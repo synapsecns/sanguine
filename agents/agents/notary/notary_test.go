@@ -3,6 +3,7 @@ package notary_test
 import (
 	"math/big"
 	"os"
+	"testing"
 	"time"
 
 	"github.com/Flaque/filet"
@@ -15,6 +16,12 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
+
+func RemoveFile(t *testing.T, fileName string) {
+	t.Helper()
+	err := os.Remove(fileName)
+	Nil(t, err)
+}
 
 func (u NotarySuite) TestNotaryE2E() {
 	testConfig := config.NotaryConfig{
@@ -43,7 +50,7 @@ func (u NotarySuite) TestNotaryE2E() {
 
 	tempConfigFile, err := os.CreateTemp("", "notary_temp_config.yaml")
 	Nil(u.T(), err)
-	defer os.Remove(tempConfigFile.Name())
+	defer RemoveFile(u.T(), tempConfigFile.Name())
 
 	numBytesWritten, err := tempConfigFile.Write(encodedTestConfig)
 	Nil(u.T(), err)
