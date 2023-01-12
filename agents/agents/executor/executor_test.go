@@ -714,6 +714,13 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		}
 	}()
 
+	go func() {
+		execErr := exec.SetMinimumTime(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
 	tips := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 	encodedTips, err := types.EncodeTips(tips)
 	e.Nil(err)
@@ -902,6 +909,13 @@ func (e *ExecutorSuite) TestExecute() {
 	// Listen with the exec.
 	go func() {
 		execErr := exec.Listen(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
+	go func() {
+		execErr := exec.SetMinimumTime(e.GetTestContext())
 		if !testDone {
 			e.Nil(execErr)
 		}
@@ -1229,13 +1243,13 @@ func (e *ExecutorSuite) TestDestinationExecute() {
 		e.True(ok)
 		e.Equal(eventType, destination.AttestationAcceptedEvent)
 
-		emittedSignedAttesation, err := types.DecodeSignedAttestation(item.Attestation)
+		emittedSignedAttestation, err := types.DecodeSignedAttestation(item.Attestation)
 		e.Nil(err)
 
-		e.Equal(e.OriginDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Origin())
-		e.Equal(e.DestinationDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Destination())
-		e.Equal(nonce, emittedSignedAttesation.Attestation().Nonce())
-		e.Equal(root, emittedSignedAttesation.Attestation().Root())
+		e.Equal(e.OriginDomainClient.Config().DomainID, emittedSignedAttestation.Attestation().Origin())
+		e.Equal(e.DestinationDomainClient.Config().DomainID, emittedSignedAttestation.Attestation().Destination())
+		e.Equal(nonce, emittedSignedAttestation.Attestation().Nonce())
+		e.Equal(root, emittedSignedAttestation.Attestation().Root())
 
 		// Now sleep for a second before executing
 		time.Sleep(time.Second)

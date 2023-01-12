@@ -288,30 +288,18 @@ func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message typ
 	chainID := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	nonce := message.Nonce()
-	attestationMask := execTypes.DBAttestation{
+	messageMask := execTypes.DBMessage{
 		ChainID:     &chainID,
 		Destination: &destinationDomain,
 		Nonce:       &nonce,
 	}
-	attestation, err := e.executorDB.GetAttestation(ctx, attestationMask)
-	if err != nil {
-		return nil, fmt.Errorf("could not get attestation: %w", err)
-	}
 
-	if attestation == nil {
-		//nolint:nilnil
-		return nil, nil
-	}
-
-	root := (*attestation).Root()
-	rootToHash := common.BytesToHash(root[:])
-	attestationMask.Root = &rootToHash
-	attestationTime, err := e.executorDB.GetAttestationBlockTime(ctx, attestationMask)
+	messageMinimumTime, err := e.executorDB.GetMessageMinimumTime(ctx, messageMask)
 	if err != nil {
 		return nil, fmt.Errorf("could not get attestation block time: %w", err)
 	}
 
-	if attestationTime == nil {
+	if messageMinimumTime == nil {
 		//nolint:nilnil
 		return nil, nil
 	}
@@ -322,7 +310,7 @@ func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message typ
 	}
 
 	currentTime := latestHeader.Time
-	if *attestationTime+uint64(message.OptimisticSeconds()) > currentTime {
+	if *messageMinimumTime > currentTime {
 		//nolint:nilnil
 		return nil, nil
 	}

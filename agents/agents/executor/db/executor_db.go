@@ -35,6 +35,8 @@ type ExecutorDBReader interface {
 	GetExecutableMessages(ctx context.Context, messageMask types.DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error)
 	// GetUnsetMinimumTimeMessages gets messages from the database that have not had their minimum time set.
 	GetUnsetMinimumTimeMessages(ctx context.Context, messageMask types.DBMessage, page int) ([]agentsTypes.Message, error)
+	// GetMessageMinimumTime gets the minimum time for a message to be executed.
+	GetMessageMinimumTime(ctx context.Context, messageMask types.DBMessage) (*uint64, error)
 
 	// GetAttestation gets an attestation from the database.
 	GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error)

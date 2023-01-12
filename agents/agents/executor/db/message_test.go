@@ -293,5 +293,10 @@ func (t *DBSuite) TestSetMinimumTime() {
 		Nil(t.T(), err)
 
 		Equal(t.T(), 1, len(messages))
+
+		time, err := testDB.GetMessageMinimumTime(t.GetTestContext(), messageMask)
+		Nil(t.T(), err)
+
+		Equal(t.T(), uint64(10), *time)
 	})
 }

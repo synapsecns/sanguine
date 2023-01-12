@@ -241,6 +241,29 @@ func (s Store) GetUnsetMinimumTimeMessages(ctx context.Context, messageMask type
 	return decodedMessages, nil
 }
 
+// GetMessageMinimumTime gets the minimum time for a message to be executed.
+func (s Store) GetMessageMinimumTime(ctx context.Context, messageMask types.DBMessage) (*uint64, error) {
+	var message Message
+
+	dbMessageMask := DBMessageToMessage(messageMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&message).
+		Where(&dbMessageMask).
+		Scan(&message)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get message: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected > 1 {
+		return nil, fmt.Errorf("multiple messages found with the same mask")
+	}
+	if !message.MinimumTimeSet || dbTx.RowsAffected != 1 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	return &message.MinimumTime, nil
+}
+
 // DBMessageToMessage converts a DBMessage to a Message.
 func DBMessageToMessage(dbMessage types.DBMessage) Message {
 	var message Message
