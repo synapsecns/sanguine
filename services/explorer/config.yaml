@@ -191,5 +191,8 @@ chains:
         start_block: -1
       - contract_type: swap #Swap wrapper
         address: '0x0271984e4cfA2A0f02664baACD551CcFCC9920E8'
-        start_block: 1861449
+        start_block: -1
+      - contract_type: swap #nUSDNOTEPool
+        address: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c'
+        start_block: 1690002
 
