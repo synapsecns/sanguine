@@ -316,28 +316,28 @@ IF(
 		   ti.token_address = '', be.token, ti.token_address
    )                   AS pre_ttoken,
 IF(
-		   se.amount[se.sold_id] != '', toUInt256(se.amount[se.sold_id]),
+		   se.amount[se.bought_id] != '', toUInt256(se.amount[se.bought_id]),
 		   be.amount
    )                   AS pre_tamount,
 IF(
-		   se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
+		   se.amount[se.bought_id] != '', se.token_decimal[se.bought_id],
 		   be.token_decimal
    )                   AS pre_ttoken_decimal,
 IF(
-			   se.amount[se.sold_id] != '' > 0,
+			   se.amount[se.bought_id] != '' > 0,
 			   (
 					   (
 							   (
 								   IF(
-											   se.amount[se.sold_id] != '',
-											   toFloat64(se.amount[se.sold_id]),
+											   se.amount[se.bought_id] != '',
+											   toFloat64(se.amount[se.bought_id]),
 											   toFloat64(be.amount)
 									   )
 								   ) / exp10(if(
-									   se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
+									   se.amount[se.bought_id] != '', se.token_decimal[se.bought_id],
 									   be.token_decimal
 							   ))
-						   ) * se.swap_amount_usd[se.sold_id]
+						   ) * se.swap_amount_usd[se.bought_id]
 				   ),
 			   be.amount_usd
    )                   AS pre_tamount_usd,
