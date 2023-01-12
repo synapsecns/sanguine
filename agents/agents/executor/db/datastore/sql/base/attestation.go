@@ -122,7 +122,7 @@ func (s Store) GetAttestationForNonceOrGreater(ctx context.Context, attestationM
 	return nonce, blockTime, nil
 }
 
-// GetAttestationsInNonceRange gets attestations in a nonce range.
+// GetAttestationsAboveOrEqualNonce gets attestations in a nonce range.
 func (s Store) GetAttestationsAboveOrEqualNonce(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, page int) ([]types.DBAttestation, error) {
 	if page < 1 {
 		page = 1

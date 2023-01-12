@@ -123,6 +123,25 @@ func (e Executor) SetMinimumTime(ctx context.Context) error {
 	return nil
 }
 
+// ExecuteExecutable executes executable messages in the database.
+func (e Executor) ExecuteExecutable(ctx context.Context) error {
+	g, _ := errgroup.WithContext(ctx)
+
+	for _, chain := range e.config.Chains {
+		chain := chain
+
+		g.Go(func() error {
+			return e.executeExecutable(ctx, chain.ChainID)
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("error when executing executable messages: %w", err)
+	}
+
+	return nil
+}
+
 // NewExecutorInjectedBackend creates a new Executor suitable for testing since it does not need a valid omnirpcURL.
 //
 //nolint:cyclop

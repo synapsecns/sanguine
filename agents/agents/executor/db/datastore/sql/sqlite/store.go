@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
-	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	loggerS "gorm.io/gorm/logger"
 	"os"
 )
 
@@ -29,7 +29,7 @@ func NewSqliteStore(ctx context.Context, dbPath string) (*Store, error) {
 
 	gdb, err := gorm.Open(sqlite.Open(fmt.Sprintf("%s/%s", dbPath, "synapse.db")), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
-		Logger:                                   common_base.GetGormLogger(logger),
+		Logger:                                   loggerS.Default.LogMode(loggerS.Silent),
 		FullSaveAssociations:                     true,
 	})
 	if err != nil {

@@ -120,7 +120,7 @@ func (t *DBSuite) TestExecuteMessage() {
 		tips := agentsTypes.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 		typesMessage := agentsTypes.NewMessage(header, tips, message)
 
-		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 0)
+		err := testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 15)
 		Nil(t.T(), err)
 
 		messageMask := types.DBMessage{
@@ -182,7 +182,7 @@ func (t *DBSuite) TestGetExecutableMessages() {
 		header = agentsTypes.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), nonce, destination, common.BigToHash(big.NewInt(gofakeit.Int64())), gofakeit.Uint32())
 		typesMessage = agentsTypes.NewMessage(header, tips, message)
 
-		err = testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 10)
+		err = testDB.StoreMessage(t.GetTestContext(), typesMessage, blockNumber, true, 20)
 		Nil(t.T(), err)
 
 		// Check when the current time is after the minimum time, and minimum time is set to true.

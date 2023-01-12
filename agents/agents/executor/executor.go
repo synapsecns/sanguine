@@ -485,7 +485,6 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		if err != nil {
 			return fmt.Errorf("could not get attestation for nonce or greater: %w", err)
 		}
-
 		if nonce != nil && blockTime != nil {
 			err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, true, *blockTime+uint64((*message).OptimisticSeconds()))
 			if err != nil {
