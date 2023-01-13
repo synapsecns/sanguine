@@ -1803,7 +1803,7 @@ func (e *ExecutorSuite) TestExecuteExecutable() {
 		mask := types2.DBMessage{
 			ChainID: &originDomain,
 		}
-		executableMessages, err := e.ExecutorTestDB.GetExecutableMessages(e.GetTestContext(), mask, 0, 1)
+		executableMessages, err := e.ExecutorTestDB.GetExecutableMessages(e.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
 		e.Nil(err)
 		if len(executableMessages) == 0 {
 			return false
@@ -1819,7 +1819,7 @@ func (e *ExecutorSuite) TestExecuteExecutable() {
 		mask := types2.DBMessage{
 			ChainID: &originDomain,
 		}
-		executableMessages, err := e.ExecutorTestDB.GetExecutableMessages(e.GetTestContext(), mask, 0, 1)
+		executableMessages, err := e.ExecutorTestDB.GetExecutableMessages(e.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
 		e.Nil(err)
 		if len(executableMessages) == 0 {
 			return true
