@@ -12,6 +12,10 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 
+	agentsConfig "github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/domains/evm"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
@@ -129,7 +133,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
 
-		chainExecutors[chain.ChainID] = &chainExecutor{
+		chainExecutors[chain.ChainID] = &ChainExecutor{
 			chainID: chain.ChainID,
 			lastLog: &logOrderInfo{
 				blockNumber: 0,
@@ -244,6 +248,87 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	return true, nil
 }
 
+// Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
+func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
+	nonce, err := e.VerifyMessageOptimisticPeriod(ctx, message)
+	if err != nil {
+		return false, fmt.Errorf("could not verify optimistic period: %w", err)
+	}
+
+	if nonce == nil {
+		return false, nil
+	}
+
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *nonce)
+	if err != nil {
+		return false, fmt.Errorf("could not get merkle proof: %w", err)
+	}
+
+	verified, err := e.VerifyMessageMerkleProof(message)
+	if err != nil {
+		return false, fmt.Errorf("could not verify merkle proof: %w", err)
+	}
+
+	if !verified {
+		return false, nil
+	}
+
+	index := big.NewInt(int64(*nonce - 1))
+
+	var proofB32 [32][32]byte
+	for i, p := range proof {
+		copy(proofB32[i][:], p)
+	}
+
+	err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
+	if err != nil {
+		return false, fmt.Errorf("could not execute message: %w", err)
+	}
+
+	return true, nil
+}
+
+// newTreeFromDB creates a new merkle tree from the database's messages.
+func newTreeFromDB(ctx context.Context, chainID uint32, destination uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
+	var allMessages []types.Message
+
+	messageMask := execTypes.DBMessage{
+		ChainID:     &chainID,
+		Destination: &destination,
+	}
+	page := 1
+
+	for {
+		messages, err := executorDB.GetMessages(ctx, messageMask, page)
+		if err != nil {
+			return nil, fmt.Errorf("could not get messages: %w", err)
+		}
+		if len(messages) == 0 {
+			break
+		}
+
+		allMessages = append(allMessages, messages...)
+		page++
+	}
+
+	rawMessages := make([][]byte, len(allMessages))
+
+	for i, message := range allMessages {
+		rawMessage, err := message.ToLeaf()
+		if err != nil {
+			return nil, fmt.Errorf("could not convert message to leaf: %w", err)
+		}
+
+		rawMessages[i] = rawMessage[:]
+	}
+
+	merkleTree := merkle.NewTreeFromItems(rawMessages)
+
+	e.chainExecutors[chainID].merkleTrees[destination] = merkleTree
+
+	return nil
+}
+
 type contractType int
 
 const (
@@ -252,8 +337,8 @@ const (
 	other
 )
 
-// verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
-func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) {
+// VerifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
+func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) {
 	root, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].Root(message.Nonce())
 	if err != nil {
 		return false, fmt.Errorf("could not get root: %w", err)
@@ -274,8 +359,8 @@ func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) 
 	return inTree, nil
 }
 
-// verifyMessageOptimisticPeriod verifies that the optimistic period is valid.
-func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
+// VerifyMessageOptimisticPeriod verifies that the optimistic period is valid.
+func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
 	chainID := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	nonce := message.Nonce()
@@ -319,45 +404,6 @@ func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message typ
 	}
 
 	return &nonce, nil
-}
-
-// newTreeFromDB creates a new merkle tree from the database's messages.
-func newTreeFromDB(ctx context.Context, chainID uint32, destination uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
-	var allMessages []types.Message
-
-	messageMask := execTypes.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-	}
-	page := 1
-
-	for {
-		messages, err := executorDB.GetMessages(ctx, messageMask, page)
-		if err != nil {
-			return nil, fmt.Errorf("could not get messages: %w", err)
-		}
-		if len(messages) == 0 {
-			break
-		}
-
-		allMessages = append(allMessages, messages...)
-		page++
-	}
-
-	rawMessages := make([][]byte, len(allMessages))
-
-	for i, message := range allMessages {
-		rawMessage, err := message.ToLeaf()
-		if err != nil {
-			return nil, fmt.Errorf("could not convert message to leaf: %w", err)
-		}
-
-		rawMessages[i] = rawMessage[:]
-	}
-
-	merkleTree := merkle.NewTreeFromItems(rawMessages)
-
-	return merkleTree, nil
 }
 
 // streamLogs uses gRPC to stream logs into a channel.

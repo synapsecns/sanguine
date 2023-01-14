@@ -15,5 +15,7 @@ func (s SimulatedSuite) TestTypecast() {
 		NotNil(s.T(), bridgeHandlev1)
 		_, messageBusHandle := s.deployManager.GetMessageBus(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), messageBusHandle)
+		_, metaSwapHandle := s.deployManager.GetMetaSwap(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), metaSwapHandle)
 	})
 }

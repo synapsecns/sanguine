@@ -46,7 +46,7 @@ func (u GuardSuite) TestAttestationDoubleCheckOnOriginVerifier() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	Nil(u.T(), err)
 
-	notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := u.NotarySigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(u.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{}, []types.Signature{notarySignature})
@@ -75,8 +75,8 @@ func (u GuardSuite) TestAttestationDoubleCheckOnOriginVerifier() {
 		u.AttestationDomainClient,
 		u.DestinationDomainClient,
 		testDB,
-		u.GuardBondedSigner,
-		u.GuardUnbondedSigner,
+		u.GuardSigner,
+		u.UnbondedSigner,
 		1*time.Second)
 
 	err = attestationDoubleCheckOnOriginVerifier.Update(u.GetTestContext())

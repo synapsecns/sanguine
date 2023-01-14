@@ -57,12 +57,10 @@ func (a AttestationGuardDestinationSubmitter) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Info("Guard AttestationGuardDestinationSubmitter exiting without error")
 			return nil
 		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
-				logger.Errorf("Guard AttestationGuardDestinationSubmitter exiting with error: %v", err)
 				return err
 			}
 		}
