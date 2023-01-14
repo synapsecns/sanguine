@@ -25,7 +25,7 @@ func NewScribeBackfiller(eventDB db.EventDB, clientsMap map[uint32][]ScribeBacke
 	chainBackfillers := map[uint32]*ChainBackfiller{}
 
 	for _, chainConfig := range config.Chains {
-		chainBackfiller, err := NewChainBackfiller(chainConfig.ChainID, eventDB, clientsMap[chainConfig.ChainID], chainConfig)
+		chainBackfiller, err := NewChainBackfiller(eventDB, clientsMap[chainConfig.ChainID], chainConfig, 1)
 		if err != nil {
 			return nil, fmt.Errorf("could not create chain backfiller: %w", err)
 		}
@@ -49,7 +49,7 @@ func (s ScribeBackfiller) Backfill(ctx context.Context) error {
 		chainBackfiller := s.ChainBackfillers[i]
 		g.Go(func() error {
 			LogEvent(InfoLevel, "Scribe backfilling chain", LogData{"cid": chainBackfiller.chainID})
-			err := chainBackfiller.Backfill(groupCtx, nil)
+			err := chainBackfiller.Backfill(groupCtx, nil, false)
 			if err != nil {
 				return fmt.Errorf("could not backfill chain: %w", err)
 			}

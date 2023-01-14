@@ -88,7 +88,7 @@ func (p *ProxySuite) TestAcquireReleaseForwarder() {
 	forwarder.SetRequiredConfirmations(gofakeit.Uint16())
 	forwarder.SetBlankResMap()
 	forwarder.SetRPCRequest([]proxy.RPCRequest{{
-		ID:     []byte(strconv.Itoa(gofakeit.Number(1, 2))),
+		ID:     gofakeit.Number(1, 2),
 		Method: gofakeit.Word(),
 	}})
 	prxy.ReleaseForwarder(forwarder)
@@ -191,7 +191,7 @@ func (p *ProxySuite) TestOverrideConfirmability() {
 	forwarder.SetChain(chainManager)
 
 	forwarder.SetBody(p.MustMarshall(proxy.RPCRequest{
-		ID:     []byte("\"1\""),
+		ID:     1,
 		Method: string(proxy.BlockByNumberMethod),
 		Params: []json.RawMessage{[]byte("\"1\"")},
 	}))

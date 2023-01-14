@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokenpool"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	model "github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -35,15 +35,29 @@ type SwapParser struct {
 	poolTokenDataService tokenpool.Service
 	// swapService is the swap service
 	swapService *fetcher.SwapService
+	// FiltererMetaSwap is the meta swap Filterer we use to parse events.
+	FiltererMetaSwap *metaswap.MetaSwapFilterer
 	// coinGeckoIDs is a mapping from coin token symbol to coin gecko ID
 	coinGeckoIDs map[string]string
 }
 
 // NewSwapParser creates a new parser for a given bridge.
-func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, consumerFetcher *fetcher.ScribeFetcher, swapService *fetcher.SwapService, tokenDataService tokendata.Service) (*SwapParser, error) {
-	filterer, err := swap.NewSwapFlashLoanFilterer(swapAddress, nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
+func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, metaSwap bool, consumerFetcher *fetcher.ScribeFetcher, swapService *fetcher.SwapService, tokenDataService tokendata.Service) (*SwapParser, error) {
+	var filterer *swap.SwapFlashLoanFilterer
+	var filtererMetaSwap *metaswap.MetaSwapFilterer
+	var err error
+	if metaSwap {
+		filtererMetaSwap, err = metaswap.NewMetaSwapFilterer(swapAddress, nil)
+		if err != nil {
+			return nil, fmt.Errorf("could not create %T: %w", metaswap.MetaSwapFilterer{}, err)
+		}
+		filterer = nil
+	} else {
+		filterer, err = swap.NewSwapFlashLoanFilterer(swapAddress, nil)
+		if err != nil {
+			return nil, fmt.Errorf("could not create %T: %w", swap.SwapFlashLoanFilterer{}, err)
+		}
+		filtererMetaSwap = nil
 	}
 
 	poolTokenDataService, err := tokenpool.NewPoolTokenDataService(*swapService, consumerDB)
@@ -64,6 +78,7 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, consume
 		tokenDataService:     tokenDataService,
 		poolTokenDataService: poolTokenDataService,
 		swapService:          swapService,
+		FiltererMetaSwap:     filtererMetaSwap,
 		coinGeckoIDs:         coinGeckoIDs}, nil
 }
 
@@ -123,8 +138,8 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 		Buyer:           buyer,
 		TokensSold:      event.GetTokensSold(),
 		TokensBought:    event.GetTokensBought(),
-		SoldID:          event.GetSoldId(),
-		BoughtID:        event.GetBoughtId(),
+		SoldID:          event.GetSoldID(),
+		BoughtID:        event.GetBoughtID(),
 		Provider:        provider,
 
 		Invariant:     event.GetInvariant(),
@@ -167,86 +182,106 @@ func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainI
 
 // Parse parses the swap logs.
 //
-//nolint:gocognit,cyclop,dupl
+//nolint:gocognit,cyclop,dupl,maintidx
 func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32) (interface{}, error) {
 	logTopic := log.Topics[0]
 
 	iFace, err := func(log ethTypes.Log) (swapTypes.EventLog, error) {
-		switch logTopic {
-		case swap.Topic(swapTypes.TokenSwapEvent):
-			iFace, err := p.Filterer.ParseTokenSwap(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not store token swap: %w", err)
+		// nolint:nestif
+		if p.FiltererMetaSwap != nil {
+			switch logTopic {
+			case swap.Topic(swapTypes.TokenSwapUnderlyingEvent):
+
+				iFace, err := p.FiltererMetaSwap.ParseTokenSwapUnderlying(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not store token swap underlying: %w", err)
+				}
+
+				return iFace, nil
+			default:
+				logger.Errorf("ErrUnknownTopic in meta swap: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+
+				return nil, fmt.Errorf(ErrUnknownTopic)
 			}
+		} else {
+			switch logTopic {
+			case swap.Topic(swapTypes.TokenSwapEvent):
 
-			return iFace, nil
-		case swap.Topic(swapTypes.AddLiquidityEvent):
-			iFace, err := p.Filterer.ParseAddLiquidity(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not store add liquidity: %w", err)
+				iFace, err := p.Filterer.ParseTokenSwap(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not store token swap: %w", err)
+				}
+
+				return iFace, nil
+			case swap.Topic(swapTypes.AddLiquidityEvent):
+				iFace, err := p.Filterer.ParseAddLiquidity(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not store add liquidity: %w", err)
+				}
+
+				return iFace, nil
+			case swap.Topic(swapTypes.RemoveLiquidityEvent):
+				iFace, err := p.Filterer.ParseRemoveLiquidity(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not store remove liquidity: %w", err)
+				}
+
+				return iFace, nil
+			case swap.Topic(swapTypes.RemoveLiquidityOneEvent):
+				iFace, err := p.Filterer.ParseRemoveLiquidityOne(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not store remove liquidity one: %w", err)
+				}
+
+				return iFace, nil
+			case swap.Topic(swapTypes.RemoveLiquidityImbalanceEvent):
+				iFace, err := p.Filterer.ParseRemoveLiquidityImbalance(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not store remove liquidity imbalance: %w", err)
+				}
+
+				return iFace, nil
+			case swap.Topic(swapTypes.NewAdminFeeEvent):
+				iFace, err := p.Filterer.ParseNewAdminFee(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not store new admin fee: %w", err)
+				}
+
+				return iFace, nil
+			case swap.Topic(swapTypes.NewSwapFeeEvent):
+				iFace, err := p.Filterer.ParseNewSwapFee(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not store new swap fee: %w", err)
+				}
+
+				return iFace, nil
+			case swap.Topic(swapTypes.RampAEvent):
+				iFace, err := p.Filterer.ParseRampA(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not store ramp a: %w", err)
+				}
+
+				return iFace, nil
+			case swap.Topic(swapTypes.StopRampAEvent):
+				iFace, err := p.Filterer.ParseStopRampA(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not store stop ramp a: %w", err)
+				}
+
+				return iFace, nil
+			case swap.Topic(swapTypes.FlashLoanEvent):
+				iFace, err := p.Filterer.ParseFlashLoan(log)
+				if err != nil {
+					return nil, fmt.Errorf("could not store flash loan: %w", err)
+				}
+
+				return iFace, nil
+
+			default:
+				logger.Errorf("ErrUnknownTopic in swap: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+
+				return nil, fmt.Errorf(ErrUnknownTopic)
 			}
-
-			return iFace, nil
-		case swap.Topic(swapTypes.RemoveLiquidityEvent):
-			iFace, err := p.Filterer.ParseRemoveLiquidity(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not store remove liquidity: %w", err)
-			}
-
-			return iFace, nil
-		case swap.Topic(swapTypes.RemoveLiquidityOneEvent):
-			iFace, err := p.Filterer.ParseRemoveLiquidityOne(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not store remove liquidity one: %w", err)
-			}
-
-			return iFace, nil
-		case swap.Topic(swapTypes.RemoveLiquidityImbalanceEvent):
-			iFace, err := p.Filterer.ParseRemoveLiquidityImbalance(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not store remove liquidity imbalance: %w", err)
-			}
-
-			return iFace, nil
-		case swap.Topic(swapTypes.NewAdminFeeEvent):
-			iFace, err := p.Filterer.ParseNewAdminFee(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not store new admin fee: %w", err)
-			}
-
-			return iFace, nil
-		case swap.Topic(swapTypes.NewSwapFeeEvent):
-			iFace, err := p.Filterer.ParseNewSwapFee(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not store new swap fee: %w", err)
-			}
-
-			return iFace, nil
-		case swap.Topic(swapTypes.RampAEvent):
-			iFace, err := p.Filterer.ParseRampA(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not store ramp a: %w", err)
-			}
-
-			return iFace, nil
-		case swap.Topic(swapTypes.StopRampAEvent):
-			iFace, err := p.Filterer.ParseStopRampA(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not store stop ramp a: %w", err)
-			}
-
-			return iFace, nil
-		case swap.Topic(swapTypes.FlashLoanEvent):
-			iFace, err := p.Filterer.ParseFlashLoan(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not store flash loan: %w", err)
-			}
-
-			return iFace, nil
-		default:
-			logger.Errorf("ErrUnknownTopic in swap: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
-
-			return nil, fmt.Errorf(ErrUnknownTopic)
 		}
 	}(log)
 	if err != nil {
@@ -294,13 +329,9 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 			}
 			tokenSymbols[tokenIndex] = tokenData.TokenID()
 			tokenDecimals[tokenIndex] = tokenData.Decimals()
-			timeStamp, err := p.consumerFetcher.FetchClient.GetBlockTime(ctx, int(chainID), int(iFace.GetBlockNumber()))
-			if err != nil {
-				return nil, fmt.Errorf("could not get timestamp: %w", err)
-			}
 			coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
-			if !(coinGeckoID == "xjewel" && *swapEvent.TimeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp.Response < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp.Response < 1668646800) && !(coinGeckoID == "highstreet" && *timeStamp.Response < 1634263200) {
-				tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, *timeStamp.Response, coinGeckoID)
+			if !(coinGeckoID == "xjewel" && *swapEvent.TimeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *swapEvent.TimeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *swapEvent.TimeStamp < 1668646800) && !(coinGeckoID == "highstreet" && *swapEvent.TimeStamp < 1634263200) {
+				tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, int(*swapEvent.TimeStamp), coinGeckoID)
 				if tokenPrice != nil {
 					tokenPrices[tokenIndex] = *tokenPrice
 				}
