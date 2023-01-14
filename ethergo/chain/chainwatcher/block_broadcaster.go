@@ -82,7 +82,7 @@ func (b *BlockBroadcaster) Subscribe() <-chan uint64 {
 	b.blockListenersMux.Lock()
 	listener := blockListener{
 		producerChan:         make(chan uint64),
-		listenerChan:         make(chan uint64),
+		listenerChan:         make(chan uint64, 1000),
 		hasNewHeightChan:     make(chan bool),
 		blockNotifierIsReady: make(chan bool),
 		lastHeight:           b.lastHeight,

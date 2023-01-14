@@ -10,8 +10,7 @@ type blockListener struct {
 	// this should never block for more then the time it takes to add messages to the
 	// listener channel
 	producerChan chan uint64
-	// listenerChan is the channel we send messeages to. To avoid goroutine leaks, this
-	// should have at most 1 message at a time (although we don't buffer)
+	// listenerChan is the channel we send messeages to.
 	listenerChan chan uint64
 	// lastHeight is the last height received by the listener
 	lastHeight uint64
