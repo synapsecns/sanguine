@@ -53,15 +53,6 @@ func (f *filterLogsTracker) update(query ethereum.FilterQuery) {
 	f.calledBlocks = append(f.calledBlocks, query.ToBlock.Uint64())
 }
 
-// There's currently a bug that makes logs proceed one at a time no matter what.
-// the working thesis is that getFilterEndHeight is called on an unbuffered channel
-// so the go func that adds heights to the channel is blocked until the channel is read.
-// before that can happen (most of the time) the default case is hit. This is a test to
-// verify this is the case. The test will be amended to pass once the bug is fixed.
-func (s *WatcherSuite) TestContractListenerDrain() {
-
-}
-
 func (s *WatcherSuite) TestContractWatcherRetry() {
 	if os.Getenv("CI") != "" {
 		s.T().Skip("this flakes on ci. TODO fix this. This should never fail locally.")
