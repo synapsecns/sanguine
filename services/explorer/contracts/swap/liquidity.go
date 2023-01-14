@@ -73,13 +73,13 @@ func (s SwapFlashLoanAddLiquidity) GetLPTokenSupply() *big.Int {
 	return core.CopyBigInt(s.LpTokenSupply)
 }
 
-// GetBoughtID gets the bought id.
-func (s SwapFlashLoanAddLiquidity) GetBoughtID() *big.Int {
+// GetBoughtId gets the bought id.
+func (s SwapFlashLoanAddLiquidity) GetBoughtId() *big.Int {
 	return nil
 }
 
-// GetSoldID gets the solid id.
-func (s SwapFlashLoanAddLiquidity) GetSoldID() *big.Int {
+// GetSoldId gets the solid id.
+func (s SwapFlashLoanAddLiquidity) GetSoldId() *big.Int {
 	return nil
 }
 
@@ -211,13 +211,13 @@ func (s SwapFlashLoanRemoveLiquidity) GetLPTokenSupply() *big.Int {
 	return s.LpTokenSupply
 }
 
-// GetBoughtID gets the bought id.
-func (s SwapFlashLoanRemoveLiquidity) GetBoughtID() *big.Int {
+// GetBoughtId gets the bought id.
+func (s SwapFlashLoanRemoveLiquidity) GetBoughtId() *big.Int {
 	return nil
 }
 
-// GetSoldID gets the solid id.
-func (s SwapFlashLoanRemoveLiquidity) GetSoldID() *big.Int {
+// GetSoldId gets the solid id.
+func (s SwapFlashLoanRemoveLiquidity) GetSoldId() *big.Int {
 	return nil
 }
 
@@ -342,8 +342,8 @@ func (s SwapFlashLoanRemoveLiquidityOne) GetLPTokenSupply() *big.Int {
 	return core.CopyBigInt(s.LpTokenSupply)
 }
 
-// GetBoughtID gets the bought id.
-func (s SwapFlashLoanRemoveLiquidityOne) GetBoughtID() *big.Int {
+// GetBoughtId gets the bought id.
+func (s SwapFlashLoanRemoveLiquidityOne) GetBoughtId() *big.Int {
 	return core.CopyBigInt(s.BoughtId)
 }
 
@@ -358,8 +358,8 @@ func (s SwapFlashLoanRemoveLiquidityOne) GetAmount() map[uint8]string {
 	return output
 }
 
-// GetSoldID gets the solid id.
-func (s SwapFlashLoanRemoveLiquidityOne) GetSoldID() *big.Int {
+// GetSoldId gets the solid id.
+func (s SwapFlashLoanRemoveLiquidityOne) GetSoldId() *big.Int {
 	return nil
 }
 
@@ -503,8 +503,8 @@ func (s SwapFlashLoanRemoveLiquidityImbalance) GetLPTokenSupply() *big.Int {
 	return core.CopyBigInt(s.LpTokenSupply)
 }
 
-// GetSoldID gets the solid id.
-func (s SwapFlashLoanRemoveLiquidityImbalance) GetSoldID() *big.Int {
+// GetSoldId gets the solid id.
+func (s SwapFlashLoanRemoveLiquidityImbalance) GetSoldId() *big.Int {
 	return nil
 }
 
@@ -568,8 +568,8 @@ func (s SwapFlashLoanRemoveLiquidityImbalance) GetTime() *big.Int {
 	return nil
 }
 
-// GetBoughtID gets the bought id.
-func (s SwapFlashLoanRemoveLiquidityImbalance) GetBoughtID() *big.Int {
+// GetBoughtId gets the bought id.
+func (s SwapFlashLoanRemoveLiquidityImbalance) GetBoughtId() *big.Int {
 	return nil
 }
 

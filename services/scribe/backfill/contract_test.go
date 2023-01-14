@@ -38,9 +38,6 @@ func (b BackfillSuite) TestFailedStore() {
 		// on retrieve last indexed call
 		On("RetrieveLastIndexed", mock.Anything, mock.Anything, mock.Anything).
 		Return(uint64(0), nil)
-
-	mockDB.On("StoreBlockTime", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-
 	chainID := gofakeit.Uint32()
 
 	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
@@ -273,9 +270,9 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
 	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
-	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1)
+	chainBackfiller, err := backfill.NewChainBackfiller(42161, b.testDB, backendClientArr, chainConfig)
 	Nil(b.T(), err)
-	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock, false)
+	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock)
 	Nil(b.T(), err)
 
 	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)
@@ -313,10 +310,10 @@ func (b BackfillSuite) TestInvalidTxVRS() {
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
 	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
-	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1)
+	chainBackfiller, err := backfill.NewChainBackfiller(1313161554, b.testDB, backendClientArr, chainConfig)
 	Nil(b.T(), err)
 
-	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock, false)
+	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock)
 	Nil(b.T(), err)
 
 	logs, err := b.testDB.RetrieveLogsWithFilter(b.GetTestContext(), db.LogFilter{}, 1)

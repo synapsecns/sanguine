@@ -19,8 +19,6 @@ const (
 	SwapContractType = "swap"
 	// MessageBusContractType is the type of a message bus contract.
 	MessageBusContractType = "messagebus"
-	// MetaSwapContractType is the type of a meta swap contract.
-	MetaSwapContractType = "metaswap"
 )
 
 // Config is used to configure the explorer's data consumption.

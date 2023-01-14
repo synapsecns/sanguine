@@ -94,6 +94,7 @@ func (a OriginAttestationSubmitter) update(ctx context.Context) error {
 
 	err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToSubmit.SignedAttestation())
 	if err != nil {
+		logger.Errorf("Error calling SubmitAttestation on AttestationCollector: %v", err)
 		return fmt.Errorf("could not submit attestation: %w", err)
 	}
 

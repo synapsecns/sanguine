@@ -26,14 +26,12 @@ const (
 	StopRampAEvent
 	// FlashLoanEvent is the flash loan event.
 	FlashLoanEvent
-	// TokenSwapUnderlyingEvent is the token meta swap underlying event.
-	TokenSwapUnderlyingEvent
 )
 
 // AllEventTypes is a list of the event types.
 func AllEventTypes() []EventType {
 	return []EventType{TokenSwapEvent, AddLiquidityEvent, RemoveLiquidityEvent, RemoveLiquidityOneEvent,
-		RemoveLiquidityImbalanceEvent, NewAdminFeeEvent, NewSwapFeeEvent, RampAEvent, StopRampAEvent, FlashLoanEvent, TokenSwapUnderlyingEvent}
+		RemoveLiquidityImbalanceEvent, NewAdminFeeEvent, NewSwapFeeEvent, RampAEvent, StopRampAEvent, FlashLoanEvent}
 }
 
 // Int gets the int value of the event type.

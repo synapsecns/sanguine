@@ -39,8 +39,8 @@ func (s SwapFlashLoanNewAdminFee) GetNewAdminFee() *big.Int {
 	return core.CopyBigInt(s.NewAdminFee)
 }
 
-// GetSoldID gets the solid id.
-func (s SwapFlashLoanNewAdminFee) GetSoldID() *big.Int {
+// GetSoldId gets the solid id.
+func (s SwapFlashLoanNewAdminFee) GetSoldId() *big.Int {
 	return nil
 }
 
@@ -104,8 +104,8 @@ func (s SwapFlashLoanNewAdminFee) GetTime() *big.Int {
 	return nil
 }
 
-// GetBoughtID gets the bought id.
-func (s SwapFlashLoanNewAdminFee) GetBoughtID() *big.Int {
+// GetBoughtId gets the bought id.
+func (s SwapFlashLoanNewAdminFee) GetBoughtId() *big.Int {
 	return nil
 }
 
@@ -175,8 +175,8 @@ func (s SwapFlashLoanNewSwapFee) GetNewSwapFee() *big.Int {
 	return core.CopyBigInt(s.NewSwapFee)
 }
 
-// GetSoldID gets the solid id.
-func (s SwapFlashLoanNewSwapFee) GetSoldID() *big.Int {
+// GetSoldId gets the solid id.
+func (s SwapFlashLoanNewSwapFee) GetSoldId() *big.Int {
 	return nil
 }
 
@@ -245,8 +245,8 @@ func (s SwapFlashLoanNewSwapFee) GetTime() *big.Int {
 	return nil
 }
 
-// GetBoughtID gets the bought id.
-func (s SwapFlashLoanNewSwapFee) GetBoughtID() *big.Int {
+// GetBoughtId gets the bought id.
+func (s SwapFlashLoanNewSwapFee) GetBoughtId() *big.Int {
 	return nil
 }
 

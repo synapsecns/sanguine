@@ -99,6 +99,10 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 			if err != nil {
 				return Guard{}, fmt.Errorf("failing to create evm for destination, could not create guard for: %w", err)
 			}
+			err = destinationDomainClient.Destination().PrimeNonce(ctx, guard.unbondedSigner)
+			if err != nil {
+				return Guard{}, fmt.Errorf("error trying to PrimeNonce for destinationClient, could not create guard for: %w", err)
+			}
 
 			guard.scanners[originName][destinationName] = NewAttestationCollectorAttestationScanner(
 				attestationDomainClient,

@@ -16,7 +16,7 @@ import (
 // error response. Which one it is depends on the fields.
 type JSONRPCMessage struct {
 	Version string          `json:"jsonrpc,omitempty"`
-	ID      int             `json:"id,omitempty"`
+	ID      json.RawMessage `json:"id,omitempty"`
 	Method  string          `json:"method,omitempty"`
 	Params  json.RawMessage `json:"params,omitempty"`
 	Error   *JSONError      `json:"error,omitempty"`

@@ -10,7 +10,6 @@ import (
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
 	"golang.org/x/exp/slices"
-	http2 "net/http"
 	"strings"
 )
 
@@ -45,7 +44,7 @@ func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string)
 		var rpcMessage JSONRPCMessage
 		err := json.Unmarshal(body, &rpcMessage)
 		if err != nil {
-			return nil, fmt.Errorf("could not parse response %s: %w", body, err)
+			return nil, fmt.Errorf("could not parse response: %w", err)
 		}
 
 		hasErr = rpcMessage.Error != nil
@@ -67,15 +66,13 @@ func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string)
 // standardizes a batch request. anyErr indicates *any* response in the batch had an error
 // (not at the decoding step).
 func (f *Forwarder) standardizeBatch(ctx context.Context, body []byte) (res []byte, anyErr bool, err error) {
+	var standardizedResponses []json.RawMessage
 	dec := json.NewDecoder(bytes.NewReader(body))
 
 	_, err = dec.Token() // skip '['
 	if err != nil {
 		return nil, true, fmt.Errorf("could not decode %s: %w", ellipsis.Shorten(string(body), 10), err)
 	}
-
-	// response.id->response
-	responses := make(map[int]json.RawMessage)
 
 	i := 0
 	for dec.More() {
@@ -89,26 +86,15 @@ func (f *Forwarder) standardizeBatch(ctx context.Context, body []byte) (res []by
 			anyErr = true
 		}
 
-		request := f.rpcRequest.ByID(response.ID)
-		if request == nil {
-			return nil, true, fmt.Errorf("no request found for id %d", response.ID)
-		}
-
-		standardized, err := standardizeResponse(ctx, f.rpcRequest.ByID(response.ID), *response)
+		standardized, err := standardizeResponse(ctx, &f.rpcRequest[i], *response)
 		if err != nil {
 			return nil, true, fmt.Errorf("could not decode response at index %d: %w", i, err)
 		}
 
-		responses[response.ID] = standardized
+		res := json.RawMessage(standardized)
+		standardizedResponses = append(standardizedResponses, res)
+
 		i++
-	}
-
-	// create the return array
-	var standardizedResponses []json.RawMessage
-
-	// return the responses in the order they were requested
-	for _, request := range f.rpcRequest {
-		standardizedResponses = append(standardizedResponses, responses[request.ID])
 	}
 
 	standardizedResponse, err := json.Marshal(standardizedResponses)
@@ -152,7 +138,7 @@ func (f *Forwarder) forwardRequest(ctx context.Context, endpoint string) (*rawRe
 	}
 
 	if resp.StatusCode() < 200 || resp.StatusCode() > 400 {
-		return nil, fmt.Errorf("invalid response code: %d (%s)", resp.StatusCode(), http2.StatusText(resp.StatusCode()))
+		return nil, fmt.Errorf("invalid response code: %w", err)
 	}
 
 	rawResp, err := f.newRawResponse(ctx, resp.Body(), endpoint)

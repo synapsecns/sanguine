@@ -52,7 +52,7 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 		uint32(origin),
 		uint32(destination),
 		testDB,
-		u.UnbondedSigner,
+		u.GuardUnbondedSigner,
 		1*time.Second)
 
 	err = attestationCollectorAttestationScanner.Update(u.GetTestContext())

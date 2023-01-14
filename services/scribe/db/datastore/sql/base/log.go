@@ -56,20 +56,14 @@ func (s Store) StoreLogs(ctx context.Context, chainID uint32, logs ...types.Log)
 			Confirmed:       false,
 		})
 	}
-	dbTxPrefix := s.DB().WithContext(ctx).
+	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
 				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: TxHashFieldName}, {Name: BlockIndexFieldName},
 			},
 			DoNothing: true,
-		})
-
-	var dbTx *gorm.DB
-	if s.db.Dialector.Name() == "sqlite" {
-		dbTx = dbTxPrefix.CreateInBatches(&storeLogs, 10)
-	} else {
-		dbTx = dbTxPrefix.Create(&storeLogs)
-	}
+		}).
+		Create(&storeLogs)
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store log: %w", dbTx.Error)

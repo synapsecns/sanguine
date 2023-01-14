@@ -14,7 +14,6 @@ func NewDeployManager(t *testing.T) *DeployManager {
 		NewSwapFlashLoanDeployer,
 		NewSynapseBridgeV1Deployer,
 		NewMessageBusDeployer,
-		NewMetaSwapDeployer,
 	)
 
 	return &DeployManager{parentManager}

@@ -18,12 +18,11 @@ func _() {
 	_ = x[RampAEvent-7]
 	_ = x[StopRampAEvent-8]
 	_ = x[FlashLoanEvent-9]
-	_ = x[TokenSwapUnderlyingEvent-10]
 }
 
-const _EventType_name = "TokenSwapEventAddLiquidityEventRemoveLiquidityEventRemoveLiquidityOneEventRemoveLiquidityImbalanceEventNewAdminFeeEventNewSwapFeeEventRampAEventStopRampAEventFlashLoanEventTokenSwapUnderlyingEvent"
+const _EventType_name = "TokenSwapEventAddLiquidityEventRemoveLiquidityEventRemoveLiquidityOneEventRemoveLiquidityImbalanceEventNewAdminFeeEventNewSwapFeeEventRampAEventStopRampAEventFlashLoanEvent"
 
-var _EventType_index = [...]uint8{0, 14, 31, 51, 74, 103, 119, 134, 144, 158, 172, 196}
+var _EventType_index = [...]uint8{0, 14, 31, 51, 74, 103, 119, 134, 144, 158, 172}
 
 func (i EventType) String() string {
 	if i >= EventType(len(_EventType_index)-1) {

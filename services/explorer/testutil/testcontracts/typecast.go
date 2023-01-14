@@ -9,7 +9,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 )
@@ -54,7 +53,7 @@ func (d *DeployManager) GetTestSynapseBridgeV1(ctx context.Context, backend back
 	return bridgeContract, bridgeHandle
 }
 
-// GetTestMessageBusUpgradeable gets a typecast test message bus contract.
+// GetTestMessageBusUpgradeable gets a typecast test swap contract.
 func (d *DeployManager) GetTestMessageBusUpgradeable(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testmessagebus.TestMessageBusRef) {
 	d.T().Helper()
 	messageContract := d.GetContractRegistry(backend).Get(ctx, TestMessageBusType)
@@ -62,14 +61,4 @@ func (d *DeployManager) GetTestMessageBusUpgradeable(ctx context.Context, backen
 	assert.True(d.T(), ok)
 
 	return messageContract, messageHandle
-}
-
-// GetTestMetaSwap gets a typecast test meta swap contract.
-func (d *DeployManager) GetTestMetaSwap(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testmetaswap.TestMetaSwapRef) {
-	d.T().Helper()
-	metaSwapContract := d.GetContractRegistry(backend).Get(ctx, TestMetaSwapType)
-	metaSwapHandle, ok := metaSwapContract.ContractHandle().(*testmetaswap.TestMetaSwapRef)
-	assert.True(d.T(), ok)
-
-	return metaSwapContract, metaSwapHandle
 }

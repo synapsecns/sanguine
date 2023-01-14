@@ -126,13 +126,13 @@ func (s SwapFlashLoanFlashLoan) GetTokensBought() *big.Int {
 	return nil
 }
 
-// GetSoldID gets the sold id.
-func (s SwapFlashLoanFlashLoan) GetSoldID() *big.Int {
+// GetSoldId gets the sold id.
+func (s SwapFlashLoanFlashLoan) GetSoldId() *big.Int {
 	return nil
 }
 
-// GetBoughtID gets the bought id.
-func (s SwapFlashLoanFlashLoan) GetBoughtID() *big.Int {
+// GetBoughtId gets the bought id.
+func (s SwapFlashLoanFlashLoan) GetBoughtId() *big.Int {
 	return nil
 }
 

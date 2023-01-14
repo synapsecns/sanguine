@@ -119,8 +119,6 @@ func (c *ChainBackfiller) makeEventParser(contract config.ContractConfig) (event
 		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
 	case config.MessageBusContractType:
 		eventParser = c.messageBusParser
-	case config.MetaSwapContractType:
-		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
 	default:
 		return nil, fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
 	}

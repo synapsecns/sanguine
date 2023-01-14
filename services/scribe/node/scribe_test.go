@@ -1,7 +1,6 @@
 package node_test
 
 import (
-	"context"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
@@ -14,15 +13,10 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/testutil"
 	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 	"math/big"
-	"os"
-	"time"
 )
 
 // TestLive tests live recording of events.
 func (l LiveSuite) TestLive() {
-	if os.Getenv("CI") != "" {
-		l.T().Skip("Test flake: 1 minute of livefilling may fail on CI")
-	}
 	chainID := gofakeit.Uint32()
 	// We need to set up multiple deploy managers, one for each contract. We will use
 	// b.manager for the first contract, and create a new ones for the next two.
@@ -79,10 +73,8 @@ func (l LiveSuite) TestLive() {
 		simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
 	}
 
-	// Livefill for a minute.
-	ctx, cancel := context.WithTimeout(l.GetTestContext(), 1*time.Minute)
-	defer cancel()
-	_ = scribe.Start(ctx)
+	err = scribe.ProcessRange(l.GetTestContext(), chainID, 0)
+	Nil(l.T(), err)
 
 	// Check that the events were recorded.
 	for _, contract := range contracts {
@@ -109,9 +101,6 @@ func (l LiveSuite) TestLive() {
 }
 
 func (l LiveSuite) TestRequiredConfirmationSetting() {
-	if os.Getenv("CI") != "" {
-		l.T().Skip("Test flake: 1 minute of livefilling may fail on CI")
-	}
 	chainID := gofakeit.Uint32()
 
 	// Emit some events on the simulated blockchain.
@@ -134,8 +123,7 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
 	scribeConfig := config.Config{
-		Chains:                  []config.ChainConfig{chainConfig},
-		ConfirmationRefreshRate: 1,
+		Chains: []config.ChainConfig{chainConfig},
 	}
 
 	clients := make(map[uint32][]backfill.ScribeBackend)
@@ -152,10 +140,9 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 		Nil(l.T(), err)
 		simulatedChain.WaitForConfirmation(l.GetTestContext(), tx)
 	}
-	// Process the events, end livefilling after a minute.
-	ctx, cancel := context.WithTimeout(l.GetTestContext(), 1*time.Minute)
-	defer cancel()
-	_ = scribe.Start(ctx)
+	// Process the events.
+	err = scribe.ProcessRange(l.GetTestContext(), chainID, chainConfig.RequiredConfirmations)
+	Nil(l.T(), err)
 
 	// The first 2 events should be confirmed, but the last 3 should not.
 	// Check logs.

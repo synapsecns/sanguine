@@ -113,7 +113,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 	chainBackfillers := []*backfill.ChainBackfiller{}
 	for i, chainConfig := range allChainConfigs {
 		simulatedChainArr := []backfill.ScribeBackend{simulatedClients[i], simulatedClients[i]}
-		chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, simulatedChainArr, chainConfig, 1)
+		chainBackfiller, err := backfill.NewChainBackfiller(chainConfig.ChainID, b.testDB, simulatedChainArr, chainConfig)
 		Nil(b.T(), err)
 		chainBackfillers = append(chainBackfillers, chainBackfiller)
 	}

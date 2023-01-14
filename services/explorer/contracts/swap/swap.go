@@ -49,13 +49,13 @@ func (s SwapFlashLoanTokenSwap) GetTokensBought() *big.Int {
 	return core.CopyBigInt(s.TokensBought)
 }
 
-// GetSoldID gets the solid id.
-func (s SwapFlashLoanTokenSwap) GetSoldID() *big.Int {
+// GetSoldId gets the solid id.
+func (s SwapFlashLoanTokenSwap) GetSoldId() *big.Int {
 	return core.CopyBigInt(s.SoldId)
 }
 
-// GetBoughtID gets the bought id.
-func (s SwapFlashLoanTokenSwap) GetBoughtID() *big.Int {
+// GetBoughtId gets the bought id.
+func (s SwapFlashLoanTokenSwap) GetBoughtId() *big.Int {
 	return core.CopyBigInt(s.BoughtId)
 }
 

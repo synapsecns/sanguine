@@ -38,7 +38,6 @@ func (b *BackfillSuite) TestBackfill() {
 	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
 	bridgeV1Contract, bridgeV1Ref := b.testDeployManager.GetTestSynapseBridgeV1(b.GetTestContext(), b.testBackend)
 	swapContractA, swapRefA := b.testDeployManager.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
-	metaSwapContract, metaSwapRef := b.testDeployManager.GetTestMetaSwap(b.GetTestContext(), b.testBackend)
 	messageBusContract, messageBusRef := b.testDeployManager.GetTestMessageBusUpgradeable(b.GetTestContext(), b.testBackend)
 	testDeployManagerB := testcontracts.NewDeployManager(b.T())
 	swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
@@ -67,11 +66,6 @@ func (b *BackfillSuite) TestBackfill() {
 		Address:      swapContractB.Address().String(),
 		StartBlock:   0,
 	}
-	contractConfigMetaSwap := config.ContractConfig{
-		ContractType: "metaswap",
-		Address:      metaSwapContract.Address().String(),
-		StartBlock:   0,
-	}
 	contractMessageBus := config.ContractConfig{
 		ContractType: "messagebus",
 		Address:      messageBusContract.Address().String(),
@@ -85,7 +79,7 @@ func (b *BackfillSuite) TestBackfill() {
 			RPCURL:              gofakeit.URL(),
 			FetchBlockIncrement: 2,
 			MaxGoroutines:       2,
-			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap},
+			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus},
 		},
 	}
 	chainConfigsV1 := []config.ChainConfig{
@@ -94,7 +88,7 @@ func (b *BackfillSuite) TestBackfill() {
 			RPCURL:              gofakeit.URL(),
 			FetchBlockIncrement: 2,
 			MaxGoroutines:       2,
-			Contracts:           []config.ContractConfig{contractConfigBridgeV1, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap},
+			Contracts:           []config.ContractConfig{contractConfigBridgeV1, contractConfigSwap1, contractConfigSwap2, contractMessageBus},
 		},
 	}
 
@@ -263,13 +257,6 @@ func (b *BackfillSuite) TestBackfill() {
 	flashLoanLog, err := b.storeTestLog(swapTx, uint32(testChainID.Uint64()), 12)
 	Nil(b.T(), err)
 
-	// Store metaswap swap underlying event.
-	metaSwapTx, err := metaSwapRef.TestSwapUnderlying(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())), big.NewInt(int64(gofakeit.Uint64())))
-	Nil(b.T(), err)
-	b.storeEthTx(metaSwapTx, testChainID, big.NewInt(int64(4)), 3)
-	metaSwapUnderlyingLog, err := b.storeTestLog(metaSwapTx, uint32(testChainID.Uint64()), 4)
-	Nil(b.T(), err)
-
 	// Store every message event.
 	messageTx, err := messageBusRef.TestExecuted(transactOpts.TransactOpts, [32]byte{byte(gofakeit.Uint64())}, uint8(gofakeit.Number(0, 2)), common.BigToAddress(big.NewInt(gofakeit.Int64())), gofakeit.Uint64(), gofakeit.Uint64())
 	Nil(b.T(), err)
@@ -315,25 +302,17 @@ func (b *BackfillSuite) TestBackfill() {
 	// srB is the swap ref for getting token data
 	srA, err := fetcher.NewSwapFetcher(swapContractA.Address(), b.testBackend)
 	Nil(b.T(), err)
-	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), false, b.consumerFetcher, &srA, tokenDataService)
+	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), b.consumerFetcher, &srA, tokenDataService)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
 	srB, err := fetcher.NewSwapFetcher(swapContractB.Address(), b.testBackend)
 	Nil(b.T(), err)
-	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), false, b.consumerFetcher, &srB, tokenDataService)
+	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), b.consumerFetcher, &srB, tokenDataService)
 	Nil(b.T(), err)
-
-	// msr is the meta swap ref for getting token data
-	msr, err := fetcher.NewSwapFetcher(metaSwapContract.Address(), b.testBackend)
-	Nil(b.T(), err)
-	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, &msr, tokenDataService)
-	Nil(b.T(), err)
-
 	spMap := map[common.Address]*parser.SwapParser{}
 	spMap[swapContractA.Address()] = spA
 	spMap[swapContractB.Address()] = spB
-	spMap[metaSwapContract.Address()] = msp
 	f := fetcher.NewFetcher(b.gqlClient)
 
 	// Set up message bus parser
@@ -345,12 +324,13 @@ func (b *BackfillSuite) TestBackfill() {
 	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, *f, chainConfigsV1[0])
 
 	// Backfill the blocks
+	// TODO: store the latest block number to query to in scribe db
 	var count int64
 	err = chainBackfiller.Backfill(b.GetTestContext(), false, 1)
 	Nil(b.T(), err)
 	swapEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
 	Nil(b.T(), swapEvents.Error)
-	Equal(b.T(), int64(11), count)
+	Equal(b.T(), int64(10), count)
 	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
 	Nil(b.T(), bridgeEvents.Error)
 	Equal(b.T(), int64(10), count)
@@ -400,10 +380,6 @@ func (b *BackfillSuite) TestBackfill() {
 	err = b.stopRampAParity(stopRampALog, spB, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 	err = b.flashLoanParity(flashLoanLog, spA, uint32(testChainID.Uint64()))
-	Nil(b.T(), err)
-
-	// Test meta swap parity
-	err = b.metaSwapUnderlyingParity(metaSwapUnderlyingLog, msp, uint32(testChainID.Uint64()))
 	Nil(b.T(), err)
 
 	// Test message parity
@@ -1471,41 +1447,6 @@ func (b *BackfillSuite) executedParity(log *types.Log, parser *parser.MessageBus
 	Equal(b.T(), int64(1), count)
 	Equal(b.T(), big.NewInt(int64(parsedLog.SrcNonce)), storedLog.Nonce)
 	Equal(b.T(), parsedLog.DstAddress.String(), storedLog.DestinationAddress.String)
-	return nil
-}
-
-//nolint:dupl
-func (b *BackfillSuite) metaSwapUnderlyingParity(log *types.Log, parser *parser.SwapParser, chainID uint32) error {
-	// parse the log
-
-	parsedLog, err := parser.FiltererMetaSwap.ParseTokenSwapUnderlying(*log)
-	if err != nil {
-		return fmt.Errorf("error parsing log: %w", err)
-	}
-	buyer := gosql.NullString{
-		String: parsedLog.Buyer.String(),
-		Valid:  true,
-	}
-
-	var count int64
-	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.SwapEvent{}).
-		Where(&sql.SwapEvent{
-			ContractAddress: log.Address.String(),
-			ChainID:         chainID,
-			EventType:       swapTypes.TokenSwapEvent.Int(),
-			BlockNumber:     log.BlockNumber,
-			TxHash:          log.TxHash.String(),
-
-			Buyer:        buyer,
-			TokensSold:   parsedLog.TokensSold,
-			TokensBought: parsedLog.TokensBought,
-			SoldID:       parsedLog.SoldId,
-			BoughtID:     parsedLog.BoughtId,
-		}).Count(&count)
-	if events.Error != nil {
-		return fmt.Errorf("error querying for event: %w", events.Error)
-	}
-	Equal(b.T(), int64(1), count)
 	return nil
 }
 
