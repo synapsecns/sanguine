@@ -56,10 +56,12 @@ func (a OriginAttestationSubmitter) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
+			logger.Info("Notary OriginAttestationSubmitter exiting without error")
 			return nil
 		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
+				logger.Errorf("Notary OriginAttestationSubmitter exiting with error: %v", err)
 				return err
 			}
 		}
@@ -92,6 +94,7 @@ func (a OriginAttestationSubmitter) update(ctx context.Context) error {
 
 	err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToSubmit.SignedAttestation())
 	if err != nil {
+		logger.Errorf("Error calling SubmitAttestation on AttestationCollector: %v", err)
 		return fmt.Errorf("could not submit attestation: %w", err)
 	}
 
