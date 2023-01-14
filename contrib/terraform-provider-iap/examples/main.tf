@@ -2,7 +2,7 @@ terraform {
   required_providers {
     boilerplate = {
       version = "~> 1.0.0"
-      source  = "boilerplate-example.com/boilerplateprovider/boilerplate"
+      source  = "../terraform-provider-iap"
     }
   }
 }

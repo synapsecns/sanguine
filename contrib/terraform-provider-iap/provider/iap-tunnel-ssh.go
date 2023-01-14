@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/phayes/freeport"
-	"github.com/synapsecns/sanguine/contrib/terraform-provider-tunnel/generated/google"
-	"github.com/synapsecns/sanguine/contrib/terraform-provider-tunnel/generated/tunnel"
+	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/google"
+	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/tunnel"
 	"log"
 	"time"
 )

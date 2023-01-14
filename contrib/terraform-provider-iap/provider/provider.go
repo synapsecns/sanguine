@@ -2,7 +2,7 @@ package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/synapsecns/sanguine/contrib/terraform-provider-tunnel/generated/google"
+	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/google"
 )
 
 func Provider() *schema.Provider {

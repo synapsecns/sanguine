@@ -8,5 +8,6 @@ This provider is written in pure go and is based on the google terraform provide
 
 ## Future Work
 
-Right now: this works for creating a proxy through an ip tunnel. Eventually, we want to allow the use of an ssh tunnel using os-loging to connect through the bastion host with more robust logging. The challenge here is `gcloud compute beta ssh --tunel-through-iap` (which this provider has been reverse engineered from) uses a stdio proxy, so we need to implement our ssh provider using that mechanism. This will be implemented in a future version
+ - *SSH Tunnels*: Right now: this works for creating a proxy through an ip tunnel. Eventually, we want to allow the use of an ssh tunnel using os-loging to connect through the bastion host with more robust logging. The challenge here is `gcloud compute beta ssh --tunel-through-iap` (which this provider has been reverse engineered from) uses a stdio proxy, so we need to implement our ssh provider using that mechanism. This will be implemented in a future version
+ - *Public Provider*: This is going to require mirroring to another repo to work with [the requirements](https://developer.hashicorp.com/terraform/cloud-docs/registry/publish-providers) around publishing
 

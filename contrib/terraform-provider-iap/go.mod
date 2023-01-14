@@ -1,4 +1,4 @@
-module github.com/synapsecns/sanguine/contrib/terraform-provider-tunnel
+module github.com/synapsecns/sanguine/contrib/terraform-provider-iap
 
 go 1.19
 
