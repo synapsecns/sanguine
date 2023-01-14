@@ -3,6 +3,12 @@ package kmsmock
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/http"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
@@ -16,11 +22,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"net"
-	"net/http"
-	"sync"
-	"testing"
-	"time"
 )
 
 // globMux is a global mutex uate configs. Since local-kms uses a global configuration store,
@@ -113,7 +114,7 @@ func (k *MockKMSService) startServer(ctx context.Context) {
 		assert.Nil(k.tb, err)
 	}()
 
-	// nolint: gosec
+	//nolint:gosec
 	// set the server url
 	k.url = fmt.Sprintf("http://%s", hostname)
 }

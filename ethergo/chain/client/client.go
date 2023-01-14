@@ -3,6 +3,10 @@ package client
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"net/url"
+	"time"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -11,9 +15,6 @@ import (
 	"github.com/lmittmann/w3"
 	"github.com/lmittmann/w3/w3types"
 	"github.com/pkg/errors"
-	"math/big"
-	"net/url"
-	"time"
 )
 
 // EVMClient is the chain client. It defines everything necessary to create a Chain.
@@ -71,7 +72,7 @@ type clientImpl struct {
 }
 
 func (c *clientImpl) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
-	// nolint: wrapcheck
+	//nolint:wrapcheck
 	return c.w3Client.CallCtx(ctx, calls...)
 }
 
@@ -131,14 +132,16 @@ func (c *clientImpl) AttemptReconnect() error {
 }
 
 // CallContext exposes the CallContext methods in the underlying ethereum rpc client.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (c *clientImpl) CallContext(ctx context.Context, result interface{}, method string, args ...interface{}) (err error) {
-	//nolint: asasalint
+	//nolint:asasalint
 	return c.rpcClient.CallContext(ctx, result, method, args)
 }
 
 // BatchCallContext calls BatchCallContext on the underlying ethereum rpc client.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (c *clientImpl) BatchCallContext(ctx context.Context, b []rpc.BatchElem) error {
 	return c.rpcClient.BatchCallContext(ctx, b)
 }

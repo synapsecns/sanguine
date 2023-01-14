@@ -62,7 +62,7 @@ func (u NotarySuite) TestOriginAttestationVerifier() {
 
 	nowTime := time.Now()
 	submittedInProgressAttestation := types.NewInProgressAttestation(signedInProgressAttestation.SignedAttestation(), signedInProgressAttestation.OriginDispatchBlockNumber(), &nowTime, 0)
-	err = testDB.UpdateSubmittedToAttestationCollectorTime(u.GetTestContext(), submittedInProgressAttestation)
+	err = testDB.UpdateNotarySubmittedToAttestationCollectorTime(u.GetTestContext(), submittedInProgressAttestation)
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
@@ -77,7 +77,7 @@ func (u NotarySuite) TestOriginAttestationVerifier() {
 		u.DestinationDomainClient,
 		testDB,
 		u.NotarySigner,
-		u.AttestationSigner,
+		u.UnbondedSigner,
 		1*time.Second)
 
 	err = originAttestationVerifier.Update(u.GetTestContext())

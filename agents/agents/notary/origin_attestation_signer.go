@@ -58,7 +58,7 @@ func (a OriginAttestationSigner) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(a.interval): // TODO: a.interval
+		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
 				return err
@@ -71,7 +71,7 @@ func (a OriginAttestationSigner) Start(ctx context.Context) error {
 func (a OriginAttestationSigner) FindOldestUnsignedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
 	inProgressAttestation, err := a.db.RetrieveOldestUnsignedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
-		if errors.Is(err, db.ErrNoNonceForDomain) {
+		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("could not oldest unsigned attestation: %w", err)
@@ -80,12 +80,14 @@ func (a OriginAttestationSigner) FindOldestUnsignedAttestation(ctx context.Conte
 }
 
 // update runs the job of th signer
-// nolint: cyclop
+//
+//nolint:cyclop
 func (a OriginAttestationSigner) update(ctx context.Context) error {
 	inProgressAttestationToSign, err := a.FindOldestUnsignedAttestation(ctx)
 	if err != nil {
 		return fmt.Errorf("could not find oldest unsigned attestation: %w", err)
 	}
+
 	if inProgressAttestationToSign == nil {
 		return nil
 	}
@@ -94,6 +96,7 @@ func (a OriginAttestationSigner) update(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not hash update: %w", err)
 	}
+
 	signature, err := a.bondedSigner.SignMessage(ctx, core.BytesToSlice(hashedAttestation), false)
 	if err != nil {
 		return fmt.Errorf("could not sign message: %w", err)
@@ -103,7 +106,7 @@ func (a OriginAttestationSigner) update(ctx context.Context) error {
 	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttestationToSign.OriginDispatchBlockNumber(), nil, 0)
 	err = a.db.UpdateNotarySignature(ctx, signedInProgressAttestation)
 	if err != nil {
-		return fmt.Errorf("could not store signature for attestation: %w", err)
+		return fmt.Errorf("could not store notary signature for attestation: %w", err)
 	}
 
 	return nil

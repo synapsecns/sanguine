@@ -124,7 +124,18 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 			if err != nil || swapService == nil {
 				return nil, fmt.Errorf("could not create swapService: %w", err)
 			}
-			swapParser, err := parser.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher, &swapService, tokenDataService)
+			swapParser, err := parser.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), false, fetcher, &swapService, tokenDataService)
+			if err != nil || swapParser == nil {
+				return nil, fmt.Errorf("could not create swap parser: %w", err)
+			}
+
+			swapParsers[common.HexToAddress(chainConfig.Contracts[i].Address)] = swapParser
+		case "metaswap":
+			swapService, err := fetcherpkg.NewSwapFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client)
+			if err != nil || swapService == nil {
+				return nil, fmt.Errorf("could not create swapService: %w", err)
+			}
+			swapParser, err := parser.NewSwapParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), true, fetcher, &swapService, tokenDataService)
 			if err != nil || swapParser == nil {
 				return nil, fmt.Errorf("could not create swap parser: %w", err)
 			}

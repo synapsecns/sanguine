@@ -3,6 +3,8 @@ package domains
 import (
 	"context"
 	"errors"
+	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/synapsecns/sanguine/agents/config"
@@ -59,6 +61,10 @@ type AttestationCollectorContract interface {
 type DestinationContract interface {
 	// SubmitAttestation submits an attestation to the destination.
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
+	// Execute executes a message on the destination.
+	Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error
+	// SubmittedAt retrieves the time a given Merkle root from the given origin was submitted on the destination.
+	SubmittedAt(ctx context.Context, origin uint32, root [32]byte) (*time.Time, error)
 }
 
 // ErrNoUpdate indicates no update has been produced.

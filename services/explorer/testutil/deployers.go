@@ -3,6 +3,8 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -41,22 +43,27 @@ type MessageBusDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// MetaSwapDeployer is the type of the meta swap deployer.
+type MetaSwapDeployer struct {
+	*deployer.BaseDeployer
+}
+
 // NewBridgeConfigV3Deployer creates a new bridge config v2 client.
 func NewBridgeConfigV3Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return BridgeConfigV3Deployer{deployer.NewSimpleDeployer(registry, backend, BridgeConfigTypeV3)}
 }
 
-// NewSynapseBridgeDeployer creates a new bridge config v2 client.
+// NewSynapseBridgeDeployer creates a new bridge client.
 func NewSynapseBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return SynapseBridgeDeployer{deployer.NewSimpleDeployer(registry, backend, SynapseBridgeType)}
 }
 
-// NewSwapFlashLoanDeployer creates a new bridge config v2 client.
+// NewSwapFlashLoanDeployer creates a new flash loan client.
 func NewSwapFlashLoanDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return SwapFlashLoanDeployer{deployer.NewSimpleDeployer(registry, backend, SwapFlashLoanType)}
 }
 
-// NewSynapseBridgeV1Deployer creates a new bridge config v2 client.
+// NewSynapseBridgeV1Deployer creates a new bridge v1 client.
 func NewSynapseBridgeV1Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return SynapseBridgeV1Deployer{deployer.NewSimpleDeployer(registry, backend, SynapseBridgeV1Type)}
 }
@@ -66,8 +73,14 @@ func NewMessageBusDeployer(registry deployer.GetOnlyContractRegistry, backend ba
 	return MessageBusDeployer{deployer.NewSimpleDeployer(registry, backend, MessageBusType)}
 }
 
+// NewMetaSwapDeployer creates a new meta swap client.
+func NewMetaSwapDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return MetaSwapDeployer{deployer.NewSimpleDeployer(registry, backend, MetaSwapType)}
+}
+
 // Deploy deploys bridge config v3 contract
-// nolint: dupl
+//
+//nolint:dupl
 func (n BridgeConfigV3Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		deployAddress, tx, handler, err := bridgeconfig.DeployBridgeConfigV3(transactOps, backend)
@@ -101,7 +114,8 @@ func (n BridgeConfigV3Deployer) Deploy(ctx context.Context) (contracts.DeployedC
 }
 
 // Deploy deploys Synapse Bridge contract
-// nolint: dupl
+//
+//nolint:dupl
 func (n SynapseBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return bridge.DeploySynapseBridge(transactOps, backend)
@@ -111,7 +125,8 @@ func (n SynapseBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 }
 
 // Deploy deploys Synapse Bridge V1 contract
-// nolint: dupl
+//
+//nolint:dupl
 func (n SynapseBridgeV1Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return bridgev1.DeploySynapseBridge(transactOps, backend)
@@ -121,7 +136,8 @@ func (n SynapseBridgeV1Deployer) Deploy(ctx context.Context) (contracts.Deployed
 }
 
 // Deploy deploys Swap Flash Loan contract
-// nolint: dupl
+//
+//nolint:dupl
 func (n SwapFlashLoanDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return swap.DeploySwapFlashLoan(transactOps, backend)
@@ -131,7 +147,8 @@ func (n SwapFlashLoanDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 }
 
 // Deploy deploys Message Bus contract
-// nolint: dupl
+//
+//nolint:dupl
 func (n MessageBusDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return messagebus.DeployMessageBusUpgradeable(transactOps, backend)
@@ -140,7 +157,19 @@ func (n MessageBusDeployer) Deploy(ctx context.Context) (contracts.DeployedContr
 	})
 }
 
+// Deploy deploys Meta Swap contract
+//
+//nolint:dupl
+func (n MetaSwapDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return metaswap.DeployMetaSwap(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return metaswap.NewMetaSwapRef(address, backend)
+	})
+}
+
 var _ deployer.ContractDeployer = &BridgeConfigV3Deployer{}
 var _ deployer.ContractDeployer = &SynapseBridgeDeployer{}
 var _ deployer.ContractDeployer = &SwapFlashLoanDeployer{}
 var _ deployer.ContractDeployer = &SynapseBridgeV1Deployer{}
+var _ deployer.ContractDeployer = &MetaSwapDeployer{}

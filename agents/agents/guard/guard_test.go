@@ -8,7 +8,6 @@ import (
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/config"
@@ -19,7 +18,6 @@ import (
 )
 
 func (u GuardSuite) TestGuardE2E() {
-	u.T().Skip()
 	testConfig := config.GuardConfig{
 		AttestationDomain: u.AttestationDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
@@ -30,11 +28,11 @@ func (u GuardSuite) TestGuardE2E() {
 		},
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.NotaryWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.GuardWallet.PrivateKeyHex()).Name(),
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.AttestationWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.UnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		Database: config.DBConfig{
 			Type:       dbcommon.Sqlite.String(),
@@ -72,7 +70,7 @@ func (u GuardSuite) TestGuardE2E() {
 	historicalRoot, dispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, u.DestinationDomainClient.Config().DomainID, nonce)
 	Nil(u.T(), err)
 
-	Greater(u.T(), 0, dispatchBlockNumber)
+	Greater(u.T(), dispatchBlockNumber.Uint64(), uint64(0))
 
 	NotEqual(u.T(), historicalRoot, [32]byte{})
 
@@ -108,27 +106,23 @@ func (u GuardSuite) TestGuardE2E() {
 		_ = guard.Start(u.GetTestContext())
 	}()
 
-	// TODO (joe): This never seems to enter. I can return false and the test still passes.
-	// Figure this out.
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveInProgressAttestation(
+		retrievedInProgressAttestation, err := dbHandle.RetrieveNewestConfirmedOnDestination(
 			u.GetTestContext(),
 			u.OriginDomainClient.Config().DomainID,
-			u.DestinationDomainClient.Config().DomainID,
-			nonce)
-		Nil(u.T(), err)
-		NotNil(u.T(), retrievedConfirmedInProgressAttestation)
+			u.DestinationDomainClient.Config().DomainID)
 
-		Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin())
-		Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination())
-		Equal(u.T(), historicalRoot, common.Hash(retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Root()))
+		isTrue := err == nil &&
+			retrievedInProgressAttestation != nil &&
+			retrievedInProgressAttestation.SignedAttestation().Attestation().Nonce() == nonce &&
+			u.OriginDomainClient.Config().DomainID == retrievedInProgressAttestation.SignedAttestation().Attestation().Origin() &&
+			u.DestinationDomainClient.Config().DomainID == retrievedInProgressAttestation.SignedAttestation().Attestation().Destination() &&
+			historicalRoot == retrievedInProgressAttestation.SignedAttestation().Attestation().Root() &&
+			len(retrievedInProgressAttestation.SignedAttestation().NotarySignatures()) == 1 &&
+			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
+			retrievedInProgressAttestation.AttestationState() == types.AttestationStateConfirmedOnDestination
 
-		Len(u.T(), retrievedConfirmedInProgressAttestation.SignedAttestation().NotarySignatures(), 1)
-		Len(u.T(), retrievedConfirmedInProgressAttestation.SignedAttestation().GuardSignatures(), 0)
-		Equal(u.T(), types.AttestationStateGuardUnsigned, retrievedConfirmedInProgressAttestation.AttestationState())
-
-		return retrievedConfirmedInProgressAttestation != nil &&
-			retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Nonce() != 0
+		return isTrue
 	})
 }

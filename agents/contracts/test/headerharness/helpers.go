@@ -2,13 +2,15 @@ package headerharness
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
 // HeaderHarnessRef is a header harness reference
-// nolint: golint
+//
+//nolint:golint
 type HeaderHarnessRef struct {
 	*HeaderHarness
 	address common.Address
