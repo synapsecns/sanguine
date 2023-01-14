@@ -8,4 +8,5 @@ use (
 	./services/omnirpc
 	./services/scribe
 	./tools
+	./contrib/terraform-provider-iap
 )
