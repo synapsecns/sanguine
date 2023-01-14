@@ -3,7 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/metaswap"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

@@ -9,8 +9,8 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/metaswap"
 )
 
 // GetBridgeConfigV3 gets a typecast bridgeconfig contract.

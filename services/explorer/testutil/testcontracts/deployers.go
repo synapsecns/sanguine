@@ -3,7 +3,7 @@ package testcontracts
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testmetaswap"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

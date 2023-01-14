@@ -54,13 +54,13 @@ func (s SwapFlashLoanRampA) GetFutureTime() *big.Int {
 	return core.CopyBigInt(s.FutureTime)
 }
 
-// GetBoughtId gets the bought id.
-func (s SwapFlashLoanRampA) GetBoughtId() *big.Int {
+// GetBoughtID gets the bought id.
+func (s SwapFlashLoanRampA) GetBoughtID() *big.Int {
 	return nil
 }
 
-// GetSoldId gets the solid id.
-func (s SwapFlashLoanRampA) GetSoldId() *big.Int {
+// GetSoldID gets the solid id.
+func (s SwapFlashLoanRampA) GetSoldID() *big.Int {
 	return nil
 }
 
@@ -180,13 +180,13 @@ func (s SwapFlashLoanStopRampA) GetTime() *big.Int {
 	return core.CopyBigInt(s.Time)
 }
 
-// GetBoughtId gets the bought id.
-func (s SwapFlashLoanStopRampA) GetBoughtId() *big.Int {
+// GetBoughtID gets the bought id.
+func (s SwapFlashLoanStopRampA) GetBoughtID() *big.Int {
 	return nil
 }
 
-// GetSoldId gets the sold id.
-func (s SwapFlashLoanStopRampA) GetSoldId() *big.Int {
+// GetSoldID gets the sold id.
+func (s SwapFlashLoanStopRampA) GetSoldID() *big.Int {
 	return nil
 }
 

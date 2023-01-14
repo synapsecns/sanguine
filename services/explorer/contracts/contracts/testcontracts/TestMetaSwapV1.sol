@@ -5682,7 +5682,7 @@ contract MetaSwap is Swap {
 }
 
 contract TestMetaSwap is MetaSwap {
-    function testSwapUnderlying(
+    function testSwap(
         address buyer,
         uint256 tokensSold,
         uint256 tokensBought,
@@ -5690,6 +5690,21 @@ contract TestMetaSwap is MetaSwap {
         uint128 boughtId
     ) external {
         emit TokenSwap(
+            buyer,
+            tokensSold,
+            tokensBought,
+            soldId,
+            boughtId
+        );
+    }
+    function testSwapUnderlying(
+        address buyer,
+        uint256 tokensSold,
+        uint256 tokensBought,
+        uint128 soldId,
+        uint128 boughtId
+    ) external {
+        emit TokenSwapUnderlying(
             buyer,
             tokensSold,
             tokensBought,
