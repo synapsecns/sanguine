@@ -2,11 +2,11 @@ go 1.19
 
 use (
 	./agents
+	./contrib/terraform-provider-iap
 	./core
 	./ethergo
 	./services/explorer
 	./services/omnirpc
 	./services/scribe
 	./tools
-	./contrib/terraform-provider-iap
 )

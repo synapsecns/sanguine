@@ -1,3 +1,4 @@
+// we skip linting this file because it is largely copied from the standard library and mostly a patch until the bug is fixed in bundle
 // Copyright 2015 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -374,7 +375,6 @@ func bundle(src, dst, dstpkg, prefix, buildTags string) ([]byte, error) {
 			switch x := n.(type) {
 			case *ast.Ident:
 				if slices.Contains(importKeys, x.Name) {
-
 					// don't rename struct vars
 					for _, item := range stack {
 						// check if any ancestor is a struct
@@ -420,7 +420,6 @@ func bundle(src, dst, dstpkg, prefix, buildTags string) ([]byte, error) {
 													}
 												}
 											}
-
 										}
 									}
 								}
@@ -615,7 +614,7 @@ func (f flagFunc) Set(s string) error {
 
 func (f flagFunc) String() string { return "" }
 
-// getAliasPrefix gets a unique import alias name for a package
+// getAliasPrefix gets a unique import alias name for a package.
 func getAliasPrefix(packages *packages.Package, file *ast.File) string {
 	filename := path.Base(packages.Fset.Position(file.Package).Filename)
 	extension := filepath.Ext(filename)
