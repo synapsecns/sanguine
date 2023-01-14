@@ -2,16 +2,18 @@ package chainwatcher
 
 import (
 	"context"
+	"sync"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/semaphore"
-	"sync"
 )
 
 // BlockBroadcaster handles communications between block subcribers and
 // clients. It Differs from BlockHeightWatcher in that it does not handle actually
 // feteching heights from the rpc or reconnecting. We expose this for client/pool
 // to allow multi-rpc block boradcasters.
-// nolint: containedctx
+//
+//nolint:containedctx
 type BlockBroadcaster struct {
 	// firstSet is whether or not height has been set before
 	firstSet bool

@@ -55,10 +55,12 @@ func (a OriginAttestationScanner) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
+			logger.Info("Notary OriginAttestationScanner exiting without error")
 			return nil
-		case <-time.After(a.interval): // TODO: a.interval
+		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
+				logger.Errorf("Notary OriginAttestationScanner exiting with error: %v", err)
 				return err
 			}
 		}
@@ -78,7 +80,8 @@ func (a OriginAttestationScanner) FindLatestNonce(ctx context.Context) (nonce ui
 }
 
 // update runs the job of the scanner
-// nolint: cyclop
+//
+//nolint:cyclop
 func (a OriginAttestationScanner) update(ctx context.Context) error {
 	latestNonce, err := a.FindLatestNonce(ctx)
 	if err != nil {
@@ -93,6 +96,7 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 		// no update produced this time
 		return nil
 	}
+
 	if err != nil {
 		return fmt.Errorf("could not get historical attestation: %w", err)
 	}
@@ -106,6 +110,7 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not store in-progress attestations: %w", err)
 	}
+
 	return nil
 }
 

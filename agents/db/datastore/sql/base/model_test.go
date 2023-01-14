@@ -58,11 +58,11 @@ func TestSignedAttestation(t *testing.T) {
 	Nil(t, err)
 
 	sa := base.SignedAttestation{
-		SAOrigin:      gofakeit.Uint32(),
-		SADestination: gofakeit.Uint32(),
-		SANonce:       gofakeit.Uint32(),
-		SARoot:        common.BytesToHash([]byte(gofakeit.Paragraph(4, 1, 4, " "))).Bytes(),
-		SASignature:   rawSig,
+		SAOrigin:         gofakeit.Uint32(),
+		SADestination:    gofakeit.Uint32(),
+		SANonce:          gofakeit.Uint32(),
+		SARoot:           common.BytesToHash([]byte(gofakeit.Paragraph(4, 1, 4, " "))).Bytes(),
+		SAGuardSignature: rawSig,
 	}
 
 	Equal(t, core.BytesToSlice(sa.Attestation().Root()), sa.SARoot)

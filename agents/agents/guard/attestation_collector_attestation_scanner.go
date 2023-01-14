@@ -45,10 +45,12 @@ func (a AttestationCollectorAttestationScanner) Start(ctx context.Context) error
 	for {
 		select {
 		case <-ctx.Done():
+			logger.Info("Guard AttestationCollectorAttestationScanner exiting without error")
 			return nil
 		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
+				logger.Errorf("Guard AttestationCollectorAttestationScanner exiting with error: %v", err)
 				return err
 			}
 		}
@@ -70,7 +72,8 @@ func (a AttestationCollectorAttestationScanner) FindLatestNonce(ctx context.Cont
 }
 
 // update runs the job of the scanner
-// nolint: cyclop
+//
+//nolint:cyclop
 func (a AttestationCollectorAttestationScanner) update(ctx context.Context) error {
 	latestNonce, err := a.FindLatestNonce(ctx)
 	if err != nil {
@@ -82,7 +85,7 @@ func (a AttestationCollectorAttestationScanner) update(ctx context.Context) erro
 	nextNonce := latestNonce + 1
 	root, err := a.attestationDomain.AttestationCollector().GetRoot(ctx, a.originID, a.destinationID, nextNonce)
 	if err != nil {
-		return fmt.Errorf("erroring getting root for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nextNonce, err)
+		return fmt.Errorf("error getting root for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nextNonce, err)
 	}
 	if root == [32]byte{} {
 		return nil

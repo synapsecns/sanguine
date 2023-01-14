@@ -16,7 +16,6 @@ import (
 )
 
 func (u NotarySuite) TestNotaryE2E() {
-	u.T().Skip()
 	testConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -25,11 +24,11 @@ func (u NotarySuite) TestNotaryE2E() {
 		},
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.NotaryWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.AttestationWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		Database: config.DBConfig{
 			Type:       dbcommon.Sqlite.String(),
@@ -38,7 +37,7 @@ func (u NotarySuite) TestNotaryE2E() {
 		},
 		RefreshIntervalInSeconds: 1,
 	}
-	ud, err := notary.NewNotary(u.GetTestContext(), testConfig)
+	notary, err := notary.NewNotary(u.GetTestContext(), testConfig)
 	Nil(u.T(), err)
 
 	dbType, err := dbcommon.DBTypeFromString(testConfig.Database.Type)
@@ -58,22 +57,18 @@ func (u NotarySuite) TestNotaryE2E() {
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
-		_ = ud.Start(u.GetTestContext())
+		_ = notary.Start(u.GetTestContext())
 	}()
 
-	// TODO (joe): This never seems to enter. I can return false and the test still passes.
-	// Figure this out.
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveNewestConfirmedInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, testConfig.DestinationDomain.DomainID)
-		Nil(u.T(), err)
-		NotNil(u.T(), retrievedConfirmedInProgressAttestation)
 
-		Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin())
-		Equal(u.T(), testConfig.DestinationDomain.DomainID, retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination())
-		Equal(u.T(), types.AttestationStateNotaryConfirmed, retrievedConfirmedInProgressAttestation.AttestationState())
-
-		return retrievedConfirmedInProgressAttestation != nil &&
+		return err == nil &&
+			retrievedConfirmedInProgressAttestation != nil &&
+			u.OriginDomainClient.Config().DomainID == retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin() &&
+			testConfig.DestinationDomain.DomainID == retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination() &&
+			types.AttestationStateNotaryConfirmed == retrievedConfirmedInProgressAttestation.AttestationState() &&
 			retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Nonce() != 0
 	})
 }

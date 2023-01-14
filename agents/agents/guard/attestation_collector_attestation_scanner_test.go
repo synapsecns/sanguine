@@ -33,7 +33,7 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	Nil(u.T(), err)
 
-	notarySignature, err := u.NotarySigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(u.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{}, []types.Signature{notarySignature})
@@ -52,18 +52,17 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 		uint32(origin),
 		uint32(destination),
 		testDB,
-		u.AttestationSigner,
+		u.GuardUnbondedSigner,
 		1*time.Second)
 
 	err = attestationCollectorAttestationScanner.Update(u.GetTestContext())
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	retrievedConfirmedInProgressAttestation, err := testDB.RetrieveInProgressAttestation(
+	retrievedConfirmedInProgressAttestation, err := testDB.RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
-		u.DestinationDomainClient.Config().DomainID,
-		nonce)
+		u.DestinationDomainClient.Config().DomainID)
 
 	Nil(u.T(), err)
 	NotNil(u.T(), retrievedConfirmedInProgressAttestation)
@@ -74,7 +73,7 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	Equal(u.T(), root, common.Hash(retrievedSignedAttestation.Attestation().Root()))
 	Len(u.T(), retrievedSignedAttestation.NotarySignatures(), 1)
 	Len(u.T(), retrievedSignedAttestation.GuardSignatures(), 0)
-	Equal(u.T(), types.AttestationStateGuardUnsigned, retrievedConfirmedInProgressAttestation.AttestationState())
+	Equal(u.T(), types.AttestationStateGuardUnsignedAndUnverified, retrievedConfirmedInProgressAttestation.AttestationState())
 
 	Nil(u.T(), err)
 }

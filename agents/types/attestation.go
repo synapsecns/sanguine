@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// AttestationState is the state the attestation is in in terms of being processed by an agent.
+// AttestationState is the state the attestation is in, in terms of being processed by an agent.
 type AttestationState uint32
 
 const (
@@ -18,16 +18,22 @@ const (
 	AttestationStateNotarySubmittedUnconfirmed // 2
 	// AttestationStateNotaryConfirmed is when the attestation was confirmed as posted on the attestation collector.
 	AttestationStateNotaryConfirmed // 3
-	// AttestationStateGuardUnsigned is when the attestation was signed by Notary but not yet by the Guard.
-	AttestationStateGuardUnsigned // 4
+	// AttestationStateGuardUnsignedAndUnverified is when the attestation was signed by Notary but not yet by the Guard.
+	AttestationStateGuardUnsignedAndUnverified // 4
+	// AttestationStateGuardUnsignedAndVerified is when the attestation was signed by Notary but not yet by the Guard, but Guard verified it on origin.
+	AttestationStateGuardUnsignedAndVerified // 5
 	// AttestationStateGuardSignedUnsubmitted is when the attestation was signed by Guard (and Notary) but not yet submitted.
-	AttestationStateGuardSignedUnsubmitted // 5
-	// AttestationStateGuardSignedSubmittedToAttestationCollector is when the attestation was signed by Guard and submitted to the attestation collector but not destination.
-	AttestationStateGuardSignedSubmittedToAttestationCollector // 6
-	// AttestationStateGuardSignedSubmittedToDestinationUnconfirmed is when the attestation was signed by Guard and submitted to the attestation collector and destination but not yet confirmed.
-	AttestationStateGuardSignedSubmittedToDestinationUnconfirmed // 7
-	// AttestationStateGuardConfirmed is when the attestation was confirmed as posted on the destination.
-	AttestationStateGuardConfirmed // 8
+	AttestationStateGuardSignedUnsubmitted // 6
+	// AttestationStateGuardSubmittedToCollectorUnconfirmed is when the attestation was signed by Guard and Notary and submitted to the attestation collector but not destination,
+	// but we have yet to confirm it on the AttestationCollector.
+	AttestationStateGuardSubmittedToCollectorUnconfirmed // 7
+	// AttestationStateGuardConfirmedOnCollector is when the attestation was signed by Guard and Notary and submitted to the attestation collector but not destination,
+	// and we have confirmed it on the AttestationCollector.
+	AttestationStateGuardConfirmedOnCollector // 8
+	// AttestationStateSubmittedToDestinationUnconfirmed is when the attestation was signed by Guard and Notary and submitted to the attestation collector and destination but not yet confirmed on destination.
+	AttestationStateSubmittedToDestinationUnconfirmed // 9
+	// AttestationStateConfirmedOnDestination is when the attestation was confirmed as posted on the destination.
+	AttestationStateConfirmedOnDestination // 10
 )
 
 const sizeOfUint256 = uint32(32)
@@ -201,6 +207,8 @@ type InProgressAttestation interface {
 	OriginDispatchBlockNumber() uint64
 	// SubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
 	SubmittedToAttestationCollectorTime() *time.Time
+	// SubmittedToDestinationTime is time when signed attestation was submitted to the Destination
+	SubmittedToDestinationTime() *time.Time
 	// AttestationState is the state the in-progress attestation is in right now
 	AttestationState() AttestationState
 }
@@ -210,6 +218,7 @@ type inProgressAttestation struct {
 	signedAttestation                   SignedAttestation
 	originDispatchBlockNumber           uint64
 	submittedToAttestationCollectorTime *time.Time
+	submittedToDestinationTime          *time.Time
 	attestationState                    AttestationState
 }
 
@@ -233,6 +242,10 @@ func (t inProgressAttestation) OriginDispatchBlockNumber() uint64 {
 
 func (t inProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time {
 	return t.submittedToAttestationCollectorTime
+}
+
+func (t inProgressAttestation) SubmittedToDestinationTime() *time.Time {
+	return t.submittedToDestinationTime
 }
 
 func (t inProgressAttestation) AttestationState() AttestationState {
