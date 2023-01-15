@@ -37,6 +37,7 @@ func (s Store) GetAttestation(ctx context.Context, attestationMask types.DBAttes
 	dbTx := s.DB().WithContext(ctx).
 		Model(&attestation).
 		Where(&dbAttestationMask).
+		Limit(1).
 		Scan(&attestation)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get attestation: %w", dbTx.Error)

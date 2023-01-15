@@ -221,6 +221,7 @@ func (e Executor) Stop(chainID uint32) {
 }
 
 // Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
+// TODO: Use multi-call to batch execute.
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
 	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
