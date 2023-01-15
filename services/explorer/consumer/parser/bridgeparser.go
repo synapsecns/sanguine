@@ -396,6 +396,9 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
 	coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
+	if coinGeckoID == "NO_PRICE" {
+		fmt.Println("NOPRICE", tokenData.TokenID())
+	}
 
 	//// Account for improper value from truncation of usdc
 	// if (coinGeckoID == "usd-coin" || coinGeckoID == "tether" || coinGeckoID == "dai" || coinGeckoID == "binance-usd") && bridgeEvent.Fee != nil && bridgeEvent.Amount.Cmp(bridgeEvent.Fee) == 1 {
@@ -405,17 +408,26 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	// Add TokenSymbol to bridgeEvent.
 	bridgeEvent.TokenSymbol = ToNullString(&realID)
 	var tokenPrice *float64
-	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1668646800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
+	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
 		tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, int(*bridgeEvent.TimeStamp), coinGeckoID)
+		if *tokenPrice == 0.0 {
+			fmt.Println("UHHHHHH", coinGeckoID, *bridgeEvent.TimeStamp, *tokenPrice, *bridgeEvent.TokenDecimal)
+		}
 	}
 	if tokenPrice != nil {
 		// Add AmountUSD to bridgeEvent (if price is not nil).
 		bridgeEvent.AmountUSD = GetAmountUSD(bridgeEvent.Amount, tokenData.Decimals(), tokenPrice)
-
+		if *bridgeEvent.AmountUSD == 0 {
+			fmt.Println("UHHHHHH2", coinGeckoID, *bridgeEvent.TimeStamp, *bridgeEvent.Amount, *tokenPrice, *bridgeEvent.TokenDecimal)
+		}
 		// Add FeeAmountUSD to bridgeEvent (if price is not nil).
 		if iFace.GetFee() != nil {
 			bridgeEvent.FeeAmountUSD = GetAmountUSD(bridgeEvent.Fee, tokenData.Decimals(), tokenPrice)
+			if *bridgeEvent.FeeAmountUSD == 0 {
+				fmt.Println("UHHHHHH2fee", coinGeckoID, *bridgeEvent.TimeStamp, *bridgeEvent.Amount, *tokenPrice, *bridgeEvent.TokenDecimal)
+			}
 		}
+
 	}
 
 	return bridgeEvent, nil
