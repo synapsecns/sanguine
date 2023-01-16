@@ -47,12 +47,12 @@ chains:
       - contract_type: bridge
         address: '0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE'
         start_block: 3376709
-      - contract_type: swap
-        address: '0xED2a7edd7413021d440b09D654f3b87712abAB66'
-        start_block: 6619007
       - contract_type: swap #AaveETH Pool
         address: '0x77a7e60555bC18B4Be44C181b2575eee46212d44'
         start_block: 7378400
+      - contract_type: swap
+        address: '0xED2a7edd7413021d440b09D654f3b87712abAB66'
+        start_block: 6619007
       - contract_type: metaswap
         address: '0xF44938b0125A6662f9536281aD2CD6c499F22004'
         start_block: 3382104
@@ -201,9 +201,3 @@ chains:
       - contract_type: swap #nUSDNOTEPool
         address: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c'
         start_block: 1690002
-      - contract_type: swap
-        address: '0x432036208d2717394d2614d6697c46DF3Ed69540'
-        start_block: 1060157
-      - contract_type: swap #Swap wrapper
-        address: '0x0271984e4cfA2A0f02664baACD551CcFCC9920E8'
-        start_block: 1861449

@@ -58,6 +58,7 @@ func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgePar
 func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRate int) (err error) {
 	chainCtx := context.WithValue(ctx, chainKey, fmt.Sprintf("%d", c.chainConfig.ChainID))
 	contractsGroup, contractCtx := errgroup.WithContext(chainCtx)
+
 	if !livefill {
 		for i := range c.chainConfig.Contracts {
 			contract := c.chainConfig.Contracts[i]
@@ -96,7 +97,7 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRa
 						}
 						b.Reset()
 						timeout = time.Duration(refreshRate) * time.Second
-						logger.Errorf("processed range for contract %s on chain %d, continuing to livefill in %d seconds - refresh rate %d ", contract.Address, c.chainConfig.ChainID, timeout, refreshRate)
+						logger.Infof("processed range for contract %s on chain %d, continuing to livefill in %d seconds - refresh rate %d ", contract.Address, c.chainConfig.ChainID, timeout, refreshRate)
 					}
 				}
 			})

@@ -3,6 +3,7 @@ package backfill_test
 import (
 	gosql "database/sql"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	messageBusTypes "github.com/synapsecns/sanguine/services/explorer/types/messagebus"
@@ -306,28 +307,30 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 	tokenDataService, err := tokendata.NewTokenDataService(bcf, tokenSymbolToIDs)
 	Nil(b.T(), err)
-
-	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), tokenDataService, b.consumerFetcher)
-	Nil(b.T(), err)
-	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), tokenDataService, b.consumerFetcher)
+	tokenPriceService, err := tokenprice.NewPriceDataService()
 	Nil(b.T(), err)
 
-	// srB is the swap ref for getting token data
-	srA, err := fetcher.NewSwapFetcher(swapContractA.Address(), b.testBackend)
+	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService)
 	Nil(b.T(), err)
-	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), false, b.consumerFetcher, &srA, tokenDataService)
+	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
-	srB, err := fetcher.NewSwapFetcher(swapContractB.Address(), b.testBackend)
+	srA, err := fetcher.NewSwapFetcher(swapContractA.Address(), b.testBackend, false)
 	Nil(b.T(), err)
-	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), false, b.consumerFetcher, &srB, tokenDataService)
+	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), false, b.consumerFetcher, &srA, tokenDataService, tokenPriceService)
+	Nil(b.T(), err)
+
+	// srB is the swap ref for getting token data
+	srB, err := fetcher.NewSwapFetcher(swapContractB.Address(), b.testBackend, false)
+	Nil(b.T(), err)
+	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), false, b.consumerFetcher, &srB, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	// msr is the meta swap ref for getting token data
-	msr, err := fetcher.NewSwapFetcher(metaSwapContract.Address(), b.testBackend)
+	msr, err := fetcher.NewSwapFetcher(metaSwapContract.Address(), b.testBackend, true)
 	Nil(b.T(), err)
-	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, &msr, tokenDataService)
+	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, &msr, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	spMap := map[common.Address]*parser.SwapParser{}

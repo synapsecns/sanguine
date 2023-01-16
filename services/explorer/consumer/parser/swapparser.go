@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
 	"time"
 
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
@@ -34,6 +35,8 @@ type SwapParser struct {
 	tokenDataService tokendata.Service
 	// poolTokenDataService get the token address from the token index
 	poolTokenDataService tokenpool.Service
+	// tokenPriceService get the token price from the coingecko id
+	tokenPriceService tokenprice.Service
 	// swapService is the swap service
 	swapService *fetcher.SwapService
 	// FiltererMetaSwap is the meta swap Filterer we use to parse events.
@@ -43,7 +46,7 @@ type SwapParser struct {
 }
 
 // NewSwapParser creates a new parser for a given bridge.
-func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, metaSwap bool, consumerFetcher *fetcher.ScribeFetcher, swapService *fetcher.SwapService, tokenDataService tokendata.Service) (*SwapParser, error) {
+func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, metaSwap bool, consumerFetcher *fetcher.ScribeFetcher, swapService *fetcher.SwapService, tokenDataService tokendata.Service, tokenPriceService tokenprice.Service) (*SwapParser, error) {
 	var filterer *swap.SwapFlashLoanFilterer
 	var filtererMetaSwap *metaswap.MetaSwapFilterer
 	var err error
@@ -78,6 +81,7 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, metaSwa
 		consumerFetcher:      consumerFetcher,
 		tokenDataService:     tokenDataService,
 		poolTokenDataService: poolTokenDataService,
+		tokenPriceService:    tokenPriceService,
 		swapService:          swapService,
 		FiltererMetaSwap:     filtererMetaSwap,
 		coinGeckoIDs:         coinGeckoIDs}, nil
@@ -200,7 +204,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 
 				return iFace, nil
 			default:
-				logger.Errorf("ErrUnknownTopic in meta swap: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+				logger.Warnf("ErrUnknownTopic in meta swap: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
 
 				return nil, fmt.Errorf(ErrUnknownTopic)
 			}
@@ -279,7 +283,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 				return iFace, nil
 
 			default:
-				logger.Errorf("ErrUnknownTopic in swap: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+				logger.Warnf("ErrUnknownTopic in swap: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
 
 				return nil, fmt.Errorf(ErrUnknownTopic)
 			}
@@ -319,7 +323,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 			// Get token symbol and decimals from the erc20 contract associated to the token.
 			tokenAddress, err := p.poolTokenDataService.GetTokenAddress(ctx, chainID, tokenIndex, swapEvent.ContractAddress)
 			if err != nil {
-				logger.Errorf("token with index %d not in pool: %v", tokenIndex, err)
+				logger.Errorf("token with index %d not in pool: %v, %d, %s, %v %s", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
 				continue
 				// return nil, fmt.Errorf("could not get token address: %w", err)
 			}
@@ -329,17 +333,34 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 				return nil, fmt.Errorf("could not get pool token data: %w", err)
 			}
 			tokenSymbols[tokenIndex] = tokenData.TokenID()
-			tokenDecimals[tokenIndex] = tokenData.Decimals()
-			coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
-			if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
-				tokenPrice, _ := fetcher.GetDefiLlamaData(ctx, int(*swapEvent.TimeStamp), coinGeckoID)
-				if tokenPrice != nil {
-					tokenPrices[tokenIndex] = *tokenPrice
-				}
+			if tokenData.TokenID() == "" {
+				fmt.Println("SWAP - TOKEN ID", tokenData.TokenID(), chainID, tokenIndex, tokenAddress, swapEvent.TxHash)
 			}
-			swapEvent.TokenPrices = tokenPrices
-			swapEvent.TokenDecimal = tokenDecimals
-			swapEvent.TokenSymbol = tokenSymbols
+			tokenDecimals[tokenIndex] = tokenData.Decimals()
+			if tokenData.Decimals() == 0 {
+				fmt.Println("SWAP - DECIMALS IS ZERO", tokenData.Decimals(), chainID, tokenIndex, tokenAddress)
+			}
+			coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
+			if coinGeckoID == "" {
+				fmt.Println("SWAP - EMPTY TOKEN ID", p.coinGeckoIDs[tokenData.TokenID()], "U", tokenData.TokenID())
+			}
+			if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
+				tokenPrice := p.tokenPriceService.GetPriceData(ctx, int(*swapEvent.TimeStamp), coinGeckoID)
+				if (tokenPrice == nil || *tokenPrice == 0.0) && coinGeckoID != noTokenID {
+					fmt.Println("SWAP - TOKEN PRICE NULL", coinGeckoID, swapEvent.TimeStamp, tokenPrice, swapEvent.TokenDecimal, chainID, swapEvent.TxHash)
+					return nil, fmt.Errorf("could not get token price for coingeckotoken:  %s chain: %d txhash %s", coinGeckoID, chainID, swapEvent.TxHash)
+				}
+				tokenPrices[tokenIndex] = *tokenPrice
+			}
+			if tokenPrices[tokenIndex] == 0 {
+				fmt.Println("SWAP - TOKEN PRICE IS ZERO", tokenPrices[tokenIndex], chainID, tokenIndex, tokenAddress)
+			}
+		}
+		swapEvent.TokenPrices = tokenPrices
+		swapEvent.TokenDecimal = tokenDecimals
+		swapEvent.TokenSymbol = tokenSymbols
+		if len(swapEvent.TokenPrices) == 0 {
+			fmt.Println("SWAP - TOKEN PRICE MAP LENGTH 0", tokenPrices, chainID, swapEvent.EventType, swapEvent.TxHash)
 		}
 	}
 	return swapEvent, nil
