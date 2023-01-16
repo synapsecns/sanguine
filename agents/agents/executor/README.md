@@ -18,7 +18,7 @@ The Executor operates with four main components:
 
 ## Usage
 
-Run the following command to start the Executor:
+Navigate to `sanguine/agents/agents/executor/main` and run the following command to start the Executor:
 
 ```bash
 $ go run main.go
