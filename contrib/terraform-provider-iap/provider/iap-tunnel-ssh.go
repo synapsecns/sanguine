@@ -37,11 +37,21 @@ func dataSourceProxyURL() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			// network interface to use
+			"interface": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
 			// port of the host to connect to
 			"remote_port": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validatePort,
+			},
+			// output proxy url
+			"proxy_url": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -77,8 +87,9 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 	go func() {
 		err := tm.StartProxy(context.Background())
 		if err != nil {
-			errChan <- err
+			fmt.Println(err)
 			log.Printf("[DEBUG] Proxy Error %v", err)
+			errChan <- err
 		}
 	}()
 
@@ -90,10 +101,14 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	fmt.Println(fmt.Sprintf("http://localhost:%d", localPort))
+
 	err = d.Set("proxy_url", fmt.Sprintf("http://localhost:%d", localPort))
 	if err != nil {
 		return fmt.Errorf("could not set proxy_url: %w", err)
 	}
+
+	time.Sleep(time.Hour)
 
 	return nil
 }

@@ -5,6 +5,7 @@ run:
   skip-dirs:
     - grpc/client/rest/*
     - bundle/*
+    - generated/*
   timeout: 15m
   skip-files:
     - '.*\\.abigen\\.go$'

@@ -1,7 +1,0 @@
-version: 3
-tasks:
-  build:
-    cmds:
-      - go build
-      - cp terraform-provider-boilerplate $HOME/.terraform.d/plugins/boilerplate-example.com/boilerplateprovider/boilerplate/1.0.0/linux_amd64
-      - cd $PWD/examples && terraform init
