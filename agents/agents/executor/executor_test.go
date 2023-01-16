@@ -1,9 +1,9 @@
-package src_test
+package executor_test
 
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/agents/executor/src"
+	"github.com/synapsecns/sanguine/agents/agents/executor"
 	"math/big"
 	"time"
 
@@ -121,7 +121,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		},
 	}
 
-	executorClients := map[uint32]src.Backend{
+	executorClients := map[uint32]executor.Backend{
 		chainIDA: simulatedChainA,
 		chainIDB: simulatedChainB,
 	}
@@ -131,7 +131,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		chainIDB: simulatedChainB.RPCAddress(),
 	}
 
-	exc, err := src.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exc, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the executor.
@@ -218,7 +218,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		},
 	}
 
-	executorClients := map[uint32]src.Backend{
+	executorClients := map[uint32]executor.Backend{
 		chainID: simulatedChain,
 	}
 
@@ -226,7 +226,7 @@ func (e *ExecutorSuite) TestLotsOfLogs() {
 		chainID: simulatedChain.RPCAddress(),
 	}
 
-	exec, err := src.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the exec.
@@ -313,7 +313,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		},
 	}
 
-	executorClients := map[uint32]src.Backend{
+	executorClients := map[uint32]executor.Backend{
 		chainID:     e.TestBackendOrigin,
 		destination: nil,
 	}
@@ -323,7 +323,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := src.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	_, err = exec.GetMerkleTree(chainID, destination).Root(1)
@@ -452,7 +452,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	var newRoot []byte
 	e.Eventually(func() bool {
-		dbTree, err := src.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
+		dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
 		e.Nil(err)
 
 		exec.OverrideMerkleTree(chainID, destination, dbTree)
@@ -506,7 +506,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		e.Nil(scribeErr)
 	}()
 
-	executorClients := map[uint32]src.Backend{
+	executorClients := map[uint32]executor.Backend{
 		chainID:     nil,
 		destination: nil,
 	}
@@ -516,7 +516,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := src.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	nonces := []uint32{1, 2, 3, 4}
@@ -579,7 +579,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2])
 	e.Nil(err)
 
-	dbTree, err := src.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
+	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
 	e.Nil(err)
 
 	exec.OverrideMerkleTree(chainID, destination, dbTree)
@@ -603,7 +603,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3])
 	e.Nil(err)
 
-	dbTree, err = src.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
+	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
 	e.Nil(err)
 
 	exec.OverrideMerkleTree(chainID, destination, dbTree)
@@ -685,7 +685,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		},
 	}
 
-	executorClients := map[uint32]src.Backend{
+	executorClients := map[uint32]executor.Backend{
 		uint32(e.TestBackendOrigin.GetChainID()):      e.TestBackendOrigin,
 		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination,
 	}
@@ -695,7 +695,7 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := src.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the exec.
@@ -878,7 +878,7 @@ func (e *ExecutorSuite) TestExecute() {
 		},
 	}
 
-	executorClients := map[uint32]src.Backend{
+	executorClients := map[uint32]executor.Backend{
 		uint32(e.TestBackendOrigin.GetChainID()):      e.TestBackendOrigin,
 		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination,
 	}
@@ -888,7 +888,7 @@ func (e *ExecutorSuite) TestExecute() {
 		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := src.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	// Start the exec.

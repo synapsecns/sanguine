@@ -1,7 +1,7 @@
 package agentsintegration_test
 
 import (
-	executor "github.com/synapsecns/sanguine/agents/agents/executor/src"
+	executor2 "github.com/synapsecns/sanguine/agents/agents/executor"
 	"math/big"
 	"time"
 
@@ -445,7 +445,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 		},
 	}
 
-	executorClients := map[uint32]executor.Backend{
+	executorClients := map[uint32]executor2.Backend{
 		uint32(u.TestBackendOrigin.GetChainID()):      u.TestBackendOrigin,
 		uint32(u.TestBackendDestination.GetChainID()): u.TestBackendDestination,
 	}
@@ -455,7 +455,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 		uint32(u.TestBackendDestination.GetChainID()): u.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor2.NewExecutorInjectedBackend(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	u.Nil(err)
 
 	// Start the exec.

@@ -6,9 +6,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/jftuga/termsize"
+	"github.com/synapsecns/sanguine/agents/agents/executor"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
-	"github.com/synapsecns/sanguine/agents/agents/executor/src"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -111,7 +111,7 @@ var runCommand = &cli.Command{
 			return fmt.Errorf("failed to initialize database: %w", err)
 		}
 
-		clients := make(map[uint32]src.Backend)
+		clients := make(map[uint32]executor.Backend)
 		for _, client := range executorConfig.Chains {
 			rpcDial, err := rpc.DialContext(c.Context, fmt.Sprintf("%s/confirmations/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, client.ChainID))
 			if err != nil {
@@ -178,7 +178,7 @@ var runCommand = &cli.Command{
 			return fmt.Errorf("invalid scribe type")
 		}
 
-		executor, err := src.NewExecutor(c.Context, executorConfig, executorDB, scribeClient, clients)
+		executor, err := executor.NewExecutor(c.Context, executorConfig, executorDB, scribeClient, clients)
 		if err != nil {
 			return fmt.Errorf("failed to create executor: %w", err)
 		}

@@ -1,4 +1,4 @@
-package src_test
+package executor_test
 
 import (
 	"testing"
