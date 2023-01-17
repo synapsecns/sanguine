@@ -12,4 +12,4 @@ import _ "github.com/hashicorp/terraform-provider-google/v4/google"
 // would make the source directory illegible. Instead, we use bundler to bundle the package together and then make our exports from this generated file
 
 // TODO: this currently breaks if ran from go generate, fix this.
-// go:generate go run golang.org/x/tools/cmd/bundle -prefix="" -pkg google -o google_gen.go github.com/hashicorp/terraform-provider-google/v4/google
+// go:generate go run github.com/synapsecns/sanguine/tools/bundle -prefix="" -tags '!codeanalysis' -pkg google -o google_gen.go github.com/hashicorp/terraform-provider-google/v4/google

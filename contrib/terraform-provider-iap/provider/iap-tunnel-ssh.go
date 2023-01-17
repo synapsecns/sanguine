@@ -123,6 +123,6 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("could not set proxy_url: %w", err)
 	}
-	
+
 	return nil
 }
