@@ -3,6 +3,7 @@ package executor_test
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/agents/executor"
 	"math/big"
 	"time"
 
@@ -19,7 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/core/merkle"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
