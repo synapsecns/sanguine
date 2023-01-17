@@ -22,9 +22,10 @@ import (
 //go:embed cmd.md
 var help string
 
-var maxConfirmations = 3
+// MaxConfirmations is the maximum number of confirmations.
+var MaxConfirmations = 3
 
-// infoComand gets info about using the scribe service.
+// infoCommand gets info about using the scribe service.
 var infoCommand = &cli.Command{
 	Name:        "info",
 	Description: "learn how to use scribe cli",
@@ -80,7 +81,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 
 	clients = make(map[uint32][]backfill.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
-		for confNum := 1; confNum <= maxConfirmations; confNum++ {
+		for confNum := 1; confNum <= MaxConfirmations; confNum++ {
 			backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID))
 			if err != nil {
 				return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
