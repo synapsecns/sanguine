@@ -1,3 +1,4 @@
+// Package provider gets the provider for the iap tunnel.
 package provider
 
 import (
@@ -5,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/google"
 )
 
+// Provider gets the provider for the iap tunnel.
 func Provider() *schema.Provider {
 	underlyingProvider := google.Provider()
 	return &schema.Provider{

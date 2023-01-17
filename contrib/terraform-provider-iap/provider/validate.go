@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// TODO: test
+// TODO: test.
 func validatePort(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(int)
 	if value < 1 || value > 65535 {

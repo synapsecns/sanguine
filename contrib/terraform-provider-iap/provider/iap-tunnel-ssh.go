@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// dataSourceProxyURL generates a proxy over an iap bastion host
+// dataSourceProxyURL generates a proxy over an iap bastion host.
 func dataSourceProxyURL() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceProxy,
@@ -58,13 +58,31 @@ func dataSourceProxyURL() *schema.Resource {
 }
 
 func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
-	config := meta.(*google.Config)
+	config, ok := meta.(*google.Config)
+	if !ok {
+		return fmt.Errorf("could not cast config of type %T to %T", meta, config)
+	}
 
-	project := d.Get("project").(string)
-	zone := d.Get("zone").(string)
-	instance := d.Get("instance").(string)
-	iface := d.Get("interface").(string)
-	remotePort := d.Get("remote_port").(int)
+	project, ok := d.Get("project").(string)
+	if !ok {
+		return fmt.Errorf("could not cast project of type %T to %T", d.Get("project"), project)
+	}
+	zone, ok := d.Get("zone").(string)
+	if !ok {
+		return fmt.Errorf("could not cast zone of type %T to %T", d.Get("zone"), zone)
+	}
+	instance, ok := d.Get("instance").(string)
+	if !ok {
+		return fmt.Errorf("could not cast instance of type %T to %T", d.Get("instance"), instance)
+	}
+	iface, ok := d.Get("interface").(string)
+	if !ok {
+		return fmt.Errorf("could not cast interface of type %T to %T", d.Get("interface"), iface)
+	}
+	remotePort, ok := d.Get("remote_port").(int)
+	if !ok {
+		return fmt.Errorf("could not cast remote_port of type %T to %T", d.Get("remote_port"), remotePort)
+	}
 
 	localPort, err := freeport.GetFreePort()
 	if err != nil {
@@ -101,14 +119,10 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	fmt.Println(fmt.Sprintf("http://localhost:%d", localPort))
-
 	err = d.Set("proxy_url", fmt.Sprintf("http://localhost:%d", localPort))
 	if err != nil {
 		return fmt.Errorf("could not set proxy_url: %w", err)
 	}
-
-	time.Sleep(time.Hour)
-
+	
 	return nil
 }
