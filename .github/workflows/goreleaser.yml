@@ -101,6 +101,7 @@ jobs:
             core: 'core/**'
             ethergo: 'ethergo/**'
             services/omnirpc: 'services/omnirpc/**'
+            contrib/terraform-provider-iap: 'contrib/terraform-provider-iap/**'
 
       - id: length
         run: |
@@ -149,6 +150,13 @@ jobs:
       - name: Git Fetch Unshallow
         run: git fetch
 
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549 # v5.2.0
+        id: import_gpg
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -170,6 +178,7 @@ jobs:
           GONOSUM: '.*'
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           GOGC: 20
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
       - name: Run GoReleaser (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true'
@@ -179,6 +188,7 @@ jobs:
           GONOSUM: '.*'
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           GOGC: 20
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
       - name: Push Docker Images (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true'
