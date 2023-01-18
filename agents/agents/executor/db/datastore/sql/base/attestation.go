@@ -107,7 +107,7 @@ func (s Store) GetAttestationForNonceOrGreater(ctx context.Context, attestationM
 		Model(&attestation).
 		Where(&dbAttestationMask).
 		Where(fmt.Sprintf("%s >= ?", NonceFieldName), attestationMask.Nonce).
-		Order(fmt.Sprintf("%s ASC", NonceFieldName)).
+		Order(fmt.Sprintf("%s ASC", BlockNumberFieldName)).
 		Limit(1).
 		Scan(&attestation)
 	if dbTx.Error != nil {
@@ -136,7 +136,7 @@ func (s Store) GetAttestationsAboveOrEqualNonce(ctx context.Context, attestation
 		Model(&attestations).
 		Where(&dbAttestationMask).
 		Where(fmt.Sprintf("%s >= ?", NonceFieldName), minNonce).
-		Order(fmt.Sprintf("%s ASC", NonceFieldName)).
+		Order(fmt.Sprintf("%s ASC", BlockNumberFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Scan(&attestations)

@@ -1,6 +1,7 @@
 package executor
 
 import (
+	"context"
 	"fmt"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
@@ -49,6 +50,36 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractType {
 	return contract
 }
 
+// setMinimumTimes goes through a list of messages and sets the minimum time for each message
+// that has an associated attestation.
+func (e Executor) setMinimumTimes(ctx context.Context, messages []types.Message, attestations []execTypes.DBAttestation) error {
+	messageIndex := 0
+	attestationIndex := 0
+	for messageIndex < len(messages) && attestationIndex < len(attestations) {
+		if messages[messageIndex].Nonce() <= *attestations[attestationIndex].Nonce {
+			minimumTime := *attestations[attestationIndex].DestinationBlockTime + uint64(messages[messageIndex].OptimisticSeconds())
+			originDomain := messages[messageIndex].OriginDomain()
+			destinationDomain := messages[messageIndex].DestinationDomain()
+			nonce := messages[messageIndex].Nonce()
+			messageMask := execTypes.DBMessage{
+				ChainID:     &originDomain,
+				Destination: &destinationDomain,
+				Nonce:       &nonce,
+			}
+			err := e.executorDB.SetMinimumTime(ctx, messageMask, minimumTime)
+			if err != nil {
+				return fmt.Errorf("could not set minimum time: %w", err)
+			}
+
+			messageIndex++
+		} else {
+			attestationIndex++
+		}
+	}
+
+	return nil
+}
+
 // verifyAfter guarantees the chronological ordering of logs.
 func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
 	if log.BlockNumber < l.blockNumber {
@@ -60,29 +91,4 @@ func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
 	}
 
 	return true
-}
-
-// binarySearchAttestationsForNonce performs a binary search for the attestation with the given nonce, or the attestation
-// that has the minimum nonce that is greater than the target nonce.
-func binarySearchAttestationsForNonce(attestations []execTypes.DBAttestation, nonce uint32) *execTypes.DBAttestation {
-	low := 0
-	high := len(attestations) - 1
-
-	for low <= high {
-		mid := (low + high) / 2
-		switch {
-		case *attestations[mid].Nonce == nonce:
-			return &attestations[mid]
-		case *attestations[mid].Nonce < nonce:
-			low = mid + 1
-		default:
-			high = mid - 1
-		}
-	}
-
-	if low < len(attestations) {
-		return &attestations[low]
-	}
-
-	return nil
 }

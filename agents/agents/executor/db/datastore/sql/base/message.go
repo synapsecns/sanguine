@@ -47,7 +47,6 @@ func (s Store) ExecuteMessage(ctx context.Context, messageMask types.DBMessage) 
 }
 
 // SetMinimumTime sets the minimum time of a message.
-// TODO: Make batch update.
 func (s Store) SetMinimumTime(ctx context.Context, messageMask types.DBMessage, minimumTime uint64) error {
 	dbMessageMask := DBMessageToMessage(messageMask)
 	update := Message{MinimumTime: minimumTime, MinimumTimeSet: true}

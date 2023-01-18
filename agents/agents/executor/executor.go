@@ -656,27 +656,9 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 				page++
 			}
 
-			// Match each message to its attestation (if one exists) and set the minimum time.
-			for _, message := range unsetMessages {
-				attestation := binarySearchAttestationsForNonce(attestations, message.Nonce())
-				if attestation == nil {
-					continue
-				}
-
-				minimumTime := *attestation.DestinationBlockTime + uint64(message.OptimisticSeconds())
-				originDomain := message.OriginDomain()
-				destinationDomain := message.DestinationDomain()
-				nonce := message.Nonce()
-				messageMask = execTypes.DBMessage{
-					ChainID:     &originDomain,
-					Destination: &destinationDomain,
-					Nonce:       &nonce,
-				}
-
-				err := e.executorDB.SetMinimumTime(ctx, messageMask, minimumTime)
-				if err != nil {
-					return fmt.Errorf("could not set minimum time: %w", err)
-				}
+			err := e.setMinimumTimes(ctx, unsetMessages, attestations)
+			if err != nil {
+				return fmt.Errorf("could not set minimum times: %w", err)
 			}
 		}
 	}
