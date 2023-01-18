@@ -52,6 +52,7 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractType {
 
 // setMinimumTimes goes through a list of messages and sets the minimum time for each message
 // that has an associated attestation.
+// The messages need to be sorted by nonce, and the attestations by their destination submission time (which can be via block number or block time).
 func (e Executor) setMinimumTimes(ctx context.Context, messages []types.Message, attestations []execTypes.DBAttestation) error {
 	messageIndex := 0
 	attestationIndex := 0
