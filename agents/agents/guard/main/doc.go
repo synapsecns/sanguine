@@ -1,2 +1,2 @@
-// Package main provides the main function for the Notary.
+// Package main provides the main function for the Guard.
 package main
