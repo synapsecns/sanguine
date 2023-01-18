@@ -23,6 +23,12 @@ type Config struct {
 	// UnbondedSigner contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
 	UnbondedSigner agentsConfig.SignerConfig `yaml:"unbonded_signer"`
+	// ExecuteInterval is the interval at which the executor agent will
+	// check if messages in the database are ready to be executed.
+	ExecuteInterval uint32 `yaml:"execute_interval"`
+	// SetMinimumTimeInterval is the interval at which the executor agent will
+	// check messages to set their minimum times from attestations.
+	SetMinimumTimeInterval uint32 `yaml:"set_minimum_time_interval"`
 	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be
 	// included if an embedded Scribe is being used. If a remote Scribe is being used,
 	// this can be left empty.

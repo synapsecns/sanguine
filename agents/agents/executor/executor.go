@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/big"
 	"strconv"
+	"time"
 
 	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
@@ -106,6 +107,14 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
 
+	if config.ExecuteInterval == 0 {
+		config.ExecuteInterval = 2
+	}
+
+	if config.SetMinimumTimeInterval == 0 {
+		config.SetMinimumTimeInterval = 2
+	}
+
 	for _, chain := range config.Chains {
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
@@ -188,6 +197,14 @@ func (e Executor) Run(ctx context.Context) error {
 		g.Go(func() error {
 			return e.receiveLogs(ctx, chain.ChainID)
 		})
+
+		g.Go(func() error {
+			return e.setMinimumTime(ctx, chain.ChainID)
+		})
+
+		g.Go(func() error {
+			return e.executeExecutable(ctx, chain.ChainID)
+		})
 	}
 
 	if err := g.Wait(); err != nil {
@@ -204,6 +221,7 @@ func (e Executor) Stop(chainID uint32) {
 }
 
 // Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
+// TODO: Use multi-call to batch execute.
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
 	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
@@ -279,30 +297,18 @@ func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message typ
 	chainID := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	nonce := message.Nonce()
-	attestationMask := execTypes.DBAttestation{
+	messageMask := execTypes.DBMessage{
 		ChainID:     &chainID,
 		Destination: &destinationDomain,
 		Nonce:       &nonce,
 	}
-	attestation, err := e.executorDB.GetAttestation(ctx, attestationMask)
-	if err != nil {
-		return nil, fmt.Errorf("could not get attestation: %w", err)
-	}
 
-	if attestation == nil {
-		//nolint:nilnil
-		return nil, nil
-	}
-
-	root := (*attestation).Root()
-	rootToHash := common.BytesToHash(root[:])
-	attestationMask.Root = &rootToHash
-	attestationTime, err := e.executorDB.GetAttestationBlockTime(ctx, attestationMask)
+	messageMinimumTime, err := e.executorDB.GetMessageMinimumTime(ctx, messageMask)
 	if err != nil {
 		return nil, fmt.Errorf("could not get attestation block time: %w", err)
 	}
 
-	if attestationTime == nil {
+	if messageMinimumTime == nil {
 		//nolint:nilnil
 		return nil, nil
 	}
@@ -313,7 +319,7 @@ func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message typ
 	}
 
 	currentTime := latestHeader.Time
-	if *attestationTime+uint64(message.OptimisticSeconds()) > currentTime {
+	if *messageMinimumTime > currentTime {
 		//nolint:nilnil
 		return nil, nil
 	}
@@ -466,9 +472,26 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 
 		e.chainExecutors[chainID].merkleTrees[destination].Insert(leaf[:])
 
-		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber)
+		messageNonce := (*message).Nonce()
+		attestationMask := execTypes.DBAttestation{
+			ChainID:     &chainID,
+			Destination: &destination,
+			Nonce:       &messageNonce,
+		}
+		nonce, blockTime, err := e.executorDB.GetAttestationForNonceOrGreater(ctx, attestationMask)
 		if err != nil {
-			return fmt.Errorf("could not store message: %w", err)
+			return fmt.Errorf("could not get attestation for nonce or greater: %w", err)
+		}
+		if nonce != nil && blockTime != nil {
+			err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, true, *blockTime+uint64((*message).OptimisticSeconds()))
+			if err != nil {
+				return fmt.Errorf("could not store message: %w", err)
+			}
+		} else {
+			err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, false, 0)
+			if err != nil {
+				return fmt.Errorf("could not store message: %w", err)
+			}
 		}
 	case destinationContract:
 		attestation, err := e.logToAttestation(log, chainID)
@@ -519,54 +542,124 @@ func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
 	}
 }
 
-// logToMessage converts the log to a leaf data.
-func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message, error) {
-	committedMessage, ok := e.chainExecutors[chainID].originParser.ParseDispatch(log)
-	if !ok {
-		return nil, fmt.Errorf("could not parse committed message")
-	}
+// executeExecutable executes executable messages in the database.
+//
+//nolint:gocognit,cyclop
+func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(time.Duration(e.config.ExecuteInterval)):
+			page := 1
+			currentTime := uint64(time.Now().Unix())
+			messageMask := execTypes.DBMessage{
+				ChainID: &chainID,
+			}
 
-	message, err := types.DecodeMessage(committedMessage.Message())
-	if err != nil {
-		return nil, fmt.Errorf("could not decode message: %w", err)
-	}
+			for {
+				messages, err := e.executorDB.GetExecutableMessages(ctx, messageMask, currentTime, page)
+				if err != nil {
+					return fmt.Errorf("could not get executable messages: %w", err)
+				}
 
-	return &message, nil
+				if len(messages) == 0 {
+					break
+				}
+
+				for _, message := range messages {
+					executed, err := e.Execute(ctx, message)
+					if err != nil {
+						return fmt.Errorf("could not execute message: %w", err)
+					}
+
+					if !executed {
+						continue
+					}
+
+					destinationDomain := message.DestinationDomain()
+					nonce := message.Nonce()
+					executedMessageMask := execTypes.DBMessage{
+						ChainID:     &chainID,
+						Destination: &destinationDomain,
+						Nonce:       &nonce,
+					}
+					err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
+					if err != nil {
+						return fmt.Errorf("could not execute message: %w", err)
+					}
+				}
+
+				page++
+			}
+		}
+	}
 }
 
-// logToAttestation converts the log to an attestation.
-func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (*types.Attestation, error) {
-	attestation, ok := e.chainExecutors[chainID].destinationParser.ParseAttestationAccepted(log)
-	if !ok {
-		return nil, fmt.Errorf("could not parse attestation")
+// setMinimumTime sets the minimum time for the message to be executed by checking for associated attestations.
+//
+//nolint:gocognit,cyclop
+func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval)):
+			page := 1
+			messageMask := execTypes.DBMessage{
+				ChainID: &chainID,
+			}
+
+			var unsetMessages []types.Message
+
+			// Get all unset messages.
+			for {
+				messages, err := e.executorDB.GetUnsetMinimumTimeMessages(ctx, messageMask, page)
+				if err != nil {
+					return fmt.Errorf("could not get messages without minimum time: %w", err)
+				}
+
+				if len(messages) == 0 {
+					break
+				}
+
+				unsetMessages = append(unsetMessages, messages...)
+
+				page++
+			}
+
+			if len(unsetMessages) == 0 {
+				continue
+			}
+
+			page = 1
+			minNonce := unsetMessages[0].Nonce()
+			attestationMask := execTypes.DBAttestation{
+				ChainID: &chainID,
+			}
+
+			var attestations []execTypes.DBAttestation
+
+			// Get all attestations for the unset messages.
+			for {
+				atts, err := e.executorDB.GetAttestationsAboveOrEqualNonce(ctx, attestationMask, minNonce, page)
+				if err != nil {
+					return fmt.Errorf("could not get attestations: %w", err)
+				}
+
+				if len(atts) == 0 {
+					break
+				}
+
+				attestations = append(attestations, atts...)
+
+				page++
+			}
+
+			err := e.setMinimumTimes(ctx, unsetMessages, attestations)
+			if err != nil {
+				return fmt.Errorf("could not set minimum times: %w", err)
+			}
+		}
 	}
-
-	return &attestation, nil
-}
-
-// logType determines whether a log is a `Dispatch` from Origin.sol or `AttestationAccepted` from Destination.sol.
-func (e Executor) logType(log ethTypes.Log, chainID uint32) contractType {
-	contract := other
-
-	if eventType, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && eventType == origin.DispatchEvent {
-		contract = originContract
-	}
-
-	if eventType, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok && eventType == destination.AttestationAcceptedEvent {
-		contract = destinationContract
-	}
-
-	return contract
-}
-
-func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
-	if log.BlockNumber < l.blockNumber {
-		return false
-	}
-
-	if log.BlockNumber == l.blockNumber {
-		return log.Index > l.blockIndex
-	}
-
-	return true
 }

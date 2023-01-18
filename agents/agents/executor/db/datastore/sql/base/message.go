@@ -9,8 +9,8 @@ import (
 )
 
 // StoreMessage stores a message in the database.
-func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64) error {
-	dbMessage, err := AgentsTypesMessageToMessage(message, blockNumber)
+func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error {
+	dbMessage, err := AgentsTypesMessageToMessage(message, blockNumber, minimumTimeSet, minimumTime)
 	if err != nil {
 		return fmt.Errorf("failed to convert message: %w", err)
 	}
@@ -26,6 +26,36 @@ func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, bl
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("failed to store message: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// ExecuteMessage marks a message as executed in the database.
+// TODO: Make batch update.
+func (s Store) ExecuteMessage(ctx context.Context, messageMask types.DBMessage) error {
+	dbMessageMask := DBMessageToMessage(messageMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Message{}).
+		Where(&dbMessageMask).
+		Update(ExecutedFieldName, true)
+	if dbTx.Error != nil {
+		return fmt.Errorf("failed to execute message: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+// SetMinimumTime sets the minimum time of a message.
+func (s Store) SetMinimumTime(ctx context.Context, messageMask types.DBMessage, minimumTime uint64) error {
+	dbMessageMask := DBMessageToMessage(messageMask)
+	update := Message{MinimumTime: minimumTime, MinimumTimeSet: true}
+	dbTx := s.DB().WithContext(ctx).
+		Model(&Message{}).
+		Where(&dbMessageMask).
+		Updates(update)
+	if dbTx.Error != nil {
+		return fmt.Errorf("failed to set minimum time: %w", dbTx.Error)
 	}
 
 	return nil
@@ -136,6 +166,105 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, 
 	return lastBlockNumber, nil
 }
 
+// GetExecutableMessages gets executable messages from the database.
+func (s Store) GetExecutableMessages(ctx context.Context, messageMask types.DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error) {
+	if page < 1 {
+		page = 1
+	}
+
+	var messages []Message
+
+	dbMessageMask := DBMessageToMessage(messageMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&messages).
+		Where(&dbMessageMask).
+		Where(fmt.Sprintf("%s > ?", MinimumTimeFieldName), currentTime).
+		Where(fmt.Sprintf("%s = ?", MinimumTimeSetFieldName), true).
+		Where(fmt.Sprintf("%s = ?", ExecutedFieldName), false).
+		Order(fmt.Sprintf("%s ASC", MinimumTimeFieldName)).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
+		Scan(&messages)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get messages: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	decodedMessages := make([]agentsTypes.Message, len(messages))
+	for i, message := range messages {
+		decodedMessage, err := agentsTypes.DecodeMessage(message.Message)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode message: %w", err)
+		}
+		decodedMessages[i] = decodedMessage
+	}
+
+	return decodedMessages, nil
+}
+
+// GetUnsetMinimumTimeMessages gets messages from the database that have not had their minimum time set.
+func (s Store) GetUnsetMinimumTimeMessages(ctx context.Context, messageMask types.DBMessage, page int) ([]agentsTypes.Message, error) {
+	if page < 1 {
+		page = 1
+	}
+
+	var messages []Message
+
+	dbMessageMask := DBMessageToMessage(messageMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&messages).
+		Where(&dbMessageMask).
+		Where(fmt.Sprintf("%s = ?", MinimumTimeSetFieldName), false).
+		Order(fmt.Sprintf("%s ASC", NonceFieldName)).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
+		Scan(&messages)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get messages: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	decodedMessages := make([]agentsTypes.Message, len(messages))
+	for i, message := range messages {
+		decodedMessage, err := agentsTypes.DecodeMessage(message.Message)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode message: %w", err)
+		}
+		decodedMessages[i] = decodedMessage
+	}
+
+	return decodedMessages, nil
+}
+
+// GetMessageMinimumTime gets the minimum time for a message to be executed.
+func (s Store) GetMessageMinimumTime(ctx context.Context, messageMask types.DBMessage) (*uint64, error) {
+	var message Message
+
+	dbMessageMask := DBMessageToMessage(messageMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&message).
+		Where(&dbMessageMask).
+		Scan(&message)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get message: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected > 1 {
+		return nil, fmt.Errorf("multiple messages found with the same mask")
+	}
+	if !message.MinimumTimeSet || dbTx.RowsAffected != 1 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	return &message.MinimumTime, nil
+}
+
 // DBMessageToMessage converts a DBMessage to a Message.
 func DBMessageToMessage(dbMessage types.DBMessage) Message {
 	var message Message
@@ -160,6 +289,18 @@ func DBMessageToMessage(dbMessage types.DBMessage) Message {
 		message.BlockNumber = *dbMessage.BlockNumber
 	}
 
+	if dbMessage.Executed != nil {
+		message.Executed = *dbMessage.Executed
+	}
+
+	if dbMessage.MinimumTimeSet != nil {
+		message.MinimumTimeSet = *dbMessage.MinimumTimeSet
+	}
+
+	if dbMessage.MinimumTime != nil {
+		message.MinimumTime = *dbMessage.MinimumTime
+	}
+
 	return message
 }
 
@@ -170,27 +311,36 @@ func MessageToDBMessage(message Message) types.DBMessage {
 	nonce := message.Nonce
 	messageBytes := message.Message
 	blockNumber := message.BlockNumber
+	executed := message.Executed
+	minimumTimeSet := message.MinimumTimeSet
+	minimumTime := message.MinimumTime
 
 	return types.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-		Nonce:       &nonce,
-		Message:     &messageBytes,
-		BlockNumber: &blockNumber,
+		ChainID:        &chainID,
+		Destination:    &destination,
+		Nonce:          &nonce,
+		Message:        &messageBytes,
+		BlockNumber:    &blockNumber,
+		Executed:       &executed,
+		MinimumTimeSet: &minimumTimeSet,
+		MinimumTime:    &minimumTime,
 	}
 }
 
 // AgentsTypesMessageToMessage converts an agentsTypes.Message to a Message.
-func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64) (Message, error) {
+func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) (Message, error) {
 	rawMessage, err := agentsTypes.EncodeMessage(message)
 	if err != nil {
 		return Message{}, fmt.Errorf("failed to encode message: %w", err)
 	}
 	return Message{
-		ChainID:     message.OriginDomain(),
-		Destination: message.DestinationDomain(),
-		Nonce:       message.Nonce(),
-		Message:     rawMessage,
-		BlockNumber: blockNumber,
+		ChainID:        message.OriginDomain(),
+		Destination:    message.DestinationDomain(),
+		Nonce:          message.Nonce(),
+		Message:        rawMessage,
+		BlockNumber:    blockNumber,
+		Executed:       false,
+		MinimumTimeSet: minimumTimeSet,
+		MinimumTime:    minimumTime,
 	}, nil
 }

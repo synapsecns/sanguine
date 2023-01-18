@@ -572,11 +572,11 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	failMessage := types.NewMessage(header1, tips[3], messageBytes[3])
 
 	// Insert messages into the database.
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0], false, 0)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message1, blockNumbers[1])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message1, blockNumbers[1], false, 0)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2], false, 0)
 	e.Nil(err)
 
 	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
@@ -600,7 +600,7 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	e.Nil(err)
 	e.False(inTreeFail)
 
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3])
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3], false, 0)
 	e.Nil(err)
 
 	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
@@ -709,6 +709,13 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	// Listen with the exec.
 	go func() {
 		execErr := exec.Listen(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
+	go func() {
+		execErr := exec.SetMinimumTime(e.GetTestContext())
 		if !testDone {
 			e.Nil(execErr)
 		}
@@ -902,6 +909,13 @@ func (e *ExecutorSuite) TestExecute() {
 	// Listen with the exec.
 	go func() {
 		execErr := exec.Listen(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
+	go func() {
+		execErr := exec.SetMinimumTime(e.GetTestContext())
 		if !testDone {
 			e.Nil(execErr)
 		}
@@ -1229,13 +1243,13 @@ func (e *ExecutorSuite) TestDestinationExecute() {
 		e.True(ok)
 		e.Equal(eventType, destination.AttestationAcceptedEvent)
 
-		emittedSignedAttesation, err := types.DecodeSignedAttestation(item.Attestation)
+		emittedSignedAttestation, err := types.DecodeSignedAttestation(item.Attestation)
 		e.Nil(err)
 
-		e.Equal(e.OriginDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Origin())
-		e.Equal(e.DestinationDomainClient.Config().DomainID, emittedSignedAttesation.Attestation().Destination())
-		e.Equal(nonce, emittedSignedAttesation.Attestation().Nonce())
-		e.Equal(root, emittedSignedAttesation.Attestation().Root())
+		e.Equal(e.OriginDomainClient.Config().DomainID, emittedSignedAttestation.Attestation().Origin())
+		e.Equal(e.DestinationDomainClient.Config().DomainID, emittedSignedAttestation.Attestation().Destination())
+		e.Equal(nonce, emittedSignedAttestation.Attestation().Nonce())
+		e.Equal(root, emittedSignedAttestation.Attestation().Root())
 
 		// Now sleep for a second before executing
 		time.Sleep(time.Second)
@@ -1425,4 +1439,634 @@ func (e *ExecutorSuite) TestDestinationBadProofExecute() {
 
 		break
 	}
+}
+
+func (e *ExecutorSuite) TestSetMinimumTime() {
+	// Put some messages without a minimum time in the database.
+	originDomain := uint32(e.TestBackendOrigin.GetBigChainID().Uint64())
+	destinationDomain := uint32(e.TestBackendDestination.GetBigChainID().Uint64())
+
+	for i := uint32(1); i <= 5; i++ {
+		header := types.NewHeader(originDomain, common.BigToHash(big.NewInt(gofakeit.Int64())), i, destinationDomain, common.BigToHash(big.NewInt(gofakeit.Int64())), i*2)
+		tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+		message := types.NewMessage(header, tips, []byte{})
+
+		err := e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message, uint64(i), false, 0)
+		e.Nil(err)
+	}
+
+	// Sanity check that the messages are in the database.
+	messageMask := types2.DBMessage{
+		ChainID:     &originDomain,
+		Destination: &destinationDomain,
+	}
+	messages, err := e.ExecutorTestDB.GetMessages(e.GetTestContext(), messageMask, 1)
+	e.Nil(err)
+	e.Len(messages, 5)
+
+	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
+	e.Nil(err)
+	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
+	e.Nil(err)
+
+	originConfig := config.ContractConfig{
+		Address:    e.OriginContract.Address().String(),
+		StartBlock: 0,
+	}
+	originChainConfig := config.ChainConfig{
+		ChainID:               uint32(e.TestBackendOrigin.GetChainID()),
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{originConfig},
+	}
+	destinationConfig := config.ContractConfig{
+		Address:    e.DestinationContract.Address().String(),
+		StartBlock: 0,
+	}
+	destinationChainConfig := config.ChainConfig{
+		ChainID:               uint32(e.TestBackendDestination.GetChainID()),
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{destinationConfig},
+	}
+	scribeConfig := config.Config{
+		Chains: []config.ChainConfig{originChainConfig, destinationChainConfig},
+	}
+	clients := map[uint32][]backfill.ScribeBackend{
+		uint32(e.TestBackendOrigin.GetChainID()):      {originClient, originClient},
+		uint32(e.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
+	}
+
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
+	e.Nil(err)
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
+	go func() {
+		scribeErr := scribeClient.Start(e.GetTestContext())
+		e.Nil(scribeErr)
+	}()
+
+	// Start the Scribe.
+	go func() {
+		_ = scribe.Start(e.GetTestContext())
+	}()
+
+	excCfg := executorCfg.Config{
+		Chains: []executorCfg.ChainConfig{
+			{
+				ChainID:       uint32(e.TestBackendOrigin.GetChainID()),
+				OriginAddress: e.OriginContract.Address().String(),
+			},
+			{
+				ChainID:            uint32(e.TestBackendDestination.GetChainID()),
+				DestinationAddress: e.DestinationContract.Address().String(),
+			},
+		},
+		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+	}
+
+	executorClients := map[uint32]executor.Backend{
+		uint32(e.TestBackendOrigin.GetChainID()):      e.TestBackendOrigin,
+		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination,
+	}
+
+	urls := map[uint32]string{
+		uint32(e.TestBackendOrigin.GetChainID()):      e.TestBackendOrigin.RPCAddress(),
+		uint32(e.TestBackendDestination.GetChainID()): e.TestBackendDestination.RPCAddress(),
+	}
+
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	e.Nil(err)
+
+	go func() {
+		_ = exec.SetMinimumTime(e.GetTestContext())
+	}()
+
+	// Inject one attestation into the database for nonce 1.
+	attestKey := types.AttestationKey{
+		Origin:      originDomain,
+		Destination: destinationDomain,
+		Nonce:       1,
+	}
+	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	attestation := types.NewAttestation(attestKey.GetRawKey(), root)
+	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation, 1, 10)
+	e.Nil(err)
+
+	waitChan := make(chan bool, 1)
+
+	e.Eventually(func() bool {
+		trueVal := true
+		minimumTime := uint64(10 + 2) // attestation block time + optimistic period of nonce 1 message
+		retrieveMessageMask := types2.DBMessage{
+			MinimumTimeSet: &trueVal,
+			MinimumTime:    &minimumTime,
+		}
+		messages, err := e.ExecutorTestDB.GetMessages(e.GetTestContext(), retrieveMessageMask, 1)
+		e.Nil(err)
+		if len(messages) != 1 {
+			return false
+		}
+		waitChan <- true
+		return true
+	})
+	<-waitChan
+
+	// Inject two attestations into the database. One for nonce 2, and one for nonce 4.
+	attestKey = types.AttestationKey{
+		Origin:      originDomain,
+		Destination: destinationDomain,
+		Nonce:       2,
+	}
+	root = common.BigToHash(big.NewInt(gofakeit.Int64()))
+	attestation = types.NewAttestation(attestKey.GetRawKey(), root)
+	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation, 2, 20)
+	e.Nil(err)
+
+	attestKey = types.AttestationKey{
+		Origin:      originDomain,
+		Destination: destinationDomain,
+		Nonce:       4,
+	}
+	root = common.BigToHash(big.NewInt(gofakeit.Int64()))
+	attestation = types.NewAttestation(attestKey.GetRawKey(), root)
+	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation, 4, 40)
+	e.Nil(err)
+
+	e.Eventually(func() bool {
+		trueVal := true
+		retrieveMessageMask := types2.DBMessage{
+			MinimumTimeSet: &trueVal,
+		}
+		messages, err := e.ExecutorTestDB.GetMessages(e.GetTestContext(), retrieveMessageMask, 1)
+		e.Nil(err)
+		if len(messages) != 4 {
+			return false
+		}
+		e.Equal(uint32(2), messages[1].Nonce())
+		e.Equal(uint32(3), messages[2].Nonce())
+		e.Equal(uint32(4), messages[3].Nonce())
+
+		waitChan <- true
+		return true
+	})
+	<-waitChan
+}
+
+func (e *ExecutorSuite) TestExecuteExecutable() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+
+	originDomain := uint32(e.TestBackendOrigin.GetBigChainID().Uint64())
+	destinationDomain := uint32(e.TestBackendDestination.GetBigChainID().Uint64())
+
+	testContractDest, testContractRef := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
+	testTransactOpts := e.TestBackendDestination.GetTxContext(e.GetTestContext(), nil)
+
+	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
+	e.Nil(err)
+	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
+	e.Nil(err)
+
+	originConfig := config.ContractConfig{
+		Address:    e.OriginContract.Address().String(),
+		StartBlock: 0,
+	}
+	originChainConfig := config.ChainConfig{
+		ChainID:               originDomain,
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{originConfig},
+	}
+	destinationConfig := config.ContractConfig{
+		Address:    e.DestinationContract.Address().String(),
+		StartBlock: 0,
+	}
+	destinationChainConfig := config.ChainConfig{
+		ChainID:               destinationDomain,
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{destinationConfig},
+	}
+	scribeConfig := config.Config{
+		Chains: []config.ChainConfig{originChainConfig, destinationChainConfig},
+	}
+	clients := map[uint32][]backfill.ScribeBackend{
+		originDomain:      {originClient, originClient},
+		destinationDomain: {destinationClient, destinationClient},
+	}
+
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
+	e.Nil(err)
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
+	go func() {
+		scribeErr := scribeClient.Start(e.GetTestContext())
+		e.Nil(scribeErr)
+	}()
+
+	// Start the Scribe.
+	go func() {
+		_ = scribe.Start(e.GetTestContext())
+	}()
+
+	excCfg := executorCfg.Config{
+		Chains: []executorCfg.ChainConfig{
+			{
+				ChainID:       originDomain,
+				OriginAddress: e.OriginContract.Address().String(),
+			},
+			{
+				ChainID:            destinationDomain,
+				DestinationAddress: e.DestinationContract.Address().String(),
+			},
+		},
+		BaseOmnirpcURL: gofakeit.URL(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+	}
+
+	executorClients := map[uint32]executor.Backend{
+		originDomain:      e.TestBackendOrigin,
+		destinationDomain: e.TestBackendDestination,
+	}
+
+	urls := map[uint32]string{
+		originDomain:      e.TestBackendOrigin.RPCAddress(),
+		destinationDomain: e.TestBackendDestination.RPCAddress(),
+	}
+
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	e.Nil(err)
+
+	// Start the exec.
+	go func() {
+		execErr := exec.Start(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
+	// Listen with the exec.
+	go func() {
+		execErr := exec.Listen(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
+	go func() {
+		execErr := exec.SetMinimumTime(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
+	go func() {
+		execErr := exec.ExecuteExecutable(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
+	tips := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	encodedTips, err := types.EncodeTips(tips)
+	e.Nil(err)
+
+	optimisticSeconds := uint32(10)
+
+	recipient := testContractDest.Address().Hash()
+	nonce := uint32(1)
+	body := []byte{byte(gofakeit.Uint32())}
+
+	txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
+	txContextOrigin.Value = types.TotalTips(tips)
+
+	tx, err := e.OriginContract.Dispatch(txContextOrigin.TransactOpts, destinationDomain, recipient, optimisticSeconds, encodedTips, body)
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
+	sender, err := e.TestBackendOrigin.Signer().Sender(tx)
+	e.Nil(err)
+
+	header := types.NewHeader(originDomain, sender.Hash(), nonce, destinationDomain, recipient, optimisticSeconds)
+	message := types.NewMessage(header, tips, body)
+
+	attestKey := types.AttestationKey{
+		Origin:      originDomain,
+		Destination: destinationDomain,
+		Nonce:       uint32(1),
+	}
+
+	tree := merkle.NewTree()
+
+	leaf, err := message.ToLeaf()
+	e.Nil(err)
+
+	tree.Insert(leaf[:])
+
+	root, err := tree.Root(1)
+	e.Nil(err)
+
+	var rootB32 [32]byte
+	copy(rootB32[:], root)
+
+	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), rootB32)
+	hashedAttestation, err := types.Hash(unsignedAttestation)
+	e.Nil(err)
+
+	guardSignature, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	e.Nil(err)
+
+	notarySignature, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	e.Nil(err)
+
+	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
+
+	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
+	e.Nil(err)
+
+	txContextDestination := e.TestBackendDestination.GetTxContext(e.GetTestContext(), e.DestinationContractMetadata.OwnerPtr())
+
+	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation)
+	e.Nil(err)
+	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
+
+	waitChan := make(chan bool, 1)
+
+	// Make sure there is one executable message in the database.
+	e.Eventually(func() bool {
+		mask := types2.DBMessage{
+			ChainID: &originDomain,
+		}
+		executableMessages, err := e.ExecutorTestDB.GetExecutableMessages(e.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
+		e.Nil(err)
+		if len(executableMessages) == 0 {
+			return false
+		}
+		waitChan <- true
+		return true
+	})
+
+	<-waitChan
+
+	// Ensure that the message that was previously executable in the database has been executed.
+	e.Eventually(func() bool {
+		mask := types2.DBMessage{
+			ChainID: &originDomain,
+		}
+		executableMessages, err := e.ExecutorTestDB.GetExecutableMessages(e.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
+		e.Nil(err)
+		if len(executableMessages) == 0 {
+			return true
+		}
+		if len(executableMessages) > 1 {
+			e.Fail("too many executable messages")
+		}
+		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
+		// increase the `time`.
+		countBeforeIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: e.GetTestContext()})
+		e.Nil(err)
+		testTx, err := testContractRef.IncrementCounter(testTransactOpts.TransactOpts)
+		e.Nil(err)
+		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), testTx)
+		countAfterIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: e.GetTestContext()})
+		e.Nil(err)
+		e.Greater(countAfterIncrement.Uint64(), countBeforeIncrement.Uint64())
+		return false
+	})
+}
+
+func (e *ExecutorSuite) TestSetMinimumTimes() {
+	chainID := uint32(e.TestBackendOrigin.GetBigChainID().Uint64())
+	destination := uint32(e.TestBackendDestination.GetBigChainID().Uint64())
+
+	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
+	e.Nil(err)
+	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
+	e.Nil(err)
+
+	originConfig := config.ContractConfig{
+		Address:    e.OriginContract.Address().String(),
+		StartBlock: 0,
+	}
+	originChainConfig := config.ChainConfig{
+		ChainID:               chainID,
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{originConfig},
+	}
+	destinationConfig := config.ContractConfig{
+		Address:    e.DestinationContract.Address().String(),
+		StartBlock: 0,
+	}
+	destinationChainConfig := config.ChainConfig{
+		ChainID:               destination,
+		RequiredConfirmations: 0,
+		Contracts:             []config.ContractConfig{destinationConfig},
+	}
+	scribeConfig := config.Config{
+		Chains: []config.ChainConfig{originChainConfig, destinationChainConfig},
+	}
+	clients := map[uint32][]backfill.ScribeBackend{
+		chainID:     {originClient, originClient},
+		destination: {destinationClient, destinationClient},
+	}
+
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
+	e.Nil(err)
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
+	go func() {
+		scribeErr := scribeClient.Start(e.GetTestContext())
+		e.Nil(scribeErr)
+	}()
+
+	// Start the Scribe.
+	go func() {
+		_ = scribe.Start(e.GetTestContext())
+	}()
+
+	excCfg := executorCfg.Config{
+		Chains: []executorCfg.ChainConfig{
+			{
+				ChainID:       chainID,
+				OriginAddress: e.OriginContract.Address().String(),
+			},
+			{
+				ChainID:            destination,
+				DestinationAddress: e.DestinationContract.Address().String(),
+			},
+		},
+		BaseOmnirpcURL: gofakeit.URL(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+	}
+
+	executorClients := map[uint32]executor.Backend{
+		chainID:     e.TestBackendOrigin,
+		destination: e.TestBackendDestination,
+	}
+
+	urls := map[uint32]string{
+		chainID:     e.TestBackendOrigin.RPCAddress(),
+		destination: e.TestBackendDestination.RPCAddress(),
+	}
+
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	e.Nil(err)
+
+	message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
+
+	for i := 1; i <= 6; i++ {
+		header := types.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint32(i), destination, common.BigToHash(big.NewInt(gofakeit.Int64())), 0)
+		tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+		typesMessage := types.NewMessage(header, tips, message)
+
+		err := e.ExecutorTestDB.StoreMessage(e.GetTestContext(), typesMessage, uint64(i), false, 0)
+		e.Nil(err)
+	}
+
+	// This test tests 4 main cases:
+	// 1. The message has an associated attestation with equal nonce (and lowest block number).
+	// 2. The message has an associated attestation with greater nonce (and lowest block number).
+	// 3. The message has an associated attestation with greater nonce (with an attestation of equal nonce, but greater block number).
+	// 4. The message has no associated attestation.
+
+	// Case 1
+	blockNumber := uint64(1)
+	attestKey := types.AttestationKey{
+		Origin:      chainID,
+		Destination: destination,
+		Nonce:       1,
+	}
+	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	attestation := types.NewAttestation(attestKey.GetRawKey(), root)
+
+	// Attestation with nonce 1 should be used by message 1.
+	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation, blockNumber, blockNumber)
+	e.Nil(err)
+
+	// Case 2
+	blockNumber = uint64(3)
+	attestKey = types.AttestationKey{
+		Origin:      chainID,
+		Destination: destination,
+		Nonce:       3,
+	}
+	root = common.BigToHash(big.NewInt(gofakeit.Int64()))
+	attestation = types.NewAttestation(attestKey.GetRawKey(), root)
+
+	// Attestation with nonce 3 should be used by messages 2 and 3.
+	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation, blockNumber, blockNumber)
+	e.Nil(err)
+
+	// Case 3
+	blockNumber = uint64(4)
+	attestKey = types.AttestationKey{
+		Origin:      chainID,
+		Destination: destination,
+		Nonce:       5,
+	}
+	root = common.BigToHash(big.NewInt(gofakeit.Int64()))
+	attestation = types.NewAttestation(attestKey.GetRawKey(), root)
+
+	// Attestation with nonce 5 should be used by messages 4 and 5.
+	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation, blockNumber, blockNumber)
+	e.Nil(err)
+
+	blockNumber = uint64(5)
+	attestKey = types.AttestationKey{
+		Origin:      chainID,
+		Destination: destination,
+		Nonce:       4,
+	}
+	root = common.BigToHash(big.NewInt(gofakeit.Int64()))
+	attestation = types.NewAttestation(attestKey.GetRawKey(), root)
+
+	// Attestation with nonce 4 should not be used by any messages.
+	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation, blockNumber, blockNumber)
+	e.Nil(err)
+
+	// Get the unset messages and attestations.
+	messageMask := types2.DBMessage{
+		ChainID: &chainID,
+	}
+
+	messages, err := e.ExecutorTestDB.GetUnsetMinimumTimeMessages(e.GetTestContext(), messageMask, 1)
+	e.Nil(err)
+
+	e.Len(messages, 6)
+
+	minNonce := messages[0].Nonce
+	attestationMask := types2.DBAttestation{
+		ChainID: &chainID,
+	}
+	attestations, err := e.ExecutorTestDB.GetAttestationsAboveOrEqualNonce(e.GetTestContext(), attestationMask, minNonce(), 1)
+	e.Nil(err)
+
+	e.Len(attestations, 4)
+
+	// Set the messages times.
+	err = exec.SetMinimumTimes(e.GetTestContext(), messages, attestations)
+	e.Nil(err)
+
+	blockNumber = uint64(1)
+	messageMask = types2.DBMessage{
+		ChainID:     &chainID,
+		BlockNumber: &blockNumber,
+	}
+	minTime, err := e.ExecutorTestDB.GetMessageMinimumTime(e.GetTestContext(), messageMask)
+	e.Nil(err)
+	e.Equal(uint64(1), *minTime)
+
+	blockNumber = uint64(2)
+	messageMask = types2.DBMessage{
+		ChainID:     &chainID,
+		BlockNumber: &blockNumber,
+	}
+	minTime, err = e.ExecutorTestDB.GetMessageMinimumTime(e.GetTestContext(), messageMask)
+	e.Nil(err)
+	e.Equal(uint64(3), *minTime)
+
+	blockNumber = uint64(3)
+	messageMask = types2.DBMessage{
+		ChainID:     &chainID,
+		BlockNumber: &blockNumber,
+	}
+	minTime, err = e.ExecutorTestDB.GetMessageMinimumTime(e.GetTestContext(), messageMask)
+	e.Nil(err)
+	e.Equal(uint64(3), *minTime)
+
+	blockNumber = uint64(4)
+	messageMask = types2.DBMessage{
+		ChainID:     &chainID,
+		BlockNumber: &blockNumber,
+	}
+	minTime, err = e.ExecutorTestDB.GetMessageMinimumTime(e.GetTestContext(), messageMask)
+	e.Nil(err)
+	e.Equal(uint64(4), *minTime)
+
+	blockNumber = uint64(5)
+	messageMask = types2.DBMessage{
+		ChainID:     &chainID,
+		BlockNumber: &blockNumber,
+	}
+	minTime, err = e.ExecutorTestDB.GetMessageMinimumTime(e.GetTestContext(), messageMask)
+	e.Nil(err)
+	e.Equal(uint64(4), *minTime)
+
+	blockNumber = uint64(6)
+	messageMask = types2.DBMessage{
+		ChainID:     &chainID,
+		BlockNumber: &blockNumber,
+	}
+	minTime, err = e.ExecutorTestDB.GetMessageMinimumTime(e.GetTestContext(), messageMask)
+	e.Nil(err)
+	e.Nil(minTime)
 }
