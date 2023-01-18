@@ -5,11 +5,15 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
+	agentsConfig "github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
 
-func configFixture() config.Config {
+func configFixture(c ConfigSuite) config.Config {
 	chainIDA := gofakeit.Uint32()
 	chainIDB := chainIDA + 1
+	testWallet, err := wallet.FromRandom()
+	Nil(c.T(), err)
 	return config.Config{
 		Chains: config.ChainConfigs{
 			config.ChainConfig{
@@ -24,11 +28,15 @@ func configFixture() config.Config {
 			},
 		},
 		BaseOmnirpcURL: gofakeit.URL(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(c.T(), "", testWallet.PrivateKeyHex()).Name(),
+		},
 	}
 }
 
 func (c ConfigSuite) TestConfigEncodeDecode() {
-	testConfig := configFixture()
+	testConfig := configFixture(c)
 
 	encodedConfig, err := testConfig.Encode()
 	Nil(c.T(), err)
@@ -43,7 +51,7 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 }
 
 func (c ConfigSuite) TestInvalidAttestationInfo() {
-	testConfig := configFixture()
+	testConfig := configFixture(c)
 
 	ok, err := testConfig.IsValid(c.GetTestContext())
 	Nil(c.T(), err)
