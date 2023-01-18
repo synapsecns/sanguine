@@ -2,6 +2,13 @@ package config
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/jftuga/ellipsis"
+	"gopkg.in/yaml.v2"
 )
 
 // GuardConfig is used for configuring the guard.
@@ -35,4 +42,26 @@ func (c *GuardConfig) IsValid(ctx context.Context) (ok bool, err error) {
 	}
 
 	return true, nil
+}
+
+// Encode gets the encoded config.yaml file.
+func (c GuardConfig) Encode() ([]byte, error) {
+	output, err := yaml.Marshal(&c)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(spew.Sdump(c), 20), err)
+	}
+	return output, nil
+}
+
+// DecodeGuardConfig parses in a config from a file.
+func DecodeGuardConfig(filePath string) (cfg GuardConfig, err error) {
+	input, err := os.ReadFile(filepath.Clean(filePath))
+	if err != nil {
+		return GuardConfig{}, fmt.Errorf("failed to read file: %w", err)
+	}
+	err = yaml.Unmarshal(input, &cfg)
+	if err != nil {
+		return GuardConfig{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
+	}
+	return cfg, nil
 }
