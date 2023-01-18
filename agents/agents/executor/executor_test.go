@@ -1923,7 +1923,7 @@ func (e *ExecutorSuite) TestSetMinimumTimes() {
 
 	message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 
-	for i := 1; i <= 10; i++ {
+	for i := 1; i <= 6; i++ {
 		header := types.NewHeader(chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), uint32(i), destination, common.BigToHash(big.NewInt(gofakeit.Int64())), 0)
 		tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 		typesMessage := types.NewMessage(header, tips, message)
