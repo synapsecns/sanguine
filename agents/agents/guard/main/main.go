@@ -6,7 +6,7 @@ import (
 
 	"github.com/synapsecns/sanguine/core/config"
 
-	"github.com/synapsecns/sanguine/agents/agents/notary/cmd"
+	"github.com/synapsecns/sanguine/agents/agents/guard/cmd"
 )
 
 var (
