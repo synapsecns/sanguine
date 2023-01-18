@@ -18,7 +18,7 @@ import (
 //go:embed cmd.md
 var help string
 
-// infoCommand gets info about using the notary agent.
+// infoCommand gets info about using the guard agent.
 var infoCommand = &cli.Command{
 	Name:        "info",
 	Description: "learn how to use guard cli",
