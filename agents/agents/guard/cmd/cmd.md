@@ -1,4 +1,4 @@
-# Notary
+# Guard
 
 The Guard is an agent detects and reports fraudulent attestations.
 
