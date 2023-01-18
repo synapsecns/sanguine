@@ -14,7 +14,7 @@ Then the Guard command line will be exposed.
 Run the following command to start the Guard:
 
 ```bash
-# Start the Notary
+# Start the Guard
 $ run --config </Users/synapsecns/guard_config.yaml>
 ```
 
