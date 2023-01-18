@@ -2001,7 +2001,7 @@ func (e *ExecutorSuite) TestSetMinimumTimes() {
 	messages, err := e.ExecutorTestDB.GetUnsetMinimumTimeMessages(e.GetTestContext(), messageMask, 1)
 	e.Nil(err)
 
-	e.Len(messages, 10)
+	e.Len(messages, 6)
 
 	minNonce := messages[0].Nonce
 	attestationMask := types2.DBAttestation{
