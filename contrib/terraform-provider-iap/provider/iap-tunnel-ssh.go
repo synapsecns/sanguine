@@ -17,11 +17,6 @@ func dataSourceProxyURL() *schema.Resource {
 		Read: dataSourceProxy,
 
 		Schema: map[string]*schema.Schema{
-			// hostname of the bastion host
-			"hostname": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
 			// project of the bastion host
 			"project": {
 				Type:     schema.TypeString,
@@ -102,6 +97,7 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 
 	errChan := make(chan error)
 
+	log.Printf("[INFO] creating tunnel")
 	go func() {
 		err := tm.StartProxy(context.Background())
 		if err != nil {
@@ -116,9 +112,11 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 	case <-time.NewTimer(time.Second * 5).C:
 		break
 	case err := <-errChan:
+		log.Printf("[ERROR] Received error while booting provider: %v", err)
 		return err
 	}
 
+	log.Printf("[DEBUG] Finished creating proxy on port %d", localPort)
 	err = d.Set("proxy_url", fmt.Sprintf("http://localhost:%d", localPort))
 	if err != nil {
 		return fmt.Errorf("could not set proxy_url: %w", err)
