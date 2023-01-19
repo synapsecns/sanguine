@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	// used to embed markdown.
-	_ "embed"
 	"fmt"
+	executorCmd "github.com/synapsecns/sanguine/agents/agents/executor/cmd"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/urfave/cli/v2"
@@ -13,12 +12,12 @@ import (
 func Start(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
 	app.Name = buildInfo.Name()
-	app.Description = buildInfo.VersionString() + "executor is used to verify and execute cross-chain messages"
+	app.Description = buildInfo.VersionString() + "agents is used to access all Sanguine agents"
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
 
 	// commands
-	app.Commands = cli.Commands{ExecutorInfoCommand, ExecutorRunCommand}
+	app.Commands = cli.Commands{executorCmd.ExecutorInfoCommand, executorCmd.ExecutorRunCommand}
 	shellCommand := commandline.GenerateShellCommand(app.Commands)
 	app.Commands = append(app.Commands, shellCommand)
 	app.Action = shellCommand.Action
