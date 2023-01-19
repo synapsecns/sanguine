@@ -11,7 +11,6 @@ provider "iap" {
 }
 
 data "iap_tunnel_proxy" "tunnel_proxy" {
-  hostname        = "my-hostname"
   zone = "us-west1-a"
   instance = "my-bastion-proxy"
   interface = "nic0"
