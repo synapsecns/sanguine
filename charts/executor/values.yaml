@@ -23,11 +23,6 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-#podAnnotations: {}
-#
-#podSecurityContext: {}
-#  # fsGroup: 2000
-
 securityContext: {}
   # capabilities:
   #   drop:
@@ -83,7 +78,7 @@ runRemote:
     - name: wait-for-omnirpc
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for mysql..."; sleep 1; done;' ]
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for mysql..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: executor-omnirpc
@@ -96,7 +91,7 @@ runRemote:
     - name: wait-for-mysql
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;' ]
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: executor-mysql
@@ -107,7 +102,7 @@ runRemote:
 
 runEmbedded:
   enabled: true
-  args: [ "run", "--config=/config/config.yaml", "--scribe-type=embedded", "--scribe-db=mysql", "--scribe-path=a.b.c"]
+  args: ["run", "--config=/config/config.yaml", "--scribe-type=embedded", "--scribe-db=mysql", "--scribe-path=a.b.c"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -120,7 +115,7 @@ runEmbedded:
     - name: wait-for-omnirpc
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for mysql..."; sleep 1; done;' ]
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for mysql..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: executor-omnirpc
@@ -133,7 +128,7 @@ runEmbedded:
     - name: wait-for-mysql
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;' ]
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: executor-mysql
