@@ -17,11 +17,6 @@ func dataSourceProxyURL() *schema.Resource {
 		Read: dataSourceProxy,
 
 		Schema: map[string]*schema.Schema{
-			// hostname of the bastion host
-			"hostname": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
 			// project of the bastion host
 			"project": {
 				Type:     schema.TypeString,
