@@ -210,6 +210,6 @@ jobs:
         with:
             github_token: ${{ secrets.PUBLISH_TOKEN }}
             # TODO: will change with new org
-            destination_repo: "trajan0x/terraform-provider-iap"
+            destination_repo: 'trajan0x/terraform-provider-iap'
             tag_name: ${{ steps.tag_version.outputs.new_tag }}
-            strip_prefix: "contrib/terraform-provider-iap/"
+            strip_prefix: 'contrib/terraform-provider-iap/'
