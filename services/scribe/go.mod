@@ -49,7 +49,7 @@ require (
 	github.com/vektra/mockery/v2 v2.14.0
 	go.uber.org/atomic v1.10.0
 	golang.org/x/exp v0.0.0-20221012211006-4de253d81b95
-	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
+	golang.org/x/oauth2 v0.4.0
 	golang.org/x/sync v0.1.0
 	google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc
 	google.golang.org/grpc v1.49.0
