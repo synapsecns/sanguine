@@ -34,3 +34,15 @@ checksum:
 # Add a changelog
 changelog:
   sort: asc
+
+dockers:
+  # Docker AMD64
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/agents/agents/executor:latest'
+      - 'ghcr.io/synapsecns/sanguine/agents/agents/executor:{{ .FullCommit }}'
+      - 'ghcr.io/synapsecns/sanguine/agents/agents/executor:{{ .Tag }}'
+    dockerfile: ../docker/executor.Dockerfile
+    ids:
+      - executor
