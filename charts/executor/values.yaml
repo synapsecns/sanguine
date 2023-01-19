@@ -127,3 +127,7 @@ omnirpc:
   enabled: true
   fullnameOverride: executor-omnirpc
   replicaCount: 2
+
+files:
+  config.yaml: |-
+    # Production config example
