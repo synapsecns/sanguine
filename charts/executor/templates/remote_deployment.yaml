@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "executor.fullname" . }}-runRemote
+  name: {{ include "executor.fullname" . }}-remote
   labels:
     {{- include "executor.labels" . | nindent 4 }}
 spec:
