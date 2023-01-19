@@ -70,7 +70,7 @@ resources: {}
 
 runRemote:
   enabled: true
-  args: ["run-remote", "--config=/config/config.yaml", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-port=0", "--scribe-grpc-port=0", "--scribe-url=a.b.c"]
+  args: ["run", "--config=/config/config.yaml", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-port=0", "--scribe-grpc-port=0", "--scribe-url=a.b.c"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -86,7 +86,7 @@ runRemote:
       command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for mysql..."; sleep 1; done;' ]
       env:
         - name: POD_NAME
-          value: scribe-omnirpc
+          value: executor-omnirpc
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -99,12 +99,48 @@ runRemote:
       command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;' ]
       env:
         - name: POD_NAME
-          value: scribe-mysql
+          value: executor-mysql
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
 
+runEmbedded:
+  enabled: true
+  args: [ "run", "--config=/config/config.yaml", "--scribe-type=embedded", "--scribe-db=mysql", "--scribe-path=a.b.c"]
+  podAnnotations: {}
+  nodeSelector: {}
+  podSecurityContext: {}
+  affinity: {}
+  env:
+    - name: GOLOG_LOG_FMT
+      value: "json"
+  tolerations: {}
+  extraInitContainers:
+    - name: wait-for-omnirpc
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for mysql..."; sleep 1; done;' ]
+      env:
+        - name: POD_NAME
+          value: executor-omnirpc
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    # Wait for mysql to show up
+    # this is mostly for testing
+    - name: wait-for-mysql
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;' ]
+      env:
+        - name: POD_NAME
+          value: executor-mysql
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
 
 autoscaling:
   enabled: false
