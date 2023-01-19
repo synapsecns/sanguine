@@ -61,9 +61,9 @@ dockers:
   - goos: linux
     goarch: amd64
     image_templates:
-      - 'ghcr.io/synapsecns/sanguine/agents/agents/executor:latest'
-      - 'ghcr.io/synapsecns/sanguine/agents/agents/executor:{{ .FullCommit }}'
-      - 'ghcr.io/synapsecns/sanguine/agents/agents/executor:{{ .Tag }}'
-    dockerfile: ../docker/executor.Dockerfile
+      - 'ghcr.io/synapsecns/sanguine/agents:latest'
+      - 'ghcr.io/synapsecns/sanguine/agents:{{ .FullCommit }}'
+      - 'ghcr.io/synapsecns/sanguine/agents:{{ .Tag }}'
+    dockerfile: ../docker/agents.Dockerfile
     ids:
-      - executor
+      - agents
