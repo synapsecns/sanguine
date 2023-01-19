@@ -137,19 +137,6 @@ runEmbedded:
             fieldRef:
               fieldPath: metadata.namespace
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
-
 mysql:
   # use a constant here to build a connection to the service
   enabled: true
@@ -164,3 +151,9 @@ mysql:
     # Note: this should be used in production instead of auth.password
     # existingSecret: mysql-password
     rootPassword: MysqlPassword
+
+omnirpc:
+  # this can be remote in production, we just want to use the public rpc servers here
+  enabled: true
+  fullnameOverride: executor-omnirpc
+  replicaCount: 2
