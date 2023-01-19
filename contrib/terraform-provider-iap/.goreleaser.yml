@@ -16,8 +16,9 @@ builds:
     ldflags:
       - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
     goos:
-      - freebsd
-      - windows
+# TODO: re-enable
+#      - freebsd
+#      - windows
       - linux
       - darwin
     goarch:
