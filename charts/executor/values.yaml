@@ -63,7 +63,7 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-runRemote:
+remote:
   enabled: true
   args: ["run", "--config=/config/config.yaml", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-port=0", "--scribe-grpc-port=0", "--scribe-url=a.b.c"]
   replicaCount: 1
