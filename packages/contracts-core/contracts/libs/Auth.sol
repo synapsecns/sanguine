@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ByteString } from "../libs/ByteString.sol";
-import { TypedMemView } from "./TypedMemView.sol";
+import "../libs/ByteString.sol";
 
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 library Auth {
-    using ByteString for bytes29;
+    using ByteString for Signature;
     using TypedMemView for bytes29;
 
     /**
@@ -31,17 +30,16 @@ library Auth {
      * recover to arbitrary addresses for non-hashed data. A safe way to ensure
      * this is by receiving a hash of the original message (which may otherwise
      * be too long), and then calling {toEthSignedMessageHash} on it.
-     * @param _digest           Digest that was signed
-     * @param _signatureView    Memory view over `signer` signature on `_digest`
-     * @return signer           Address that signed the data
+     * @param _digest       Digest that was signed
+     * @param _signature    Memory view over `signer` signature on `_digest`
+     * @return signer       Address that signed the data
      */
-    function recoverSigner(bytes32 _digest, bytes29 _signatureView)
+    function recoverSigner(bytes32 _digest, Signature _signature)
         internal
         pure
         returns (address signer)
     {
-        require(_signatureView.isSignature(), "Not a signature");
-        (bytes32 r, bytes32 s, uint8 v) = _signatureView.toRSV();
+        (bytes32 r, bytes32 s, uint8 v) = _signature.toRSV();
         signer = ECDSA.recover({ hash: _digest, r: r, s: s, v: v });
     }
 }

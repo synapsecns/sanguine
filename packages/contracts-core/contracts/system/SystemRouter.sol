@@ -2,12 +2,11 @@
 pragma solidity 0.8.17;
 
 import "../Version.sol";
+import "../libs/SystemMessage.sol";
+import "../libs/Tips.sol";
 import { BasicClient } from "../client/BasicClient.sol";
 import { LocalDomainContext } from "../context/LocalDomainContext.sol";
-import { ByteString } from "../libs/ByteString.sol";
-import { SystemCall } from "../libs/SystemCall.sol";
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
-import { Tips } from "../libs/Tips.sol";
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
@@ -19,7 +18,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * recipient are deployed on different chains.
  *
  * SystemRouter allows both calls and "multi calls". Multicall performs a series of calls,
- * calling requested recipients one by one, supplying the requested payloads. The whole multicall
+ * calling requested recipients one by one, supplying the requested calldata. The whole multicall
  * will fail, if any of the calls reverts.
  *
  * SystemRouter keeps track of all system contracts deployed on current chain. This enables sending
@@ -59,16 +58,16 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version0_0_1 {
     using Address for address;
     using ByteString for bytes;
-    using SystemCall for bytes;
-    using SystemCall for bytes29;
+    using SystemMessageLib for bytes;
+    using SystemMessageLib for SystemMessage;
 
     /**
-     * @dev System entity initiates a system call with given call payload.
-     *      Entity provides payload = (foo.selector, security arguments, remaining arguments).
+     * @dev System entity initiates a system call with given calldata.
+     *      Entity provides calldata = (foo.selector, security arguments, remaining arguments).
      *      Provided security arguments are overwritten by System Routers with the correct ones.
-     *      Full payload for the performed call on destination chain is:
-     * ============   GIVEN CALL PAYLOAD DATA       ============
-     * 1. Call payload selector
+     *      Full calldata for the performed call on destination chain is:
+     * ============   GIVEN ENTITY DATA             ============
+     * 1. Selector from given calldata.
      * ============   FILLED ON DESTINATION CHAIN   ============
      * 2. Root timestamp is the first security argument filled by SystemRouter:
      * - rootSubmittedAt: time when merkle root used for proving a message
@@ -78,8 +77,8 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
      * 3. (callOrigin, systemCaller) are second and third security arguments filled by SystemRouter:
      * - callOrigin: domain where system call originated
      * - systemCaller: entity that initiated the system call on origin chain
-     * ============   GIVEN CALL PAYLOAD DATA       ============
-     * 4. Call payload remaining arguments
+     * ============   GIVEN ENTITY DATA             ============
+     * 4. Remaining arguments from given calldata.
      *
      * As the result, following call is performed: `recipient.foo(securityArgs, remainingArgs)`
      * - `securityArgs` part is filled collectively by System Routers on origin, destination chains
@@ -111,7 +110,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Call a System Contract on the destination chain with a given data payload.
+     * @notice Call a System Contract on the destination chain with a given calldata.
      * Note: for system calls on the local chain
      * - use `destination = localDomain`
      * - `_optimisticSeconds` value will be ignored
@@ -119,7 +118,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
      * @dev Only System contracts are allowed to call this function.
      * Note: knowledge of recipient address is not required, routing will be done by SystemRouter
      * on the destination chain. Following call will be made on destination chain:
-     * - recipient.call(_data, callOrigin, systemCaller, rootSubmittedAt)
+     * - recipient.call(_callData, callOrigin, systemCaller, rootSubmittedAt)
      * This allows recipient to check:
      * - callOrigin: domain where a system call originated (local domain in this case)
      * - systemCaller: system entity who initiated the call (msg.sender on local chain)
@@ -131,24 +130,23 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
      * @param _destination          Domain of destination chain
      * @param _optimisticSeconds    Optimistic period for the message
      * @param _recipient            System entity to receive the call on destination chain
-     * @param _data                 Data for calling recipient on destination chain
+     * @param _callData             Data for calling recipient on destination chain
      */
     function systemCall(
         uint32 _destination,
         uint32 _optimisticSeconds,
         SystemEntity _recipient,
-        bytes memory _data
+        bytes memory _callData
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
         // To generalize things, a system call is always a multicall.
         // In case of a "single system call", this is a multicall with exactly one call inside.
         SystemEntity[] memory recipients = new SystemEntity[](1);
-        bytes29[] memory callPayloads = new bytes29[](1);
+        CallData[] memory callDataArray = new CallData[](1);
         recipients[0] = _recipient;
-        callPayloads[0] = _data.castToCallPayload();
-        // TODO: check isCallPayload() here?
-        _multiCall(caller, _destination, _optimisticSeconds, recipients, callPayloads);
+        callDataArray[0] = _callData.castToCallData();
+        _multiCall(caller, _destination, _optimisticSeconds, recipients, callDataArray);
     }
 
     /**
@@ -161,18 +159,17 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
         uint32 _destination,
         uint32 _optimisticSeconds,
         SystemEntity[] memory _recipients,
-        bytes[] memory _dataArray
+        bytes[] memory _callDataArray
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
         uint256 amount = _recipients.length;
-        bytes29[] memory callPayloads = new bytes29[](amount);
+        CallData[] memory callDataArray = new CallData[](amount);
         for (uint256 i = 0; i < amount; ++i) {
-            // Assign a memory view for every calldata payload
-            callPayloads[i] = _dataArray[i].castToCallPayload();
-            // TODO: check isCallPayload() here?
+            // Do a cast to a CallData view for every element
+            callDataArray[i] = _callDataArray[i].castToCallData();
         }
-        _multiCall(caller, _destination, _optimisticSeconds, _recipients, callPayloads);
+        _multiCall(caller, _destination, _optimisticSeconds, _recipients, callDataArray);
     }
 
     /**
@@ -185,20 +182,18 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
         uint32 _destination,
         uint32 _optimisticSeconds,
         SystemEntity[] memory _recipients,
-        bytes memory _data
+        bytes memory _callData
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
         uint256 amount = _recipients.length;
-        bytes29[] memory callPayloads = new bytes29[](amount);
-        bytes29 dataView = _data.castToCallPayload();
+        CallData[] memory callDataArray = new CallData[](amount);
+        CallData callData = _callData.castToCallData();
         for (uint256 i = 0; i < amount; ++i) {
-            // `_data` is never modified, all slicing leads to writing in unallocated memory
-            // so we can reuse the same memory view here
-            callPayloads[i] = dataView;
-            // TODO: check isCallPayload() here?
+            // `_callData` is never modified, so we can reuse the same memory view here
+            callDataArray[i] = callData;
         }
-        _multiCall(caller, _destination, _optimisticSeconds, _recipients, callPayloads);
+        _multiCall(caller, _destination, _optimisticSeconds, _recipients, callDataArray);
     }
 
     /**
@@ -211,21 +206,20 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
         uint32 _destination,
         uint32 _optimisticSeconds,
         SystemEntity _recipient,
-        bytes[] memory _dataArray
+        bytes[] memory _callDataArray
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
-        uint256 amount = _dataArray.length;
-        bytes29[] memory callPayloads = new bytes29[](amount);
+        uint256 amount = _callDataArray.length;
+        CallData[] memory callDataArray = new CallData[](amount);
         SystemEntity[] memory recipients = new SystemEntity[](amount);
         for (uint256 i = 0; i < amount; ++i) {
             // Every call recipient is the same
             recipients[i] = _recipient;
-            // Assign a memory view for every calldata payload
-            callPayloads[i] = _dataArray[i].castToCallPayload();
-            // TODO: check isCallPayload() here?
+            // Do a cast to a CallData view for every element
+            callDataArray[i] = _callDataArray[i].castToCallData();
         }
-        _multiCall(caller, _destination, _optimisticSeconds, recipients, callPayloads);
+        _multiCall(caller, _destination, _optimisticSeconds, recipients, callDataArray);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -246,7 +240,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
          * Destination is supposed to reject messages
          * from unknown chains, so we can skip origin check here.
          */
-        return SystemCall.SYSTEM_ROUTER;
+        return SystemMessageLib.SYSTEM_ROUTER;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -270,20 +264,18 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
         // Received a message containing a remote system call, use the corresponding prefix
         bytes29 prefix = _prefixReceiveCall(_rootSubmittedAt).castToRawBytes();
         for (uint256 i = 0; i < amount; ++i) {
-            bytes29 _view = systemMessages[i].castToSystemCall();
-            // Check that payload in a properly formatted system call
-            require(_view.isSystemCall(), "Not a system call");
+            SystemMessage _systemMessage = systemMessages[i].castToSystemMessage();
             // Route the system call to specified recipient
-            _localSystemCall(_view.callRecipient(), _view.callPayload(), prefix);
+            _localSystemCall(_systemMessage.callRecipient(), _systemMessage.callData(), prefix);
         }
     }
 
     /**
      * @notice Routes a system call to a local System Contract, using provided
-     * call payload, and abi-encoded arguments to add as the prefix.
+     * calldata, and abi-encoded arguments to add as the prefix.
      * @dev Suppose following values were passed:
      * - recipient: System Contract to call
-     * - callPayload = abi.encodeWithSelector(foo.selector, a, b, c, d, e, f);
+     * - callData = abi.encodeWithSelector(foo.selector, a, b, c, d, e, f);
      * - prefix = abi.encode(x, y, z)
      * - (a, b, c) types match (x, y, z) types, and they are all static
      * Following call will be performed:
@@ -291,7 +283,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
      */
     function _localSystemCall(
         uint8 _recipient,
-        bytes29 _callPayload,
+        CallData _callData,
         bytes29 _prefix
     ) internal {
         // We adjust the first arguments for the call using the given `_prefix`.
@@ -305,28 +297,28 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
         address recipient = _getSystemAddress(_recipient);
         require(recipient != address(0), "System Contract not set");
         // recipient.functionCall() calls recipient and bubbles the revert from the external call
-        recipient.functionCall(SystemCall.formatAdjustedCallPayload(_callPayload, _prefix));
+        recipient.functionCall(SystemMessageLib.formatAdjustedCallData(_callData, _prefix));
     }
 
     /**
      * @notice Performs the "sending part" of a remote system multicall.
      * @param _destination          Destination domain where system multicall will be performed
      * @param _optimisticSeconds    Optimistic period for the executing the system multicall
-     * @param _systemCalls          List of system calls to perform on destination chain
+     * @param _systemMessages       List of system messages to execute on destination chain
      */
     function _remoteSystemCall(
         uint32 _destination,
         uint32 _optimisticSeconds,
-        bytes[] memory _systemCalls
+        bytes[] memory _systemMessages
     ) internal {
         // TODO: use TypedMemView for encoding/decoding instead
         // Serialize the series of system calls into a byte string
-        bytes memory message = abi.encode(_systemCalls);
+        bytes memory message = abi.encode(_systemMessages);
         /**
          * @dev Origin will use SYSTEM_ROUTER as "sender" field for messages
          * sent by System Router.
          */
-        _send(_destination, _optimisticSeconds, Tips.emptyTips(), message);
+        _send(_destination, _optimisticSeconds, TipsLib.emptyTips(), message);
     }
 
     /**
@@ -336,14 +328,14 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
      * @param _destination          Destination domain where system multicall will be performed
      * @param _optimisticSeconds    Optimistic period for the executing the system multicall
      * @param _recipients           List of system entities to route the system call to
-     * @param _callPayloads         List of memory views over call payloads
+     * @param _callDataArray        List of memory views over calldata
      */
     function _multiCall(
         SystemEntity _caller,
         uint32 _destination,
         uint32 _optimisticSeconds,
         SystemEntity[] memory _recipients,
-        bytes29[] memory _callPayloads
+        CallData[] memory _callDataArray
     ) internal {
         uint256 amount = _recipients.length;
         // Performing a system call on origin chain,
@@ -352,19 +344,19 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
         if (_destination == _localDomain()) {
             // Performing a local system multicall
             for (uint256 i = 0; i < amount; ++i) {
-                _localSystemCall(uint8(_recipients[i]), _callPayloads[i], prefix);
+                _localSystemCall(uint8(_recipients[i]), _callDataArray[i], prefix);
             }
         } else {
             // Performing a remote system multicall
-            bytes[] memory systemCalls = new bytes[](amount);
+            bytes[] memory systemMessages = new bytes[](amount);
             for (uint256 i = 0; i < amount; ++i) {
-                systemCalls[i] = SystemCall.formatSystemCall({
+                systemMessages[i] = SystemMessageLib.formatSystemMessage({
                     _systemRecipient: uint8(_recipients[i]),
-                    _payload: _callPayloads[i],
+                    _callData: _callDataArray[i],
                     _prefix: prefix
                 });
             }
-            _remoteSystemCall(_destination, _optimisticSeconds, systemCalls);
+            _remoteSystemCall(_destination, _optimisticSeconds, systemMessages);
         }
     }
 

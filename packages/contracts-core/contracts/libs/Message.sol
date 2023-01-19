@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { TypedMemView } from "./TypedMemView.sol";
+import "./Header.sol";
+import "./Tips.sol";
 
-import { Header } from "./Header.sol";
-import { Tips } from "./Tips.sol";
-import { SynapseTypes } from "./SynapseTypes.sol";
+/// @dev Message is a memory over over a formatted message payload.
+type Message is bytes29;
 
 /**
  * @notice  Library for versioned formatting the messages used by Origin and Destination.
  */
-library Message {
-    using Header for bytes29;
-    using Tips for bytes29;
-    using TypedMemView for bytes;
+library MessageLib {
+    using HeaderLib for bytes29;
+    using TipsLib for bytes29;
+    using ByteString for bytes;
     using TypedMemView for bytes29;
 
     enum Parts {
@@ -48,24 +48,8 @@ library Message {
     uint16 internal constant OFFSET_HEADER = TWO_BYTES * uint8(type(Parts).max);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    modifier onlyMessage(bytes29 _view) {
-        _view.assertType(SynapseTypes.MESSAGE);
-        _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              FORMATTERS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Returns a properly typed bytes29 pointer for a message payload.
-     */
-    function castToMessage(bytes memory _payload) internal pure returns (bytes29) {
-        return _payload.ref(SynapseTypes.MESSAGE);
-    }
 
     /**
      * @notice Returns formatted message with provided fields
@@ -115,7 +99,7 @@ library Message {
     ) internal pure returns (bytes memory) {
         return
             formatMessage(
-                Header.formatHeader(
+                HeaderLib.formatHeader(
                     _origin,
                     _sender,
                     _nonce,
@@ -129,6 +113,23 @@ library Message {
     }
 
     /**
+     * @notice Returns a Message view over for the given payload.
+     * @dev Will revert if the payload is not a message payload.
+     */
+    function castToMessage(bytes memory _payload) internal pure returns (Message) {
+        return castToMessage(_payload.castToRawBytes());
+    }
+
+    /**
+     * @notice Casts a memory view to a Message view.
+     * @dev Will revert if the memory view is not over a message payload.
+     */
+    function castToMessage(bytes29 _view) internal pure returns (Message) {
+        require(isMessage(_view), "Not a message payload");
+        return Message.wrap(_view);
+    }
+
+    /**
      * @notice Checks that a payload is a formatted Message.
      */
     function isMessage(bytes29 _view) internal pure returns (bool) {
@@ -136,33 +137,23 @@ library Message {
         // Check if version and lengths exist in the payload
         if (length < OFFSET_HEADER) return false;
         // Check message version
-        if (messageVersion(_view) != MESSAGE_VERSION) return false;
+        if (_getVersion(_view) != MESSAGE_VERSION) return false;
 
-        uint256 headerLength = _loadLength(_view, Parts.Header);
-        uint256 tipsLength = _loadLength(_view, Parts.Tips);
+        uint256 headerLength = _getLen(_view, Parts.Header);
+        uint256 tipsLength = _getLen(_view, Parts.Tips);
         // Header and Tips need to exist
         // Body could be empty, thus >
         if (OFFSET_HEADER + headerLength + tipsLength > length) return false;
 
         // Check header for being a formatted header payload
         // Check tips for being a formatted tips payload
-        if (!header(_view).isHeader() || !tips(_view).isTips()) return false;
+        if (!_getHeader(_view).isHeader() || !_getTips(_view).isTips()) return false;
         return true;
     }
 
-    /**
-     * @notice Returns leaf of formatted message with provided fields.
-     * @param _header       Formatted header payload
-     * @param _tips         Formatted tips payload
-     * @param _messageBody  Raw bytes of message body
-     * @return Leaf (hash) of formatted message
-     **/
-    function messageHash(
-        bytes memory _header,
-        bytes memory _tips,
-        bytes memory _messageBody
-    ) internal pure returns (bytes32) {
-        return keccak256(formatMessage(_header, _tips, _messageBody));
+    /// @notice Convenience shortcut for unwrapping a view.
+    function unwrap(Message _msg) internal pure returns (bytes29) {
+        return Message.unwrap(_msg);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -170,41 +161,66 @@ library Message {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns message's version field.
-    function messageVersion(bytes29 _view) internal pure onlyMessage(_view) returns (uint16) {
+    function version(Message _msg) internal pure returns (uint16) {
+        // Get the underlying memory view
+        bytes29 _view = unwrap(_msg);
+        return _getVersion(_view);
+    }
+
+    /// @notice Returns message's header field as a Header view.
+    function header(Message _msg) internal pure returns (Header) {
+        bytes29 _view = unwrap(_msg);
+        return _getHeader(_view).castToHeader();
+    }
+
+    /// @notice Returns message's tips field as a Tips view.
+    function tips(Message _msg) internal pure returns (Tips) {
+        bytes29 _view = unwrap(_msg);
+        return _getTips(_view).castToTips();
+    }
+
+    /// @notice Returns message's body field as a generic memory view.
+    function body(Message _msg) internal pure returns (bytes29) {
+        bytes29 _view = unwrap(_msg);
+        // Determine index where message body payload starts
+        uint256 index = OFFSET_HEADER + _getLen(_view, Parts.Header) + _getLen(_view, Parts.Tips);
+        return _view.sliceFrom({ _index: index, newType: 0 });
+    }
+
+    /// @notice Returns message's hash: a leaf to be inserted in the Merkle tree.
+    function leaf(Message _msg) internal pure returns (bytes32) {
+        bytes29 _view = unwrap(_msg);
+        return _view.keccak();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           PRIVATE HELPERS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Returns length for a given part of the message
+    /// without checking if the payload is properly formatted.
+    function _getLen(bytes29 _view, Parts _part) private pure returns (uint256) {
+        return _view.indexUint(uint256(_part) * TWO_BYTES, TWO_BYTES);
+    }
+
+    /// @dev Returns a version field without checking if the payload is properly formatted.
+    function _getVersion(bytes29 _view) private pure returns (uint16) {
         return uint16(_view.indexUint(OFFSET_VERSION, 2));
     }
 
-    /// @notice Returns message's header field as bytes29 pointer.
-    function header(bytes29 _view) internal pure onlyMessage(_view) returns (bytes29) {
-        return
-            _view.slice(
-                OFFSET_HEADER,
-                _loadLength(_view, Parts.Header),
-                SynapseTypes.MESSAGE_HEADER
-            );
+    /// @dev Returns a generic memory view over the header field without checking
+    /// if the whole payload or the header are properly formatted.
+    function _getHeader(bytes29 _view) private pure returns (bytes29) {
+        uint256 length = _getLen(_view, Parts.Header);
+        return _view.slice({ _index: OFFSET_HEADER, _len: length, newType: 0 });
     }
 
-    /// @notice Returns message's tips field as bytes29 pointer.
-    function tips(bytes29 _view) internal pure onlyMessage(_view) returns (bytes29) {
-        return
-            _view.slice(
-                OFFSET_HEADER + _loadLength(_view, Parts.Header),
-                _loadLength(_view, Parts.Tips),
-                SynapseTypes.MESSAGE_TIPS
-            );
-    }
-
-    /// @notice Returns message's body field as bytes29 pointer.
-    function body(bytes29 _view) internal pure onlyMessage(_view) returns (bytes29) {
-        return
-            _view.sliceFrom(
-                OFFSET_HEADER + _loadLength(_view, Parts.Header) + _loadLength(_view, Parts.Tips),
-                SynapseTypes.RAW_BYTES
-            );
-    }
-
-    /// @notice Loads length for a given part of the message
-    function _loadLength(bytes29 _view, Parts _part) private pure returns (uint256) {
-        return _view.indexUint(uint256(_part) * TWO_BYTES, TWO_BYTES);
+    /// @dev Returns a generic memory view over the tips field without checking
+    /// if the whole payload or the tips are properly formatted.
+    function _getTips(bytes29 _view) private pure returns (bytes29) {
+        // Determine index where tips payload starts
+        uint256 indexFrom = OFFSET_HEADER + _getLen(_view, Parts.Header);
+        uint256 length = _getLen(_view, Parts.Tips);
+        return _view.slice({ _index: indexFrom, _len: length, newType: 0 });
     }
 }

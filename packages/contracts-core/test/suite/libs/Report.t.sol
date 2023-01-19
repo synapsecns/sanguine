@@ -178,6 +178,6 @@ contract ReportLibraryTest is SynapseLibraryTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function createTestPayload() public pure returns (bytes memory) {
-        return new bytes(Report.REPORT_LENGTH);
+        return new bytes(ReportLib.REPORT_LENGTH);
     }
 }

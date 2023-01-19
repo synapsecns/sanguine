@@ -39,8 +39,8 @@ contract MessageLibraryTest is SynapseLibraryTest {
         uint32 optimisticSeconds
     ) public {
         // Construct message parts: this has been tested in the dedicated unit tests
-        bytes memory tips = Tips.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
-        bytes memory header = Header.formatHeader(
+        bytes memory tips = TipsLib.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
+        bytes memory header = HeaderLib.formatHeader(
             origin,
             sender,
             nonce,
@@ -62,7 +62,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
         // Test formatter against manually constructed payload
         assertEq(
             message,
-            constructPayload(Message.MESSAGE_VERSION, header, tips),
+            constructPayload(MessageLib.MESSAGE_VERSION, header, tips),
             "!formatMessage"
         );
         // All formatters should return the same results
@@ -72,190 +72,107 @@ contract MessageLibraryTest is SynapseLibraryTest {
             "!formatMessage: 3 args variant"
         );
         // Test formatting checker
-        assertTrue(libHarness.isMessage(message), "!isMessage");
+        checkCastToMessage({ payload: message, isMessage: true });
         // Test getters (most getters are tested in Header, Tips tests)
-        assertEq(
-            libHarness.messageVersion(SynapseTypes.MESSAGE, message),
-            Message.MESSAGE_VERSION,
-            "!messageVersion"
-        );
-        assertEq(
-            libHarness.messageHash(header, tips, TEST_MESSAGE_BODY),
-            keccak256(message),
-            "!messageHash"
-        );
-        // Test bytes29 getters
-        checkBytes29Getter({
-            getter: libHarness.castToMessage,
-            payloadType: SynapseTypes.MESSAGE,
-            payload: message,
-            expectedType: SynapseTypes.MESSAGE,
-            expectedData: message,
-            revertMessage: "!castToMessage"
-        });
-        checkBytes29Getter({
-            getter: libHarness.header,
-            payloadType: SynapseTypes.MESSAGE,
-            payload: message,
-            expectedType: SynapseTypes.MESSAGE_HEADER,
-            expectedData: header,
-            revertMessage: "!header"
-        });
-        checkBytes29Getter({
-            getter: libHarness.tips,
-            payloadType: SynapseTypes.MESSAGE,
-            payload: message,
-            expectedType: SynapseTypes.MESSAGE_TIPS,
-            expectedData: tips,
-            revertMessage: "!tips"
-        });
-        checkBytes29Getter({
-            getter: libHarness.body,
-            payloadType: SynapseTypes.MESSAGE,
-            payload: message,
-            expectedType: SynapseTypes.RAW_BYTES,
-            expectedData: TEST_MESSAGE_BODY,
-            revertMessage: "!body"
-        });
+        assertEq(libHarness.version(message), MessageLib.MESSAGE_VERSION, "!messageVersion");
+        assertEq(libHarness.header(message), header, "!header");
+        assertEq(libHarness.tips(message), tips, "!tips");
+        assertEq(libHarness.body(message), TEST_MESSAGE_BODY, "!body");
+        assertEq(libHarness.leaf(message), keccak256(message), "!leaf");
     }
 
     function test_isMessage_firstElementIncomplete(uint8 payloadLength, bytes32 data) public {
         // Payload having less bytes than Message's first element (uint16 messageVersion)
         // should be correctly treated as unformatted (i.e. with no reverts)
-        assertFalse(
-            libHarness.isMessage(createShortPayload(payloadLength, FIRST_ELEMENT_BYTES, data)),
-            "!isHeader: short payload"
-        );
+        bytes memory payload = createShortPayload(payloadLength, FIRST_ELEMENT_BYTES, data);
+        checkCastToMessage({ payload: payload, isMessage: false });
     }
 
     function test_isMessage_wrongMessageVersion(uint16 messageVersion) public {
         // Wrong message version value means payload is not a formatted Message
-        vm.assume(messageVersion != Message.MESSAGE_VERSION);
-        assertFalse(
-            libHarness.isMessage(
-                constructPayload(messageVersion, createTestHeader(), createTestTips())
-            ),
-            "!isMessage: wrong version"
+        vm.assume(messageVersion != MessageLib.MESSAGE_VERSION);
+        bytes memory payload = constructPayload(
+            messageVersion,
+            createTestHeader(),
+            createTestTips()
         );
+        checkCastToMessage({ payload: payload, isMessage: false });
     }
 
     function test_isMessage_emptyBody() public {
         // A formatted Message could have an empty body
-        assertTrue(
-            libHarness.isMessage(
-                libHarness.formatMessage(createTestHeader(), createTestTips(), "")
-            ),
-            "!isMessage: empty body"
-        );
+        bytes memory payload = libHarness.formatMessage(createTestHeader(), createTestTips(), "");
+        checkCastToMessage({ payload: payload, isMessage: true });
     }
 
     function test_isMessage_emptyEverything() public {
         // Empty header or tips means payload is not a formatted Message
         // empty header and tips
-        assertFalse(
-            libHarness.isMessage(libHarness.formatMessage("", "", "")),
-            "!isMessage: header,tips,body empty"
-        );
-        assertFalse(
-            libHarness.isMessage(libHarness.formatMessage("", "", TEST_MESSAGE_BODY)),
-            "!isMessage: header,tips empty"
-        );
+        bytes memory payload = libHarness.formatMessage("", "", "");
+        checkCastToMessage({ payload: payload, isMessage: false });
+        payload = libHarness.formatMessage("", "", TEST_MESSAGE_BODY);
+        checkCastToMessage({ payload: payload, isMessage: false });
         // empty header
-        assertFalse(
-            libHarness.isMessage(libHarness.formatMessage("", createTestTips(), "")),
-            "!isMessage: header,body empty"
-        );
-        assertFalse(
-            libHarness.isMessage(libHarness.formatMessage("", createTestTips(), TEST_MESSAGE_BODY)),
-            "!isMessage: header empty"
-        );
+        payload = libHarness.formatMessage("", createTestTips(), "");
+        checkCastToMessage({ payload: payload, isMessage: false });
+        payload = libHarness.formatMessage("", createTestTips(), TEST_MESSAGE_BODY);
+        checkCastToMessage({ payload: payload, isMessage: false });
         // empty tips
-        assertFalse(
-            libHarness.isMessage(libHarness.formatMessage(createTestHeader(), "", "")),
-            "!isMessage: tips,body empty"
-        );
-        assertFalse(
-            libHarness.isMessage(
-                libHarness.formatMessage(createTestHeader(), "", TEST_MESSAGE_BODY)
-            ),
-            "!isMessage: tips empty"
-        );
+        payload = libHarness.formatMessage(createTestHeader(), "", "");
+        checkCastToMessage({ payload: payload, isMessage: false });
+        payload = libHarness.formatMessage(createTestHeader(), "", TEST_MESSAGE_BODY);
+        checkCastToMessage({ payload: payload, isMessage: false });
     }
 
     function test_isMessage_incorrectLengths() public {
-        uint16 version = Message.MESSAGE_VERSION;
+        uint16 version = MessageLib.MESSAGE_VERSION;
         bytes memory header = createTestHeader();
         bytes memory tips = createTestTips();
         // With an empty body, specifying a longer length leads
         // to a memory view overrun. Should be treated without a revert/panic.
-        assertFalse(
-            libHarness.isMessage(
-                abi.encodePacked(
-                    version,
-                    uint16(header.length + 1),
-                    uint16(tips.length),
-                    header,
-                    tips
-                )
-            ),
-            "!isMessage: bad header length"
+        bytes memory payload = abi.encodePacked(
+            version,
+            uint16(header.length + 1),
+            uint16(tips.length),
+            header,
+            tips
         );
-        assertFalse(
-            libHarness.isMessage(
-                abi.encodePacked(
-                    version,
-                    uint16(header.length),
-                    uint16(tips.length + 1),
-                    header,
-                    tips
-                )
-            ),
-            "!isMessage: bad tips length"
+        checkCastToMessage({ payload: payload, isMessage: false });
+        payload = abi.encodePacked(
+            version,
+            uint16(header.length),
+            uint16(tips.length + 1),
+            header,
+            tips
         );
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          TESTS: WRONG TYPE                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_wrongTypeRevert_messageVersion(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
-        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.MESSAGE });
-        libHarness.messageVersion(wrongType, payload);
-    }
-
-    function test_wrongTypeRevert_header(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
-        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.MESSAGE });
-        libHarness.header(wrongType, payload);
-    }
-
-    function test_wrongTypeRevert_tips(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
-        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.MESSAGE });
-        libHarness.tips(wrongType, payload);
-    }
-
-    function test_wrongTypeRevert_body(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
-        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.MESSAGE });
-        libHarness.body(wrongType, payload);
+        checkCastToMessage({ payload: payload, isMessage: false });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               HELPERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    function checkCastToMessage(bytes memory payload, bool isMessage) public {
+        if (isMessage) {
+            assertTrue(libHarness.isMessage(payload), "!isMessage: when valid");
+            assertEq(libHarness.castToMessage(payload), payload, "!castToMessage: when valid");
+        } else {
+            assertFalse(libHarness.isMessage(payload), "!isMessage: when valid");
+            vm.expectRevert("Not a message payload");
+            libHarness.castToMessage(payload);
+        }
+    }
+
     function createTestPayload() public view returns (bytes memory) {
         return libHarness.formatMessage(createTestHeader(), createTestTips(), TEST_MESSAGE_BODY);
     }
 
     function createTestHeader() public pure returns (bytes memory) {
-        return Header.formatHeader(0, bytes32(0), 0, 0, bytes32(0), 0);
+        return HeaderLib.formatHeader(0, bytes32(0), 0, 0, bytes32(0), 0);
     }
 
     function createTestTips() public pure returns (bytes memory) {
-        return Tips.emptyTips();
+        return TipsLib.emptyTips();
     }
 
     function constructPayload(

@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { TypedMemView } from "./TypedMemView.sol";
-import { ByteString } from "./ByteString.sol";
-import { Attestation } from "./Attestation.sol";
-import { SynapseTypes } from "./SynapseTypes.sol";
+import "./Attestation.sol";
+
+/// @dev Report is a memory view over a formatted report payload.
+type Report is bytes29;
+/// @dev ReportData is a memory view over a formatted report data.
+type ReportData is bytes29;
 
 /**
  * @notice Library for formatting the Guard Reports.
@@ -18,10 +20,11 @@ import { SynapseTypes } from "./SynapseTypes.sol";
  * - Reported Attestation (Attestation data and Notary signature on that data).
  * - Guard signature on Report data.
  */
-library Report {
-    using Attestation for bytes;
-    using Attestation for bytes29;
-    using TypedMemView for bytes;
+library ReportLib {
+    using AttestationLib for bytes;
+    using AttestationLib for Attestation;
+    using AttestationLib for AttestationData;
+    using ByteString for bytes;
     using TypedMemView for bytes29;
 
     /**
@@ -38,6 +41,7 @@ library Report {
         Fraud
     }
 
+    // TODO: revisit once Report structure is finalized
     /**
      * @dev ReportData memory layout
      * [000 .. 001): flag           uint8    1 bytes
@@ -74,33 +78,24 @@ library Report {
     uint256 internal constant REPORT_LENGTH = REPORT_DATA_LENGTH + 2 * 65;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    modifier onlyReport(bytes29 _view) {
-        _view.assertType(SynapseTypes.REPORT);
-        _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       FORMATTERS: REPORT DATA                        ║*▕
+    ▏*║                             REPORT DATA                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Returns formatted report data with provided fields
      * @param _flag         Flag indicating whether attestation is fraudulent
-     * @param _attestation  Formatted attestation (see Attestation.sol)
+     * @param _attPayload   Formatted attestation (see Attestation.sol)
      * @return Formatted report data
      **/
-    function formatReportData(Flag _flag, bytes memory _attestation)
+    function formatReportData(Flag _flag, bytes memory _attPayload)
         internal
         view
         returns (bytes memory)
     {
         // Extract attestation data from payload
-        bytes memory attestationData = _attestation.castToAttestation().attestationData().clone();
+        AttestationData attData = _attPayload.castToAttestation().data();
         // Construct report data
-        return abi.encodePacked(uint8(_flag), attestationData);
+        return abi.encodePacked(uint8(_flag), attData.unwrap().clone());
     }
 
     /**
@@ -129,30 +124,50 @@ library Report {
         return formatReportData(Flag.Fraud, _fraudAttestation);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          FORMATTERS: REPORT                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    /**
+     * @notice Returns a ReportData view over the given payload.
+     * @dev Will revert if the payload is not a report data.
+     */
+    function castToReportData(bytes memory _payload) internal pure returns (ReportData) {
+        return castToReportData(_payload.castToRawBytes());
+    }
 
     /**
-     * @notice Returns a properly typed bytes29 pointer for a report payload.
+     * @notice Casts a memory view to a ReportData view.
+     * @dev Will revert if the memory view is not over a report data.
      */
-    function castToReport(bytes memory _payload) internal pure returns (bytes29) {
-        return _payload.ref(SynapseTypes.REPORT);
+    function castToReportData(bytes29 _view) internal pure returns (ReportData) {
+        require(isReportData(_view), "Not a report data");
+        return ReportData.wrap(_view);
     }
+
+    /// @notice Checks that a payload is a formatted Attestation Data.
+    function isReportData(bytes29 _view) internal pure returns (bool) {
+        return _view.len() == REPORT_DATA_LENGTH;
+    }
+
+    /// @notice Convenience shortcut for unwrapping a view.
+    function unwrap(ReportData _data) internal pure returns (bytes29) {
+        return ReportData.unwrap(_data);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                REPORT                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Returns formatted report payload with provided fields.
      * @param _flag         Flag indicating whether attestation is fraudulent
-     * @param _attestation  Formatted attestation (see Attestation.sol)
+     * @param _attPayload   Formatted attestation (see Attestation.sol)
      * @param _guardSig     Guard signature on reportData (see formatReportData below)
      * @return Formatted report
      **/
     function formatReport(
         Flag _flag,
-        bytes memory _attestation,
+        bytes memory _attPayload,
         bytes memory _guardSig
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(uint8(_flag), _attestation, _guardSig);
+        return abi.encodePacked(uint8(_flag), _attPayload, _guardSig);
     }
 
     /**
@@ -184,66 +199,49 @@ library Report {
     }
 
     /**
+     * @notice Returns a Report view over the given payload.
+     * @dev Will revert if the payload is not a report.
+     */
+    function castToReport(bytes memory _payload) internal pure returns (Report) {
+        return castToReport(_payload.castToRawBytes());
+    }
+
+    /**
+     * @notice Casts a memory view to a Report view.
+     * @dev Will revert if the memory view is not over a report.
+     */
+    function castToReport(bytes29 _view) internal pure returns (Report) {
+        require(isReport(_view), "Not a report data");
+        return Report.wrap(_view);
+    }
+
+    /**
      * @notice Checks that a payload is a formatted Report payload.
      */
     function isReport(bytes29 _view) internal pure returns (bool) {
-        uint256 length = _view.len();
-        // Report should be the correct length
-        if (length != REPORT_LENGTH) return false;
-        // Flag needs to match an existing enum value
-        if (_flagIntValue(_view) > uint8(type(Flag).max)) return false;
-        // Attestation needs to be formatted as well
-        return reportedAttestation(_view).isAttestation();
+        // TODO: revisit once Report structure is finalized
+    }
+
+    /// @notice Convenience shortcut for unwrapping a view.
+    function unwrap(Report _data) internal pure returns (bytes29) {
+        return Report.unwrap(_data);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            REPORT SLICING                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Returns whether Report's Flag is Fraud (indicating fraudulent attestation).
-     */
-    function reportedFraud(bytes29 _view) internal pure onlyReport(_view) returns (bool) {
-        return _flagIntValue(_view) != uint8(Flag.Valid);
-    }
-
-    /**
-     * @notice Returns Report's Attestation (which is supposed to be signed by the Notary already).
-     */
-    function reportedAttestation(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
-        // return
-        //     _view.slice({
-        //         _index: OFFSET_ATTESTATION,
-        //         _len: Attestation.ATTESTATION_LENGTH,
-        //         newType: SynapseTypes.ATTESTATION
-        //     });
-    }
+    // TODO: revisit once Report structure is finalized
 
     /**
      * @notice Returns Report's Data, that is going to be signed by the Guard.
      */
-    function reportData(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
-        // reportData starts from Flag
-        return
-            _view.slice({
-                _index: OFFSET_FLAG,
-                _len: REPORT_DATA_LENGTH,
-                newType: SynapseTypes.REPORT_DATA
-            });
-    }
+    function reportData(bytes29 _view) internal pure returns (ReportData) {}
 
     /**
      * @notice Returns Guard's signature on ReportData.
      */
-    function guardSignature(bytes29 _view) internal pure onlyReport(_view) returns (bytes29) {
-        // uint256 offsetSignature = OFFSET_ATTESTATION + Attestation.ATTESTATION_LENGTH;
-        // return
-        //     _view.slice({
-        //         _index: offsetSignature,
-        //         _len: ByteString.SIGNATURE_LENGTH,
-        //         newType: SynapseTypes.SIGNATURE
-        //     });
-    }
+    function guardSignature(bytes29 _view) internal pure returns (Signature) {}
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          PRIVATE FUNCTIONS                           ║*▕

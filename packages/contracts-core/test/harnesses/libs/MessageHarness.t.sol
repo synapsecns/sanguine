@@ -2,17 +2,17 @@
 
 pragma solidity 0.8.17;
 
-import { Message } from "../../../contracts/libs/Message.sol";
-import { Header } from "../../../contracts/libs/Header.sol";
-import { Tips } from "../../../contracts/libs/Tips.sol";
-import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
+import "../../../contracts/libs/Message.sol";
 
 /**
  * @notice Exposes Message methods for testing against golang.
  */
 contract MessageHarness {
-    using Message for bytes;
-    using Message for bytes29;
+    using HeaderLib for Header;
+    using TipsLib for Tips;
+    using MessageLib for bytes;
+    using MessageLib for bytes29;
+    using MessageLib for Message;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
@@ -20,55 +20,35 @@ contract MessageHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToMessage(uint40, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
+    function castToMessage(bytes memory _payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        bytes29 _view = Message.castToMessage(_payload);
-        return (_view.typeOf(), _view.clone());
+        Message _msg = MessageLib.castToMessage(_payload);
+        return _msg.unwrap().clone();
     }
 
-    /// @notice Returns message's header field as bytes29 pointer.
-    function header(uint40 _type, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
-        bytes29 _view = _payload.ref(_type).header();
-        return (_view.typeOf(), _view.clone());
+    function header(bytes memory _payload) public view returns (bytes memory) {
+        return _payload.castToMessage().header().unwrap().clone();
     }
 
-    /// @notice Returns message's tips field as bytes29 pointer.
-    function tips(uint40 _type, bytes memory _payload) public view returns (uint40, bytes memory) {
-        bytes29 _view = _payload.ref(_type).tips();
-        return (_view.typeOf(), _view.clone());
+    function tips(bytes memory _payload) public view returns (bytes memory) {
+        return _payload.castToMessage().tips().unwrap().clone();
     }
 
-    /// @notice Returns message's body field as bytes29 pointer.
-    function body(uint40 _type, bytes memory _payload) public view returns (uint40, bytes memory) {
-        bytes29 _view = _payload.ref(_type).body();
-        return (_view.typeOf(), _view.clone());
+    function body(bytes memory _payload) public view returns (bytes memory) {
+        return _payload.castToMessage().body().clone();
     }
 
-    /// @notice Returns message's version field.
-    function messageVersion(uint40 _type, bytes memory _payload) public pure returns (uint16) {
-        return _payload.ref(_type).messageVersion();
+    function version(bytes memory _payload) public pure returns (uint16) {
+        return _payload.castToMessage().version();
     }
 
-    // TODO: Do we need this function in the library? Literally never used.
-    function messageHash(
-        bytes memory _header,
-        bytes memory _tips,
-        bytes memory _messageBody
-    ) public pure returns (bytes32) {
-        return Message.messageHash(_header, _tips, _messageBody);
+    function leaf(bytes memory _payload) public pure returns (bytes32) {
+        return _payload.castToMessage().leaf();
     }
 
     function isMessage(bytes memory _payload) public pure returns (bool) {
-        return _payload.castToMessage().isMessage();
+        return _payload.ref(0).isMessage();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -89,9 +69,14 @@ contract MessageHarness {
         uint96 _executorTip,
         bytes memory _messageBody
     ) public pure returns (bytes memory) {
-        bytes memory _tips = Tips.formatTips(_notaryTip, _broadcasterTip, _proverTip, _executorTip);
+        bytes memory _tips = TipsLib.formatTips(
+            _notaryTip,
+            _broadcasterTip,
+            _proverTip,
+            _executorTip
+        );
 
-        bytes memory _header = Header.formatHeader(
+        bytes memory _header = HeaderLib.formatHeader(
             _origin,
             _sender,
             _nonce,
@@ -113,7 +98,7 @@ contract MessageHarness {
         bytes memory _messageBody
     ) public pure returns (bytes memory) {
         return
-            Message.formatMessage(
+            MessageLib.formatMessage(
                 _origin,
                 _sender,
                 _nonce,
@@ -130,7 +115,7 @@ contract MessageHarness {
         bytes memory _tips,
         bytes memory _messageBody
     ) public pure returns (bytes memory) {
-        return Message.formatMessage(_header, _tips, _messageBody);
+        return MessageLib.formatMessage(_header, _tips, _messageBody);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -138,14 +123,14 @@ contract MessageHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function messageVersion() public pure returns (uint16) {
-        return Message.MESSAGE_VERSION;
+        return MessageLib.MESSAGE_VERSION;
     }
 
     function offsetVersion() public pure returns (uint256) {
-        return Message.OFFSET_VERSION;
+        return MessageLib.OFFSET_VERSION;
     }
 
     function offsetHeader() public pure returns (uint256) {
-        return Message.OFFSET_HEADER;
+        return MessageLib.OFFSET_HEADER;
     }
 }

@@ -2,8 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { ByteString } from "../../../contracts/libs/ByteString.sol";
-import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
+import "../../../contracts/libs/ByteString.sol";
 
 /**
  * @notice Exposes ByteString methods for testing against golang.
@@ -11,6 +10,8 @@ import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
 contract ByteStringHarness {
     using ByteString for bytes;
     using ByteString for bytes29;
+    using ByteString for CallData;
+    using ByteString for Signature;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
@@ -18,54 +19,36 @@ contract ByteStringHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToRawBytes(uint40, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
+    function castToRawBytes(bytes memory _payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
         bytes29 _view = ByteString.castToRawBytes(_payload);
-        return (_view.typeOf(), _view.clone());
+        return _view.clone();
     }
 
-    function castToSignature(uint40, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
-        bytes29 _view = _payload.castToSignature();
-        return (_view.typeOf(), _view.clone());
+    function castToSignature(bytes memory _payload) public view returns (bytes memory) {
+        Signature _sig = _payload.castToSignature();
+        return _sig.unwrap().clone();
     }
 
-    function castToCallPayload(uint40, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
-        bytes29 _view = _payload.castToCallPayload();
-        return (_view.typeOf(), _view.clone());
+    function castToCallData(bytes memory _payload) public view returns (bytes memory) {
+        CallData _callData = _payload.castToCallData();
+        return _callData.unwrap().clone();
     }
 
-    function argumentsPayload(uint40 _type, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
-        bytes29 _view = _payload.ref(_type).argumentsPayload();
-        return (_view.typeOf(), _view.clone());
+    function arguments(bytes memory _payload) public view returns (bytes memory) {
+        return _payload.castToCallData().arguments().clone();
     }
 
-    function callSelector(uint40 _type, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
-        bytes29 _view = _payload.ref(_type).callSelector();
-        return (_view.typeOf(), _view.clone());
+    function callSelector(bytes memory _payload) public view returns (bytes memory) {
+        return _payload.castToCallData().callSelector().clone();
     }
 
-    function toRSV(uint40 _type, bytes memory _payload)
+    function argumentWords(bytes memory _payload) public pure returns (uint256) {
+        return _payload.castToCallData().argumentWords();
+    }
+
+    function toRSV(bytes memory _payload)
         public
         pure
         returns (
@@ -74,11 +57,7 @@ contract ByteStringHarness {
             uint8
         )
     {
-        return _payload.ref(_type).toRSV();
-    }
-
-    function argumentWords(uint40 _type, bytes memory _payload) public pure returns (uint256) {
-        return _payload.ref(_type).argumentWords();
+        return _payload.castToSignature().toRSV();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -97,8 +76,8 @@ contract ByteStringHarness {
         return _payload.ref(0).isSignature();
     }
 
-    function isCallPayload(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isCallPayload();
+    function isCallData(bytes memory _payload) public pure returns (bool) {
+        return _payload.ref(0).isCallData();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

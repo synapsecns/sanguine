@@ -58,7 +58,7 @@ abstract contract SystemRouterTools is DestinationTools {
             context: context,
             mockTips: false,
             body: abi.encode(formattedSystemCalls),
-            recipient: SystemCall.SYSTEM_ROUTER,
+            recipient: SystemMessageLib.SYSTEM_ROUTER,
             optimisticSeconds: 0
         });
         // Save dispatched message for later execution
@@ -136,9 +136,9 @@ abstract contract SystemRouterTools is DestinationTools {
             // Root timestamp, domain of origin chain, and system entity that sent the message
             bytes memory prefix = abi.encode(block.timestamp, systemCallOrigin, systemCallSender);
             // Save formatted system call
-            formattedSystemCalls[i] = SystemCall.formatSystemCall({
+            formattedSystemCalls[i] = SystemMessageLib.formatSystemMessage({
                 _systemRecipient: uint8(systemCallRecipients[i]),
-                _payload: systemCallDataArray[i].castToCallPayload(),
+                _callData: systemCallDataArray[i].castToCallData(),
                 _prefix: prefix.castToRawBytes()
             });
         }
@@ -265,7 +265,7 @@ abstract contract SystemRouterTools is DestinationTools {
             _destination: systemCallDestination,
             _optimisticSeconds: systemCallOptimisticSeconds,
             _recipient: systemCallRecipients[index],
-            _data: systemCallDataArray[index]
+            _callData: systemCallDataArray[index]
         });
     }
 
@@ -276,7 +276,7 @@ abstract contract SystemRouterTools is DestinationTools {
             _destination: systemCallDestination,
             _optimisticSeconds: systemCallOptimisticSeconds,
             _recipients: systemCallRecipients,
-            _dataArray: systemCallDataArray
+            _callDataArray: systemCallDataArray
         });
     }
 
@@ -286,7 +286,7 @@ abstract contract SystemRouterTools is DestinationTools {
             _destination: systemCallDestination,
             _optimisticSeconds: systemCallOptimisticSeconds,
             _recipient: systemCallRecipients[0],
-            _dataArray: systemCallDataArray
+            _callDataArray: systemCallDataArray
         });
     }
 
@@ -296,7 +296,7 @@ abstract contract SystemRouterTools is DestinationTools {
             _destination: systemCallDestination,
             _optimisticSeconds: systemCallOptimisticSeconds,
             _recipients: systemCallRecipients,
-            _data: systemCallDataArray[0]
+            _callData: systemCallDataArray[0]
         });
     }
 

@@ -2,33 +2,10 @@
 pragma solidity 0.8.17;
 
 import "../utils/SynapseTestSuite.t.sol";
-import "../../contracts/libs/SynapseTypes.sol";
 
 abstract contract SynapseLibraryTest is SynapseTestSuite {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
-
-    function checkBytes29Getter(
-        function(uint40, bytes memory) external view returns (uint40, bytes memory) getter,
-        uint40 payloadType,
-        bytes memory payload,
-        uint40 expectedType,
-        bytes memory expectedData,
-        string memory revertMessage
-    ) public {
-        (uint40 _type, bytes memory _data) = getter(payloadType, payload);
-        assertEq(_data, expectedData, revertMessage);
-        assertEq(_type, expectedType, string.concat(revertMessage, ": type"));
-    }
-
-    function expectRevertWrongType(uint40 wrongType, uint40 correctType) public {
-        vm.assume(wrongType != correctType);
-        (, uint256 g) = TypedMemView.encodeHex(wrongType);
-        (, uint256 e) = TypedMemView.encodeHex(correctType);
-        vm.expectRevert(
-            abi.encodePacked("Type assertion failed. Got 0x", uint80(g), ". Expected 0x", uint80(e))
-        );
-    }
 
     function createShortPayload(
         uint8 payloadLength,

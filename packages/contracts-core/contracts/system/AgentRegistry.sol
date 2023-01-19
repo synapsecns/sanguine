@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import { AgentRegistryEvents } from "../events/AgentRegistryEvents.sol";
 import { AgentSet } from "../libs/AgentSet.sol";
 import { Auth } from "../libs/Auth.sol";
+import "../libs/ByteString.sol";
 
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -266,9 +267,9 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     function _checkAgentAuth(
         uint32 _domain,
         bytes32 _digest,
-        bytes29 _signatureView
+        Signature _signature
     ) internal view returns (address agent) {
-        agent = Auth.recoverSigner(_digest, _signatureView);
+        agent = Auth.recoverSigner(_digest, _signature);
         require(_isActiveAgent(_domain, agent), "Signer is not authorized");
     }
 

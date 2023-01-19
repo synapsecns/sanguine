@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { TypedMemView } from "./TypedMemView.sol";
+import "./ByteString.sol";
 import { TypeCasts } from "./TypeCasts.sol";
-import { SynapseTypes } from "./SynapseTypes.sol";
+
+/// @dev Header is a memory over over a formatted message header payload.
+type Header is bytes29;
 
 /**
  * @notice Library for versioned formatting [the header part]
  * of [the messages used by Origin and Destination].
  */
-library Header {
-    using TypedMemView for bytes;
+library HeaderLib {
+    using ByteString for bytes;
     using TypedMemView for bytes29;
 
     uint16 internal constant HEADER_VERSION = 1;
@@ -37,24 +39,8 @@ library Header {
     uint256 internal constant HEADER_LENGTH = 82;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    modifier onlyHeader(bytes29 _view) {
-        _view.assertType(SynapseTypes.MESSAGE_HEADER);
-        _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              FORMATTERS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Returns a properly typed bytes29 pointer for a header payload.
-     */
-    function castToHeader(bytes memory _payload) internal pure returns (bytes29) {
-        return _payload.ref(SynapseTypes.MESSAGE_HEADER);
-    }
 
     /**
      * @notice Returns a formatted Header payload with provided fields
@@ -87,6 +73,23 @@ library Header {
     }
 
     /**
+     * @notice Returns a Header view over for the given payload.
+     * @dev Will revert if the payload is not a header payload.
+     */
+    function castToHeader(bytes memory _payload) internal pure returns (Header) {
+        return castToHeader(_payload.castToRawBytes());
+    }
+
+    /**
+     * @notice Casts a memory view to a Header view.
+     * @dev Will revert if the memory view is not over a header payload.
+     */
+    function castToHeader(bytes29 _view) internal pure returns (Header) {
+        require(isHeader(_view), "Not a header payload");
+        return Header.wrap(_view);
+    }
+
+    /**
      * @notice Checks that a payload is a formatted Header.
      */
     function isHeader(bytes29 _view) internal pure returns (bool) {
@@ -94,7 +97,12 @@ library Header {
         // Check if version exists in the payload
         if (length < 2) return false;
         // Check that header version and its length matches
-        return headerVersion(_view) == HEADER_VERSION && length == HEADER_LENGTH;
+        return _getVersion(_view) == HEADER_VERSION && length == HEADER_LENGTH;
+    }
+
+    /// @notice Convenience shortcut for unwrapping a view.
+    function unwrap(Header _header) internal pure returns (bytes29) {
+        return Header.unwrap(_header);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -102,42 +110,59 @@ library Header {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns header's version field.
-    function headerVersion(bytes29 _header) internal pure onlyHeader(_header) returns (uint16) {
-        return uint16(_header.indexUint(OFFSET_VERSION, 2));
+    function version(Header _header) internal pure returns (uint16) {
+        // Get the underlying memory view
+        bytes29 _view = Header.unwrap(_header);
+        return _getVersion(_view);
     }
 
     /// @notice Returns header's origin field
-    function origin(bytes29 _header) internal pure onlyHeader(_header) returns (uint32) {
-        return uint32(_header.indexUint(OFFSET_ORIGIN, 4));
+    function origin(Header _header) internal pure returns (uint32) {
+        bytes29 _view = Header.unwrap(_header);
+        return uint32(_view.indexUint(OFFSET_ORIGIN, 4));
     }
 
     /// @notice Returns header's sender field
-    function sender(bytes29 _header) internal pure onlyHeader(_header) returns (bytes32) {
-        return _header.index(OFFSET_SENDER, 32);
+    function sender(Header _header) internal pure returns (bytes32) {
+        bytes29 _view = Header.unwrap(_header);
+        return _view.index(OFFSET_SENDER, 32);
     }
 
     /// @notice Returns header's nonce field
-    function nonce(bytes29 _header) internal pure onlyHeader(_header) returns (uint32) {
-        return uint32(_header.indexUint(OFFSET_NONCE, 4));
+    function nonce(Header _header) internal pure returns (uint32) {
+        bytes29 _view = Header.unwrap(_header);
+        return uint32(_view.indexUint(OFFSET_NONCE, 4));
     }
 
     /// @notice Returns header's destination field
-    function destination(bytes29 _header) internal pure onlyHeader(_header) returns (uint32) {
-        return uint32(_header.indexUint(OFFSET_DESTINATION, 4));
+    function destination(Header _header) internal pure returns (uint32) {
+        bytes29 _view = Header.unwrap(_header);
+        return uint32(_view.indexUint(OFFSET_DESTINATION, 4));
     }
 
     /// @notice Returns header's recipient field as bytes32
-    function recipient(bytes29 _header) internal pure onlyHeader(_header) returns (bytes32) {
-        return _header.index(OFFSET_RECIPIENT, 32);
+    function recipient(Header _header) internal pure returns (bytes32) {
+        bytes29 _view = Header.unwrap(_header);
+        return _view.index(OFFSET_RECIPIENT, 32);
     }
 
     /// @notice Returns header's optimistic seconds field
-    function optimisticSeconds(bytes29 _header) internal pure onlyHeader(_header) returns (uint32) {
-        return uint32(_header.indexUint(OFFSET_OPTIMISTIC_SECONDS, 4));
+    function optimisticSeconds(Header _header) internal pure returns (uint32) {
+        bytes29 _view = Header.unwrap(_header);
+        return uint32(_view.indexUint(OFFSET_OPTIMISTIC_SECONDS, 4));
     }
 
     /// @notice Returns header's recipient field as an address
-    function recipientAddress(bytes29 _header) internal pure returns (address) {
+    function recipientAddress(Header _header) internal pure returns (address) {
         return TypeCasts.bytes32ToAddress(recipient(_header));
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           PRIVATE HELPERS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Returns a version field without checking if payload is properly formatted.
+    function _getVersion(bytes29 _view) internal pure returns (uint16) {
+        return uint16(_view.indexUint(OFFSET_VERSION, 2));
     }
 }

@@ -3,14 +3,11 @@ pragma solidity 0.8.17;
 
 // ============ Internal Imports ============
 import "./Version.sol";
+import "./libs/Message.sol";
+import "./libs/SystemMessage.sol";
 import { LocalDomainContext } from "./context/LocalDomainContext.sol";
 import { OriginEvents } from "./events/OriginEvents.sol";
 import { OriginHub } from "./hubs/OriginHub.sol";
-import { Header } from "./libs/Header.sol";
-import { Message } from "./libs/Message.sol";
-import { Tips } from "./libs/Tips.sol";
-import { SystemCall } from "./libs/SystemCall.sol";
-import { TypeCasts } from "./libs/TypeCasts.sol";
 // ============ External Imports ============
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
@@ -29,8 +26,8 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * of a Guard's report with said signature and slashes Guard in that case.
  */
 contract Origin is OriginEvents, OriginHub, LocalDomainContext, Version0_0_1 {
-    using Tips for bytes;
-    using Tips for bytes29;
+    using TipsLib for bytes;
+    using TipsLib for Tips;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
@@ -90,16 +87,15 @@ contract Origin is OriginEvents, OriginHub, LocalDomainContext, Version0_0_1 {
     {
         // TODO: add unit tests covering return values
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
-        bytes29 tips = _tips.castToTips();
         // Check: tips payload is correctly formatted
-        require(tips.isTips(), "!tips: formatting");
+        Tips tips = _tips.castToTips();
         // Check: total tips value matches msg.value
         require(tips.totalTips() == msg.value, "!tips: totalTips");
         // Latest nonce (i.e. "last message" nonce) is current amount of leaves in the tree.
         // Message nonce is the amount of leaves after the leaf insertion
         messageNonce = nonce(_destination) + 1;
         // format the message into packed bytes
-        bytes memory message = Message.formatMessage({
+        bytes memory message = MessageLib.formatMessage({
             _origin: _localDomain(),
             _sender: _checkForSystemRouter(_recipient),
             _nonce: messageNonce,
@@ -153,18 +149,18 @@ contract Origin is OriginEvents, OriginHub, LocalDomainContext, Version0_0_1 {
      * Note: tx will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
      */
     function _checkForSystemRouter(bytes32 _recipient) internal view returns (bytes32 sender) {
-        if (_recipient != SystemCall.SYSTEM_ROUTER) {
+        if (_recipient != SystemMessageLib.SYSTEM_ROUTER) {
             sender = TypeCasts.addressToBytes32(msg.sender);
             /**
              * @dev Note: SYSTEM_ROUTER has only the highest 12 bytes set,
              * whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
-             * Thus, in this branch: sender != SystemCall.SYSTEM_ROUTER
+             * Thus, in this branch: sender != SystemMessageLib.SYSTEM_ROUTER
              */
         } else {
             // Check that SystemRouter specified SYSTEM_ROUTER as recipient, revert otherwise.
             _assertSystemRouter();
             // Adjust "sender" field for correct processing on remote chain.
-            sender = SystemCall.SYSTEM_ROUTER;
+            sender = SystemMessageLib.SYSTEM_ROUTER;
         }
     }
 }

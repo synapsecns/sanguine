@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
+import "../../../contracts/libs/Attestation.sol";
 import { AttestationHub } from "../../../contracts/hubs/AttestationHub.sol";
 
 import { AttestationHubHarnessEvents } from "../events/AttestationHubHarnessEvents.sol";
@@ -13,15 +13,16 @@ contract AttestationHubHarness is
     AttestationHub,
     AgentRegistryExtended
 {
+    using AttestationLib for Attestation;
     using TypedMemView for bytes29;
 
     function _handleAttestation(
         address[] memory _guards,
         address[] memory _notaries,
-        bytes29 _attestationView,
-        bytes memory _attestation
+        Attestation _att,
+        bytes memory _attPayload
     ) internal override returns (bool) {
-        emit LogAttestation(_guards, _notaries, _attestationView.clone(), _attestation);
+        emit LogAttestation(_guards, _notaries, _att.unwrap().clone(), _attPayload);
         return true;
     }
 }

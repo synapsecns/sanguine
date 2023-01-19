@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Tips } from "../../../contracts/libs/Tips.sol";
+import "../../../contracts/libs/Tips.sol";
 
 abstract contract TipsTools {
     // Mock values
@@ -20,7 +20,7 @@ abstract contract TipsTools {
 
     // Create the tip payload and calculates the total tip using the saved data
     function createTips() public {
-        tipsRaw = Tips.formatTips(tipNotary, tipBroadcaster, tipProver, tipExecutor);
+        tipsRaw = TipsLib.formatTips(tipNotary, tipBroadcaster, tipProver, tipExecutor);
         calcTotalTips();
     }
 
