@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Attestation } from "../libs/Attestation.sol";
-import { Report } from "../libs/Report.sol";
+import "../libs/Report.sol";
 
 import { ReportHub } from "./ReportHub.sol";
 import { SystemRegistry } from "../system/SystemRegistry.sol";
@@ -12,8 +11,8 @@ import { SystemRegistry } from "../system/SystemRegistry.sol";
  * merkle state in a separate Mirror.
  */
 abstract contract DestinationHub is SystemRegistry, ReportHub {
-    using Attestation for bytes29;
-    using Report for bytes29;
+    using AttestationLib for Attestation;
+    using AttestationLib for AttestationData;
 
     /**
      * @notice Information stored for every submitted merkle root.
@@ -100,31 +99,32 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
      *
      * @dev Guards and Notaries signatures and roles have been checked in AttestationHub.
      *
-     * @param _guards           Guard addresses (signatures&roles already verified)
-     * @param _notaries         Notary addresses (signatures&roles already verified)
-     * @param _attestationView  Memory view over the Attestation for convenience
-     * @param _attestation      Payload with Attestation data and signature
+     * @param _guards       Guard addresses (signatures&roles already verified)
+     * @param _notaries     Notary addresses (signatures&roles already verified)
+     * @param _att          Memory view over the Attestation for convenience
+     * @param _attPayload   Payload with Attestation data and signature
      * @return TRUE if Attestation was accepted (implying a new root was added to Mirror).
      */
     function _handleAttestation(
         address[] memory _guards,
         address[] memory _notaries,
-        bytes29 _attestationView,
-        bytes memory _attestation
+        Attestation _att,
+        bytes memory _attPayload
     ) internal override returns (bool) {
         // Check that there is at least one Guard and Notary signature
-        require(_attestationView.guardSignatures() != 0, "No guard signatures");
-        require(_attestationView.notarySignatures() != 0, "No notary signatures");
-        _checkAttestationDomains(_attestationView);
-        bytes32 root = _attestationView.attestedRoot();
+        require(_att.guardsAmount() != 0, "No guard signatures");
+        require(_att.notariesAmount() != 0, "No notary signatures");
+        AttestationData attData = _att.data();
+        _checkAttestationDomains(attData);
+        bytes32 root = attData.root();
         // Empty root is clearly fraud, so should be rejected
         require(root != bytes32(0), "Empty root");
-        uint32 origin = _attestationView.attestedOrigin();
-        uint32 nonce = _attestationView.attestedNonce();
+        uint32 origin = attData.origin();
+        uint32 nonce = attData.nonce();
         // TODO: Use more than one notary here?
         address notary = _notaries[0];
         _updateMirror(notary, origin, nonce, root);
-        emit AttestationAccepted(_guards, _notaries, _attestation);
+        emit AttestationAccepted(_guards, _notaries, _attPayload);
         return true;
     }
 
@@ -210,10 +210,10 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
         return _domain != _localDomain() && _domain != 0;
     }
 
-    function _checkAttestationDomains(bytes29 _attestationView) internal view {
+    function _checkAttestationDomains(AttestationData _attData) internal view {
         uint32 local = _localDomain();
         // Attestation must have Origin as remote chain and Destination as local
-        require(_attestationView.attestedOrigin() != local, "!attestationOrigin: local");
-        require(_attestationView.attestedDestination() == local, "!attestationDestination: !local");
+        require(_attData.origin() != local, "!attestationOrigin: local");
+        require(_attData.destination() == local, "!attestationDestination: !local");
     }
 }

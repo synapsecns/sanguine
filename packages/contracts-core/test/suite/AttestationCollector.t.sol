@@ -528,7 +528,7 @@ contract AttestationCollectorTest is AttestationCollectorTools {
             uint32 _origin = domains[o];
             for (uint32 d = 0; d < DOMAINS; ++d) {
                 uint32 _destination = domains[d];
-                uint64 attDomains = Attestation.attestationDomains(_origin, _destination);
+                uint64 attDomains = AttestationLib.packDomains(_origin, _destination);
                 for (uint256 i = 0; i < GUARDS; ++i) {
                     address guard = suiteGuard(i);
                     assertEq(

@@ -6,10 +6,6 @@ import { AttestationHubHarness } from "../../harnesses/hubs/AttestationHubHarnes
 
 // solhint-disable func-name-mixedcase
 contract AttestationHubTest is AttestationTools {
-    using Attestation for bytes;
-    using Attestation for bytes29;
-    using TypedMemView for bytes29;
-
     AttestationHubHarness internal attestationHub;
 
     function setUp() public override {

@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Tips } from "../../../contracts/libs/Tips.sol";
-import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
+import "../../../contracts/libs/Tips.sol";
 
 /**
- * @notice Exposes Tips methods for testing against golang.
+ * @notice Exposes TipsLib methods for testing against golang.
  */
 contract TipsHarness {
-    using Tips for bytes;
-    using Tips for bytes29;
+    using TipsLib for bytes;
+    using TipsLib for bytes29;
+    using TipsLib for Tips;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
@@ -17,45 +17,45 @@ contract TipsHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToTips(uint40, bytes memory _payload) public view returns (uint40, bytes memory) {
+    function castToTips(bytes memory _payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        bytes29 _view = Tips.castToTips(_payload);
-        return (_view.typeOf(), _view.clone());
+        Tips tips = TipsLib.castToTips(_payload);
+        return tips.unwrap().clone();
     }
 
     /// @notice Returns version of formatted tips
-    function tipsVersion(uint40 _type, bytes memory _payload) public pure returns (uint16) {
-        return _payload.ref(_type).tipsVersion();
+    function version(bytes memory _payload) public pure returns (uint16) {
+        return _payload.castToTips().version();
     }
 
     /// @notice Returns notaryTip field
-    function notaryTip(uint40 _type, bytes memory _payload) public pure returns (uint96) {
-        return _payload.ref(_type).notaryTip();
+    function notaryTip(bytes memory _payload) public pure returns (uint96) {
+        return _payload.castToTips().notaryTip();
     }
 
     /// @notice Returns broadcasterTip field
-    function broadcasterTip(uint40 _type, bytes memory _payload) public pure returns (uint96) {
-        return _payload.ref(_type).broadcasterTip();
+    function broadcasterTip(bytes memory _payload) public pure returns (uint96) {
+        return _payload.castToTips().broadcasterTip();
     }
 
     /// @notice Returns proverTip field
-    function proverTip(uint40 _type, bytes memory _payload) public pure returns (uint96) {
-        return _payload.ref(_type).proverTip();
+    function proverTip(bytes memory _payload) public pure returns (uint96) {
+        return _payload.castToTips().proverTip();
     }
 
     /// @notice Returns executorTip field
-    function executorTip(uint40 _type, bytes memory _payload) public pure returns (uint96) {
-        return _payload.ref(_type).executorTip();
+    function executorTip(bytes memory _payload) public pure returns (uint96) {
+        return _payload.castToTips().executorTip();
     }
 
     /// @notice Returns total tip amount.
-    function totalTips(uint40 _type, bytes memory _payload) public pure returns (uint96) {
-        return _payload.ref(_type).totalTips();
+    function totalTips(bytes memory _payload) public pure returns (uint96) {
+        return _payload.castToTips().totalTips();
     }
 
     function isTips(bytes memory _payload) public pure returns (bool) {
-        return _payload.castToTips().isTips();
+        return _payload.ref(0).isTips();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -68,11 +68,11 @@ contract TipsHarness {
         uint96 _proverTip,
         uint96 _executorTip
     ) public pure returns (bytes memory) {
-        return Tips.formatTips(_notaryTip, _broadcasterTip, _proverTip, _executorTip);
+        return TipsLib.formatTips(_notaryTip, _broadcasterTip, _proverTip, _executorTip);
     }
 
     function emptyTips() public pure returns (bytes memory) {
-        return Tips.emptyTips();
+        return TipsLib.emptyTips();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -80,30 +80,30 @@ contract TipsHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function tipsLength() public pure returns (uint256) {
-        return Tips.TIPS_LENGTH;
+        return TipsLib.TIPS_LENGTH;
     }
 
     function tipsVersion() public pure returns (uint16) {
-        return Tips.TIPS_VERSION;
+        return TipsLib.TIPS_VERSION;
     }
 
     function offsetVersion() public pure returns (uint256) {
-        return Tips.OFFSET_VERSION;
+        return TipsLib.OFFSET_VERSION;
     }
 
     function offsetNotary() public pure returns (uint256) {
-        return Tips.OFFSET_NOTARY;
+        return TipsLib.OFFSET_NOTARY;
     }
 
     function offsetBroadcaster() public pure returns (uint256) {
-        return Tips.OFFSET_BROADCASTER;
+        return TipsLib.OFFSET_BROADCASTER;
     }
 
     function offsetProver() public pure returns (uint256) {
-        return Tips.OFFSET_PROVER;
+        return TipsLib.OFFSET_PROVER;
     }
 
     function offsetExecutor() public pure returns (uint256) {
-        return Tips.OFFSET_EXECUTOR;
+        return TipsLib.OFFSET_EXECUTOR;
     }
 }

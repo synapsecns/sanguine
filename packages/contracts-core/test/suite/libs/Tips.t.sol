@@ -23,7 +23,7 @@ contract TipsLibraryTest is SynapseLibraryTest {
     ▏*║                          TESTS: FORMATTING                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_formattedCorrectly(
+    function test_formatTips(
         uint96 notaryTip,
         uint96 broadcasterTip,
         uint96 proverTip,
@@ -41,57 +41,51 @@ contract TipsLibraryTest is SynapseLibraryTest {
         );
         assertEq(
             payload,
-            abi.encodePacked(Tips.TIPS_VERSION, notaryTip, broadcasterTip, proverTip, executorTip),
+            abi.encodePacked(
+                TipsLib.TIPS_VERSION,
+                notaryTip,
+                broadcasterTip,
+                proverTip,
+                executorTip
+            ),
             "!formatTips"
         );
         // Test formatting checker
-        assertTrue(libHarness.isTips(payload), "!isTips");
+        checkCastToTips({ payload: payload, isTips: true });
         // Test getters
-        assertEq(
-            libHarness.tipsVersion(SynapseTypes.MESSAGE_TIPS, payload),
-            Tips.TIPS_VERSION,
-            "!tipsVersion"
-        );
-        assertEq(libHarness.notaryTip(SynapseTypes.MESSAGE_TIPS, payload), notaryTip, "!notaryTip");
-        assertEq(
-            libHarness.broadcasterTip(SynapseTypes.MESSAGE_TIPS, payload),
-            broadcasterTip,
-            "!broadcasterTip"
-        );
-        assertEq(libHarness.proverTip(SynapseTypes.MESSAGE_TIPS, payload), proverTip, "!proverTip");
-        assertEq(
-            libHarness.executorTip(SynapseTypes.MESSAGE_TIPS, payload),
-            executorTip,
-            "!executorTip"
-        );
-        assertEq(libHarness.totalTips(SynapseTypes.MESSAGE_TIPS, payload), totalTips, "!totalTips");
+        assertEq(libHarness.version(payload), TipsLib.TIPS_VERSION, "!tipsVersion");
+        assertEq(libHarness.notaryTip(payload), notaryTip, "!notaryTip");
+        assertEq(libHarness.broadcasterTip(payload), broadcasterTip, "!broadcasterTip");
+        assertEq(libHarness.proverTip(payload), proverTip, "!proverTip");
+        assertEq(libHarness.executorTip(payload), executorTip, "!executorTip");
+        assertEq(libHarness.totalTips(payload), totalTips, "!totalTips");
     }
 
     function test_emptyTips() public {
         bytes memory payload = libHarness.emptyTips();
         assertEq(payload, createTestPayload(), "!formatTips");
         // Check formatting
-        test_formattedCorrectly(0, 0, 0, 0);
+        test_formatTips(0, 0, 0, 0);
     }
 
     function test_isTips_firstElementIncomplete(uint8 payloadLength, bytes32 data) public {
         // Payload having less bytes than Tips' first element (uint16 tipsVersion)
         // should be correctly treated as unformatted (i.e. with no reverts)
-        assertFalse(
-            libHarness.isTips(createShortPayload(payloadLength, FIRST_ELEMENT_BYTES, data)),
-            "!isTips: short payload"
-        );
+        bytes memory payload = createShortPayload(payloadLength, FIRST_ELEMENT_BYTES, data);
+        checkCastToTips({ payload: payload, isTips: false });
     }
 
     function test_isTips_testPayload() public {
         // Check that manually constructed test payload is considered formatted
-        assertTrue(libHarness.isTips(createTestPayload()), "!isTips: test payload");
+        bytes memory payload = createTestPayload();
+        checkCastToTips({ payload: payload, isTips: true });
     }
 
     function test_isTips_shorterLength() public {
         // Check that manually constructed test payload without the last byte
         // is not considered formatted
-        assertFalse(libHarness.isTips(cutLastByte(createTestPayload())), "!isTips: 1 byte shorter");
+        bytes memory payload = cutLastByte(createTestPayload());
+        checkCastToTips({ payload: payload, isTips: false });
     }
 
     function test_isTips_longerLength() public {
@@ -101,48 +95,19 @@ contract TipsLibraryTest is SynapseLibraryTest {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          TESTS: WRONG TYPE                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_wrongTypeRevert_tipsVersion(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
-        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.MESSAGE_TIPS });
-        libHarness.tipsVersion(wrongType, payload);
-    }
-
-    function test_wrongTypeRevert_notaryTip(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
-        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.MESSAGE_TIPS });
-        libHarness.notaryTip(wrongType, payload);
-    }
-
-    function test_wrongTypeRevert_broadcasterTip(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
-        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.MESSAGE_TIPS });
-        libHarness.broadcasterTip(wrongType, payload);
-    }
-
-    function test_wrongTypeRevert_proverTip(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
-        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.MESSAGE_TIPS });
-        libHarness.proverTip(wrongType, payload);
-    }
-
-    function test_wrongTypeRevert_executorTip(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
-        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.MESSAGE_TIPS });
-        libHarness.executorTip(wrongType, payload);
-    }
-
-    function test_wrongTypeRevert_totalTips(uint40 wrongType) public {
-        bytes memory payload = createTestPayload();
-        expectRevertWrongType({ wrongType: wrongType, correctType: SynapseTypes.MESSAGE_TIPS });
-        libHarness.totalTips(wrongType, payload);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               HELPERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function checkCastToTips(bytes memory payload, bool isTips) public {
+        if (isTips) {
+            assertTrue(libHarness.isTips(payload), "!isTips: when valid");
+            assertEq(libHarness.castToTips(payload), payload, "!castToTips: when valid");
+        } else {
+            assertFalse(libHarness.isTips(payload), "!isTips: when valid");
+            vm.expectRevert("Not a tips payload");
+            libHarness.castToTips(payload);
+        }
+    }
 
     function createTestPayload() public view returns (bytes memory) {
         return libHarness.formatTips(0, 0, 0, 0);

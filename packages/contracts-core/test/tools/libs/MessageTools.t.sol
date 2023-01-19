@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Header } from "../../../contracts/libs/Header.sol";
-import { Message } from "../../../contracts/libs/Message.sol";
+import "../../../contracts/libs/Message.sol";
 
 import { TipsTools } from "./TipsTools.t.sol";
 import { SynapseUtilities } from "../../utils/SynapseUtilities.t.sol";
@@ -54,8 +53,8 @@ abstract contract MessageTools is SynapseUtilities, TipsTools {
 
     // Create message using all the saved data
     function createMessage() public {
-        messageRaw = Message.formatMessage(
-            Header.formatHeader(
+        messageRaw = MessageLib.formatMessage(
+            HeaderLib.formatHeader(
                 messageOrigin,
                 messageSender,
                 messageNonce,

@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Attestation } from "../libs/Attestation.sol";
-import { Report } from "../libs/Report.sol";
-import { TypedMemView } from "../libs/TypedMemView.sol";
+import "../libs/Report.sol";
 
 import { OriginHubEvents } from "../events/OriginHubEvents.sol";
 import { ReportHub } from "./ReportHub.sol";
@@ -18,9 +16,8 @@ import { MerkleLib } from "../libs/Merkle.sol";
  * and checks their attestations/reports related to Origin.
  */
 abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
-    using Attestation for bytes29;
-    using Report for bytes29;
-    using TypedMemView for bytes29;
+    using AttestationLib for Attestation;
+    using AttestationLib for AttestationData;
 
     using MerkleLib for MerkleLib.Tree;
 
@@ -110,7 +107,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         require(_nonce < historicalRoots[_destination].length, "!nonce");
         bytes32 historicalRoot = historicalRoots[_destination][_nonce];
         RootMetadata memory metadata = historicalMetadata[_destination][_nonce];
-        attestationData = Attestation.formatAttestationData({
+        attestationData = AttestationLib.formatAttestationData({
             _origin: _localDomain(),
             _destination: _destination,
             _nonce: _nonce,
@@ -193,29 +190,30 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
      *
      * @dev Guards and Notaries signatures and roles have been checked in AttestationHub.
      *
-     * @param _guards           Guard addresses (signatures&roles already verified)
-     * @param _notaries         Notary addresses (signatures&roles already verified)
-     * @param _attestationView  Memory view over the Attestation for convenience
-     * @param _attestation      Payload with Attestation data and signature
-     * @return isValid          TRUE if Attestation was valid (implying no agent was slashed).
+     * @param _guards       Guard addresses (signatures&roles already verified)
+     * @param _notaries     Notary addresses (signatures&roles already verified)
+     * @param _att          Memory view over the Attestation for convenience
+     * @param _attPayload   Payload with Attestation data and signature
+     * @return isValid      TRUE if Attestation was valid (implying no agent was slashed).
      */
     function _handleAttestation(
         address[] memory _guards,
         address[] memory _notaries,
-        bytes29 _attestationView,
-        bytes memory _attestation
+        Attestation _att,
+        bytes memory _attPayload
     ) internal override returns (bool isValid) {
-        uint32 _origin = _attestationView.attestedOrigin();
-        uint32 _destination = _attestationView.attestedDestination();
-        uint32 _nonce = _attestationView.attestedNonce();
-        bytes32 _root = _attestationView.attestedRoot();
+        AttestationData attData = _att.data();
+        uint32 _origin = attData.origin();
+        uint32 _destination = attData.destination();
+        uint32 _nonce = attData.nonce();
+        bytes32 _root = attData.root();
         RootMetadata memory metadata = RootMetadata({
-            blockNumber: _attestationView.attestedBlockNumber(),
-            timestamp: _attestationView.attestedTimestamp()
+            blockNumber: attData.blockNumber(),
+            timestamp: attData.timestamp()
         });
         isValid = _isValidAttestation(_origin, _destination, _nonce, _root, metadata);
         if (!isValid) {
-            emit FraudAttestation(_guards, _notaries, _attestation);
+            emit FraudAttestation(_guards, _notaries, _attPayload);
             // Guard doesn't receive anything, as Agents weren't slashed using the Fraud Report
             _slashAgents({ _domain: 0, _accounts: _guards, _guard: address(0) });
             _slashAgents({ _domain: _destination, _accounts: _notaries, _guard: address(0) });

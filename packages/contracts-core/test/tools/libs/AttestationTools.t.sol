@@ -244,8 +244,8 @@ abstract contract AttestationTools is SynapseTestSuite {
     }
 
     function saveAttestationIDs() public {
-        attestationDomains = Attestation.attestationDomains(ra.origin, ra.destination);
-        attestationKey = Attestation.attestationKey(ra.origin, ra.destination, ra.nonce);
+        attestationDomains = AttestationLib.packDomains(ra.origin, ra.destination);
+        attestationKey = AttestationLib.packKey(ra.origin, ra.destination, ra.nonce);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

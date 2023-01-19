@@ -2,17 +2,13 @@
 pragma solidity 0.8.17;
 
 import "./Version.sol";
+import "./libs/Message.sol";
+import "./libs/SystemMessage.sol";
 import { LocalDomainContext } from "./context/LocalDomainContext.sol";
 import { DestinationHub } from "./hubs/DestinationHub.sol";
 import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
-import { Message } from "./libs/Message.sol";
-import { Header } from "./libs/Header.sol";
-import { Tips } from "./libs/Tips.sol";
-import { TypedMemView } from "./libs/TypedMemView.sol";
-import { TypeCasts } from "./libs/TypeCasts.sol";
-import { SystemCall } from "./libs/SystemCall.sol";
 
 /**
  * @title Destination
@@ -20,9 +16,9 @@ import { SystemCall } from "./libs/SystemCall.sol";
  * prove and dispatch messages to end recipients.
  */
 contract Destination is DestinationEvents, DestinationHub, LocalDomainContext, Version0_0_1 {
-    using Message for bytes;
-    using Message for bytes29;
-    using Header for bytes29;
+    using HeaderLib for Header;
+    using MessageLib for bytes;
+    using MessageLib for Message;
     using TypedMemView for bytes29;
 
     /**
@@ -130,12 +126,12 @@ contract Destination is DestinationEvents, DestinationHub, LocalDomainContext, V
         bytes32[32] calldata _proof,
         uint256 _index
     ) external {
-        bytes29 message = _message.castToMessage();
-        bytes29 header = message.header();
+        Message message = _message.castToMessage();
+        Header header = message.header();
         uint32 origin = header.origin();
         // ensure message was meant for this domain
         require(header.destination() == _localDomain(), "!destination");
-        bytes32 leaf = message.keccak();
+        bytes32 leaf = message.leaf();
         // ensure message can be proven against a confirmed root,
         // and that message's optimistic period has passed
         bytes32 root = _prove(origin, leaf, _proof, _index, header.optimisticSeconds());
@@ -192,7 +188,7 @@ contract Destination is DestinationEvents, DestinationHub, LocalDomainContext, V
     }
 
     // solhint-disable-next-line no-empty-blocks
-    function _storeTips(bytes29 _tips) internal virtual {
+    function _storeTips(Tips _tips) internal virtual {
         // TODO: implement storing & claiming logic
     }
 
@@ -202,7 +198,7 @@ contract Destination is DestinationEvents, DestinationHub, LocalDomainContext, V
 
     function _checkForSystemRouter(bytes32 _recipient) internal view returns (address recipient) {
         // Check if SYSTEM_ROUTER was specified as message recipient
-        if (_recipient == SystemCall.SYSTEM_ROUTER) {
+        if (_recipient == SystemMessageLib.SYSTEM_ROUTER) {
             /**
              * @dev Route message to SystemRouter.
              * Note: Only SystemRouter contract on origin chain can send a message

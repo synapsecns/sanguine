@@ -33,7 +33,7 @@ contract SystemRouterTest is SystemRouterTools {
             uint32 domain = domains[d];
             assertEq(
                 suiteSystemRouter(domain).trustedSender(remoteDomain),
-                SystemCall.SYSTEM_ROUTER,
+                SystemMessageLib.SYSTEM_ROUTER,
                 "!trustedSender"
             );
         }
@@ -59,7 +59,7 @@ contract SystemRouterTest is SystemRouterTools {
         suiteSystemRouter(DOMAIN_LOCAL).handle({
             _origin: DOMAIN_REMOTE,
             _nonce: 1,
-            _sender: SystemCall.SYSTEM_ROUTER,
+            _sender: SystemMessageLib.SYSTEM_ROUTER,
             _rootSubmittedAt: block.timestamp,
             _message: abi.encode(formattedSystemCalls)
         });
@@ -85,16 +85,16 @@ contract SystemRouterTest is SystemRouterTools {
         }
     }
 
-    function test_systemCall_revert_notSystemCall() public {
+    function test_systemCall_revert_notSystemMessage() public {
         formattedSystemCalls = new bytes[](1);
-        // Try passing empty payload as "system call"
-        vm.expectRevert("Not a system call");
+        // Try passing empty payload as "system message"
+        vm.expectRevert("Not a system message");
         // Mock executing of the message on Destination
         vm.prank(address(suiteDestination(DOMAIN_LOCAL)));
         suiteSystemRouter(DOMAIN_LOCAL).handle({
             _origin: DOMAIN_REMOTE,
             _nonce: 1,
-            _sender: SystemCall.SYSTEM_ROUTER,
+            _sender: SystemMessageLib.SYSTEM_ROUTER,
             _rootSubmittedAt: block.timestamp,
             _message: abi.encode(formattedSystemCalls)
         });
@@ -106,7 +106,7 @@ contract SystemRouterTest is SystemRouterTools {
             sender: address(suiteOrigin(DOMAIN_REMOTE)),
             destination: DOMAIN_LOCAL
         });
-        // Create a valid system call payload
+        // Create a valid SystemCall payload
         createSystemCall({ context: context, recipient: address(suiteOrigin(DOMAIN_LOCAL)) });
         // Change first byte (uint8 recipient) to an invalid value
         bytes memory systemCall = formattedSystemCalls[0];
@@ -124,7 +124,7 @@ contract SystemRouterTest is SystemRouterTools {
         suiteSystemRouter(DOMAIN_LOCAL).handle({
             _origin: DOMAIN_REMOTE,
             _nonce: 1,
-            _sender: SystemCall.SYSTEM_ROUTER,
+            _sender: SystemMessageLib.SYSTEM_ROUTER,
             _rootSubmittedAt: block.timestamp,
             _message: abi.encode(formattedSystemCalls)
         });
@@ -182,7 +182,7 @@ contract SystemRouterTest is SystemRouterTools {
             sender: address(suiteOrigin(DOMAIN_LOCAL)),
             destination: DOMAIN_LOCAL
         });
-        // Create a valid system call payload
+        // Create a valid SystemCall payload
         createSystemCall({ context: context, recipient: address(suiteDestination(DOMAIN_LOCAL)) });
         // Adjust calldata passed to SystemRouter to feature fake security args
         systemCallDataArray[0] = abi.encodeWithSelector(

@@ -126,7 +126,7 @@ contract OriginTest is OriginTools {
         uint256 length = tipsRaw.length;
         // COnstruct tips payload, but use incorrect tips version
         tipsRaw = abi.encodePacked(
-            Tips.TIPS_VERSION + 1,
+            TipsLib.TIPS_VERSION + 1,
             tipNotary,
             tipBroadcaster,
             tipProver,
@@ -135,7 +135,7 @@ contract OriginTest is OriginTools {
         // Length should stay the same
         require(tipsRaw.length == length, "Failed to construct tips payload");
         createDispatchedMessage({ context: userLocalToRemote, mockTips: false });
-        originDispatch({ revertMessage: "!tips: formatting" });
+        originDispatch({ revertMessage: "Not a tips payload" });
     }
 
     function test_dispatch_revert_tipsPayloadTooSmall() public {
@@ -143,7 +143,7 @@ contract OriginTest is OriginTools {
         // Cut the last byte from tips payload, making it improperly formatted
         tipsRaw = tipsRaw.ref(0).slice({ _index: 0, _len: tipsRaw.length - 1, newType: 0 }).clone();
         createDispatchedMessage({ context: userLocalToRemote, mockTips: false });
-        originDispatch({ revertMessage: "!tips: formatting" });
+        originDispatch({ revertMessage: "Not a tips payload" });
     }
 
     function test_dispatch_revert_tipsPayloadTooBig() public {
@@ -151,7 +151,7 @@ contract OriginTest is OriginTools {
         // Add extra byte to tips payload, making it improperly formatted
         tipsRaw = bytes.concat(tipsRaw, bytes1(0));
         createDispatchedMessage({ context: userLocalToRemote, mockTips: false });
-        originDispatch({ revertMessage: "!tips: formatting" });
+        originDispatch({ revertMessage: "Not a tips payload" });
     }
 
     function test_dispatch_revert_messageTooBig() public {
@@ -177,7 +177,7 @@ contract OriginTest is OriginTools {
         // Should match latest values
         assertEq(
             data,
-            Attestation.formatAttestationData({
+            AttestationLib.formatAttestationData({
                 _origin: DOMAIN_LOCAL,
                 _destination: DOMAIN_REMOTE,
                 _nonce: uint32(amount),

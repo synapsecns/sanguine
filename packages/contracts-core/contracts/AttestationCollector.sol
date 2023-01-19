@@ -2,11 +2,9 @@
 pragma solidity 0.8.17;
 
 import "./Version.sol";
-import { Attestation } from "./libs/Attestation.sol";
+import "./libs/Attestation.sol";
 import { AttestationHub } from "./hubs/AttestationHub.sol";
 import { AttestationCollectorEvents } from "./events/AttestationCollectorEvents.sol";
-
-import { ByteString } from "./libs/Attestation.sol";
 
 import {
     OwnableUpgradeable
@@ -18,9 +16,10 @@ contract AttestationCollector is
     OwnableUpgradeable,
     Version0_0_1
 {
-    using Attestation for bytes29;
+    using AttestationLib for Attestation;
+    using AttestationLib for AttestationData;
     using ByteString for bytes;
-    using ByteString for bytes29;
+    using ByteString for Signature;
 
     /**
      * @notice Contains a merkle root and existing agent signatures for this root.
@@ -133,7 +132,7 @@ contract AttestationCollector is
         uint32 _destination,
         address _agent
     ) external view returns (uint256) {
-        uint64 attDomains = Attestation.attestationDomains(_origin, _destination);
+        uint64 attDomains = AttestationLib.packDomains(_origin, _destination);
         return agentSigIndexes[attDomains][_agent].length;
     }
 
@@ -154,7 +153,7 @@ contract AttestationCollector is
         address _agent,
         uint256 _index
     ) external view returns (bytes memory) {
-        uint64 attDomains = Attestation.attestationDomains(_origin, _destination);
+        uint64 attDomains = AttestationLib.packDomains(_origin, _destination);
         require(_index < agentSigIndexes[attDomains][_agent].length, "Out of range");
         uint256 signatureIndex = agentSigIndexes[attDomains][_agent][_index];
         return _formatAgentAttestation(signatureIndex);
@@ -169,8 +168,8 @@ contract AttestationCollector is
         uint32 _destination,
         address _agent
     ) external view returns (uint32) {
-        uint64 attestationDomains = Attestation.attestationDomains(_origin, _destination);
-        uint32 latestNonce = _latestAgentNonce(attestationDomains, _agent);
+        uint64 attDomains = AttestationLib.packDomains(_origin, _destination);
+        uint32 latestNonce = _latestAgentNonce(attDomains, _agent);
         return latestNonce;
     }
 
@@ -182,7 +181,7 @@ contract AttestationCollector is
         uint32 _destination,
         address _agent
     ) external view returns (bytes memory) {
-        uint64 attDomains = Attestation.attestationDomains(_origin, _destination);
+        uint64 attDomains = AttestationLib.packDomains(_origin, _destination);
         uint256 amount = agentSigIndexes[attDomains][_agent].length;
         require(amount != 0, "No attestations found");
         uint256 signatureIndex = agentSigIndexes[attDomains][_agent][amount - 1];
@@ -200,7 +199,7 @@ contract AttestationCollector is
         uint32 _destination,
         uint32 _nonce
     ) external view returns (bytes memory) {
-        uint96 attKey = Attestation.attestationKey(_origin, _destination, _nonce);
+        uint96 attKey = AttestationLib.packKey(_origin, _destination, _nonce);
         SignedRoot memory signedRoot = signedRoots[attKey];
         require(signedRoot.root != bytes32(0), "Unknown nonce");
         // Find an existing signature for the attestation
@@ -213,7 +212,7 @@ contract AttestationCollector is
             savedSignatures[agentSigIndex - 1].blockNumber,
             savedSignatures[agentSigIndex - 1].timestamp
         );
-        bytes memory attData = Attestation.formatAttestationData({
+        bytes memory attDataPayload = AttestationLib.formatAttestationData({
             _origin: _origin,
             _destination: _destination,
             _nonce: _nonce,
@@ -223,7 +222,7 @@ contract AttestationCollector is
         });
         return
             _formatDualAttestation({
-                _attestationData: attData,
+                _attDataPayload: attDataPayload,
                 _guardSignatureIndex: signedRoot.guardSigIndex,
                 _notarySignatureIndex: signedRoot.notarySigIndex
             });
@@ -237,7 +236,7 @@ contract AttestationCollector is
         uint32 _destination,
         uint32 _nonce
     ) external view returns (bytes32) {
-        uint96 attKey = Attestation.attestationKey(_origin, _destination, _nonce);
+        uint96 attKey = AttestationLib.packKey(_origin, _destination, _nonce);
         return signedRoots[attKey].root;
     }
 
@@ -259,19 +258,21 @@ contract AttestationCollector is
      * Saves all agent signatures that are not outdated.
      * @dev Guards and Notaries signatures and roles have been checked in AttestationHub.
      *
-     * @param _guards           Guard addresses (signatures&roles already verified)
-     * @param _notaries         Notary addresses (signatures&roles already verified)
-     * @param _attestationView  Memory view over the Attestation for convenience
+     * @param _guards       Guard addresses (signatures&roles already verified)
+     * @param _notaries     Notary addresses (signatures&roles already verified)
+     * @param _att          Memory view over the Attestation for convenience
+     * @param _attPayload   Payload with Attestation data and signature
      * @return stored   TRUE if Attestation was stored.
      */
     function _handleAttestation(
         address[] memory _guards,
         address[] memory _notaries,
-        bytes29 _attestationView,
-        bytes memory _attestation
+        Attestation _att,
+        bytes memory _attPayload
     ) internal override returns (bool stored) {
-        uint96 attKey = _attestationView.attestedKey();
-        bytes32 root = _attestationView.attestedRoot();
+        AttestationData attData = _att.data();
+        uint96 attKey = attData.key();
+        bytes32 root = attData.root();
         // TODO (Chi): to enforce "non-zero saved root" invariant by
         // checking if root is non-zero in Attestation.isAttestation()
         require(root != bytes32(0), "Root is zero");
@@ -294,14 +295,14 @@ contract AttestationCollector is
         // Save all new guard signatures
         bool linked;
         (stored, linked) = _handleSignatures({
-            _attestationView: _attestationView,
+            _att: _att,
             _existingRoot: existingRoot,
             _isGuard: true,
             _agents: _guards
         });
         // Save all new notary signatures
         (bool _stored, bool _linked) = _handleSignatures({
-            _attestationView: _attestationView,
+            _att: _att,
             _existingRoot: existingRoot,
             _isGuard: false,
             _agents: _notaries
@@ -311,7 +312,7 @@ contract AttestationCollector is
         linked = linked || _linked;
         // Emit event only if at least one signature was stored
         if (stored) {
-            emit AttestationAccepted(_guards, _notaries, _attestation);
+            emit AttestationAccepted(_guards, _notaries, _attPayload);
         }
         // Update storage records if at least one signature was linked
         if (linked) {
@@ -326,7 +327,7 @@ contract AttestationCollector is
      * an attestation with an equal or bigger nonce.
      */
     function _handleSignatures(
-        bytes29 _attestationView,
+        Attestation _att,
         SignedRoot memory _existingRoot,
         bool _isGuard,
         address[] memory _agents
@@ -334,7 +335,7 @@ contract AttestationCollector is
         uint256 amount = _agents.length;
         for (uint256 i = 0; i < amount; ++i) {
             uint256 savedSigIndex = _insertAttestation({
-                _attestationView: _attestationView,
+                _att: _att,
                 _agentIndex: i,
                 _isGuard: _isGuard,
                 _agent: _agents[i]
@@ -362,31 +363,30 @@ contract AttestationCollector is
      * an attestation with an equal or bigger nonce.
      */
     function _insertAttestation(
-        bytes29 _attestationView,
+        Attestation _att,
         uint256 _agentIndex,
         bool _isGuard,
         address _agent
     ) internal returns (uint256 signatureIndex) {
-        uint64 attDomains = _attestationView.attestedDomains();
-        uint32 nonce = _attestationView.attestedNonce();
+        AttestationData attData = _att.data();
+        uint64 attDomains = attData.domains();
+        uint32 nonce = attData.nonce();
         // Don't store outdated agent attestation
         if (nonce <= _latestAgentNonce(attDomains, _agent)) return 0;
         // Get the memory view over the agent's signature
-        bytes29 signature = (
-            _isGuard
-                ? _attestationView.guardSignature(_agentIndex)
-                : _attestationView.notarySignature(_agentIndex)
+        Signature signature = (
+            _isGuard ? _att.guardSignature(_agentIndex) : _att.notarySignature(_agentIndex)
         );
         // Second agent signature will be left empty
-        bytes29 emptySig = bytes("").castToSignature();
+        bytes29 emptySig = bytes("").castToRawBytes();
         // Construct the signature struct to save
         AgentSignature memory agentSig;
         (agentSig.r, agentSig.s, agentSig.v) = signature.toRSV();
         agentSig.isGuard = _isGuard;
-        (agentSig.origin, agentSig.destination) = Attestation.unpackDomains(attDomains);
+        (agentSig.origin, agentSig.destination) = AttestationLib.unpackDomains(attDomains);
         agentSig.nonce = nonce;
-        agentSig.blockNumber = _attestationView.attestedBlockNumber();
-        agentSig.timestamp = _attestationView.attestedTimestamp();
+        agentSig.blockNumber = attData.blockNumber();
+        agentSig.timestamp = attData.timestamp();
         savedSignatures.push(agentSig);
         // The signature is stored at length-1, but we add 1 to all indexes
         // and use 0 as a sentinel value
@@ -394,10 +394,10 @@ contract AttestationCollector is
         agentSigIndexes[attDomains][_agent].push(signatureIndex);
         // Construct attestation with a single signature of a given agent
         // Here we pass views over the existing byte arrays to reduce amount of copying into memory
-        bytes memory agentAttestation = Attestation.formatAttestation({
-            _dataView: _attestationView.attestationData(),
-            _guardSigsView: _isGuard ? signature : emptySig,
-            _notarySigsView: _isGuard ? emptySig : signature
+        bytes memory agentAttestation = AttestationLib.formatAttestation({
+            _data: attData,
+            _guardSigs: _isGuard ? signature.unwrap() : emptySig,
+            _notarySigs: _isGuard ? emptySig : signature.unwrap()
         });
         // Use the actual signature position in `savedSignatures` for the event
         emit AttestationSaved(signatureIndex - 1, agentAttestation);
@@ -429,7 +429,7 @@ contract AttestationCollector is
         assert(_signatureIndex != 0);
         // Read saved agent signature
         AgentSignature memory agentSig = savedSignatures[_signatureIndex - 1];
-        uint96 attKey = Attestation.attestationKey({
+        uint96 attKey = AttestationLib.packKey({
             _origin: agentSig.origin,
             _destination: agentSig.destination,
             _nonce: agentSig.nonce
@@ -438,7 +438,7 @@ contract AttestationCollector is
         // Invariant: Every saved signature refers to saved root
         assert(root != bytes32(0));
         // Reconstruct attestation data
-        bytes memory attData = Attestation.formatAttestationData({
+        bytes memory attDataPayload = AttestationLib.formatAttestationData({
             _origin: agentSig.origin,
             _destination: agentSig.destination,
             _nonce: agentSig.nonce,
@@ -454,10 +454,10 @@ contract AttestationCollector is
         });
         // Format attestation using a single signature
         return
-            Attestation.formatAttestation({
-                _data: attData,
-                _guardSignatures: agentSig.isGuard ? signature : bytes(""),
-                _notarySignatures: agentSig.isGuard ? bytes("") : signature
+            AttestationLib.formatAttestation({
+                _dataPayload: attDataPayload,
+                _guardSigsPayload: agentSig.isGuard ? signature : bytes(""),
+                _notarySigsPayload: agentSig.isGuard ? bytes("") : signature
             });
     }
 
@@ -466,15 +466,15 @@ contract AttestationCollector is
      * and one notary signature (if present).
      */
     function _formatDualAttestation(
-        bytes memory _attestationData,
+        bytes memory _attDataPayload,
         uint256 _guardSignatureIndex,
         uint256 _notarySignatureIndex
     ) internal view returns (bytes memory) {
         return
-            Attestation.formatAttestation({
-                _data: _attestationData,
-                _guardSignatures: _getSignature(_guardSignatureIndex),
-                _notarySignatures: _getSignature(_notarySignatureIndex)
+            AttestationLib.formatAttestation({
+                _dataPayload: _attDataPayload,
+                _guardSigsPayload: _getSignature(_guardSignatureIndex),
+                _notarySigsPayload: _getSignature(_notarySignatureIndex)
             });
     }
 

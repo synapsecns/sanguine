@@ -2,16 +2,17 @@
 
 pragma solidity 0.8.17;
 
-import { SynapseTypes } from "../../../contracts/libs/SynapseTypes.sol";
-import { SystemCall } from "../../../contracts/libs/SystemCall.sol";
-import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
+import "../../../contracts/libs/SystemMessage.sol";
 
 /**
- * @notice Exposes SystemCall methods for testing against golang.
+ * @notice Exposes SystemMessageLib methods for testing against golang.
  */
-contract SystemCallHarness {
-    using SystemCall for bytes;
-    using SystemCall for bytes29;
+contract SystemMessageHarness {
+    using ByteString for bytes;
+    using ByteString for CallData;
+    using SystemMessageLib for bytes;
+    using SystemMessageLib for bytes29;
+    using SystemMessageLib for SystemMessage;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
@@ -19,29 +20,28 @@ contract SystemCallHarness {
     ▏*║                              FORMATTERS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatSystemCall(
+    function formatSystemMessage(
         uint8 _systemRecipient,
-        uint40 _type,
-        bytes memory _payload,
+        bytes memory _callData,
         bytes memory _prefix
     ) public view returns (bytes memory) {
         return
-            SystemCall.formatSystemCall(
+            SystemMessageLib.formatSystemMessage(
                 _systemRecipient,
-                _payload.ref(_type),
-                _prefix.ref(SynapseTypes.RAW_BYTES)
+                _callData.castToCallData(),
+                _prefix.castToRawBytes()
             );
     }
 
-    function formatAdjustedCallPayload(
-        uint40 _type,
-        bytes memory _payload,
-        bytes memory _prefix
-    ) public view returns (bytes memory) {
+    function formatAdjustedCallData(bytes memory _callData, bytes memory _prefix)
+        public
+        view
+        returns (bytes memory)
+    {
         return
-            SystemCall.formatAdjustedCallPayload(
-                _payload.ref(_type),
-                _prefix.ref(SynapseTypes.RAW_BYTES)
+            SystemMessageLib.formatAdjustedCallData(
+                _callData.castToCallData(),
+                _prefix.castToRawBytes()
             );
     }
 
@@ -49,32 +49,23 @@ contract SystemCallHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToSystemCall(uint40, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
+    function castToSystemMessage(bytes memory _payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        bytes29 _view = SystemCall.castToSystemCall(_payload);
-        return (_view.typeOf(), _view.clone());
+        SystemMessage sm = SystemMessageLib.castToSystemMessage(_payload);
+        return sm.unwrap().clone();
     }
 
-    function callPayload(uint40 _type, bytes memory _payload)
-        public
-        view
-        returns (uint40, bytes memory)
-    {
-        bytes29 _view = _payload.ref(_type).callPayload();
-        return (_view.typeOf(), _view.clone());
+    function callData(bytes memory _payload) public view returns (bytes memory) {
+        return _payload.castToSystemMessage().callData().unwrap().clone();
     }
 
-    function callRecipient(uint40 _type, bytes memory _payload) public pure returns (uint8) {
-        return _payload.ref(_type).callRecipient();
+    function callRecipient(bytes memory _payload) public pure returns (uint8) {
+        return _payload.castToSystemMessage().callRecipient();
     }
 
-    function isSystemCall(bytes memory _payload) public pure returns (bool) {
-        return _payload.castToSystemCall().isSystemCall();
+    function isSystemMessage(bytes memory _payload) public pure returns (bool) {
+        return _payload.ref(0).isSystemMessage();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -82,14 +73,14 @@ contract SystemCallHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function systemRouter() public pure returns (bytes32) {
-        return SystemCall.SYSTEM_ROUTER;
+        return SystemMessageLib.SYSTEM_ROUTER;
     }
 
-    function offsetCallRecipient() public pure returns (uint256) {
-        return SystemCall.OFFSET_CALL_RECIPIENT;
+    function offsetRecipient() public pure returns (uint256) {
+        return SystemMessageLib.OFFSET_RECIPIENT;
     }
 
-    function offsetCallPayload() public pure returns (uint256) {
-        return SystemCall.OFFSET_CALL_PAYLOAD;
+    function offsetCallData() public pure returns (uint256) {
+        return SystemMessageLib.OFFSET_CALLDATA;
     }
 }

@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { TypedMemView } from "./TypedMemView.sol";
-import { TypeCasts } from "./TypeCasts.sol";
-import { SynapseTypes } from "./SynapseTypes.sol";
+import "./ByteString.sol";
+
+/// @dev Tips is a memory over over a formatted message tips payload.
+type Tips is bytes29;
 
 /**
  * @notice Library for versioned formatting [the tips part]
  * of [the messages used by Origin and Destination].
  */
-library Tips {
-    using TypedMemView for bytes;
+library TipsLib {
+    using ByteString for bytes;
     using TypedMemView for bytes29;
 
     uint16 internal constant TIPS_VERSION = 1;
@@ -36,24 +37,8 @@ library Tips {
     uint256 internal constant TIPS_LENGTH = 50;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
+    ▏*║                                 TIPS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    modifier onlyTips(bytes29 _view) {
-        _view.assertType(SynapseTypes.MESSAGE_TIPS);
-        _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              FORMATTERS                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Returns a properly typed bytes29 pointer for a tips payload.
-     */
-    function castToTips(bytes memory _payload) internal pure returns (bytes29) {
-        return _payload.ref(SynapseTypes.MESSAGE_TIPS);
-    }
 
     /**
      * @notice Returns a formatted Tips payload with provided fields
@@ -82,14 +67,34 @@ library Tips {
     }
 
     /**
-     * @notice Checks that a payload is a formatted Tips payload.
+     * @notice Returns a Tips view over for the given payload.
+     * @dev Will revert if the payload is not a tips payload.
      */
+    function castToTips(bytes memory _payload) internal pure returns (Tips) {
+        return castToTips(_payload.castToRawBytes());
+    }
+
+    /**
+     * @notice Casts a memory view to a Tips view.
+     * @dev Will revert if the memory view is not over a tips payload.
+     */
+    function castToTips(bytes29 _view) internal pure returns (Tips) {
+        require(isTips(_view), "Not a tips payload");
+        return Tips.wrap(_view);
+    }
+
+    /// @notice Checks that a payload is a formatted Tips payload.
     function isTips(bytes29 _view) internal pure returns (bool) {
         uint256 length = _view.len();
         // Check if version exists in the payload
-        if (length < 2) return false;
-        // Check that header version and its length matches
-        return tipsVersion(_view) == TIPS_VERSION && length == TIPS_LENGTH;
+        if (length < OFFSET_NOTARY) return false;
+        // Check that tips version and its length matches
+        return _getVersion(_view) == TIPS_VERSION && length == TIPS_LENGTH;
+    }
+
+    /// @notice Convenience shortcut for unwrapping a view.
+    function unwrap(Tips _tips) internal pure returns (bytes29) {
+        return Tips.unwrap(_tips);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -97,34 +102,49 @@ library Tips {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns version of formatted tips
-    function tipsVersion(bytes29 _tips) internal pure onlyTips(_tips) returns (uint16) {
-        return uint16(_tips.indexUint(OFFSET_VERSION, 2));
+    function version(Tips _tips) internal pure returns (uint16) {
+        // Get the underlying memory view
+        bytes29 _view = unwrap(_tips);
+        return _getVersion(_view);
     }
 
     /// @notice Returns notaryTip field
-    function notaryTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint96(_tips.indexUint(OFFSET_NOTARY, 12));
+    function notaryTip(Tips _tips) internal pure returns (uint96) {
+        bytes29 _view = unwrap(_tips);
+        return uint96(_view.indexUint(OFFSET_NOTARY, 12));
     }
 
     /// @notice Returns broadcasterTip field
-    function broadcasterTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint96(_tips.indexUint(OFFSET_BROADCASTER, 12));
+    function broadcasterTip(Tips _tips) internal pure returns (uint96) {
+        bytes29 _view = unwrap(_tips);
+        return uint96(_view.indexUint(OFFSET_BROADCASTER, 12));
     }
 
     /// @notice Returns proverTip field
-    function proverTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint96(_tips.indexUint(OFFSET_PROVER, 12));
+    function proverTip(Tips _tips) internal pure returns (uint96) {
+        bytes29 _view = unwrap(_tips);
+        return uint96(_view.indexUint(OFFSET_PROVER, 12));
     }
 
     /// @notice Returns executorTip field
-    function executorTip(bytes29 _tips) internal pure onlyTips(_tips) returns (uint96) {
-        return uint96(_tips.indexUint(OFFSET_EXECUTOR, 12));
+    function executorTip(Tips _tips) internal pure returns (uint96) {
+        bytes29 _view = unwrap(_tips);
+        return uint96(_view.indexUint(OFFSET_EXECUTOR, 12));
     }
 
     /// @notice Returns total tip amount.
-    function totalTips(bytes29 _tips) internal pure returns (uint96) {
+    function totalTips(Tips _tips) internal pure returns (uint96) {
         // In practice there's no chance that the total tips value would not fit into uint96.
         // TODO: determine if we want to use uint256 here instead anyway.
         return notaryTip(_tips) + broadcasterTip(_tips) + proverTip(_tips) + executorTip(_tips);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           PRIVATE HELPERS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Returns a version field without checking if payload is properly formatted.
+    function _getVersion(bytes29 _view) private pure returns (uint16) {
+        return uint16(_view.indexUint(OFFSET_VERSION, 2));
     }
 }
