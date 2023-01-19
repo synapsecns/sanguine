@@ -60,6 +60,12 @@ var pathFlag = &cli.StringFlag{
 	Required: true,
 }
 
+var scribeTypeFlag = &cli.StringFlag{
+	Name:     "scribe-type",
+	Usage:    "--scribe-type <embedded> or <remote>",
+	Required: true,
+}
+
 var scribeDBFlag = &cli.StringFlag{
 	Name:  "scribe-db",
 	Usage: "--scribe-db <sqlite> or <mysql>",
@@ -111,102 +117,76 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 	return executorConfig, executorDB, clients, nil
 }
 
-var runRemoteCommand = &cli.Command{
-	Name:        "run-remote",
-	Description: "runs the executor agent with a remote scribe",
-	Flags: []cli.Flag{
-		configFlag, dbFlag, pathFlag, scribePortFlag, scribeGrpcPortFlag, scribeURL,
-	},
+var runCommand = &cli.Command{
+	Name:        "run",
+	Description: "runs the executor service",
+	Flags: []cli.Flag{configFlag, dbFlag, pathFlag, scribeTypeFlag,
+		// The flags below are used when `scribeTypeFlag` is set to "embedded".
+		scribeDBFlag, scribePathFlag,
+		// The flags below are used when `scribeTypeFlag` is set to "remote".
+		scribePortFlag, scribeGrpcPortFlag, scribeURL},
 	Action: func(c *cli.Context) error {
 		executorConfig, executorDB, clients, err := createExecutorParameters(c)
 		if err != nil {
-			return fmt.Errorf("failed to create executor parameters: %w", err)
+			return err
 		}
 
-		scribeClient := client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), uint16(c.Uint(scribeGrpcPortFlag.Name)), c.String(scribeURL.Name)).ScribeClient
-
-		executor, err := executor.NewExecutor(c.Context, executorConfig, executorDB, scribeClient, clients)
-		if err != nil {
-			return fmt.Errorf("failed to create executor: %w", err)
-		}
+		var scribeClient client.ScribeClient
 
 		g, _ := errgroup.WithContext(c.Context)
 
-		g.Go(func() error {
-			err = executor.Run(c.Context)
+		switch c.String(scribeTypeFlag.Name) {
+		case "embedded":
+			eventDB, err := scribeAPI.InitDB(c.Context, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name))
 			if err != nil {
-				return fmt.Errorf("failed to run executor: %w", err)
+				return fmt.Errorf("failed to initialize database: %w", err)
 			}
 
-			return nil
-		})
+			scribeClients := make(map[uint32][]backfill.ScribeBackend)
 
-		if err := g.Wait(); err != nil {
-			return fmt.Errorf("failed to run executor: %w", err)
-		}
+			for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
+				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
+					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/confirmations/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, confNum, client.ChainID))
+					if err != nil {
+						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/%s/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, "confirmations", confNum, client.ChainID))
+					}
 
-		return nil
-	},
-}
+					scribeClients[client.ChainID] = append(scribeClients[client.ChainID], backendClient)
+				}
+			}
 
-var runEmbeddedCommand = &cli.Command{
-	Name:        "run-embedded",
-	Description: "runs the executor agent with an embedded scribe",
-	Flags: []cli.Flag{
-		configFlag, dbFlag, pathFlag, scribeDBFlag, scribePathFlag,
-	},
-	Action: func(c *cli.Context) error {
-		executorConfig, executorDB, clients, err := createExecutorParameters(c)
-		if err != nil {
-			return fmt.Errorf("failed to create executor parameters: %w", err)
-		}
+			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.EmbeddedScribeConfig)
+			if err != nil {
+				return fmt.Errorf("failed to initialize scribe: %w", err)
+			}
 
-		g, _ := errgroup.WithContext(c.Context)
-
-		eventDB, err := scribeAPI.InitDB(c.Context, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name))
-		if err != nil {
-			return fmt.Errorf("failed to initialize database: %w", err)
-		}
-
-		scribeClients := make(map[uint32][]backfill.ScribeBackend)
-
-		for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
-			for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-				backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/confirmations/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, confNum, client.ChainID))
+			g.Go(func() error {
+				err := scribe.Start(c.Context)
 				if err != nil {
-					return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/%s/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, "confirmations", confNum, client.ChainID))
+					return fmt.Errorf("failed to start scribe: %w", err)
 				}
 
-				scribeClients[client.ChainID] = append(scribeClients[client.ChainID], backendClient)
-			}
+				return nil
+			})
+
+			embedded := client.NewEmbeddedScribe(c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name))
+
+			g.Go(func() error {
+				err := embedded.Start(c.Context)
+				if err != nil {
+					return fmt.Errorf("failed to start embedded scribe: %w", err)
+				}
+
+				return nil
+			})
+
+			scribeClient = embedded.ScribeClient
+		case "remote":
+			scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), uint16(c.Uint(scribeGrpcPortFlag.Name)), c.String(scribeURL.Name)).ScribeClient
+		default:
+			return fmt.Errorf("invalid scribe type")
 		}
 
-		scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.EmbeddedScribeConfig)
-		if err != nil {
-			return fmt.Errorf("failed to initialize scribe: %w", err)
-		}
-
-		g.Go(func() error {
-			err := scribe.Start(c.Context)
-			if err != nil {
-				return fmt.Errorf("failed to start scribe: %w", err)
-			}
-
-			return nil
-		})
-
-		embedded := client.NewEmbeddedScribe(c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name))
-
-		g.Go(func() error {
-			err := embedded.Start(c.Context)
-			if err != nil {
-				return fmt.Errorf("failed to start embedded scribe: %w", err)
-			}
-
-			return nil
-		})
-
-		scribeClient := embedded.ScribeClient
 		executor, err := executor.NewExecutor(c.Context, executorConfig, executorDB, scribeClient, clients)
 		if err != nil {
 			return fmt.Errorf("failed to create executor: %w", err)
