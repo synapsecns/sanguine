@@ -18,8 +18,8 @@ import (
 //go:embed cmd.md
 var help string
 
-// infoCommand gets info about using the notary agent.
-var infoCommand = &cli.Command{
+// NotaryInfoCommand gets info about using the notary agent.
+var NotaryInfoCommand = &cli.Command{
 	Name:        "info",
 	Description: "learn how to use notary cli",
 	Action: func(c *cli.Context) error {
@@ -35,7 +35,7 @@ var configFlag = &cli.StringFlag{
 	Required:  true,
 }
 
-var runCommand = &cli.Command{
+var NotaryRunCommand = &cli.Command{
 	Name:        "run",
 	Description: "runs the notary service",
 	Flags:       []cli.Flag{configFlag},

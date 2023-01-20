@@ -29,8 +29,8 @@ import (
 //go:embed cmd.md
 var help string
 
-// infoCommand gets info about using the executor agent.
-var infoCommand = &cli.Command{
+// ExecutorInfoCommand gets info about using the executor agent.
+var ExecutorInfoCommand = &cli.Command{
 	Name:        "info",
 	Description: "learn how to use executor cli",
 	Action: func(c *cli.Context) error {
@@ -117,7 +117,7 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 	return executorConfig, executorDB, clients, nil
 }
 
-var runCommand = &cli.Command{
+var ExecutorRunCommand = &cli.Command{
 	Name:        "run",
 	Description: "runs the executor service",
 	Flags: []cli.Flag{configFlag, dbFlag, pathFlag, scribeTypeFlag,
