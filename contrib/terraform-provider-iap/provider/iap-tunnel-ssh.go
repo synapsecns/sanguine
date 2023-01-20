@@ -9,6 +9,8 @@ import (
 	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/google"
 	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/tunnel"
 	"log"
+	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -131,6 +133,18 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 	err = d.Set("proxy_url", proxyURL)
 	if err != nil {
 		return fmt.Errorf("could not set proxy_url: %w", err)
+	}
+
+	// test the tunnel
+	parsedURL, err := url.Parse(proxyURL)
+	if err != nil {
+		log.Printf("[ERROR] could not parse proxy url %s: %v", proxyURL, err)
+		return err
+	}
+	testClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(parsedURL)}}
+	_, err = testClient.Get("https://www.google.com/")
+	if err != nil {
+		log.Printf("[ERROR] could not connect through proxy %s: %v", proxyURL, err)
 	}
 
 	return nil
