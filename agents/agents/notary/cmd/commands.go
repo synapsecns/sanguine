@@ -35,6 +35,7 @@ var configFlag = &cli.StringFlag{
 	Required:  true,
 }
 
+// NotaryRunCommand runs the notary.
 var NotaryRunCommand = &cli.Command{
 	Name:        "run",
 	Description: "runs the notary service",

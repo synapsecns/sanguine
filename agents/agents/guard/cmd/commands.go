@@ -35,6 +35,7 @@ var configFlag = &cli.StringFlag{
 	Required:  true,
 }
 
+// GuardRunCommand runs the guard.
 var GuardRunCommand = &cli.Command{
 	Name:        "run",
 	Description: "runs the guard service",

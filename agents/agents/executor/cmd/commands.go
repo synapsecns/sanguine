@@ -117,6 +117,7 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 	return executorConfig, executorDB, clients, nil
 }
 
+// ExecutorRunCommand runs the executor.
 var ExecutorRunCommand = &cli.Command{
 	Name:        "run",
 	Description: "runs the executor service",
