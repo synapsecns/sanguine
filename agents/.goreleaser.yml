@@ -27,6 +27,21 @@ builds:
       - linux
     goarch:
       - amd64
+  - id: executor
+    binary: executor
+    ldflags:
+      - -s -w -extldflags "-static"
+    tags:
+      - netgo
+      - osusergo
+    env:
+      - CC=gcc
+      - CXX=g++
+    main: agents/agents/executor/main/main.go
+    goos:
+      - linux
+    goarch:
+      - amd64
 
 # add a source archive at release time
 source:
