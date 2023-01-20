@@ -205,7 +205,7 @@ jobs:
 
 
       - name: Copy Releases
-        if: steps.branch-name.outputs.is_default == 'true' && ${{ contains( matrix.package, 'terraform') }}
+        if: steps.branch-name.outputs.is_default == 'true' && ${{ contains( steps.tag_version.outputs.new_tag, 'terraform') }}
         uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
         with:
             github_token: ${{ secrets.PUBLISH_TOKEN }}
