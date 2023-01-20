@@ -37,7 +37,7 @@ builds:
     env:
       - CC=gcc
       - CXX=g++
-    main: agents/agents/executor/main/main.go
+    main: agents/executor/main/main.go
     goos:
       - linux
     goarch:
