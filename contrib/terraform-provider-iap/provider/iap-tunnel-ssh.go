@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/google"
@@ -117,6 +118,8 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	log.Printf("[DEBUG] Finished creating proxy on port %d", localPort)
+
+	d.SetId(uuid.New().String())
 	err = d.Set("proxy_url", fmt.Sprintf("http://localhost:%d", localPort))
 	if err != nil {
 		return fmt.Errorf("could not set proxy_url: %w", err)
