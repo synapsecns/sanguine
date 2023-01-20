@@ -100,12 +100,15 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[INFO] creating tunnel")
 	go func() {
+		startTime := time.Now()
 		err := tm.StartProxy(context.Background())
 		if err != nil {
 			fmt.Println(err)
 			log.Printf("[DEBUG] Proxy Error %v", err)
 			errChan <- err
 		}
+
+		log.Printf("[DEBUG] Proxy closed after %s", time.Since(startTime))
 	}()
 
 	select {
