@@ -13,7 +13,7 @@ var (
 )
 
 func main() {
-	buildInfo := config.NewBuildInfo(version, commit, "executor", date)
+	buildInfo := config.NewBuildInfo(version, commit, "agents", date)
 
 	cmd.Start(os.Args, buildInfo)
 }
