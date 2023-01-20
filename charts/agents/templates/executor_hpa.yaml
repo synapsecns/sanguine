@@ -1,3 +1,4 @@
+{{- if .Values.executor.enabled }}
 {{- if .Values.executor.autoscaling.enabled }}
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
@@ -25,4 +26,5 @@ spec:
         name: memory
         targetAverageUtilization: {{ .Values.executor.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
+{{- end }}
 {{- end }}
