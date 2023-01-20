@@ -14,7 +14,7 @@ func main() {
 	// GITHUB_TOKEN: the github access token
 	// GITHUB_REPOSITORY: the repository we are running the action on in the format owner/repo
 	repoOwner, repoPath := utils.ParseGithubRepository(os.Getenv("GITHUB_REPOSITORY"))
-	token := os.Getenv("GITHUB_TOKEN")
+	token := githubactions.GetInput("github_token")
 
 	// we also parse the source and target repositories
 	destOwner, destRepo := utils.ParseGithubRepository(githubactions.GetInput("destination_repo"))
