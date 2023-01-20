@@ -27,6 +27,7 @@ builds:
       - linux
     goarch:
       - amd64
+
   - id: executor
     binary: executor
     ldflags:
@@ -38,6 +39,38 @@ builds:
       - CC=gcc
       - CXX=g++
     main: agents/executor/main/main.go
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+  - id: guard
+    binary: guard
+    ldflags:
+      - -s -w -extldflags "-static"
+    tags:
+      - netgo
+      - osusergo
+    env:
+      - CC=gcc
+      - CXX=g++
+    main: agents/guard/main/main.go
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+  - id: notary
+    binary: notary
+    ldflags:
+      - -s -w -extldflags "-static"
+    tags:
+      - netgo
+      - osusergo
+    env:
+      - CC=gcc
+      - CXX=g++
+    main: agents/notary/main/main.go
     goos:
       - linux
     goarch:
