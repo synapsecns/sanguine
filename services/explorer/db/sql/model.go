@@ -104,7 +104,7 @@ type BridgeEvent struct {
 	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
 	// Fee is the fee.
 	Fee *big.Int `gorm:"column:fee;type:UInt256"`
-	// Kappa is theFee keccak256 hash of the transaction.
+	// Kappa is the keccak256 hash of the transaction.
 	Kappa sql.NullString `gorm:"column:kappa"`
 	// TokenIndexFrom is the index of the from token in the pool.
 	TokenIndexFrom *big.Int `gorm:"column:token_index_from;type:UInt256"`
