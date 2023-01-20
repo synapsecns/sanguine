@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
+  repository: ghcr.io/synapsecns/sanguine/agents
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
@@ -22,11 +22,6 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
-
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
 
 securityContext: {}
   # capabilities:
@@ -68,15 +63,71 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+executor:
+  enabled: true
+  args: ["run", "--config=/config/config.yaml", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-port=0", "--scribe-grpc-port=0", "--scribe-url=a.b.c"]
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+  podAnnotations: {}
+  nodeSelector: {}
+  podSecurityContext: {}
+  affinity: {}
+  env:
+    - name: GOLOG_LOG_FMT
+      value: "json"
+  tolerations: {}
+  extraInitContainers:
+    - name: wait-for-omnirpc
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for mysql..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: executor-omnirpc
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    # Wait for mysql to show up
+    # this is mostly for testing
+    - name: wait-for-mysql
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: executor-mysql
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
 
-nodeSelector: {}
+mysql:
+  # use a constant here to build a connection to the service
+  enabled: true
+  fullnameOverride: executor-mysql
+  architecture: standalone
+  networkPolicy:
+    enabled: true
+  metrics:
+    enabled: true
+  auth:
+    database: scribe
+    # Note: this should be used in production instead of auth.password
+    # existingSecret: mysql-password
+    rootPassword: MysqlPassword
 
-tolerations: []
+omnirpc:
+  # this can be remote in production, we just want to use the public rpc servers here
+  enabled: true
+  fullnameOverride: executor-omnirpc
+  replicaCount: 2
 
-affinity: {}
+files:
+  config.yaml: |-
+    # Production config example
