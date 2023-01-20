@@ -1,3 +1,4 @@
+// Package main provides the main entry point for all agents.
 package main
 
 import (
