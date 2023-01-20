@@ -67,3 +67,33 @@ dockers:
     dockerfile: ../docker/agents.Dockerfile
     ids:
       - agents
+
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/executor:latest'
+      - 'ghcr.io/synapsecns/sanguine/executor:{{ .FullCommit }}'
+      - 'ghcr.io/synapsecns/sanguine/executor:{{ .Tag }}'
+    dockerfile: ../docker/executor.Dockerfile
+    ids:
+      - executor
+
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/guard:latest'
+      - 'ghcr.io/synapsecns/sanguine/guard:{{ .FullCommit }}'
+      - 'ghcr.io/synapsecns/sanguine/guard:{{ .Tag }}'
+    dockerfile: ../docker/guard.Dockerfile
+    ids:
+      - guard
+
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/notary:latest'
+      - 'ghcr.io/synapsecns/sanguine/notary:{{ .FullCommit }}'
+      - 'ghcr.io/synapsecns/sanguine/notary:{{ .Tag }}'
+    dockerfile: ../docker/notary.Dockerfile
+    ids:
+      - notary
