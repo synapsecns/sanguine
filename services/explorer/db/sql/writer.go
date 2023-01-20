@@ -166,3 +166,38 @@ func (s *Store) StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex 
 	}
 	return nil
 }
+
+// StoreSwapFee stores the swap fee.
+func (s *Store) StoreSwapFee(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string, fee uint64, feeType string) error {
+	entry := SwapFees{}
+	dbTx := s.db.WithContext(ctx).
+		Model(&SwapFees{}).
+		Where(&SwapFees{
+			ChainID:         chainID,
+			BlockNumber:     blockNumber,
+			ContractAddress: contractAddress,
+			FeeType:         feeType,
+		}).
+		Limit(1).
+		Find(&entry)
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not retrieve last block: %w", dbTx.Error)
+	}
+	if blockNumber != entry.BlockNumber {
+		dbTx = s.db.WithContext(ctx).
+			Model(&SwapFees{}).
+			Create(&SwapFees{
+				ChainID:         chainID,
+				ContractAddress: contractAddress,
+				BlockNumber:     blockNumber,
+				FeeType:         feeType,
+				Fee:             fee,
+			})
+		if dbTx.Error != nil {
+			return fmt.Errorf("could not store last block: %w", dbTx.Error)
+		}
+
+		return nil
+	}
+	return nil
+}

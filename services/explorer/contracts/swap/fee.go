@@ -51,7 +51,7 @@ func (s SwapFlashLoanNewAdminFee) GetAmount() map[uint8]string {
 
 // GetAmountFee gets the fee amount(s).
 func (s SwapFlashLoanNewAdminFee) GetAmountFee() map[uint8]string {
-	return nil
+	return map[uint8]string{}
 }
 
 // GetProtocolFee gets the protocol fee of the tx.
@@ -187,7 +187,7 @@ func (s SwapFlashLoanNewSwapFee) GetAmount() map[uint8]string {
 
 // GetAmountFee gets the amount.
 func (s SwapFlashLoanNewSwapFee) GetAmountFee() map[uint8]string {
-	return nil
+	return map[uint8]string{}
 }
 
 // GetProtocolFee gets the protocol fee of the tx.

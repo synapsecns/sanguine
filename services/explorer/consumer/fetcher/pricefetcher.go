@@ -19,8 +19,8 @@ type PriceService interface {
 
 // tokenMetadataMaxRetry is the maximum number of times to retry requesting token metadata
 // from the defi llama API.
-const tokenMetadataMaxRetry = 24
-const tokenMetadataMaxRetrySecondary = 3
+const tokenMetadataMaxRetry = 40
+const tokenMetadataMaxRetrySecondary = 2
 
 var endpoints = []string{
 	"https://o7zsk6wjki.execute-api.us-east-1.amazonaws.com/default/ipDivider0?url=",
@@ -43,8 +43,8 @@ var endpoints = []string{
 }
 
 //
-//const coinGeckoRetryThreshold = 15
-//func GetCoinGeckoPriceData(ctx context.Context, timestamp int, coinGeckoID string, retries int) *float64 {
+// const coinGeckoRetryThreshold = 15
+// func GetCoinGeckoPriceData(ctx context.Context, timestamp int, coinGeckoID string, retries int) *float64 {
 //	client := http.Client{
 //		Timeout: 5 * time.Second,
 //	}
@@ -99,7 +99,7 @@ func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID string) *f
 RETRY:
 	select {
 	case <-ctx.Done():
-		logger.Errorf("context cancelled %s, %v", coinGeckoID, ctx.Err())
+		logger.Errorf("context canceled %s, %v", coinGeckoID, ctx.Err())
 
 		return nil
 	case <-time.After(timeout):
@@ -112,11 +112,18 @@ RETRY:
 			fmt.Println("Max retries reached, could not get token metadata for", coinGeckoID)
 			return &zero
 		}
-		granularityStr := fmt.Sprintf("?searchWidth=%dm", retries+1)
-		if retries > 12 {
-			granularityStr = fmt.Sprintf("?searchWidth=%dh", retries-12)
+		granularityStr := fmt.Sprintf("?searchWidth=%dm", 10*(retries)+1)
+		if retries > 6 {
+			granularityStr = fmt.Sprintf("?searchWidth=%dh", retries-6)
 		}
-		url := endpoints[rand.Intn(len(endpoints))] + fmt.Sprintf("'https://coins.llama.fi/prices/historical/%d/coingecko:%s%s'", timestamp, coinGeckoID, granularityStr)
+
+		url := fmt.Sprintf("https://coins.llama.fi/prices/historical/%d/coingecko:%s%s", timestamp, coinGeckoID, granularityStr)
+
+		// nolint:gosec
+		if rand.Intn(retries/3+1) == 1 {
+			// nolint:gosec
+			url = endpoints[rand.Intn(len(endpoints))] + fmt.Sprintf("'https://coins.llama.fi/prices/historical/%d/coingecko:%s%s'", timestamp, coinGeckoID, granularityStr)
+		}
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 		if err != nil {
 			timeout = b.Duration()
@@ -136,7 +143,7 @@ RETRY:
 		res := make(map[string]map[string]map[string]interface{})
 		err = json.NewDecoder(resRaw.Body).Decode(&res)
 		if err != nil {
-			if retriesSecondary > retriesSecondary-2 {
+			if retriesSecondary > retriesSecondary-2 && retries > 18 {
 				logger.Errorf("Failed decoding defillama data after retries %d, retries secondary: %d  id %s: timestamp: %d error %v %s", retries, retriesSecondary, coinGeckoID, timestamp, err, url)
 			}
 			timeout = b.Duration()
@@ -146,8 +153,8 @@ RETRY:
 
 		priceRaw := res["coins"][fmt.Sprintf("coingecko:%s", coinGeckoID)]["price"]
 		if priceRaw == nil {
-			if retries >= 12 {
-				logger.Errorf("error getting price from defi llama: retries: %d %s %d", retries, coinGeckoID, timestamp)
+			if retries >= 6 {
+				logger.Errorf("error getting price from defi llama: retries: %d %s %d %v %s", retries, coinGeckoID, timestamp, res, url)
 			}
 			timeout = b.Duration()
 			retries++

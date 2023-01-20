@@ -95,7 +95,7 @@ func (t *tokenPoolDataServiceImpl) retryWithBackoff(ctx context.Context, doFunc 
 		Factor: 2,
 		Jitter: true,
 		Min:    1 * time.Second,
-		Max:    5 * time.Second,
+		Max:    3 * time.Second,
 	}
 
 	timeout := time.Duration(0)

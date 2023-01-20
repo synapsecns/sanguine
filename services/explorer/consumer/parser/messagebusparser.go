@@ -73,6 +73,7 @@ func eventToMessageEvent(event messageBusTypes.EventLog, chainID uint32) model.M
 		Fee:                event.GetFee(),
 		TimeStamp:          nil,
 		RevertedReason:     ToNullString(event.GetRevertReason()),
+		FeeUSD:             nil,
 	}
 }
 
@@ -147,5 +148,10 @@ func (m *MessageBusParser) Parse(ctx context.Context, log ethTypes.Log, chainID 
 	timeStampBig := uint64(*timeStamp)
 	messageEvent.TimeStamp = &timeStampBig
 
+	if messageEvent.Fee != nil {
+		// is this correct? are fees just usd?
+		one := 1.0
+		messageEvent.FeeUSD = GetAmountUSD(messageEvent.Fee, 18, &one)
+	}
 	return messageEvent, nil
 }

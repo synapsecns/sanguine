@@ -6,7 +6,7 @@ bridge_config_chain_id: 1
 chains:
   - chain_id: 1
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0x2796317b0fF8538F253012862c06787Adfb8cEb6'
@@ -16,7 +16,7 @@ chains:
         start_block: 13037609
   - chain_id: 42161
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9'
@@ -29,7 +29,7 @@ chains:
         start_block: 5440
   - chain_id: 1313161554
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0xaeD5b25BE1c3163c907a471082640450F928DDFE'
@@ -42,7 +42,7 @@ chains:
         start_block: 67351746
   - chain_id: 43114
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE'
@@ -58,7 +58,7 @@ chains:
         start_block: 3382104
   - chain_id: 288
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0x432036208d2717394d2614d6697c46DF3Ed69540'
@@ -71,7 +71,7 @@ chains:
         start_block: 49329
   - chain_id: 56
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0xd123f70AE324d34A9E76b67a27bf77593bA8749f'
@@ -84,7 +84,7 @@ chains:
         start_block: 3382104
   - chain_id: 250
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b'
@@ -97,7 +97,7 @@ chains:
         start_block: 28288390
   - chain_id: 1666600000
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b'
@@ -110,7 +110,7 @@ chains:
         start_block: 26108972
   - chain_id: 137
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280'
@@ -123,7 +123,7 @@ chains:
         start_block: 18030407
   - chain_id: 10
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b'
@@ -136,21 +136,21 @@ chains:
         start_block: 30819
   - chain_id: 1284
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0x84A420459cd31C3c34583F67E0f0fB191067D32f'
         start_block: 173355
   - chain_id: 1285
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0xaeD5b25BE1c3163c907a471082640450F928DDFE'
         start_block: 890949
   - chain_id: 53935
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0xE05c976d3f045D0E6E7A6f61083d98A15603cF6A'
@@ -160,7 +160,7 @@ chains:
         start_block: 1513462
   - chain_id: 25
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9'
@@ -170,7 +170,7 @@ chains:
         start_block: 2511054
   - chain_id: 1088
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0x06Fea8513FF03a0d3f61324da709D4cf06F42A5c'
@@ -183,7 +183,7 @@ chains:
         start_block: 1698935
   - chain_id: 8217
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b'
@@ -193,7 +193,7 @@ chains:
         start_block: 105416660
   - chain_id: 7700
     fetch_block_increment: 200
-    max_goroutines: 2
+    max_goroutines: 4
     contracts:
       - contract_type: bridge
         address: '0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0'

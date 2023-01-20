@@ -126,8 +126,8 @@ type BridgeEvent struct {
 	TokenID sql.NullString `gorm:"column:token_id"`
 	// AmountUSD is the amount in USD.
 	AmountUSD *float64 `gorm:"column:amount_usd;type:Float64"`
-	// FeeAmountUSD is the fee amount in USD.
-	FeeAmountUSD *float64 `gorm:"column:fee_amount_usd;type:Float64"`
+	// FeeUSD is the fee amount in USD.
+	FeeUSD *float64 `gorm:"column:fee_usd;type:Float64"`
 	// TokenDecimal is the token's decimal.
 	TokenDecimal *uint8 `gorm:"column:token_decimal"`
 	// TokenSymbol is the token's symbol from coin gecko.
@@ -158,7 +158,11 @@ type SwapEvent struct {
 	// Amount is the amount of tokens.
 	Amount map[uint8]string `gorm:"column:amount;type:Map(UInt8, String)"`
 	// AmountFee is the amount of fees.
-	AmountFee map[uint8]string `gorm:"column:amount_fee;type:Map(UInt8, String)"`
+	Fee map[uint8]string `gorm:"column:fee;type:Map(UInt8, String)"`
+	// AmountUSD is the amount in USD.
+	AmountUSD map[uint8]float64 `gorm:"column:amount_usd;type:Map(UInt8, Float64)"`
+	// FeeAmountUSD is the fee amount in USD.
+	FeeUSD map[uint8]float64 `gorm:"column:fee_usd;type:Map(UInt8, Float64)"`
 	// ProtocolFee is the protocol fee.
 	ProtocolFee *big.Int `gorm:"column:protocol_fee;type:UInt256"`
 	// Buyer is the address of the buyer.
@@ -198,11 +202,13 @@ type SwapEvent struct {
 	// Receiver is the address of the receiver.
 	Receiver sql.NullString `gorm:"column:receiver"`
 	// TokenPrices are the prices of each token at the given time.
-	TokenPrices map[uint8]float64 `gorm:"column:amount_usd;type:Map(UInt8, Float64)"`
+	TokenPrice map[uint8]float64 `gorm:"column:token_price;type:Map(UInt8, Float64)"`
 	// TokenDecimal is the token's decimal.
 	TokenDecimal map[uint8]uint8 `gorm:"column:token_decimal;type:Map(UInt8, UInt8)"`
 	// TokenSymbol is the token's symbol from coingecko.
 	TokenSymbol map[uint8]string `gorm:"column:token_symbol;type:Map(UInt8, String)"`
+	// TokenSymbol is the token's symbol from coingecko.
+	TokenCoinGeckoID map[uint8]string `gorm:"column:token_coingecko_id;type:Map(UInt8, String)"`
 	// TimeStamp is the timestamp of the block in which the event occurred.
 	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
@@ -227,6 +233,20 @@ type TokenIndex struct {
 	TokenAddress string `gorm:"column:token_address"`
 	// ContractAddress is the address of the contract that generated the event.
 	ContractAddress string `gorm:"column:contract_address"`
+}
+
+// SwapFees stores the admin and swap fees.
+type SwapFees struct {
+	// ChainID is the chain id of the chain.
+	ChainID uint32 `gorm:"column:chain_id"`
+	// ContractAddress is the address of the contract that generated the event.
+	ContractAddress string `gorm:"column:contract_address"`
+	// BlockNumber is the timestamp.
+	BlockNumber uint64 `gorm:"column:block_number"`
+	// FeeType is the type of fee.
+	FeeType string `gorm:"column:fee_type"`
+	// Fee the fee.
+	Fee uint64 `gorm:"column:fee"`
 }
 
 // MessageBusEvent stores data for emitted events from the message bus contract.
@@ -270,6 +290,8 @@ type MessageBusEvent struct {
 	Options sql.NullString `gorm:"column:options"`
 	// Fee is the fee of the message.
 	Fee *big.Int `gorm:"column:fee;type:UInt256"`
+	// FeeUSD is the fee of the message.
+	FeeUSD *float64 `gorm:"column:fee_usd;type:Float64"`
 	// RevertedReason is the reason a call was reverted.
 	RevertedReason sql.NullString `gorm:"column:reverted_reason"`
 	// TimeStamp is the timestamp in which the record was inserted.

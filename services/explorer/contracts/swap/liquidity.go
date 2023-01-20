@@ -203,7 +203,7 @@ func (s SwapFlashLoanRemoveLiquidity) GetAmount() map[uint8]string {
 
 // GetAmountFee gets the fees.
 func (s SwapFlashLoanRemoveLiquidity) GetAmountFee() map[uint8]string {
-	return nil
+	return map[uint8]string{}
 }
 
 // GetLPTokenSupply gets the LP token supply.
@@ -365,7 +365,7 @@ func (s SwapFlashLoanRemoveLiquidityOne) GetSoldID() *big.Int {
 
 // GetAmountFee gets the amount.
 func (s SwapFlashLoanRemoveLiquidityOne) GetAmountFee() map[uint8]string {
-	return nil
+	return map[uint8]string{}
 }
 
 // GetProtocolFee gets the protocol fee of the tx.

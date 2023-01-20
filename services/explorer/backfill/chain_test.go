@@ -1185,7 +1185,7 @@ func (b *BackfillSuite) addLiquidityParity(log *types.Log, parser *parser.SwapPa
 	}
 	Equal(b.T(), int64(1), count)
 	Equal(b.T(), arrayToTokenIndexMap(parsedLog.TokenAmounts), storedLog.Amount)
-	Equal(b.T(), arrayToTokenIndexMap(parsedLog.Fees), storedLog.AmountFee)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.Fees), storedLog.Fee)
 	return nil
 }
 
@@ -1292,7 +1292,7 @@ func (b *BackfillSuite) removeLiquidityImbalanceParity(log *types.Log, parser *p
 	}
 	Equal(b.T(), int64(1), count)
 	Equal(b.T(), arrayToTokenIndexMap(parsedLog.TokenAmounts), storedLog.Amount)
-	Equal(b.T(), arrayToTokenIndexMap(parsedLog.Fees), storedLog.AmountFee)
+	Equal(b.T(), arrayToTokenIndexMap(parsedLog.Fees), storedLog.Fee)
 	return nil
 }
 
@@ -1437,7 +1437,7 @@ func (b *BackfillSuite) flashLoanParity(log *types.Log, parser *parser.SwapParse
 	}
 	Equal(b.T(), int64(1), count)
 	Equal(b.T(), amountArray, storedLog.Amount)
-	Equal(b.T(), feeArray, storedLog.AmountFee)
+	Equal(b.T(), feeArray, storedLog.Fee)
 	return nil
 }
 
