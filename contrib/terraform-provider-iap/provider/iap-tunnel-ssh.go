@@ -119,8 +119,13 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[DEBUG] Finished creating proxy on port %d", localPort)
 
-	d.SetId(uuid.New().String())
-	err = d.Set("proxy_url", fmt.Sprintf("http://localhost:%d", localPort))
+	id := uuid.New().String()
+	log.Printf("[DEBUG] setting proxy id to %s", id)
+	d.SetId(id)
+
+	proxyURL := fmt.Sprintf("http://localhost:%d", localPort)
+	log.Printf("[DEBUG] setting proxy url to %s", proxyURL)
+	err = d.Set("proxy_url", proxyURL)
 	if err != nil {
 		return fmt.Errorf("could not set proxy_url: %w", err)
 	}
