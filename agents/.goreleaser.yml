@@ -28,54 +28,6 @@ builds:
     goarch:
       - amd64
 
-  - id: executor
-    binary: executor
-    ldflags:
-      - -s -w -extldflags "-static"
-    tags:
-      - netgo
-      - osusergo
-    env:
-      - CC=gcc
-      - CXX=g++
-    main: agents/executor/main/main.go
-    goos:
-      - linux
-    goarch:
-      - amd64
-
-  - id: guard
-    binary: guard
-    ldflags:
-      - -s -w -extldflags "-static"
-    tags:
-      - netgo
-      - osusergo
-    env:
-      - CC=gcc
-      - CXX=g++
-    main: agents/guard/main/main.go
-    goos:
-      - linux
-    goarch:
-      - amd64
-
-  - id: notary
-    binary: notary
-    ldflags:
-      - -s -w -extldflags "-static"
-    tags:
-      - netgo
-      - osusergo
-    env:
-      - CC=gcc
-      - CXX=g++
-    main: agents/notary/main/main.go
-    goos:
-      - linux
-    goarch:
-      - amd64
-
 # add a source archive at release time
 source:
   enabled: true
@@ -115,33 +67,3 @@ dockers:
     dockerfile: ../docker/agents.Dockerfile
     ids:
       - agents
-
-  - goos: linux
-    goarch: amd64
-    image_templates:
-      - 'ghcr.io/synapsecns/sanguine/executor:latest'
-      - 'ghcr.io/synapsecns/sanguine/executor:{{ .FullCommit }}'
-      - 'ghcr.io/synapsecns/sanguine/executor:{{ .Tag }}'
-    dockerfile: ../docker/executor.Dockerfile
-    ids:
-      - executor
-
-  - goos: linux
-    goarch: amd64
-    image_templates:
-      - 'ghcr.io/synapsecns/sanguine/guard:latest'
-      - 'ghcr.io/synapsecns/sanguine/guard:{{ .FullCommit }}'
-      - 'ghcr.io/synapsecns/sanguine/guard:{{ .Tag }}'
-    dockerfile: ../docker/guard.Dockerfile
-    ids:
-      - guard
-
-  - goos: linux
-    goarch: amd64
-    image_templates:
-      - 'ghcr.io/synapsecns/sanguine/notary:latest'
-      - 'ghcr.io/synapsecns/sanguine/notary:{{ .FullCommit }}'
-      - 'ghcr.io/synapsecns/sanguine/notary:{{ .Tag }}'
-    dockerfile: ../docker/notary.Dockerfile
-    ids:
-      - notary
