@@ -203,7 +203,6 @@ jobs:
           docker tag ghcr.io/synapsecns/sanguine/$image_name:latest ghcr.io/synapsecns/$image_name:${GITHUB_SHA}
           docker push ghcr.io/synapsecns/sanguine/$image_name:${GITHUB_SHA}
 
-
       - name: Copy Releases
         if: steps.branch-name.outputs.is_default == 'true' && ${{ contains( steps.tag_version.outputs.new_tag, 'terraform') }}
         uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
