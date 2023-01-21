@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
-	"golang.org/x/sync/errgroup"
 	"math"
 	"math/big"
 	"time"
@@ -337,67 +336,61 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 	tokenDecimals := make(map[uint8]uint8, len(totalTokenIndexRange))
 	tokenSymbols := make(map[uint8]string, len(totalTokenIndexRange))
 	tokenCoinGeckoIDs := make(map[uint8]string, len(totalTokenIndexRange))
-	g, groupCtx := errgroup.WithContext(ctx)
 
 	// nolint:nestif
 	for i := range totalTokenIndexRange {
 		tokenIndex := i
-		g.Go(func() error {
-			var tokenData tokendata.ImmutableTokenData
-			// Get token symbol and decimals from the erc20 contract associated to the token.
-			tokenAddress, err := p.poolTokenDataService.GetTokenAddress(groupCtx, chainID, tokenIndex, swapEvent.ContractAddress)
-			if err != nil {
-				logger.Errorf("token with index %d not in pool: %v, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
-				return fmt.Errorf("token with index %d not in pool: %w, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
-			}
-			tokenData, err = p.tokenDataService.GetPoolTokenData(groupCtx, chainID, *tokenAddress, *p.swapService)
-			if err != nil {
-				logger.Errorf("could not get token data: %v", err)
-				return fmt.Errorf("could not get pool token data: %w", err)
-			}
-			tokenSymbols[tokenIndex] = tokenData.TokenID()
+		var tokenData tokendata.ImmutableTokenData
+		// Get token symbol and decimals from the erc20 contract associated to the token.
+		tokenAddress, err := p.poolTokenDataService.GetTokenAddress(ctx, chainID, tokenIndex, swapEvent.ContractAddress)
+		if err != nil {
+			logger.Errorf("token with index %d not in pool: %v, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
+			return nil, fmt.Errorf("token with index %d not in pool: %w, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
+		}
+		tokenData, err = p.tokenDataService.GetPoolTokenData(ctx, chainID, *tokenAddress, *p.swapService)
+		if err != nil {
+			logger.Errorf("could not get token data: %v", err)
+			return nil, fmt.Errorf("could not get pool token data: %w", err)
+		}
+		tokenSymbols[tokenIndex] = tokenData.TokenID()
 
-			// TODO DELETE
-			if tokenData.TokenID() == "" {
-				fmt.Println("SWAP - TOKEN ID", tokenData.TokenID(), chainID, tokenIndex, tokenAddress, swapEvent.TxHash)
-			}
+		// TODO DELETE
+		if tokenData.TokenID() == "" {
+			fmt.Println("SWAP - TOKEN ID", tokenData.TokenID(), chainID, tokenIndex, tokenAddress, swapEvent.TxHash)
+		}
 
-			tokenDecimals[tokenIndex] = tokenData.Decimals()
+		tokenDecimals[tokenIndex] = tokenData.Decimals()
 
-			// TODO DELETE
-			if tokenData.Decimals() == 0 {
-				fmt.Println("SWAP - DECIMALS IS ZERO", tokenData.Decimals(), chainID, tokenIndex, tokenAddress)
-			}
-			coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
+		// TODO DELETE
+		if tokenData.Decimals() == 0 {
+			fmt.Println("SWAP - DECIMALS IS ZERO", tokenData.Decimals(), chainID, tokenIndex, tokenAddress)
+		}
+		coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
 
-			// TODO DELETE
-			if coinGeckoID == "" {
-				fmt.Println("SWAP - EMPTY TOKEN ID", p.coinGeckoIDs[tokenData.TokenID()], "U", tokenData.TokenID())
-			}
-			tokenCoinGeckoIDs[tokenIndex] = coinGeckoID
+		// TODO DELETE
+		if coinGeckoID == "" {
+			fmt.Println("SWAP - EMPTY TOKEN ID", p.coinGeckoIDs[tokenData.TokenID()], "U", tokenData.TokenID())
+		}
+		tokenCoinGeckoIDs[tokenIndex] = coinGeckoID
 
-			if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
-				tokenPrice := p.tokenPriceService.GetPriceData(groupCtx, int(*swapEvent.TimeStamp), coinGeckoID)
-				if (tokenPrice == nil || *tokenPrice == 0.0) && coinGeckoID != noTokenID {
-					if coinGeckoID != "usd-coin" {
-						// TODO DELETE
-						fmt.Println("SWAP - TOKEN PRICE NULL", coinGeckoID, swapEvent.TimeStamp, tokenPrice, swapEvent.TokenDecimal, chainID, swapEvent.TxHash)
-						return fmt.Errorf("SWAP could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, swapEvent.TxHash, swapEvent.TimeStamp)
-					}
-					*tokenPrice = 1.0
+		if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
+			tokenPrice := p.tokenPriceService.GetPriceData(ctx, int(*swapEvent.TimeStamp), coinGeckoID)
+			if (tokenPrice == nil || *tokenPrice == 0.0) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
+				if coinGeckoID != "usd-coin" {
+					// TODO DELETE
+					fmt.Println("SWAP - TOKEN PRICE NULL", coinGeckoID, swapEvent.TimeStamp, tokenPrice, swapEvent.TokenDecimal, chainID, swapEvent.TxHash)
+					return nil, fmt.Errorf("SWAP could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, swapEvent.TxHash, swapEvent.TimeStamp)
 				}
-				tokenPrices[tokenIndex] = *tokenPrice
+				*tokenPrice = 1.0
 			}
+			tokenPrices[tokenIndex] = *tokenPrice
+		}
 
-			// TODO DELETE
-			if tokenPrices[tokenIndex] == 0 {
-				fmt.Println("SWAP - TOKEN PRICE IS ZERO", tokenPrices[tokenIndex], chainID, tokenIndex, tokenAddress)
-			}
-			return nil
-		})
-	}
-	if err := g.Wait(); err != nil {
-		return nil, fmt.Errorf("error while getting token data in goroutine(s): %w", err)
+		// TODO DELETE
+		if tokenPrices[tokenIndex] == 0 {
+			fmt.Println("SWAP - TOKEN PRICE IS ZERO", tokenPrices[tokenIndex], chainID, tokenIndex, tokenAddress)
+		}
+
 	}
 
 	swapEvent.TokenPrice = tokenPrices

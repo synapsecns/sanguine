@@ -44,6 +44,7 @@ type BridgeParser struct {
 }
 
 const noTokenID = "NO_TOKEN"
+const noPrice = "NO_PRICE"
 
 // NewBridgeParser creates a new parser for a given bridge.
 func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, tokenDataService tokendata.Service, consumerFetcher *fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*BridgeParser, error) {
@@ -416,7 +417,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	var tokenPrice *float64
 	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
 		tokenPrice := p.tokenPriceService.GetPriceData(ctx, int(*timeStamp), coinGeckoID)
-		if (tokenPrice == nil || *tokenPrice == 0.0) && coinGeckoID != noTokenID {
+		if (tokenPrice == nil || *tokenPrice == 0.0) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
 			if coinGeckoID != "usd-coin" {
 				fmt.Println("BRIDGE - TOKEN PRICE NULL", coinGeckoID, *bridgeEvent.TimeStamp, tokenPrice, *bridgeEvent.TokenDecimal, chainID, bridgeEvent.TxHash)
 				return nil, fmt.Errorf("BRIDGE could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, bridgeEvent.TxHash, bridgeEvent.TimeStamp)

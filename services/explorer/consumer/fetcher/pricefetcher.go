@@ -112,7 +112,7 @@ RETRY:
 			fmt.Println("Max retries reached, could not get token metadata for", coinGeckoID)
 			return &zero
 		}
-		granularityStr := fmt.Sprintf("?searchWidth=%dm", 10*(retries)+1)
+		granularityStr := fmt.Sprintf("?searchWidth=%dm", 10*(retries)+5)
 		if retries > 6 {
 			granularityStr = fmt.Sprintf("?searchWidth=%dh", retries-6)
 		}
