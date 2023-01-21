@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	// used to embed markdown.
-	_ "embed"
 	"fmt"
-
+	executorCmd "github.com/synapsecns/sanguine/agents/agents/executor/cmd"
+	guardCmd "github.com/synapsecns/sanguine/agents/agents/guard/cmd"
+	notaryCmd "github.com/synapsecns/sanguine/agents/agents/notary/cmd"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/urfave/cli/v2"
@@ -14,12 +14,19 @@ import (
 func Start(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
 	app.Name = buildInfo.Name()
-	app.Description = buildInfo.VersionString() + "guard is used to detect and report fraudulent attestations."
+	app.Description = buildInfo.VersionString() + "agents is used to access all Sanguine agents"
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
 
 	// commands
-	app.Commands = cli.Commands{GuardInfoCommand, GuardRunCommand}
+	app.Commands = cli.Commands{
+		// Executor Commands
+		executorCmd.ExecutorInfoCommand, executorCmd.ExecutorRunCommand,
+		// Notary Commands
+		notaryCmd.NotaryInfoCommand, notaryCmd.NotaryRunCommand,
+		// Guard Commands
+		guardCmd.GuardInfoCommand, guardCmd.GuardRunCommand,
+	}
 	shellCommand := commandline.GenerateShellCommand(app.Commands)
 	app.Commands = append(app.Commands, shellCommand)
 	app.Action = shellCommand.Action
