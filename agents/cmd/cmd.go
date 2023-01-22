@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	executorCmd "github.com/synapsecns/sanguine/agents/agents/executor/cmd"
+	guardCmd "github.com/synapsecns/sanguine/agents/agents/guard/cmd"
+	notaryCmd "github.com/synapsecns/sanguine/agents/agents/notary/cmd"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/urfave/cli/v2"
@@ -17,7 +19,14 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	app.EnableBashCompletion = true
 
 	// commands
-	app.Commands = cli.Commands{executorCmd.ExecutorInfoCommand, executorCmd.ExecutorRunCommand}
+	app.Commands = cli.Commands{
+		// Executor Commands
+		executorCmd.ExecutorInfoCommand, executorCmd.ExecutorRunCommand,
+		// Notary Commands
+		notaryCmd.NotaryInfoCommand, notaryCmd.NotaryRunCommand,
+		// Guard Commands
+		guardCmd.GuardInfoCommand, guardCmd.GuardRunCommand,
+	}
 	shellCommand := commandline.GenerateShellCommand(app.Commands)
 	app.Commands = append(app.Commands, shellCommand)
 	app.Action = shellCommand.Action

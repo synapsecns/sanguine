@@ -31,7 +31,7 @@ var help string
 
 // ExecutorInfoCommand gets info about using the executor agent.
 var ExecutorInfoCommand = &cli.Command{
-	Name:        "info",
+	Name:        "executor-info",
 	Description: "learn how to use executor cli",
 	Action: func(c *cli.Context) error {
 		fmt.Println(string(markdown.Render(help, termsize.Width(), 6)))

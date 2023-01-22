@@ -10,8 +10,7 @@ terraform {
 provider "iap" {
 }
 
-data "iap_tunnel_proxy" "tunnel_proxy" {
-  hostname        = "my-hostname"
+resource "iap_tunnel_proxy" "tunnel_proxy" {
   zone = "us-west1-a"
   instance = "my-bastion-proxy"
   interface = "nic0"

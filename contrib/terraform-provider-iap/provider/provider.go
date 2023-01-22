@@ -13,8 +13,11 @@ func Provider() *schema.Provider {
 		Schema:               underlyingProvider.Schema,
 		ProviderMetaSchema:   underlyingProvider.ProviderMetaSchema,
 		ConfigureContextFunc: underlyingProvider.ConfigureContextFunc,
-		DataSourcesMap: map[string]*schema.Resource{
+		ResourcesMap: map[string]*schema.Resource{
 			"iap_tunnel_proxy": dataSourceProxyURL(),
+		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"iap_tunnel_keep_alive": keepAlive(),
 		},
 	}
 }

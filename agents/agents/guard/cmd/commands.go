@@ -18,9 +18,9 @@ import (
 //go:embed cmd.md
 var help string
 
-// infoCommand gets info about using the guard agent.
-var infoCommand = &cli.Command{
-	Name:        "info",
+// GuardInfoCommand gets info about using the guard agent.
+var GuardInfoCommand = &cli.Command{
+	Name:        "guard-info",
 	Description: "learn how to use guard cli",
 	Action: func(c *cli.Context) error {
 		fmt.Println(string(markdown.Render(help, termsize.Width(), 6)))
@@ -35,8 +35,9 @@ var configFlag = &cli.StringFlag{
 	Required:  true,
 }
 
-var runCommand = &cli.Command{
-	Name:        "run",
+// GuardRunCommand runs the guard.
+var GuardRunCommand = &cli.Command{
+	Name:        "guard-run",
 	Description: "runs the guard service",
 	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
