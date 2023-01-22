@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2086
 
 # This gets the arch prefix we use when building a terraform plugin
 TF_PREFIX=$( go version |  awk '{print $NF}' | sed 's/\//_/')
