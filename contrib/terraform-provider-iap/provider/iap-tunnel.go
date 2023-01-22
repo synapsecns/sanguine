@@ -24,27 +24,32 @@ func dataSourceProxyURL() *schema.Resource {
 			"project": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			// zone of the bastion host
 			"zone": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			// zone of the bastion host
 			"instance": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			// network interface to use
 			"interface": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			// port of the host to connect to
 			"remote_port": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validatePort,
+				ForceNew:     true,
 			},
 			// output proxy url
 			"proxy_url": {
