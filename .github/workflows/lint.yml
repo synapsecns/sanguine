@@ -17,6 +17,8 @@ jobs:
           curl -s -o /dev/null -w "%{http_code}" --data-binary @.codecov.yml https://codecov.io/validate  | grep --invert-match 200 && exit 1 || exit 0
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
+        with:
+          ignore_paths: contrib/terraform-provider-iap/scripts/add-tfmac.sh
 
       - name: Validate renovate
         uses: rinchsan/renovate-config-validator@v0.0.12
