@@ -2,7 +2,7 @@
 
 The goal of the iap provider is to allow the use of an identity-aware proxy to connect to a GCP through a bastion host using terraform. This looks like this:
 
-![Architecture](./assets/img.png)
+![Architecture Diagram](./assets/img.png)
 
 This provider is written in pure go and is based on the google terraform provider.
 
