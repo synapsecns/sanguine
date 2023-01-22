@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
+	provider_diag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/google"
@@ -18,10 +19,14 @@ import (
 func dataSourceProxyURL() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceProxy,
-		// this is a temporary resource that will be destroyed after the apply anyway
-		Delete: func(data *schema.ResourceData, i interface{}) error {
-			return nil
+		CreateContext: func(ctx context.Context, data *schema.ResourceData, i interface{}) provider_diag.Diagnostics {
+			err := dataSourceProxy(data, i)
+			if err != nil {
+				return provider_diag.FromErr(err)
+			}
+			return provider_diag.Diagnostics{}
 		},
+		Delete: dataSourceProxyDelete,
 
 		Schema: map[string]*schema.Schema{
 			// project of the bastion host
@@ -62,6 +67,20 @@ func dataSourceProxyURL() *schema.Resource {
 			},
 		},
 	}
+}
+
+func dataSourceProxyDelete(d *schema.ResourceData, meta interface{}) error {
+	// Delete the proxy URL.
+	// This could involve making a call to an API to delete the proxy, or just
+	// cleaning up any resources created on your end.
+	//...
+
+	// Remove all fields in the dataSourceProxyURL resource
+	d.SetId("")
+	for k := range dataSourceProxyURL().Schema {
+		_ = d.Set(k, nil)
+	}
+	return nil
 }
 
 func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
