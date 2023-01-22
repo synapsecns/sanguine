@@ -18,6 +18,10 @@ import (
 func dataSourceProxyURL() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceProxy,
+		// this is a temporary resource that will be destroyed after the apply anyway
+		Delete: func(data *schema.ResourceData, i interface{}) error {
+			return nil
+		},
 
 		Schema: map[string]*schema.Schema{
 			// project of the bastion host
