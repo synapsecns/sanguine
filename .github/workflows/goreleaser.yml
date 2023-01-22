@@ -173,7 +173,7 @@ jobs:
 
       - name: Run GoReleaser (Release)
         if: steps.branch-name.outputs.is_default == 'true'
-        run: goreleaser  --timeout 60m --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
+        run: goreleaser  --timeout 120m --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GONOSUM: '.*'
@@ -183,7 +183,7 @@ jobs:
 
       - name: Run GoReleaser (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true'
-        run: goreleaser --timeout 60m --snapshot --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
+        run: goreleaser --timeout 120m --snapshot --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GONOSUM: '.*'
