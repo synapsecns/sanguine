@@ -3,7 +3,7 @@ package main
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-	"github.com/synapsecns/sanguine/contrib/terraform-provider-helm-proxy/provider"
+	"github.com/synapsecns/sanguine/contrib/terraform-provider-helmproxy/provider"
 )
 
 // Generate the Terraform provider documentation using `tfplugindocs`:

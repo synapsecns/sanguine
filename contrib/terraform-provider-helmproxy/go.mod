@@ -1,4 +1,4 @@
-module github.com/synapsecns/sanguine/contrib/terraform-provider-helm-proxy
+module github.com/synapsecns/sanguine/contrib/terraform-provider-helmproxy
 
 go 1.19
 

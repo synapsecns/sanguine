@@ -84,10 +84,6 @@ func startTunnel(ctx context.Context, d *schema.ResourceData, config *configured
 
 	proxyURL = fmt.Sprintf("http://localhost:%d", localPort)
 	log.Printf("[DEBUG] setting proxy url to %s", proxyURL)
-	err = d.Set("proxy_url", proxyURL)
-	if err != nil {
-		return proxyURL, fmt.Errorf("could not set proxy_url: %w", err)
-	}
 
 	parsedURL, err := url.Parse(proxyURL)
 	if err != nil {

@@ -3,11 +3,13 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	provider_diag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-helm/helm"
 	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/google"
+	"log"
+	"os"
+	"strings"
 )
 
 var combinedSchema map[string]*schema.Schema
@@ -18,43 +20,31 @@ var resourceMap, dataSourceMap map[string]*schema.Resource
 // we use this as a static assertion to check for overlap between keys in the two providers.
 func init() {
 	// schema
-	combinedSchema = make(map[string]*schema.Schema)
-	combinedMetaSchema = make(map[string]*schema.Schema)
+	combinedSchema = MustCombineMaps(google.Provider().Schema, helm.Provider().Schema)
+	combinedMetaSchema = MustCombineMaps(google.Provider().ProviderMetaSchema, helm.Provider().ProviderMetaSchema)
 	resourceMap = make(map[string]*schema.Resource)
 	dataSourceMap = make(map[string]*schema.Resource)
 
-	googleSchema := google.Provider().Schema
-	helmSchema := helm.Provider().Schema
-	// TODO: remove proxy_url or make inaccessible
-	for item, val := range googleSchema {
-		combinedSchema[item] = val
-		if helmSchema[item] != nil {
-			panic(fmt.Errorf("key overlap between google and helm providers on key %s", item))
-		}
-	}
-
-	// metaschema
-	googleSchema = google.Provider().ProviderMetaSchema
-	helmSchema = helm.Provider().ProviderMetaSchema
-	for item, val := range googleSchema {
-		combinedMetaSchema[item] = val
-		if helmSchema[item] != nil {
-			panic(fmt.Errorf("key overlap between google and helm providers on key %s", item))
-		}
-	}
-
 	for key, val := range helm.Provider().ResourcesMap {
-		resourceMap[key] = wrapSchemaResource(val)
+		resourceMap[strings.Replace(key, "helm", "helmproxy", 1)] = wrapSchemaResource(val)
 	}
 
 	for key, val := range helm.Provider().DataSourcesMap {
-		dataSourceMap[key] = wrapSchemaResource(val)
+		dataSourceMap[strings.Replace(key, "helm", "helmproxy", 1)] = wrapSchemaResource(val)
 	}
 
 	// project is required to start the proxy
 	combinedSchema["project"].Required = true
+	combinedSchema["project"].Optional = false
 	// zone is required to start the proxy
 	combinedSchema["zone"].Required = true
+	combinedSchema["zone"].Optional = false
+
+	combinedSchema["service_account"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "service account to proxy through",
+	}
 	combinedSchema["instance"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
@@ -62,9 +52,19 @@ func init() {
 	}
 	combinedSchema["interface"] = &schema.Schema{
 		Type:        schema.TypeString,
-		Required:    true,
 		Description: "The name of the interface to start the proxy on",
 		Default:     "nic0",
+		// defaults to default
+		Optional: true,
+	}
+
+	combinedSchema["remote_port"] = &schema.Schema{
+		Type:        schema.TypeInt,
+		Description: "the port to proxy to",
+		// defaults to default
+		Optional: true,
+		// default tinyproxy port
+		Default: "8888",
 	}
 }
 
@@ -121,7 +121,9 @@ func Provider() *schema.Provider {
 				return nil, append(gdg, provider_diag.FromErr(err)[0])
 			}
 
-			err = data.Set("proxy_url", proxyURL)
+			// set the proxy url
+			log.Printf("[INFO] setting proxy url to %s", proxyURL)
+			err = os.Setenv("KUBE_PROXY_URL", proxyURL)
 			if err != nil {
 				return nil, append(gdg, provider_diag.FromErr(err)[0])
 			}
