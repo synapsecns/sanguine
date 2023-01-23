@@ -82,6 +82,9 @@ enum StatisticType {
   MEAN_VOLUME_USD
   MEDIAN_VOLUME_USD
   TOTAL_VOLUME_USD
+  MEAN_FEE_USD
+  MEDIAN_FEE_USD
+  TOTAL_FEE_USD
   COUNT_TRANSACTIONS
   COUNT_ADDRESSES
 }
@@ -89,4 +92,18 @@ enum HistoricalResultType {
   BRIDGEVOLUME
   TRANSACTIONS
   ADDRESSES
+}
+
+enum Platform{
+  ALL
+  SWAP
+  BRIDGE
+  MESSAGE_BUS
+}
+
+enum DailyStatisticType {
+  VOLUME
+  TRANSACTIONS
+  ADDRESSES
+  FEE
 }

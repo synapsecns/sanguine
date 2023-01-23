@@ -100,3 +100,32 @@ query GetHistoricalStatistics($chainId: Int, $type: HistoricalResultType, $days:
     type
   }
 }
+
+query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: Duration, $chainId: Int, $address: String, $tokenAddress: String) {
+  response: amountStatistic(
+    type: $type
+    duration: $duration
+    platform: $platform
+    chainId: $chainId
+    address: $address
+    tokenAddress: $tokenAddress
+  ) {
+    value
+  }
+}
+
+query GetDailyStatistics($chainId: Int, $type: DailyStatisticType, $platform: Platform, $days: Int) {
+  response: dailyStatistics(
+    chainId: $chainId
+    type: $type
+    days: $days
+    platform: $platform
+  ) {
+    total
+    dateResults {
+      date
+      total
+    }
+    type
+  }
+}

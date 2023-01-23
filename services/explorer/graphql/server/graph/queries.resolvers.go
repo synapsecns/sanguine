@@ -225,6 +225,74 @@ func (r *queryResolver) HistoricalStatistics(ctx context.Context, chainID *int, 
 	return &payload, nil
 }
 
+// AmountStatistic is the resolver for the amountStatistic field.
+func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error) {
+	var err error
+	var timestampSpecifier string
+	firstFilter := true
+
+	switch *duration {
+	case model.DurationPastDay:
+		hours := 24
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPastMonth:
+		hours := 720
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationAllTime:
+		timestampSpecifier = ""
+	}
+	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
+	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "")
+
+	compositeFilters := fmt.Sprintf(
+		`%s%s%s%s%s`,
+		timestampSpecifier, tokenAddressSpecifier, addressSpecifier, chainIDSpecifier, directionSpecifier,
+	)
+
+	var operation string
+	var finalSQL string
+	switch typeArg {
+	case model.StatisticTypeMeanVolumeUsd:
+		operation = fmt.Sprintf("AVG(%s)", sql.AmountUSDFieldName)
+		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
+	case model.StatisticTypeMedianVolumeUsd:
+		operation = fmt.Sprintf("median(%s)", sql.AmountUSDFieldName)
+		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
+	case model.StatisticTypeTotalVolumeUsd:
+		operation = fmt.Sprintf("sumKahan(%s)", sql.AmountUSDFieldName)
+		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
+	case model.StatisticTypeCountTransactions:
+		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil))
+	case model.StatisticTypeCountAddresses:
+		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil))
+	default:
+		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
+	}
+
+	res, err := r.DB.GetFloat64(ctx, finalSQL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get amount data stats: %w", err)
+	}
+
+	value := fmt.Sprintf("%f", res)
+	output := model.ValueResult{
+		Value: &value,
+	}
+
+	return &output, nil
+}
+
+// DailyStatistics is the resolver for the dailyStatistics field.
+func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) (*model.HistoricalResult, error) {
+	panic(fmt.Errorf("not implemented: DailyStatistics - dailyStatistics"))
+}
+
 // Query returns resolvers.QueryResolver implementation.
 func (r *Resolver) Query() resolvers.QueryResolver { return &queryResolver{r} }
 

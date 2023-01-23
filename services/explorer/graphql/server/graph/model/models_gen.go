@@ -70,6 +70,51 @@ type ValueResult struct {
 	Value *string `json:"value"`
 }
 
+type DailyStatisticType string
+
+const (
+	DailyStatisticTypeVolume       DailyStatisticType = "VOLUME"
+	DailyStatisticTypeTransactions DailyStatisticType = "TRANSACTIONS"
+	DailyStatisticTypeAddresses    DailyStatisticType = "ADDRESSES"
+	DailyStatisticTypeFee          DailyStatisticType = "FEE"
+)
+
+var AllDailyStatisticType = []DailyStatisticType{
+	DailyStatisticTypeVolume,
+	DailyStatisticTypeTransactions,
+	DailyStatisticTypeAddresses,
+	DailyStatisticTypeFee,
+}
+
+func (e DailyStatisticType) IsValid() bool {
+	switch e {
+	case DailyStatisticTypeVolume, DailyStatisticTypeTransactions, DailyStatisticTypeAddresses, DailyStatisticTypeFee:
+		return true
+	}
+	return false
+}
+
+func (e DailyStatisticType) String() string {
+	return string(e)
+}
+
+func (e *DailyStatisticType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = DailyStatisticType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid DailyStatisticType", str)
+	}
+	return nil
+}
+
+func (e DailyStatisticType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type Direction string
 
 const (
@@ -197,12 +242,60 @@ func (e HistoricalResultType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type Platform string
+
+const (
+	PlatformAll        Platform = "ALL"
+	PlatformSwap       Platform = "SWAP"
+	PlatformBridge     Platform = "BRIDGE"
+	PlatformMessageBus Platform = "MESSAGE_BUS"
+)
+
+var AllPlatform = []Platform{
+	PlatformAll,
+	PlatformSwap,
+	PlatformBridge,
+	PlatformMessageBus,
+}
+
+func (e Platform) IsValid() bool {
+	switch e {
+	case PlatformAll, PlatformSwap, PlatformBridge, PlatformMessageBus:
+		return true
+	}
+	return false
+}
+
+func (e Platform) String() string {
+	return string(e)
+}
+
+func (e *Platform) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Platform(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Platform", str)
+	}
+	return nil
+}
+
+func (e Platform) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type StatisticType string
 
 const (
 	StatisticTypeMeanVolumeUsd     StatisticType = "MEAN_VOLUME_USD"
 	StatisticTypeMedianVolumeUsd   StatisticType = "MEDIAN_VOLUME_USD"
 	StatisticTypeTotalVolumeUsd    StatisticType = "TOTAL_VOLUME_USD"
+	StatisticTypeMeanFeeUsd        StatisticType = "MEAN_FEE_USD"
+	StatisticTypeMedianFeeUsd      StatisticType = "MEDIAN_FEE_USD"
+	StatisticTypeTotalFeeUsd       StatisticType = "TOTAL_FEE_USD"
 	StatisticTypeCountTransactions StatisticType = "COUNT_TRANSACTIONS"
 	StatisticTypeCountAddresses    StatisticType = "COUNT_ADDRESSES"
 )
@@ -211,13 +304,16 @@ var AllStatisticType = []StatisticType{
 	StatisticTypeMeanVolumeUsd,
 	StatisticTypeMedianVolumeUsd,
 	StatisticTypeTotalVolumeUsd,
+	StatisticTypeMeanFeeUsd,
+	StatisticTypeMedianFeeUsd,
+	StatisticTypeTotalFeeUsd,
 	StatisticTypeCountTransactions,
 	StatisticTypeCountAddresses,
 }
 
 func (e StatisticType) IsValid() bool {
 	switch e {
-	case StatisticTypeMeanVolumeUsd, StatisticTypeMedianVolumeUsd, StatisticTypeTotalVolumeUsd, StatisticTypeCountTransactions, StatisticTypeCountAddresses:
+	case StatisticTypeMeanVolumeUsd, StatisticTypeMedianVolumeUsd, StatisticTypeTotalVolumeUsd, StatisticTypeMeanFeeUsd, StatisticTypeMedianFeeUsd, StatisticTypeTotalFeeUsd, StatisticTypeCountTransactions, StatisticTypeCountAddresses:
 		return true
 	}
 	return false

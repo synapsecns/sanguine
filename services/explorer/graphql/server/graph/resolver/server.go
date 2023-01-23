@@ -81,10 +81,12 @@ type ComplexityRoot struct {
 
 	Query struct {
 		AddressRanking        func(childComplexity int, hours *int) int
+		AmountStatistic       func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) int
 		BridgeAmountStatistic func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) int
 		BridgeTransactions    func(childComplexity int, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) int
 		CountByChainID        func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress   func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
+		DailyStatistics       func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) int
 		HistoricalStatistics  func(childComplexity int, chainID *int, typeArg *model.HistoricalResultType, days *int) int
 	}
 
@@ -111,6 +113,8 @@ type QueryResolver interface {
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
 	AddressRanking(ctx context.Context, hours *int) ([]*model.AddressRanking, error)
 	HistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int) (*model.HistoricalResult, error)
+	AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error)
+	DailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) (*model.HistoricalResult, error)
 }
 
 type executableSchema struct {
@@ -294,6 +298,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.AddressRanking(childComplexity, args["hours"].(*int)), true
 
+	case "Query.amountStatistic":
+		if e.complexity.Query.AmountStatistic == nil {
+			break
+		}
+
+		args, err := ec.field_Query_amountStatistic_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.AmountStatistic(childComplexity, args["type"].(model.StatisticType), args["duration"].(*model.Duration), args["platform"].(*model.Platform), args["chainId"].(*int), args["address"].(*string), args["tokenAddress"].(*string)), true
+
 	case "Query.bridgeAmountStatistic":
 		if e.complexity.Query.BridgeAmountStatistic == nil {
 			break
@@ -341,6 +357,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.CountByTokenAddress(childComplexity, args["chainId"].(*int), args["address"].(*string), args["direction"].(*model.Direction), args["hours"].(*int)), true
+
+	case "Query.dailyStatistics":
+		if e.complexity.Query.DailyStatistics == nil {
+			break
+		}
+
+		args, err := ec.field_Query_dailyStatistics_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.DailyStatistics(childComplexity, args["chainId"].(*int), args["type"].(*model.DailyStatisticType), args["platform"].(*model.Platform), args["days"].(*int)), true
 
 	case "Query.historicalStatistics":
 		if e.complexity.Query.HistoricalStatistics == nil {
@@ -518,6 +546,27 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     type:     HistoricalResultType = BRIDGEVOLUME
     days:     Int = 30
   ): HistoricalResult
+  """
+  Returns mean/median/total/count of transactions transacted for a given duration, chain and address.
+  Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
+  """
+  amountStatistic(
+    type:         StatisticType!
+    duration:     Duration = ALL_TIME
+    platform:     Platform = ALL
+    chainId:      Int
+    address:      String
+    tokenAddress: String
+  ): ValueResult
+  """
+  Daily statistic data
+  """
+  dailyStatistics(
+    chainId:  Int
+    type:     DailyStatisticType = VOLUME
+    platform: Platform = BRIDGE
+    days:     Int = 30
+  ): HistoricalResult
 }
 `, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `"""
@@ -604,6 +653,9 @@ enum StatisticType {
   MEAN_VOLUME_USD
   MEDIAN_VOLUME_USD
   TOTAL_VOLUME_USD
+  MEAN_FEE_USD
+  MEDIAN_FEE_USD
+  TOTAL_FEE_USD
   COUNT_TRANSACTIONS
   COUNT_ADDRESSES
 }
@@ -611,6 +663,20 @@ enum HistoricalResultType {
   BRIDGEVOLUME
   TRANSACTIONS
   ADDRESSES
+}
+
+enum Platform{
+  ALL
+  SWAP
+  BRIDGE
+  MESSAGE_BUS
+}
+
+enum DailyStatisticType {
+  VOLUME
+  TRANSACTIONS
+  ADDRESSES
+  FEE
 }
 `, BuiltIn: false},
 }
@@ -647,6 +713,66 @@ func (ec *executionContext) field_Query_addressRanking_args(ctx context.Context,
 		}
 	}
 	args["hours"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_amountStatistic_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.StatisticType
+	if tmp, ok := rawArgs["type"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+		arg0, err = ec.unmarshalNStatisticType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐStatisticType(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["type"] = arg0
+	var arg1 *model.Duration
+	if tmp, ok := rawArgs["duration"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
+		arg1, err = ec.unmarshalODuration2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDuration(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["duration"] = arg1
+	var arg2 *model.Platform
+	if tmp, ok := rawArgs["platform"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("platform"))
+		arg2, err = ec.unmarshalOPlatform2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPlatform(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["platform"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["chainId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainId"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chainId"] = arg3
+	var arg4 *string
+	if tmp, ok := rawArgs["address"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
+		arg4, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["address"] = arg4
+	var arg5 *string
+	if tmp, ok := rawArgs["tokenAddress"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tokenAddress"))
+		arg5, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tokenAddress"] = arg5
 	return args, nil
 }
 
@@ -851,6 +977,48 @@ func (ec *executionContext) field_Query_countByTokenAddress_args(ctx context.Con
 		}
 	}
 	args["hours"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_dailyStatistics_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["chainId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainId"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chainId"] = arg0
+	var arg1 *model.DailyStatisticType
+	if tmp, ok := rawArgs["type"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+		arg1, err = ec.unmarshalODailyStatisticType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDailyStatisticType(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["type"] = arg1
+	var arg2 *model.Platform
+	if tmp, ok := rawArgs["platform"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("platform"))
+		arg2, err = ec.unmarshalOPlatform2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPlatform(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["platform"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["days"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("days"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["days"] = arg3
 	return args, nil
 }
 
@@ -2227,6 +2395,122 @@ func (ec *executionContext) fieldContext_Query_historicalStatistics(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_historicalStatistics_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_amountStatistic(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_amountStatistic(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AmountStatistic(rctx, fc.Args["type"].(model.StatisticType), fc.Args["duration"].(*model.Duration), fc.Args["platform"].(*model.Platform), fc.Args["chainId"].(*int), fc.Args["address"].(*string), fc.Args["tokenAddress"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ValueResult)
+	fc.Result = res
+	return ec.marshalOValueResult2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐValueResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_amountStatistic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "value":
+				return ec.fieldContext_ValueResult_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ValueResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_amountStatistic_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_dailyStatistics(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_dailyStatistics(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().DailyStatistics(rctx, fc.Args["chainId"].(*int), fc.Args["type"].(*model.DailyStatisticType), fc.Args["platform"].(*model.Platform), fc.Args["days"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.HistoricalResult)
+	fc.Result = res
+	return ec.marshalOHistoricalResult2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐHistoricalResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_dailyStatistics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_HistoricalResult_total(ctx, field)
+			case "dateResults":
+				return ec.fieldContext_HistoricalResult_dateResults(ctx, field)
+			case "type":
+				return ec.fieldContext_HistoricalResult_type(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type HistoricalResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_dailyStatistics_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -4721,6 +5005,46 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "amountStatistic":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_amountStatistic(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "dailyStatistics":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_dailyStatistics(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -5564,6 +5888,22 @@ func (ec *executionContext) marshalOBridgeTransaction2ᚖgithubᚗcomᚋsynapsec
 	return ec._BridgeTransaction(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalODailyStatisticType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDailyStatisticType(ctx context.Context, v interface{}) (*model.DailyStatisticType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.DailyStatisticType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODailyStatisticType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDailyStatisticType(ctx context.Context, sel ast.SelectionSet, v *model.DailyStatisticType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) marshalODateResult2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDateResult(ctx context.Context, sel ast.SelectionSet, v []*model.DateResult) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -5704,6 +6044,22 @@ func (ec *executionContext) marshalOPartialInfo2ᚖgithubᚗcomᚋsynapsecnsᚋs
 		return graphql.Null
 	}
 	return ec._PartialInfo(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOPlatform2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPlatform(ctx context.Context, v interface{}) (*model.Platform, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.Platform)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOPlatform2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPlatform(ctx context.Context, sel ast.SelectionSet, v *model.Platform) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

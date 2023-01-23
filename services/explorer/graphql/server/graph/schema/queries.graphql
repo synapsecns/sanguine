@@ -58,4 +58,25 @@ type Query {
     type:     HistoricalResultType = BRIDGEVOLUME
     days:     Int = 30
   ): HistoricalResult
+  """
+  Returns mean/median/total/count of transactions transacted for a given duration, chain and address.
+  Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
+  """
+  amountStatistic(
+    type:         StatisticType!
+    duration:     Duration = ALL_TIME
+    platform:     Platform = ALL
+    chainId:      Int
+    address:      String
+    tokenAddress: String
+  ): ValueResult
+  """
+  Daily statistic data
+  """
+  dailyStatistics(
+    chainId:  Int
+    type:     DailyStatisticType = VOLUME
+    platform: Platform = BRIDGE
+    days:     Int = 30
+  ): HistoricalResult
 }

@@ -25,6 +25,8 @@ type Query struct {
 	CountByTokenAddress   []*model.TokenCountResult       "json:\"countByTokenAddress\" graphql:\"countByTokenAddress\""
 	AddressRanking        []*model.AddressRanking         "json:\"addressRanking\" graphql:\"addressRanking\""
 	HistoricalStatistics  *model.HistoricalResult         "json:\"historicalStatistics\" graphql:\"historicalStatistics\""
+	AmountStatistic       *model.ValueResult              "json:\"amountStatistic\" graphql:\"amountStatistic\""
+	DailyStatistics       *model.HistoricalResult         "json:\"dailyStatistics\" graphql:\"dailyStatistics\""
 }
 type GetBridgeTransactions struct {
 	Response []*struct {
@@ -82,6 +84,21 @@ type GetAddressRanking struct {
 	} "json:\"response\" graphql:\"response\""
 }
 type GetHistoricalStatistics struct {
+	Response *struct {
+		Total       *float64 "json:\"total\" graphql:\"total\""
+		DateResults []*struct {
+			Date  *string  "json:\"date\" graphql:\"date\""
+			Total *float64 "json:\"total\" graphql:\"total\""
+		} "json:\"dateResults\" graphql:\"dateResults\""
+		Type *model.HistoricalResultType "json:\"type\" graphql:\"type\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetAmountStatistic struct {
+	Response *struct {
+		Value *string "json:\"value\" graphql:\"value\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetDailyStatistics struct {
 	Response *struct {
 		Total       *float64 "json:\"total\" graphql:\"total\""
 		DateResults []*struct {
@@ -259,6 +276,59 @@ func (c *Client) GetHistoricalStatistics(ctx context.Context, chainID *int, type
 
 	var res GetHistoricalStatistics
 	if err := c.Client.Post(ctx, "GetHistoricalStatistics", GetHistoricalStatisticsDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetAmountStatisticDocument = `query GetAmountStatistic ($type: StatisticType!, $platform: Platform, $duration: Duration, $chainId: Int, $address: String, $tokenAddress: String) {
+	response: amountStatistic(type: $type, duration: $duration, platform: $platform, chainId: $chainId, address: $address, tokenAddress: $tokenAddress) {
+		value
+	}
+}
+`
+
+func (c *Client) GetAmountStatistic(ctx context.Context, typeArg model.StatisticType, platform *model.Platform, duration *model.Duration, chainID *int, address *string, tokenAddress *string, httpRequestOptions ...client.HTTPRequestOption) (*GetAmountStatistic, error) {
+	vars := map[string]interface{}{
+		"type":         typeArg,
+		"platform":     platform,
+		"duration":     duration,
+		"chainId":      chainID,
+		"address":      address,
+		"tokenAddress": tokenAddress,
+	}
+
+	var res GetAmountStatistic
+	if err := c.Client.Post(ctx, "GetAmountStatistic", GetAmountStatisticDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetDailyStatisticsDocument = `query GetDailyStatistics ($chainId: Int, $type: DailyStatisticType, $platform: Platform, $days: Int) {
+	response: dailyStatistics(chainId: $chainId, type: $type, days: $days, platform: $platform) {
+		total
+		dateResults {
+			date
+			total
+		}
+		type
+	}
+}
+`
+
+func (c *Client) GetDailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int, httpRequestOptions ...client.HTTPRequestOption) (*GetDailyStatistics, error) {
+	vars := map[string]interface{}{
+		"chainId":  chainID,
+		"type":     typeArg,
+		"platform": platform,
+		"days":     days,
+	}
+
+	var res GetDailyStatistics
+	if err := c.Client.Post(ctx, "GetDailyStatistics", GetDailyStatisticsDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
