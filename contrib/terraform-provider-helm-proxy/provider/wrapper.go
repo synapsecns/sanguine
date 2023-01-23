@@ -10,6 +10,7 @@ import (
 // wrapSchemaResource wraps a schema.resource to extract the helm interface. This way, we can configure context on both
 // the helm and google interfaces without modifying the underlying provider. This allows are only modification to the provider
 // itself to be the addition of the proxy_url field and the proxy starter.
+// nolint: staticcheck, wrapcheck, gocognit, cyclop
 func wrapSchemaResource(resource *schema.Resource) *schema.Resource {
 	resResource := &schema.Resource{
 		Schema:         resource.Schema,

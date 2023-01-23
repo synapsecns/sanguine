@@ -1,3 +1,4 @@
+// Package main starts the terraform provider
 package main
 
 import (

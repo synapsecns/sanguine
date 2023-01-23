@@ -15,7 +15,7 @@ var combinedMetaSchema map[string]*schema.Schema
 
 var resourceMap, dataSourceMap map[string]*schema.Resource
 
-// we use this as a static assertion to check for overlap between keys in the two providers
+// we use this as a static assertion to check for overlap between keys in the two providers.
 func init() {
 	// schema
 	combinedSchema = make(map[string]*schema.Schema)
@@ -50,6 +50,22 @@ func init() {
 	for key, val := range helm.Provider().DataSourcesMap {
 		dataSourceMap[key] = wrapSchemaResource(val)
 	}
+
+	// project is required to start the proxy
+	combinedSchema["project"].Required = true
+	// zone is required to start the proxy
+	combinedSchema["zone"].Required = true
+	combinedSchema["instance"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The name of the instance to start the proxy on",
+	}
+	combinedSchema["interface"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The name of the interface to start the proxy on",
+		Default:     "nic0",
+	}
 }
 
 type configuredProvider struct {
@@ -69,7 +85,7 @@ func Provider() *schema.Provider {
 		ResourcesMap:       resourceMap,
 		DataSourcesMap:     dataSourceMap,
 		ConfigureContextFunc: func(ctx context.Context, data *schema.ResourceData) (_ interface{}, dg provider_diag.Diagnostics) {
-			cp := configuredProvider{}
+			cp := &configuredProvider{}
 			var gdg, hdg provider_diag.Diagnostics
 			var giface, hiface interface{}
 			var ok bool
@@ -100,6 +116,15 @@ func Provider() *schema.Provider {
 			}
 
 			// TODO: the proxy_url needs to be set in here
+			proxyURL, err := startTunnel(ctx, data, cp)
+			if err != nil {
+				return nil, append(gdg, provider_diag.FromErr(err)[0])
+			}
+
+			err = data.Set("proxy_url", proxyURL)
+			if err != nil {
+				return nil, append(gdg, provider_diag.FromErr(err)[0])
+			}
 
 			dg = append(dg, hdg...)
 			return cp, dg
