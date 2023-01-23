@@ -4,6 +4,7 @@ use (
 	./agents
 	./contrib/release-copier-action
 	./contrib/terraform-provider-iap
+	./contrib/terraform-provider-helm-proxy
 	./core
 	./ethergo
 	./services/explorer
