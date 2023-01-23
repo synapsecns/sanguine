@@ -340,7 +340,7 @@ func (b *BackfillSuite) TestBackfill() {
 	f := fetcher.NewFetcher(b.gqlClient)
 
 	// Set up message bus parser
-	mbp, err := parser.NewMessageBusParser(b.db, messageBusContract.Address(), b.consumerFetcher)
+	mbp, err := parser.NewMessageBusParser(b.db, messageBusContract.Address(), b.consumerFetcher, tokenPriceService)
 	Nil(b.T(), err)
 
 	// Test the first chain in the config file

@@ -3,6 +3,7 @@ package parser
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -24,15 +25,17 @@ type MessageBusParser struct {
 	messageBusAddress common.Address
 	// consumerFetcher is the Fetcher for sender and timestamp
 	consumerFetcher *fetcher.ScribeFetcher
+	// tokenPriceService contains the token price service/cache
+	tokenPriceService tokenprice.Service
 }
 
 // NewMessageBusParser creates a new parser for a given message.
-func NewMessageBusParser(consumerDB db.ConsumerDB, messageBusAddress common.Address, consumerFetcher *fetcher.ScribeFetcher) (*MessageBusParser, error) {
+func NewMessageBusParser(consumerDB db.ConsumerDB, messageBusAddress common.Address, consumerFetcher *fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*MessageBusParser, error) {
 	filterer, err := messagebus.NewMessageBusUpgradeableFilterer(messageBusAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", messagebus.MessageBusReceiverUpgradeableFilterer{}, err)
 	}
-	return &MessageBusParser{consumerDB, filterer, messageBusAddress, consumerFetcher}, nil
+	return &MessageBusParser{consumerDB, filterer, messageBusAddress, consumerFetcher, tokenPriceService}, nil
 }
 
 // EventType returns the event type of a message log.
@@ -149,9 +152,44 @@ func (m *MessageBusParser) Parse(ctx context.Context, log ethTypes.Log, chainID 
 	messageEvent.TimeStamp = &timeStampBig
 
 	if messageEvent.Fee != nil {
-		// is this correct? are fees just usd?
-		one := 1.0
-		messageEvent.FeeUSD = GetAmountUSD(messageEvent.Fee, 18, &one)
+		switch messageEvent.ChainID {
+		case 8217: // Klaytn
+			coinGeckoID := "klay-token"
+			feeValue, err := m.getFeeValue(ctx, messageEvent, coinGeckoID)
+			if err != nil {
+				return nil, err
+			}
+			messageEvent.FeeUSD = feeValue
+		case 53935: // DFK
+			coinGeckoID := "defi-kingdoms"
+			feeValue, err := m.getFeeValue(ctx, messageEvent, coinGeckoID)
+			if err != nil {
+				return nil, err
+			}
+			messageEvent.FeeUSD = feeValue
+		case 1666600000: // Harmony
+			coinGeckoID := "harmony"
+			feeValue, err := m.getFeeValue(ctx, messageEvent, coinGeckoID)
+			if err != nil {
+				return nil, err
+			}
+			messageEvent.FeeUSD = feeValue
+		default:
+			// pass
+		}
 	}
 	return messageEvent, nil
+}
+
+func (m *MessageBusParser) getFeeValue(ctx context.Context, messageEvent model.MessageBusEvent, coinGeckoID string) (*float64, error) {
+	tokenPrice := m.tokenPriceService.GetPriceData(ctx, int(*messageEvent.TimeStamp), coinGeckoID)
+	if (tokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
+		return nil, fmt.Errorf("MESSAGEBUS could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, messageEvent.ChainID, messageEvent.TxHash, messageEvent.TimeStamp)
+	}
+	price := GetAmountUSD(messageEvent.Fee, 18, tokenPrice)
+	if price != nil {
+		return price, nil
+	}
+	return nil, fmt.Errorf("MESSAGEBUS could not convert token price:  %s chain: %d txhash %s %d", coinGeckoID, messageEvent.ChainID, messageEvent.TxHash, messageEvent.TimeStamp)
+
 }

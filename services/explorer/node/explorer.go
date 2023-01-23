@@ -149,7 +149,7 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig config.ChainConfig
 
 			swapParsers[common.HexToAddress(chainConfig.Contracts[i].Address)] = swapParser
 		case "messagebus":
-			messageBusParser, err = parser.NewMessageBusParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher)
+			messageBusParser, err = parser.NewMessageBusParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher, priceDataService)
 			if err != nil || messageBusParser == nil {
 				return nil, fmt.Errorf("could not create message bus parser: %w", err)
 			}
