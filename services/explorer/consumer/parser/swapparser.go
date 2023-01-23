@@ -483,14 +483,15 @@ func getAdjustedFee(fee uint64, decimal uint8) float64 {
 	return float64(fee) / math.Pow(10, float64(decimal))
 }
 
+// TODO make more dynamic
 // GetCorrectSwapFee returns the correct swap fee for the given pool contract.
 func (p *SwapParser) GetCorrectSwapFee(ctx context.Context, swapEvent model.SwapEvent) (uint64, uint64, error) {
-	dbAdminFee, err := p.consumerDB.GetUint64(ctx, fmt.Sprintf("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number < %d", swapEvent.ChainID, swapEvent.ContractAddress, "admin", swapEvent.BlockNumber))
+	dbAdminFee, err := p.consumerDB.GetUint64(ctx, fmt.Sprintf("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number <= %d ORDER BY block_number DESC LIMIT 1", swapEvent.ChainID, swapEvent.ContractAddress, "admin", swapEvent.BlockNumber))
 	if err != nil {
 		return 0, 0, fmt.Errorf("could not get admin fee: %w", err)
 	}
 
-	dbSwapFee, err := p.consumerDB.GetUint64(ctx, fmt.Sprintf("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number < %d", swapEvent.ChainID, swapEvent.ContractAddress, "swap", swapEvent.BlockNumber))
+	dbSwapFee, err := p.consumerDB.GetUint64(ctx, fmt.Sprintf("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number <= %d ORDER BY block_number DESC LIMIT 1", swapEvent.ChainID, swapEvent.ContractAddress, "swap", swapEvent.BlockNumber))
 	if err != nil {
 		return 0, 0, fmt.Errorf("could not get swap fee: %w", err)
 	}
