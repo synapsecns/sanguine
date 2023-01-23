@@ -178,7 +178,6 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 		SwapDeadline:       event.GetSwapDeadline(),
 
 		// Placeholders for further data maturation of this event.
-		TokenID:      sql.NullString{},
 		TimeStamp:    nil,
 		AmountUSD:    nil,
 		FeeUSD:       nil,
@@ -415,31 +414,31 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	// Add TokenSymbol to bridgeEvent.
 	bridgeEvent.TokenSymbol = ToNullString(&realID)
 	var tokenPrice *float64
-	if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
-		tokenPrice := p.tokenPriceService.GetPriceData(ctx, int(*timeStamp), coinGeckoID)
-		if (tokenPrice == nil || *tokenPrice == 0.0) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
-			if coinGeckoID != "usd-coin" {
-				fmt.Println("BRIDGE - TOKEN PRICE NULL", coinGeckoID, *bridgeEvent.TimeStamp, tokenPrice, *bridgeEvent.TokenDecimal, chainID, bridgeEvent.TxHash)
+	if coinGeckoID != "" && !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
+		tokenPrice = p.tokenPriceService.GetPriceData(ctx, int(*timeStamp), coinGeckoID)
+		if tokenPrice == nil && coinGeckoID != noTokenID && coinGeckoID != noPrice {
+			if coinGeckoID != "usd-coin" && coinGeckoID != "tether" && coinGeckoID != "dai" || coinGeckoID == "binance-usd" {
+				fmt.Println("BRIDGE - TOKEN PRICE NULL OR ZERO", coinGeckoID, *bridgeEvent.TimeStamp, *bridgeEvent.TokenDecimal, chainID, bridgeEvent.TxHash)
 				return nil, fmt.Errorf("BRIDGE could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, bridgeEvent.TxHash, bridgeEvent.TimeStamp)
 			}
-			*tokenPrice = 1.0
+			one := 1.0
+			tokenPrice = &one
 		}
 	}
+
 	if tokenPrice != nil {
 		// Add AmountUSD to bridgeEvent (if price is not nil).
 		bridgeEvent.AmountUSD = GetAmountUSD(bridgeEvent.Amount, tokenData.Decimals(), tokenPrice)
-		if *bridgeEvent.AmountUSD == 0 && coinGeckoID != noTokenID && bridgeEvent.Amount.Cmp(bridgeEvent.Fee) == 1 {
+		if *bridgeEvent.AmountUSD == 0 && coinGeckoID != noTokenID && coinGeckoID != noPrice {
 			fmt.Println("BRIDGE - AMOUNT USD 0", *bridgeEvent.AmountUSD, coinGeckoID, *bridgeEvent.TimeStamp, *bridgeEvent.Amount, *tokenPrice, *bridgeEvent.TokenDecimal)
 		}
 		// Add FeeAmountUSD to bridgeEvent (if price is not nil).
 		if iFace.GetFee() != nil {
 			bridgeEvent.FeeUSD = GetAmountUSD(bridgeEvent.Fee, tokenData.Decimals(), tokenPrice)
-			fmt.Println("DA FEE BRIDGE", bridgeEvent.FeeUSD, iFace.GetFee())
-			if *bridgeEvent.FeeUSD == 0 && coinGeckoID != "NO_TOKEN" {
+			if *bridgeEvent.FeeUSD == 0 && coinGeckoID != noTokenID && coinGeckoID != noPrice {
 				fmt.Println("BRIDGE - FEE USD 0", coinGeckoID, *bridgeEvent.TimeStamp, *bridgeEvent.Amount, *tokenPrice, *bridgeEvent.TokenDecimal)
 			}
 		}
 	}
-
 	return bridgeEvent, nil
 }

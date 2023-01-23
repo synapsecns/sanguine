@@ -19,8 +19,8 @@ type PriceService interface {
 
 // tokenMetadataMaxRetry is the maximum number of times to retry requesting token metadata
 // from the defi llama API.
-const tokenMetadataMaxRetry = 40
-const tokenMetadataMaxRetrySecondary = 2
+const tokenMetadataMaxRetry = 20
+const tokenMetadataMaxRetrySecondary = 1
 
 var endpoints = []string{
 	"https://o7zsk6wjki.execute-api.us-east-1.amazonaws.com/default/ipDivider0?url=",
@@ -81,7 +81,7 @@ func GetDefiLlamaData(ctx context.Context, timestamp int, coinGeckoID string) *f
 	if coinGeckoID == "NO_TOKEN" || coinGeckoID == "NO_PRICE" {
 		// if there is no data on the token, the amount returned will be 1:1 (price will be same as the amount of token
 		// and the token  symbol will say "no symbol"
-
+		fmt.Println("FETCHER: NO PRICE/NO_TOKEN")
 		return &zero
 	}
 	client := http.Client{
@@ -110,11 +110,11 @@ RETRY:
 		if retries >= tokenMetadataMaxRetry {
 			logger.Errorf("Max retries reached, could not get token metadata for %s", coinGeckoID)
 			fmt.Println("Max retries reached, could not get token metadata for", coinGeckoID)
-			return &zero
+			return nil
 		}
-		granularityStr := fmt.Sprintf("?searchWidth=%dm", 10*(retries)+5)
-		if retries > 6 {
-			granularityStr = fmt.Sprintf("?searchWidth=%dh", retries-6)
+		var granularityStr string
+		if retries > 1 {
+			granularityStr = fmt.Sprintf("?searchWidth=%dh", 15*(retries-2)+24)
 		}
 
 		url := fmt.Sprintf("https://coins.llama.fi/prices/historical/%d/coingecko:%s%s", timestamp, coinGeckoID, granularityStr)
@@ -161,7 +161,7 @@ RETRY:
 
 			goto RETRY
 		}
-		priceStr := fmt.Sprintf("%.4f", priceRaw)
+		priceStr := fmt.Sprintf("%.10f", priceRaw)
 		priceFloat, err := strconv.ParseFloat(priceStr, 64)
 		if err != nil {
 			timeout = b.Duration()

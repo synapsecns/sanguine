@@ -122,8 +122,6 @@ type BridgeEvent struct {
 	SwapMinAmount *big.Int `gorm:"column:swap_min_amount;type:UInt256"`
 	// SwapDeadline is the deadline of the swap transaction.
 	SwapDeadline *big.Int `gorm:"column:swap_deadline;type:UInt256"`
-	// TokenID is the token's ID.
-	TokenID sql.NullString `gorm:"column:token_id"`
 	// AmountUSD is the amount in USD.
 	AmountUSD *float64 `gorm:"column:amount_usd;type:Float64"`
 	// FeeUSD is the fee amount in USD.
