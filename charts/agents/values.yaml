@@ -109,7 +109,7 @@ executor_remote:
 
 executor_embedded:
   enabled: true
-  args: [ "executor-run", "--config=/config/config.yaml", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-db=mysql", "--scribe-path=a.b.c" ]
+  args: ["executor-run", "--config=/config/config.yaml", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-db=mysql", "--scribe-path=a.b.c"]
   replicaCount: 1
   autoscaling:
     enabled: false
@@ -117,19 +117,19 @@ executor_embedded:
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
-  podAnnotations: { }
-  nodeSelector: { }
-  podSecurityContext: { }
-  affinity: { }
+  podAnnotations: {}
+  nodeSelector: {}
+  podSecurityContext: {}
+  affinity: {}
   env:
     - name: GOLOG_LOG_FMT
       value: "json"
-  tolerations: { }
+  tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;' ]
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: executor-omnirpc
@@ -142,7 +142,7 @@ executor_embedded:
     - name: wait-for-mysql
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;' ]
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: executor-mysql
@@ -153,7 +153,7 @@ executor_embedded:
     - name: wait-for-scribe
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for scribe..."; sleep 1; done;' ]
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for scribe..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: executor-scribe
