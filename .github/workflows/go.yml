@@ -243,7 +243,7 @@ jobs:
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
-        if: !contains( matrix.package, 'terraform-provider-iap') }}
+        if: ${{ !contains(matrix.package, 'terraform-provider-iap') }}
         with:
           working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
@@ -265,7 +265,7 @@ jobs:
       # we add a build tag here (and here only, or other importing modules have trouble exporting)
       # TODO: at some point it might make sense to put the common deps in a common lib
       - name: golangci-lint (IAP)
-        if: contains( matrix.package, 'terraform-provider-iap') }}
+        if: ${{ contains(matrix.package, 'terraform-provider-iap') }}
         uses: golangci/golangci-lint-action@v2
         with:
           working-directory: ${{matrix.package}}/
