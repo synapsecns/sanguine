@@ -5,6 +5,7 @@ use (
 	./contrib/release-copier-action
 	./contrib/terraform-provider-helmproxy
 	./contrib/terraform-provider-iap
+	./contrib/tfcore
 	./core
 	./ethergo
 	./services/explorer
