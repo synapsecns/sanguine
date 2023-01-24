@@ -215,7 +215,7 @@ jobs:
             strip_prefix: 'contrib/terraform-provider-iap/'
 
       - name: Copy Releases
-        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-iap') }}
+        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-helmproxy') }}
         uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
         with:
           github_token: ${{ secrets.PUBLISH_TOKEN }}
