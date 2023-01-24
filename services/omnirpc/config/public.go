@@ -1,6 +1,7 @@
 package config
 
 import (
+	// for embedding the config.
 	_ "embed"
 	"encoding/json"
 	"fmt"
