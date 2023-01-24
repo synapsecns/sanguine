@@ -10,7 +10,6 @@ terraform {
 
 provider "helmproxy" {
   instance = var.instance
-  service_account = var.service_account
   zone = var.zone
   interface = var.interface
   project = var.project
