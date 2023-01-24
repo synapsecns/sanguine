@@ -40,10 +40,6 @@ func init() {
 	combinedSchema["zone"].Required = true
 	combinedSchema["zone"].Optional = false
 
-	combinedSchema["service_account"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Description: "service account to proxy through",
-	}
 	combinedSchema["instance"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
