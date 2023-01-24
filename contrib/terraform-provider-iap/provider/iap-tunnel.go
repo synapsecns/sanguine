@@ -73,7 +73,7 @@ func dataSourceProxyDelete(d *schema.ResourceData, meta interface{}) error {
 	// Delete the proxy URL.
 	// This could involve making a call to an API to delete the proxy, or just
 	// cleaning up any resources created on your end.
-	//...
+	// ...
 
 	// Remove all fields in the dataSourceProxyURL resource
 	d.SetId("")
