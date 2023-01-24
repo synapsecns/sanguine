@@ -101,6 +101,7 @@ jobs:
             core: 'core/**'
             ethergo: 'ethergo/**'
             services/omnirpc: 'services/omnirpc/**'
+            contrib/tfcore: 'contrib/tfcore/**'
             contrib/terraform-provider-iap: 'contrib/terraform-provider-iap/**'
             contrib/terraform-provider-helmproxy: 'contrib/terraform-provider-helmproxy/**'
             contrib/release-copier-action: 'contrib/release-copier-action/**'

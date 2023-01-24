@@ -6,7 +6,7 @@ import (
 	provider_diag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-helm/helm"
-	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/google"
+	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
 	"log"
 	"os"
 	"strings"

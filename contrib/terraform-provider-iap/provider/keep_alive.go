@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/google"
+	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
 	"log"
 	"net/http"
 	"net/url"
