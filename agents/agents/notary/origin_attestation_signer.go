@@ -69,14 +69,14 @@ func (a OriginAttestationSigner) Start(ctx context.Context) error {
 	}
 }
 
-// FindOldestUnsignedAttestation fetches the oldest attestation that still needs to be signed.
-func (a OriginAttestationSigner) FindOldestUnsignedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestUnsignedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+// FindNewestUnsignedAttestation fetches the newest attestation that still needs to be signed.
+func (a OriginAttestationSigner) FindNewestUnsignedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
+	inProgressAttestation, err := a.db.RetrieveNewestUnsignedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not oldest unsigned attestation: %w", err)
+		return nil, fmt.Errorf("could not newest unsigned attestation: %w", err)
 	}
 	return inProgressAttestation, nil
 }
@@ -85,9 +85,9 @@ func (a OriginAttestationSigner) FindOldestUnsignedAttestation(ctx context.Conte
 //
 //nolint:cyclop
 func (a OriginAttestationSigner) update(ctx context.Context) error {
-	inProgressAttestationToSign, err := a.FindOldestUnsignedAttestation(ctx)
+	inProgressAttestationToSign, err := a.FindNewestUnsignedAttestation(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find oldest unsigned attestation: %w", err)
+		return fmt.Errorf("could not find newest unsigned attestation: %w", err)
 	}
 
 	if inProgressAttestationToSign == nil {
@@ -105,7 +105,7 @@ func (a OriginAttestationSigner) update(ctx context.Context) error {
 	}
 
 	signedAttestation := types.NewSignedAttestation(inProgressAttestationToSign.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
-	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttestationToSign.OriginDispatchBlockNumber(), nil, 0)
+	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, nil, 0)
 	err = a.db.UpdateNotarySignature(ctx, signedInProgressAttestation)
 	if err != nil {
 		return fmt.Errorf("could not store notary signature for attestation: %w", err)

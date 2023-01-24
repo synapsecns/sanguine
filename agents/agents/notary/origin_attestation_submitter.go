@@ -68,14 +68,14 @@ func (a OriginAttestationSubmitter) Start(ctx context.Context) error {
 	}
 }
 
-// FindOldestUnsubmittedAttestation fetches the oldest unsubmitted attestation that has been signed.
-func (a OriginAttestationSubmitter) FindOldestUnsubmittedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestUnsubmittedSignedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+// FindNewestUnsubmittedAttestation fetches the newest unsubmitted attestation that has been signed.
+func (a OriginAttestationSubmitter) FindNewestUnsubmittedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
+	inProgressAttestation, err := a.db.RetrieveNewestUnsubmittedSignedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not find oldest unsubmitted signed attestation: %w", err)
+		return nil, fmt.Errorf("could not find newest unsubmitted signed attestation: %w", err)
 	}
 	return inProgressAttestation, nil
 }
@@ -84,9 +84,9 @@ func (a OriginAttestationSubmitter) FindOldestUnsubmittedAttestation(ctx context
 //
 //nolint:cyclop
 func (a OriginAttestationSubmitter) update(ctx context.Context) error {
-	inProgressAttestationToSubmit, err := a.FindOldestUnsubmittedAttestation(ctx)
+	inProgressAttestationToSubmit, err := a.FindNewestUnsubmittedAttestation(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find oldest unsubmitted attestation: %w", err)
+		return fmt.Errorf("could not find newest unsubmitted attestation: %w", err)
 	}
 	if inProgressAttestationToSubmit == nil {
 		return nil
@@ -99,7 +99,7 @@ func (a OriginAttestationSubmitter) update(ctx context.Context) error {
 	}
 
 	nowTime := time.Now()
-	submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToSubmit.SignedAttestation(), inProgressAttestationToSubmit.OriginDispatchBlockNumber(), &nowTime, 0)
+	submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToSubmit.SignedAttestation(), &nowTime, 0)
 	err = a.db.UpdateNotarySubmittedToAttestationCollectorTime(ctx, submittedInProgressAttestation)
 	if err != nil {
 		return fmt.Errorf("could not store submission time for attestation: %w", err)

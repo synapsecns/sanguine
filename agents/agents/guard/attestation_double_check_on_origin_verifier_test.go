@@ -83,7 +83,7 @@ func (u GuardSuite) TestAttestationDoubleCheckOnOriginVerifier() {
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	retrievedSignedAndVerifiedInProgressAttestation, err := testDB.RetrieveOldestGuardUnsignedAndVerifiedInProgressAttestation(
+	retrievedSignedAndVerifiedInProgressAttestation, err := testDB.RetrieveNewestGuardUnsignedAndVerifiedInProgressAttestation(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
 		u.DestinationDomainClient.Config().DomainID)

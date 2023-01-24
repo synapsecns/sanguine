@@ -59,7 +59,7 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	retrievedConfirmedInProgressAttestation, err := testDB.RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation(
+	retrievedConfirmedInProgressAttestation, err := testDB.RetrieveNewestGuardUnsignedAndUnverifiedInProgressAttestation(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
 		u.DestinationDomainClient.Config().DomainID)

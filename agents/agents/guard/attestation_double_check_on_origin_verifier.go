@@ -68,14 +68,14 @@ func (a AttestationDoubleCheckOnOriginVerifier) Start(ctx context.Context) error
 	}
 }
 
-// FindOldestGuardUnsignedAndUnverifiedAttestation fetches the oldest attestation that still needs to be signed by the guard and needs to be verified.
-func (a AttestationDoubleCheckOnOriginVerifier) FindOldestGuardUnsignedAndUnverifiedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+// FindNewestGuardUnsignedAndUnverifiedAttestation fetches the newest attestation that still needs to be signed by the guard and needs to be verified.
+func (a AttestationDoubleCheckOnOriginVerifier) FindNewestGuardUnsignedAndUnverifiedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
+	inProgressAttestation, err := a.db.RetrieveNewestGuardUnsignedAndUnverifiedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not find oldest unsigned and unverified attestation: %w", err)
+		return nil, fmt.Errorf("could not find newest unsigned and unverified attestation: %w", err)
 	}
 	return inProgressAttestation, nil
 }
@@ -84,17 +84,15 @@ func (a AttestationDoubleCheckOnOriginVerifier) FindOldestGuardUnsignedAndUnveri
 //
 //nolint:cyclop
 func (a AttestationDoubleCheckOnOriginVerifier) update(ctx context.Context) error {
-	inProgressAttestationToVerify, err := a.FindOldestGuardUnsignedAndUnverifiedAttestation(ctx)
+	inProgressAttestationToVerify, err := a.FindNewestGuardUnsignedAndUnverifiedAttestation(ctx)
 	if err != nil {
-		return fmt.Errorf("could not retrieve oldest unsigned and unverified attestation: %w", err)
+		return fmt.Errorf("could not retrieve newest unsigned and unverified attestation: %w", err)
 	}
 	if inProgressAttestationToVerify == nil {
 		return nil
 	}
 
-	// TODO (joe): Currently we are scanning all nonces in order. Later, we really want to get the latest
-	// attestation after the latestNonce if any exists.
-	attestationFromOrigin, dispatchBlockNumber, err := a.originDomain.Origin().GetHistoricalAttestation(ctx, a.destinationDomain.Config().DomainID, inProgressAttestationToVerify.SignedAttestation().Attestation().Nonce())
+	attestationFromOrigin, _, err := a.originDomain.Origin().GetHistoricalAttestation(ctx, a.destinationDomain.Config().DomainID, inProgressAttestationToVerify.SignedAttestation().Attestation().Nonce())
 	if errors.Is(err, domains.ErrNoUpdate) {
 		return fmt.Errorf("FRAUD ALERT! could not get historical attestation with origin %d, destination %d, nonce %d : %w",
 			inProgressAttestationToVerify.SignedAttestation().Attestation().Origin(),
@@ -104,11 +102,6 @@ func (a AttestationDoubleCheckOnOriginVerifier) update(ctx context.Context) erro
 	}
 	if err != nil {
 		return fmt.Errorf("could not get historical attestation: %w", err)
-	}
-
-	if !a.isConfirmed(dispatchBlockNumber) {
-		// not yet confirmed so skip
-		return nil
 	}
 
 	if attestationFromOrigin.Root() != inProgressAttestationToVerify.SignedAttestation().Attestation().Root() {
@@ -122,7 +115,6 @@ func (a AttestationDoubleCheckOnOriginVerifier) update(ctx context.Context) erro
 	nowTime := time.Now()
 	inProgressAttestationToMarkVerified := types.NewInProgressAttestation(
 		inProgressAttestationToVerify.SignedAttestation(),
-		inProgressAttestationToVerify.OriginDispatchBlockNumber(),
 		&nowTime,
 		0)
 	err = a.db.MarkVerifiedOnOrigin(ctx, inProgressAttestationToMarkVerified)
@@ -131,9 +123,4 @@ func (a AttestationDoubleCheckOnOriginVerifier) update(ctx context.Context) erro
 	}
 
 	return nil
-}
-
-func (a AttestationDoubleCheckOnOriginVerifier) isConfirmed(txBlockNum uint64) bool {
-	// TODO (joe): figure this out
-	return true
 }

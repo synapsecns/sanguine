@@ -73,13 +73,12 @@ func (u GuardSuite) TestAttestationGuardCollectorVerifier() {
 	err = testDB.StoreExistingSignedInProgressAttestation(u.GetTestContext(), signedAttestationFromCollector)
 	Nil(u.T(), err)
 
-	inProgressAttestationToMarkVerified, err := testDB.RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation(u.GetTestContext(), origin, destination)
+	inProgressAttestationToMarkVerified, err := testDB.RetrieveNewestGuardUnsignedAndUnverifiedInProgressAttestation(u.GetTestContext(), origin, destination)
 	Nil(u.T(), err)
 
 	nowTime := time.Now()
 	submittedInProgressAttestation := types.NewInProgressAttestation(
 		signedAttestationFromCollector,
-		inProgressAttestationToMarkVerified.OriginDispatchBlockNumber(),
 		&nowTime,
 		0)
 	err = testDB.MarkVerifiedOnOrigin(u.GetTestContext(), submittedInProgressAttestation)
@@ -94,7 +93,6 @@ func (u GuardSuite) TestAttestationGuardCollectorVerifier() {
 		[]types.Signature{notarySignature})
 	signedInProgressAttestation := types.NewInProgressAttestation(
 		guardSignedAttestation,
-		inProgressAttestationToMarkVerified.OriginDispatchBlockNumber(),
 		nil,
 		0)
 	err = testDB.UpdateGuardSignature(u.GetTestContext(), signedInProgressAttestation)
@@ -115,7 +113,6 @@ func (u GuardSuite) TestAttestationGuardCollectorVerifier() {
 
 	inProgressAttestationToSubmit := types.NewInProgressAttestation(
 		inProgressAttestationToMarkVerified.SignedAttestation(),
-		inProgressAttestationToMarkVerified.OriginDispatchBlockNumber(),
 		&nowTime,
 		0)
 
@@ -136,22 +133,22 @@ func (u GuardSuite) TestAttestationGuardCollectorVerifier() {
 	Nil(u.T(), err)
 
 	// make sure the attesation has been verified
-	retrievedOldestGuardConfirmedOnCollector, err := testDB.RetrieveOldestGuardConfirmedOnCollector(
+	retrievedNewestGuardConfirmedOnCollector, err := testDB.RetrieveNewestGuardConfirmedOnCollector(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
 		u.DestinationDomainClient.Config().DomainID)
 
 	Nil(u.T(), err)
-	NotNil(u.T(), retrievedOldestGuardConfirmedOnCollector)
+	NotNil(u.T(), retrievedNewestGuardConfirmedOnCollector)
 
-	retrievedAttestation := retrievedOldestGuardConfirmedOnCollector.SignedAttestation()
+	retrievedAttestation := retrievedNewestGuardConfirmedOnCollector.SignedAttestation()
 	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedAttestation.Attestation().Origin())
 	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedAttestation.Attestation().Destination())
 	Equal(u.T(), root, retrievedAttestation.Attestation().Root())
 	Len(u.T(), retrievedAttestation.NotarySignatures(), 1)
 	Len(u.T(), retrievedAttestation.GuardSignatures(), 1)
-	Greater(u.T(), retrievedOldestGuardConfirmedOnCollector.SubmittedToAttestationCollectorTime().Unix(), int64(0))
-	Equal(u.T(), types.AttestationStateGuardConfirmedOnCollector, retrievedOldestGuardConfirmedOnCollector.AttestationState())
+	Greater(u.T(), retrievedNewestGuardConfirmedOnCollector.SubmittedToAttestationCollectorTime().Unix(), int64(0))
+	Equal(u.T(), types.AttestationStateGuardConfirmedOnCollector, retrievedNewestGuardConfirmedOnCollector.AttestationState())
 
 	Nil(u.T(), err)
 }

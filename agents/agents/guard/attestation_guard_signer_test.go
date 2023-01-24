@@ -69,13 +69,9 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	err = testDB.StoreExistingSignedInProgressAttestation(u.GetTestContext(), signedAttestationFromCollector)
 	Nil(u.T(), err)
 
-	inProgressAttestationToMarkVerified, err := testDB.RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation(u.GetTestContext(), origin, destination)
-	Nil(u.T(), err)
-
 	nowTime := time.Now()
 	submittedInProgressAttestation := types.NewInProgressAttestation(
 		signedAttestationFromCollector,
-		inProgressAttestationToMarkVerified.OriginDispatchBlockNumber(),
 		&nowTime,
 		0)
 	err = testDB.MarkVerifiedOnOrigin(u.GetTestContext(), submittedInProgressAttestation)
@@ -95,21 +91,21 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	retrievedOldestGuardUnsubmittedSignedInProgressAttestation, err := testDB.RetrieveOldestGuardUnsubmittedSignedInProgressAttestation(
+	retrievedNewestGuardUnsubmittedSignedInProgressAttestation, err := testDB.RetrieveNewestGuardUnsubmittedSignedInProgressAttestation(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
 		u.DestinationDomainClient.Config().DomainID)
 
 	Nil(u.T(), err)
-	NotNil(u.T(), retrievedOldestGuardUnsubmittedSignedInProgressAttestation)
+	NotNil(u.T(), retrievedNewestGuardUnsubmittedSignedInProgressAttestation)
 
-	retrievedAttestation := retrievedOldestGuardUnsubmittedSignedInProgressAttestation.SignedAttestation()
+	retrievedAttestation := retrievedNewestGuardUnsubmittedSignedInProgressAttestation.SignedAttestation()
 	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedAttestation.Attestation().Origin())
 	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedAttestation.Attestation().Destination())
 	Equal(u.T(), root, retrievedAttestation.Attestation().Root())
 	Len(u.T(), retrievedAttestation.NotarySignatures(), 1)
 	Len(u.T(), retrievedAttestation.GuardSignatures(), 1)
-	Equal(u.T(), types.AttestationStateGuardSignedUnsubmitted, retrievedOldestGuardUnsubmittedSignedInProgressAttestation.AttestationState())
+	Equal(u.T(), types.AttestationStateGuardSignedUnsubmitted, retrievedNewestGuardUnsubmittedSignedInProgressAttestation.AttestationState())
 
 	Nil(u.T(), err)
 }

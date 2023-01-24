@@ -73,13 +73,12 @@ func (u GuardSuite) TestAttestationGuardDestinationVerifier() {
 	err = testDB.StoreExistingSignedInProgressAttestation(u.GetTestContext(), signedAttestationFromCollector)
 	Nil(u.T(), err)
 
-	inProgressAttestationToMarkVerified, err := testDB.RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation(u.GetTestContext(), origin, destination)
+	inProgressAttestationToMarkVerified, err := testDB.RetrieveNewestGuardUnsignedAndUnverifiedInProgressAttestation(u.GetTestContext(), origin, destination)
 	Nil(u.T(), err)
 
 	nowTime := time.Now()
 	submittedInProgressAttestation := types.NewInProgressAttestation(
 		signedAttestationFromCollector,
-		inProgressAttestationToMarkVerified.OriginDispatchBlockNumber(),
 		&nowTime,
 		0)
 	err = testDB.MarkVerifiedOnOrigin(u.GetTestContext(), submittedInProgressAttestation)
@@ -94,7 +93,6 @@ func (u GuardSuite) TestAttestationGuardDestinationVerifier() {
 		[]types.Signature{notarySignature})
 	signedInProgressAttestation := types.NewInProgressAttestation(
 		guardSignedAttestation,
-		inProgressAttestationToMarkVerified.OriginDispatchBlockNumber(),
 		nil,
 		0)
 	err = testDB.UpdateGuardSignature(u.GetTestContext(), signedInProgressAttestation)
@@ -115,7 +113,6 @@ func (u GuardSuite) TestAttestationGuardDestinationVerifier() {
 
 	inProgressAttestationToSubmit := types.NewInProgressAttestation(
 		inProgressAttestationToMarkVerified.SignedAttestation(),
-		inProgressAttestationToMarkVerified.OriginDispatchBlockNumber(),
 		&nowTime,
 		0)
 

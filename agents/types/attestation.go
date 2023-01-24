@@ -203,8 +203,6 @@ var _ SignedAttestation = signedAttestation{}
 type InProgressAttestation interface {
 	// SignedAttestation gets the signed attestation
 	SignedAttestation() SignedAttestation
-	// DispatchedBlockNumber when message was dispatched on origin
-	OriginDispatchBlockNumber() uint64
 	// SubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
 	SubmittedToAttestationCollectorTime() *time.Time
 	// SubmittedToDestinationTime is time when signed attestation was submitted to the Destination
@@ -216,17 +214,15 @@ type InProgressAttestation interface {
 // inProgressAttestation is a struct that conforms to InProgressAttestation.
 type inProgressAttestation struct {
 	signedAttestation                   SignedAttestation
-	originDispatchBlockNumber           uint64
 	submittedToAttestationCollectorTime *time.Time
 	submittedToDestinationTime          *time.Time
 	attestationState                    AttestationState
 }
 
 // NewInProgressAttestation creates a new to process attestation.
-func NewInProgressAttestation(signedAttestation SignedAttestation, originDispatchBlockNumber uint64, submittedToAttestationCollectorTime *time.Time, state AttestationState) InProgressAttestation {
+func NewInProgressAttestation(signedAttestation SignedAttestation, submittedToAttestationCollectorTime *time.Time, state AttestationState) InProgressAttestation {
 	return inProgressAttestation{
 		signedAttestation:                   signedAttestation,
-		originDispatchBlockNumber:           originDispatchBlockNumber,
 		submittedToAttestationCollectorTime: submittedToAttestationCollectorTime,
 		attestationState:                    state,
 	}
@@ -234,10 +230,6 @@ func NewInProgressAttestation(signedAttestation SignedAttestation, originDispatc
 
 func (t inProgressAttestation) SignedAttestation() SignedAttestation {
 	return t.signedAttestation
-}
-
-func (t inProgressAttestation) OriginDispatchBlockNumber() uint64 {
-	return t.originDispatchBlockNumber
 }
 
 func (t inProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time {

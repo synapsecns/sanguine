@@ -69,14 +69,14 @@ func (a AttestationGuardSigner) Start(ctx context.Context) error {
 	}
 }
 
-// FindOldestGuardUnsignedAndVerifiedAttestation fetches the oldest attestation that still needs to be signed by the guard but has been verified on origin.
-func (a AttestationGuardSigner) FindOldestGuardUnsignedAndVerifiedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestGuardUnsignedAndVerifiedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+// FindNewestGuardUnsignedAndVerifiedAttestation fetches the newest attestation that still needs to be signed by the guard but has been verified on origin.
+func (a AttestationGuardSigner) FindNewestGuardUnsignedAndVerifiedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
+	inProgressAttestation, err := a.db.RetrieveNewestGuardUnsignedAndVerifiedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not retrieve oldest unsigned and verified attestation: %w", err)
+		return nil, fmt.Errorf("could not retrieve newest unsigned and verified attestation: %w", err)
 	}
 	return inProgressAttestation, nil
 }
@@ -85,9 +85,9 @@ func (a AttestationGuardSigner) FindOldestGuardUnsignedAndVerifiedAttestation(ct
 //
 //nolint:cyclop
 func (a AttestationGuardSigner) update(ctx context.Context) error {
-	inProgressAttestationToSign, err := a.FindOldestGuardUnsignedAndVerifiedAttestation(ctx)
+	inProgressAttestationToSign, err := a.FindNewestGuardUnsignedAndVerifiedAttestation(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find oldest unsigned and verified attestation: %w", err)
+		return fmt.Errorf("could not find newest unsigned and verified attestation: %w", err)
 	}
 	if inProgressAttestationToSign == nil {
 		return nil
@@ -104,7 +104,7 @@ func (a AttestationGuardSigner) update(ctx context.Context) error {
 	}
 
 	signedAttestation := types.NewSignedAttestation(inProgressAttestationToSign.SignedAttestation().Attestation(), []types.Signature{guardSignature}, []types.Signature{})
-	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, inProgressAttestationToSign.OriginDispatchBlockNumber(), nil, 0)
+	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, nil, 0)
 	err = a.db.UpdateGuardSignature(ctx, signedInProgressAttestation)
 	if err != nil {
 		return fmt.Errorf("could not store guard signature for attestation: %w", err)

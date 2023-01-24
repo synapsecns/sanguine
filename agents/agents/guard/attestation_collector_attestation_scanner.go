@@ -58,8 +58,6 @@ func (a AttestationCollectorAttestationScanner) Start(ctx context.Context) error
 }
 
 // FindLatestNonce fetches the latest cached nonce for a given chain.
-// TODO (joe): there was a bug in this code not covered by current tests.
-// Make sure to add a test that covers when latestNonce is not zero.
 func (a AttestationCollectorAttestationScanner) FindLatestNonce(ctx context.Context) (nonce uint32, err error) {
 	latestNonce, err := a.db.RetrieveLatestCachedNonce(ctx, a.originID, a.destinationID)
 	if err != nil {
@@ -80,8 +78,6 @@ func (a AttestationCollectorAttestationScanner) update(ctx context.Context) erro
 		return fmt.Errorf("could not find latest root: %w", err)
 	}
 
-	// TODO (joe): Currently we are scanning all nonces in order. Later, we really want to get the latest
-	// attestation after the latestNonce if any exists.
 	nextNonce := latestNonce + 1
 	root, err := a.attestationDomain.AttestationCollector().GetRoot(ctx, a.originID, a.destinationID, nextNonce)
 	if err != nil {

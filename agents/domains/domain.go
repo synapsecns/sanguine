@@ -41,6 +41,8 @@ type OriginContract interface {
 	// GetHistoricalAttestation gets the root corresponding to destination and nonce,
 	// as well as the block number the message was dispatched and the current block number
 	GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, error)
+	// SuggestAttestation gets the latest attestation on the origin for the given destination
+	SuggestAttestation(ctx context.Context, destinationID uint32) (types.Attestation, error)
 }
 
 // AttestationCollectorContract contains the interface for the attestation collector.

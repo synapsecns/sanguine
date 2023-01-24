@@ -20,7 +20,6 @@ func (u NotarySuite) TestOriginAttestationSubmitter() {
 
 	fakeNonce := uint32(1)
 	fakeRoot := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-	fakeDispatchBlockNumber := uint64(1)
 
 	fakeAttestKey := types.AttestationKey{
 		Origin:      u.OriginDomainClient.Config().DomainID,
@@ -29,7 +28,7 @@ func (u NotarySuite) TestOriginAttestationSubmitter() {
 	}
 	fakeUnsignedAttestation := types.NewAttestation(fakeAttestKey.GetRawKey(), fakeRoot)
 
-	err = testDB.StoreNewInProgressAttestation(u.GetTestContext(), fakeUnsignedAttestation, fakeDispatchBlockNumber)
+	err = testDB.StoreNewInProgressAttestation(u.GetTestContext(), fakeUnsignedAttestation)
 	Nil(u.T(), err)
 
 	unsignedInProgressAttestation, err := testDB.RetrieveInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, u.DestinationDomainClient.Config().DomainID, fakeNonce)
@@ -42,7 +41,7 @@ func (u NotarySuite) TestOriginAttestationSubmitter() {
 	Nil(u.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedInProgressAttestation.SignedAttestation().Attestation(), []types.Signature{}, []types.Signature{signature})
-	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, unsignedInProgressAttestation.OriginDispatchBlockNumber(), nil, 0)
+	signedInProgressAttestation := types.NewInProgressAttestation(signedAttestation, nil, 0)
 	err = testDB.UpdateNotarySignature(u.GetTestContext(), signedInProgressAttestation)
 	Nil(u.T(), err)
 
@@ -60,7 +59,7 @@ func (u NotarySuite) TestOriginAttestationSubmitter() {
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	producedAttestation, err := testDB.RetrieveOldestUnconfirmedSubmittedInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, u.DestinationDomainClient.Config().DomainID)
+	producedAttestation, err := testDB.RetrieveNewestUnconfirmedSubmittedInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, u.DestinationDomainClient.Config().DomainID)
 	Nil(u.T(), err)
 	Equal(u.T(), producedAttestation.SignedAttestation().Attestation().Nonce(), fakeNonce)
 	NotNil(u.T(), producedAttestation.SubmittedToAttestationCollectorTime())
