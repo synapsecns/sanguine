@@ -12,7 +12,7 @@ import (
 )
 
 // keepAlive is a resource that keeps a tunnel alive
-// by delaying the read of the datasource until the timeout is finished
+// by delaying the read of the datasource until the timeout is finished.
 func keepAlive() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceKeepAlive,
@@ -56,7 +56,7 @@ func dataSourceKeepAlive(d *schema.ResourceData, meta interface{}) error {
 	parsedURL, err := url.Parse(proxyURL)
 	if err != nil {
 		log.Printf("[ERROR] could not parse proxy url %s: %v", proxyURL, err)
-		return err
+		return fmt.Errorf("could not parse proxy url %s: %v", proxyURL, err)
 	}
 
 	id := uuid.New().String()
@@ -86,8 +86,8 @@ func dataSourceKeepAlive(d *schema.ResourceData, meta interface{}) error {
 			log.Printf("[INFO] successfully connected through proxy %s", proxyURL)
 			continue
 		case <-config.GetContext().Done():
-			log.Printf("[ERROR] contet cancelled before timeout (%d seconds)", timeout)
-			return fmt.Errorf("context was cancelled")
+			log.Printf("[ERROR] contet canceled before timeout (%d seconds)", timeout)
+			return fmt.Errorf("context was canceled")
 		}
 	}
 }
