@@ -22,5 +22,3 @@ The Terraform Kubernetes IAP Proxy Provider allows you to use an IAP proxy when 
 
 It's good to note that this is a conceptual explanation and the implementation may differ and depend on the specific details of the kubernetes provider and how it interacts with the gcp iap.
 
-
-
