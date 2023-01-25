@@ -146,7 +146,7 @@ var scribeCommand = &cli.Command{
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag},
+	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag, grpcPortFlag},
 	Action: func(c *cli.Context) error {
 		err := api.Start(c.Context, api.Config{
 			HTTPPort:   uint16(c.Uint(portFlag.Name)),
