@@ -57,7 +57,7 @@ func dataSourceKeepAlive(d *schema.ResourceData, meta interface{}) error {
 	parsedURL, err := url.Parse(proxyURL)
 	if err != nil {
 		log.Printf("[ERROR] could not parse proxy url %s: %v", proxyURL, err)
-		return fmt.Errorf("could not parse proxy url %s: %v", proxyURL, err)
+		return fmt.Errorf("could not parse proxy url %s: %w", proxyURL, err)
 	}
 
 	id := uuid.New().String()
@@ -74,12 +74,13 @@ func dataSourceKeepAlive(d *schema.ResourceData, meta interface{}) error {
 			log.Printf("[INFO] finished waiting %d seconds", timeout)
 			err := d.Set("timed_out", true)
 			if err != nil {
-				return fmt.Errorf("could not set timed_out to true: %v", err)
+				return fmt.Errorf("could not set timed_out to true: %w", err)
 			}
 			return nil
 		case <-time.After(time.Second * 5):
 			log.Printf("[INFO] testing proxy %s", proxyURL)
 			testClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(parsedURL)}}
+			//nolint: noctx
 			resp, err := testClient.Get("https://www.google.com/")
 			if err != nil {
 				log.Printf("[ERROR] could not connect through proxy %s: %v", proxyURL, err)

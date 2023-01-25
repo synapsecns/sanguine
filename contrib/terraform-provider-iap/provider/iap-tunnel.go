@@ -171,6 +171,7 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("could not parse url: %w", err)
 	}
 	testClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(parsedURL)}}
+	//nolint: noctx
 	resp, err := testClient.Get("https://www.google.com/")
 	if err != nil {
 		log.Printf("[ERROR] could not connect through proxy %s: %v", proxyURL, err)
