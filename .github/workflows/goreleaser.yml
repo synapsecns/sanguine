@@ -104,6 +104,7 @@ jobs:
             contrib/tfcore: 'contrib/tfcore/**'
             contrib/terraform-provider-iap: 'contrib/terraform-provider-iap/**'
             contrib/terraform-provider-helmproxy: 'contrib/terraform-provider-helmproxy/**'
+            contrib/terraform-provider-kubeproxy: 'contrib/terraform-provider-kubeproxy/**'
             contrib/release-copier-action: 'contrib/release-copier-action/**'
 
       - id: length
