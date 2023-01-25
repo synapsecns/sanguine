@@ -7,66 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-helm/helm"
 	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
+	"github.com/synapsecns/sanguine/contrib/tfcore/utils"
 	"log"
 	"os"
-	"strings"
 )
-
-var combinedSchema map[string]*schema.Schema
-var combinedMetaSchema map[string]*schema.Schema
-
-var resourceMap, dataSourceMap map[string]*schema.Resource
-
-// we use this as a static assertion to check for overlap between keys in the two providers.
-func init() {
-	// schema
-	combinedSchema = MustCombineMaps(google.Provider().Schema, helm.Provider().Schema)
-	combinedMetaSchema = MustCombineMaps(google.Provider().ProviderMetaSchema, helm.Provider().ProviderMetaSchema)
-	resourceMap = make(map[string]*schema.Resource)
-	dataSourceMap = make(map[string]*schema.Resource)
-
-	for key, val := range helm.Provider().ResourcesMap {
-		resourceMap[strings.Replace(key, "helm", "helmproxy", 1)] = wrapSchemaResource(val)
-	}
-
-	for key, val := range helm.Provider().DataSourcesMap {
-		dataSourceMap[strings.Replace(key, "helm", "helmproxy", 1)] = wrapSchemaResource(val)
-	}
-
-	// project is required to start the proxy
-	combinedSchema["project"].Required = true
-	combinedSchema["project"].Optional = false
-	// zone is required to start the proxy
-	combinedSchema["zone"].Required = true
-	combinedSchema["zone"].Optional = false
-
-	combinedSchema["service_account"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "service account to proxy through",
-	}
-	combinedSchema["instance"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "The name of the instance to start the proxy on",
-	}
-	combinedSchema["interface"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Description: "The name of the interface to start the proxy on",
-		Default:     "nic0",
-		// defaults to default
-		Optional: true,
-	}
-
-	combinedSchema["remote_port"] = &schema.Schema{
-		Type:        schema.TypeInt,
-		Description: "the port to proxy to",
-		// defaults to default
-		Optional: true,
-		// default tinyproxy port
-		Default: "8888",
-	}
-}
 
 type configuredProvider struct {
 	// googleIface is the google interface
@@ -75,15 +19,26 @@ type configuredProvider struct {
 	helmIface *helm.Meta
 }
 
+func (c configuredProvider) GoogleProvider() interface{} {
+	return c.googleIface
+}
+
+func (c configuredProvider) UnderlyingProvider() interface{} {
+	return c.helmIface
+}
+
+var _ utils.WrappedProvider = &configuredProvider{}
+
 // Provider gets the provider for the iap tunnel.
 func Provider() *schema.Provider {
+	combinedSchema := utils.CombineSchemas(google.Provider(), helm.Provider(), "helm", "helmproxy")
 	underlyingGoogleProvider := google.Provider()
 	underlyingHelmProvider := helm.Provider()
 	return &schema.Provider{
-		Schema:             combinedSchema,
-		ProviderMetaSchema: combinedMetaSchema,
-		ResourcesMap:       resourceMap,
-		DataSourcesMap:     dataSourceMap,
+		Schema:             combinedSchema.Schema,
+		ProviderMetaSchema: combinedSchema.MetaSchema,
+		ResourcesMap:       combinedSchema.ResourceMap,
+		DataSourcesMap:     combinedSchema.DataSourceMap,
 		ConfigureContextFunc: func(ctx context.Context, data *schema.ResourceData) (_ interface{}, dg provider_diag.Diagnostics) {
 			cp := &configuredProvider{}
 			var gdg, hdg provider_diag.Diagnostics
@@ -116,7 +71,7 @@ func Provider() *schema.Provider {
 			}
 
 			// TODO: the proxy_url needs to be set in here
-			proxyURL, err := startTunnel(ctx, data, cp)
+			proxyURL, err := utils.StartTunnel(ctx, data, cp.googleIface)
 			if err != nil {
 				return nil, append(gdg, provider_diag.FromErr(err)[0])
 			}

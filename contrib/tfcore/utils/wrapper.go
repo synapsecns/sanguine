@@ -1,4 +1,4 @@
-package provider
+package utils
 
 import (
 	"context"
@@ -7,11 +7,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// wrapSchemaResource wraps a schema.resource to extract the helm interface. This way, we can configure context on both
-// the helm and google interfaces without modifying the underlying provider. This allows are only modification to the provider
+type WrappedProvider interface {
+	// UnderlyingProvider gets the underlying provider
+	UnderlyingProvider() interface{}
+	GoogleProvider() interface{}
+}
+
+// WrapSchemaResource wraps a schema.resource to extract the underlying provider interface. This way, we can configure context on both
+// the underlying provider interfaces without modifying the underlying provider. This allows are only modification to the provider
 // itself to be the addition of the proxy_url field and the proxy starter.
 // nolint: staticcheck, wrapcheck, gocognit, cyclop
-func wrapSchemaResource(resource *schema.Resource) *schema.Resource {
+func WrapSchemaResource(resource *schema.Resource) *schema.Resource {
 	resResource := &schema.Resource{
 		Schema:         resource.Schema,
 		SchemaVersion:  resource.SchemaVersion,
@@ -24,17 +30,17 @@ func wrapSchemaResource(resource *schema.Resource) *schema.Resource {
 
 	if resource.Create != nil {
 		resResource.Create = func(data *schema.ResourceData, meta interface{}) error {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return errors.New("failed to cast meta interface")
 			}
-			return resource.Create(data, cp.helmIface)
+			return resource.Create(data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.CreateContext != nil {
 		resResource.CreateContext = func(ctx context.Context, data *schema.ResourceData, meta interface{}) (_ provider_diag.Diagnostics) {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return provider_diag.Diagnostics{
 					{
@@ -43,23 +49,23 @@ func wrapSchemaResource(resource *schema.Resource) *schema.Resource {
 					},
 				}
 			}
-			return resource.CreateContext(ctx, data, cp.helmIface)
+			return resource.CreateContext(ctx, data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.Read != nil {
 		resResource.Read = func(data *schema.ResourceData, meta interface{}) error {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return errors.New("failed to cast meta interface")
 			}
-			return resource.Read(data, cp.helmIface)
+			return resource.Read(data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.ReadContext != nil {
 		resResource.ReadContext = func(ctx context.Context, data *schema.ResourceData, meta interface{}) (_ provider_diag.Diagnostics) {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return provider_diag.Diagnostics{
 					{
@@ -68,13 +74,13 @@ func wrapSchemaResource(resource *schema.Resource) *schema.Resource {
 					},
 				}
 			}
-			return resource.ReadContext(ctx, data, cp.helmIface)
+			return resource.ReadContext(ctx, data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.UpdateContext != nil {
 		resResource.UpdateContext = func(ctx context.Context, data *schema.ResourceData, meta interface{}) (_ provider_diag.Diagnostics) {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return provider_diag.Diagnostics{
 					{
@@ -83,43 +89,43 @@ func wrapSchemaResource(resource *schema.Resource) *schema.Resource {
 					},
 				}
 			}
-			return resource.UpdateContext(ctx, data, cp.helmIface)
+			return resource.UpdateContext(ctx, data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.Update != nil {
 		resResource.Update = func(data *schema.ResourceData, meta interface{}) error {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return errors.New("failed to cast meta interface")
 			}
-			return resource.Update(data, cp.helmIface)
+			return resource.Update(data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.Delete != nil {
 		resResource.Delete = func(data *schema.ResourceData, meta interface{}) error {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return errors.New("failed to cast meta interface")
 			}
-			return resource.Delete(data, cp.helmIface)
+			return resource.Delete(data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.Exists != nil {
 		resResource.Exists = func(data *schema.ResourceData, meta interface{}) (bool, error) {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return false, errors.New("failed to cast meta interface")
 			}
-			return resource.Exists(data, cp.helmIface)
+			return resource.Exists(data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.CreateWithoutTimeout != nil {
 		resResource.CreateWithoutTimeout = func(ctx context.Context, data *schema.ResourceData, meta interface{}) provider_diag.Diagnostics {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return provider_diag.Diagnostics{
 					{
@@ -128,13 +134,13 @@ func wrapSchemaResource(resource *schema.Resource) *schema.Resource {
 					},
 				}
 			}
-			return resource.CreateWithoutTimeout(ctx, data, cp.helmIface)
+			return resource.CreateWithoutTimeout(ctx, data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.ReadWithoutTimeout != nil {
 		resResource.ReadWithoutTimeout = func(ctx context.Context, data *schema.ResourceData, meta interface{}) provider_diag.Diagnostics {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return provider_diag.Diagnostics{
 					{
@@ -143,13 +149,13 @@ func wrapSchemaResource(resource *schema.Resource) *schema.Resource {
 					},
 				}
 			}
-			return resource.ReadWithoutTimeout(ctx, data, cp.helmIface)
+			return resource.ReadWithoutTimeout(ctx, data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.UpdateWithoutTimeout != nil {
 		resResource.UpdateWithoutTimeout = func(ctx context.Context, data *schema.ResourceData, meta interface{}) provider_diag.Diagnostics {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return provider_diag.Diagnostics{
 					{
@@ -158,13 +164,13 @@ func wrapSchemaResource(resource *schema.Resource) *schema.Resource {
 					},
 				}
 			}
-			return resource.UpdateWithoutTimeout(ctx, data, cp.helmIface)
+			return resource.UpdateWithoutTimeout(ctx, data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.DeleteWithoutTimeout != nil {
 		resResource.DeleteWithoutTimeout = func(ctx context.Context, data *schema.ResourceData, meta interface{}) provider_diag.Diagnostics {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return provider_diag.Diagnostics{
 					{
@@ -174,24 +180,24 @@ func wrapSchemaResource(resource *schema.Resource) *schema.Resource {
 				}
 			}
 
-			return resource.DeleteWithoutTimeout(ctx, data, cp.helmIface)
+			return resource.DeleteWithoutTimeout(ctx, data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.CustomizeDiff != nil {
 		resResource.CustomizeDiff = func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return errors.New("failed to cast meta interface")
 			}
 
-			return resource.CustomizeDiff(ctx, diff, cp.helmIface)
+			return resource.CustomizeDiff(ctx, diff, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
 	if resource.DeleteContext != nil {
 		resResource.DeleteContext = func(ctx context.Context, data *schema.ResourceData, meta interface{}) (_ provider_diag.Diagnostics) {
-			cp, ok := meta.(*configuredProvider)
+			underlyingProvider, ok := meta.(WrappedProvider)
 			if !ok {
 				return provider_diag.Diagnostics{
 					{
@@ -200,7 +206,7 @@ func wrapSchemaResource(resource *schema.Resource) *schema.Resource {
 					},
 				}
 			}
-			return resource.DeleteContext(ctx, data, cp.helmIface)
+			return resource.DeleteContext(ctx, data, underlyingProvider.UnderlyingProvider())
 		}
 	}
 
