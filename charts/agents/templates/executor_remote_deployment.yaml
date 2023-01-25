@@ -6,9 +6,7 @@ metadata:
   labels:
     {{- include "agents.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.executor_remote.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "agents.selectorLabels" . | nindent 6 }}
@@ -66,6 +64,9 @@ spec:
           volumeMounts:
             - name: configmap
               mountPath: /config
+        {{- end }}
+        {{- if .Values.executor_remote.extraContainers }}
+        {{- toYaml .Values.executor_remote.extraContainers | nindent 8 }}
         {{- end }}
       {{- with .Values.executor_remote.nodeSelector }}
       nodeSelector:
