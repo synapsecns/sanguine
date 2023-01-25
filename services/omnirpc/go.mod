@@ -28,7 +28,6 @@ require (
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/josephburnett/jd v1.6.1
-	github.com/jpillora/backoff v1.0.0
 	github.com/lmittmann/w3 v0.10.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
@@ -41,7 +40,6 @@ require (
 	github.com/synapsecns/sanguine/ethergo v0.0.2
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/valyala/fasthttp v1.41.0
-	gitlab.com/1f320/x v0.3.0
 	go.uber.org/automaxprocs v1.5.1
 	golang.org/x/exp v0.0.0-20221012211006-4de253d81b95
 	golang.org/x/sync v0.1.0
@@ -140,6 +138,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
+	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
 	github.com/keep-network/keep-common v1.7.1-0.20211012131917-7102d7b9c6a0 // indirect
