@@ -48,8 +48,8 @@ var portFlag = &cli.UintFlag{
 }
 
 var grpcPortFlag = &cli.UintFlag{
-	Name:  "grpc-port",
-	Usage: "--port 5121",
+	Name:  "grpcport",
+	Usage: "--grpcport 443",
 	Value: 0,
 }
 
@@ -145,7 +145,7 @@ var scribeCommand = &cli.Command{
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag},
+	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag, grpcPortFlag},
 	Action: func(c *cli.Context) error {
 		err := api.Start(c.Context, api.Config{
 			HTTPPort:   uint16(c.Uint(portFlag.Name)),
