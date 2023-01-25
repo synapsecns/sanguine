@@ -449,11 +449,11 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 		if !ok {
 			return nil, fmt.Errorf("error in parsing fee amount %s", swapEvent.Fee[i])
 		}
+
 		price := swapEvent.TokenPrice[i]
 		feeResults[i] = *GetAmountUSD(n, swapEvent.TokenDecimal[i], &price)
-
-		if feeResults[i] == 0 {
-			fmt.Println(" FEE ZERO________", feeResults[i], swapEvent.Fee, swapEvent.TokenDecimal[i], price)
+		if swapEvent.EventType == 1 || swapEvent.EventType == 4 || swapEvent.EventType == 9 {
+			feeResults[i] = feeResults[i] * getAdjustedFee(adminFee, 10)
 		}
 	}
 
