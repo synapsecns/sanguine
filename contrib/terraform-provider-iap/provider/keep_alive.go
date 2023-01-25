@@ -36,6 +36,7 @@ func keepAlive() *schema.Resource {
 	}
 }
 
+// nolint: cyclop
 func dataSourceKeepAlive(d *schema.ResourceData, meta interface{}) error {
 	config, ok := meta.(*google.Config)
 	if !ok {
@@ -73,16 +74,17 @@ func dataSourceKeepAlive(d *schema.ResourceData, meta interface{}) error {
 			log.Printf("[INFO] finished waiting %d seconds", timeout)
 			err := d.Set("timed_out", true)
 			if err != nil {
-				return fmt.Errorf("could not set timed_out to true: %w", err)
+				return fmt.Errorf("could not set timed_out to true: %v", err)
 			}
 			return nil
 		case <-time.After(time.Second * 5):
 			log.Printf("[INFO] testing proxy %s", proxyURL)
 			testClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(parsedURL)}}
-			_, err = testClient.Get("https://www.google.com/")
+			resp, err := testClient.Get("https://www.google.com/")
 			if err != nil {
 				log.Printf("[ERROR] could not connect through proxy %s: %v", proxyURL, err)
 			}
+			_ = resp.Body.Close()
 			log.Printf("[INFO] successfully connected through proxy %s", proxyURL)
 			continue
 		case <-config.GetContext().Done():

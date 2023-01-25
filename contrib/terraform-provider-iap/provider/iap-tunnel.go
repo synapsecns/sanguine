@@ -83,6 +83,7 @@ func dataSourceProxyDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
+// nolint: cyclop
 func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 	config, ok := meta.(*google.Config)
 	if !ok {
@@ -170,10 +171,12 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("could not parse url: %w", err)
 	}
 	testClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(parsedURL)}}
-	_, err = testClient.Get("https://www.google.com/")
+	resp, err := testClient.Get("https://www.google.com/")
 	if err != nil {
 		log.Printf("[ERROR] could not connect through proxy %s: %v", proxyURL, err)
 	}
+
+	_ = resp.Body.Close()
 
 	return nil
 }
