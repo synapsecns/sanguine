@@ -1,69 +1,26 @@
 package config
 
 import (
-	"context"
+	// for embedding the config.
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"github.com/buger/jsonparser"
 	"github.com/jftuga/ellipsis"
-	backoffHelper "github.com/jpillora/backoff"
-	"gitlab.com/1f320/x/duration"
-	"io"
-	"net/http"
 	"strconv"
-	"time"
 )
 
-// PublicRPCMapURL is the url we pull the rpc list from.
-// TODO: this has some rate-limits, they're relatively aggressive but something like gitcdn.xyz would be good here.
-const PublicRPCMapURL = "https://raw.githubusercontent.com/DefiLlama/chainlist/master/constants/extraRpcs.json"
+//go:embed extraRpcs.json
+var extraRpcs []byte
 
-// GetPublicRPCConfig gets the rpc map from defillama. This should be done at startup time.
-// this will retry on a backoffHelper until context cancellation.
-func GetPublicRPCConfig(ctx context.Context) (c Config, err error) {
-	backoff := &backoffHelper.Backoff{
-		Factor: 1.3,
-		Jitter: true,
-		Min:    time.Second * 1,
-		Max:    time.Second * 10,
+// GetPublicRPCConfig gets the rpc map. This should be done at startup time.
+func GetPublicRPCConfig() (c Config, err error) {
+	c, err = parseConfig(extraRpcs)
+	if err != nil {
+		return c, fmt.Errorf("could not parse config: %w", err)
 	}
 
-	var waitTime time.Duration
-	httpClient := &http.Client{}
-	for {
-		select {
-		case <-ctx.Done():
-			return Config{}, fmt.Errorf("could not get rpc map: %w", ctx.Err())
-		case <-time.After(waitTime):
-			waitTime = backoff.Duration()
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, PublicRPCMapURL, nil)
-			if err != nil {
-				return Config{}, fmt.Errorf("could not create request: %w", err)
-			}
-
-			resp, err := httpClient.Do(req)
-			if err != nil {
-				logger.Errorf("could not retrieve rpc list from %s, waiting %s before trying again (error: %v)", PublicRPCMapURL, duration.Format(waitTime), err)
-				continue
-			}
-
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				logger.Errorf("could not read body from %s, waiting %s before trying again (error: %v)", PublicRPCMapURL, duration.Format(waitTime), err)
-				continue
-			}
-
-			_ = resp.Body.Close()
-
-			c, err = parseConfig(body)
-			if err != nil {
-				logger.Error(err)
-				continue
-			}
-
-			return c, nil
-		}
-	}
+	return c, nil
 }
 
 // parseConfig parses a chain map from a json payload.

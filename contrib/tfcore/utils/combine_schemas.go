@@ -40,11 +40,6 @@ func CombineSchemas(googleProvider, underlyingProvider *schema.Provider, toRepla
 	co.Schema["zone"].Required = true
 	co.Schema["zone"].Optional = false
 
-	co.Schema["service_account"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "service account to proxy through",
-	}
 	co.Schema["instance"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
