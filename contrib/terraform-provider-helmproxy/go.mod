@@ -12,8 +12,6 @@ replace (
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
 	github.com/hashicorp/terraform-provider-helm v1.3.3-0.20230117165241-19fa52fdcd9a
-	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
-	github.com/synapsecns/sanguine/contrib/terraform-provider-iap v0.0.18
 	github.com/synapsecns/sanguine/contrib/tfcore v0.0.0-00010101000000-000000000000
 )
 
@@ -149,6 +147,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
+	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.13.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect

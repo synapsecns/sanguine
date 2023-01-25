@@ -1,3 +1,6 @@
+// Package main provides a Terraform wrapper around kubernetes for using an IAP (Identity-Aware Proxy) when interacting with GCP resources.
+// The provider wraps the original provider (e.g Helm or Kubernetes) and adds the necessary fields and functionality for configuring and using the IAP proxy.
+// This allows for more fine-grained authentication and authorization of access to resources, and is especially useful for short-lived Terraform resources.
 package main
 
 import (
@@ -5,6 +8,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy/provider"
 	"log"
 	"os"
 	"time"
@@ -13,9 +17,6 @@ import (
 	"github.com/hashicorp/terraform-exec/tfexec"
 	tf5server "github.com/hashicorp/terraform-plugin-go/tfprotov5/tf5server"
 	tf5muxserver "github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
-
-	"github.com/hashicorp/terraform-provider-kubernetes/kubernetes"
-	manifest "github.com/hashicorp/terraform-provider-kubernetes/manifest/provider"
 )
 
 const providerName = "registry.terraform.io/hashicorp/kubernetes"
@@ -27,11 +28,11 @@ func main() {
 	debugFlag := flag.Bool("debug", false, "Start provider in stand-alone debug mode.")
 	flag.Parse()
 
-	mainProvider := kubernetes.Provider().GRPCProvider
-	manifestProvider := manifest.Provider()
+	mainProvider := provider.MainProvider().GRPCProvider
+	// note: manifest provider is not currently supported
 
 	ctx := context.Background()
-	muxer, err := tf5muxserver.NewMuxServer(ctx, mainProvider, manifestProvider)
+	muxer, err := tf5muxserver.NewMuxServer(ctx, mainProvider)
 	if err != nil {
 		log.Println(err.Error())
 		os.Exit(1)
@@ -51,10 +52,10 @@ func main() {
 		opts = append(opts, tf5server.WithDebug(ctx, reattachConfigCh, nil))
 	}
 
-	tf5server.Serve(providerName, muxer.ProviderServer, opts...)
+	_ = tf5server.Serve(providerName, muxer.ProviderServer, opts...)
 }
 
-// convertReattachConfig converts plugin.ReattachConfig to tfexec.ReattachConfig
+// convertReattachConfig converts plugin.ReattachConfig to tfexec.ReattachConfig.
 func convertReattachConfig(reattachConfig *plugin.ReattachConfig) tfexec.ReattachConfig {
 	return tfexec.ReattachConfig{
 		Protocol: string(reattachConfig.Protocol),
@@ -68,7 +69,7 @@ func convertReattachConfig(reattachConfig *plugin.ReattachConfig) tfexec.Reattac
 }
 
 // printReattachConfig prints the line the user needs to copy and paste
-// to set the TF_REATTACH_PROVIDERS variable
+// to set the TF_REATTACH_PROVIDERS variable.
 func printReattachConfig(config *plugin.ReattachConfig) {
 	reattachStr, err := json.Marshal(map[string]tfexec.ReattachConfig{
 		"kubernetes": convertReattachConfig(config),
@@ -80,7 +81,7 @@ func printReattachConfig(config *plugin.ReattachConfig) {
 	fmt.Printf("# Provider server started\nexport TF_REATTACH_PROVIDERS='%s'\n", string(reattachStr))
 }
 
-// waitForReattachConfig blocks until a ReattachConfig is recieved on the
+// waitForReattachConfig blocks until a ReattachConfig is received on the
 // supplied channel or times out after 2 seconds.
 func waitForReattachConfig(ch chan *plugin.ReattachConfig) (*plugin.ReattachConfig, error) {
 	select {

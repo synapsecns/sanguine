@@ -1,48 +1,46 @@
-// Package provider gets the provider for the iap tunnel.
 package provider
 
 import (
 	"context"
 	provider_diag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-provider-helm/helm"
+	"github.com/hashicorp/terraform-provider-kubernetes/kubernetes"
 	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
 	"github.com/synapsecns/sanguine/contrib/tfcore/utils"
 	"log"
-	"os"
 )
 
-type configuredProvider struct {
+type configuredKubeProvider struct {
 	// googleIface is the google interface
 	googleIface *google.Config
 	// helmIface is the helm interface
-	helmIface *helm.Meta
+	kubeIface interface{}
 }
 
-func (c configuredProvider) GoogleProvider() interface{} {
+func (c configuredKubeProvider) GoogleProvider() interface{} {
 	return c.googleIface
 }
 
-func (c configuredProvider) UnderlyingProvider() interface{} {
-	return c.helmIface
+func (c configuredKubeProvider) UnderlyingProvider() interface{} {
+	return c.kubeIface
 }
 
-var _ utils.WrappedProvider = &configuredProvider{}
+var _ utils.WrappedProvider = &configuredKubeProvider{}
 
-// Provider gets the provider for the iap tunnel.
-func Provider() *schema.Provider {
-	combinedSchema := utils.CombineSchemas(google.Provider(), helm.Provider(), "helm", "helmproxy")
+// MainProvider creates the main provider for the iap tunnel.
+func MainProvider() *schema.Provider {
+	combinedSchema := utils.CombineSchemas(google.Provider(), kubernetes.Provider(), "kubernetes", "kubeproxy")
 	underlyingGoogleProvider := google.Provider()
-	underlyingHelmProvider := helm.Provider()
+	underlyingKubernetesProvider := kubernetes.Provider()
 	return &schema.Provider{
 		Schema:             combinedSchema.Schema,
 		ProviderMetaSchema: combinedSchema.MetaSchema,
 		ResourcesMap:       combinedSchema.ResourceMap,
 		DataSourcesMap:     combinedSchema.DataSourceMap,
 		ConfigureContextFunc: func(ctx context.Context, data *schema.ResourceData) (_ interface{}, dg provider_diag.Diagnostics) {
-			cp := &configuredProvider{}
+			cp := &configuredKubeProvider{}
 			var gdg, hdg provider_diag.Diagnostics
-			var giface, hiface interface{}
+			var giface interface{}
 			var ok bool
 
 			giface, gdg = underlyingGoogleProvider.ConfigureContextFunc(ctx, data)
@@ -58,18 +56,7 @@ func Provider() *schema.Provider {
 				})
 			}
 
-			hiface, hdg = underlyingHelmProvider.ConfigureContextFunc(ctx, data)
-			if hdg.HasError() {
-				return nil, hdg
-			}
-			cp.helmIface, ok = hiface.(*helm.Meta)
-			if !ok {
-				return nil, append(gdg, provider_diag.Diagnostic{
-					Severity: provider_diag.Error,
-					Summary:  "failed to cast helm interface",
-				})
-			}
-
+			// TODO: the proxy_url needs to be set in here
 			proxyURL, err := utils.StartTunnel(ctx, data, cp.googleIface)
 			if err != nil {
 				return nil, append(gdg, provider_diag.FromErr(err)[0])
@@ -77,12 +64,23 @@ func Provider() *schema.Provider {
 
 			// set the proxy url
 			log.Printf("[INFO] setting proxy url to %s", proxyURL)
-			err = os.Setenv("KUBE_PROXY_URL", proxyURL)
+			err = data.Set("proxy_url", proxyURL)
 			if err != nil {
 				return nil, append(gdg, provider_diag.FromErr(err)[0])
 			}
 
+			cp.kubeIface, hdg = underlyingKubernetesProvider.ConfigureContextFunc(ctx, data)
+			if hdg.HasError() {
+				return nil, hdg
+			}
 			dg = append(dg, hdg...)
+			if !ok {
+				return nil, append(hdg, provider_diag.Diagnostic{
+					Severity: provider_diag.Error,
+					Summary:  "failed to cast kubernetes interface",
+				})
+			}
+
 			return cp, dg
 		},
 	}
