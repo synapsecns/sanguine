@@ -21,7 +21,7 @@ import (
 const providerName = "registry.terraform.io/hashicorp/kubernetes"
 
 // Generate docs for website
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+// go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
 func main() {
 	debugFlag := flag.Bool("debug", false, "Start provider in stand-alone debug mode.")
