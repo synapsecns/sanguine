@@ -3,7 +3,10 @@ go 1.19
 use (
 	./agents
 	./contrib/release-copier-action
+	./contrib/terraform-provider-helmproxy
 	./contrib/terraform-provider-iap
+	./contrib/terraform-provider-kubeproxy
+	./contrib/tfcore
 	./core
 	./ethergo
 	./services/explorer

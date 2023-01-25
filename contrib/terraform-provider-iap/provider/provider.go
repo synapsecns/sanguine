@@ -3,7 +3,7 @@ package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/google"
+	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
 )
 
 // Provider gets the provider for the iap tunnel.
