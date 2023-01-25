@@ -290,7 +290,57 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 
 // DailyStatistics is the resolver for the dailyStatistics field.
 func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) (*model.HistoricalResult, error) {
-	panic(fmt.Errorf("not implemented: DailyStatistics - dailyStatistics"))
+	var subQuery string
+	var query string
+	var err error
+	startTime := uint64(time.Now().Unix() - int64(*days*86400))
+	firstFilter := true
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+	timeStampSpecifier := generateTimestampSpecifierSQL(&startTime, sql.TimeStampFieldName, &firstFilter, "")
+	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "")
+	compositeFilters := fmt.Sprintf("%s%s%s", chainIDSpecifier, timeStampSpecifier, directionSpecifier)
+
+	switch *platform {
+	case model.PlatformBridge:
+		subQuery, query, err = GenerateDailyStatisticBridgeSQL(typeArg, compositeFilters)
+	case model.PlatformSwap:
+	case model.PlatformMessageBus:
+	case model.PlatformAll:
+
+	}
+
+	var sum float64
+	var err error
+	var dayByDayData []*model.DateResult
+	g, groupCtx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		dayByDayData, err = r.DB.GetDateResults(groupCtx, fmt.Sprintf("%s %s", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery))
+		if err != nil {
+			return fmt.Errorf("failed to get dateResults: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		sum, err = r.DB.GetFloat64(groupCtx, query)
+		if err != nil {
+			return fmt.Errorf("failed to get total sum: %w", err)
+		}
+		return nil
+	})
+	err = g.Wait()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not get historical data: %w", err)
+	}
+
+	payload := model.HistoricalResult{
+		Total:       &sum,
+		DateResults: dayByDayData,
+		Type:        typeArg,
+	}
+
+	return &payload, nil
 }
 
 // Query returns resolvers.QueryResolver implementation.

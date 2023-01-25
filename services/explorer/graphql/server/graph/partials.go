@@ -17,12 +17,13 @@ FROM (
                 bought_id,
                 token_decimal,
                 amount,
+                amount_usd,
                 contract_address                              AS swap_address,
                 tx_hash                                       AS swap_tx_hash,
                 chain_id                                      AS swap_chain_id,
                 if(notEmpty(amount.keys), amount.keys[1], -1) AS amount_id
 
-         FROM explorer_staging_4.swap_events WHERE timestamp >= minTimestamp
+         FROM explorer_prod_1.swap_events WHERE timestamp >= minTimestamp
          LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)
 )
 `
@@ -52,7 +53,6 @@ f.pre_fswap_success AS fswap_success,
 f.pre_fswap_token_index AS fswap_token_index,
 f.pre_fswap_min_amount AS fswap_min_amount,
 f.pre_fswap_deadline AS fswap_deadline,
-f.pre_ftoken_id AS ftoken_id,
 f.pre_ffee_amount_usd AS ffee_amount_usd,
 f.pre_ftoken_decimal AS ftoken_decimal,
 f.pre_ftimestamp AS ftimestamp,
@@ -70,23 +70,8 @@ f.pre_finsert_time AS finsert_time,
 			 be.token_decimal
 	 )                       AS ttoken_decimal,
  IF(
-	 se.amount[se.bought_id] != '' > 0,
-	 (
-		 (
-			 (
-				 IF(
-					 se.amount[se.bought_id] != '',
-					 toFloat64(se.amount[se.bought_id]),
-					 toFloat64(be.amount)
-					 )
-				 ) / exp10(
-							if(
-							 se.amount[se.bought_id] != '', se.token_decimal[se.bought_id],
-							 be.token_decimal
-			 				)
-							)
-					) * se.swap_amount_usd[se.bought_id]
-		 ),
+	 se.amount_usd[se.bought_id]  > 0,
+	 se.amount_usd[se.bought_id],
 	 be.amount_usd
 ) AS tamount_usd,
 be.event_type AS tevent_type,
@@ -109,9 +94,8 @@ be.swap_success AS tswap_success,
 be.swap_token_index AS tswap_token_index,
 be.swap_min_amount AS tswap_min_amount,
 be.swap_deadline AS tswap_deadline,
-be.token_id AS ttoken_id,
 be.block_number AS tblock_number,
-be.fee_amount_usd AS tfee_amount_usd,
+be.fee_usd AS tfee_amount_usd,
 be.timestamp AS ttimestamp,
 be.destination_chain_id AS tdestination_chain_id,
 be.insert_time AS tinsert_time
@@ -130,22 +114,9 @@ IF(
 		   be.token_decimal
    )                   AS pre_ftoken_decimal,
 IF(
-			   se.amount[se.sold_id] != '' > 0,
-			   (
-					   (
-							   (
-								   IF(
-											   se.amount[se.sold_id] != '',
-											   toFloat64(se.amount[se.sold_id]),
-											   toFloat64(be.amount)
-									   )
-								   ) / exp10(if(
-									   se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
-									   be.token_decimal
-							   ))
-						   ) * se.swap_amount_usd[se.sold_id]
-				   ),
-			   be.amount_usd
+			    se.amount_usd[se.sold_id] > 0,
+			    se.amount_usd[se.sold_id],
+			    be.amount_usd
    )                   AS pre_famount_usd,
       be.event_type AS pre_fevent_type,
       be.token AS pre_ftoken_raw,
@@ -168,12 +139,12 @@ IF(
       be.swap_token_index AS pre_fswap_token_index,
       be.swap_min_amount AS pre_fswap_min_amount,
       be.swap_deadline AS pre_fswap_deadline,
-      be.token_id AS pre_ftoken_id,
-      be.fee_amount_usd AS pre_ffee_amount_usd,
+      be.fee_usd AS pre_ffee_amount_usd,
       be.timestamp AS pre_ftimestamp,
       be.destination_chain_id AS pre_fdestination_chain_id,
       be.insert_time AS pre_finsert_time
 `
+
 const originToDestJoins = `
 be
 LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
@@ -246,7 +217,6 @@ t.pre_tswap_success AS tswap_success,
 t.pre_tswap_token_index AS tswap_token_index,
 t.pre_tswap_min_amount AS tswap_min_amount,
 t.pre_tswap_deadline AS tswap_deadline,
-t.pre_ttoken_id AS ttoken_id,
 t.pre_tfee_amount_usd AS tfee_amount_usd,
 t.pre_ttoken_decimal AS ttoken_decimal,
 t.pre_ttimestamp AS ttimestamp,
@@ -263,26 +233,12 @@ IF(
 		 se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
 		 be.token_decimal
  )                       AS ftoken_decimal,
+
 IF(
- se.amount[se.sold_id] != '' > 0,
- (
-	 (
-		 (
-			 IF(
-				 se.amount[se.sold_id] != '',
-				 toFloat64(se.amount[se.sold_id]),
-				 toFloat64(be.amount)
-				 )
-			 ) / exp10(
-						if(
-						 se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
-						 be.token_decimal
-						)
-						)
-				) * se.swap_amount_usd[se.sold_id]
-	 ),
- be.amount_usd
-) AS famount_usd,
+			    se.amount_usd[se.sold_id] > 0,
+			    se.amount_usd[se.sold_id],
+			    be.amount_usd
+   )                   AS famount_usd,
 be.event_type AS fevent_type,
 be.token AS ftoken_raw,
 be.tx_hash AS ftx_hash,
@@ -303,9 +259,8 @@ be.swap_success AS fswap_success,
 be.swap_token_index AS fswap_token_index,
 be.swap_min_amount AS fswap_min_amount,
 be.swap_deadline AS fswap_deadline,
-be.token_id AS ftoken_id,
 be.block_number AS fblock_number,
-be.fee_amount_usd AS ffee_amount_usd,
+be.fee_usd AS ffee_amount_usd,
 be.timestamp AS ftimestamp,
 be.destination_chain_id AS fdestination_chain_id,
 be.insert_time AS finsert_time
@@ -324,22 +279,9 @@ IF(
 		   be.token_decimal
    )                   AS pre_ttoken_decimal,
 IF(
-			   se.amount[se.bought_id] != '' > 0,
-			   (
-					   (
-							   (
-								   IF(
-											   se.amount[se.bought_id] != '',
-											   toFloat64(se.amount[se.bought_id]),
-											   toFloat64(be.amount)
-									   )
-								   ) / exp10(if(
-									   se.amount[se.bought_id] != '', se.token_decimal[se.bought_id],
-									   be.token_decimal
-							   ))
-						   ) * se.swap_amount_usd[se.bought_id]
-				   ),
-			   be.amount_usd
+			    se.amount_usd[se.bought_id] > 0,
+			    se.amount_usd[se.bought_id],
+			    be.amount_usd
    )                   AS pre_tamount_usd,
       be.event_type AS pre_tevent_type,
       be.token AS pre_ttoken_raw,
@@ -362,8 +304,7 @@ IF(
       be.swap_token_index AS pre_tswap_token_index,
       be.swap_min_amount AS pre_tswap_min_amount,
       be.swap_deadline AS pre_tswap_deadline,
-      be.token_id AS pre_ttoken_id,
-      be.fee_amount_usd AS pre_tfee_amount_usd,
+      be.fee_usd AS pre_tfee_amount_usd,
       be.timestamp AS pre_ttimestamp,
       be.destination_chain_id AS pre_tdestination_chain_id,
       be.insert_time AS pre_tinsert_time
@@ -428,21 +369,8 @@ IF(
    be.token_decimal
 )                   AS token_decimal,
 IF(
-	   se.amount[se.sold_id] != '' > 0,
-	   (
-			   (
-					   (
-						   IF(
-									   se.amount[se.sold_id] != '',
-									   toFloat64(se.amount[se.sold_id]),
-									   toFloat64(be.amount)
-							   )
-						   ) / exp10(if(
-							   se.amount[se.sold_id] != '', se.token_decimal[se.sold_id],
-							   be.token_decimal
-					   ))
-				   ) * se.swap_amount_usd[se.sold_id]
-		   ),
+	   se.amount_usd[se.sold_id] > 0,
+	   se.amount_usd[se.sold_id],
 	   be.amount_usd
 ) AS amount_usd,
 be.event_type AS event_type,
@@ -465,8 +393,7 @@ be.swap_success AS swap_success,
 be.swap_token_index AS swap_token_index,
 be.swap_min_amount AS swap_min_amount,
 be.swap_deadline AS swap_deadline,
-be.token_id AS token_id,
-be.fee_amount_usd AS fee_amount_usd,
+be.fee_usd AS fee_amount_usd,
 be.timestamp AS timestamp,
 be.destination_chain_id AS destination_chain_id,
 be.insert_time AS insert_time
