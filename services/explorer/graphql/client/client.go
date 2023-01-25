@@ -26,7 +26,7 @@ type Query struct {
 	AddressRanking        []*model.AddressRanking         "json:\"addressRanking\" graphql:\"addressRanking\""
 	HistoricalStatistics  *model.HistoricalResult         "json:\"historicalStatistics\" graphql:\"historicalStatistics\""
 	AmountStatistic       *model.ValueResult              "json:\"amountStatistic\" graphql:\"amountStatistic\""
-	DailyStatistics       *model.HistoricalResult         "json:\"dailyStatistics\" graphql:\"dailyStatistics\""
+	DailyStatistics       *model.DailyResult              "json:\"dailyStatistics\" graphql:\"dailyStatistics\""
 }
 type GetBridgeTransactions struct {
 	Response []*struct {
@@ -105,7 +105,7 @@ type GetDailyStatistics struct {
 			Date  *string  "json:\"date\" graphql:\"date\""
 			Total *float64 "json:\"total\" graphql:\"total\""
 		} "json:\"dateResults\" graphql:\"dateResults\""
-		Type *model.HistoricalResultType "json:\"type\" graphql:\"type\""
+		Type *model.DailyStatisticType "json:\"type\" graphql:\"type\""
 	} "json:\"response\" graphql:\"response\""
 }
 

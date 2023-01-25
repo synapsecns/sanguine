@@ -78,5 +78,5 @@ type Query {
     type:     DailyStatisticType = VOLUME
     platform: Platform = BRIDGE
     days:     Int = 30
-  ): HistoricalResult
+  ): DailyResult
 }

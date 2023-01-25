@@ -478,7 +478,7 @@ func GenerateDailyStatisticSwapSQL(typeArg *model.DailyStatisticType, compositeF
 	return &subQuery, &query, nil
 }
 
-func GenerateDailyStatisticSMessageBusSQL(typeArg *model.DailyStatisticType, compositeFilters string) (*string, *string, error) {
+func GenerateDailyStatisticMessageBusSQL(typeArg *model.DailyStatisticType, compositeFilters string) (*string, *string, error) {
 	var subQuery string
 	var query string
 	switch *typeArg {

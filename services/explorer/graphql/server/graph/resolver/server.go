@@ -55,6 +55,12 @@ type ComplexityRoot struct {
 		ToInfo      func(childComplexity int) int
 	}
 
+	DailyResult struct {
+		DateResults func(childComplexity int) int
+		Total       func(childComplexity int) int
+		Type        func(childComplexity int) int
+	}
+
 	DateResult struct {
 		Date  func(childComplexity int) int
 		Total func(childComplexity int) int
@@ -114,7 +120,7 @@ type QueryResolver interface {
 	AddressRanking(ctx context.Context, hours *int) ([]*model.AddressRanking, error)
 	HistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int) (*model.HistoricalResult, error)
 	AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error)
-	DailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) (*model.HistoricalResult, error)
+	DailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) (*model.DailyResult, error)
 }
 
 type executableSchema struct {
@@ -180,6 +186,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BridgeTransaction.ToInfo(childComplexity), true
+
+	case "DailyResult.dateResults":
+		if e.complexity.DailyResult.DateResults == nil {
+			break
+		}
+
+		return e.complexity.DailyResult.DateResults(childComplexity), true
+
+	case "DailyResult.total":
+		if e.complexity.DailyResult.Total == nil {
+			break
+		}
+
+		return e.complexity.DailyResult.Total(childComplexity), true
+
+	case "DailyResult.type":
+		if e.complexity.DailyResult.Type == nil {
+			break
+		}
+
+		return e.complexity.DailyResult.Type(childComplexity), true
 
 	case "DateResult.date":
 		if e.complexity.DateResult.Date == nil {
@@ -566,7 +593,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     type:     DailyStatisticType = VOLUME
     platform: Platform = BRIDGE
     days:     Int = 30
-  ): HistoricalResult
+  ): DailyResult
 }
 `, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `"""
@@ -610,6 +637,14 @@ type HistoricalResult {
   total:        Float
   dateResults:  [DateResult]
   type:         HistoricalResultType
+}
+"""
+DailyResult is a given statistic for dates.
+"""
+type DailyResult {
+  total:        Float
+  dateResults:  [DateResult]
+  type:         DailyStatisticType
 }
 """
 ValueResult is a value result of either USD or numeric value.
@@ -1419,6 +1454,135 @@ func (ec *executionContext) fieldContext_BridgeTransaction_swapSuccess(ctx conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DailyResult_total(ctx context.Context, field graphql.CollectedField, obj *model.DailyResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DailyResult_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DailyResult_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DailyResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DailyResult_dateResults(ctx context.Context, field graphql.CollectedField, obj *model.DailyResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DailyResult_dateResults(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DateResults, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.DateResult)
+	fc.Result = res
+	return ec.marshalODateResult2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDateResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DailyResult_dateResults(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DailyResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "date":
+				return ec.fieldContext_DateResult_date(ctx, field)
+			case "total":
+				return ec.fieldContext_DateResult_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DateResult", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DailyResult_type(ctx context.Context, field graphql.CollectedField, obj *model.DailyResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DailyResult_type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.DailyStatisticType)
+	fc.Result = res
+	return ec.marshalODailyStatisticType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDailyStatisticType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DailyResult_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DailyResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DailyStatisticType does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2480,9 +2644,9 @@ func (ec *executionContext) _Query_dailyStatistics(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.HistoricalResult)
+	res := resTmp.(*model.DailyResult)
 	fc.Result = res
-	return ec.marshalOHistoricalResult2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐHistoricalResult(ctx, field.Selections, res)
+	return ec.marshalODailyResult2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDailyResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_dailyStatistics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2494,13 +2658,13 @@ func (ec *executionContext) fieldContext_Query_dailyStatistics(ctx context.Conte
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "total":
-				return ec.fieldContext_HistoricalResult_total(ctx, field)
+				return ec.fieldContext_DailyResult_total(ctx, field)
 			case "dateResults":
-				return ec.fieldContext_HistoricalResult_dateResults(ctx, field)
+				return ec.fieldContext_DailyResult_dateResults(ctx, field)
 			case "type":
-				return ec.fieldContext_HistoricalResult_type(ctx, field)
+				return ec.fieldContext_DailyResult_type(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type HistoricalResult", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type DailyResult", field.Name)
 		},
 	}
 	defer func() {
@@ -4743,6 +4907,39 @@ func (ec *executionContext) _BridgeTransaction(ctx context.Context, sel ast.Sele
 	return out
 }
 
+var dailyResultImplementors = []string{"DailyResult"}
+
+func (ec *executionContext) _DailyResult(ctx context.Context, sel ast.SelectionSet, obj *model.DailyResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dailyResultImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DailyResult")
+		case "total":
+
+			out.Values[i] = ec._DailyResult_total(ctx, field, obj)
+
+		case "dateResults":
+
+			out.Values[i] = ec._DailyResult_dateResults(ctx, field, obj)
+
+		case "type":
+
+			out.Values[i] = ec._DailyResult_type(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var dateResultImplementors = []string{"DateResult"}
 
 func (ec *executionContext) _DateResult(ctx context.Context, sel ast.SelectionSet, obj *model.DateResult) graphql.Marshaler {
@@ -5886,6 +6083,13 @@ func (ec *executionContext) marshalOBridgeTransaction2ᚖgithubᚗcomᚋsynapsec
 		return graphql.Null
 	}
 	return ec._BridgeTransaction(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalODailyResult2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDailyResult(ctx context.Context, sel ast.SelectionSet, v *model.DailyResult) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DailyResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalODailyStatisticType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDailyStatisticType(ctx context.Context, v interface{}) (*model.DailyStatisticType, error) {

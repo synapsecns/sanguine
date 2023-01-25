@@ -289,9 +289,9 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 }
 
 // DailyStatistics is the resolver for the dailyStatistics field.
-func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) (*model.HistoricalResult, error) {
-	var subQuery string
-	var query string
+func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) (*model.DailyResult, error) {
+	var subQuery *string
+	var query *string
 	var err error
 	startTime := uint64(time.Now().Unix() - int64(*days*86400))
 	firstFilter := true
@@ -303,18 +303,126 @@ func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeA
 	switch *platform {
 	case model.PlatformBridge:
 		subQuery, query, err = GenerateDailyStatisticBridgeSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
 	case model.PlatformSwap:
+		subQuery, query, err = GenerateDailyStatisticSwapSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
 	case model.PlatformMessageBus:
+		subQuery, query, err = GenerateDailyStatisticMessageBusSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
 	case model.PlatformAll:
+		bridgeSubQuery, bridgeQuery, bridgeErr := GenerateDailyStatisticBridgeSQL(typeArg, compositeFilters)
+		if bridgeErr != nil {
+			return nil, bridgeErr
+		}
+		swapSubQuery, swapQuery, swapErr := GenerateDailyStatisticSwapSQL(typeArg, compositeFilters)
+		if swapErr != nil {
+			return nil, swapErr
+		}
+		messageBusSubQuery, messageBusQuery, messageBusErr := GenerateDailyStatisticMessageBusSQL(typeArg, compositeFilters)
+		if messageBusErr != nil {
+			return nil, messageBusErr
+		}
 
+		var bridgeSum float64
+		var swapSum float64
+		var messageBusSum float64
+		var dailyBridgeData []*model.DateResult
+		var dailySwapData []*model.DateResult
+		var dailyMessageBusData []*model.DateResult
+		g, groupCtx := errgroup.WithContext(ctx)
+
+		// Get Bridge
+		g.Go(func() error {
+			dailyBridgeData, err = r.DB.GetDateResults(groupCtx, fmt.Sprintf("%s %s", generateDeDepQueryCTE(compositeFilters, nil, nil, true), *bridgeSubQuery))
+			if err != nil {
+				return fmt.Errorf("failed to get dateResults: %w", err)
+			}
+			return nil
+		})
+		g.Go(func() error {
+			bridgeSum, err = r.DB.GetFloat64(groupCtx, *bridgeQuery)
+			if err != nil {
+				return fmt.Errorf("failed to get total sum: %w", err)
+			}
+			return nil
+		})
+
+		// Get Swap
+		g.Go(func() error {
+			dailySwapData, err = r.DB.GetDateResults(groupCtx, fmt.Sprintf("%s %s", generateDeDepQueryCTE(compositeFilters, nil, nil, true), *swapSubQuery))
+			if err != nil {
+				return fmt.Errorf("failed to get dateResults: %w", err)
+			}
+			return nil
+		})
+		g.Go(func() error {
+			swapSum, err = r.DB.GetFloat64(groupCtx, *swapQuery)
+			if err != nil {
+				return fmt.Errorf("failed to get total sum: %w", err)
+			}
+			return nil
+		})
+
+		// Get Message Bus
+		g.Go(func() error {
+			dailyMessageBusData, err = r.DB.GetDateResults(groupCtx, fmt.Sprintf("%s %s", generateDeDepQueryCTE(compositeFilters, nil, nil, true), *messageBusSubQuery))
+			if err != nil {
+				return fmt.Errorf("failed to get dateResults: %w", err)
+			}
+			return nil
+		})
+		g.Go(func() error {
+			messageBusSum, err = r.DB.GetFloat64(groupCtx, *messageBusQuery)
+			if err != nil {
+				return fmt.Errorf("failed to get total sum: %w", err)
+			}
+			return nil
+		})
+		err = g.Wait()
+
+		totalDailyResults := make(map[string]float64)
+
+		for i := range dailyBridgeData {
+			key := *dailyBridgeData[i].Date
+			totalDailyResults[key] = totalDailyResults[key] + *dailyBridgeData[i].Total
+		}
+		for i := range dailySwapData {
+			key := *dailySwapData[i].Date
+			totalDailyResults[key] = totalDailyResults[key] + *dailySwapData[i].Total
+		}
+		for i := range dailyMessageBusData {
+			key := *dailyMessageBusData[i].Date
+			totalDailyResults[key] = totalDailyResults[key] + *dailyMessageBusData[i].Total
+		}
+
+		var finalDailyData []*model.DateResult
+		for k := range totalDailyResults {
+			date := k
+			value := totalDailyResults[k]
+			entry := model.DateResult{&date, &value}
+			finalDailyData = append(finalDailyData, &entry)
+		}
+
+		totalSum := bridgeSum + swapSum + messageBusSum
+		payload := model.DailyResult{
+			Total:       &totalSum,
+			DateResults: finalDailyData,
+		}
+		return &payload, nil
 	}
 
 	var sum float64
-	var err error
 	var dayByDayData []*model.DateResult
 	g, groupCtx := errgroup.WithContext(ctx)
 	g.Go(func() error {
-		dayByDayData, err = r.DB.GetDateResults(groupCtx, fmt.Sprintf("%s %s", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery))
+		dayByDayData, err = r.DB.GetDateResults(groupCtx, fmt.Sprintf("%s %s", generateDeDepQueryCTE(compositeFilters, nil, nil, true), *subQuery))
 		if err != nil {
 			return fmt.Errorf("failed to get dateResults: %w", err)
 		}
@@ -322,7 +430,7 @@ func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeA
 	})
 
 	g.Go(func() error {
-		sum, err = r.DB.GetFloat64(groupCtx, query)
+		sum, err = r.DB.GetFloat64(groupCtx, *query)
 		if err != nil {
 			return fmt.Errorf("failed to get total sum: %w", err)
 		}
@@ -334,12 +442,11 @@ func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeA
 		return nil, fmt.Errorf("could not get historical data: %w", err)
 	}
 
-	payload := model.HistoricalResult{
+	payload := model.DailyResult{
 		Total:       &sum,
 		DateResults: dayByDayData,
 		Type:        typeArg,
 	}
-
 	return &payload, nil
 }
 
