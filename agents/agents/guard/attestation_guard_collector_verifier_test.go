@@ -78,7 +78,6 @@ func (u GuardSuite) TestAttestationGuardCollectorVerifier() {
 		u.OriginDomainClient.Config().DomainID,
 		u.DestinationDomainClient.Config().DomainID,
 		types.AttestationStateGuardUnsignedAndUnverified)
-
 	Nil(u.T(), err)
 
 	nowTime := time.Now()

@@ -78,6 +78,7 @@ func (u GuardSuite) TestAttestationGuardDestinationVerifier() {
 		u.OriginDomainClient.Config().DomainID,
 		u.DestinationDomainClient.Config().DomainID,
 		types.AttestationStateGuardUnsignedAndUnverified)
+	Nil(u.T(), err)
 
 	nowTime := time.Now()
 	submittedInProgressAttestation := types.NewInProgressAttestation(
