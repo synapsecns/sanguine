@@ -1,21 +1,21 @@
-package provider
+package utils
 
 import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/phayes/freeport"
-	"github.com/synapsecns/sanguine/contrib/terraform-provider-iap/generated/tunnel"
+	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
+	"github.com/synapsecns/sanguine/contrib/tfcore/generated/tunnel"
 	"log"
 	"net/http"
 	"net/url"
 	"time"
 )
 
-// starts a tunnel and returns the proxy url
-// TODO: break up the defines here, make them common between terraform libs
+// StartTunnel and returns the proxy url
 // nolint: cyclop
-func startTunnel(ctx context.Context, d *schema.ResourceData, config *configuredProvider) (proxyURL string, err error) {
+func StartTunnel(ctx context.Context, d *schema.ResourceData, config *google.Config) (proxyURL string, err error) {
 	project, ok := d.Get("project").(string)
 	if !ok {
 		return proxyURL, fmt.Errorf("could not cast project of type %T to %T", d.Get("project"), project)
@@ -51,7 +51,7 @@ func startTunnel(ctx context.Context, d *schema.ResourceData, config *configured
 		Interface:  iface,
 	}
 
-	tm.SetTokenSource(config.googleIface.GetTokenSource())
+	tm.SetTokenSource(config.GetTokenSource())
 
 	errChan := make(chan error)
 

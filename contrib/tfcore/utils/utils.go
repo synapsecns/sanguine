@@ -1,4 +1,4 @@
-package provider
+package utils
 
 // MustCombineMaps attempts to combine two maps. Panics if maps can not be combined.
 func MustCombineMaps[T interface{}](m1, m2 map[string]T) map[string]T {
