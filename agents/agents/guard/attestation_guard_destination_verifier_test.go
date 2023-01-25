@@ -73,8 +73,11 @@ func (u GuardSuite) TestAttestationGuardDestinationVerifier() {
 	err = testDB.StoreExistingSignedInProgressAttestation(u.GetTestContext(), signedAttestationFromCollector)
 	Nil(u.T(), err)
 
-	inProgressAttestationToMarkVerified, err := testDB.RetrieveNewestGuardUnsignedAndUnverifiedInProgressAttestation(u.GetTestContext(), origin, destination)
-	Nil(u.T(), err)
+	inProgressAttestationToMarkVerified, err := testDB.RetrieveNewestInProgressAttestationIfInState(
+		u.GetTestContext(),
+		u.OriginDomainClient.Config().DomainID,
+		u.DestinationDomainClient.Config().DomainID,
+		types.AttestationStateGuardUnsignedAndUnverified)
 
 	nowTime := time.Now()
 	submittedInProgressAttestation := types.NewInProgressAttestation(
@@ -147,10 +150,11 @@ func (u GuardSuite) TestAttestationGuardDestinationVerifier() {
 	Nil(u.T(), err)
 
 	// make sure the attesation has been verifier
-	retrievedNewestConfirmedOnDestination, err := testDB.RetrieveNewestConfirmedOnDestination(
+	retrievedNewestConfirmedOnDestination, err := testDB.RetrieveNewestInProgressAttestationIfInState(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
-		u.DestinationDomainClient.Config().DomainID)
+		u.DestinationDomainClient.Config().DomainID,
+		types.AttestationStateConfirmedOnDestination)
 
 	Nil(u.T(), err)
 	NotNil(u.T(), retrievedNewestConfirmedOnDestination)

@@ -105,10 +105,11 @@ func (u GuardSuite) TestAttestationGuardCollectorSubmitter() {
 	Nil(u.T(), err)
 
 	// make sure the attesation has been submitted
-	retrievedNewestGuardSubmittedToCollectorUnconfirmed, err := testDB.RetrieveNewestGuardSubmittedToCollectorUnconfirmed(
+	retrievedNewestGuardSubmittedToCollectorUnconfirmed, err := testDB.RetrieveNewestInProgressAttestationIfInState(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
-		u.DestinationDomainClient.Config().DomainID)
+		u.DestinationDomainClient.Config().DomainID,
+		types.AttestationStateGuardSubmittedToCollectorUnconfirmed)
 
 	Nil(u.T(), err)
 	NotNil(u.T(), retrievedNewestGuardSubmittedToCollectorUnconfirmed)

@@ -71,7 +71,11 @@ func (a AttestationGuardSigner) Start(ctx context.Context) error {
 
 // FindNewestGuardUnsignedAndVerifiedAttestation fetches the newest attestation that still needs to be signed by the guard but has been verified on origin.
 func (a AttestationGuardSigner) FindNewestGuardUnsignedAndVerifiedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveNewestGuardUnsignedAndVerifiedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+	inProgressAttestation, err := a.db.RetrieveNewestInProgressAttestationIfInState(
+		ctx,
+		a.originDomain.Config().DomainID,
+		a.destinationDomain.Config().DomainID,
+		types.AttestationStateGuardUnsignedAndVerified)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil

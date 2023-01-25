@@ -69,50 +69,26 @@ type InProgressAttestationDB interface {
 	MarkNotaryConfirmedOnAttestationCollector(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
 	// RetrieveInProgressAttestation retrieves an in-progress attestation by <origin, destination, nonce>.
 	RetrieveInProgressAttestation(ctx context.Context, originID, destinationID, nonce uint32) (inProgressAttestation types.InProgressAttestation, err error)
-	// RetrieveNewestUnsignedInProgressAttestation retrieves the newest in-progress attestation that has not yet been signed.
-	RetrieveNewestUnsignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
-	// RetrieveNewestUnsubmittedSignedInProgressAttestation retrieves the newest in-progress attestation that has been signed but not yet submitted.
-	RetrieveNewestUnsubmittedSignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
-	// RetrieveNewestUnconfirmedSubmittedInProgressAttestation retrieves the newest in-progress attestation that has been signed and submitted but not yet confirmed on the AttestationCollector.
-	RetrieveNewestUnconfirmedSubmittedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
-	// RetrieveNewestConfirmedInProgressAttestation retrieves the newest in-progress attestation that has been confirmed on the AttestationCollector.
-	RetrieveNewestConfirmedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
-	// RetrieveNewestGuardUnsignedAndUnverifiedInProgressAttestation retrieves the newest in-progress attestation that has been signed by a notary but not a guard
-	// and it has not been verified on the origin.
-	RetrieveNewestGuardUnsignedAndUnverifiedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
-	// RetrieveNewestGuardUnsignedAndVerifiedInProgressAttestation retrieves the newest in-progress attestation that has been signed by a notary but not a guard
-	// but it has  been verified on the origin.
-	RetrieveNewestGuardUnsignedAndVerifiedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
+	// RetrieveNewestInProgressAttestation retrieves the newest in-progress attestation.
+	RetrieveNewestInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
+	// RetrieveNewestInProgressAttestationIfInState retrieves the newest in-progress attestation in the given state.
+	RetrieveNewestInProgressAttestationIfInState(ctx context.Context, originID, destinationID uint32, state types.AttestationState) (_ types.InProgressAttestation, err error)
 	// StoreExistingSignedInProgressAttestation stores a signed in-progress attestation only if it hasn't already been stored
 	StoreExistingSignedInProgressAttestation(ctx context.Context, signedAttestation types.SignedAttestation) error
 	// MarkVerifiedOnOrigin marks the attestation as having been verified on origin.
 	MarkVerifiedOnOrigin(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
 	// UpdateGuardSignature sets the guard signature of the in-progress Attestation.
 	UpdateGuardSignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
-	// RetrieveNewestGuardUnsubmittedSignedInProgressAttestation retrieves the newest in-progress attestation that has been signed by the notary and guard but not yet submitted.
-	RetrieveNewestGuardUnsubmittedSignedInProgressAttestation(ctx context.Context, originID, destinationID uint32) (inProgressAttestation types.InProgressAttestation, err error)
 	// UpdateGuardSubmittedToAttestationCollectorTime sets the time the attestation was sent to Attestation Collector by the Guard.
 	UpdateGuardSubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
-	// ReUpdateGuardSubmittedToAttestationCollectorTime sets the time the attestation was sent to Attestation Collector by the Guard when resubmitting.
-	ReUpdateGuardSubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
-	// RetrieveNewestGuardSubmittedToCollectorUnconfirmed retrieves the newest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector,
-	// but not yet confirmed.
-	RetrieveNewestGuardSubmittedToCollectorUnconfirmed(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error)
 	// MarkGuardConfirmedOnAttestationCollector confirms that the guard posted the signed attestation on the Attestation Collector.
 	MarkGuardConfirmedOnAttestationCollector(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
-	// RetrieveNewestGuardConfirmedOnCollector retrieves the newest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector,
-	// and confirmed on the Attestation Collector.
-	RetrieveNewestGuardConfirmedOnCollector(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error)
+	// ReUpdateGuardSubmittedToAttestationCollectorTime sets the time the attestation was sent to Attestation Collector by the Guard when resubmitting.
+	ReUpdateGuardSubmittedToAttestationCollectorTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
 	// UpdateSubmittedToDestinationTime sets the time the attestation was sent to the Destination.
 	UpdateSubmittedToDestinationTime(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
-	// RetrieveNewestSubmittedToDestinationUnconfirmed retrieves the newest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector and destination,
-	// but not yet confirmed on the destination.
-	RetrieveNewestSubmittedToDestinationUnconfirmed(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error)
 	// MarkConfirmedOnDestination confirms that we posted the signed attestation on the Destination.
 	MarkConfirmedOnDestination(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
-	// RetrieveNewestConfirmedOnDestination retrieves the newest in-progress attestation that has been signed by both the guard and notary and submitted to the attestation collector and destination,
-	// and has been confirmed on the destination.
-	RetrieveNewestConfirmedOnDestination(ctx context.Context, originID, destinationID uint32) (_ types.InProgressAttestation, err error)
 }
 
 // SynapseDB combines db types.

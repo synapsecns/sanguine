@@ -70,7 +70,11 @@ func (a OriginAttestationSubmitter) Start(ctx context.Context) error {
 
 // FindNewestUnsubmittedAttestation fetches the newest unsubmitted attestation that has been signed.
 func (a OriginAttestationSubmitter) FindNewestUnsubmittedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveNewestUnsubmittedSignedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+	inProgressAttestation, err := a.db.RetrieveNewestInProgressAttestationIfInState(
+		ctx,
+		a.originDomain.Config().DomainID,
+		a.destinationDomain.Config().DomainID,
+		types.AttestationStateNotarySignedUnsubmitted)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil

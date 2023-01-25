@@ -59,7 +59,11 @@ func (u NotarySuite) TestOriginAttestationSubmitter() {
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	producedAttestation, err := testDB.RetrieveNewestUnconfirmedSubmittedInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, u.DestinationDomainClient.Config().DomainID)
+	producedAttestation, err := testDB.RetrieveNewestInProgressAttestationIfInState(
+		u.GetTestContext(),
+		u.OriginDomainClient.Config().DomainID,
+		u.DestinationDomainClient.Config().DomainID,
+		types.AttestationStateNotarySubmittedUnconfirmed)
 	Nil(u.T(), err)
 	Equal(u.T(), producedAttestation.SignedAttestation().Attestation().Nonce(), fakeNonce)
 	NotNil(u.T(), producedAttestation.SubmittedToAttestationCollectorTime())

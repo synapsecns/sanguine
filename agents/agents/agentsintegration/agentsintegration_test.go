@@ -114,10 +114,11 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedInProgressAttestation, err := guardDBHandle.RetrieveNewestConfirmedOnDestination(
+		retrievedInProgressAttestation, err := guardDBHandle.RetrieveNewestInProgressAttestationIfInState(
 			u.GetTestContext(),
 			u.OriginDomainClient.Config().DomainID,
-			u.DestinationDomainClient.Config().DomainID)
+			u.DestinationDomainClient.Config().DomainID,
+			types.AttestationStateConfirmedOnDestination)
 
 		isTrue := err == nil &&
 			retrievedInProgressAttestation != nil &&
@@ -229,10 +230,11 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedInProgressAttestation, err := guardDBHandle.RetrieveNewestConfirmedOnDestination(
+		retrievedInProgressAttestation, err := guardDBHandle.RetrieveNewestInProgressAttestationIfInState(
 			u.GetTestContext(),
 			u.OriginDomainClient.Config().DomainID,
-			u.DestinationDomainClient.Config().DomainID)
+			u.DestinationDomainClient.Config().DomainID,
+			types.AttestationStateConfirmedOnDestination)
 
 		isTrue := err == nil &&
 			retrievedInProgressAttestation != nil &&
@@ -358,10 +360,11 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedInProgressAttestation, err := guardDBHandle.RetrieveNewestConfirmedOnDestination(
+		retrievedInProgressAttestation, err := guardDBHandle.RetrieveNewestInProgressAttestationIfInState(
 			u.GetTestContext(),
 			u.OriginDomainClient.Config().DomainID,
-			u.DestinationDomainClient.Config().DomainID)
+			u.DestinationDomainClient.Config().DomainID,
+			types.AttestationStateConfirmedOnDestination)
 
 		isTrue := err == nil &&
 			retrievedInProgressAttestation != nil &&

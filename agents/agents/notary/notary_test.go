@@ -89,7 +89,11 @@ func (u NotarySuite) TestNotaryE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveNewestConfirmedInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, testConfig.DestinationDomain.DomainID)
+		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveNewestInProgressAttestationIfInState(
+			u.GetTestContext(),
+			u.OriginDomainClient.Config().DomainID,
+			testConfig.DestinationDomain.DomainID,
+			types.AttestationStateNotaryConfirmed)
 
 		return err == nil &&
 			retrievedConfirmedInProgressAttestation != nil &&

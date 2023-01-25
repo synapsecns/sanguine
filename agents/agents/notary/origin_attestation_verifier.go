@@ -70,7 +70,11 @@ func (a OriginAttestationVerifier) Start(ctx context.Context) error {
 
 // FindNewestUnconfirmedAttestation fetches the newest attestation that still needs to be confirmed.
 func (a OriginAttestationVerifier) FindNewestUnconfirmedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveNewestUnconfirmedSubmittedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+	inProgressAttestation, err := a.db.RetrieveNewestInProgressAttestationIfInState(
+		ctx,
+		a.originDomain.Config().DomainID,
+		a.destinationDomain.Config().DomainID,
+		types.AttestationStateNotarySubmittedUnconfirmed)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil

@@ -91,10 +91,11 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	retrievedNewestGuardUnsubmittedSignedInProgressAttestation, err := testDB.RetrieveNewestGuardUnsubmittedSignedInProgressAttestation(
+	retrievedNewestGuardUnsubmittedSignedInProgressAttestation, err := testDB.RetrieveNewestInProgressAttestationIfInState(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
-		u.DestinationDomainClient.Config().DomainID)
+		u.DestinationDomainClient.Config().DomainID,
+		types.AttestationStateGuardSignedUnsubmitted)
 
 	Nil(u.T(), err)
 	NotNil(u.T(), retrievedNewestGuardUnsubmittedSignedInProgressAttestation)

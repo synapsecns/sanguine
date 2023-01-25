@@ -72,7 +72,11 @@ func (a AttestationGuardCollectorSubmitter) Start(ctx context.Context) error {
 // FindNewestGuardUnsubmittedSignedInProgressAttestation fetches the newest signed attestation (by both notary and guard)
 // that has not yet been submitted to the Attestation Collector.
 func (a AttestationGuardCollectorSubmitter) FindNewestGuardUnsubmittedSignedInProgressAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveNewestGuardUnsubmittedSignedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+	inProgressAttestation, err := a.db.RetrieveNewestInProgressAttestationIfInState(
+		ctx,
+		a.originDomain.Config().DomainID,
+		a.destinationDomain.Config().DomainID,
+		types.AttestationStateGuardSignedUnsubmitted)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil

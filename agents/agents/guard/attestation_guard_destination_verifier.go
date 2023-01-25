@@ -72,7 +72,11 @@ func (a AttestationGuardDestinationVerifier) Start(ctx context.Context) error {
 // FindNewestSubmittedToDestinationInProgressAttestation fetches the newest signed attestation (by both notary and guard)
 // that has been submitted to the Destination.
 func (a AttestationGuardDestinationVerifier) FindNewestSubmittedToDestinationInProgressAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveNewestSubmittedToDestinationUnconfirmed(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+	inProgressAttestation, err := a.db.RetrieveNewestInProgressAttestationIfInState(
+		ctx,
+		a.originDomain.Config().DomainID,
+		a.destinationDomain.Config().DomainID,
+		types.AttestationStateSubmittedToDestinationUnconfirmed)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
