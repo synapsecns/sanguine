@@ -1,7 +1,7 @@
-package provider_test
+package utils_test
 
 import (
-	"github.com/synapsecns/sanguine/contrib/terraform-provider-helmproxy/provider"
+	"github.com/synapsecns/sanguine/contrib/tfcore/utils"
 	"testing"
 )
 
@@ -10,7 +10,7 @@ func TestCombineMaps(t *testing.T) {
 	m2 := map[string]int{"c": 3, "d": 4}
 	expected := map[string]int{"a": 1, "b": 2, "c": 3, "d": 4}
 
-	combinedMap := provider.MustCombineMaps(m1, m2)
+	combinedMap := utils.MustCombineMaps(m1, m2)
 
 	for key, value := range expected {
 		if combinedMap[key] != value {
@@ -29,5 +29,5 @@ func TestCombineMapsPanic(t *testing.T) {
 		}
 	}()
 
-	_ = provider.MustCombineMaps(m1, m2)
+	_ = utils.MustCombineMaps(m1, m2)
 }

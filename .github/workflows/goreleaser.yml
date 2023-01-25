@@ -101,8 +101,10 @@ jobs:
             core: 'core/**'
             ethergo: 'ethergo/**'
             services/omnirpc: 'services/omnirpc/**'
+            contrib/tfcore: 'contrib/tfcore/**'
             contrib/terraform-provider-iap: 'contrib/terraform-provider-iap/**'
             contrib/terraform-provider-helmproxy: 'contrib/terraform-provider-helmproxy/**'
+            contrib/terraform-provider-kubeproxy: 'contrib/terraform-provider-kubeproxy/**'
             contrib/release-copier-action: 'contrib/release-copier-action/**'
 
       - id: length
@@ -223,3 +225,13 @@ jobs:
           destination_repo: 'trajan0x/terraform-provider-helmproxy'
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           strip_prefix: 'contrib/terraform-provider-helmproxy/'
+
+      - name: Copy Releases
+        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-kubeproxy') }}
+        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
+        with:
+          github_token: ${{ secrets.PUBLISH_TOKEN }}
+          # TODO: will change with new org
+          destination_repo: 'trajan0x/terraform-provider-kubeproxy'
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          strip_prefix: 'contrib/terraform-provider-kubeproxy/'
