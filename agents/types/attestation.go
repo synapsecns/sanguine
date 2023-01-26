@@ -41,13 +41,6 @@ const sizeOfUint32 = uint32(4)
 const sizeOfUint16 = uint32(2)
 const sizeOfUint8 = uint32(1)
 
-const attestationNonceStartingByte = uint32(0)
-const attestationDestinationStartingByte = uint32(4)
-const attestationOriginStartingByte = uint32(8)
-const attestationRootStartingByte = uint32(12)
-const attestationSize = uint32(44)
-const attestationRawKeyStartingByte = uint32(0)
-
 const attestationKeyNonceStartingByte = uint32(0)
 const attestationKeyDestinationStartingByte = uint32(4)
 const attestationKeyOriginStartingByte = uint32(8)

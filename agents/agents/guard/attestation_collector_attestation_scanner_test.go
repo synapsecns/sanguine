@@ -33,7 +33,7 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	Nil(u.T(), err)
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
-	suggestedAttestationRaw, err := u.OriginContract.SuggestAttestation(&bind.CallOpts{Context: u.GetTestContext()}, uint32(destination))
+	suggestedAttestationRaw, err := u.OriginContract.SuggestAttestation(&bind.CallOpts{Context: u.GetTestContext()}, destination)
 	Nil(u.T(), err)
 	suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
 	Nil(u.T(), err)
