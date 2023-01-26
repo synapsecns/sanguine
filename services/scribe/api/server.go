@@ -46,6 +46,7 @@ var logger = log.Logger("scribe-api")
 
 // Start starts the api server.
 func Start(ctx context.Context, cfg Config) error {
+	cfg.SSL = true
 	router := ginhelper.New(logger)
 
 	eventDB, err := InitDB(ctx, cfg.Database, cfg.Path)
