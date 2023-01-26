@@ -65,8 +65,9 @@ func Start(ctx context.Context, cfg Config) error {
 	}
 
 	m := cmux.New(listener)
-	grpcListener := m.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
 	httpListener := m.Match(cmux.HTTP1Fast())
+	// fallback to grpc
+	grpcListener := m.Match(cmux.Any())
 
 	g.Go(func() error {
 		//nolint: gosec
