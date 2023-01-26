@@ -11,8 +11,6 @@ import (
 type ScribeClient struct {
 	// Port is the port the Scribe is listening on for HTTP requests.
 	Port uint16
-	// GRPCPort is the port the Scribe is listening on for gRPC requests.
-	GRPCPort uint16
 	// URL is the URL for the connection.
 	URL string
 }

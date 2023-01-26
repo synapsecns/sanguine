@@ -89,6 +89,14 @@ func Start(ctx context.Context, cfg Config) error {
 	})
 
 	g.Go(func() error {
+		err := m.Serve()
+		if err != nil {
+			return fmt.Errorf("could not start server: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
 		<-ctx.Done()
 		grpcServer.Stop()
 
