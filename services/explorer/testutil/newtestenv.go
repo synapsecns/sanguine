@@ -41,10 +41,9 @@ func NewTestEnvDB(ctx context.Context, t *testing.T) (db db.ConsumerDB, eventDB 
 
 	go func() {
 		assert.Nil(t, api.Start(ctx, api.Config{
-			HTTPPort: uint16(freePort),
+			Port:     uint16(freePort),
 			Database: "sqlite",
 			Path:     dbPath,
-			GRPCPort: uint16(freeport.GetPort()),
 		}))
 	}()
 
