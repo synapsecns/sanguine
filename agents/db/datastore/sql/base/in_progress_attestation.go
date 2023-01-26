@@ -40,6 +40,26 @@ func (s Store) StoreNewInProgressAttestation(ctx context.Context, attestation ty
 	return nil
 }
 
+// StoreNewGuardInProgressAttestation stores in-progress attestation only if it hasn't already been stored.
+func (s Store) StoreNewGuardInProgressAttestation(ctx context.Context, attestation types.Attestation) error {
+	// We only want to store if not already stored
+	tx := s.DB().WithContext(ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: OriginFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName}},
+		DoNothing: true,
+	}).Create(&InProgressAttestation{
+		IPOrigin:           attestation.Origin(),
+		IPDestination:      attestation.Destination(),
+		IPNonce:            attestation.Nonce(),
+		IPRoot:             core.BytesToSlice(attestation.Root()),
+		IPAttestationState: uint32(types.AttestationStateGuardInitialState),
+	})
+
+	if tx.Error != nil {
+		return fmt.Errorf("could not store signed attestations: %w", tx.Error)
+	}
+	return nil
+}
+
 // StoreExistingSignedInProgressAttestation stores signed in-progress attestation only if it hasn't already been stored.
 func (s Store) StoreExistingSignedInProgressAttestation(ctx context.Context, signedAttestation types.SignedAttestation) error {
 	if len(signedAttestation.NotarySignatures()) == 0 {
@@ -50,21 +70,22 @@ func (s Store) StoreExistingSignedInProgressAttestation(ctx context.Context, sig
 		return fmt.Errorf("could not encode notary signature: %w", err)
 	}
 
-	// We only want to store if not already stored
-	tx := s.DB().WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: OriginFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName}},
-		DoNothing: true,
-	}).Create(&InProgressAttestation{
-		IPOrigin:           signedAttestation.Attestation().Origin(),
-		IPDestination:      signedAttestation.Attestation().Destination(),
-		IPNonce:            signedAttestation.Attestation().Nonce(),
-		IPRoot:             core.BytesToSlice(signedAttestation.Attestation().Root()),
-		IPNotarySignature:  sig,
-		IPAttestationState: uint32(types.AttestationStateGuardUnsignedAndUnverified),
-	})
+	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
+		Where(&InProgressAttestation{
+			IPOrigin:      signedAttestation.Attestation().Origin(),
+			IPDestination: signedAttestation.Attestation().Destination(),
+			IPNonce:       signedAttestation.Attestation().Nonce(),
+		}).
+		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardInitialState)).
+		Updates(
+			InProgressAttestation{
+				IPNotarySignature:  sig,
+				IPAttestationState: uint32(types.AttestationStateGuardUnsignedAndVerified),
+			},
+		)
 
 	if tx.Error != nil {
-		return fmt.Errorf("could not store signed attestations: %w", tx.Error)
+		return fmt.Errorf("could not set notary signature for in-progress attestations: %w", tx.Error)
 	}
 	return nil
 }
@@ -175,27 +196,6 @@ func (s Store) MarkNotaryConfirmedOnAttestationCollector(ctx context.Context, in
 
 	if tx.Error != nil {
 		return fmt.Errorf("could not execute MarkNotaryConfirmedOnAttestationCollector for in-progress attestation: %w", tx.Error)
-	}
-	return nil
-}
-
-// MarkVerifiedOnOrigin marks the attestation as having been verified on origin.
-func (s Store) MarkVerifiedOnOrigin(ctx context.Context, inProgressAttestation types.InProgressAttestation) error {
-	tx := s.DB().WithContext(ctx).Model(&InProgressAttestation{}).
-		Where(&InProgressAttestation{
-			IPOrigin:      inProgressAttestation.SignedAttestation().Attestation().Origin(),
-			IPDestination: inProgressAttestation.SignedAttestation().Attestation().Destination(),
-			IPNonce:       inProgressAttestation.SignedAttestation().Attestation().Nonce(),
-		}).
-		Where(AttestationStateFieldName, uint32(types.AttestationStateGuardUnsignedAndUnverified)).
-		Updates(
-			InProgressAttestation{
-				IPAttestationState: uint32(types.AttestationStateGuardUnsignedAndVerified),
-			},
-		)
-
-	if tx.Error != nil {
-		return fmt.Errorf("could not execute MarkVerifiedOnOrigin for in-progress attestation: %w", tx.Error)
 	}
 	return nil
 }

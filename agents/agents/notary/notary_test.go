@@ -23,7 +23,7 @@ func RemoveNotaryTempFile(t *testing.T, fileName string) {
 	Nil(t, err)
 }
 
-func (u NotarySuite) TestNotaryE2E() {
+func (u *NotarySuite) TestNotaryE2E() {
 	testConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
 		AttestationDomain: u.AttestationDomainClient.Config(),

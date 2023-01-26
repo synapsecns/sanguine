@@ -139,7 +139,10 @@ func (h originContract) SuggestAttestation(ctx context.Context, destinationID ui
 		return nil, fmt.Errorf("could not get suggested attestation: %w", err)
 	}
 
-	suggestedAttestation := types.NewAttestationFromBytes(suggestedAttestationRaw)
+	suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode suggested attestation: %w", err)
+	}
 
 	return suggestedAttestation, nil
 }

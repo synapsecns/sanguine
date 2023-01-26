@@ -59,6 +59,8 @@ type InProgressAttestationDB interface {
 	RetrieveLatestCachedNonce(ctx context.Context, originID, destinationID uint32) (nonce uint32, err error)
 	// StoreNewInProgressAttestation stores a in-progress attestation only if it hasn't already been stored
 	StoreNewInProgressAttestation(ctx context.Context, attestation types.Attestation) error
+	// StoreNewGuardInProgressAttestation stores a in-progress attestation only if it hasn't already been stored
+	StoreNewGuardInProgressAttestation(ctx context.Context, attestation types.Attestation) error
 	// UpdateNotarySignature sets the notary signature of the in-progress Attestation.
 	UpdateNotarySignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
 	// UpdateNotarySubmittedToAttestationCollectorTime sets the time the attestation was sent to Attestation Collector by the Notary.
@@ -75,8 +77,6 @@ type InProgressAttestationDB interface {
 	RetrieveNewestInProgressAttestationIfInState(ctx context.Context, originID, destinationID uint32, state types.AttestationState) (_ types.InProgressAttestation, err error)
 	// StoreExistingSignedInProgressAttestation stores a signed in-progress attestation only if it hasn't already been stored
 	StoreExistingSignedInProgressAttestation(ctx context.Context, signedAttestation types.SignedAttestation) error
-	// MarkVerifiedOnOrigin marks the attestation as having been verified on origin.
-	MarkVerifiedOnOrigin(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
 	// UpdateGuardSignature sets the guard signature of the in-progress Attestation.
 	UpdateGuardSignature(ctx context.Context, inProgressAttestation types.InProgressAttestation) error
 	// UpdateGuardSubmittedToAttestationCollectorTime sets the time the attestation was sent to Attestation Collector by the Guard.

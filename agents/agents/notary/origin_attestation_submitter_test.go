@@ -14,7 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/core"
 )
 
-func (u NotarySuite) TestOriginAttestationSubmitter() {
+func (u *NotarySuite) TestOriginAttestationSubmitter() {
 	testDB, err := sqlite.NewSqliteStore(u.GetTestContext(), filet.TmpDir(u.T(), ""))
 	Nil(u.T(), err)
 

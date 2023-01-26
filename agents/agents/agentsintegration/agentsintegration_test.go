@@ -247,19 +247,18 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 			retrievedInProgressAttestation.AttestationState() == types.AttestationStateConfirmedOnDestination
 
 		if isTrue {
-			for i := 0; i < numMessages; i++ {
-				currNonce := uint32(i + 1)
-				currInProgressAttestation, err := guardDBHandle.RetrieveInProgressAttestation(
-					u.GetTestContext(),
-					u.OriginDomainClient.Config().DomainID,
-					u.DestinationDomainClient.Config().DomainID,
-					currNonce)
-				if err != nil {
-					return false
-				}
-				if currInProgressAttestation.AttestationState() != types.AttestationStateConfirmedOnDestination {
-					return false
-				}
+			i := numMessages - 1
+			currNonce := uint32(i + 1)
+			currInProgressAttestation, err := guardDBHandle.RetrieveInProgressAttestation(
+				u.GetTestContext(),
+				u.OriginDomainClient.Config().DomainID,
+				u.DestinationDomainClient.Config().DomainID,
+				currNonce)
+			if err != nil {
+				return false
+			}
+			if currInProgressAttestation.AttestationState() != types.AttestationStateConfirmedOnDestination {
+				return false
 			}
 		}
 

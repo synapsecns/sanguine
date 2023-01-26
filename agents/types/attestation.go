@@ -18,8 +18,8 @@ const (
 	AttestationStateNotarySubmittedUnconfirmed // 2
 	// AttestationStateNotaryConfirmed is when the attestation was confirmed as posted on the attestation collector.
 	AttestationStateNotaryConfirmed // 3
-	// AttestationStateGuardUnsignedAndUnverified is when the attestation was signed by Notary but not yet by the Guard.
-	AttestationStateGuardUnsignedAndUnverified // 4
+	// AttestationStateGuardInitialState is when the attestation is fetched from origin. This is a temporary hack state.
+	AttestationStateGuardInitialState // 4 // 4
 	// AttestationStateGuardUnsignedAndVerified is when the attestation was signed by Notary but not yet by the Guard, but Guard verified it on origin.
 	AttestationStateGuardUnsignedAndVerified // 5
 	// AttestationStateGuardSignedUnsubmitted is when the attestation was signed by Guard (and Notary) but not yet submitted.
@@ -108,26 +108,6 @@ type AttestationAgentCounts struct {
 	GuardCount uint32
 	// NotaryCount is the number of notary signatures collected in the SignedAttestation.
 	NotaryCount uint32
-}
-
-// NewAttestationFromBytes creates a new attesation from raw bytes.
-func NewAttestationFromBytes(rawBytes []byte) Attestation {
-	rootBytes := rawBytes[attestationRootStartingByte:attestationSize]
-	rawKeyBytes := rawBytes[attestationRawKeyStartingByte:attestationKeySize]
-	originBytes := rawKeyBytes[attestationOriginStartingByte:attestationRootStartingByte]
-	destinationBytes := rawKeyBytes[attestationDestinationStartingByte:attestationOriginStartingByte]
-	nonceBytes := rawKeyBytes[attestationNonceStartingByte:attestationDestinationStartingByte]
-	origin := binary.BigEndian.Uint32(originBytes)
-	destination := binary.BigEndian.Uint32(destinationBytes)
-	nonce := binary.BigEndian.Uint32(nonceBytes)
-	var root [32]byte
-	copy(root[:], rootBytes)
-	return attestation{
-		origin:      origin,
-		destination: destination,
-		nonce:       nonce,
-		root:        root,
-	}
 }
 
 // NewAttestation creates a new attestation.

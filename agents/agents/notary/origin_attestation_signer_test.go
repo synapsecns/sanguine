@@ -13,7 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 )
 
-func (u NotarySuite) TestOriginAttestationSigner() {
+func (u *NotarySuite) TestOriginAttestationSigner() {
 	testDB, err := sqlite.NewSqliteStore(u.GetTestContext(), filet.TmpDir(u.T(), ""))
 	Nil(u.T(), err)
 
