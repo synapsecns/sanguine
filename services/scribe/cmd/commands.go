@@ -49,7 +49,7 @@ var portFlag = &cli.UintFlag{
 
 var grpcPortFlag = &cli.UintFlag{
 	Name:  "grpcport",
-	Usage: "--grpcport 443",
+	Usage: "--grpcport 5121",
 	Value: 0,
 }
 
