@@ -34,6 +34,7 @@ require (
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/jftuga/termsize v1.0.2
+	github.com/joshrivers/selfsignedcertgen v0.1.0
 	github.com/jpillora/backoff v1.0.0
 	github.com/lmittmann/w3 v0.10.0
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5

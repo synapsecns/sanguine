@@ -58,7 +58,7 @@ func Start(ctx context.Context, cfg Config) error {
 	// this provider only supports self signed certs generated on the fly
 	var certPool *crypto.SelfSignedCertProvider
 	if cfg.SSL {
-		certPool, err = crypto.GetSelfSignedCert()
+		certPool, err = crypto.GetNewSelfSignedCert()
 		if err != nil {
 			return fmt.Errorf("could not get cert Pool: %w", err)
 		}

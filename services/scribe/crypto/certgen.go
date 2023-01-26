@@ -11,6 +11,8 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/joshrivers/selfsignedcertgen"
+
 	"math/big"
 	"os"
 	"time"
@@ -50,6 +52,23 @@ type SelfSignedCertProvider struct {
 	CertFile, KeyFile string
 }
 
+func GetNewSelfSignedCert() (*SelfSignedCertProvider, error) {
+	signer := selfsignedcertgen.NewSelfSigner()
+	signer.Hosts = []string{"localhost"}
+	signer.Country = "US"
+	signer.Locality = "Los Angeles"
+	signer.Organization = "Tyrell Corporation"
+	signer.OrganizationUnit = "Nexus Design"
+	signer.RsaKeyBits = 4096
+	signer.ValidFor = 10 * 365 * 24 * time.Hour
+	keyLocations := signer.GenerateKeyAndCertificate()
+
+	return &SelfSignedCertProvider{
+		CertFile: keyLocations.CertPath,
+		KeyFile:  keyLocations.KeyPath,
+	}, nil
+}
+
 func GetSelfSignedCert() (*SelfSignedCertProvider, error) {
 	// priv, err := rsa.GenerateKey(rand.Reader, *rsaBits)
 	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -60,12 +79,13 @@ func GetSelfSignedCert() (*SelfSignedCertProvider, error) {
 		SerialNumber: big.NewInt(1),
 		Subject: pkix.Name{
 			Organization: []string{"Self Signed"},
+			CommonName:   "localhost",
 		},
 		NotBefore: time.Now(),
 		NotAfter:  time.Now().Add(time.Hour * 24 * 180),
 
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 		BasicConstraintsValid: true,
 	}
 

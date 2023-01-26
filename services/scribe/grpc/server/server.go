@@ -21,7 +21,11 @@ import (
 func SetupGRPCServer(ctx context.Context, engine *gin.Engine, eventDB db.EventDB, cert *crypto.SelfSignedCertProvider) (*grpc.Server, error) {
 	s := grpc.NewServer()
 	if cert != nil {
-		s = grpc.NewServer(grpc.Creds(credentials.NewClientTLSFromCert(cert.Pool, "")))
+		tpc, err := credentials.NewServerTLSFromFile(cert.CertFile, cert.KeyFile)
+		if err != nil {
+			return nil, err
+		}
+		s = grpc.NewServer(grpc.Creds(tpc))
 	}
 
 	sImpl := server{
