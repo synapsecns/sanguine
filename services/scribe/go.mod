@@ -38,6 +38,7 @@ require (
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/errors v0.9.1
 	github.com/richardwilkes/toolbox v1.74.0
+	github.com/soheilhy/cmux v0.1.5
 	github.com/stretchr/testify v1.8.1
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
