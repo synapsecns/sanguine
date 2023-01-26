@@ -65,20 +65,20 @@ func Start(ctx context.Context, cfg Config) error {
 	}
 
 	m := cmux.New(listener)
-	httpListener := m.Match(cmux.HTTP1Fast())
+	//httpListener := m.Match(cmux.HTTP1Fast())
 	// fallback to grpc
 	grpcListener := m.Match(cmux.Any())
 
-	g.Go(func() error {
-		//nolint: gosec
-		// TODO: consider setting timeouts here:  https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
-		err := http.Serve(httpListener, router)
-		if err != nil {
-			return fmt.Errorf("could not serve http: %w", err)
-		}
-
-		return nil
-	})
+	//g.Go(func() error {
+	//	//nolint: gosec
+	//	// TODO: consider setting timeouts here:  https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
+	//	err := http.Serve(httpListener, router)
+	//	if err != nil {
+	//		return fmt.Errorf("could not serve http: %w", err)
+	//	}
+	//
+	//	return nil
+	//})
 
 	g.Go(func() error {
 		err = grpcServer.Serve(grpcListener)
