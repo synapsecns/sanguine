@@ -10,7 +10,7 @@ import (
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
 	"golang.org/x/exp/slices"
-	http2 "net/http"
+	goHTTP "net/http"
 	"strings"
 )
 
@@ -152,7 +152,7 @@ func (f *Forwarder) forwardRequest(ctx context.Context, endpoint string) (*rawRe
 	}
 
 	if resp.StatusCode() < 200 || resp.StatusCode() > 400 {
-		return nil, fmt.Errorf("invalid response code: %d (%s)", resp.StatusCode(), http2.StatusText(resp.StatusCode()))
+		return nil, fmt.Errorf("invalid response code: %d (%s)", resp.StatusCode(), goHTTP.StatusText(resp.StatusCode()))
 	}
 
 	rawResp, err := f.newRawResponse(ctx, resp.Body(), endpoint)
