@@ -48,12 +48,6 @@ var portFlag = &cli.UintFlag{
 	Value: 0,
 }
 
-var grpcPortFlag = &cli.UintFlag{
-	Name:  "grpcport",
-	Usage: "--grpcport 5121",
-	Value: 0,
-}
-
 var dbFlag = &cli.StringFlag{
 	Name:     "db",
 	Usage:    "--db <sqlite> or <mysql>",
@@ -146,13 +140,12 @@ var scribeCommand = &cli.Command{
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag, grpcPortFlag},
+	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag},
 	Action: func(c *cli.Context) error {
 		err := api.Start(c.Context, api.Config{
-			HTTPPort:   uint16(c.Uint(portFlag.Name)),
+			Port:       uint16(c.Uint(portFlag.Name)),
 			Database:   c.String(dbFlag.Name),
 			Path:       c.String(pathFlag.Name),
-			GRPCPort:   uint16(c.Uint(grpcPortFlag.Name)),
 			OmniRPCURL: c.String(omniRPCFlag.Name),
 		})
 		if err != nil {

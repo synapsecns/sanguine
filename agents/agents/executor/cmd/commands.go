@@ -82,11 +82,6 @@ var scribePortFlag = &cli.UintFlag{
 	Value: 0,
 }
 
-var scribeGrpcPortFlag = &cli.UintFlag{
-	Name:  "scribe-grpc-port",
-	Usage: "--scribe-grpc-port <port>",
-}
-
 var scribeURL = &cli.StringFlag{
 	Name:  "scribe-url",
 	Usage: "--scribe-url <url>",
@@ -125,7 +120,7 @@ var ExecutorRunCommand = &cli.Command{
 		// The flags below are used when `scribeTypeFlag` is set to "embedded".
 		scribeDBFlag, scribePathFlag,
 		// The flags below are used when `scribeTypeFlag` is set to "remote".
-		scribePortFlag, scribeGrpcPortFlag, scribeURL},
+		scribePortFlag, scribeURL},
 	Action: func(c *cli.Context) error {
 		executorConfig, executorDB, clients, err := createExecutorParameters(c)
 		if err != nil {
@@ -183,7 +178,7 @@ var ExecutorRunCommand = &cli.Command{
 
 			scribeClient = embedded.ScribeClient
 		case "remote":
-			scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), uint16(c.Uint(scribeGrpcPortFlag.Name)), c.String(scribeURL.Name)).ScribeClient
+			scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name)).ScribeClient
 		default:
 			return fmt.Errorf("invalid scribe type")
 		}
