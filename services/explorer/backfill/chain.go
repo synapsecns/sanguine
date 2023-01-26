@@ -104,9 +104,11 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRa
 		}
 	}
 	if err := contractsGroup.Wait(); err != nil {
+		logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-eeeerrbackfilling chain %d completed", c.chainConfig.ChainID)
+
 		return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
 	}
-	logger.Infof("backfilling chain %d completed", c.chainConfig.ChainID)
+	logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-backfilling chain %d completed", c.chainConfig.ChainID)
 	return nil
 }
 
@@ -147,11 +149,14 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 			sql.BlockNumberFieldName, sql.ChainIDFieldName, c.chainConfig.ChainID, sql.ContractAddressFieldName, contract.Address,
 		))
 		if err != nil {
-			return fmt.Errorf("could not get last block number: %w", err)
+			return fmt.Errorf("could not get last block number: %w, %s", err, contract.ContractType)
 		}
 	}
-
-	endHeight, err := c.Fetcher.FetchLastIndexed(parentCtx, c.chainConfig.ChainID, contract.Address)
+	var endHeight uint64
+	err = c.retryWithBackoff(parentCtx, func(ctx context.Context) error {
+		endHeight, err = c.Fetcher.FetchLastIndexed(parentCtx, c.chainConfig.ChainID, contract.Address)
+		return err
+	})
 	if err != nil {
 		return fmt.Errorf("could not get last indexed for contract %s: %w", contract.Address, err)
 	}
@@ -220,9 +225,11 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 		logger.Infof("backfilling contract %s chunk completed, %d to %d", contract.Address, chunkStart, chunkEnd)
 
 		// Store the last block in clickhouse
-		err = c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
+		err = c.retryWithBackoff(parentCtx, func(ctx context.Context) error {
+			return c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
+		})
 		if err != nil {
-			logger.Errorf("could not store last block for chain %d: %s", c.chainConfig.ChainID, err)
+			logger.Errorf("could not store last block for chain %d: %s %d, %s, %s", c.chainConfig.ChainID, err, chunkEnd, contract.Address, contract.ContractType)
 			return fmt.Errorf("could not store last block for chain %d: %w", c.chainConfig.ChainID, err)
 		}
 		currentHeight = chunkEnd + 1
@@ -294,4 +301,36 @@ func (c *ChainBackfiller) storeParsedLogs(ctx context.Context, parsedEvents []in
 			return nil
 		}
 	}
+}
+
+const maxAttempt = 20
+
+type retryableFunc func(ctx context.Context) error
+
+// retryWithBackoff will retry to get data with a backoff.
+func (t *ChainBackfiller) retryWithBackoff(ctx context.Context, doFunc retryableFunc) error {
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    3 * time.Second,
+	}
+
+	timeout := time.Duration(0)
+	attempts := 0
+	for attempts < maxAttempt {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("%w while retrying", ctx.Err())
+		case <-time.After(timeout):
+			err := doFunc(ctx)
+			if err != nil {
+				timeout = b.Duration()
+				attempts++
+			} else {
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("max attempts reached while retrying swap fetcher")
 }

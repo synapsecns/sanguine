@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
+	"golang.org/x/sync/errgroup"
 	"math"
 	"math/big"
 	"time"
@@ -169,7 +170,9 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 		TokenPrice:   nil,
 		TokenSymbol:  nil,
 		TokenDecimal: nil,
+		AdminFee:     nil,
 		FeeUSD:       nil,
+		AdminFeeUSD:  nil,
 		AmountUSD:    nil,
 	}
 }
@@ -321,76 +324,127 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 	swapEvent.TimeStamp = timeStamp
 	swapEvent.Sender = *sender
 
+	maxIndex := uint8(0)
 	totalTokenIndexRange := make(map[uint8]bool)
 	if swapEvent.Amount != nil {
 		for k := range swapEvent.Amount {
 			totalTokenIndexRange[k] = true
+			if k > maxIndex {
+				maxIndex = k
+			}
 		}
 	}
 	if swapEvent.Fee != nil {
 		for k := range swapEvent.Fee {
 			totalTokenIndexRange[k] = true
+			if k > maxIndex {
+				maxIndex = k
+			}
 		}
 	}
+
+	adminFee := uint64(6000000000)
+	swapFee := uint64(4000000)
+
+	tokenPricesArr := make([]float64, maxIndex+1)
+	tokenDecimalsArr := make([]uint8, maxIndex+1)
+	tokenSymbolsArr := make([]string, maxIndex+1)
+	tokenCoinGeckoIDsArr := make([]string, maxIndex+1)
+
 	tokenPrices := make(map[uint8]float64, len(totalTokenIndexRange))
 	tokenDecimals := make(map[uint8]uint8, len(totalTokenIndexRange))
 	tokenSymbols := make(map[uint8]string, len(totalTokenIndexRange))
 	tokenCoinGeckoIDs := make(map[uint8]string, len(totalTokenIndexRange))
 
+	g, groupCtx := errgroup.WithContext(ctx)
 	// nolint:nestif
 	for i := range totalTokenIndexRange {
 		tokenIndex := i
-		var tokenData tokendata.ImmutableTokenData
-		// Get token symbol and decimals from the erc20 contract associated to the token.
-		tokenAddress, err := p.poolTokenDataService.GetTokenAddress(ctx, chainID, tokenIndex, swapEvent.ContractAddress)
-		if err != nil {
-			logger.Errorf("token with index %d not in pool: %v, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
-			return nil, fmt.Errorf("token with index %d not in pool: %w, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
-		}
-		tokenData, err = p.tokenDataService.GetPoolTokenData(ctx, chainID, *tokenAddress, *p.swapService)
-		if err != nil {
-			logger.Errorf("could not get token data: %v", err)
-			return nil, fmt.Errorf("could not get pool token data: %w", err)
-		}
-		tokenSymbols[tokenIndex] = tokenData.TokenID()
-
-		// TODO DELETE
-		if tokenData.TokenID() == "" {
-			fmt.Println("SWAP - TOKEN ID", tokenData.TokenID(), chainID, tokenIndex, tokenAddress, swapEvent.TxHash)
-		}
-
-		tokenDecimals[tokenIndex] = tokenData.Decimals()
-
-		// TODO DELETE
-		if tokenData.Decimals() == 0 {
-			fmt.Println("SWAP - DECIMALS IS ZERO", tokenData.Decimals(), chainID, tokenIndex, tokenAddress)
-		}
-		coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
-
-		// TODO DELETE
-		if coinGeckoID == "" {
-			fmt.Println("SWAP - EMPTY TOKEN ID", p.coinGeckoIDs[tokenData.TokenID()], "U", tokenData.TokenID())
-		}
-		tokenCoinGeckoIDs[tokenIndex] = coinGeckoID
-
-		if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
-			tokenPrice := p.tokenPriceService.GetPriceData(ctx, int(*swapEvent.TimeStamp), coinGeckoID)
-			if (tokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
-				if coinGeckoID != "usd-coin" && coinGeckoID != "tether" && coinGeckoID != "dai" || coinGeckoID == "binance-usd" {
-					// TODO DELETE
-					fmt.Println("SWAP - TOKEN PRICE NULL", coinGeckoID, swapEvent.TimeStamp, timeStamp, tokenPrice, swapEvent.TokenDecimal, chainID, swapEvent.TxHash)
-					return nil, fmt.Errorf("SWAP could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, swapEvent.TxHash, swapEvent.TimeStamp)
-				}
-				one := 1.0
-				tokenPrice = &one
+		g.Go(func() error {
+			var tokenData tokendata.ImmutableTokenData
+			// Get token symbol and decimals from the erc20 contract associated to the token.
+			tokenAddress, err := p.poolTokenDataService.GetTokenAddress(groupCtx, chainID, tokenIndex, swapEvent.ContractAddress)
+			if err != nil {
+				logger.Errorf("token with index %d not in pool: %v, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
+				return fmt.Errorf("token with index %d not in pool: %w, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
 			}
-			tokenPrices[tokenIndex] = *tokenPrice
-		}
+			tokenData, err = p.tokenDataService.GetPoolTokenData(groupCtx, chainID, *tokenAddress, *p.swapService)
+			if err != nil {
+				logger.Errorf("could not get token data: %v", err)
+				return fmt.Errorf("could not get pool token data: %w", err)
+			}
+			tokenSymbolsArr[tokenIndex] = tokenData.TokenID()
 
-		// TODO DELETE
-		if tokenPrices[tokenIndex] == 0 {
-			fmt.Println("SWAP - TOKEN PRICE IS ZERO", tokenPrices[tokenIndex], chainID, tokenIndex, tokenAddress)
+			// TODO DELETE
+			if tokenData.TokenID() == "" {
+				fmt.Println("SWAP - TOKEN ID", tokenData.TokenID(), chainID, tokenIndex, tokenAddress, swapEvent.TxHash)
+			}
+
+			tokenDecimalsArr[tokenIndex] = tokenData.Decimals()
+
+			// TODO DELETE
+			if tokenData.Decimals() == 0 {
+				fmt.Println("SWAP - DECIMALS IS ZERO", tokenData.Decimals(), chainID, tokenIndex, tokenAddress)
+			}
+			coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
+
+			// TODO DELETE
+			if coinGeckoID == "" {
+				fmt.Println("SWAP - EMPTY TOKEN ID", p.coinGeckoIDs[tokenData.TokenID()], "U", tokenData.TokenID())
+			}
+			tokenCoinGeckoIDsArr[tokenIndex] = coinGeckoID
+
+			if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
+				tokenPrice := p.tokenPriceService.GetPriceData(groupCtx, int(*swapEvent.TimeStamp), coinGeckoID)
+				if (tokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
+					if coinGeckoID != "usd-coin" && coinGeckoID != "tether" && coinGeckoID != "dai" || coinGeckoID == "binance-usd" {
+						// TODO DELETE
+						fmt.Println("SWAP - TOKEN PRICE NULL", coinGeckoID, swapEvent.TimeStamp, timeStamp, tokenPrice, swapEvent.TokenDecimal, chainID, swapEvent.TxHash)
+						return fmt.Errorf("SWAP could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, swapEvent.TxHash, swapEvent.TimeStamp)
+					}
+					one := 1.0
+					tokenPrice = &one
+				}
+				tokenPricesArr[tokenIndex] = *tokenPrice
+			}
+
+			// TODO DELETE
+			if tokenPricesArr[tokenIndex] == 0 {
+				fmt.Println("SWAP - TOKEN PRICE IS ZERO", tokenPricesArr[tokenIndex], chainID, tokenIndex, tokenAddress)
+			}
+			return nil
+		})
+	}
+
+	g.Go(func() error {
+		// Check for all fee emitting event types
+		if swapEvent.EventType == 0 || swapEvent.EventType == 1 || swapEvent.EventType == 4 || swapEvent.EventType == 9 || swapEvent.EventType == 10 {
+			dbAdminFee, dbSwapFee, err := p.GetCorrectSwapFee(ctx, swapEvent)
+			if err != nil {
+				return fmt.Errorf("could not process swap event: %w", err)
+			}
+			if dbAdminFee > 0 {
+				fmt.Println("USING DIFFERENT ADMIN FEE", dbAdminFee)
+				adminFee = dbAdminFee
+			}
+			if dbSwapFee > 0 {
+				fmt.Println("USING DIFFERENT SWAP FEE", dbSwapFee)
+				swapFee = dbSwapFee
+			}
 		}
+		return nil
+	})
+
+	err = g.Wait()
+	if err != nil {
+		return nil, fmt.Errorf("could get all swap data from go routines: %w", err)
+	}
+
+	for i := range totalTokenIndexRange {
+		tokenPrices[i] = tokenPricesArr[i]
+		tokenDecimals[i] = tokenDecimalsArr[i]
+		tokenSymbols[i] = tokenSymbolsArr[i]
+		tokenCoinGeckoIDs[i] = tokenCoinGeckoIDsArr[i]
 
 	}
 
@@ -404,29 +458,18 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 		fmt.Println("SWAP - TOKEN PRICE MAP LENGTH 0", tokenPrices, chainID, swapEvent.EventType, swapEvent.TxHash)
 	}
 
-	adminFee := uint64(6000000000)
-	swapFee := uint64(4000000)
-	if swapEvent.EventType == 0 || swapEvent.EventType == 2 || swapEvent.EventType == 3 || swapEvent.EventType == 5 || swapEvent.EventType == 6 || swapEvent.EventType == 7 {
-		dbAdminFee, dbSwapFee, err := p.GetCorrectSwapFee(ctx, swapEvent)
-		if err != nil {
-			return nil, fmt.Errorf("could not process swap event: %w", err)
-		}
-		if dbAdminFee > 0 {
-			adminFee = dbAdminFee
-		}
-		if dbSwapFee > 0 {
-			swapFee = dbSwapFee
-		}
-	}
-	// fmt.Println("SWAP - ADMIN FEE", chainID, adminFee, swapFee, swapEvent.EventType, swapEvent.TxHash)
 	amountResults := make(map[uint8]float64, len(totalTokenIndexRange))
 	feeResults := make(map[uint8]float64, len(totalTokenIndexRange))
+	adminFeeResults := make(map[uint8]float64, len(totalTokenIndexRange))
+	adminFeeAmountResults := make(map[uint8]string, len(totalTokenIndexRange))
+
 	if swapEvent.EventType == 0 || swapEvent.EventType == 10 {
-		fee, err := convertFee(swapEvent.TokensSold, uint8(swapEvent.SoldID.Uint64()), swapFee, adminFee)
+		fee, err := convertFee(swapEvent.TokensSold, swapEvent.TokenDecimal[uint8(swapEvent.SoldID.Uint64())], swapFee)
 		if err != nil {
 			return nil, fmt.Errorf("could not convert fee: %w %d %d %d %d", err, swapEvent.TokensSold, uint8(swapEvent.SoldID.Uint64()), swapFee, adminFee)
 		}
 		swapEvent.Fee[uint8(swapEvent.SoldID.Uint64())] = fee
+
 	}
 
 	for i := range swapEvent.Amount {
@@ -452,30 +495,36 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 
 		price := swapEvent.TokenPrice[i]
 		feeResults[i] = *GetAmountUSD(n, swapEvent.TokenDecimal[i], &price)
-		if swapEvent.EventType == 1 || swapEvent.EventType == 4 || swapEvent.EventType == 9 {
-			feeResults[i] = feeResults[i] * getAdjustedFee(adminFee, 10)
+		adminFeeAmountResults[i], err = convertFee(n, swapEvent.TokenDecimal[i], adminFee)
+		if err != nil {
+			return nil, fmt.Errorf("could not convert fee: %w %d %d %d %d", err, swapEvent.TokensSold, uint8(swapEvent.SoldID.Uint64()), swapFee, adminFee)
 		}
+
+		adminFeeResults[i] = feeResults[i] * getAdjustedFee(adminFee, 10)
 	}
 
 	swapEvent.AmountUSD = amountResults
 	swapEvent.FeeUSD = feeResults
-	// fmt.Println("SWAP - FINAL", swapEvent.EventType, swapEvent.FeeUSD, swapEvent.AmountUSD, swapEvent.Fee, swapEvent.Amount)
+	swapEvent.AdminFee = adminFeeAmountResults
+	swapEvent.AdminFeeUSD = adminFeeResults
+
 	return swapEvent, nil
 }
 
 // convertFee gets the fee amount.
-func convertFee(amount *big.Int, decimal uint8, swapFee uint64, adminFee uint64) (string, error) {
+func convertFee(amount *big.Int, decimal uint8, feeAmount uint64) (string, error) {
 	adjustedAmount := GetAdjustedAmount(amount, decimal)
 	if adjustedAmount == nil {
 		return "", fmt.Errorf("SWAP - adjusted amount IS NIL %d", adjustedAmount)
 	}
 
-	fee := big.NewFloat(*adjustedAmount * getAdjustedFee(swapFee, 10) * getAdjustedFee(adminFee, 10))
+	fee := big.NewFloat(*adjustedAmount * getAdjustedFee(feeAmount, 10))
 	feeDecimals := big.NewFloat(math.Pow(10, float64(decimal)))
 	fee.Mul(fee, feeDecimals)
 
 	result := new(big.Int)
 	fee.Int(result)
+
 	return fee.Text('f', 0), nil
 }
 
@@ -486,14 +535,27 @@ func getAdjustedFee(fee uint64, decimal uint8) float64 {
 // TODO make more dynamic
 // GetCorrectSwapFee returns the correct swap fee for the given pool contract.
 func (p *SwapParser) GetCorrectSwapFee(ctx context.Context, swapEvent model.SwapEvent) (uint64, uint64, error) {
-	dbAdminFee, err := p.consumerDB.GetUint64(ctx, fmt.Sprintf("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number <= %d ORDER BY block_number DESC LIMIT 1", swapEvent.ChainID, swapEvent.ContractAddress, "admin", swapEvent.BlockNumber))
+	var dbAdminFee uint64
+	var dbSwapFee uint64
+	var err error
+	g, groupCtx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		dbAdminFee, err = p.consumerDB.GetUint64(groupCtx, fmt.Sprintf("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number <= %d ORDER BY block_number DESC LIMIT 1", swapEvent.ChainID, swapEvent.ContractAddress, "admin", swapEvent.BlockNumber))
+		if err != nil {
+			return fmt.Errorf("could not get admin fee: %w", err)
+		}
+		return nil
+	})
+	g.Go(func() error {
+		dbSwapFee, err = p.consumerDB.GetUint64(groupCtx, fmt.Sprintf("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number <= %d ORDER BY block_number DESC LIMIT 1", swapEvent.ChainID, swapEvent.ContractAddress, "swap", swapEvent.BlockNumber))
+		if err != nil {
+			return fmt.Errorf("could not get swap fee: %w", err)
+		}
+		return nil
+	})
+	err = g.Wait()
 	if err != nil {
-		return 0, 0, fmt.Errorf("could not get admin fee: %w", err)
-	}
-
-	dbSwapFee, err := p.consumerDB.GetUint64(ctx, fmt.Sprintf("SELECT fee FROM swap_fees WHERE chain_id = %d AND contract_address = '%s' AND fee_type = '%s' AND block_number <= %d ORDER BY block_number DESC LIMIT 1", swapEvent.ChainID, swapEvent.ContractAddress, "swap", swapEvent.BlockNumber))
-	if err != nil {
-		return 0, 0, fmt.Errorf("could not get swap fee: %w", err)
+		return 0, 0, fmt.Errorf("could notget newest swap fees: %w", err)
 	}
 	return dbAdminFee, dbSwapFee, nil
 }

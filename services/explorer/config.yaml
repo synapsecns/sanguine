@@ -1,4 +1,4 @@
-refresh_rate: 0
+refresh_rate: 15000
 rpc_url: 'https://rpc.interoperability.institute/confirmations/1/rpc/'
 scribe_url: 'https://scribe.interoperability.institute/graphql'
 bridge_config_address: '0x5217c83ca75559B1f8a8803824E5b7ac233A12a1'

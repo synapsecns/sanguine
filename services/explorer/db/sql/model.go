@@ -155,12 +155,16 @@ type SwapEvent struct {
 
 	// Amount is the amount of tokens.
 	Amount map[uint8]string `gorm:"column:amount;type:Map(UInt8, String)"`
-	// AmountFee is the amount of fees.
+	// Fee is the amount of fees.
 	Fee map[uint8]string `gorm:"column:fee;type:Map(UInt8, String)"`
+	// AdminFee is the amount of admin fees.
+	AdminFee map[uint8]string `gorm:"column:admin_fee;type:Map(UInt8, String)"`
 	// AmountUSD is the amount in USD.
 	AmountUSD map[uint8]float64 `gorm:"column:amount_usd;type:Map(UInt8, Float64)"`
 	// FeeAmountUSD is the fee amount in USD.
 	FeeUSD map[uint8]float64 `gorm:"column:fee_usd;type:Map(UInt8, Float64)"`
+	// AdminFeeAmountUSD is the admin fee amount in USD.
+	AdminFeeUSD map[uint8]float64 `gorm:"column:admin_fee_usd;type:Map(UInt8, Float64)"`
 	// ProtocolFee is the protocol fee.
 	ProtocolFee *big.Int `gorm:"column:protocol_fee;type:UInt256"`
 	// Buyer is the address of the buyer.

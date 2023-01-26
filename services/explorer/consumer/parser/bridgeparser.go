@@ -429,15 +429,14 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	if tokenPrice != nil {
 		// Add AmountUSD to bridgeEvent (if price is not nil).
 		bridgeEvent.AmountUSD = GetAmountUSD(bridgeEvent.Amount, tokenData.Decimals(), tokenPrice)
-		if *bridgeEvent.AmountUSD == 0 && coinGeckoID != noTokenID && coinGeckoID != noPrice {
-			fmt.Println("BRIDGE - AMOUNT USD 0", *bridgeEvent.AmountUSD, coinGeckoID, *bridgeEvent.TimeStamp, *bridgeEvent.Amount, *tokenPrice, *bridgeEvent.TokenDecimal)
-		}
+		//if *bridgeEvent.AmountUSD == 0 && coinGeckoID != noTokenID && coinGeckoID != noPrice {
+		//}
 		// Add FeeAmountUSD to bridgeEvent (if price is not nil).
 		if iFace.GetFee() != nil {
 			bridgeEvent.FeeUSD = GetAmountUSD(bridgeEvent.Fee, tokenData.Decimals(), tokenPrice)
-			if *bridgeEvent.FeeUSD == 0 && coinGeckoID != noTokenID && coinGeckoID != noPrice {
-				fmt.Println("BRIDGE - FEE USD 0", coinGeckoID, *bridgeEvent.TimeStamp, *bridgeEvent.Amount, *tokenPrice, *bridgeEvent.TokenDecimal)
-			}
+			//if *bridgeEvent.FeeUSD == 0 && coinGeckoID != noTokenID && coinGeckoID != noPrice {
+			//	fmt.Println("BRIDGE - FEE USD 0", coinGeckoID, *bridgeEvent.TimeStamp, *bridgeEvent.Amount, *tokenPrice, *bridgeEvent.TokenDecimal)
+			//}
 		}
 	}
 	return bridgeEvent, nil

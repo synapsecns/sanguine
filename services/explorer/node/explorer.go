@@ -17,6 +17,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	"golang.org/x/sync/errgroup"
 	"net/http"
+	"time"
 )
 
 // ExplorerBackfiller is a backfiller that aggregates all backfilling from ChainBackfillers.
@@ -36,7 +37,13 @@ type ExplorerBackfiller struct {
 // nolint:gocognit
 func NewExplorerBackfiller(consumerDB db.ConsumerDB, config config.Config, clients map[uint32]bind.ContractBackend) (*ExplorerBackfiller, error) {
 	chainBackfillers := make(map[uint32]*backfill.ChainBackfiller)
-	fetcher := fetcherpkg.NewFetcher(gqlClient.NewClient(http.DefaultClient, config.ScribeURL))
+	httpClient := http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			ResponseHeaderTimeout: 10 * time.Second,
+		},
+	}
+	fetcher := fetcherpkg.NewFetcher(gqlClient.NewClient(&httpClient, config.ScribeURL))
 	bridgeConfigRef, err := bridgeconfig.NewBridgeConfigRef(common.HexToAddress(config.BridgeConfigAddress), clients[config.BridgeConfigChainID])
 	if err != nil || bridgeConfigRef == nil {
 		return nil, fmt.Errorf("could not create bridge config ScribeFetcher: %w", err)

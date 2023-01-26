@@ -15,7 +15,7 @@ type Service interface {
 	GetPriceData(context.Context, int, string) *float64
 }
 
-const cacheSize = 10000
+const cacheSize = 5000
 
 type tokenPriceServiceImpl struct {
 	// tokenCache is the cache of the token prices
