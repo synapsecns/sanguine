@@ -9,6 +9,7 @@ import (
 	"github.com/soheilhy/cmux"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/ginhelper"
+	"github.com/synapsecns/sanguine/services/scribe/crypto"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
@@ -35,6 +36,10 @@ type Config struct {
 	Path string
 	// OmniRPCURL is the url of the omnirpc service.
 	OmniRPCURL string
+	// SSL enables ssl using a self signed certificate. This is useful to allow listening on http2 behind a load balancer that uses a root certificate
+	// since http2 requires ssl, even if encryption between the backend and the load balancer already occurs through the service mesh.
+	// See GFE docs for an example: https://cloud.google.com/load-balancing/docs/ssl-certificates/encryption-to-the-backends
+	SSL bool
 }
 
 var logger = log.Logger("scribe-api")
@@ -48,8 +53,18 @@ func Start(ctx context.Context, cfg Config) error {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
 
+	// certPool will be nil if ssl is disabled
+	// this provider only supports self signed certs generated on the fly
+	var certPool *crypto.SelfSignedCertProvider
+	if cfg.SSL {
+		certPool, err = crypto.GetSelfSignedCert()
+		if err != nil {
+			return fmt.Errorf("could not get cert Pool: %w", err)
+		}
+	}
+
 	gqlServer.EnableGraphql(router, eventDB, cfg.OmniRPCURL)
-	grpcServer, err := server.SetupGRPCServer(ctx, router, eventDB)
+	grpcServer, err := server.SetupGRPCServer(ctx, router, eventDB, certPool)
 	if err != nil {
 		return fmt.Errorf("could not create grpc server: %w", err)
 	}
@@ -70,9 +85,15 @@ func Start(ctx context.Context, cfg Config) error {
 	grpcListener := m.Match(cmux.Any())
 
 	g.Go(func() error {
-		//nolint: gosec
 		// TODO: consider setting timeouts here:  https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
-		err := http.Serve(httpListener, router)
+		var err error
+		if cfg.SSL {
+			//nolint: gosec
+			err = http.ServeTLS(httpListener, router, certPool.CertFile, certPool.KeyFile)
+		} else {
+			//nolint: gosec
+			err = http.Serve(httpListener, router)
+		}
 		if err != nil {
 			return fmt.Errorf("could not serve http: %w", err)
 		}

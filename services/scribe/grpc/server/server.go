@@ -7,17 +7,23 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/gin-gonic/gin"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/synapsecns/sanguine/services/scribe/crypto"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"strconv"
 	"time"
 )
 
 // SetupGRPCServer sets up the grpc server.
-func SetupGRPCServer(ctx context.Context, engine *gin.Engine, eventDB db.EventDB) (*grpc.Server, error) {
+func SetupGRPCServer(ctx context.Context, engine *gin.Engine, eventDB db.EventDB, cert *crypto.SelfSignedCertProvider) (*grpc.Server, error) {
 	s := grpc.NewServer()
+	if cert != nil {
+		s = grpc.NewServer(grpc.Creds(credentials.NewClientTLSFromCert(cert.Pool, "")))
+	}
+
 	sImpl := server{
 		db: eventDB,
 	}
