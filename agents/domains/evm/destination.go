@@ -113,3 +113,11 @@ func (a destinationContract) SubmittedAt(ctx context.Context, originID uint32, r
 
 	return &submittedAtTime, nil
 }
+
+func (a destinationContract) PrimeNonce(ctx context.Context, signer signer.Signer) error {
+	_, err := a.nonceManager.GetNextNonce(signer.Address())
+	if err != nil {
+		return fmt.Errorf("could not prime nonce for signer on destination: %w", err)
+	}
+	return nil
+}

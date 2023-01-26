@@ -56,10 +56,12 @@ func (a AttestationDoubleCheckOnOriginVerifier) Start(ctx context.Context) error
 	for {
 		select {
 		case <-ctx.Done():
+			logger.Info("Guard AttestationDoubleCheckOnOriginVerifier exiting without error")
 			return nil
 		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
+				logger.Errorf("Guard AttestationDoubleCheckOnOriginVerifier exiting with error: %v", err)
 				return err
 			}
 		}

@@ -25,9 +25,9 @@ func (i ContractSuite) TestDestinationSubmitAttestation() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	Nil(i.T(), err)
 
-	notarySignature, err := i.NotarySigner.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := i.NotaryBondedSigner.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(i.T(), err)
-	guardSignature, err := i.GuardSigner.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := i.GuardBondedSigner.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(i.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})

@@ -2,6 +2,8 @@ package notary_test
 
 import (
 	"math/big"
+	"os"
+	"testing"
 	"time"
 
 	"github.com/Flaque/filet"
@@ -15,6 +17,12 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
+func RemoveNotaryTempFile(t *testing.T, fileName string) {
+	t.Helper()
+	err := os.Remove(fileName)
+	Nil(t, err)
+}
+
 func (u NotarySuite) TestNotaryE2E() {
 	testConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
@@ -24,11 +32,11 @@ func (u NotarySuite) TestNotaryE2E() {
 		},
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.NotaryWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.UnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		Database: config.DBConfig{
 			Type:       dbcommon.Sqlite.String(),
@@ -37,7 +45,26 @@ func (u NotarySuite) TestNotaryE2E() {
 		},
 		RefreshIntervalInSeconds: 1,
 	}
-	ud, err := notary.NewNotary(u.GetTestContext(), testConfig)
+	encodedTestConfig, err := testConfig.Encode()
+	Nil(u.T(), err)
+
+	tempConfigFile, err := os.CreateTemp("", "notary_temp_config.yaml")
+	Nil(u.T(), err)
+	defer RemoveNotaryTempFile(u.T(), tempConfigFile.Name())
+
+	numBytesWritten, err := tempConfigFile.Write(encodedTestConfig)
+	Nil(u.T(), err)
+	Positive(u.T(), numBytesWritten)
+
+	decodedNotaryConfig, err := config.DecodeNotaryConfig(tempConfigFile.Name())
+	Nil(u.T(), err)
+
+	decodedNotaryConfigBackToEncodedBytes, err := decodedNotaryConfig.Encode()
+	Nil(u.T(), err)
+
+	Equal(u.T(), encodedTestConfig, decodedNotaryConfigBackToEncodedBytes)
+
+	notary, err := notary.NewNotary(u.GetTestContext(), testConfig)
 	Nil(u.T(), err)
 
 	dbType, err := dbcommon.DBTypeFromString(testConfig.Database.Type)
@@ -57,7 +84,7 @@ func (u NotarySuite) TestNotaryE2E() {
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
-		_ = ud.Start(u.GetTestContext())
+		_ = notary.Start(u.GetTestContext())
 	}()
 
 	u.Eventually(func() bool {
