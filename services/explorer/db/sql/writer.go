@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
@@ -86,8 +87,12 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 		return fmt.Errorf("could not retrieve last block: %w", dbTx.Error)
 	}
 	if dbTx.RowsAffected == 0 {
-		dbTx = s.db.WithContext(ctx).
-			Model(&LastBlock{}).
+		dbTx = s.db.WithContext(ctx).Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: BlockNumberFieldName},
+			},
+			DoNothing: true,
+		}).Model(&LastBlock{}).
 			Create(&LastBlock{
 				ChainID:         chainID,
 				BlockNumber:     blockNumber,
@@ -101,7 +106,12 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 	}
 
 	if blockNumber > entry.BlockNumber {
-		dbTx = s.db.WithContext(ctx).
+		dbTx = s.db.WithContext(ctx).Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: BlockNumberFieldName},
+			},
+			DoNothing: true,
+		}).
 			Model(&LastBlock{}).
 			Create(&LastBlock{
 				ChainID:         chainID,
