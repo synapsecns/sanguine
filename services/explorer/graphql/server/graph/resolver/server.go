@@ -90,6 +90,7 @@ type ComplexityRoot struct {
 		AmountStatistic       func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) int
 		BridgeAmountStatistic func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) int
 		BridgeTransactions    func(childComplexity int, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) int
+		BridgeTransactions2   func(childComplexity int, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress []*string) int
 		CountByChainID        func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress   func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatistics       func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) int
@@ -114,6 +115,7 @@ type ComplexityRoot struct {
 
 type QueryResolver interface {
 	BridgeTransactions(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) ([]*model.BridgeTransaction, error)
+	BridgeTransactions2(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error)
 	BridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error)
 	CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error)
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
@@ -361,6 +363,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.BridgeTransactions(childComplexity, args["chainId"].(*int), args["address"].(*string), args["txnHash"].(*string), args["kappa"].(*string), args["includePending"].(*bool), args["page"].(*int), args["tokenAddress"].(*string)), true
 
+	case "Query.bridgeTransactions2":
+		if e.complexity.Query.BridgeTransactions2 == nil {
+			break
+		}
+
+		args, err := ec.field_Query_bridgeTransactions2_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.BridgeTransactions2(childComplexity, args["chainId"].([]*int), args["address"].(*string), args["maxAmount"].(*int), args["minAmount"].(*int), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["kappa"].(*string), args["includePending"].(*bool), args["page"].(*int), args["tokenAddress"].([]*string)), true
+
 	case "Query.countByChainId":
 		if e.complexity.Query.CountByChainID == nil {
 			break
@@ -527,6 +541,22 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     tokenAddress:   String
   ): [BridgeTransaction]
 
+  """
+  Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
+  """
+  bridgeTransactions2(
+    chainId:        [Int]
+    address:        String
+    maxAmount:      Int
+    minAmount:      Int
+    startTime:      Int
+    endTime:        Int
+    txnHash:        String
+    kappa:          String
+    includePending: Boolean = false
+    page:           Int = 1
+    tokenAddress:   [String]
+  ): [BridgeTransaction]
   """
   Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
   Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
@@ -859,6 +889,111 @@ func (ec *executionContext) field_Query_bridgeAmountStatistic_args(ctx context.C
 		}
 	}
 	args["tokenAddress"] = arg4
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_bridgeTransactions2_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*int
+	if tmp, ok := rawArgs["chainId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainId"))
+		arg0, err = ec.unmarshalOInt2ᚕᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chainId"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["address"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["address"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["maxAmount"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxAmount"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["maxAmount"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["minAmount"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minAmount"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["minAmount"] = arg3
+	var arg4 *int
+	if tmp, ok := rawArgs["startTime"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startTime"))
+		arg4, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["startTime"] = arg4
+	var arg5 *int
+	if tmp, ok := rawArgs["endTime"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("endTime"))
+		arg5, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["endTime"] = arg5
+	var arg6 *string
+	if tmp, ok := rawArgs["txnHash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txnHash"))
+		arg6, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["txnHash"] = arg6
+	var arg7 *string
+	if tmp, ok := rawArgs["kappa"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kappa"))
+		arg7, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["kappa"] = arg7
+	var arg8 *bool
+	if tmp, ok := rawArgs["includePending"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("includePending"))
+		arg8, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["includePending"] = arg8
+	var arg9 *int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg9, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg9
+	var arg10 []*string
+	if tmp, ok := rawArgs["tokenAddress"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tokenAddress"))
+		arg10, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tokenAddress"] = arg10
 	return args, nil
 }
 
@@ -2267,6 +2402,70 @@ func (ec *executionContext) fieldContext_Query_bridgeTransactions(ctx context.Co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_bridgeTransactions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_bridgeTransactions2(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_bridgeTransactions2(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().BridgeTransactions2(rctx, fc.Args["chainId"].([]*int), fc.Args["address"].(*string), fc.Args["maxAmount"].(*int), fc.Args["minAmount"].(*int), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["includePending"].(*bool), fc.Args["page"].(*int), fc.Args["tokenAddress"].([]*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.BridgeTransaction)
+	fc.Result = res
+	return ec.marshalOBridgeTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeTransaction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_bridgeTransactions2(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "fromInfo":
+				return ec.fieldContext_BridgeTransaction_fromInfo(ctx, field)
+			case "toInfo":
+				return ec.fieldContext_BridgeTransaction_toInfo(ctx, field)
+			case "kappa":
+				return ec.fieldContext_BridgeTransaction_kappa(ctx, field)
+			case "pending":
+				return ec.fieldContext_BridgeTransaction_pending(ctx, field)
+			case "swapSuccess":
+				return ec.fieldContext_BridgeTransaction_swapSuccess(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BridgeTransaction", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_bridgeTransactions2_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -5102,6 +5301,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "bridgeTransactions2":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_bridgeTransactions2(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "bridgeAmountStatistic":
 			field := field
 
@@ -6227,6 +6446,38 @@ func (ec *executionContext) marshalOHistoricalResultType2ᚖgithubᚗcomᚋsynap
 	return v
 }
 
+func (ec *executionContext) unmarshalOInt2ᚕᚖint(ctx context.Context, v interface{}) ([]*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOInt2ᚖint(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕᚖint(ctx context.Context, sel ast.SelectionSet, v []*int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOInt2ᚖint(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -6299,6 +6550,38 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 		if e == graphql.Null {
 			return graphql.Null
 		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
 	}
 
 	return ret

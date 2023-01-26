@@ -171,10 +171,10 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 		SwapDeadline:       event.GetSwapDeadline(),
 
 		// Placeholders for further data maturation of this event.
-		TokenID:      sql.NullString{},
+
 		TimeStamp:    nil,
 		AmountUSD:    nil,
-		FeeAmountUSD: nil,
+		FeeUSD:       nil,
 		TokenDecimal: nil,
 		TokenSymbol:  sql.NullString{},
 	}
@@ -413,7 +413,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 		// Add FeeAmountUSD to bridgeEvent (if price is not nil).
 		if iFace.GetFee() != nil {
-			bridgeEvent.FeeAmountUSD = GetAmountUSD(bridgeEvent.Fee, tokenData.Decimals(), tokenPrice)
+			bridgeEvent.FeeUSD = GetAmountUSD(bridgeEvent.Fee, tokenData.Decimals(), tokenPrice)
 		}
 	}
 

@@ -61,6 +61,52 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	return results, nil
 }
 
+// BridgeTransactions2 is the resolver for the bridgeTransactions2 field.
+func (r *queryResolver) BridgeTransactions2(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error) {
+	var err error
+	var results []*model.BridgeTransaction
+
+	switch {
+	case kappa != nil:
+		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
+		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
+		results, err = r.GetBridgeTxsFromDestination2(ctx, nil, address, maxAmount, minAmount, startTime, endTime, txnHash, kappa, includePending, page, tokenAddress)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		var fromResults []*model.BridgeTransaction
+		var toResults []*model.BridgeTransaction
+		var wg sync.WaitGroup
+		var err error
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fromResults, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *page, tokenAddress, *includePending, false)
+		}()
+		if !*includePending {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				toResults, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, *page, tokenAddress)
+			}()
+		}
+		wg.Wait()
+		if err != nil {
+			return nil, err
+		}
+		// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for
+		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
+		// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
+
+		results = r.mergeBridgeTransactions(fromResults, toResults)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
+	}
+	return results, nil
+}
+
 // BridgeAmountStatistic is the resolver for the bridgeAmountStatistic field.
 func (r *queryResolver) BridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error) {
 	var err error
@@ -246,36 +292,94 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
 	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "")
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
-	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "")
 
 	compositeFilters := fmt.Sprintf(
-		`%s%s%s%s%s`,
-		timestampSpecifier, tokenAddressSpecifier, addressSpecifier, chainIDSpecifier, directionSpecifier,
+		`%s%s%s%s`,
+		timestampSpecifier, tokenAddressSpecifier, addressSpecifier, chainIDSpecifier,
 	)
 
-	var operation string
-	var finalSQL string
-	switch typeArg {
-	case model.StatisticTypeMeanVolumeUsd:
-		operation = fmt.Sprintf("AVG(%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
-	case model.StatisticTypeMedianVolumeUsd:
-		operation = fmt.Sprintf("median(%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
-	case model.StatisticTypeTotalVolumeUsd:
-		operation = fmt.Sprintf("sumKahan(%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
-	case model.StatisticTypeCountTransactions:
-		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil))
-	case model.StatisticTypeCountAddresses:
-		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil))
+	var finalSQL *string
+	switch *platform {
+	case model.PlatformBridge:
+		directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "")
+		compositeFilters += directionSpecifier
+		finalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
+	case model.PlatformSwap:
+		finalSQL, err = GenerateAmountStatisticSwapSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
+	case model.PlatformMessageBus:
+		finalSQL, err = GenerateAmountStatisticMessageBusSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
+	case model.PlatformAll:
+		var bridgeFinalSQL *string
+		var swapFinalSQL *string
+		var messageBusFinalSQL *string
+
+		var bridgeSum float64
+		var swapSum float64
+		var messageBusSum float64
+
+		bridgeFinalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, compositeFilters+generateDirectionSpecifierSQL(true, &firstFilter, ""))
+		if err != nil {
+			return nil, err
+		}
+
+		swapFinalSQL, err = GenerateAmountStatisticSwapSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
+
+		messageBusFinalSQL, err = GenerateAmountStatisticMessageBusSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
+
+		g, groupCtx := errgroup.WithContext(ctx)
+		g.Go(func() error {
+			bridgeSum, err = r.DB.GetFloat64(groupCtx, *bridgeFinalSQL)
+			if err != nil {
+				return fmt.Errorf("failed to get dateResults: %w", err)
+			}
+			return nil
+		})
+		g.Go(func() error {
+			swapSum, err = r.DB.GetFloat64(groupCtx, *swapFinalSQL)
+			if err != nil {
+				return fmt.Errorf("failed to get dateResults: %w", err)
+			}
+			return nil
+		})
+		if typeArg != model.StatisticTypeMeanVolumeUsd && typeArg != model.StatisticTypeMedianVolumeUsd && typeArg != model.StatisticTypeTotalVolumeUsd {
+			g.Go(func() error {
+				messageBusSum, err = r.DB.GetFloat64(groupCtx, *messageBusFinalSQL)
+				if err != nil {
+					return fmt.Errorf("failed to get dateResults: %w", err)
+				}
+				return nil
+			})
+		}
+		err = g.Wait()
+		if err != nil {
+			return nil, err
+		}
+		value := fmt.Sprintf("%f", bridgeSum+swapSum+messageBusSum)
+		output := model.ValueResult{
+			Value: &value,
+		}
+
+		return &output, nil
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
 
-	res, err := r.DB.GetFloat64(ctx, finalSQL)
+	res, err := r.DB.GetFloat64(ctx, *finalSQL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get amount data stats: %w", err)
 	}
@@ -290,6 +394,9 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 
 // DailyStatistics is the resolver for the dailyStatistics field.
 func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) (*model.DailyResult, error) {
+	if *typeArg == model.DailyStatisticTypeVolume && *platform == model.PlatformMessageBus {
+		return nil, fmt.Errorf("cannot calculate volume for the message bus")
+	}
 	var subQuery *string
 	var query *string
 	var err error
@@ -297,11 +404,12 @@ func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeA
 	firstFilter := true
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 	timeStampSpecifier := generateTimestampSpecifierSQL(&startTime, sql.TimeStampFieldName, &firstFilter, "")
-	directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "")
-	compositeFilters := fmt.Sprintf("%s%s%s", chainIDSpecifier, timeStampSpecifier, directionSpecifier)
+	compositeFilters := fmt.Sprintf("%s%s", chainIDSpecifier, timeStampSpecifier)
 
 	switch *platform {
 	case model.PlatformBridge:
+		directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "")
+		compositeFilters += directionSpecifier
 		subQuery, query, err = GenerateDailyStatisticBridgeSQL(typeArg, compositeFilters)
 		if err != nil {
 			return nil, err
@@ -325,6 +433,7 @@ func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeA
 		if swapErr != nil {
 			return nil, swapErr
 		}
+
 		messageBusSubQuery, messageBusQuery, messageBusErr := GenerateDailyStatisticMessageBusSQL(typeArg, compositeFilters)
 		if messageBusErr != nil {
 			return nil, messageBusErr
@@ -370,21 +479,24 @@ func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeA
 			return nil
 		})
 
+		// if volume skip
 		// Get Message Bus
-		g.Go(func() error {
-			dailyMessageBusData, err = r.DB.GetDateResults(groupCtx, fmt.Sprintf("%s %s", generateDeDepQueryCTE(compositeFilters, nil, nil, true), *messageBusSubQuery))
-			if err != nil {
-				return fmt.Errorf("failed to get dateResults: %w", err)
-			}
-			return nil
-		})
-		g.Go(func() error {
-			messageBusSum, err = r.DB.GetFloat64(groupCtx, *messageBusQuery)
-			if err != nil {
-				return fmt.Errorf("failed to get total sum: %w", err)
-			}
-			return nil
-		})
+		if *typeArg != model.DailyStatisticTypeVolume {
+			g.Go(func() error {
+				dailyMessageBusData, err = r.DB.GetDateResults(groupCtx, fmt.Sprintf("%s %s", generateDeDepQueryCTE(compositeFilters, nil, nil, true), *messageBusSubQuery))
+				if err != nil {
+					return fmt.Errorf("failed to get dateResults: %w", err)
+				}
+				return nil
+			})
+			g.Go(func() error {
+				messageBusSum, err = r.DB.GetFloat64(groupCtx, *messageBusQuery)
+				if err != nil {
+					return fmt.Errorf("failed to get total sum: %w", err)
+				}
+				return nil
+			})
+		}
 		err = g.Wait()
 
 		totalDailyResults := make(map[string]float64)

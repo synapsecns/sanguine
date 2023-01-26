@@ -393,7 +393,7 @@ be.swap_success AS swap_success,
 be.swap_token_index AS swap_token_index,
 be.swap_min_amount AS swap_min_amount,
 be.swap_deadline AS swap_deadline,
-be.fee_usd AS fee_amount_usd,
+be.fee_usd AS fee_usd,
 be.timestamp AS timestamp,
 be.destination_chain_id AS destination_chain_id,
 be.insert_time AS insert_time
@@ -413,4 +413,19 @@ LEFT JOIN (
 ) ti ON be.chain_id = ti.chain_id
 AND se.swap_address = ti.contract_address
 AND ti.token_index = be.sold_id
+`
+
+const baseBridge = `
+SELECT * FROM bridge_events LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
+`
+
+const baseSwap = `
+SELECT * FROM swap_events LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
+`
+
+const baseMessageBus = `
+SELECT * FROM message_bus_events LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
+`
+const swapVolumeSelect = `
+multiIf(event_type = 0, amount_usd[sold_id],event_type = 1, arraySum(mapValues(amount_usd)),event_type = 9, arraySum(mapValues(amount_usd)),event_type = 10,amount_usd[sold_id],0)
 `

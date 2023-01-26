@@ -133,7 +133,7 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 		NewAdminFee:   event.GetNewAdminFee(),
 		NewSwapFee:    event.GetNewSwapFee(),
 		Amount:        event.GetAmount(),
-		AmountFee:     event.GetAmountFee(),
+		Fee:           event.GetAmountFee(),
 		ProtocolFee:   event.GetProtocolFee(),
 		OldA:          event.GetOldA(),
 		NewA:          event.GetNewA(),
@@ -144,7 +144,7 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 		Receiver:      receiver,
 
 		TimeStamp:    nil,
-		TokenPrices:  nil,
+		TokenPrice:   nil,
 		TokenSymbol:  nil,
 		TokenDecimal: nil,
 	}
@@ -305,7 +305,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 					tokenPrices[tokenIndex] = *tokenPrice
 				}
 			}
-			swapEvent.TokenPrices = tokenPrices
+			swapEvent.TokenPrice = tokenPrices
 			swapEvent.TokenDecimal = tokenDecimals
 			swapEvent.TokenSymbol = tokenSymbols
 		}

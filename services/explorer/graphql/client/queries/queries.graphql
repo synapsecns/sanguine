@@ -37,6 +37,49 @@ query GetBridgeTransactions($chainId: Int, $address: String, $txHash: String, $k
     swapSuccess
   }
 }
+query GetBridgeTransactions2($chainId: [Int], $address: String, $maxAmount: Int, $minAmount: Int, $startTime: Int, $endTime: Int, $txHash: String, $kappa: String, $includePending: Boolean, $page: Int, $tokenAddress: [String]) {
+  response: bridgeTransactions2(
+    chainId: $chainId
+    address: $address
+    maxAmount: $maxAmount
+    minAmount: $minAmount
+    startTime: $startTime
+    endTime: $endTime
+    txnHash: $txHash
+    kappa: $kappa
+    includePending: $includePending
+    page: $page
+    tokenAddress: $tokenAddress
+  ) {
+    fromInfo {
+      chainId
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+    }
+    toInfo {
+      chainId
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+    }
+    kappa
+    pending
+    swapSuccess
+  }
+}
 
 
 query GetBridgeAmountStatistic($type: StatisticType!, $duration: Duration, $chainId: Int, $address: String, $tokenAddress: String) {

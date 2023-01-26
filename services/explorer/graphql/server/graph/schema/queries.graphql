@@ -13,6 +13,22 @@ type Query {
   ): [BridgeTransaction]
 
   """
+  Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
+  """
+  bridgeTransactions2(
+    chainId:        [Int]
+    address:        String
+    maxAmount:      Int
+    minAmount:      Int
+    startTime:      Int
+    endTime:        Int
+    txnHash:        String
+    kappa:          String
+    includePending: Boolean = false
+    page:           Int = 1
+    tokenAddress:   [String]
+  ): [BridgeTransaction]
+  """
   Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
   Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
   """
