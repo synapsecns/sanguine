@@ -18,6 +18,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 )
 
 //go:embed static
@@ -90,6 +91,9 @@ func Start(ctx context.Context, cfg Config) error {
 	})
 
 	g.Go(func() error {
+		yo := ctx
+		_ = yo
+		time.Sleep(time.Millisecond * 50)
 		err := m.Serve()
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)
@@ -100,6 +104,7 @@ func Start(ctx context.Context, cfg Config) error {
 	g.Go(func() error {
 		<-ctx.Done()
 		grpcServer.Stop()
+		m.Close()
 
 		return nil
 	})
