@@ -49,8 +49,8 @@ var portFlag = &cli.UintFlag{
 }
 
 var grpcPortFlag = &cli.UintFlag{
-	Name:  "grpc-port",
-	Usage: "--port 5121",
+	Name:  "grpcport",
+	Usage: "--grpcport 5121",
 	Value: 0,
 }
 
@@ -104,7 +104,7 @@ var backfillCommand = &cli.Command{
 		}
 
 		// TODO delete once livefilling done
-		ctx, cancel := context.WithTimeout(c.Context, time.Minute*12)
+		ctx, cancel := context.WithTimeout(c.Context, time.Minute*5)
 		cancelVar := cancel
 		for {
 			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
@@ -146,7 +146,7 @@ var scribeCommand = &cli.Command{
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag},
+	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag, grpcPortFlag},
 	Action: func(c *cli.Context) error {
 		err := api.Start(c.Context, api.Config{
 			HTTPPort:   uint16(c.Uint(portFlag.Name)),
