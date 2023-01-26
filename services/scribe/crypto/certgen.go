@@ -52,7 +52,7 @@ type SelfSignedCertProvider struct {
 
 func GetSelfSignedCert() (*SelfSignedCertProvider, error) {
 	// priv, err := rsa.GenerateKey(rand.Reader, *rsaBits)
-	priv, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		return nil, err
 	}
