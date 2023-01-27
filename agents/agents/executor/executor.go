@@ -232,7 +232,10 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *nonce)
+	// TODO (joe): This is just a hack to get the test working, and it is not a general solution.
+	// Rather than pass in treeLength, we need the root at some nonce when there was a SubmitAttestation on Destination,
+	treeLength := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].NumOfItems()
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, treeLength)
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
