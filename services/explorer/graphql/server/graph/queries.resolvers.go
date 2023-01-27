@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -70,7 +71,7 @@ func (r *queryResolver) BridgeTransactions2(ctx context.Context, chainID []*int,
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
-		results, err = r.GetBridgeTxsFromDestination2(ctx, nil, address, maxAmount, minAmount, startTime, endTime, txnHash, kappa, includePending, page, tokenAddress)
+		results, err = r.GetBridgeTxsFromDestination2(ctx, nil, address, maxAmount, minAmount, startTime, endTime, txnHash, kappa, page, tokenAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -82,13 +83,13 @@ func (r *queryResolver) BridgeTransactions2(ctx context.Context, chainID []*int,
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			fromResults, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *page, tokenAddress, *includePending, false)
+			fromResults, err = r.GetBridgeTxsFromOrigin2(ctx, chainID, address, maxAmount, minAmount, startTime, endTime, txnHash, page, tokenAddress, *includePending, false)
 		}()
 		if !*includePending {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				toResults, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, *page, tokenAddress)
+				toResults, err = r.GetBridgeTxsFromDestination2(ctx, chainID, address, maxAmount, minAmount, startTime, endTime, txnHash, kappa, page, tokenAddress)
 			}()
 		}
 		wg.Wait()
@@ -101,6 +102,7 @@ func (r *queryResolver) BridgeTransactions2(ctx context.Context, chainID []*int,
 
 		results = r.mergeBridgeTransactions(fromResults, toResults)
 	}
+	sort.Sort(SortBridgeTxType(results))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
@@ -318,6 +320,9 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 			return nil, err
 		}
 	case model.PlatformAll:
+		if typeArg == model.StatisticTypeMedianVolumeUsd || typeArg == model.StatisticTypeMeanVolumeUsd || typeArg == model.StatisticTypeMedianFeeUsd || typeArg == model.StatisticTypeMeanFeeUsd {
+			return nil, fmt.Errorf("cannot calculate averages or medians across all platforms")
+		}
 		var bridgeFinalSQL *string
 		var swapFinalSQL *string
 		var messageBusFinalSQL *string
@@ -356,7 +361,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 			}
 			return nil
 		})
-		if typeArg != model.StatisticTypeMeanVolumeUsd && typeArg != model.StatisticTypeMedianVolumeUsd && typeArg != model.StatisticTypeTotalVolumeUsd {
+		if typeArg != model.StatisticTypeTotalVolumeUsd {
 			g.Go(func() error {
 				messageBusSum, err = r.DB.GetFloat64(groupCtx, *messageBusFinalSQL)
 				if err != nil {
