@@ -169,6 +169,7 @@ func (s Store) GetEarliestAttestationsNonceInNonceRange(ctx context.Context, att
 		return nil, fmt.Errorf("failed to get earliest attestation in nonce range: %w", dbTx.Error)
 	}
 	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
 		return nil, nil
 	}
 

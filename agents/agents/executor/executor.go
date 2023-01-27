@@ -232,9 +232,6 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	// earliest attestation by block number that has a nonce greater than or equal to current nonce
-	// and make sure that the nonce is equal to or less than the tree length
-
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	attestationMask := execTypes.DBAttestation{
