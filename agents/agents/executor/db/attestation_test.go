@@ -160,3 +160,54 @@ func (t *DBSuite) TestGetAttestationsInNonceRange() {
 		Equal(t.T(), 0, len(attestations))
 	})
 }
+
+func (t *DBSuite) TestGetEarliestAttestationsNonceInNonceRange() {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
+		chainID := gofakeit.Uint32()
+		destination := gofakeit.Uint32()
+		nonce := uint32(1)
+		attestKey := agentsTypes.AttestationKey{
+			Origin:      chainID,
+			Destination: destination,
+			Nonce:       nonce,
+		}
+		root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+		attestation := agentsTypes.NewAttestation(attestKey.GetRawKey(), root)
+
+		err := testDB.StoreAttestation(t.GetTestContext(), attestation, 2, 2)
+		Nil(t.T(), err)
+
+		nonce = uint32(5)
+		attestKey = agentsTypes.AttestationKey{
+			Origin:      chainID,
+			Destination: destination,
+			Nonce:       nonce,
+		}
+		root = common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+		attestation = agentsTypes.NewAttestation(attestKey.GetRawKey(), root)
+
+		err = testDB.StoreAttestation(t.GetTestContext(), attestation, 1, 1)
+		Nil(t.T(), err)
+
+		nonce = uint32(10)
+		attestKey = agentsTypes.AttestationKey{
+			Origin:      chainID,
+			Destination: destination,
+			Nonce:       nonce,
+		}
+		root = common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+		attestation = agentsTypes.NewAttestation(attestKey.GetRawKey(), root)
+
+		err = testDB.StoreAttestation(t.GetTestContext(), attestation, 3, 3)
+		Nil(t.T(), err)
+		// Get attestations in nonce range
+		mask := types.DBAttestation{
+			ChainID: &chainID,
+		}
+
+		nonceNum, err := testDB.GetEarliestAttestationsNonceInNonceRange(t.GetTestContext(), mask, 1, 10)
+		Nil(t.T(), err)
+
+		Equal(t.T(), uint32(5), *nonceNum)
+	})
+}
