@@ -311,6 +311,7 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	fromValue := bridgeEvent.FAmount.String()
 	var fromTimestamp int
 	var fromFormattedValue *float64
+	var fromTimeStampFormatted string
 	if bridgeEvent.FTokenDecimal != nil {
 		fromFormattedValue = getAdjustedValue(bridgeEvent.FAmount, *bridgeEvent.FTokenDecimal)
 	} else {
@@ -318,6 +319,8 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	}
 	if bridgeEvent.FTimeStamp != nil {
 		fromTimestamp = int(*bridgeEvent.FTimeStamp)
+		fromTimeStampFormatted = time.Unix(int64(*bridgeEvent.FTimeStamp), 0).String()
+
 	} else {
 		return nil, fmt.Errorf("timestamp is not valid")
 	}
@@ -333,6 +336,7 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		TokenSymbol:    &bridgeEvent.FTokenSymbol.String,
 		BlockNumber:    &fromBlockNumber,
 		Time:           &fromTimestamp,
+		FormattedTime:  &fromTimeStampFormatted,
 	}
 
 	// If not pending, return a destination partial, otherwise toInfos will be null.
@@ -345,7 +349,7 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		toValue := bridgeEvent.TAmount.String()
 		var toTimestamp int
 		var toFormattedValue *float64
-
+		var toTimeStampFormatted string
 		if bridgeEvent.TTokenDecimal != nil {
 			toFormattedValue = getAdjustedValue(bridgeEvent.TAmount, *bridgeEvent.TTokenDecimal)
 		} else {
@@ -353,6 +357,8 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		}
 		if bridgeEvent.TTimeStamp != nil {
 			toTimestamp = int(*bridgeEvent.TTimeStamp)
+			toTimeStampFormatted = time.Unix(int64(*bridgeEvent.TTimeStamp), 0).String()
+
 		} else {
 			return nil, fmt.Errorf("timestamp is not valid")
 		}
@@ -367,6 +373,7 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 			TokenSymbol:    &bridgeEvent.TTokenSymbol.String,
 			BlockNumber:    &toBlockNumber,
 			Time:           &toTimestamp,
+			FormattedTime:  &toTimeStampFormatted,
 		}
 	} else {
 		toInfos = nil
@@ -395,41 +402,33 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	return &bridgeTx, nil
 }
 
-// generatePartialInfoQuery returns the query for making the PartialInfo query.
-//
-// nolint:dupl
-func generateAllBridgeEventsQueryFromOrigin(chainID *int, address, tokenAddress, txHash *string, page int, in bool) string {
+func generateMessageBusQuery(chainID []*int, address *string, startTime *int, endTime *int, messageID *string, pending bool, txHash *string, page int) string {
 	firstFilter := true
-	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+
+	chainIDSpecifier := generateSingleSpecifierI32ArrSQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+
+	minTimeSpecfier := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "", true)
+	maxTimeSpecfier := generateEqualitySpecifierSQL(endTime, sql.TimeStampFieldName, &firstFilter, "", false)
+
 	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "")
-	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
+	kappaSpecifier := generateSingleSpecifierStringSQL(messageID, sql.KappaFieldName, &firstFilter, "")
 	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "")
-	directionSpecifier := generateDirectionSpecifierSQL(in, &firstFilter, "")
-	compositeFilters := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + txHashSpecifier + directionSpecifier
+	operation := " = ''"
+	if !pending {
+		operation = " != ''"
+	}
+	pendingSpecifier := fmt.Sprintf(" WHERE t.message_id %s", operation)
+	compositeFilters := chainIDSpecifier + minTimeSpecfier + maxTimeSpecfier + addressSpecifier + kappaSpecifier + txHashSpecifier
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
-	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, true), originToDestCol, "baseQuery", originToDestJoins)
 
+	cte := fmt.Sprintf("WITH baseQuery AS (SELECT * FROM message_bus_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash), (SELECT min(timestamp) FROM baseQuery) AS minTimestamp", compositeFilters)
+
+	finalQuery := fmt.Sprintf("%s SELECT * FROM (SELECT * FROM (SELECT * FROM %s WHERE %s = 1 ) f LEFT JOIN (SELECT * FROM (%s) WHERE %s = 0) t ON f.%s = t.%s %s)  LIMIT %d OFFSET %d", cte, "baseQuery", sql.EventTypeFieldName, baseMessageBus, sql.EventTypeFieldName, "message_id", "message_id", pendingSpecifier, pageValue, pageOffset)
 	return finalQuery
 }
 
-func generateAllBridgeEventsQueryFromDestination(chainID *int, address, tokenAddress, kappa, txHash *string, page int, in bool) string {
-	firstFilter := true
-	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
-	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "")
-	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
-	kappaSpecifier := generateKappaSpecifierSQL(kappa, sql.KappaFieldName, &firstFilter, "")
-	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "")
-	directionSpecifier := generateDirectionSpecifierSQL(in, &firstFilter, "")
-	compositeFilters := chainIDSpecifier + addressSpecifier + tokenAddressSpecifier + kappaSpecifier + txHashSpecifier + directionSpecifier
-	pageValue := sql.PageSize
-	pageOffset := (page - 1) * sql.PageSize
-	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, false), destToOriginCol, "baseQuery", destToOriginJoins)
-
-	return finalQuery
-}
-
-func generateAllBridgeEventsQueryFromDestination2(chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, tokenAddress []*string, kappa *string, txHash *string, page *int, in bool) string {
+func generateAllBridgeEventsQueryFromDestination(chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, tokenAddress []*string, kappa *string, txHash *string, page int, in bool) string {
 	firstFilter := true
 
 	chainIDSpecifier := generateSingleSpecifierI32ArrSQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
@@ -447,16 +446,16 @@ func generateAllBridgeEventsQueryFromDestination2(chainID []*int, address *strin
 	directionSpecifier := generateDirectionSpecifierSQL(in, &firstFilter, "")
 	compositeFilters := chainIDSpecifier + tokenAddressSpecifier + minTimeSpecfier + maxTimeSpecfier + minAmountSpecfier + maxAmountSpecfier + addressSpecifier + kappaSpecifier + txHashSpecifier + directionSpecifier
 	pageValue := sql.PageSize
-	pageOffset := (*page - 1) * sql.PageSize
+	pageOffset := (page - 1) * sql.PageSize
 	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, false), destToOriginCol, "baseQuery", destToOriginJoins)
 	//fmt.Println(compositeFilters)
 	return finalQuery
 }
 
-// generateAllBridgeEventsQueryFromOrigin2 gets all the filters for query from origin.
+// generateAllBridgeEventsQueryFromOrigin gets all the filters for query from origin.
 //
 // nolint:dupl
-func generateAllBridgeEventsQueryFromOrigin2(chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, tokenAddress []*string, txHash *string, page *int, in bool) string {
+func generateAllBridgeEventsQueryFromOrigin(chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, tokenAddress []*string, txHash *string, page int, in bool) string {
 	firstFilter := true
 	chainIDSpecifier := generateSingleSpecifierI32ArrSQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 	tokenAddressSpecifier := generateSingleSpecifierStringArrSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
@@ -472,17 +471,17 @@ func generateAllBridgeEventsQueryFromOrigin2(chainID []*int, address *string, ma
 	directionSpecifier := generateDirectionSpecifierSQL(in, &firstFilter, "")
 	compositeFilters := chainIDSpecifier + tokenAddressSpecifier + minTimeSpecfier + maxTimeSpecfier + minAmountSpecfier + maxAmountSpecfier + addressSpecifier + txHashSpecifier + directionSpecifier
 	pageValue := sql.PageSize
-	pageOffset := (*page - 1) * sql.PageSize
+	pageOffset := (page - 1) * sql.PageSize
 	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, true), originToDestCol, "baseQuery", originToDestJoins)
 	//fmt.Println(compositeFilters)
 	return finalQuery
 }
 
 // nolint:gocognit,cyclop
-func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID *int, address *string, txHash *string, kappa *string, page int, tokenAddress *string) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txHash *string, kappa *string, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error) {
 	var err error
 	var results []*model.BridgeTransaction
-	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, generateAllBridgeEventsQueryFromDestination(chainID, address, tokenAddress, kappa, txHash, page, false))
+	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, generateAllBridgeEventsQueryFromDestination(chainID, address, maxAmount, minAmount, startTime, endTime, tokenAddress, kappa, txHash, *page, false))
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
@@ -505,37 +504,11 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID
 }
 
 // nolint:gocognit,cyclop
-func (r *queryResolver) GetBridgeTxsFromDestination2(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txHash *string, kappa *string, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error) {
-	var err error
-	var results []*model.BridgeTransaction
-	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, generateAllBridgeEventsQueryFromDestination2(chainID, address, maxAmount, minAmount, startTime, endTime, tokenAddress, kappa, txHash, page, false))
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
-	}
-	if len(allBridgeEvents) == 0 {
-		return nil, nil
-	}
-
-	// Iterate through all bridge events and return all partials
-	for i := range allBridgeEvents {
-		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], false)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
-		}
-		if bridgeTx != nil {
-			results = append(results, bridgeTx)
-		}
-	}
-	return results, nil
-}
-
-// nolint:gocognit,cyclop
-func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int, address *string, txHash *string, page int, tokenAddress *string, pending bool, latest bool) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txHash *string, page *int, tokenAddress []*string, pending bool, latest bool) ([]*model.BridgeTransaction, error) {
 	var err error
 	var chainMap = make(map[uint32]bool)
 	var results []*model.BridgeTransaction
-	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, generateAllBridgeEventsQueryFromOrigin(chainID, address, tokenAddress, txHash, page, true))
+	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, generateAllBridgeEventsQueryFromOrigin(chainID, address, maxAmount, minAmount, startTime, endTime, tokenAddress, txHash, *page, true))
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
@@ -562,33 +535,74 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID *int
 	return results, nil
 }
 
-// nolint:gocognit,cyclop
-func (r *queryResolver) GetBridgeTxsFromOrigin2(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txHash *string, page *int, tokenAddress []*string, pending bool, latest bool) ([]*model.BridgeTransaction, error) {
-	var err error
-	var chainMap = make(map[uint32]bool)
-	var results []*model.BridgeTransaction
-	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, generateAllBridgeEventsQueryFromOrigin2(chainID, address, maxAmount, minAmount, startTime, endTime, tokenAddress, txHash, page, true))
+// GetPartialInfoFromMessageBusEventHybrid returns the partial info from message bus event.
+//
+// nolint:cyclop
+func GetPartialInfoFromMessageBusEventHybrid(messageBusEvent sql.HybridMessageBusEvent, pending bool) (*model.MessageBusTransaction, error) {
 
+	var messageBusTx model.MessageBusTransaction
+	fromChainID := int(messageBusEvent.FChainID)
+	fromDestinationChainID := int(messageBusEvent.FDestinationChainID.Uint64())
+	fromBlockNumber := int(messageBusEvent.FBlockNumber)
+	fromTimeStamp := int(*messageBusEvent.FTimeStamp)
+	fromTimeStampFormatted := time.Unix(int64(*messageBusEvent.FTimeStamp), 0).String()
+
+	toChainID := int(messageBusEvent.TChainID)
+	toBlockNumber := int(messageBusEvent.TBlockNumber)
+	toTimeStamp := int(*messageBusEvent.TTimeStamp)
+	toTimeStampFormatted := time.Unix(int64(*messageBusEvent.TTimeStamp), 0).String()
+
+	fromInfos := &model.PartialMessageBusInfo{
+		ChainID:            &fromChainID,
+		DestinationChainID: &fromDestinationChainID,
+		ContractAddress:    &messageBusEvent.FContractAddress,
+		TxnHash:            &messageBusEvent.FTxHash,
+		Message:            &messageBusEvent.FMessage.String,
+		BlockNumber:        &fromBlockNumber,
+		Time:               &fromTimeStamp,
+		FormattedTime:      &fromTimeStampFormatted,
+	}
+	toInfos := &model.PartialMessageBusInfo{
+		ChainID:            &toChainID,
+		DestinationChainID: nil,
+		ContractAddress:    &messageBusEvent.TContractAddress,
+		TxnHash:            &messageBusEvent.TTxHash,
+		Message:            &messageBusEvent.TMessage.String,
+		BlockNumber:        &toBlockNumber,
+		Time:               &toTimeStamp,
+		FormattedTime:      &toTimeStampFormatted,
+	}
+
+	messageBusTx = model.MessageBusTransaction{
+		FromInfo:  fromInfos,
+		ToInfo:    toInfos,
+		MessageID: &messageBusEvent.FMessageID.String,
+		Pending:   &pending,
+	}
+	return &messageBusTx, nil
+}
+
+// nolint:gocognit,cyclop
+func (r *queryResolver) GetMessageBusTxs(ctx context.Context, chainID []*int, address *string, startTime *int, endTime *int, txHash *string, messageID *string, pending bool, page *int) ([]*model.MessageBusTransaction, error) {
+	var err error
+	var results []*model.MessageBusTransaction
+	allMessageBusEvents, err := r.DB.GetAllMessageBusEvents(ctx, generateMessageBusQuery(chainID, address, startTime, endTime, messageID, pending, txHash, *page))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
 	}
-	if len(allBridgeEvents) == 0 {
+
+	if len(allMessageBusEvents) == 0 {
 		return nil, nil
 	}
 
 	// Iterate through all bridge events and return all partials
-	for i := range allBridgeEvents {
-		if latest && chainMap[allBridgeEvents[i].FChainID] {
-			continue
-		}
-
-		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], pending)
+	for i := range allMessageBusEvents {
+		messageBusTx, err := GetPartialInfoFromMessageBusEventHybrid(allMessageBusEvents[i], pending)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
 		}
-		if bridgeTx != nil {
-			results = append(results, bridgeTx)
-			chainMap[allBridgeEvents[i].FChainID] = true
+		if messageBusTx != nil {
+			results = append(results, messageBusTx)
 		}
 	}
 	return results, nil
@@ -779,3 +793,9 @@ type SortBridgeTxType []*model.BridgeTransaction
 func (s SortBridgeTxType) Len() int           { return len(s) }
 func (s SortBridgeTxType) Less(i, j int) bool { return *s[i].FromInfo.Time > *s[j].FromInfo.Time }
 func (s SortBridgeTxType) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
+type SortMessageBusTxType []*model.MessageBusTransaction
+
+func (s SortMessageBusTxType) Len() int           { return len(s) }
+func (s SortMessageBusTxType) Less(i, j int) bool { return *s[i].FromInfo.Time > *s[j].FromInfo.Time }
+func (s SortMessageBusTxType) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }

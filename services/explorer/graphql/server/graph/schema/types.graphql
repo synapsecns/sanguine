@@ -14,7 +14,7 @@ type BridgeTransaction {
 PartialInfo is a transaction that occurred on one chain.
 """
 type PartialInfo {
-  chainId: Int
+  chainID: Int
   address: String
   txnHash: String
   value:          String
@@ -24,6 +24,7 @@ type PartialInfo {
   tokenSymbol:    String
   blockNumber:    Int
   time:           Int
+  formattedTime: String
 }
 """
 DateResult is a given statistic for a given date.
@@ -58,14 +59,14 @@ type ValueResult {
 TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
 """
 type TransactionCountResult {
-  chainId:  Int
+  chainID:  Int
   count:    Int
 }
 """
 TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
 """
 type TokenCountResult {
-  chainId:      Int
+  chainID:      Int
   tokenAddress: String
   count:        Int
 }
@@ -114,4 +115,23 @@ enum DailyStatisticType {
   TRANSACTIONS
   ADDRESSES
   FEE
+}
+
+
+type MessageBusTransaction {
+  fromInfo:   PartialMessageBusInfo
+  toInfo:     PartialMessageBusInfo
+  pending:    Boolean
+  messageID:  String
+}
+
+type PartialMessageBusInfo {
+  chainID: Int
+  destinationChainID: Int
+  contractAddress: String
+  txnHash: String
+  message:        String
+  blockNumber:    Int
+  time:           Int
+  formattedTime: String
 }

@@ -1,45 +1,7 @@
-query GetBridgeTransactions($chainId: Int, $address: String, $txHash: String, $kappa: String, $includePending: Boolean, $page: Int, $tokenAddress: String) {
+
+query GetBridgeTransactions($chainID: [Int], $address: String, $maxAmount: Int, $minAmount: Int, $startTime: Int, $endTime: Int, $txHash: String, $kappa: String, $pending: Boolean, $page: Int, $tokenAddress: [String]) {
   response: bridgeTransactions(
-    chainId: $chainId
-    address: $address
-    txnHash: $txHash
-    kappa: $kappa
-    includePending: $includePending
-    page: $page
-    tokenAddress: $tokenAddress
-  ) {
-    fromInfo {
-      chainId
-      address
-      txnHash
-      value
-      formattedValue
-      USDValue
-      tokenAddress
-      tokenSymbol
-      blockNumber
-      time
-    }
-    toInfo {
-      chainId
-      address
-      txnHash
-      value
-      formattedValue
-      USDValue
-      tokenAddress
-      tokenSymbol
-      blockNumber
-      time
-    }
-    kappa
-    pending
-    swapSuccess
-  }
-}
-query GetBridgeTransactions2($chainId: [Int], $address: String, $maxAmount: Int, $minAmount: Int, $startTime: Int, $endTime: Int, $txHash: String, $kappa: String, $includePending: Boolean, $page: Int, $tokenAddress: [String]) {
-  response: bridgeTransactions2(
-    chainId: $chainId
+    chainID: $chainID
     address: $address
     maxAmount: $maxAmount
     minAmount: $minAmount
@@ -47,12 +9,12 @@ query GetBridgeTransactions2($chainId: [Int], $address: String, $maxAmount: Int,
     endTime: $endTime
     txnHash: $txHash
     kappa: $kappa
-    includePending: $includePending
+    pending: $pending
     page: $page
     tokenAddress: $tokenAddress
   ) {
     fromInfo {
-      chainId
+      chainID
       address
       txnHash
       value
@@ -62,9 +24,10 @@ query GetBridgeTransactions2($chainId: [Int], $address: String, $maxAmount: Int,
       tokenSymbol
       blockNumber
       time
+      formattedTime
     }
     toInfo {
-      chainId
+      chainID
       address
       txnHash
       value
@@ -74,6 +37,7 @@ query GetBridgeTransactions2($chainId: [Int], $address: String, $maxAmount: Int,
       tokenSymbol
       blockNumber
       time
+      formattedTime
     }
     kappa
     pending
@@ -82,11 +46,11 @@ query GetBridgeTransactions2($chainId: [Int], $address: String, $maxAmount: Int,
 }
 
 
-query GetBridgeAmountStatistic($type: StatisticType!, $duration: Duration, $chainId: Int, $address: String, $tokenAddress: String) {
+query GetBridgeAmountStatistic($type: StatisticType!, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
   response: bridgeAmountStatistic(
     type: $type
     duration: $duration
-    chainId: $chainId
+    chainID: $chainID
     address: $address
     tokenAddress: $tokenAddress
   ) {
@@ -94,26 +58,26 @@ query GetBridgeAmountStatistic($type: StatisticType!, $duration: Duration, $chai
   }
 }
 
-query GetCountByChainId($chainId: Int, $address: String, $direction: Direction, $hours: Int) {
+query GetCountByChainId($chainID: Int, $address: String, $direction: Direction, $hours: Int) {
   response: countByChainId(
-    chainId: $chainId
+    chainID: $chainID
     address: $address
     direction: $direction
     hours: $hours
   ) {
     count
-    chainId
+    chainID
     }
 }
 
-query GetCountByTokenAddress($chainId: Int, $address: String, $direction: Direction, $hours: Int) {
+query GetCountByTokenAddress($chainID: Int, $address: String, $direction: Direction, $hours: Int) {
   response: countByTokenAddress(
-    chainId: $chainId
+    chainID: $chainID
     address: $address
     direction: $direction
     hours: $hours
   ) {
-    chainId
+    chainID
     tokenAddress
     count
     }
@@ -129,9 +93,9 @@ query GetAddressRanking($hours: Int) {
 }
 
 
-query GetHistoricalStatistics($chainId: Int, $type: HistoricalResultType, $days: Int) {
+query GetHistoricalStatistics($chainID: Int, $type: HistoricalResultType, $days: Int) {
   response: historicalStatistics(
-    chainId: $chainId
+    chainID: $chainID
     type: $type
     days: $days
   ) {
@@ -144,12 +108,12 @@ query GetHistoricalStatistics($chainId: Int, $type: HistoricalResultType, $days:
   }
 }
 
-query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: Duration, $chainId: Int, $address: String, $tokenAddress: String) {
+query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
   response: amountStatistic(
     type: $type
     duration: $duration
     platform: $platform
-    chainId: $chainId
+    chainID: $chainID
     address: $address
     tokenAddress: $tokenAddress
   ) {
@@ -157,9 +121,9 @@ query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: 
   }
 }
 
-query GetDailyStatistics($chainId: Int, $type: DailyStatisticType, $platform: Platform, $days: Int) {
+query GetDailyStatistics($chainID: Int, $type: DailyStatisticType, $platform: Platform, $days: Int) {
   response: dailyStatistics(
-    chainId: $chainId
+    chainID: $chainID
     type: $type
     days: $days
     platform: $platform
@@ -170,5 +134,41 @@ query GetDailyStatistics($chainId: Int, $type: DailyStatisticType, $platform: Pl
       total
     }
     type
+  }
+}
+
+query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $startTime: Int, $endTime: Int, $txHash: String, $messageID: String, $pending: Boolean, $page: Int) {
+  response: messageBusTransactions(
+    chainID: $chainID
+    contractAddress: $contractAddress
+    startTime: $startTime
+    endTime: $endTime
+    txnHash: $txHash
+    messageID: $messageID
+    pending: $pending
+    page: $page
+  ) {
+    fromInfo {
+      chainID
+      destinationChainID
+      contractAddress
+      txnHash
+      message
+      blockNumber
+      time
+      formattedTime
+    }
+    toInfo {
+      chainID
+      destinationChainID
+      contractAddress
+      txnHash
+      message
+      blockNumber
+      time
+      formattedTime
+    }
+    messageID
+    pending
   }
 }

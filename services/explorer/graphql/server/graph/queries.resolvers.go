@@ -16,8 +16,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// BridgeTransactions is the resolver for the bridgeTransactions field.
-func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) ([]*model.BridgeTransaction, error) {
+// BridgeTransactions is the resolver for the bridgeTransactions2 field.
+func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error) {
 	var err error
 	var results []*model.BridgeTransaction
 
@@ -25,7 +25,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
-		results, err = r.GetBridgeTxsFromDestination(ctx, nil, address, txnHash, kappa, *page, tokenAddress)
+		results, err = r.GetBridgeTxsFromDestination(ctx, nil, address, maxAmount, minAmount, startTime, endTime, txnHash, kappa, page, tokenAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -37,13 +37,13 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			fromResults, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, txnHash, *page, tokenAddress, *includePending, false)
+			fromResults, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, maxAmount, minAmount, startTime, endTime, txnHash, page, tokenAddress, *pending, false)
 		}()
-		if !*includePending {
+		if !*pending {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				toResults, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, txnHash, kappa, *page, tokenAddress)
+				toResults, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, maxAmount, minAmount, startTime, endTime, txnHash, kappa, page, tokenAddress)
 			}()
 		}
 		wg.Wait()
@@ -59,53 +59,19 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID *int, ad
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
+	sort.Sort(SortBridgeTxType(results))
 	return results, nil
 }
 
-// BridgeTransactions2 is the resolver for the bridgeTransactions2 field.
-func (r *queryResolver) BridgeTransactions2(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error) {
+// MessageBusTransactions is the resolver for the messageBusTransactions field.
+func (r *queryResolver) MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, page *int) ([]*model.MessageBusTransaction, error) {
 	var err error
-	var results []*model.BridgeTransaction
-
-	switch {
-	case kappa != nil:
-		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
-		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
-		results, err = r.GetBridgeTxsFromDestination2(ctx, nil, address, maxAmount, minAmount, startTime, endTime, txnHash, kappa, page, tokenAddress)
-		if err != nil {
-			return nil, err
-		}
-	default:
-		var fromResults []*model.BridgeTransaction
-		var toResults []*model.BridgeTransaction
-		var wg sync.WaitGroup
-		var err error
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			fromResults, err = r.GetBridgeTxsFromOrigin2(ctx, chainID, address, maxAmount, minAmount, startTime, endTime, txnHash, page, tokenAddress, *includePending, false)
-		}()
-		if !*includePending {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				toResults, err = r.GetBridgeTxsFromDestination2(ctx, chainID, address, maxAmount, minAmount, startTime, endTime, txnHash, kappa, page, tokenAddress)
-			}()
-		}
-		wg.Wait()
-		if err != nil {
-			return nil, err
-		}
-		// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for
-		// both the origin -> destination transactions that match the search parameters, and the destination -> origin
-		// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
-
-		results = r.mergeBridgeTransactions(fromResults, toResults)
-	}
-	sort.Sort(SortBridgeTxType(results))
+	var results []*model.MessageBusTransaction
+	results, err = r.GetMessageBusTxs(ctx, chainID, contractAddress, startTime, endTime, txnHash, messageID, *pending, page)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
+		fmt.Errorf("could not get message bus transactions %v", err)
 	}
+	sort.Sort(SortMessageBusTxType(results))
 	return results, nil
 }
 

@@ -72,10 +72,18 @@ type ComplexityRoot struct {
 		Type        func(childComplexity int) int
 	}
 
+	MessageBusTransaction struct {
+		FromInfo  func(childComplexity int) int
+		MessageID func(childComplexity int) int
+		Pending   func(childComplexity int) int
+		ToInfo    func(childComplexity int) int
+	}
+
 	PartialInfo struct {
 		Address        func(childComplexity int) int
 		BlockNumber    func(childComplexity int) int
 		ChainID        func(childComplexity int) int
+		FormattedTime  func(childComplexity int) int
 		FormattedValue func(childComplexity int) int
 		Time           func(childComplexity int) int
 		TokenAddress   func(childComplexity int) int
@@ -85,16 +93,27 @@ type ComplexityRoot struct {
 		Value          func(childComplexity int) int
 	}
 
+	PartialMessageBusInfo struct {
+		BlockNumber        func(childComplexity int) int
+		ChainID            func(childComplexity int) int
+		ContractAddress    func(childComplexity int) int
+		DestinationChainID func(childComplexity int) int
+		FormattedTime      func(childComplexity int) int
+		Message            func(childComplexity int) int
+		Time               func(childComplexity int) int
+		TxnHash            func(childComplexity int) int
+	}
+
 	Query struct {
-		AddressRanking        func(childComplexity int, hours *int) int
-		AmountStatistic       func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) int
-		BridgeAmountStatistic func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) int
-		BridgeTransactions    func(childComplexity int, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) int
-		BridgeTransactions2   func(childComplexity int, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress []*string) int
-		CountByChainID        func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
-		CountByTokenAddress   func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
-		DailyStatistics       func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) int
-		HistoricalStatistics  func(childComplexity int, chainID *int, typeArg *model.HistoricalResultType, days *int) int
+		AddressRanking         func(childComplexity int, hours *int) int
+		AmountStatistic        func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) int
+		BridgeAmountStatistic  func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) int
+		BridgeTransactions     func(childComplexity int, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) int
+		CountByChainID         func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
+		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
+		DailyStatistics        func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) int
+		HistoricalStatistics   func(childComplexity int, chainID *int, typeArg *model.HistoricalResultType, days *int) int
+		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, page *int) int
 	}
 
 	TokenCountResult struct {
@@ -114,8 +133,8 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	BridgeTransactions(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) ([]*model.BridgeTransaction, error)
-	BridgeTransactions2(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error)
+	BridgeTransactions(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error)
+	MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, page *int) ([]*model.MessageBusTransaction, error)
 	BridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error)
 	CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error)
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
@@ -245,6 +264,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.HistoricalResult.Type(childComplexity), true
 
+	case "MessageBusTransaction.fromInfo":
+		if e.complexity.MessageBusTransaction.FromInfo == nil {
+			break
+		}
+
+		return e.complexity.MessageBusTransaction.FromInfo(childComplexity), true
+
+	case "MessageBusTransaction.messageID":
+		if e.complexity.MessageBusTransaction.MessageID == nil {
+			break
+		}
+
+		return e.complexity.MessageBusTransaction.MessageID(childComplexity), true
+
+	case "MessageBusTransaction.pending":
+		if e.complexity.MessageBusTransaction.Pending == nil {
+			break
+		}
+
+		return e.complexity.MessageBusTransaction.Pending(childComplexity), true
+
+	case "MessageBusTransaction.toInfo":
+		if e.complexity.MessageBusTransaction.ToInfo == nil {
+			break
+		}
+
+		return e.complexity.MessageBusTransaction.ToInfo(childComplexity), true
+
 	case "PartialInfo.address":
 		if e.complexity.PartialInfo.Address == nil {
 			break
@@ -259,12 +306,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PartialInfo.BlockNumber(childComplexity), true
 
-	case "PartialInfo.chainId":
+	case "PartialInfo.chainID":
 		if e.complexity.PartialInfo.ChainID == nil {
 			break
 		}
 
 		return e.complexity.PartialInfo.ChainID(childComplexity), true
+
+	case "PartialInfo.formattedTime":
+		if e.complexity.PartialInfo.FormattedTime == nil {
+			break
+		}
+
+		return e.complexity.PartialInfo.FormattedTime(childComplexity), true
 
 	case "PartialInfo.formattedValue":
 		if e.complexity.PartialInfo.FormattedValue == nil {
@@ -315,6 +369,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PartialInfo.Value(childComplexity), true
 
+	case "PartialMessageBusInfo.blockNumber":
+		if e.complexity.PartialMessageBusInfo.BlockNumber == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.BlockNumber(childComplexity), true
+
+	case "PartialMessageBusInfo.chainID":
+		if e.complexity.PartialMessageBusInfo.ChainID == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.ChainID(childComplexity), true
+
+	case "PartialMessageBusInfo.contractAddress":
+		if e.complexity.PartialMessageBusInfo.ContractAddress == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.ContractAddress(childComplexity), true
+
+	case "PartialMessageBusInfo.destinationChainID":
+		if e.complexity.PartialMessageBusInfo.DestinationChainID == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.DestinationChainID(childComplexity), true
+
+	case "PartialMessageBusInfo.formattedTime":
+		if e.complexity.PartialMessageBusInfo.FormattedTime == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.FormattedTime(childComplexity), true
+
+	case "PartialMessageBusInfo.message":
+		if e.complexity.PartialMessageBusInfo.Message == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.Message(childComplexity), true
+
+	case "PartialMessageBusInfo.time":
+		if e.complexity.PartialMessageBusInfo.Time == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.Time(childComplexity), true
+
+	case "PartialMessageBusInfo.txnHash":
+		if e.complexity.PartialMessageBusInfo.TxnHash == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.TxnHash(childComplexity), true
+
 	case "Query.addressRanking":
 		if e.complexity.Query.AddressRanking == nil {
 			break
@@ -337,7 +447,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.AmountStatistic(childComplexity, args["type"].(model.StatisticType), args["duration"].(*model.Duration), args["platform"].(*model.Platform), args["chainId"].(*int), args["address"].(*string), args["tokenAddress"].(*string)), true
+		return e.complexity.Query.AmountStatistic(childComplexity, args["type"].(model.StatisticType), args["duration"].(*model.Duration), args["platform"].(*model.Platform), args["chainID"].(*int), args["address"].(*string), args["tokenAddress"].(*string)), true
 
 	case "Query.bridgeAmountStatistic":
 		if e.complexity.Query.BridgeAmountStatistic == nil {
@@ -349,7 +459,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.BridgeAmountStatistic(childComplexity, args["type"].(model.StatisticType), args["duration"].(*model.Duration), args["chainId"].(*int), args["address"].(*string), args["tokenAddress"].(*string)), true
+		return e.complexity.Query.BridgeAmountStatistic(childComplexity, args["type"].(model.StatisticType), args["duration"].(*model.Duration), args["chainID"].(*int), args["address"].(*string), args["tokenAddress"].(*string)), true
 
 	case "Query.bridgeTransactions":
 		if e.complexity.Query.BridgeTransactions == nil {
@@ -361,19 +471,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.BridgeTransactions(childComplexity, args["chainId"].(*int), args["address"].(*string), args["txnHash"].(*string), args["kappa"].(*string), args["includePending"].(*bool), args["page"].(*int), args["tokenAddress"].(*string)), true
-
-	case "Query.bridgeTransactions2":
-		if e.complexity.Query.BridgeTransactions2 == nil {
-			break
-		}
-
-		args, err := ec.field_Query_bridgeTransactions2_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.BridgeTransactions2(childComplexity, args["chainId"].([]*int), args["address"].(*string), args["maxAmount"].(*int), args["minAmount"].(*int), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["kappa"].(*string), args["includePending"].(*bool), args["page"].(*int), args["tokenAddress"].([]*string)), true
+		return e.complexity.Query.BridgeTransactions(childComplexity, args["chainID"].([]*int), args["address"].(*string), args["maxAmount"].(*int), args["minAmount"].(*int), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["kappa"].(*string), args["pending"].(*bool), args["page"].(*int), args["tokenAddress"].([]*string)), true
 
 	case "Query.countByChainId":
 		if e.complexity.Query.CountByChainID == nil {
@@ -385,7 +483,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.CountByChainID(childComplexity, args["chainId"].(*int), args["address"].(*string), args["direction"].(*model.Direction), args["hours"].(*int)), true
+		return e.complexity.Query.CountByChainID(childComplexity, args["chainID"].(*int), args["address"].(*string), args["direction"].(*model.Direction), args["hours"].(*int)), true
 
 	case "Query.countByTokenAddress":
 		if e.complexity.Query.CountByTokenAddress == nil {
@@ -397,7 +495,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.CountByTokenAddress(childComplexity, args["chainId"].(*int), args["address"].(*string), args["direction"].(*model.Direction), args["hours"].(*int)), true
+		return e.complexity.Query.CountByTokenAddress(childComplexity, args["chainID"].(*int), args["address"].(*string), args["direction"].(*model.Direction), args["hours"].(*int)), true
 
 	case "Query.dailyStatistics":
 		if e.complexity.Query.DailyStatistics == nil {
@@ -409,7 +507,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.DailyStatistics(childComplexity, args["chainId"].(*int), args["type"].(*model.DailyStatisticType), args["platform"].(*model.Platform), args["days"].(*int)), true
+		return e.complexity.Query.DailyStatistics(childComplexity, args["chainID"].(*int), args["type"].(*model.DailyStatisticType), args["platform"].(*model.Platform), args["days"].(*int)), true
 
 	case "Query.historicalStatistics":
 		if e.complexity.Query.HistoricalStatistics == nil {
@@ -421,9 +519,21 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.HistoricalStatistics(childComplexity, args["chainId"].(*int), args["type"].(*model.HistoricalResultType), args["days"].(*int)), true
+		return e.complexity.Query.HistoricalStatistics(childComplexity, args["chainID"].(*int), args["type"].(*model.HistoricalResultType), args["days"].(*int)), true
 
-	case "TokenCountResult.chainId":
+	case "Query.messageBusTransactions":
+		if e.complexity.Query.MessageBusTransactions == nil {
+			break
+		}
+
+		args, err := ec.field_Query_messageBusTransactions_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.MessageBusTransactions(childComplexity, args["chainID"].([]*int), args["contractAddress"].(*string), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["messageID"].(*string), args["pending"].(*bool), args["page"].(*int)), true
+
+	case "TokenCountResult.chainID":
 		if e.complexity.TokenCountResult.ChainID == nil {
 			break
 		}
@@ -444,7 +554,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TokenCountResult.TokenAddress(childComplexity), true
 
-	case "TransactionCountResult.chainId":
+	case "TransactionCountResult.chainID":
 		if e.complexity.TransactionCountResult.ChainID == nil {
 			break
 		}
@@ -528,24 +638,12 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   | FIELD_DEFINITION
 `, BuiltIn: false},
 	{Name: "../schema/queries.graphql", Input: `type Query {
-  """
-  Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
-  """
-  bridgeTransactions(
-    chainId:        Int
-    address:        String
-    txnHash:        String
-    kappa:          String
-    includePending: Boolean = false
-    page:           Int = 1
-    tokenAddress:   String
-  ): [BridgeTransaction]
 
   """
   Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
   """
-  bridgeTransactions2(
-    chainId:        [Int]
+  bridgeTransactions(
+    chainID:        [Int]
     address:        String
     maxAmount:      Int
     minAmount:      Int
@@ -553,10 +651,24 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     endTime:        Int
     txnHash:        String
     kappa:          String
-    includePending: Boolean = false
+    pending:        Boolean = false
     page:           Int = 1
     tokenAddress:   [String]
   ): [BridgeTransaction]
+
+  """
+  Message bus transactions
+  """
+  messageBusTransactions(
+    chainID:        [Int]
+    contractAddress:        String
+    startTime:      Int
+    endTime:        Int
+    txnHash:        String
+    messageID:      String
+    pending:        Boolean = false
+    page:           Int = 1
+  ): [MessageBusTransaction]
   """
   Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
   Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
@@ -564,7 +676,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   bridgeAmountStatistic(
     type:         StatisticType!
     duration:     Duration = ALL_TIME
-    chainId:      Int
+    chainID:      Int
     address:      String
     tokenAddress: String
   ): ValueResult
@@ -574,7 +686,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   Specifying no duration defaults to the last 24 hours.
   """
   countByChainId(
-    chainId:    Int
+    chainID:    Int
     address:    String
     direction:  Direction = IN
     hours:      Int = 720
@@ -584,7 +696,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   Specifying no parameters defaults to origin and 24 hours.
   """
   countByTokenAddress(
-    chainId:    Int
+    chainID:    Int
     address:    String
     direction:  Direction = IN
     hours:      Int = 24
@@ -599,7 +711,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   Historical transactional data
   """
   historicalStatistics(
-    chainId:  Int
+    chainID:  Int
     type:     HistoricalResultType = BRIDGEVOLUME
     days:     Int = 30
   ): HistoricalResult
@@ -611,7 +723,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     type:         StatisticType!
     duration:     Duration = ALL_TIME
     platform:     Platform = ALL
-    chainId:      Int
+    chainID:      Int
     address:      String
     tokenAddress: String
   ): ValueResult
@@ -619,11 +731,13 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   Daily statistic data
   """
   dailyStatistics(
-    chainId:  Int
+    chainID:  Int
     type:     DailyStatisticType = VOLUME
     platform: Platform = BRIDGE
     days:     Int = 30
   ): DailyResult
+
+
 }
 `, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `"""
@@ -642,7 +756,7 @@ type BridgeTransaction {
 PartialInfo is a transaction that occurred on one chain.
 """
 type PartialInfo {
-  chainId: Int
+  chainID: Int
   address: String
   txnHash: String
   value:          String
@@ -652,6 +766,7 @@ type PartialInfo {
   tokenSymbol:    String
   blockNumber:    Int
   time:           Int
+  formattedTime: String
 }
 """
 DateResult is a given statistic for a given date.
@@ -686,14 +801,14 @@ type ValueResult {
 TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
 """
 type TransactionCountResult {
-  chainId:  Int
+  chainID:  Int
   count:    Int
 }
 """
 TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
 """
 type TokenCountResult {
-  chainId:      Int
+  chainID:      Int
   tokenAddress: String
   count:        Int
 }
@@ -742,6 +857,25 @@ enum DailyStatisticType {
   TRANSACTIONS
   ADDRESSES
   FEE
+}
+
+
+type MessageBusTransaction {
+  fromInfo:   PartialMessageBusInfo
+  toInfo:     PartialMessageBusInfo
+  pending:    Boolean
+  messageID:  String
+}
+
+type PartialMessageBusInfo {
+  chainID: Int
+  destinationChainID: Int
+  contractAddress: String
+  txnHash: String
+  message:        String
+  blockNumber:    Int
+  time:           Int
+  formattedTime: String
 }
 `, BuiltIn: false},
 }
@@ -812,14 +946,14 @@ func (ec *executionContext) field_Query_amountStatistic_args(ctx context.Context
 	}
 	args["platform"] = arg2
 	var arg3 *int
-	if tmp, ok := rawArgs["chainId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainId"))
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
 		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["chainId"] = arg3
+	args["chainID"] = arg3
 	var arg4 *string
 	if tmp, ok := rawArgs["address"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
@@ -863,14 +997,14 @@ func (ec *executionContext) field_Query_bridgeAmountStatistic_args(ctx context.C
 	}
 	args["duration"] = arg1
 	var arg2 *int
-	if tmp, ok := rawArgs["chainId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainId"))
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
 		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["chainId"] = arg2
+	args["chainID"] = arg2
 	var arg3 *string
 	if tmp, ok := rawArgs["address"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
@@ -892,18 +1026,18 @@ func (ec *executionContext) field_Query_bridgeAmountStatistic_args(ctx context.C
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_bridgeTransactions2_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_bridgeTransactions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 []*int
-	if tmp, ok := rawArgs["chainId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainId"))
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
 		arg0, err = ec.unmarshalOInt2ᚕᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["chainId"] = arg0
+	args["chainID"] = arg0
 	var arg1 *string
 	if tmp, ok := rawArgs["address"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
@@ -968,14 +1102,14 @@ func (ec *executionContext) field_Query_bridgeTransactions2_args(ctx context.Con
 	}
 	args["kappa"] = arg7
 	var arg8 *bool
-	if tmp, ok := rawArgs["includePending"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("includePending"))
+	if tmp, ok := rawArgs["pending"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pending"))
 		arg8, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["includePending"] = arg8
+	args["pending"] = arg8
 	var arg9 *int
 	if tmp, ok := rawArgs["page"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
@@ -997,87 +1131,18 @@ func (ec *executionContext) field_Query_bridgeTransactions2_args(ctx context.Con
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_bridgeTransactions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *int
-	if tmp, ok := rawArgs["chainId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainId"))
-		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["chainId"] = arg0
-	var arg1 *string
-	if tmp, ok := rawArgs["address"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["address"] = arg1
-	var arg2 *string
-	if tmp, ok := rawArgs["txnHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txnHash"))
-		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["txnHash"] = arg2
-	var arg3 *string
-	if tmp, ok := rawArgs["kappa"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kappa"))
-		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["kappa"] = arg3
-	var arg4 *bool
-	if tmp, ok := rawArgs["includePending"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("includePending"))
-		arg4, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["includePending"] = arg4
-	var arg5 *int
-	if tmp, ok := rawArgs["page"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
-		arg5, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["page"] = arg5
-	var arg6 *string
-	if tmp, ok := rawArgs["tokenAddress"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tokenAddress"))
-		arg6, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["tokenAddress"] = arg6
-	return args, nil
-}
-
 func (ec *executionContext) field_Query_countByChainId_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *int
-	if tmp, ok := rawArgs["chainId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainId"))
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
 		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["chainId"] = arg0
+	args["chainID"] = arg0
 	var arg1 *string
 	if tmp, ok := rawArgs["address"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
@@ -1112,14 +1177,14 @@ func (ec *executionContext) field_Query_countByTokenAddress_args(ctx context.Con
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *int
-	if tmp, ok := rawArgs["chainId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainId"))
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
 		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["chainId"] = arg0
+	args["chainID"] = arg0
 	var arg1 *string
 	if tmp, ok := rawArgs["address"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
@@ -1154,14 +1219,14 @@ func (ec *executionContext) field_Query_dailyStatistics_args(ctx context.Context
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *int
-	if tmp, ok := rawArgs["chainId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainId"))
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
 		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["chainId"] = arg0
+	args["chainID"] = arg0
 	var arg1 *model.DailyStatisticType
 	if tmp, ok := rawArgs["type"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
@@ -1196,14 +1261,14 @@ func (ec *executionContext) field_Query_historicalStatistics_args(ctx context.Co
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *int
-	if tmp, ok := rawArgs["chainId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainId"))
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
 		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["chainId"] = arg0
+	args["chainID"] = arg0
 	var arg1 *model.HistoricalResultType
 	if tmp, ok := rawArgs["type"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
@@ -1222,6 +1287,84 @@ func (ec *executionContext) field_Query_historicalStatistics_args(ctx context.Co
 		}
 	}
 	args["days"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_messageBusTransactions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*int
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
+		arg0, err = ec.unmarshalOInt2ᚕᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chainID"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["contractAddress"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contractAddress"))
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["contractAddress"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["startTime"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startTime"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["startTime"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["endTime"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("endTime"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["endTime"] = arg3
+	var arg4 *string
+	if tmp, ok := rawArgs["txnHash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txnHash"))
+		arg4, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["txnHash"] = arg4
+	var arg5 *string
+	if tmp, ok := rawArgs["messageID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("messageID"))
+		arg5, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["messageID"] = arg5
+	var arg6 *bool
+	if tmp, ok := rawArgs["pending"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pending"))
+		arg6, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pending"] = arg6
+	var arg7 *int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg7, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg7
 	return args, nil
 }
 
@@ -1381,8 +1524,8 @@ func (ec *executionContext) fieldContext_BridgeTransaction_fromInfo(ctx context.
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "chainId":
-				return ec.fieldContext_PartialInfo_chainId(ctx, field)
+			case "chainID":
+				return ec.fieldContext_PartialInfo_chainID(ctx, field)
 			case "address":
 				return ec.fieldContext_PartialInfo_address(ctx, field)
 			case "txnHash":
@@ -1401,6 +1544,8 @@ func (ec *executionContext) fieldContext_BridgeTransaction_fromInfo(ctx context.
 				return ec.fieldContext_PartialInfo_blockNumber(ctx, field)
 			case "time":
 				return ec.fieldContext_PartialInfo_time(ctx, field)
+			case "formattedTime":
+				return ec.fieldContext_PartialInfo_formattedTime(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialInfo", field.Name)
 		},
@@ -1444,8 +1589,8 @@ func (ec *executionContext) fieldContext_BridgeTransaction_toInfo(ctx context.Co
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "chainId":
-				return ec.fieldContext_PartialInfo_chainId(ctx, field)
+			case "chainID":
+				return ec.fieldContext_PartialInfo_chainID(ctx, field)
 			case "address":
 				return ec.fieldContext_PartialInfo_address(ctx, field)
 			case "txnHash":
@@ -1464,6 +1609,8 @@ func (ec *executionContext) fieldContext_BridgeTransaction_toInfo(ctx context.Co
 				return ec.fieldContext_PartialInfo_blockNumber(ctx, field)
 			case "time":
 				return ec.fieldContext_PartialInfo_time(ctx, field)
+			case "formattedTime":
+				return ec.fieldContext_PartialInfo_formattedTime(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialInfo", field.Name)
 		},
@@ -1934,8 +2081,208 @@ func (ec *executionContext) fieldContext_HistoricalResult_type(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _PartialInfo_chainId(ctx context.Context, field graphql.CollectedField, obj *model.PartialInfo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PartialInfo_chainId(ctx, field)
+func (ec *executionContext) _MessageBusTransaction_fromInfo(ctx context.Context, field graphql.CollectedField, obj *model.MessageBusTransaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageBusTransaction_fromInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FromInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.PartialMessageBusInfo)
+	fc.Result = res
+	return ec.marshalOPartialMessageBusInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPartialMessageBusInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageBusTransaction_fromInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageBusTransaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "chainID":
+				return ec.fieldContext_PartialMessageBusInfo_chainID(ctx, field)
+			case "destinationChainID":
+				return ec.fieldContext_PartialMessageBusInfo_destinationChainID(ctx, field)
+			case "contractAddress":
+				return ec.fieldContext_PartialMessageBusInfo_contractAddress(ctx, field)
+			case "txnHash":
+				return ec.fieldContext_PartialMessageBusInfo_txnHash(ctx, field)
+			case "message":
+				return ec.fieldContext_PartialMessageBusInfo_message(ctx, field)
+			case "blockNumber":
+				return ec.fieldContext_PartialMessageBusInfo_blockNumber(ctx, field)
+			case "time":
+				return ec.fieldContext_PartialMessageBusInfo_time(ctx, field)
+			case "formattedTime":
+				return ec.fieldContext_PartialMessageBusInfo_formattedTime(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PartialMessageBusInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MessageBusTransaction_toInfo(ctx context.Context, field graphql.CollectedField, obj *model.MessageBusTransaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageBusTransaction_toInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ToInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.PartialMessageBusInfo)
+	fc.Result = res
+	return ec.marshalOPartialMessageBusInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPartialMessageBusInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageBusTransaction_toInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageBusTransaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "chainID":
+				return ec.fieldContext_PartialMessageBusInfo_chainID(ctx, field)
+			case "destinationChainID":
+				return ec.fieldContext_PartialMessageBusInfo_destinationChainID(ctx, field)
+			case "contractAddress":
+				return ec.fieldContext_PartialMessageBusInfo_contractAddress(ctx, field)
+			case "txnHash":
+				return ec.fieldContext_PartialMessageBusInfo_txnHash(ctx, field)
+			case "message":
+				return ec.fieldContext_PartialMessageBusInfo_message(ctx, field)
+			case "blockNumber":
+				return ec.fieldContext_PartialMessageBusInfo_blockNumber(ctx, field)
+			case "time":
+				return ec.fieldContext_PartialMessageBusInfo_time(ctx, field)
+			case "formattedTime":
+				return ec.fieldContext_PartialMessageBusInfo_formattedTime(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PartialMessageBusInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MessageBusTransaction_pending(ctx context.Context, field graphql.CollectedField, obj *model.MessageBusTransaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageBusTransaction_pending(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pending, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageBusTransaction_pending(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageBusTransaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MessageBusTransaction_messageID(ctx context.Context, field graphql.CollectedField, obj *model.MessageBusTransaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageBusTransaction_messageID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MessageID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageBusTransaction_messageID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageBusTransaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialInfo_chainID(ctx context.Context, field graphql.CollectedField, obj *model.PartialInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialInfo_chainID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1962,7 +2309,7 @@ func (ec *executionContext) _PartialInfo_chainId(ctx context.Context, field grap
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_PartialInfo_chainId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PartialInfo_chainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PartialInfo",
 		Field:      field,
@@ -2344,6 +2691,375 @@ func (ec *executionContext) fieldContext_PartialInfo_time(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _PartialInfo_formattedTime(ctx context.Context, field graphql.CollectedField, obj *model.PartialInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialInfo_formattedTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FormattedTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialInfo_formattedTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialMessageBusInfo_chainID(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_chainID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ChainID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_chainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialMessageBusInfo_destinationChainID(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_destinationChainID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DestinationChainID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_destinationChainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialMessageBusInfo_contractAddress(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_contractAddress(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ContractAddress, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_contractAddress(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialMessageBusInfo_txnHash(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_txnHash(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TxnHash, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_txnHash(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialMessageBusInfo_message(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_message(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialMessageBusInfo_blockNumber(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_blockNumber(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BlockNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_blockNumber(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialMessageBusInfo_time(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_time(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Time, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_time(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialMessageBusInfo_formattedTime(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_formattedTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FormattedTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_formattedTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_bridgeTransactions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_bridgeTransactions(ctx, field)
 	if err != nil {
@@ -2358,7 +3074,7 @@ func (ec *executionContext) _Query_bridgeTransactions(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().BridgeTransactions(rctx, fc.Args["chainId"].(*int), fc.Args["address"].(*string), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["includePending"].(*bool), fc.Args["page"].(*int), fc.Args["tokenAddress"].(*string))
+		return ec.resolvers.Query().BridgeTransactions(rctx, fc.Args["chainID"].([]*int), fc.Args["address"].(*string), fc.Args["maxAmount"].(*int), fc.Args["minAmount"].(*int), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["pending"].(*bool), fc.Args["page"].(*int), fc.Args["tokenAddress"].([]*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2408,8 +3124,8 @@ func (ec *executionContext) fieldContext_Query_bridgeTransactions(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_bridgeTransactions2(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_bridgeTransactions2(ctx, field)
+func (ec *executionContext) _Query_messageBusTransactions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_messageBusTransactions(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2422,7 +3138,7 @@ func (ec *executionContext) _Query_bridgeTransactions2(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().BridgeTransactions2(rctx, fc.Args["chainId"].([]*int), fc.Args["address"].(*string), fc.Args["maxAmount"].(*int), fc.Args["minAmount"].(*int), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["includePending"].(*bool), fc.Args["page"].(*int), fc.Args["tokenAddress"].([]*string))
+		return ec.resolvers.Query().MessageBusTransactions(rctx, fc.Args["chainID"].([]*int), fc.Args["contractAddress"].(*string), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["messageID"].(*string), fc.Args["pending"].(*bool), fc.Args["page"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2431,12 +3147,12 @@ func (ec *executionContext) _Query_bridgeTransactions2(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.BridgeTransaction)
+	res := resTmp.([]*model.MessageBusTransaction)
 	fc.Result = res
-	return ec.marshalOBridgeTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeTransaction(ctx, field.Selections, res)
+	return ec.marshalOMessageBusTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageBusTransaction(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_bridgeTransactions2(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_messageBusTransactions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -2445,17 +3161,15 @@ func (ec *executionContext) fieldContext_Query_bridgeTransactions2(ctx context.C
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "fromInfo":
-				return ec.fieldContext_BridgeTransaction_fromInfo(ctx, field)
+				return ec.fieldContext_MessageBusTransaction_fromInfo(ctx, field)
 			case "toInfo":
-				return ec.fieldContext_BridgeTransaction_toInfo(ctx, field)
-			case "kappa":
-				return ec.fieldContext_BridgeTransaction_kappa(ctx, field)
+				return ec.fieldContext_MessageBusTransaction_toInfo(ctx, field)
 			case "pending":
-				return ec.fieldContext_BridgeTransaction_pending(ctx, field)
-			case "swapSuccess":
-				return ec.fieldContext_BridgeTransaction_swapSuccess(ctx, field)
+				return ec.fieldContext_MessageBusTransaction_pending(ctx, field)
+			case "messageID":
+				return ec.fieldContext_MessageBusTransaction_messageID(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type BridgeTransaction", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MessageBusTransaction", field.Name)
 		},
 	}
 	defer func() {
@@ -2465,7 +3179,7 @@ func (ec *executionContext) fieldContext_Query_bridgeTransactions2(ctx context.C
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_bridgeTransactions2_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_messageBusTransactions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -2486,7 +3200,7 @@ func (ec *executionContext) _Query_bridgeAmountStatistic(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().BridgeAmountStatistic(rctx, fc.Args["type"].(model.StatisticType), fc.Args["duration"].(*model.Duration), fc.Args["chainId"].(*int), fc.Args["address"].(*string), fc.Args["tokenAddress"].(*string))
+		return ec.resolvers.Query().BridgeAmountStatistic(rctx, fc.Args["type"].(model.StatisticType), fc.Args["duration"].(*model.Duration), fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["tokenAddress"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2542,7 +3256,7 @@ func (ec *executionContext) _Query_countByChainId(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().CountByChainID(rctx, fc.Args["chainId"].(*int), fc.Args["address"].(*string), fc.Args["direction"].(*model.Direction), fc.Args["hours"].(*int))
+		return ec.resolvers.Query().CountByChainID(rctx, fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["direction"].(*model.Direction), fc.Args["hours"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2564,8 +3278,8 @@ func (ec *executionContext) fieldContext_Query_countByChainId(ctx context.Contex
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "chainId":
-				return ec.fieldContext_TransactionCountResult_chainId(ctx, field)
+			case "chainID":
+				return ec.fieldContext_TransactionCountResult_chainID(ctx, field)
 			case "count":
 				return ec.fieldContext_TransactionCountResult_count(ctx, field)
 			}
@@ -2600,7 +3314,7 @@ func (ec *executionContext) _Query_countByTokenAddress(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().CountByTokenAddress(rctx, fc.Args["chainId"].(*int), fc.Args["address"].(*string), fc.Args["direction"].(*model.Direction), fc.Args["hours"].(*int))
+		return ec.resolvers.Query().CountByTokenAddress(rctx, fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["direction"].(*model.Direction), fc.Args["hours"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2622,8 +3336,8 @@ func (ec *executionContext) fieldContext_Query_countByTokenAddress(ctx context.C
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "chainId":
-				return ec.fieldContext_TokenCountResult_chainId(ctx, field)
+			case "chainID":
+				return ec.fieldContext_TokenCountResult_chainID(ctx, field)
 			case "tokenAddress":
 				return ec.fieldContext_TokenCountResult_tokenAddress(ctx, field)
 			case "count":
@@ -2718,7 +3432,7 @@ func (ec *executionContext) _Query_historicalStatistics(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().HistoricalStatistics(rctx, fc.Args["chainId"].(*int), fc.Args["type"].(*model.HistoricalResultType), fc.Args["days"].(*int))
+		return ec.resolvers.Query().HistoricalStatistics(rctx, fc.Args["chainID"].(*int), fc.Args["type"].(*model.HistoricalResultType), fc.Args["days"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2778,7 +3492,7 @@ func (ec *executionContext) _Query_amountStatistic(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().AmountStatistic(rctx, fc.Args["type"].(model.StatisticType), fc.Args["duration"].(*model.Duration), fc.Args["platform"].(*model.Platform), fc.Args["chainId"].(*int), fc.Args["address"].(*string), fc.Args["tokenAddress"].(*string))
+		return ec.resolvers.Query().AmountStatistic(rctx, fc.Args["type"].(model.StatisticType), fc.Args["duration"].(*model.Duration), fc.Args["platform"].(*model.Platform), fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["tokenAddress"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2834,7 +3548,7 @@ func (ec *executionContext) _Query_dailyStatistics(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().DailyStatistics(rctx, fc.Args["chainId"].(*int), fc.Args["type"].(*model.DailyStatisticType), fc.Args["platform"].(*model.Platform), fc.Args["days"].(*int))
+		return ec.resolvers.Query().DailyStatistics(rctx, fc.Args["chainID"].(*int), fc.Args["type"].(*model.DailyStatisticType), fc.Args["platform"].(*model.Platform), fc.Args["days"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3009,8 +3723,8 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _TokenCountResult_chainId(ctx context.Context, field graphql.CollectedField, obj *model.TokenCountResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TokenCountResult_chainId(ctx, field)
+func (ec *executionContext) _TokenCountResult_chainID(ctx context.Context, field graphql.CollectedField, obj *model.TokenCountResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TokenCountResult_chainID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3037,7 +3751,7 @@ func (ec *executionContext) _TokenCountResult_chainId(ctx context.Context, field
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TokenCountResult_chainId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TokenCountResult_chainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TokenCountResult",
 		Field:      field,
@@ -3132,8 +3846,8 @@ func (ec *executionContext) fieldContext_TokenCountResult_count(ctx context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _TransactionCountResult_chainId(ctx context.Context, field graphql.CollectedField, obj *model.TransactionCountResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TransactionCountResult_chainId(ctx, field)
+func (ec *executionContext) _TransactionCountResult_chainID(ctx context.Context, field graphql.CollectedField, obj *model.TransactionCountResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TransactionCountResult_chainID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3160,7 +3874,7 @@ func (ec *executionContext) _TransactionCountResult_chainId(ctx context.Context,
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TransactionCountResult_chainId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TransactionCountResult_chainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TransactionCountResult",
 		Field:      field,
@@ -5201,6 +5915,43 @@ func (ec *executionContext) _HistoricalResult(ctx context.Context, sel ast.Selec
 	return out
 }
 
+var messageBusTransactionImplementors = []string{"MessageBusTransaction"}
+
+func (ec *executionContext) _MessageBusTransaction(ctx context.Context, sel ast.SelectionSet, obj *model.MessageBusTransaction) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, messageBusTransactionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MessageBusTransaction")
+		case "fromInfo":
+
+			out.Values[i] = ec._MessageBusTransaction_fromInfo(ctx, field, obj)
+
+		case "toInfo":
+
+			out.Values[i] = ec._MessageBusTransaction_toInfo(ctx, field, obj)
+
+		case "pending":
+
+			out.Values[i] = ec._MessageBusTransaction_pending(ctx, field, obj)
+
+		case "messageID":
+
+			out.Values[i] = ec._MessageBusTransaction_messageID(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var partialInfoImplementors = []string{"PartialInfo"}
 
 func (ec *executionContext) _PartialInfo(ctx context.Context, sel ast.SelectionSet, obj *model.PartialInfo) graphql.Marshaler {
@@ -5211,9 +5962,9 @@ func (ec *executionContext) _PartialInfo(ctx context.Context, sel ast.SelectionS
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("PartialInfo")
-		case "chainId":
+		case "chainID":
 
-			out.Values[i] = ec._PartialInfo_chainId(ctx, field, obj)
+			out.Values[i] = ec._PartialInfo_chainID(ctx, field, obj)
 
 		case "address":
 
@@ -5250,6 +6001,63 @@ func (ec *executionContext) _PartialInfo(ctx context.Context, sel ast.SelectionS
 		case "time":
 
 			out.Values[i] = ec._PartialInfo_time(ctx, field, obj)
+
+		case "formattedTime":
+
+			out.Values[i] = ec._PartialInfo_formattedTime(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var partialMessageBusInfoImplementors = []string{"PartialMessageBusInfo"}
+
+func (ec *executionContext) _PartialMessageBusInfo(ctx context.Context, sel ast.SelectionSet, obj *model.PartialMessageBusInfo) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, partialMessageBusInfoImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PartialMessageBusInfo")
+		case "chainID":
+
+			out.Values[i] = ec._PartialMessageBusInfo_chainID(ctx, field, obj)
+
+		case "destinationChainID":
+
+			out.Values[i] = ec._PartialMessageBusInfo_destinationChainID(ctx, field, obj)
+
+		case "contractAddress":
+
+			out.Values[i] = ec._PartialMessageBusInfo_contractAddress(ctx, field, obj)
+
+		case "txnHash":
+
+			out.Values[i] = ec._PartialMessageBusInfo_txnHash(ctx, field, obj)
+
+		case "message":
+
+			out.Values[i] = ec._PartialMessageBusInfo_message(ctx, field, obj)
+
+		case "blockNumber":
+
+			out.Values[i] = ec._PartialMessageBusInfo_blockNumber(ctx, field, obj)
+
+		case "time":
+
+			out.Values[i] = ec._PartialMessageBusInfo_time(ctx, field, obj)
+
+		case "formattedTime":
+
+			out.Values[i] = ec._PartialMessageBusInfo_formattedTime(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -5301,7 +6109,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "bridgeTransactions2":
+		case "messageBusTransactions":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -5310,7 +6118,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_bridgeTransactions2(ctx, field)
+				res = ec._Query_messageBusTransactions(ctx, field)
 				return res
 			}
 
@@ -5494,9 +6302,9 @@ func (ec *executionContext) _TokenCountResult(ctx context.Context, sel ast.Selec
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("TokenCountResult")
-		case "chainId":
+		case "chainID":
 
-			out.Values[i] = ec._TokenCountResult_chainId(ctx, field, obj)
+			out.Values[i] = ec._TokenCountResult_chainID(ctx, field, obj)
 
 		case "tokenAddress":
 
@@ -5527,9 +6335,9 @@ func (ec *executionContext) _TransactionCountResult(ctx context.Context, sel ast
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("TransactionCountResult")
-		case "chainId":
+		case "chainID":
 
-			out.Values[i] = ec._TransactionCountResult_chainId(ctx, field, obj)
+			out.Values[i] = ec._TransactionCountResult_chainID(ctx, field, obj)
 
 		case "count":
 
@@ -6494,11 +7302,66 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
+func (ec *executionContext) marshalOMessageBusTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageBusTransaction(ctx context.Context, sel ast.SelectionSet, v []*model.MessageBusTransaction) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOMessageBusTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageBusTransaction(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOMessageBusTransaction2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageBusTransaction(ctx context.Context, sel ast.SelectionSet, v *model.MessageBusTransaction) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MessageBusTransaction(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOPartialInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPartialInfo(ctx context.Context, sel ast.SelectionSet, v *model.PartialInfo) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._PartialInfo(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPartialMessageBusInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPartialMessageBusInfo(ctx context.Context, sel ast.SelectionSet, v *model.PartialMessageBusInfo) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PartialMessageBusInfo(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOPlatform2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPlatform(ctx context.Context, v interface{}) (*model.Platform, error) {

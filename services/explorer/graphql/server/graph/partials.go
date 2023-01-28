@@ -429,3 +429,9 @@ SELECT * FROM message_bus_events LIMIT 1 BY chain_id, contract_address, event_ty
 const swapVolumeSelect = `
 multiIf(event_type = 0, amount_usd[sold_id],event_type = 1, arraySum(mapValues(amount_usd)),event_type = 9, arraySum(mapValues(amount_usd)),event_type = 10,amount_usd[sold_id],0)
 `
+const messageBusCTE = `
+WITH baseQuery AS (
+	SELECT * FROM message_bus_events
+	ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC
+	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
+), (SELECT min(timestamp) FROM baseQuery) AS minTimestamp`

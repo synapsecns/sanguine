@@ -45,9 +45,16 @@ type HistoricalResult struct {
 	Type        *HistoricalResultType `json:"type"`
 }
 
+type MessageBusTransaction struct {
+	FromInfo  *PartialMessageBusInfo `json:"fromInfo"`
+	ToInfo    *PartialMessageBusInfo `json:"toInfo"`
+	Pending   *bool                  `json:"pending"`
+	MessageID *string                `json:"messageID"`
+}
+
 // PartialInfo is a transaction that occurred on one chain.
 type PartialInfo struct {
-	ChainID        *int     `json:"chainId"`
+	ChainID        *int     `json:"chainID"`
 	Address        *string  `json:"address"`
 	TxnHash        *string  `json:"txnHash"`
 	Value          *string  `json:"value"`
@@ -57,18 +64,30 @@ type PartialInfo struct {
 	TokenSymbol    *string  `json:"tokenSymbol"`
 	BlockNumber    *int     `json:"blockNumber"`
 	Time           *int     `json:"time"`
+	FormattedTime  *string  `json:"formattedTime"`
+}
+
+type PartialMessageBusInfo struct {
+	ChainID            *int    `json:"chainID"`
+	DestinationChainID *int    `json:"destinationChainID"`
+	ContractAddress    *string `json:"contractAddress"`
+	TxnHash            *string `json:"txnHash"`
+	Message            *string `json:"message"`
+	BlockNumber        *int    `json:"blockNumber"`
+	Time               *int    `json:"time"`
+	FormattedTime      *string `json:"formattedTime"`
 }
 
 // TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
 type TokenCountResult struct {
-	ChainID      *int    `json:"chainId"`
+	ChainID      *int    `json:"chainID"`
 	TokenAddress *string `json:"tokenAddress"`
 	Count        *int    `json:"count"`
 }
 
 // TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
 type TransactionCountResult struct {
-	ChainID *int `json:"chainId"`
+	ChainID *int `json:"chainID"`
 	Count   *int `json:"count"`
 }
 

@@ -1,22 +1,10 @@
 type Query {
-  """
-  Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
-  """
-  bridgeTransactions(
-    chainId:        Int
-    address:        String
-    txnHash:        String
-    kappa:          String
-    includePending: Boolean = false
-    page:           Int = 1
-    tokenAddress:   String
-  ): [BridgeTransaction]
 
   """
   Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
   """
-  bridgeTransactions2(
-    chainId:        [Int]
+  bridgeTransactions(
+    chainID:        [Int]
     address:        String
     maxAmount:      Int
     minAmount:      Int
@@ -24,10 +12,24 @@ type Query {
     endTime:        Int
     txnHash:        String
     kappa:          String
-    includePending: Boolean = false
+    pending:        Boolean = false
     page:           Int = 1
     tokenAddress:   [String]
   ): [BridgeTransaction]
+
+  """
+  Message bus transactions
+  """
+  messageBusTransactions(
+    chainID:        [Int]
+    contractAddress:        String
+    startTime:      Int
+    endTime:        Int
+    txnHash:        String
+    messageID:      String
+    pending:        Boolean = false
+    page:           Int = 1
+  ): [MessageBusTransaction]
   """
   Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
   Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
@@ -35,7 +37,7 @@ type Query {
   bridgeAmountStatistic(
     type:         StatisticType!
     duration:     Duration = ALL_TIME
-    chainId:      Int
+    chainID:      Int
     address:      String
     tokenAddress: String
   ): ValueResult
@@ -45,7 +47,7 @@ type Query {
   Specifying no duration defaults to the last 24 hours.
   """
   countByChainId(
-    chainId:    Int
+    chainID:    Int
     address:    String
     direction:  Direction = IN
     hours:      Int = 720
@@ -55,7 +57,7 @@ type Query {
   Specifying no parameters defaults to origin and 24 hours.
   """
   countByTokenAddress(
-    chainId:    Int
+    chainID:    Int
     address:    String
     direction:  Direction = IN
     hours:      Int = 24
@@ -70,7 +72,7 @@ type Query {
   Historical transactional data
   """
   historicalStatistics(
-    chainId:  Int
+    chainID:  Int
     type:     HistoricalResultType = BRIDGEVOLUME
     days:     Int = 30
   ): HistoricalResult
@@ -82,7 +84,7 @@ type Query {
     type:         StatisticType!
     duration:     Duration = ALL_TIME
     platform:     Platform = ALL
-    chainId:      Int
+    chainID:      Int
     address:      String
     tokenAddress: String
   ): ValueResult
@@ -90,9 +92,11 @@ type Query {
   Daily statistic data
   """
   dailyStatistics(
-    chainId:  Int
+    chainID:  Int
     type:     DailyStatisticType = VOLUME
     platform: Platform = BRIDGE
     days:     Int = 30
   ): DailyResult
+
+
 }
