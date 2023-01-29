@@ -304,6 +304,9 @@ func bundle(src, dst, dstpkg, prefix, buildTags string) ([]byte, error) {
 			if path == dst {
 				continue
 			}
+
+			ogPath := path
+
 			if newPath, ok := importMap[path]; ok {
 				path = newPath
 			}
@@ -313,7 +316,7 @@ func bundle(src, dst, dstpkg, prefix, buildTags string) ([]byte, error) {
 				name = imp.Name.Name
 			}
 
-			importName := pkg.Imports[path].Types.Name()
+			importName := pkg.Imports[ogPath].Types.Name()
 
 			refName := name
 			if name == "" {

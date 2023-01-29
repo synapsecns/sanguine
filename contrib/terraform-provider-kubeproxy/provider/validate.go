@@ -4,8 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
-	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy/generated/convert"
 )
 
 // validateConfigNulls checks a config value for unsupported nulls before
@@ -38,7 +37,7 @@ func validateConfigNulls(ctx context.Context, v cty.Value, path cty.Path) []*tfp
 					Severity:  tfprotov5.DiagnosticSeverityError,
 					Summary:   "Null value found in list",
 					Detail:    "Null values are not allowed for this attribute value.",
-					Attribute: PathToAttributePath(p),
+					Attribute: convert.PathToAttributePath(p),
 				})
 				continue
 			}
@@ -64,42 +63,4 @@ func validateConfigNulls(ctx context.Context, v cty.Value, path cty.Path) []*tfp
 	}
 
 	return diags
-}
-
-// PathToAttributePath takes a cty.Path and converts it to a proto-encoded path.
-func PathToAttributePath(p cty.Path) *tftypes.AttributePath {
-	if p == nil || len(p) < 1 {
-		return nil
-	}
-	ap := tftypes.NewAttributePath()
-	for _, step := range p {
-		switch selector := step.(type) {
-		case cty.GetAttrStep:
-			ap = ap.WithAttributeName(selector.Name)
-
-		case cty.IndexStep:
-			key := selector.Key
-			switch key.Type() {
-			case cty.String:
-				ap = ap.WithElementKeyString(key.AsString())
-			case cty.Number:
-				v, _ := key.AsBigFloat().Int64()
-				ap = ap.WithElementKeyInt(int(v))
-			default:
-				// We'll bail early if we encounter anything else, and just
-				// return the valid prefix.
-				return ap
-			}
-		}
-	}
-	return ap
-}
-
-func convertDiag(sev diag.Severity) tfprotov5.DiagnosticSeverity {
-	switch sev {
-	case diag.Error:
-		return tfprotov5.DiagnosticSeverityError
-	default:
-		return tfprotov5.DiagnosticSeverityWarning
-	}
 }

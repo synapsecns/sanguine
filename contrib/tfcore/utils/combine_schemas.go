@@ -74,13 +74,14 @@ func UpdateSchemaWithDefaults(smap map[string]*schema.Schema) map[string]*schema
 	return smap
 }
 
-// CombineProtoSchemas combines google schemas and tfproto schemas
+// CombineProtoSchemas combines google schemas and tfproto schemas into a single schema
+// this differs from CombineSchemas in that it supports tfproto schemas
 func CombineProtoSchemas(ctx context.Context, googleSchema *schema.Provider, protoSchema *tfprotov5.GetProviderSchemaResponse, toReplace, replaceWith string) (co *tfprotov5.Schema, err error) {
 	// add defaults to the terraform schema
 	googleSchema.Schema = UpdateSchemaWithDefaults(googleSchema.Schema)
-
 	providerSchema := schema.NewGRPCProviderServer(googleSchema)
 	tfProviderSchema, err := providerSchema.GetProviderSchema(ctx, &tfprotov5.GetProviderSchemaRequest{})
+
 	if err != nil {
 		return nil, fmt.Errorf("could not get provider schema: %w", err)
 	}
@@ -96,7 +97,7 @@ func CombineProtoSchemas(ctx context.Context, googleSchema *schema.Provider, pro
 		protoSchema.Provider.Block.BlockTypes = append(protoSchema.Provider.Block.BlockTypes, blockType)
 	}
 
-	return co, nil
+	return protoSchema.Provider, nil
 }
 
 func hasAttribute(schema *tfprotov5.GetProviderSchemaResponse, attribute *tfprotov5.SchemaAttribute) bool {

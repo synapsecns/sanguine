@@ -10,8 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hashicorp/terraform-provider-kubernetes/manifest/test/logging"
+	"github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy/generated/convert"
+	"github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy/generated/manifest"
 	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
-	"github.com/synapsecns/sanguine/contrib/tfcore/generated/manifest"
 	"github.com/synapsecns/sanguine/contrib/tfcore/utils"
 	"log"
 	"os"
@@ -57,20 +58,18 @@ func (r *RawProviderServer) GetProviderSchema(ctx context.Context, req *tfprotov
 	}, nil
 }
 
-// ConfigureProvider configures the provider and sets up the tunnel
+// ConfigureProvider configures the provider and sets up the tunnel.
 func (r *RawProviderServer) ConfigureProvider(ctx context.Context, req *tfprotov5.ConfigureProviderRequest) (*tfprotov5.ConfigureProviderResponse, error) {
-	updatedSchema := utils.UpdateSchemaWithDefaults(r.googleProvider.Schema)
+	updatedSchema := utils.UpdateSchemaWithDefaults(google.Provider().Schema)
 	googleSchema := schema.InternalMap(updatedSchema).CoreConfigSchema()
+
+	combinedProtoSchema := convert.ProtoToConfigSchema(ctx, r.combinedSchema.Block)
 
 	resp := &tfprotov5.ConfigureProviderResponse{}
 
-	configVal, err := msgpack.Unmarshal(req.Config.MsgPack, googleSchema.ImpliedType())
+	configVal, err := msgpack.Unmarshal(req.Config.MsgPack, combinedProtoSchema.ImpliedType())
 	if err != nil {
-		resp.Diagnostics = append(resp.Diagnostics, &tfprotov5.Diagnostic{
-			Severity: tfprotov5.DiagnosticSeverityError,
-			Summary:  "Could not unmarshal config",
-			Detail:   err.Error(),
-		})
+		resp.Diagnostics = convert.AppendProtoDiag(ctx, resp.Diagnostics, err)
 		return resp, nil
 	}
 
@@ -81,61 +80,53 @@ func (r *RawProviderServer) ConfigureProvider(ctx context.Context, req *tfprotov
 	}
 
 	config := terraform.NewResourceConfigShimmed(configVal, googleSchema)
-	logging.HelperSchemaTrace(ctx, "Calling downstream")
-	// TODO: move this to the validation step
-	diag := r.googleProvider.Validate(config)
-	if diag != nil {
-		for _, d := range diag {
-			resp.Diagnostics = append(resp.Diagnostics, &tfprotov5.Diagnostic{
-				Severity:  convertDiag(d.Severity),
-				Summary:   d.Summary,
-				Detail:    d.Detail,
-				Attribute: PathToAttributePath(d.AttributePath),
-			})
-		}
-		return resp, nil
-	}
-
-	logging.HelperSchemaTrace(ctx, "Called downstream")
 	ctxHack := context.WithValue(ctx, schema.StopContextKey, r.StopContext(context.Background()))
 
-	r.googleProvider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (_ interface{}, gdg provider_diag.Diagnostics) {
-		gface, googleDiagnostics := google.Provider().ConfigureContextFunc(ctx, d)
-		gdg = append(gdg, googleDiagnostics...)
-		if gdg.HasError() {
-			return nil, diag
-		}
-
-		googleConfig, ok := gface.(*google.Config)
-		if !ok {
-			return nil, append(gdg, provider_diag.Diagnostic{
-				Severity: provider_diag.Error,
-				Summary:  "failed to cast google interface",
-			})
-		}
-		// TODO: the proxy_url needs to be set in here
-		proxyURL, err := utils.StartTunnel(ctx, d, googleConfig)
-		if err != nil {
-			return nil, append(gdg, provider_diag.FromErr(err)[0])
-		}
-
-		// set the proxy url
-		log.Printf("[INFO] setting proxy url to %s", proxyURL)
-		err = os.Setenv("KUBE_PROXY_URL", proxyURL)
-		if err != nil {
-			return nil, append(gdg, provider_diag.FromErr(err)[0])
-		}
-		return gface, gdg
-	}
-
+	logging.HelperSchemaTrace(ctx, "Calling downstream configure google")
+	// this is called below
+	r.googleProvider.ConfigureContextFunc = googConfigureContextFunc
 	r.googleProvider.Configure(ctxHack, config)
 
-	resp, err = r.RawProviderServer.ConfigureProvider(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("could not configure provider: %w", err)
+	logging.HelperSchemaTrace(ctx, "Called downstream configure google")
+
+	if false {
+		resp, err = r.RawProviderServer.ConfigureProvider(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("could not configure provider: %w", err)
+		}
 	}
 
 	return resp, nil
+}
+
+// googConfigureContextFunc configures the context function for google
+func googConfigureContextFunc(ctx context.Context, d *schema.ResourceData) (_ interface{}, gdg provider_diag.Diagnostics) {
+	gface, googleDiagnostics := google.Provider().ConfigureContextFunc(ctx, d)
+	gdg = append(gdg, googleDiagnostics...)
+	if gdg.HasError() {
+		return nil, gdg
+	}
+
+	googleConfig, ok := gface.(*google.Config)
+	if !ok {
+		return nil, append(gdg, provider_diag.Diagnostic{
+			Severity: provider_diag.Error,
+			Summary:  "failed to cast google interface",
+		})
+	}
+	// TODO: the proxy_url needs to be set in here
+	proxyURL, err := utils.StartTunnel(ctx, d, googleConfig)
+	if err != nil {
+		return nil, append(gdg, provider_diag.FromErr(err)[0])
+	}
+
+	// set the proxy url
+	log.Printf("[INFO] setting proxy url to %s", proxyURL)
+	err = os.Setenv("KUBE_PROXY_URL", proxyURL)
+	if err != nil {
+		return nil, append(gdg, provider_diag.FromErr(err)[0])
+	}
+	return gface, gdg
 }
 
 // StopContext derives a new context from the passed in grpc context.
@@ -163,7 +154,7 @@ func mergeStop(ctx context.Context, cancel context.CancelFunc, stopCh chan struc
 	}
 }
 
-// makeRawProvider makes a raw provider
+// makeRawProvider makes a raw provider.
 func makeRawProvider() *RawProviderServer {
 	var logLevel string
 	var ok = false
