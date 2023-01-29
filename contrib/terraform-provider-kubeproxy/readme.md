@@ -21,3 +21,7 @@ After configuring the provider, you can use it in your Terraform resources just 
 The Terraform Kubernetes IAP Proxy Provider allows you to use an IAP proxy when interacting with GCP Kubernetes clusters in Terraform, allowing for more fine-grained authentication and authorization of access to your resources. It is easy to use and seamlessly integrates with the Kubernetes provider, making it a great choice for securing your GCP Kubernetes clusters in Terraform.
 
 It's good to note that this is a conceptual explanation and the implementation may differ and depend on the specific details of the kubernetes provider and how it interacts with the gcp iap.
+
+## Incompatibilities
+
+This provider does not support kubernetes_manifest resources. The kubectl provider should be used for this

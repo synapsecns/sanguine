@@ -34,3 +34,17 @@ resource "kubeproxy_secret" "example" {
 
   type = "kubernetes.io/basic-auth"
 }
+
+data "kubeproxy_resource" "example" {
+  api_version = "v1"
+  kind        = "ConfigMap"
+
+  metadata {
+    name      = "example"
+    namespace = "default"
+  }
+}
+
+output "test" {
+  value = data.kubeproxy_resource.example.object.data.TEST
+}
