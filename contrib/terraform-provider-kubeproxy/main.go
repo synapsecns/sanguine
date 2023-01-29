@@ -29,10 +29,14 @@ func main() {
 	flag.Parse()
 
 	mainProvider := provider.MainProvider().GRPCProvider
+	manifestProvider, err := provider.ManifestProvider()
+	if err != nil {
+		panic(err)
+	}
 	// note: manifest provider is not currently supported
 
 	ctx := context.Background()
-	muxer, err := tf5muxserver.NewMuxServer(ctx, mainProvider)
+	muxer, err := tf5muxserver.NewMuxServer(ctx, mainProvider, manifestProvider)
 	if err != nil {
 		log.Println(err.Error())
 		os.Exit(1)
