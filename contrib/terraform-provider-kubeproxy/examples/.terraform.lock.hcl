@@ -5,7 +5,7 @@ provider "example-kube.com/provider/kubeproxy" {
   version     = "1.0.0"
   constraints = "~> 1.0.0"
   hashes = [
-    "h1:OfTTESIq6xuvXCTNBaQexOHkK5BGTPBDRiuGA6gIfvc=",
+    "h1:Wcf94AqnYUSfFMJS7RWUaDgfmbHbh29bgLcZgFfvtL8=",
   ]
 }
 

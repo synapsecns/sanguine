@@ -1,3 +1,5 @@
+// Package provider is the Terraform provider for Kubernetes
+// nolint
 package provider
 
 import (

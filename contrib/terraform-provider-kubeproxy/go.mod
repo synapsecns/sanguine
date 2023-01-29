@@ -9,13 +9,15 @@ require (
 	github.com/hashicorp/hcl/v2 v2.15.0
 	github.com/hashicorp/terraform-exec v0.17.3
 	github.com/hashicorp/terraform-plugin-go v0.14.2
+	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-mux v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
-	github.com/hashicorp/terraform-provider-google/v4 v4.2.0
 	github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20220907163743-48d1f3528353
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/mitchellh/go-testing-interface v1.14.1
 	github.com/synapsecns/sanguine/contrib/tfcore v0.0.0-00010101000000-000000000000
 	github.com/zclconf/go-cty v1.12.1
+	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 	golang.org/x/mod v0.7.0
 	golang.org/x/tools v0.5.0
 	google.golang.org/grpc v1.51.0
@@ -90,7 +92,7 @@ require (
 	github.com/hashicorp/hc-install v0.4.0 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-json v0.14.0 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.7.0 // indirect
+	github.com/hashicorp/terraform-provider-google/v4 v4.2.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.1.0 // indirect
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
@@ -106,7 +108,6 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
-	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/hashstructure v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

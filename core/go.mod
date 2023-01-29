@@ -45,7 +45,7 @@ require (
 	github.com/temoto/robotstxt v1.1.2
 	github.com/urfave/cli/v2 v2.16.3
 	go.uber.org/zap v1.23.0
-	golang.org/x/exp v0.0.0-20221012211006-4de253d81b95
+	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 	golang.org/x/sync v0.1.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.44.1
 	gorm.io/driver/sqlite v1.4.3

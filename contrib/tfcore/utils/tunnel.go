@@ -18,23 +18,23 @@ import (
 func StartTunnel(ctx context.Context, d *schema.ResourceData, config *google.Config) (proxyURL string, err error) {
 	project, ok := d.Get("project").(string)
 	if !ok {
-		return proxyURL, fmt.Errorf("could not cast project of type %T to %T", d.Get("project"), project)
+		return proxyURL, fmt.Errorf("could not cast project of type %T to %T for project", d.Get("project"), project)
 	}
 	zone, ok := d.Get("zone").(string)
 	if !ok {
-		return proxyURL, fmt.Errorf("could not cast zone of type %T to %T", d.Get("zone"), zone)
+		return proxyURL, fmt.Errorf("could not cast zone of type %T to %T for zone", d.Get("zone"), zone)
 	}
 	instance, ok := d.Get("instance").(string)
 	if !ok {
-		return proxyURL, fmt.Errorf("could not cast instance of type %T to %T", d.Get("instance"), instance)
+		return proxyURL, fmt.Errorf("could not cast instance of type %T to %T for instance", d.Get("instance"), instance)
 	}
 	iface, ok := d.Get("interface").(string)
 	if !ok {
-		return proxyURL, fmt.Errorf("could not cast interface of type %T to %T", d.Get("interface"), iface)
+		return proxyURL, fmt.Errorf("could not cast interface of type %T to %T for interface", d.Get("interface"), iface)
 	}
 	remotePort, ok := d.Get("remote_port").(int)
 	if !ok {
-		return proxyURL, fmt.Errorf("could not cast remote_port of type %T to %T", d.Get("remote_port"), remotePort)
+		return proxyURL, fmt.Errorf("could not cast remote_port of type %T to %T for remote port", d.Get("remote_port"), remotePort)
 	}
 
 	localPort, err := freeport.GetFreePort()

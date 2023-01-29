@@ -22,9 +22,12 @@ import (
 	"golang.org/x/exp/slices"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
 )
 
+// ManifestProvider gets the manifest provider.
 func ManifestProvider() (func() tfprotov5.ProviderServer, error) {
 	providerSchema, err := manifest.Provider()().GetProviderSchema(context.Background(), &tfprotov5.GetProviderSchemaRequest{})
 	if err != nil {
@@ -39,12 +42,14 @@ func ManifestProvider() (func() tfprotov5.ProviderServer, error) {
 	}
 
 	rawProvider.googleProvider = google.Provider()
+	rawProvider.googleProvider.Schema = utils.UpdateSchemaWithDefaults(rawProvider.googleProvider.Schema)
 
 	return func() tfprotov5.ProviderServer {
 		return rawProvider
 	}, nil
 }
 
+// RawProviderServer is the raw provider server.
 type RawProviderServer struct {
 	*manifest.RawProviderServer
 	combinedSchema *tfprotov5.Schema
@@ -55,13 +60,27 @@ type RawProviderServer struct {
 	stopCh chan struct{}
 }
 
-func (r *RawProviderServer) GetProviderSchema(ctx context.Context, req *tfprotov5.GetProviderSchemaRequest) (*tfprotov5.GetProviderSchemaResponse, error) {
+const (
+	originalProviderPrefix = "kubernetes"
+	replacedProviderPrefix = "kubeproxy"
+)
+
+// GetProviderSchema returns the provider schema.
+func (r *RawProviderServer) GetProviderSchema(_ context.Context, _ *tfprotov5.GetProviderSchemaRequest) (*tfprotov5.GetProviderSchemaResponse, error) {
 	return &tfprotov5.GetProviderSchemaResponse{
 		Provider: r.combinedSchema,
 		// TODO: keys must be rewritten
-		ResourceSchemas:   manifest.GetProviderResourceSchema(),
-		DataSourceSchemas: manifest.GetProviderDataSourceSchema(),
+		ResourceSchemas:   replaceResourceKeys(manifest.GetProviderResourceSchema(), originalProviderPrefix, replacedProviderPrefix),
+		DataSourceSchemas: replaceResourceKeys(manifest.GetProviderDataSourceSchema(), originalProviderPrefix, replacedProviderPrefix),
 	}, nil
+}
+
+func replaceResourceKeys(keyMap map[string]*tfprotov5.Schema, toReplace, replaceWith string) map[string]*tfprotov5.Schema {
+	newKeyMap := make(map[string]*tfprotov5.Schema)
+	for key, value := range keyMap {
+		newKeyMap[strings.Replace(key, toReplace, replaceWith, 1)] = value
+	}
+	return newKeyMap
 }
 
 // ConfigureProvider configures the provider and sets up the tunnel.
@@ -96,7 +115,11 @@ func (r *RawProviderServer) ConfigureProvider(ctx context.Context, req *tfprotov
 	logging.HelperSchemaTrace(ctx, "Calling downstream configure google")
 	// configure the google provider
 	r.googleProvider.ConfigureContextFunc = googConfigureContextFunc
-	r.googleProvider.Configure(ctxHack, config)
+	diag := r.googleProvider.Configure(ctxHack, config)
+	if diag.HasError() {
+		resp.Diagnostics = convert.AppendProtoDiag(ctx, resp.Diagnostics, diag)
+		return resp, nil
+	}
 
 	logging.HelperSchemaTrace(ctx, "Called downstream configure google")
 	// remove extra fields
@@ -117,9 +140,9 @@ func (r *RawProviderServer) ConfigureProvider(ctx context.Context, req *tfprotov
 }
 
 // removeRequestFields removes google specified fields from the configure provider request
-// represented as cty.Value and returns a new request that can be used for the provider
+// represented as cty.Value and returns a new request that can be used for the provider.
 func removeRequestFields(ctx context.Context, reqConfig cty.Value, combinedConfigSchema *configschema.Block, keysToPrune []string) (*tfprotov5.ConfigureProviderRequest, error) {
-	// we'll start by marshalling the config to json, we'll then remove extra keys and
+	// we'll start by marshaling the config to json, we'll then remove extra keys and
 	// convert the config back to msgpack
 	jsonReq, err := json.Marshal(reqConfig, combinedConfigSchema.ImpliedType())
 	if err != nil {
@@ -135,9 +158,12 @@ func removeRequestFields(ctx context.Context, reqConfig cty.Value, combinedConfi
 	}
 
 	// we'll remove the google fields
-	for field, _ := range objmap {
+	for field := range objmap {
 		if slices.Contains(keysToPrune, field) {
 			delete(objmap, field)
+		}
+		if field == "proxy_url" {
+			objmap["proxy_url"] = gojson.RawMessage(strconv.Quote(os.Getenv("KUBE_PROXY_URL")))
 		}
 	}
 
@@ -157,7 +183,7 @@ func removeRequestFields(ctx context.Context, reqConfig cty.Value, combinedConfi
 	return req, nil
 }
 
-// googConfigureContextFunc configures the context function for google
+// googConfigureContextFunc configures the context function for google.
 func googConfigureContextFunc(ctx context.Context, d *schema.ResourceData) (_ interface{}, gdg provider_diag.Diagnostics) {
 	gface, googleDiagnostics := google.Provider().ConfigureContextFunc(ctx, d)
 	gdg = append(gdg, googleDiagnostics...)
