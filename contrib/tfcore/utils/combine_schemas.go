@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"context"
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"strings"
 )
@@ -33,19 +36,26 @@ func CombineSchemas(googleProvider, underlyingProvider *schema.Provider, toRepla
 		co.DataSourceMap[strings.Replace(key, toReplace, replaceWith, 1)] = WrapSchemaResource(val)
 	}
 
-	// project is required to start the proxy
-	co.Schema["project"].Required = true
-	co.Schema["project"].Optional = false
-	// zone is required to start the proxy
-	co.Schema["zone"].Required = true
-	co.Schema["zone"].Optional = false
+	co.Schema = UpdateSchemaWithDefaults(co.Schema)
 
-	co.Schema["instance"] = &schema.Schema{
+	return co
+}
+
+// UpdateSchemaWithDefaults adds extra fields to the schema needed for the google tunnel
+func UpdateSchemaWithDefaults(smap map[string]*schema.Schema) map[string]*schema.Schema {
+	// project is required to start the proxy
+	smap["project"].Required = true
+	smap["project"].Optional = false
+	// zone is required to start the proxy
+	smap["zone"].Required = true
+	smap["zone"].Optional = false
+
+	smap["instance"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,
 		Description: "The name of the instance to start the proxy on",
 	}
-	co.Schema["interface"] = &schema.Schema{
+	smap["interface"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The name of the interface to start the proxy on",
 		Default:     "nic0",
@@ -53,7 +63,7 @@ func CombineSchemas(googleProvider, underlyingProvider *schema.Provider, toRepla
 		Optional: true,
 	}
 
-	co.Schema["remote_port"] = &schema.Schema{
+	smap["remote_port"] = &schema.Schema{
 		Type:        schema.TypeInt,
 		Description: "the port to proxy to",
 		// defaults to default
@@ -61,6 +71,39 @@ func CombineSchemas(googleProvider, underlyingProvider *schema.Provider, toRepla
 		// default tinyproxy port
 		Default: "8888",
 	}
+	return smap
+}
 
-	return co
+// CombineProtoSchemas combines google schemas and tfproto schemas
+func CombineProtoSchemas(ctx context.Context, googleSchema *schema.Provider, protoSchema *tfprotov5.GetProviderSchemaResponse, toReplace, replaceWith string) (co *tfprotov5.Schema, err error) {
+	// add defaults to the terraform schema
+	googleSchema.Schema = UpdateSchemaWithDefaults(googleSchema.Schema)
+
+	providerSchema := schema.NewGRPCProviderServer(googleSchema)
+	tfProviderSchema, err := providerSchema.GetProviderSchema(ctx, &tfprotov5.GetProviderSchemaRequest{})
+	if err != nil {
+		return nil, fmt.Errorf("could not get provider schema: %w", err)
+	}
+
+	for _, attribute := range tfProviderSchema.Provider.Block.Attributes {
+		if hasAttribute(protoSchema, attribute) {
+			return nil, fmt.Errorf("cannot override attribute %s", attribute.Name)
+		}
+		protoSchema.Provider.Block.Attributes = append(protoSchema.Provider.Block.Attributes, attribute)
+	}
+
+	for _, blockType := range tfProviderSchema.Provider.Block.BlockTypes {
+		protoSchema.Provider.Block.BlockTypes = append(protoSchema.Provider.Block.BlockTypes, blockType)
+	}
+
+	return co, nil
+}
+
+func hasAttribute(schema *tfprotov5.GetProviderSchemaResponse, attribute *tfprotov5.SchemaAttribute) bool {
+	for _, ogAttribute := range schema.Provider.Block.Attributes {
+		if ogAttribute.Name == attribute.Name {
+			return true
+		}
+	}
+	return false
 }

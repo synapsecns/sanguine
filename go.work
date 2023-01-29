@@ -13,4 +13,5 @@ use (
 	./services/omnirpc
 	./services/scribe
 	./tools
+	contrib/terraform-provider-kubectlproxy
 )

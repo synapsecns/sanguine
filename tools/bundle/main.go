@@ -82,6 +82,7 @@ import (
 	"go/types"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
+	"golang.org/x/tools/imports"
 	"io/ioutil"
 	"log"
 	"os"
@@ -516,8 +517,13 @@ func bundle(src, dst, dstpkg, prefix, buildTags string) ([]byte, error) {
 		printLastComments(&out, f.Comments, last)
 	}
 
+	importsOut, err := imports.Process("", out.Bytes(), &imports.Options{})
+	if err != nil {
+		return nil, fmt.Errorf("error processing imports: %v", err)
+	}
+
 	// Now format the entire thing.
-	result, err := format.Source(out.Bytes())
+	result, err := format.Source(importsOut)
 	if err != nil {
 		log.Fatalf("formatting failed: %v", err)
 	}
