@@ -2,7 +2,10 @@ package provider
 
 import (
 	"context"
+	gojson "encoding/json"
 	"fmt"
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/go-cty/cty/json"
 	"github.com/hashicorp/go-cty/cty/msgpack"
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
@@ -10,10 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hashicorp/terraform-provider-kubernetes/manifest/test/logging"
+	"github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy/generated/configschema"
 	"github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy/generated/convert"
 	"github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy/generated/manifest"
 	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
 	"github.com/synapsecns/sanguine/contrib/tfcore/utils"
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 	"log"
 	"os"
 	"sync"
@@ -60,43 +66,95 @@ func (r *RawProviderServer) GetProviderSchema(ctx context.Context, req *tfprotov
 
 // ConfigureProvider configures the provider and sets up the tunnel.
 func (r *RawProviderServer) ConfigureProvider(ctx context.Context, req *tfprotov5.ConfigureProviderRequest) (*tfprotov5.ConfigureProviderResponse, error) {
-	updatedSchema := utils.UpdateSchemaWithDefaults(google.Provider().Schema)
-	googleSchema := schema.InternalMap(updatedSchema).CoreConfigSchema()
-
-	combinedProtoSchema := convert.ProtoToConfigSchema(ctx, r.combinedSchema.Block)
-
 	resp := &tfprotov5.ConfigureProviderResponse{}
 
-	configVal, err := msgpack.Unmarshal(req.Config.MsgPack, combinedProtoSchema.ImpliedType())
+	// we start by adding our custom fields to the google schema
+	updatedSchema := utils.UpdateSchemaWithDefaults(google.Provider().Schema)
+	// and then converting the google schema to an internal map. This can be used by the converter module
+	googleSchema := schema.InternalMap(updatedSchema).CoreConfigSchema()
+
+	// we convert the schema to a config schema
+	combinedConfigSchema := convert.ProtoToConfigSchema(ctx, r.combinedSchema.Block)
+
+	// we then use that to unmarshall the config
+	reqConfig, err := msgpack.Unmarshal(req.Config.MsgPack, combinedConfigSchema.ImpliedType())
 	if err != nil {
 		resp.Diagnostics = convert.AppendProtoDiag(ctx, resp.Diagnostics, err)
 		return resp, nil
 	}
 
 	// Ensure there are no nulls that will cause helper/schema to panic.
-	if err := validateConfigNulls(ctx, configVal, nil); err != nil {
+	if err := validateConfigNulls(ctx, reqConfig, nil); err != nil {
 		resp.Diagnostics = append(resp.Diagnostics, err...)
 		return resp, nil
 	}
 
-	config := terraform.NewResourceConfigShimmed(configVal, googleSchema)
+	// shim the tfproto config into a terraform config
+	config := terraform.NewResourceConfigShimmed(reqConfig, googleSchema)
 	ctxHack := context.WithValue(ctx, schema.StopContextKey, r.StopContext(context.Background()))
 
 	logging.HelperSchemaTrace(ctx, "Calling downstream configure google")
-	// this is called below
+	// configure the google provider
 	r.googleProvider.ConfigureContextFunc = googConfigureContextFunc
 	r.googleProvider.Configure(ctxHack, config)
 
 	logging.HelperSchemaTrace(ctx, "Called downstream configure google")
+	// remove extra fields
 
-	if false {
-		resp, err = r.RawProviderServer.ConfigureProvider(ctx, req)
-		if err != nil {
-			return nil, fmt.Errorf("could not configure provider: %w", err)
-		}
+	marshalledRequest, err := removeRequestFields(ctx, reqConfig, combinedConfigSchema, maps.Keys(updatedSchema))
+	if err != nil {
+		resp.Diagnostics = convert.AppendProtoDiag(ctx, resp.Diagnostics, err)
+	}
+	marshalledRequest.TerraformVersion = req.TerraformVersion
+
+	// end remove extra fields
+	resp, err = r.RawProviderServer.ConfigureProvider(ctx, marshalledRequest)
+	if err != nil {
+		return nil, fmt.Errorf("could not configure provider: %w", err)
 	}
 
 	return resp, nil
+}
+
+// removeRequestFields removes google specified fields from the configure provider request
+// represented as cty.Value and returns a new request that can be used for the provider
+func removeRequestFields(ctx context.Context, reqConfig cty.Value, combinedConfigSchema *configschema.Block, keysToPrune []string) (*tfprotov5.ConfigureProviderRequest, error) {
+	// we'll start by marshalling the config to json, we'll then remove extra keys and
+	// convert the config back to msgpack
+	jsonReq, err := json.Marshal(reqConfig, combinedConfigSchema.ImpliedType())
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal config: %w", err)
+	}
+	logging.HelperSchemaTrace(ctx, "pruning google fields from config")
+	logging.HelperSchemaTrace(ctx, string(jsonReq))
+
+	var objmap map[string]gojson.RawMessage
+	err = gojson.Unmarshal(jsonReq, &objmap)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal config: %w", err)
+	}
+
+	// we'll remove the google fields
+	for field, _ := range objmap {
+		if slices.Contains(keysToPrune, field) {
+			delete(objmap, field)
+		}
+	}
+
+	// we'll then marshal the config back to messagepack
+	jsonReq, err = gojson.Marshal(objmap)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal config: %w", err)
+	}
+
+	logging.HelperSchemaTrace(ctx, "pruned google fields from config")
+	logging.HelperSchemaTrace(ctx, string(jsonReq))
+
+	req := &tfprotov5.ConfigureProviderRequest{}
+	req.Config = &tfprotov5.DynamicValue{
+		JSON: jsonReq,
+	}
+	return req, nil
 }
 
 // googConfigureContextFunc configures the context function for google

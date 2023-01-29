@@ -6,7 +6,7 @@ import _ "golang.org/x/tools/benchmark/parse"
 import _ "golang.org/x/mod/semver"
 
 // required for copying the module
-import _ "github.com/hashicorp/terraform-provider-google/v4/google"
+import _ "github.com/hashicorp/terraform-provider-kubernetes/manifest/provider"
 
 // Here: we copy the google module here to make some exports that we need for our module. While we could use module copier for this, the number of files
 // would make the source directory illegible. Instead, we use bundler to bundle the package together and then make our exports from this generated file
