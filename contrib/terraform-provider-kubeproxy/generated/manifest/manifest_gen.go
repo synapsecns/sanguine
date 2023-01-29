@@ -1316,12 +1316,7 @@ func (s *RawProviderServer) ConfigureProvider(ctx configure_context.Context, req
 	}
 	if proxyUrl, ok := configure_os.LookupEnv("KUBE_PROXY_URL"); ok && proxyUrl != "" {
 		overrides.ClusterDefaults.ProxyURL = proxyURL
-		s.logger.Debug("durl", "proxy_url", proxyUrl)
-		s.logger.Debug("gdurl", "proxy_url", overrides.ClusterDefaults.ProxyURL)
 	}
-	s.logger.Debug("furl", "proxy_url", overrides.ClusterDefaults.ProxyURL)
-	hoe, _ := configure_os.LookupEnv("KUBE_PROXY_URL")
-	s.logger.Debug("shirl", "proxy_url", hoe)
 
 	if !providerConfig["exec"].IsNull() && providerConfig["exec"].IsKnown() {
 		var execBlock []configure_tftypes.Value
@@ -1464,7 +1459,6 @@ func (s *RawProviderServer) ConfigureProvider(ctx configure_context.Context, req
 
 	s.logger.Trace("[Configure]", "[ClientConfig]", dump(*clientConfig))
 	s.clientConfig = clientConfig
-	s.logger.Trace("[froxy]", s.clientConfig.Proxy)
 
 	return response, nil
 }
