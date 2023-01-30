@@ -25,6 +25,7 @@ func (s Server) ListenAndServe(ctx context.Context, port string, handler *gin.En
 
 	go func() {
 		//nolint:gosec
+		// TODO: consider setting timeouts here:  https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
 		err := http.Serve(s.listener, handler)
 		if err != nil {
 			logger.Errorf(fmt.Sprintf("rpc server got error: %v", err))

@@ -86,7 +86,7 @@ const logChanSize = 1000
 //nolint:cyclop
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("could not dial grpc: %w", err)
 	}
@@ -234,8 +234,27 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 
 	// TODO (joe): This is just a hack to get the test working, and it is not a general solution.
 	// Rather than pass in treeLength, we need the root at some nonce when there was a SubmitAttestation on Destination,
-	treeLength := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].NumOfItems()
-	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, treeLength)
+	//treeLength := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].NumOfItems()
+	//proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, treeLength)
+
+	originDomain := message.OriginDomain()
+	destinationDomain := message.DestinationDomain()
+	attestationMask := execTypes.DBAttestation{
+		ChainID:     &originDomain,
+		Destination: &destinationDomain,
+	}
+	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].NumOfItems()
+	itemCountNonce, err := e.executorDB.GetEarliestAttestationsNonceInNonceRange(ctx, attestationMask, *nonce, maximumNonce)
+	if err != nil {
+		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
+	}
+
+	if itemCountNonce == nil {
+		return false, nil
+	}
+
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *itemCountNonce)
+
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}

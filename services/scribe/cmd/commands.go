@@ -48,12 +48,6 @@ var portFlag = &cli.UintFlag{
 	Value: 0,
 }
 
-var grpcPortFlag = &cli.UintFlag{
-	Name:  "grpc-port",
-	Usage: "--port 5121",
-	Value: 0,
-}
-
 var dbFlag = &cli.StringFlag{
 	Name:     "db",
 	Usage:    "--db <sqlite> or <mysql>",
@@ -104,7 +98,7 @@ var backfillCommand = &cli.Command{
 		}
 
 		// TODO delete once livefilling done
-		ctx, cancel := context.WithTimeout(c.Context, time.Minute*12)
+		ctx, cancel := context.WithTimeout(c.Context, time.Minute*5)
 		cancelVar := cancel
 		for {
 			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
@@ -149,10 +143,9 @@ var serverCommand = &cli.Command{
 	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag},
 	Action: func(c *cli.Context) error {
 		err := api.Start(c.Context, api.Config{
-			HTTPPort:   uint16(c.Uint(portFlag.Name)),
+			Port:       uint16(c.Uint(portFlag.Name)),
 			Database:   c.String(dbFlag.Name),
 			Path:       c.String(pathFlag.Name),
-			GRPCPort:   uint16(c.Uint(grpcPortFlag.Name)),
 			OmniRPCURL: c.String(omniRPCFlag.Name),
 		})
 		if err != nil {

@@ -15,3 +15,4 @@ This provider is written in pure go and is based on the google terraform provide
 ## Disadvantages:
 
 Terraform resources are limited to the lifecycle of the proxy. This means that if you want to use this to connect to a GCP instance, you need to create a proxy resource, then create a compute instance resource, then create a connection resource. This is because the proxy resource is ephemeral and will be destroyed when the connection resource is destroyed. This is a limitation of the IAP tunneling mechanism, not the provider. The helm provider is exported witha  configurable proxy for this reason
+
