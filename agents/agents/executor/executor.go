@@ -232,11 +232,6 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	// TODO (joe): This is just a hack to get the test working, and it is not a general solution.
-	// Rather than pass in treeLength, we need the root at some nonce when there was a SubmitAttestation on Destination,
-	//treeLength := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].NumOfItems()
-	//proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, treeLength)
-
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	attestationMask := execTypes.DBAttestation{
