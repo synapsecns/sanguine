@@ -122,8 +122,10 @@ var ExecutorRunCommand = &cli.Command{
 		// The flags below are used when `scribeTypeFlag` is set to "remote".
 		scribePortFlag, scribeURL},
 	Action: func(c *cli.Context) error {
+		logger.Errorf("starting executor run command")
 		executorConfig, executorDB, clients, err := createExecutorParameters(c)
 		if err != nil {
+			logger.Errorf("failed to create executor parameters: %v", err)
 			return err
 		}
 
@@ -135,6 +137,7 @@ var ExecutorRunCommand = &cli.Command{
 		case "embedded":
 			eventDB, err := scribeAPI.InitDB(c.Context, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name))
 			if err != nil {
+				logger.Errorf("failed to initialize database: %v", err)
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
 
@@ -144,6 +147,7 @@ var ExecutorRunCommand = &cli.Command{
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
 					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, confNum, client.ChainID))
 					if err != nil {
+						logger.Errorf("failed to dial rpc: %v", err)
 						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, client.ChainID))
 					}
 
@@ -153,12 +157,14 @@ var ExecutorRunCommand = &cli.Command{
 
 			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.EmbeddedScribeConfig)
 			if err != nil {
+				logger.Errorf("failed to create scribe: %v", err)
 				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}
 
 			g.Go(func() error {
 				err := scribe.Start(c.Context)
 				if err != nil {
+					logger.Errorf("failed to start scribe: %v", err)
 					return fmt.Errorf("failed to start scribe: %w", err)
 				}
 
@@ -170,6 +176,7 @@ var ExecutorRunCommand = &cli.Command{
 			g.Go(func() error {
 				err := embedded.Start(c.Context)
 				if err != nil {
+					logger.Errorf("failed to start embedded scribe: %v", err)
 					return fmt.Errorf("failed to start embedded scribe: %w", err)
 				}
 
@@ -185,12 +192,14 @@ var ExecutorRunCommand = &cli.Command{
 
 		executor, err := executor.NewExecutor(c.Context, executorConfig, executorDB, scribeClient, clients)
 		if err != nil {
+			logger.Errorf("failed to create executor: %v", err)
 			return fmt.Errorf("failed to create executor: %w", err)
 		}
 
 		g.Go(func() error {
 			err = executor.Run(c.Context)
 			if err != nil {
+				logger.Errorf("failed to run executor: %v", err)
 				return fmt.Errorf("failed to run executor: %w", err)
 			}
 
@@ -198,6 +207,7 @@ var ExecutorRunCommand = &cli.Command{
 		})
 
 		if err := g.Wait(); err != nil {
+			logger.Errorf("failed to run executor: %v", err)
 			return fmt.Errorf("failed to run executor: %w", err)
 		}
 
