@@ -75,7 +75,7 @@ func NewContractBackfiller(chainConfig config.ChainConfig, address string, event
 func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, endHeight uint64) error {
 	g, groupCtx := errgroup.WithContext(ctx)
 	startHeight := givenStart
-
+	var err error
 	// dont need this
 	//lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(groupCtx, common.HexToAddress(c.address), c.chainConfig.ChainID)
 	//if err != nil {
