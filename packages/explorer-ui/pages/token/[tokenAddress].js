@@ -8,7 +8,7 @@ import {useEffect, useState} from 'react'
 
 import {useLazyQuery, useQuery} from '@apollo/client'
 
-import {BRIDGE_AMOUNT_STATISTIC, GET_BRIDGE_TRANSACTIONS_QUERY,} from '@graphql/queries'
+import {AMOUNT_STATISTIC, GET_BRIDGE_TRANSACTIONS_QUERY,} from '@graphql/queries'
 import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
 import {Pagination} from '@components/Pagination'
 
@@ -140,40 +140,43 @@ export default function tokenAddressRoute({
 export async function getServerSideProps(context) {
   const { tokenAddress, chainId } = context.query
   const { data: allTimeBridgeVolume } = await client.query({
-    query: BRIDGE_AMOUNT_STATISTIC,
+    query: AMOUNT_STATISTIC,
     variables: {
       chainId: chainId,
       duration: 'ALL_TIME',
       tokenAddress: tokenAddress,
       type: 'TOTAL_VOLUME_USD',
+      platform: 'BRIDGE',
     },
   })
 
   const { data: allTimeTransactionCount } = await client.query({
-    query: BRIDGE_AMOUNT_STATISTIC,
+    query: AMOUNT_STATISTIC,
     variables: {
       chainId: chainId,
       duration: 'ALL_TIME',
       tokenAddress: tokenAddress,
       type: 'COUNT_TRANSACTIONS',
+      platform: 'BRIDGE',
     },
   })
 
   const { data: allTimeAddresses } = await client.query({
-    query: BRIDGE_AMOUNT_STATISTIC,
+    query: AMOUNT_STATISTIC,
     variables: {
       chainId: chainId,
       duration: 'ALL_TIME',
       tokenAddress: tokenAddress,
       type: 'COUNT_ADDRESSES',
+      platform: 'BRIDGE',
     },
   })
 
   const { data: bridgeTransactions } = await client.query({
     query: GET_BRIDGE_TRANSACTIONS_QUERY,
     variables: {
-      chainId: chainId,
-      tokenAddress: tokenAddress,
+      chainId: [chainId],
+      tokenAddress: [tokenAddress],
       page: 1,
     },
   })
@@ -181,13 +184,13 @@ export async function getServerSideProps(context) {
   return {
     props: {
       allTimeBridgeVolume: normalizeValue(
-        allTimeBridgeVolume?.bridgeAmountStatistic?.value
+        allTimeBridgeVolume?.amountStatistic?.value
       ),
       allTimeTransactionCount: normalizeValue(
-        allTimeTransactionCount?.bridgeAmountStatistic?.value
+        allTimeTransactionCount?.amountStatistic?.value
       ),
       allTimeAddresses: normalizeValue(
-        allTimeAddresses?.bridgeAmountStatistic?.value
+        allTimeAddresses?.amountStatistic?.value
       ),
       bridgeTransactions: bridgeTransactions,
     },

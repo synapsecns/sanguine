@@ -23,7 +23,7 @@ FROM (
                 chain_id                                      AS swap_chain_id,
                 if(notEmpty(amount.keys), amount.keys[1], -1) AS amount_id
 
-         FROM explorer_prod_1.swap_events WHERE timestamp >= minTimestamp
+         FROM swap_events WHERE timestamp >= minTimestamp
          LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)
 )
 `

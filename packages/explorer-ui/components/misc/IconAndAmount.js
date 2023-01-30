@@ -14,7 +14,7 @@ export function IconAndAmount({
   styledCoin = false,
 }) {
   tokenAddress = tokenAddress && tokenAddress.toLowerCase()
-  const t = chainId && tokenAddress && TOKEN_HASH_MAP[chainId][tokenAddress]
+  const t = chainId && tokenAddress && TOKEN_HASH_MAP[chainId]?.[tokenAddress]
 
   let styledCoinClass
   if (styledCoin === true) {

@@ -1,11 +1,11 @@
 import {Home} from '@components/pages/Home'
 import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
 import {
-  BRIDGE_AMOUNT_STATISTIC,
+  AMOUNT_STATISTIC,
   COUNT_BY_CHAIN_ID,
   COUNT_BY_TOKEN_ADDRESS,
   GET_BRIDGE_TRANSACTIONS_QUERY,
-  GET_HISTORICAL_STATS,
+  GET_DAILY_STATS,
 } from '@graphql/queries'
 import {API_URL} from '@graphql'
 
@@ -27,10 +27,8 @@ function Index({
   bridgeVolume,
   transactions,
   addresses,
-  bridgeVolumeAllTime,
-  transactionsAllTime,
-  addressesAllTime,
   latestBridgeTransactions,
+  latestBridgeTransactionsPending,
   popularTokens,
   popularChains,
 }) {
@@ -39,10 +37,6 @@ function Index({
       bridgeVolume={bridgeVolume}
       transactions={transactions}
       addresses={addresses}
-      bridgeVolumeAllTime={bridgeVolumeAllTime}
-      transactionsAllTime={transactionsAllTime}
-      addressesAllTime={addressesAllTime}
-      latestBridgeTransactions={latestBridgeTransactions}
       popularTokens={popularTokens}
       popularChains={popularChains}
     />
@@ -53,60 +47,73 @@ export default Index
 
 export async function getServerSideProps() {
   const { data: bridgeVolume } = await client.query({
-    query: GET_HISTORICAL_STATS,
+    query: GET_DAILY_STATS,
     variables: {
       chainId: null,
-      type: 'BRIDGEVOLUME',
+      type: 'VOLUME',
+      platform: 'BRIDGE',
       days: 30,
     },
   })
 
   const { data: transactions } = await client.query({
-    query: GET_HISTORICAL_STATS,
+    query: GET_DAILY_STATS,
     variables: {
       chainId: null,
       type: 'TRANSACTIONS',
+      platform: 'BRIDGE',
       days: 30,
     },
   })
 
   const { data: addresses } = await client.query({
-    query: GET_HISTORICAL_STATS,
+    query: GET_DAILY_STATS,
     variables: {
       chainId: null,
       type: 'ADDRESSES',
+      platform: 'BRIDGE',
       days: 30,
     },
   })
 
-  const { data: bridgeVolumeAllTime } = await client.query({
-    query: BRIDGE_AMOUNT_STATISTIC,
-    variables: {
-      type: 'TOTAL_VOLUME_USD',
-      duration: 'ALL_TIME',
-    },
-  })
+  // const { data: bridgeVolumeAllTime } = await client.query({
+  //   query: AMOUNT_STATISTIC,
+  //   variables: {
+  //     type: 'TOTAL_VOLUME_USD',
+  //     duration: 'ALL_TIME',
+  //     platform: 'BRIDGE',
+  //   },
+  // })
 
-  const { data: transactionsAllTime } = await client.query({
-    query: BRIDGE_AMOUNT_STATISTIC,
-    variables: {
-      type: 'COUNT_TRANSACTIONS',
-      duration: 'ALL_TIME',
-    },
-  })
+  // const { data: transactionsAllTime } = await client.query({
+  //   query: AMOUNT_STATISTIC,
+  //   variables: {
+  //     type: 'COUNT_TRANSACTIONS',
+  //     duration: 'ALL_TIME',
+  //     platform: 'BRIDGE',
+  //   },
+  // })
 
-  const { data: addressesAllTime } = await client.query({
-    query: BRIDGE_AMOUNT_STATISTIC,
-    variables: {
-      type: 'COUNT_ADDRESSES',
-      duration: 'ALL_TIME',
-    },
-  })
+  // const { data: addressesAllTime } = await client.query({
+  //   query: AMOUNT_STATISTIC,
+  //   variables: {
+  //     type: 'COUNT_ADDRESSES',
+  //     duration: 'ALL_TIME',
+  //     platform: 'BRIDGE',
+  //   },
+  // })
 
   const { data: latestBridgeTransactions } = await client.query({
     query: GET_BRIDGE_TRANSACTIONS_QUERY,
     variables: {
-      includePending: false,
+      pending: false,
+      page: 1,
+    },
+  })
+  const { data: latestBridgeTransactionsPending } = await client.query({
+    query: GET_BRIDGE_TRANSACTIONS_QUERY,
+    variables: {
+      pending: true,
       page: 1,
     },
   })
@@ -135,10 +142,6 @@ export async function getServerSideProps() {
       bridgeVolume: bridgeVolume,
       transactions: transactions,
       addresses: addresses,
-      bridgeVolumeAllTime: bridgeVolumeAllTime,
-      transactionsAllTime: transactionsAllTime,
-      addressesAllTime: addressesAllTime,
-      latestBridgeTransactions: latestBridgeTransactions,
       popularTokens: countByTokenAddress,
       popularChains: countByChainId,
     }, // will be passed to the page component as props

@@ -1,4 +1,4 @@
-import {GET_BRIDGE_TRANSACTIONS_QUERY, GET_HISTORICAL_STATS,} from '@graphql/queries'
+import {GET_BRIDGE_TRANSACTIONS_QUERY, GET_DAILY_STATS,} from '@graphql/queries'
 import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
 import {API_URL} from '@graphql'
 
@@ -42,17 +42,22 @@ export default function chainId({
   const router = useRouter()
   const { chainId } = router.query
 
-  const [chartType, setChartType] = useState('BRIDGEVOLUME')
+  const [chartType, setChartType] = useState('VOLUME')
 
   let chartData
 
-  if (chartType === 'BRIDGEVOLUME') {
-    chartData = bridgeVolume && bridgeVolume.historicalStatistics.dateResults
+  if (chartType === 'VOLUME') {
+    console.log(bridgeVolume.dailyStatistics)
+    chartData = bridgeVolume && bridgeVolume.dailyStatistics.dateResults
   } else if (chartType === 'TRANSACTIONS') {
+    console.log(transactionsData.dailyStatistics)
+
     chartData =
-      transactionsData && transactionsData.historicalStatistics.dateResults
+      transactionsData && transactionsData.dailyStatistics.dateResults
   } else if (chartType === 'ADDRESSES') {
-    chartData = addresses && addresses.historicalStatistics.dateResults
+    console.log(addresses.dailyStatistics)
+
+    chartData = addresses && addresses.dailyStatistics.dateResults
   }
 
   const search = useSearchParams()
@@ -64,12 +69,12 @@ export default function chainId({
   const [getBridgeTransactions, { error: pageError, data }] = useLazyQuery(
     GET_BRIDGE_TRANSACTIONS_QUERY
   )
-
+  console.log("dskjahkdsnj", data)
   useEffect(() => {
     if (data) {
       setTransactions(data.bridgeTransactions, {
         variables: {
-          chainId: Number(chainId),
+          chainId: [Number(chainId)],
         },
       })
     }
@@ -80,7 +85,7 @@ export default function chainId({
       setPage(1)
       getBridgeTransactions({
         variables: {
-          chainId: Number(chainId),
+          chainId:[ Number(chainId)],
           page: 1,
         },
       })
@@ -88,7 +93,7 @@ export default function chainId({
       setPage(num)
       getBridgeTransactions({
         variables: {
-          chainId: Number(chainId),
+          chainId: [Number(chainId)],
           page: num,
         },
       })
@@ -101,7 +106,7 @@ export default function chainId({
     // setSearch({ page: newPage })
 
     getBridgeTransactions({
-      variables: { chainId: Number(chainId), page: newPage },
+      variables: { chainId: [Number(chainId)], page: newPage },
     })
   }
 
@@ -111,7 +116,7 @@ export default function chainId({
       setPage(newPage)
       // setSearch({ page: newPage })
       getBridgeTransactions({
-        variables: { chainId: Number(chainId), page: newPage },
+        variables: { chainId: [Number(chainId)], page: newPage },
       })
     }
   }
@@ -120,7 +125,7 @@ export default function chainId({
     setPage(1)
     // setSearch({ page: 1 })
     getBridgeTransactions({
-      variables: { chainId: Number(chainId), page: 1 },
+      variables: { chainId: [Number(chainId)], page: 1 },
     })
   }
 
@@ -142,9 +147,9 @@ export default function chainId({
       <Chart data={chartData} />
       {bridgeVolume && transactionsData && addresses ? (
         <Stats
-          bridgeVolume={bridgeVolume.historicalStatistics.total}
-          transactions={transactionsData.historicalStatistics.total}
-          addresses={addresses.historicalStatistics.total}
+          bridgeVolume={bridgeVolume.dailyStatistics.total}
+          transactions={transactionsData.dailyStatistics.total}
+          addresses={addresses.dailyStatistics.total}
           setChartType={setChartType}
         />
       ) : (
@@ -164,27 +169,30 @@ export default function chainId({
 
 export async function getServerSideProps(context) {
   const { data: bridgeVolume } = await client.query({
-    query: GET_HISTORICAL_STATS,
+    query: GET_DAILY_STATS,
     variables: {
-      type: 'BRIDGEVOLUME',
+      type: 'VOLUME',
+      platform: 'BRIDGE',
       days: 30,
       chainId: Number(context.params.chainId),
     },
   })
 
   const { data: transactionsData } = await client.query({
-    query: GET_HISTORICAL_STATS,
+    query: GET_DAILY_STATS,
     variables: {
       type: 'TRANSACTIONS',
+      platform: 'BRIDGE',
       days: 30,
       chainId: Number(context.params.chainId),
     },
   })
 
   const { data: addresses } = await client.query({
-    query: GET_HISTORICAL_STATS,
+    query: GET_DAILY_STATS,
     variables: {
       type: 'ADDRESSES',
+      platform: 'BRIDGE',
       days: 30,
       chainId: Number(context.params.chainId),
     },
@@ -193,7 +201,7 @@ export async function getServerSideProps(context) {
   const { data: latestBridgeTransactions } = await client.query({
     query: GET_BRIDGE_TRANSACTIONS_QUERY,
     variables: {
-      chainId: Number(context.params.chainId),
+      chainId: [Number(context.params.chainId)],
       page: 1,
     },
   })

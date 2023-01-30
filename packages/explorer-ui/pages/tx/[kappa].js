@@ -75,7 +75,7 @@ export default function BridgeTransaction({ queryResult }) {
               <IconAndAmount
                 formattedValue={fromInfo.formattedValue}
                 tokenAddress={fromInfo.tokenAddress}
-                chainId={fromInfo.chainId}
+                chainId={fromInfo.chainID}
                 tokenSymbol={fromInfo.tokenSymbol}
                 iconSize="w-6 h-6"
                 textSize="text-sm"
@@ -89,7 +89,7 @@ export default function BridgeTransaction({ queryResult }) {
               <IconAndAmount
                 formattedValue={toInfo.formattedValue}
                 tokenAddress={toInfo.tokenAddress}
-                chainId={toInfo.chainId}
+                chainId={toInfo.chainID}
                 tokenSymbol={toInfo.tokenSymbol}
                 iconSize="w-6 h-6"
                 textSize="text-sm"

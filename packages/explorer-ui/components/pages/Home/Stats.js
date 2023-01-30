@@ -11,7 +11,7 @@ export function Stats({
   setChartType,
   allTime,
 }) {
-  const [activeState, setState] = useState('BRIDGEVOLUME')
+  const [activeState, setState] = useState('VOLUME')
 
   function updateState(string) {
     setState(string)
@@ -23,8 +23,8 @@ export function Stats({
       <Grid cols={{ sm: 1, md: 3, lg: 3 }} gap={4} className="my-3">
         <AllTimeStatCard
           title="Bridge Volume"
-          active={activeState === 'BRIDGEVOLUME'}
-          onClick={() => updateState('BRIDGEVOLUME')}
+          active={activeState === 'VOLUME'}
+          onClick={() => updateState('VOLUME')}
         >
           <div className="text-4xl font-bold text-white">
             {numeral(bridgeVolume / 1000000000).format('$0.000')}B
@@ -55,8 +55,8 @@ export function Stats({
       <Grid cols={{ sm: 1, md: 3, lg: 3 }} gap={4} className="my-3">
         <StatCard
           title="Bridge Volume"
-          active={activeState === 'BRIDGEVOLUME'}
-          onClick={() => updateState('BRIDGEVOLUME')}
+          active={activeState === 'VOLUME'}
+          onClick={() => updateState('VOLUME')}
         >
           <div className="text-4xl font-bold text-white">
             {numeral(bridgeVolume / 1000000).format('$0.000')}M

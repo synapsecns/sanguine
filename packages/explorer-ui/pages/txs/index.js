@@ -61,7 +61,7 @@ export async function getServerSideProps(context) {
       query: GET_BRIDGE_TRANSACTIONS_QUERY,
       variables: {
         address: context.query.account,
-        includePending: false,
+        pending: false,
         page: context.query.p ?? 1,
       },
     })
@@ -70,8 +70,8 @@ export async function getServerSideProps(context) {
     let { data } = await client.query({
       query: GET_BRIDGE_TRANSACTIONS_QUERY,
       variables: {
-        chainId: context.query.chainId,
-        includePending: false,
+        chainID: [context.query.chainId],
+        pending: false,
         page: context.query.p ?? 1,
       },
     })
@@ -80,7 +80,7 @@ export async function getServerSideProps(context) {
     let { data } = await client.query({
       query: GET_BRIDGE_TRANSACTIONS_QUERY,
       variables: {
-        includePending: false,
+        pending: false,
         page: context.query.p ?? 1,
       },
     })

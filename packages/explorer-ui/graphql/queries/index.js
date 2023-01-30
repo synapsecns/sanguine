@@ -2,7 +2,7 @@ import {gql} from '@apollo/client'
 
 const SINGLE_SIDE_INFO_FRAGMENT = gql`
   fragment SingleSideInfo on PartialInfo {
-    chainId
+    chainID
     address
     hash: txnHash
     value
@@ -34,19 +34,19 @@ export const GET_BRIDGE_TRANSACTIONS_QUERY = gql`
   query GetBridgeTransactionsQuery(
     $txnHash:         String
     $address:         String
-    $chainId:         Int
+    $chainID:         [Int]
     $page:            Int
-    $tokenAddress:    String
-    $includePending:  Boolean
+    $tokenAddress:    [String]
+    $pending:         Boolean
     $kappa:           String
   ) {
     bridgeTransactions(
       txnHash:          $txnHash
       address:          $address
-      chainId:          $chainId
+      chainID:          $chainID
       page:             $page
       tokenAddress:     $tokenAddress
-      includePending:   $includePending
+      pending:          $pending
       kappa:            $kappa
     ) {
       ...TransactionInfo
@@ -56,16 +56,16 @@ export const GET_BRIDGE_TRANSACTIONS_QUERY = gql`
 `
 export const COUNT_BY_CHAIN_ID = gql`
   query CountByChainId(
-    $chainId:   Int
+    $chainID:   Int
     $direction: Direction
     $hours:     Int
   ) {
     countByChainId(
-      chainId:    $chainId
+      chainID:    $chainID
       direction:  $direction
       hours:      $hours
     ) {
-      chainId
+      chainID
       count
     }
   }
@@ -73,19 +73,19 @@ export const COUNT_BY_CHAIN_ID = gql`
 
 export const COUNT_BY_TOKEN_ADDRESS = gql`
   query CountByTokenAddress(
-    $chainId:   Int
+    $chainID:   Int
     $direction: Direction
     $hours:     Int
     $address:   String
   ) {
     countByTokenAddress(
-      chainId:    $chainId
+      chainID:    $chainID
       direction:  $direction
       hours:      $hours
       address:    $address
     ) {
       tokenAddress
-      chainId
+      chainID
       count
     }
   }
@@ -104,14 +104,14 @@ export const BRIDGE_AMOUNT_STATISTIC = gql`
   query BridgeAmountStatistic(
     $type:          StatisticType!
     $duration:      Duration!
-    $chainId:       Int
+    $chainID:       Int
     $address:       String
     $tokenAddress:  String
   ) {
     bridgeAmountStatistic(
       type:           $type
       duration:       $duration
-      chainId:        $chainId
+      chainID:        $chainID
       address:        $address
       tokenAddress:   $tokenAddress
     ) {
@@ -131,12 +131,12 @@ export const GET_CSV = gql`
 
 export const GET_HISTORICAL_STATS = gql`
   query HistoricalStatistics(
-    $chainId: Int
+    $chainID: Int
     $type: HistoricalResultType!
     $days: Int
   ) {
     historicalStatistics(
-      chainId: $chainId
+      chainID: $chainID
       type: $type
       days: $days
     ) {
@@ -145,6 +145,52 @@ export const GET_HISTORICAL_STATS = gql`
         date
         total
       }
+    }
+  }
+`
+
+
+export const GET_DAILY_STATS = gql`
+  query DailyStatistics(
+    $chainID: Int
+    $type: DailyStatisticType!,
+    $platform: Platform,
+     $days: Int
+  ) {
+    dailyStatistics(
+      chainID: $chainID
+      type: $type
+      days: $days
+      platform: $platform
+    ) {
+      total
+      dateResults {
+        date
+        total
+      }
+    }
+  }
+`
+
+
+export const AMOUNT_STATISTIC = gql`
+  query AmountStatistic(
+    $type:          StatisticType!
+    $duration:      Duration!
+    $platform:      Platform
+    $chainID:       Int
+    $address:       String
+    $tokenAddress:  String
+  ) {
+    amountStatistic(
+      type: $type
+      duration: $duration
+      platform: $platform
+      chainID: $chainID
+      address: $address
+      tokenAddress: $tokenAddress
+    ) {
+      value
     }
   }
 `

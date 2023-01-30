@@ -20,7 +20,7 @@ import (
 func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error) {
 	var err error
 	var results []*model.BridgeTransaction
-
+	fmt.Println(chainID, maxAmount, minAmount, startTime, endTime, txnHash, kappa, *pending, *page, tokenAddress)
 	switch {
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
@@ -60,6 +60,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID []*int, 
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
 	sort.Sort(SortBridgeTxType(results))
+	fmt.Println(results)
 	return results, nil
 }
 
@@ -269,9 +270,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 	var finalSQL *string
 	switch *platform {
 	case model.PlatformBridge:
-		directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "")
-		compositeFilters += directionSpecifier
-		finalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, compositeFilters)
+		finalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, compositeFilters, &firstFilter)
 		if err != nil {
 			return nil, err
 		}
@@ -297,7 +296,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 		var swapSum float64
 		var messageBusSum float64
 
-		bridgeFinalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, compositeFilters+generateDirectionSpecifierSQL(true, &firstFilter, ""))
+		bridgeFinalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, compositeFilters, &firstFilter)
 		if err != nil {
 			return nil, err
 		}
@@ -379,9 +378,7 @@ func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeA
 
 	switch *platform {
 	case model.PlatformBridge:
-		directionSpecifier := generateDirectionSpecifierSQL(true, &firstFilter, "")
-		compositeFilters += directionSpecifier
-		subQuery, query, err = GenerateDailyStatisticBridgeSQL(typeArg, compositeFilters)
+		subQuery, query, err = GenerateDailyStatisticBridgeSQL(typeArg, compositeFilters, &firstFilter)
 		if err != nil {
 			return nil, err
 		}
@@ -396,7 +393,7 @@ func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeA
 			return nil, err
 		}
 	case model.PlatformAll:
-		bridgeSubQuery, bridgeQuery, bridgeErr := GenerateDailyStatisticBridgeSQL(typeArg, compositeFilters)
+		bridgeSubQuery, bridgeQuery, bridgeErr := GenerateDailyStatisticBridgeSQL(typeArg, compositeFilters, &firstFilter)
 		if bridgeErr != nil {
 			return nil, bridgeErr
 		}

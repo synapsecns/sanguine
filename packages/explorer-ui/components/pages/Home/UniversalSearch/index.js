@@ -1,16 +1,18 @@
 import _ from 'lodash'
-import {useState} from 'react'
+import { useState } from 'react'
 
-import {validateAndParseAddress} from '@utils/validateAndParseAddress'
-import {validateAndParseHash} from '@utils/validateAndParseHash'
+import { validateAndParseAddress } from '@utils/validateAndParseAddress'
+import { validateAndParseHash } from '@utils/validateAndParseHash'
 
-import {ChainId} from '@constants/networks'
+import { ChainId } from '@constants/networks'
 
-import {SearchBox} from './SearchBox'
+import { SearchBox } from './SearchBox'
 
-export function UniversalSearch({ placeholder }) {
+export function UniversalSearch({ placeholder, setPending, pending, loading }) {
   const [searchField, setSearchField] = useState('')
   const [showText, setShowText] = useState(false)
+  const unSelectStyle = "border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30"
+  const selectStyle = "text-white border-[#BE78FF] bg-synapse-radial"
 
   let isValid
   let error
@@ -85,10 +87,10 @@ export function UniversalSearch({ placeholder }) {
             </a>
           </button>
           <div className="">
-            <button className="font-medium rounded-l-md text-white border  border-[#BE78FF] bg-synapse-radial px-4 py-2">
+            <button disabled={loading} onClick={() => setPending(false)} className={"font-medium rounded-l-md px-4 py-2 border " + (pending ? unSelectStyle : selectStyle) + (loading ? " pointer-events-none" : "")}>
               Confirmed
             </button>
-            <button className="font-medium rounded-r-md border border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 px-4 py-2">
+            <button disabled={loading} onClick={() => setPending(true)} className={"font-medium rounded-r-md px-4 py-2 border " + (pending ? selectStyle : unSelectStyle) + (loading ? " pointer-events-none" : "")}>
               Pending
             </button>
           </div>
@@ -291,3 +293,4 @@ export function UniversalSearch({ placeholder }) {
     </>
   )
 }
+

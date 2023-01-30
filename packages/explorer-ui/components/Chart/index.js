@@ -26,7 +26,7 @@ function BarMaker({ value, height, date }) {
       <div
         className={`relative flex justify-center w-full ${h} bg-gradient-to-b from-[#FF00FF] to-[#AC8FFF] hover:opacity-50`}
       ></div>
-            <span className='-rotate-45 text-white text-[5px] mt-3 l-0 pr-0'>{date.substring(0,date.length - 5)}</span>
+            <span className='-rotate-45 text-white text-[5px] mt-3 l-0 pr-0'>{date}</span>
 
     </div>
   )
@@ -61,10 +61,12 @@ function normalize(data) {
   data.map((entry) => (entry.total > max)? max = entry.total : null)
 
   let newList = data.map((day) => {
+    let date = new Date(day.date)
+    let formattedDate = (date.getUTCMonth() + 1)  + '/' + (date.getUTCDate())
     let n = (day.total / max) * maxHeight
     return {
       value: day.total,
-      date: day.date,
+      date: formattedDate,
       normalizedValue: Math.trunc(n),
     }
   })

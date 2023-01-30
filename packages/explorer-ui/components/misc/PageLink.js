@@ -1,9 +1,9 @@
 export function PageLink({ text, url, external = false }) {
   if (external) {
     return (
-      <div className="mt-2 mb-10 ml-2">
+      <div className="mt-2 mb-14">
         <a
-          className="text-white text-opacity-50 hover:text-opacity-90 hover:underline"
+          className="text-white text-opacity-100 hover:text-opacity-90 hover:underline"
           href={url}
           target="_blank"
           rel="noreferrer"
@@ -14,8 +14,8 @@ export function PageLink({ text, url, external = false }) {
     )
   } else {
     return (
-      <div className="mt-2 mb-10 ml-2">
-        <a href={url} className="text-white text-opacity-50 hover:text-opacity-90 hover:underline">
+      <div className="mt-2 mb-14 ">
+        <a href={url} className="text-white text-opacity-100 hover:text-opacity-90 hover:underline">
           {text}
         </a>
       </div>
