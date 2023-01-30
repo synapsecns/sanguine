@@ -178,11 +178,9 @@ var backfillDFKCommand = &cli.Command{
 			}
 
 			err = scribeBackfiller.Backfill(c.Context)
-			//if err != nil {
-			//	cancelVar()
-			//	ctx, cancel = context.WithTimeout(c.Context, time.Minute*10)
-			//	cancelVar = cancel
-			//}
+			if err != nil {
+				fmt.Println("fail backfilling")
+			}
 		}
 	},
 }
