@@ -2,7 +2,6 @@ package agentsintegration_test
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	executor2 "github.com/synapsecns/sanguine/agents/agents/executor"
 	"math/big"
 	"time"
@@ -640,13 +639,9 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 	recipient := testContractDest.Address().Hash()
 	txContextOrigin.Value = types.TotalTips(tips)
 
-	bodies := [][]byte{}
-	senders := []common.Address{}
-	headers := []types.Header{}
 	messages := []types.Message{}
 	for i := 0; i < numMessages; i++ {
 		body := []byte{byte(gofakeit.Uint32())}
-		bodies = append(bodies, body)
 
 		tx, err := u.OriginContract.Dispatch(
 			txContextOrigin.TransactOpts,
@@ -664,10 +659,8 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 
 		sender, err := u.TestBackendOrigin.Signer().Sender(tx)
 		u.Nil(err)
-		senders = append(senders, sender)
 
 		header := types.NewHeader(uint32(u.TestBackendOrigin.GetChainID()), sender.Hash(), uint32(i+1), uint32(u.TestBackendDestination.GetChainID()), recipient, optimisticSeconds)
-		headers = append(headers, header)
 		message := types.NewMessage(header, tips, body)
 		messages = append(messages, message)
 	}
