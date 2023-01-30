@@ -69,15 +69,19 @@ func (a AttestationGuardCollectorSubmitter) Start(ctx context.Context) error {
 	}
 }
 
-// FindOldestGuardUnsubmittedSignedInProgressAttestation fetches the oldest signed attestation (by both notary and guard)
+// FindNewestGuardUnsubmittedSignedInProgressAttestation fetches the newest signed attestation (by both notary and guard)
 // that has not yet been submitted to the Attestation Collector.
-func (a AttestationGuardCollectorSubmitter) FindOldestGuardUnsubmittedSignedInProgressAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestGuardUnsubmittedSignedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+func (a AttestationGuardCollectorSubmitter) FindNewestGuardUnsubmittedSignedInProgressAttestation(ctx context.Context) (types.InProgressAttestation, error) {
+	inProgressAttestation, err := a.db.RetrieveNewestInProgressAttestationIfInState(
+		ctx,
+		a.originDomain.Config().DomainID,
+		a.destinationDomain.Config().DomainID,
+		types.AttestationStateGuardSignedUnsubmitted)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not retrieve oldest signed and unsubmitted attestation: %w", err)
+		return nil, fmt.Errorf("could not retrieve newest signed and unsubmitted attestation: %w", err)
 	}
 	return inProgressAttestation, nil
 }
@@ -86,9 +90,9 @@ func (a AttestationGuardCollectorSubmitter) FindOldestGuardUnsubmittedSignedInPr
 //
 //nolint:cyclop
 func (a AttestationGuardCollectorSubmitter) update(ctx context.Context) error {
-	inProgressAttestationToSubmitToCollector, err := a.FindOldestGuardUnsubmittedSignedInProgressAttestation(ctx)
+	inProgressAttestationToSubmitToCollector, err := a.FindNewestGuardUnsubmittedSignedInProgressAttestation(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find oldest signed and unsubmitted attestation: %w", err)
+		return fmt.Errorf("could not find newest signed and unsubmitted attestation: %w", err)
 	}
 	if inProgressAttestationToSubmitToCollector == nil {
 		return nil
@@ -106,7 +110,6 @@ func (a AttestationGuardCollectorSubmitter) update(ctx context.Context) error {
 	nowTime := time.Now()
 	submittedInProgressAttestation := types.NewInProgressAttestation(
 		inProgressAttestationToSubmitToCollector.SignedAttestation(),
-		inProgressAttestationToSubmitToCollector.OriginDispatchBlockNumber(),
 		&nowTime,
 		0)
 

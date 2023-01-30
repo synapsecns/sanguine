@@ -17,8 +17,8 @@ import (
 // signs them, and posts to destination chains.
 // TODO: Note right now, I have threads for each origin-destination pair and do no batching at all.
 type Guard struct {
+	originScanners             map[string]map[string]OriginGuardAttestationScanner
 	scanners                   map[string]map[string]AttestationCollectorAttestationScanner
-	originDoubleCheckers       map[string]map[string]AttestationDoubleCheckOnOriginVerifier
 	guardSigners               map[string]map[string]AttestationGuardSigner
 	guardCollectorSubmitters   map[string]map[string]AttestationGuardCollectorSubmitter
 	guardCollectorVerifiers    map[string]map[string]AttestationGuardCollectorVerifier
@@ -37,8 +37,8 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		return Guard{}, fmt.Errorf("cfg.refreshInterval cannot be 0")
 	}
 	guard := Guard{
+		originScanners:             make(map[string]map[string]OriginGuardAttestationScanner),
 		scanners:                   make(map[string]map[string]AttestationCollectorAttestationScanner),
-		originDoubleCheckers:       make(map[string]map[string]AttestationDoubleCheckOnOriginVerifier),
 		guardSigners:               make(map[string]map[string]AttestationGuardSigner),
 		guardCollectorSubmitters:   make(map[string]map[string]AttestationGuardCollectorSubmitter),
 		guardCollectorVerifiers:    make(map[string]map[string]AttestationGuardCollectorVerifier),
@@ -81,8 +81,8 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		if err != nil {
 			return Guard{}, fmt.Errorf("failing to create evm for origiin, could not create guard for: %w", err)
 		}
+		guard.originScanners[originName] = make(map[string]OriginGuardAttestationScanner)
 		guard.scanners[originName] = make(map[string]AttestationCollectorAttestationScanner)
-		guard.originDoubleCheckers[originName] = make(map[string]AttestationDoubleCheckOnOriginVerifier)
 		guard.guardSigners[originName] = make(map[string]AttestationGuardSigner)
 		guard.guardCollectorSubmitters[originName] = make(map[string]AttestationGuardCollectorSubmitter)
 		guard.guardCollectorVerifiers[originName] = make(map[string]AttestationGuardCollectorVerifier)
@@ -104,20 +104,20 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 				return Guard{}, fmt.Errorf("error trying to PrimeNonce for destinationClient, could not create guard for: %w", err)
 			}
 
-			guard.scanners[originName][destinationName] = NewAttestationCollectorAttestationScanner(
-				attestationDomainClient,
-				originDomain.DomainID,
-				destinationDomain.DomainID,
-				dbHandle,
-				guard.unbondedSigner,
-				guard.refreshInterval)
-
-			guard.originDoubleCheckers[originName][destinationName] = NewAttestationDoubleCheckOnOriginVerifier(
+			guard.originScanners[originName][destinationName] = NewOriginGuardAttestationScanner(
 				originDomainClient,
 				attestationDomainClient,
 				destinationDomainClient,
 				dbHandle,
 				guard.bondedSigner,
+				guard.unbondedSigner,
+				guard.refreshInterval)
+
+			guard.scanners[originName][destinationName] = NewAttestationCollectorAttestationScanner(
+				attestationDomainClient,
+				originDomain.DomainID,
+				destinationDomain.DomainID,
+				dbHandle,
 				guard.unbondedSigner,
 				guard.refreshInterval)
 
@@ -177,24 +177,24 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 func (u Guard) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
-	for originName, originScanners := range u.scanners {
+	for originName, originScanners := range u.originScanners {
 		for destinationName := range originScanners {
 			originName := originName           // capture func literal
 			destinationName := destinationName // capture func literal
 			g.Go(func() error {
 				//nolint: wrapcheck
-				return u.scanners[originName][destinationName].Start(ctx)
+				return u.originScanners[originName][destinationName].Start(ctx)
 			})
 		}
 	}
 
-	for originName, originToAllDestinationsDoubleCheckers := range u.originDoubleCheckers {
-		for destinationName := range originToAllDestinationsDoubleCheckers {
+	for originName, attestationScanners := range u.scanners {
+		for destinationName := range attestationScanners {
 			originName := originName           // capture func literal
 			destinationName := destinationName // capture func literal
 			g.Go(func() error {
 				//nolint: wrapcheck
-				return u.originDoubleCheckers[originName][destinationName].Start(ctx)
+				return u.scanners[originName][destinationName].Start(ctx)
 			})
 		}
 	}

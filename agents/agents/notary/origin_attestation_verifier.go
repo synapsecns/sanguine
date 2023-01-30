@@ -68,14 +68,18 @@ func (a OriginAttestationVerifier) Start(ctx context.Context) error {
 	}
 }
 
-// FindOldestUnconfirmedAttestation fetches the oldest attestation that still needs to be confirmed.
-func (a OriginAttestationVerifier) FindOldestUnconfirmedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestUnconfirmedSubmittedInProgressAttestation(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+// FindNewestUnconfirmedAttestation fetches the newest attestation that still needs to be confirmed.
+func (a OriginAttestationVerifier) FindNewestUnconfirmedAttestation(ctx context.Context) (types.InProgressAttestation, error) {
+	inProgressAttestation, err := a.db.RetrieveNewestInProgressAttestationIfInState(
+		ctx,
+		a.originDomain.Config().DomainID,
+		a.destinationDomain.Config().DomainID,
+		types.AttestationStateNotarySubmittedUnconfirmed)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not find oldest unconfirmed signed attestation: %w", err)
+		return nil, fmt.Errorf("could not find newest unconfirmed signed attestation: %w", err)
 	}
 	return inProgressAttestation, nil
 }
@@ -85,9 +89,9 @@ func (a OriginAttestationVerifier) FindOldestUnconfirmedAttestation(ctx context.
 //nolint:cyclop
 func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	// TODO (joe): we want to go through and update attestations for each destination.
-	inProgressAttestationToConfirm, err := a.FindOldestUnconfirmedAttestation(ctx)
+	inProgressAttestationToConfirm, err := a.FindNewestUnconfirmedAttestation(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find oldest unconfirmed attestation: %w", err)
+		return fmt.Errorf("could not find newest unconfirmed attestation: %w", err)
 	}
 	if inProgressAttestationToConfirm == nil {
 		return nil
@@ -100,7 +104,7 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 	}
 
 	if latestNonce >= inProgressAttestationToConfirm.SignedAttestation().Attestation().Nonce() {
-		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime(), 0)
+		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.SubmittedToAttestationCollectorTime(), 0)
 
 		err = a.db.MarkNotaryConfirmedOnAttestationCollector(ctx, confirmedInProgressAttestation)
 		if err != nil {
@@ -115,7 +119,7 @@ func (a OriginAttestationVerifier) update(ctx context.Context) error {
 		}
 
 		nowTime := time.Now()
-		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), inProgressAttestationToConfirm.OriginDispatchBlockNumber(), &nowTime, 0)
+		submittedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToConfirm.SignedAttestation(), &nowTime, 0)
 		err = a.db.ReUpdateNotarySubmittedToAttestationCollectorTime(ctx, submittedInProgressAttestation)
 		if err != nil {
 			return fmt.Errorf("could not store submission time for attestation: %w", err)

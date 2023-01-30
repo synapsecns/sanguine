@@ -1,18 +1,18 @@
-package notary_test
+package guard_test
 
 import (
+	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"math/big"
 	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/types"
 )
 
-func (u *NotarySuite) TestOriginAttestationScanner() {
+func (u *GuardSuite) TestOriginGuardAttestationScanner() {
 	destinationDomain := uint32(u.TestBackendDestination.GetChainID())
 
 	testDB, err := sqlite.NewSqliteStore(u.GetTestContext(), filet.TmpDir(u.T(), ""))
@@ -30,16 +30,16 @@ func (u *NotarySuite) TestOriginAttestationScanner() {
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
 	// call the update producing function
-	originAttestationScanner := notary.NewOriginAttestationScanner(
+	originGuardAttestationScanner := guard.NewOriginGuardAttestationScanner(
 		u.OriginDomainClient,
 		u.AttestationDomainClient,
 		u.DestinationDomainClient,
 		testDB,
-		u.NotaryBondedSigner,
-		u.NotaryUnbondedSigner,
+		u.GuardBondedSigner,
+		u.GuardUnbondedSigner,
 		1*time.Second)
 
-	err = originAttestationScanner.Update(u.GetTestContext())
+	err = originGuardAttestationScanner.Update(u.GetTestContext())
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
@@ -47,8 +47,8 @@ func (u *NotarySuite) TestOriginAttestationScanner() {
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
 		u.DestinationDomainClient.Config().DomainID,
-		types.AttestationStateNotaryUnsigned)
+		types.AttestationStateGuardInitialState)
 	Nil(u.T(), err)
 	Equal(u.T(), producedAttestation.SignedAttestation().Attestation().Nonce(), uint32(1))
-	Equal(u.T(), types.AttestationStateNotaryUnsigned, producedAttestation.AttestationState())
+	Equal(u.T(), types.AttestationStateGuardInitialState, producedAttestation.AttestationState())
 }

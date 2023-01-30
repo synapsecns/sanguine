@@ -109,7 +109,7 @@ func (h originContract) GetHistoricalAttestation(ctx context.Context, destinatio
 			return nil, 0, domains.ErrNoUpdate
 		}
 
-		return nil, 0, fmt.Errorf("could get historical root: %w", err)
+		return nil, 0, fmt.Errorf("could not get historical root: %w", err)
 	}
 
 	if historicalRoot == [32]byte{} {
@@ -131,6 +131,20 @@ func (h originContract) GetHistoricalAttestation(ctx context.Context, destinatio
 	historicalAttestation := types.NewAttestation(attestationKey.GetRawKey(), historicalRoot)
 
 	return historicalAttestation, dispatchBlockNumber.Uint64(), nil
+}
+
+func (h originContract) SuggestAttestation(ctx context.Context, destinationID uint32) (types.Attestation, error) {
+	suggestedAttestationRaw, err := h.contract.SuggestAttestation(&bind.CallOpts{Context: ctx}, destinationID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get suggested attestation: %w", err)
+	}
+
+	suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode suggested attestation: %w", err)
+	}
+
+	return suggestedAttestation, nil
 }
 
 var _ domains.OriginContract = &originContract{}

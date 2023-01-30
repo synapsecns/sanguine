@@ -249,6 +249,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	}
 
 	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *itemCountNonce)
+
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
