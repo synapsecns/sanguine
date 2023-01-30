@@ -558,7 +558,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 // TestAllAgentsMultipleeMessagesIntegrationE2E is an integration involving just a guard, notary
 // and executor executing multiple messages to the destination.
 //
-//nolint:dupl,cyclop,maintidx
+//nolint:dupl,cyclop,maintidx,gocognit
 func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 	numMessages := 5
 
@@ -878,10 +878,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 			u.Greater(countAfterIncrement.Uint64(), countBeforeIncrement.Uint64())
 			return false
 		}
-		if trueCount == numMessages {
-			return true
-		}
-		return false
+		return trueCount == numMessages
 	})
 
 	exec.Stop(uint32(u.TestBackendOrigin.GetChainID()))
