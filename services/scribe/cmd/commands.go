@@ -87,6 +87,48 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 	return eventDB, clients, scribeConfig, nil
 }
 
+func createDFKParameters(c *cli.Context) (eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, scribeConfig config.Config, err error) {
+	dfkConfig := config.Config{
+		Chains: config.ChainConfigs{
+			config.ChainConfig{
+				ChainID: 53935,
+				Contracts: config.ContractConfigs{
+					config.ContractConfig{
+						Address:    "0xE05c976d3f045D0E6E7A6f61083d98A15603cF6A",
+						StartBlock: 11605635,
+					},
+					config.ContractConfig{
+						Address:    "0x7bc5fD6b80067d6052A4550c69f152877bF7C748",
+						StartBlock: 11605632,
+					},
+				},
+			},
+		},
+		RefreshRate: 1,
+		RPCURL:      "http://omnirpc/confirmations",
+	}
+
+	scribeConfig = dfkConfig
+
+	eventDB, err = api.InitDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name))
+	if err != nil {
+		return nil, nil, scribeConfig, fmt.Errorf("could not initialize database: %w", err)
+	}
+
+	clients = make(map[uint32][]backfill.ScribeBackend)
+	for _, client := range scribeConfig.Chains {
+		for confNum := 1; confNum <= MaxConfirmations; confNum++ {
+			backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID))
+			if err != nil {
+				return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
+			}
+			clients[client.ChainID] = append(clients[client.ChainID], backendClient)
+		}
+	}
+
+	return eventDB, clients, scribeConfig, nil
+}
+
 var backfillCommand = &cli.Command{
 	Name:        "backfill",
 	Description: "backfills up to a block and then halts",
@@ -111,6 +153,32 @@ var backfillCommand = &cli.Command{
 				cancelVar()
 				ctx, cancel = context.WithTimeout(c.Context, time.Minute*5)
 				cancelVar = cancel
+			}
+		}
+	},
+}
+
+var backfillDFKCommand = &cli.Command{
+	Name:        "backfilldfk",
+	Description: "backfills up to a block and then halts",
+	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},
+	Action: func(c *cli.Context) error {
+		db, clients, decodeConfig, err := createDFKParameters(c)
+		if err != nil {
+			return err
+		}
+
+		// TODO delete once livefilling done
+
+		for {
+			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
+			if err != nil {
+				return fmt.Errorf("could not create scribe backfiller: %w", err)
+			}
+
+			err = scribeBackfiller.Backfill(c.Context)
+			if err != nil {
+				fmt.Errorf("ERRORR")
 			}
 		}
 	},
