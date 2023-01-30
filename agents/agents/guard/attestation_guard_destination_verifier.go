@@ -69,15 +69,19 @@ func (a AttestationGuardDestinationVerifier) Start(ctx context.Context) error {
 	}
 }
 
-// FindOldestSubmittedToDestinationInProgressAttestation fetches the oldest signed attestation (by both notary and guard)
+// FindNewestSubmittedToDestinationInProgressAttestation fetches the newest signed attestation (by both notary and guard)
 // that has been submitted to the Destination.
-func (a AttestationGuardDestinationVerifier) FindOldestSubmittedToDestinationInProgressAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestSubmittedToDestinationUnconfirmed(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+func (a AttestationGuardDestinationVerifier) FindNewestSubmittedToDestinationInProgressAttestation(ctx context.Context) (types.InProgressAttestation, error) {
+	inProgressAttestation, err := a.db.RetrieveNewestInProgressAttestationIfInState(
+		ctx,
+		a.originDomain.Config().DomainID,
+		a.destinationDomain.Config().DomainID,
+		types.AttestationStateSubmittedToDestinationUnconfirmed)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not retrieve oldest submitted-to-destination attestation: %w", err)
+		return nil, fmt.Errorf("could not retrieve newest submitted-to-destination attestation: %w", err)
 	}
 	return inProgressAttestation, nil
 }
@@ -86,9 +90,9 @@ func (a AttestationGuardDestinationVerifier) FindOldestSubmittedToDestinationInP
 //
 //nolint:cyclop
 func (a AttestationGuardDestinationVerifier) update(ctx context.Context) error {
-	inProgressAttestationToVerifyOnDestination, err := a.FindOldestSubmittedToDestinationInProgressAttestation(ctx)
+	inProgressAttestationToVerifyOnDestination, err := a.FindNewestSubmittedToDestinationInProgressAttestation(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find oldest sumbitted-to-destination attestation: %w", err)
+		return fmt.Errorf("could not find newest sumbitted-to-destination attestation: %w", err)
 	}
 	if inProgressAttestationToVerifyOnDestination == nil {
 		return nil
@@ -101,7 +105,7 @@ func (a AttestationGuardDestinationVerifier) update(ctx context.Context) error {
 	}
 
 	if submittedAtTime != nil {
-		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToVerifyOnDestination.SignedAttestation(), inProgressAttestationToVerifyOnDestination.OriginDispatchBlockNumber(), inProgressAttestationToVerifyOnDestination.SubmittedToAttestationCollectorTime(), 0)
+		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToVerifyOnDestination.SignedAttestation(), inProgressAttestationToVerifyOnDestination.SubmittedToAttestationCollectorTime(), 0)
 
 		err = a.db.MarkConfirmedOnDestination(ctx, confirmedInProgressAttestation)
 		if err != nil {

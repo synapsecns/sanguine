@@ -1,4 +1,4 @@
-package notary
+package guard
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
-// OriginAttestationScanner fetches merkle roots for particular origin-destination pair.
+// OriginGuardAttestationScanner fetches merkle roots for particular origin-destination pair.
 // TODO: this needs to become an interface.
-type OriginAttestationScanner struct {
+type OriginGuardAttestationScanner struct {
 	// originDomain allows access to the origin contract on the origin chain
 	originDomain domains.DomainClient
 	// attestationDomain allows access to the attestation contract on the SYN chain
@@ -30,16 +30,16 @@ type OriginAttestationScanner struct {
 	interval time.Duration
 }
 
-// NewOriginAttestationScanner creates a new origin attestation scanner.
-func NewOriginAttestationScanner(
+// NewOriginGuardAttestationScanner creates a new origin guard attestation scanner.
+func NewOriginGuardAttestationScanner(
 	originDomain domains.DomainClient,
 	attestationDomain domains.DomainClient,
 	destinationDomain domains.DomainClient,
 	db db.SynapseDB,
 	bondedSigner signer.Signer,
 	unbondedSigner signer.Signer,
-	interval time.Duration) OriginAttestationScanner {
-	return OriginAttestationScanner{
+	interval time.Duration) OriginGuardAttestationScanner {
+	return OriginGuardAttestationScanner{
 		originDomain:      originDomain,
 		attestationDomain: attestationDomain,
 		destinationDomain: destinationDomain,
@@ -50,17 +50,17 @@ func NewOriginAttestationScanner(
 	}
 }
 
-// Start starts the OriginAttestationScanner.
-func (a OriginAttestationScanner) Start(ctx context.Context) error {
+// Start starts the OriginGuardAttestationScanner.
+func (a OriginGuardAttestationScanner) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Info("Notary OriginAttestationScanner exiting without error")
+			logger.Info("Guard OriginGuardAttestationScanner exiting without error")
 			return nil
 		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
-				logger.Errorf("Notary OriginAttestationScanner exiting with error: %v", err)
+				logger.Errorf("Guard OriginGuardAttestationScanner exiting with error: %v", err)
 				return err
 			}
 		}
@@ -68,7 +68,7 @@ func (a OriginAttestationScanner) Start(ctx context.Context) error {
 }
 
 // FindLatestNonce fetches the latest nonce for a given chain.
-func (a OriginAttestationScanner) FindLatestNonce(ctx context.Context) (nonce uint32, err error) {
+func (a OriginGuardAttestationScanner) FindLatestNonce(ctx context.Context) (nonce uint32, err error) {
 	latestNonce, err := a.db.RetrieveLatestCachedNonce(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoNonceForDomain) {
@@ -82,7 +82,7 @@ func (a OriginAttestationScanner) FindLatestNonce(ctx context.Context) (nonce ui
 // update runs the job of the scanner
 //
 //nolint:cyclop
-func (a OriginAttestationScanner) update(ctx context.Context) error {
+func (a OriginGuardAttestationScanner) update(ctx context.Context) error {
 	latestNonce, err := a.FindLatestNonce(ctx)
 	if err != nil {
 		return fmt.Errorf("could not find latest root: %w", err)
@@ -103,7 +103,7 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 		return nil
 	}
 
-	err = a.db.StoreNewInProgressAttestation(ctx, attestation)
+	err = a.db.StoreNewGuardInProgressAttestation(ctx, attestation)
 	if err != nil {
 		return fmt.Errorf("could not store in-progress attestations: %w", err)
 	}

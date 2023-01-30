@@ -15,12 +15,12 @@ import (
 )
 
 func (u GuardSuite) TestAttestationGuardSigner() {
-	destination := uint32(u.TestBackendDestination.GetChainID())
-	origin := uint32(u.TestBackendOrigin.GetChainID())
-	nonce := uint32(1)
-
 	testDB, err := sqlite.NewSqliteStore(u.GetTestContext(), filet.TmpDir(u.T(), ""))
 	Nil(u.T(), err)
+
+	origin := uint32(u.TestBackendOrigin.GetChainID())
+	destination := uint32(u.TestBackendDestination.GetChainID())
+	nonce := uint32(1)
 
 	// dispatch a random update
 	originAuth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
@@ -33,9 +33,20 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	Nil(u.T(), err)
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
-	root, dispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, destination, nonce)
+	suggestedAttestationRaw, err := u.OriginContract.SuggestAttestation(&bind.CallOpts{Context: u.GetTestContext()}, destination)
 	Nil(u.T(), err)
-	Greater(u.T(), dispatchBlockNumber.Uint64(), uint64(0))
+	suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
+	Nil(u.T(), err)
+	Equal(u.T(), origin, suggestedAttestation.Origin())
+	Equal(u.T(), destination, suggestedAttestation.Destination())
+	Equal(u.T(), nonce, suggestedAttestation.Nonce())
+
+	err = testDB.StoreNewGuardInProgressAttestation(u.GetTestContext(), suggestedAttestation)
+	Nil(u.T(), err)
+
+	auth := u.TestBackendAttestation.GetTxContext(u.GetTestContext(), nil)
+
+	root := suggestedAttestation.Root()
 
 	attestKey := types.AttestationKey{
 		Origin:      origin,
@@ -54,8 +65,7 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
 	Nil(u.T(), err)
 
-	attestationAuth := u.TestBackendAttestation.GetTxContext(u.GetTestContext(), nil)
-	tx, err = u.AttestationContract.SubmitAttestation(attestationAuth.TransactOpts, rawSignedAttestation)
+	tx, err = u.AttestationContract.SubmitAttestation(auth.TransactOpts, rawSignedAttestation)
 	Nil(u.T(), err)
 
 	u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), tx)
@@ -67,18 +77,6 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	Nil(u.T(), err)
 
 	err = testDB.StoreExistingSignedInProgressAttestation(u.GetTestContext(), signedAttestationFromCollector)
-	Nil(u.T(), err)
-
-	inProgressAttestationToMarkVerified, err := testDB.RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation(u.GetTestContext(), origin, destination)
-	Nil(u.T(), err)
-
-	nowTime := time.Now()
-	submittedInProgressAttestation := types.NewInProgressAttestation(
-		signedAttestationFromCollector,
-		inProgressAttestationToMarkVerified.OriginDispatchBlockNumber(),
-		&nowTime,
-		0)
-	err = testDB.MarkVerifiedOnOrigin(u.GetTestContext(), submittedInProgressAttestation)
 	Nil(u.T(), err)
 
 	// Now call the guard signer
@@ -95,21 +93,22 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	retrievedOldestGuardUnsubmittedSignedInProgressAttestation, err := testDB.RetrieveOldestGuardUnsubmittedSignedInProgressAttestation(
+	retrievedNewestGuardUnsubmittedSignedInProgressAttestation, err := testDB.RetrieveNewestInProgressAttestationIfInState(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
-		u.DestinationDomainClient.Config().DomainID)
+		u.DestinationDomainClient.Config().DomainID,
+		types.AttestationStateGuardSignedUnsubmitted)
 
 	Nil(u.T(), err)
-	NotNil(u.T(), retrievedOldestGuardUnsubmittedSignedInProgressAttestation)
+	NotNil(u.T(), retrievedNewestGuardUnsubmittedSignedInProgressAttestation)
 
-	retrievedAttestation := retrievedOldestGuardUnsubmittedSignedInProgressAttestation.SignedAttestation()
+	retrievedAttestation := retrievedNewestGuardUnsubmittedSignedInProgressAttestation.SignedAttestation()
 	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedAttestation.Attestation().Origin())
 	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedAttestation.Attestation().Destination())
 	Equal(u.T(), root, retrievedAttestation.Attestation().Root())
 	Len(u.T(), retrievedAttestation.NotarySignatures(), 1)
 	Len(u.T(), retrievedAttestation.GuardSignatures(), 1)
-	Equal(u.T(), types.AttestationStateGuardSignedUnsubmitted, retrievedOldestGuardUnsubmittedSignedInProgressAttestation.AttestationState())
+	Equal(u.T(), types.AttestationStateGuardSignedUnsubmitted, retrievedNewestGuardUnsubmittedSignedInProgressAttestation.AttestationState())
 
 	Nil(u.T(), err)
 }
