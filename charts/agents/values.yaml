@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "6344421b3967e6dae053a99874ea0612f81587bb"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -137,10 +137,6 @@ executor_embedded:
             fieldRef:
               fieldPath: metadata.namespace
 
-
-
-
-
 #    - name: wait-for-scribe
 #      image: busybox:latest
 #      imagePullPolicy: IfNotPresent
@@ -173,15 +169,6 @@ omnirpc:
   enabled: true
   fullnameOverride: executor-omnirpc
   replicaCount: 2
-
-scribe:
-  enabled: true
-  fullnameOverride: executor-scribe-indexer
-
-
-#files:
-#  config.yaml: |-
-#    # Production config example
 
 executor_remote_files:
   config.yaml: |-
