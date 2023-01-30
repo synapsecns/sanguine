@@ -11,6 +11,7 @@ $ go run main.go
 ```
 Then the Scribe command line will be exposed. You can use the following commands:
 
+
 ```bash
 # Start the Scribe
 $ scribe --config </Full/Path/To/Config.yaml> --db <sqlite or mysql> --path <path/to/database or database url>
