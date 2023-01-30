@@ -1,4 +1,4 @@
-{{- if .Values.executor_remote.enabled -}}
+{{- if .Values.executor_embedded.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,14 +12,14 @@ spec:
       {{- include "agents.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.executor_remote.podAnnotations }}
+      {{- with .Values.executor_embedded.podAnnotations }}
       annotations:
         checksum/config: {{ include (print $.Chart.Name "/templates/" $.Chart.Name "-configmap.yaml") . | sha256sum }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "agents.selectorLabels" . | nindent 8 }}
-{{/*        executor-type: remote*/}}
+{{/*        executor-type: embedded*/}}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -27,8 +27,8 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "agents.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.executor_remote.podSecurityContext | nindent 8 }}
-    {{- if .Values.executor_remote_files }}
+        {{- toYaml .Values.executor_embedded.podSecurityContext | nindent 8 }}
+    {{- if .Values.executor_embedded_files }}
       initContainers:
         - name: copy-{{ .Release.Name }}-config
           image: busybox
@@ -38,8 +38,8 @@ spec:
               mountPath: /configmap
             - name: {{ .Release.Name }}-config
               mountPath: /config
-        {{- if .Values.executor_remote.extraInitContainers }}
-        {{- toYaml .Values.executor_remote.extraInitContainers | nindent 8 }}
+        {{- if .Values.executor_embedded.extraInitContainers }}
+        {{- toYaml .Values.executor_embedded.extraInitContainers | nindent 8 }}
         {{- end }}
     {{- end }}
       containers:
@@ -56,32 +56,32 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.executor_remote.env }}
+          {{- if .Values.executor_embedded.env }}
           env:
-            {{- toYaml .Values.executor_remote.env | nindent 12 }}
+            {{- toYaml .Values.executor_embedded.env | nindent 12 }}
           {{- end }}
-        {{- if .Values.executor_remote_files }}
+        {{- if .Values.executor_embedded_files }}
           volumeMounts:
             - name: configmap
               mountPath: /config
         {{- end }}
-        {{- if .Values.executor_remote.extraContainers }}
-        {{- toYaml .Values.executor_remote.extraContainers | nindent 8 }}
+        {{- if .Values.executor_embedded.extraContainers }}
+        {{- toYaml .Values.executor_embedded.extraContainers | nindent 8 }}
         {{- end }}
-      {{- with .Values.executor_remote.nodeSelector }}
+      {{- with .Values.executor_embedded.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.executor_remote.affinity }}
+      {{- with .Values.executor_embedded.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.executor_remote.tolerations }}
+      {{- with .Values.executor_embedded.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-        {{- if .Values.executor_remote_files }}
+        {{- if .Values.executor_embedded_files }}
         - name: {{ .Release.Name }}-config
           emptyDir: { }
         - name: configmap

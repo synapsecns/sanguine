@@ -142,9 +142,9 @@ var ExecutorRunCommand = &cli.Command{
 
 			for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/confirmations/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, confNum, client.ChainID))
+					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, confNum, client.ChainID))
 					if err != nil {
-						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/%s/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, "confirmations", confNum, client.ChainID))
+						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, client.ChainID))
 					}
 
 					scribeClients[client.ChainID] = append(scribeClients[client.ChainID], backendClient)
