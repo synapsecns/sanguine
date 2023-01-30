@@ -161,15 +161,16 @@ var backfillCommand = &cli.Command{
 var backfillDFKCommand = &cli.Command{
 	Name:        "backfilldfk",
 	Description: "backfills up to a block and then halts",
-	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},
+	Flags:       []cli.Flag{dbFlag, pathFlag},
 	Action: func(c *cli.Context) error {
 		db, clients, decodeConfig, err := createDFKParameters(c)
 		if err != nil {
 			return err
 		}
 
-		// TODO delete once livefilling done
-
+		//// TODO delete once livefilling done
+		//ctx, cancel := context.WithTimeout(c.Context, time.Minute*10)
+		//cancelVar := cancel
 		for {
 			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
 			if err != nil {
@@ -177,9 +178,11 @@ var backfillDFKCommand = &cli.Command{
 			}
 
 			err = scribeBackfiller.Backfill(c.Context)
-			if err != nil {
-				fmt.Errorf("ERRORR")
-			}
+			//if err != nil {
+			//	cancelVar()
+			//	ctx, cancel = context.WithTimeout(c.Context, time.Minute*10)
+			//	cancelVar = cancel
+			//}
 		}
 	},
 }

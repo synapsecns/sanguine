@@ -100,6 +100,8 @@ func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig 
 //
 //nolint:gocognit,cyclop
 func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, livefill bool) error {
+	fmt.Println("ursdadasdasd mom")
+
 	// Create a new context for the chain so all chains don't halt when backfilling is completed.
 	chainCtx := context.WithValue(ctx, chainContextKey, fmt.Sprintf("%d-%d", c.chainID, c.minBlockHeight))
 	backfillGroup, backfillCtx := errgroup.WithContext(chainCtx)
@@ -117,6 +119,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 	for i := range c.contractBackfillers {
 		contractBackfiller := c.contractBackfillers[i]
 		startHeight := c.startHeights[contractBackfiller.address]
+		fmt.Println("ursdadasssssdasd mom")
 
 		LogEvent(InfoLevel, "Starting livefilling contracts", LogData{"cid": c.chainID})
 		backfillGroup.Go(func() error {
@@ -129,6 +132,8 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 
 					return fmt.Errorf("%s chain context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
 				case <-time.After(timeout):
+					fmt.Println("aaaaaursdadasssssdasd mom")
+
 					var latestBlock *uint64
 					var err error
 
@@ -137,11 +142,13 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 						startHeight = *onlyOneBlock
 						latestBlock = onlyOneBlock
 					} else {
+						fmt.Println("asdasdasdasdasdsasssssss mom")
 						latestBlock, err = c.getLatestBlock(backfillCtx)
 						if err != nil {
 							return fmt.Errorf("could not get current block number while backfilling: %w", err)
 						}
 					}
+					fmt.Println("ur momss")
 
 					err = contractBackfiller.Backfill(backfillCtx, startHeight, *latestBlock)
 					if err != nil {
