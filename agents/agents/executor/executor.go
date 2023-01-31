@@ -243,7 +243,24 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *nonce)
+	originDomain := message.OriginDomain()
+	destinationDomain := message.DestinationDomain()
+	attestationMask := execTypes.DBAttestation{
+		ChainID:     &originDomain,
+		Destination: &destinationDomain,
+	}
+	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].NumOfItems()
+	itemCountNonce, err := e.executorDB.GetEarliestAttestationsNonceInNonceRange(ctx, attestationMask, *nonce, maximumNonce)
+	if err != nil {
+		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
+	}
+
+	if itemCountNonce == nil {
+		return false, nil
+	}
+
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *itemCountNonce)
+
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}

@@ -323,8 +323,6 @@ type InProgressAttestation struct {
 	IPNotarySignature []byte `gorm:"column:notary_signature;default:NULL"`
 	// IPGuardSignature stores the raw guard signature
 	IPGuardSignature []byte `gorm:"column:guard_signature;default:NULL"`
-	// IPOriginDispatchBlockNumber stores when message was dispatched on origin
-	IPOriginDispatchBlockNumber uint64 `gorm:"column:origin_dispatch_block_number;<-"`
 	// IPSubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
 	IPSubmittedToAttestationCollectorTime sql.NullTime `gorm:"column:submitted_to_attestation_collector_time;type:TIMESTAMP NULL;<-:update"`
 	// IPSubmittedToDestinationTime is time when signed attestation was submitted to Destination
@@ -391,11 +389,6 @@ func (t InProgressAttestation) Nonce() uint32 {
 // Root gets the root of the in-progress attestation.
 func (t InProgressAttestation) Root() [32]byte {
 	return common.BytesToHash(t.IPRoot)
-}
-
-// OriginDispatchBlockNumber gets the block number when message was dispatched on origin.
-func (t InProgressAttestation) OriginDispatchBlockNumber() uint64 {
-	return t.IPOriginDispatchBlockNumber
 }
 
 // SubmittedToAttestationCollectorTime gets the time when attestation was sent to AttestationCollector.

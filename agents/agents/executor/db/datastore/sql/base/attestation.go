@@ -152,6 +152,30 @@ func (s Store) GetAttestationsAboveOrEqualNonce(ctx context.Context, attestation
 	return dbAttestations, nil
 }
 
+// GetEarliestAttestationsNonceInNonceRange gets the earliest attestation (by block number) in a nonce range.
+func (s Store) GetEarliestAttestationsNonceInNonceRange(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, maxNonce uint32) (*uint32, error) {
+	var attestation Attestation
+
+	dbAttestationMask := DBAttestationToAttestation(attestationMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&attestation).
+		Where(&dbAttestationMask).
+		Where(fmt.Sprintf("%s >= ?", NonceFieldName), minNonce).
+		Where(fmt.Sprintf("%s <= ?", NonceFieldName), maxNonce).
+		Order(fmt.Sprintf("%s ASC", BlockNumberFieldName)).
+		Limit(1).
+		Scan(&attestation)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get earliest attestation in nonce range: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	return &attestation.Nonce, nil
+}
+
 // DBAttestationToAttestation converts a DBAttestation to an Attestation.
 func DBAttestationToAttestation(dbAttestation types.DBAttestation) Attestation {
 	var attestation Attestation

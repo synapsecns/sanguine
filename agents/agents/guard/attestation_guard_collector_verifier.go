@@ -69,15 +69,19 @@ func (a AttestationGuardCollectorVerifier) Start(ctx context.Context) error {
 	}
 }
 
-// FindOldestGuardSubmittedToCollectorInProgressAttestation fetches the oldest signed attestation (by both notary and guard)
+// FindNewestGuardSubmittedToCollectorInProgressAttestation fetches the newest signed attestation (by both notary and guard)
 // that has been submitted to the Attestation Collector.
-func (a AttestationGuardCollectorVerifier) FindOldestGuardSubmittedToCollectorInProgressAttestation(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestGuardSubmittedToCollectorUnconfirmed(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+func (a AttestationGuardCollectorVerifier) FindNewestGuardSubmittedToCollectorInProgressAttestation(ctx context.Context) (types.InProgressAttestation, error) {
+	inProgressAttestation, err := a.db.RetrieveNewestInProgressAttestationIfInState(
+		ctx,
+		a.originDomain.Config().DomainID,
+		a.destinationDomain.Config().DomainID,
+		types.AttestationStateGuardSubmittedToCollectorUnconfirmed)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not retrieve oldest submitted-to-collector attestation: %w", err)
+		return nil, fmt.Errorf("could not retrieve newest submitted-to-collector attestation: %w", err)
 	}
 	return inProgressAttestation, nil
 }
@@ -86,9 +90,9 @@ func (a AttestationGuardCollectorVerifier) FindOldestGuardSubmittedToCollectorIn
 //
 //nolint:cyclop
 func (a AttestationGuardCollectorVerifier) update(ctx context.Context) error {
-	inProgressAttestationToVerifyOnCollector, err := a.FindOldestGuardSubmittedToCollectorInProgressAttestation(ctx)
+	inProgressAttestationToVerifyOnCollector, err := a.FindNewestGuardSubmittedToCollectorInProgressAttestation(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find oldest submitted-to-collector attestation: %w", err)
+		return fmt.Errorf("could not find newest submitted-to-collector attestation: %w", err)
 	}
 	if inProgressAttestationToVerifyOnCollector == nil {
 		return nil
@@ -101,7 +105,7 @@ func (a AttestationGuardCollectorVerifier) update(ctx context.Context) error {
 	}
 
 	if latestNonce >= inProgressAttestationToVerifyOnCollector.SignedAttestation().Attestation().Nonce() {
-		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToVerifyOnCollector.SignedAttestation(), inProgressAttestationToVerifyOnCollector.OriginDispatchBlockNumber(), inProgressAttestationToVerifyOnCollector.SubmittedToAttestationCollectorTime(), 0)
+		confirmedInProgressAttestation := types.NewInProgressAttestation(inProgressAttestationToVerifyOnCollector.SignedAttestation(), inProgressAttestationToVerifyOnCollector.SubmittedToAttestationCollectorTime(), 0)
 
 		err = a.db.MarkGuardConfirmedOnAttestationCollector(ctx, confirmedInProgressAttestation)
 		if err != nil {
@@ -122,7 +126,6 @@ func (a AttestationGuardCollectorVerifier) update(ctx context.Context) error {
 		nowTime := time.Now()
 		submittedInProgressAttestation := types.NewInProgressAttestation(
 			inProgressAttestationToVerifyOnCollector.SignedAttestation(),
-			inProgressAttestationToVerifyOnCollector.OriginDispatchBlockNumber(),
 			&nowTime,
 			0)
 
