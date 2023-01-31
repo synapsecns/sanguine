@@ -109,6 +109,10 @@ indexer:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
+  args:
+    - backfill
+    - '--address=clickhouse://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
+    - '--config=/config/config.yaml'
   env:
     - name: POD_NAMESPACE
       valueFrom:
@@ -164,6 +168,11 @@ server:
     - name: GOLOG_LOG_FMT
       value: "json"
   tolerations: []
+  args:
+    - server
+    - '--port=80'
+    - '--scribe-url=https://scribe.interoperability.institute/graphql'
+    - '--address=tcp://default:clickhouse@${POD_NAMESPACE}-clickhouse:9000'
   # TODO: this should be in extraValues for testing
   extraInitContainers:
     - name: wait-for-omnirpc
