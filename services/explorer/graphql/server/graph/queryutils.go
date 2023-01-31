@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/user"
 	"math/big"
 	"strconv"
 	"time"
@@ -538,8 +539,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID []*i
 // GetPartialInfoFromMessageBusEventHybrid returns the partial info from message bus event.
 //
 // nolint:cyclop
-func GetPartialInfoFromMessageBusEventHybrid(messageBusEvent sql.HybridMessageBusEvent, pending bool) (*model.MessageBusTransaction, error) {
-
+func GetPartialInfoFromMessageBusEventHybrid(ctx context.Context, messageBusEvent sql.HybridMessageBusEvent, pending bool) (*model.MessageBusTransaction, error) {
 	var messageBusTx model.MessageBusTransaction
 	fromChainID := int(messageBusEvent.FChainID)
 	fromDestinationChainID := int(messageBusEvent.FDestinationChainID.Uint64())
@@ -557,15 +557,18 @@ func GetPartialInfoFromMessageBusEventHybrid(messageBusEvent sql.HybridMessageBu
 		DestinationChainID: &fromDestinationChainID,
 		ContractAddress:    &messageBusEvent.FContractAddress,
 		TxnHash:            &messageBusEvent.FTxHash,
+		MessageType:        user.Decode(ctx, messageBusEvent.TMessage.String),
 		Message:            &messageBusEvent.FMessage.String,
 		BlockNumber:        &fromBlockNumber,
 		Time:               &fromTimeStamp,
 		FormattedTime:      &fromTimeStampFormatted,
 	}
+
 	toInfos := &model.PartialMessageBusInfo{
 		ChainID:            &toChainID,
 		DestinationChainID: nil,
 		ContractAddress:    &messageBusEvent.TContractAddress,
+		MessageType:        user.Decode(ctx, messageBusEvent.TMessage.String),
 		TxnHash:            &messageBusEvent.TTxHash,
 		Message:            &messageBusEvent.TMessage.String,
 		BlockNumber:        &toBlockNumber,
@@ -597,7 +600,7 @@ func (r *queryResolver) GetMessageBusTxs(ctx context.Context, chainID []*int, ad
 
 	// Iterate through all bridge events and return all partials
 	for i := range allMessageBusEvents {
-		messageBusTx, err := GetPartialInfoFromMessageBusEventHybrid(allMessageBusEvents[i], pending)
+		messageBusTx, err := GetPartialInfoFromMessageBusEventHybrid(ctx, allMessageBusEvents[i], pending)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
 		}

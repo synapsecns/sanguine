@@ -1,0 +1,21 @@
+union MessageType = TearType | HeroType | PetType | UnknownType
+
+type TearType {
+  recipient: String!
+  amount: String!
+}
+
+type HeroType {
+  recipient: String!
+  heroID: String!
+}
+
+type PetType {
+  recipient: String!
+  petID: String!
+  name: String!
+}
+
+type UnknownType {
+  known: Boolean!
+}

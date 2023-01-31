@@ -310,6 +310,20 @@ func (_m *ConsumerDB) StoreLastBlock(ctx context.Context, chainID uint32, blockN
 	return r0
 }
 
+// StoreSwapFee provides a mock function with given fields: ctx, chainID, timestamp, contractAddress, fee, feeType
+func (_m *ConsumerDB) StoreSwapFee(ctx context.Context, chainID uint32, timestamp uint64, contractAddress string, fee uint64, feeType string) error {
+	ret := _m.Called(ctx, chainID, timestamp, contractAddress, fee, feeType)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint64, string, uint64, string) error); ok {
+		r0 = rf(ctx, chainID, timestamp, contractAddress, fee, feeType)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // StoreTokenIndex provides a mock function with given fields: ctx, chainID, tokenIndex, tokenAddress, contractAddress
 func (_m *ConsumerDB) StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error {
 	ret := _m.Called(ctx, chainID, tokenIndex, tokenAddress, contractAddress)
