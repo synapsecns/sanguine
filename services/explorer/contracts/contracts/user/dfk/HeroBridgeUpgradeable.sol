@@ -943,6 +943,10 @@ contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable
         return decodedMessage;
     }
 
+    function decodeMessage(bytes memory _message) external pure returns (MessageFormat memory) {
+        return _decodeMessage(_message);
+    }
+
     function _createOptions() internal view returns (bytes memory) {
         return abi.encodePacked(uint16(1), msgGasLimit);
     }

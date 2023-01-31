@@ -1,6 +1,6 @@
 
 
-// 
+//
 interface ISynMessagingReceiver {
     // Maps chain ID to the bytes32 trusted addresses allowed to be source senders
     // mapping(uint256 => bytes32) internal trustedRemoteLookup;
@@ -21,7 +21,7 @@ interface ISynMessagingReceiver {
     ) external;
 }
 
-// 
+//
 interface IMessageBus {
     /**
      * @notice Sends a message to a receiving contract address on another chain.
@@ -71,7 +71,7 @@ interface IMessageBus {
     function withdrawFee(address _account) external;
 }
 
-// 
+//
 // OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
 /**
  * @dev Provides information about the current execution context, including the
@@ -93,7 +93,7 @@ abstract contract Context {
     }
 }
 
-// 
+//
 // OpenZeppelin Contracts v4.4.1 (access/Ownable.sol)
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -165,7 +165,7 @@ abstract contract Ownable is Context {
     }
 }
 
-// 
+//
 abstract contract SynMessagingReceiver is ISynMessagingReceiver, Ownable {
     address public messageBus;
 
@@ -231,7 +231,7 @@ abstract contract SynMessagingReceiver is ISynMessagingReceiver, Ownable {
     }
 }
 
-// 
+//
 // OpenZeppelin Contracts (last updated v4.5.0) (token/ERC20/IERC20.sol)
 /**
  * @dev Interface of the ERC20 standard as defined in the EIP.
@@ -311,7 +311,7 @@ interface IERC20 {
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-// 
+//
 /**
  * @dev Interface of Inventory Items.
  */
@@ -324,7 +324,7 @@ interface IInventoryItem is IERC20 {
     function mint(address to, uint256 amount) external;
 }
 
-// 
+//
 contract TearBridge is SynMessagingReceiver {
     address public immutable gaiaTears;
     uint256 public msgGasLimit;
@@ -352,6 +352,11 @@ contract TearBridge is SynMessagingReceiver {
         MessageFormat memory decodedMessage = abi.decode(_message, (MessageFormat));
         return decodedMessage;
     }
+
+    function decodeMessage(bytes memory _message) external pure returns (MessageFormat memory) {
+        return _decodeMessage(_message);
+    }
+
 
     function _createOptions() internal view returns (bytes memory) {
         return abi.encodePacked(uint16(1), msgGasLimit);
