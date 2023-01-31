@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/user"
+	"golang.org/x/sync/errgroup"
 	"math/big"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
@@ -557,7 +559,6 @@ func GetPartialInfoFromMessageBusEventHybrid(ctx context.Context, messageBusEven
 		DestinationChainID: &fromDestinationChainID,
 		ContractAddress:    &messageBusEvent.FContractAddress,
 		TxnHash:            &messageBusEvent.FTxHash,
-		MessageType:        user.Decode(ctx, messageBusEvent.TMessage.String),
 		Message:            &messageBusEvent.FMessage.String,
 		BlockNumber:        &fromBlockNumber,
 		Time:               &fromTimeStamp,
@@ -568,13 +569,27 @@ func GetPartialInfoFromMessageBusEventHybrid(ctx context.Context, messageBusEven
 		ChainID:            &toChainID,
 		DestinationChainID: nil,
 		ContractAddress:    &messageBusEvent.TContractAddress,
-		MessageType:        user.Decode(ctx, messageBusEvent.TMessage.String),
 		TxnHash:            &messageBusEvent.TTxHash,
 		Message:            &messageBusEvent.TMessage.String,
 		BlockNumber:        &toBlockNumber,
 		Time:               &toTimeStamp,
 		FormattedTime:      &toTimeStampFormatted,
 	}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		fromInfos.MessageType = user.Decode(ctx, messageBusEvent.FMessage.String)
+	}()
+
+	go func() {
+		defer wg.Done()
+		toInfos.MessageType = user.Decode(ctx, messageBusEvent.TMessage.String)
+	}()
+
+	wg.Wait()
 
 	messageBusTx = model.MessageBusTransaction{
 		FromInfo:  fromInfos,
@@ -588,7 +603,6 @@ func GetPartialInfoFromMessageBusEventHybrid(ctx context.Context, messageBusEven
 // nolint:gocognit,cyclop
 func (r *queryResolver) GetMessageBusTxs(ctx context.Context, chainID []*int, address *string, startTime *int, endTime *int, txHash *string, messageID *string, pending bool, page *int) ([]*model.MessageBusTransaction, error) {
 	var err error
-	var results []*model.MessageBusTransaction
 	allMessageBusEvents, err := r.DB.GetAllMessageBusEvents(ctx, generateMessageBusQuery(chainID, address, startTime, endTime, messageID, pending, txHash, *page))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
@@ -598,15 +612,25 @@ func (r *queryResolver) GetMessageBusTxs(ctx context.Context, chainID []*int, ad
 		return nil, nil
 	}
 
+	results := make([]*model.MessageBusTransaction, len(allMessageBusEvents))
+	var sliceMux sync.Mutex
+	g, ctx := errgroup.WithContext(ctx)
 	// Iterate through all bridge events and return all partials
 	for i := range allMessageBusEvents {
-		messageBusTx, err := GetPartialInfoFromMessageBusEventHybrid(ctx, allMessageBusEvents[i], pending)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
-		}
-		if messageBusTx != nil {
-			results = append(results, messageBusTx)
-		}
+		i := i // capture func literal
+		g.Go(func() error {
+			messageBusTx, err := GetPartialInfoFromMessageBusEventHybrid(ctx, allMessageBusEvents[i], pending)
+			if err != nil {
+				return fmt.Errorf("failed to get partial info from bridge event: %w", err)
+			}
+			if messageBusTx != nil {
+				sliceMux.Lock()
+				results[i] = messageBusTx
+				sliceMux.Unlock()
+			}
+
+			return nil
+		})
 	}
 	return results, nil
 }
