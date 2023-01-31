@@ -132,6 +132,8 @@ var ExecutorRunCommand = &cli.Command{
 			return err
 		}
 
+		logger.Errorf("the config is the following: %+v\n", executorConfig)
+
 		var scribeClient client.ScribeClient
 
 		g, _ := errgroup.WithContext(c.Context)
