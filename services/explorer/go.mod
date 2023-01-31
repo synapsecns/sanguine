@@ -20,7 +20,6 @@ require (
 	github.com/MichaelMure/go-term-markdown v0.1.4
 	github.com/Yamashou/gqlgenc v0.10.0
 	github.com/brianvoe/gofakeit/v6 v6.19.0
-	github.com/chebyrash/promise v0.0.0-20220530143319-1123826567d6
 	github.com/davecgh/go-spew v1.1.1
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/friendsofgo/graphiql v0.2.2

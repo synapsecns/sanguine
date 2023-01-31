@@ -21,11 +21,9 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 type Query struct {
 	BridgeTransactions     []*model.BridgeTransaction      "json:\"bridgeTransactions\" graphql:\"bridgeTransactions\""
 	MessageBusTransactions []*model.MessageBusTransaction  "json:\"messageBusTransactions\" graphql:\"messageBusTransactions\""
-	BridgeAmountStatistic  *model.ValueResult              "json:\"bridgeAmountStatistic\" graphql:\"bridgeAmountStatistic\""
 	CountByChainID         []*model.TransactionCountResult "json:\"countByChainId\" graphql:\"countByChainId\""
 	CountByTokenAddress    []*model.TokenCountResult       "json:\"countByTokenAddress\" graphql:\"countByTokenAddress\""
 	AddressRanking         []*model.AddressRanking         "json:\"addressRanking\" graphql:\"addressRanking\""
-	HistoricalStatistics   *model.HistoricalResult         "json:\"historicalStatistics\" graphql:\"historicalStatistics\""
 	AmountStatistic        *model.ValueResult              "json:\"amountStatistic\" graphql:\"amountStatistic\""
 	DailyStatistics        *model.DailyResult              "json:\"dailyStatistics\" graphql:\"dailyStatistics\""
 }
@@ -62,11 +60,6 @@ type GetBridgeTransactions struct {
 		SwapSuccess *bool   "json:\"swapSuccess\" graphql:\"swapSuccess\""
 	} "json:\"response\" graphql:\"response\""
 }
-type GetBridgeAmountStatistic struct {
-	Response *struct {
-		Value *string "json:\"value\" graphql:\"value\""
-	} "json:\"response\" graphql:\"response\""
-}
 type GetCountByChainID struct {
 	Response []*struct {
 		Count   *int "json:\"count\" graphql:\"count\""
@@ -84,16 +77,6 @@ type GetAddressRanking struct {
 	Response []*struct {
 		Address *string "json:\"address\" graphql:\"address\""
 		Count   *int    "json:\"count\" graphql:\"count\""
-	} "json:\"response\" graphql:\"response\""
-}
-type GetHistoricalStatistics struct {
-	Response *struct {
-		Total       *float64 "json:\"total\" graphql:\"total\""
-		DateResults []*struct {
-			Date  *string  "json:\"date\" graphql:\"date\""
-			Total *float64 "json:\"total\" graphql:\"total\""
-		} "json:\"dateResults\" graphql:\"dateResults\""
-		Type *model.HistoricalResultType "json:\"type\" graphql:\"type\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetAmountStatistic struct {
@@ -196,30 +179,6 @@ func (c *Client) GetBridgeTransactions(ctx context.Context, chainID []*int, addr
 	return &res, nil
 }
 
-const GetBridgeAmountStatisticDocument = `query GetBridgeAmountStatistic ($type: StatisticType!, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
-	response: bridgeAmountStatistic(type: $type, duration: $duration, chainID: $chainID, address: $address, tokenAddress: $tokenAddress) {
-		value
-	}
-}
-`
-
-func (c *Client) GetBridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string, httpRequestOptions ...client.HTTPRequestOption) (*GetBridgeAmountStatistic, error) {
-	vars := map[string]interface{}{
-		"type":         typeArg,
-		"duration":     duration,
-		"chainID":      chainID,
-		"address":      address,
-		"tokenAddress": tokenAddress,
-	}
-
-	var res GetBridgeAmountStatistic
-	if err := c.Client.Post(ctx, "GetBridgeAmountStatistic", GetBridgeAmountStatisticDocument, &res, vars, httpRequestOptions...); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
 const GetCountByChainIDDocument = `query GetCountByChainId ($chainID: Int, $address: String, $direction: Direction, $hours: Int) {
 	response: countByChainId(chainID: $chainID, address: $address, direction: $direction, hours: $hours) {
 		count
@@ -284,33 +243,6 @@ func (c *Client) GetAddressRanking(ctx context.Context, hours *int, httpRequestO
 
 	var res GetAddressRanking
 	if err := c.Client.Post(ctx, "GetAddressRanking", GetAddressRankingDocument, &res, vars, httpRequestOptions...); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-const GetHistoricalStatisticsDocument = `query GetHistoricalStatistics ($chainID: Int, $type: HistoricalResultType, $days: Int) {
-	response: historicalStatistics(chainID: $chainID, type: $type, days: $days) {
-		total
-		dateResults {
-			date
-			total
-		}
-		type
-	}
-}
-`
-
-func (c *Client) GetHistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int, httpRequestOptions ...client.HTTPRequestOption) (*GetHistoricalStatistics, error) {
-	vars := map[string]interface{}{
-		"chainID": chainID,
-		"type":    typeArg,
-		"days":    days,
-	}
-
-	var res GetHistoricalStatistics
-	if err := c.Client.Post(ctx, "GetHistoricalStatistics", GetHistoricalStatisticsDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
