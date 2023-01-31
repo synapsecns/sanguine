@@ -531,90 +531,121 @@ abstract contract SynMessagingReceiverUpgradeable is ISynMessagingReceiver, Owna
     uint256[48] private __gap;
 }
 
-enum Rarity {
-    COMMON,
-    UNCOMMON,
-    RARE,
-    LEGENDARY,
-    MYTHIC
-}
+    enum Rarity {
+        COMMON,
+        UNCOMMON,
+        RARE,
+        LEGENDARY,
+        MYTHIC
+    }
 
-struct SummoningInfo {
-    uint256 summonedTime;
-    // How long until the hero can participate in summoning again.
-    uint256 nextSummonTime;
-    uint256 summonerId;
-    uint256 assistantId;
-    // How many summons the hero has done.
-    uint32 summons;
-    // How many summons can the hero do max.
-    uint32 maxSummons;
-}
+    struct HeroStats {
+        uint16 strength;
+        uint16 agility;
+        uint16 intelligence;
+        uint16 wisdom;
+        uint16 luck;
+        uint16 vitality;
+        uint16 endurance;
+        uint16 dexterity;
+        uint16 hp;
+        uint16 mp;
+        uint16 stamina;
+    }
 
-struct HeroInfo {
-    uint256 statGenes;
-    uint256 visualGenes;
-    Rarity rarity;
-    bool shiny;
-    uint16 generation;
-    uint32 firstName;
-    uint32 lastName;
-    uint8 shinyStyle;
-    uint8 class;
-    uint8 subClass;
-}
+    struct HeroStatGrowth {
+        uint16 strength;
+        uint16 agility;
+        uint16 intelligence;
+        uint16 wisdom;
+        uint16 luck;
+        uint16 vitality;
+        uint16 endurance;
+        uint16 dexterity;
+        uint16 hpSm;
+        uint16 hpRg;
+        uint16 hpLg;
+        uint16 mpSm;
+        uint16 mpRg;
+        uint16 mpLg;
+    }
 
-struct HeroState {
-    // The time the hero's stamina is full at.
-    uint256 staminaFullAt;
-    // The time the hero's hp is full at.
-    uint256 hpFullAt;
-    // The time the hero's mp is full at.
-    uint256 mpFullAt;
-    // The current level of the hero.
-    uint16 level;
-    // The current XP the hero has towards their next level.
-    uint64 xp;
-    // The current quest a hero is undertaking, if any.
-    address currentQuest;
-    // The skill points the hero can spend.
-    uint8 sp;
-    HeroStatus status;
-}
+    struct SummoningInfo {
+        uint256 summonedTime;
+        // How long until the hero can participate in summoning again.
+        uint256 nextSummonTime;
+        uint256 summonerId;
+        uint256 assistantId;
+        // How many summons the hero has done.
+        uint32 summons;
+        // How many summons can the hero do max.
+        uint32 maxSummons;
+    }
 
-struct HeroProfessions {
-    uint16 mining;
-    uint16 gardening;
-    uint16 foraging;
-    uint16 fishing;
-}
+    struct HeroInfo {
+        uint256 statGenes;
+        uint256 visualGenes;
+        Rarity rarity;
+        bool shiny;
+        uint16 generation;
+        uint32 firstName;
+        uint32 lastName;
+        uint8 shinyStyle;
+        uint8 class;
+        uint8 subClass;
+    }
 
-struct Hero {
-    uint256 id;
-    SummoningInfo summoningInfo;
-    HeroInfo info;
-    HeroState state;
-    HeroStats stats;
-    HeroStatGrowth primaryStatGrowth;
-    HeroStatGrowth secondaryStatGrowth;
-    HeroProfessions professions;
-}
+    struct HeroState {
+        // The time the hero's stamina is full at.
+        uint256 staminaFullAt;
+        // The time the hero's hp is full at.
+        uint256 hpFullAt;
+        // The time the hero's mp is full at.
+        uint256 mpFullAt;
+        // The current level of the hero.
+        uint16 level;
+        // The current XP the hero has towards their next level.
+        uint64 xp;
+        // The current quest a hero is undertaking, if any.
+        address currentQuest;
+        // The skill points the hero can spend.
+        uint8 sp;
+        HeroStatus status;
+    }
 
-struct HeroCrystal {
-    address owner;
-    uint256 summonerId;
-    uint256 assistantId;
-    uint16 generation;
-    uint256 createdBlock;
-    uint256 heroId;
-    uint8 summonerTears;
-    uint8 assistantTears;
-    address enhancementStone;
-    uint32 maxSummons;
-    uint32 firstName;
-    uint32 lastName;
-    uint8 shinyStyle;
-}
+    struct HeroProfessions {
+        uint16 mining;
+        uint16 gardening;
+        uint16 foraging;
+        uint16 fishing;
+    }
+
+    struct Hero {
+        uint256 id;
+        SummoningInfo summoningInfo;
+        HeroInfo info;
+        HeroState state;
+        HeroStats stats;
+        HeroStatGrowth primaryStatGrowth;
+        HeroStatGrowth secondaryStatGrowth;
+        HeroProfessions professions;
+    }
+
+    struct HeroCrystal {
+        address owner;
+        uint256 summonerId;
+        uint256 assistantId;
+        uint16 generation;
+        uint256 createdBlock;
+        uint256 heroId;
+        uint8 summonerTears;
+        uint8 assistantTears;
+        address enhancementStone;
+        uint32 maxSummons;
+        uint32 firstName;
+        uint32 lastName;
+        uint8 shinyStyle;
+    }
 
 //
 interface IHeroCoreUpgradeable {
@@ -831,15 +862,15 @@ interface IAssistingAuction {
     ) external;
 
     function getAuction(uint256 _tokenId)
-        external
-        view
-        returns (
-            address seller,
-            uint256 startingPrice,
-            uint256 endingPrice,
-            uint256 duration,
-            uint256 startedAt
-        );
+    external
+    view
+    returns (
+        address seller,
+        uint256 startingPrice,
+        uint256 endingPrice,
+        uint256 duration,
+        uint256 startedAt
+    );
 
     function getCurrentPrice(uint256 _tokenId) external view returns (uint256);
 
@@ -860,10 +891,10 @@ interface IAssistingAuction {
     function transferOwnership(address newOwner) external;
 }
 
-enum HeroStatus {
-    OK,
-    KO
-}
+    enum HeroStatus {
+        OK,
+        KO
+    }
 
 //
 /** @title Core app for handling cross chain messaging passing to bridge Hero NFTs
@@ -900,9 +931,9 @@ contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable
     ) internal pure returns (bytes memory) {
         // create the message here from the nested struct
         MessageFormat memory msgFormat = MessageFormat({
-            dstHeroId: _heroId,
-            dstHero: _heroToBridge,
-            dstUser: _dstUserAddress
+        dstHeroId: _heroId,
+        dstHero: _heroToBridge,
+        dstUser: _dstUserAddress
         });
         return abi.encode(msgFormat);
     }
