@@ -60,6 +60,20 @@ spec:
           env:
             {{- toYaml .Values.executor_embedded.env | nindent 12 }}
           {{- end }}
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            failureThreshold: 5
+            timeoutSeconds: 30
+            httpGet:
+              path: /health-check
+              port: http
+          readinessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            timeoutSeconds: 30
+            httpGet:
+              path: /health-check
+              port: http
         {{- if .Values.executor_embedded_files }}
           volumeMounts:
             - name: configmap

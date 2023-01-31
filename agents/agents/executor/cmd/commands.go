@@ -212,6 +212,8 @@ var ExecutorRunCommand = &cli.Command{
 			return nil
 		})
 
+		logger.Errorf("made it to the end of commands!!!")
+
 		if err := g.Wait(); err != nil {
 			logger.Errorf("failed to run executor: %v", err)
 			return fmt.Errorf("failed to run executor: %w", err)

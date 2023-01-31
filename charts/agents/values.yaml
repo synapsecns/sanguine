@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "181fbd7002021e6a4cbf5a40667fe8c282beb936"
+  tag: "0981e030f4430720c1c25b2f35b762f633687186"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -34,6 +34,8 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 80
+
+initialDelaySeconds: 20
 
 ingress:
   enabled: false
@@ -175,8 +177,13 @@ executor_remote_files:
     # Production config example
 
 executor_embedded_files:
+  signer.txt: |-
+    b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   config.yaml: |-
     base_omnirpc_url: "http://omnirpc/confirmations"
+    unbonded_signer:
+      type: "File"
+      file: "/config/signer.txt"
     embedded_scribe_config:
       chains:
         - chain_id: 1285
