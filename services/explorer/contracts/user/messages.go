@@ -24,12 +24,12 @@ import (
 // globMux is a global mutex to protect the global message parsing map
 // to parse messages, we start up a simulated network and add the contracts to it
 // to avoid slower start time, we do this in a go function at boot time.
-// we lock the mutex here and then release it only acquiring read locks going forward since these are much cheaper
+// we lock the mutex here and then release it only acquiring read locks going forward since these are much cheaper.
 var globMux sync.RWMutex
 
 var decoders []Decoder
 
-// Decoder decodes a message into a message type
+// Decoder decodes a message into a message type.
 type Decoder func(ctx context.Context, message []byte) (model.MessageType, error)
 
 func init() {

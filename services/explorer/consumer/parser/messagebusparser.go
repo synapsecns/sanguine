@@ -191,5 +191,4 @@ func (m *MessageBusParser) getFeeValue(ctx context.Context, messageEvent model.M
 		return price, nil
 	}
 	return nil, fmt.Errorf("MESSAGEBUS could not convert token price:  %s chain: %d txhash %s %d", coinGeckoID, messageEvent.ChainID, messageEvent.TxHash, messageEvent.TimeStamp)
-
 }

@@ -183,7 +183,6 @@ func generateSingleSpecifierI32ArrSQL(values []*int, field string, firstFilter *
 //
 // nolint:unparam
 func generateSingleSpecifierStringArrSQL(values []*string, field string, firstFilter *bool, tablePrefix string) string {
-
 	if len(values) == 0 {
 		return ""
 	}
@@ -203,7 +202,6 @@ func generateSingleSpecifierStringArrSQL(values []*string, field string, firstFi
 	}
 
 	return final + ")"
-
 }
 
 // generateTimestampSpecifierSQL generates a where function with an uint64.
@@ -323,7 +321,6 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	if bridgeEvent.FTimeStamp != nil {
 		fromTimestamp = int(*bridgeEvent.FTimeStamp)
 		fromTimeStampFormatted = time.Unix(int64(*bridgeEvent.FTimeStamp), 0).String()
-
 	} else {
 		return nil, fmt.Errorf("timestamp is not valid")
 	}
@@ -361,7 +358,6 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		if bridgeEvent.TTimeStamp != nil {
 			toTimestamp = int(*bridgeEvent.TTimeStamp)
 			toTimeStampFormatted = time.Unix(int64(*bridgeEvent.TTimeStamp), 0).String()
-
 		} else {
 			return nil, fmt.Errorf("timestamp is not valid")
 		}
@@ -451,7 +447,7 @@ func generateAllBridgeEventsQueryFromDestination(chainID []*int, address *string
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, false), destToOriginCol, "baseQuery", destToOriginJoins)
-	//fmt.Println(compositeFilters)
+	// fmt.Println(compositeFilters)
 	return finalQuery
 }
 
@@ -476,7 +472,7 @@ func generateAllBridgeEventsQueryFromOrigin(chainID []*int, address *string, max
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, true), originToDestCol, "baseQuery", originToDestJoins)
-	//fmt.Println(compositeFilters)
+	// fmt.Println(compositeFilters)
 	return finalQuery
 }
 

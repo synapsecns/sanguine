@@ -445,7 +445,6 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 		tokenDecimals[i] = tokenDecimalsArr[i]
 		tokenSymbols[i] = tokenSymbolsArr[i]
 		tokenCoinGeckoIDs[i] = tokenCoinGeckoIDsArr[i]
-
 	}
 
 	swapEvent.TokenPrice = tokenPrices
@@ -469,7 +468,6 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 			return nil, fmt.Errorf("could not convert fee: %w %d %d %d %d", err, swapEvent.TokensSold, uint8(swapEvent.SoldID.Uint64()), swapFee, adminFee)
 		}
 		swapEvent.Fee[uint8(swapEvent.SoldID.Uint64())] = fee
-
 	}
 
 	for i := range swapEvent.Amount {
