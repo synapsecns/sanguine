@@ -51,10 +51,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            - server
-            - '--port=80'
-            - '--scribe-url=https://scribe.interoperability.institute/graphql'
-            - '--address=tcp://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
+            {{- toYaml .Values.server.args | nindent 12 }}
           ports:
             - name: http
               containerPort: 80
