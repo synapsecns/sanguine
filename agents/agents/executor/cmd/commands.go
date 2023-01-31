@@ -102,7 +102,7 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 
 	clients = make(map[uint32]executor.Backend)
 	for _, execClient := range executorConfig.Chains {
-		rpcDial, err := rpc.DialContext(c.Context, fmt.Sprintf("%s/confirmations/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, execClient.ChainID))
+		rpcDial, err := rpc.DialContext(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, execClient.ChainID))
 		if err != nil {
 			logger.Errorf("failed to dial rpc in create executor parameters: %v", err)
 			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
@@ -150,11 +150,11 @@ var ExecutorRunCommand = &cli.Command{
 
 			for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					logger.Errorf("the embeddedscribeconfig's rpc_url is: %s", executorConfig.EmbeddedScribeConfig.RPCURL)
-					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, confNum, client.ChainID))
+					logger.Errorf("the embeddedscribeconfig's rpc_url is: %s", executorConfig.BaseOmnirpcURL)
+					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID))
 					if err != nil {
 						logger.Errorf("failed to dial rpc: %v", err)
-						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, confNum, client.ChainID))
+						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID))
 					}
 
 					scribeClients[client.ChainID] = append(scribeClients[client.ChainID], backendClient)
