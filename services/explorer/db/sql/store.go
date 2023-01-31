@@ -60,7 +60,7 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 		return nil, fmt.Errorf("failed to get clickhouse db: %w", err)
 	}
 
-	db.SetConnMaxIdleTime(15 * time.Minute)
-	db.SetConnMaxLifetime(15 * time.Minute)
+	db.SetConnMaxIdleTime(1 * time.Second)
+	db.SetConnMaxLifetime(30 * time.Second)
 	return &Store{clickhouseDB}, nil
 }
