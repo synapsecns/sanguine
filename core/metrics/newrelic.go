@@ -3,6 +3,10 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
+	"sync"
+
 	"github.com/gin-gonic/gin"
 	ngrin "github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/integrations/nrzap"
@@ -10,9 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/core/config"
 	nrcontrib "github.com/synapsecns/sanguine/core/metrics/newrelic"
 	"gorm.io/gorm"
-	"net/http"
-	"os"
-	"sync"
 )
 
 type newRelicHandler struct {
@@ -86,7 +87,7 @@ func (n nrRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	defer txn.End()
 	resp, err := n.inner.RoundTrip(req)
 	if err != nil {
-		// nolint: wrapcheck
+		//nolint:wrapcheck
 		return nil, err
 	}
 	return resp, nil

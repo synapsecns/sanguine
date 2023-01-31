@@ -3,6 +3,8 @@ package domains
 import (
 	"context"
 	"errors"
+	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/synapsecns/sanguine/agents/config"
@@ -39,6 +41,8 @@ type OriginContract interface {
 	// GetHistoricalAttestation gets the root corresponding to destination and nonce,
 	// as well as the block number the message was dispatched and the current block number
 	GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, error)
+	// SuggestAttestation gets the latest attestation on the origin for the given destination
+	SuggestAttestation(ctx context.Context, destinationID uint32) (types.Attestation, error)
 }
 
 // AttestationCollectorContract contains the interface for the attestation collector.
@@ -49,12 +53,24 @@ type AttestationCollectorContract interface {
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// GetLatestNonce gets the latest nonce signed by the bondedAgentSigner for the domain on the attestation collector
 	GetLatestNonce(ctx context.Context, origin uint32, destination uint32, bondedAgentSigner signer.Signer) (nonce uint32, err error)
+	// GetAttestation gets the attestation if any for the given origin, destination and nonce
+	GetAttestation(ctx context.Context, origin, destination, nonce uint32) (types.SignedAttestation, error)
+	// GetRoot gets the root if any for the given origin, destination and nonce
+	GetRoot(ctx context.Context, origin, destination, nonce uint32) ([32]byte, error)
+	// PrimeNonce primes the nonce for the signer
+	PrimeNonce(ctx context.Context, signer signer.Signer) error
 }
 
 // DestinationContract contains the interface for the destination.
 type DestinationContract interface {
 	// SubmitAttestation submits an attestation to the destination.
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
+	// Execute executes a message on the destination.
+	Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error
+	// SubmittedAt retrieves the time a given Merkle root from the given origin was submitted on the destination.
+	SubmittedAt(ctx context.Context, origin uint32, root [32]byte) (*time.Time, error)
+	// PrimeNonce primes the nonce for the signer
+	PrimeNonce(ctx context.Context, signer signer.Signer) error
 }
 
 // ErrNoUpdate indicates no update has been produced.

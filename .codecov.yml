@@ -18,6 +18,7 @@ ignore:
   - '**/*_generated.go'
   - '**/*.abigen.go'
   - '**/*_string.go'
+  - '**/*_gen.go'
   - '**/*.pb.go'
   # solidity test files
   - '*/test/*.sol'

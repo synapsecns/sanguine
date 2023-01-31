@@ -12,7 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 )
 
-func (u NotarySuite) TestUpdateProducer() {
+func (u *NotarySuite) TestUpdateProducer() {
 	testDB, err := sqlite.NewSqliteStore(u.GetTestContext(), filet.TmpDir(u.T(), ""))
 	Nil(u.T(), err)
 
@@ -27,7 +27,7 @@ func (u NotarySuite) TestUpdateProducer() {
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
 	// call the update producing function
-	attestationProducer := notary.NewAttestationProducer(u.OriginDomainClient, testDB, u.NotarySigner, 1*time.Second)
+	attestationProducer := notary.NewAttestationProducer(u.OriginDomainClient, testDB, u.NotaryBondedSigner, 1*time.Second)
 
 	err = attestationProducer.Update(u.GetTestContext())
 	Nil(u.T(), err)

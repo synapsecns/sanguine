@@ -3,6 +3,9 @@ package chain
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"sync"
+
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
@@ -10,8 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas"
 	"github.com/synapsecns/sanguine/ethergo/chain/watcher"
-	"math/big"
-	"sync"
 )
 
 var _ Chain = &baseChain{}
@@ -132,7 +133,8 @@ func NewFromMeteredClient(ctx context.Context, config *client.Config, meteredCli
 }
 
 // NewFromURL creates a new client from a url.
-// nolint: ireturn
+//
+//nolint:ireturn
 func NewFromURL(ctx context.Context, url string) (Chain, error) {
 	tmpClient, err := client.NewClient(ctx, url)
 	if err != nil {
