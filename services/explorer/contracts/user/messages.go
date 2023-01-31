@@ -3,9 +3,7 @@ package user
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/chebyrash/promise"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
@@ -52,28 +50,38 @@ func Decode(ctx context.Context, hexMessage string) model.MessageType {
 		return model.UnknownType{Known: false}
 	}
 
-	var promises []*promise.Promise[model.MessageType]
-	pctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	results := make([]model.MessageType, len(decoders))
 
-	for _, decoder := range decoders {
-		promises = append(promises, promise.New[model.MessageType](func(resolve func(model.MessageType), reject func(error)) {
-			messageType, err := decoder(pctx, message)
+	var wg sync.WaitGroup
+	var sliceMux sync.Mutex
+	for i, decoder := range decoders {
+		wg.Add(1)
+		i := i
+		decoder := decoder //capture func literal
+		go func() {
+			defer wg.Done()
+			messageType, err := decoder(ctx, message)
 			if err != nil {
-				reject(errors.New("could not decode message"))
+				return
 			}
 			if messageType != nil {
-				resolve(messageType)
+				sliceMux.Lock()
+				results[i] = messageType
+				sliceMux.Unlock()
 			}
-		}))
+		}()
 	}
 
-	res, err := promise.Any(promises...).Await()
-	if err != nil {
-		return model.UnknownType{Known: false}
+	wg.Wait()
+
+	// go in order of decoders from largest->smallest
+	for _, result := range results {
+		if result != nil {
+			return result
+		}
 	}
 
-	return res
+	return model.UnknownType{Known: false}
 }
 
 func deployParseNet() error {
@@ -107,6 +115,7 @@ func deployParseNet() error {
 		return fmt.Errorf("could not deploy hero bridge: %w", err)
 	}
 
+	// Note: these should stay in order of largest to smallest
 	decoders = append(decoders, func(ctx context.Context, message []byte) (model.MessageType, error) {
 		messageFormat, err := heroBridge.DecodeMessage(&bind.CallOpts{Context: ctx}, message)
 		if err != nil {
