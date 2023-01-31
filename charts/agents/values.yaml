@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0981e030f4430720c1c25b2f35b762f633687186"
+  tag: "e2356a9b5122b9cd93932db928c5cf9625ebad5f"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -35,7 +35,7 @@ service:
   type: ClusterIP
   port: 80
 
-initialDelaySeconds: 20
+# initialDelaySeconds: 20
 
 ingress:
   enabled: false
