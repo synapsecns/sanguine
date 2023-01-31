@@ -1,21 +1,21 @@
-{{- if .Values.executor_remote_files }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "agents.fullname" . }}-executor-remote-{{ .Release.Name }}
-  labels:
-    app: {{ include "agents.name" . }}
-    chart: "{{ .Chart.Name }}"
-    release: "{{ .Release.Name }}"
-    heritage: {{ .Release.Service }}
-data:
-{{ toYaml .Values.executor_remote_files | indent 2}}
-{{- end }}
+{{/*{{- if .Values.executor_remote_files }}*/}}
+{{/*apiVersion: v1*/}}
+{{/*kind: ConfigMap*/}}
+{{/*metadata:*/}}
+{{/*  name: {{ include "agents.fullname" . }}-{{ .Release.Name }}*/}}
+{{/*  labels:*/}}
+{{/*    app: {{ include "agents.name" . }}*/}}
+{{/*    chart: "{{ .Chart.Name }}"*/}}
+{{/*    release: "{{ .Release.Name }}"*/}}
+{{/*    heritage: {{ .Release.Service }}*/}}
+{{/*data:*/}}
+{{/*{{ toYaml .Values.executor_remote_files | indent 2}}*/}}
+{{/*{{- end }}*/}}
 {{- if .Values.executor_embedded_files }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "agents.fullname" . }}-executor-embedded-{{ .Release.Name }}
+  name: {{ include "agents.fullname" . }}-{{ .Release.Name }}
   labels:
     app: {{ include "agents.name" . }}
     chart: "{{ .Chart.Name }}"

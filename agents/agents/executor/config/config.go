@@ -51,6 +51,10 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 		return false, fmt.Errorf("unbonded signer is invalid: %w", err)
 	}
 
+	if ok, err = c.EmbeddedScribeConfig.IsValid(ctx); !ok {
+		return false, fmt.Errorf("embedded scribe config is invalid: %w", err)
+	}
+
 	return true, nil
 }
 
