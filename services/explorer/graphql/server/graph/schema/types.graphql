@@ -135,6 +135,7 @@ type PartialMessageBusInfo {
   blockNumber:    Int
   time:           Int
   formattedTime: String
+  revertedReason: String
 }
 
 

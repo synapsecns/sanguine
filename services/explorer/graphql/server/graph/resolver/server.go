@@ -106,6 +106,7 @@ type ComplexityRoot struct {
 		FormattedTime      func(childComplexity int) int
 		Message            func(childComplexity int) int
 		MessageType        func(childComplexity int) int
+		RevertedReason     func(childComplexity int) int
 		Time               func(childComplexity int) int
 		TxnHash            func(childComplexity int) int
 	}
@@ -123,7 +124,7 @@ type ComplexityRoot struct {
 		CountByChainID         func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatistics        func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) int
-		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, page *int) int
+		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) int
 	}
 
 	TearType struct {
@@ -153,7 +154,7 @@ type ComplexityRoot struct {
 
 type QueryResolver interface {
 	BridgeTransactions(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error)
-	MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, page *int) ([]*model.MessageBusTransaction, error)
+	MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) ([]*model.MessageBusTransaction, error)
 	CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error)
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
 	AddressRanking(ctx context.Context, hours *int) ([]*model.AddressRanking, error)
@@ -449,6 +450,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PartialMessageBusInfo.MessageType(childComplexity), true
 
+	case "PartialMessageBusInfo.revertedReason":
+		if e.complexity.PartialMessageBusInfo.RevertedReason == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.RevertedReason(childComplexity), true
+
 	case "PartialMessageBusInfo.time":
 		if e.complexity.PartialMessageBusInfo.Time == nil {
 			break
@@ -566,7 +574,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.MessageBusTransactions(childComplexity, args["chainID"].([]*int), args["contractAddress"].(*string), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["messageID"].(*string), args["pending"].(*bool), args["page"].(*int)), true
+		return e.complexity.Query.MessageBusTransactions(childComplexity, args["chainID"].([]*int), args["contractAddress"].(*string), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["messageID"].(*string), args["pending"].(*bool), args["reverted"].(*bool), args["page"].(*int)), true
 
 	case "TearType.amount":
 		if e.complexity.TearType.Amount == nil {
@@ -745,6 +753,7 @@ type UnknownType {
     txnHash:        String
     messageID:      String
     pending:        Boolean = false
+    reverted:       Boolean = false
     page:           Int = 1
   ): [MessageBusTransaction]
 
@@ -937,6 +946,7 @@ type PartialMessageBusInfo {
   blockNumber:    Int
   time:           Int
   formattedTime: String
+  revertedReason: String
 }
 
 
@@ -1335,15 +1345,24 @@ func (ec *executionContext) field_Query_messageBusTransactions_args(ctx context.
 		}
 	}
 	args["pending"] = arg6
-	var arg7 *int
-	if tmp, ok := rawArgs["page"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
-		arg7, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+	var arg7 *bool
+	if tmp, ok := rawArgs["reverted"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reverted"))
+		arg7, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["page"] = arg7
+	args["reverted"] = arg7
+	var arg8 *int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg8, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg8
 	return args, nil
 }
 
@@ -2202,6 +2221,8 @@ func (ec *executionContext) fieldContext_MessageBusTransaction_fromInfo(ctx cont
 				return ec.fieldContext_PartialMessageBusInfo_time(ctx, field)
 			case "formattedTime":
 				return ec.fieldContext_PartialMessageBusInfo_formattedTime(ctx, field)
+			case "revertedReason":
+				return ec.fieldContext_PartialMessageBusInfo_revertedReason(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialMessageBusInfo", field.Name)
 		},
@@ -2263,6 +2284,8 @@ func (ec *executionContext) fieldContext_MessageBusTransaction_toInfo(ctx contex
 				return ec.fieldContext_PartialMessageBusInfo_time(ctx, field)
 			case "formattedTime":
 				return ec.fieldContext_PartialMessageBusInfo_formattedTime(ctx, field)
+			case "revertedReason":
+				return ec.fieldContext_PartialMessageBusInfo_revertedReason(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialMessageBusInfo", field.Name)
 		},
@@ -3172,6 +3195,47 @@ func (ec *executionContext) fieldContext_PartialMessageBusInfo_formattedTime(ctx
 	return fc, nil
 }
 
+func (ec *executionContext) _PartialMessageBusInfo_revertedReason(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_revertedReason(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RevertedReason, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_revertedReason(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PetType_recipient(ctx context.Context, field graphql.CollectedField, obj *model.PetType) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PetType_recipient(ctx, field)
 	if err != nil {
@@ -3382,7 +3446,7 @@ func (ec *executionContext) _Query_messageBusTransactions(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().MessageBusTransactions(rctx, fc.Args["chainID"].([]*int), fc.Args["contractAddress"].(*string), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["messageID"].(*string), fc.Args["pending"].(*bool), fc.Args["page"].(*int))
+		return ec.resolvers.Query().MessageBusTransactions(rctx, fc.Args["chainID"].([]*int), fc.Args["contractAddress"].(*string), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["messageID"].(*string), fc.Args["pending"].(*bool), fc.Args["reverted"].(*bool), fc.Args["page"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6394,6 +6458,10 @@ func (ec *executionContext) _PartialMessageBusInfo(ctx context.Context, sel ast.
 		case "formattedTime":
 
 			out.Values[i] = ec._PartialMessageBusInfo_formattedTime(ctx, field, obj)
+
+		case "revertedReason":
+
+			out.Values[i] = ec._PartialMessageBusInfo_revertedReason(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

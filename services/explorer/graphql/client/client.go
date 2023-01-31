@@ -115,6 +115,7 @@ type GetMessageBusTransactions struct {
 			BlockNumber        *int    "json:\"blockNumber\" graphql:\"blockNumber\""
 			Time               *int    "json:\"time\" graphql:\"time\""
 			FormattedTime      *string "json:\"formattedTime\" graphql:\"formattedTime\""
+			RevertedReason     *string "json:\"revertedReason\" graphql:\"revertedReason\""
 		} "json:\"toInfo\" graphql:\"toInfo\""
 		MessageID *string "json:\"messageID\" graphql:\"messageID\""
 		Pending   *bool   "json:\"pending\" graphql:\"pending\""
@@ -302,8 +303,8 @@ func (c *Client) GetDailyStatistics(ctx context.Context, chainID *int, typeArg *
 	return &res, nil
 }
 
-const GetMessageBusTransactionsDocument = `query GetMessageBusTransactions ($chainID: [Int], $contractAddress: String, $startTime: Int, $endTime: Int, $txHash: String, $messageID: String, $pending: Boolean, $page: Int) {
-	response: messageBusTransactions(chainID: $chainID, contractAddress: $contractAddress, startTime: $startTime, endTime: $endTime, txnHash: $txHash, messageID: $messageID, pending: $pending, page: $page) {
+const GetMessageBusTransactionsDocument = `query GetMessageBusTransactions ($chainID: [Int], $contractAddress: String, $startTime: Int, $endTime: Int, $txHash: String, $messageID: String, $pending: Boolean, $reverted: Boolean, $page: Int) {
+	response: messageBusTransactions(chainID: $chainID, contractAddress: $contractAddress, startTime: $startTime, endTime: $endTime, txnHash: $txHash, messageID: $messageID, pending: $pending, reverted: $reverted, page: $page) {
 		fromInfo {
 			chainID
 			destinationChainID
@@ -323,6 +324,7 @@ const GetMessageBusTransactionsDocument = `query GetMessageBusTransactions ($cha
 			blockNumber
 			time
 			formattedTime
+			revertedReason
 		}
 		messageID
 		pending
@@ -330,7 +332,7 @@ const GetMessageBusTransactionsDocument = `query GetMessageBusTransactions ($cha
 }
 `
 
-func (c *Client) GetMessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txHash *string, messageID *string, pending *bool, page *int, httpRequestOptions ...client.HTTPRequestOption) (*GetMessageBusTransactions, error) {
+func (c *Client) GetMessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txHash *string, messageID *string, pending *bool, reverted *bool, page *int, httpRequestOptions ...client.HTTPRequestOption) (*GetMessageBusTransactions, error) {
 	vars := map[string]interface{}{
 		"chainID":         chainID,
 		"contractAddress": contractAddress,
@@ -339,6 +341,7 @@ func (c *Client) GetMessageBusTransactions(ctx context.Context, chainID []*int, 
 		"txHash":          txHash,
 		"messageID":       messageID,
 		"pending":         pending,
+		"reverted":        reverted,
 		"page":            page,
 	}
 

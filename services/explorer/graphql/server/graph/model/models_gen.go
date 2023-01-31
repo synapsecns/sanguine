@@ -88,6 +88,7 @@ type PartialMessageBusInfo struct {
 	BlockNumber        *int        `json:"blockNumber"`
 	Time               *int        `json:"time"`
 	FormattedTime      *string     `json:"formattedTime"`
+	RevertedReason     *string     `json:"revertedReason"`
 }
 
 type PetType struct {

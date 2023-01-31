@@ -64,10 +64,10 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID []*int, 
 }
 
 // MessageBusTransactions is the resolver for the messageBusTransactions field.
-func (r *queryResolver) MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, page *int) ([]*model.MessageBusTransaction, error) {
+func (r *queryResolver) MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) ([]*model.MessageBusTransaction, error) {
 	var err error
 	var results []*model.MessageBusTransaction
-	results, err = r.GetMessageBusTxs(ctx, chainID, contractAddress, startTime, endTime, txnHash, messageID, *pending, page)
+	results, err = r.GetMessageBusTxs(ctx, chainID, contractAddress, startTime, endTime, txnHash, messageID, *pending, *reverted, page)
 	if err != nil {
 		fmt.Errorf("could not get message bus transactions %v", err)
 	}

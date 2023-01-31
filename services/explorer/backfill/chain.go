@@ -292,6 +292,7 @@ func (c *ChainBackfiller) storeParsedLogs(ctx context.Context, parsedEvents []in
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled while storing events: %w", ctx.Err())
 		case <-time.After(timeout):
+			fmt.Println("stpromg!!")
 			err := c.consumerDB.StoreEvents(ctx, parsedEvents)
 			if err != nil {
 				logger.Errorf("Error storing events: %v", err)

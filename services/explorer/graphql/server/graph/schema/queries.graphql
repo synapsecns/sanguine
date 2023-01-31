@@ -28,6 +28,7 @@ type Query {
     txnHash:        String
     messageID:      String
     pending:        Boolean = false
+    reverted:       Boolean = false
     page:           Int = 1
   ): [MessageBusTransaction]
 
