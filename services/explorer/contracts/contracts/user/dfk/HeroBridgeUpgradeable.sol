@@ -1,7 +1,7 @@
 pragma solidity 0.8.13;
 
 
-// 
+//
 interface ISynMessagingReceiver {
     // Maps chain ID to the bytes32 trusted addresses allowed to be source senders
     // mapping(uint256 => bytes32) internal trustedRemoteLookup;
@@ -22,7 +22,7 @@ interface ISynMessagingReceiver {
     ) external;
 }
 
-// 
+//
 interface IMessageBus {
     /**
      * @notice Sends a message to a receiving contract address on another chain.
@@ -72,7 +72,7 @@ interface IMessageBus {
     function withdrawFee(address _account) external;
 }
 
-// 
+//
 // OpenZeppelin Contracts (last updated v4.5.0) (utils/Address.sol)
 /**
  * @dev Collection of functions related to the address type
@@ -265,7 +265,7 @@ library AddressUpgradeable {
     }
 }
 
-// 
+//
 // OpenZeppelin Contracts (last updated v4.5.0) (proxy/utils/Initializable.sol)
 /**
  * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed
@@ -341,7 +341,7 @@ abstract contract Initializable {
     }
 }
 
-// 
+//
 // OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
 /**
  * @dev Provides information about the current execution context, including the
@@ -375,7 +375,7 @@ abstract contract ContextUpgradeable is Initializable {
     uint256[50] private __gap;
 }
 
-// 
+//
 // OpenZeppelin Contracts v4.4.1 (access/Ownable.sol)
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -458,7 +458,7 @@ abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
     uint256[49] private __gap;
 }
 
-// 
+//
 abstract contract SynMessagingReceiverUpgradeable is ISynMessagingReceiver, OwnableUpgradeable {
     address public messageBus;
 
@@ -616,7 +616,7 @@ struct HeroCrystal {
     uint8 shinyStyle;
 }
 
-// 
+//
 interface IHeroCoreUpgradeable {
     function bridgeMint(uint256 _id, address _to) external;
 
@@ -807,7 +807,7 @@ interface IHeroCoreUpgradeable {
     function vrf(uint256 blockNumber) external view returns (bytes32 result);
 }
 
-// 
+//
 interface IAssistingAuction {
     function bid(uint256 _tokenId, uint256 _bidAmount) external;
 
@@ -865,7 +865,7 @@ enum HeroStatus {
     KO
 }
 
-// 
+//
 /** @title Core app for handling cross chain messaging passing to bridge Hero NFTs
  */
 contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable {
@@ -959,8 +959,8 @@ contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable
         address
     ) internal override {
         // Decode _message, depending on exactly how the originating message is structured
-        /** 
-            Message data: 
+        /**
+            Message data:
                 Hero memory heroToBridge = IHeroCoreUpgradeable(heroes).getHero(_heroId);
                 address dstUserAddress = msg.sender;
                 uint256 dstHeroId = _heroId;
@@ -973,7 +973,7 @@ contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable
 
         // will revert if non-existant Hero
         try IHeroCoreUpgradeable(heroes).ownerOf(dstHeroId) returns (address heroOwner) {
-            /** 
+            /**
                 If heroId does exist (which means it should be locked on this contract), as it was bridged before.
                 Transfer it to message.dstUserAddress
                 */
@@ -982,8 +982,8 @@ contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable
                 IHeroCoreUpgradeable(heroes).safeTransferFrom(address(this), dstUser, dstHeroId);
             }
         } catch {
-            /** 
-                If hero ID doesn't exist: 
+            /**
+                If hero ID doesn't exist:
                 Mint a hero to msg.dstUserAddress
                 */
             IHeroCoreUpgradeable(heroes).bridgeMint(dstHeroId, dstUser);
