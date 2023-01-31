@@ -90,11 +90,13 @@ var scribeURL = &cli.StringFlag{
 func createExecutorParameters(c *cli.Context) (executorConfig config.Config, executorDB db.ExecutorDB, clients map[uint32]executor.Backend, err error) {
 	executorConfig, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
+		logger.Errorf("failed to decode config: %v", err)
 		return executorConfig, nil, nil, fmt.Errorf("failed to decode config: %w", err)
 	}
 
 	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name))
 	if err != nil {
+		logger.Errorf("failed to initialize executor db: %v", err)
 		return executorConfig, nil, nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
 
@@ -102,6 +104,7 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 	for _, execClient := range executorConfig.Chains {
 		rpcDial, err := rpc.DialContext(c.Context, fmt.Sprintf("%s/confirmations/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, execClient.ChainID))
 		if err != nil {
+			logger.Errorf("failed to dial rpc in create executor parameters: %v", err)
 			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
 		}
 
