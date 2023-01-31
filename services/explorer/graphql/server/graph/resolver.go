@@ -11,7 +11,7 @@ import (
 
 // Resolver is the root resolver.
 //
-//go:generate go run github.com/synapsecns/sanguine/services/explorer/graphql/contrib/client
+//go:generate go run github.com/synapsecns/sanguine/services/explorer/graphql/contrib
 type Resolver struct {
 	DB      db.ConsumerDB
 	Fetcher fetcher.ScribeFetcher
