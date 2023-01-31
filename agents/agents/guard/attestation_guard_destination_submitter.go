@@ -69,15 +69,19 @@ func (a AttestationGuardDestinationSubmitter) Start(ctx context.Context) error {
 	}
 }
 
-// FindOldestGuardConfirmedOnCollector fetches the oldest signed attestation (by both notary and guard)
+// FindNewestGuardConfirmedOnCollector fetches the newest signed attestation (by both notary and guard)
 // that has been submitted to and confirmed on the Attestation Collector.
-func (a AttestationGuardDestinationSubmitter) FindOldestGuardConfirmedOnCollector(ctx context.Context) (types.InProgressAttestation, error) {
-	inProgressAttestation, err := a.db.RetrieveOldestGuardConfirmedOnCollector(ctx, a.originDomain.Config().DomainID, a.destinationDomain.Config().DomainID)
+func (a AttestationGuardDestinationSubmitter) FindNewestGuardConfirmedOnCollector(ctx context.Context) (types.InProgressAttestation, error) {
+	inProgressAttestation, err := a.db.RetrieveNewestInProgressAttestationIfInState(
+		ctx,
+		a.originDomain.Config().DomainID,
+		a.destinationDomain.Config().DomainID,
+		types.AttestationStateGuardConfirmedOnCollector)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not retrieve oldest confirmed attestation on attestation collector: %w", err)
+		return nil, fmt.Errorf("could not retrieve newest confirmed attestation on attestation collector: %w", err)
 	}
 	return inProgressAttestation, nil
 }
@@ -86,9 +90,9 @@ func (a AttestationGuardDestinationSubmitter) FindOldestGuardConfirmedOnCollecto
 //
 //nolint:cyclop
 func (a AttestationGuardDestinationSubmitter) update(ctx context.Context) error {
-	inProgressAttestationToSubmitToDestination, err := a.FindOldestGuardConfirmedOnCollector(ctx)
+	inProgressAttestationToSubmitToDestination, err := a.FindNewestGuardConfirmedOnCollector(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find oldest confirmed-on-collector attestation: %w", err)
+		return fmt.Errorf("could not find newest confirmed-on-collector attestation: %w", err)
 	}
 	if inProgressAttestationToSubmitToDestination == nil {
 		return nil
@@ -103,7 +107,6 @@ func (a AttestationGuardDestinationSubmitter) update(ctx context.Context) error 
 
 	submittedInProgressAttestation := types.NewInProgressAttestation(
 		inProgressAttestationToSubmitToDestination.SignedAttestation(),
-		inProgressAttestationToSubmitToDestination.OriginDispatchBlockNumber(),
 		nil,
 		0)
 

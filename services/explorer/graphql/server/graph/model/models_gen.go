@@ -25,6 +25,13 @@ type BridgeTransaction struct {
 	SwapSuccess *bool        `json:"swapSuccess"`
 }
 
+// DailyResult is a given statistic for dates.
+type DailyResult struct {
+	Total       *float64            `json:"total"`
+	DateResults []*DateResult       `json:"dateResults"`
+	Type        *DailyStatisticType `json:"type"`
+}
+
 // DateResult is a given statistic for a given date.
 type DateResult struct {
 	Date  *string  `json:"date"`
@@ -38,9 +45,16 @@ type HistoricalResult struct {
 	Type        *HistoricalResultType `json:"type"`
 }
 
+type MessageBusTransaction struct {
+	FromInfo  *PartialMessageBusInfo `json:"fromInfo"`
+	ToInfo    *PartialMessageBusInfo `json:"toInfo"`
+	Pending   *bool                  `json:"pending"`
+	MessageID *string                `json:"messageID"`
+}
+
 // PartialInfo is a transaction that occurred on one chain.
 type PartialInfo struct {
-	ChainID        *int     `json:"chainId"`
+	ChainID        *int     `json:"chainID"`
 	Address        *string  `json:"address"`
 	TxnHash        *string  `json:"txnHash"`
 	Value          *string  `json:"value"`
@@ -50,24 +64,81 @@ type PartialInfo struct {
 	TokenSymbol    *string  `json:"tokenSymbol"`
 	BlockNumber    *int     `json:"blockNumber"`
 	Time           *int     `json:"time"`
+	FormattedTime  *string  `json:"formattedTime"`
+}
+
+type PartialMessageBusInfo struct {
+	ChainID            *int    `json:"chainID"`
+	DestinationChainID *int    `json:"destinationChainID"`
+	ContractAddress    *string `json:"contractAddress"`
+	TxnHash            *string `json:"txnHash"`
+	Message            *string `json:"message"`
+	BlockNumber        *int    `json:"blockNumber"`
+	Time               *int    `json:"time"`
+	FormattedTime      *string `json:"formattedTime"`
 }
 
 // TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
 type TokenCountResult struct {
-	ChainID      *int    `json:"chainId"`
+	ChainID      *int    `json:"chainID"`
 	TokenAddress *string `json:"tokenAddress"`
 	Count        *int    `json:"count"`
 }
 
 // TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
 type TransactionCountResult struct {
-	ChainID *int `json:"chainId"`
+	ChainID *int `json:"chainID"`
 	Count   *int `json:"count"`
 }
 
 // ValueResult is a value result of either USD or numeric value.
 type ValueResult struct {
 	Value *string `json:"value"`
+}
+
+type DailyStatisticType string
+
+const (
+	DailyStatisticTypeVolume       DailyStatisticType = "VOLUME"
+	DailyStatisticTypeTransactions DailyStatisticType = "TRANSACTIONS"
+	DailyStatisticTypeAddresses    DailyStatisticType = "ADDRESSES"
+	DailyStatisticTypeFee          DailyStatisticType = "FEE"
+)
+
+var AllDailyStatisticType = []DailyStatisticType{
+	DailyStatisticTypeVolume,
+	DailyStatisticTypeTransactions,
+	DailyStatisticTypeAddresses,
+	DailyStatisticTypeFee,
+}
+
+func (e DailyStatisticType) IsValid() bool {
+	switch e {
+	case DailyStatisticTypeVolume, DailyStatisticTypeTransactions, DailyStatisticTypeAddresses, DailyStatisticTypeFee:
+		return true
+	}
+	return false
+}
+
+func (e DailyStatisticType) String() string {
+	return string(e)
+}
+
+func (e *DailyStatisticType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = DailyStatisticType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid DailyStatisticType", str)
+	}
+	return nil
+}
+
+func (e DailyStatisticType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type Direction string
@@ -197,12 +268,60 @@ func (e HistoricalResultType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type Platform string
+
+const (
+	PlatformAll        Platform = "ALL"
+	PlatformSwap       Platform = "SWAP"
+	PlatformBridge     Platform = "BRIDGE"
+	PlatformMessageBus Platform = "MESSAGE_BUS"
+)
+
+var AllPlatform = []Platform{
+	PlatformAll,
+	PlatformSwap,
+	PlatformBridge,
+	PlatformMessageBus,
+}
+
+func (e Platform) IsValid() bool {
+	switch e {
+	case PlatformAll, PlatformSwap, PlatformBridge, PlatformMessageBus:
+		return true
+	}
+	return false
+}
+
+func (e Platform) String() string {
+	return string(e)
+}
+
+func (e *Platform) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Platform(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Platform", str)
+	}
+	return nil
+}
+
+func (e Platform) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type StatisticType string
 
 const (
 	StatisticTypeMeanVolumeUsd     StatisticType = "MEAN_VOLUME_USD"
 	StatisticTypeMedianVolumeUsd   StatisticType = "MEDIAN_VOLUME_USD"
 	StatisticTypeTotalVolumeUsd    StatisticType = "TOTAL_VOLUME_USD"
+	StatisticTypeMeanFeeUsd        StatisticType = "MEAN_FEE_USD"
+	StatisticTypeMedianFeeUsd      StatisticType = "MEDIAN_FEE_USD"
+	StatisticTypeTotalFeeUsd       StatisticType = "TOTAL_FEE_USD"
 	StatisticTypeCountTransactions StatisticType = "COUNT_TRANSACTIONS"
 	StatisticTypeCountAddresses    StatisticType = "COUNT_ADDRESSES"
 )
@@ -211,13 +330,16 @@ var AllStatisticType = []StatisticType{
 	StatisticTypeMeanVolumeUsd,
 	StatisticTypeMedianVolumeUsd,
 	StatisticTypeTotalVolumeUsd,
+	StatisticTypeMeanFeeUsd,
+	StatisticTypeMedianFeeUsd,
+	StatisticTypeTotalFeeUsd,
 	StatisticTypeCountTransactions,
 	StatisticTypeCountAddresses,
 }
 
 func (e StatisticType) IsValid() bool {
 	switch e {
-	case StatisticTypeMeanVolumeUsd, StatisticTypeMedianVolumeUsd, StatisticTypeTotalVolumeUsd, StatisticTypeCountTransactions, StatisticTypeCountAddresses:
+	case StatisticTypeMeanVolumeUsd, StatisticTypeMedianVolumeUsd, StatisticTypeTotalVolumeUsd, StatisticTypeMeanFeeUsd, StatisticTypeMedianFeeUsd, StatisticTypeTotalFeeUsd, StatisticTypeCountTransactions, StatisticTypeCountAddresses:
 		return true
 	}
 	return false

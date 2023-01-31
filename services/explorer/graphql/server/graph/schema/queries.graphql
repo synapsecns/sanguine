@@ -1,17 +1,35 @@
 type Query {
+
   """
   Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
   """
   bridgeTransactions(
-    chainId:        Int
+    chainID:        [Int]
     address:        String
+    maxAmount:      Int
+    minAmount:      Int
+    startTime:      Int
+    endTime:        Int
     txnHash:        String
     kappa:          String
-    includePending: Boolean = true
+    pending:        Boolean = false
     page:           Int = 1
-    tokenAddress:   String
+    tokenAddress:   [String]
   ): [BridgeTransaction]
 
+  """
+  Message bus transactions
+  """
+  messageBusTransactions(
+    chainID:        [Int]
+    contractAddress:        String
+    startTime:      Int
+    endTime:        Int
+    txnHash:        String
+    messageID:      String
+    pending:        Boolean = false
+    page:           Int = 1
+  ): [MessageBusTransaction]
   """
   Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
   Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
@@ -19,7 +37,7 @@ type Query {
   bridgeAmountStatistic(
     type:         StatisticType!
     duration:     Duration = ALL_TIME
-    chainId:      Int
+    chainID:      Int
     address:      String
     tokenAddress: String
   ): ValueResult
@@ -29,7 +47,7 @@ type Query {
   Specifying no duration defaults to the last 24 hours.
   """
   countByChainId(
-    chainId:    Int
+    chainID:    Int
     address:    String
     direction:  Direction = IN
     hours:      Int = 720
@@ -39,7 +57,7 @@ type Query {
   Specifying no parameters defaults to origin and 24 hours.
   """
   countByTokenAddress(
-    chainId:    Int
+    chainID:    Int
     address:    String
     direction:  Direction = IN
     hours:      Int = 24
@@ -54,8 +72,31 @@ type Query {
   Historical transactional data
   """
   historicalStatistics(
-    chainId:  Int
+    chainID:  Int
     type:     HistoricalResultType = BRIDGEVOLUME
     days:     Int = 30
   ): HistoricalResult
+  """
+  Returns mean/median/total/count of transactions transacted for a given duration, chain and address.
+  Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
+  """
+  amountStatistic(
+    type:         StatisticType!
+    duration:     Duration = ALL_TIME
+    platform:     Platform = ALL
+    chainID:      Int
+    address:      String
+    tokenAddress: String
+  ): ValueResult
+  """
+  Daily statistic data
+  """
+  dailyStatistics(
+    chainID:  Int
+    type:     DailyStatisticType = VOLUME
+    platform: Platform = BRIDGE
+    days:     Int = 30
+  ): DailyResult
+
+
 }

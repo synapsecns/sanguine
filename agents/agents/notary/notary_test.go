@@ -2,6 +2,8 @@ package notary_test
 
 import (
 	"math/big"
+	"os"
+	"testing"
 	"time"
 
 	"github.com/Flaque/filet"
@@ -15,7 +17,13 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
-func (u NotarySuite) TestNotaryE2E() {
+func RemoveNotaryTempFile(t *testing.T, fileName string) {
+	t.Helper()
+	err := os.Remove(fileName)
+	Nil(t, err)
+}
+
+func (u *NotarySuite) TestNotaryE2E() {
 	testConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -37,6 +45,25 @@ func (u NotarySuite) TestNotaryE2E() {
 		},
 		RefreshIntervalInSeconds: 1,
 	}
+	encodedTestConfig, err := testConfig.Encode()
+	Nil(u.T(), err)
+
+	tempConfigFile, err := os.CreateTemp("", "notary_temp_config.yaml")
+	Nil(u.T(), err)
+	defer RemoveNotaryTempFile(u.T(), tempConfigFile.Name())
+
+	numBytesWritten, err := tempConfigFile.Write(encodedTestConfig)
+	Nil(u.T(), err)
+	Positive(u.T(), numBytesWritten)
+
+	decodedNotaryConfig, err := config.DecodeNotaryConfig(tempConfigFile.Name())
+	Nil(u.T(), err)
+
+	decodedNotaryConfigBackToEncodedBytes, err := decodedNotaryConfig.Encode()
+	Nil(u.T(), err)
+
+	Equal(u.T(), encodedTestConfig, decodedNotaryConfigBackToEncodedBytes)
+
 	notary, err := notary.NewNotary(u.GetTestContext(), testConfig)
 	Nil(u.T(), err)
 
@@ -62,7 +89,11 @@ func (u NotarySuite) TestNotaryE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveNewestConfirmedInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, testConfig.DestinationDomain.DomainID)
+		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveNewestInProgressAttestationIfInState(
+			u.GetTestContext(),
+			u.OriginDomainClient.Config().DomainID,
+			testConfig.DestinationDomain.DomainID,
+			types.AttestationStateNotaryConfirmed)
 
 		return err == nil &&
 			retrievedConfirmedInProgressAttestation != nil &&

@@ -14,7 +14,7 @@ type BridgeTransaction {
 PartialInfo is a transaction that occurred on one chain.
 """
 type PartialInfo {
-  chainId: Int
+  chainID: Int
   address: String
   txnHash: String
   value:          String
@@ -24,6 +24,7 @@ type PartialInfo {
   tokenSymbol:    String
   blockNumber:    Int
   time:           Int
+  formattedTime: String
 }
 """
 DateResult is a given statistic for a given date.
@@ -41,6 +42,14 @@ type HistoricalResult {
   type:         HistoricalResultType
 }
 """
+DailyResult is a given statistic for dates.
+"""
+type DailyResult {
+  total:        Float
+  dateResults:  [DateResult]
+  type:         DailyStatisticType
+}
+"""
 ValueResult is a value result of either USD or numeric value.
 """
 type ValueResult {
@@ -50,14 +59,14 @@ type ValueResult {
 TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
 """
 type TransactionCountResult {
-  chainId:  Int
+  chainID:  Int
   count:    Int
 }
 """
 TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
 """
 type TokenCountResult {
-  chainId:      Int
+  chainID:      Int
   tokenAddress: String
   count:        Int
 }
@@ -82,6 +91,9 @@ enum StatisticType {
   MEAN_VOLUME_USD
   MEDIAN_VOLUME_USD
   TOTAL_VOLUME_USD
+  MEAN_FEE_USD
+  MEDIAN_FEE_USD
+  TOTAL_FEE_USD
   COUNT_TRANSACTIONS
   COUNT_ADDRESSES
 }
@@ -89,4 +101,37 @@ enum HistoricalResultType {
   BRIDGEVOLUME
   TRANSACTIONS
   ADDRESSES
+}
+
+enum Platform{
+  ALL
+  SWAP
+  BRIDGE
+  MESSAGE_BUS
+}
+
+enum DailyStatisticType {
+  VOLUME
+  TRANSACTIONS
+  ADDRESSES
+  FEE
+}
+
+
+type MessageBusTransaction {
+  fromInfo:   PartialMessageBusInfo
+  toInfo:     PartialMessageBusInfo
+  pending:    Boolean
+  messageID:  String
+}
+
+type PartialMessageBusInfo {
+  chainID: Int
+  destinationChainID: Int
+  contractAddress: String
+  txnHash: String
+  message:        String
+  blockNumber:    Int
+  time:           Int
+  formattedTime: String
 }

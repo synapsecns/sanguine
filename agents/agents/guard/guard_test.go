@@ -2,6 +2,8 @@ package guard_test
 
 import (
 	"math/big"
+	"os"
+	"testing"
 	"time"
 
 	"github.com/Flaque/filet"
@@ -16,6 +18,12 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
+
+func RemoveGuardTempFile(t *testing.T, fileName string) {
+	t.Helper()
+	err := os.Remove(fileName)
+	Nil(t, err)
+}
 
 func (u GuardSuite) TestGuardE2E() {
 	testConfig := config.GuardConfig{
@@ -41,6 +49,25 @@ func (u GuardSuite) TestGuardE2E() {
 		},
 		RefreshIntervalInSeconds: 1,
 	}
+	encodedTestConfig, err := testConfig.Encode()
+	Nil(u.T(), err)
+
+	tempConfigFile, err := os.CreateTemp("", "guard_temp_config.yaml")
+	Nil(u.T(), err)
+	defer RemoveGuardTempFile(u.T(), tempConfigFile.Name())
+
+	numBytesWritten, err := tempConfigFile.Write(encodedTestConfig)
+	Nil(u.T(), err)
+	Positive(u.T(), numBytesWritten)
+
+	decodedGuardConfig, err := config.DecodeGuardConfig(tempConfigFile.Name())
+	Nil(u.T(), err)
+
+	decodedGuardConfigBackToEncodedBytes, err := decodedGuardConfig.Encode()
+	Nil(u.T(), err)
+
+	Equal(u.T(), encodedTestConfig, decodedGuardConfigBackToEncodedBytes)
+
 	guard, err := guard.NewGuard(u.GetTestContext(), testConfig)
 	Nil(u.T(), err)
 
@@ -108,10 +135,11 @@ func (u GuardSuite) TestGuardE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedInProgressAttestation, err := dbHandle.RetrieveNewestConfirmedOnDestination(
+		retrievedInProgressAttestation, err := dbHandle.RetrieveNewestInProgressAttestationIfInState(
 			u.GetTestContext(),
 			u.OriginDomainClient.Config().DomainID,
-			u.DestinationDomainClient.Config().DomainID)
+			u.DestinationDomainClient.Config().DomainID,
+			types.AttestationStateConfirmedOnDestination)
 
 		isTrue := err == nil &&
 			retrievedInProgressAttestation != nil &&

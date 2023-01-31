@@ -65,6 +65,29 @@ func (_m *ConsumerDB) GetAllBridgeEvents(ctx context.Context, query string) ([]s
 	return r0, r1
 }
 
+// GetAllMessageBusEvents provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetAllMessageBusEvents(ctx context.Context, query string) ([]sql.HybridMessageBusEvent, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 []sql.HybridMessageBusEvent
+	if rf, ok := ret.Get(0).(func(context.Context, string) []sql.HybridMessageBusEvent); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]sql.HybridMessageBusEvent)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetBridgeEvent provides a mock function with given fields: ctx, query
 func (_m *ConsumerDB) GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error) {
 	ret := _m.Called(ctx, query)
@@ -233,52 +256,6 @@ func (_m *ConsumerDB) GetUint64(ctx context.Context, query string) (uint64, erro
 		r0 = rf(ctx, query)
 	} else {
 		r0 = ret.Get(0).(uint64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, query)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// PartialInfosFromIdentifiers provides a mock function with given fields: ctx, query
-func (_m *ConsumerDB) PartialInfosFromIdentifiers(ctx context.Context, query string) ([]*model.PartialInfo, error) {
-	ret := _m.Called(ctx, query)
-
-	var r0 []*model.PartialInfo
-	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.PartialInfo); ok {
-		r0 = rf(ctx, query)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.PartialInfo)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, query)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// PartialInfosFromIdentifiersByChain provides a mock function with given fields: ctx, query
-func (_m *ConsumerDB) PartialInfosFromIdentifiersByChain(ctx context.Context, query string) (map[int]*model.PartialInfo, error) {
-	ret := _m.Called(ctx, query)
-
-	var r0 map[int]*model.PartialInfo
-	if rf, ok := ret.Get(0).(func(context.Context, string) map[int]*model.PartialInfo); ok {
-		r0 = rf(ctx, query)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(map[int]*model.PartialInfo)
-		}
 	}
 
 	var r1 error

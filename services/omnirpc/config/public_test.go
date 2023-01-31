@@ -1,12 +1,10 @@
 package config_test
 
 import (
-	"context"
 	"github.com/jarcoal/httpmock"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	"golang.org/x/exp/slices"
-	"net/http"
 	"testing"
 )
 
@@ -14,8 +12,7 @@ func TestGetPublicConfig(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder(http.MethodGet, config.PublicRPCMapURL, httpmock.NewStringResponder(http.StatusOK, testData))
-	res, err := config.GetPublicRPCConfig(context.Background())
+	res, err := config.GetPublicRPCConfig()
 	Nil(t, err)
 
 	True(t, slices.Contains(res.Chains[1].RPCs, "https://api.mycryptoapi.com/eth"))

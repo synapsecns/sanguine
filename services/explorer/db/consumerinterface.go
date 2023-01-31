@@ -44,6 +44,8 @@ type ConsumerDBReader interface {
 	GetBridgeEvents(ctx context.Context, query string) ([]sql.BridgeEvent, error)
 	// GetAllBridgeEvents returns a bridge event.
 	GetAllBridgeEvents(ctx context.Context, query string) ([]sql.HybridBridgeEvent, error)
+	// GetAllMessageBusEvents returns a bridge event.
+	GetAllMessageBusEvents(ctx context.Context, query string) ([]sql.HybridMessageBusEvent, error)
 	// GetDateResults gets day by day data for a given query.
 	GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error)
 	// GetAddressRanking gets AddressRanking for a given query.

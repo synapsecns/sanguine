@@ -54,10 +54,9 @@ func (g *APISuite) SetupTest() {
 
 	go func() {
 		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
-			HTTPPort:   uint16(port),
+			Port:       uint16(port),
 			Database:   "sqlite",
 			Path:       g.dbPath,
-			GRPCPort:   uint16(freeport.GetPort()),
 			OmniRPCURL: "https://rpc.interoperability.institute/confirmations/1/rpc",
 		}))
 	}()

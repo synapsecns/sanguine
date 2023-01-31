@@ -605,7 +605,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Equal(g.T(), formattedValue, uint64(*fromInfo.FormattedValue*1000000))
 	Equal(g.T(), tokenSymbol, *fromInfo.TokenSymbol)
 	Equal(g.T(), tokenAddress, *fromInfo.TokenAddress)
-	Equal(g.T(), 0, *fromInfo.BlockNumber)
+	Equal(g.T(), 1, *fromInfo.BlockNumber)
 	Equal(g.T(), int(timestamp), *fromInfo.Time)
 
 	toInfo := *originResOne.ToInfo
@@ -617,7 +617,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Equal(g.T(), formattedValue, uint64(*toInfo.FormattedValue*1000000))
 	Equal(g.T(), tokenSymbol, *toInfo.TokenSymbol)
 	Equal(g.T(), tokenAddress, *toInfo.TokenAddress)
-	Equal(g.T(), 0, *toInfo.BlockNumber)
+	Equal(g.T(), 1, *toInfo.BlockNumber)
 	Equal(g.T(), int(timestamp), *toInfo.Time)
 
 	pending = false
