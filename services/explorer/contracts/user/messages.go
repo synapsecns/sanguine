@@ -113,8 +113,7 @@ func deployParseNet() error {
 			return nil, fmt.Errorf("could not decode message: %w", err)
 		}
 		return model.HeroType{
-			HeroID:    messageFormat.DstHeroId.String(),
-			Recipient: messageFormat.DstUser.String(),
+			HeroID: messageFormat.DstHeroId.String(),
 		}, nil
 	})
 
@@ -129,9 +128,8 @@ func deployParseNet() error {
 			return nil, fmt.Errorf("could not decode message: %w", err)
 		}
 		return model.PetType{
-			PetID:     messageFormat.DstPet.Id.String(),
-			Recipient: messageFormat.DstUser.String(),
-			Name:      messageFormat.DstPet.Name,
+			PetID: messageFormat.DstPet.Id.String(),
+			Name:  messageFormat.DstPet.Name,
 		}, nil
 	})
 
@@ -146,8 +144,7 @@ func deployParseNet() error {
 			return nil, fmt.Errorf("could not decode message: %w", err)
 		}
 		return model.TearType{
-			Amount:    messageFormat.DstTearAmount.String(),
-			Recipient: messageFormat.DstUser.String(),
+			Amount: messageFormat.DstTearAmount.String(),
 		}, nil
 	})
 
