@@ -77,7 +77,7 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 	startHeight := givenStart
 	var err error
 	// dont need this
-	if c.chainConfig.ChainID != 53935 {
+	if c.chainConfig.ChainID != 1666600000 {
 		lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(groupCtx, common.HexToAddress(c.address), c.chainConfig.ChainID)
 		if err != nil {
 			LogEvent(WarnLevel, "Could not get last indexed", LogData{"cid": c.chainConfig.ChainID, "sh": startHeight, "eh": endHeight, "e": err.Error()})
