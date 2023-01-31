@@ -633,6 +633,7 @@ func (r *queryResolver) GetMessageBusTxs(ctx context.Context, chainID []*int, ad
 		})
 	}
 	err = g.Wait()
+
 	if err != nil {
 		return nil, fmt.Errorf("could not get partial info from message bus event: %w", err)
 	}

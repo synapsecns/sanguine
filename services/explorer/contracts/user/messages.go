@@ -3,7 +3,9 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/chebyrash/promise"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
@@ -46,18 +48,32 @@ func Decode(ctx context.Context, hexMessage string) model.MessageType {
 
 	message := common.FromHex(hexMessage)
 
-	for _, decoder := range decoders {
-		messageType, err := decoder(ctx, message)
-		if err != nil {
-			// TODO; is this such a good idea?
-			continue
-		}
-		if messageType != nil {
-			return messageType
-		}
+	if len(hexMessage) == 0 {
+		return model.UnknownType{Known: false}
 	}
 
-	return model.UnknownType{Known: false}
+	var promises []*promise.Promise[model.MessageType]
+	pctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	for _, decoder := range decoders {
+		promises = append(promises, promise.New[model.MessageType](func(resolve func(model.MessageType), reject func(error)) {
+			messageType, err := decoder(pctx, message)
+			if err != nil {
+				reject(errors.New("could not decode message"))
+			}
+			if messageType != nil {
+				resolve(messageType)
+			}
+		}))
+	}
+
+	res, err := promise.Any(promises...).Await()
+	if err != nil {
+		return model.UnknownType{Known: false}
+	}
+
+	return res
 }
 
 func deployParseNet() error {
@@ -134,6 +150,8 @@ func deployParseNet() error {
 			Recipient: messageFormat.DstUser.String(),
 		}, nil
 	})
+
+	simulatedBackend.Commit()
 
 	return nil
 }
