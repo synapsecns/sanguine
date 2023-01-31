@@ -89,6 +89,6 @@ type Query {
     type:     DailyStatisticType = VOLUME
     platform: Platform = BRIDGE
     duration:     Duration = ALL_TIME
-  ): [DateResultByChain]
+  ): [DateResultsByChain]
 
 }

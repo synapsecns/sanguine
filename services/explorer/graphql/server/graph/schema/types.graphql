@@ -138,16 +138,31 @@ type PartialMessageBusInfo {
   formattedTime: String
 }
 
-
-type DailyResultByChain {
-  total:        Float
-  dateResults:  [DateResult]
-  type:         DailyStatisticType
+type DateResultsByChain{
+  date: String
+  dailyData: DateResultByChain
 }
+
 """
 DateResult is a given statistic for a given date.
 """
 type DateResultByChain {
-  date:   String,
+  Ethereum: Float
+  Optimism: Float
+  Cronos: Float
+  BSC: Float
+  Polygon: Float
+  Fantom: Float
+  Boba: Float
+  Metis: Float
+  Moonbeam: Float
+  Moonriver: Float
+  Klaytn: Float
+  Arbitrum: Float
+  Avalanche: Float
+  DFK: Float
+  Aurora: Float
+  Harmony: Float
+  Canto: Float
   total:  Float
 }

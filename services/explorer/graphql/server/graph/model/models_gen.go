@@ -38,6 +38,33 @@ type DateResult struct {
 	Total *float64 `json:"total"`
 }
 
+// DateResult is a given statistic for a given date.
+type DateResultByChain struct {
+	Ethereum  *float64 `json:"Ethereum"`
+	Optimism  *float64 `json:"Optimism"`
+	Cronos    *float64 `json:"Cronos"`
+	Bsc       *float64 `json:"BSC"`
+	Polygon   *float64 `json:"Polygon"`
+	Fantom    *float64 `json:"Fantom"`
+	Boba      *float64 `json:"Boba"`
+	Metis     *float64 `json:"Metis"`
+	Moonbeam  *float64 `json:"Moonbeam"`
+	Moonriver *float64 `json:"Moonriver"`
+	Klaytn    *float64 `json:"Klaytn"`
+	Arbitrum  *float64 `json:"Arbitrum"`
+	Avalanche *float64 `json:"Avalanche"`
+	Dfk       *float64 `json:"DFK"`
+	Aurora    *float64 `json:"Aurora"`
+	Harmony   *float64 `json:"Harmony"`
+	Canto     *float64 `json:"Canto"`
+	Total     *float64 `json:"total"`
+}
+
+type DateResultsByChain struct {
+	Date      *string            `json:"date"`
+	DailyData *DateResultByChain `json:"dailyData"`
+}
+
 // HistoricalResult is a given statistic for dates.
 type HistoricalResult struct {
 	Total       *float64              `json:"total"`
@@ -68,14 +95,16 @@ type PartialInfo struct {
 }
 
 type PartialMessageBusInfo struct {
-	ChainID            *int    `json:"chainID"`
-	DestinationChainID *int    `json:"destinationChainID"`
-	ContractAddress    *string `json:"contractAddress"`
-	TxnHash            *string `json:"txnHash"`
-	Message            *string `json:"message"`
-	BlockNumber        *int    `json:"blockNumber"`
-	Time               *int    `json:"time"`
-	FormattedTime      *string `json:"formattedTime"`
+	ChainID              *int    `json:"chainID"`
+	ChainName            *string `json:"chainName"`
+	DestinationChainID   *int    `json:"destinationChainID"`
+	DestinationChainName *string `json:"destinationChainName"`
+	ContractAddress      *string `json:"contractAddress"`
+	TxnHash              *string `json:"txnHash"`
+	Message              *string `json:"message"`
+	BlockNumber          *int    `json:"blockNumber"`
+	Time                 *int    `json:"time"`
+	FormattedTime        *string `json:"formattedTime"`
 }
 
 // TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
