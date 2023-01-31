@@ -76,32 +76,7 @@ export async function getServerSideProps() {
     },
   })
 
-  // const { data: bridgeVolumeAllTime } = await client.query({
-  //   query: AMOUNT_STATISTIC,
-  //   variables: {
-  //     type: 'TOTAL_VOLUME_USD',
-  //     duration: 'ALL_TIME',
-  //     platform: 'BRIDGE',
-  //   },
-  // })
 
-  // const { data: transactionsAllTime } = await client.query({
-  //   query: AMOUNT_STATISTIC,
-  //   variables: {
-  //     type: 'COUNT_TRANSACTIONS',
-  //     duration: 'ALL_TIME',
-  //     platform: 'BRIDGE',
-  //   },
-  // })
-
-  // const { data: addressesAllTime } = await client.query({
-  //   query: AMOUNT_STATISTIC,
-  //   variables: {
-  //     type: 'COUNT_ADDRESSES',
-  //     duration: 'ALL_TIME',
-  //     platform: 'BRIDGE',
-  //   },
-  // })
 
   const { data: latestBridgeTransactions } = await client.query({
     query: GET_BRIDGE_TRANSACTIONS_QUERY,

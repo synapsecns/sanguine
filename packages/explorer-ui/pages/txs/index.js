@@ -1,15 +1,17 @@
-import {HorizontalDivider} from "@components/misc/HorizontalDivider";
-import {UniversalSearch} from "@components/pages/Home/UniversalSearch";
-import {BridgeTransactionTable} from "@components/BridgeTransaction/BridgeTransactionTable";
+import { HorizontalDivider } from "@components/misc/HorizontalDivider";
+import { UniversalSearch } from "@components/pages/Home/UniversalSearch";
+import { BridgeTransactionTable } from "@components/BridgeTransaction/BridgeTransactionTable";
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY
 } from "@graphql/queries";
-import {API_URL} from '@graphql'
-
-import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
+import { API_URL } from '@graphql'
+import { useState, useEffect } from "react";
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import _ from "lodash";
-import {Pagination} from "@components/Pagination";
+import { Pagination } from "@components/Pagination";
+import { useLazyQuery } from '@apollo/client'
+
 
 const link = new HttpLink({
   uri: API_URL,
@@ -26,11 +28,46 @@ const client = new ApolloClient({
 })
 
 
-export default function Txs({queryResult}) {
-  let { bridgeTransactions: bridgeTransactionsTable } = queryResult
+export default function Txs({ queryResult }) {
+  const [transactionsArr, setTransactionsArr] = useState([])
+  const [pending, setPending] = useState(false)
+  const [getBridgeTransactions, { loading, error, data }] = useLazyQuery(
+    GET_BRIDGE_TRANSACTIONS_QUERY
+  )
 
-  bridgeTransactionsTable = _.orderBy(
-    bridgeTransactionsTable,
+  useEffect(() => {
+    if (data) {
+      setTransactionsArr(data.bridgeTransactions, {
+        variables: {
+          pending: pending,
+        },
+      })
+    }
+
+  }, [data, pending])
+
+
+  // Get initial data
+  useEffect(() => {
+    getBridgeTransactions({
+      variables: {
+        pending: pending,
+        page: 1,
+      },
+    })
+  }, [])
+  const handlePending = (arg) => {
+    setPending(arg)
+    getBridgeTransactions({
+      variables: {
+        pending: arg,
+        page: 1,
+      },
+    })
+  }
+
+  let bridgeTransactionsTable = _.orderBy(
+    transactionsArr,
     'fromInfo.time',
     ['desc']
   ).slice(0, 25)
@@ -42,12 +79,16 @@ export default function Txs({queryResult}) {
           <h3 className="text-white text-4xl font-semibold">Bridge Transactions</h3>
         </div>
         <HorizontalDivider />
-        <UniversalSearch placeholder={'Search all bridge transactions'} />
-        <BridgeTransactionTable queryResult={bridgeTransactionsTable} />
+        <UniversalSearch placeholder={'Search all bridge transactions'}
+          setPending={handlePending}
+          pending={pending}
+          loading={loading} />
+        {loading ? <div className="text-white">Loading...</div> : <BridgeTransactionTable queryResult={bridgeTransactionsTable} />}
+
 
         <HorizontalDivider />
         <Pagination />
-        </StandardPageContainer>
+      </StandardPageContainer>
     </>
   )
 }

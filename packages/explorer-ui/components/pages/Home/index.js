@@ -4,6 +4,8 @@ import { Stats } from './Stats'
 import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
 
 import { Chart, ChartLoading } from '@components/Chart'
+import { OverviewChart } from '@components/ChainChart'
+
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { PageLink } from '@components/misc/PageLink'
 import Grid from '@components/tailwind/Grid'
@@ -28,7 +30,6 @@ export function Home({
 }) {
   const search = useSearchParams()
   const [chartType, setChartType] = useState('VOLUME')
-  const [allTime, setAllTime] = useState(1)
   const [pending, setPending] = useState(false)
   const [transactionsArr, setTransactionsArr] = useState([])
   const [completed, setCompleted] = useState(false);
@@ -81,15 +82,7 @@ export function Home({
 
   }, [dataTx, search, pending])
 
-  const handlePending = (arg) => {
-    setPending(arg)
-    getBridgeTransactions({
-      variables: {
-        pending: arg,
-        page: 1,
-      },
-    })
-  }
+
 
   console.log("u:", dataTx?.bridgeTransactions, pageError)
   let data
@@ -114,12 +107,16 @@ export function Home({
 
     <StandardPageContainer title={"Synapse Analytics"}>
 
-      <p className='text-white text-2xl font-bold'>All Time Statistics</p>
       <HolisticStats />
       <br />
       <HorizontalDivider />
       <br />
-
+<OverviewChart
+         data={bridgeVolume.dailyStatistics.dateResults}
+         isCumulativeData={false}
+         showAggregated={false}
+         monthlyData={false}
+         currency/>
       <p className='text-white text-2xl font-bold'>30-Day Statistics</p>
       <Chart data={data} ttl />
       {bridgeVolume &&
@@ -159,7 +156,7 @@ export function Home({
       <br /> <br />
 
       <p className='text-white text-2xl font-bold'>Recent all Transactions</p>
-        {txContent}
+      {txContent}
       <div className='text-center text-white my-6'>
         <PageLink text="Explore all transactions" url={TRANSACTIONS_PATH} />
 

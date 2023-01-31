@@ -100,25 +100,7 @@ export const ADDRESS_RANKING = gql`
   }
 `
 
-export const BRIDGE_AMOUNT_STATISTIC = gql`
-  query BridgeAmountStatistic(
-    $type:          StatisticType!
-    $duration:      Duration!
-    $chainID:       Int
-    $address:       String
-    $tokenAddress:  String
-  ) {
-    bridgeAmountStatistic(
-      type:           $type
-      duration:       $duration
-      chainID:        $chainID
-      address:        $address
-      tokenAddress:   $tokenAddress
-    ) {
-      value
-    }
-  }
-`
+
 
 export const GET_CSV = gql`
   query GetCsv($address: String!) {
@@ -129,25 +111,7 @@ export const GET_CSV = gql`
   }
 `
 
-export const GET_HISTORICAL_STATS = gql`
-  query HistoricalStatistics(
-    $chainID: Int
-    $type: HistoricalResultType!
-    $days: Int
-  ) {
-    historicalStatistics(
-      chainID: $chainID
-      type: $type
-      days: $days
-    ) {
-      total
-      dateResults {
-        date
-        total
-      }
-    }
-  }
-`
+
 
 
 export const GET_DAILY_STATS = gql`

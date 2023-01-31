@@ -516,3 +516,5 @@ export const CHAIN_ENUM_BY_ID = {
   [ChainId.METIS]: 'metis',
   [ChainId.KLAYTN]: 'klaytn',
 }
+
+export const CHAIN_ID_NAMES_REVERSE = Object.fromEntries(Object.entries(CHAIN_ENUM_BY_ID).map(([k, v]) => [v, k]))

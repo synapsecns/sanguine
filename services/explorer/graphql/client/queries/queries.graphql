@@ -46,17 +46,6 @@ query GetBridgeTransactions($chainID: [Int], $address: String, $maxAmount: Int, 
 }
 
 
-query GetBridgeAmountStatistic($type: StatisticType!, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
-  response: bridgeAmountStatistic(
-    type: $type
-    duration: $duration
-    chainID: $chainID
-    address: $address
-    tokenAddress: $tokenAddress
-  ) {
-    value
-  }
-}
 
 query GetCountByChainId($chainID: Int, $address: String, $direction: Direction, $hours: Int) {
   response: countByChainId(
@@ -93,20 +82,6 @@ query GetAddressRanking($hours: Int) {
 }
 
 
-query GetHistoricalStatistics($chainID: Int, $type: HistoricalResultType, $days: Int) {
-  response: historicalStatistics(
-    chainID: $chainID
-    type: $type
-    days: $days
-  ) {
-    total
-    dateResults {
-      date
-      total
-    }
-    type
-  }
-}
 
 query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
   response: amountStatistic(
@@ -150,17 +125,20 @@ query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $star
   ) {
     fromInfo {
       chainID
+      chainName
       destinationChainID
+      destinationChainName
       contractAddress
       txnHash
       message
       blockNumber
       time
       formattedTime
+
     }
     toInfo {
       chainID
-      destinationChainID
+      chainName
       contractAddress
       txnHash
       message

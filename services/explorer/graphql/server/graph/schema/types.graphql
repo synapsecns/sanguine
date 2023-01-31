@@ -127,11 +127,27 @@ type MessageBusTransaction {
 
 type PartialMessageBusInfo {
   chainID: Int
+  chainName: String
   destinationChainID: Int
+  destinationChainName: String
   contractAddress: String
   txnHash: String
   message:        String
   blockNumber:    Int
   time:           Int
   formattedTime: String
+}
+
+
+type DailyResultByChain {
+  total:        Float
+  dateResults:  [DateResult]
+  type:         DailyStatisticType
+}
+"""
+DateResult is a given statistic for a given date.
+"""
+type DateResultByChain {
+  date:   String,
+  total:  Float
 }

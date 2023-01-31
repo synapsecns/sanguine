@@ -30,17 +30,8 @@ type Query {
     pending:        Boolean = false
     page:           Int = 1
   ): [MessageBusTransaction]
-  """
-  Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
-  Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
-  """
-  bridgeAmountStatistic(
-    type:         StatisticType!
-    duration:     Duration = ALL_TIME
-    chainID:      Int
-    address:      String
-    tokenAddress: String
-  ): ValueResult
+
+
   """
   Returns the COUNT of bridged transactions for a given chain. If direction of bridge transactions
   is not specified, it defaults to IN.
@@ -69,14 +60,6 @@ type Query {
   addressRanking(hours: Int = 24): [AddressRanking]
 
   """
-  Historical transactional data
-  """
-  historicalStatistics(
-    chainID:  Int
-    type:     HistoricalResultType = BRIDGEVOLUME
-    days:     Int = 30
-  ): HistoricalResult
-  """
   Returns mean/median/total/count of transactions transacted for a given duration, chain and address.
   Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
   """
@@ -98,5 +81,14 @@ type Query {
     days:     Int = 30
   ): DailyResult
 
+  """
+  Daily statistic data
+  """
+  dailyStatisticsByChain(
+    chainID:  Int
+    type:     DailyStatisticType = VOLUME
+    platform: Platform = BRIDGE
+    duration:     Duration = ALL_TIME
+  ): [DateResultByChain]
 
 }

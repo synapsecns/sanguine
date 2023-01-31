@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLazyQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { AMOUNT_STATISTIC } from '@graphql/queries'
 import Card from '@components/tailwind/Card'
 import Grid from '@components/tailwind/Grid'
@@ -8,65 +8,79 @@ import numeral from 'numeral'
 
 
 export default function HolisticStats() {
-  const [platform, setPlatform] = useState("ALL")
   const [volume, setVolume] = useState("--")
   const [revenue, setRevenue] = useState("--")
   const [addresses, setAddresses] = useState("--")
   const [txs, setTxs] = useState("--")
+  const [platform, setPlatform] = useState("ALL");
+  const unSelectStyle = "border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30"
+  const selectStyle = "text-white border-[#BE78FF] bg-synapse-radial"
 
+  const { loading: loadingVolume, error: errorVolume, data: dataVolume } = useQuery(
+    AMOUNT_STATISTIC, {
+    fetchPolicy: 'network-only',
+    variables: {
+      platform: platform,
+      duration: "ALL_TIME",
+      type: "TOTAL_VOLUME_USD",
+    },
+    pollInterval: 10000,
+  }
+  )
+  const { loading: loadingRevenue, error: errorRevenue, data: dataRevenue } = useQuery(
+    AMOUNT_STATISTIC, {
+    fetchPolicy: 'network-only',
+    variables: {
+      platform: platform,
+      duration: "ALL_TIME",
+      type: "TOTAL_FEE_USD",
+    },
+    pollInterval: 10000,
+  }
+  )
+  const { loading: loadingAddresses, error: errorAddresses, data: dataAddresses } = useQuery(
+    AMOUNT_STATISTIC, {
+    fetchPolicy: 'network-only',
+    variables: {
+      platform: platform,
+      duration: "ALL_TIME",
+      type: "COUNT_ADDRESSES",
+    },
+    pollInterval: 10000,
+    notifyOnNetworkStatusChange: true,
 
-  const [getVolume, { loading: loadingVolume, error: errorVolume, data: dataVolume }] = useLazyQuery(
-    AMOUNT_STATISTIC, {
-    fetchPolicy: 'network-only',
   }
   )
-  const [getRevenue, { loading: loadingRevenue, error: errorRevenue, data: dataRevenue }] = useLazyQuery(
+  const { loading: loadingTxs, error: errorTxs, data: dataTxs, startPolling: stopPollingTx, stopPolling: startPollingTx } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
-  }
-  )
-  const [getAddresses, { loading: loadingAddresses, error: errorAddresses, data: dataAddresses }] = useLazyQuery(
-    AMOUNT_STATISTIC, {
-    fetchPolicy: 'network-only',
-  }
-  )
-  const [getTxs, { loading: loadingTxs, error: errorTxs, data: dataTxs }] = useLazyQuery(
-    AMOUNT_STATISTIC, {
-    fetchPolicy: 'network-only',
+    variables: {
+      platform: platform,
+      duration: "ALL_TIME",
+      type: "COUNT_TRANSACTIONS",
+    },
+    pollInterval: 10000,
+    notifyOnNetworkStatusChange: true,
+
   }
   )
 
+  // useEffect(() => {
+  //   // versionRefetch()
+  //   startPollingTx(10000)
+
+  //   return () => {
+  //     stopPollingTx()
+  //   }
+  // }, [stopPollingTx, startPollingTx])
   // Get initial data
   useEffect(() => {
-    getVolume({
-      variables: {
-        platform: platform,
-        duration: "ALL_TIME",
-        type: "TOTAL_VOLUME_USD",
-      },
-    })
-    getRevenue({
-      variables: {
-        platform: platform,
-        duration: "ALL_TIME",
-        type: "TOTAL_FEE_USD",
-      },
-    })
-    getAddresses({
-      variables: {
-        platform: platform,
-        duration: "ALL_TIME",
-        type: "COUNT_ADDRESSES",
-      },
-    })
-    getTxs({
-      variables: {
-        platform: platform,
-        duration: "ALL_TIME",
-        type: "COUNT_TRANSACTIONS",
-      },
-    })
-  }, [])
+    setVolume("--")
+    setRevenue("--")
+    setAddresses("--")
+    setTxs("--")
+
+  }, [platform])
 
   // Get data when search params change
   useEffect(() => {
@@ -84,13 +98,13 @@ export default function HolisticStats() {
   useEffect(() => {
     if (dataAddresses) {
       console.log("setting", dataAddresses)
-      setAddresses(dataAddresses.amountStatistic.value)
+      setAddresses(dataAddresses.amountStatistic?.value)
     }
   }, [dataAddresses])
   useEffect(() => {
     if (dataTxs) {
       console.log("setting", dataTxs)
-      setTxs(dataTxs.amountStatistic.value)
+      setTxs(dataTxs.amountStatistic?.value)
     }
   }, [dataTxs])
 
@@ -127,9 +141,24 @@ export default function HolisticStats() {
   }
 
   return (
+    <>
+    <div className="my-2 mt-8">
+    <button onClick={() => setPlatform("ALL")} className={"font-medium rounded-l-md px-4 py-2 border  " + (platform === "ALL" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+      All
+    </button>
+    <button onClick={() => setPlatform("BRIDGE")} className={"font-medium  px-4 py-2 border  " + (platform === "BRIDGE" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+      Bridge
+    </button>
+    <button onClick={() => setPlatform("SWAP")} className={"font-medium  px-4 py-2 border  " + (platform === "SWAP" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+      Swap
+    </button>
+    <button onClick={() => setPlatform("MESSAGING")} className={"font-medium rounded-r-md px-4 py-2 border mr-5 " + (platform === "MESSAGING" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+      Messaging
+    </button>
+  </div>
     <Grid cols={{ sm: 1, md: 4, lg: 4 }} gap={4} className="my-4">
       <AllTimeStatCard
-        title="Bridge Volume"
+        title="Volume"
       >
         <div className="text-4xl font-bold text-white">
           {numeral(volume / 1000000000).format('$0.000')}B
@@ -139,7 +168,7 @@ export default function HolisticStats() {
         title="Revenue"
       >
         <div className="text-4xl font-bold text-white">
-          {numeral(revenue).format('0,0')}
+          {numeral(revenue/ 1000000).format('$0.000')}M
         </div>
       </AllTimeStatCard>
       <AllTimeStatCard
@@ -157,7 +186,7 @@ export default function HolisticStats() {
         </div>
       </AllTimeStatCard>
 
-    </Grid>
+    </Grid></>
   )
 }
 
