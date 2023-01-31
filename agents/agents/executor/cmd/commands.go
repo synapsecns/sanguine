@@ -148,6 +148,7 @@ var ExecutorRunCommand = &cli.Command{
 
 			for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
+					logger.Errorf("the embeddedscribeconfig's rpc_url is: %s", executorConfig.EmbeddedScribeConfig.RPCURL)
 					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, confNum, client.ChainID))
 					if err != nil {
 						logger.Errorf("failed to dial rpc: %v", err)
