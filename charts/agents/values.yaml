@@ -67,7 +67,7 @@ resources: {}
 
 executor_remote:
   enabled: false
-  args: ["executor-run", "--config=/config/config.yaml", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-port=443", "--scribe-grpc-port=443", "--scribe-url=https://scribe.interoperability.institute"]
+  args: ["executor-run", "--config=/config/config.yaml", "--scribe-type=poop", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -173,8 +173,13 @@ omnirpc:
   replicaCount: 2
 
 executor_remote_files:
+  signer.txt: |-
+    b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   config.yaml: |-
-    # Production config example
+    base_omnirpc_url: "http://omnirpc/confirmations"
+    unbonded_signer:
+      type: "File"
+      file: "/config/signer.txt"
 
 executor_embedded_files:
   signer.txt: |-

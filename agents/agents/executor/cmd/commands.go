@@ -191,11 +191,14 @@ var ExecutorRunCommand = &cli.Command{
 
 			scribeClient = embedded.ScribeClient
 		case "remote":
+			logger.Errorf("the scribe url is: %s", c.String(scribeURL.Name))
 			scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name)).ScribeClient
 		default:
+			logger.Errorf("invalid scribe type: %s", c.String(scribeTypeFlag.Name))
 			return fmt.Errorf("invalid scribe type")
 		}
 
+		logger.Errorf("making a new executor now!")
 		executor, err := executor.NewExecutor(c.Context, executorConfig, executorDB, scribeClient, clients)
 		if err != nil {
 			logger.Errorf("failed to create executor: %v", err)
