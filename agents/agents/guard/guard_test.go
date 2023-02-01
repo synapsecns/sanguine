@@ -135,10 +135,11 @@ func (u GuardSuite) TestGuardE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedInProgressAttestation, err := dbHandle.RetrieveNewestConfirmedOnDestination(
+		retrievedInProgressAttestation, err := dbHandle.RetrieveNewestInProgressAttestationIfInState(
 			u.GetTestContext(),
 			u.OriginDomainClient.Config().DomainID,
-			u.DestinationDomainClient.Config().DomainID)
+			u.DestinationDomainClient.Config().DomainID,
+			types.AttestationStateConfirmedOnDestination)
 
 		isTrue := err == nil &&
 			retrievedInProgressAttestation != nil &&

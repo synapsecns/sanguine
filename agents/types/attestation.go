@@ -18,8 +18,8 @@ const (
 	AttestationStateNotarySubmittedUnconfirmed // 2
 	// AttestationStateNotaryConfirmed is when the attestation was confirmed as posted on the attestation collector.
 	AttestationStateNotaryConfirmed // 3
-	// AttestationStateGuardUnsignedAndUnverified is when the attestation was signed by Notary but not yet by the Guard.
-	AttestationStateGuardUnsignedAndUnverified // 4
+	// AttestationStateGuardInitialState is when the attestation is fetched from origin. This is a temporary hack state.
+	AttestationStateGuardInitialState // 4 // 4
 	// AttestationStateGuardUnsignedAndVerified is when the attestation was signed by Notary but not yet by the Guard, but Guard verified it on origin.
 	AttestationStateGuardUnsignedAndVerified // 5
 	// AttestationStateGuardSignedUnsubmitted is when the attestation was signed by Guard (and Notary) but not yet submitted.
@@ -40,13 +40,6 @@ const sizeOfUint256 = uint32(32)
 const sizeOfUint32 = uint32(4)
 const sizeOfUint16 = uint32(2)
 const sizeOfUint8 = uint32(1)
-
-const attestationNonceStartingByte = uint32(0)
-const attestationDestinationStartingByte = uint32(4)
-const attestationOriginStartingByte = uint32(8)
-const attestationRootStartingByte = uint32(12)
-const attestationSize = uint32(44)
-const attestationRawKeyStartingByte = uint32(0)
 
 const attestationKeyNonceStartingByte = uint32(0)
 const attestationKeyDestinationStartingByte = uint32(4)
@@ -108,26 +101,6 @@ type AttestationAgentCounts struct {
 	GuardCount uint32
 	// NotaryCount is the number of notary signatures collected in the SignedAttestation.
 	NotaryCount uint32
-}
-
-// NewAttestationFromBytes creates a new attesation from raw bytes.
-func NewAttestationFromBytes(rawBytes []byte) Attestation {
-	rootBytes := rawBytes[attestationRootStartingByte:attestationSize]
-	rawKeyBytes := rawBytes[attestationRawKeyStartingByte:attestationKeySize]
-	originBytes := rawKeyBytes[attestationOriginStartingByte:attestationRootStartingByte]
-	destinationBytes := rawKeyBytes[attestationDestinationStartingByte:attestationOriginStartingByte]
-	nonceBytes := rawKeyBytes[attestationNonceStartingByte:attestationDestinationStartingByte]
-	origin := binary.BigEndian.Uint32(originBytes)
-	destination := binary.BigEndian.Uint32(destinationBytes)
-	nonce := binary.BigEndian.Uint32(nonceBytes)
-	var root [32]byte
-	copy(root[:], rootBytes)
-	return attestation{
-		origin:      origin,
-		destination: destination,
-		nonce:       nonce,
-		root:        root,
-	}
 }
 
 // NewAttestation creates a new attestation.
@@ -203,8 +176,6 @@ var _ SignedAttestation = signedAttestation{}
 type InProgressAttestation interface {
 	// SignedAttestation gets the signed attestation
 	SignedAttestation() SignedAttestation
-	// DispatchedBlockNumber when message was dispatched on origin
-	OriginDispatchBlockNumber() uint64
 	// SubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
 	SubmittedToAttestationCollectorTime() *time.Time
 	// SubmittedToDestinationTime is time when signed attestation was submitted to the Destination
@@ -216,17 +187,15 @@ type InProgressAttestation interface {
 // inProgressAttestation is a struct that conforms to InProgressAttestation.
 type inProgressAttestation struct {
 	signedAttestation                   SignedAttestation
-	originDispatchBlockNumber           uint64
 	submittedToAttestationCollectorTime *time.Time
 	submittedToDestinationTime          *time.Time
 	attestationState                    AttestationState
 }
 
 // NewInProgressAttestation creates a new to process attestation.
-func NewInProgressAttestation(signedAttestation SignedAttestation, originDispatchBlockNumber uint64, submittedToAttestationCollectorTime *time.Time, state AttestationState) InProgressAttestation {
+func NewInProgressAttestation(signedAttestation SignedAttestation, submittedToAttestationCollectorTime *time.Time, state AttestationState) InProgressAttestation {
 	return inProgressAttestation{
 		signedAttestation:                   signedAttestation,
-		originDispatchBlockNumber:           originDispatchBlockNumber,
 		submittedToAttestationCollectorTime: submittedToAttestationCollectorTime,
 		attestationState:                    state,
 	}
@@ -234,10 +203,6 @@ func NewInProgressAttestation(signedAttestation SignedAttestation, originDispatc
 
 func (t inProgressAttestation) SignedAttestation() SignedAttestation {
 	return t.signedAttestation
-}
-
-func (t inProgressAttestation) OriginDispatchBlockNumber() uint64 {
-	return t.originDispatchBlockNumber
 }
 
 func (t inProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time {

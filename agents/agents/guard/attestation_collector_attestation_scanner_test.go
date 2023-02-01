@@ -1,12 +1,12 @@
 package guard_test
 
 import (
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"math/big"
 	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
@@ -17,16 +17,40 @@ import (
 func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	testDB, err := sqlite.NewSqliteStore(u.GetTestContext(), filet.TmpDir(u.T(), ""))
 	Nil(u.T(), err)
+
+	origin := uint32(u.TestBackendOrigin.GetChainID())
+	destination := uint32(u.TestBackendDestination.GetChainID())
+	nonce := uint32(1)
+
+	// dispatch a random update
+	originAuth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
+
+	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
+	Nil(u.T(), err)
+
+	optimisticSeconds := uint32(5)
+	tx, err := u.OriginContract.Dispatch(originAuth.TransactOpts, destination, [32]byte{}, optimisticSeconds, encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
+	Nil(u.T(), err)
+	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
+
+	suggestedAttestationRaw, err := u.OriginContract.SuggestAttestation(&bind.CallOpts{Context: u.GetTestContext()}, destination)
+	Nil(u.T(), err)
+	suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
+	Nil(u.T(), err)
+	Equal(u.T(), origin, suggestedAttestation.Origin())
+	Equal(u.T(), destination, suggestedAttestation.Destination())
+	Equal(u.T(), nonce, suggestedAttestation.Nonce())
+
+	err = testDB.StoreNewGuardInProgressAttestation(u.GetTestContext(), suggestedAttestation)
+	Nil(u.T(), err)
+
 	auth := u.TestBackendAttestation.GetTxContext(u.GetTestContext(), nil)
 
-	origin := u.TestBackendOrigin.GetChainID()
-	destination := u.TestBackendDestination.GetChainID()
-	nonce := uint32(1)
-	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+	root := suggestedAttestation.Root()
 
 	attestKey := types.AttestationKey{
-		Origin:      uint32(origin),
-		Destination: uint32(destination),
+		Origin:      origin,
+		Destination: destination,
 		Nonce:       nonce,
 	}
 	unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
@@ -41,7 +65,7 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
 	Nil(u.T(), err)
 
-	tx, err := u.AttestationContract.SubmitAttestation(auth.TransactOpts, rawSignedAttestation)
+	tx, err = u.AttestationContract.SubmitAttestation(auth.TransactOpts, rawSignedAttestation)
 	Nil(u.T(), err)
 
 	u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), tx)
@@ -49,8 +73,8 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	// call the update producing function
 	attestationCollectorAttestationScanner := guard.NewAttestationCollectorAttestationScanner(
 		u.AttestationDomainClient,
-		uint32(origin),
-		uint32(destination),
+		origin,
+		destination,
 		testDB,
 		u.GuardUnbondedSigner,
 		1*time.Second)
@@ -59,10 +83,11 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	retrievedConfirmedInProgressAttestation, err := testDB.RetrieveOldestGuardUnsignedAndUnverifiedInProgressAttestation(
+	retrievedConfirmedInProgressAttestation, err := testDB.RetrieveNewestInProgressAttestationIfInState(
 		u.GetTestContext(),
 		u.OriginDomainClient.Config().DomainID,
-		u.DestinationDomainClient.Config().DomainID)
+		u.DestinationDomainClient.Config().DomainID,
+		types.AttestationStateGuardUnsignedAndVerified)
 
 	Nil(u.T(), err)
 	NotNil(u.T(), retrievedConfirmedInProgressAttestation)
@@ -70,10 +95,10 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	retrievedSignedAttestation := retrievedConfirmedInProgressAttestation.SignedAttestation()
 	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedSignedAttestation.Attestation().Origin())
 	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedSignedAttestation.Attestation().Destination())
-	Equal(u.T(), root, common.Hash(retrievedSignedAttestation.Attestation().Root()))
+	Equal(u.T(), root, retrievedSignedAttestation.Attestation().Root())
 	Len(u.T(), retrievedSignedAttestation.NotarySignatures(), 1)
 	Len(u.T(), retrievedSignedAttestation.GuardSignatures(), 0)
-	Equal(u.T(), types.AttestationStateGuardUnsignedAndUnverified, retrievedConfirmedInProgressAttestation.AttestationState())
+	Equal(u.T(), types.AttestationStateGuardUnsignedAndVerified, retrievedConfirmedInProgressAttestation.AttestationState())
 
 	Nil(u.T(), err)
 }

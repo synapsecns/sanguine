@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/types"
 	"time"
 
 	"github.com/synapsecns/sanguine/agents/db"
@@ -57,46 +58,48 @@ func (a AttestationCollectorAttestationScanner) Start(ctx context.Context) error
 	}
 }
 
-// FindLatestNonce fetches the latest cached nonce for a given chain.
-// TODO (joe): there was a bug in this code not covered by current tests.
-// Make sure to add a test that covers when latestNonce is not zero.
-func (a AttestationCollectorAttestationScanner) FindLatestNonce(ctx context.Context) (nonce uint32, err error) {
-	latestNonce, err := a.db.RetrieveLatestCachedNonce(ctx, a.originID, a.destinationID)
+// FindNewestGuardAttestationInInitialState fetches the newest attestation that was suggested from origin.
+func (a AttestationCollectorAttestationScanner) FindNewestGuardAttestationInInitialState(ctx context.Context) (types.InProgressAttestation, error) {
+	inProgressAttestation, err := a.db.RetrieveNewestInProgressAttestationIfInState(
+		ctx,
+		a.originID,
+		a.destinationID,
+		types.AttestationStateGuardInitialState)
 	if err != nil {
-		if errors.Is(err, db.ErrNoNonceForDomain) {
-			return 0, nil
+		if errors.Is(err, db.ErrNotFound) {
+			return nil, nil
 		}
-		return 0, fmt.Errorf("could not find latest root: %w", err)
+		return nil, fmt.Errorf("could not find newest unsigned and unverified attestation: %w", err)
 	}
-	return latestNonce, nil
+	return inProgressAttestation, nil
 }
 
 // update runs the job of the scanner
 //
 //nolint:cyclop
 func (a AttestationCollectorAttestationScanner) update(ctx context.Context) error {
-	latestNonce, err := a.FindLatestNonce(ctx)
+	inProgressAttestation, err := a.FindNewestGuardAttestationInInitialState(ctx)
 	if err != nil {
-		return fmt.Errorf("could not find latest root: %w", err)
+		return fmt.Errorf("could not retrieve newest attestation in initial state: %w", err)
+	}
+	if inProgressAttestation == nil {
+		return nil
 	}
 
-	// TODO (joe): Currently we are scanning all nonces in order. Later, we really want to get the latest
-	// attestation after the latestNonce if any exists.
-	nextNonce := latestNonce + 1
-	root, err := a.attestationDomain.AttestationCollector().GetRoot(ctx, a.originID, a.destinationID, nextNonce)
+	nonceToFetch := inProgressAttestation.SignedAttestation().Attestation().Nonce()
+	root, err := a.attestationDomain.AttestationCollector().GetRoot(ctx, a.originID, a.destinationID, nonceToFetch)
 	if err != nil {
-		return fmt.Errorf("error getting root for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nextNonce, err)
+		return fmt.Errorf("error getting root for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nonceToFetch, err)
 	}
 	if root == [32]byte{} {
 		return nil
 	}
 
-	signedAttestation, err := a.attestationDomain.AttestationCollector().GetAttestation(ctx, a.originID, a.destinationID, nextNonce)
+	signedAttestation, err := a.attestationDomain.AttestationCollector().GetAttestation(ctx, a.originID, a.destinationID, nonceToFetch)
 	if err != nil {
-		return fmt.Errorf("erroring getting attestation found for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nextNonce, err)
+		return fmt.Errorf("erroring getting attestation found for origin %d, destination %d, nonce %d: %w", a.originID, a.destinationID, nonceToFetch, err)
 	}
 
-	// TODO (joe): Check if attestation is valid on Origin before saving it to the DB.
 	// Either do this here or in the next worker.
 	err = a.db.StoreExistingSignedInProgressAttestation(ctx, signedAttestation)
 	if err != nil {
