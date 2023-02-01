@@ -6,7 +6,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/jftuga/termsize"
+	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
+	"github.com/synapsecns/sanguine/agents/agents/executor/api"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
@@ -58,6 +60,12 @@ var pathFlag = &cli.StringFlag{
 	Usage:    "--path <path/to/database> or <database url>",
 	Value:    "",
 	Required: true,
+}
+
+var metricsPortFlag = &cli.UintFlag{
+	Name:  "metrics-port",
+	Usage: "--port 5121",
+	Value: 0,
 }
 
 var scribeTypeFlag = &cli.StringFlag{
@@ -119,7 +127,7 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 var ExecutorRunCommand = &cli.Command{
 	Name:        "executor-run",
 	Description: "runs the executor service",
-	Flags: []cli.Flag{configFlag, dbFlag, pathFlag, scribeTypeFlag,
+	Flags: []cli.Flag{configFlag, dbFlag, pathFlag, scribeTypeFlag, metricsPortFlag,
 		// The flags below are used when `scribeTypeFlag` is set to "embedded".
 		scribeDBFlag, scribePathFlag,
 		// The flags below are used when `scribeTypeFlag` is set to "remote".
@@ -206,7 +214,17 @@ var ExecutorRunCommand = &cli.Command{
 		}
 
 		g.Go(func() error {
-			err = executor.Run(c.Context)
+			err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
+			if err != nil {
+				logger.Errorf("failed to start api: %v", err)
+				return fmt.Errorf("failed to start api: %w", err)
+			}
+
+			return nil
+		})
+
+		g.Go(func() error {
+			err := executor.Run(c.Context)
 			if err != nil {
 				logger.Errorf("failed to run executor: %v", err)
 				return fmt.Errorf("failed to run executor: %w", err)
@@ -259,4 +277,8 @@ func InitExecutorDB(ctx context.Context, database string, path string) (db.Execu
 	default:
 		return nil, fmt.Errorf("invalid database type: %s", database)
 	}
+}
+
+func init() {
+	metricsPortFlag.Value = uint(freeport.GetPort())
 }
