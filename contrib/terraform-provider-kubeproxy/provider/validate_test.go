@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-// Copied from grpc provider to test parity
+// Copied from grpc provider to test parity.
 func TestValidateNulls(t *testing.T) {
 	for i, tc := range []struct {
 		Cfg cty.Value
@@ -72,6 +72,7 @@ func TestValidateNulls(t *testing.T) {
 			Err: true,
 		},
 	} {
+		tc := tc // capture func literal
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			d := provider.ValidateConfigNulls(context.Background(), tc.Cfg, nil)
 			diags := convert.ProtoToDiags(d)
