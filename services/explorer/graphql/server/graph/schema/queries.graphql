@@ -87,7 +87,6 @@ type Query {
   dailyStatisticsByChain(
     chainID:  Int
     type:     DailyStatisticType = VOLUME
-    platform: Platform = BRIDGE
     duration:     Duration = ALL_TIME
   ): [DateResultsByChain]
 

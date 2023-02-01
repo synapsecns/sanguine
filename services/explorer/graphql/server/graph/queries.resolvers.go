@@ -406,8 +406,83 @@ func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeA
 }
 
 // DailyStatisticsByChain is the resolver for the dailyStatisticsByChain field.
-func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration) ([]*model.DateResultsByChain, error) {
-	panic(fmt.Errorf("not implemented: DailyStatisticsByChain - dailyStatisticsByChain"))
+func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration) ([]*model.DateResultsByChain, error) {
+	var err error
+
+	//var timestampSpecifier string
+	//firstFilter := true
+	//
+	//switch *duration {
+	//case model.DurationPastDay:
+	//	hours := 24
+	//	targetTime := r.getTargetTime(&hours)
+	//	timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	//case model.DurationPastMonth:
+	//	hours := 720
+	//	targetTime := r.getTargetTime(&hours)
+	//	timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	//case model.DurationAllTime:
+	//	timestampSpecifier = ""
+	//}
+
+	//chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+	//compositeFilters := fmt.Sprintf(
+	//	`%s%s`,
+	//	timestampSpecifier, chainIDSpecifier,
+	//)
+	//
+	var res []map[string]interface{}
+	g, groupCtx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		res, err = r.DB.GetDailyTotals(groupCtx, calculateDailyVolume)
+		if err != nil {
+			return fmt.Errorf("failed to get dateResults: %w", err)
+		}
+		return nil
+	})
+
+	err = g.Wait()
+	//var dailyVolume []*model.DateResultsByChain
+	//for i := range res {
+	//	date := res[i]["date"].(string)
+	//	fmt.Println(res[i]["date_results"])
+	//	dateResults := res[i]["date_results"].(map[string]float64)
+	//	dateResultsType := model.DateResultByChain{}
+	//	for k := range dateResults{
+	//		1, 'Ethereum',
+	//			10, 'Optimism',
+	//			25, 'Cronos',
+	//			56, 'BSC',
+	//			137, 'Polygon',
+	//			250, 'Fantom',
+	//			288, 'Boba',
+	//			1088, 'Metis',
+	//			1284, 'Moonbeam',
+	//			1285, 'Moonriver',
+	//			8217, 'Klaytn',
+	//			42161, 'Arbitrum',
+	//			43114, 'Avalanche',
+	//			53935, 'DFK',
+	//			1313161554, 'Aurora',
+	//			1666600000, 'Harmony',
+	//			7700, 'Canto'
+	//		switch (k){
+	//		case ""
+	//		}
+	//		dateResultsType.[k] = dateResults[k]
+	//	}
+	//	day := &model.DateResultsByChain{
+	//		Date:        &date,
+	//		DateResults: &dateResults,
+	//	}
+	//	dailyVolume = append(dailyVolume, day)
+	//}
+	fmt.Println(res)
+	if err != nil {
+		return nil, fmt.Errorf("could not get daily data: %w", err)
+	}
+
+	return nil, nil
 }
 
 // Query returns resolvers.QueryResolver implementation.

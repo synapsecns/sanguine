@@ -88,8 +88,8 @@ type ComplexityRoot struct {
 	}
 
 	DateResultsByChain struct {
-		DailyData func(childComplexity int) int
-		Date      func(childComplexity int) int
+		Date        func(childComplexity int) int
+		DateResults func(childComplexity int) int
 	}
 
 	HistoricalResult struct {
@@ -139,7 +139,7 @@ type ComplexityRoot struct {
 		CountByChainID         func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatistics        func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) int
-		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration) int
+		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration) int
 		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, page *int) int
 	}
 
@@ -167,7 +167,7 @@ type QueryResolver interface {
 	AddressRanking(ctx context.Context, hours *int) ([]*model.AddressRanking, error)
 	AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error)
 	DailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) (*model.DailyResult, error)
-	DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration) ([]*model.DateResultsByChain, error)
+	DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration) ([]*model.DateResultsByChain, error)
 }
 
 type executableSchema struct {
@@ -395,19 +395,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.DateResultByChain.Total(childComplexity), true
 
-	case "DateResultsByChain.dailyData":
-		if e.complexity.DateResultsByChain.DailyData == nil {
-			break
-		}
-
-		return e.complexity.DateResultsByChain.DailyData(childComplexity), true
-
 	case "DateResultsByChain.date":
 		if e.complexity.DateResultsByChain.Date == nil {
 			break
 		}
 
 		return e.complexity.DateResultsByChain.Date(childComplexity), true
+
+	case "DateResultsByChain.dateResults":
+		if e.complexity.DateResultsByChain.DateResults == nil {
+			break
+		}
+
+		return e.complexity.DateResultsByChain.DateResults(childComplexity), true
 
 	case "HistoricalResult.dateResults":
 		if e.complexity.HistoricalResult.DateResults == nil {
@@ -687,7 +687,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.DailyStatisticsByChain(childComplexity, args["chainID"].(*int), args["type"].(*model.DailyStatisticType), args["platform"].(*model.Platform), args["duration"].(*model.Duration)), true
+		return e.complexity.Query.DailyStatisticsByChain(childComplexity, args["chainID"].(*int), args["type"].(*model.DailyStatisticType), args["duration"].(*model.Duration)), true
 
 	case "Query.messageBusTransactions":
 		if e.complexity.Query.MessageBusTransactions == nil {
@@ -894,7 +894,6 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   dailyStatisticsByChain(
     chainID:  Int
     type:     DailyStatisticType = VOLUME
-    platform: Platform = BRIDGE
     duration:     Duration = ALL_TIME
   ): [DateResultsByChain]
 
@@ -1039,10 +1038,10 @@ type PartialMessageBusInfo {
   time:           Int
   formattedTime: String
 }
-
+scalar ObjectScalar
 type DateResultsByChain{
   date: String
-  dailyData: DateResultByChain
+  dateResults: DateResultByChain
 }
 
 """
@@ -1376,24 +1375,15 @@ func (ec *executionContext) field_Query_dailyStatisticsByChain_args(ctx context.
 		}
 	}
 	args["type"] = arg1
-	var arg2 *model.Platform
-	if tmp, ok := rawArgs["platform"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("platform"))
-		arg2, err = ec.unmarshalOPlatform2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPlatform(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["platform"] = arg2
-	var arg3 *model.Duration
+	var arg2 *model.Duration
 	if tmp, ok := rawArgs["duration"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
-		arg3, err = ec.unmarshalODuration2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDuration(ctx, tmp)
+		arg2, err = ec.unmarshalODuration2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDuration(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["duration"] = arg3
+	args["duration"] = arg2
 	return args, nil
 }
 
@@ -2880,8 +2870,8 @@ func (ec *executionContext) fieldContext_DateResultsByChain_date(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _DateResultsByChain_dailyData(ctx context.Context, field graphql.CollectedField, obj *model.DateResultsByChain) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_DateResultsByChain_dailyData(ctx, field)
+func (ec *executionContext) _DateResultsByChain_dateResults(ctx context.Context, field graphql.CollectedField, obj *model.DateResultsByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultsByChain_dateResults(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2894,7 +2884,7 @@ func (ec *executionContext) _DateResultsByChain_dailyData(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.DailyData, nil
+		return obj.DateResults, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2908,7 +2898,7 @@ func (ec *executionContext) _DateResultsByChain_dailyData(ctx context.Context, f
 	return ec.marshalODateResultByChain2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDateResultByChain(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_DateResultsByChain_dailyData(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_DateResultsByChain_dateResults(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "DateResultsByChain",
 		Field:      field,
@@ -4589,7 +4579,7 @@ func (ec *executionContext) _Query_dailyStatisticsByChain(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().DailyStatisticsByChain(rctx, fc.Args["chainID"].(*int), fc.Args["type"].(*model.DailyStatisticType), fc.Args["platform"].(*model.Platform), fc.Args["duration"].(*model.Duration))
+		return ec.resolvers.Query().DailyStatisticsByChain(rctx, fc.Args["chainID"].(*int), fc.Args["type"].(*model.DailyStatisticType), fc.Args["duration"].(*model.Duration))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4613,8 +4603,8 @@ func (ec *executionContext) fieldContext_Query_dailyStatisticsByChain(ctx contex
 			switch field.Name {
 			case "date":
 				return ec.fieldContext_DateResultsByChain_date(ctx, field)
-			case "dailyData":
-				return ec.fieldContext_DateResultsByChain_dailyData(ctx, field)
+			case "dateResults":
+				return ec.fieldContext_DateResultsByChain_dateResults(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DateResultsByChain", field.Name)
 		},
@@ -7028,9 +7018,9 @@ func (ec *executionContext) _DateResultsByChain(ctx context.Context, sel ast.Sel
 
 			out.Values[i] = ec._DateResultsByChain_date(ctx, field, obj)
 
-		case "dailyData":
+		case "dateResults":
 
-			out.Values[i] = ec._DateResultsByChain_dailyData(ctx, field, obj)
+			out.Values[i] = ec._DateResultsByChain_dateResults(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

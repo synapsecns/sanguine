@@ -61,8 +61,8 @@ type DateResultByChain struct {
 }
 
 type DateResultsByChain struct {
-	Date      *string            `json:"date"`
-	DailyData *DateResultByChain `json:"dailyData"`
+	Date        *string            `json:"date"`
+	DateResults *DateResultByChain `json:"dateResults"`
 }
 
 // HistoricalResult is a given statistic for dates.

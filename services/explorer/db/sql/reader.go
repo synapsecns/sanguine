@@ -78,6 +78,17 @@ func (s *Store) GetAllBridgeEvents(ctx context.Context, query string) ([]HybridB
 	return res, nil
 }
 
+// GetDailyTotals returns bridge events.
+func (s *Store) GetDailyTotals(ctx context.Context, query string) ([]map[string]interface{}, error) {
+	var res []map[string]interface{}
+
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+	return res, nil
+}
+
 // GetAllMessageBusEvents returns message bus events.
 func (s *Store) GetAllMessageBusEvents(ctx context.Context, query string) ([]HybridMessageBusEvent, error) {
 	var res []HybridMessageBusEvent

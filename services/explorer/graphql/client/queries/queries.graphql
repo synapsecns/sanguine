@@ -95,6 +95,35 @@ query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: 
     value
   }
 }
+query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $duration: Duration) {
+  response: dailyStatisticsByChain(
+    chainID: $chainID
+    type: $type
+    duration: $duration
+  ) {
+    date
+    dateResults{
+      Ethereum
+      Optimism
+      Cronos
+      BSC
+      Polygon
+      Fantom
+      Boba
+      Metis
+      Moonbeam
+      Moonriver
+      Klaytn
+      Arbitrum
+      Avalanche
+      DFK
+      Aurora
+      Harmony
+      Canto
+      total
+    }
+  }
+}
 
 query GetDailyStatistics($chainID: Int, $type: DailyStatisticType, $platform: Platform, $days: Int) {
   response: dailyStatistics(

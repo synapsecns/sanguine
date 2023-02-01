@@ -85,6 +85,31 @@ type GetAmountStatistic struct {
 		Value *string "json:\"value\" graphql:\"value\""
 	} "json:\"response\" graphql:\"response\""
 }
+type GetDailyStatisticsByChain struct {
+	Response []*struct {
+		Date        *string "json:\"date\" graphql:\"date\""
+		DateResults *struct {
+			Ethereum  *float64 "json:\"Ethereum\" graphql:\"Ethereum\""
+			Optimism  *float64 "json:\"Optimism\" graphql:\"Optimism\""
+			Cronos    *float64 "json:\"Cronos\" graphql:\"Cronos\""
+			Bsc       *float64 "json:\"BSC\" graphql:\"BSC\""
+			Polygon   *float64 "json:\"Polygon\" graphql:\"Polygon\""
+			Fantom    *float64 "json:\"Fantom\" graphql:\"Fantom\""
+			Boba      *float64 "json:\"Boba\" graphql:\"Boba\""
+			Metis     *float64 "json:\"Metis\" graphql:\"Metis\""
+			Moonbeam  *float64 "json:\"Moonbeam\" graphql:\"Moonbeam\""
+			Moonriver *float64 "json:\"Moonriver\" graphql:\"Moonriver\""
+			Klaytn    *float64 "json:\"Klaytn\" graphql:\"Klaytn\""
+			Arbitrum  *float64 "json:\"Arbitrum\" graphql:\"Arbitrum\""
+			Avalanche *float64 "json:\"Avalanche\" graphql:\"Avalanche\""
+			Dfk       *float64 "json:\"DFK\" graphql:\"DFK\""
+			Aurora    *float64 "json:\"Aurora\" graphql:\"Aurora\""
+			Harmony   *float64 "json:\"Harmony\" graphql:\"Harmony\""
+			Canto     *float64 "json:\"Canto\" graphql:\"Canto\""
+			Total     *float64 "json:\"total\" graphql:\"total\""
+		} "json:\"dateResults\" graphql:\"dateResults\""
+	} "json:\"response\" graphql:\"response\""
+}
 type GetDailyStatistics struct {
 	Response *struct {
 		Total       *float64 "json:\"total\" graphql:\"total\""
@@ -271,6 +296,48 @@ func (c *Client) GetAmountStatistic(ctx context.Context, typeArg model.Statistic
 
 	var res GetAmountStatistic
 	if err := c.Client.Post(ctx, "GetAmountStatistic", GetAmountStatisticDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($chainID: Int, $type: DailyStatisticType, $duration: Duration) {
+	response: dailyStatisticsByChain(chainID: $chainID, type: $type, duration: $duration) {
+		date
+		dateResults {
+			Ethereum
+			Optimism
+			Cronos
+			BSC
+			Polygon
+			Fantom
+			Boba
+			Metis
+			Moonbeam
+			Moonriver
+			Klaytn
+			Arbitrum
+			Avalanche
+			DFK
+			Aurora
+			Harmony
+			Canto
+			total
+		}
+	}
+}
+`
+
+func (c *Client) GetDailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration, httpRequestOptions ...client.HTTPRequestOption) (*GetDailyStatisticsByChain, error) {
+	vars := map[string]interface{}{
+		"chainID":  chainID,
+		"type":     typeArg,
+		"duration": duration,
+	}
+
+	var res GetDailyStatisticsByChain
+	if err := c.Client.Post(ctx, "GetDailyStatisticsByChain", GetDailyStatisticsByChainDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

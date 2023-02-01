@@ -137,10 +137,10 @@ type PartialMessageBusInfo {
   time:           Int
   formattedTime: String
 }
-
+scalar ObjectScalar
 type DateResultsByChain{
   date: String
-  dailyData: DateResultByChain
+  dateResults: DateResultByChain
 }
 
 """
