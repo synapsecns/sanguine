@@ -27,7 +27,7 @@ func Start(ctx context.Context, metricsPort uint16) error {
 	})
 
 	if err := g.Wait(); err != nil {
-		return err
+		return fmt.Errorf("could not start api: %w", err)
 	}
 
 	return nil
