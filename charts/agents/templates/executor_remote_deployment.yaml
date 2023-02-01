@@ -19,7 +19,6 @@ spec:
       {{- end }}
       labels:
         {{- include "agents.selectorLabels" . | nindent 8 }}
-{{/*        executor-type: remote*/}}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
