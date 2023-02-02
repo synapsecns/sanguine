@@ -2,13 +2,13 @@ go 1.19
 
 use (
 	./agents
-    ./contrib/git-changes-action
+	./contrib/git-changes-action
 	./contrib/package-mirror-action
 	./contrib/release-copier-action
-	./contrib/tfcore
 	./contrib/terraform-provider-helmproxy
 	./contrib/terraform-provider-iap
 	./contrib/terraform-provider-kubeproxy
+	./contrib/tfcore
 	./core
 	./ethergo
 	./services/explorer
