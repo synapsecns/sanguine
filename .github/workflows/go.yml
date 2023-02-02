@@ -25,7 +25,7 @@ jobs:
         with:
           go-version: 1.19
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:48adb00f0b392361c07953dd6f0959dc10f2fa52
       # For pull requests it's not necessary to checkout the code
       - uses: dorny/paths-filter@v2
         name: 'Check for Go Changes'
