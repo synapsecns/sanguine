@@ -31,6 +31,18 @@ const client = new ApolloClient({
 export default function Txs({ queryResult }) {
   const [transactionsArr, setTransactionsArr] = useState([])
   const [pending, setPending] = useState(false)
+  const [wallet, setWallet] = useState("")
+  const [minSize, setMinSize] = useState("")
+  const [maxSize, setMaxSize] = useState("")
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
+  const [toTx, setToTx] = useState(true)
+  const [fromTx, setFromTx] = useState(true)
+  const [kappa , setKappa] = useState()
+
+
+
+
   const [getBridgeTransactions, { loading, error, data }] = useLazyQuery(
     GET_BRIDGE_TRANSACTIONS_QUERY
   )
@@ -79,10 +91,27 @@ export default function Txs({ queryResult }) {
           <h3 className="text-white text-4xl font-semibold">Bridge Transactions</h3>
         </div>
         <HorizontalDivider />
-        <UniversalSearch placeholder={'Search all bridge transactions'}
+        <UniversalSearch placeholder={'Search bridge transactions by bridge tx'}
           setPending={handlePending}
           pending={pending}
-          loading={loading} />
+          loading={loading}
+          setWallet={setWallet}
+          wallet={wallet}
+          setMinSize={setMinSize}
+          minSize={minSize}
+          setMaxSize={setMaxSize}
+          maxSize={maxSize}
+          setStartDate={setStartDate}
+          startDate={startDate}
+          setEndDate={setEndDate}
+          endDate={endDate}
+          setToTx={setToTx}
+          toTx={toTx}
+          setFromTx={setFromTx}
+          FromTx={fromTx}
+          setKappa={setKappa}
+          kappa={kappa}
+           />
         {loading ? <div className="text-white">Loading...</div> : <BridgeTransactionTable queryResult={bridgeTransactionsTable} />}
 
 

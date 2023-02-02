@@ -472,6 +472,7 @@ func generateAllBridgeEventsQueryFromOrigin(chainID []*int, address *string, max
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, true), originToDestCol, "baseQuery", originToDestJoins)
+	fmt.Println(finalQuery)
 	return finalQuery
 }
 
