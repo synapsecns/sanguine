@@ -439,7 +439,7 @@ type HybridMessageBusEvent struct {
 	//// FChainID is the chain id of the contract that generated the event
 	// FChainID uint32 `gorm:"column:chain_id"`
 	//// FBlockNumber is the block number of the event
-	//FBlockNumber uint64 `gorm:"column:block_number"`
+	// FBlockNumber uint64 `gorm:"column:block_number"`
 	//// FTxHash is the transaction hash of the event
 	//FTxHash string `gorm:"column:tx_hash"`
 	//// ContractAddress is the address of the contract that generated the event

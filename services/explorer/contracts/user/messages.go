@@ -57,7 +57,7 @@ func Decode(ctx context.Context, hexMessage string) model.MessageType {
 	for i, decoder := range decoders {
 		wg.Add(1)
 		i := i
-		decoder := decoder //capture func literal
+		decoder := decoder // capture func literal
 		go func() {
 			defer wg.Done()
 			messageType, err := decoder(ctx, message)
