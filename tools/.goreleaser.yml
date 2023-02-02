@@ -39,6 +39,24 @@ builds:
       - linux
     goarch:
       - amd64
+
+  - id: bundle-amd64
+    binary: bundle-amd64
+    env:
+      # probably not neccesary for this module
+      - CGO_CFLAGS=-I/usr/local/include
+      - CGO_ENABLED=1
+      - CGO_LDFLAGS=-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lsnappy  -lzstd -lbz2
+    # see: https://github.com/cosmos/iavl/pull/465/files
+    ldflags:
+      - -s -w
+    main: bundle/main.go
+    flags:
+      - -tags=builtin_static,rocksdb,static # probably not neccesary for this module
+    goos:
+      - linux
+    goarch:
+      - amd64
 # add a source archive at release time
 source:
   enabled: true

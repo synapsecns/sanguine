@@ -2,6 +2,13 @@ package watcher_test
 
 import (
 	"context"
+	"math/big"
+	"os"
+	"reflect"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
@@ -15,12 +22,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/watcher"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"golang.org/x/sync/semaphore"
-	"math/big"
-	"os"
-	"reflect"
-	"sync"
-	"testing"
-	"time"
 )
 
 // filterLogsTracker tracks various calls attempted on filterLogs() mock.
@@ -125,7 +126,8 @@ func (s *WatcherSuite) TestContractWatcherRetry() {
 }
 
 // TestListeners tests a scenario with more than 1 listener listening to the contract observer.
-// nolint: gocognit, cyclop
+//
+//nolint:gocognit,cyclop
 func (s *WatcherSuite) TestListeners() {
 	// timeout the test after thie period
 	ctx, cancel := context.WithTimeout(s.GetTestContext(), 30*time.Second)

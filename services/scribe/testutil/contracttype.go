@@ -55,7 +55,8 @@ func (c contractTypeImpl) Name() string {
 
 // ContractInfo gets the source code of every contract. See TODO above.
 // TODO these should use contract name and maybe come out of the generator.
-// nolint: cyclop
+//
+//nolint:cyclop
 func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case TestContractType:

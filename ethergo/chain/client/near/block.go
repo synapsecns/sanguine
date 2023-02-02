@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
-	"math/big"
 )
 
 // AuroraClient contains the methods necessary to use the aurora client adapter.
@@ -41,7 +42,7 @@ func BlockByNumber(ctx context.Context, c AuroraClient, number *big.Int) (*types
 	if number == nil {
 		latestBlock, err := c.BlockNumber(ctx)
 		if err != nil {
-			// nolint: wrapcheck
+			//nolint:wrapcheck
 			return nil, err
 		}
 
@@ -75,15 +76,16 @@ type rpcBlock struct {
 
 // getBlock is a temporary workaround for https://github.com/aurora-is-near/aurora-relayer/pull/141
 // amd will be removed as soon as possible.
-// nolint: gocognit, cyclop
+//
+//nolint:gocognit,cyclop
 func getBlock(ctx context.Context, c AuroraClient, method string, args ...interface{}) (*types.Block, error) {
 	var raw json.RawMessage
 	err := c.CallContext(ctx, &raw, method, args...)
 	if err != nil {
-		// nolint: wrapcheck
+		//nolint:wrapcheck
 		return nil, err
 	} else if len(raw) == 0 {
-		// nolint: wrapcheck
+		//nolint:wrapcheck
 		return nil, ethereum.NotFound
 	}
 	// Decode header and transactions.

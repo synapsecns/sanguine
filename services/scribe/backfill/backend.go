@@ -3,6 +3,9 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"math"
+	"math/big"
+
 	"github.com/benbjohnson/immutable"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -13,9 +16,6 @@ import (
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/ethergo/util"
-	"golang.org/x/exp/constraints"
-	"math"
-	"math/big"
 )
 
 // ScribeBackend is the set of functions that the scribe needs from a client.
@@ -51,7 +51,7 @@ type ScribeBackend interface {
 func DialBackend(ctx context.Context, url string) (ScribeBackend, error) {
 	c, err := rpc.DialContext(ctx, url)
 	if err != nil {
-		// nolint: wrapcheck
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -76,32 +76,6 @@ func (c *scribeBackendImpl) Batch(ctx context.Context, calls ...w3types.Caller) 
 }
 
 var _ ScribeBackend = &scribeBackendImpl{}
-
-// BlockTimesInRange gets all block times in a range with a single batch request
-// in successful cases an immutable map is returned of [height->time], otherwise an error is returned.
-func BlockTimesInRange(ctx context.Context, backend ScribeBackend, startHeight uint64, endHeight uint64) (*immutable.Map[uint64, uint64], error) {
-	// performance impact will be negligible here because of external constraints on blocksize
-	blocks := makeRange(startHeight, endHeight)
-	bulkSize := len(blocks)
-	calls := make([]w3types.Caller, bulkSize)
-	results := make([]types.Header, bulkSize)
-
-	for i, blockNumber := range blocks {
-		calls[i] = eth.HeaderByNumber(new(big.Int).SetUint64(blockNumber)).Returns(&results[i])
-	}
-
-	if err := backend.Batch(ctx, calls...); err != nil {
-		return nil, fmt.Errorf("could not fetch blocks in range %d to %d: %w", startHeight, endHeight, err)
-	}
-
-	// use an immutable map for additional safety to the caller, don't allocate until batch returns successfully
-	res := immutable.NewMapBuilder[uint64, uint64](nil)
-	for _, result := range results {
-		res.Set(result.Number.Uint64(), result.Time)
-	}
-
-	return res.Map(), nil
-}
 
 // GetLogsInRange gets all logs in a range with a single batch request
 // in successful cases an immutable list is returned, otherwise an error is returned.
@@ -151,13 +125,4 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, startHeight uint
 	}
 
 	return res.List(), nil
-}
-
-// make range.
-func makeRange[T constraints.Integer](min, max T) []T {
-	a := make([]T, max-min+1)
-	for i := range a {
-		a[i] = min + T(i)
-	}
-	return a
 }

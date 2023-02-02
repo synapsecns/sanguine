@@ -1,0 +1,40 @@
+origindomains:
+  origin_client:
+    domainid: 4
+    type: EVM
+    requiredconfirmations: 0
+    originaddress: 0xeAcfB4380199dBD2fC5d067e4e2033275F5b223C
+    attestationcollectoraddress: ''
+    destinationaddress: ''
+    rpcurl: http://127.0.0.1:57310
+    startheight: 0
+attestationdomain:
+  domainid: 137
+  type: EVM
+  requiredconfirmations: 0
+  originaddress: ''
+  attestationcollectoraddress: 0x5B3C02d32E60cD38E10835b1B177d543e006f6d0
+  destinationaddress: ''
+  rpcurl: http://127.0.0.1:57324
+  startheight: 0
+destinationdomains:
+  destination_client:
+    domainid: 97
+    type: EVM
+    requiredconfirmations: 0
+    originaddress: ''
+    attestationcollectoraddress: ''
+    destinationaddress: 0xdd98f1a7521Eb28FBe8EF0d428b92A8198fADA26
+    rpcurl: http://127.0.0.1:57302
+    startheight: 0
+unbondedsigner:
+  type: File
+  file: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/file519820387
+bondedsigner:
+  type: File
+  file: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/file180527636
+database:
+  type: sqlite
+  dbpath: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/dir191059046
+  connstring: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/dir927549581
+refreshintervalinseconds: 1

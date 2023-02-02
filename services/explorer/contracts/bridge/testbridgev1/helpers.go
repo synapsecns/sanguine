@@ -20,7 +20,8 @@ func (s TestBridgeV1Ref) Address() common.Address {
 }
 
 // NewTestBridgeV1Ref gets a bound synapse bridge config contract that returns the address of the contract
-// nolint: golint
+//
+//nolint:golint
 func NewTestBridgeV1Ref(address common.Address, backend bind.ContractBackend) (*TestBridgeV1Ref, error) {
 	bridge, err := NewTestSynapseBridgeV1(address, backend)
 	if err != nil {

@@ -55,10 +55,12 @@ func (a OriginAttestationScanner) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
+			logger.Info("Notary OriginAttestationScanner exiting without error")
 			return nil
-		case <-time.After(a.interval): // TODO: a.interval
+		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
+				logger.Errorf("Notary OriginAttestationScanner exiting with error: %v", err)
 				return err
 			}
 		}
@@ -78,38 +80,33 @@ func (a OriginAttestationScanner) FindLatestNonce(ctx context.Context) (nonce ui
 }
 
 // update runs the job of the scanner
-// nolint: cyclop
+//
+//nolint:cyclop
 func (a OriginAttestationScanner) update(ctx context.Context) error {
 	latestNonce, err := a.FindLatestNonce(ctx)
 	if err != nil {
 		return fmt.Errorf("could not find latest root: %w", err)
 	}
 
-	// TODO (joe): Currently we are scanning all nonces in order. Later, we really want to get the latest
-	// attestation after the latestNonce if any exists.
-	nextNonce := latestNonce + 1
-	attestation, dispatchBlockNumber, err := a.originDomain.Origin().GetHistoricalAttestation(ctx, a.destinationDomain.Config().DomainID, nextNonce)
+	attestation, err := a.originDomain.Origin().SuggestAttestation(ctx, a.destinationDomain.Config().DomainID)
 	if errors.Is(err, domains.ErrNoUpdate) {
 		// no update produced this time
 		return nil
 	}
+
 	if err != nil {
-		return fmt.Errorf("could not get historical attestation: %w", err)
+		return fmt.Errorf("could not get suggested attestation: %w", err)
 	}
 
-	if !a.isConfirmed(dispatchBlockNumber) {
-		// not yet confirmed so skip
+	if latestNonce > uint32(0) && attestation.Nonce() <= latestNonce {
+		// We already have seen this nonce
 		return nil
 	}
 
-	err = a.db.StoreNewInProgressAttestation(ctx, attestation, dispatchBlockNumber)
+	err = a.db.StoreNewInProgressAttestation(ctx, attestation)
 	if err != nil {
 		return fmt.Errorf("could not store in-progress attestations: %w", err)
 	}
-	return nil
-}
 
-func (a OriginAttestationScanner) isConfirmed(txBlockNum uint64) bool {
-	// TODO (joe): figure this out
-	return true
+	return nil
 }

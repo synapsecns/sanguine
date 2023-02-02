@@ -7,7 +7,8 @@ import (
 )
 
 // BridgeConfigRef is a bound synapse bridge config v2 contract that returns the address of that contract
-// nolint: golint
+//
+//nolint:golint
 type BridgeConfigRef struct {
 	*BridgeConfigV3
 	address common.Address
@@ -19,7 +20,8 @@ func (s BridgeConfigRef) Address() common.Address {
 }
 
 // NewBridgeConfigRef gets a bound synapse bridge config contract that returns the address of the contract
-// nolint: golint
+//
+//nolint:golint
 func NewBridgeConfigRef(address common.Address, backend bind.ContractBackend) (*BridgeConfigRef, error) {
 	bridgeConfigSwap, err := NewBridgeConfigV3(address, backend)
 	if err != nil {

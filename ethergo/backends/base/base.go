@@ -4,6 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"math/big"
+	"os"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum"
@@ -24,11 +30,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"github.com/teivah/onecontext"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"math/big"
-	"os"
-	"sync"
-	"testing"
-	"time"
 )
 
 var logger = log.Logger("backend-base-logger")
@@ -62,7 +63,8 @@ func (b *Backend) SetT(t *testing.T) {
 }
 
 // NewBaseBackend creates a new base backend.
-// nolint: staticcheck
+//
+//nolint:staticcheck
 func NewBaseBackend(ctx context.Context, t *testing.T, chn chain.Chain) (*Backend, error) {
 	t.Helper()
 
@@ -286,6 +288,6 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 	}, timeout)
 }
 
-// nolint: staticcheck
+//nolint:staticcheck
 var _ chain.Chain = &Backend{}
 var _ suite.TestingSuite = &Backend{}

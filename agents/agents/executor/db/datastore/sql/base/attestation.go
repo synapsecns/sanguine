@@ -37,6 +37,7 @@ func (s Store) GetAttestation(ctx context.Context, attestationMask types.DBAttes
 	dbTx := s.DB().WithContext(ctx).
 		Model(&attestation).
 		Where(&dbAttestationMask).
+		Limit(1).
 		Scan(&attestation)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get attestation: %w", dbTx.Error)
@@ -95,6 +96,84 @@ func (s Store) GetAttestationBlockTime(ctx context.Context, attestationMask type
 	}
 
 	return &attestation.DestinationBlockTime, nil
+}
+
+// GetAttestationForNonceOrGreater gets the lowest nonce attestation that is greater than or equal to the given nonce.
+func (s Store) GetAttestationForNonceOrGreater(ctx context.Context, attestationMask types.DBAttestation) (nonce *uint32, blockTime *uint64, err error) {
+	var attestation Attestation
+
+	dbAttestationMask := DBAttestationToAttestation(attestationMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&attestation).
+		Where(&dbAttestationMask).
+		Where(fmt.Sprintf("%s >= ?", NonceFieldName), attestationMask.Nonce).
+		Order(fmt.Sprintf("%s ASC", BlockNumberFieldName)).
+		Limit(1).
+		Scan(&attestation)
+	if dbTx.Error != nil {
+		return nil, nil, fmt.Errorf("failed to get attestation for nonce or greater: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		return nil, nil, nil
+	}
+
+	nonce = &attestation.Nonce
+	blockTime = &attestation.DestinationBlockTime
+
+	return nonce, blockTime, nil
+}
+
+// GetAttestationsAboveOrEqualNonce gets attestations in a nonce range.
+func (s Store) GetAttestationsAboveOrEqualNonce(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, page int) ([]types.DBAttestation, error) {
+	if page < 1 {
+		page = 1
+	}
+
+	var attestations []Attestation
+
+	dbAttestationMask := DBAttestationToAttestation(attestationMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&attestations).
+		Where(&dbAttestationMask).
+		Where(fmt.Sprintf("%s >= ?", NonceFieldName), minNonce).
+		Order(fmt.Sprintf("%s ASC", BlockNumberFieldName)).
+		Offset((page - 1) * PageSize).
+		Limit(PageSize).
+		Scan(&attestations)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get attestations in nonce range: %w", dbTx.Error)
+	}
+
+	dbAttestations := make([]types.DBAttestation, len(attestations))
+	for i := range attestations {
+		dbAttestations[i] = AttestationToDBAttestation(attestations[i])
+	}
+
+	return dbAttestations, nil
+}
+
+// GetEarliestAttestationsNonceInNonceRange gets the earliest attestation (by block number) in a nonce range.
+func (s Store) GetEarliestAttestationsNonceInNonceRange(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, maxNonce uint32) (*uint32, error) {
+	var attestation Attestation
+
+	dbAttestationMask := DBAttestationToAttestation(attestationMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&attestation).
+		Where(&dbAttestationMask).
+		Where(fmt.Sprintf("%s >= ?", NonceFieldName), minNonce).
+		Where(fmt.Sprintf("%s <= ?", NonceFieldName), maxNonce).
+		Order(fmt.Sprintf("%s ASC", BlockNumberFieldName)).
+		Limit(1).
+		Scan(&attestation)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get earliest attestation in nonce range: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	return &attestation.Nonce, nil
 }
 
 // DBAttestationToAttestation converts a DBAttestation to an Attestation.
