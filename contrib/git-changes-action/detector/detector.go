@@ -82,9 +82,7 @@ func getChangeTree(repoPath string, toHash string) (tree.Tree, error) {
 			return nil, fmt.Errorf("could not get references for repository %s: %w", repoPath, err)
 		}
 
-		fmt.Println(toHash)
 		err = refs.ForEach(func(ref *plumbing.Reference) error {
-			fmt.Println(ref.Name().String())
 			if ref.Name().String() == toHash {
 				toHash = ref.Hash().String()
 			}

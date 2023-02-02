@@ -31,6 +31,6 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(marshalledJSON)
+	fmt.Println(string(marshalledJSON))
 	githubactions.SetOutput("changed_modules", string(marshalledJSON))
 }
