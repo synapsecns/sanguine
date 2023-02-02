@@ -527,7 +527,7 @@ const dailyVolumeBridge = `
 `
 const toDateSelect = `toDate(FROM_UNIXTIME(timestamp, '%Y/%m/%d')) as date`
 
-// TODO MAKE MORE DYNAMIC
+// TODO MAKE MORE DYNAMIC.
 const dailyStatisticGenericSelect = `
 SELECT date,
        results[1]                   AS ethereum,

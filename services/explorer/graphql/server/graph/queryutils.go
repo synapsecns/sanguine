@@ -180,7 +180,6 @@ func generateSingleSpecifierI32ArrSQL(values []*int, field string, firstFilter *
 //
 // nolint:unparam
 func generateSingleSpecifierStringArrSQL(values []*string, field string, firstFilter *bool, tablePrefix string) string {
-
 	if len(values) == 0 {
 		return ""
 	}
@@ -200,7 +199,6 @@ func generateSingleSpecifierStringArrSQL(values []*string, field string, firstFi
 	}
 
 	return final + ")"
-
 }
 
 // generateTimestampSpecifierSQL generates a where function with an uint64.
@@ -320,7 +318,6 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	if bridgeEvent.FTimeStamp != nil {
 		fromTimestamp = int(*bridgeEvent.FTimeStamp)
 		fromTimeStampFormatted = time.Unix(int64(*bridgeEvent.FTimeStamp), 0).String()
-
 	} else {
 		return nil, fmt.Errorf("timestamp is not valid")
 	}
@@ -358,7 +355,6 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		if bridgeEvent.TTimeStamp != nil {
 			toTimestamp = int(*bridgeEvent.TTimeStamp)
 			toTimeStampFormatted = time.Unix(int64(*bridgeEvent.TTimeStamp), 0).String()
-
 		} else {
 			return nil, fmt.Errorf("timestamp is not valid")
 		}
@@ -538,7 +534,6 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID []*i
 //
 // nolint:cyclop
 func GetPartialInfoFromMessageBusEventHybrid(messageBusEvent sql.HybridMessageBusEvent, pending bool) (*model.MessageBusTransaction, error) {
-
 	var messageBusTx model.MessageBusTransaction
 	fromChainID := int(messageBusEvent.FChainID)
 	fromDestinationChainID := int(messageBusEvent.FDestinationChainID.Uint64())
@@ -802,7 +797,7 @@ func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, composite
 }
 
 //
-//func GenerateDailyStatisticBridgeSQL(typeArg *model.DailyStatisticType, compositeFilters string, firstFilter *bool) (*string, *string, error) {
+// func GenerateDailyStatisticBridgeSQL(typeArg *model.DailyStatisticType, compositeFilters string, firstFilter *bool) (*string, *string, error) {
 //	var subQuery string
 //	var query string
 //	switch *typeArg {
