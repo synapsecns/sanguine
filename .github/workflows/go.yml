@@ -25,9 +25,8 @@ jobs:
         with:
           go-version: 1.19
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:48adb00f0b392361c07953dd6f0959dc10f2fa52
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:9fd829eefd3da9666ecc7b48eed9d5ef919de9d2
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
           include_deps: true
       # For pull requests it's not necessary to checkout the code
       - uses: dorny/paths-filter@v2
