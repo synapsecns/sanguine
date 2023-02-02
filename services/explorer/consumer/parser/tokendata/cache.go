@@ -25,6 +25,10 @@ type Service interface {
 
 const cacheSize = 3000
 
+// maxAttemptTime is how many times we will attempt to get the token data.
+const maxAttemptTime = time.Minute * 5
+const maxAttempt = 10
+
 type tokenDataServiceImpl struct {
 	// tokenCache is the tokenCache of the tokenDataServices
 	tokenCache *lru.TwoQueueCache[string, ImmutableTokenData]
@@ -180,10 +184,6 @@ func (t *tokenDataServiceImpl) retrievePoolTokenData(parentCtx context.Context, 
 
 	return res, nil
 }
-
-// maxAttemptTime is how many times we will attempt to get the token data.
-var maxAttemptTime = time.Second * 10
-var maxAttempt = 10
 
 type retryableFunc func(ctx context.Context) error
 

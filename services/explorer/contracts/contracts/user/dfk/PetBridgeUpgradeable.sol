@@ -1,7 +1,7 @@
 pragma solidity 0.8.13;
 
 
-// 
+//
 interface ISynMessagingReceiver {
     // Maps chain ID to the bytes32 trusted addresses allowed to be source senders
     // mapping(uint256 => bytes32) internal trustedRemoteLookup;
@@ -22,7 +22,7 @@ interface ISynMessagingReceiver {
     ) external;
 }
 
-// 
+//
 interface IMessageBus {
     /**
      * @notice Sends a message to a receiving contract address on another chain.
@@ -72,7 +72,7 @@ interface IMessageBus {
     function withdrawFee(address _account) external;
 }
 
-// 
+//
 // OpenZeppelin Contracts (last updated v4.5.0) (utils/Address.sol)
 /**
  * @dev Collection of functions related to the address type
@@ -265,7 +265,7 @@ library AddressUpgradeable {
     }
 }
 
-// 
+//
 // OpenZeppelin Contracts (last updated v4.5.0) (proxy/utils/Initializable.sol)
 /**
  * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed
@@ -341,7 +341,7 @@ abstract contract Initializable {
     }
 }
 
-// 
+//
 // OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
 /**
  * @dev Provides information about the current execution context, including the
@@ -375,7 +375,7 @@ abstract contract ContextUpgradeable is Initializable {
     uint256[50] private __gap;
 }
 
-// 
+//
 // OpenZeppelin Contracts v4.4.1 (access/Ownable.sol)
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -458,7 +458,7 @@ abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
     uint256[49] private __gap;
 }
 
-// 
+//
 abstract contract SynMessagingReceiverUpgradeable is ISynMessagingReceiver, OwnableUpgradeable {
     address public messageBus;
 
@@ -591,7 +591,7 @@ struct UnhatchedEgg {
     uint8 tier; // 0 = Small, 1 = Medium, 2 = Large
 }
 
-// 
+//
 interface IPetCoreUpgradeable {
     function getUserPets(address _address) external view returns (Pet[] memory);
 
@@ -627,7 +627,7 @@ interface IPetCoreUpgradeable {
     function approve(address to, uint256 tokenId) external;
 }
 
-// 
+//
 /** @title Core app for handling cross chain messaging passing to bridge Pet NFTs
  */
 contract PetBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable {
@@ -666,6 +666,10 @@ contract PetBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable 
     function _decodeMessage(bytes memory _message) internal pure returns (MessageFormat memory) {
         MessageFormat memory decodedMessage = abi.decode(_message, (MessageFormat));
         return decodedMessage;
+    }
+
+    function decodeMessage(bytes memory _message) external pure returns (MessageFormat memory) {
+        return _decodeMessage(_message);
     }
 
     function _createOptions() internal view returns (bytes memory) {
@@ -712,8 +716,8 @@ contract PetBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable 
         address
     ) internal override {
         // Decode _message, depending on exactly how the originating message is structured
-        /** 
-            Message data: 
+        /**
+            Message data:
                 Pet memory petToBridge = IPetCoreUpgradeable(pets).getPet(_petId);
                 address dstUserAddress = msg.sender;
                 uint256 dstPetId = _petId;
@@ -726,7 +730,7 @@ contract PetBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable 
 
         // will revert if non-existent Pet
         try IPetCoreUpgradeable(pets).ownerOf(dstPetId) returns (address petOwner) {
-            /** 
+            /**
                 If petId does exist (which means it should be locked on this contract), as it was bridged before.
                 Transfer it to message.dstUserAddress
                 */
@@ -735,8 +739,8 @@ contract PetBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable 
                 IPetCoreUpgradeable(pets).safeTransferFrom(address(this), dstUser, dstPetId);
             }
         } catch {
-            /** 
-                If pet ID doesn't exist: 
+            /**
+                If pet ID doesn't exist:
                 Mint a pet to msg.dstUserAddress
                 */
             IPetCoreUpgradeable(pets).bridgeMint(dstPetId, dstUser);

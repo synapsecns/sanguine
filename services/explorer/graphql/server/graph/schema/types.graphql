@@ -134,9 +134,11 @@ type PartialMessageBusInfo {
   contractAddress: String
   txnHash: String
   message:        String
+  messageType: MessageType
   blockNumber:    Int
   time:           Int
   formattedTime: String
+  revertedReason: String
 }
 """
 DateResult is a given statistic for a given date.

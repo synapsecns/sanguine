@@ -149,7 +149,7 @@ query GetDailyStatistics($chainID: Int, $type: DailyStatisticType, $platform: Pl
   }
 }
 
-query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $startTime: Int, $endTime: Int, $txHash: String, $messageID: String, $pending: Boolean, $page: Int) {
+query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $startTime: Int, $endTime: Int, $txHash: String, $messageID: String, $pending: Boolean, $reverted: Boolean, $page: Int) {
   response: messageBusTransactions(
     chainID: $chainID
     contractAddress: $contractAddress
@@ -158,6 +158,7 @@ query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $star
     txnHash: $txHash
     messageID: $messageID
     pending: $pending
+    reverted: $reverted
     page: $page
   ) {
     fromInfo {
@@ -182,6 +183,7 @@ query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $star
       blockNumber
       time
       formattedTime
+      revertedReason
     }
     messageID
     pending

@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"math/big"
 	"strconv"
+	"sync"
 	"time"
+
+	"github.com/synapsecns/sanguine/services/explorer/contracts/user"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
@@ -398,7 +402,7 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	return &bridgeTx, nil
 }
 
-func generateMessageBusQuery(chainID []*int, address *string, startTime *int, endTime *int, messageID *string, pending bool, txHash *string, page int) string {
+func generateMessageBusQuery(chainID []*int, address *string, startTime *int, endTime *int, messageID *string, pending bool, reverted bool, txHash *string, page int) string {
 	firstFilter := true
 
 	chainIDSpecifier := generateSingleSpecifierI32ArrSQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
@@ -407,20 +411,25 @@ func generateMessageBusQuery(chainID []*int, address *string, startTime *int, en
 	maxTimeSpecfier := generateEqualitySpecifierSQL(endTime, sql.TimeStampFieldName, &firstFilter, "", false)
 
 	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "")
-	kappaSpecifier := generateSingleSpecifierStringSQL(messageID, sql.KappaFieldName, &firstFilter, "")
+	messageIDSpecifier := generateSingleSpecifierStringSQL(messageID, "message_id", &firstFilter, "")
 	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "")
 	operation := " = ''"
 	if !pending {
 		operation = " != ''"
 	}
 	pendingSpecifier := fmt.Sprintf(" WHERE t.message_id %s", operation)
-	compositeFilters := chainIDSpecifier + minTimeSpecfier + maxTimeSpecfier + addressSpecifier + kappaSpecifier + txHashSpecifier
+	compositeFilters := chainIDSpecifier + minTimeSpecfier + maxTimeSpecfier + addressSpecifier + messageIDSpecifier + txHashSpecifier
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 
 	cte := fmt.Sprintf("WITH baseQuery AS (SELECT * FROM message_bus_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash), (SELECT min(timestamp) FROM baseQuery) AS minTimestamp", compositeFilters)
 
 	finalQuery := fmt.Sprintf("%s SELECT * FROM (SELECT * FROM (SELECT * FROM %s WHERE %s = 1 ) f LEFT JOIN (SELECT * FROM (%s) WHERE %s = 0) t ON f.%s = t.%s %s)  LIMIT %d OFFSET %d", cte, "baseQuery", sql.EventTypeFieldName, baseMessageBus, sql.EventTypeFieldName, "message_id", "message_id", pendingSpecifier, pageValue, pageOffset)
+
+	if reverted {
+		finalQuery = fmt.Sprintf("%s SELECT * FROM  (SELECT * FROM (select * from (%s) WHERE %s = 1) f RIGHT OUTER JOIN (Select r.reverted_reason AS reverted_reason, j.reverted_reason AS rrr, * FROM (select * from %s WHERE event_type = 0 and status = 'Fail') j LEFT JOIN (select reverted_reason, tx_hash from (%s) WHERE %s = 2) r on j.tx_hash = r.tx_hash) t ON f.%s = t.%s)  LIMIT %d OFFSET %d", cte, baseMessageBus, sql.EventTypeFieldName, "baseQuery", baseMessageBus, sql.EventTypeFieldName, "message_id", "message_id", pageValue, pageOffset)
+	}
+	fmt.Println(finalQuery)
 	return finalQuery
 }
 
@@ -533,7 +542,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID []*i
 // GetPartialInfoFromMessageBusEventHybrid returns the partial info from message bus event.
 //
 // nolint:cyclop
-func GetPartialInfoFromMessageBusEventHybrid(messageBusEvent sql.HybridMessageBusEvent, pending bool) (*model.MessageBusTransaction, error) {
+func GetPartialInfoFromMessageBusEventHybrid(ctx context.Context, messageBusEvent sql.HybridMessageBusEvent, pending bool) (*model.MessageBusTransaction, error) {
 	var messageBusTx model.MessageBusTransaction
 	fromChainID := int(messageBusEvent.FChainID)
 	fromDestinationChainID := int(messageBusEvent.FDestinationChainID.Uint64())
@@ -555,7 +564,9 @@ func GetPartialInfoFromMessageBusEventHybrid(messageBusEvent sql.HybridMessageBu
 		BlockNumber:        &fromBlockNumber,
 		Time:               &fromTimeStamp,
 		FormattedTime:      &fromTimeStampFormatted,
+		RevertedReason:     nil,
 	}
+
 	toInfos := &model.PartialMessageBusInfo{
 		ChainID:            &toChainID,
 		DestinationChainID: nil,
@@ -565,7 +576,23 @@ func GetPartialInfoFromMessageBusEventHybrid(messageBusEvent sql.HybridMessageBu
 		BlockNumber:        &toBlockNumber,
 		Time:               &toTimeStamp,
 		FormattedTime:      &toTimeStampFormatted,
+		RevertedReason:     &messageBusEvent.TRevertedReason.String,
 	}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		fromInfos.MessageType = user.Decode(ctx, messageBusEvent.FMessage.String)
+	}()
+
+	go func() {
+		defer wg.Done()
+		toInfos.MessageType = user.Decode(ctx, messageBusEvent.TMessage.String)
+	}()
+
+	wg.Wait()
 
 	messageBusTx = model.MessageBusTransaction{
 		FromInfo:  fromInfos,
@@ -577,10 +604,9 @@ func GetPartialInfoFromMessageBusEventHybrid(messageBusEvent sql.HybridMessageBu
 }
 
 // nolint:gocognit,cyclop
-func (r *queryResolver) GetMessageBusTxs(ctx context.Context, chainID []*int, address *string, startTime *int, endTime *int, txHash *string, messageID *string, pending bool, page *int) ([]*model.MessageBusTransaction, error) {
+func (r *queryResolver) GetMessageBusTxs(ctx context.Context, chainID []*int, address *string, startTime *int, endTime *int, txHash *string, messageID *string, pending bool, reverted bool, page *int) ([]*model.MessageBusTransaction, error) {
 	var err error
-	var results []*model.MessageBusTransaction
-	allMessageBusEvents, err := r.DB.GetAllMessageBusEvents(ctx, generateMessageBusQuery(chainID, address, startTime, endTime, messageID, pending, txHash, *page))
+	allMessageBusEvents, err := r.DB.GetAllMessageBusEvents(ctx, generateMessageBusQuery(chainID, address, startTime, endTime, messageID, pending, reverted, txHash, *page))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
 	}
@@ -589,15 +615,30 @@ func (r *queryResolver) GetMessageBusTxs(ctx context.Context, chainID []*int, ad
 		return nil, nil
 	}
 
+	results := make([]*model.MessageBusTransaction, len(allMessageBusEvents))
+	var sliceMux sync.Mutex
+	g, ctx := errgroup.WithContext(ctx)
 	// Iterate through all bridge events and return all partials
 	for i := range allMessageBusEvents {
-		messageBusTx, err := GetPartialInfoFromMessageBusEventHybrid(allMessageBusEvents[i], pending)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
-		}
-		if messageBusTx != nil {
-			results = append(results, messageBusTx)
-		}
+		i := i // capture func literal
+		g.Go(func() error {
+			messageBusTx, err := GetPartialInfoFromMessageBusEventHybrid(ctx, allMessageBusEvents[i], pending)
+			if err != nil {
+				return fmt.Errorf("failed to get partial info from bridge event: %w", err)
+			}
+			if messageBusTx != nil {
+				sliceMux.Lock()
+				results[i] = messageBusTx
+				sliceMux.Unlock()
+			}
+
+			return nil
+		})
+	}
+	err = g.Wait()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not get partial info from message bus event: %w", err)
 	}
 	return results, nil
 }

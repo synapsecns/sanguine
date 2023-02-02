@@ -21,6 +21,10 @@ type Service interface {
 
 const cacheSize = 3000
 
+// maxAttemptTime is how many times we will attempt to get the token data.
+const maxAttemptTime = time.Second * 120
+const maxAttempt = 60
+
 type tokenPoolDataServiceImpl struct {
 	consumerDB db.ConsumerDB
 	// tokenCache is the tokenCache of the tokenDataServices
@@ -61,7 +65,7 @@ func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, ch
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not get token data with retry backoff: %w", err)
+		return nil, fmt.Errorf("could not get token data with retry backoff chainID %d, tokenIndex %d, contractAddress %s: %w", chainID, tokenIndex, contractAddress, err)
 	}
 
 	err = t.retryWithBackoff(ctx, func(ctx context.Context) error {
@@ -83,10 +87,6 @@ func (t *tokenPoolDataServiceImpl) storeTokenIndex(parentCtx context.Context, ch
 	return nil
 }
 
-// maxAttemptTime is how many times we will attempt to get the token data.
-var maxAttemptTime = time.Second * 10
-var maxAttempt = 10
-
 type retryableFunc func(ctx context.Context) error
 
 // retryWithBackoff will retry to get data with a backoff.
@@ -94,8 +94,8 @@ func (t *tokenPoolDataServiceImpl) retryWithBackoff(ctx context.Context, doFunc 
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    200 * time.Millisecond,
-		Max:    5 * time.Second,
+		Min:    1 * time.Second,
+		Max:    3 * time.Second,
 	}
 
 	timeout := time.Duration(0)
@@ -114,5 +114,5 @@ func (t *tokenPoolDataServiceImpl) retryWithBackoff(ctx context.Context, doFunc 
 			}
 		}
 	}
-	return fmt.Errorf("max attempts reached")
+	return fmt.Errorf("max attempts reached while retrying swap fetcher")
 }

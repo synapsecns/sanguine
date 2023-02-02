@@ -1,7 +1,7 @@
 pragma solidity 0.8.13;
 
 
-// 
+//
 interface ISynMessagingReceiver {
     // Maps chain ID to the bytes32 trusted addresses allowed to be source senders
     // mapping(uint256 => bytes32) internal trustedRemoteLookup;
@@ -22,7 +22,7 @@ interface ISynMessagingReceiver {
     ) external;
 }
 
-// 
+//
 interface IMessageBus {
     /**
      * @notice Sends a message to a receiving contract address on another chain.
@@ -72,7 +72,7 @@ interface IMessageBus {
     function withdrawFee(address _account) external;
 }
 
-// 
+//
 // OpenZeppelin Contracts (last updated v4.5.0) (utils/Address.sol)
 /**
  * @dev Collection of functions related to the address type
@@ -265,7 +265,7 @@ library AddressUpgradeable {
     }
 }
 
-// 
+//
 // OpenZeppelin Contracts (last updated v4.5.0) (proxy/utils/Initializable.sol)
 /**
  * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed
@@ -341,7 +341,7 @@ abstract contract Initializable {
     }
 }
 
-// 
+//
 // OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
 /**
  * @dev Provides information about the current execution context, including the
@@ -375,7 +375,7 @@ abstract contract ContextUpgradeable is Initializable {
     uint256[50] private __gap;
 }
 
-// 
+//
 // OpenZeppelin Contracts v4.4.1 (access/Ownable.sol)
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -458,7 +458,7 @@ abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
     uint256[49] private __gap;
 }
 
-// 
+//
 abstract contract SynMessagingReceiverUpgradeable is ISynMessagingReceiver, OwnableUpgradeable {
     address public messageBus;
 
@@ -531,92 +531,123 @@ abstract contract SynMessagingReceiverUpgradeable is ISynMessagingReceiver, Owna
     uint256[48] private __gap;
 }
 
-enum Rarity {
-    COMMON,
-    UNCOMMON,
-    RARE,
-    LEGENDARY,
-    MYTHIC
-}
+    enum Rarity {
+        COMMON,
+        UNCOMMON,
+        RARE,
+        LEGENDARY,
+        MYTHIC
+    }
 
-struct SummoningInfo {
-    uint256 summonedTime;
-    // How long until the hero can participate in summoning again.
-    uint256 nextSummonTime;
-    uint256 summonerId;
-    uint256 assistantId;
-    // How many summons the hero has done.
-    uint32 summons;
-    // How many summons can the hero do max.
-    uint32 maxSummons;
-}
+    struct HeroStats {
+        uint16 strength;
+        uint16 agility;
+        uint16 intelligence;
+        uint16 wisdom;
+        uint16 luck;
+        uint16 vitality;
+        uint16 endurance;
+        uint16 dexterity;
+        uint16 hp;
+        uint16 mp;
+        uint16 stamina;
+    }
 
-struct HeroInfo {
-    uint256 statGenes;
-    uint256 visualGenes;
-    Rarity rarity;
-    bool shiny;
-    uint16 generation;
-    uint32 firstName;
-    uint32 lastName;
-    uint8 shinyStyle;
-    uint8 class;
-    uint8 subClass;
-}
+    struct HeroStatGrowth {
+        uint16 strength;
+        uint16 agility;
+        uint16 intelligence;
+        uint16 wisdom;
+        uint16 luck;
+        uint16 vitality;
+        uint16 endurance;
+        uint16 dexterity;
+        uint16 hpSm;
+        uint16 hpRg;
+        uint16 hpLg;
+        uint16 mpSm;
+        uint16 mpRg;
+        uint16 mpLg;
+    }
 
-struct HeroState {
-    // The time the hero's stamina is full at.
-    uint256 staminaFullAt;
-    // The time the hero's hp is full at.
-    uint256 hpFullAt;
-    // The time the hero's mp is full at.
-    uint256 mpFullAt;
-    // The current level of the hero.
-    uint16 level;
-    // The current XP the hero has towards their next level.
-    uint64 xp;
-    // The current quest a hero is undertaking, if any.
-    address currentQuest;
-    // The skill points the hero can spend.
-    uint8 sp;
-    HeroStatus status;
-}
+    struct SummoningInfo {
+        uint256 summonedTime;
+        // How long until the hero can participate in summoning again.
+        uint256 nextSummonTime;
+        uint256 summonerId;
+        uint256 assistantId;
+        // How many summons the hero has done.
+        uint32 summons;
+        // How many summons can the hero do max.
+        uint32 maxSummons;
+    }
 
-struct HeroProfessions {
-    uint16 mining;
-    uint16 gardening;
-    uint16 foraging;
-    uint16 fishing;
-}
+    struct HeroInfo {
+        uint256 statGenes;
+        uint256 visualGenes;
+        Rarity rarity;
+        bool shiny;
+        uint16 generation;
+        uint32 firstName;
+        uint32 lastName;
+        uint8 shinyStyle;
+        uint8 class;
+        uint8 subClass;
+    }
 
-struct Hero {
-    uint256 id;
-    SummoningInfo summoningInfo;
-    HeroInfo info;
-    HeroState state;
-    HeroStats stats;
-    HeroStatGrowth primaryStatGrowth;
-    HeroStatGrowth secondaryStatGrowth;
-    HeroProfessions professions;
-}
+    struct HeroState {
+        // The time the hero's stamina is full at.
+        uint256 staminaFullAt;
+        // The time the hero's hp is full at.
+        uint256 hpFullAt;
+        // The time the hero's mp is full at.
+        uint256 mpFullAt;
+        // The current level of the hero.
+        uint16 level;
+        // The current XP the hero has towards their next level.
+        uint64 xp;
+        // The current quest a hero is undertaking, if any.
+        address currentQuest;
+        // The skill points the hero can spend.
+        uint8 sp;
+        HeroStatus status;
+    }
 
-struct HeroCrystal {
-    address owner;
-    uint256 summonerId;
-    uint256 assistantId;
-    uint16 generation;
-    uint256 createdBlock;
-    uint256 heroId;
-    uint8 summonerTears;
-    uint8 assistantTears;
-    address enhancementStone;
-    uint32 maxSummons;
-    uint32 firstName;
-    uint32 lastName;
-    uint8 shinyStyle;
-}
+    struct HeroProfessions {
+        uint16 mining;
+        uint16 gardening;
+        uint16 foraging;
+        uint16 fishing;
+    }
 
-// 
+    struct Hero {
+        uint256 id;
+        SummoningInfo summoningInfo;
+        HeroInfo info;
+        HeroState state;
+        HeroStats stats;
+        HeroStatGrowth primaryStatGrowth;
+        HeroStatGrowth secondaryStatGrowth;
+        HeroProfessions professions;
+    }
+
+    struct HeroCrystal {
+        address owner;
+        uint256 summonerId;
+        uint256 assistantId;
+        uint16 generation;
+        uint256 createdBlock;
+        uint256 heroId;
+        uint8 summonerTears;
+        uint8 assistantTears;
+        address enhancementStone;
+        uint32 maxSummons;
+        uint32 firstName;
+        uint32 lastName;
+        uint8 shinyStyle;
+    }
+
+//
 interface IHeroCoreUpgradeable {
     function bridgeMint(uint256 _id, address _to) external;
 
@@ -807,7 +838,7 @@ interface IHeroCoreUpgradeable {
     function vrf(uint256 blockNumber) external view returns (bytes32 result);
 }
 
-// 
+//
 interface IAssistingAuction {
     function bid(uint256 _tokenId, uint256 _bidAmount) external;
 
@@ -831,15 +862,15 @@ interface IAssistingAuction {
     ) external;
 
     function getAuction(uint256 _tokenId)
-        external
-        view
-        returns (
-            address seller,
-            uint256 startingPrice,
-            uint256 endingPrice,
-            uint256 duration,
-            uint256 startedAt
-        );
+    external
+    view
+    returns (
+        address seller,
+        uint256 startingPrice,
+        uint256 endingPrice,
+        uint256 duration,
+        uint256 startedAt
+    );
 
     function getCurrentPrice(uint256 _tokenId) external view returns (uint256);
 
@@ -860,12 +891,12 @@ interface IAssistingAuction {
     function transferOwnership(address newOwner) external;
 }
 
-enum HeroStatus {
-    OK,
-    KO
-}
+    enum HeroStatus {
+        OK,
+        KO
+    }
 
-// 
+//
 /** @title Core app for handling cross chain messaging passing to bridge Hero NFTs
  */
 contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable {
@@ -900,9 +931,9 @@ contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable
     ) internal pure returns (bytes memory) {
         // create the message here from the nested struct
         MessageFormat memory msgFormat = MessageFormat({
-            dstHeroId: _heroId,
-            dstHero: _heroToBridge,
-            dstUser: _dstUserAddress
+        dstHeroId: _heroId,
+        dstHero: _heroToBridge,
+        dstUser: _dstUserAddress
         });
         return abi.encode(msgFormat);
     }
@@ -910,6 +941,10 @@ contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable
     function _decodeMessage(bytes memory _message) internal pure returns (MessageFormat memory) {
         MessageFormat memory decodedMessage = abi.decode(_message, (MessageFormat));
         return decodedMessage;
+    }
+
+    function decodeMessage(bytes memory _message) external pure returns (MessageFormat memory) {
+        return _decodeMessage(_message);
     }
 
     function _createOptions() internal view returns (bytes memory) {
@@ -959,8 +994,8 @@ contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable
         address
     ) internal override {
         // Decode _message, depending on exactly how the originating message is structured
-        /** 
-            Message data: 
+        /**
+            Message data:
                 Hero memory heroToBridge = IHeroCoreUpgradeable(heroes).getHero(_heroId);
                 address dstUserAddress = msg.sender;
                 uint256 dstHeroId = _heroId;
@@ -973,7 +1008,7 @@ contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable
 
         // will revert if non-existant Hero
         try IHeroCoreUpgradeable(heroes).ownerOf(dstHeroId) returns (address heroOwner) {
-            /** 
+            /**
                 If heroId does exist (which means it should be locked on this contract), as it was bridged before.
                 Transfer it to message.dstUserAddress
                 */
@@ -982,8 +1017,8 @@ contract HeroBridgeUpgradeable is Initializable, SynMessagingReceiverUpgradeable
                 IHeroCoreUpgradeable(heroes).safeTransferFrom(address(this), dstUser, dstHeroId);
             }
         } catch {
-            /** 
-                If hero ID doesn't exist: 
+            /**
+                If hero ID doesn't exist:
                 Mint a hero to msg.dstUserAddress
                 */
             IHeroCoreUpgradeable(heroes).bridgeMint(dstHeroId, dstUser);

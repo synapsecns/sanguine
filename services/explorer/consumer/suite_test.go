@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/db"
+
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"

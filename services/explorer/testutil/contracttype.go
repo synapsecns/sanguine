@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
 
@@ -48,6 +49,8 @@ const (
 	SynapseBridgeV1Type
 	// MessageBusType is the messagebus contract type.
 	MessageBusType
+	// MetaSwapType is the metaswap contract type.
+	MetaSwapType
 )
 
 // ID gets the contract type as an id.
@@ -78,7 +81,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return bridgev1.Contracts["/solidity/SynapseBridgeV1_flat.sol:SynapseBridge"]
 	case MessageBusType:
 		return messagebus.Contracts["/solidity/MessageBusUpgradeableV1_flat.sol:MessageBusUpgradeable"]
-
+	case MetaSwapType:
+		return metaswap.Contracts["/solidity/MetaSwapV1_flat.sol:MetaSwap"]
 	default:
 		panic("not yet implemented")
 	}

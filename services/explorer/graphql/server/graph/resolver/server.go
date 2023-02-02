@@ -88,6 +88,11 @@ type ComplexityRoot struct {
 		Total     func(childComplexity int) int
 	}
 
+	HeroType struct {
+		HeroID    func(childComplexity int) int
+		Recipient func(childComplexity int) int
+	}
+
 	HistoricalResult struct {
 		DateResults func(childComplexity int) int
 		Total       func(childComplexity int) int
@@ -124,8 +129,16 @@ type ComplexityRoot struct {
 		DestinationChainName func(childComplexity int) int
 		FormattedTime        func(childComplexity int) int
 		Message              func(childComplexity int) int
+		MessageType          func(childComplexity int) int
+		RevertedReason       func(childComplexity int) int
 		Time                 func(childComplexity int) int
 		TxnHash              func(childComplexity int) int
+	}
+
+	PetType struct {
+		Name      func(childComplexity int) int
+		PetID     func(childComplexity int) int
+		Recipient func(childComplexity int) int
 	}
 
 	Query struct {
@@ -136,8 +149,13 @@ type ComplexityRoot struct {
 		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatistics        func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) int
 		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration) int
-		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, page *int) int
+		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) int
 		RankedChainIDsByVolume func(childComplexity int, duration *model.Duration) int
+	}
+
+	TearType struct {
+		Amount    func(childComplexity int) int
+		Recipient func(childComplexity int) int
 	}
 
 	TokenCountResult struct {
@@ -149,6 +167,10 @@ type ComplexityRoot struct {
 	TransactionCountResult struct {
 		ChainID func(childComplexity int) int
 		Count   func(childComplexity int) int
+	}
+
+	UnknownType struct {
+		Known func(childComplexity int) int
 	}
 
 	ValueResult struct {
@@ -163,7 +185,7 @@ type ComplexityRoot struct {
 
 type QueryResolver interface {
 	BridgeTransactions(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error)
-	MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, page *int) ([]*model.MessageBusTransaction, error)
+	MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) ([]*model.MessageBusTransaction, error)
 	CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error)
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
 	AddressRanking(ctx context.Context, hours *int) ([]*model.AddressRanking, error)
@@ -405,6 +427,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.DateResultByChain.Total(childComplexity), true
 
+	case "HeroType.heroID":
+		if e.complexity.HeroType.HeroID == nil {
+			break
+		}
+
+		return e.complexity.HeroType.HeroID(childComplexity), true
+
+	case "HeroType.recipient":
+		if e.complexity.HeroType.Recipient == nil {
+			break
+		}
+
+		return e.complexity.HeroType.Recipient(childComplexity), true
+
 	case "HistoricalResult.dateResults":
 		if e.complexity.HistoricalResult.DateResults == nil {
 			break
@@ -587,6 +623,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PartialMessageBusInfo.Message(childComplexity), true
 
+	case "PartialMessageBusInfo.messageType":
+		if e.complexity.PartialMessageBusInfo.MessageType == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.MessageType(childComplexity), true
+
+	case "PartialMessageBusInfo.revertedReason":
+		if e.complexity.PartialMessageBusInfo.RevertedReason == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.RevertedReason(childComplexity), true
+
 	case "PartialMessageBusInfo.time":
 		if e.complexity.PartialMessageBusInfo.Time == nil {
 			break
@@ -600,6 +650,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PartialMessageBusInfo.TxnHash(childComplexity), true
+
+	case "PetType.name":
+		if e.complexity.PetType.Name == nil {
+			break
+		}
+
+		return e.complexity.PetType.Name(childComplexity), true
+
+	case "PetType.petID":
+		if e.complexity.PetType.PetID == nil {
+			break
+		}
+
+		return e.complexity.PetType.PetID(childComplexity), true
+
+	case "PetType.recipient":
+		if e.complexity.PetType.Recipient == nil {
+			break
+		}
+
+		return e.complexity.PetType.Recipient(childComplexity), true
 
 	case "Query.addressRanking":
 		if e.complexity.Query.AddressRanking == nil {
@@ -695,7 +766,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.MessageBusTransactions(childComplexity, args["chainID"].([]*int), args["contractAddress"].(*string), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["messageID"].(*string), args["pending"].(*bool), args["page"].(*int)), true
+		return e.complexity.Query.MessageBusTransactions(childComplexity, args["chainID"].([]*int), args["contractAddress"].(*string), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["messageID"].(*string), args["pending"].(*bool), args["reverted"].(*bool), args["page"].(*int)), true
 
 	case "Query.rankedChainIDsByVolume":
 		if e.complexity.Query.RankedChainIDsByVolume == nil {
@@ -708,6 +779,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.RankedChainIDsByVolume(childComplexity, args["duration"].(*model.Duration)), true
+
+	case "TearType.amount":
+		if e.complexity.TearType.Amount == nil {
+			break
+		}
+
+		return e.complexity.TearType.Amount(childComplexity), true
+
+	case "TearType.recipient":
+		if e.complexity.TearType.Recipient == nil {
+			break
+		}
+
+		return e.complexity.TearType.Recipient(childComplexity), true
 
 	case "TokenCountResult.chainID":
 		if e.complexity.TokenCountResult.ChainID == nil {
@@ -743,6 +828,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.TransactionCountResult.Count(childComplexity), true
+
+	case "UnknownType.known":
+		if e.complexity.UnknownType.Known == nil {
+			break
+		}
+
+		return e.complexity.UnknownType.Known(childComplexity), true
 
 	case "ValueResult.value":
 		if e.complexity.ValueResult.Value == nil {
@@ -827,6 +919,28 @@ var sources = []*ast.Source{
 directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
   | FIELD_DEFINITION
 `, BuiltIn: false},
+	{Name: "../schema/message.graphql", Input: `union MessageType = TearType | HeroType | PetType | UnknownType
+
+type TearType {
+  recipient: String!
+  amount: String!
+}
+
+type HeroType {
+  recipient: String!
+  heroID: String!
+}
+
+type PetType {
+  recipient: String!
+  petID: String!
+  name: String!
+}
+
+type UnknownType {
+  known: Boolean!
+}
+`, BuiltIn: false},
 	{Name: "../schema/queries.graphql", Input: `type Query {
 
   """
@@ -857,9 +971,9 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     txnHash:        String
     messageID:      String
     pending:        Boolean = false
+    reverted:       Boolean = false
     page:           Int = 1
   ): [MessageBusTransaction]
-
 
   """
   Returns the COUNT of bridged transactions for a given chain. If direction of bridge transactions
@@ -1064,9 +1178,11 @@ type PartialMessageBusInfo {
   contractAddress: String
   txnHash: String
   message:        String
+  messageType: MessageType
   blockNumber:    Int
   time:           Int
   formattedTime: String
+  revertedReason: String
 }
 """
 DateResult is a given statistic for a given date.
@@ -1525,15 +1641,24 @@ func (ec *executionContext) field_Query_messageBusTransactions_args(ctx context.
 		}
 	}
 	args["pending"] = arg6
-	var arg7 *int
-	if tmp, ok := rawArgs["page"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
-		arg7, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+	var arg7 *bool
+	if tmp, ok := rawArgs["reverted"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reverted"))
+		arg7, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["page"] = arg7
+	args["reverted"] = arg7
+	var arg8 *int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg8, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg8
 	return args, nil
 }
 
@@ -2915,6 +3040,94 @@ func (ec *executionContext) fieldContext_DateResultByChain_total(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _HeroType_recipient(ctx context.Context, field graphql.CollectedField, obj *model.HeroType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HeroType_recipient(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Recipient, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_HeroType_recipient(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HeroType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HeroType_heroID(ctx context.Context, field graphql.CollectedField, obj *model.HeroType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HeroType_heroID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HeroID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_HeroType_heroID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HeroType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _HistoricalResult_total(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalResult) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_HistoricalResult_total(ctx, field)
 	if err != nil {
@@ -3094,12 +3307,16 @@ func (ec *executionContext) fieldContext_MessageBusTransaction_fromInfo(ctx cont
 				return ec.fieldContext_PartialMessageBusInfo_txnHash(ctx, field)
 			case "message":
 				return ec.fieldContext_PartialMessageBusInfo_message(ctx, field)
+			case "messageType":
+				return ec.fieldContext_PartialMessageBusInfo_messageType(ctx, field)
 			case "blockNumber":
 				return ec.fieldContext_PartialMessageBusInfo_blockNumber(ctx, field)
 			case "time":
 				return ec.fieldContext_PartialMessageBusInfo_time(ctx, field)
 			case "formattedTime":
 				return ec.fieldContext_PartialMessageBusInfo_formattedTime(ctx, field)
+			case "revertedReason":
+				return ec.fieldContext_PartialMessageBusInfo_revertedReason(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialMessageBusInfo", field.Name)
 		},
@@ -3157,12 +3374,16 @@ func (ec *executionContext) fieldContext_MessageBusTransaction_toInfo(ctx contex
 				return ec.fieldContext_PartialMessageBusInfo_txnHash(ctx, field)
 			case "message":
 				return ec.fieldContext_PartialMessageBusInfo_message(ctx, field)
+			case "messageType":
+				return ec.fieldContext_PartialMessageBusInfo_messageType(ctx, field)
 			case "blockNumber":
 				return ec.fieldContext_PartialMessageBusInfo_blockNumber(ctx, field)
 			case "time":
 				return ec.fieldContext_PartialMessageBusInfo_time(ctx, field)
 			case "formattedTime":
 				return ec.fieldContext_PartialMessageBusInfo_formattedTime(ctx, field)
+			case "revertedReason":
+				return ec.fieldContext_PartialMessageBusInfo_revertedReason(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PartialMessageBusInfo", field.Name)
 		},
@@ -3990,6 +4211,47 @@ func (ec *executionContext) fieldContext_PartialMessageBusInfo_message(ctx conte
 	return fc, nil
 }
 
+func (ec *executionContext) _PartialMessageBusInfo_messageType(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_messageType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MessageType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(model.MessageType)
+	fc.Result = res
+	return ec.marshalOMessageType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_messageType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type MessageType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PartialMessageBusInfo_blockNumber(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PartialMessageBusInfo_blockNumber(ctx, field)
 	if err != nil {
@@ -4113,6 +4375,179 @@ func (ec *executionContext) fieldContext_PartialMessageBusInfo_formattedTime(ctx
 	return fc, nil
 }
 
+func (ec *executionContext) _PartialMessageBusInfo_revertedReason(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_revertedReason(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RevertedReason, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_revertedReason(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PetType_recipient(ctx context.Context, field graphql.CollectedField, obj *model.PetType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PetType_recipient(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Recipient, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PetType_recipient(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PetType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PetType_petID(ctx context.Context, field graphql.CollectedField, obj *model.PetType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PetType_petID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PetID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PetType_petID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PetType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PetType_name(ctx context.Context, field graphql.CollectedField, obj *model.PetType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PetType_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PetType_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PetType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_bridgeTransactions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_bridgeTransactions(ctx, field)
 	if err != nil {
@@ -4191,7 +4626,7 @@ func (ec *executionContext) _Query_messageBusTransactions(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().MessageBusTransactions(rctx, fc.Args["chainID"].([]*int), fc.Args["contractAddress"].(*string), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["messageID"].(*string), fc.Args["pending"].(*bool), fc.Args["page"].(*int))
+		return ec.resolvers.Query().MessageBusTransactions(rctx, fc.Args["chainID"].([]*int), fc.Args["contractAddress"].(*string), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["messageID"].(*string), fc.Args["pending"].(*bool), fc.Args["reverted"].(*bool), fc.Args["page"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4810,6 +5245,94 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _TearType_recipient(ctx context.Context, field graphql.CollectedField, obj *model.TearType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TearType_recipient(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Recipient, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TearType_recipient(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TearType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TearType_amount(ctx context.Context, field graphql.CollectedField, obj *model.TearType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TearType_amount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Amount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TearType_amount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TearType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TokenCountResult_chainID(ctx context.Context, field graphql.CollectedField, obj *model.TokenCountResult) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TokenCountResult_chainID(ctx, field)
 	if err != nil {
@@ -5010,6 +5533,50 @@ func (ec *executionContext) fieldContext_TransactionCountResult_count(ctx contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UnknownType_known(ctx context.Context, field graphql.CollectedField, obj *model.UnknownType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UnknownType_known(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Known, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UnknownType_known(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UnknownType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6915,6 +7482,43 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    ************************** interface.gotpl ***************************
 
+func (ec *executionContext) _MessageType(ctx context.Context, sel ast.SelectionSet, obj model.MessageType) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.TearType:
+		return ec._TearType(ctx, sel, &obj)
+	case *model.TearType:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._TearType(ctx, sel, obj)
+	case model.HeroType:
+		return ec._HeroType(ctx, sel, &obj)
+	case *model.HeroType:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._HeroType(ctx, sel, obj)
+	case model.PetType:
+		return ec._PetType(ctx, sel, &obj)
+	case *model.PetType:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._PetType(ctx, sel, obj)
+	case model.UnknownType:
+		return ec._UnknownType(ctx, sel, &obj)
+	case *model.UnknownType:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UnknownType(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
@@ -7148,6 +7752,41 @@ func (ec *executionContext) _DateResultByChain(ctx context.Context, sel ast.Sele
 	return out
 }
 
+var heroTypeImplementors = []string{"HeroType", "MessageType"}
+
+func (ec *executionContext) _HeroType(ctx context.Context, sel ast.SelectionSet, obj *model.HeroType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, heroTypeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("HeroType")
+		case "recipient":
+
+			out.Values[i] = ec._HeroType_recipient(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "heroID":
+
+			out.Values[i] = ec._HeroType_heroID(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var historicalResultImplementors = []string{"HistoricalResult"}
 
 func (ec *executionContext) _HistoricalResult(ctx context.Context, sel ast.SelectionSet, obj *model.HistoricalResult) graphql.Marshaler {
@@ -7321,6 +7960,10 @@ func (ec *executionContext) _PartialMessageBusInfo(ctx context.Context, sel ast.
 
 			out.Values[i] = ec._PartialMessageBusInfo_message(ctx, field, obj)
 
+		case "messageType":
+
+			out.Values[i] = ec._PartialMessageBusInfo_messageType(ctx, field, obj)
+
 		case "blockNumber":
 
 			out.Values[i] = ec._PartialMessageBusInfo_blockNumber(ctx, field, obj)
@@ -7333,6 +7976,52 @@ func (ec *executionContext) _PartialMessageBusInfo(ctx context.Context, sel ast.
 
 			out.Values[i] = ec._PartialMessageBusInfo_formattedTime(ctx, field, obj)
 
+		case "revertedReason":
+
+			out.Values[i] = ec._PartialMessageBusInfo_revertedReason(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var petTypeImplementors = []string{"PetType", "MessageType"}
+
+func (ec *executionContext) _PetType(ctx context.Context, sel ast.SelectionSet, obj *model.PetType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, petTypeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PetType")
+		case "recipient":
+
+			out.Values[i] = ec._PetType_recipient(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "petID":
+
+			out.Values[i] = ec._PetType_petID(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+
+			out.Values[i] = ec._PetType_name(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7566,6 +8255,41 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
+var tearTypeImplementors = []string{"TearType", "MessageType"}
+
+func (ec *executionContext) _TearType(ctx context.Context, sel ast.SelectionSet, obj *model.TearType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tearTypeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TearType")
+		case "recipient":
+
+			out.Values[i] = ec._TearType_recipient(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "amount":
+
+			out.Values[i] = ec._TearType_amount(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var tokenCountResultImplementors = []string{"TokenCountResult"}
 
 func (ec *executionContext) _TokenCountResult(ctx context.Context, sel ast.SelectionSet, obj *model.TokenCountResult) graphql.Marshaler {
@@ -7617,6 +8341,34 @@ func (ec *executionContext) _TransactionCountResult(ctx context.Context, sel ast
 
 			out.Values[i] = ec._TransactionCountResult_count(ctx, field, obj)
 
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var unknownTypeImplementors = []string{"UnknownType", "MessageType"}
+
+func (ec *executionContext) _UnknownType(ctx context.Context, sel ast.SelectionSet, obj *model.UnknownType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, unknownTypeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UnknownType")
+		case "known":
+
+			out.Values[i] = ec._UnknownType_known(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8692,6 +9444,13 @@ func (ec *executionContext) marshalOMessageBusTransaction2ᚖgithubᚗcomᚋsyna
 		return graphql.Null
 	}
 	return ec._MessageBusTransaction(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOMessageType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐMessageType(ctx context.Context, sel ast.SelectionSet, v model.MessageType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MessageType(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOPartialInfo2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPartialInfo(ctx context.Context, sel ast.SelectionSet, v *model.PartialInfo) graphql.Marshaler {

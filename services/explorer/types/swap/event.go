@@ -29,12 +29,12 @@ type EventLog interface {
 	GetBuyer() *common.Address
 	// GetTokensSold returns the amount of tokens sold.
 	GetTokensSold() *big.Int
-	// GetSoldId returns the token id of the sold token.
-	GetSoldId() *big.Int
+	// GetSoldID returns the token id of the sold token.
+	GetSoldID() *big.Int
 	// GetLPTokenAmount returns the LP token amount.
 	GetLPTokenAmount() *big.Int
-	// GetBoughtId returns the token id of the bought token.
-	GetBoughtId() *big.Int
+	// GetBoughtID returns the token id of the bought token.
+	GetBoughtID() *big.Int
 	// GetTokensBought returns the amount of tokens bought.
 	GetTokensBought() *big.Int
 	// GetProvider returns the provider removing liquidity.

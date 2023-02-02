@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"gorm.io/gorm"
@@ -17,6 +18,8 @@ type ConsumerDBWriter interface {
 	StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error
 	// StoreTokenIndex stores the token index data.
 	StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error
+	// StoreSwapFee stores the swap fee data.
+	StoreSwapFee(ctx context.Context, chainID uint32, timestamp uint64, contractAddress string, fee uint64, feeType string) error
 	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
 	//
 	//nolint:golint

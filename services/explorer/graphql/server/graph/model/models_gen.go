@@ -8,6 +8,10 @@ import (
 	"strconv"
 )
 
+type MessageType interface {
+	IsMessageType()
+}
+
 // AddressRanking gives the amount of transactions that occurred for a specific address across all chains.
 type AddressRanking struct {
 	Address *string `json:"address"`
@@ -61,6 +65,13 @@ type DateResultByChain struct {
 	Total     *float64 `json:"total"`
 }
 
+type HeroType struct {
+	Recipient string `json:"recipient"`
+	HeroID    string `json:"heroID"`
+}
+
+func (HeroType) IsMessageType() {}
+
 // HistoricalResult is a given statistic for dates.
 type HistoricalResult struct {
 	Total       *float64              `json:"total"`
@@ -91,17 +102,34 @@ type PartialInfo struct {
 }
 
 type PartialMessageBusInfo struct {
-	ChainID              *int    `json:"chainID"`
-	ChainName            *string `json:"chainName"`
-	DestinationChainID   *int    `json:"destinationChainID"`
-	DestinationChainName *string `json:"destinationChainName"`
-	ContractAddress      *string `json:"contractAddress"`
-	TxnHash              *string `json:"txnHash"`
-	Message              *string `json:"message"`
-	BlockNumber          *int    `json:"blockNumber"`
-	Time                 *int    `json:"time"`
-	FormattedTime        *string `json:"formattedTime"`
+	ChainID              *int        `json:"chainID"`
+	ChainName            *string     `json:"chainName"`
+	DestinationChainID   *int        `json:"destinationChainID"`
+	DestinationChainName *string     `json:"destinationChainName"`
+	ContractAddress      *string     `json:"contractAddress"`
+	TxnHash              *string     `json:"txnHash"`
+	Message              *string     `json:"message"`
+	MessageType          MessageType `json:"messageType"`
+	BlockNumber          *int        `json:"blockNumber"`
+	Time                 *int        `json:"time"`
+	FormattedTime        *string     `json:"formattedTime"`
+	RevertedReason       *string     `json:"revertedReason"`
 }
+
+type PetType struct {
+	Recipient string `json:"recipient"`
+	PetID     string `json:"petID"`
+	Name      string `json:"name"`
+}
+
+func (PetType) IsMessageType() {}
+
+type TearType struct {
+	Recipient string `json:"recipient"`
+	Amount    string `json:"amount"`
+}
+
+func (TearType) IsMessageType() {}
 
 // TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
 type TokenCountResult struct {
@@ -115,6 +143,12 @@ type TransactionCountResult struct {
 	ChainID *int `json:"chainID"`
 	Count   *int `json:"count"`
 }
+
+type UnknownType struct {
+	Known bool `json:"known"`
+}
+
+func (UnknownType) IsMessageType() {}
 
 // ValueResult is a value result of either USD or numeric value.
 type ValueResult struct {
