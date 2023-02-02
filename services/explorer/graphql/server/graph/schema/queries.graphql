@@ -88,6 +88,13 @@ type Query {
     chainID:  Int
     type:     DailyStatisticType = VOLUME
     duration:     Duration = ALL_TIME
-  ): [DateResultsByChain]
+  ): [DateResultByChain]
+
+  """
+Ranked chainIDs by volume
+  """
+  rankedChainIDsByVolume(
+    duration:     Duration = ALL_TIME
+  ): [VolumeByChainID]
 
 }

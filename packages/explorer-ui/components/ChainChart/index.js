@@ -33,9 +33,7 @@ const createMonthlyData = (data, isCumulativeData) => {
 
   data.forEach((obj, idx) => {
     const date = new Date(obj.date)
-    console.log("DATTTE", date)
     const month = formatMonth.format(date)
-    console.log("MONTH", month)
 
     if (isCumulativeData) {
       // Skip all dates that are not the last date of the month.
@@ -48,7 +46,6 @@ const createMonthlyData = (data, isCumulativeData) => {
     }
 
     for (const [key, value] of Object.entries(obj)) {
-      console.log("KEY", key, "VALUE", value)
       if (key === 'date') {
         if (!(month in monthlyData)) {
           monthlyData[month] = { date: month }
@@ -64,33 +61,38 @@ const createMonthlyData = (data, isCumulativeData) => {
 
 export const OverviewChart = ({
   data,
+  isUSD,
   isCumulativeData,
   showAggregated,
-  weeklyData,
-  monthlyData,
-  currency,
   height = 480,
 }) => {
-  console.log("DATA", data, "2", weeklyData, "3", monthlyData)
-  // If both `weeklyData` and `monthlyData` is set, favor `monthlyData`.
-  if (monthlyData || (weeklyData && monthlyData)) {
-    data = createMonthlyData(data, isCumulativeData)
-  }
+  let chartData = data
+  if (isCumulativeData) {
+    chartData = JSON.parse(JSON.stringify(data))
+    for (let i = 1; i < chartData.length; i++) {
+      for (let key in data[i]) {
+        if (key !== 'date' && key !== '__typename') {
+          chartData[i][key] += (chartData[i - 1]?.[key] ? chartData[i - 1][key] : 0)
+        }
 
+      }
+    }
+  }
+  console.log(chartData)
   return (
     <ResponsiveContainer width={'99%'} height={height}>
-      <BarChart width={0} height={480} data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+      <BarChart width={0} height={480} data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
         <XAxis hide dataKey="date" stroke="#374151" />
         <YAxis
+        orientation="right"
           interval="preserveStart"
           width={40}
           stroke="#374151"
           tickCount={10}
-          tickFormatter={
-            currency ? (value) => `$${formatTotalUsdVolumes(value)}` : (value) => formatTotalUsdVolumes(value)
+          tickFormatter={(value) => isUSD ? "$" + formatTotalUsdVolumes(value) : formatTotalUsdVolumes(value)
           }
         />
-        <Tooltip wrapperClassName="rounded-lg shadow-lg" content={currency ? CurrencyTooltip : NumericTooltip} />
+        <Tooltip wrapperClassName="rounded-lg shadow-lg" content={isUSD ? CurrencyTooltip : NumericTooltip} />
         {showAggregated ? (
           <Bar isAnimationActive={false} dataKey="total" stackId="a" fill="#6a30b4" />
         ) : (
@@ -111,36 +113,9 @@ export const OverviewChart = ({
             <Bar isAnimationActive={false} dataKey="cronos" stackId="a" fill="#1711a2" />
             <Bar isAnimationActive={false} dataKey="dfk" stackId="a" fill="#ffff83" />
             <Bar isAnimationActive={false} dataKey="klaytn" stackId="a" fill="#f9810b" />
-          </>
-        )}
-      </BarChart>
-    </ResponsiveContainer>
-  )
-}
+            <Bar isAnimationActive={false} dataKey="canto" stackId="a" fill="#09fc99" />
 
-export const FlowChart = ({ data, volume, txCount, showUSDVolume, height = 480 }) => {
-  return (
-    <ResponsiveContainer width={'99%'} height={height}>
-      <BarChart width={0} height={480} data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-        <XAxis hide dataKey="date" stroke="#374151" />
-        <YAxis
-          interval="preserveStart"
-          width={32}
-          stroke="#374151"
-          tickFormatter={(value) => formatTick(value, txCount, volume, showUSDVolume)}
-        />
-        <Tooltip
-          wrapperClassName="rounded-lg shadow-lg"
-          content={showUSDVolume === true ? CurrencyTooltip : NumericTooltip}
-        />
-        {txCount && <Bar isAnimationActive={false} dataKey="txCount" stackId="a" fill="#434971" />}
-        {volume && (
-          <Bar
-            isAnimationActive={false}
-            dataKey={showUSDVolume ? 'usdVolume' : 'coinVolume'}
-            stackId="a"
-            fill="#e74242"
-          />
+          </>
         )}
       </BarChart>
     </ResponsiveContainer>

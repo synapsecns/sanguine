@@ -158,3 +158,48 @@ export const AMOUNT_STATISTIC = gql`
     }
   }
 `
+
+export const DAILY_STATISTICS_BY_CHAIN = gql`
+  query DailyStatisticsByChain(
+    $chainID:   Int
+    $type:      DailyStatisticType
+    $duration:  Duration
+  ) {
+    dailyStatisticsByChain(
+      chainID: $chainID
+      type: $type
+      duration: $duration
+    ) {
+      date
+      ethereum
+      optimism
+      cronos
+      bsc
+      polygon
+      fantom
+      boba
+      metis
+      moonbeam
+      moonriver
+      klaytn
+      arbitrum
+      avalanche
+      dfk
+      aurora
+      harmony
+      canto
+      total
+    }
+  }
+`
+
+export const RANKED_CHAINIDS_BY_VOLUME = gql`
+query RankedChainIDsByVolume($duration: Duration) {
+  rankedChainIDsByVolume(
+    duration: $duration
+  ) {
+    chainID
+    total
+  }
+}
+`

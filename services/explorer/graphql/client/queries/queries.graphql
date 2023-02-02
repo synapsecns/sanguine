@@ -81,6 +81,16 @@ query GetAddressRanking($hours: Int) {
   }
 }
 
+query GetRankedChainIDsByVolume($duration: Duration) {
+  response: rankedChainIDsByVolume(
+    duration: $duration
+  ) {
+    chainID
+    total
+  }
+}
+
+
 
 
 query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
@@ -102,26 +112,24 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     duration: $duration
   ) {
     date
-    dateResults{
-      Ethereum
-      Optimism
-      Cronos
-      BSC
-      Polygon
-      Fantom
-      Boba
-      Metis
-      Moonbeam
-      Moonriver
-      Klaytn
-      Arbitrum
-      Avalanche
-      DFK
-      Aurora
-      Harmony
-      Canto
-      total
-    }
+    ethereum
+    optimism
+    cronos
+    bsc
+    polygon
+    fantom
+    boba
+    metis
+    moonbeam
+    moonriver
+    klaytn
+    arbitrum
+    avalanche
+    dfk
+    aurora
+    harmony
+    canto
+    total
   }
 }
 

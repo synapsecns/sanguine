@@ -26,7 +26,8 @@ type Query struct {
 	AddressRanking         []*model.AddressRanking         "json:\"addressRanking\" graphql:\"addressRanking\""
 	AmountStatistic        *model.ValueResult              "json:\"amountStatistic\" graphql:\"amountStatistic\""
 	DailyStatistics        *model.DailyResult              "json:\"dailyStatistics\" graphql:\"dailyStatistics\""
-	DailyStatisticsByChain []*model.DateResultsByChain     "json:\"dailyStatisticsByChain\" graphql:\"dailyStatisticsByChain\""
+	DailyStatisticsByChain []*model.DateResultByChain      "json:\"dailyStatisticsByChain\" graphql:\"dailyStatisticsByChain\""
+	RankedChainIDsByVolume []*model.VolumeByChainID        "json:\"rankedChainIDsByVolume\" graphql:\"rankedChainIDsByVolume\""
 }
 type GetBridgeTransactions struct {
 	Response []*struct {
@@ -80,6 +81,12 @@ type GetAddressRanking struct {
 		Count   *int    "json:\"count\" graphql:\"count\""
 	} "json:\"response\" graphql:\"response\""
 }
+type GetRankedChainIDsByVolume struct {
+	Response []*struct {
+		ChainID *int     "json:\"chainID\" graphql:\"chainID\""
+		Total   *float64 "json:\"total\" graphql:\"total\""
+	} "json:\"response\" graphql:\"response\""
+}
 type GetAmountStatistic struct {
 	Response *struct {
 		Value *string "json:\"value\" graphql:\"value\""
@@ -87,27 +94,25 @@ type GetAmountStatistic struct {
 }
 type GetDailyStatisticsByChain struct {
 	Response []*struct {
-		Date        *string "json:\"date\" graphql:\"date\""
-		DateResults *struct {
-			Ethereum  *float64 "json:\"Ethereum\" graphql:\"Ethereum\""
-			Optimism  *float64 "json:\"Optimism\" graphql:\"Optimism\""
-			Cronos    *float64 "json:\"Cronos\" graphql:\"Cronos\""
-			Bsc       *float64 "json:\"BSC\" graphql:\"BSC\""
-			Polygon   *float64 "json:\"Polygon\" graphql:\"Polygon\""
-			Fantom    *float64 "json:\"Fantom\" graphql:\"Fantom\""
-			Boba      *float64 "json:\"Boba\" graphql:\"Boba\""
-			Metis     *float64 "json:\"Metis\" graphql:\"Metis\""
-			Moonbeam  *float64 "json:\"Moonbeam\" graphql:\"Moonbeam\""
-			Moonriver *float64 "json:\"Moonriver\" graphql:\"Moonriver\""
-			Klaytn    *float64 "json:\"Klaytn\" graphql:\"Klaytn\""
-			Arbitrum  *float64 "json:\"Arbitrum\" graphql:\"Arbitrum\""
-			Avalanche *float64 "json:\"Avalanche\" graphql:\"Avalanche\""
-			Dfk       *float64 "json:\"DFK\" graphql:\"DFK\""
-			Aurora    *float64 "json:\"Aurora\" graphql:\"Aurora\""
-			Harmony   *float64 "json:\"Harmony\" graphql:\"Harmony\""
-			Canto     *float64 "json:\"Canto\" graphql:\"Canto\""
-			Total     *float64 "json:\"total\" graphql:\"total\""
-		} "json:\"dateResults\" graphql:\"dateResults\""
+		Date      *string  "json:\"date\" graphql:\"date\""
+		Ethereum  *float64 "json:\"ethereum\" graphql:\"ethereum\""
+		Optimism  *float64 "json:\"optimism\" graphql:\"optimism\""
+		Cronos    *float64 "json:\"cronos\" graphql:\"cronos\""
+		Bsc       *float64 "json:\"bsc\" graphql:\"bsc\""
+		Polygon   *float64 "json:\"polygon\" graphql:\"polygon\""
+		Fantom    *float64 "json:\"fantom\" graphql:\"fantom\""
+		Boba      *float64 "json:\"boba\" graphql:\"boba\""
+		Metis     *float64 "json:\"metis\" graphql:\"metis\""
+		Moonbeam  *float64 "json:\"moonbeam\" graphql:\"moonbeam\""
+		Moonriver *float64 "json:\"moonriver\" graphql:\"moonriver\""
+		Klaytn    *float64 "json:\"klaytn\" graphql:\"klaytn\""
+		Arbitrum  *float64 "json:\"arbitrum\" graphql:\"arbitrum\""
+		Avalanche *float64 "json:\"avalanche\" graphql:\"avalanche\""
+		Dfk       *float64 "json:\"dfk\" graphql:\"dfk\""
+		Aurora    *float64 "json:\"aurora\" graphql:\"aurora\""
+		Harmony   *float64 "json:\"harmony\" graphql:\"harmony\""
+		Canto     *float64 "json:\"canto\" graphql:\"canto\""
+		Total     *float64 "json:\"total\" graphql:\"total\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetDailyStatistics struct {
@@ -277,6 +282,27 @@ func (c *Client) GetAddressRanking(ctx context.Context, hours *int, httpRequestO
 	return &res, nil
 }
 
+const GetRankedChainIDsByVolumeDocument = `query GetRankedChainIDsByVolume ($duration: Duration) {
+	response: rankedChainIDsByVolume(duration: $duration) {
+		chainID
+		total
+	}
+}
+`
+
+func (c *Client) GetRankedChainIDsByVolume(ctx context.Context, duration *model.Duration, httpRequestOptions ...client.HTTPRequestOption) (*GetRankedChainIDsByVolume, error) {
+	vars := map[string]interface{}{
+		"duration": duration,
+	}
+
+	var res GetRankedChainIDsByVolume
+	if err := c.Client.Post(ctx, "GetRankedChainIDsByVolume", GetRankedChainIDsByVolumeDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 const GetAmountStatisticDocument = `query GetAmountStatistic ($type: StatisticType!, $platform: Platform, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
 	response: amountStatistic(type: $type, duration: $duration, platform: $platform, chainID: $chainID, address: $address, tokenAddress: $tokenAddress) {
 		value
@@ -305,26 +331,24 @@ func (c *Client) GetAmountStatistic(ctx context.Context, typeArg model.Statistic
 const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($chainID: Int, $type: DailyStatisticType, $duration: Duration) {
 	response: dailyStatisticsByChain(chainID: $chainID, type: $type, duration: $duration) {
 		date
-		dateResults {
-			Ethereum
-			Optimism
-			Cronos
-			BSC
-			Polygon
-			Fantom
-			Boba
-			Metis
-			Moonbeam
-			Moonriver
-			Klaytn
-			Arbitrum
-			Avalanche
-			DFK
-			Aurora
-			Harmony
-			Canto
-			total
-		}
+		ethereum
+		optimism
+		cronos
+		bsc
+		polygon
+		fantom
+		boba
+		metis
+		moonbeam
+		moonriver
+		klaytn
+		arbitrum
+		avalanche
+		dfk
+		aurora
+		harmony
+		canto
+		total
 	}
 }
 `

@@ -47,15 +47,12 @@ export default function chainId({
   let chartData
 
   if (chartType === 'VOLUME') {
-    console.log(bridgeVolume.dailyStatistics)
     chartData = bridgeVolume && bridgeVolume.dailyStatistics.dateResults
   } else if (chartType === 'TRANSACTIONS') {
-    console.log(transactionsData.dailyStatistics)
 
     chartData =
       transactionsData && transactionsData.dailyStatistics.dateResults
   } else if (chartType === 'ADDRESSES') {
-    console.log(addresses.dailyStatistics)
 
     chartData = addresses && addresses.dailyStatistics.dateResults
   }
@@ -69,7 +66,6 @@ export default function chainId({
   const [getBridgeTransactions, { error: pageError, data }] = useLazyQuery(
     GET_BRIDGE_TRANSACTIONS_QUERY
   )
-  console.log("dskjahkdsnj", data)
   useEffect(() => {
     if (data) {
       setTransactions(data.bridgeTransactions, {

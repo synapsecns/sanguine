@@ -85,25 +85,21 @@ export default function HolisticStats() {
   // Get data when search params change
   useEffect(() => {
     if (dataVolume) {
-      console.log("setting", dataVolume)
       setVolume(dataVolume.amountStatistic.value)
     }
   }, [dataVolume])
   useEffect(() => {
     if (dataRevenue) {
-      console.log("setting", dataRevenue)
       setRevenue(dataRevenue.amountStatistic.value)
     }
   }, [dataRevenue])
   useEffect(() => {
     if (dataAddresses) {
-      console.log("setting", dataAddresses)
       setAddresses(dataAddresses.amountStatistic?.value)
     }
   }, [dataAddresses])
   useEffect(() => {
     if (dataTxs) {
-      console.log("setting", dataTxs)
       setTxs(dataTxs.amountStatistic?.value)
     }
   }, [dataTxs])
@@ -142,51 +138,51 @@ export default function HolisticStats() {
 
   return (
     <>
-    <div className="my-2 mt-8">
-    <button onClick={() => setPlatform("ALL")} className={"font-medium rounded-l-md px-4 py-2 border  " + (platform === "ALL" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
-      All
-    </button>
-    <button onClick={() => setPlatform("BRIDGE")} className={"font-medium  px-4 py-2 border  " + (platform === "BRIDGE" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
-      Bridge
-    </button>
-    <button onClick={() => setPlatform("SWAP")} className={"font-medium  px-4 py-2 border  " + (platform === "SWAP" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
-      Swap
-    </button>
-    <button onClick={() => setPlatform("MESSAGING")} className={"font-medium rounded-r-md px-4 py-2 border mr-5 " + (platform === "MESSAGING" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
-      Messaging
-    </button>
-  </div>
-    <Grid cols={{ sm: 1, md: 4, lg: 4 }} gap={4} className="my-4">
-      <AllTimeStatCard
-        title="Volume"
-      >
-        <div className="text-4xl font-bold text-white">
-          {numeral(volume / 1000000000).format('$0.000')}B
-        </div>
-      </AllTimeStatCard>
-      <AllTimeStatCard
-        title="Revenue"
-      >
-        <div className="text-4xl font-bold text-white">
-          {numeral(revenue/ 1000000).format('$0.000')}M
-        </div>
-      </AllTimeStatCard>
-      <AllTimeStatCard
-        title="Transactions"
-      >
-        <div className="text-4xl font-bold text-white">
-          {numeral(txs).format('0,0')}
-        </div>
-      </AllTimeStatCard>
-      <AllTimeStatCard
-        title="Addresses"
-      >
-        <div className="text-4xl font-bold text-white">
-          {numeral(addresses).format('0,0')}
-        </div>
-      </AllTimeStatCard>
+      <div className="my-2 mt-8">
+        <button onClick={() => setPlatform("ALL")} className={"font-medium rounded-l-md px-4 py-2 border  " + (platform === "ALL" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+          All
+        </button>
+        <button onClick={() => setPlatform("BRIDGE")} className={"font-medium  px-4 py-2 border  " + (platform === "BRIDGE" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+          Bridge
+        </button>
+        <button onClick={() => setPlatform("SWAP")} className={"font-medium  px-4 py-2 border  " + (platform === "SWAP" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+          Swap
+        </button>
+        <button onClick={() => setPlatform("MESSAGE_BUS")} className={"font-medium rounded-r-md px-4 py-2 border mr-5 " + (platform === "MESSAGE_BUS" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+          Messaging
+        </button>
+      </div>
+      <Grid cols={{ sm: 1, md: 4, lg: 4 }} gap={4} className="my-4">
+        <AllTimeStatCard
+          title="Volume"
+        >
+          <div className="text-4xl font-bold text-white">
+            {numeral(volume / 1000000000).format('$0.000')}B
+          </div>
+        </AllTimeStatCard>
+        <AllTimeStatCard
+          title="Fees"
+        >
+          <div className="text-4xl font-bold text-white">
+            {numeral(revenue / 1000000).format('$0.000')}M
+          </div>
+        </AllTimeStatCard>
+        <AllTimeStatCard
+          title="Transactions"
+        >
+          <div className="text-4xl font-bold text-white">
+            {numeral(txs).format('0,0')}
+          </div>
+        </AllTimeStatCard>
+        <AllTimeStatCard
+          title="Addresses"
+        >
+          <div className="text-4xl font-bold text-white">
+            {numeral(addresses).format('0,0')}
+          </div>
+        </AllTimeStatCard>
 
-    </Grid></>
+      </Grid></>
   )
 }
 

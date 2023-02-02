@@ -25,10 +25,12 @@ const formatTooltipName = (name) => {
 
 export const CurrencyTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
+    payload.sort((a,b) =>  b.value - a.value);
     const names = _.map(payload, 'name')
     const values = _.map(payload, 'value')
     const fills = _.map(payload, 'fill')
     const total = _.sum(values)
+
 
     return (
       <div className="bg-gray-600 rounded-lg shadow-lg">
@@ -58,6 +60,9 @@ export const CurrencyTooltip = ({ active, payload, label }) => {
           {fills.map((fill, index) => {
             const name = names[index]
             const value = values[index]
+            if (value === 0)  {
+              return null
+            }
             return (
               <div className="flex justify-between">
                 <div className="flex justify-start">
@@ -88,11 +93,12 @@ export const CurrencyTooltip = ({ active, payload, label }) => {
 
 export const NumericTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
+    payload.sort((a,b) =>  b.value - a.value);
+
     const names = _.map(payload, 'name')
     const values = _.map(payload, 'value')
     const fills = _.map(payload, 'fill')
     const total = _.sum(values)
-
     return (
       <div className="bg-gray-600 rounded-lg shadow-lg">
         <div className="px-4 py-2">
@@ -121,6 +127,9 @@ export const NumericTooltip = ({ active, payload, label }) => {
           {fills.map((fill, index) => {
             const name = names[index]
             const value = values[index]
+            if (value === 0)  {
+              return null
+            }
             return (
               <div className="flex justify-between">
                 <div className="flex justify-start">

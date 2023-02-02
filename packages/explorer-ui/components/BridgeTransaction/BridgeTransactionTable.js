@@ -9,7 +9,6 @@ import { getBridgeTransactionUrl } from "@urls";
 import { ellipsizeString } from "@utils/ellipsizeString";
 
 export function BridgeTransactionTable({ queryResult }) {
-  console.log("UUU", queryResult)
   let headers = [
     'From',
     'To',

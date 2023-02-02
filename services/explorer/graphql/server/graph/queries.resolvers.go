@@ -20,7 +20,6 @@ import (
 func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error) {
 	var err error
 	var results []*model.BridgeTransaction
-	fmt.Println(chainID, maxAmount, minAmount, startTime, endTime, txnHash, kappa, *pending, *page, tokenAddress)
 	switch {
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
@@ -60,7 +59,6 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID []*int, 
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
 	sort.Sort(SortBridgeTxType(results))
-	fmt.Println(results)
 	return results, nil
 }
 
@@ -155,7 +153,9 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 			return nil, err
 		}
 	case model.PlatformMessageBus:
+
 		finalSQL, err = GenerateAmountStatisticMessageBusSQL(typeArg, compositeFilters)
+
 		if err != nil {
 			return nil, err
 		}
@@ -204,6 +204,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 		if typeArg != model.StatisticTypeTotalVolumeUsd {
 			g.Go(func() error {
 				messageBusSum, err = r.DB.GetFloat64(groupCtx, *messageBusFinalSQL)
+
 				if err != nil {
 					return fmt.Errorf("failed to get dateResults: %w", err)
 				}
@@ -223,7 +224,9 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
-
+	if finalSQL == nil {
+		return nil, fmt.Errorf("invalid statistic or platform type: %s", typeArg)
+	}
 	res, err := r.DB.GetFloat64(ctx, *finalSQL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get amount data stats: %w", err)
@@ -406,35 +409,52 @@ func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeA
 }
 
 // DailyStatisticsByChain is the resolver for the dailyStatisticsByChain field.
-func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration) ([]*model.DateResultsByChain, error) {
+func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration) ([]*model.DateResultByChain, error) {
 	var err error
+	var timestampSpecifier string
+	firstFilter := true
 
-	//var timestampSpecifier string
-	//firstFilter := true
-	//
-	//switch *duration {
-	//case model.DurationPastDay:
-	//	hours := 24
-	//	targetTime := r.getTargetTime(&hours)
-	//	timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
-	//case model.DurationPastMonth:
-	//	hours := 720
-	//	targetTime := r.getTargetTime(&hours)
-	//	timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
-	//case model.DurationAllTime:
-	//	timestampSpecifier = ""
-	//}
+	switch *duration {
+	case model.DurationPastDay:
+		hours := 24
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPastMonth:
+		hours := 720
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPastYear:
+		hours := 8760
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationAllTime:
+		timestampSpecifier = ""
+	}
 
-	//chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
-	//compositeFilters := fmt.Sprintf(
-	//	`%s%s`,
-	//	timestampSpecifier, chainIDSpecifier,
-	//)
-	//
-	var res []map[string]interface{}
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+	compositeFilters := fmt.Sprintf(
+		`%s%s`,
+		timestampSpecifier, chainIDSpecifier,
+	)
+
+	var res []*model.DateResultByChain
+	var query string
 	g, groupCtx := errgroup.WithContext(ctx)
+
+	switch *typeArg {
+	case model.DailyStatisticTypeVolume:
+		query = GenerateDailyStatisticVolumeSQL(compositeFilters, &firstFilter)
+	case model.DailyStatisticTypeFee:
+		query = GenerateDailyStatisticFeeSQL(compositeFilters)
+	case model.DailyStatisticTypeAddresses:
+		query = GenerateDailyStatisticAddressesSQL(compositeFilters)
+	case model.DailyStatisticTypeTransactions:
+		query = GenerateDailyStatisticTransactionsSQL(compositeFilters, &firstFilter)
+	default:
+		return nil, fmt.Errorf("unsupported statistic type")
+	}
 	g.Go(func() error {
-		res, err = r.DB.GetDailyTotals(groupCtx, calculateDailyVolume)
+		res, err = r.DB.GetDailyTotals(groupCtx, query)
 		if err != nil {
 			return fmt.Errorf("failed to get dateResults: %w", err)
 		}
@@ -442,47 +462,57 @@ func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int
 	})
 
 	err = g.Wait()
-	//var dailyVolume []*model.DateResultsByChain
-	//for i := range res {
-	//	date := res[i]["date"].(string)
-	//	fmt.Println(res[i]["date_results"])
-	//	dateResults := res[i]["date_results"].(map[string]float64)
-	//	dateResultsType := model.DateResultByChain{}
-	//	for k := range dateResults{
-	//		1, 'Ethereum',
-	//			10, 'Optimism',
-	//			25, 'Cronos',
-	//			56, 'BSC',
-	//			137, 'Polygon',
-	//			250, 'Fantom',
-	//			288, 'Boba',
-	//			1088, 'Metis',
-	//			1284, 'Moonbeam',
-	//			1285, 'Moonriver',
-	//			8217, 'Klaytn',
-	//			42161, 'Arbitrum',
-	//			43114, 'Avalanche',
-	//			53935, 'DFK',
-	//			1313161554, 'Aurora',
-	//			1666600000, 'Harmony',
-	//			7700, 'Canto'
-	//		switch (k){
-	//		case ""
-	//		}
-	//		dateResultsType.[k] = dateResults[k]
-	//	}
-	//	day := &model.DateResultsByChain{
-	//		Date:        &date,
-	//		DateResults: &dateResults,
-	//	}
-	//	dailyVolume = append(dailyVolume, day)
-	//}
-	fmt.Println(res)
+
 	if err != nil {
 		return nil, fmt.Errorf("could not get daily data: %w", err)
 	}
 
-	return nil, nil
+	return res, nil
+}
+
+// RankedChainIDsByVolume is the resolver for the rankedChainIDsByVolume field.
+func (r *queryResolver) RankedChainIDsByVolume(ctx context.Context, duration *model.Duration) ([]*model.VolumeByChainID, error) {
+	var err error
+	var timestampSpecifier string
+	firstFilter := true
+
+	switch *duration {
+	case model.DurationPastDay:
+		hours := 24
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPastMonth:
+		hours := 720
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPastYear:
+		hours := 8760
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationAllTime:
+		timestampSpecifier = ""
+	}
+
+	query := GenerateRankedChainsByVolumeSQL(timestampSpecifier, &firstFilter)
+
+	var res []*model.VolumeByChainID
+	g, groupCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		res, err = r.DB.GetRankedChainsByVolume(groupCtx, query)
+		if err != nil {
+			return fmt.Errorf("failed to get dateResults: %w", err)
+		}
+		return nil
+	})
+
+	err = g.Wait()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not get daily data: %w", err)
+	}
+
+	return res, nil
 }
 
 // Query returns resolvers.QueryResolver implementation.
