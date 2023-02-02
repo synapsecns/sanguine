@@ -29,6 +29,7 @@ export function UniversalSearch({
   fromTx,
   setKappa,
   kappa,
+  executeSearch,
 }) {
   const [searchField, setSearchField] = useState('')
   const [showText, setShowText] = useState(false)
@@ -112,7 +113,7 @@ export function UniversalSearch({
               placeholder={placeholder}
             />
           </div>
-          <button className="font-medium rounded-r-md border border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 px-4 py-2">
+          <button onClick={() => executeSearch()} className="font-medium rounded-r-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200">
             <a href={searchLink}>Search</a>
           </button>
           <div className="">
@@ -184,7 +185,7 @@ export function UniversalSearch({
                   </div>
                 </form>
               </div>
-              <input
+              {/* <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 checked={toTx}
@@ -198,7 +199,7 @@ export function UniversalSearch({
                 checked={fromTx}
                 onClick={() => { setFromTx(!fromTx) }}
               />
-              <h3 className="text-white font-semibold">From</h3>
+              <h3 className="text-white font-semibold">From</h3> */}
             </div>
             {/* THIS IS MIN/MAX SIZE */}
             <div className="flex justify-center items-center p-2 gap-x-4 py-4">
@@ -286,7 +287,7 @@ export function UniversalSearch({
                         text-white
                         placeholder:text-white placeholder:text-opacity-60
                       `}
-                      placeholder="yyyy-mm-dd"
+                      placeholder="enter timestamp for now"
                       onChange={(e) => {
                         setStartDate(e.target.value)
                       }}
@@ -316,7 +317,7 @@ export function UniversalSearch({
                         text-white
                         placeholder:text-white placeholder:text-opacity-60
                       `}
-                      placeholder="yyyy-mm-dd"
+                      placeholder="enter timestamp for now"
                       onChange={(e) => {
                         setEndDate(e.target.value)
                       }}
@@ -329,7 +330,7 @@ export function UniversalSearch({
             {/* THIS IS BUTTONS */}
             <div className="flex items-center p-2 gap-x-4 mb-3">
 
-              <button className="font-medium rounded-[4px] text-white bg-[#333333] px-4 py-2" onClick={()=> resetFields()}>
+              <button className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200" onClick={() => resetFields()}>
                 Reset
               </button>
             </div>

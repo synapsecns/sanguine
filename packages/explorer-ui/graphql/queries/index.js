@@ -32,22 +32,30 @@ const BRIDGE_TRANSACTION_INFO_FRAGMENT = gql`
 
 export const GET_BRIDGE_TRANSACTIONS_QUERY = gql`
   query GetBridgeTransactionsQuery(
-    $txnHash:         String
-    $address:         String
-    $chainID:         [Int]
-    $page:            Int
-    $tokenAddress:    [String]
-    $pending:         Boolean
-    $kappa:           String
+    $chainID: [Int]
+    $address: String
+    $maxAmount: Int
+    $minAmount: Int
+    $startTime: Int
+    $endTime: Int
+    $txHash: String
+    $kappa: String
+    $pending: Boolean
+    $page: Int
+    $tokenAddress: [String]
   ) {
     bridgeTransactions(
-      txnHash:          $txnHash
-      address:          $address
-      chainID:          $chainID
-      page:             $page
-      tokenAddress:     $tokenAddress
-      pending:          $pending
-      kappa:            $kappa
+      chainID: $chainID
+      address: $address
+      maxAmount: $maxAmount
+      minAmount: $minAmount
+      startTime: $startTime
+      endTime: $endTime
+      txnHash: $txHash
+      kappa: $kappa
+      pending: $pending
+      page: $page
+      tokenAddress: $tokenAddress
     ) {
       ...TransactionInfo
     }

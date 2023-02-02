@@ -38,7 +38,7 @@ export default function Txs({ queryResult }) {
   const [endDate, setEndDate] = useState("")
   const [toTx, setToTx] = useState(true)
   const [fromTx, setFromTx] = useState(true)
-  const [kappa , setKappa] = useState()
+  const [kappa, setKappa] = useState("")
 
 
 
@@ -49,11 +49,8 @@ export default function Txs({ queryResult }) {
 
   useEffect(() => {
     if (data) {
-      setTransactionsArr(data.bridgeTransactions, {
-        variables: {
-          pending: pending,
-        },
-      })
+      setTransactionsArr(data.bridgeTransactions
+      )
     }
 
   }, [data, pending])
@@ -77,7 +74,31 @@ export default function Txs({ queryResult }) {
       },
     })
   }
-
+  const createQueryField = (field, value, query) => {
+    if (value !== "") {
+      // if (field === "endTime" || field === "startTime") {
+      //   query[field] = parseInt((new Date(field).getTime() / 1000).toFixed(0))
+      // } else {
+      //   query[field] = value
+      // }
+      query[field] = value
+    }
+    return query
+  }
+  const executeSearch = () => {
+    let variables = { page: 1 }
+    variables = createQueryField("address", wallet, variables)
+    variables = createQueryField("minAmount", minSize, variables)
+    variables = createQueryField("maxAmount", maxSize, variables)
+    variables = createQueryField("startTime", startDate, variables)
+    variables = createQueryField("endTime", endDate, variables)
+    variables = createQueryField("kappa", kappa, variables)
+    variables = createQueryField("pending", pending, variables)
+    console.log(variables)
+    getBridgeTransactions({
+      variables: variables,
+    })
+  }
   let bridgeTransactionsTable = _.orderBy(
     transactionsArr,
     'fromInfo.time',
@@ -111,7 +132,8 @@ export default function Txs({ queryResult }) {
           FromTx={fromTx}
           setKappa={setKappa}
           kappa={kappa}
-           />
+          executeSearch={executeSearch}
+        />
         {loading ? <div className="text-white">Loading...</div> : <BridgeTransactionTable queryResult={bridgeTransactionsTable} />}
 
 

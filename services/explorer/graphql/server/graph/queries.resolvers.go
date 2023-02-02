@@ -59,6 +59,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID []*int, 
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
 	sort.Sort(SortBridgeTxType(results))
+	fmt.Println(results)
 	return results, nil
 }
 

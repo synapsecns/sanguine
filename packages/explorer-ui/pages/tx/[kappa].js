@@ -57,6 +57,14 @@ export default function BridgeTransaction({ queryResult }) {
           </h3>
         </div>
         <div className="flex gap-y-2 flex-col">
+        <div className="flex gap-x-4">
+            <p className="text-white text-opacity-60">From</p>
+            <p className="text-white ">{fromInfo.address}</p>
+          </div>
+          <div className="flex gap-x-4">
+            <p className="text-white text-opacity-60">T0</p>
+            <p className="text-white ">{toInfo.address}</p>
+          </div>
           <div className="flex gap-x-4">
             <p className="text-white text-opacity-60">Requested</p>
             <p className="text-white ">{fromInfo.time}</p>
@@ -67,7 +75,7 @@ export default function BridgeTransaction({ queryResult }) {
           </div>
           <div className="flex gap-x-4">
             <p className="text-white text-opacity-60">Elapsed</p>
-            <p className="text-white ">30 seconds</p>
+            <p className="text-white ">{toInfo.time-fromInfo.time} seconds</p>
           </div>
           <div className="flex mt-4">
             <div className="flex gap-x-6 w-1/2">
