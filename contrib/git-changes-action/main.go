@@ -12,6 +12,7 @@ func main() {
 	workingDirectory := githubactions.GetInput("working_directory")
 	ref := githubactions.GetInput("ref")
 	rawIncludeDeps := githubactions.GetInput("include_deps")
+	// TODO: we might need to use a pr as a base
 	includeDeps := false
 	if rawIncludeDeps == "true" {
 		includeDeps = true
