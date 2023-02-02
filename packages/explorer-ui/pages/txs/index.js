@@ -1,15 +1,17 @@
-import {HorizontalDivider} from "@components/misc/HorizontalDivider";
-import {UniversalSearch} from "@components/pages/Home/UniversalSearch";
-import {BridgeTransactionTable} from "@components/BridgeTransaction/BridgeTransactionTable";
+import { HorizontalDivider } from "@components/misc/HorizontalDivider";
+import { UniversalSearch } from "@components/pages/Home/UniversalSearch";
+import { BridgeTransactionTable } from "@components/BridgeTransaction/BridgeTransactionTable";
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY
 } from "@graphql/queries";
-import {API_URL} from '@graphql'
-
-import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
+import { API_URL } from '@graphql'
+import { useState, useEffect } from "react";
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import _ from "lodash";
-import {Pagination} from "@components/Pagination";
+import { Pagination } from "@components/Pagination";
+import { useLazyQuery } from '@apollo/client'
+
 
 const link = new HttpLink({
   uri: API_URL,
@@ -26,11 +28,79 @@ const client = new ApolloClient({
 })
 
 
-export default function Txs({queryResult}) {
-  let { bridgeTransactions: bridgeTransactionsTable } = queryResult
+export default function Txs({ queryResult }) {
+  const [transactionsArr, setTransactionsArr] = useState([])
+  const [pending, setPending] = useState(false)
+  const [wallet, setWallet] = useState("")
+  const [minSize, setMinSize] = useState("")
+  const [maxSize, setMaxSize] = useState("")
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
+  const [toTx, setToTx] = useState(true)
+  const [fromTx, setFromTx] = useState(true)
+  const [kappa, setKappa] = useState("")
 
-  bridgeTransactionsTable = _.orderBy(
-    bridgeTransactionsTable,
+
+
+
+  const [getBridgeTransactions, { loading, error, data }] = useLazyQuery(
+    GET_BRIDGE_TRANSACTIONS_QUERY
+  )
+
+  useEffect(() => {
+    if (data) {
+      setTransactionsArr(data.bridgeTransactions
+      )
+    }
+
+  }, [data, pending])
+
+
+  // Get initial data
+  useEffect(() => {
+    getBridgeTransactions({
+      variables: {
+        pending: pending,
+        page: 1,
+      },
+    })
+  }, [])
+  const handlePending = (arg) => {
+    setPending(arg)
+    getBridgeTransactions({
+      variables: {
+        pending: arg,
+        page: 1,
+      },
+    })
+  }
+  const createQueryField = (field, value, query) => {
+    if (value !== "") {
+      // if (field === "endTime" || field === "startTime") {
+      //   query[field] = parseInt((new Date(field).getTime() / 1000).toFixed(0))
+      // } else {
+      //   query[field] = value
+      // }
+      query[field] = value
+    }
+    return query
+  }
+  const executeSearch = () => {
+    let variables = { page: 1 }
+    variables = createQueryField("address", wallet, variables)
+    variables = createQueryField("minAmount", minSize, variables)
+    variables = createQueryField("maxAmount", maxSize, variables)
+    variables = createQueryField("startTime", startDate, variables)
+    variables = createQueryField("endTime", endDate, variables)
+    variables = createQueryField("kappa", kappa, variables)
+    variables = createQueryField("pending", pending, variables)
+    console.log(variables)
+    getBridgeTransactions({
+      variables: variables,
+    })
+  }
+  let bridgeTransactionsTable = _.orderBy(
+    transactionsArr,
     'fromInfo.time',
     ['desc']
   ).slice(0, 25)
@@ -42,12 +112,34 @@ export default function Txs({queryResult}) {
           <h3 className="text-white text-4xl font-semibold">Bridge Transactions</h3>
         </div>
         <HorizontalDivider />
-        <UniversalSearch placeholder={'Search all bridge transactions'} />
-        <BridgeTransactionTable queryResult={bridgeTransactionsTable} />
+        <UniversalSearch placeholder={'Search bridge transactions by bridge tx'}
+          setPending={handlePending}
+          pending={pending}
+          loading={loading}
+          setWallet={setWallet}
+          wallet={wallet}
+          setMinSize={setMinSize}
+          minSize={minSize}
+          setMaxSize={setMaxSize}
+          maxSize={maxSize}
+          setStartDate={setStartDate}
+          startDate={startDate}
+          setEndDate={setEndDate}
+          endDate={endDate}
+          setToTx={setToTx}
+          toTx={toTx}
+          setFromTx={setFromTx}
+          FromTx={fromTx}
+          setKappa={setKappa}
+          kappa={kappa}
+          executeSearch={executeSearch}
+        />
+        {loading ? <div className="text-white">Loading...</div> : <BridgeTransactionTable queryResult={bridgeTransactionsTable} />}
+
 
         <HorizontalDivider />
         <Pagination />
-        </StandardPageContainer>
+      </StandardPageContainer>
     </>
   )
 }
@@ -61,7 +153,7 @@ export async function getServerSideProps(context) {
       query: GET_BRIDGE_TRANSACTIONS_QUERY,
       variables: {
         address: context.query.account,
-        includePending: false,
+        pending: false,
         page: context.query.p ?? 1,
       },
     })
@@ -70,8 +162,8 @@ export async function getServerSideProps(context) {
     let { data } = await client.query({
       query: GET_BRIDGE_TRANSACTIONS_QUERY,
       variables: {
-        chainId: context.query.chainId,
-        includePending: false,
+        chainID: [context.query.chainId],
+        pending: false,
         page: context.query.p ?? 1,
       },
     })
@@ -80,7 +172,7 @@ export async function getServerSideProps(context) {
     let { data } = await client.query({
       query: GET_BRIDGE_TRANSACTIONS_QUERY,
       variables: {
-        includePending: false,
+        pending: false,
         page: context.query.p ?? 1,
       },
     })

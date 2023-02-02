@@ -78,6 +78,17 @@ func (s *Store) GetAllBridgeEvents(ctx context.Context, query string) ([]HybridB
 	return res, nil
 }
 
+// GetDailyTotals returns bridge events.
+func (s *Store) GetDailyTotals(ctx context.Context, query string) ([]*model.DateResultByChain, error) {
+	var res []*model.DateResultByChain
+
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+	return res, nil
+}
+
 // GetAllMessageBusEvents returns message bus events.
 func (s *Store) GetAllMessageBusEvents(ctx context.Context, query string) ([]HybridMessageBusEvent, error) {
 	var res []HybridMessageBusEvent
@@ -104,6 +115,17 @@ func (s *Store) GetTxCounts(ctx context.Context, query string) ([]*model.Transac
 func (s *Store) GetTokenCounts(ctx context.Context, query string) ([]*model.TokenCountResult, error) {
 	var res []*model.TokenCountResult
 	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
+// GetRankedChainsByVolume gets ranked chains by volume.
+func (s *Store) GetRankedChainsByVolume(ctx context.Context, query string) ([]*model.VolumeByChainID, error) {
+	var res []*model.VolumeByChainID
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}

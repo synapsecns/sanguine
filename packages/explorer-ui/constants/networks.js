@@ -502,9 +502,10 @@ export const CHAIN_ENUM_BY_ID = {
   [ChainId.ETH]: 'ethereum',
   [ChainId.OPTIMISM]: 'optimism',
   [ChainId.BSC]: 'bsc',
-  [ChainId.POLYGON]: 'polygon',
-  [ChainId.FANTOM]: 'fantom',
+  [ChainId.CANTO]: 'canto',
   [ChainId.BOBA]: 'boba',
+  [ChainId.FANTOM]: 'fantom',
+  [ChainId.POLYGON]: 'polygon',
   [ChainId.MOONBEAM]: 'moonbeam',
   [ChainId.MOONRIVER]: 'moonriver',
   [ChainId.ARBITRUM]: 'arbitrum',
@@ -515,4 +516,7 @@ export const CHAIN_ENUM_BY_ID = {
   [ChainId.CRONOS]: 'cronos',
   [ChainId.METIS]: 'metis',
   [ChainId.KLAYTN]: 'klaytn',
+
 }
+
+export const CHAIN_ID_NAMES_REVERSE = Object.fromEntries(Object.entries(CHAIN_ENUM_BY_ID).map(([k, v]) => [v, k]))

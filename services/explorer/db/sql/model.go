@@ -31,7 +31,6 @@ func init() {
 	TokenDecimalFieldName = namer.GetConsistentName("TokenDecimal")
 	AdminFeeUSDFieldName = namer.GetConsistentName("AdminFeeUSD")
 	FeeUSDFieldName = namer.GetConsistentName("FeeUSD")
-
 }
 
 var (
@@ -438,7 +437,7 @@ type HybridBridgeEvent struct {
 // HybridMessageBusEvent stores data for emitted events from the message bus contract after joining origin and destination events.
 type HybridMessageBusEvent struct {
 	//// FChainID is the chain id of the contract that generated the event
-	//FChainID uint32 `gorm:"column:chain_id"`
+	// FChainID uint32 `gorm:"column:chain_id"`
 	//// FBlockNumber is the block number of the event
 	//FBlockNumber uint64 `gorm:"column:block_number"`
 	//// FTxHash is the transaction hash of the event

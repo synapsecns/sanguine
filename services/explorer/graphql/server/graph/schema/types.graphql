@@ -81,6 +81,7 @@ type AddressRanking {
 enum Duration {
   PAST_DAY
   PAST_MONTH
+  PAST_YEAR
   ALL_TIME
 }
 enum Direction {
@@ -127,11 +128,42 @@ type MessageBusTransaction {
 
 type PartialMessageBusInfo {
   chainID: Int
+  chainName: String
   destinationChainID: Int
+  destinationChainName: String
   contractAddress: String
   txnHash: String
   message:        String
   blockNumber:    Int
   time:           Int
   formattedTime: String
+}
+"""
+DateResult is a given statistic for a given date.
+"""
+type DateResultByChain {
+  date: String
+  ethereum: Float
+  optimism: Float
+  cronos: Float
+  bsc: Float
+  polygon: Float
+  fantom: Float
+  boba: Float
+  metis: Float
+  moonbeam: Float
+  moonriver: Float
+  klaytn: Float
+  arbitrum: Float
+  avalanche: Float
+  dfk: Float
+  aurora: Float
+  harmony: Float
+  canto: Float
+  total:  Float
+}
+
+type VolumeByChainID {
+  chainID:  Int
+  total:    Float
 }

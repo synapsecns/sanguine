@@ -46,17 +46,6 @@ query GetBridgeTransactions($chainID: [Int], $address: String, $maxAmount: Int, 
 }
 
 
-query GetBridgeAmountStatistic($type: StatisticType!, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
-  response: bridgeAmountStatistic(
-    type: $type
-    duration: $duration
-    chainID: $chainID
-    address: $address
-    tokenAddress: $tokenAddress
-  ) {
-    value
-  }
-}
 
 query GetCountByChainId($chainID: Int, $address: String, $direction: Direction, $hours: Int) {
   response: countByChainId(
@@ -92,21 +81,17 @@ query GetAddressRanking($hours: Int) {
   }
 }
 
-
-query GetHistoricalStatistics($chainID: Int, $type: HistoricalResultType, $days: Int) {
-  response: historicalStatistics(
-    chainID: $chainID
-    type: $type
-    days: $days
+query GetRankedChainIDsByVolume($duration: Duration) {
+  response: rankedChainIDsByVolume(
+    duration: $duration
   ) {
+    chainID
     total
-    dateResults {
-      date
-      total
-    }
-    type
   }
 }
+
+
+
 
 query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
   response: amountStatistic(
@@ -118,6 +103,33 @@ query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: 
     tokenAddress: $tokenAddress
   ) {
     value
+  }
+}
+query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $duration: Duration) {
+  response: dailyStatisticsByChain(
+    chainID: $chainID
+    type: $type
+    duration: $duration
+  ) {
+    date
+    ethereum
+    optimism
+    cronos
+    bsc
+    polygon
+    fantom
+    boba
+    metis
+    moonbeam
+    moonriver
+    klaytn
+    arbitrum
+    avalanche
+    dfk
+    aurora
+    harmony
+    canto
+    total
   }
 }
 
@@ -150,17 +162,20 @@ query GetMessageBusTransactions($chainID: [Int], $contractAddress: String, $star
   ) {
     fromInfo {
       chainID
+      chainName
       destinationChainID
+      destinationChainName
       contractAddress
       txnHash
       message
       blockNumber
       time
       formattedTime
+
     }
     toInfo {
       chainID
-      destinationChainID
+      chainName
       contractAddress
       txnHash
       message

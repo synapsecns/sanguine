@@ -38,6 +38,29 @@ type DateResult struct {
 	Total *float64 `json:"total"`
 }
 
+// DateResult is a given statistic for a given date.
+type DateResultByChain struct {
+	Date      *string  `json:"date"`
+	Ethereum  *float64 `json:"ethereum"`
+	Optimism  *float64 `json:"optimism"`
+	Cronos    *float64 `json:"cronos"`
+	Bsc       *float64 `json:"bsc"`
+	Polygon   *float64 `json:"polygon"`
+	Fantom    *float64 `json:"fantom"`
+	Boba      *float64 `json:"boba"`
+	Metis     *float64 `json:"metis"`
+	Moonbeam  *float64 `json:"moonbeam"`
+	Moonriver *float64 `json:"moonriver"`
+	Klaytn    *float64 `json:"klaytn"`
+	Arbitrum  *float64 `json:"arbitrum"`
+	Avalanche *float64 `json:"avalanche"`
+	Dfk       *float64 `json:"dfk"`
+	Aurora    *float64 `json:"aurora"`
+	Harmony   *float64 `json:"harmony"`
+	Canto     *float64 `json:"canto"`
+	Total     *float64 `json:"total"`
+}
+
 // HistoricalResult is a given statistic for dates.
 type HistoricalResult struct {
 	Total       *float64              `json:"total"`
@@ -68,14 +91,16 @@ type PartialInfo struct {
 }
 
 type PartialMessageBusInfo struct {
-	ChainID            *int    `json:"chainID"`
-	DestinationChainID *int    `json:"destinationChainID"`
-	ContractAddress    *string `json:"contractAddress"`
-	TxnHash            *string `json:"txnHash"`
-	Message            *string `json:"message"`
-	BlockNumber        *int    `json:"blockNumber"`
-	Time               *int    `json:"time"`
-	FormattedTime      *string `json:"formattedTime"`
+	ChainID              *int    `json:"chainID"`
+	ChainName            *string `json:"chainName"`
+	DestinationChainID   *int    `json:"destinationChainID"`
+	DestinationChainName *string `json:"destinationChainName"`
+	ContractAddress      *string `json:"contractAddress"`
+	TxnHash              *string `json:"txnHash"`
+	Message              *string `json:"message"`
+	BlockNumber          *int    `json:"blockNumber"`
+	Time                 *int    `json:"time"`
+	FormattedTime        *string `json:"formattedTime"`
 }
 
 // TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
@@ -94,6 +119,11 @@ type TransactionCountResult struct {
 // ValueResult is a value result of either USD or numeric value.
 type ValueResult struct {
 	Value *string `json:"value"`
+}
+
+type VolumeByChainID struct {
+	ChainID *int     `json:"chainID"`
+	Total   *float64 `json:"total"`
 }
 
 type DailyStatisticType string
@@ -187,18 +217,20 @@ type Duration string
 const (
 	DurationPastDay   Duration = "PAST_DAY"
 	DurationPastMonth Duration = "PAST_MONTH"
+	DurationPastYear  Duration = "PAST_YEAR"
 	DurationAllTime   Duration = "ALL_TIME"
 )
 
 var AllDuration = []Duration{
 	DurationPastDay,
 	DurationPastMonth,
+	DurationPastYear,
 	DurationAllTime,
 }
 
 func (e Duration) IsValid() bool {
 	switch e {
-	case DurationPastDay, DurationPastMonth, DurationAllTime:
+	case DurationPastDay, DurationPastMonth, DurationPastYear, DurationAllTime:
 		return true
 	}
 	return false

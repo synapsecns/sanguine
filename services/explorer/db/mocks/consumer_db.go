@@ -134,6 +134,29 @@ func (_m *ConsumerDB) GetBridgeEvents(ctx context.Context, query string) ([]sql.
 	return r0, r1
 }
 
+// GetDailyTotals provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetDailyTotals(ctx context.Context, query string) ([]*model.DateResultByChain, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 []*model.DateResultByChain
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.DateResultByChain); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.DateResultByChain)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetDateResults provides a mock function with given fields: ctx, query
 func (_m *ConsumerDB) GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error) {
 	ret := _m.Called(ctx, query)
@@ -166,6 +189,29 @@ func (_m *ConsumerDB) GetFloat64(ctx context.Context, query string) (float64, er
 		r0 = rf(ctx, query)
 	} else {
 		r0 = ret.Get(0).(float64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetRankedChainsByVolume provides a mock function with given fields: ctx, query
+func (_m *ConsumerDB) GetRankedChainsByVolume(ctx context.Context, query string) ([]*model.VolumeByChainID, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 []*model.VolumeByChainID
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.VolumeByChainID); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.VolumeByChainID)
+		}
 	}
 
 	var r1 error

@@ -1,17 +1,51 @@
 import _ from 'lodash'
-import {useState} from 'react'
+import { useState } from 'react'
 
-import {validateAndParseAddress} from '@utils/validateAndParseAddress'
-import {validateAndParseHash} from '@utils/validateAndParseHash'
+import { validateAndParseAddress } from '@utils/validateAndParseAddress'
+import { validateAndParseHash } from '@utils/validateAndParseHash'
 
-import {ChainId} from '@constants/networks'
+import { ChainId } from '@constants/networks'
 
-import {SearchBox} from './SearchBox'
+import { SearchBox } from './SearchBox'
 
-export function UniversalSearch({ placeholder }) {
+export function UniversalSearch({
+  placeholder,
+  setPending,
+  pending,
+  loading,
+  setWallet,
+  wallet,
+  setMinSize,
+  minSize,
+  setMaxSize,
+  maxSize,
+  setStartDate,
+  startDate,
+  setEndDate,
+  endDate,
+  setToTx,
+  toTx,
+  setFromTx,
+  fromTx,
+  setKappa,
+  kappa,
+  executeSearch,
+}) {
   const [searchField, setSearchField] = useState('')
   const [showText, setShowText] = useState(false)
-
+  const unSelectStyle =
+    'border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30'
+  const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
+  const resetFields = () => {
+    setWallet('')
+    setMinSize('')
+    setMaxSize('')
+    setStartDate('')
+    setEndDate('')
+    setToTx(true)
+    setFromTx(true)
+    setKappa('')
+  }
   let isValid
   let error
   let inputType
@@ -73,22 +107,36 @@ export function UniversalSearch({ placeholder }) {
           </h3>
           <div className="grow">
             <SearchBox
-              searchField={searchField}
-              setSearchField={setSearchField}
+              searchField={kappa}
+              setSearchField={setKappa}
               inputType={inputType}
               placeholder={placeholder}
             />
           </div>
-          <button className="font-medium rounded-r-md border border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 px-4 py-2">
-            <a href={searchLink}>
-              Search
-            </a>
+          <button onClick={() => executeSearch()} className="font-medium rounded-r-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200">
+            <a href={searchLink}>Search</a>
           </button>
           <div className="">
-            <button className="font-medium rounded-l-md text-white border  border-[#BE78FF] bg-synapse-radial px-4 py-2">
+            <button
+              disabled={loading}
+              onClick={() => setPending(false)}
+              className={
+                'font-medium rounded-l-md px-4 py-2 border ' +
+                (pending ? unSelectStyle : selectStyle) +
+                (loading ? ' pointer-events-none' : '')
+              }
+            >
               Confirmed
             </button>
-            <button className="font-medium rounded-r-md border border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 px-4 py-2">
+            <button
+              disabled={loading}
+              onClick={() => setPending(true)}
+              className={
+                'font-medium rounded-r-md px-4 py-2 border ' +
+                (pending ? selectStyle : unSelectStyle) +
+                (loading ? ' pointer-events-none' : '')
+              }
+            >
               Pending
             </button>
           </div>
@@ -130,25 +178,28 @@ export function UniversalSearch({ placeholder }) {
                       `}
                       placeholder="Wallet Address"
                       onChange={(e) => {
-                        setSearchField(e.target.value)
+                        setWallet(e.target.value)
                       }}
-                      value={searchField}
+                      value={wallet}
                     />
                   </div>
                 </form>
               </div>
-              <input
+              {/* <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                checked
+                checked={toTx}
+                onClick={() => { setToTx(!toTx) }}
+
               />
               <h3 className="text-white font-semibold">To</h3>
               <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                checked
+                checked={fromTx}
+                onClick={() => { setFromTx(!fromTx) }}
               />
-              <h3 className="text-white font-semibold">From</h3>
+              <h3 className="text-white font-semibold">From</h3> */}
             </div>
             {/* THIS IS MIN/MAX SIZE */}
             <div className="flex justify-center items-center p-2 gap-x-4 py-4">
@@ -175,9 +226,9 @@ export function UniversalSearch({ placeholder }) {
                       `}
                       placeholder="Min Size"
                       onChange={(e) => {
-                        setSearchField(e.target.value)
+                        setMinSize(e.target.value)
                       }}
-                      value={searchField}
+                      value={minSize}
                     />
                   </div>
                 </form>
@@ -205,9 +256,9 @@ export function UniversalSearch({ placeholder }) {
                       `}
                       placeholder="Max Size"
                       onChange={(e) => {
-                        setSearchField(e.target.value)
+                        setMaxSize(e.target.value)
                       }}
-                      value={searchField}
+                      value={maxSize}
                     />
                   </div>
                 </form>
@@ -236,11 +287,11 @@ export function UniversalSearch({ placeholder }) {
                         text-white
                         placeholder:text-white placeholder:text-opacity-60
                       `}
-                      placeholder="yyyy-mm-dd"
+                      placeholder="enter timestamp for now"
                       onChange={(e) => {
-                        setSearchField(e.target.value)
+                        setStartDate(e.target.value)
                       }}
-                      value={searchField}
+                      value={startDate}
                     />
                   </div>
                 </form>
@@ -266,11 +317,11 @@ export function UniversalSearch({ placeholder }) {
                         text-white
                         placeholder:text-white placeholder:text-opacity-60
                       `}
-                      placeholder="yyyy-mm-dd"
+                      placeholder="enter timestamp for now"
                       onChange={(e) => {
-                        setSearchField(e.target.value)
+                        setEndDate(e.target.value)
                       }}
-                      value={searchField}
+                      value={endDate}
                     />
                   </div>
                 </form>
@@ -278,10 +329,8 @@ export function UniversalSearch({ placeholder }) {
             </div>
             {/* THIS IS BUTTONS */}
             <div className="flex items-center p-2 gap-x-4 mb-3">
-              <button className="font-medium rounded-[4px] text-white bg-[#333333] px-4 py-2">
-                Apply
-              </button>
-              <button className="font-medium rounded-[4px] text-[#333333]  bg-opacity-40 bg-[#333333] px-4 py-2">
+
+              <button className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200" onClick={() => resetFields()}>
                 Reset
               </button>
             </div>

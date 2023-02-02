@@ -48,6 +48,10 @@ type ConsumerDBReader interface {
 	GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error)
 	// GetAddressRanking gets AddressRanking for a given query.
 	GetAddressRanking(ctx context.Context, query string) ([]*model.AddressRanking, error)
+	// GetDailyTotals gets the daily stats for each date broken down by chain
+	GetDailyTotals(ctx context.Context, query string) ([]*model.DateResultByChain, error)
+	// GetRankedChainsByVolume gets the volume for each chain
+	GetRankedChainsByVolume(ctx context.Context, query string) ([]*model.VolumeByChainID, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.

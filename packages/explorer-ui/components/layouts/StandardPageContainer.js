@@ -10,9 +10,9 @@ export function StandardPageContainer({
         <span
           className={`
             flex items-center
-            text-3xl font-medium text-default
-            bg-clip-text text-transparent bg-gradient-to-r
-            from-purple-600 to-blue-600
+            text-5xl font-medium text-default
+            font-bold
+            text-white
           `}
         >
           {title}

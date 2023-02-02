@@ -66,6 +66,28 @@ type ComplexityRoot struct {
 		Total func(childComplexity int) int
 	}
 
+	DateResultByChain struct {
+		Arbitrum  func(childComplexity int) int
+		Aurora    func(childComplexity int) int
+		Avalanche func(childComplexity int) int
+		Boba      func(childComplexity int) int
+		Bsc       func(childComplexity int) int
+		Canto     func(childComplexity int) int
+		Cronos    func(childComplexity int) int
+		Date      func(childComplexity int) int
+		Dfk       func(childComplexity int) int
+		Ethereum  func(childComplexity int) int
+		Fantom    func(childComplexity int) int
+		Harmony   func(childComplexity int) int
+		Klaytn    func(childComplexity int) int
+		Metis     func(childComplexity int) int
+		Moonbeam  func(childComplexity int) int
+		Moonriver func(childComplexity int) int
+		Optimism  func(childComplexity int) int
+		Polygon   func(childComplexity int) int
+		Total     func(childComplexity int) int
+	}
+
 	HistoricalResult struct {
 		DateResults func(childComplexity int) int
 		Total       func(childComplexity int) int
@@ -94,26 +116,28 @@ type ComplexityRoot struct {
 	}
 
 	PartialMessageBusInfo struct {
-		BlockNumber        func(childComplexity int) int
-		ChainID            func(childComplexity int) int
-		ContractAddress    func(childComplexity int) int
-		DestinationChainID func(childComplexity int) int
-		FormattedTime      func(childComplexity int) int
-		Message            func(childComplexity int) int
-		Time               func(childComplexity int) int
-		TxnHash            func(childComplexity int) int
+		BlockNumber          func(childComplexity int) int
+		ChainID              func(childComplexity int) int
+		ChainName            func(childComplexity int) int
+		ContractAddress      func(childComplexity int) int
+		DestinationChainID   func(childComplexity int) int
+		DestinationChainName func(childComplexity int) int
+		FormattedTime        func(childComplexity int) int
+		Message              func(childComplexity int) int
+		Time                 func(childComplexity int) int
+		TxnHash              func(childComplexity int) int
 	}
 
 	Query struct {
 		AddressRanking         func(childComplexity int, hours *int) int
 		AmountStatistic        func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) int
-		BridgeAmountStatistic  func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) int
 		BridgeTransactions     func(childComplexity int, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) int
 		CountByChainID         func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatistics        func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) int
-		HistoricalStatistics   func(childComplexity int, chainID *int, typeArg *model.HistoricalResultType, days *int) int
+		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration) int
 		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, page *int) int
+		RankedChainIDsByVolume func(childComplexity int, duration *model.Duration) int
 	}
 
 	TokenCountResult struct {
@@ -130,18 +154,23 @@ type ComplexityRoot struct {
 	ValueResult struct {
 		Value func(childComplexity int) int
 	}
+
+	VolumeByChainID struct {
+		ChainID func(childComplexity int) int
+		Total   func(childComplexity int) int
+	}
 }
 
 type QueryResolver interface {
 	BridgeTransactions(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error)
 	MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, page *int) ([]*model.MessageBusTransaction, error)
-	BridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error)
 	CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error)
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
 	AddressRanking(ctx context.Context, hours *int) ([]*model.AddressRanking, error)
-	HistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int) (*model.HistoricalResult, error)
 	AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error)
 	DailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) (*model.DailyResult, error)
+	DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration) ([]*model.DateResultByChain, error)
+	RankedChainIDsByVolume(ctx context.Context, duration *model.Duration) ([]*model.VolumeByChainID, error)
 }
 
 type executableSchema struct {
@@ -242,6 +271,139 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DateResult.Total(childComplexity), true
+
+	case "DateResultByChain.arbitrum":
+		if e.complexity.DateResultByChain.Arbitrum == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Arbitrum(childComplexity), true
+
+	case "DateResultByChain.aurora":
+		if e.complexity.DateResultByChain.Aurora == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Aurora(childComplexity), true
+
+	case "DateResultByChain.avalanche":
+		if e.complexity.DateResultByChain.Avalanche == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Avalanche(childComplexity), true
+
+	case "DateResultByChain.boba":
+		if e.complexity.DateResultByChain.Boba == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Boba(childComplexity), true
+
+	case "DateResultByChain.bsc":
+		if e.complexity.DateResultByChain.Bsc == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Bsc(childComplexity), true
+
+	case "DateResultByChain.canto":
+		if e.complexity.DateResultByChain.Canto == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Canto(childComplexity), true
+
+	case "DateResultByChain.cronos":
+		if e.complexity.DateResultByChain.Cronos == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Cronos(childComplexity), true
+
+	case "DateResultByChain.date":
+		if e.complexity.DateResultByChain.Date == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Date(childComplexity), true
+
+	case "DateResultByChain.dfk":
+		if e.complexity.DateResultByChain.Dfk == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Dfk(childComplexity), true
+
+	case "DateResultByChain.ethereum":
+		if e.complexity.DateResultByChain.Ethereum == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Ethereum(childComplexity), true
+
+	case "DateResultByChain.fantom":
+		if e.complexity.DateResultByChain.Fantom == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Fantom(childComplexity), true
+
+	case "DateResultByChain.harmony":
+		if e.complexity.DateResultByChain.Harmony == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Harmony(childComplexity), true
+
+	case "DateResultByChain.klaytn":
+		if e.complexity.DateResultByChain.Klaytn == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Klaytn(childComplexity), true
+
+	case "DateResultByChain.metis":
+		if e.complexity.DateResultByChain.Metis == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Metis(childComplexity), true
+
+	case "DateResultByChain.moonbeam":
+		if e.complexity.DateResultByChain.Moonbeam == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Moonbeam(childComplexity), true
+
+	case "DateResultByChain.moonriver":
+		if e.complexity.DateResultByChain.Moonriver == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Moonriver(childComplexity), true
+
+	case "DateResultByChain.optimism":
+		if e.complexity.DateResultByChain.Optimism == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Optimism(childComplexity), true
+
+	case "DateResultByChain.polygon":
+		if e.complexity.DateResultByChain.Polygon == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Polygon(childComplexity), true
+
+	case "DateResultByChain.total":
+		if e.complexity.DateResultByChain.Total == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Total(childComplexity), true
 
 	case "HistoricalResult.dateResults":
 		if e.complexity.HistoricalResult.DateResults == nil {
@@ -383,6 +545,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PartialMessageBusInfo.ChainID(childComplexity), true
 
+	case "PartialMessageBusInfo.chainName":
+		if e.complexity.PartialMessageBusInfo.ChainName == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.ChainName(childComplexity), true
+
 	case "PartialMessageBusInfo.contractAddress":
 		if e.complexity.PartialMessageBusInfo.ContractAddress == nil {
 			break
@@ -396,6 +565,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PartialMessageBusInfo.DestinationChainID(childComplexity), true
+
+	case "PartialMessageBusInfo.destinationChainName":
+		if e.complexity.PartialMessageBusInfo.DestinationChainName == nil {
+			break
+		}
+
+		return e.complexity.PartialMessageBusInfo.DestinationChainName(childComplexity), true
 
 	case "PartialMessageBusInfo.formattedTime":
 		if e.complexity.PartialMessageBusInfo.FormattedTime == nil {
@@ -449,18 +625,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.AmountStatistic(childComplexity, args["type"].(model.StatisticType), args["duration"].(*model.Duration), args["platform"].(*model.Platform), args["chainID"].(*int), args["address"].(*string), args["tokenAddress"].(*string)), true
 
-	case "Query.bridgeAmountStatistic":
-		if e.complexity.Query.BridgeAmountStatistic == nil {
-			break
-		}
-
-		args, err := ec.field_Query_bridgeAmountStatistic_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.BridgeAmountStatistic(childComplexity, args["type"].(model.StatisticType), args["duration"].(*model.Duration), args["chainID"].(*int), args["address"].(*string), args["tokenAddress"].(*string)), true
-
 	case "Query.bridgeTransactions":
 		if e.complexity.Query.BridgeTransactions == nil {
 			break
@@ -509,17 +673,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.DailyStatistics(childComplexity, args["chainID"].(*int), args["type"].(*model.DailyStatisticType), args["platform"].(*model.Platform), args["days"].(*int)), true
 
-	case "Query.historicalStatistics":
-		if e.complexity.Query.HistoricalStatistics == nil {
+	case "Query.dailyStatisticsByChain":
+		if e.complexity.Query.DailyStatisticsByChain == nil {
 			break
 		}
 
-		args, err := ec.field_Query_historicalStatistics_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_dailyStatisticsByChain_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.HistoricalStatistics(childComplexity, args["chainID"].(*int), args["type"].(*model.HistoricalResultType), args["days"].(*int)), true
+		return e.complexity.Query.DailyStatisticsByChain(childComplexity, args["chainID"].(*int), args["type"].(*model.DailyStatisticType), args["duration"].(*model.Duration)), true
 
 	case "Query.messageBusTransactions":
 		if e.complexity.Query.MessageBusTransactions == nil {
@@ -532,6 +696,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.MessageBusTransactions(childComplexity, args["chainID"].([]*int), args["contractAddress"].(*string), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["messageID"].(*string), args["pending"].(*bool), args["page"].(*int)), true
+
+	case "Query.rankedChainIDsByVolume":
+		if e.complexity.Query.RankedChainIDsByVolume == nil {
+			break
+		}
+
+		args, err := ec.field_Query_rankedChainIDsByVolume_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.RankedChainIDsByVolume(childComplexity, args["duration"].(*model.Duration)), true
 
 	case "TokenCountResult.chainID":
 		if e.complexity.TokenCountResult.ChainID == nil {
@@ -574,6 +750,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ValueResult.Value(childComplexity), true
+
+	case "VolumeByChainID.chainID":
+		if e.complexity.VolumeByChainID.ChainID == nil {
+			break
+		}
+
+		return e.complexity.VolumeByChainID.ChainID(childComplexity), true
+
+	case "VolumeByChainID.total":
+		if e.complexity.VolumeByChainID.Total == nil {
+			break
+		}
+
+		return e.complexity.VolumeByChainID.Total(childComplexity), true
 
 	}
 	return 0, false
@@ -669,17 +859,8 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     pending:        Boolean = false
     page:           Int = 1
   ): [MessageBusTransaction]
-  """
-  Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
-  Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
-  """
-  bridgeAmountStatistic(
-    type:         StatisticType!
-    duration:     Duration = ALL_TIME
-    chainID:      Int
-    address:      String
-    tokenAddress: String
-  ): ValueResult
+
+
   """
   Returns the COUNT of bridged transactions for a given chain. If direction of bridge transactions
   is not specified, it defaults to IN.
@@ -708,14 +889,6 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
   addressRanking(hours: Int = 24): [AddressRanking]
 
   """
-  Historical transactional data
-  """
-  historicalStatistics(
-    chainID:  Int
-    type:     HistoricalResultType = BRIDGEVOLUME
-    days:     Int = 30
-  ): HistoricalResult
-  """
   Returns mean/median/total/count of transactions transacted for a given duration, chain and address.
   Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
   """
@@ -737,6 +910,21 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     days:     Int = 30
   ): DailyResult
 
+  """
+  Daily statistic data
+  """
+  dailyStatisticsByChain(
+    chainID:  Int
+    type:     DailyStatisticType = VOLUME
+    duration:     Duration = ALL_TIME
+  ): [DateResultByChain]
+
+  """
+Ranked chainIDs by volume
+  """
+  rankedChainIDsByVolume(
+    duration:     Duration = ALL_TIME
+  ): [VolumeByChainID]
 
 }
 `, BuiltIn: false},
@@ -823,6 +1011,7 @@ type AddressRanking {
 enum Duration {
   PAST_DAY
   PAST_MONTH
+  PAST_YEAR
   ALL_TIME
 }
 enum Direction {
@@ -869,13 +1058,44 @@ type MessageBusTransaction {
 
 type PartialMessageBusInfo {
   chainID: Int
+  chainName: String
   destinationChainID: Int
+  destinationChainName: String
   contractAddress: String
   txnHash: String
   message:        String
   blockNumber:    Int
   time:           Int
   formattedTime: String
+}
+"""
+DateResult is a given statistic for a given date.
+"""
+type DateResultByChain {
+  date: String
+  ethereum: Float
+  optimism: Float
+  cronos: Float
+  bsc: Float
+  polygon: Float
+  fantom: Float
+  boba: Float
+  metis: Float
+  moonbeam: Float
+  moonriver: Float
+  klaytn: Float
+  arbitrum: Float
+  avalanche: Float
+  dfk: Float
+  aurora: Float
+  harmony: Float
+  canto: Float
+  total:  Float
+}
+
+type VolumeByChainID {
+  chainID:  Int
+  total:    Float
 }
 `, BuiltIn: false},
 }
@@ -972,57 +1192,6 @@ func (ec *executionContext) field_Query_amountStatistic_args(ctx context.Context
 		}
 	}
 	args["tokenAddress"] = arg5
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_bridgeAmountStatistic_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 model.StatisticType
-	if tmp, ok := rawArgs["type"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-		arg0, err = ec.unmarshalNStatisticType2githubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐStatisticType(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["type"] = arg0
-	var arg1 *model.Duration
-	if tmp, ok := rawArgs["duration"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
-		arg1, err = ec.unmarshalODuration2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDuration(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["duration"] = arg1
-	var arg2 *int
-	if tmp, ok := rawArgs["chainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
-		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["chainID"] = arg2
-	var arg3 *string
-	if tmp, ok := rawArgs["address"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
-		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["address"] = arg3
-	var arg4 *string
-	if tmp, ok := rawArgs["tokenAddress"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tokenAddress"))
-		arg4, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["tokenAddress"] = arg4
 	return args, nil
 }
 
@@ -1215,6 +1384,39 @@ func (ec *executionContext) field_Query_countByTokenAddress_args(ctx context.Con
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_dailyStatisticsByChain_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["chainID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["chainID"] = arg0
+	var arg1 *model.DailyStatisticType
+	if tmp, ok := rawArgs["type"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+		arg1, err = ec.unmarshalODailyStatisticType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDailyStatisticType(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["type"] = arg1
+	var arg2 *model.Duration
+	if tmp, ok := rawArgs["duration"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
+		arg2, err = ec.unmarshalODuration2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDuration(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["duration"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_dailyStatistics_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1254,39 +1456,6 @@ func (ec *executionContext) field_Query_dailyStatistics_args(ctx context.Context
 		}
 	}
 	args["days"] = arg3
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_historicalStatistics_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *int
-	if tmp, ok := rawArgs["chainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
-		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["chainID"] = arg0
-	var arg1 *model.HistoricalResultType
-	if tmp, ok := rawArgs["type"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-		arg1, err = ec.unmarshalOHistoricalResultType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐHistoricalResultType(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["type"] = arg1
-	var arg2 *int
-	if tmp, ok := rawArgs["days"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("days"))
-		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["days"] = arg2
 	return args, nil
 }
 
@@ -1365,6 +1534,21 @@ func (ec *executionContext) field_Query_messageBusTransactions_args(ctx context.
 		}
 	}
 	args["page"] = arg7
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_rankedChainIDsByVolume_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.Duration
+	if tmp, ok := rawArgs["duration"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
+		arg0, err = ec.unmarshalODuration2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDuration(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["duration"] = arg0
 	return args, nil
 }
 
@@ -1952,6 +2136,785 @@ func (ec *executionContext) fieldContext_DateResult_total(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _DateResultByChain_date(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_ethereum(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_ethereum(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ethereum, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_ethereum(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_optimism(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_optimism(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Optimism, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_optimism(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_cronos(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_cronos(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cronos, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_cronos(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_bsc(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_bsc(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Bsc, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_bsc(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_polygon(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_polygon(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Polygon, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_polygon(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_fantom(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_fantom(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Fantom, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_fantom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_boba(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_boba(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Boba, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_boba(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_metis(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_metis(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Metis, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_metis(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_moonbeam(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_moonbeam(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Moonbeam, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_moonbeam(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_moonriver(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_moonriver(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Moonriver, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_moonriver(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_klaytn(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_klaytn(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Klaytn, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_klaytn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_arbitrum(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_arbitrum(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Arbitrum, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_arbitrum(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_avalanche(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_avalanche(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Avalanche, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_avalanche(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_dfk(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_dfk(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Dfk, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_dfk(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_aurora(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_aurora(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Aurora, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_aurora(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_harmony(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_harmony(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Harmony, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_harmony(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_canto(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_canto(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Canto, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_canto(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_total(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _HistoricalResult_total(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalResult) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_HistoricalResult_total(ctx, field)
 	if err != nil {
@@ -2119,8 +3082,12 @@ func (ec *executionContext) fieldContext_MessageBusTransaction_fromInfo(ctx cont
 			switch field.Name {
 			case "chainID":
 				return ec.fieldContext_PartialMessageBusInfo_chainID(ctx, field)
+			case "chainName":
+				return ec.fieldContext_PartialMessageBusInfo_chainName(ctx, field)
 			case "destinationChainID":
 				return ec.fieldContext_PartialMessageBusInfo_destinationChainID(ctx, field)
+			case "destinationChainName":
+				return ec.fieldContext_PartialMessageBusInfo_destinationChainName(ctx, field)
 			case "contractAddress":
 				return ec.fieldContext_PartialMessageBusInfo_contractAddress(ctx, field)
 			case "txnHash":
@@ -2178,8 +3145,12 @@ func (ec *executionContext) fieldContext_MessageBusTransaction_toInfo(ctx contex
 			switch field.Name {
 			case "chainID":
 				return ec.fieldContext_PartialMessageBusInfo_chainID(ctx, field)
+			case "chainName":
+				return ec.fieldContext_PartialMessageBusInfo_chainName(ctx, field)
 			case "destinationChainID":
 				return ec.fieldContext_PartialMessageBusInfo_destinationChainID(ctx, field)
+			case "destinationChainName":
+				return ec.fieldContext_PartialMessageBusInfo_destinationChainName(ctx, field)
 			case "contractAddress":
 				return ec.fieldContext_PartialMessageBusInfo_contractAddress(ctx, field)
 			case "txnHash":
@@ -2773,6 +3744,47 @@ func (ec *executionContext) fieldContext_PartialMessageBusInfo_chainID(ctx conte
 	return fc, nil
 }
 
+func (ec *executionContext) _PartialMessageBusInfo_chainName(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_chainName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ChainName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_chainName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PartialMessageBusInfo_destinationChainID(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PartialMessageBusInfo_destinationChainID(ctx, field)
 	if err != nil {
@@ -2809,6 +3821,47 @@ func (ec *executionContext) fieldContext_PartialMessageBusInfo_destinationChainI
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialMessageBusInfo_destinationChainName(ctx context.Context, field graphql.CollectedField, obj *model.PartialMessageBusInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialMessageBusInfo_destinationChainName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DestinationChainName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialMessageBusInfo_destinationChainName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialMessageBusInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3186,62 +4239,6 @@ func (ec *executionContext) fieldContext_Query_messageBusTransactions(ctx contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_bridgeAmountStatistic(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_bridgeAmountStatistic(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().BridgeAmountStatistic(rctx, fc.Args["type"].(model.StatisticType), fc.Args["duration"].(*model.Duration), fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["tokenAddress"].(*string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.ValueResult)
-	fc.Result = res
-	return ec.marshalOValueResult2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐValueResult(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_bridgeAmountStatistic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "value":
-				return ec.fieldContext_ValueResult_value(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type ValueResult", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_bridgeAmountStatistic_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_countByChainId(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_countByChainId(ctx, field)
 	if err != nil {
@@ -3418,66 +4415,6 @@ func (ec *executionContext) fieldContext_Query_addressRanking(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_historicalStatistics(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_historicalStatistics(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().HistoricalStatistics(rctx, fc.Args["chainID"].(*int), fc.Args["type"].(*model.HistoricalResultType), fc.Args["days"].(*int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.HistoricalResult)
-	fc.Result = res
-	return ec.marshalOHistoricalResult2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐHistoricalResult(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_historicalStatistics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "total":
-				return ec.fieldContext_HistoricalResult_total(ctx, field)
-			case "dateResults":
-				return ec.fieldContext_HistoricalResult_dateResults(ctx, field)
-			case "type":
-				return ec.fieldContext_HistoricalResult_type(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type HistoricalResult", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_historicalStatistics_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_amountStatistic(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_amountStatistic(ctx, field)
 	if err != nil {
@@ -3588,6 +4525,156 @@ func (ec *executionContext) fieldContext_Query_dailyStatistics(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_dailyStatistics_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_dailyStatisticsByChain(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_dailyStatisticsByChain(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().DailyStatisticsByChain(rctx, fc.Args["chainID"].(*int), fc.Args["type"].(*model.DailyStatisticType), fc.Args["duration"].(*model.Duration))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.DateResultByChain)
+	fc.Result = res
+	return ec.marshalODateResultByChain2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDateResultByChain(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_dailyStatisticsByChain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "date":
+				return ec.fieldContext_DateResultByChain_date(ctx, field)
+			case "ethereum":
+				return ec.fieldContext_DateResultByChain_ethereum(ctx, field)
+			case "optimism":
+				return ec.fieldContext_DateResultByChain_optimism(ctx, field)
+			case "cronos":
+				return ec.fieldContext_DateResultByChain_cronos(ctx, field)
+			case "bsc":
+				return ec.fieldContext_DateResultByChain_bsc(ctx, field)
+			case "polygon":
+				return ec.fieldContext_DateResultByChain_polygon(ctx, field)
+			case "fantom":
+				return ec.fieldContext_DateResultByChain_fantom(ctx, field)
+			case "boba":
+				return ec.fieldContext_DateResultByChain_boba(ctx, field)
+			case "metis":
+				return ec.fieldContext_DateResultByChain_metis(ctx, field)
+			case "moonbeam":
+				return ec.fieldContext_DateResultByChain_moonbeam(ctx, field)
+			case "moonriver":
+				return ec.fieldContext_DateResultByChain_moonriver(ctx, field)
+			case "klaytn":
+				return ec.fieldContext_DateResultByChain_klaytn(ctx, field)
+			case "arbitrum":
+				return ec.fieldContext_DateResultByChain_arbitrum(ctx, field)
+			case "avalanche":
+				return ec.fieldContext_DateResultByChain_avalanche(ctx, field)
+			case "dfk":
+				return ec.fieldContext_DateResultByChain_dfk(ctx, field)
+			case "aurora":
+				return ec.fieldContext_DateResultByChain_aurora(ctx, field)
+			case "harmony":
+				return ec.fieldContext_DateResultByChain_harmony(ctx, field)
+			case "canto":
+				return ec.fieldContext_DateResultByChain_canto(ctx, field)
+			case "total":
+				return ec.fieldContext_DateResultByChain_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DateResultByChain", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_dailyStatisticsByChain_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_rankedChainIDsByVolume(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_rankedChainIDsByVolume(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().RankedChainIDsByVolume(rctx, fc.Args["duration"].(*model.Duration))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.VolumeByChainID)
+	fc.Result = res
+	return ec.marshalOVolumeByChainID2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐVolumeByChainID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_rankedChainIDsByVolume(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "chainID":
+				return ec.fieldContext_VolumeByChainID_chainID(ctx, field)
+			case "total":
+				return ec.fieldContext_VolumeByChainID_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type VolumeByChainID", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_rankedChainIDsByVolume_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3964,6 +5051,88 @@ func (ec *executionContext) fieldContext_ValueResult_value(ctx context.Context, 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VolumeByChainID_chainID(ctx context.Context, field graphql.CollectedField, obj *model.VolumeByChainID) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VolumeByChainID_chainID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ChainID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VolumeByChainID_chainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VolumeByChainID",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VolumeByChainID_total(ctx context.Context, field graphql.CollectedField, obj *model.VolumeByChainID) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VolumeByChainID_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VolumeByChainID_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VolumeByChainID",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5882,6 +7051,103 @@ func (ec *executionContext) _DateResult(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
+var dateResultByChainImplementors = []string{"DateResultByChain"}
+
+func (ec *executionContext) _DateResultByChain(ctx context.Context, sel ast.SelectionSet, obj *model.DateResultByChain) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dateResultByChainImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DateResultByChain")
+		case "date":
+
+			out.Values[i] = ec._DateResultByChain_date(ctx, field, obj)
+
+		case "ethereum":
+
+			out.Values[i] = ec._DateResultByChain_ethereum(ctx, field, obj)
+
+		case "optimism":
+
+			out.Values[i] = ec._DateResultByChain_optimism(ctx, field, obj)
+
+		case "cronos":
+
+			out.Values[i] = ec._DateResultByChain_cronos(ctx, field, obj)
+
+		case "bsc":
+
+			out.Values[i] = ec._DateResultByChain_bsc(ctx, field, obj)
+
+		case "polygon":
+
+			out.Values[i] = ec._DateResultByChain_polygon(ctx, field, obj)
+
+		case "fantom":
+
+			out.Values[i] = ec._DateResultByChain_fantom(ctx, field, obj)
+
+		case "boba":
+
+			out.Values[i] = ec._DateResultByChain_boba(ctx, field, obj)
+
+		case "metis":
+
+			out.Values[i] = ec._DateResultByChain_metis(ctx, field, obj)
+
+		case "moonbeam":
+
+			out.Values[i] = ec._DateResultByChain_moonbeam(ctx, field, obj)
+
+		case "moonriver":
+
+			out.Values[i] = ec._DateResultByChain_moonriver(ctx, field, obj)
+
+		case "klaytn":
+
+			out.Values[i] = ec._DateResultByChain_klaytn(ctx, field, obj)
+
+		case "arbitrum":
+
+			out.Values[i] = ec._DateResultByChain_arbitrum(ctx, field, obj)
+
+		case "avalanche":
+
+			out.Values[i] = ec._DateResultByChain_avalanche(ctx, field, obj)
+
+		case "dfk":
+
+			out.Values[i] = ec._DateResultByChain_dfk(ctx, field, obj)
+
+		case "aurora":
+
+			out.Values[i] = ec._DateResultByChain_aurora(ctx, field, obj)
+
+		case "harmony":
+
+			out.Values[i] = ec._DateResultByChain_harmony(ctx, field, obj)
+
+		case "canto":
+
+			out.Values[i] = ec._DateResultByChain_canto(ctx, field, obj)
+
+		case "total":
+
+			out.Values[i] = ec._DateResultByChain_total(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var historicalResultImplementors = []string{"HistoricalResult"}
 
 func (ec *executionContext) _HistoricalResult(ctx context.Context, sel ast.SelectionSet, obj *model.HistoricalResult) graphql.Marshaler {
@@ -6031,9 +7297,17 @@ func (ec *executionContext) _PartialMessageBusInfo(ctx context.Context, sel ast.
 
 			out.Values[i] = ec._PartialMessageBusInfo_chainID(ctx, field, obj)
 
+		case "chainName":
+
+			out.Values[i] = ec._PartialMessageBusInfo_chainName(ctx, field, obj)
+
 		case "destinationChainID":
 
 			out.Values[i] = ec._PartialMessageBusInfo_destinationChainID(ctx, field, obj)
+
+		case "destinationChainName":
+
+			out.Values[i] = ec._PartialMessageBusInfo_destinationChainName(ctx, field, obj)
 
 		case "contractAddress":
 
@@ -6129,26 +7403,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "bridgeAmountStatistic":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_bridgeAmountStatistic(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
 		case "countByChainId":
 			field := field
 
@@ -6209,26 +7463,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "historicalStatistics":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_historicalStatistics(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
 		case "amountStatistic":
 			field := field
 
@@ -6259,6 +7493,46 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_dailyStatistics(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "dailyStatisticsByChain":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_dailyStatisticsByChain(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "rankedChainIDsByVolume":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_rankedChainIDsByVolume(ctx, field)
 				return res
 			}
 
@@ -6367,6 +7641,35 @@ func (ec *executionContext) _ValueResult(ctx context.Context, sel ast.SelectionS
 		case "value":
 
 			out.Values[i] = ec._ValueResult_value(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var volumeByChainIDImplementors = []string{"VolumeByChainID"}
+
+func (ec *executionContext) _VolumeByChainID(ctx context.Context, sel ast.SelectionSet, obj *model.VolumeByChainID) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, volumeByChainIDImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("VolumeByChainID")
+		case "chainID":
+
+			out.Values[i] = ec._VolumeByChainID_chainID(ctx, field, obj)
+
+		case "total":
+
+			out.Values[i] = ec._VolumeByChainID_total(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -7183,6 +8486,54 @@ func (ec *executionContext) marshalODateResult2ᚖgithubᚗcomᚋsynapsecnsᚋsa
 	return ec._DateResult(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalODateResultByChain2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDateResultByChain(ctx context.Context, sel ast.SelectionSet, v []*model.DateResultByChain) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalODateResultByChain2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDateResultByChain(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalODateResultByChain2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDateResultByChain(ctx context.Context, sel ast.SelectionSet, v *model.DateResultByChain) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DateResultByChain(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalODirection2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDirection(ctx context.Context, v interface{}) (*model.Direction, error) {
 	if v == nil {
 		return nil, nil
@@ -7229,13 +8580,6 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	}
 	res := graphql.MarshalFloatContext(*v)
 	return graphql.WrapContextMarshaler(ctx, res)
-}
-
-func (ec *executionContext) marshalOHistoricalResult2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐHistoricalResult(ctx context.Context, sel ast.SelectionSet, v *model.HistoricalResult) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._HistoricalResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOHistoricalResultType2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐHistoricalResultType(ctx context.Context, v interface{}) (*model.HistoricalResultType, error) {
@@ -7567,6 +8911,54 @@ func (ec *executionContext) marshalOValueResult2ᚖgithubᚗcomᚋsynapsecnsᚋs
 		return graphql.Null
 	}
 	return ec._ValueResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOVolumeByChainID2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐVolumeByChainID(ctx context.Context, sel ast.SelectionSet, v []*model.VolumeByChainID) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOVolumeByChainID2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐVolumeByChainID(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOVolumeByChainID2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐVolumeByChainID(ctx context.Context, sel ast.SelectionSet, v *model.VolumeByChainID) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._VolumeByChainID(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

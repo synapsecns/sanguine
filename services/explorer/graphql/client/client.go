@@ -21,13 +21,13 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 type Query struct {
 	BridgeTransactions     []*model.BridgeTransaction      "json:\"bridgeTransactions\" graphql:\"bridgeTransactions\""
 	MessageBusTransactions []*model.MessageBusTransaction  "json:\"messageBusTransactions\" graphql:\"messageBusTransactions\""
-	BridgeAmountStatistic  *model.ValueResult              "json:\"bridgeAmountStatistic\" graphql:\"bridgeAmountStatistic\""
 	CountByChainID         []*model.TransactionCountResult "json:\"countByChainId\" graphql:\"countByChainId\""
 	CountByTokenAddress    []*model.TokenCountResult       "json:\"countByTokenAddress\" graphql:\"countByTokenAddress\""
 	AddressRanking         []*model.AddressRanking         "json:\"addressRanking\" graphql:\"addressRanking\""
-	HistoricalStatistics   *model.HistoricalResult         "json:\"historicalStatistics\" graphql:\"historicalStatistics\""
 	AmountStatistic        *model.ValueResult              "json:\"amountStatistic\" graphql:\"amountStatistic\""
 	DailyStatistics        *model.DailyResult              "json:\"dailyStatistics\" graphql:\"dailyStatistics\""
+	DailyStatisticsByChain []*model.DateResultByChain      "json:\"dailyStatisticsByChain\" graphql:\"dailyStatisticsByChain\""
+	RankedChainIDsByVolume []*model.VolumeByChainID        "json:\"rankedChainIDsByVolume\" graphql:\"rankedChainIDsByVolume\""
 }
 type GetBridgeTransactions struct {
 	Response []*struct {
@@ -62,11 +62,6 @@ type GetBridgeTransactions struct {
 		SwapSuccess *bool   "json:\"swapSuccess\" graphql:\"swapSuccess\""
 	} "json:\"response\" graphql:\"response\""
 }
-type GetBridgeAmountStatistic struct {
-	Response *struct {
-		Value *string "json:\"value\" graphql:\"value\""
-	} "json:\"response\" graphql:\"response\""
-}
 type GetCountByChainID struct {
 	Response []*struct {
 		Count   *int "json:\"count\" graphql:\"count\""
@@ -86,19 +81,38 @@ type GetAddressRanking struct {
 		Count   *int    "json:\"count\" graphql:\"count\""
 	} "json:\"response\" graphql:\"response\""
 }
-type GetHistoricalStatistics struct {
-	Response *struct {
-		Total       *float64 "json:\"total\" graphql:\"total\""
-		DateResults []*struct {
-			Date  *string  "json:\"date\" graphql:\"date\""
-			Total *float64 "json:\"total\" graphql:\"total\""
-		} "json:\"dateResults\" graphql:\"dateResults\""
-		Type *model.HistoricalResultType "json:\"type\" graphql:\"type\""
+type GetRankedChainIDsByVolume struct {
+	Response []*struct {
+		ChainID *int     "json:\"chainID\" graphql:\"chainID\""
+		Total   *float64 "json:\"total\" graphql:\"total\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetAmountStatistic struct {
 	Response *struct {
 		Value *string "json:\"value\" graphql:\"value\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetDailyStatisticsByChain struct {
+	Response []*struct {
+		Date      *string  "json:\"date\" graphql:\"date\""
+		Ethereum  *float64 "json:\"ethereum\" graphql:\"ethereum\""
+		Optimism  *float64 "json:\"optimism\" graphql:\"optimism\""
+		Cronos    *float64 "json:\"cronos\" graphql:\"cronos\""
+		Bsc       *float64 "json:\"bsc\" graphql:\"bsc\""
+		Polygon   *float64 "json:\"polygon\" graphql:\"polygon\""
+		Fantom    *float64 "json:\"fantom\" graphql:\"fantom\""
+		Boba      *float64 "json:\"boba\" graphql:\"boba\""
+		Metis     *float64 "json:\"metis\" graphql:\"metis\""
+		Moonbeam  *float64 "json:\"moonbeam\" graphql:\"moonbeam\""
+		Moonriver *float64 "json:\"moonriver\" graphql:\"moonriver\""
+		Klaytn    *float64 "json:\"klaytn\" graphql:\"klaytn\""
+		Arbitrum  *float64 "json:\"arbitrum\" graphql:\"arbitrum\""
+		Avalanche *float64 "json:\"avalanche\" graphql:\"avalanche\""
+		Dfk       *float64 "json:\"dfk\" graphql:\"dfk\""
+		Aurora    *float64 "json:\"aurora\" graphql:\"aurora\""
+		Harmony   *float64 "json:\"harmony\" graphql:\"harmony\""
+		Canto     *float64 "json:\"canto\" graphql:\"canto\""
+		Total     *float64 "json:\"total\" graphql:\"total\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetDailyStatistics struct {
@@ -114,24 +128,26 @@ type GetDailyStatistics struct {
 type GetMessageBusTransactions struct {
 	Response []*struct {
 		FromInfo *struct {
-			ChainID            *int    "json:\"chainID\" graphql:\"chainID\""
-			DestinationChainID *int    "json:\"destinationChainID\" graphql:\"destinationChainID\""
-			ContractAddress    *string "json:\"contractAddress\" graphql:\"contractAddress\""
-			TxnHash            *string "json:\"txnHash\" graphql:\"txnHash\""
-			Message            *string "json:\"message\" graphql:\"message\""
-			BlockNumber        *int    "json:\"blockNumber\" graphql:\"blockNumber\""
-			Time               *int    "json:\"time\" graphql:\"time\""
-			FormattedTime      *string "json:\"formattedTime\" graphql:\"formattedTime\""
+			ChainID              *int    "json:\"chainID\" graphql:\"chainID\""
+			ChainName            *string "json:\"chainName\" graphql:\"chainName\""
+			DestinationChainID   *int    "json:\"destinationChainID\" graphql:\"destinationChainID\""
+			DestinationChainName *string "json:\"destinationChainName\" graphql:\"destinationChainName\""
+			ContractAddress      *string "json:\"contractAddress\" graphql:\"contractAddress\""
+			TxnHash              *string "json:\"txnHash\" graphql:\"txnHash\""
+			Message              *string "json:\"message\" graphql:\"message\""
+			BlockNumber          *int    "json:\"blockNumber\" graphql:\"blockNumber\""
+			Time                 *int    "json:\"time\" graphql:\"time\""
+			FormattedTime        *string "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"fromInfo\" graphql:\"fromInfo\""
 		ToInfo *struct {
-			ChainID            *int    "json:\"chainID\" graphql:\"chainID\""
-			DestinationChainID *int    "json:\"destinationChainID\" graphql:\"destinationChainID\""
-			ContractAddress    *string "json:\"contractAddress\" graphql:\"contractAddress\""
-			TxnHash            *string "json:\"txnHash\" graphql:\"txnHash\""
-			Message            *string "json:\"message\" graphql:\"message\""
-			BlockNumber        *int    "json:\"blockNumber\" graphql:\"blockNumber\""
-			Time               *int    "json:\"time\" graphql:\"time\""
-			FormattedTime      *string "json:\"formattedTime\" graphql:\"formattedTime\""
+			ChainID         *int    "json:\"chainID\" graphql:\"chainID\""
+			ChainName       *string "json:\"chainName\" graphql:\"chainName\""
+			ContractAddress *string "json:\"contractAddress\" graphql:\"contractAddress\""
+			TxnHash         *string "json:\"txnHash\" graphql:\"txnHash\""
+			Message         *string "json:\"message\" graphql:\"message\""
+			BlockNumber     *int    "json:\"blockNumber\" graphql:\"blockNumber\""
+			Time            *int    "json:\"time\" graphql:\"time\""
+			FormattedTime   *string "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"toInfo\" graphql:\"toInfo\""
 		MessageID *string "json:\"messageID\" graphql:\"messageID\""
 		Pending   *bool   "json:\"pending\" graphql:\"pending\""
@@ -190,30 +206,6 @@ func (c *Client) GetBridgeTransactions(ctx context.Context, chainID []*int, addr
 
 	var res GetBridgeTransactions
 	if err := c.Client.Post(ctx, "GetBridgeTransactions", GetBridgeTransactionsDocument, &res, vars, httpRequestOptions...); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-const GetBridgeAmountStatisticDocument = `query GetBridgeAmountStatistic ($type: StatisticType!, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
-	response: bridgeAmountStatistic(type: $type, duration: $duration, chainID: $chainID, address: $address, tokenAddress: $tokenAddress) {
-		value
-	}
-}
-`
-
-func (c *Client) GetBridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string, httpRequestOptions ...client.HTTPRequestOption) (*GetBridgeAmountStatistic, error) {
-	vars := map[string]interface{}{
-		"type":         typeArg,
-		"duration":     duration,
-		"chainID":      chainID,
-		"address":      address,
-		"tokenAddress": tokenAddress,
-	}
-
-	var res GetBridgeAmountStatistic
-	if err := c.Client.Post(ctx, "GetBridgeAmountStatistic", GetBridgeAmountStatisticDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
@@ -290,27 +282,21 @@ func (c *Client) GetAddressRanking(ctx context.Context, hours *int, httpRequestO
 	return &res, nil
 }
 
-const GetHistoricalStatisticsDocument = `query GetHistoricalStatistics ($chainID: Int, $type: HistoricalResultType, $days: Int) {
-	response: historicalStatistics(chainID: $chainID, type: $type, days: $days) {
+const GetRankedChainIDsByVolumeDocument = `query GetRankedChainIDsByVolume ($duration: Duration) {
+	response: rankedChainIDsByVolume(duration: $duration) {
+		chainID
 		total
-		dateResults {
-			date
-			total
-		}
-		type
 	}
 }
 `
 
-func (c *Client) GetHistoricalStatistics(ctx context.Context, chainID *int, typeArg *model.HistoricalResultType, days *int, httpRequestOptions ...client.HTTPRequestOption) (*GetHistoricalStatistics, error) {
+func (c *Client) GetRankedChainIDsByVolume(ctx context.Context, duration *model.Duration, httpRequestOptions ...client.HTTPRequestOption) (*GetRankedChainIDsByVolume, error) {
 	vars := map[string]interface{}{
-		"chainID": chainID,
-		"type":    typeArg,
-		"days":    days,
+		"duration": duration,
 	}
 
-	var res GetHistoricalStatistics
-	if err := c.Client.Post(ctx, "GetHistoricalStatistics", GetHistoricalStatisticsDocument, &res, vars, httpRequestOptions...); err != nil {
+	var res GetRankedChainIDsByVolume
+	if err := c.Client.Post(ctx, "GetRankedChainIDsByVolume", GetRankedChainIDsByVolumeDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
@@ -336,6 +322,46 @@ func (c *Client) GetAmountStatistic(ctx context.Context, typeArg model.Statistic
 
 	var res GetAmountStatistic
 	if err := c.Client.Post(ctx, "GetAmountStatistic", GetAmountStatisticDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($chainID: Int, $type: DailyStatisticType, $duration: Duration) {
+	response: dailyStatisticsByChain(chainID: $chainID, type: $type, duration: $duration) {
+		date
+		ethereum
+		optimism
+		cronos
+		bsc
+		polygon
+		fantom
+		boba
+		metis
+		moonbeam
+		moonriver
+		klaytn
+		arbitrum
+		avalanche
+		dfk
+		aurora
+		harmony
+		canto
+		total
+	}
+}
+`
+
+func (c *Client) GetDailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration, httpRequestOptions ...client.HTTPRequestOption) (*GetDailyStatisticsByChain, error) {
+	vars := map[string]interface{}{
+		"chainID":  chainID,
+		"type":     typeArg,
+		"duration": duration,
+	}
+
+	var res GetDailyStatisticsByChain
+	if err := c.Client.Post(ctx, "GetDailyStatisticsByChain", GetDailyStatisticsByChainDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
@@ -374,7 +400,9 @@ const GetMessageBusTransactionsDocument = `query GetMessageBusTransactions ($cha
 	response: messageBusTransactions(chainID: $chainID, contractAddress: $contractAddress, startTime: $startTime, endTime: $endTime, txnHash: $txHash, messageID: $messageID, pending: $pending, page: $page) {
 		fromInfo {
 			chainID
+			chainName
 			destinationChainID
+			destinationChainName
 			contractAddress
 			txnHash
 			message
@@ -384,7 +412,7 @@ const GetMessageBusTransactionsDocument = `query GetMessageBusTransactions ($cha
 		}
 		toInfo {
 			chainID
-			destinationChainID
+			chainName
 			contractAddress
 			txnHash
 			message

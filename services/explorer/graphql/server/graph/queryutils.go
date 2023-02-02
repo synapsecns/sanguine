@@ -180,7 +180,6 @@ func generateSingleSpecifierI32ArrSQL(values []*int, field string, firstFilter *
 //
 // nolint:unparam
 func generateSingleSpecifierStringArrSQL(values []*string, field string, firstFilter *bool, tablePrefix string) string {
-
 	if len(values) == 0 {
 		return ""
 	}
@@ -200,7 +199,6 @@ func generateSingleSpecifierStringArrSQL(values []*string, field string, firstFi
 	}
 
 	return final + ")"
-
 }
 
 // generateTimestampSpecifierSQL generates a where function with an uint64.
@@ -320,7 +318,6 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	if bridgeEvent.FTimeStamp != nil {
 		fromTimestamp = int(*bridgeEvent.FTimeStamp)
 		fromTimeStampFormatted = time.Unix(int64(*bridgeEvent.FTimeStamp), 0).String()
-
 	} else {
 		return nil, fmt.Errorf("timestamp is not valid")
 	}
@@ -358,7 +355,6 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 		if bridgeEvent.TTimeStamp != nil {
 			toTimestamp = int(*bridgeEvent.TTimeStamp)
 			toTimeStampFormatted = time.Unix(int64(*bridgeEvent.TTimeStamp), 0).String()
-
 		} else {
 			return nil, fmt.Errorf("timestamp is not valid")
 		}
@@ -448,7 +444,6 @@ func generateAllBridgeEventsQueryFromDestination(chainID []*int, address *string
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, false), destToOriginCol, "baseQuery", destToOriginJoins)
-	//fmt.Println(compositeFilters)
 	return finalQuery
 }
 
@@ -473,7 +468,7 @@ func generateAllBridgeEventsQueryFromOrigin(chainID []*int, address *string, max
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
 	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, true), originToDestCol, "baseQuery", originToDestJoins)
-	//fmt.Println(compositeFilters)
+	fmt.Println(finalQuery)
 	return finalQuery
 }
 
@@ -539,7 +534,6 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID []*i
 //
 // nolint:cyclop
 func GetPartialInfoFromMessageBusEventHybrid(messageBusEvent sql.HybridMessageBusEvent, pending bool) (*model.MessageBusTransaction, error) {
-
 	var messageBusTx model.MessageBusTransaction
 	fromChainID := int(messageBusEvent.FChainID)
 	fromDestinationChainID := int(messageBusEvent.FDestinationChainID.Uint64())
@@ -623,21 +617,23 @@ func keyGen(chainID string, kappa string) string {
 	return fmt.Sprintf("%s-%s", chainID, kappa)
 }
 
-func GenerateDailyStatisticBridgeSQL(typeArg *model.DailyStatisticType, compositeFilters string) (*string, *string, error) {
+func GenerateDailyStatisticBridgeSQL(typeArg *model.DailyStatisticType, compositeFilters string, firstFilter *bool) (*string, *string, error) {
 	var subQuery string
 	var query string
 	switch *typeArg {
 	case model.DailyStatisticTypeVolume:
-		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, "baseQuery", singleSideJoinsCTE)
+		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
+		compositeFilters += directionSpecifier
+		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
 		query = fmt.Sprintf("%s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
 	case model.DailyStatisticTypeAddresses:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, "baseQuery", singleSideJoinsCTE)
+		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
 		query = fmt.Sprintf("%s SELECT toFloat64(uniq(%s, %s )) AS total FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.SenderFieldName, singleSideCol, "baseQuery", singleSideJoinsCTE)
 	case model.DailyStatisticTypeTransactions:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, "baseQuery", singleSideJoinsCTE)
+		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
 		query = fmt.Sprintf(" %s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
 	case model.DailyStatisticTypeFee:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FROM_UNIXTIME(%s, %s) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%m/%d/%Y'", singleSideCol, "baseQuery", singleSideJoinsCTE)
+		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FtoDate(ROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
 		query = fmt.Sprintf(" %s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
 
 	default:
@@ -690,34 +686,45 @@ func GenerateDailyStatisticMessageBusSQL(typeArg *model.DailyStatisticType, comp
 	return &subQuery, &query, nil
 }
 
-func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, compositeFilters string) (*string, error) {
+func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, compositeFilters string, firstFilter *bool) (*string, error) {
 	var operation string
 	var finalSQL string
 	switch typeArg {
 	case model.StatisticTypeMeanVolumeUsd:
+		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
+		compositeFilters += directionSpecifier
 		operation = fmt.Sprintf("AVG(%s)", sql.AmountUSDFieldName)
 		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
 	case model.StatisticTypeMedianVolumeUsd:
+		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
+		compositeFilters += directionSpecifier
 		operation = fmt.Sprintf("median(%s)", sql.AmountUSDFieldName)
 		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
 	case model.StatisticTypeTotalVolumeUsd:
+		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
+		compositeFilters += directionSpecifier
 		operation = fmt.Sprintf("sumKahan(%s)", sql.AmountUSDFieldName)
 		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
 	case model.StatisticTypeCountTransactions:
+		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
+		compositeFilters += directionSpecifier
 		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
 		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil))
 	case model.StatisticTypeCountAddresses:
+		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
+		compositeFilters += directionSpecifier
 		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
 		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil))
 	case model.StatisticTypeMeanFeeUsd:
 		operation = fmt.Sprintf("AVG(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseBridge)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseBridge, compositeFilters)
 	case model.StatisticTypeMedianFeeUsd:
 		operation = fmt.Sprintf("median(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseBridge)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseBridge, compositeFilters)
 	case model.StatisticTypeTotalFeeUsd:
 		operation = fmt.Sprintf("sumKahan(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseBridge)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseBridge, compositeFilters)
+
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
@@ -729,31 +736,32 @@ func GenerateAmountStatisticSwapSQL(typeArg model.StatisticType, compositeFilter
 	switch typeArg {
 	case model.StatisticTypeMeanVolumeUsd:
 		operation = fmt.Sprintf("AVG(%s)", swapVolumeSelect)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseSwap)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeMedianVolumeUsd:
 		operation = fmt.Sprintf("median(%s)", swapVolumeSelect)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseSwap)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeTotalVolumeUsd:
 		operation = fmt.Sprintf("sumKahan(%s)", swapVolumeSelect)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseSwap)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeCountTransactions:
 		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseSwap)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeCountAddresses:
 		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseSwap)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeMeanFeeUsd:
-		operation = fmt.Sprintf("AVG(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseSwap)
+		operation = fmt.Sprintf("AVG(arraySum(mapValues(%s)))", sql.AdminFeeUSDFieldName)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeMedianFeeUsd:
-		operation = fmt.Sprintf("median(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseSwap)
+		operation = fmt.Sprintf("median(arraySum(mapValues(%s)))", sql.AdminFeeUSDFieldName)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeTotalFeeUsd:
-		operation = fmt.Sprintf("sumKahan(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseSwap)
+		operation = fmt.Sprintf("sumKahan(arraySum(mapValues(%s)))", sql.AdminFeeUSDFieldName)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
+
 	return &finalSQL, nil
 }
 
@@ -769,23 +777,116 @@ func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, composite
 		return nil, nil
 	case model.StatisticTypeCountTransactions:
 		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseMessageBus)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
 	case model.StatisticTypeCountAddresses:
-		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseMessageBus)
+		operation = fmt.Sprintf("uniq(%s, source_address) AS res", sql.ChainIDFieldName)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
 	case model.StatisticTypeMeanFeeUsd:
 		operation = fmt.Sprintf("AVG(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseMessageBus)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
 	case model.StatisticTypeMedianFeeUsd:
 		operation = fmt.Sprintf("median(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseMessageBus)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
 	case model.StatisticTypeTotalFeeUsd:
 		operation = fmt.Sprintf("sumKahan(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, baseMessageBus)
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
 	return &finalSQL, nil
+}
+
+//
+// func GenerateDailyStatisticBridgeSQL(typeArg *model.DailyStatisticType, compositeFilters string, firstFilter *bool) (*string, *string, error) {
+//	var subQuery string
+//	var query string
+//	switch *typeArg {
+//	case model.DailyStatisticTypeVolume:
+//		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
+//		compositeFilters += directionSpecifier
+//		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
+//		query = fmt.Sprintf("%s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
+//	case model.DailyStatisticTypeAddresses:
+//		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
+//		query = fmt.Sprintf("%s SELECT toFloat64(uniq(%s, %s )) AS total FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.SenderFieldName, singleSideCol, "baseQuery", singleSideJoinsCTE)
+//	case model.DailyStatisticTypeTransactions:
+//		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
+//		query = fmt.Sprintf(" %s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
+//	case model.DailyStatisticTypeFee:
+//		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FtoDate(ROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
+//		query = fmt.Sprintf(" %s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
+//
+//	default:
+//		return nil, nil, fmt.Errorf("invalid type argument")
+//	}
+//	return &subQuery, &query, nil
+//}
+//
+//func GenerateDailyStatisticSwapSQL(typeArg *model.DailyStatisticType, compositeFilters string) (*string, *string, error) {
+//	var subQuery string
+//	var query string
+//	switch *typeArg {
+//	case model.DailyStatisticTypeVolume:
+//		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", swapVolumeSelect, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
+//		query = fmt.Sprintf("%s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
+//	case model.DailyStatisticTypeAddresses:
+//		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
+//		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
+//	case model.DailyStatisticTypeTransactions:
+//		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
+//		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
+//	case model.DailyStatisticTypeFee:
+//		subQuery = fmt.Sprintf("SELECT sumKahan(arraySum(mapValues(%s))) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.AdminFeeUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
+//		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
+//
+//	default:
+//		return nil, nil, fmt.Errorf("invalid type argument")
+//	}
+//	return &subQuery, &query, nil
+//}
+//
+//func GenerateDailyStatisticMessageBusSQL(typeArg *model.DailyStatisticType, compositeFilters string) (*string, *string, error) {
+//	var subQuery string
+//	var query string
+//	switch *typeArg {
+//	case model.DailyStatisticTypeVolume:
+//		return nil, nil, nil
+//	case model.DailyStatisticTypeAddresses:
+//		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseMessageBus, compositeFilters)
+//		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
+//	case model.DailyStatisticTypeTransactions:
+//		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseMessageBus, compositeFilters)
+//		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
+//	case model.DailyStatisticTypeFee:
+//		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.FeeUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseMessageBus, compositeFilters)
+//		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
+//	default:
+//		return nil, nil, fmt.Errorf("invalid type argument")
+//	}
+//	return &subQuery, &query, nil
+//}
+
+func GenerateDailyStatisticVolumeSQL(compositeFilters string, firstFilter *bool) string {
+	directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
+	return fmt.Sprintf("%s %s FULL OUTER JOIN (SELECT %s, chain_id, sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1,    arraySum(mapValues(amount_usd)), event_type = 9,    arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],    0) )     as usdTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.pre_fchain_id = s.chain_id) group by date order by date) SETTINGS join_use_nulls=1", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), dailyVolumeBridge, toDateSelect, compositeFilters)
+}
+
+func GenerateRankedChainsByVolumeSQL(compositeFilters string, firstFilter *bool) string {
+	directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
+	return fmt.Sprintf("%s %s FULL OUTER JOIN (SELECT chain_id, sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1, arraySum(mapValues(amount_usd)), event_type = 9, arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id], 0)) as usdTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by chain_id) s ON b.pre_fchain_id = s.chain_id ORDER BY total DESC SETTINGS join_use_nulls = 1", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), rankedChainsBridgeVolume, compositeFilters)
+}
+
+func GenerateDailyStatisticFeeSQL(compositeFilters string) string {
+	return fmt.Sprintf("%s FROM ( SELECT %s, chain_id, sumKahan(fee_usd) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(arraySum(mapValues(admin_fee_usd))) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(fee_usd) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+}
+
+func GenerateDailyStatisticAddressesSQL(compositeFilters string) string {
+	return fmt.Sprintf("%s FROM ( SELECT %s, chain_id, uniq(chain_id, sender) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, sender) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, source_address) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+}
+
+func GenerateDailyStatisticTransactionsSQL(compositeFilters string, firstFilter *bool) string {
+	directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
+	return fmt.Sprintf("%s FROM ( SELECT %s, chain_id, uniq(chain_id, tx_hash) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters+directionSpecifier, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
 }
 
 type SortBridgeTxType []*model.BridgeTransaction
