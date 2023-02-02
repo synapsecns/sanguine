@@ -14,6 +14,7 @@ require (
 	github.com/go-git/go-git/v5 v5.5.2
 	github.com/kendru/darwin/go/depgraph v0.0.0-20221105232959-877d6a81060c
 	github.com/otiai10/copy v1.9.0
+	github.com/sethvargo/go-githubactions v1.1.0
 	github.com/stretchr/testify v1.8.1
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/vishalkuo/bimap v0.0.0-20220726225509-e0b4f20de28b
@@ -44,6 +45,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/sethvargo/go-envconfig v0.8.0 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
 	github.com/spf13/afero v1.9.3 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect

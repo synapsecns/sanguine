@@ -36,6 +36,7 @@ jobs:
             contrib/terraform-provider-iap: 'contrib/terraform-provider-iap/**'
             contrib/tfcore: 'contrib/tfcore/**'
             contrib/terraform-provider-helmproxy: 'contrib/terraform-provider-helmproxy/**'
+            contrib/git-changes-action: 'contrib/git-changes-action/**'
             contrib/terraform-provider-kubeproxy: 'contrib/terraform-provider-kubeproxy/**'
             contrib/release-copier-action: 'contrib/release-copier-action/**'
             services/scribe: 'services/scribe/**'
