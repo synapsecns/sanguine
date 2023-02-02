@@ -29,4 +29,5 @@ func main() {
 	}
 
 	fmt.Println(marshalledJSON)
+	githubactions.SetOutput("changed_modules", string(marshalledJSON))
 }

@@ -108,6 +108,7 @@ func (s *TestSuite) SetupSuite() {
 	s.setupSuiteCalled.Store(true)
 }
 
+// BeforeTest performs some assertions and sets up the test.
 func (s *TestSuite) BeforeTest(_, _ string) {
 	if !s.setupTestCalled.Load() {
 		panic("make sure SetupTest is called on the parent")
