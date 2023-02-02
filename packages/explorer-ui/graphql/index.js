@@ -1,1 +1,1 @@
-export const API_URL = 'http://localhost/graphql'
+export const API_URL = 'https://explorer.interoperability.institute/graphql'
