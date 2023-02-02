@@ -6,8 +6,8 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/contrib/git-changest-action/detector/tree"
+	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-// Repo is a test repo
+// Repo is a test repo.
 type Repo struct {
 	repo         *git.Repository
 	dir          string
@@ -24,7 +24,7 @@ type Repo struct {
 	tb           testing.TB
 }
 
-// NewTestRepo creates a new test repo
+// NewTestRepo creates a new test repo.
 func NewTestRepo(tb testing.TB, r *git.Repository, dir string) (*Repo, error) {
 	tb.Helper()
 
@@ -32,7 +32,7 @@ func NewTestRepo(tb testing.TB, r *git.Repository, dir string) (*Repo, error) {
 	// create a tree with the following structure:
 	// we'll use this to add some paths
 	err := tree.AddDirectoryPaths(testTree, dir, dir)
-	Nil(tb, err, "should not return an error")
+	assert.Nil(tb, err, "should not return an error")
 
 	return &Repo{
 		repo: r,
@@ -42,11 +42,13 @@ func NewTestRepo(tb testing.TB, r *git.Repository, dir string) (*Repo, error) {
 	}, nil
 }
 
-// trimFiles trims files from a list of paths
-func (t *Repo) trimFiles(tb testing.TB, paths []string) (res []string) {
+// trimFiles trims files from a list of paths.
+func (t *Repo) trimFiles(paths []string) (res []string) {
+	t.tb.Helper()
+
 	for _, path := range paths {
 		stats, err := os.Stat(filepath.Join(t.dir, path))
-		Nil(tb, err)
+		assert.Nil(t.tb, err)
 
 		if stats.IsDir() {
 			res = append(res, path)
@@ -59,18 +61,19 @@ func (t *Repo) trimFiles(tb testing.TB, paths []string) (res []string) {
 // addedFiles are returned relative to the repo.
 func (t *Repo) AddRandomFiles(fileCount int) (addedFiles []string) {
 	if fileCount > 0 {
-		defer t.commit()
+		defer t.Commit()
 	}
 
-	dirPaths := t.trimFiles(t.tb, t.tree.AllPaths())
+	dirPaths := t.trimFiles(t.tree.AllPaths())
 
 	for i := 0; i < fileCount; i++ {
 		newFile := filepath.Join(t.dir, gofakeit.RandomString(dirPaths), fmt.Sprintf("%s.%s", gofakeit.Word(), gofakeit.FileExtension()))
+		//nolint: gosec
 		testFile, err := os.Create(newFile)
-		Nil(t.tb, err, "should not return an error")
+		assert.Nil(t.tb, err, "should not return an error")
 
 		_, err = testFile.Write(gofakeit.ImageJpeg(20, 20))
-		Nil(t.tb, err, "should not return an error")
+		assert.Nil(t.tb, err, "should not return an error")
 
 		addedFiles = append(addedFiles, strings.TrimPrefix(newFile, t.dir))
 	}
@@ -78,20 +81,20 @@ func (t *Repo) AddRandomFiles(fileCount int) (addedFiles []string) {
 	return addedFiles
 }
 
-// Commit commits all changed files to the repo
-func (t *Repo) commit() {
+// Commit commits all changed files to the repo.
+func (t *Repo) Commit() {
 	wt, err := t.repo.Worktree()
-	Nil(t.tb, err, "should be able to load work tree")
+	assert.Nil(t.tb, err, "should be able to load work tree")
 
 	err = wt.AddGlob(".")
-	Nil(t.tb, err, "should be able to add all files")
+	assert.Nil(t.tb, err, "should be able to add all files")
 
-	_, err = wt.Commit("test commit", &git.CommitOptions{
+	_, err = wt.Commit("test Commit", &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  gofakeit.Name(),
 			Email: gofakeit.Email(),
 			When:  time.Now(),
 		},
 	})
-	Nil(t.tb, err, "should be able to commit")
+	assert.Nil(t.tb, err, "should be able to Commit")
 }

@@ -42,7 +42,7 @@ require (
 	github.com/99designs/gqlgen v0.17.20 // indirect
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/MichaelMure/go-term-text v0.3.1 // indirect
-	github.com/Microsoft/go-winio v0.5.2 // indirect
+	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7 // indirect
 	github.com/VictoriaMetrics/fastcache v1.6.0 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
@@ -70,6 +70,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
+	github.com/docker/docker v20.10.23+incompatible // indirect
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/eliukblau/pixterm/pkg/ansimage v0.0.0-20191210081756-9fb6cf8c2f75 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
@@ -151,7 +152,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/mattn/go-tty v0.0.3 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/miguelmota/go-ethereum-hdwallet v0.1.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
@@ -191,7 +192,7 @@ require (
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
-	github.com/spf13/afero v1.8.2 // indirect
+	github.com/spf13/afero v1.9.3 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/cobra v1.6.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

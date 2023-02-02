@@ -8,7 +8,7 @@ import (
 )
 
 // AddDirectoryPaths is a helper function that adds all paths in a directory to the tree
-// you can optionally pass in a prefix to trim from the paths
+// you can optionally pass in a prefix to trim from the paths.
 func AddDirectoryPaths(tree Tree, dirPath, trimPrefix string) error {
 	err := filepath.Walk(dirPath, func(path string, _ os.FileInfo, err error) error {
 		if err != nil {

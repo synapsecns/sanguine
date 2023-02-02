@@ -2,7 +2,7 @@ package tree_test
 
 import (
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/contrib/git-changest-action/detector/tree"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
 	"testing"
 )
 

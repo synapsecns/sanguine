@@ -5,14 +5,16 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/synapsecns/sanguine/contrib/git-changest-action/detector/tree"
+	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
 	"golang.org/x/mod/modfile"
 	"os"
 	"path"
 )
 
 // DetectChangedModules is the change detector client.
-func DetectChangedModules(repoPath, fromHash string) (modules map[string]bool, err error) {
+// nolint: cyclop
+func DetectChangedModules(repoPath, fromHash string, includeDeps bool) (modules map[string]bool, err error) {
 	modules = make(map[string]bool)
 
 	goWorkPath := path.Join(repoPath, "go.work")
@@ -21,6 +23,7 @@ func DetectChangedModules(repoPath, fromHash string) (modules map[string]bool, e
 		return nil, fmt.Errorf("go.work file not found in %s", repoPath)
 	}
 
+	//nolint: gosec
 	workFile, err := os.ReadFile(goWorkPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read go.work file: %w", err)
@@ -47,10 +50,12 @@ func DetectChangedModules(repoPath, fromHash string) (modules map[string]bool, e
 			changed = true
 		}
 
-		deps := depGraph[module.Path]
-		for _, dep := range deps {
-			if ct.HasPath(dep) {
-				changed = true
+		if includeDeps {
+			deps := depGraph[module.Path]
+			for _, dep := range deps {
+				if ct.HasPath(dep) {
+					changed = true
+				}
 			}
 		}
 
@@ -88,22 +93,42 @@ func getChangeTree(repoPath string, fromHash string) (tree.Tree, error) {
 		return nil, fmt.Errorf("could not get commit object for hash %s: %w", fromHash, err)
 	}
 
-	// generate a diff
-	patch, err := fromCommitObject.Patch(toCommitObject)
+	diff, err := fastDiff(fromCommitObject, toCommitObject)
 	if err != nil {
-		return nil, fmt.Errorf("could not get patch for commit objects %s and %s: %w", fromHash, toCommitObject.Hash.String(), err)
+		return nil, fmt.Errorf("could not get diff: %w", err)
 	}
 
-	// add diff items to the tree
-	for _, filePatch := range patch.FilePatches() {
-		fromFile, toFile := filePatch.Files()
-		if fromFile != nil {
-			changeTree.Add(fromFile.Path())
-		}
-		if toFile != nil {
-			changeTree.Add(toFile.Path())
-		}
-	}
+	changeTree.Add(diff...)
 
 	return changeTree, nil
+}
+
+// fastDiff is a faster way to get the diff between two commits.
+// it returns a boolean rather than a full blob diff.
+func fastDiff(from, to *object.Commit) (changedFiles []string, err error) {
+	fromTree, err := from.Tree()
+	if err != nil {
+		return []string{}, fmt.Errorf("could not get tree for commit %s: %w", from.Hash.String(), err)
+	}
+
+	toTree, err := to.Tree()
+	if err != nil {
+		return []string{}, fmt.Errorf("could not get tree for commit %s: %w", to.Hash.String(), err)
+	}
+
+	changes, err := fromTree.Diff(toTree)
+	if err != nil {
+		return []string{}, fmt.Errorf("could not get diff for commit %s: %w", to.Hash.String(), err)
+	}
+
+	for _, change := range changes {
+		if change.From.Name != "" {
+			changedFiles = append(changedFiles, change.From.Name)
+		}
+		if change.To.Name != "" {
+			changedFiles = append(changedFiles, change.To.Name)
+		}
+	}
+
+	return changedFiles, nil
 }

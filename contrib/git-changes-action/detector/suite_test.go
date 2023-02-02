@@ -112,10 +112,10 @@ func TestDetectorSuite(t *testing.T) {
 	suite.Run(t, NewTestSuite(t))
 }
 
-// nullWriter writes no progress
+// nullWriter writes no progress.
 type nullWriter struct{}
 
-func (_ nullWriter) Write(p []byte) (n int, err error) {
+func (nullWriter) Write(p []byte) (n int, err error) {
 	// Do Nothing
 	return 0, nil
 }

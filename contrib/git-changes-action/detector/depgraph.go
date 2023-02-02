@@ -13,7 +13,8 @@ import (
 )
 
 // getDependencyGraph returns a dependency graph of all the modules in the go.work file that refer to other modules in the go.work file
-// returns a map of module (./my_module)->(./my_module_dependency1,./my_module_dependency2)
+// returns a map of module (./my_module)->(./my_module_dependency1,./my_module_dependency2).
+// nolint: cyclop
 func getDependencyGraph(repoPath string) (moduleDeps map[string][]string, err error) {
 	moduleDeps = make(map[string][]string)
 	// parse the go.work file
@@ -23,6 +24,7 @@ func getDependencyGraph(repoPath string) (moduleDeps map[string][]string, err er
 		return nil, fmt.Errorf("go.work file not found in %s", repoPath)
 	}
 
+	//nolint: gosec
 	workFile, err := os.ReadFile(goWorkPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read go.work file: %w", err)
@@ -34,9 +36,9 @@ func getDependencyGraph(repoPath string) (moduleDeps map[string][]string, err er
 	}
 
 	// map of module->dependencies + replaces
-	dependencies := make(map[string][]string)
+	var dependencies map[string][]string
 	// bidirectional map of module->module name
-	moduleNames := bimap.NewBiMap[string, string]()
+	var moduleNames *bimap.BiMap[string, string]
 
 	// iterate through each module in the go.work file
 	// create a list of dependencies for each module
@@ -68,11 +70,10 @@ func getDependencyGraph(repoPath string) (moduleDeps map[string][]string, err er
 				}
 			}
 		}
-
 	}
 
 	for _, module := range parsedWorkFile.Use {
-		for dep, _ := range depGraph.Dependencies(module.Path) {
+		for dep := range depGraph.Dependencies(module.Path) {
 			moduleDeps[module.Path] = append(moduleDeps[module.Path], dep)
 		}
 	}
@@ -80,7 +81,7 @@ func getDependencyGraph(repoPath string) (moduleDeps map[string][]string, err er
 	return moduleDeps, nil
 }
 
-// makeDepMaps makes a dependency map and a bidirectional map of dep<->module
+// makeDepMaps makes a dependency map and a bidirectional map of dep<->module.
 func makeDepMaps(repoPath string, uses []*modfile.Use) (dependencies map[string][]string, moduleNames *bimap.BiMap[string, string], err error) {
 	// map of module->dependencies + replaces
 	dependencies = make(map[string][]string)
@@ -91,6 +92,7 @@ func makeDepMaps(repoPath string, uses []*modfile.Use) (dependencies map[string]
 	// create a list of dependencies for each module
 	// and module names
 	for _, module := range uses {
+		//nolint: gosec
 		modContents, err := os.ReadFile(filepath.Join(repoPath, module.Path, "go.mod"))
 		if err != nil {
 			return dependencies, moduleNames, fmt.Errorf("failed to read module file %s: %w", module.Path, err)
@@ -116,13 +118,13 @@ func makeDepMaps(repoPath string, uses []*modfile.Use) (dependencies map[string]
 	return dependencies, moduleNames, nil
 }
 
-// isRelativeDep returns true if the dependency is relative to the module (starts with ./ or ../)
+// isRelativeDep returns true if the dependency is relative to the module (starts with ./ or ../).
 func isRelativeDep(path string) bool {
 	return strings.HasPrefix(path, "./") && strings.HasPrefix(path, "../")
 }
 
 // convertRelPath converts a path relative to a module to a path relative to the repository root.
-// it does nothing if the path does not start with ./ or ../
+// it does nothing if the path does not start with ./ or ../.
 func convertRelPath(repoPath string, modulePath, dependency string) string {
 	if !isRelativeDep(dependency) {
 		return dependency

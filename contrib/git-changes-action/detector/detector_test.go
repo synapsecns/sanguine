@@ -2,12 +2,40 @@ package detector_test
 
 import (
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/contrib/git-changest-action/detector"
-	"github.com/synapsecns/sanguine/contrib/git-changest-action/detector/gitmock"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/gitmock"
+	"os"
+	"path/filepath"
 )
 
 func (d *DetectorSuite) TestChangedModules() {
-	detector.DetectChangedModules("/Users/jake/sanguine", "665a3b1d014c0f5482c3cf6393868f70438ad3f8")
+	// store the headref for integrity checking after tests
+	headRef, err := d.sourceRepo.repo.Head()
+	Nil(d.T(), err, "could not get source repo head ref")
+
+	testRepo, err := gitmock.NewTestRepo(d.T(), d.sourceRepo.repo, d.sourceRepo.dir)
+	Nil(d.T(), err, "should not return an error")
+
+	_, err = os.Create(filepath.Join(d.sourceRepo.dir, "lib", "newfile.go"))
+	Nil(d.T(), err, "should not return an error")
+
+	testRepo.Commit()
+
+	withDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, headRef.Hash().String(), true)
+	Nil(d.T(), err, "should not return an error")
+
+	withoutDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, headRef.Hash().String(), false)
+	Nil(d.T(), err, "should not return an error")
+
+	False(d.T(), withoutDeps["./cmd/app1"])
+	False(d.T(), withoutDeps["./cmd/app2"])
+	False(d.T(), withoutDeps["./cmd/app3"])
+	True(d.T(), withoutDeps["./lib"])
+
+	True(d.T(), withDeps["./cmd/app1"])
+	True(d.T(), withDeps["./cmd/app2"])
+	False(d.T(), withDeps["./cmd/app3"])
+	True(d.T(), withDeps["./lib"])
 }
 
 func (d *DetectorSuite) TestGetDependencyDag() {
