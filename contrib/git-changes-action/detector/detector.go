@@ -67,14 +67,14 @@ func DetectChangedModules(repoPath, fromHash string, includeDeps bool) (modules 
 }
 
 // getChangeTree returns a tree of all the files that have changed between the current commit and the commit with the given hash.
-func getChangeTree(repoPath string, fromHash string) (tree.Tree, error) {
+func getChangeTree(repoPath string, toHash string) (tree.Tree, error) {
 	// open the repository
 	repository, err := git.PlainOpen(repoPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not open repository %s: %w", repoPath, err)
 	}
 
-	_, err = hex.DecodeString(fromHash)
+	_, err = hex.DecodeString(toHash)
 	if err != nil {
 		// this is a ref, convert it to a hash
 		refs, err := repository.References()
@@ -82,11 +82,11 @@ func getChangeTree(repoPath string, fromHash string) (tree.Tree, error) {
 			return nil, fmt.Errorf("could not get references for repository %s: %w", repoPath, err)
 		}
 
-		fmt.Println(fromHash)
+		fmt.Println(toHash)
 		err = refs.ForEach(func(ref *plumbing.Reference) error {
 			fmt.Println(ref.Name().String())
-			if ref.Name().String() == fromHash {
-				fromHash = ref.Hash().String()
+			if ref.Name().String() == toHash {
+				toHash = ref.Hash().String()
 			}
 			return nil
 		})
@@ -108,12 +108,12 @@ func getChangeTree(repoPath string, fromHash string) (tree.Tree, error) {
 	// get each commit object (before and after)
 	toCommitObject, err := repository.CommitObject(repoHead.Hash())
 	if err != nil {
-		return nil, fmt.Errorf("could not get commit object for hash %s: %w", fromHash, err)
+		return nil, fmt.Errorf("could not get commit object for hash %s: %w", toHash, err)
 	}
 
-	fromCommitObject, err := repository.CommitObject(plumbing.NewHash(fromHash))
+	fromCommitObject, err := repository.CommitObject(plumbing.NewHash(toHash))
 	if err != nil {
-		return nil, fmt.Errorf("could not get commit object for hash %s: %w", fromHash, err)
+		return nil, fmt.Errorf("could not get commit object for hash %s: %w", toHash, err)
 	}
 
 	diff, err := fastDiff(fromCommitObject, toCommitObject)
