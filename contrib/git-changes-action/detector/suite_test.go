@@ -115,7 +115,7 @@ func TestDetectorSuite(t *testing.T) {
 // nullWriter writes no progress.
 type nullWriter struct{}
 
-func (nullWriter) Write(p []byte) (n int, err error) {
+func (_ nullWriter) Write(p []byte) (n int, err error) {
 	// Do Nothing
 	return 0, nil
 }

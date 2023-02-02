@@ -83,8 +83,10 @@ func getChangeTree(repoPath string, toHash string) (tree.Tree, error) {
 		}
 
 		err = refs.ForEach(func(ref *plumbing.Reference) error {
+			fmt.Println(ref.Name().String())
 			if ref.Name().String() == toHash {
 				toHash = ref.Hash().String()
+				fmt.Println(toHash)
 			}
 			return nil
 		})
@@ -114,7 +116,7 @@ func getChangeTree(repoPath string, toHash string) (tree.Tree, error) {
 		return nil, fmt.Errorf("could not get commit object for hash %s: %w", toHash, err)
 	}
 
-	diff, err := fastDiff(toCommitObject, fromCommitObject)
+	diff, err := fastDiff(fromCommitObject, toCommitObject)
 	if err != nil {
 		return nil, fmt.Errorf("could not get diff: %w", err)
 	}
