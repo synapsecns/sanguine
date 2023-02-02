@@ -114,7 +114,7 @@ func getChangeTree(repoPath string, toHash string) (tree.Tree, error) {
 		return nil, fmt.Errorf("could not get commit object for hash %s: %w", toHash, err)
 	}
 
-	diff, err := fastDiff(fromCommitObject, toCommitObject)
+	diff, err := fastDiff(toCommitObject, fromCommitObject)
 	if err != nil {
 		return nil, fmt.Errorf("could not get diff: %w", err)
 	}
