@@ -25,7 +25,7 @@ jobs:
         with:
           go-version: 1.19
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:ae53c01956dd7f90a187d5355b773203262dea42
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:14dd7894933a48382eb31c75574c44512529e1cf
         with:
           include_deps: true
       # For pull requests it's not necessary to checkout the code
