@@ -51,10 +51,10 @@ jobs:
 
       - id: length
         run: |
-          export FILTER_LENGTH_DEPS=$(echo $FILTERED_PATHS | jq '. | length')
+          export FILTER_LENGTH_DEPS=$(echo $FILTERED_PATHS_DEPS | jq '. | length')
           echo "##[set-output name=FILTER_LENGTH_DEPS;]$(echo $FILTER_LENGTH_DEPS)"
 
-          export FILTER_LENGTH_NODEPS=$(echo $FILTERED_PATHS | jq '. | length')
+          export FILTER_LENGTH_NODEPS=$(echo $FILTERED_PATHS_NODEPS | jq '. | length')
           echo "##[set-output name=FILTER_LENGTH_NODEPS;]$(echo $FILTER_LENGTH_NODEPS)"
         env:
           FILTERED_PATHS_DEPS: ${{ steps.filter_go_deps.outputs.changed_modules }}
