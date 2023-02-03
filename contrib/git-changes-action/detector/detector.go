@@ -15,7 +15,7 @@ import (
 
 // DetectChangedModules is the change detector client.
 // nolint: cyclop
-func DetectChangedModules(repoPath, fromHash string, includeDeps bool) (modules map[string]bool, err error) {
+func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool) (modules map[string]bool, err error) {
 	modules = make(map[string]bool)
 
 	goWorkPath := path.Join(repoPath, "go.work")
@@ -33,11 +33,6 @@ func DetectChangedModules(repoPath, fromHash string, includeDeps bool) (modules 
 	parsedWorkFile, err := modfile.ParseWork(goWorkPath, workFile, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse go.work file: %w", err)
-	}
-
-	ct, err := getChangeTree(repoPath, fromHash)
-	if err != nil {
-		return nil, fmt.Errorf("could not get change tree: %w", err)
 	}
 
 	depGraph, err := getDependencyGraph(repoPath)
@@ -66,8 +61,8 @@ func DetectChangedModules(repoPath, fromHash string, includeDeps bool) (modules 
 	return modules, nil
 }
 
-// getChangeTree returns a tree of all the files that have changed between the current commit and the commit with the given hash.
-func getChangeTree(repoPath string, toHash string) (tree.Tree, error) {
+// getChangeTreeFromGit returns a tree of all the files that have changed between the current commit and the commit with the given hash.
+func getChangeTreeFromGit(repoPath string, toHash string) (tree.Tree, error) {
 	// open the repository
 	repository, err := git.PlainOpen(repoPath)
 	if err != nil {

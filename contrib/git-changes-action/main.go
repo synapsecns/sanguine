@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/sethvargo/go-githubactions"
@@ -21,7 +22,15 @@ func main() {
 		includeDeps = true
 	}
 
-	modules, err := detector.DetectChangedModules(workingDirectory, os.Getenv("GITHUB_REF"), includeDeps)
+	eventName := os.Getenv("GITHUB_EVENT_NAME")
+	ref := os.Getenv("GITHUB_REF")
+
+	ct, err := detector.GetChangeTree(context.Background(), workingDirectory, eventName, ref, "")
+	if err != nil {
+		panic(err)
+	}
+
+	modules, err := detector.DetectChangedModules(workingDirectory, ct, includeDeps)
 	if err != nil {
 		panic(err)
 	}

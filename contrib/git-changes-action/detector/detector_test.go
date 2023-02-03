@@ -21,10 +21,13 @@ func (d *DetectorSuite) TestChangedModules() {
 
 	testRepo.Commit()
 
-	withDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, headRef.Hash().String(), true)
+	ct, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", headRef.Hash().String(), "")
 	Nil(d.T(), err, "should not return an error")
 
-	withoutDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, headRef.Hash().String(), false)
+	withDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, ct, true)
+	Nil(d.T(), err, "should not return an error")
+
+	withoutDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, ct, false)
 	Nil(d.T(), err, "should not return an error")
 
 	False(d.T(), withoutDeps["./cmd/app1"])
@@ -48,7 +51,6 @@ func (d *DetectorSuite) TestGetDependencyDag() {
 }
 
 func (d *DetectorSuite) TestChangeTree() {
-	d.T().Skip()
 	testRepo, err := gitmock.NewTestRepo(d.T(), d.sourceRepo.repo, d.sourceRepo.dir)
 	Nil(d.T(), err, "should not return an error")
 
@@ -57,7 +59,7 @@ func (d *DetectorSuite) TestChangeTree() {
 
 	addedFiles := testRepo.AddRandomFiles(5)
 
-	changeTree, err := detector.GetChangeTree(d.sourceRepo.dir, prevHash.Hash().String())
+	changeTree, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", prevHash.Hash().String(), "")
 	Nil(d.T(), err, "should not empty change tree")
 
 	for _, file := range addedFiles {

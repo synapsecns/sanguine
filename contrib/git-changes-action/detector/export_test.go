@@ -4,8 +4,8 @@ import (
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
 )
 
-func GetChangeTree(repoPath string, commitHash string) (tree.Tree, error) {
-	return getChangeTree(repoPath, commitHash)
+func GetChangeTreeFromGit(repoPath string, commitHash string) (tree.Tree, error) {
+	return getChangeTreeFromGit(repoPath, commitHash)
 }
 
 func GetDependencyDag(repoPath string) (map[string][]string, error) {
