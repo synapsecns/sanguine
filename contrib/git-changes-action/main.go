@@ -26,6 +26,11 @@ func main() {
 
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
 	ref := os.Getenv("GITHUB_REF")
+	explicitRef := githubactions.GetInput("ref")
+	if explicitRef != "" {
+		ref = explicitRef
+	}
+
 	base := githubactions.GetInput("base")
 
 	ct, err := detector.GetChangeTree(context.Background(), workingDirectory, eventName, ref, token, base)
