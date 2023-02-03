@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "81039ecea4a78cdc5cb9ac3402981453fb220234"
+  tag: "0b5eda017b53779ff7dff99af3822308f5428ece"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -104,7 +104,6 @@ executor_remote_existing:
 
 executor_remote_fresh:
   enabled: true
-#  args: ["executor-run", "--config=/config/config.yaml", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -151,7 +150,7 @@ executor_remote_fresh:
               fieldPath: metadata.namespace
 
 executor_embedded:
-  enabled: false
+  enabled: true
   args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=80", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-db=sqlite", "--scribe-path=dapaff"]
   podAnnotations: {}
   nodeSelector: {}

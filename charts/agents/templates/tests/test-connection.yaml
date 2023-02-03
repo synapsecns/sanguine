@@ -12,9 +12,4 @@ spec:
       image: busybox
       command: ['wget']
       args: ['{{ include "agents.fullname" . }}:{{ .Values.service.port }}/health-check']
-{{/*      args: ['{{ include "agents.fullname" . }}:{{ .Values.service.port }}/health-check']*/}}
-{{/*      args: ['{{ include "agents.fullname" . }}-executor-embedded-{{ .Release.Name }}:{{ .Values.service.port }}/health-check']*/}}
-{{/*      args: ['{{ include "agents.fullname" . }}-executor-embedded{{ include "agents.labels" .}}:{{ .Values.service.port }}/health-check']*/}}
-{{/*      args: ['{{ include "agents.fullname" . }}:{{ .Values.service.port }}/health-check']*/}}
-{{/*      args: ['{{ .Release.Namespace }}:{{ .Values.service.port }}/health-check']*/}}
   restartPolicy: Never

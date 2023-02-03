@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "agents.fullname" . }}-executor-remote
+  name: {{ include "agents.fullname" . }}-executor-remote-fresh
   labels:
     {{- include "agents.labels" . | nindent 4 }}
 spec:
@@ -50,11 +50,12 @@ spec:
           args:
             - "executor-run"
             - "--config=/config/config.yaml"
+            - "--metrics-port={{ .Values.service.port }}"
             - "--scribe-type=remote"
             - "--db=mysql"
             - "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor"
             - "--scribe-port=80"
-            - "--scribe-url=executor-scribe-server"
+            - "--scribe-url=executor-scribe.{{ .Release.Namespace }}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -65,6 +66,14 @@ spec:
           env:
             {{- toYaml .Values.executor_remote_fresh.env | nindent 12 }}
           {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: http
         {{- if .Values.executor_remote_fresh_files }}
           volumeMounts:
             - name: configmap

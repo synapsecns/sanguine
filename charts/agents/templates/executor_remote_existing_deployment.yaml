@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "agents.fullname" . }}-executor-remote
+  name: {{ include "agents.fullname" . }}-executor-remote-existing
   labels:
     {{- include "agents.labels" . | nindent 4 }}
 spec:
