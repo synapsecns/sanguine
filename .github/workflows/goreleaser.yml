@@ -12,7 +12,7 @@ jobs:
       goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0 # needed if using new-from-rev (see: https://golangci-lint.run/usage/configuration/#issues-configuration)
           submodules: true
@@ -82,7 +82,7 @@ jobs:
       packages: ${{ steps.filter_go.outputs.changes }}
       package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           submodules: 'recursive'
