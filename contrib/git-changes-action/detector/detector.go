@@ -128,6 +128,7 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 
 			for _, remote := range remotes {
 				refName := plumbing.NewRemoteReferenceName(remote.Config().Name, base)
+				fmt.Println(refName)
 				if refName == reference.Name() {
 					baseSha = reference.Hash().String()
 				}
