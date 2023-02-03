@@ -25,7 +25,7 @@ jobs:
         with:
           go-version: 1.19
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:14dd7894933a48382eb31c75574c44512529e1cf
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:b08d1e88beeecd75fe48cf2605106fdf77a3f1ff
         with:
           include_deps: true
       # For pull requests it's not necessary to checkout the code
@@ -80,7 +80,7 @@ jobs:
     strategy:
       matrix:
         go-version:
-          - 1.19.x
+          - 1.20.x
         platform:
           - ubuntu-latest
         # only do on agents for now. Anything that relies on solidity in a package should do this
@@ -193,7 +193,7 @@ jobs:
     strategy:
       matrix:
         go-version:
-          - 1.19.x
+          - 1.20.x
         platform:
           - ubuntu-latest
     steps:
