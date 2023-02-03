@@ -108,6 +108,9 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 	// create the change tree
 	changeTree := tree.NewTree()
 
+	fmt.Println(baseSha)
+	fmt.Println(head)
+
 	// get each commit object (before and after)
 	baseObject, err := repository.CommitObject(plumbing.NewHash(baseSha))
 	if err != nil {
