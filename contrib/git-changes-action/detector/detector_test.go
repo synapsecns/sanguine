@@ -1,6 +1,7 @@
 package detector_test
 
 import (
+	"fmt"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/gitmock"
@@ -21,7 +22,7 @@ func (d *DetectorSuite) TestChangedModules() {
 
 	testRepo.Commit()
 
-	ct, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", headRef.Hash().String(), "")
+	ct, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", headRef.Hash().String(), "", "main")
 	Nil(d.T(), err, "should not return an error")
 
 	withDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, ct, true)
@@ -59,10 +60,13 @@ func (d *DetectorSuite) TestChangeTree() {
 
 	addedFiles := testRepo.AddRandomFiles(5)
 
-	changeTree, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", prevHash.Hash().String(), "")
+	changeTree, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", prevHash.Hash().String(), "", "main")
 	Nil(d.T(), err, "should not empty change tree")
 
 	for _, file := range addedFiles {
-		True(d.T(), changeTree.HasPath(file))
+		if !changeTree.HasPath(file) {
+			fmt.Println("hi")
+		}
+		True(d.T(), changeTree.HasPath(file), "could not find added file in change tree", file)
 	}
 }

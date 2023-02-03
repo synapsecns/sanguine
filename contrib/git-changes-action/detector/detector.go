@@ -2,11 +2,13 @@ package detector
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/google/go-github/v37/github"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
 	"golang.org/x/mod/modfile"
 	"os"
@@ -62,56 +64,62 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool) (modu
 }
 
 // getChangeTreeFromGit returns a tree of all the files that have changed between the current commit and the commit with the given hash.
-func getChangeTreeFromGit(repoPath string, toHash string) (tree.Tree, error) {
+// nolint: cyclop
+func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error) {
 	// open the repository
 	repository, err := git.PlainOpen(repoPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not open repository %s: %w", repoPath, err)
 	}
 
-	_, err = hex.DecodeString(toHash)
-	if err != nil {
-		// this is a ref, convert it to a hash
-		refs, err := repository.References()
-		if err != nil {
-			return nil, fmt.Errorf("could not get references for repository %s: %w", repoPath, err)
-		}
+	_, err = hex.DecodeString(head)
+	isBaseSha := err == nil
+	isBaseSameAsHead := base == head
 
-		err = refs.ForEach(func(ref *plumbing.Reference) error {
-			fmt.Println(ref.Name().String())
-			if ref.Name().String() == toHash {
-				toHash = ref.Hash().String()
-				fmt.Println(toHash)
+	var baseSha string
+
+	// If base is commit SHA we will do comparison against the referenced commit
+	// Or if base references same branch it was pushed to, we will do comparison against the previously pushed commit
+	//nolint: nestif
+	if isBaseSha || isBaseSameAsHead {
+		baseSha = base
+		if isBaseSha {
+			var ok bool
+			baseSha, ok, _ = tryGetPushEvent()
+
+			if !ok {
+				baseSha, err = getLastCommitHash(repository)
+				if err != nil {
+					return nil, fmt.Errorf("could not get last commit hash: %w", err)
+				}
 			}
-			return nil
-		})
-
-		if err != nil {
-			return nil, fmt.Errorf("could not get reference for repository %s: %w", repoPath, err)
 		}
+	}
+
+	if head == "" {
+		rawHead, err := repository.Head()
+		if err != nil {
+			return nil, fmt.Errorf("could not get HEAD: %w", err)
+		}
+
+		head = rawHead.String()
 	}
 
 	// create the change tree
 	changeTree := tree.NewTree()
 
-	// get the head of the repository (git status)
-	repoHead, err := repository.Head()
-	if err != nil {
-		return nil, fmt.Errorf("could not get head for repository %s: %w", repoPath, err)
-	}
-
 	// get each commit object (before and after)
-	toCommitObject, err := repository.CommitObject(repoHead.Hash())
+	baseObject, err := repository.CommitObject(plumbing.NewHash(baseSha))
 	if err != nil {
-		return nil, fmt.Errorf("could not get commit object for hash %s: %w", toHash, err)
+		return nil, fmt.Errorf("could not get commit object for hash %s: %w", head, err)
 	}
 
-	fromCommitObject, err := repository.CommitObject(plumbing.NewHash(toHash))
+	headObject, err := repository.CommitObject(plumbing.NewHash(head))
 	if err != nil {
-		return nil, fmt.Errorf("could not get commit object for hash %s: %w", toHash, err)
+		return nil, fmt.Errorf("could not get commit object for hash %s: %w", head, err)
 	}
 
-	diff, err := fastDiff(fromCommitObject, toCommitObject)
+	diff, err := fastDiff(baseObject, headObject)
 	if err != nil {
 		return nil, fmt.Errorf("could not get diff: %w", err)
 	}
@@ -149,4 +157,37 @@ func fastDiff(from, to *object.Commit) (changedFiles []string, err error) {
 	}
 
 	return changedFiles, nil
+}
+
+func tryGetPushEvent() (lastSha string, ok bool, err error) {
+	f, err := os.Open(os.Getenv("GITHUB_EVENT_PATH"))
+	if err != nil {
+		return "", false, fmt.Errorf("could not open event path: %w", err)
+	}
+	defer func() {
+		_ = f.Close()
+	}()
+
+	var gpe github.PushEvent
+
+	if err := json.NewDecoder(f).Decode(&gpe); err != nil {
+		return "gpe", false, fmt.Errorf("could not decode event: %w", err)
+	}
+
+	return gpe.GetBefore(), true, nil
+}
+
+// note: we don't  handle the case of no previous commit, this will error.
+func getLastCommitHash(repo *git.Repository) (string, error) {
+	co, err := repo.CommitObjects()
+	if err != nil {
+		return "", fmt.Errorf("could not get head: %w", err)
+	}
+
+	lastCommit, err := co.Next()
+	if err != nil {
+		return "", fmt.Errorf("could not get last commit: %w", err)
+	}
+
+	return lastCommit.Hash.String(), nil
 }

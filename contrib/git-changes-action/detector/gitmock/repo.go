@@ -67,7 +67,7 @@ func (t *Repo) AddRandomFiles(fileCount int) (addedFiles []string) {
 	dirPaths := t.trimFiles(t.tree.AllPaths())
 
 	for i := 0; i < fileCount; i++ {
-		newFile := filepath.Join(t.dir, gofakeit.RandomString(dirPaths), fmt.Sprintf("%s.%s", gofakeit.Word(), gofakeit.FileExtension()))
+		newFile := filepath.Join(t.dir, gofakeit.RandomString(dirPaths), fmt.Sprintf("%s.dontignoreme", gofakeit.Word()))
 		//nolint: gosec
 		testFile, err := os.Create(newFile)
 		assert.Nil(t.tb, err, "should not return an error")

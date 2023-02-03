@@ -5,7 +5,7 @@ import (
 )
 
 func GetChangeTreeFromGit(repoPath string, commitHash string) (tree.Tree, error) {
-	return getChangeTreeFromGit(repoPath, commitHash)
+	return getChangeTreeFromGit(repoPath, "", commitHash)
 }
 
 func GetDependencyDag(repoPath string) (map[string][]string, error) {

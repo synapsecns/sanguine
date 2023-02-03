@@ -3,7 +3,6 @@ package detector
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/google/go-github/v37/github"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
@@ -16,16 +15,33 @@ import (
 
 // GetChangeTree returns the ref for the given event name.
 // it is based on  https://github.com/dorny/paths-filter/blob/4067d885736b84de7c414f582ac45897079b0a78/src/main.ts#L36
-func GetChangeTree(ctx context.Context, repoPath, eventName, ref, token string) (tree.Tree, error) {
+func GetChangeTree(ctx context.Context, repoPath, eventName, ref, token, base string) (tree.Tree, error) {
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: token})
+
+	tc := oauth2.NewClient(ctx, ts)
+
+	client := github.NewClient(tc)
+
 	isPrEvent := slices.ContainsFunc([]EventType{EventPullRequest, EventPullRequestReview, EventPullRequestReviewComment, EventPullRequestTarget}, func(eventType EventType) bool {
 		return strings.EqualFold(eventName, eventType.String())
 	})
 
 	if isPrEvent {
-		return getChangedFilesFromAPI(ctx, token)
+		return getChangedFilesFromAPI(ctx, client)
 	}
 
-	ct, err := getChangeTreeFromGit(repoPath, ref)
+	if base == "" {
+		repoOwner, repoName := githubparser.ParseGithubRepository(os.Getenv("GITHUB_REPOSITORY"))
+		repoInfo, _, err := client.Repositories.Get(ctx, repoOwner, repoName)
+		if err != nil {
+			return nil, fmt.Errorf("could not get repo info: %w", err)
+		}
+
+		base = repoInfo.GetDefaultBranch()
+	}
+
+	ct, err := getChangeTreeFromGit(repoPath, ref, base)
 	if err != nil {
 		return nil, fmt.Errorf("could not get change tree: %w", err)
 	}
@@ -33,7 +49,7 @@ func GetChangeTree(ctx context.Context, repoPath, eventName, ref, token string) 
 }
 
 // nolint: cyclop
-func getChangedFilesFromAPI(ctx context.Context, token string) (ct tree.Tree, err error) {
+func getChangedFilesFromAPI(ctx context.Context, client *github.Client) (ct tree.Tree, err error) {
 	var gpe github.PullRequestEvent
 	f, err := os.Open(os.Getenv("GITHUB_EVENT_PATH"))
 	if err != nil {
@@ -50,13 +66,6 @@ func getChangedFilesFromAPI(ctx context.Context, token string) (ct tree.Tree, er
 	repoOwner, repoName := githubparser.ParseGithubRepository(os.Getenv("GITHUB_REPOSITORY"))
 
 	prNumber := gpe.GetPullRequest().GetNumber()
-
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token})
-
-	tc := oauth2.NewClient(ctx, ts)
-
-	client := github.NewClient(tc)
 
 	ct = tree.NewTree()
 
@@ -87,34 +96,6 @@ func getChangedFilesFromAPI(ctx context.Context, token string) (ct tree.Tree, er
 	}
 
 	return ct, nil
-}
-
-func getName(repo *github.Repository) (string, error) {
-	if repo == nil {
-		return "", errors.New("repository is nil")
-	}
-	if repo.GetName() == "" {
-		return "", errors.New("repository name is empty")
-	}
-
-	return repo.GetName(), nil
-}
-
-// getOwner returns the owner of the repository.
-func getOwner(repo *github.Repository) (string, error) {
-	if repo == nil {
-		return "", errors.New("repository is nil")
-	}
-
-	if repo.GetOwner() == nil {
-		return "", errors.New("repository owner is nil")
-	}
-
-	if repo.GetOwner().GetName() != "" {
-		return "", errors.New("repository owner name is empty")
-	}
-
-	return repo.GetOwner().GetName(), nil
 }
 
 // EventType is the type of github api event.
