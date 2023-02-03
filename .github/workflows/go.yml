@@ -28,6 +28,7 @@ jobs:
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:5f12d03105d32687eff2e2bf31973c82fa096f64
         with:
           include_deps: true
+          github_token: ${{ secrets.github_token }}
       # For pull requests it's not necessary to checkout the code
       - uses: dorny/paths-filter@v2
         name: 'Check for Go Changes'
