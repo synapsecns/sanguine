@@ -133,6 +133,10 @@ jobs:
           tag_prefix: ${{matrix.package}}/v
           release_branches: master
           fetch_all_tags: true
+
+      - name: Tag Config
+        run: git config --global --add safe.directory /__w/sanguine/sanguine
+
       -
         name: Fetch all tags
         run: git fetch --force --tags
