@@ -93,7 +93,9 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		return nil, fmt.Errorf("could not dial grpc: %w", err)
 	}
 
+	logger.Errorf("EXEC A")
 	grpcClient := pbscribe.NewScribeServiceClient(conn)
+	logger.Errorf("EXEC B")
 
 	// Ensure that gRPC is up and running.
 	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
@@ -105,6 +107,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		logger.Errorf("scribe gRPC server is not serving")
 		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
+	logger.Errorf("EXEC C")
 
 	executorSigner, err := agentsConfig.SignerFromConfig(config.UnbondedSigner)
 	if err != nil {
@@ -121,6 +124,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 	}
 
 	for _, chain := range config.Chains {
+		logger.Errorf("EXEC D: %v", chain)
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
 			logger.Errorf("error creating origin parser: %v", err)

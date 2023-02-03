@@ -214,6 +214,7 @@ var ExecutorRunCommand = &cli.Command{
 		}
 
 		g.Go(func() error {
+			logger.Errorf("COMMANDS A")
 			err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
 			if err != nil {
 				logger.Errorf("failed to start api: %v", err)
@@ -224,6 +225,7 @@ var ExecutorRunCommand = &cli.Command{
 		})
 
 		g.Go(func() error {
+			logger.Errorf("COMMANDS B")
 			err := executor.Run(c.Context)
 			if err != nil {
 				logger.Errorf("failed to run executor: %v", err)

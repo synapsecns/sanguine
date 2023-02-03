@@ -53,8 +53,8 @@ spec:
             - "--scribe-type=remote"
             - "--db=mysql"
             - "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor"
-            - "--scribe-port=somenum"
-            - "--scribe-url=some.com"
+            - "--scribe-port=80"
+            - "--scribe-url=executor-scribe-server"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
