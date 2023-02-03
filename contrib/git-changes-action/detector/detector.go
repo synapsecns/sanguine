@@ -92,6 +92,7 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 			baseSha, ok, _ = tryGetPushEvent()
 
 			if !ok {
+				fmt.Println("could not get push event")
 				baseSha, err = getLastCommitHash(repository)
 				if err != nil {
 					return nil, fmt.Errorf("could not get last commit hash: %w", err)
