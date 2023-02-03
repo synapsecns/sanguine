@@ -8,6 +8,7 @@ import (
 	"github.com/sethvargo/go-githubactions"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -43,11 +44,20 @@ func main() {
 		panic(err)
 	}
 
-	marshalledJSON, err := json.Marshal(modules)
+	var changedModules []string
+	for module, changed := range modules {
+		if !changed {
+			continue
+		}
+
+		changedModules = append(changedModules, strings.TrimPrefix(module, "./"))
+	}
+
+	marshalledJSON, err := json.Marshal(changedModules)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(string(marshalledJSON))
+	fmt.Printf("setting output to %s\n", marshalledJSON)
 	githubactions.SetOutput("changed_modules", string(marshalledJSON))
 }
