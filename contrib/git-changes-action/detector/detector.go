@@ -111,8 +111,6 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 	}
 
 	if !isBaseSha {
-		fmt.Println("base sha")
-		fmt.Println(isBaseSha)
 		refs, err := repository.References()
 		if err != nil {
 			return nil, fmt.Errorf("could not get references: %w", err)
