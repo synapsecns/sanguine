@@ -12,7 +12,7 @@ jobs:
       goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0 # needed if using new-from-rev (see: https://golangci-lint.run/usage/configuration/#issues-configuration)
           submodules: true
@@ -79,40 +79,27 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       # Expose matched filters as job 'packages' output variable
-      packages: ${{ steps.filter_go.outputs.changes }}
+      packages: ${{ steps.filter_go.outputs.changed_modules }}
       package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           submodules: 'recursive'
 
-      # For pull requests it's not necessary to checkout the code
-      - uses: dorny/paths-filter@v2
-        name: 'Check for Go Changes'
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:80b3bd017f46acd960a72cfc0095587d33928c34
         id: filter_go
         with:
-          #  make sure to update run-goreleaser when adding a new package here
-          filters: |
-            agents: 'agents/**'
-            services/scribe: 'services/scribe/**'
-            services/explorer: 'services/explorer/**'
-            tools: 'tools/**'
-            core: 'core/**'
-            ethergo: 'ethergo/**'
-            services/omnirpc: 'services/omnirpc/**'
-            contrib/tfcore: 'contrib/tfcore/**'
-            contrib/terraform-provider-iap: 'contrib/terraform-provider-iap/**'
-            contrib/terraform-provider-helmproxy: 'contrib/terraform-provider-helmproxy/**'
-            contrib/terraform-provider-kubeproxy: 'contrib/terraform-provider-kubeproxy/**'
-            contrib/release-copier-action: 'contrib/release-copier-action/**'
+          include_deps: true
+          github_token: ${{ secrets.github_token }}
+          ref: ${{ github.sha }}
 
       - id: length
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
           echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
         env:
-          FILTERED_PATHS: ${{ steps.filter_go.outputs.changes }}
+          FILTERED_PATHS: ${{ steps.filter_go.outputs.changed_modules }}
 
   # TODO: once this is public, we need to dry run this on prs
   run-goreleaser:
@@ -146,6 +133,10 @@ jobs:
           tag_prefix: ${{matrix.package}}/v
           release_branches: master
           fetch_all_tags: true
+
+      - name: Tag Config
+        run: git config --global --add safe.directory /__w/sanguine/sanguine
+
       -
         name: Fetch all tags
         run: git fetch --force --tags

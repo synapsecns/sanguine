@@ -9,38 +9,38 @@ import (
 func TestCombineSchemas(t *testing.T) {
 	googleProvider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"project": &schema.Schema{
+			"project": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"zone": &schema.Schema{
+			"zone": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"google_compute_instance": &schema.Resource{},
+			"google_compute_instance": {},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"google_compute_instance": &schema.Resource{},
+			"google_compute_instance": {},
 		},
 	}
 	underlyingProvider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"region": &schema.Schema{
+			"region": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"vpc": &schema.Schema{
+			"vpc": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"aws_instance": &schema.Resource{},
+			"aws_instance": {},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"aws_instance": &schema.Resource{},
+			"aws_instance": {},
 		},
 	}
 	toReplace := "aws"
