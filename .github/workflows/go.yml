@@ -29,6 +29,7 @@ jobs:
         with:
           include_deps: true
           github_token: ${{ secrets.github_token }}
+          ref: ${{ github.sha }}
       # For pull requests it's not necessary to checkout the code
       - uses: dorny/paths-filter@v2
         name: 'Check for Go Changes'
