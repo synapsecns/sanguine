@@ -68,7 +68,7 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool) (modu
 func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error) {
 	fmt.Println("og")
 	fmt.Println(head)
-	fmt.Println(base
+	fmt.Println(base)
 	// open the repository
 	repository, err := git.PlainOpen(repoPath)
 	if err != nil {
