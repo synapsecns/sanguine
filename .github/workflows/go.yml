@@ -25,7 +25,7 @@ jobs:
         with:
           go-version: 1.19
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:5f12d03105d32687eff2e2bf31973c82fa096f64
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:78fa652e077846ba67b29dffb2e711082f387dae
         with:
           include_deps: true
           github_token: ${{ secrets.github_token }}
