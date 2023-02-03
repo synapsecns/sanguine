@@ -75,9 +75,14 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 		return nil, fmt.Errorf("could not open repository %s: %w", repoPath, err)
 	}
 
-	_, err = repository.CommitObject(plumbing.NewHash("aaaeb750a4afa3c5bef5486d7d79bb88ebb1b347"))
+	_, err = repository.CommitObject(plumbing.NewHash(head))
 	if err == nil {
 		fmt.Println("this works")
+	}
+
+	_, err = repository.CommitObject(plumbing.NewHash(base))
+	if err == nil {
+		fmt.Println("this works 2")
 	}
 
 	_, err = hex.DecodeString(base)
