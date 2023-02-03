@@ -116,29 +116,30 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 			return nil, fmt.Errorf("could not get references: %w", err)
 		}
 
+		remotes, err := repository.Remotes()
+		if err != nil {
+			return nil, fmt.Errorf("could not get remotes: %w", err)
+		}
+
 		err = refs.ForEach(func(reference *plumbing.Reference) error {
 			if reference.Name().String() == base {
 				baseSha = reference.Hash().String()
 			}
+
+			for _, remote := range remotes {
+				refName := plumbing.NewRemoteReferenceName(remote.Config().Name, base)
+				if refName == reference.Name() {
+					baseSha = reference.Hash().String()
+				}
+
+			}
+
 			return nil
 		})
 
 		if err != nil {
 			return nil, fmt.Errorf("could not iterate through references: %w", err)
 		}
-
-		branches, err := repository.Branches()
-		if err != nil {
-			return nil, fmt.Errorf("could not get branches: %w", err)
-		}
-
-		err = branches.ForEach(func(branch *plumbing.Reference) error {
-			fmt.Println(branch.Name().String())
-			if branch.Name().String() == base {
-				baseSha = branch.Hash().String()
-			}
-			return nil
-		})
 	}
 
 	// create the change tree
