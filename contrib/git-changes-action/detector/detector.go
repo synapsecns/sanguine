@@ -75,6 +75,11 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 		return nil, fmt.Errorf("could not open repository %s: %w", repoPath, err)
 	}
 
+	_, err = repository.CommitObject(plumbing.NewHash("aaaeb750a4afa3c5bef5486d7d79bb88ebb1b347"))
+	if err == nil {
+		fmt.Println("this works")
+	}
+
 	_, err = hex.DecodeString(base)
 	isBaseSha := err == nil
 	isBaseSameAsHead := base == head
@@ -113,24 +118,15 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 	// create the change tree
 	changeTree := tree.NewTree()
 
-	fmt.Println(baseSha)
-	fmt.Println(head)
-
-	allTheObjecfs, _ := repository.CommitObjects()
-	allTheObjecfs.ForEach(func(commit *object.Commit) error {
-		fmt.Println(commit.Hash.String())
-		return nil
-	})
-
 	// get each commit object (before and after)
 	baseObject, err := repository.CommitObject(plumbing.NewHash(baseSha))
 	if err != nil {
-		return nil, fmt.Errorf("could not get commit object for hash %s: %w", head, err)
+		return nil, fmt.Errorf("could not get commit object for base %s: %w", head, err)
 	}
 
 	headObject, err := repository.CommitObject(plumbing.NewHash(head))
 	if err != nil {
-		return nil, fmt.Errorf("could not get commit object for hash %s: %w", head, err)
+		return nil, fmt.Errorf("could not get commit object for head %s: %w", head, err)
 	}
 
 	diff, err := fastDiff(baseObject, headObject)
