@@ -126,6 +126,18 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 		if err != nil {
 			return nil, fmt.Errorf("could not iterate through references: %w", err)
 		}
+
+		branches, err := repository.Branches()
+		if err != nil {
+			return nil, fmt.Errorf("could not get branches: %w", err)
+		}
+
+		err = branches.ForEach(func(branch *plumbing.Reference) error {
+			if branch.Name().String() == base {
+				baseSha = branch.Hash().String()
+			}
+			return nil
+		})
 	}
 
 	// create the change tree
