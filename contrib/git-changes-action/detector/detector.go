@@ -64,11 +64,8 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool) (modu
 }
 
 // getChangeTreeFromGit returns a tree of all the files that have changed between the current commit and the commit with the given hash.
-// nolint: cyclop
+// nolint: cyclop, gocognit
 func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error) {
-	fmt.Println("og")
-	fmt.Println(head)
-	fmt.Println(base)
 	// open the repository
 	repository, err := git.PlainOpen(repoPath)
 	if err != nil {
@@ -87,12 +84,10 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 	if isBaseSha || isBaseSameAsHead {
 		baseSha = base
 		if isBaseSha {
-			fmt.Println("base sha")
 			var ok bool
 			baseSha, ok, _ = tryGetPushEvent()
 
 			if !ok {
-				fmt.Println("could not get push event")
 				baseSha, err = getLastCommitHash(repository)
 				if err != nil {
 					return nil, fmt.Errorf("could not get last commit hash: %w", err)
@@ -110,6 +105,7 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 		head = rawHead.String()
 	}
 
+	//nolint: nestif
 	if !isBaseSha {
 		refs, err := repository.References()
 		if err != nil {
@@ -128,11 +124,9 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 
 			for _, remote := range remotes {
 				refName := plumbing.NewRemoteReferenceName(remote.Config().Name, base)
-				fmt.Println(refName)
 				if refName == reference.Name() {
 					baseSha = reference.Hash().String()
 				}
-
 			}
 
 			return nil

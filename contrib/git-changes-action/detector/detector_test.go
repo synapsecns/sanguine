@@ -1,7 +1,6 @@
 package detector_test
 
 import (
-	"fmt"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/gitmock"
@@ -10,10 +9,6 @@ import (
 )
 
 func (d *DetectorSuite) TestChangedModules() {
-	// store the headref for integrity checking after tests
-	headRef, err := d.sourceRepo.repo.Head()
-	Nil(d.T(), err, "could not get source repo head ref")
-
 	testRepo, err := gitmock.NewTestRepo(d.T(), d.sourceRepo.repo, d.sourceRepo.dir)
 	Nil(d.T(), err, "should not return an error")
 
@@ -22,7 +17,7 @@ func (d *DetectorSuite) TestChangedModules() {
 
 	testRepo.Commit()
 
-	ct, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", headRef.Hash().String(), "", "main")
+	ct, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", "", "", "main")
 	Nil(d.T(), err, "should not return an error")
 
 	withDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, ct, true)
@@ -55,18 +50,12 @@ func (d *DetectorSuite) TestChangeTree() {
 	testRepo, err := gitmock.NewTestRepo(d.T(), d.sourceRepo.repo, d.sourceRepo.dir)
 	Nil(d.T(), err, "should not return an error")
 
-	prevHash, err := d.sourceRepo.repo.Head()
-	Nil(d.T(), err, "should not return an error")
-
 	addedFiles := testRepo.AddRandomFiles(5)
 
-	changeTree, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", prevHash.Hash().String(), "", "main")
+	changeTree, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", "", "", "main")
 	Nil(d.T(), err, "should not empty change tree")
 
 	for _, file := range addedFiles {
-		if !changeTree.HasPath(file) {
-			fmt.Println("hi")
-		}
 		True(d.T(), changeTree.HasPath(file), "could not find added file in change tree", file)
 	}
 }
