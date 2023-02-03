@@ -1,5 +1,5 @@
-// Package utils contains utility functions for parsing github actions
-package utils
+// Package githubparser contains utility functions for parsing github actions
+package githubparser
 
 import "strings"
 

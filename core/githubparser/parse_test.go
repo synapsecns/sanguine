@@ -1,14 +1,14 @@
-package utils_test
+package githubparser_test
 
 import (
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/contrib/release-copier-action/utils"
+	"github.com/synapsecns/sanguine/core/githubparser"
 	"testing"
 )
 
 func TestParseGithubRepository(t *testing.T) {
 	testCase := "octocat/Hello-World"
-	repoOwner, repoName := utils.ParseGithubRepository(testCase)
+	repoOwner, repoName := githubparser.ParseGithubRepository(testCase)
 	Equal(t, repoOwner, "octocat")
 	Equal(t, repoName, "Hello-World")
 }

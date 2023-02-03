@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/google/go-github/v37/github"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
+	"github.com/synapsecns/sanguine/core/githubparser"
 	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2"
 	"os"
@@ -46,15 +47,7 @@ func getChangedFilesFromAPI(ctx context.Context, token string) (ct tree.Tree, er
 		return nil, fmt.Errorf("could not decode event: %w", err)
 	}
 
-	owner, err := getOwner(gpe.Repo)
-	if err != nil {
-		return nil, fmt.Errorf("could not get owner: %w", err)
-	}
-
-	name, err := getName(gpe.Repo)
-	if err != nil {
-		return nil, fmt.Errorf("could not get name: %w", err)
-	}
+	repoOwner, repoName := githubparser.ParseGithubRepository(os.Getenv("GITHUB_REPOSITORY"))
 
 	prNumber := gpe.GetPullRequest().GetNumber()
 
@@ -69,7 +62,7 @@ func getChangedFilesFromAPI(ctx context.Context, token string) (ct tree.Tree, er
 
 	page := 1
 	for {
-		files, res, err := client.PullRequests.ListFiles(ctx, owner, name, prNumber, &github.ListOptions{
+		files, res, err := client.PullRequests.ListFiles(ctx, repoOwner, repoName, prNumber, &github.ListOptions{
 			Page:    page,
 			PerPage: 100,
 		})
