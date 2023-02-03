@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
+	token := githubactions.GetInput("github_token")
+
 	workingDirectory, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -25,7 +27,7 @@ func main() {
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
 	ref := os.Getenv("GITHUB_REF")
 
-	ct, err := detector.GetChangeTree(context.Background(), workingDirectory, eventName, ref, "")
+	ct, err := detector.GetChangeTree(context.Background(), workingDirectory, eventName, ref, token)
 	if err != nil {
 		panic(err)
 	}
