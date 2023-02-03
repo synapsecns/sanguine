@@ -66,6 +66,9 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool) (modu
 // getChangeTreeFromGit returns a tree of all the files that have changed between the current commit and the commit with the given hash.
 // nolint: cyclop
 func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error) {
+	fmt.Println("og")
+	fmt.Println(head)
+	fmt.Println(base
 	// open the repository
 	repository, err := git.PlainOpen(repoPath)
 	if err != nil {
@@ -84,6 +87,7 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 	if isBaseSha || isBaseSameAsHead {
 		baseSha = base
 		if isBaseSha {
+			fmt.Println("base sha")
 			var ok bool
 			baseSha, ok, _ = tryGetPushEvent()
 
