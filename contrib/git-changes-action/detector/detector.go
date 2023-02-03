@@ -234,6 +234,12 @@ func getLastCommitHash(repo *git.Repository) (string, error) {
 		return "", fmt.Errorf("could not get head: %w", err)
 	}
 
+	// skip the current commit
+	_, err = co.Next()
+	if err != nil {
+		return "", fmt.Errorf("could not get current commit: %w", err)
+	}
+
 	lastCommit, err := co.Next()
 	if err != nil {
 		return "", fmt.Errorf("could not get last commit: %w", err)
