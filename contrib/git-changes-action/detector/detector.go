@@ -135,6 +135,7 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 		}
 
 		err = branches.ForEach(func(branch *plumbing.Reference) error {
+			fmt.Println(branch.Name().String())
 			if branch.Name().String() == base {
 				baseSha = branch.Hash().String()
 			}
