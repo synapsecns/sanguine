@@ -185,6 +185,24 @@ func tryGetPushEvent() (lastSha string, ok bool, err error) {
 	return gpe.GetBefore(), true, nil
 }
 
+func getDefaultBranch() (defaultBranch string, err error) {
+	f, err := os.Open(os.Getenv("GITHUB_EVENT_PATH"))
+	if err != nil {
+		return "", fmt.Errorf("could not open event path: %w", err)
+	}
+	defer func() {
+		_ = f.Close()
+	}()
+
+	var gpe github.PushEvent
+
+	if err := json.NewDecoder(f).Decode(&gpe); err != nil {
+		return "gpe", fmt.Errorf("could not decode event: %w", err)
+	}
+
+	return gpe.Repo.GetDefaultBranch(), nil
+}
+
 // note: we don't  handle the case of no previous commit, this will error.
 func getLastCommitHash(repo *git.Repository) (string, error) {
 	co, err := repo.CommitObjects()

@@ -32,13 +32,11 @@ func GetChangeTree(ctx context.Context, repoPath, eventName, ref, token, base st
 	}
 
 	if base == "" {
-		repoOwner, repoName := githubparser.ParseGithubRepository(os.Getenv("GITHUB_REPOSITORY"))
-		repoInfo, _, err := client.Repositories.Get(ctx, repoOwner, repoName)
+		var err error
+		base, err = getDefaultBranch()
 		if err != nil {
-			return nil, fmt.Errorf("could not get repo info: %w", err)
+			return nil, fmt.Errorf("could not get default branch: %w", err)
 		}
-
-		base = repoInfo.GetDefaultBranch()
 	}
 
 	ct, err := getChangeTreeFromGit(repoPath, ref, base)
