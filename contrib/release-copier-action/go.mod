@@ -3,7 +3,7 @@ module github.com/synapsecns/sanguine/contrib/release-copier-action
 go 1.19
 
 require (
-	github.com/brianvoe/gofakeit/v6 v6.19.0
+	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/google/go-github/v41 v41.0.0
 	github.com/migueleliasweb/go-github-mock v0.0.14
 	github.com/sethvargo/go-githubactions v1.1.0
