@@ -75,7 +75,7 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 		return nil, fmt.Errorf("could not open repository %s: %w", repoPath, err)
 	}
 
-	_, err = hex.DecodeString(head)
+	_, err = hex.DecodeString(base)
 	isBaseSha := err == nil
 	isBaseSameAsHead := base == head
 
