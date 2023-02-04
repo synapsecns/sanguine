@@ -10,7 +10,6 @@ import (
 
 // CombinedSchema returns the combined schema of only
 // schema, metaSchema, resourceMaps and dataSourceMaps
-
 type CombinedSchema struct {
 	Schema     map[string]*schema.Schema
 	MetaSchema map[string]*schema.Schema
@@ -41,7 +40,7 @@ func CombineSchemas(googleProvider, underlyingProvider *schema.Provider, toRepla
 	return co
 }
 
-// UpdateSchemaWithDefaults adds extra fields to the schema needed for the google tunnel
+// UpdateSchemaWithDefaults adds extra fields to the schema needed for the google tunnel.
 func UpdateSchemaWithDefaults(smap map[string]*schema.Schema) map[string]*schema.Schema {
 	// project is required to start the proxy
 	smap["project"].Required = true
@@ -75,7 +74,7 @@ func UpdateSchemaWithDefaults(smap map[string]*schema.Schema) map[string]*schema
 }
 
 // CombineProtoSchemas combines google schemas and tfproto schemas into a single schema
-// this differs from CombineSchemas in that it supports tfproto schemas
+// this differs from CombineSchemas in that it supports tfproto schemas.
 func CombineProtoSchemas(ctx context.Context, googleSchema *schema.Provider, protoSchema *tfprotov5.GetProviderSchemaResponse, toReplace, replaceWith string) (co *tfprotov5.Schema, err error) {
 	// add defaults to the terraform schema
 	googleSchema.Schema = UpdateSchemaWithDefaults(googleSchema.Schema)

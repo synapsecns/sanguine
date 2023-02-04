@@ -85,33 +85,25 @@ const logChanSize = 1000
 //
 //nolint:cyclop
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
-	logger.Errorf("starting executor agent")
 	chainExecutors := make(map[uint32]*chainExecutor)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		logger.Errorf("error dialing scribe gRPC server: %v", err)
 		return nil, fmt.Errorf("could not dial grpc: %w", err)
 	}
 
-	logger.Errorf("EXEC A")
 	grpcClient := pbscribe.NewScribeServiceClient(conn)
-	logger.Errorf("EXEC B")
 
 	// Ensure that gRPC is up and running.
 	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
 	if err != nil {
-		logger.Errorf("error checking health of scribe gRPC server: %v", err)
 		return nil, fmt.Errorf("could not check: %w", err)
 	}
 	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
-		logger.Errorf("scribe gRPC server is not serving")
 		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
-	logger.Errorf("EXEC C")
 
 	executorSigner, err := agentsConfig.SignerFromConfig(config.UnbondedSigner)
 	if err != nil {
-		logger.Errorf("error creating signer: %v", err)
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
 
@@ -124,16 +116,13 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 	}
 
 	for _, chain := range config.Chains {
-		logger.Errorf("EXEC D: %v", chain)
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
-			logger.Errorf("error creating origin parser: %v", err)
 			return nil, fmt.Errorf("could not create origin parser: %w", err)
 		}
 
 		destinationParser, err := destination.NewParser(common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
-			logger.Errorf("error creating destination parser: %v", err)
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
 		}
 
@@ -141,13 +130,11 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
 		if err != nil {
-			logger.Errorf("error creating underlying client: %v", err)
 			return nil, fmt.Errorf("could not get evm: %w", err)
 		}
 
 		boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
-			logger.Errorf("error creating bound destination contract: %v", err)
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
 
@@ -174,7 +161,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 
 			tree, err := newTreeFromDB(ctx, chain.ChainID, destinationChain.ChainID, executorDB)
 			if err != nil {
-				logger.Errorf("error creating merkle tree: %v", err)
 				return nil, fmt.Errorf("could not get tree from db: %w", err)
 			}
 
@@ -182,7 +168,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		}
 	}
 
-	logger.Errorf("Made it to the end of the init")
 	return &Executor{
 		config:         config,
 		executorDB:     executorDB,

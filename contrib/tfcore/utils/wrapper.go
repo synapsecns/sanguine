@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// WrappedProvider is a provider that wraps another provider. This is used to wrap the underlying provider with the google provider.
 type WrappedProvider interface {
 	// UnderlyingProvider gets the underlying provider
 	UnderlyingProvider() interface{}

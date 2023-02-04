@@ -1,3 +1,3 @@
 # Core
 
-Core contains common libraries used across our golang repositories.
+Core contains common libraries used across our Golang repositories.
