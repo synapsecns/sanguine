@@ -4,6 +4,7 @@ This is a tool to help with the release process. It copies the release from a ta
 
 ## Usage
 
+
 ```yaml
       - name: Bump version and push tag
         id: tag_version

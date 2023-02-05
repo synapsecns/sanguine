@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:80b3bd017f46acd960a72cfc0095587d33928c34
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:ed69c3161378f30a89ab3bdaeb49a444510b8114
         id: filter_go_deps
         with:
           include_deps: true
@@ -31,7 +31,7 @@ jobs:
           ref: ${{ github.sha }}
 
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:80b3bd017f46acd960a72cfc0095587d33928c34
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:ed69c3161378f30a89ab3bdaeb49a444510b8114
         id: filter_go_nodeps
         with:
           include_deps: false
@@ -90,7 +90,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
           submodules: 'recursive'
 
       - name: Cache Docker images.
@@ -146,6 +146,8 @@ jobs:
           GOMAXPROCS: 18
           GANACHE_KEYS: /tmp/keys/rinkeby
           GANACHE_RPC_URL: http://0.0.0.0:8045
+          GOMEMLIMIT: 6GiB
+          GOGC: 2000
 
       - name: Get Coverage name
         id: coverage
@@ -177,8 +179,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-          submodules: 'recursive'
+          fetch-depth: 1
       - name: Install Go
         uses: actions/setup-go@v3
         with:
@@ -199,6 +200,9 @@ jobs:
       - name: Build
         # go build all workspaces
         run: go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
+        # see: https://www.reddit.com/r/golang/comments/476pae/how_to_speed_up_go_compiler_and_many_other_go/
+        env:
+          GOGC: 2000
 
   #note: right now this is not run against all work dirs
   lint:
@@ -219,7 +223,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          submodules: 'recursive'
 
       # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
       - name: Setup cache key
@@ -280,7 +283,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
           submodules: 'recursive'
 
       - name: Cache Docker images.
@@ -355,6 +358,9 @@ jobs:
         working-directory: ${{matrix.package}}/
         run: |
           go generate ./...
+        env:
+          GOMEMLIMIT: 6GiB
+          GOGC: 2000
 
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v10.1
@@ -395,7 +401,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
           submodules: 'recursive'
 
 
