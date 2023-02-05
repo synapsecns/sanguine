@@ -87,10 +87,9 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - name: Set up Go
-        uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
-          go-version: 1.20
+          go-version: 1.20.x
 #
 #      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:80b3bd017f46acd960a72cfc0095587d33928c34
 #        id: filter_go
@@ -98,7 +97,7 @@ jobs:
 #          include_deps: true
 #          github_token: ${{ secrets.github_token }}
 
-      - run: go run ./contrib/git-changes-action
+      - run: go run ./contrib/git-changes-action/main.go
         id: filter_go
         env:
           INPUT_include_deps: true
