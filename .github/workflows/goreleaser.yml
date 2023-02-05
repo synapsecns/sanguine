@@ -87,27 +87,11 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-#      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:ed69c3161378f30a89ab3bdaeb49a444510b8114
-#        id: filter_go
-#        with:
-#          include_deps: true
-#          github_token: ${{ secrets.github_token }}
-#        env:
-#          GOGC: 2000
-#          GOMEMLIMIT: 6GiB
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.20.x
-
-      - run: go run ./contrib/git-changes-action/main.go
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:ff41d6b92c10b948d1414a4184ddef4df984c133
         id: filter_go
-        env:
-          INPUT_include_deps: true
-          INPUT_github_token: ${{ secrets.github_token }}
-          GOGC: 2000
-          GOMEMLIMIT: 6GiB
+        with:
+          include_deps: true
+          github_token: ${{ secrets.github_token }}
 
       - id: length
         run: |
@@ -218,11 +202,11 @@ jobs:
         if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-iap') }}
         uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
         with:
-            github_token: ${{ secrets.PUBLISH_TOKEN }}
-            # TODO: will change with new org
-            destination_repo: 'trajan0x/terraform-provider-iap'
-            tag_name: ${{ steps.tag_version.outputs.new_tag }}
-            strip_prefix: 'contrib/terraform-provider-iap/'
+          github_token: ${{ secrets.PUBLISH_TOKEN }}
+          # TODO: will change with new org
+          destination_repo: 'trajan0x/terraform-provider-iap'
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          strip_prefix: 'contrib/terraform-provider-iap/'
 
       - name: Copy Releases
         if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-helmproxy') }}
