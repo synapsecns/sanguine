@@ -83,7 +83,6 @@ func getChangeTreeFromGit(repoPath string, ghContext *actionscore.Context, head,
 	head = getShortName(head)
 
 	base = getShortName(getBase(ghContext, base))
-	fmt.Printf("head: %s, base: %s", head, base)
 
 	_, err = hex.DecodeString(base)
 	isBaseSha := err == nil
@@ -132,8 +131,6 @@ func getChangeTreeFromGit(repoPath string, ghContext *actionscore.Context, head,
 
 	// create the change tree
 	changeTree := tree.NewTree()
-
-	fmt.Printf("head: %s, base: %s", head, baseSha)
 
 	// get each commit object (before and after)
 	baseObject, err := repository.CommitObject(plumbing.NewHash(baseSha))
