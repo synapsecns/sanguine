@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-github/v41/github"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/actionscore"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
+	"github.com/synapsecns/sanguine/core"
 	"golang.org/x/mod/modfile"
 	"os"
 	"path"
@@ -120,34 +121,12 @@ func getChangeTreeFromGit(repoPath string, ghContext *actionscore.Context, head,
 	// nolint: nestif
 	// this gets hit
 	if !isBaseSha {
-		refs, err := repository.References()
-		if err != nil {
-			return nil, fmt.Errorf("could not get references: %w", err)
+		res, err := convertToSha(repository, base)
+		if err != nil{
+			return nil, fmt.Errorf("could not convert base to sha: %w", err)
 		}
 
-		remotes, err := repository.Remotes()
-		if err != nil {
-			return nil, fmt.Errorf("could not get remotes: %w", err)
-		}
-
-		err = refs.ForEach(func(reference *plumbing.Reference) error {
-			if reference.Name().String() == base {
-				baseSha = reference.Hash().String()
-			}
-
-			for _, remote := range remotes {
-				refName := plumbing.NewRemoteReferenceName(remote.Config().Name, base)
-				if refName == reference.Name() {
-					baseSha = reference.Hash().String()
-				}
-			}
-
-			return nil
-		})
-
-		if err != nil {
-			return nil, fmt.Errorf("could not iterate through references: %w", err)
-		}
+		baseSha = res.String()
 	}
 
 	// create the change tree
@@ -161,7 +140,12 @@ func getChangeTreeFromGit(repoPath string, ghContext *actionscore.Context, head,
 		return nil, fmt.Errorf("could not get commit object for base %s: %w", baseSha, err)
 	}
 
-	headObject, err := repository.CommitObject(plumbing.NewHash(head))
+	headHash, err := convertToSha(repository, head)
+	if err != nil{
+		return nil, fmt.Errorf("could not convert head to sha: %w", err)
+	}
+
+	headObject, err := repository.CommitObject(*headHash)
 	if err != nil {
 		return nil, fmt.Errorf("could not get commit object for head %s: %w", head, err)
 	}
@@ -174,6 +158,46 @@ func getChangeTreeFromGit(repoPath string, ghContext *actionscore.Context, head,
 	changeTree.Add(diff...)
 
 	return changeTree, nil
+}
+
+func convertToSha(repository *git.Repository, ref string) (res *plumbing.Hash, err error) {
+	// already a sha
+	_, err = hex.DecodeString(ref)
+	if err == nil {
+		return core.PtrTo(plumbing.NewHash(ref)), nil
+	}
+
+	refs, err := repository.References()
+	if err != nil {
+		return nil, fmt.Errorf("could not get references: %w", err)
+	}
+
+	remotes, err := repository.Remotes()
+	if err != nil {
+		return nil, fmt.Errorf("could not get remotes: %w", err)
+	}
+
+	err = refs.ForEach(func(reference *plumbing.Reference) error {
+		if reference.Name().String() == ref {
+			res = core.PtrTo(reference.Hash())
+		}
+
+		for _, remote := range remotes {
+			refName := plumbing.NewRemoteReferenceName(remote.Config().Name, ref)
+			if refName == reference.Name() {
+				res = core.PtrTo(reference.Hash())
+			}
+		}
+
+		return nil
+	})
+
+	if res != nil {
+		return res, nil
+	}
+
+	return nil, fmt.Errorf("could not convert reference %s to %T", ref, core.PtrTo(plumbing.NewHash(""))
+
 }
 
 // fastDiff is a faster way to get the diff between two commits.
