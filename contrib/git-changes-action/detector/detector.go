@@ -81,6 +81,7 @@ func getChangeTreeFromGit(repoPath string, ghContext *actionscore.Context, head,
 	head = getShortName(head)
 
 	base = getShortName(getBase(ghContext, base))
+	fmt.Printf("head: %s, base: %s", head, base)
 
 	_, err = hex.DecodeString(base)
 	isBaseSha := err == nil
@@ -265,7 +266,6 @@ func getHead(repo *git.Repository, ghContext *actionscore.Context, head string) 
 }
 
 func getBase(ghContext *actionscore.Context, base string) string {
-	fmt.Printf("base: %s", base)
 	if base != "" {
 		return base
 	}
