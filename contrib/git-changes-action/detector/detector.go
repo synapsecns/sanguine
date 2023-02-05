@@ -265,6 +265,7 @@ func getHead(repo *git.Repository, ghContext *actionscore.Context, head string) 
 }
 
 func getBase(ghContext *actionscore.Context, base string) string {
+	fmt.Printf("base: %s", base)
 	if base != "" {
 		return base
 	}
