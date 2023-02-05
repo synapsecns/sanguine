@@ -119,7 +119,6 @@ func getChangeTreeFromGit(repoPath string, ghContext *actionscore.Context, head,
 	}
 
 	// nolint: nestif
-	// this gets hit
 	if !isBaseSha {
 		res, err := convertToSha(repository, base)
 		if err != nil {
