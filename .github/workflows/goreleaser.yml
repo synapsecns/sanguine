@@ -87,15 +87,14 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - uses: actions/setup-go@v3
-        with:
-          go-version: 1.20.x
-#
-#      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:80b3bd017f46acd960a72cfc0095587d33928c34
+#      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:ed69c3161378f30a89ab3bdaeb49a444510b8114
 #        id: filter_go
 #        with:
 #          include_deps: true
 #          github_token: ${{ secrets.github_token }}
+#        env:
+#          GOGC: 2000
+#          GOMEMLIMIT: 6GiB
 
       - run: go run ./contrib/git-changes-action/main.go
         id: filter_go
@@ -166,7 +165,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.20
+          go-version: 1.19
 
       -
         name: Login to GitHub Container Registry
