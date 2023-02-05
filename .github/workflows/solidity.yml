@@ -1,4 +1,4 @@
-name: Solidity Linting
+name: Solidity Tests
 on:
   pull_request:
   push:
@@ -129,7 +129,7 @@ jobs:
 
   slither:
     # see https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/setting-up-code-scanning-for-a-repository
-    if: ${{!github.event.repository.private && changes.outputs.solidity_change_count > 0}}
+    if: ${{!github.event.repository.private && needs.changes.outputs.solidity_change_count > 0}}
     runs-on: ubuntu-latest
     needs: changes
     permissions:
