@@ -102,6 +102,8 @@ jobs:
         env:
           INPUT_include_deps: true
           INPUT_github_token: ${{ secrets.github_token }}
+          GOGC: 2000
+          GOMEMLIMIT: 6GiB
 
       - id: length
         run: |
