@@ -8,6 +8,7 @@ import (
 	"github.com/sethvargo/go-githubactions"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -47,6 +48,7 @@ func main() {
 		changedModules = append(changedModules, strings.TrimPrefix(module, "./"))
 	}
 
+	sort.Strings(changedModules)
 	marshalledJSON, err := json.Marshal(changedModules)
 	if err != nil {
 		panic(err)
