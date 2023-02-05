@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"io"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -71,6 +72,16 @@ func (d *DetectorSuite) SetupTest() {
 
 	d.sourceRepo.repo, err = git.PlainOpen(d.sourceRepo.dir)
 	Nil(d.T(), err, "could not open source repo")
+
+	// unset all github env vars
+	for _, osVar := range os.Environ() {
+		splitVar := strings.Split(osVar, "=")
+		key := splitVar[0]
+
+		if strings.HasPrefix(key, "GITHUB_") {
+			d.T().Setenv(key, "")
+		}
+	}
 }
 
 func (d *DetectorSuite) TearDownTest() {
