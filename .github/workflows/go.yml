@@ -28,15 +28,12 @@ jobs:
         with:
           include_deps: true
           github_token: ${{ secrets.github_token }}
-          ref: ${{ github.sha }}
-
 
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:ed69c3161378f30a89ab3bdaeb49a444510b8114
         id: filter_go_nodeps
         with:
           include_deps: false
           github_token: ${{ secrets.github_token }}
-          ref: ${{ github.sha }}
 
       - name: Check For Solidity Changes
         id: filter_solidity

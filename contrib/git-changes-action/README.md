@@ -17,5 +17,4 @@ Usage:
         with:
           include_deps: true
           github_token: ${{ secrets.github_token }}
-          ref: ${{ github.sha }}
 ```
