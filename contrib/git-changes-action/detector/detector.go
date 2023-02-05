@@ -3,6 +3,7 @@ package detector
 import (
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-git/go-git/v5"
@@ -122,7 +123,7 @@ func getChangeTreeFromGit(repoPath string, ghContext *actionscore.Context, head,
 	// this gets hit
 	if !isBaseSha {
 		res, err := convertToSha(repository, base)
-		if err != nil{
+		if err != nil {
 			return nil, fmt.Errorf("could not convert base to sha: %w", err)
 		}
 
@@ -141,7 +142,7 @@ func getChangeTreeFromGit(repoPath string, ghContext *actionscore.Context, head,
 	}
 
 	headHash, err := convertToSha(repository, head)
-	if err != nil{
+	if err != nil {
 		return nil, fmt.Errorf("could not convert head to sha: %w", err)
 	}
 
@@ -192,12 +193,15 @@ func convertToSha(repository *git.Repository, ref string) (res *plumbing.Hash, e
 		return nil
 	})
 
+	if err != nil {
+		return nil, errors.New("could not iterate through references")
+	}
+
 	if res != nil {
 		return res, nil
 	}
 
-	return nil, fmt.Errorf("could not convert reference %s to %T", ref, core.PtrTo(plumbing.NewHash(""))
-
+	return nil, fmt.Errorf("could not convert reference %s to %T", ref, core.PtrTo(plumbing.NewHash("")))
 }
 
 // fastDiff is a faster way to get the diff between two commits.
