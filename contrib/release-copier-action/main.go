@@ -6,7 +6,7 @@ import (
 	"context"
 	"github.com/sethvargo/go-githubactions"
 	"github.com/synapsecns/sanguine/contrib/release-copier-action/copier"
-	"github.com/synapsecns/sanguine/core/githubparser"
+	"github.com/synapsecns/sanguine/contrib/release-copier-action/util"
 	"os"
 )
 
@@ -15,11 +15,11 @@ func main() {
 	//
 	// GITHUB_TOKEN: the github access token
 	// GITHUB_REPOSITORY: the repository we are running the action on in the format owner/repo
-	repoOwner, repoPath := githubparser.ParseGithubRepository(os.Getenv("GITHUB_REPOSITORY"))
+	repoOwner, repoPath := util.ParseGithubRepository(os.Getenv("GITHUB_REPOSITORY"))
 	token := githubactions.GetInput("github_token")
 
 	// we also parse the source and target repositories
-	destOwner, destRepo := githubparser.ParseGithubRepository(githubactions.GetInput("destination_repo"))
+	destOwner, destRepo := util.ParseGithubRepository(githubactions.GetInput("destination_repo"))
 	// and the tag to copy
 	tagName := githubactions.GetInput("tag_name")
 	// the prefix to strip

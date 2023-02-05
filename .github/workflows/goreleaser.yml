@@ -87,7 +87,7 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:80b3bd017f46acd960a72cfc0095587d33928c34
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:ed69c3161378f30a89ab3bdaeb49a444510b8114
         id: filter_go
         with:
           include_deps: true
@@ -172,7 +172,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GONOSUM: '.*'
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
-          GOGC: 20
+          GOGC: 2000
+          GOMEMLIMIT: 6GiB
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
       - name: Run GoReleaser (Snapshot)
@@ -183,6 +184,7 @@ jobs:
           GONOSUM: '.*'
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           GOGC: 20
+          GOMEMLIMIT: 6GiB
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
       - name: Push Docker Images (Snapshot)

@@ -8,11 +8,13 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/google/go-github/v37/github"
+	"github.com/google/go-github/v41/github"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/actionscore"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
 	"golang.org/x/mod/modfile"
 	"os"
 	"path"
+	"strings"
 )
 
 // DetectChangedModules is the change detector client.
@@ -65,12 +67,20 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool) (modu
 
 // getChangeTreeFromGit returns a tree of all the files that have changed between the current commit and the commit with the given hash.
 // nolint: cyclop, gocognit
-func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error) {
+func getChangeTreeFromGit(repoPath string, ghContext *actionscore.Context, head, base string) (tree.Tree, error) {
 	// open the repository
 	repository, err := git.PlainOpen(repoPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not open repository %s: %w", repoPath, err)
 	}
+
+	head, err = getHead(repository, ghContext, head)
+	if err != nil {
+		return nil, fmt.Errorf("could not get head: %w", err)
+	}
+	head = getShortName(head)
+
+	base = getShortName(getBase(ghContext, base))
 
 	_, err = hex.DecodeString(base)
 	isBaseSha := err == nil
@@ -82,14 +92,15 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 	// Or if base references same branch it was pushed to, we will do comparison against the previously pushed commit
 	//nolint: nestif
 	if isBaseSha || isBaseSameAsHead {
-		baseSha = base
-		if isBaseSha {
+		if !isBaseSha {
 			var ok bool
-			baseSha, ok, _ = tryGetPushEvent()
+			baseSha, head, ok, _ = tryGetPushEvent()
+			isBaseSha = true
 
 			if !ok {
-				baseSha, err = getLastCommitHash(repository)
+				baseSha, head, err = getHeadBase(repository)
 				if err != nil {
+					// TODO: we might need to add error handling here for last commit on a branch, see: https://github.com/dorny/paths-filter/blob/master/src/main.ts#L141
 					return nil, fmt.Errorf("could not get last commit hash: %w", err)
 				}
 			}
@@ -105,7 +116,8 @@ func getChangeTreeFromGit(repoPath string, head, base string) (tree.Tree, error)
 		head = rawHead.String()
 	}
 
-	//nolint: nestif
+	// nolint: nestif
+	// this gets hit
 	if !isBaseSha {
 		refs, err := repository.References()
 		if err != nil {
@@ -191,10 +203,10 @@ func fastDiff(from, to *object.Commit) (changedFiles []string, err error) {
 	return changedFiles, nil
 }
 
-func tryGetPushEvent() (lastSha string, ok bool, err error) {
+func tryGetPushEvent() (base, head string, ok bool, err error) {
 	f, err := os.Open(os.Getenv("GITHUB_EVENT_PATH"))
 	if err != nil {
-		return "", false, fmt.Errorf("could not open event path: %w", err)
+		return "", "", false, fmt.Errorf("could not open event path: %w", err)
 	}
 	defer func() {
 		_ = f.Close()
@@ -203,47 +215,75 @@ func tryGetPushEvent() (lastSha string, ok bool, err error) {
 	var gpe github.PushEvent
 
 	if err := json.NewDecoder(f).Decode(&gpe); err != nil {
-		return "gpe", false, fmt.Errorf("could not decode event: %w", err)
+		return "gpe", "", false, fmt.Errorf("could not decode event: %w", err)
 	}
 
-	return gpe.GetBefore(), true, nil
-}
-
-func getDefaultBranch() (defaultBranch string, err error) {
-	f, err := os.Open(os.Getenv("GITHUB_EVENT_PATH"))
-	if err != nil {
-		return "", fmt.Errorf("could not open event path: %w", err)
-	}
-	defer func() {
-		_ = f.Close()
-	}()
-
-	var gpe github.PushEvent
-
-	if err := json.NewDecoder(f).Decode(&gpe); err != nil {
-		return "gpe", fmt.Errorf("could not decode event: %w", err)
-	}
-
-	return gpe.Repo.GetDefaultBranch(), nil
+	return gpe.GetBefore(), gpe.GetAfter(), true, nil
 }
 
 // note: we don't  handle the case of no previous commit, this will error.
-func getLastCommitHash(repo *git.Repository) (string, error) {
+func getHeadBase(repo *git.Repository) (head string, base string, err error) {
 	co, err := repo.CommitObjects()
 	if err != nil {
+		return "", "", fmt.Errorf("could not get head: %w", err)
+	}
+
+	var rawHead, rawBase *object.Commit
+	// skip the current commit
+	rawHead, err = co.Next()
+	if err != nil {
+		return "", "", fmt.Errorf("could not get current commit: %w", err)
+	}
+
+	rawBase, err = co.Next()
+	if err != nil {
+		return "", "", fmt.Errorf("could not get last commit: %w", err)
+	}
+
+	return rawBase.Hash.String(), rawHead.Hash.String(), nil
+}
+
+// getHead gets the head of the current branch.
+// it attempts to mirror the logic of  https://github.com/dorny/paths-filter/blob/0ef5f0d812dc7b631d69e07d2491d70fcebc25c8/src/main.ts#L104
+func getHead(repo *git.Repository, ghContext *actionscore.Context, head string) (string, error) {
+	if head != "" {
+		return head, nil
+	}
+
+	if ghContext.Ref != "" {
+		return ghContext.Ref, nil
+	}
+
+	gitHead, err := repo.Head()
+	if err != nil {
+		// TODO: there's some other logic here: https://github.com/dorny/paths-filter/blob/4067d885736b84de7c414f582ac45897079b0a78/src/git.ts#L174
+		// we might want to build in
 		return "", fmt.Errorf("could not get head: %w", err)
 	}
 
-	// skip the current commit
-	_, err = co.Next()
-	if err != nil {
-		return "", fmt.Errorf("could not get current commit: %w", err)
+	return gitHead.Name().Short(), nil
+}
+
+func getBase(ghContext *actionscore.Context, base string) string {
+	if base != "" {
+		return base
 	}
 
-	lastCommit, err := co.Next()
-	if err != nil {
-		return "", fmt.Errorf("could not get last commit: %w", err)
+	return ghContext.Payload.Repository.GetDefaultBranch()
+}
+
+// emulates https://github.com/dorny/paths-filter/blob/master/src/git.ts#L185
+func getShortName(ref string) string {
+	const heads = "refs/heads/"
+	const tags = "refs/tags/"
+
+	if strings.HasPrefix(ref, heads) {
+		return strings.TrimPrefix(ref, heads)
 	}
 
-	return lastCommit.Hash.String(), nil
+	if strings.HasPrefix(ref, tags) {
+		return strings.TrimPrefix(ref, tags)
+	}
+
+	return ref
 }
