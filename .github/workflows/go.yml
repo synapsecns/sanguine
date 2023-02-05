@@ -235,7 +235,7 @@ jobs:
           # Path to your GolangCI-Lint config within the repo (optional)
           config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
           # see: https://github.com/golangci/golangci-lint/issues/2654
-          args: --timeout=60m
+          args: --timeout=60m --verbose
         env:
           # GitHub token for annotations (optional)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
