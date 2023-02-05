@@ -96,6 +96,11 @@ jobs:
 #          GOGC: 2000
 #          GOMEMLIMIT: 6GiB
 
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.20
+
       - run: go run ./contrib/git-changes-action/main.go
         id: filter_go
         env:
@@ -163,9 +168,9 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          go-version: 1.20
 
       -
         name: Login to GitHub Container Registry

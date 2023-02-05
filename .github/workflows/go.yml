@@ -23,6 +23,19 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.20
+
+      - run: go run ./contrib/git-changes-action/main.go
+        id: filter_gof
+        env:
+          INPUT_include_deps: true
+          INPUT_github_token: ${{ secrets.github_token }}
+          GOGC: 2000
+          GOMEMLIMIT: 6GiB
+
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:ed69c3161378f30a89ab3bdaeb49a444510b8114
         id: filter_go_deps
         with:
