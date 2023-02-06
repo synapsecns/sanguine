@@ -38,7 +38,7 @@ export const CurrencyTooltip = ({ active, payload, label }) => {
           <div className="flex justify-between">
             <div className="flex justify-start">
               <div>
-                <p className="mr-6 font-bold">Date</p>
+                <p className="mr-6 font-bold text-white">Date</p>
               </div>
             </div>
             <div>
@@ -48,7 +48,7 @@ export const CurrencyTooltip = ({ active, payload, label }) => {
           <div className="flex justify-between">
             <div className="flex justify-start">
               <div>
-                <p className="mr-6 font-bold">Total</p>
+                <p className="mr-6 font-bold text-white">Total</p>
               </div>
             </div>
             <div>
@@ -70,7 +70,7 @@ export const CurrencyTooltip = ({ active, payload, label }) => {
                     <div style={{ backgroundColor: fill }} className="w-2 h-2 mt-2 mr-2 rounded-full" />
                   </div>
                   <div>
-                    <p className="mr-6 font-bold">
+                    <p className="mr-6 font-bold text-white">
                       {CHAIN_INFO_MAP[CHAIN_ID_NAMES_REVERSE[name]]?.chainName
                         .replace('Binance Smart Chain', 'BSC')
                         .replace('Boba Network', 'Boba') || formatTooltipName(name)}
@@ -78,7 +78,7 @@ export const CurrencyTooltip = ({ active, payload, label }) => {
                   </div>
                 </div>
                 <div>
-                  <p className="">{formatCurrency.format(value)}</p>
+                  <p className="text-white">{formatCurrency.format(value)}</p>
                 </div>
               </div>
             )
@@ -105,7 +105,7 @@ export const NumericTooltip = ({ active, payload, label }) => {
           <div className="flex justify-between">
             <div className="flex justify-start">
               <div>
-                <p className="mr-6 font-bold">Date</p>
+                <p className="mr-6 font-bold text-white">Date</p>
               </div>
             </div>
             <div>
@@ -115,7 +115,7 @@ export const NumericTooltip = ({ active, payload, label }) => {
           <div className="flex justify-between">
             <div className="flex justify-start">
               <div>
-                <p className="mr-6 font-bold">Total</p>
+                <p className="mr-6 font-bold text-white">Total</p>
               </div>
             </div>
             <div>
@@ -137,7 +137,7 @@ export const NumericTooltip = ({ active, payload, label }) => {
                     <div style={{ backgroundColor: fill }} className="w-2 h-2 mt-2 mr-2 rounded-full" />
                   </div>
                   <div>
-                    <p className="mr-6 font-bold">
+                    <p className="mr-6 font-bold text-white">
                       {CHAIN_INFO_MAP[CHAIN_ID_NAMES_REVERSE[name]]?.chainName
                         .replace('Binance Smart Chain', 'BSC')
                         .replace('Boba Network', 'Boba') || formatTooltipName(name)}
@@ -145,7 +145,7 @@ export const NumericTooltip = ({ active, payload, label }) => {
                   </div>
                 </div>
                 <div>
-                  <p className="">{formatNumber.format(value)}</p>
+                  <p className="text-white">{formatNumber.format(value)}</p>
                 </div>
               </div>
             )

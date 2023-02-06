@@ -696,7 +696,7 @@ func GenerateDailyStatisticSwapSQL(typeArg *model.DailyStatisticType, compositeF
 		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
 		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 	case model.DailyStatisticTypeFee:
-		subQuery = fmt.Sprintf("SELECT sumKahan(arraySum(mapValues(%s))) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.AdminFeeUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
+		subQuery = fmt.Sprintf("SELECT sumKahan(arraySum(mapValues(%s))) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.FeeUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
 		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 
 	default:
@@ -790,13 +790,13 @@ func GenerateAmountStatisticSwapSQL(typeArg model.StatisticType, compositeFilter
 		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
 		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeMeanFeeUsd:
-		operation = fmt.Sprintf("AVG(arraySum(mapValues(%s)))", sql.AdminFeeUSDFieldName)
+		operation = fmt.Sprintf("AVG(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
 		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeMedianFeeUsd:
-		operation = fmt.Sprintf("median(arraySum(mapValues(%s)))", sql.AdminFeeUSDFieldName)
+		operation = fmt.Sprintf("median(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
 		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeTotalFeeUsd:
-		operation = fmt.Sprintf("sumKahan(arraySum(mapValues(%s)))", sql.AdminFeeUSDFieldName)
+		operation = fmt.Sprintf("sumKahan(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
 		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
@@ -876,7 +876,7 @@ func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, composite
 //		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
 //		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 //	case model.DailyStatisticTypeFee:
-//		subQuery = fmt.Sprintf("SELECT sumKahan(arraySum(mapValues(%s))) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.AdminFeeUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
+//		subQuery = fmt.Sprintf("SELECT sumKahan(arraySum(mapValues(%s))) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.FeeUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
 //		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
 //
 //	default:
@@ -917,7 +917,7 @@ func GenerateRankedChainsByVolumeSQL(compositeFilters string, firstFilter *bool)
 }
 
 func GenerateDailyStatisticFeeSQL(compositeFilters string) string {
-	return fmt.Sprintf("%s FROM ( SELECT %s, chain_id, sumKahan(fee_usd) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(arraySum(mapValues(admin_fee_usd))) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(fee_usd) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+	return fmt.Sprintf("%s FROM ( SELECT %s, chain_id, sumKahan(fee_usd) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(arraySum(mapValues(fee_usd))) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(fee_usd) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
 }
 
 func GenerateDailyStatisticAddressesSQL(compositeFilters string) string {
