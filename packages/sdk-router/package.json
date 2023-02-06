@@ -18,7 +18,9 @@
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
-    "analyze": "size-limit --why"
+    "analyze": "size-limit --why",
+    "ci:lint": " ",
+    "build:go": " "
   },
   "husky": {
     "hooks": {
