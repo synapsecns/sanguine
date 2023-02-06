@@ -24,7 +24,7 @@ func GenerateShellCommand(shellCommands []*cli.Command) *cli.Command {
 
 	// make sure tty is open, this will not be the case in distroless containers
 	_, err := syscall.Open("/dev/tty", syscall.O_RDONLY, 0)
-	shellAvailable := err != nil
+	shellAvailable := err == nil
 
 	return &cli.Command{
 		Name:  shellCommandName,
