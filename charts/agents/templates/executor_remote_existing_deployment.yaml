@@ -1,8 +1,8 @@
-{{- if .Values.executor_remote_existing.enabled -}}
+{{- if and .Values.executor_remote_existing.enabled ( eq .Values.executor.type "remote_existing" ) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "agents.fullname" . }}-executor-remote-existing
+  name: {{ include "agents.fullname" . }}-executor
   labels:
     {{- include "agents.labels" . | nindent 4 }}
 spec:

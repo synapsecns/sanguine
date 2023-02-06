@@ -1,8 +1,8 @@
-{{- if .Values.executor_remote_fresh.enabled -}}
+{{- if and .Values.executor_remote_fresh.enabled ( eq .Values.executor.type "remote_fresh" ) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "agents.fullname" . }}-executor-remote-fresh
+  name: {{ include "agents.fullname" . }}-executor
   labels:
     {{- include "agents.labels" . | nindent 4 }}
 spec:
@@ -54,7 +54,7 @@ spec:
             - "--scribe-type=remote"
             - "--db=mysql"
             - "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor"
-            - "--scribe-port=80"
+            - "--scribe-port=5080"
             - "--scribe-url=executor-scribe.{{ .Release.Namespace }}"
           ports:
             - name: http

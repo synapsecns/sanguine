@@ -1,8 +1,8 @@
-{{- if .Values.executor_embedded.enabled -}}
+{{- if and .Values.executor_embedded.enabled ( eq .Values.executor.type "embedded" ) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "agents.fullname" . }}-executor-embedded
+  name: {{ include "agents.fullname" . }}-executor
   labels:
     {{- include "agents.labels" . | nindent 4 }}
 spec:

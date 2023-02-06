@@ -33,7 +33,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 5080
 
 initialDelaySeconds: 20
 
@@ -65,10 +65,13 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+executor:
+  type: "embedded"
+
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
   enabled: false
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=80", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
+  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -152,7 +155,7 @@ executor_remote_fresh:
 
 executor_embedded:
   enabled: true
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=80", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-db=sqlite", "--scribe-path=dapaff"]
+  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-db=sqlite", "--scribe-path=dapaff"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
