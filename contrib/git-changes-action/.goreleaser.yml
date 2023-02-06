@@ -55,7 +55,7 @@ dockers:
   - goos: linux
     goarch: amd64
     image_templates:
-      - 'ghcr.io/synapsecns/sanguine/git-changes-action:latest'
+      - 'ghcr.io/synapsecns/sanguine/git-changes-action:91f20a1aa3abb3f5647180cf5caa257b88f71422'
       - 'ghcr.io/synapsecns/sanguine/git-changes-action:{{ .FullCommit }}'
       - 'ghcr.io/synapsecns/sanguine/git-changes-action:{{ .Tag }}'
     dockerfile: ../../docker/git-changes-action.Dockerfile
