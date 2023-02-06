@@ -275,7 +275,7 @@ jobs:
     name: Go Generate (Solidity Only)
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes }}
+    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes == 'true' }}
     strategy:
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
