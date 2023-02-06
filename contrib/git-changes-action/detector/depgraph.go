@@ -120,7 +120,7 @@ func makeDepMaps(repoPath string, uses []*modfile.Use) (dependencies map[string]
 
 // isRelativeDep returns true if the dependency is relative to the module (starts with ./ or ../).
 func isRelativeDep(path string) bool {
-	return strings.HasPrefix(path, "./") && strings.HasPrefix(path, "../")
+	return strings.HasPrefix(path, "./") || strings.HasPrefix(path, "../")
 }
 
 // convertRelPath converts a path relative to a module to a path relative to the repository root.
