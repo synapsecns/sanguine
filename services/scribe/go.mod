@@ -20,7 +20,7 @@ require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/MichaelMure/go-term-markdown v0.1.4
 	github.com/Yamashou/gqlgenc v0.10.0
-	github.com/aws/smithy-go v1.13.3
+	github.com/aws/smithy-go v1.13.5
 	github.com/benbjohnson/immutable v0.4.0
 	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/davecgh/go-spew v1.1.1
@@ -239,7 +239,7 @@ require (
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
-	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spf13/afero v1.9.3 // indirect

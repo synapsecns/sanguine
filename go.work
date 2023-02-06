@@ -3,6 +3,7 @@ go 1.19
 // note: new paths should be added as flags to the .codecov.yaml
 use (
 	./agents
+	./contrib/docker-mirror
 	./contrib/git-changes-action
 	./contrib/release-copier-action
 	./contrib/terraform-provider-helmproxy
