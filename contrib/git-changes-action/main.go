@@ -54,6 +54,10 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("setting output to %s\n", marshalledJSON)
+	if len(changedModules) == 0 {
+		fmt.Println("no modules changed")
+	} else {
+		fmt.Printf("setting output to %s\n", marshalledJSON)
+	}
 	githubactions.SetOutput("changed_modules", string(marshalledJSON))
 }

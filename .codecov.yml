@@ -64,6 +64,10 @@ flags:
     paths:
       - services/scribe/*
     carryforward: true
+  solidity:
+    paths:
+      - packages/contracts-core/*
+    carryforward: true
   tools:
     paths:
       - tools/*
