@@ -1,4 +1,4 @@
-import { TRANSACTIONS_PATH } from '@urls'
+import { TRANSACTIONS_PATH, getChainUrl } from '@urls'
 import { useState, useEffect } from 'react'
 import { Stats } from './Stats'
 import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
@@ -84,6 +84,16 @@ export function Home({ }) {
     },
   ] = useLazyQuery(RANKED_CHAINIDS_BY_VOLUME)
 
+  const formatTotalUsdVolumes = (totalUsdVolumes) => {
+    if (totalUsdVolumes > 1000000000) {
+      return `${_.round(totalUsdVolumes / 1000000000, 3)}B`
+    } else if (totalUsdVolumes > 100000) {
+      return `${_.round(totalUsdVolumes / 1000000, 2)}M`
+    }
+
+    return `${_.round(totalUsdVolumes / 1000, 1)}K`
+  }
+
   useEffect(() => {
     if (dailyData) {
       setDailyDataArr(dailyData.dailyStatisticsByChain, {
@@ -104,6 +114,7 @@ export function Home({ }) {
       })
     }
   }, [rankedChainsData, loadingRankedChains])
+
   // Get initial data
   useEffect(() => {
     getDailyStatisticsByChain({
@@ -119,6 +130,7 @@ export function Home({ }) {
     })
   }, [])
 
+  // update chart
   useEffect(() => {
     getDailyStatisticsByChain({
       variables: {
@@ -128,6 +140,21 @@ export function Home({ }) {
     })
   }, [dailyStatisticDuration, dailyStatisticType, dailyStatisticCumulative])
 
+  // update chart with chainID
+  useEffect(() => {
+    let variables = {
+      type: dailyStatisticType,
+      duration: dailyStatisticDuration,
+    }
+    if (currentChainID > 0) {
+      variables["chainID"] = currentChainID
+    }
+    getDailyStatisticsByChain({
+      variables: variables,
+    })
+  }, [currentChainID])
+
+  // update ranked chains
   useEffect(() => {
     getChainIDsRankedByVolume({
       variables: {
@@ -197,11 +224,12 @@ export function Home({ }) {
               font-bold
               text-white"
               >
-                All Chains
+                All Transactions
               </p>
             ) : (
               <ChainInfo
                 chainId={currentChainID}
+                noLink={true}
                 imgClassName="w-8 h-8"
                 linkClassName="bg-gray-700 p-1 rounded-md ml-1 mt-2"
                 textClassName="text-4xl font-medium text-default
@@ -331,64 +359,73 @@ export function Home({ }) {
       </div>
       <HorizontalDivider />
       <div className="grid grid-cols-4 gap-4">
-        <div className="col-span-1">
-          <div className="pb-2 px-4 sm:px-6 lg:px-8">
+        <div className="col-span-1 w-[100%]">
+          {/* <div className="pb-2 px-4 sm:px-6 lg:px-8">
             <div className="mt-8 flex flex-col">
               <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div className="inline-block min-w-full py-2 align-middle">
-                  <div className="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5">
-                    <table className="min-w-full">
-                      <TableHeader headers={['Chain', 'Volume']} />
-                      <tbody>
-                      <tr
-                            key={0}
-                            className="hover:bg-synapse-radial rounded-md cursor-pointer "
-                            onClick={() => setCurrentChainID(0)}
-                          >
-                            <td>
-                              <p
-                                className="text-1xl font-medium text-default text-white ml-2"
-                              >All Chains</p>
-                            </td>
-                            <td>
-                              <div className="ml-1 mr-2 text-white self-center">
-                                {formatCurrency.format(totalRankedChainVolume)}
-                              </div>
-                            </td>
-                          </tr>
-                        {rankedChainIDs.map((row, i) => (
-
-                          <tr
-                            key={i}
-                            className="hover:bg-synapse-radial rounded-md cursor-pointer "
-                            onClick={() => setCurrentChainID(row.chainID)}
-                          >
-                            <td>
-                              <ChainInfo
-                                noLink={true}
-                                chainId={row.chainID}
-                                imgClassName="w-4 h-4 ml-2"
-                                textClassName="text-1xl font-medium text-default text-white"
-                              />
-                            </td>
-                            <td>
-                              <div className="ml-1 mr-2 text-white self-center">
-                                {formatCurrency.format(row.total)}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="shadow-sm ring-1 ring-black ring-opacity-5"> */}
+          <table className='min-w-full'>
+            <TableHeader headers={['Chain', '', 'Volume']} />
+            <tbody>
+              <tr
+                key={0}
+                className="hover:bg-synapse-radial rounded-md cursor-pointer "
+                onClick={() => setCurrentChainID(0)}
+              >
+                <td>
+                  <p
+                    className="text-1xl font-medium text-default text-white ml-2"
+                  >All Chains</p>
+                </td>
+                <td className='w-[8%] ml-[2%]'>
+                  <p className='text-white'> </p>
+                </td>
+                <td>
+                  <div className="ml-1 mr-2 self-center">
+                    <p className='whitespace-nowrap px-2  text-sm  text-white'>{formatTotalUsdVolumes(totalRankedChainVolume)}</p>
                   </div>
+                </td>
+              </tr>
+              {rankedChainIDs.map((row, i) => (
+
+                <tr
+                  key={i}
+                  className="hover:bg-synapse-radial rounded-md cursor-pointer  w-[100%]"
+                  onClick={() => setCurrentChainID(row.chainID)}
+                >
+                  <td className='w-fit'>
+                    <ChainInfo
+                      chainId={row.chainID}
+                      noLink={true}
+                      imgClassName="w-4 h-4 ml-2"
+                      textClassName="whitespace-nowrap px-2  text-sm  text-white"
+                    />
+                  </td>
+                  <td className='w-fit text-center'>
+                    <a href={getChainUrl({ chainId: row.chainID })}
+                      target="_blank"
+                      rel="noreferrer" className='text-white hover:bg-cyan-100/50 px-1 rounded-md ease-in-out '>↗</a>
+                  </td>
+                  <td className='w-fit'>
+                    <div className="ml-1 mr-2 self-center">
+                      <p className='whitespace-nowrap px-2  text-sm  text-white'>{formatTotalUsdVolumes(row.total)}</p>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {/* </div>
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="col-span-3 ">
-          <br />
+
           <OverviewChart
+            height={rankedChainIDs.length * 30}
             data={dailyDataArr}
             isCumulativeData={dailyStatisticCumulative}
             isUSD={
@@ -403,6 +440,7 @@ export function Home({ }) {
           />
         </div>{' '}
       </div>
+      <br /> <br />
       <HorizontalDivider />
       <br /> <br />
       <p className="text-white text-2xl font-bold">Recent Transactions</p>

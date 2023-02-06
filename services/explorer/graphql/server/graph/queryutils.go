@@ -296,6 +296,7 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 		query = fmt.Sprintf(`%s SELECT %s, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM %s %s) GROUP BY %s ORDER BY Count Desc`,
 			generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.TxHashFieldName, singleSideCol, "baseQuery", singleSideJoinsCTE, sql.ChainIDFieldName)
 	}
+	fmt.Println(query)
 	return query
 }
 

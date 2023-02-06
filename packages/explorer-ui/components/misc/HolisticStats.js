@@ -152,19 +152,68 @@ export default function HolisticStats() {
           Messaging
         </button>
       </div>
+      <div className="flex flex-wrap flex-row">
+        <Card
+          className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
+        >
+          <div className="text-xl opacity-80">Volume</div>
+          <div className="text-4xl font-bold text-white">
+            {numeral(volume / 1000000000).format('$0.0')}B
+          </div>
+          <div className="flex space-x-2 text-sm font-medium">
+            <div className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-400">
+              All Time
+            </div>
+          </div>
+        </Card>
+        <Card
+          className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
+        >
+          <div className="text-xl opacity-80">Fees</div>
+          <div className="text-4xl font-bold text-white">
+          {numeral(revenue / 1000000).format('$0.0')}M
+          </div>
+          <div className="flex space-x-2 text-sm font-medium">
+
+          </div>
+        </Card>
+        <Card
+          className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
+        >
+          <div className="text-xl opacity-80">Transactions</div>
+          <div className="text-4xl font-bold text-white">
+          {numeral(txs).format('0,0')}
+          </div>
+          <div className="flex space-x-2 text-sm font-medium">
+
+          </div>
+        </Card>
+        <Card
+          className={`px-0 pb-2 space-y-3 text-white bg-transparent min-w-[10%]`}
+        >
+          <div className="text-xl opacity-80">Addresses</div>
+          <div className="text-4xl font-bold text-white">
+          {numeral(addresses).format('0,0')}
+          </div>
+          <div className="flex space-x-2 text-sm font-medium">
+
+          </div>
+        </Card>
+
+      </div>
+
+      {/*
       <Grid cols={{ sm: 1, md: 4, lg: 4 }} gap={4} className="my-4">
         <AllTimeStatCard
           title="Volume"
         >
-          <div className="text-4xl font-bold text-white">
-            {numeral(volume / 1000000000).format('$0.000')}B
-          </div>
+
         </AllTimeStatCard>
         <AllTimeStatCard
           title="Fees"
         >
           <div className="text-4xl font-bold text-white">
-            {numeral(revenue / 1000000).format('$0.000')}M
+            {numeral(revenue / 1000000).format('$0.0')}M
           </div>
         </AllTimeStatCard>
         <AllTimeStatCard
@@ -182,7 +231,8 @@ export default function HolisticStats() {
           </div>
         </AllTimeStatCard>
 
-      </Grid></>
+      </Grid>*/}
+    </>
   )
 }
 
@@ -190,11 +240,11 @@ export default function HolisticStats() {
 export function AllTimeStatCard({
   title,
   children,
-  duration = 'All-Time',
+  duration = 'All Time',
 }) {
   return (
     <Card
-      className={`px-0 pb-2 space-y-3 text-white bg-transparent cursor-pointer`}
+      className={`px-0 pb-2 space-y-3 text-white bg-transparent`}
     >
       <div className="text-xl">{title}</div>
       {children}

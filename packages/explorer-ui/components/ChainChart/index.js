@@ -9,7 +9,7 @@ const formatMonth = new Intl.DateTimeFormat('en-US', {
 const formatTotalUsdVolumes = (totalUsdVolumes) => {
   if (totalUsdVolumes > 1000000000) {
     return `${_.round(totalUsdVolumes / 1000000000, 3)}B`
-  } else if (totalUsdVolumes > 1000000) {
+  } else if (totalUsdVolumes > 100000) {
     return `${_.round(totalUsdVolumes / 1000000, 2)}M`
   }
 
@@ -84,15 +84,16 @@ export const OverviewChart = ({
       <BarChart width={0} height={480} data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
         <XAxis hide dataKey="date" stroke="#374151" />
         <YAxis
+        tick={{fontSize: "0.7rem"}}
         orientation="right"
           interval="preserveStart"
-          width={40}
-          stroke="#374151"
-          tickCount={10}
+          width={20}
+          stroke="#ffffff"
+          tickCount={7}
           tickFormatter={(value) => isUSD ? "$" + formatTotalUsdVolumes(value) : formatTotalUsdVolumes(value)
           }
         />
-        <Tooltip wrapperClassName="rounded-lg shadow-lg" content={isUSD ? CurrencyTooltip : NumericTooltip} />
+        <Tooltip cursor={{fill: 'rgba(255, 255, 255, 0.1)'}} wrapperClassName="rounded-lg shadow-lg" content={isUSD ? CurrencyTooltip : NumericTooltip} />
         {showAggregated ? (
           <Bar isAnimationActive={false} dataKey="total" stackId="a" fill="#6a30b4" />
         ) : (
@@ -114,6 +115,7 @@ export const OverviewChart = ({
             <Bar isAnimationActive={false} dataKey="dfk" stackId="a" fill="#ffff83" />
             <Bar isAnimationActive={false} dataKey="klaytn" stackId="a" fill="#f9810b" />
             <Bar isAnimationActive={false} dataKey="canto" stackId="a" fill="#09fc99" />
+            <Bar isAnimationActive={false} dataKey="dogechain" stackId="a" fill="#8168f7" />
 
           </>
         )}
