@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/go-github/v37/github"
+	"github.com/google/go-github/v41/github"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/actionscore"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
-	"github.com/synapsecns/sanguine/core/githubparser"
 	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2"
 	"os"
@@ -15,7 +15,9 @@ import (
 
 // GetChangeTree returns the ref for the given event name.
 // it is based on  https://github.com/dorny/paths-filter/blob/4067d885736b84de7c414f582ac45897079b0a78/src/main.ts#L36
-func GetChangeTree(ctx context.Context, repoPath, eventName, ref, token, base string) (tree.Tree, error) {
+func GetChangeTree(ctx context.Context, repoPath, ref, token, base string) (tree.Tree, error) {
+	ghContext := actionscore.NewContext()
+
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token})
 
@@ -24,22 +26,14 @@ func GetChangeTree(ctx context.Context, repoPath, eventName, ref, token, base st
 	client := github.NewClient(tc)
 
 	isPrEvent := slices.ContainsFunc([]EventType{EventPullRequest, EventPullRequestReview, EventPullRequestReviewComment, EventPullRequestTarget}, func(eventType EventType) bool {
-		return strings.EqualFold(eventName, eventType.String())
+		return strings.EqualFold(ghContext.EventName, eventType.String())
 	})
 
 	if isPrEvent {
-		return getChangedFilesFromAPI(ctx, client)
+		return getChangedFilesFromAPI(ctx, ghContext, client)
 	}
 
-	if base == "" {
-		var err error
-		base, err = getDefaultBranch()
-		if err != nil {
-			return nil, fmt.Errorf("could not get default branch: %w", err)
-		}
-	}
-
-	ct, err := getChangeTreeFromGit(repoPath, ref, base)
+	ct, err := getChangeTreeFromGit(repoPath, ghContext, ref, base)
 	if err != nil {
 		return nil, fmt.Errorf("could not get change tree: %w", err)
 	}
@@ -47,8 +41,9 @@ func GetChangeTree(ctx context.Context, repoPath, eventName, ref, token, base st
 }
 
 // nolint: cyclop
-func getChangedFilesFromAPI(ctx context.Context, client *github.Client) (ct tree.Tree, err error) {
+func getChangedFilesFromAPI(ctx context.Context, ghContext *actionscore.Context, client *github.Client) (ct tree.Tree, err error) {
 	var gpe github.PullRequestEvent
+	// TODO: should rap into context
 	f, err := os.Open(os.Getenv("GITHUB_EVENT_PATH"))
 	if err != nil {
 		return nil, fmt.Errorf("could not open event path: %w", err)
@@ -61,7 +56,7 @@ func getChangedFilesFromAPI(ctx context.Context, client *github.Client) (ct tree
 		return nil, fmt.Errorf("could not decode event: %w", err)
 	}
 
-	repoOwner, repoName := githubparser.ParseGithubRepository(os.Getenv("GITHUB_REPOSITORY"))
+	repoOwner, repoName := ghContext.Repo()
 
 	prNumber := gpe.GetPullRequest().GetNumber()
 

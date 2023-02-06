@@ -52,12 +52,12 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - server
-            - '--port=80'
+            - '--port=5080'
             - '--scribe-url=https://scribe.interoperability.institute/graphql'
             - '--address=tcp://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 5080
               protocol: TCP
           {{- if .Values.server.env }}
           env:

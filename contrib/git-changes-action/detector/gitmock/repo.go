@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
@@ -82,14 +83,15 @@ func (t *Repo) AddRandomFiles(fileCount int) (addedFiles []string) {
 }
 
 // Commit commits all changed files to the repo.
-func (t *Repo) Commit() {
+func (t *Repo) Commit() (hash string) {
 	wt, err := t.repo.Worktree()
 	assert.Nil(t.tb, err, "should be able to load work tree")
 
 	err = wt.AddGlob(".")
 	assert.Nil(t.tb, err, "should be able to add all files")
 
-	_, err = wt.Commit("test Commit", &git.CommitOptions{
+	var commitHash plumbing.Hash
+	commitHash, err = wt.Commit("test Commit", &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  gofakeit.Name(),
 			Email: gofakeit.Email(),
@@ -97,4 +99,6 @@ func (t *Repo) Commit() {
 		},
 	})
 	assert.Nil(t.tb, err, "should be able to Commit")
+
+	return commitHash.String()
 }

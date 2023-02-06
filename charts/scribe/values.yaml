@@ -106,7 +106,7 @@ indexer:
 server:
   enabled: true
   # this should use a secret in production, for testing only
-  args: ["server", "--port=80", "--db=mysql", "--omnirpc=http://omnirpc/confirmations/1/rpc", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true"]
+  args: ["server", "--port=5080", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true", "--omnirpc=http://scribe-omnirpc"]
   replicaCount: 1
   autoscaling:
     enabled: false

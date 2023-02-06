@@ -1,9 +1,12 @@
 name: Solidity Linting
+
 on:
   pull_request:
+    paths:
+      - 'packages/contracts-core/**'
   push:
-    branches-ignore:
-      - 'gh-pages'
+    paths:
+      - 'packages/contracts-core/**'
 
 jobs:
   lint:
@@ -13,7 +16,7 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
           submodules: 'recursive'
 
       - name: Read .nvmrc
@@ -62,7 +65,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
           submodules: 'recursive'
 
       - name: Read .nvmrc

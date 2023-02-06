@@ -15,8 +15,12 @@ root
 ├── <a href="./agents">agents</a>: agents contain all the agents used in optimistic messaging
 ├── <a href="./charts">charts</a>: The helm charts used for deploying sanguine related services
 ├── <a href="./contrib">contrib</a>: Devops related tools
+│   ├── <a href="./contrib/git-changes-action">git-changes-action</a>: Github action for identifying changes in dependent modules in a go workspace
 │   ├── <a href="./contrib/release-copier-action">release-copier-action</a>: Github action for copying releases from one repo to another
 │   ├── <a href="./contrib/terraform-provider-iap">terraform-provider-iap</a>: Terraform provider used for bastion proxy tunneling
+│   ├── <a href="./contrib/terraform-provider-helmproxy">terraform-provider-helmproxy</a>: Terraform provider that allows helm to be proxied through an iap bastion proxy
+│   ├── <a href="./contrib/terraform-provider-kubeproxy">terraform-provider-kubeproxy</a>: Terraform provider that allows kube to be proxied through an iap bastion proxy
+│   ├── <a href="./contrib/tfcore">tfcore</a>: Terraform core utilities + iap utilities
 ├── <a href="./core">core</a>: The Go core library with common utilities for use across the monorepo
 ├── <a href="./ethergo">ethergo</a>: Go-based ethereum testing + common library
 ├── <a href="./packages">packages</a>

@@ -12,8 +12,8 @@ ENV GORELEASER_DOWNLOAD_FILE=$FILE_ARG
 ENV GORELEASER_DOWNLOAD_URL=$DOWNLOAD_ARG
 
 # Golang
-ENV GOLANG_VERSION=1.20
-ENV GOLANG_SHA=5a9ebcc65c1cce56e0d2dc616aff4c4cedcfbda8cc6f0288cc08cda3b18dcbf1
+ENV GOLANG_VERSION=1.19
+ENV GOLANG_SHA=464b6b66591f6cf055bc5df90a9750bf5fbc9d038722bb84a9d56a2bea974be6
 ENV GOLANG_DOWNLOAD_FILE=go${GOLANG_VERSION}.linux-amd64.tar.gz
 ENV GOLANG_DOWNLOAD_URL=https://dl.google.com/go/${GOLANG_DOWNLOAD_FILE}
 
@@ -101,3 +101,10 @@ RUN \
 
 
 ENV PATH=${PATH}:/etc/musl/x86_64-linux-musl-native/bin:/etc/musl/aarch64-linux-musl-cross/bin:/usr/local/go/bin
+
+# Install node 16
+RUN apt-get install -y curl
+
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+
+RUN apt-get install -y nodejs

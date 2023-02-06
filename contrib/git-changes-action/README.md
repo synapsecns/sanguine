@@ -2,6 +2,7 @@
 
 This action will export a variable containing the list of go modules changed in the current pull request, and any dependent modules.
 
+
 Usage:
 
 ```yaml
@@ -16,5 +17,4 @@ Usage:
         with:
           include_deps: true
           github_token: ${{ secrets.github_token }}
-          ref: ${{ github.sha }}
 ```

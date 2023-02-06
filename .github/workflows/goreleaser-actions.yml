@@ -1,6 +1,5 @@
 name: Go Releaser
-on:
-  push:
+on: [push]
 
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
@@ -87,12 +86,11 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:80b3bd017f46acd960a72cfc0095587d33928c34
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:5c58aac95bfd4f546eefb6cff35ec0c642e26c93
         id: filter_go
         with:
           include_deps: true
           github_token: ${{ secrets.github_token }}
-          ref: ${{ github.sha }}
 
       - id: length
         run: |
@@ -153,9 +151,9 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          go-version: 1.20.x
 
       -
         name: Login to GitHub Container Registry
@@ -172,7 +170,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GONOSUM: '.*'
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
-          GOGC: 20
+          GOGC: 2000
+          GOMEMLIMIT: 6GiB
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
       - name: Run GoReleaser (Snapshot)
@@ -183,6 +182,7 @@ jobs:
           GONOSUM: '.*'
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           GOGC: 20
+          GOMEMLIMIT: 6GiB
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
       - name: Push Docker Images (Snapshot)
@@ -201,11 +201,11 @@ jobs:
         if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-iap') }}
         uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
         with:
-            github_token: ${{ secrets.PUBLISH_TOKEN }}
-            # TODO: will change with new org
-            destination_repo: 'trajan0x/terraform-provider-iap'
-            tag_name: ${{ steps.tag_version.outputs.new_tag }}
-            strip_prefix: 'contrib/terraform-provider-iap/'
+          github_token: ${{ secrets.PUBLISH_TOKEN }}
+          # TODO: will change with new org
+          destination_repo: 'trajan0x/terraform-provider-iap'
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          strip_prefix: 'contrib/terraform-provider-iap/'
 
       - name: Copy Releases
         if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-helmproxy') }}
