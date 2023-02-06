@@ -33,7 +33,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 5080
+  port: 80
 
 initialDelaySeconds: 20
 
@@ -66,7 +66,7 @@ resources: {}
   #   memory: 128Mi
 
 executor:
-  type: "embedded"
+  type: "remote_fresh"
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
@@ -144,7 +144,7 @@ executor_remote_fresh:
     - name: wait-for-scribe
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for scribe..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 5080; do echo "Waiting for scribe..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: executor-scribe
@@ -214,8 +214,8 @@ omnirpc:
 scribe:
   enabled: true
   fullnameOverride: executor-scribe
-  server:
-    args: ["server", "--port=80", "--db=mysql", "--omnirpc=http://omnirpc/confirmations/1/rpc", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true"]
+#  server:
+#  args: ["server", "--port=5080", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true", "--omnirpc=http://scribe-omnirpc"]
 
 executor_remote_existing_files:
   signer.txt: |-
