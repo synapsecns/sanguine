@@ -41,7 +41,7 @@ require (
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/valyala/fasthttp v1.41.0
 	go.uber.org/automaxprocs v1.5.1
-	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
+	golang.org/x/exp v0.0.0-20230206171751-46f607a40771
 	golang.org/x/sync v0.1.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.25.5
