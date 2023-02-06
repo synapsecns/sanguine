@@ -1,9 +1,12 @@
 name: Solidity Linting
+
 on:
   pull_request:
+    paths:
+      - 'packages/contracts-core/**'
   push:
-    branches-ignore:
-      - 'gh-pages'
+    paths:
+      - 'packages/contracts-core/**'
 
 jobs:
   lint:

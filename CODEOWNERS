@@ -5,7 +5,6 @@
 
 .github/ @trajan0x
 .github/workflows/solidity.yml @trajan0x @ChiTimesChi
-.github/workflows/foundry-tests.yml @trajan0x @ChiTimesChi
 
 .vscode/ @trajan0x @ChiTimesChi
 agents/ @trajan0x @ChiTimesChi
@@ -15,10 +14,11 @@ docker/ @trajan0x
 ethergo/ @trajan0x
 make/ @trajan0x
 packages/contracts-core/ @ChiTimesChi @trajan0x
+contrib/ @trajan0x
 
 services/explorer @CryptoMaxPlanck @simonmahns @trajan0x
 services/omnirpc @trajan0x
-services/scribe @trajan0x @CryptoMaxPlanck
+services/scribe @trajan0x @simonmahns
 tools/ @trajan0x
 
 # config files
