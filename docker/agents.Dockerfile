@@ -3,7 +3,7 @@ FROM alpine:latest as builder
 RUN apk add --no-cache ca-certificates
 RUN update-ca-certificates
 
-FROM gcr.io/distroless/static:latest
+FROM gcr.io/distroless/static-debian11:latest
 
 LABEL org.label-schema.description="Agents Docker file"
 LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine/agents"
