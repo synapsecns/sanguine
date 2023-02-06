@@ -21,6 +21,11 @@ const shellCommandName = "shell"
 func GenerateShellCommand(shellCommands []*cli.Command) *cli.Command {
 	// explicitly exclude shell if included
 	capturedCommands := pruneShellCommands(shellCommands)
+
+	// make sure tty is open, this will not be the case in distroless containers
+	_, err := syscall.Open("/dev/tty", syscall.O_RDONLY, 0)
+	shellAvailable := err == nil
+
 	return &cli.Command{
 		Name:  shellCommandName,
 		Usage: "start an interactive shell. Note: certain commands (reliant on authentication) are only available via the shell",
@@ -57,6 +62,11 @@ func GenerateShellCommand(shellCommands []*cli.Command) *cli.Command {
 				signal.Stop(sigs)
 				close(sigs)
 			}()
+
+			if !shellAvailable {
+				fmt.Println("Shell is not available in this environment because /dev/tty is not available. This is expected in containerized images")
+				return nil
+			}
 
 			interactive := newInteractiveClient(c.Context, capturedCommands, console)
 			for {

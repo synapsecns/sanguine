@@ -50,11 +50,9 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            {{- toYaml .Values.indexer.args | nindent 12 }}
-          ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
+            - backfill
+            - '--address=clickhouse://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
+            - '--config=/config/config.yaml'
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- if .Values.indexer.env }}

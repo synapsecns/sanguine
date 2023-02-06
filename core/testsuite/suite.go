@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -60,6 +61,12 @@ type TestSuite struct {
 	runAfterSuite []func()
 	// structMux protects non thread safe operations
 	structMux sync.Mutex
+	// setupSuiteCalled is an assertion that makes sure setupSuite was called on the parent
+	setupSuiteCalled atomic.Bool
+	// setupTestCalled is an assertion that setupTest was called on the parent
+	setupTestCalled atomic.Bool
+	// beforeTestCalled is wether or not before test was called
+	beforeTestCalled atomic.Bool
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -93,8 +100,30 @@ func (s *TestSuite) Eventually(willBeTrue func() bool) {
 
 // SetupSuite sets up the test suite.
 func (s *TestSuite) SetupSuite() {
+	s.structMux.Lock()
+	defer s.structMux.Unlock()
+
 	s.runAfterSuite = nil
 	s.suiteContext = newCancellableContext(s.context)
+	s.setupSuiteCalled.Store(true)
+}
+
+// BeforeTest performs some assertions and sets up the test.
+func (s *TestSuite) BeforeTest(_, _ string) {
+	if !s.setupTestCalled.Load() {
+		panic("make sure SetupTest is called on the parent")
+	}
+
+	if !s.setupSuiteCalled.Load() {
+		panic("make sure SetupSuite is called on the parent")
+	}
+
+	s.beforeTestCalled.Store(true)
+	s.DeferAfterTest(func() {
+		if !s.beforeTestCalled.Load() {
+			panic("make sure you call before test on the parent")
+		}
+	})
 }
 
 // runDefferedFunctions runs deferred functions.
@@ -108,12 +137,15 @@ func runDeferredFunctions(deferredFuncs []func()) {
 func (s *TestSuite) TearDownSuite() {
 	runDeferredFunctions(s.runAfterSuite)
 	s.suiteContext.cancelFunc()
+
+	s.setupSuiteCalled.Store(false)
 }
 
 // SetupTest runs checks at the end of the test suite.
 func (s *TestSuite) SetupTest() {
 	s.runAfterTest = nil
 	s.testContext = newCancellableContext(s.suiteContext.ctx)
+	s.setupTestCalled.Store(true)
 
 	fmt.Printf("running test %s with id %d \n", s.T().Name(), s.testID)
 }
@@ -144,8 +176,9 @@ func (s *TestSuite) TearDownTest() {
 	runDeferredFunctions(s.runAfterTest)
 	// this will panic if you failed to call SetupTest() from an inheriting suite
 	s.testContext.cancelFunc()
-
 	fmt.Printf("finished running test %s with id %d \n", s.T().Name(), s.testID)
+
+	s.setupTestCalled.Store(false)
 }
 
 // DeferAfterTest runs a function after the test. This will run before context cancellation

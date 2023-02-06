@@ -1,0 +1,63 @@
+project_name: git-changes-action
+
+monorepo:
+  tag_prefix: contrib/git-changes-action/
+  dir: contrib/git-changes-action/
+
+builds:
+  # Linux AMD64
+  - id: git-changes-action
+    binary: git-changes-action
+    ldflags: -installsuffix static
+    env:
+      - CGO_ENABLED=0
+    main: main.go
+    flags:
+      - -trimpath
+    tags:
+      - netgo
+      - osusergo
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+# add a source archive at release time
+source:
+  enabled: true
+
+# Archives
+archives:
+  - format: tar.gz
+    wrap_in_directory: true
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: '{{.ProjectName}}-{{.Version}}_{{.Os}}_{{.Arch}}'
+    replacements:
+      amd64: x86_64
+      arm64: ARM64
+      darwin: macOS
+      linux: Linux
+      windows: Windows
+    files:
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+# Add a changelog
+changelog:
+  sort: asc
+
+dockers:
+  # Docker AMD64
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/git-changes-action:latest'
+      - 'ghcr.io/synapsecns/sanguine/git-changes-action:{{ .FullCommit }}'
+      - 'ghcr.io/synapsecns/sanguine/git-changes-action:{{ .Tag }}'
+    dockerfile: ../../docker/git-changes-action.Dockerfile
+    ids:
+      - git-changes-action
