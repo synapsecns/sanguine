@@ -1,6 +1,5 @@
 name: Go Releaser
-on:
-  push:
+on: [push]
 
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
