@@ -50,15 +50,15 @@ spec:
           args:
             - "executor-run"
             - "--config=/config/config.yaml"
-            - "--metrics-port={{ .Values.service.port }}"
+            - "--metrics-port=5080"
             - "--scribe-type=remote"
             - "--db=mysql"
             - "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor"
-            - "--scribe-port=5080"
+            - "--scribe-port=80"
             - "--scribe-url=executor-scribe.{{ .Release.Namespace }}"
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: 5080
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

@@ -144,7 +144,7 @@ executor_remote_fresh:
     - name: wait-for-scribe
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 5080; do echo "Waiting for scribe..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for scribe..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: executor-scribe
