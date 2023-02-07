@@ -38,4 +38,4 @@ jobs:
         run: yarn install --immutable
 
       - name: Run tests # Run tests of all packages
-        run: npx lerna exec yarn ci:lint
+        run: npx lerna exec npm run  ci:lint
