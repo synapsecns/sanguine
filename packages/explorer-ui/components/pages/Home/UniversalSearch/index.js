@@ -110,12 +110,16 @@ export function UniversalSearch({
               searchField={kappa}
               setSearchField={setKappa}
               inputType={inputType}
-              placeholder={placeholder}
+              extraStyling="pr-[98px]"
+              placeholder="Search by address / txid / token / chain / date"
             />
           </div>
-          <button onClick={() => executeSearch()} className="font-medium rounded-r-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200">
-            <a href={searchLink}>Search</a>
+          <button onClick={() => executeSearch()} className="font-medium rounded-r-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200 ml-[-100px] pointer-cursor z-10">
+            Search
           </button>
+          {/* <button onClick={() => executeSearch()} className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200">
+            <a href={searchLink}>Search</a>
+          </button> */}
           <div className="">
             <button
               disabled={loading}

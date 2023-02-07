@@ -12,10 +12,12 @@ import { OverviewChart } from '@components/ChainChart'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { PageLink } from '@components/misc/PageLink'
 import Grid from '@components/tailwind/Grid'
-
+import {formatUSD} from '@utils/formatUSD'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
+import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
+import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
@@ -57,6 +59,8 @@ export function Home({ }) {
     return `${month}/${day}/${year}`
   }
   // var { loading, error, dataTx, refetch } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY)
+  // CHAIN_ID_NAMES_REVERSE.values().map((i)=>  console.log("SsdsadsSS", i)
+
 
   const {
     loading,
@@ -84,15 +88,7 @@ export function Home({ }) {
     },
   ] = useLazyQuery(RANKED_CHAINIDS_BY_VOLUME)
 
-  const formatTotalUsdVolumes = (totalUsdVolumes) => {
-    if (totalUsdVolumes > 1000000000) {
-      return `${_.round(totalUsdVolumes / 1000000000, 3)}B`
-    } else if (totalUsdVolumes > 100000) {
-      return `${_.round(totalUsdVolumes / 1000000, 2)}M`
-    }
 
-    return `${_.round(totalUsdVolumes / 1000, 1)}K`
-  }
 
   useEffect(() => {
     if (dailyData) {
@@ -186,14 +182,7 @@ export function Home({ }) {
     }
   }, [dataTx, search, pending])
 
-  // let data
-  // if (chartType === 'VOLUME') {
-  //   data = bridgeVolume && bridgeVolume.dailyStatistics.dateResults
-  // } else if (chartType === 'TRANSACTIONS') {
-  //   data = transactions && transactions.dailyStatistics.dateResults
-  // } else if (chartType === 'ADDRESSES') {
-  //   data = addresses && addresses.dailyStatistics.dateResults
-  // }
+
   let txContent
   let bridgeTransactionsTable = transactionsArr
 
@@ -241,7 +230,7 @@ export function Home({ }) {
               <p className="text-md font-medium text-default mt-2 text-white">
                 {formatDate(dailyDataArr[0].date)} to{' '}
                 {formatDate(dailyDataArr[dailyDataArr.length - 1].date)}
-              </p> : null}
+              </p> : <div class="h-3 w-[50%] mt-4 bg-slate-700 rounded animate-pulse"></div>}
           </div>
         </div>
         <div className="col-span-2 flex justify-end">
@@ -360,71 +349,61 @@ export function Home({ }) {
       <HorizontalDivider />
       <div className="grid grid-cols-4 gap-4">
         <div className="col-span-1 w-[100%]">
-          {/* <div className="pb-2 px-4 sm:px-6 lg:px-8">
-            <div className="mt-8 flex flex-col">
-              <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div className="inline-block min-w-full py-2 align-middle">
-                  <div className="shadow-sm ring-1 ring-black ring-opacity-5"> */}
           <table className='min-w-full'>
-            <TableHeader headers={['Chain', '', 'Volume']} />
-            <tbody>
+            <TableHeader headers={['Chain', 'Volume']} />
+            {loadingRankedChains ? <tbody> {Object.values(CHAIN_ID_NAMES_REVERSE).map((i) =>
               <tr
-                key={0}
-                className="hover:bg-synapse-radial rounded-md cursor-pointer "
-                onClick={() => setCurrentChainID(0)}
-              >
-                <td>
-                  <p
-                    className="text-1xl font-medium text-default text-white ml-2"
-                  >All Chains</p>
-                </td>
-                <td className='w-[8%] ml-[2%]'>
-                  <p className='text-white'> </p>
-                </td>
-                <td>
-                  <div className="ml-1 mr-2 self-center">
-                    <p className='whitespace-nowrap px-2  text-sm  text-white'>{formatTotalUsdVolumes(totalRankedChainVolume)}</p>
-                  </div>
-                </td>
-              </tr>
-              {rankedChainIDs.map((row, i) => (
+                key={i}
 
+              ><td className='w-[70%]'> <div className="h-3 w-full mt-4 bg-slate-700 rounded animate-pulse"></div></td><td className='w-[30%]'><div className="h-3 w-full mt-4 bg-slate-700 rounded animate-pulse"></div></td></tr>)}</tbody> :
+              (<tbody>
                 <tr
-                  key={i}
-                  className="hover:bg-synapse-radial rounded-md cursor-pointer  w-[100%]"
-                  onClick={() => setCurrentChainID(row.chainID)}
+                  key={0}
+                  className="hover:bg-synapse-radial rounded-md cursor-pointer "
+                  onClick={() => setCurrentChainID(0)}
                 >
-                  <td className='w-fit'>
-                    <ChainInfo
-                      chainId={row.chainID}
-                      noLink={true}
-                      imgClassName="w-4 h-4 ml-2"
-                      textClassName="whitespace-nowrap px-2  text-sm  text-white"
-                    />
+                  <td>
+                    <p
+                      className="text-1xl font-medium text-default text-white ml-2"
+                    >All Chains</p>
                   </td>
-                  <td className='w-fit text-center'>
-                    <a href={getChainUrl({ chainId: row.chainID })}
-                      target="_blank"
-                      rel="noreferrer" className='text-white hover:bg-cyan-100/50 px-1 rounded-md ease-in-out '>↗</a>
-                  </td>
-                  <td className='w-fit'>
+                  <td>
                     <div className="ml-1 mr-2 self-center">
-                      <p className='whitespace-nowrap px-2  text-sm  text-white'>{formatTotalUsdVolumes(row.total)}</p>
+                      <p className='whitespace-nowrap px-2  text-sm  text-white'>{formatUSD(totalRankedChainVolume)}</p>
                     </div>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+                {rankedChainIDs.map((row, i) => (
+
+                  <tr
+                    key={i}
+                    className="hover:bg-synapse-radial rounded-md cursor-pointer w-[100%]"
+                    onClick={(event) => event.target.type !== "link" && setCurrentChainID(row.chainID)}
+                  >
+                    <td className='w-fit'>
+                      <ChainInfo
+                        chainId={row.chainID}
+                        imgClassName="w-4 h-4 ml-2"
+                        textClassName="whitespace-nowrap px-2  text-sm  text-white"
+                      />
+                    </td>
+
+                    <td className='w-fit'>
+                      <div className="ml-1 mr-2 self-center">
+                        <p className='whitespace-nowrap px-2  text-sm  text-white'>{formatUSD(row.total)}</p>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>)}
           </table>
-          {/* </div>
-                </div>
-              </div>
-            </div>
-          </div> */}
         </div>
         <div className="col-span-3 ">
+            {/* { loadingDailyData ?  <div className={"flex justify-center align-center w-full animate-spin mt-[" + (Object.values(CHAIN_ID_NAMES_REVERSE).length * 10).toString() + "px]"}><SynapseLogoSvg /></div> : */}
+            { loadingDailyData ?  <div className="flex justify-center align-center w-full my-[240px]"><div className='animate-spin'><SynapseLogoSvg /></div></div> :
 
           <OverviewChart
+            loading={loadingDailyData}
             height={rankedChainIDs.length * 30}
             data={dailyDataArr}
             isCumulativeData={dailyStatisticCumulative}
@@ -437,21 +416,24 @@ export function Home({ }) {
             showAggregated={false}
             monthlyData={false}
             currency
-          />
-        </div>{' '}
+          />}
+        </div>
       </div>
       <br /> <br />
       <HorizontalDivider />
       <br /> <br />
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
-      {txContent}
+      {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : txContent}
+
+
       <br />
       <div className="text-center text-white my-6 ">
         <div className="mt-2 mb-14 ">
+
           <a
-            className="text-white rounded-md px-5 py-3 border text-opacity-100 transition-all ease-in hover:bg-synapse-radial "
-            href={TRANSACTIONS_PATH}
+            className="text-white rounded-md px-5 py-3 text-opacity-100 transition-all ease-in hover:bg-synapse-radial border-l-0 border-gray-700 border-opacity-30 bg-gray-700 bg-opacity-30 hover:border-[#BE78FF] cursor-pointer"
             target="_blank"
+            href={TRANSACTIONS_PATH}
             rel="noreferrer"
           >
             {'Explore all transactions'}

@@ -290,8 +290,8 @@ export const CHAIN_EXPLORER_URLS = {
   [ChainId.FANTOM]: 'https://ftmscan.com',
   [ChainId.HARMONY]: 'https://explorer.harmony.one',
   [ChainId.AURORA]: 'https://explorer.mainnet.aurora.dev',
-  [ChainId.CRONOS]: 'https://cronoscan.com/',
-  [ChainId.METIS]: 'https://andromeda-explorer.metis.io/',
+  [ChainId.CRONOS]: 'https://cronoscan.com',
+  [ChainId.METIS]: 'https://andromeda-explorer.metis.io',
   [ChainId.KLAYTN]: 'https://scope.klaytn.com',
   [ChainId.TERRA]: 'https://terrasco.pe/mainnet', //'https://finder.terra.money/mainnet',
 }

@@ -4,10 +4,11 @@ import { AMOUNT_STATISTIC } from '@graphql/queries'
 import Card from '@components/tailwind/Card'
 import Grid from '@components/tailwind/Grid'
 import numeral from 'numeral'
+import {formatUSD} from '@utils/formatUSD'
 
 
 
-export default function HolisticStats() {
+export default function HolisticStats(loading) {
   const [volume, setVolume] = useState("--")
   const [revenue, setRevenue] = useState("--")
   const [addresses, setAddresses] = useState("--")
@@ -158,7 +159,8 @@ export default function HolisticStats() {
         >
           <div className="text-xl opacity-80">Volume</div>
           <div className="text-4xl font-bold text-white">
-            {numeral(volume / 1000000000).format('$0.0')}B
+            {loadingVolume? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>):
+           formatUSD(volume)}
           </div>
           <div className="flex space-x-2 text-sm font-medium">
             <div className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-400">
@@ -171,7 +173,8 @@ export default function HolisticStats() {
         >
           <div className="text-xl opacity-80">Fees</div>
           <div className="text-4xl font-bold text-white">
-          {numeral(revenue / 1000000).format('$0.0')}M
+          {loadingRevenue? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>):
+         formatUSD(revenue)}
           </div>
           <div className="flex space-x-2 text-sm font-medium">
 
@@ -182,7 +185,8 @@ export default function HolisticStats() {
         >
           <div className="text-xl opacity-80">Transactions</div>
           <div className="text-4xl font-bold text-white">
-          {numeral(txs).format('0,0')}
+          {loadingTxs? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>):
+        numeral(txs).format('0,0')}
           </div>
           <div className="flex space-x-2 text-sm font-medium">
 
@@ -193,7 +197,8 @@ export default function HolisticStats() {
         >
           <div className="text-xl opacity-80">Addresses</div>
           <div className="text-4xl font-bold text-white">
-          {numeral(addresses).format('0,0')}
+          {loadingAddresses? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>):
+        numeral(addresses).format('0,0')}
           </div>
           <div className="flex space-x-2 text-sm font-medium">
 

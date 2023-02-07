@@ -62,6 +62,7 @@ const createMonthlyData = (data, isCumulativeData) => {
 export const OverviewChart = ({
   data,
   isUSD,
+  loading,
   isCumulativeData,
   showAggregated,
   height = 480,
@@ -84,8 +85,8 @@ export const OverviewChart = ({
       <BarChart width={0} height={480} data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
         <XAxis hide dataKey="date" stroke="#374151" />
         <YAxis
-        tick={{fontSize: "0.7rem"}}
-        orientation="right"
+          tick={{ fontSize: "0.7rem" }}
+          orientation="right"
           interval="preserveStart"
           width={20}
           stroke="#ffffff"
@@ -93,29 +94,30 @@ export const OverviewChart = ({
           tickFormatter={(value) => isUSD ? "$" + formatTotalUsdVolumes(value) : formatTotalUsdVolumes(value)
           }
         />
-        <Tooltip cursor={{fill: 'rgba(255, 255, 255, 0.1)'}} wrapperClassName="rounded-lg shadow-lg" content={isUSD ? CurrencyTooltip : NumericTooltip} />
+        {loading ? null :
+        <Tooltip cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }} wrapperClassName="rounded-lg shadow-lg" content={isUSD ? CurrencyTooltip : NumericTooltip} />}
         {showAggregated ? (
           <Bar isAnimationActive={false} dataKey="total" stackId="a" fill="#6a30b4" />
         ) : (
           <>
-            <Bar isAnimationActive={false} dataKey="ethereum" stackId="a" fill="#637eea" />
-            <Bar isAnimationActive={false} dataKey="avalanche" stackId="a" fill="#e74242" />
-            <Bar isAnimationActive={false} dataKey="polygon" stackId="a" fill="#7b3fe4" />
-            <Bar isAnimationActive={false} dataKey="bsc" stackId="a" fill="#efb90b" />
-            <Bar isAnimationActive={false} dataKey="arbitrum" stackId="a" fill="#2d374b" />
-            <Bar isAnimationActive={false} dataKey="fantom" stackId="a" fill="#1969ff" />
-            <Bar isAnimationActive={false} dataKey="harmony" stackId="a" fill="#39cdd8" />
-            <Bar isAnimationActive={false} dataKey="optimism" stackId="a" fill="#fe0621" />
-            <Bar isAnimationActive={false} dataKey="moonriver" stackId="a" fill="#f2b707" />
-            <Bar isAnimationActive={false} dataKey="boba" stackId="a" fill="#cbff00" />
-            <Bar isAnimationActive={false} dataKey="aurora" stackId="a" fill="#78d64b" />
-            <Bar isAnimationActive={false} dataKey="moonbeam" stackId="a" fill="#20223c" />
-            <Bar isAnimationActive={false} dataKey="metis" stackId="a" fill="#22e5f2" />
-            <Bar isAnimationActive={false} dataKey="cronos" stackId="a" fill="#1711a2" />
-            <Bar isAnimationActive={false} dataKey="dfk" stackId="a" fill="#ffff83" />
-            <Bar isAnimationActive={false} dataKey="klaytn" stackId="a" fill="#f9810b" />
-            <Bar isAnimationActive={false} dataKey="canto" stackId="a" fill="#09fc99" />
-            <Bar isAnimationActive={false} dataKey="dogechain" stackId="a" fill="#8168f7" />
+            <Bar isAnimationActive={false} dataKey="ethereum" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#637eea"} />
+            <Bar isAnimationActive={false} dataKey="avalanche" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#e74242"} />
+            <Bar isAnimationActive={false} dataKey="polygon" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#7b3fe4"} />
+            <Bar isAnimationActive={false} dataKey="bsc" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#efb90b"} />
+            <Bar isAnimationActive={false} dataKey="arbitrum" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#2d374b"} />
+            <Bar isAnimationActive={false} dataKey="fantom" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#1969ff"} />
+            <Bar isAnimationActive={false} dataKey="harmony" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#39cdd8"} />
+            <Bar isAnimationActive={false} dataKey="optimism" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#fe0621"} />
+            <Bar isAnimationActive={false} dataKey="moonriver" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#f2b707"} />
+            <Bar isAnimationActive={false} dataKey="boba" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#cbff00"} />
+            <Bar isAnimationActive={false} dataKey="aurora" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#78d64b"} />
+            <Bar isAnimationActive={false} dataKey="moonbeam" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#20223c"} />
+            <Bar isAnimationActive={false} dataKey="metis" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#22e5f2"} />
+            <Bar isAnimationActive={false} dataKey="cronos" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#1711a2"} />
+            <Bar isAnimationActive={false} dataKey="dfk" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#ffff83"} />
+            <Bar isAnimationActive={false} dataKey="klaytn" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#f9810b"} />
+            <Bar isAnimationActive={false} dataKey="canto" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#09fc99"} />
+            <Bar isAnimationActive={false} dataKey="dogechain" stackId="a" fill={loading ? 'rgba(255, 255, 255, 0.1)' : "#8168f7"} />
 
           </>
         )}

@@ -42,7 +42,7 @@ export const CurrencyTooltip = ({ active, payload, label }) => {
               </div>
             </div>
             <div>
-              <p className="">{label}</p>
+              <p className="text-white">{label}</p>
             </div>
           </div>
           <div className="flex justify-between">
@@ -52,7 +52,7 @@ export const CurrencyTooltip = ({ active, payload, label }) => {
               </div>
             </div>
             <div>
-              <p className="">{formatCurrency.format(total)}</p>
+              <p className="text-white">{formatCurrency.format(total)}</p>
             </div>
           </div>
         </div>
@@ -109,7 +109,7 @@ export const NumericTooltip = ({ active, payload, label }) => {
               </div>
             </div>
             <div>
-              <p className="">{label}</p>
+              <p className="text-white">{label}</p>
             </div>
           </div>
           <div className="flex justify-between">
@@ -119,7 +119,7 @@ export const NumericTooltip = ({ active, payload, label }) => {
               </div>
             </div>
             <div>
-              <p className="">{formatNumber.format(total)}</p>
+              <p className="text-white">{formatNumber.format(total)}</p>
             </div>
           </div>
         </div>

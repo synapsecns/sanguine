@@ -11,7 +11,7 @@ import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import _ from "lodash";
 import { Pagination } from "@components/Pagination";
 import { useLazyQuery } from '@apollo/client'
-
+import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
 
 const link = new HttpLink({
   uri: API_URL,
@@ -107,10 +107,11 @@ export default function Txs({ queryResult }) {
 
   return (
     <>
-      <StandardPageContainer>
-        <div className="flex items-center mb-10">
-          <h3 className="text-white text-4xl font-semibold">Bridge Transactions</h3>
+      <StandardPageContainer title="Synapse Analytics">
+        <div className="flex items-center mt-10 mb-2">
+          <h3 className="text-white text-2xl font-semibold">Bridge Transactions</h3>
         </div>
+
         <HorizontalDivider />
         <UniversalSearch placeholder={'Search bridge transactions by bridge tx'}
           setPending={handlePending}
@@ -134,7 +135,7 @@ export default function Txs({ queryResult }) {
           kappa={kappa}
           executeSearch={executeSearch}
         />
-        {loading ? <div className="text-white">Loading...</div> : <BridgeTransactionTable queryResult={bridgeTransactionsTable} />}
+        {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={bridgeTransactionsTable} />}
 
 
         <HorizontalDivider />

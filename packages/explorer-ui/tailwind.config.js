@@ -15,6 +15,7 @@ module.exports = {
       colors: {
         synapse: '#100C13',
       },
+
     },
   },
   plugins: [],

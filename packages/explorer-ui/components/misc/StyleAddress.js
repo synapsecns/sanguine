@@ -1,6 +1,6 @@
 import {ellipsizeString} from '@utils/ellipsizeString'
 
-export function StyleAddress({ sourceInfo, limiter = 6 }) {
+export function StyleAddress({ sourceInfo, limiter = 4 }) {
   if (sourceInfo.address) {
     return (
       <span
@@ -13,7 +13,7 @@ export function StyleAddress({ sourceInfo, limiter = 6 }) {
         // })}
         onClick={(e) => e.stopPropagation()}
       >
-        {ellipsizeString({ string: sourceInfo.address, limiter })}
+        {ellipsizeString({ string: sourceInfo.address, limiter, isZeroX: true })}
       </span>
     )
   } else {
