@@ -63,7 +63,7 @@ var NotaryRunCommand = &cli.Command{
 		g, _ := errgroup.WithContext(c.Context)
 
 		notary, err := notary.NewNotary(c.Context, notaryConfig)
-		if err != nil {
+		if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
 			return fmt.Errorf("failed to create notary: %w", err)
 		}
 

@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0b5eda017b53779ff7dff99af3822308f5428ece"
+  tag: "e736ed8d15a2f1571084b52a0148bc6f978f9e50"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -67,7 +67,7 @@ resources: {}
 
 notary:
   enabled: true
-  args: ["notary-run", "--config=/config/config.yaml"]
+  args: ["notary-run", "--config=/config/config.yaml", "--metrics-port=5080", "--ignore-init-errors"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -85,7 +85,7 @@ notary:
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
       env:
         - name: POD_NAME
-          value: notary-mysql
+          value: agents-mysql
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -93,7 +93,7 @@ notary:
 
 guard:
   enabled: false
-  args: ["guard-run", "--config=/config/config.yaml"]
+  args: ["guard-run", "--config=/config/config.yaml", "--metrics-port=5080", "--ignore-init-errors"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -111,7 +111,7 @@ guard:
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
       env:
         - name: POD_NAME
-          value: guard-mysql
+          value: agents-mysql
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -123,7 +123,7 @@ executor:
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
   enabled: false
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
+  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/executor", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -152,7 +152,7 @@ executor_remote_existing:
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
       env:
         - name: POD_NAME
-          value: executor-mysql
+          value: agents-mysql
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -188,7 +188,7 @@ executor_remote_fresh:
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
       env:
         - name: POD_NAME
-          value: executor-mysql
+          value: agents-mysql
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -207,7 +207,7 @@ executor_remote_fresh:
 
 executor_embedded:
   enabled: false
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-db=sqlite", "--scribe-path=dapaff"]
+  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/executor", "--scribe-db=sqlite", "--scribe-path=dapaff"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -236,7 +236,7 @@ executor_embedded:
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
       env:
         - name: POD_NAME
-          value: executor-mysql
+          value: agents-mysql
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -249,7 +249,7 @@ mysql:
     repository: zcube/bitnami-compat/mysql
     tag: 8.0-debian-11-r54
   enabled: true
-  fullnameOverride: executor-mysql
+  fullnameOverride: agents-mysql
   architecture: standalone
   networkPolicy:
     enabled: true
@@ -276,11 +276,11 @@ scribe:
 
 notary_files:
   config.yaml: |-
-    fart: poop
+    sam: ple
 
 guard_files:
   config.yaml: |-
-    fart: poop
+    sam: ple
 
 executor_remote_existing_files:
   signer.txt: |-

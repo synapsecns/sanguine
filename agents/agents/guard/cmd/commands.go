@@ -63,7 +63,7 @@ var GuardRunCommand = &cli.Command{
 		g, _ := errgroup.WithContext(c.Context)
 
 		guard, err := guard.NewGuard(c.Context, guardConfig)
-		if err != nil {
+		if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
 			return fmt.Errorf("failed to create guard: %w", err)
 		}
 
