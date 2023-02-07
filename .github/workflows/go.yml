@@ -315,7 +315,7 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install Node Dependencies
-        run: yarn install --frozen-lockfile --check-files
+        run: yarn install --frozen-lockfile
 
       - name: Install dependencies
         run: |
@@ -438,7 +438,7 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install Node Dependencies
-        run: yarn install --frozen-lockfile --check-files
+        run: yarn install --frozen-lockfile
         if: ${{ contains(matrix.package, 'agents') }}
 
       - name: Install dependencies
