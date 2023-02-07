@@ -36,9 +36,8 @@ export class SynapseSDK {
     const originRouter: SynapseRouter = this.synapseRouters[originChainId];
     const destRouter: SynapseRouter = this.synapseRouters[destChainId];
     // Step 0: find connected bridge tokens on destination
-    const bridgeTokens = await destRouter.routerContract.getConnectedBridgeTokens(
-      tokenOut
-    );
+    const bridgeTokens =
+      await destRouter.routerContract.getConnectedBridgeTokens(tokenOut);
 
     if (bridgeTokens.length === 0) {
       throw Error('No bridge tokens found for this route');

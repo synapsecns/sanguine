@@ -27,7 +27,7 @@ describe('SynapseRouter', () => {
 
     it('succeeds with correct contract address', () => {
       for (const chainId of Object.keys(SupportedChainId).filter(
-        x => parseInt(x, 10) > 0
+        (x) => parseInt(x, 10) > 0
       )) {
         expect(
           new SynapseRouter(chainId as any, provider).routerContract.address
