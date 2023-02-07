@@ -77,6 +77,7 @@ func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
 func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error {
 	entry := LastBlock{}
 	dbTx := s.db.WithContext(ctx).
+		Select(fmt.Sprintf("max(%s) as %s", BlockNumberFieldName, BlockNumberFieldName)).
 		Model(&LastBlock{}).
 		Where(&LastBlock{
 			ChainID:         chainID,
