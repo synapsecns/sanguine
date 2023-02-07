@@ -5,6 +5,7 @@ import { StandardPageContainer } from '@components/layouts/StandardPageContainer
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY
 } from "@graphql/queries";
+
 import { API_URL } from '@graphql'
 import { useState, useEffect } from "react";
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
@@ -34,8 +35,10 @@ export default function Txs({ queryResult }) {
   const [wallet, setWallet] = useState("")
   const [minSize, setMinSize] = useState("")
   const [maxSize, setMaxSize] = useState("")
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
+  const [chains, setChains] = useState([])
+  const [tokens, setTokens] = useState([])
+  const [startDate, setStartDate] = useState(null)
+  const [endDate, setEndDate] = useState(null)
   const [toTx, setToTx] = useState(true)
   const [fromTx, setFromTx] = useState(true)
   const [kappa, setKappa] = useState("")
@@ -134,6 +137,10 @@ export default function Txs({ queryResult }) {
           setKappa={setKappa}
           kappa={kappa}
           executeSearch={executeSearch}
+          chains={chains}
+          setChains={setChains}
+          tokens={tokens}
+          setTokens={setTokens}
         />
         {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={bridgeTransactionsTable} />}
 

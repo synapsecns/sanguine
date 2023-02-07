@@ -1,10 +1,22 @@
 import _ from 'lodash'
 import { useState } from 'react'
-
+import TextField from '@mui/material/TextField'
+import { inputStyle, dateInputStyle, comboSelectStyle, comboSelectStyleSmall, inputStyleRounded } from '@utils/styles/muiStyles'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
 import { validateAndParseHash } from '@utils/validateAndParseHash'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+import OutlinedInput from '@mui/material/OutlinedInput';
 
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 import { ChainId } from '@constants/networks'
+import dayjs from "dayjs"
+import { CHAIN_ENUM_BY_ID } from '@constants/networks'
 
 import { SearchBox } from './SearchBox'
 
@@ -30,9 +42,33 @@ export function UniversalSearch({
   setKappa,
   kappa,
   executeSearch,
+  chains,
+  setChains,
+  tokens,
+  setTokens,
 }) {
   const [searchField, setSearchField] = useState('')
   const [showText, setShowText] = useState(false)
+  // const [startDate, setStartDate] = useState("s");
+  const handleChains = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setChains(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
+
+  const handleTokens = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setTokens(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
   const unSelectStyle =
     'border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30'
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
@@ -40,8 +76,8 @@ export function UniversalSearch({
     setWallet('')
     setMinSize('')
     setMaxSize('')
-    setStartDate('')
-    setEndDate('')
+    setStartDate(null)
+    setEndDate(null)
     setToTx(true)
     setFromTx(true)
     setKappa('')
@@ -106,15 +142,20 @@ export function UniversalSearch({
             Filters
           </h3>
           <div className="grow">
-            <SearchBox
+            {/* <SearchBox
               searchField={kappa}
               setSearchField={setKappa}
               inputType={inputType}
               extraStyling="pr-[98px]"
               placeholder="Search by address / txid / token / chain / date"
-            />
+            /> */}
+            <TextField size="small" value={kappa} onChange={(e) => {
+              setKappa(e.target.value)
+            }}
+              id="outlined-basic" label="Search by address / txid / token / chain / date" variant="outlined" sx={inputStyle} />
+
           </div>
-          <button onClick={() => executeSearch()} className="font-medium rounded-r-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200 ml-[-100px] pointer-cursor z-10">
+          <button onClick={() => executeSearch()} className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ml-[-105px] pointer-cursor z-10">
             Search
           </button>
           {/* <button onClick={() => executeSearch()} className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200">
@@ -156,7 +197,7 @@ export function UniversalSearch({
         )} */}
         </div>
         {showText ? (
-          <div>
+          <div >
             {/* THIS IS WALLET ADDRESS */}
             <div className="flex justify-center items-center p-2 gap-x-4 py-4">
               <h3
@@ -166,28 +207,21 @@ export function UniversalSearch({
                 Wallet
               </h3>
               <div className="grow">
-                <form className="flex items-center">
-                  <div className="relative w-full group">
-                    <input
-                      type="text"
-                      id="simple-search"
-                      className={`
-                        bg-white bg-opacity-5
-                        rounded-md
-                        border border-white border-opacity-20
-                        focus:outline-none focus-within:border-gray-500
-                        block w-full  px-4 py-2
-                        text-white
-                        placeholder:text-white placeholder:text-opacity-60
-                      `}
-                      placeholder="Wallet Address"
-                      onChange={(e) => {
-                        setWallet(e.target.value)
-                      }}
-                      value={wallet}
-                    />
-                  </div>
-                </form>
+                <TextField size="small" value={wallet} onChange={(e) => {
+                  setWallet(e.target.value)
+                }} id="outlined-basic" label="Wallet Address" variant="outlined" sx={inputStyle} />
+
+
+              </div>
+              <div class="flex justify-center rounded-md border-l-0 border-gray-700 border-opacity-70 bg-[#333333]  bg-opacity-30 py-3 px-3">
+                <div class="form-check form-check-inline mx-1">
+                  <input class="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
+                  <label class="form-check-label inline-block text-gray-500 " for="walletFrom">From</label>
+                </div>
+                <div class="form-check form-check-inline mx-1">
+                  <input class="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletTo" value="option2" />
+                  <label class="form-check-label inline-block text-gray-500  " for="walletTo">To</label>
+                </div>
               </div>
               {/* <input
                 type="checkbox"
@@ -205,132 +239,188 @@ export function UniversalSearch({
               />
               <h3 className="text-white font-semibold">From</h3> */}
             </div>
+
+
+
             {/* THIS IS MIN/MAX SIZE */}
-            <div className="flex justify-center items-center p-2 gap-x-4 py-4">
+            <div className="flex justify-center items-center p-2 gap-x-14 py-4">
+              <h3
+                className="text-white flex items-center mr-1"
+                onClick={() => setShowText(!showText)}
+              >
+                Chain
+              </h3>
+              <div className="grow">
+                <div className="flex flex-row items-center ">
+                  <TextField
+                    select
+                    name="Chains"
+                    variant="outlined"
+                    label="Chains"
+                    size="small"
+                    sx={comboSelectStyle}
+                    SelectProps={{
+                      multiple: true,
+                      value: chains,
+                      onChange: (e) => handleChains(e)
+                    }}
+                  >
+
+                    {Object.values(CHAIN_ENUM_BY_ID).map((chain) => (
+                      <MenuItem
+                        key={chain}
+                        value={chain}
+                      >
+                        {chain}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  <div class="ml-4 w-fit flex justify-center rounded-md border-l-0 border-gray-700 border-opacity-70 bg-[#333333]  bg-opacity-30 py-3 px-3">
+                    <div class="form-check form-check-inline mx-2">
+                      <input class="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
+                      <label class="form-check-label inline-block text-gray-500 " for="walletFrom">Origin</label>
+                    </div>
+                    <div class="form-check form-check-inline mx-2">
+                      <input class="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletTo" value="option2" />
+                      <label class="form-check-label inline-block text-gray-500  " for="walletTo">Destination</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* <div className="flex justify-center items-center p-2 gap-x-14 py-4">
+              <h3
+                className="text-white flex items-center mr-1"
+                onClick={() => setShowText(!showText)}
+              >
+                Token
+              </h3>
+              <div className="grow">
+                <div className="flex flex-row items-center ">
+                <TextField size="small" value={token} onChange={(e) => {
+                  setToken(e.target.value)
+                }} id="outlined-basic" label="Token Address" variant="outlined" sx={inputStyle} />
+
+
+                </div>
+              </div>
+            </div> */}
+            {/* THIS IS MIN/MAX SIZE */}
+            <div className="flex justify-center items-center p-2 gap-x-6 py-4">
               <h3
                 className="text-white flex items-center mr-6"
                 onClick={() => setShowText(!showText)}
               >
-                Min Size
+                Volume
               </h3>
-              <div className="grow mr-12">
-                <form className="flex items-center">
-                  <div className="relative w-full group">
-                    <input
-                      type="text"
-                      id="simple-search"
-                      className={`
-                        bg-white bg-opacity-5
-                        rounded-md
-                        border border-white border-opacity-20
-                        focus:outline-none focus-within:border-gray-500
-                        block w-full  px-4 py-2
-                        text-white
-                        placeholder:text-white placeholder:text-opacity-60
-                      `}
-                      placeholder="Min Size"
-                      onChange={(e) => {
-                        setMinSize(e.target.value)
-                      }}
-                      value={minSize}
-                    />
+              <div className="flex flex-row w-full justify-between">
+
+                <div className="w-[49%] flex flex-row ">
+                  <div className='w-[80%]'>
+                    <TextField size="small" value={minSize} onChange={(e) => {
+                      setMinSize(e.target.value)
+                    }} id="outlined-basic" label="Min Size" variant="outlined" sx={inputStyleRounded} />
                   </div>
-                </form>
-              </div>
-              <h3
-                className="text-white flex items-center"
-                onClick={() => setShowText(!showText)}
-              >
-                Max Size
-              </h3>
-              <div className="grow">
-                <form className="flex items-center">
-                  <div className="relative w-full group ">
-                    <input
-                      type="text"
-                      id="simple-search"
-                      className={`
-                        bg-white bg-opacity-5
-                        rounded-md
-                        border border-white border-opacity-20
-                        focus:outline-none focus-within:border-gray-500
-                        block w-full  px-4 py-2
-                        text-white
-                        placeholder:text-white placeholder:text-opacity-60
-                      `}
-                      placeholder="Max Size"
-                      onChange={(e) => {
-                        setMaxSize(e.target.value)
+                  <div className='w-[20%]'>
+                    <TextField
+                      select
+                      name="Units"
+                      variant="outlined"
+                      label="Units"
+                      size="small"
+                      sx={comboSelectStyleSmall}
+                      SelectProps={{
+                        value: chains,
+                        onChange: (e) => handleChains(e)
                       }}
-                      value={maxSize}
-                    />
+                    >
+                      <MenuItem
+                        key="USD"
+                        value="USD"
+                      >
+                        USD
+                      </MenuItem>
+                      <MenuItem
+                        key="Amount"
+                        value="Amount"
+                      >
+                        Amount
+                      </MenuItem>
+                    </TextField>
                   </div>
-                </form>
+                </div>
+
+                <div className="w-[49%] flex flex-row">
+                  <div className='w-[80%]'>
+                    <TextField size="small" onChange={(e) => { setMaxSize(e.target.value) }}
+                      value={maxSize} id="outlined-basic" label="Max Size" variant="outlined" sx={inputStyleRounded} />
+                  </div>
+                  <div className='w-[20%]'>
+                    <TextField
+                      select
+                      name="Units"
+                      variant="outlined"
+                      label="Units"
+                      size="small"
+                      sx={comboSelectStyleSmall}
+                      SelectProps={{
+                        value: chains,
+                        onChange: (e) => handleChains(e)
+                      }}
+                    >
+                      <MenuItem
+                        key="USD"
+                        value="USD"
+                      >
+                        USD
+                      </MenuItem>
+                      <MenuItem
+                        key="Amount"
+                        value="Amount"
+                      >
+                        Amount
+                      </MenuItem>
+                    </TextField>
+                  </div>
+                </div>
               </div>
             </div>
             {/* THIS IS START/DATE */}
-            <div className="flex justify-center items-center p-2 gap-x-4 py-4">
+            <div className="flex justify-center items-center p-2 gap-x-14 py-4">
               <h3
                 className="text-white flex items-center mr-2"
                 onClick={() => setShowText(!showText)}
               >
-                Start date
+                Time
               </h3>
-              <div className="grow mr-12">
-                <form className="flex items-center">
-                  <div className="relative w-full group">
-                    <input
-                      type="text"
-                      id="simple-search"
-                      className={`
-                        bg-white bg-opacity-5
-                        rounded-md
-                        border border-white border-opacity-20
-                        focus:outline-none focus-within:border-gray-500
-                        block w-full  px-4 py-2
-                        text-white
-                        placeholder:text-white placeholder:text-opacity-60
-                      `}
-                      placeholder="enter timestamp for now"
-                      onChange={(e) => {
-                        setStartDate(e.target.value)
-                      }}
+              <div className="flex flex-row w-full justify-between">
+                <div className="w-[49%]">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Start Date"
                       value={startDate}
-                    />
-                  </div>
-                </form>
-              </div>
-              <h3
-                className="text-white flex items-center"
-                onClick={() => setShowText(!showText)}
-              >
-                End date
-              </h3>
-              <div className="grow">
-                <form className="flex items-center">
-                  <div className="relative w-full group ">
-                    <input
-                      type="text"
-                      id="simple-search"
-                      className={`
-                        bg-white bg-opacity-5
-                        rounded-md
-                        border border-white border-opacity-20
-                        focus:outline-none focus-within:border-gray-500
-                        block w-full  px-4 py-2
-                        text-white
-                        placeholder:text-white placeholder:text-opacity-60
-                      `}
-                      placeholder="enter timestamp for now"
-                      onChange={(e) => {
-                        setEndDate(e.target.value)
+                      onChange={(newValue) => {
+                        setStartDate(newValue);
                       }}
-                      value={endDate}
+                      renderInput={(params) => <TextField size="small" sx={dateInputStyle} {...params} />}
                     />
-                  </div>
-                </form>
-              </div>
-            </div>
+                  </LocalizationProvider>
+                </div>
+                <div className="w-[49%]">
+                  <LocalizationProvider sx={{ width: "100%" }} dateAdapter={AdapterDayjs}>
+                    <DatePicker
+
+                      label="End Date"
+                      value={endDate}
+                      onChange={(newValue) => {
+                        setEndDate(newValue);
+                      }}
+                      renderInput={(params) => <TextField size="small" sx={dateInputStyle} {...params} />}
+                    />
+                  </LocalizationProvider>
+                </div>
+              </div> </div>
             {/* THIS IS BUTTONS */}
             <div className="flex items-center p-2 gap-x-4 mb-3">
 
