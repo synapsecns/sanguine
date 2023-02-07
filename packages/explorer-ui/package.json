@@ -29,6 +29,7 @@
     "dev": "next dev",
     "start": "next start",
     "build": "next build",
+    "test:coverage": "echo 'No tests defined.'",
     "lint": "next lint",
     "ci:lint": " ",
     "build:go": " ",

@@ -19,17 +19,12 @@
     "lint:check": "eslint . --max-warnings=0 --ext ts --ext tsx --ext js --ext jsx",
     "ci:lint": "npm run lint:check",
     "lint:fix": "npm run lint:check --fix",
+    "test:coverage": "tsdx test --coverage",
     "prepare": "tsdx build",
     "size": "size-limit",
     "analyze": "size-limit --why",
     "build:go": " ",
     "build:slither": " "
-  },
-  "prettier": {
-    "printWidth": 80,
-    "semi": true,
-    "singleQuote": true,
-    "trailingComma": "es5"
   },
   "module": "dist/sdk-v2.esm.js",
   "devDependencies": {
