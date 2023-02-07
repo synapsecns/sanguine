@@ -76,4 +76,4 @@ jobs:
             fail_ci_if_error: true # optional (default = false)
             verbose: true # optional (default = false)
             flags: packages
-            files: lcov/lcov.info
+            files: codecov/clover.xml

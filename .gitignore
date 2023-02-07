@@ -119,3 +119,4 @@ profile.cov
 .nyc_output
 coverage/
 lcov/
+codecov/
