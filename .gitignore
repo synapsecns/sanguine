@@ -118,3 +118,4 @@ profile.cov
 **/.yarn/install-state.gz
 .nyc_output
 coverage/
+lcov/
