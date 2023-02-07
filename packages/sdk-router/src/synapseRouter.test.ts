@@ -1,29 +1,29 @@
-import { Provider } from '@ethersproject/abstract-provider';
-import { providers } from 'ethers';
-import JSBI from 'jsbi';
+import { Provider } from '@ethersproject/abstract-provider'
+import { providers } from 'ethers'
+import JSBI from 'jsbi'
 
-import { SupportedChainId, ROUTER_ADDRESS } from './constants';
-import { SynapseRouter } from './synapseRouter';
+import { SupportedChainId, ROUTER_ADDRESS } from './constants'
+import { SynapseRouter } from './synapseRouter'
 
 describe('SynapseRouter', () => {
   const arbitrumProvider: Provider = new providers.JsonRpcProvider(
     'https://arb1.arbitrum.io/rpc'
-  );
+  )
 
-  const provider: Provider = new providers.AlchemyProvider('mainnet', 'demo');
+  const provider: Provider = new providers.AlchemyProvider('mainnet', 'demo')
 
   describe('#constructor', () => {
     it('fails with undefined chain id', () => {
       expect(() => new SynapseRouter(undefined as any, provider)).toThrow(
         'CHAIN_ID_UNDEFINED'
-      );
-    });
+      )
+    })
 
     it('fails with undefined provider', () => {
       expect(() => new SynapseRouter(1, undefined as any)).toThrow(
         'PROVIDER_UNDEFINED'
-      );
-    });
+      )
+    })
 
     it('succeeds with correct contract address', () => {
       for (const chainId of Object.keys(SupportedChainId).filter(
@@ -31,10 +31,10 @@ describe('SynapseRouter', () => {
       )) {
         expect(
           new SynapseRouter(chainId as any, provider).routerContract.address
-        ).toEqual(ROUTER_ADDRESS[chainId as keyof object]);
+        ).toEqual(ROUTER_ADDRESS[chainId as keyof object])
       }
-    });
-  });
+    })
+  })
 
   describe('get amount out', () => {
     it('get amount', async () => {
@@ -44,12 +44,12 @@ describe('SynapseRouter', () => {
       //     "0x2913e812cf0dcca30fb28e6cac3d2dcff4497688",
       //     JSBI.BigInt("1")
       // ))
-    });
-  });
+    })
+  })
 
   describe('Bridge', () => {
     it('Bridge with nUSD', async () => {
-      const synapseRouter = new SynapseRouter(42161, arbitrumProvider);
+      const synapseRouter = new SynapseRouter(42161, arbitrumProvider)
 
       console.log(
         await synapseRouter.routerContract.populateTransaction.bridge(
@@ -72,7 +72,7 @@ describe('SynapseRouter', () => {
             rawParams: '0x0000000000000000000000000000000000000000',
           }
         )
-      );
-    });
-  });
-});
+      )
+    })
+  })
+})

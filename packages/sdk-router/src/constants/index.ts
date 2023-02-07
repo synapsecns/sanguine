@@ -1,5 +1,5 @@
-import JSBI from 'jsbi';
-import { BigNumber } from '@ethersproject/bignumber';
+import JSBI from 'jsbi'
+import { BigNumber } from '@ethersproject/bignumber'
 
 export enum SupportedChainId {
   ARBITRUM = 42161,
@@ -9,10 +9,10 @@ export enum SupportedChainId {
 export const ROUTER_ADDRESS: object = {
   [SupportedChainId.ARBITRUM]: '0x59aA81DF6C4d400A68f99d850f69c8A6494eB0E8',
   [SupportedChainId.AVALANCHE]: '0x59aA81DF6C4d400A68f99d850f69c8A6494eB0E8',
-};
+}
 
 // exports for external consumption
-export type BigintIsh = JSBI | BigNumber | string | number;
+export type BigintIsh = JSBI | BigNumber | string | number
 
 export enum TradeType {
   EXACT_INPUT,
@@ -27,4 +27,4 @@ export enum Rounding {
 
 export const MaxUint256 = JSBI.BigInt(
   '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
-);
+)

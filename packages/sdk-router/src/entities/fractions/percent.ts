@@ -1,9 +1,9 @@
-import JSBI from 'jsbi';
+import JSBI from 'jsbi'
 
-import { BigintIsh, Rounding } from '../../constants';
-import { Fraction } from './fraction';
+import { BigintIsh, Rounding } from '../../constants'
+import { Fraction } from './fraction'
 
-const ONE_HUNDRED = new Fraction(JSBI.BigInt(100));
+const ONE_HUNDRED = new Fraction(JSBI.BigInt(100))
 
 /**
  * Converts a fraction to a percent
@@ -11,28 +11,28 @@ const ONE_HUNDRED = new Fraction(JSBI.BigInt(100));
  * @param fraction the fraction to convert
  */
 const toPercent = (fraction: Fraction): Percent =>
-  new Percent(fraction.numerator, fraction.denominator);
+  new Percent(fraction.numerator, fraction.denominator)
 
 export class Percent extends Fraction {
   /**
    * This boolean prevents a fraction from being interpreted as a Percent
    */
-  public readonly isPercent: true = true;
+  public readonly isPercent: true = true
 
   add(other: Fraction | BigintIsh): Percent {
-    return toPercent(super.add(other));
+    return toPercent(super.add(other))
   }
 
   subtract(other: Fraction | BigintIsh): Percent {
-    return toPercent(super.subtract(other));
+    return toPercent(super.subtract(other))
   }
 
   multiply(other: Fraction | BigintIsh): Percent {
-    return toPercent(super.multiply(other));
+    return toPercent(super.multiply(other))
   }
 
   divide(other: Fraction | BigintIsh): Percent {
-    return toPercent(super.divide(other));
+    return toPercent(super.divide(other))
   }
 
   public toSignificant(
@@ -42,7 +42,7 @@ export class Percent extends Fraction {
   ): string {
     return super
       .multiply(ONE_HUNDRED)
-      .toSignificant(significantDigits, format, rounding);
+      .toSignificant(significantDigits, format, rounding)
   }
 
   public toFixed(
@@ -50,6 +50,6 @@ export class Percent extends Fraction {
     format?: object,
     rounding?: Rounding
   ): string {
-    return super.multiply(ONE_HUNDRED).toFixed(decimalPlaces, format, rounding);
+    return super.multiply(ONE_HUNDRED).toFixed(decimalPlaces, format, rounding)
   }
 }
