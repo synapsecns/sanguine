@@ -26,7 +26,7 @@
   "scripts": {
     "update:yarn": "GITHUB_TOKEN='' yarn set version 1.x",
     "clean": "yarn lerna run clean --parallel",
-    "test:coverage": "yarn cover-all && yarn collect &&  nyc report --reporter clover --report-dir=codecov",
+    "test:coverage": "yarn cover-all && yarn collect &&  nyc report --reporter lcov --report-dir=lcov",
     "cover-all": "yarn lerna exec npm run test:coverage --parallel",
     "collect": "rm -rf .nyc_output && mkdir -p .nyc_output && aggregate-coverage collectFiles --pattern='packages/**/!(node_modules)/**/coverage-final.json' --target='.nyc_output'"
   },
