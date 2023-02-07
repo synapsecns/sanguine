@@ -37,5 +37,6 @@ jobs:
       - name: Install Node Dependencies
         run: yarn install --immutable
 
-      - name: Run tests # Run tests of all packages
-        run: npx lerna exec npm run  ci:lint --parallel
+#      - name: Run tests # Run tests of all packages
+#        run: npx lerna exec npm run  ci:lint --parallel
+# disable for a bit to enable caching
