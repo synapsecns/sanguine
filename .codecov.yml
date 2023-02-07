@@ -18,62 +18,66 @@ coverage:
 flags:
   agents:
     paths:
-      - agents/*
+      - agents/
     carryforward: true
   git-changes-action:
     paths:
-      - contrib/git-changes-action/*
+      - contrib/git-changes-action/
     carryforward: true
   release-copier-action:
     paths:
-      - contrib/release-copier-action/*
+      - contrib/release-copier-action/
     carryforward: true
   terraform-provider-helmproxy:
     paths:
-      - contrib/terraform-provider-helmproxy/*
+      - contrib/terraform-provider-helmproxy/
     carryforward: true
   terraform-provider-iap:
     paths:
-      - contrib/terraform-provider-iap/*
+      - contrib/terraform-provider-iap/
     carryforward: true
   terraform-provider-kubeproxy:
     paths:
-      - contrib/terraform-provider-kubeproxy/*
+      - contrib/terraform-provider-kubeproxy/
     carryforward: true
   tfcore:
     paths:
-      - contrib/tfcore/*
+      - contrib/tfcore/
     carryforward: true
   core:
     paths:
-      - core/*
+      - core/
     carryforward: true
   ethergo:
     paths:
-      - ethergo/*
+      - ethergo/
     carryforward: true
   explorer:
     paths:
-      - services/explorer/*
+      - services/explorer/
     carryforward: true
   omnirpc:
     paths:
-      - services/omnirpc/*
+      - services/omnirpc/
     carryforward: true
   scribe:
     paths:
-      - services/scribe/*
+      - services/scribe/
     carryforward: true
   solidity:
     paths:
-      - packages/contracts-core/*
+      - packages/contracts-core/
     carryforward: true
   tools:
     paths:
-      - tools/*
+      - tools/
     carryforward: true
-
-
+  packages:
+    paths:
+      - packages/coverage-aggregator/
+      - packages/explorer-ui/
+      - packages/sdk-router/
+    carryforward: true
 
 ignore:
   - '**/*_generated.go'
