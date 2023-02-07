@@ -39,7 +39,7 @@ jobs:
 
       - name: Run tests # Run tests of all packages
         run: npx lerna exec npm run ci:lint --parallel
-    test:
+  test:
       runs-on: ubuntu-latest
       steps:
         - name: 'Checkout'
