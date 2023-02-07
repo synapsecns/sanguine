@@ -16,12 +16,12 @@
     "build": "tsdx build",
     "test": "tsdx test",
     "lint": "yarn lint:fix && yarn lint:check",
+    "ci:lint": "yarn lint:check",
     "lint:check": "eslint . --max-warnings=0",
     "lint:fix": "yarn lint:check --fix",
     "prepare": "tsdx build",
     "size": "size-limit",
     "analyze": "size-limit --why",
-    "ci:lint": "lint:check",
     "build:go": " "
   },
   "prettier": {
