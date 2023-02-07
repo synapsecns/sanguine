@@ -23347,7 +23347,9 @@ __metadata:
     "@ethersproject/abi": ^5.7.0
     "@ethersproject/abstract-provider": ^5.7.0
     "@ethersproject/address": ^5.7.0
+    "@ethersproject/bignumber": ^5.7.0
     "@ethersproject/bytes": ^5.7.0
+    "@ethersproject/constants": ^5.7.0
     "@ethersproject/contracts": ^5.7.0
     "@types/big.js": ^4.0.5
     "@types/jest": ^24.0.25
