@@ -1,4 +1,4 @@
-{{- if and .Values.executor_remote_fresh.enabled ( eq .Values.executor.type "remote_fresh" ) -}}
+{{- if and .Values.executor_remote_fresh.enabled ( eq .Values.executor.type "remote-fresh" ) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

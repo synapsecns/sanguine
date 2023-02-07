@@ -1,8 +1,8 @@
-{{- if and .Values.executor_remote_existing.enabled ( eq .Values.executor.type "remote-existing" ) -}}
+{{- if and .Values.guard.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "agents.fullname" . }}-executor
+  name: {{ include "agents.fullname" . }}-guard
   labels:
     {{- include "agents.labels" . | nindent 4 }}
 spec:
@@ -12,7 +12,7 @@ spec:
       {{- include "agents.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.executor_remote_existing.podAnnotations }}
+      {{- with .Values.guard.podAnnotations }}
       annotations:
         checksum/config: {{ include (print $.Chart.Name "/templates/" $.Chart.Name "-configmap.yaml") . | sha256sum }}
         {{- toYaml . | nindent 8 }}
@@ -26,8 +26,8 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "agents.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.executor_remote_existing.podSecurityContext | nindent 8 }}
-    {{- if .Values.executor_remote_existing_files }}
+        {{- toYaml .Values.guard.podSecurityContext | nindent 8 }}
+    {{- if .Values.guard_files }}
       initContainers:
         - name: copy-{{ .Release.Name }}-config
           image: busybox
@@ -37,8 +37,8 @@ spec:
               mountPath: /configmap
             - name: {{ .Release.Name }}-config
               mountPath: /config
-        {{- if .Values.executor_remote_existing.extraInitContainers }}
-        {{- toYaml .Values.executor_remote_existing.extraInitContainers | nindent 8 }}
+        {{- if .Values.guard.extraInitContainers }}
+        {{- toYaml .Values.guard.extraInitContainers | nindent 8 }}
         {{- end }}
     {{- end }}
       containers:
@@ -48,39 +48,53 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            {{- toYaml .Values.executor_remote_existing.args | nindent 12 }}
+            {{- toYaml .Values.guard.args | nindent 12 }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: 5080
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.executor_remote_existing.env }}
+          {{- if .Values.guard.env }}
           env:
-            {{- toYaml .Values.executor_remote_existing.env | nindent 12 }}
+            {{- toYaml .Values.guard.env | nindent 12 }}
           {{- end }}
-        {{- if .Values.executor_remote_existing_files }}
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            failureThreshold: 5
+            timeoutSeconds: 30
+            httpGet:
+              path: /health-check
+              port: http
+          readinessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            timeoutSeconds: 30
+            httpGet:
+              path: /health-check
+              port: http
+        {{- if .Values.guard_files }}
           volumeMounts:
             - name: configmap
               mountPath: /config
         {{- end }}
-        {{- if .Values.executor_remote_existing.extraContainers }}
-        {{- toYaml .Values.executor_remote_existing.extraContainers | nindent 8 }}
+        {{- if .Values.guard.extraContainers }}
+        {{- toYaml .Values.guard.extraContainers | nindent 8 }}
         {{- end }}
-      {{- with .Values.executor_remote_existing.nodeSelector }}
+      {{- with .Values.guard.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.executor_remote_existing.affinity }}
+      {{- with .Values.guard.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.executor_remote_existing.tolerations }}
+      {{- with .Values.guard.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-        {{- if .Values.executor_remote_existing_files }}
+        {{- if .Values.guard_files }}
         - name: {{ .Release.Name }}-config
           emptyDir: { }
         - name: configmap

@@ -3,7 +3,9 @@ package cmd
 import (
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/jftuga/termsize"
+	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
+	"github.com/synapsecns/sanguine/agents/agents/notary/api"
 	"golang.org/x/sync/errgroup"
 
 	// used to embed markdown.
@@ -28,6 +30,18 @@ var NotaryInfoCommand = &cli.Command{
 	},
 }
 
+var metricsPortFlag = &cli.UintFlag{
+	Name:  "metrics-port",
+	Usage: "--port 5121",
+	Value: 0,
+}
+
+var ignoreInitErrorsFlag = &cli.BoolFlag{
+	Name:  "ignore-init-errors",
+	Usage: "--ignore-init-errors",
+	Value: false,
+}
+
 var configFlag = &cli.StringFlag{
 	Name:      "config",
 	Usage:     "--config /Users/synapsecns/notary_config.yaml",
@@ -39,7 +53,7 @@ var configFlag = &cli.StringFlag{
 var NotaryRunCommand = &cli.Command{
 	Name:        "notary-run",
 	Description: "runs the notary service",
-	Flags:       []cli.Flag{configFlag},
+	Flags:       []cli.Flag{configFlag, metricsPortFlag, ignoreInitErrorsFlag},
 	Action: func(c *cli.Context) error {
 		notaryConfig, err := config.DecodeNotaryConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
@@ -55,8 +69,17 @@ var NotaryRunCommand = &cli.Command{
 
 		g.Go(func() error {
 			err = notary.Start(c.Context)
-			if err != nil {
+			if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
 				return fmt.Errorf("failed to run notary: %w", err)
+			}
+
+			return nil
+		})
+
+		g.Go(func() error {
+			err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
+			if err != nil {
+				return fmt.Errorf("failed to start api: %w", err)
 			}
 
 			return nil
@@ -68,4 +91,8 @@ var NotaryRunCommand = &cli.Command{
 
 		return nil
 	},
+}
+
+func init() {
+	metricsPortFlag.Value = uint(freeport.GetPort())
 }

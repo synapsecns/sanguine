@@ -51,7 +51,7 @@ spec:
             {{- toYaml .Values.executor_embedded.args | nindent 12 }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: 5080
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

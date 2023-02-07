@@ -65,8 +65,60 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+notary:
+  enabled: true
+  args: ["notary-run", "--config=/config/config.yaml"]
+  podAnnotations: {}
+  nodeSelector: {}
+  podSecurityContext: {}
+  affinity: {}
+  env:
+    - name: GOLOG_LOG_FMT
+      value: "json"
+  tolerations: {}
+  extraInitContainers:
+    # Wait for mysql to show up
+    # this is mostly for testing
+    - name: wait-for-mysql
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: notary-mysql
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+
+guard:
+  enabled: false
+  args: ["guard-run", "--config=/config/config.yaml"]
+  podAnnotations: {}
+  nodeSelector: {}
+  podSecurityContext: {}
+  affinity: {}
+  env:
+    - name: GOLOG_LOG_FMT
+      value: "json"
+  tolerations: {}
+  extraInitContainers:
+    # Wait for mysql to show up
+    # this is mostly for testing
+    - name: wait-for-mysql
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: guard-mysql
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+
 executor:
-  type: "remote_fresh"
+  type: "embedded"
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
@@ -107,7 +159,7 @@ executor_remote_existing:
               fieldPath: metadata.namespace
 
 executor_remote_fresh:
-  enabled: true
+  enabled: false
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -154,7 +206,7 @@ executor_remote_fresh:
               fieldPath: metadata.namespace
 
 executor_embedded:
-  enabled: true
+  enabled: false
   args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(executor-mysql:3306)/executor", "--scribe-db=sqlite", "--scribe-path=dapaff"]
   podAnnotations: {}
   nodeSelector: {}
@@ -192,14 +244,19 @@ executor_embedded:
 
 mysql:
   # use a constant here to build a connection to the service
+  image:
+    registry: ghcr.io
+    repository: zcube/bitnami-compat/mysql
+    tag: 8.0-debian-11-r54
   enabled: true
   fullnameOverride: executor-mysql
   architecture: standalone
   networkPolicy:
     enabled: true
   metrics:
-    enabled: true
+    enabled: false
   auth:
+    createDatabase: true
     database: executor
     # Note: this should be used in production instead of auth.password
     # existingSecret: mysql-password
@@ -216,6 +273,14 @@ scribe:
   fullnameOverride: executor-scribe
 #  server:
 #  args: ["server", "--port=5080", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true", "--omnirpc=http://scribe-omnirpc"]
+
+notary_files:
+  config.yaml: |-
+    fart: poop
+
+guard_files:
+  config.yaml: |-
+    fart: poop
 
 executor_remote_existing_files:
   signer.txt: |-
