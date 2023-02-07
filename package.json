@@ -14,7 +14,6 @@
       "**/@openzeppelin/contracts"
     ]
   },
-  "private": "true",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/synapsecns/sanguine.git"
@@ -60,5 +59,6 @@
   },
   "dependencies": {
     "@changesets/cli": "2.22.0"
-  }
+  },
+  "packageManager": "yarn@3.4.1"
 }

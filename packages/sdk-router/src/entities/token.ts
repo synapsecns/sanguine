@@ -1,4 +1,5 @@
 import invariant from 'tiny-invariant';
+
 import { validateAndParseAddress } from '../utils/validateAndParseAddress';
 import { BaseCurrency } from './baseCurrency';
 import { Currency } from './currency';
@@ -28,6 +29,7 @@ export class Token extends BaseCurrency {
 
   /**
    * Returns true if the two tokens are equivalent, i.e. have the same chainId and address.
+   *
    * @param other other token to compare
    */
   public equals(other: Currency): boolean {
@@ -40,6 +42,7 @@ export class Token extends BaseCurrency {
 
   /**
    * Returns true if the address of this token sorts before the address of the other token
+   *
    * @param other other token to compare
    * @throws if the tokens have the same address
    * @throws if the tokens are on different chains

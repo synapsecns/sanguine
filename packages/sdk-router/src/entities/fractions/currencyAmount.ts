@@ -1,11 +1,11 @@
 import invariant from 'tiny-invariant';
 import JSBI from 'jsbi';
+import _Big from 'big.js';
+import toFormat from 'toformat';
+
 import { Currency } from '../currency';
 import { Token } from '../token';
 import { Fraction } from './fraction';
-import _Big from 'big.js';
-
-import toFormat from 'toformat';
 import { BigintIsh, Rounding, MaxUint256 } from '../../constants';
 
 const Big = toFormat(_Big);
@@ -16,6 +16,7 @@ export class CurrencyAmount<T extends Currency> extends Fraction {
 
   /**
    * Returns a new currency amount instance from the unitless amount of token, i.e. the raw amount
+   *
    * @param currency the currency in the amount
    * @param rawAmount the raw token or ether amount
    */
@@ -28,6 +29,7 @@ export class CurrencyAmount<T extends Currency> extends Fraction {
 
   /**
    * Construct a currency amount with a denominator that is not equal to 1
+   *
    * @param currency the currency
    * @param numerator the numerator of the fractional token amount
    * @param denominator the denominator of the fractional token amount
@@ -121,7 +123,9 @@ export class CurrencyAmount<T extends Currency> extends Fraction {
   }
 
   public get wrapped(): CurrencyAmount<Token> {
-    if (this.currency.isToken) return this as CurrencyAmount<Token>;
+    if (this.currency.isToken) {
+      return this as CurrencyAmount<Token>;
+    }
     return CurrencyAmount.fromFractionalAmount(
       this.currency.wrapped,
       this.numerator,

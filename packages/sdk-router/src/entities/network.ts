@@ -1,4 +1,5 @@
 import invariant from 'tiny-invariant';
+
 import { NativeCurrency } from './nativeCurrency';
 import { GasToken } from './gas';
 export class Network {

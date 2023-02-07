@@ -1,4 +1,5 @@
 import JSBI from 'jsbi';
+
 import { MaxUint256 } from '../../constants';
 import { Ether } from '../ether';
 import { Token } from '../token';

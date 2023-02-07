@@ -1,4 +1,5 @@
 import invariant from 'tiny-invariant';
+
 import { Currency } from './currency';
 import { Token } from './token';
 
@@ -34,6 +35,7 @@ export abstract class BaseCurrency {
 
   /**
    * Constructs an instance of the base class `BaseCurrency`.
+   *
    * @param chainId the chain ID on which this currency resides
    * @param decimals decimals of the currency
    * @param symbol symbol of the currency
@@ -59,6 +61,7 @@ export abstract class BaseCurrency {
 
   /**
    * Returns whether this currency is functionally equivalent to the other currency
+   *
    * @param other the other currency
    */
   public abstract equals(other: Currency): boolean;
