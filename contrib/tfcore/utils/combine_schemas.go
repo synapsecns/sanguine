@@ -10,7 +10,6 @@ import (
 
 // CombinedSchema returns the combined schema of only
 // schema, metaSchema, resourceMaps and dataSourceMaps
-
 type CombinedSchema struct {
 	Schema     map[string]*schema.Schema
 	MetaSchema map[string]*schema.Schema

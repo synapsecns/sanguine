@@ -3,9 +3,9 @@ module github.com/synapsecns/sanguine/contrib/release-copier-action
 go 1.19
 
 require (
-	github.com/brianvoe/gofakeit/v6 v6.19.0
+	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/google/go-github/v41 v41.0.0
-	github.com/migueleliasweb/go-github-mock v0.0.14
+	github.com/migueleliasweb/go-github-mock v0.0.16
 	github.com/sethvargo/go-githubactions v1.1.0
 	github.com/stretchr/testify v1.8.1
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
@@ -18,6 +18,7 @@ require (
 	github.com/gogo/protobuf v1.3.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-github/v50 v50.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/ipfs/go-log v1.0.5 // indirect
