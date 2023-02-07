@@ -117,3 +117,4 @@ profile.cov
 .yarn/cache
 **/.yarn/install-state.gz
 .nyc_output
+coverage/

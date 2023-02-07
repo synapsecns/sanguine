@@ -72,8 +72,12 @@ flags:
     paths:
       - tools/*
     carryforward: true
-
-
+  packages:
+    paths:
+      - packages/coverage-aggregator/*
+      - packages/explorer-ui/*
+      - packages/sdk-router/*
+    carryforward: true
 
 ignore:
   - '**/*_generated.go'

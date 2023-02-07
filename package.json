@@ -26,11 +26,12 @@
   "scripts": {
     "update:yarn": "GITHUB_TOKEN='' yarn set version 1.x",
     "clean": "yarn lerna run clean --parallel",
-    "collect": "mkdir -p .nyc_output && aggregate-coverage collectFiles --pattern='packages/**/!(node_modules)/**/coverage-final.json' --target='.nyc_output'"
+    "test:coverage": "yarn lerna exec npm run test:coverage --parallel && yarn collect &&  nyc report --reporter lcov",
+    "collect": "rm -rf .nyc_output && mkdir -p .nyc_output && aggregate-coverage collectFiles --pattern='packages/**/!(node_modules)/**/coverage-final.json' --target='.nyc_output'"
   },
   "devDependencies": {
-    "@synapsecns/coverage-aggregator": "file:./packages/coverage-aggregator",
     "@babel/eslint-parser": "^7.18.2",
+    "@synapsecns/coverage-aggregator": "file:./packages/coverage-aggregator",
     "@types/chai": "^4.2.18",
     "@types/chai-as-promised": "^7.1.4",
     "@types/mocha": "^8.2.2",
@@ -38,6 +39,7 @@
     "@typescript-eslint/eslint-plugin": "^5.45.1",
     "@typescript-eslint/parser": "^5.45.1",
     "chai": "^4.2.0",
+    "codecov": "^3.8.3",
     "copyfiles": "^2.3.0",
     "depcheck": "^1.4.3",
     "doctoc": "^2.2.0",
@@ -58,6 +60,7 @@
     "markdownlint-cli2": "0.4.0",
     "mkdirp": "^1.0.4",
     "mocha": "^8.4.0",
+    "nyc": "^15.1.0",
     "prettier": "^2.8.0",
     "prettier-plugin-solidity": "^1.0.0-beta.13",
     "solhint-plugin-prettier": "^0.0.5",
