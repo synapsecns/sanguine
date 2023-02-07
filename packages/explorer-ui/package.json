@@ -32,6 +32,7 @@
     "lint": "next lint",
     "ci:lint": " ",
     "build:go": " ",
+    "build:slither": " ",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },

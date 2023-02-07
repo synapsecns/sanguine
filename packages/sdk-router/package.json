@@ -22,7 +22,8 @@
     "prepare": "tsdx build",
     "size": "size-limit",
     "analyze": "size-limit --why",
-    "build:go": " "
+    "build:go": " ",
+    "build:slither": " "
   },
   "prettier": {
     "printWidth": 80,
