@@ -63,3 +63,4 @@ jobs:
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
           working-directory: ./packages/contracts-core/
+          flags: solidity
