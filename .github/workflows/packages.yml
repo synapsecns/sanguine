@@ -67,7 +67,7 @@ jobs:
           run: yarn install --immutable
 
         - name: Run tests # Run tests of all packages
-          run: npx lerna exec npm run test:coverage --parallel
+          run: yarn test:coverage
 
         - uses: codecov/codecov-action@v3
           name: Send Coverage (Codecov)
