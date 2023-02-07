@@ -44,10 +44,6 @@ jobs:
       - name: Install Node Dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Install dependencies
-        run: |
-          npx lerna bootstrap
-
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:

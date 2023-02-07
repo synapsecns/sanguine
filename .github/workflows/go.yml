@@ -310,10 +310,6 @@ jobs:
       - name: Install Node Dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Install dependencies
-        run: |
-          npx lerna bootstrap
-
       # Generate flattened files
       - name: Run flattener
         run: npx lerna exec npm run build:go
@@ -425,11 +421,6 @@ jobs:
       - name: Install Node Dependencies
         run: yarn install --frozen-lockfile
         if: ${{ contains(matrix.package, 'agents') }}
-
-      - name: Install dependencies
-        if: ${{ contains(matrix.package, 'agents') }}
-        run: |
-          npx lerna bootstrap
 
       # Generate flattened files
       - name: Run flattener

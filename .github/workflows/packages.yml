@@ -37,9 +37,5 @@ jobs:
       - name: Install Node Dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Install dependencies
-        run: |
-          npx lerna bootstrap
-
       - name: Run tests # Run tests of all packages
         run: npx lerna exec npm run ci:lint
