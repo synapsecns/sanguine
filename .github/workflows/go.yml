@@ -308,7 +308,7 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install Node Dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       # Generate flattened files
       - name: Run flattener
@@ -419,7 +419,7 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install Node Dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
         if: ${{ contains(matrix.package, 'agents') }}
 
       # Generate flattened files

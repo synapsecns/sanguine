@@ -28,7 +28,7 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install Node Dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Changeset Status
         run: npx changeset status
