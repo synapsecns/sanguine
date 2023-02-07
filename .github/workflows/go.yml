@@ -158,7 +158,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV }}
           files: profile.cov
-          flags: ${{ steps.coverage.output.flag }}
+          flags: ${{ steps.coverage.outputs.flag }}
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
 
