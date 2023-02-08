@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "6e8f0bd253d3a7d5066dd0cbf80716bb16d9370e"
+  tag: "fbf01ced787ea03162b708fbf08f589ea2ca3b94"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -66,7 +66,7 @@ resources: {}
   #   memory: 128Mi
 
 notary:
-  enabled: false
+  enabled: true
   args: ["notary-run", "--config=/config/config.yaml", "--metrics-port=5080", "--ignore-init-errors"]
   podAnnotations: {}
   nodeSelector: {}
@@ -118,7 +118,7 @@ guard:
               fieldPath: metadata.namespace
 
 executor:
-  type: "none"
+  type: "embedded"
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.

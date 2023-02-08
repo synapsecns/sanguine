@@ -2,7 +2,7 @@
 
 OG_DIR=$(pwd)
 
-if [ $1 == "" ]; then
+if [ "$1" == "" ]; then
   echo "No chart name provided"
   exit 1
 fi
@@ -26,18 +26,19 @@ for filename in *; do
 
     # auto add https://github.com/helm/helm/issues/8036#issuecomment-1126959239
     if [ -f "./Chart.lock" ]; then
-      if [ $filename == "agents" ]; then \
-      for i in "embedded" "remote-fresh" "remote-existing"; do \
-        if [ $i == "embedded" ]; then \
-          cd $1; \
-          ct install --debug --helm-extra-set-args "--set=executor.type=$i" --chart-dirs agents --charts agents; \
-        else
-          cd $1; \
-          ct install --debug --helm-extra-set-args "--set=executor.type=$i --set=notary.enabled=false --set=guard.enabled=false" --chart-dirs agents --charts agents; \
-        fi; \
-      done; \
+      if [ "$filename" == "agents" ]; then \
+        # TODO: add "remote-existing" once it's supported
+        for i in "embedded" "remote-fresh"; do \
+          if [ $i == "embedded" ]; then \
+            cd "$1" || exit; \
+            ct install --debug --helm-extra-set-args "--set=executor.type=$i" --chart-dirs agents --charts agents; \
+          else
+            cd "$1" || exit; \
+            ct install --debug --helm-extra-set-args "--set=executor.type=$i --set=notary.enabled=false --set=guard.enabled=false" --chart-dirs agents --charts agents; \
+          fi; \
+        done; \
       fi;
-      	if [ $filename != "" ] && [ $filename != "agents" ]; then cd $1; ct install --debug --chart-dirs $filename --charts $filename; fi;
+      	if [ "$filename" != "" ] && [ "$filename" != "agents" ]; then cd "$1" || exit; ct install --debug --chart-dirs "$filename" --charts "$filename"; fi;
     fi
 
 #    helm dependency update
