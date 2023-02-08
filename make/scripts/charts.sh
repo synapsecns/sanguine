@@ -29,6 +29,8 @@ for filename in *; do
       if [ "$filename" == "agents" ]; then \
         # TODO: add "remote-existing" once it's supported
         for i in "embedded" "remote-fresh"; do \
+          # Only test guard and notary when the executor type is "embedded". Only testing these agents with "embedded"
+          # scribe is arbitrary. Just to ensure they are tested at least and only once.
           if [ $i == "embedded" ]; then \
             cd "$1" || exit; \
             ct install --debug --helm-extra-set-args "--set=executor.type=$i" --chart-dirs agents --charts agents; \
