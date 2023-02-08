@@ -70,7 +70,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 	dbType, err := dbcommon.DBTypeFromString(testConfig.Database.Type)
 	Nil(u.T(), err)
 
-	dbHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), dbType, testConfig.Database.ConnString)
+	dbHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), dbType, testConfig.Database.ConnString, "notary")
 	Nil(u.T(), err)
 
 	auth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)

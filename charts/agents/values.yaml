@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "e736ed8d15a2f1571084b52a0148bc6f978f9e50"
+  tag: "6e8f0bd253d3a7d5066dd0cbf80716bb16d9370e"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -66,7 +66,7 @@ resources: {}
   #   memory: 128Mi
 
 notary:
-  enabled: true
+  enabled: false
   args: ["notary-run", "--config=/config/config.yaml", "--metrics-port=5080", "--ignore-init-errors"]
   podAnnotations: {}
   nodeSelector: {}
@@ -92,8 +92,8 @@ notary:
               fieldPath: metadata.namespace
 
 guard:
-  enabled: false
-  args: ["guard-run", "--config=/config/config.yaml", "--metrics-port=5080", "--ignore-init-errors"]
+  enabled: true
+  args: ["guard-run", "--config=/config/config.yaml", "--metrics-port=5082", "--ignore-init-errors"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -118,12 +118,12 @@ guard:
               fieldPath: metadata.namespace
 
 executor:
-  type: "embedded"
+  type: "none"
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
   enabled: false
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/executor", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
+  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -159,7 +159,7 @@ executor_remote_existing:
               fieldPath: metadata.namespace
 
 executor_remote_fresh:
-  enabled: false
+  enabled: true
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -206,8 +206,8 @@ executor_remote_fresh:
               fieldPath: metadata.namespace
 
 executor_embedded:
-  enabled: false
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/executor", "--scribe-db=sqlite", "--scribe-path=dapaff"]
+  enabled: true
+  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-db=mysql", "--scribe-path=root:MysqlPassword@tcp(agents-mysql:3306)/agents"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -257,7 +257,7 @@ mysql:
     enabled: false
   auth:
     createDatabase: true
-    database: executor
+    database: agents
     # Note: this should be used in production instead of auth.password
     # existingSecret: mysql-password
     rootPassword: MysqlPassword
@@ -299,7 +299,6 @@ executor_remote_fresh_files:
     unbonded_signer:
       type: "File"
       file: "/config/signer.txt"
-
 
 executor_embedded_files:
   signer.txt: |-

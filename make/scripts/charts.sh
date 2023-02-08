@@ -28,8 +28,13 @@ for filename in *; do
     if [ -f "./Chart.lock" ]; then
       if [ $filename == "agents" ]; then \
       for i in "embedded" "remote-fresh" "remote-existing"; do \
+        if [ $i == "embedded" ]; then \
           cd $1; \
           ct install --debug --helm-extra-set-args "--set=executor.type=$i" --chart-dirs agents --charts agents; \
+        else
+          cd $1; \
+          ct install --debug --helm-extra-set-args "--set=executor.type=$i --set=notary.enabled=false --set=guard.enabled=false" --chart-dirs agents --charts agents; \
+        fi; \
       done; \
       fi;
       	if [ $filename != "" ] && [ $filename != "agents" ]; then cd $1; ct install --debug --chart-dirs $filename --charts $filename; fi;

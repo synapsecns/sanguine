@@ -51,7 +51,7 @@ spec:
             {{- toYaml .Values.guard.args | nindent 12 }}
           ports:
             - name: http
-              containerPort: 5080
+              containerPort: 5082
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

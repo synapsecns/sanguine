@@ -62,7 +62,7 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		return Guard{}, fmt.Errorf("could not get legacyDB type: %w", err)
 	}
 
-	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString)
+	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString, cfg.DBPrefix)
 	if err != nil {
 		return Guard{}, fmt.Errorf("could not connect to legacyDB: %w", err)
 	}

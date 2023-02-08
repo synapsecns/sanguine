@@ -74,7 +74,7 @@ func (u GuardSuite) TestGuardE2E() {
 	dbType, err := dbcommon.DBTypeFromString(testConfig.Database.Type)
 	Nil(u.T(), err)
 
-	dbHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), dbType, testConfig.Database.ConnString)
+	dbHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), dbType, testConfig.Database.ConnString, "guard")
 	Nil(u.T(), err)
 
 	originAuth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
