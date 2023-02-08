@@ -26,6 +26,12 @@
     "build:go": " ",
     "build:slither": " "
   },
+  "typedoc": {
+    "entryPoint": "./src/sdk.ts",
+    "readmeFile": "./README.md",
+    "displayName": "SDK ROUTER",
+    "tsconfig": "./tsconfig.json"
+  },
   "module": "dist/sdk-v2.esm.js",
   "devDependencies": {
     "@types/big.js": "^4.0.5",

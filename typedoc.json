@@ -1,0 +1,6 @@
+{
+  "entryPointStrategy": "packages",
+  "entryPoints": [
+    "packages/sdk-router"
+  ]
+}
