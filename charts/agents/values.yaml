@@ -64,7 +64,7 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-#
+
 notary:
   enabled: true
   args: ["notary-run", "--config=/config/config.yaml", "--metrics-port=5080", "--ignore-init-errors"]
