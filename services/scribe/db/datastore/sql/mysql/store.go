@@ -37,7 +37,7 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not create mysql connection: %w", err)
+		return nil, fmt.Errorf("could not create mysql connection: the dbURL is: %s and the error is: %w", dbURL, err)
 	}
 
 	err = gdb.Exec("CREATE DATABASE IF NOT EXISTS scribe").Error
