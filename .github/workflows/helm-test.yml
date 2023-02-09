@@ -11,7 +11,6 @@ on:
 # TODO: it'd be nice to eventually work this into release process on new images
 # definitely not a right now thing
 jobs:
-  lint:
 
   lint-test:
     runs-on: ubuntu-latest
