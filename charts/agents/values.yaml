@@ -267,7 +267,7 @@ executor_embedded:
 mysql:
   # use a constant here to build a connection to the service
 #  image:
-#    registry: ghcr.io
+#    registry: g hcr.io
 #    repository: zcube/bitnami-compat/mysql
 #    tag: 8.0-debian-11-r54
   enabled: true
