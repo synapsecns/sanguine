@@ -53,7 +53,7 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not create mysql connection: %w", err)
+		return nil, fmt.Errorf("could not create mysql connection: the dbURL is: %s and the error is: %w", fmt.Sprintf("%sscribe/", dbURL), err)
 	}
 
 	sqlDB, err := gdb.DB()
