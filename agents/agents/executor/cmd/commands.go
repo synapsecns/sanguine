@@ -224,6 +224,8 @@ var ExecutorRunCommand = &cli.Command{
 }
 
 // InitExecutorDB initializes a database given a database type and path.
+//
+//nolint:cyclop
 func InitExecutorDB(ctx context.Context, database string, path string, tablePrefix string, dbName string) (db.ExecutorDB, error) {
 	switch {
 	case database == "sqlite":
