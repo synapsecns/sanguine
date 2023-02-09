@@ -53,7 +53,7 @@ spec:
             - "--metrics-port=5080"
             - "--scribe-type=remote"
             - "--db=mysql"
-            - "--path=root:MysqlPassword@tcp(agents-mysql:3306)"
+            - "--path=root:MysqlPassword@tcp(agents-mysql:3306)/"
             - "--scribe-port=80"
             - "--scribe-url=executor-scribe.{{ .Release.Namespace }}"
           ports:
