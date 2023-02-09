@@ -66,7 +66,7 @@ resources: {}
   #   memory: 128Mi
 
 notary:
-  enabled: false
+  enabled: true
   args: ["notary-run", "--config=/config/config.yaml", "--metrics-port=5080", "--ignore-init-errors"]
   podAnnotations: {}
   nodeSelector: {}
@@ -92,7 +92,7 @@ notary:
               fieldPath: metadata.namespace
 
 guard:
-  enabled: false
+  enabled: true
   args: ["guard-run", "--config=/config/config.yaml", "--metrics-port=5082", "--ignore-init-errors"]
   podAnnotations: {}
   nodeSelector: {}
