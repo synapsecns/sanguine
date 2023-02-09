@@ -1,4 +1,4 @@
-package kmssigner
+package awssigner
 
 import (
 	"bytes"
@@ -25,7 +25,7 @@ var (
 )
 
 // GetTransactor creates a kms transactor.
-func (signingHandler *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpts, error) {
+func (signingHandler *Signer) GetTransactor(ctx context.Context, chainID *big.Int) (*bind.TransactOpts, error) {
 	pubKeyBytes := secp256k1.S256().Marshal(signingHandler.pubKeyData.ecdsaKey.X, signingHandler.pubKeyData.ecdsaKey.Y)
 	latestSigner := types.LatestSignerForChainID(chainID)
 
@@ -36,7 +36,7 @@ func (signingHandler *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpt
 
 		txHashBytes := latestSigner.Hash(tx).Bytes()
 
-		rBytes, sBytes, err := signingHandler.getSignatureFromKMS(context.Background(), txHashBytes)
+		rBytes, sBytes, err := signingHandler.getSignatureFromKMS(ctx, txHashBytes)
 		if err != nil {
 			return nil, fmt.Errorf("could not get signature: %w", err)
 		}

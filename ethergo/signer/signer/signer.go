@@ -18,7 +18,7 @@ type Signer interface {
 	SignMessage(ctx context.Context, message []byte, hash bool) (Signature, error)
 	// GetTransactor gets the transactor for a tx manager.
 	// TODO: this doesn't support pre-london txes yet
-	GetTransactor(chainID *big.Int) (*bind.TransactOpts, error)
+	GetTransactor(ctx context.Context, chainID *big.Int) (*bind.TransactOpts, error)
 	// Address gets the address of the address of the signer
 	Address() ethCommon.Address
 }
