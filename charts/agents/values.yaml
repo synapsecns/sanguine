@@ -240,7 +240,7 @@ executor_embedded:
             fieldRef:
               fieldPath: metadata.namespace
     # Wait for mysql to show up
-    # this is mostly for testing
+    # this is mostly for te sting
     - name: wait-for-mysql
       image: busybox:latest
       imagePullPolicy: IfNotPresent
