@@ -193,17 +193,17 @@ executor_remote_fresh:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-#    - name: wait-extra-mysql
-#      image: busybox:latest
-#      imagePullPolicy: IfNotPresent
-#      command: ['sh', '-c', 'sleep 2;']
-#      env:
-#        - name: POD_NAME
-#          value: agents-mysql-wait
-#        - name: POD_NAMESPACE
-#          valueFrom:
-#            fieldRef:
-#              fieldPath: metadata.namespace
+    - name: wait-extra-mysql
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'sleep 2;']
+      env:
+        - name: POD_NAME
+          value: agents-mysql-wait
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
     - name: wait-for-scribe
       image: busybox:latest
       imagePullPolicy: IfNotPresent
@@ -218,7 +218,7 @@ executor_remote_fresh:
 
 executor_embedded:
   enabled: true
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/", "--scribe-db=mysql", "--scribe-path=root:MysqlPassword@tcp(agents-mysql:3306)/"]
+  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)", "--scribe-db=mysql", "--scribe-path=root:MysqlPassword@tcp(agents-mysql:3306)"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -248,6 +248,17 @@ executor_embedded:
       env:
         - name: POD_NAME
           value: agents-mysql
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    - name: wait-extra-mysql
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'sleep 2;']
+      env:
+        - name: POD_NAME
+          value: agents-mysql-wait
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -282,8 +293,6 @@ omnirpc:
 scribe:
   enabled: true
   fullnameOverride: executor-scribe
-#  server:
-#  args: ["server", "--port=5080", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true", "--omnirpc=http://scribe-omnirpc"]
 
 notary_files:
   config.yaml: |-
