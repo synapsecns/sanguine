@@ -196,7 +196,7 @@ executor_remote_fresh:
     - name: wait-extra-mysql
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'sleep 10;']
+      command: ['sh', '-c', 'sleep 60;']
       env:
         - name: POD_NAME
           value: agents-mysql-wait
@@ -255,7 +255,7 @@ executor_embedded:
     - name: wait-extra-mysql
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'sleep 10;']
+      command: ['sh', '-c', 'sleep 60;']
       env:
         - name: POD_NAME
           value: agents-mysql-wait
