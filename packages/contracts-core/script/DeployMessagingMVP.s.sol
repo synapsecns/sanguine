@@ -11,15 +11,21 @@ import { Origin } from "../contracts/Origin.sol";
 import { SystemRouter } from "../contracts/system/SystemRouter.sol";
 
 contract DeployMessagingMVPScript is DeployerUtils {
+    using stdJson for string;
+
     string public constant BONDING_MANAGER_NAME = "BondingMVP";
     string public constant DESTINATION_NAME = "Destination";
     string public constant ORIGIN_NAME = "Origin";
     string public constant SYSTEM_ROUTER_NAME = "SystemRouter";
 
+    string public constant MESSAGING = "MessagingMVP";
+
     BondingMVP public bondingMVP;
     Destination public destination;
     Origin public origin;
     SystemRouter public systemRouter;
+
+    address public owner;
 
     constructor() {
         setupPK("MESSAGING_DEPLOYER_PRIVATE_KEY");
@@ -41,7 +47,7 @@ contract DeployMessagingMVPScript is DeployerUtils {
     }
 
     function checkDeployments() public {
-        vm.startPrank(broadcasterAddress);
+        vm.startPrank(owner);
         _checkAgent({
             domain: 0,
             agent: address(1),
@@ -68,10 +74,13 @@ contract DeployMessagingMVPScript is DeployerUtils {
 
     function _deploy(bool _isBroadcasted) internal {
         startBroadcast(_isBroadcasted);
+        // TODO: setup actual address in .dc.json files
+        owner = loadDeployConfig(MESSAGING).readAddress("owner");
         _deployBondingMVP();
         _deployDestination();
         _deployOrigin();
         _deploySystemRouter();
+        _transferOwnership();
         stopBroadcast();
         // Test add and remove agents without broadcasting using the deployed contracts
         checkDeployments();
@@ -111,6 +120,14 @@ contract DeployMessagingMVPScript is DeployerUtils {
         bondingMVP.setSystemRouter(systemRouter);
         destination.setSystemRouter(systemRouter);
         origin.setSystemRouter(systemRouter);
+    }
+
+    function _transferOwnership() internal {
+        bondingMVP.transferOwnership(owner);
+        destination.transferOwnership(owner);
+        origin.transferOwnership(owner);
+        console.log("Ownership transferred to %s", owner);
+        // SystemRouter is unowned
     }
 
     function _checkAgent(
