@@ -6,11 +6,19 @@ import { SystemContract } from "../system/SystemContract.sol";
 import { LocalDomainContext } from "../context/LocalDomainContext.sol";
 import { BondingManager } from "./BondingManager.sol";
 
+interface IAttestationCollector {
+    function addAgent(uint32 _domain, address _account) external returns (bool);
+
+    function removeAgent(uint32 _domain, address _account) external returns (bool);
+}
+
 /**
  * @notice MVP for BondingManager. Controls agents status for local chain registries.
  * Doesn't do anything cross-chain related.
  */
 contract BondingMVP is LocalDomainContext, BondingManager {
+    address public attestationCollector;
+
     constructor(uint32 _domain) LocalDomainContext(_domain) {}
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -23,6 +31,10 @@ contract BondingMVP is LocalDomainContext, BondingManager {
      */
     function addAgent(uint32 _domain, address _account) external onlyOwner {
         _updateAgentStatus({ _domain: _domain, _agent: _account, _bonded: true });
+        // TODO: remove when AttestationCollector is merged with BondingPrimary
+        if (attestationCollector != address(0)) {
+            IAttestationCollector(attestationCollector).addAgent(_domain, _account);
+        }
     }
 
     /**
@@ -31,6 +43,16 @@ contract BondingMVP is LocalDomainContext, BondingManager {
      */
     function removeAgent(uint32 _domain, address _account) external onlyOwner {
         _updateAgentStatus({ _domain: _domain, _agent: _account, _bonded: false });
+        // TODO: remove when AttestationCollector is merged with BondingPrimary
+        if (attestationCollector != address(0)) {
+            IAttestationCollector(attestationCollector).removeAgent(_domain, _account);
+        }
+    }
+
+    /// @notice Sets Attestation Collector address.
+    /// @dev AttestationCollector.owner() needs to be BondingMVP.
+    function setAttestationCollector(address _attestationCollector) external onlyOwner {
+        attestationCollector = _attestationCollector;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
