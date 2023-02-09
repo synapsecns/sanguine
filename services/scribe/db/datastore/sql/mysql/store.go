@@ -45,7 +45,7 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 		return nil, fmt.Errorf("could not create database: %w", err)
 	}
 
-	gdb, err = gorm.Open(mysql.Open(fmt.Sprintf("%sscribe/", dbURL)), &gorm.Config{
+	gdb, err = gorm.Open(mysql.Open(fmt.Sprintf("%sscribe", dbURL)), &gorm.Config{
 		Logger:                 common_base.GetGormLogger(logger),
 		FullSaveAssociations:   true,
 		NamingStrategy:         NamingStrategy,
