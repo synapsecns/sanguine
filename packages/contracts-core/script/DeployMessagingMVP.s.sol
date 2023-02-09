@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 
 import { DeployerUtils } from "./utils/DeployerUtils.sol";
 
-import { BondingManager, BondingMVP } from "../contracts/bonding/BondingMVP.sol";
+import { BondingManager, BondingMVP, SystemContract } from "../contracts/bonding/BondingMVP.sol";
 import { Destination } from "../contracts/Destination.sol";
 import { Origin } from "../contracts/Origin.sol";
 import { SystemRouter } from "../contracts/system/SystemRouter.sol";
@@ -81,58 +81,70 @@ contract DeployMessagingMVPScript is DeployerUtils {
         startBroadcast(_isBroadcasted);
         // TODO: setup actual address in .dc.json files
         owner = loadDeployConfig(MESSAGING).readAddress("owner");
-        _deployBondingMVP();
-        _deployDestination();
-        _deployOrigin();
-        _deploySystemRouter();
-        _transferOwnership();
+        // Deploy System Contracts
+        bondingMVP = BondingMVP(deployContract(BONDING_MANAGER_NAME, _deployBondingMVP));
+        destination = Destination(deployContract(DESTINATION_NAME, _deployDestination));
+        origin = Origin(deployContract(ORIGIN_NAME, _deployOrigin));
+        // Deploy System Router
+        systemRouter = SystemRouter(deployContract(SYSTEM_ROUTER_NAME, _deploySystemRouter));
+        // Setup System Contracts
+        _setupSystemContract(bondingMVP);
+        _setupSystemContract(destination);
+        _setupSystemContract(origin);
+        // Stop broadcasting before testing the deployed contracts
         stopBroadcast();
-        // Test add and remove agents without broadcasting using the deployed contracts
+        // Test: add and remove agents using the deployed contracts (no broadcast)
         checkDeployments();
     }
 
-    function _deployBondingMVP() internal {
-        bondingMVP = new BondingMVP(uint32(block.chainid));
+    /// @dev Callback function to deploy BondingManager
+    function _deployBondingMVP() internal returns (address) {
+        BondingMVP _bondingMVP = new BondingMVP(uint32(block.chainid));
         // Initialize to take ownership
-        bondingMVP.initialize();
-        saveDeployment(BONDING_MANAGER_NAME, address(bondingMVP));
+        _bondingMVP.initialize();
+        return address(_bondingMVP);
     }
 
-    function _deployDestination() internal {
-        destination = new Destination(uint32(block.chainid));
+    /// @dev Callback function to deploy Destination
+    function _deployDestination() internal returns (address) {
+        Destination _destination = new Destination(uint32(block.chainid));
         // Initialize to take ownership
-        destination.initialize();
-        saveDeployment(DESTINATION_NAME, address(destination));
+        _destination.initialize();
+        return address(_destination);
     }
 
-    function _deployOrigin() internal {
-        origin = new Origin(uint32(block.chainid));
+    /// @dev Callback function to deploy Origin
+    function _deployOrigin() internal returns (address) {
+        Origin _origin = new Origin(uint32(block.chainid));
         // Initialize to take ownership
-        origin.initialize();
-        saveDeployment(ORIGIN_NAME, address(origin));
+        _origin.initialize();
+        return address(_origin);
     }
 
-    function _deploySystemRouter() internal {
-        systemRouter = new SystemRouter({
+    /// @dev Callback function to deploy SystemRouter
+    function _deploySystemRouter() internal returns (address) {
+        SystemRouter _systemRouter = new SystemRouter({
             _domain: uint32(block.chainid),
             _origin: address(origin),
             _destination: address(destination),
             _bondingManager: address(bondingMVP)
         });
-        // SystemRouter is unowned immutable contract, no further setup is required
-        saveDeployment(SYSTEM_ROUTER_NAME, address(systemRouter));
-        // Setup SystemRouter on deployed messaging contracts
-        bondingMVP.setSystemRouter(systemRouter);
-        destination.setSystemRouter(systemRouter);
-        origin.setSystemRouter(systemRouter);
+        // SystemRouter is unowned
+        return address(_systemRouter);
     }
 
-    function _transferOwnership() internal {
-        bondingMVP.transferOwnership(owner);
-        destination.transferOwnership(owner);
-        origin.transferOwnership(owner);
-        console.log("Ownership transferred to %s", owner);
-        // SystemRouter is unowned
+    function _setupSystemContract(SystemContract sc) internal {
+        // Check if broadcaster is the owner
+        if (sc.owner() == broadcasterAddress) {
+            // Setup systemRouter, if needed
+            if (sc.systemRouter() != systemRouter) {
+                sc.setSystemRouter(systemRouter);
+                console.log("%s: systemRouter set to %s", address(sc), address(systemRouter));
+            }
+            // Transfer ownership
+            sc.transferOwnership(owner);
+            console.log("%s: ownership transferred to %s", address(sc), owner);
+        }
     }
 
     function _checkAgent(

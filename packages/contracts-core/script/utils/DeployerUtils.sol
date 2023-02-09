@@ -56,6 +56,25 @@ contract DeployerUtils is Script {
     ▏*║                             DEPLOYMENTS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @notice Deploys the contract and saves the deployment artifact
+    /// @dev Will reuse existing deployment, if it exists
+    /// @param contractName     Contract name to deploy
+    /// @param deployFunc       Callback function to deploy a requested contract
+    /// @return deployment  The deployment address
+    function deployContract(
+        string memory contractName,
+        function() internal returns (address) deployFunc
+    ) internal returns (address deployment) {
+        deployment = tryLoadDeployment(contractName);
+        if (deployment == address(0)) {
+            deployment = deployFunc();
+            saveDeployment(contractName, deployment);
+        } else {
+            console.log("Reusing existing deployment for %s: %s", contractName, deployment);
+        }
+        vm.label(deployment, contractName);
+    }
+
     /// @notice Returns the deployment for a contract on the current chain, if it exists.
     /// Reverts if it doesn't exist.
     function loadDeployment(string memory contractName) public returns (address deployment) {
