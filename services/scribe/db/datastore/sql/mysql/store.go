@@ -36,7 +36,22 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 		NowFunc:                time.Now,
 		SkipDefaultTransaction: true,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("could not create mysql connection: %w", err)
+	}
 
+	err = gdb.Exec("CREATE DATABASE IF NOT EXISTS scribe").Error
+	if err != nil {
+		return nil, fmt.Errorf("could not create database: %w", err)
+	}
+
+	gdb, err = gorm.Open(mysql.Open(fmt.Sprintf("%s/scribe", dbURL)), &gorm.Config{
+		Logger:                 common_base.GetGormLogger(logger),
+		FullSaveAssociations:   true,
+		NamingStrategy:         NamingStrategy,
+		NowFunc:                time.Now,
+		SkipDefaultTransaction: true,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("could not create mysql connection: %w", err)
 	}
