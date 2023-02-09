@@ -27,7 +27,7 @@ var NamingStrategy = schema.NamingStrategy{}
 func NewMysqlStore(ctx context.Context, dbURL string, dbName string) (*Store, error) {
 	logger.Debug("creating mysql store")
 
-	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
+	gdb, err := gorm.Open(mysql.Open(dbURL+"/"), &gorm.Config{
 		Logger:               common_base.GetGormLogger(logger),
 		FullSaveAssociations: true,
 		NamingStrategy:       NamingStrategy,

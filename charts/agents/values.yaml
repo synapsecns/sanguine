@@ -193,17 +193,6 @@ executor_remote_fresh:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-#    - name: wait-extra-mysql
-#      image: busybox:latest
-#      imagePullPolicy: IfNotPresent
-#      command: ['sh', '-c', 'sleep 60;']
-#      env:
-#        - name: POD_NAME
-#          value: agents-mysql-wait
-#        - name: POD_NAMESPACE
-#          valueFrom:
-#            fieldRef:
-#              fieldPath: metadata.namespace
     - name: wait-for-scribe
       image: busybox:latest
       imagePullPolicy: IfNotPresent
@@ -252,17 +241,6 @@ executor_embedded:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-#    - name: wait-extra-mysql
-#      image: busybox:latest
-#      imagePullPolicy: IfNotPresent
-#      command: ['sh', '-c', 'sleep 60;']
-#      env:
-#        - name: POD_NAME
-#          value: agents-mysql-wait
-#        - name: POD_NAMESPACE
-#          valueFrom:
-#            fieldRef:
-#              fieldPath: metadata.namespace
 
 mysql:
   # use a constant here to build a connection to the service
