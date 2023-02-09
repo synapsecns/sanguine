@@ -271,6 +271,11 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 			return nil, fmt.Errorf("failed to create database: %w", err)
 		}
 
+		err = mysqlStore.DB().Exec(fmt.Sprintf("USE %s;", dbName)).Error
+		if err != nil {
+			return nil, fmt.Errorf("failed to use database: %w", err)
+		}
+
 		return mysqlStore, nil
 
 	default:
