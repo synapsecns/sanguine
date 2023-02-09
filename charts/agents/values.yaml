@@ -121,7 +121,7 @@ executor:
   type: "embedded"
 
 executor_remote_existing:
-  # TODO: W e need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
+  # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
   enabled: false
   args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
   podAnnotations: {}
