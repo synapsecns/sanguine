@@ -241,7 +241,7 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
 
-			mysqlStore, err := mysql.NewMysqlStore(ctx, connString)
+			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, dbname)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
 			}
@@ -263,22 +263,12 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 
 		mysql.NamingStrategy = namingStrategy
 
-		mysqlStore, err := mysql.NewMysqlStore(ctx, path)
+		mysqlStore, err := mysql.NewMysqlStore(ctx, path, dbName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}
 
-		err = mysqlStore.DB().Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", dbName)).Error
-		if err != nil {
-			return nil, fmt.Errorf("failed to create database: %w", err)
-		}
-
-		reConnectMysqlStore, err := mysql.NewMysqlStore(ctx, fmt.Sprintf("%s/%s", path, dbName))
-		if err != nil {
-			return nil, fmt.Errorf("failed to create mysql store: %w", err)
-		}
-
-		return reConnectMysqlStore, nil
+		return mysqlStore, nil
 
 	default:
 		return nil, fmt.Errorf("invalid database type: %s", database)

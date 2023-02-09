@@ -24,7 +24,7 @@ var MaxIdleConns = 10
 var NamingStrategy = schema.NamingStrategy{}
 
 // NewMysqlStore creates a new mysql store for a given data store.
-func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
+func NewMysqlStore(ctx context.Context, dbURL string, dbName string) (*Store, error) {
 	logger.Debug("creating mysql store")
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
@@ -33,9 +33,23 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 		NamingStrategy:       NamingStrategy,
 		NowFunc:              time.Now,
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("could not create mysql connection: %w", err)
+	}
+
+	err = gdb.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", dbName)).Error
+	if err != nil {
+		return nil, fmt.Errorf("could not create database: %w", err)
+	}
+
+	gdb, err = gorm.Open(mysql.Open(fmt.Sprintf("%s/%s", dbURL, dbName)), &gorm.Config{
+		Logger:               common_base.GetGormLogger(logger),
+		FullSaveAssociations: true,
+		NamingStrategy:       NamingStrategy,
+		NowFunc:              time.Now,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not create mysql re-connection: %w", err)
 	}
 
 	sqlDB, err := gdb.DB()

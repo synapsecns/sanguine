@@ -69,7 +69,7 @@ func (t *DBSuite) setupMysqlDB() {
 	mysql.MaxIdleConns = 10
 
 	// create the sql store
-	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString)
+	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, "test")
 	Nil(t.T(), err)
 	// add the db
 	t.dbs = append(t.dbs, mysqlStore)
