@@ -5,6 +5,7 @@ import "forge-std/Script.sol";
 
 import { DeployerUtils } from "./utils/DeployerUtils.sol";
 
+import { AttestationCollector } from "../contracts/AttestationCollector.sol";
 import { BondingManager, BondingMVP, SystemContract } from "../contracts/bonding/BondingMVP.sol";
 import { Destination } from "../contracts/Destination.sol";
 import { Origin } from "../contracts/Origin.sol";
@@ -13,6 +14,7 @@ import { SystemRouter } from "../contracts/system/SystemRouter.sol";
 contract DeployMessagingMVPScript is DeployerUtils {
     using stdJson for string;
 
+    string public constant ATTESTATION_COLLECTOR_NAME = "AttestationCollector";
     string public constant BONDING_MANAGER_NAME = "BondingMVP";
     string public constant DESTINATION_NAME = "Destination";
     string public constant ORIGIN_NAME = "Origin";
@@ -20,6 +22,7 @@ contract DeployMessagingMVPScript is DeployerUtils {
 
     string public constant MESSAGING = "MessagingMVP";
 
+    AttestationCollector public collector;
     BondingMVP public bondingMVP;
     Destination public destination;
     Origin public origin;
@@ -80,11 +83,21 @@ contract DeployMessagingMVPScript is DeployerUtils {
     function _deploy(bool _isBroadcasted) internal {
         startBroadcast(_isBroadcasted);
         // TODO: setup actual address in .dc.json files
-        owner = loadDeployConfig(MESSAGING).readAddress("owner");
+        string memory config = loadDeployConfig(MESSAGING);
+        owner = config.readAddress("owner");
         // Deploy System Contracts
         bondingMVP = BondingMVP(deployContract(BONDING_MANAGER_NAME, _deployBondingMVP));
         destination = Destination(deployContract(DESTINATION_NAME, _deployDestination));
         origin = Origin(deployContract(ORIGIN_NAME, _deployOrigin));
+        // Deploy AttestationCollector, if requested for the current chain
+        if (config.readBool("deployAC")) {
+            collector = AttestationCollector(
+                deployContract(ATTESTATION_COLLECTOR_NAME, _deployAttestationCollector)
+            );
+            if (bondingMVP.attestationCollector() != address(collector)) {
+                bondingMVP.setAttestationCollector(address(collector));
+            }
+        }
         // Deploy System Router
         systemRouter = SystemRouter(deployContract(SYSTEM_ROUTER_NAME, _deploySystemRouter));
         // Setup System Contracts
@@ -95,6 +108,15 @@ contract DeployMessagingMVPScript is DeployerUtils {
         stopBroadcast();
         // Test: add and remove agents using the deployed contracts (no broadcast)
         checkDeployments();
+    }
+
+    function _deployAttestationCollector() internal returns (address) {
+        AttestationCollector _collector = new AttestationCollector();
+        // Initialize to take ownership
+        _collector.initialize();
+        require(address(bondingMVP) != address(0), "BodingMVP is not yet deployed");
+        _collector.transferOwnership(address(bondingMVP));
+        return address(_collector);
     }
 
     /// @dev Callback function to deploy BondingManager
@@ -180,6 +202,13 @@ contract DeployMessagingMVPScript is DeployerUtils {
                 string.concat("Destination: added ", agentName)
             );
         }
+        // Check if agent was added to AttestationCollector
+        if (address(collector) != address(0)) {
+            require(
+                collector.isActiveAgent(domain, agent),
+                string.concat("AttestationCollector: failed to add ", agentName)
+            );
+        }
         bondingMVP.removeAgent(domain, agent);
         require(
             !origin.isActiveAgent(domain, agent),
@@ -189,5 +218,11 @@ contract DeployMessagingMVPScript is DeployerUtils {
             !destination.isActiveAgent(domain, agent),
             string.concat("Destination: failed to remove ", agentName)
         );
+        if (address(collector) != address(0)) {
+            require(
+                !collector.isActiveAgent(domain, agent),
+                string.concat("AttestationCollector: failed to remove ", agentName)
+            );
+        }
     }
 }
