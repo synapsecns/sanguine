@@ -272,7 +272,7 @@ scribe:
   enabled: true
   fullnameOverride: executor-scribe
 #  server:
-#  args:  ["server", "--port=5080", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true", "--omnirpc=http://scribe-omnirpc"]
+#  args: ["server", "--port=5080", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true", "--omnirpc=http://scribe-omnirpc"]
 
 notary_files:
   config.yaml: |-
