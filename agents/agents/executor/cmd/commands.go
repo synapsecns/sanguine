@@ -102,7 +102,7 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 		return executorConfig, nil, nil, fmt.Errorf("failed to decode config: %w", err)
 	}
 
-	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix)
+	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix, "agents")
 	if err != nil {
 		return executorConfig, nil, nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
@@ -224,7 +224,7 @@ var ExecutorRunCommand = &cli.Command{
 }
 
 // InitExecutorDB initializes a database given a database type and path.
-func InitExecutorDB(ctx context.Context, database string, path string, tablePrefix string) (db.ExecutorDB, error) {
+func InitExecutorDB(ctx context.Context, database string, path string, tablePrefix string, dbName string) (db.ExecutorDB, error) {
 	switch {
 	case database == "sqlite":
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path)
@@ -239,20 +239,6 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
 
-			var namingStrategy schema.NamingStrategy
-
-			if tablePrefix != "" {
-				namingStrategy = schema.NamingStrategy{
-					TablePrefix: fmt.Sprintf("%s_", tablePrefix),
-				}
-			} else {
-				namingStrategy = schema.NamingStrategy{
-					TablePrefix: "executor_",
-				}
-			}
-
-			mysql.NamingStrategy = namingStrategy
-
 			mysqlStore, err := mysql.NewMysqlStore(ctx, connString)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
@@ -261,12 +247,26 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 			return mysqlStore, nil
 		}
 
+		var namingStrategy schema.NamingStrategy
+
+		if tablePrefix != "" {
+			namingStrategy = schema.NamingStrategy{
+				TablePrefix: fmt.Sprintf("%s_", tablePrefix),
+			}
+		} else {
+			namingStrategy = schema.NamingStrategy{
+				TablePrefix: "executor_",
+			}
+		}
+
+		mysql.NamingStrategy = namingStrategy
+
 		mysqlStore, err := mysql.NewMysqlStore(ctx, path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}
 
-		err = mysqlStore.Store.DB().Exec("CREATE DATABASE IF NOT EXISTS executor;").Error
+		err = mysqlStore.Store.DB().Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", dbName)).Error
 		if err != nil {
 			return nil, fmt.Errorf("failed to create database: %w", err)
 		}
