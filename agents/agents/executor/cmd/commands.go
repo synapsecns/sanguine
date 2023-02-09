@@ -273,12 +273,12 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 			return nil, fmt.Errorf("failed to create database: %w", err)
 		}
 
-		err = mysqlStore.DB().Exec(fmt.Sprintf("USE %s;", dbName)).Error
+		reConnectMysqlStore, err := mysql.NewMysqlStore(ctx, fmt.Sprintf("%s/%s", path, dbName))
 		if err != nil {
-			return nil, fmt.Errorf("failed to use database: %w", err)
+			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}
 
-		return mysqlStore, nil
+		return reConnectMysqlStore, nil
 
 	default:
 		return nil, fmt.Errorf("invalid database type: %s", database)
