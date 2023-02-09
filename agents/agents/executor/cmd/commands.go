@@ -266,7 +266,7 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}
 
-		err = mysqlStore.Store.DB().Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", dbName)).Error
+		err = mysqlStore.DB().Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", dbName)).Error
 		if err != nil {
 			return nil, fmt.Errorf("failed to create database: %w", err)
 		}
