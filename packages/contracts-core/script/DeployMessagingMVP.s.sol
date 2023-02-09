@@ -31,16 +31,16 @@ contract DeployMessagingMVPScript is DeployerUtils {
         setupPK("MESSAGING_DEPLOYER_PRIVATE_KEY");
     }
 
-    /// @notice Main function with the deploy logic
-    /// @dev To deploy contracts on $chainName:
-    /// Make sure ./deployments/$chainName exists, then call
+    /// @notice Main function with the deploy logic.
+    /// @dev To deploy contracts on $chainName
+    /// Make sure "./script/configs/$chainName/MessagingMVP.dc.json" exists, then call
     /// forge script script/DeployMessagingMVP.s.sol -f chainName --ffi --broadcast --verify
     function run() external {
         _deploy(true);
     }
 
-    /// @notice Function to simulate the deployment procedure
-    /// @dev To simulate deployment on {chainName}
+    /// @notice Function to simulate the deployment procedure.
+    /// @dev To simulate deployment on $chainName
     /// forge script script/DeployMessagingMVP.s.sol -f chainName --sig "runDry()"
     function runDry() external {
         _deploy(false);
@@ -48,6 +48,7 @@ contract DeployMessagingMVPScript is DeployerUtils {
 
     function checkDeployments() public {
         vm.startPrank(owner);
+        // Zero Domain refers to a Guard
         _checkAgent({
             domain: 0,
             agent: address(1),
@@ -55,6 +56,7 @@ contract DeployMessagingMVPScript is DeployerUtils {
             originAffected: true,
             destinationAffected: true
         });
+        // Check Notary for current chain
         _checkAgent({
             domain: uint32(block.chainid),
             agent: address(2),
@@ -62,6 +64,7 @@ contract DeployMessagingMVPScript is DeployerUtils {
             originAffected: false,
             destinationAffected: true
         });
+        // Check Notary for chain other than the current one
         _checkAgent({
             domain: uint32(block.chainid ^ 1),
             agent: address(3),
@@ -72,6 +75,8 @@ contract DeployMessagingMVPScript is DeployerUtils {
         vm.stopPrank();
     }
 
+    /// @dev Deploys Messaging contracts, transfer ownership and sanity check the new deployments.
+    /// Will save the deployments, if script is being broadcasted.
     function _deploy(bool _isBroadcasted) internal {
         startBroadcast(_isBroadcasted);
         // TODO: setup actual address in .dc.json files
