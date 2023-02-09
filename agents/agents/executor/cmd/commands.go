@@ -142,7 +142,7 @@ var ExecutorRunCommand = &cli.Command{
 
 		switch c.String(scribeTypeFlag.Name) {
 		case "embedded":
-			eventDB, err := scribeAPI.InitDB(c.Context, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name))
+			eventDB, err := scribeAPI.InitDB(c.Context, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name)+"/")
 			if err != nil {
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
