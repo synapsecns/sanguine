@@ -151,10 +151,10 @@ server:
 
 mysql:
   # use a constant here to build a connection to the service
-  image:
-    registry: ghcr.io
-    repository: zcube/bitnami-compat/mysql
-    tag: 8.0-debian-11-r54
+#  image:
+#    registry: ghcr.io
+#    repository: zcube/bitnami-compat/mysql
+#    tag: 8.0-debian-11-r54
   enabled: true
   fullnameOverride: scribe-mysql
   architecture: standalone
