@@ -142,6 +142,9 @@ func InitDB(ctx context.Context, database string, path string) (db.EventDB, erro
 		}
 
 		err = mysqlStore.DB().Exec("CREATE DATABASE IF NOT EXISTS scribe;").Error
+		if err != nil {
+			return nil, fmt.Errorf("failed to create database: %w", err)
+		}
 
 		return mysqlStore, nil
 
