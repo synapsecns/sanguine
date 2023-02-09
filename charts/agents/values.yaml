@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "392de2e636c5143d2130c8b1fb0e677ed32286cc"
+  tag: "a8926853a4a3a78266460bb5e14525e979aa127e"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -193,17 +193,17 @@ executor_remote_fresh:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-    - name: wait-extra-mysql
-      image: busybox:latest
-      imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'sleep 60;']
-      env:
-        - name: POD_NAME
-          value: agents-mysql-wait
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+#    - name: wait-extra-mysql
+#      image: busybox:latest
+#      imagePullPolicy: IfNotPresent
+#      command: ['sh', '-c', 'sleep 60;']
+#      env:
+#        - name: POD_NAME
+#          value: agents-mysql-wait
+#        - name: POD_NAMESPACE
+#          valueFrom:
+#            fieldRef:
+#              fieldPath: metadata.namespace
     - name: wait-for-scribe
       image: busybox:latest
       imagePullPolicy: IfNotPresent
@@ -252,17 +252,17 @@ executor_embedded:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-    - name: wait-extra-mysql
-      image: busybox:latest
-      imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'sleep 60;']
-      env:
-        - name: POD_NAME
-          value: agents-mysql-wait
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+#    - name: wait-extra-mysql
+#      image: busybox:latest
+#      imagePullPolicy: IfNotPresent
+#      command: ['sh', '-c', 'sleep 60;']
+#      env:
+#        - name: POD_NAME
+#          value: agents-mysql-wait
+#        - name: POD_NAMESPACE
+#          valueFrom:
+#            fieldRef:
+#              fieldPath: metadata.namespace
 
 mysql:
   # use a constant here to build a connection to the service
