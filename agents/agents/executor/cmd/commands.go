@@ -102,7 +102,7 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 		return executorConfig, nil, nil, fmt.Errorf("failed to decode config: %w", err)
 	}
 
-	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix, "agents")
+	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix)
 	if err != nil {
 		return executorConfig, nil, nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
@@ -226,7 +226,7 @@ var ExecutorRunCommand = &cli.Command{
 // InitExecutorDB initializes a database given a database type and path.
 //
 //nolint:cyclop
-func InitExecutorDB(ctx context.Context, database string, path string, tablePrefix string, dbName string) (db.ExecutorDB, error) {
+func InitExecutorDB(ctx context.Context, database string, path string, tablePrefix string) (db.ExecutorDB, error) {
 	switch {
 	case database == "sqlite":
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path)
@@ -266,16 +266,6 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 		mysqlStore, err := mysql.NewMysqlStore(ctx, path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
-		}
-
-		err = mysqlStore.DB().Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", dbName)).Error
-		if err != nil {
-			return nil, fmt.Errorf("failed to create database: %w", err)
-		}
-
-		err = mysqlStore.DB().Exec(fmt.Sprintf("USE %s;", dbName)).Error
-		if err != nil {
-			return nil, fmt.Errorf("failed to use database: %w", err)
 		}
 
 		return mysqlStore, nil
