@@ -273,7 +273,7 @@ jobs:
     name: Get The Issue Number
     needs: changes
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes == 'true' }}
+    if: ${{ github.event_name != 'pull_request' }}
     outputs:
       issue_number: ${{ steps.find_pr.outputs.pr }}
     steps:
