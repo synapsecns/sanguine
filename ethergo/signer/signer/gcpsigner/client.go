@@ -7,7 +7,7 @@ import (
 	"github.com/googleapis/gax-go/v2"
 )
 
-// KeyClient defines the interface for a GCP Key Management Service client
+// KeyClient defines the interface for a GCP Key Management Service client.
 type KeyClient interface {
 	// GetPublicKey gets the public key for the given key name.
 	GetPublicKey(context.Context, *kmspb.GetPublicKeyRequest, ...gax.CallOption) (*kmspb.PublicKey, error)

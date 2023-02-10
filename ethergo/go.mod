@@ -22,7 +22,6 @@ require (
 	github.com/ipfs/go-log v1.0.5
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/jpillora/backoff v1.0.0
-	github.com/kahing/minio v0.0.0-20150917235322-f4bd7b151c64
 	github.com/keep-network/keep-common v1.7.1-0.20211012131917-7102d7b9c6a0
 	github.com/lmittmann/w3 v0.10.0
 	github.com/mattn/go-colorable v0.1.13
@@ -42,12 +41,12 @@ require (
 	github.com/teivah/onecontext v1.3.0
 	github.com/tenderly/tenderly-cli v1.4.6
 	github.com/tyler-smith/go-bip39 v1.1.0
-	github.com/vanhallio/go-secp256k1-pem v0.0.0-20211026115354-dadde58ecd39
 	github.com/viant/toolbox v0.24.0
 	go.uber.org/atomic v1.10.0
 	go.uber.org/zap v1.23.0
 	golang.org/x/sync v0.1.0
 	golang.org/x/time v0.3.0
+	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
 	k8s.io/apimachinery v0.25.5
@@ -203,7 +202,6 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37 // indirect
 	google.golang.org/grpc v1.51.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

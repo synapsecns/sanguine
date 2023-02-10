@@ -1,4 +1,4 @@
-// Package gcpsigner utilises the Key Management Service (KMS) from the Google
+// Package gcpsigner utilizes the Key Management Service (KMS) from the Google
 // Cloud Platform (GCP).
 package gcpsigner
 
@@ -46,7 +46,7 @@ func NewManagedKey(ctx context.Context, client KeyClient, keyName string) (signe
 }
 
 func (mk *managedKey) SignMessage(ctx context.Context, message []byte, hash bool) (signer.Signature, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -81,7 +81,7 @@ func resolveAddr(ctx context.Context, client KeyClient, keyName string) (common.
 	}
 	_, err = asn1.Unmarshal(block.Bytes, &info)
 	if err != nil {
-		return common.Address{}, fmt.Errorf("google KMS public key %q PEM block %q: %v", keyName, block.Type, err)
+		return common.Address{}, fmt.Errorf("google KMS public key %q PEM block %q: %w", keyName, block.Type, err)
 	}
 
 	wantAlg := asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}
@@ -104,6 +104,7 @@ func (mk *managedKey) NewEthereumTransactor(ctx context.Context, txIdentificatio
 
 // newEthereumSigner returns a KMS-backed instance. Ctx applies to the entire
 // lifespan of the bind.SignerFn.
+// nolint: cyclop
 func (mk *managedKey) newEthereumSigner(ctx context.Context, txIdentification types.Signer) bind.SignerFn {
 	return func(addr common.Address, tx *types.Transaction) (*types.Transaction, error) {
 		if addr != mk.Addr {
@@ -168,6 +169,7 @@ func (mk *managedKey) newEthereumSigner(ctx context.Context, txIdentification ty
 				// sign the transaction
 				sig[65] = recoveryID // Ethereum 'v' parameter
 				etcsig := sig[1:]    // exclude BitCoin header
+				// nolint: wrapcheck
 				return tx.WithSignature(txIdentification, etcsig)
 			}
 		}
