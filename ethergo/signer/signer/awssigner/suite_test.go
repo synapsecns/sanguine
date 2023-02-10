@@ -1,4 +1,4 @@
-package kmssigner_test
+package awssigner_test
 
 import (
 	"github.com/stretchr/testify/suite"

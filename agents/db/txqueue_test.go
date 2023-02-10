@@ -74,7 +74,7 @@ func (t *DBSuite) TestTxInsertion() {
 
 			// TODO: retrieve raw tx
 
-			transactor, err := signer.GetTransactor(testTx.ChainId())
+			transactor, err := signer.GetTransactor(t.GetTestContext(), testTx.ChainId())
 			Nil(t.T(), err)
 
 			signedTx, err := transactor.Signer(signer.Address(), testTx)

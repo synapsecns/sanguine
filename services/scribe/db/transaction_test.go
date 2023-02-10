@@ -71,7 +71,7 @@ func (t *DBSuite) TestStoreAndRetrieveEthTx() {
 
 	t.RunOnAllDBs(func(testDB db.EventDB) {
 		for _, testTx := range testTxes {
-			transactor, err := signer.GetTransactor(testTx.ChainId())
+			transactor, err := signer.GetTransactor(t.GetTestContext(), testTx.ChainId())
 			Nil(t.T(), err)
 
 			signedTx, err := transactor.Signer(signer.Address(), testTx)
@@ -114,7 +114,7 @@ func (t *DBSuite) TestConfirmEthTxsInRange() {
 				Value:    new(big.Int).SetUint64(gofakeit.Uint64()),
 				Data:     []byte(gofakeit.Paragraph(1, 2, 3, " ")),
 			})
-			transactor, err := localsigner.NewSigner(testWallet.PrivateKey()).GetTransactor(testTx.ChainId())
+			transactor, err := localsigner.NewSigner(testWallet.PrivateKey()).GetTransactor(t.GetTestContext(), testTx.ChainId())
 			Nil(t.T(), err)
 
 			signedTx, err := transactor.Signer(signer.Address(), testTx)
@@ -157,7 +157,7 @@ func (t *DBSuite) TestDeleteEthTxsForBlockHash() {
 			Value:    new(big.Int).SetUint64(gofakeit.Uint64()),
 			Data:     []byte(gofakeit.Paragraph(1, 2, 3, " ")),
 		})
-		transactor, err := localsigner.NewSigner(testWallet.PrivateKey()).GetTransactor(testTx.ChainId())
+		transactor, err := localsigner.NewSigner(testWallet.PrivateKey()).GetTransactor(t.GetTestContext(), testTx.ChainId())
 		Nil(t.T(), err)
 
 		signedTx, err := transactor.Signer(signer.Address(), testTx)

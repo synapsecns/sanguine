@@ -36,13 +36,13 @@ func (_m *Signer) Address() common.Address {
 	return r0
 }
 
-// GetTransactor provides a mock function with given fields: chainID
-func (_m *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpts, error) {
-	ret := _m.Called(chainID)
+// GetTransactor provides a mock function with given fields: ctx, chainID
+func (_m *Signer) GetTransactor(ctx context.Context, chainID *big.Int) (*bind.TransactOpts, error) {
+	ret := _m.Called(ctx, chainID)
 
 	var r0 *bind.TransactOpts
-	if rf, ok := ret.Get(0).(func(*big.Int) *bind.TransactOpts); ok {
-		r0 = rf(chainID)
+	if rf, ok := ret.Get(0).(func(context.Context, *big.Int) *bind.TransactOpts); ok {
+		r0 = rf(ctx, chainID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bind.TransactOpts)
@@ -50,8 +50,8 @@ func (_m *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpts, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*big.Int) error); ok {
-		r1 = rf(chainID)
+	if rf, ok := ret.Get(1).(func(context.Context, *big.Int) error); ok {
+		r1 = rf(ctx, chainID)
 	} else {
 		r1 = ret.Error(1)
 	}
