@@ -103,21 +103,7 @@ func (signingHandler *Signer) SignMessage(ctx context.Context, message []byte, h
 		return nil, fmt.Errorf("could not derive ethereum signature: %w", err)
 	}
 
-	return decodeSignature(sigBytes), nil
-}
-
-// TODO: this is duplicated, but we don't want it exported from signer so it's kept internal right now.
-// TODO: we need to move this function to an internal module.
-func decodeSignature(sig []byte) signer.Signature {
-	// panic here should never happen, this is an additional sanity check and should be considered a static assertion
-	if len(sig) != crypto.SignatureLength {
-		panic(fmt.Sprintf("wrong size for signature: got %d, want %d", len(sig), crypto.SignatureLength))
-	}
-	v := new(big.Int).SetBytes([]byte{sig[64] + 27})
-	r := new(big.Int).SetBytes(sig[:32])
-	s := new(big.Int).SetBytes(sig[32:64])
-
-	return signer.NewSignature(v, r, s)
+	return signer.DecodeSignature(sigBytes), nil
 }
 
 func (signingHandler *Signer) getEthereumSignature(expectedPublicKeyBytes []byte, txHash []byte, r []byte, s []byte) ([]byte, error) {

@@ -45,11 +45,7 @@ func NewManagedKey(ctx context.Context, client KeyClient, keyName string) (signe
 	}, nil
 }
 
-func (mk *managedKey) SignMessage(ctx context.Context, message []byte, hash bool) (signer.Signature, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
+// GetTransactor returns a transaction signer for the managed key.
 func (mk *managedKey) GetTransactor(ctx context.Context, chainID *big.Int) (*bind.TransactOpts, error) {
 	latestSigner := types.LatestSignerForChainID(chainID)
 	return &bind.TransactOpts{
@@ -102,6 +98,83 @@ func (mk *managedKey) NewEthereumTransactor(ctx context.Context, txIdentificatio
 	}
 }
 
+// SignMessage returns a signature of the message. If hash is true, the message,.
+func (mk *managedKey) SignMessage(ctx context.Context, message []byte, hash bool) (signer.Signature, error) {
+	if hash {
+		message = crypto.Keccak256(message)
+	}
+
+	etcSig, err := mk.getSignatureFromKMS(ctx, message)
+	if err != nil {
+		return nil, fmt.Errorf("could not get kms signature: %w", err)
+	}
+
+	return signer.DecodeSignature(etcSig), nil
+}
+
+// nolint: cyclop
+func (mk *managedKey) getSignatureFromKMS(ctx context.Context, messageBytes []byte) ([]byte, error) {
+	// resolve a signature
+	req := kmspb.AsymmetricSignRequest{
+		Name: mk.KeyName,
+		Digest: &kmspb.Digest{
+			Digest: &kmspb.Digest_Sha256{
+				Sha256: messageBytes,
+			},
+		},
+	}
+	resp, err := mk.asymmetricSignFunc(ctx, &req)
+	if err != nil {
+		return nil, fmt.Errorf("google KMS asymmetric sign operation: %w", err)
+	}
+
+	// parse signature
+	var params struct{ R, S *big.Int }
+	_, err = asn1.Unmarshal(resp.Signature, &params)
+	if err != nil {
+		return nil, fmt.Errorf("google KMS asymmetric signature encoding: %w", err)
+	}
+	var rLen, sLen int // byte size
+	if params.R != nil {
+		rLen = (params.R.BitLen() + 7) / 8
+	}
+	if params.S != nil {
+		sLen = (params.S.BitLen() + 7) / 8
+	}
+	if rLen == 0 || rLen > 32 || sLen == 0 || sLen > 32 {
+		return nil, fmt.Errorf("google KMS asymmetric signature with %d-byte r and %d-byte s denied on size", rLen, sLen)
+	}
+
+	// Need uncompressed signature with "recovery ID" at end:
+	// https://bitcointalk.org/index.php?topic=5249677.0
+	// https://ethereum.stackexchange.com/a/53182/39582
+	var sig [66]byte // + 1-byte header + 1-byte tailer
+	params.R.FillBytes(sig[33-rLen : 33])
+	params.S.FillBytes(sig[65-sLen : 65])
+
+	// brute force try includes KMS verification
+	var recoverErr error
+	for recoveryID := byte(0); recoveryID < 2; recoveryID++ {
+		sig[0] = recoveryID + 27 // BitCoin header
+		btcsig := sig[:65]       // exclude Ethereum 'v' parameter
+		pubKey, _, err := btcecdsa.RecoverCompact(btcsig, messageBytes)
+		if err != nil {
+			recoverErr = err
+			continue
+		}
+
+		if pubKeyAddr(pubKey.SerializeUncompressed()) == mk.Addr {
+			// sign the transaction
+			sig[65] = recoveryID // Ethereum 'v' parameter
+			etcsig := sig[1:]    // exclude BitCoin header
+			// nolint: wrapcheck
+			return etcsig, nil
+		}
+	}
+
+	return nil, fmt.Errorf("google KMS asymmetric signature address recovery mis: %w", recoverErr)
+}
+
 // newEthereumSigner returns a KMS-backed instance. Ctx applies to the entire
 // lifespan of the bind.SignerFn.
 // nolint: cyclop
@@ -114,67 +187,13 @@ func (mk *managedKey) newEthereumSigner(ctx context.Context, txIdentification ty
 		// hash the transaction (with Keccak-256 probably)
 		txHash := txIdentification.Hash(tx)
 
-		// resolve a signature
-		req := kmspb.AsymmetricSignRequest{
-			Name: mk.KeyName,
-			// The digest is probably not a standard SHA256.
-			// Unclear why the API/client cares anyway. 🤨
-			Digest: &kmspb.Digest{
-				Digest: &kmspb.Digest_Sha256{
-					Sha256: txHash[:],
-				},
-			},
-		}
-		resp, err := mk.asymmetricSignFunc(ctx, &req)
+		etcSig, err := mk.getSignatureFromKMS(ctx, txHash[:])
 		if err != nil {
-			return nil, fmt.Errorf("google KMS asymmetric sign operation: %w", err)
+			return nil, fmt.Errorf("could not get kms signature: %w", err)
 		}
 
-		// parse signature
-		var params struct{ R, S *big.Int }
-		_, err = asn1.Unmarshal(resp.Signature, &params)
-		if err != nil {
-			return nil, fmt.Errorf("google KMS asymmetric signature encoding: %w", err)
-		}
-		var rLen, sLen int // byte size
-		if params.R != nil {
-			rLen = (params.R.BitLen() + 7) / 8
-		}
-		if params.S != nil {
-			sLen = (params.S.BitLen() + 7) / 8
-		}
-		if rLen == 0 || rLen > 32 || sLen == 0 || sLen > 32 {
-			return nil, fmt.Errorf("google KMS asymmetric signature with %d-byte r and %d-byte s denied on size", rLen, sLen)
-		}
-
-		// Need uncompressed signature with "recovery ID" at end:
-		// https://bitcointalk.org/index.php?topic=5249677.0
-		// https://ethereum.stackexchange.com/a/53182/39582
-		var sig [66]byte // + 1-byte header + 1-byte tailer
-		params.R.FillBytes(sig[33-rLen : 33])
-		params.S.FillBytes(sig[65-sLen : 65])
-
-		// brute force try includes KMS verification
-		var recoverErr error
-		for recoveryID := byte(0); recoveryID < 2; recoveryID++ {
-			sig[0] = recoveryID + 27 // BitCoin header
-			btcsig := sig[:65]       // exclude Ethereum 'v' parameter
-			pubKey, _, err := btcecdsa.RecoverCompact(btcsig, txHash[:])
-			if err != nil {
-				recoverErr = err
-				continue
-			}
-
-			if pubKeyAddr(pubKey.SerializeUncompressed()) == mk.Addr {
-				// sign the transaction
-				sig[65] = recoveryID // Ethereum 'v' parameter
-				etcsig := sig[1:]    // exclude BitCoin header
-				// nolint: wrapcheck
-				return tx.WithSignature(txIdentification, etcsig)
-			}
-		}
-		// recoverErr can be nil, but that's OK
-		return nil, fmt.Errorf("google KMS asymmetric signature address recovery mis: %w", recoverErr)
+		// nolint: wrapcheck
+		return tx.WithSignature(txIdentification, etcSig)
 	}
 }
 

@@ -18,7 +18,7 @@ func (k *KMSSuite) TestSigning() {
 
 	testBackend.FundAccount(k.GetTestContext(), testSigner.Address(), *big.NewInt(params.Ether))
 
-	transactor, err := testSigner.GetTransactor(nil, testBackend.GetBigChainID())
+	transactor, err := testSigner.GetTransactor(k.GetTestContext(), testBackend.GetBigChainID())
 	Nil(k.T(), err)
 
 	gasPrice, err := testBackend.SuggestGasPrice(k.GetTestContext())

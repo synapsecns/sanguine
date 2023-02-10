@@ -3,6 +3,7 @@ package signer
 
 import (
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -39,6 +40,17 @@ func NewSignature(v, r, s *big.Int) Signature {
 	}
 }
 
+// IsEqual checks if two signatures are equal.
+func IsEqual(sig1, sig2 Signature) bool {
+	if sig1.R().Cmp(sig2.R()) != 0 {
+		return false
+	}
+	if sig1.S().Cmp(sig2.S()) != 0 {
+		return false
+	}
+	return true
+}
+
 type signatureImpl struct {
 	v, r, s *big.Int
 }
@@ -64,6 +76,17 @@ func Encode(sg Signature) []byte {
 	sig[64] = byte(sg.V().Uint64())
 
 	return sig
+}
+
+// DecodeSignature decodes a signature.
+func DecodeSignature(sig []byte) Signature {
+	if len(sig) != crypto.SignatureLength {
+		panic(fmt.Sprintf("wrong size for signature: got %d, want %d", len(sig), crypto.SignatureLength))
+	}
+	r := new(big.Int).SetBytes(sig[:32])
+	s := new(big.Int).SetBytes(sig[32:64])
+	v := new(big.Int).SetBytes([]byte{sig[64] + 27})
+	return NewSignature(v, r, s)
 }
 
 var _ Signature = signatureImpl{}
