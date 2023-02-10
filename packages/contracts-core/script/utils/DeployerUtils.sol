@@ -10,6 +10,11 @@ import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 contract DeployerUtils is Script {
     using stdJson for string;
 
+    /// @dev Path to artifacts, deployments and configs directories
+    string private constant ARTIFACTS = "artifacts/";
+    string private constant DEPLOYMENTS = "deployments/";
+    string private constant DEPLOY_CONFIGS = "script/configs/";
+
     /// @dev Whether the script will be broadcasted or not
     bool internal isBroadcasted = false;
     /// @dev Current chain alias
@@ -30,7 +35,7 @@ contract DeployerUtils is Script {
 
     function startBroadcast(bool _isBroadcasted) public {
         chainAlias = getChainAlias();
-        if (_isBroadcasted) createDir(deploymentsPath());
+        if (_isBroadcasted) createDir(string.concat(DEPLOYMENTS, chainAlias));
         vm.startBroadcast(broadcasterPK);
         isBroadcasted = _isBroadcasted;
     }
@@ -151,18 +156,23 @@ contract DeployerUtils is Script {
         sortJSON(path);
     }
 
+    /// @notice Loads deploy config for a given contract on the current chain.
+    /// Will revert if config doesn't exist.
+    function loadGlobalDeployConfig(string memory contractName)
+        public
+        view
+        returns (string memory json)
+    {
+        return vm.readFile(globalDeployConfigPath(contractName));
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               HELPERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns path to the contract artifact.
     function artifactPath(string memory contractName) public pure returns (string memory path) {
-        return string.concat("artifacts/", contractName, ".sol/", contractName, ".json");
-    }
-
-    /// @notice Returns path to the deployments directory for the current chain.
-    function deploymentsPath() public view returns (string memory path) {
-        return string.concat("deployments/", chainAlias);
+        return string.concat(ARTIFACTS, contractName, ".sol/", deploymentFn(contractName));
     }
 
     /// @notice Returns deployment filename for the contract.
@@ -172,22 +182,28 @@ contract DeployerUtils is Script {
 
     /// @notice Returns path to the contract deployment for the current chain.
     function deploymentPath(string memory contractName) public view returns (string memory path) {
-        return string.concat(deploymentsPath(), "/", deploymentFn(contractName));
+        require(bytes(chainAlias).length != 0, "Chain not set");
+        return string.concat(DEPLOYMENTS, chainAlias, "/", deploymentFn(contractName));
     }
 
-    /// @notice Returns path to the deploy configs directory for the current chain.
-    function deployConfigsPath() public view returns (string memory path) {
-        return string.concat("script/configs/", chainAlias);
-    }
-
-    /// @notice Returns path to the contract deploy config JSON.
+    /// @notice Returns deploy config filename for the contract.
     function deployConfigFn(string memory contractName) public pure returns (string memory path) {
         return string.concat(contractName, ".dc.json");
     }
 
-    /// @notice Returns path to the contract deploy config JSON.
+    /// @notice Returns path to the contract deploy config JSON on the current chain.
     function deployConfigPath(string memory contractName) public view returns (string memory path) {
-        return string.concat(deployConfigsPath(), "/", deployConfigFn(contractName));
+        require(bytes(chainAlias).length != 0, "Chain not set");
+        return string.concat(DEPLOY_CONFIGS, chainAlias, "/", deployConfigFn(contractName));
+    }
+
+    /// @notice Returns path to the global contract deploy config JSON.
+    function globalDeployConfigPath(string memory contractName)
+        public
+        pure
+        returns (string memory path)
+    {
+        return string.concat(DEPLOY_CONFIGS, deployConfigFn(contractName));
     }
 
     /// @notice Create directory if it not exists already

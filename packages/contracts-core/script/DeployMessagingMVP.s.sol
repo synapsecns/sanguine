@@ -36,7 +36,7 @@ contract DeployMessagingMVPScript is DeployerUtils {
 
     /// @notice Main function with the deploy logic.
     /// @dev To deploy contracts on $chainName
-    /// Make sure "./script/configs/$chainName/MessagingMVP.dc.json" exists, then call
+    /// Make sure "./script/configs/MessagingMVP.dc.json" exists, then call
     /// forge script script/DeployMessagingMVP.s.sol -f chainName --ffi --broadcast --verify
     function run() external {
         _deploy(true);
@@ -83,14 +83,14 @@ contract DeployMessagingMVPScript is DeployerUtils {
     function _deploy(bool _isBroadcasted) internal {
         startBroadcast(_isBroadcasted);
         // TODO: setup actual address in .dc.json files
-        string memory config = loadDeployConfig(MESSAGING);
+        string memory config = loadGlobalDeployConfig(MESSAGING);
         owner = config.readAddress("owner");
         // Deploy System Contracts
         bondingMVP = BondingMVP(deployContract(BONDING_MANAGER_NAME, _deployBondingMVP));
         destination = Destination(deployContract(DESTINATION_NAME, _deployDestination));
         origin = Origin(deployContract(ORIGIN_NAME, _deployOrigin));
         // Deploy AttestationCollector, if requested for the current chain
-        if (config.readBool("deployAC")) {
+        if (config.readUint("chainidAC") == block.chainid) {
             collector = AttestationCollector(
                 deployContract(ATTESTATION_COLLECTOR_NAME, _deployAttestationCollector)
             );
