@@ -273,12 +273,12 @@ jobs:
     name: Get The Issue Number
     needs: changes
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' }}
     outputs:
       issue_number: ${{ steps.find_pr.outputs.pr }}
     steps:
       - uses: jwalton/gh-find-current-pr@v1
         id: find_pr
+        if: ${{ github.event_name != 'pull_request' }}
 
 
   # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
