@@ -74,10 +74,24 @@ contract DeployerUtils is Script {
         string memory contractName,
         function() internal returns (address) deployFunc
     ) internal returns (address deployment) {
-        deployment = tryLoadDeployment(contractName);
+        return deployContract(contractName, contractName, deployFunc);
+    }
+
+    /// @notice Deploys the contract and saves the deployment artifact under specified name
+    /// @dev Will reuse existing deployment, if it exists
+    /// @param contractName     Contract name to deploy
+    /// @param saveAsName       Name to use for saving the deployment artifact
+    /// @param deployFunc       Callback function to deploy a requested contract
+    /// @return deployment  The deployment address
+    function deployContract(
+        string memory contractName,
+        string memory saveAsName,
+        function() internal returns (address) deployFunc
+    ) internal returns (address deployment) {
+        deployment = tryLoadDeployment(saveAsName);
         if (deployment == address(0)) {
             deployment = deployFunc();
-            saveDeployment(contractName, deployment);
+            saveDeployment(contractName, saveAsName, deployment);
         } else {
             console.log("Reusing existing deployment for %s: %s", contractName, deployment);
         }
@@ -107,7 +121,11 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Saves the deployment JSON for a deployed contract.
-    function saveDeployment(string memory contractName, address deployedAt) public {
+    function saveDeployment(
+        string memory contractName,
+        string memory saveAsName,
+        address deployedAt
+    ) public {
         console.log("Deployed: [%s] on [%s] at %s", contractName, chainAlias, deployedAt);
         // Do nothing if script isn't broadcasted
         if (!isBroadcasted) return;
@@ -115,7 +133,7 @@ contract DeployerUtils is Script {
         string memory deployment = "deployment";
         // First, write only the deployment address
         deployment = deployment.serialize("address", deployedAt);
-        deployment.write(deploymentPath(contractName));
+        deployment.write(deploymentPath(saveAsName));
         // Then, initiate the jq command to add "abi" as the next key
         // This makes sure that "address" value is printed first later
         string[] memory inputs = new string[](6);
@@ -126,10 +144,10 @@ contract DeployerUtils is Script {
         inputs[3] = artifactPath(contractName);
         // Set value for ".abi" key to artifact's ABI
         inputs[4] = ".abi = $artifact.abi";
-        inputs[5] = deploymentPath(contractName);
+        inputs[5] = deploymentPath(saveAsName);
         bytes memory full = vm.ffi(inputs);
         // Finally, print the updated deployment JSON
-        string(full).write(deploymentPath(contractName));
+        string(full).write(deploymentPath(saveAsName));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
