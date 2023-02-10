@@ -11,8 +11,11 @@ import { Destination } from "../contracts/Destination.sol";
 import { Origin } from "../contracts/Origin.sol";
 import { SystemRouter } from "../contracts/system/SystemRouter.sol";
 
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+
 contract DeployMessagingMVPScript is DeployerUtils {
     using stdJson for string;
+    using Strings for uint256;
 
     string public constant ATTESTATION_COLLECTOR_NAME = "AttestationCollector";
     string public constant BONDING_MANAGER_NAME = "BondingMVP";
@@ -49,35 +52,6 @@ contract DeployMessagingMVPScript is DeployerUtils {
         _deploy(false);
     }
 
-    function checkDeployments() public {
-        vm.startPrank(owner);
-        // Zero Domain refers to a Guard
-        _checkAgent({
-            domain: 0,
-            agent: address(1),
-            agentName: "Guard",
-            originAffected: true,
-            destinationAffected: true
-        });
-        // Check Notary for current chain
-        _checkAgent({
-            domain: uint32(block.chainid),
-            agent: address(2),
-            agentName: "Local Notary",
-            originAffected: false,
-            destinationAffected: true
-        });
-        // Check Notary for chain other than the current one
-        _checkAgent({
-            domain: uint32(block.chainid ^ 1),
-            agent: address(3),
-            agentName: "Remote Notary",
-            originAffected: true,
-            destinationAffected: false
-        });
-        vm.stopPrank();
-    }
-
     /// @dev Deploys Messaging contracts, transfer ownership and sanity check the new deployments.
     /// Will save the deployments, if script is being broadcasted.
     function _deploy(bool _isBroadcasted) internal {
@@ -101,14 +75,24 @@ contract DeployMessagingMVPScript is DeployerUtils {
         // Deploy System Router
         systemRouter = SystemRouter(deployContract(SYSTEM_ROUTER_NAME, _deploySystemRouter));
         // Setup System Contracts
-        _setupSystemContract(bondingMVP);
-        _setupSystemContract(destination);
-        _setupSystemContract(origin);
+        _setSystemRouter(bondingMVP);
+        _setSystemRouter(destination);
+        _setSystemRouter(origin);
+        // Add preset agents from the config
+        _addAgents(config);
+        // Transfer ownership
+        _transferOwnership(bondingMVP);
+        _transferOwnership(destination);
+        _transferOwnership(origin);
         // Stop broadcasting before testing the deployed contracts
         stopBroadcast();
-        // Test: add and remove agents using the deployed contracts (no broadcast)
-        checkDeployments();
+        // Test: check if all agents from config were added
+        _checkAgents(config);
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            DEPLOY HELPERS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function _deployAttestationCollector() internal returns (address) {
         AttestationCollector _collector = new AttestationCollector();
@@ -155,7 +139,26 @@ contract DeployMessagingMVPScript is DeployerUtils {
         return address(_systemRouter);
     }
 
-    function _setupSystemContract(SystemContract sc) internal {
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            SETUP HELPERS                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function _addAgents(string memory config) internal {
+        uint256[] memory domains = config.readUintArray("domains");
+        for (uint256 i = 0; i < domains.length; ++i) {
+            uint256 domain = domains[i];
+            // Key is "agents.0: for Guards, "agents.10" for Optimism Notaries, etc
+            address[] memory agents = config.readAddressArray(
+                string.concat("agents.", domain.toString())
+            );
+            for (uint256 j = 0; j < agents.length; ++j) {
+                bondingMVP.addAgent(uint32(domain), agents[j]);
+                console.log("Adding Agent: %s on domain [%s]", agents[j], domain);
+            }
+        }
+    }
+
+    function _setSystemRouter(SystemContract sc) internal {
         // Check if broadcaster is the owner
         if (sc.owner() == broadcasterAddress) {
             // Setup systemRouter, if needed
@@ -163,66 +166,53 @@ contract DeployMessagingMVPScript is DeployerUtils {
                 sc.setSystemRouter(systemRouter);
                 console.log("%s: systemRouter set to %s", address(sc), address(systemRouter));
             }
+        }
+    }
+
+    function _transferOwnership(SystemContract sc) internal {
+        // Check if broadcaster is the owner
+        if (sc.owner() == broadcasterAddress) {
             // Transfer ownership
             sc.transferOwnership(owner);
             console.log("%s: ownership transferred to %s", address(sc), owner);
         }
     }
 
-    function _checkAgent(
-        uint32 domain,
-        address agent,
-        string memory agentName,
-        bool originAffected,
-        bool destinationAffected
-    ) internal {
-        // Add agent
-        bondingMVP.addAgent(domain, agent);
-        // Check if agent was added to Origin
-        if (originAffected) {
-            require(
-                origin.isActiveAgent(domain, agent),
-                string.concat("Origin: failed to add ", agentName)
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                TESTS                                 ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function _checkAgents(string memory config) internal {
+        uint256[] memory domains = config.readUintArray("domains");
+        for (uint256 i = 0; i < domains.length; ++i) {
+            uint256 domain = domains[i];
+            bool isGuard = domain == 0;
+            bool isLocalNotary = domain == block.chainid;
+            bool isRemoteNotary = !isGuard && !isLocalNotary;
+            // Key is "agents.0: for Guards, "agents.10" for Optimism Notaries, etc
+            address[] memory agents = config.readAddressArray(
+                string.concat("agents.", domain.toString())
             );
-        } else {
-            require(
-                !origin.isActiveAgent(domain, agent),
-                string.concat("Origin: added ", agentName)
-            );
-        }
-        // Check if agent was added to Destination
-        if (destinationAffected) {
-            require(
-                destination.isActiveAgent(domain, agent),
-                string.concat("Destination: failed to add ", agentName)
-            );
-        } else {
-            require(
-                !destination.isActiveAgent(domain, agent),
-                string.concat("Destination: added ", agentName)
-            );
-        }
-        // Check if agent was added to AttestationCollector
-        if (address(collector) != address(0)) {
-            require(
-                collector.isActiveAgent(domain, agent),
-                string.concat("AttestationCollector: failed to add ", agentName)
-            );
-        }
-        bondingMVP.removeAgent(domain, agent);
-        require(
-            !origin.isActiveAgent(domain, agent),
-            string.concat("Origin: failed to remove ", agentName)
-        );
-        require(
-            !destination.isActiveAgent(domain, agent),
-            string.concat("Destination: failed to remove ", agentName)
-        );
-        if (address(collector) != address(0)) {
-            require(
-                !collector.isActiveAgent(domain, agent),
-                string.concat("AttestationCollector: failed to remove ", agentName)
-            );
+            for (uint256 j = 0; j < agents.length; ++j) {
+                address agent = agents[j];
+                // Destination needs to know about Guards and local Notaries
+                require(
+                    destination.isActiveAgent(uint32(domain), agent) == isGuard || isLocalNotary,
+                    string.concat("!destination: ", domain.toString())
+                );
+                // Origin needs to know about Guards and remote Notaries
+                require(
+                    origin.isActiveAgent(uint32(domain), agent) == isGuard || isRemoteNotary,
+                    string.concat("!origin: ", domain.toString())
+                );
+                // AttestationCollector needs to know about everything (if deployed)
+                if (address(collector) != address(0)) {
+                    require(
+                        collector.isActiveAgent(uint32(domain), agent),
+                        string.concat("!collector: ", domain.toString())
+                    );
+                }
+            }
         }
     }
 }
