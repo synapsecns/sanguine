@@ -10,6 +10,7 @@ import { BondingManager, BondingMVP, SystemContract } from "../contracts/bonding
 import { Destination } from "../contracts/Destination.sol";
 import { Origin } from "../contracts/Origin.sol";
 import { SystemRouter } from "../contracts/system/SystemRouter.sol";
+import { TestClient } from "../contracts/client/TestClient.sol";
 
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -23,6 +24,8 @@ contract DeployMessagingMVPScript is DeployerUtils {
     string public constant ORIGIN_NAME = "Origin";
     string public constant SYSTEM_ROUTER_NAME = "SystemRouter";
 
+    string public constant CLIENT_NAME = "TestClient";
+
     string public constant MESSAGING = "MessagingMVP";
 
     AttestationCollector public collector;
@@ -30,6 +33,8 @@ contract DeployMessagingMVPScript is DeployerUtils {
     Destination public destination;
     Origin public origin;
     SystemRouter public systemRouter;
+
+    TestClient public testClient;
 
     address public owner;
 
@@ -74,6 +79,8 @@ contract DeployMessagingMVPScript is DeployerUtils {
         }
         // Deploy System Router
         systemRouter = SystemRouter(deployContract(SYSTEM_ROUTER_NAME, _deploySystemRouter));
+        // Deploy Test Client
+        testClient = TestClient(deployContract(CLIENT_NAME, _deployTestClient));
         // Setup System Contracts
         _setSystemRouter(bondingMVP);
         _setSystemRouter(destination);
@@ -137,6 +144,15 @@ contract DeployMessagingMVPScript is DeployerUtils {
         });
         // SystemRouter is unowned
         return address(_systemRouter);
+    }
+
+    function _deployTestClient() internal returns (address) {
+        TestClient _testClient = new TestClient({
+            _origin: address(origin),
+            _destination: address(destination)
+        });
+        // TestClient is unowned
+        return address(_testClient);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
