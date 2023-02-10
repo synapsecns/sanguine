@@ -68,6 +68,10 @@ contract DeployMessagingMVPScript is DeployerUtils {
         bondingMVP = BondingMVP(deployContract(BONDING_MANAGER_NAME, _deployBondingMVP));
         destination = Destination(deployContract(DESTINATION_NAME, _deployDestination));
         origin = Origin(deployContract(ORIGIN_NAME, _deployOrigin));
+        // Deploy System Router
+        systemRouter = SystemRouter(deployContract(SYSTEM_ROUTER_NAME, _deploySystemRouter));
+        // Deploy Test Client
+        testClient = TestClient(deployContract(CLIENT_NAME, _deployTestClient));
         // Deploy AttestationCollector, if requested for the current chain
         if (config.readUint("chainidAC") == block.chainid) {
             collector = AttestationCollector(
@@ -77,10 +81,6 @@ contract DeployMessagingMVPScript is DeployerUtils {
                 bondingMVP.setAttestationCollector(address(collector));
             }
         }
-        // Deploy System Router
-        systemRouter = SystemRouter(deployContract(SYSTEM_ROUTER_NAME, _deploySystemRouter));
-        // Deploy Test Client
-        testClient = TestClient(deployContract(CLIENT_NAME, _deployTestClient));
         // Setup System Contracts
         _setSystemRouter(bondingMVP);
         _setSystemRouter(destination);
