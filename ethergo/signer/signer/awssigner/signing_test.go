@@ -1,4 +1,4 @@
-package kmssigner_test
+package awssigner_test
 
 import (
 	"github.com/ethereum/go-ethereum/common"
@@ -6,19 +6,19 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer/kmssigner"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/awssigner"
 	"math/big"
 )
 
 // TestSigning tests the signing process.
 func (k *KMSSuite) TestSigning() {
-	testSigner := kmssigner.NewSignerFromMockKMS(k.GetTestContext(), k.T())
+	testSigner := awssigner.NewSignerFromMockKMS(k.GetTestContext(), k.T())
 
 	testBackend := simulated.NewSimulatedBackend(k.GetTestContext(), k.T())
 
 	testBackend.FundAccount(k.GetTestContext(), testSigner.Address(), *big.NewInt(params.Ether))
 
-	transactor, err := testSigner.GetTransactor(testBackend.GetBigChainID())
+	transactor, err := testSigner.GetTransactor(k.GetTestContext(), testBackend.GetBigChainID())
 	Nil(k.T(), err)
 
 	gasPrice, err := testBackend.SuggestGasPrice(k.GetTestContext())
