@@ -46,10 +46,14 @@ contract DeployerUtils is Script {
 
     function setupPK(string memory pkEnvKey) public {
         // Load deployer PK from .env
-        broadcasterPK = vm.envUint(pkEnvKey);
-        // Derive deployer address
-        broadcasterAddress = vm.addr(broadcasterPK);
-        console.log("Deployer address: %s", broadcasterAddress);
+        broadcasterPK = vm.envOr(pkEnvKey, uint256(0));
+        if (broadcasterPK == 0) {
+            console.log("Key not specified in .env: %s", pkEnvKey);
+        } else {
+            // Derive deployer address
+            broadcasterAddress = vm.addr(broadcasterPK);
+            console.log("Deployer address: %s", broadcasterAddress);
+        }
     }
 
     /// @notice Returns name of the current chain.
