@@ -49,14 +49,7 @@ spec:
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           args:
-            - "executor-run"
-            - "--config=/config/config.yaml"
-            - "--metrics-port=5080"
-            - "--scribe-type=remote"
-            - "--db=mysql"
-            - "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents"
-            - "--scribe-port=80"
-            - "--scribe-url=executor-scribe.{{ $.Release.Namespace }}"
+            {{- toYaml .args | nindent 12 }}
           ports:
             - name: http
               containerPort: 5080
