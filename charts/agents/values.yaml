@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "5e991dfddd7bdf190519c2cd00126bcbc3512fe4"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
