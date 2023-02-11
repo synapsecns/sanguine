@@ -63,9 +63,9 @@ jobs:
       - name: Run chart-testing (install agents embedded)
         working-directory: charts/
         if: ${{ contains(matrix.chart, 'agents_embedded') }}
-        run: ct install --debug --helm-extra-set-args "--set=executor.type=embedded --set=scribe.enabled=true" --chart-dirs "agents" --charts "agents"
+        run: ct install --debug --helm-extra-set-args "--set=executor.type=embedded" --chart-dirs "agents" --charts "agents"
 
       - name: Run chart-testing (install agents remote)
         working-directory: charts/
         if: ${{ contains(matrix.chart, 'agents_remote') }}
-        run: ct install --debug --helm-extra-set-args "--set=executor.type=remote-fresh" --chart-dirs "agents" --charts "agents"
+        run: ct install --debug --helm-extra-set-args "--set=executor.type=remote-fresh --set=scribe.enabled=true" --chart-dirs "agents" --charts "agents"
