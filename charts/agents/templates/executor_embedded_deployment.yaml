@@ -3,29 +3,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "agents.fullname" . }}-executor
+  name: {{ include "agents.fullname" $ }}-executor
   labels:
-    {{- include "agents.labels" . | nindent 4 }}
+    {{- include "agents.labels" $ | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "agents.selectorLabels" . | nindent 6 }}
+      {{- include "agents.selectorLabels" $ | nindent 6 }}
   template:
     metadata:
       {{- with .podAnnotations }}
       annotations:
-        checksum/config: {{ include (print $.Chart.Name "/templates/" $.Chart.Name "-configmap.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Chart.Name "/templates/" $.Chart.Name "-configmap.yaml") $ | sha256sum }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "agents.selectorLabels" . | nindent 8 }}
+        {{- include "agents.selectorLabels" $ | nindent 8 }}
     spec:
       {{- with $.Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "agents.serviceAccountName" . }}
+      serviceAccountName: {{ include "agents.serviceAccountName" $ }}
       securityContext:
         {{- toYaml .podSecurityContext | nindent 8 }}
     {{- if $.Values.executor_embedded_files }}
@@ -43,11 +43,11 @@ spec:
         {{- end }}
     {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ $.Chart.Name }}
           securityContext:
             {{- toYaml $.Values.securityContext | nindent 12 }}
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
           args:
             {{- toYaml .args | nindent 12 }}
           ports:
@@ -61,7 +61,7 @@ spec:
             {{- toYaml .env | nindent 12 }}
           {{- end }}
           livenessProbe:
-            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            initialDelaySeconds: {{ $.Values.initialDelaySeconds }}
             failureThreshold: 5
             timeoutSeconds: 30
             httpGet:
@@ -69,7 +69,7 @@ spec:
               port: http
           readinessProbe:
             failureThreshold: 5
-            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            initialDelaySeconds: {{ $.Values.initialDelaySeconds }}
             timeoutSeconds: 30
             httpGet:
               path: /health-check
@@ -100,7 +100,7 @@ spec:
           emptyDir: { }
         - name: configmap
           configMap:
-            name: {{ include "agents.fullname" . }}-{{ $.Release.Name }}
+            name: {{ include "agents.fullname" $ }}-{{ $.Release.Name }}
         {{- end }}
 {{- end }}
 {{- end }}
