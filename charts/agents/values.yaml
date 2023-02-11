@@ -93,7 +93,7 @@ notary:
     - name: create-database
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -130,7 +130,7 @@ guard:
     - name: create-database
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -234,7 +234,7 @@ executor_remote_fresh:
     - name: create-database-agents
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -282,7 +282,7 @@ executor_embedded:
     - name: create-database-agents
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -293,7 +293,7 @@ executor_embedded:
     - name: create-database-scribe
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do echo waiting for db; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
