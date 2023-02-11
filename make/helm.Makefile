@@ -46,6 +46,3 @@ kind-create: kind-install ## create a local kubernetes cluster
 test-install: ct-install kind-install helm-install kind-create ## test chart installs on a local kubernetes cluster use make chart=<chart-name> test-install to select a specific chart to run.
 	@if [ "$(chart)" == "" ]; then @eval $$(cd $(GIT_ROOT)); ct install --debug --chart-dirs $(CHART_DIRS) --charts $(CHART_DIRS); fi;
 	@if [ "$(chart)" != "" ]; then @eval $$(cd $(GIT_ROOT)); ct install --debug --chart-dirs $(chart) --charts $(chart); fi;
-
-test-install-ci: ct-install kind-install helm-install kind-create
-	@eval $$(cd $(GIT_ROOT)/charts); $(GIT_ROOT)/make/scripts/charts.sh $(GIT_ROOT)/charts
