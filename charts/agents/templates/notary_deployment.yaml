@@ -1,66 +1,67 @@
-{{- if and .Values.notary.enabled -}}
+{{- with .Values.notary }}
+{{- if and .enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "agents.fullname" . }}-notary
+  name: {{ include "agents.fullname" $ }}-notary
   labels:
-    {{- include "agents.labels" . | nindent 4 }}
+    {{- include "agents.labels" $ | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "agents.selectorLabels" . | nindent 6 }}
+      {{- include "agents.selectorLabels" $ | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.notary.podAnnotations }}
+      {{- with .podAnnotations }}
       annotations:
-        checksum/config: {{ include (print $.Chart.Name "/templates/" $.Chart.Name "-configmap.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Chart.Name "/templates/" $.Chart.Name "-configmap.yaml") $ | sha256sum }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "agents.selectorLabels" . | nindent 8 }}
+        {{- include "agents.selectorLabels" $ | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- with $.Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "agents.serviceAccountName" . }}
+      serviceAccountName: {{ include "agents.serviceAccountName" $ }}
       securityContext:
-        {{- toYaml .Values.notary.podSecurityContext | nindent 8 }}
-    {{- if .Values.notary_files }}
+        {{- toYaml .podSecurityContext | nindent 8 }}
+    {{- if $.Values.notary_files }}
       initContainers:
-        - name: copy-{{ .Release.Name }}-config
+        - name: copy-{{ $.Release.Name }}-config
           image: busybox
           command: [ 'sh', '-c', 'cp -v /configmap/* /config/' ]
           volumeMounts:
             - name: configmap
               mountPath: /configmap
-            - name: {{ .Release.Name }}-config
+            - name: {{ $.Release.Name }}-config
               mountPath: /config
-        {{- if .Values.notary.extraInitContainers }}
-        {{- toYaml .Values.notary.extraInitContainers | nindent 8 }}
+        {{- if .extraInitContainers }}
+        {{- toYaml .extraInitContainers | nindent 8 }}
         {{- end }}
     {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ $.Chart.Name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
           args:
-            {{- toYaml .Values.notary.args | nindent 12 }}
+            {{- toYaml .args | nindent 12 }}
           ports:
             - name: http
               containerPort: 5080
               protocol: TCP
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.notary.env }}
+            {{- toYaml $.Values.resources | nindent 12 }}
+          {{- if .env }}
           env:
-            {{- toYaml .Values.notary.env | nindent 12 }}
+            {{- toYaml .env | nindent 12 }}
           {{- end }}
           livenessProbe:
-            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            initialDelaySeconds: {{ $.Values.initialDelaySeconds }}
             failureThreshold: 5
             timeoutSeconds: 30
             httpGet:
@@ -68,37 +69,38 @@ spec:
               port: http
           readinessProbe:
             failureThreshold: 5
-            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            initialDelaySeconds: {{ $.Values.initialDelaySeconds }}
             timeoutSeconds: 30
             httpGet:
               path: /health-check
               port: http
-        {{- if .Values.notary_files }}
+        {{- if $.Values.notary_files }}
           volumeMounts:
             - name: configmap
               mountPath: /config
         {{- end }}
-        {{- if .Values.notary.extraContainers }}
-        {{- toYaml .Values.notary.extraContainers | nindent 8 }}
+        {{- if .extraContainers }}
+        {{- toYaml .extraContainers | nindent 8 }}
         {{- end }}
-      {{- with .Values.notary.nodeSelector }}
+      {{- with .nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.notary.affinity }}
+      {{- with .affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.notary.tolerations }}
+      {{- with .tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-        {{- if .Values.notary_files }}
-        - name: {{ .Release.Name }}-config
+        {{- if $.Values.notary_files }}
+        - name: {{ $.Release.Name }}-config
           emptyDir: { }
         - name: configmap
           configMap:
-            name: {{ include "agents.fullname" . }}-{{ .Release.Name }}
+            name: {{ include "agents.fullname" $ }}-{{ $.Release.Name }}
         {{- end }}
-{{- end}}
+{{- end }}
+{{- end }}

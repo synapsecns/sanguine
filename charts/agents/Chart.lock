@@ -8,5 +8,5 @@ dependencies:
 - name: scribe
   repository: file://../scribe/
   version: 0.2.1
-digest: sha256:84552aee77f92ebef57cc370000662dd93ccb79c7a43124412cf9b69671d4b40
-generated: "2023-02-10T22:19:55.937179-05:00"
+digest: sha256:c1c018c112a3c6018d34bb15ebf73467bbb66e4efb1180600d295d7ec75f7db8
+generated: "2023-02-10T22:38:22.798462-05:00"
