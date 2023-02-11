@@ -324,7 +324,7 @@ omnirpc:
   replicaCount: 3
 
 scribe:
-  enabled: true
+  enabled: false
   fullnameOverride: executor-scribe
 
 notary_files:
