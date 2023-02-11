@@ -298,7 +298,7 @@ executor_embedded:
               fieldPath: metadata.namespace
 
 mysql:
-  # use a constant here to build a connection to the service
+  # use a constant here to build a con nection to the service
 #  image:
 #    registry: ghcr.io
 #    repository: zcube/bitnami-compat/mysql
