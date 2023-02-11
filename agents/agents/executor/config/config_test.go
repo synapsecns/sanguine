@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
 	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 )
 
 func configFixture(c ConfigSuite) config.Config {
@@ -31,6 +32,9 @@ func configFixture(c ConfigSuite) config.Config {
 		UnbondedSigner: agentsConfig.SignerConfig{
 			Type: agentsConfig.FileType.String(),
 			File: filet.TmpFile(c.T(), "", testWallet.PrivateKeyHex()).Name(),
+		},
+		EmbeddedScribeConfig: scribeConfig.Config{
+			RPCURL: gofakeit.URL(),
 		},
 	}
 }
