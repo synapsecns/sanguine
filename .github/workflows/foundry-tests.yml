@@ -52,10 +52,6 @@ jobs:
         working-directory: ./packages/contracts-core
         run: forge coverage -vvv --report=lcov
 
-      - name: Run snapshot
-        working-directory: ./packages/contracts-core
-        run: forge snapshot >> $GITHUB_STEP_SUMMARY
-
       - uses: codecov/codecov-action@v3
         name: Send Coverage (Codecov)
         with:
@@ -63,3 +59,8 @@ jobs:
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
           working-directory: ./packages/contracts-core/
+          flags: solidity
+
+      - name: Run snapshot
+        working-directory: ./packages/contracts-core
+        run: forge snapshot >> $GITHUB_STEP_SUMMARY

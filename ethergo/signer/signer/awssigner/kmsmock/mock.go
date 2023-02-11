@@ -18,7 +18,7 @@ import (
 	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer/kmssigner/kmsmock/internal"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/awssigner/kmsmock/internal"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/util/wait"

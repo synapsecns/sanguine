@@ -63,7 +63,7 @@ func (t *TxQueueTransactor) GetTransactor(ctx context.Context, chainID *big.Int)
 			return nil, fmt.Errorf("could not store tx: %w", err)
 		}
 
-		parentTransactor, err := t.signer.GetTransactor(chainID)
+		parentTransactor, err := t.signer.GetTransactor(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get transactor: %w", err)
 		}

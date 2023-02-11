@@ -1,4 +1,4 @@
-package kmssigner
+package awssigner
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go-v2/service/kms/types"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer/kmssigner/kmsmock"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/awssigner/kmsmock"
 	"testing"
 )
 
