@@ -16,6 +16,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+
+	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 )
 
 // GetOrigin gets a typecast origin contract.
@@ -120,4 +122,15 @@ func (d *DeployManager) GetHeaderHarness(ctx context.Context, backend backends.S
 	assert.True(d.T(), ok)
 
 	return headerHarnessContract, headerHarness
+}
+
+// GetAgentsTestContract gets the agents test contract.
+func (d *DeployManager) GetAgentsTestContract(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *agentstestcontract.AgentsTestContractRef) {
+	d.T().Helper()
+
+	agentsTestContract := d.GetContractRegistry(backend).Get(ctx, AgentsTestContractType)
+	agentsTestContractHandle, ok := agentsTestContract.ContractHandle().(*agentstestcontract.AgentsTestContractRef)
+	assert.True(d.T(), ok)
+
+	return agentsTestContract, agentsTestContractHandle
 }

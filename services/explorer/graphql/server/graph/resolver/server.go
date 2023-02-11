@@ -80,13 +80,12 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AddressRanking           func(childComplexity int, hours *int) int
-		BridgeAmountStatistic    func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) int
-		BridgeTransactions       func(childComplexity int, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) int
-		CountByChainID           func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
-		CountByTokenAddress      func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
-		HistoricalStatistics     func(childComplexity int, chainID *int, typeArg *model.HistoricalResultType, days *int) int
-		LatestBridgeTransactions func(childComplexity int, includePending *bool, page *int) int
+		AddressRanking        func(childComplexity int, hours *int) int
+		BridgeAmountStatistic func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) int
+		BridgeTransactions    func(childComplexity int, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) int
+		CountByChainID        func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
+		CountByTokenAddress   func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
+		HistoricalStatistics  func(childComplexity int, chainID *int, typeArg *model.HistoricalResultType, days *int) int
 	}
 
 	TokenCountResult struct {
@@ -107,7 +106,6 @@ type ComplexityRoot struct {
 
 type QueryResolver interface {
 	BridgeTransactions(ctx context.Context, chainID *int, address *string, txnHash *string, kappa *string, includePending *bool, page *int, tokenAddress *string) ([]*model.BridgeTransaction, error)
-	LatestBridgeTransactions(ctx context.Context, includePending *bool, page *int) ([]*model.BridgeTransaction, error)
 	BridgeAmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error)
 	CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error)
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
@@ -356,18 +354,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.HistoricalStatistics(childComplexity, args["chainId"].(*int), args["type"].(*model.HistoricalResultType), args["days"].(*int)), true
 
-	case "Query.latestBridgeTransactions":
-		if e.complexity.Query.LatestBridgeTransactions == nil {
-			break
-		}
-
-		args, err := ec.field_Query_latestBridgeTransactions_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.LatestBridgeTransactions(childComplexity, args["includePending"].(*bool), args["page"].(*int)), true
-
 	case "TokenCountResult.chainId":
 		if e.complexity.TokenCountResult.ChainID == nil {
 			break
@@ -475,7 +461,6 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
 	{Name: "../schema/queries.graphql", Input: `type Query {
   """
   Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
-  At least 1 search parameter is required, which is one of chain id, address, txn hash or kappa.
   """
   bridgeTransactions(
     chainId:        Int
@@ -486,13 +471,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     page:           Int = 1
     tokenAddress:   String
   ): [BridgeTransaction]
-  """
-  Returns the latest bridged transactions across all chains.
-  """
-  latestBridgeTransactions(
-    includePending: Boolean = true
-    page:           Int = 1
-  ): [BridgeTransaction]
+
   """
   Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
   Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
@@ -614,6 +593,7 @@ type AddressRanking {
 
 enum Duration {
   PAST_DAY
+  PAST_MONTH
   ALL_TIME
 }
 enum Direction {
@@ -904,30 +884,6 @@ func (ec *executionContext) field_Query_historicalStatistics_args(ctx context.Co
 		}
 	}
 	args["days"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_latestBridgeTransactions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *bool
-	if tmp, ok := rawArgs["includePending"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("includePending"))
-		arg0, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["includePending"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["page"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["page"] = arg1
 	return args, nil
 }
 
@@ -1979,70 +1935,6 @@ func (ec *executionContext) fieldContext_Query_bridgeTransactions(ctx context.Co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_bridgeTransactions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_latestBridgeTransactions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_latestBridgeTransactions(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().LatestBridgeTransactions(rctx, fc.Args["includePending"].(*bool), fc.Args["page"].(*int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.BridgeTransaction)
-	fc.Result = res
-	return ec.marshalOBridgeTransaction2ᚕᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐBridgeTransaction(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_latestBridgeTransactions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "fromInfo":
-				return ec.fieldContext_BridgeTransaction_fromInfo(ctx, field)
-			case "toInfo":
-				return ec.fieldContext_BridgeTransaction_toInfo(ctx, field)
-			case "kappa":
-				return ec.fieldContext_BridgeTransaction_kappa(ctx, field)
-			case "pending":
-				return ec.fieldContext_BridgeTransaction_pending(ctx, field)
-			case "swapSuccess":
-				return ec.fieldContext_BridgeTransaction_swapSuccess(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type BridgeTransaction", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_latestBridgeTransactions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -4719,26 +4611,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_bridgeTransactions(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
-		case "latestBridgeTransactions":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_latestBridgeTransactions(ctx, field)
 				return res
 			}
 

@@ -12,7 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/types"
 )
 
-func (u NotarySuite) TestOriginAttestationScanner() {
+func (u *NotarySuite) TestOriginAttestationScanner() {
 	destinationDomain := uint32(u.TestBackendDestination.GetChainID())
 
 	testDB, err := sqlite.NewSqliteStore(u.GetTestContext(), filet.TmpDir(u.T(), ""))
@@ -35,15 +35,19 @@ func (u NotarySuite) TestOriginAttestationScanner() {
 		u.AttestationDomainClient,
 		u.DestinationDomainClient,
 		testDB,
-		u.NotarySigner,
-		u.AttestationSigner,
+		u.NotaryBondedSigner,
+		u.NotaryUnbondedSigner,
 		1*time.Second)
 
 	err = originAttestationScanner.Update(u.GetTestContext())
 	Nil(u.T(), err)
 
 	// make sure an update has been produced
-	producedAttestation, err := testDB.RetrieveOldestUnsignedInProgressAttestation(u.GetTestContext(), u.OriginDomainClient.Config().DomainID, u.DestinationDomainClient.Config().DomainID)
+	producedAttestation, err := testDB.RetrieveNewestInProgressAttestationIfInState(
+		u.GetTestContext(),
+		u.OriginDomainClient.Config().DomainID,
+		u.DestinationDomainClient.Config().DomainID,
+		types.AttestationStateNotaryUnsigned)
 	Nil(u.T(), err)
 	Equal(u.T(), producedAttestation.SignedAttestation().Attestation().Nonce(), uint32(1))
 	Equal(u.T(), types.AttestationStateNotaryUnsigned, producedAttestation.AttestationState())

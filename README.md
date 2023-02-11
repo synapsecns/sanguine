@@ -12,19 +12,28 @@ Then check out our list of [good first issues](https://github.com/ethereum-optim
 
 <pre>
 root
+├── <a href="./agents">agents</a>: agents contain all the agents used in optimistic messaging
+├── <a href="./charts">charts</a>: The helm charts used for deploying sanguine related services
+├── <a href="./contrib">contrib</a>: Devops related tools
+│   ├── <a href="./contrib/git-changes-action">git-changes-action</a>: Github action for identifying changes in dependent modules in a go workspace
+│   ├── <a href="./contrib/release-copier-action">release-copier-action</a>: Github action for copying releases from one repo to another
+│   ├── <a href="./contrib/terraform-provider-iap">terraform-provider-iap</a>: Terraform provider used for bastion proxy tunneling
+│   ├── <a href="./contrib/terraform-provider-helmproxy">terraform-provider-helmproxy</a>: Terraform provider that allows helm to be proxied through an iap bastion proxy
+│   ├── <a href="./contrib/terraform-provider-kubeproxy">terraform-provider-kubeproxy</a>: Terraform provider that allows kube to be proxied through an iap bastion proxy
+│   ├── <a href="./contrib/tfcore">tfcore</a>: Terraform core utilities + iap utilities
 ├── <a href="./core">core</a>: The Go core library with common utilities for use across the monorepo
 ├── <a href="./ethergo">ethergo</a>: Go-based ethereum testing + common library
 ├── <a href="./packages">packages</a>
 │   ├── <a href="./packages/contracts-core">contracts-core</a>: Core contracts used for synapse, powered by <a href="https://github.com/foundry-rs/foundry">Foundry</a>
-│   ├── <a href="./packages/explorer-ui">Explorer UI</a>: Explorer UI
+│   ├── <a href="./packages/explorer-ui">explorer-ui</a>: Explorer UI
 ├── <a href="./tools">services</a>
 │   ├── <a href="./services/explorer">explorer</a>: Bridge/messaging explorer backend
 │   ├── <a href="./services/omnirpc">omnirpc</a>: Latency aware RPC Client used across multiple-chains at once
 │   ├── <a href="./services/scribe">scribe</a>: Generalized ethereum event logger
 ├── <a href="./tools">tools</a>
 │   ├── <a href="./tools/abigen">abigen</a>: Used to generate abigen bindings for go
+│   ├── <a href="./tools/bundle">bundle</a>: Modified version of <a href="https://pkg.go.dev/golang.org/x/tools@v0.5.0/cmd/bundle"> go bundler </a> with improved shadowing support
 │   ├── <a href="./tools/modulecopier">module copier</a>: Used to copy internal modules and export methods for testing
-├── <a href="./agents">agents</a>: agents contain all the agents used in optimistic messaging
 </pre>
 
 ## Setup

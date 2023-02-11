@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
+	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
@@ -162,5 +163,24 @@ func (h HeaderHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 		return headerharness.DeployHeaderHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return headerharness.NewHeaderHarnessRef(address, backend)
+	})
+}
+
+// AgentsTestContractDeployer deploys the agents test contract.
+type AgentsTestContractDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewAgentsTestContractDeployer gets the agents test contract.
+func NewAgentsTestContractDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return AgentsTestContractDeployer{deployer.NewSimpleDeployer(registry, backend, AgentsTestContractType)}
+}
+
+// Deploy deploys the header harness.
+func (h AgentsTestContractDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return agentstestcontract.DeployAgentsTestContract(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return agentstestcontract.NewAgentsTestContractRef(address, backend)
 	})
 }

@@ -15,7 +15,8 @@ import (
 )
 
 // NewAttestationCollectorContract returns a bound attestation collector contract.
-// nolint: staticcheck
+//
+//nolint:staticcheck
 func NewAttestationCollectorContract(ctx context.Context, client chain.Chain, attestationAddress common.Address) (domains.AttestationCollectorContract, error) {
 	boundCountract, err := attestationcollector.NewAttestationCollectorRef(attestationAddress, client)
 	if err != nil {
@@ -50,7 +51,7 @@ func (a attestationCollectorContract) AddAgent(transactOpts *bind.TransactOpts, 
 }
 
 func (a attestationCollectorContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
-	transactor, err := signer.GetTransactor(a.client.GetBigChainID())
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
 		return fmt.Errorf("could not sign tx: %w", err)
 	}
@@ -82,4 +83,35 @@ func (a attestationCollectorContract) GetLatestNonce(ctx context.Context, origin
 	}
 
 	return latestNonce, nil
+}
+
+func (a attestationCollectorContract) GetAttestation(ctx context.Context, origin, destination, nonce uint32) (types.SignedAttestation, error) {
+	rawAttestation, err := a.contract.GetAttestation(&bind.CallOpts{Context: ctx}, origin, destination, nonce)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve attestation: %w", err)
+	}
+
+	signedAttesation, err := types.DecodeSignedAttestation(rawAttestation)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode attestation: %w", err)
+	}
+
+	return signedAttesation, nil
+}
+
+func (a attestationCollectorContract) GetRoot(ctx context.Context, origin, destination, nonce uint32) ([32]byte, error) {
+	root, err := a.contract.GetRoot(&bind.CallOpts{Context: ctx}, origin, destination, nonce)
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("could not retrieve root: %w", err)
+	}
+
+	return root, nil
+}
+
+func (a attestationCollectorContract) PrimeNonce(ctx context.Context, signer signer.Signer) error {
+	_, err := a.nonceManager.GetNextNonce(signer.Address())
+	if err != nil {
+		return fmt.Errorf("could not prime nonce for signer on collector: %w", err)
+	}
+	return nil
 }

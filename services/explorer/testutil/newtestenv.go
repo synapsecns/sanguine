@@ -3,6 +3,10 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/assert"
@@ -19,9 +23,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server"
 	"go.uber.org/atomic"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"net/http"
-	"testing"
-	"time"
 )
 
 // NewTestEnvDB sets up the test env with a database.
@@ -40,10 +41,9 @@ func NewTestEnvDB(ctx context.Context, t *testing.T) (db db.ConsumerDB, eventDB 
 
 	go func() {
 		assert.Nil(t, api.Start(ctx, api.Config{
-			HTTPPort: uint16(freePort),
+			Port:     uint16(freePort),
 			Database: "sqlite",
 			Path:     dbPath,
-			GRPCPort: uint16(freeport.GetPort()),
 		}))
 	}()
 

@@ -1,6 +1,12 @@
-on: [push, pull_request]
-
 name: Foundry Tests
+
+on:
+  pull_request:
+    paths:
+      - 'packages/contracts-core/**'
+  push:
+    paths:
+      - 'packages/contracts-core/**'
 
 jobs:
   check:
@@ -46,10 +52,6 @@ jobs:
         working-directory: ./packages/contracts-core
         run: forge coverage -vvv --report=lcov
 
-      - name: Run snapshot
-        working-directory: ./packages/contracts-core
-        run: forge snapshot >> $GITHUB_STEP_SUMMARY
-
       - uses: codecov/codecov-action@v3
         name: Send Coverage (Codecov)
         with:
@@ -57,11 +59,8 @@ jobs:
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
           working-directory: ./packages/contracts-core/
+          flags: solidity
 
-      - name: Send Coverage (Coveralls)
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.github_token }}
-          path-to-lcov: ./packages/contracts-core/lcov.info
-          base-path: ./packages/contracts-core/
-          flag-name: foundry
+      - name: Run snapshot
+        working-directory: ./packages/contracts-core
+        run: forge snapshot >> $GITHUB_STEP_SUMMARY

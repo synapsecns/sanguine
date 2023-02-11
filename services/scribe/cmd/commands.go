@@ -22,9 +22,10 @@ import (
 //go:embed cmd.md
 var help string
 
-var maxConfirmations = 3
+// MaxConfirmations is the maximum number of confirmations.
+var MaxConfirmations = 3
 
-// infoComand gets info about using the scribe service.
+// infoCommand gets info about using the scribe service.
 var infoCommand = &cli.Command{
 	Name:        "info",
 	Description: "learn how to use scribe cli",
@@ -43,12 +44,6 @@ var configFlag = &cli.StringFlag{
 
 var portFlag = &cli.UintFlag{
 	Name:  "port",
-	Usage: "--port 5121",
-	Value: 0,
-}
-
-var grpcPortFlag = &cli.UintFlag{
-	Name:  "grpc-port",
 	Usage: "--port 5121",
 	Value: 0,
 }
@@ -80,7 +75,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 
 	clients = make(map[uint32][]backfill.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
-		for confNum := 1; confNum <= maxConfirmations; confNum++ {
+		for confNum := 1; confNum <= MaxConfirmations; confNum++ {
 			backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID))
 			if err != nil {
 				return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
@@ -103,7 +98,7 @@ var backfillCommand = &cli.Command{
 		}
 
 		// TODO delete once livefilling done
-		ctx, cancel := context.WithTimeout(c.Context, time.Minute*12)
+		ctx, cancel := context.WithTimeout(c.Context, time.Minute*5)
 		cancelVar := cancel
 		for {
 			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
@@ -148,10 +143,9 @@ var serverCommand = &cli.Command{
 	Flags:       []cli.Flag{portFlag, dbFlag, pathFlag, omniRPCFlag},
 	Action: func(c *cli.Context) error {
 		err := api.Start(c.Context, api.Config{
-			HTTPPort:   uint16(c.Uint(portFlag.Name)),
+			Port:       uint16(c.Uint(portFlag.Name)),
 			Database:   c.String(dbFlag.Name),
 			Path:       c.String(pathFlag.Name),
-			GRPCPort:   uint16(c.Uint(grpcPortFlag.Name)),
 			OmniRPCURL: c.String(omniRPCFlag.Name),
 		})
 		if err != nil {

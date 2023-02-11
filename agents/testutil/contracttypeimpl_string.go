@@ -17,11 +17,12 @@ func _() {
 	_ = x[DestinationHarnessType-6]
 	_ = x[AttestationCollectorType-7]
 	_ = x[DestinationType-8]
+	_ = x[AgentsTestContractType-9]
 }
 
-const _contractTypeImpl_name = "OriginMessageHarnessOriginHarnessAttestationHarnessTypeTipsHarnessTypeHeaderHarnessTypeDestinationHarnessAttestationCollectorDestination"
+const _contractTypeImpl_name = "OriginMessageHarnessOriginHarnessAttestationHarnessTypeTipsHarnessTypeHeaderHarnessTypeDestinationHarnessAttestationCollectorDestinationAgentsTestContract"
 
-var _contractTypeImpl_index = [...]uint8{0, 6, 20, 33, 55, 70, 87, 105, 125, 136}
+var _contractTypeImpl_index = [...]uint8{0, 6, 20, 33, 55, 70, 87, 105, 125, 136, 154}
 
 func (i contractTypeImpl) String() string {
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {

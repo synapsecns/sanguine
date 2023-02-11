@@ -2,6 +2,9 @@ package client
 
 import (
 	"context"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -9,8 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/ethergo/chain/client/near"
-	"math/big"
-	"time"
 )
 
 // Permitter handles permit acquires/releases for a lifecycle client.
@@ -48,7 +49,8 @@ func NewLifecycleClient(client EVMClient, chainID *big.Int, permitter Permitter,
 }
 
 // CallContract calls contract on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) (contractResponse []byte, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -63,7 +65,8 @@ func (m LifecycleClient) CallContract(ctx context.Context, call ethereum.CallMsg
 }
 
 // PendingCallContract calls contract on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) PendingCallContract(ctx context.Context, call ethereum.CallMsg) (contractResponse []byte, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -78,7 +81,8 @@ func (m LifecycleClient) PendingCallContract(ctx context.Context, call ethereum.
 }
 
 // PendingCodeAt calls PendingCodeAt on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) PendingCodeAt(ctx context.Context, account common.Address) (codeResponse []byte, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -93,7 +97,8 @@ func (m LifecycleClient) PendingCodeAt(ctx context.Context, account common.Addre
 }
 
 // PendingBalanceAt calls PendingBalanceAt on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) PendingBalanceAt(ctx context.Context, account common.Address) (pendingBalance *big.Int, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -108,7 +113,8 @@ func (m LifecycleClient) PendingBalanceAt(ctx context.Context, account common.Ad
 }
 
 // PendingStorageAt calls PendingStorageAt on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) PendingStorageAt(ctx context.Context, account common.Address, key common.Hash) (pendingStorage []byte, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -123,7 +129,8 @@ func (m LifecycleClient) PendingStorageAt(ctx context.Context, account common.Ad
 }
 
 // PendingNonceAt calls PendingNonceAt on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) PendingNonceAt(ctx context.Context, account common.Address) (pendingNonce uint64, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -138,7 +145,8 @@ func (m LifecycleClient) PendingNonceAt(ctx context.Context, account common.Addr
 }
 
 // PendingTransactionCount calls PendingTransactionCount on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) PendingTransactionCount(ctx context.Context) (count uint, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -153,7 +161,8 @@ func (m LifecycleClient) PendingTransactionCount(ctx context.Context) (count uin
 }
 
 // NetworkID calls NetworkID on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) NetworkID(ctx context.Context) (id *big.Int, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -168,7 +177,8 @@ func (m LifecycleClient) NetworkID(ctx context.Context) (id *big.Int, err error)
 }
 
 // SyncProgress calls SyncProgress on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) SyncProgress(ctx context.Context) (syncProgress *ethereum.SyncProgress, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -183,7 +193,8 @@ func (m LifecycleClient) SyncProgress(ctx context.Context) (syncProgress *ethere
 }
 
 // SuggestGasPrice calls SuggestGasPrice on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) SuggestGasPrice(ctx context.Context) (gasPrice *big.Int, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -198,7 +209,8 @@ func (m LifecycleClient) SuggestGasPrice(ctx context.Context) (gasPrice *big.Int
 }
 
 // EstimateGas calls EstimateGas on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) EstimateGas(ctx context.Context, call ethereum.CallMsg) (gas uint64, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -213,7 +225,8 @@ func (m LifecycleClient) EstimateGas(ctx context.Context, call ethereum.CallMsg)
 }
 
 // SendTransaction calls SendTransaction on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) SendTransaction(ctx context.Context, tx *types.Transaction) (err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -228,7 +241,8 @@ func (m LifecycleClient) SendTransaction(ctx context.Context, tx *types.Transact
 }
 
 // FilterLogs calls FilterLogs on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) FilterLogs(ctx context.Context, query ethereum.FilterQuery) (logs []types.Log, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -243,7 +257,8 @@ func (m LifecycleClient) FilterLogs(ctx context.Context, query ethereum.FilterQu
 }
 
 // SubscribeFilterLogs calls SubscribeFilterLogs on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) SubscribeFilterLogs(ctx context.Context, query ethereum.FilterQuery, ch chan<- types.Log) (sub ethereum.Subscription, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -258,7 +273,8 @@ func (m LifecycleClient) SubscribeFilterLogs(ctx context.Context, query ethereum
 }
 
 // BlockByHash calls BlockByHash on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) BlockByHash(ctx context.Context, hash common.Hash) (block *types.Block, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -277,7 +293,8 @@ func (m LifecycleClient) BlockByHash(ctx context.Context, hash common.Hash) (blo
 }
 
 // BlockByNumber calls BlockByNumber on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) BlockByNumber(ctx context.Context, number *big.Int) (block *types.Block, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -296,7 +313,8 @@ func (m LifecycleClient) BlockByNumber(ctx context.Context, number *big.Int) (bl
 }
 
 // HeaderByHash calls HeaderByHash on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) HeaderByHash(ctx context.Context, hash common.Hash) (header *types.Header, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -311,7 +329,8 @@ func (m LifecycleClient) HeaderByHash(ctx context.Context, hash common.Hash) (he
 }
 
 // HeaderByNumber calls HeaderByNumber on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) HeaderByNumber(ctx context.Context, number *big.Int) (header *types.Header, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -326,7 +345,8 @@ func (m LifecycleClient) HeaderByNumber(ctx context.Context, number *big.Int) (h
 }
 
 // TransactionCount calls TransactionCount on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) TransactionCount(ctx context.Context, blockHash common.Hash) (txCount uint, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -341,7 +361,8 @@ func (m LifecycleClient) TransactionCount(ctx context.Context, blockHash common.
 }
 
 // TransactionInBlock calls TransactionInBlock on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) TransactionInBlock(ctx context.Context, blockHash common.Hash, index uint) (tx *types.Transaction, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -356,7 +377,8 @@ func (m LifecycleClient) TransactionInBlock(ctx context.Context, blockHash commo
 }
 
 // SubscribeNewHead calls SubscribeNewHead on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) SubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (sub ethereum.Subscription, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -371,7 +393,8 @@ func (m LifecycleClient) SubscribeNewHead(ctx context.Context, ch chan<- *types.
 }
 
 // TransactionByHash calls TransactionByHash on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) TransactionByHash(ctx context.Context, txHash common.Hash) (tx *types.Transaction, isPending bool, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -386,7 +409,8 @@ func (m LifecycleClient) TransactionByHash(ctx context.Context, txHash common.Ha
 }
 
 // TransactionReceipt calls TransactionReceipt on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) TransactionReceipt(ctx context.Context, txHash common.Hash) (receipt *types.Receipt, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -401,7 +425,8 @@ func (m LifecycleClient) TransactionReceipt(ctx context.Context, txHash common.H
 }
 
 // BalanceAt calls BalanceAt on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (balance *big.Int, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -416,7 +441,8 @@ func (m LifecycleClient) BalanceAt(ctx context.Context, account common.Address, 
 }
 
 // StorageAt calls StorageAt on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) StorageAt(ctx context.Context, account common.Address, key common.Hash, blockNumber *big.Int) (storage []byte, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -431,7 +457,8 @@ func (m LifecycleClient) StorageAt(ctx context.Context, account common.Address, 
 }
 
 // BlockNumber gets the latest block number
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) BlockNumber(ctx context.Context) (_ uint64, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -446,7 +473,8 @@ func (m LifecycleClient) BlockNumber(ctx context.Context) (_ uint64, err error) 
 }
 
 // CodeAt calls CodeAt on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) CodeAt(ctx context.Context, account common.Address, blockNumber *big.Int) (codeAt []byte, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -461,7 +489,8 @@ func (m LifecycleClient) CodeAt(ctx context.Context, account common.Address, blo
 }
 
 // SuggestGasTipCap gets the suggested gas tip for a chain.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) SuggestGasTipCap(ctx context.Context) (tip *big.Int, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -476,19 +505,22 @@ func (m LifecycleClient) SuggestGasTipCap(ctx context.Context) (tip *big.Int, er
 }
 
 // CallContext calls CallContext on the underlying client. Note: this will bypass the rate-limiter.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) CallContext(ctx context.Context, result interface{}, method string, args ...interface{}) (err error) {
 	return m.underlyingClient.CallContext(ctx, result, method, args...)
 }
 
 // BatchCallContext calls BatchCallContext on the underlying client. Note: this will bypass the rate-limiter.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) BatchCallContext(ctx context.Context, b []rpc.BatchElem) error {
 	return m.underlyingClient.BatchCallContext(ctx, b)
 }
 
 // NonceAt calls NonceAt on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) NonceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (nonce uint64, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -503,13 +535,15 @@ func (m LifecycleClient) NonceAt(ctx context.Context, account common.Address, bl
 }
 
 // ChainConfig calls ChainConfig on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) ChainConfig() *params.ChainConfig {
 	return ConfigFromID(m.chainID)
 }
 
 // ChainID calls ChainID on the underlying client.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) ChainID(ctx context.Context) (chainID *big.Int, err error) {
 	err = m.AcquirePermit(ctx)
 	if err != nil {
@@ -524,7 +558,8 @@ func (m LifecycleClient) ChainID(ctx context.Context) (chainID *big.Int, err err
 }
 
 // BatchContext calls BatchContext on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
 	err := m.AcquirePermit(ctx)
 	if err != nil {
@@ -539,7 +574,8 @@ func (m LifecycleClient) BatchContext(ctx context.Context, calls ...w3types.Call
 }
 
 // FeeHistory calls FeeHistory on the underlying client
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (m LifecycleClient) FeeHistory(ctx context.Context, blockCount uint64, lastBlock *big.Int, rewardPercentiles []float64) (*ethereum.FeeHistory, error) {
 	err := m.AcquirePermit(ctx)
 	if err != nil {

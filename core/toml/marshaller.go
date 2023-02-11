@@ -3,9 +3,10 @@ package toml
 import (
 	"bytes"
 	"fmt"
-	"github.com/BurntSushi/toml"
 	"reflect"
 	"strings"
+
+	"github.com/BurntSushi/toml"
 )
 
 // Encodable is an interface for a toml with an encode method.
@@ -79,7 +80,7 @@ func MarshalTextPtr(config interface{}) (text []byte, err error) {
 
 // eindirect wraps a pointer.
 func eindirect(v reflect.Value) reflect.Value {
-	// nolint: exhaustive
+	//nolint:exhaustive
 	switch v.Kind() {
 	case reflect.Ptr, reflect.Interface:
 		return eindirect(v.Elem())
