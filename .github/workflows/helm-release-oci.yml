@@ -32,7 +32,7 @@ jobs:
         uses: appany/helm-oci-chart-releaser@v0.3.0
         with:
           name: agents
-          repository: helm
+          repository: synapsecns/sanguine/helm
           # note: this must be manually updated for the workaround
           tag: 0.1.1
           path: charts/agents # Default charts/{name}
