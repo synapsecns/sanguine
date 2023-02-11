@@ -2,13 +2,15 @@ package tipsharness
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
 // TipsHarnessRef is a tips harness reference
-// nolint: golint
+//
+//nolint:golint
 type TipsHarnessRef struct {
 	*TipsHarness
 	address common.Address

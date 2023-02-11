@@ -3,6 +3,8 @@ package london
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -11,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas/backend"
-	"math/big"
 )
 
 // NewOracleBackendFromHeight creates a fee oracle for deterministically generating gas prices from a given height
@@ -36,7 +37,8 @@ func (h HeightOracleBackend) SubscribeChainHeadEvent(ch chan<- core.ChainHeadEve
 }
 
 // HeaderByNumber wraps oracle baccend.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (h HeightOracleBackend) HeaderByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Header, error) {
 	if number == rpc.LatestBlockNumber {
 		return h.chain.HeaderByNumber(ctx, big.NewInt(int64(h.height)))
@@ -45,13 +47,15 @@ func (h HeightOracleBackend) HeaderByNumber(ctx context.Context, number rpc.Bloc
 }
 
 // BlockByNumber wraps the oracle backend.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (h HeightOracleBackend) BlockByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Block, error) {
 	return h.chain.BlockByNumber(ctx, big.NewInt(int64(number)))
 }
 
 // GetReceipts gets receipts for a block in a single rpc call.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (h HeightOracleBackend) GetReceipts(ctx context.Context, hash common.Hash) (types.Receipts, error) {
 	block, err := h.chain.BlockByHash(ctx, hash)
 	if err != nil {

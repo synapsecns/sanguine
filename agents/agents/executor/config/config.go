@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
+	agentsConfig "github.com/synapsecns/sanguine/agents/config"
+	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"
@@ -15,7 +17,24 @@ type Config struct {
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
 	// BaseOmnirpcURL is the base url for omnirpc.
+	// The format is "https://omnirpc.url/". Notice the lack of "confirmations" on the URL
+	// in comparison to what `Scribe` uses.
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
+	// UnbondedSigner contains the unbonded signer config for agents
+	// (this is signer used to submit transactions)
+	UnbondedSigner agentsConfig.SignerConfig `yaml:"unbonded_signer"`
+	// ExecuteInterval is the interval at which the executor agent will
+	// check if messages in the database are ready to be executed.
+	ExecuteInterval uint32 `yaml:"execute_interval"`
+	// SetMinimumTimeInterval is the interval at which the executor agent will
+	// check messages to set their minimum times from attestations.
+	SetMinimumTimeInterval uint32 `yaml:"set_minimum_time_interval"`
+	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be
+	// included if an embedded Scribe is being used. If a remote Scribe is being used,
+	// this can be left empty.
+	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
+	// DBPrefix is the prefix for the tables in the database.
+	DBPrefix string `yaml:"db_prefix"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -28,6 +47,14 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 
 	if c.BaseOmnirpcURL == "" {
 		return false, fmt.Errorf("rpc url cannot be empty")
+	}
+
+	if ok, err = c.UnbondedSigner.IsValid(ctx); !ok {
+		return false, fmt.Errorf("unbonded signer is invalid: %w", err)
+	}
+
+	if ok, err = c.EmbeddedScribeConfig.IsValid(ctx); !ok {
+		return false, fmt.Errorf("embedded scribe config is invalid: %w", err)
 	}
 
 	return true, nil

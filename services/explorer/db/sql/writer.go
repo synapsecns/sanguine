@@ -3,7 +3,6 @@ package sql
 import (
 	"context"
 	"fmt"
-
 	"gorm.io/gorm"
 )
 
@@ -132,5 +131,38 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 		}
 	}
 
+	return nil
+}
+
+// StoreTokenIndex stores the token index data.
+func (s *Store) StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error {
+	entry := TokenIndex{}
+	dbTx := s.db.WithContext(ctx).
+		Model(&TokenIndex{}).
+		Where(&TokenIndex{
+			ChainID:         chainID,
+			TokenIndex:      tokenIndex,
+			ContractAddress: contractAddress,
+		}).
+		Limit(1).
+		Find(&entry)
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not retrieve last block: %w", dbTx.Error)
+	}
+	if tokenAddress != entry.TokenAddress {
+		dbTx = s.db.WithContext(ctx).
+			Model(&TokenIndex{}).
+			Create(&TokenIndex{
+				ChainID:         chainID,
+				TokenIndex:      tokenIndex,
+				ContractAddress: contractAddress,
+				TokenAddress:    tokenAddress,
+			})
+		if dbTx.Error != nil {
+			return fmt.Errorf("could not store last block: %w", dbTx.Error)
+		}
+
+		return nil
+	}
 	return nil
 }

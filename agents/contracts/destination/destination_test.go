@@ -54,10 +54,10 @@ func (d DestinationSuite) TestDestinationSuite() {
 	hashedAttestation, err := types.Hash(unsignedAttestation)
 	Nil(d.T(), err)
 
-	notarySignature, err := d.NotarySigner.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	notarySignature, err := d.NotaryBondedSigner.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(d.T(), err)
 
-	guardSignature, err := d.GuardSigner.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	guardSignature, err := d.GuardBondedSigner.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	Nil(d.T(), err)
 
 	signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
@@ -70,7 +70,6 @@ func (d DestinationSuite) TestDestinationSuite() {
 
 	d.TestBackendDestination.WaitForConfirmation(d.GetTestContext(), tx)
 
-	// TODO (joe): Get this working
 	watchCtx, cancel := context.WithTimeout(d.GetTestContext(), time.Second*10)
 	defer cancel()
 

@@ -48,13 +48,13 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 
 	notarySignatures := []types.Signature{}
 	if amountNotaries == 1 {
-		notarySignature, err := a.NotarySigner.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+		notarySignature, err := a.NotaryBondedSigner.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 		Nil(a.T(), err)
 		notarySignatures = append(notarySignatures, notarySignature)
 	}
 	guardSignatures := []types.Signature{}
 	if amountGuards == 1 {
-		guardSignature, err := a.GuardSigner.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+		guardSignature, err := a.GuardBondedSigner.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 		Nil(a.T(), err)
 		guardSignatures = append(guardSignatures, guardSignature)
 	}

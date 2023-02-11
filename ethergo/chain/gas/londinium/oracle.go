@@ -2,6 +2,7 @@ package londinium
 
 import (
 	"context"
+
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
 )
@@ -13,7 +14,8 @@ type HeightOracleBackend struct {
 }
 
 // HeaderByNumber overrides the default behavior on header by number when getting the latest block.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (d HeightOracleBackend) HeaderByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Header, error) {
 	if number == rpc.LatestBlockNumber {
 		return d.OracleBackend.HeaderByNumber(ctx, rpc.BlockNumber(d.height))

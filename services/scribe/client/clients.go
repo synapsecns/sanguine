@@ -9,10 +9,8 @@ import (
 
 // ScribeClient is a gRPC client to a Scribe.
 type ScribeClient struct {
-	// HTTPPort is the port the Scribe is listening on for HTTP requests.
-	HTTPPort uint16
-	// GRPCPort is the port the Scribe is listening on for gRPC requests.
-	GRPCPort uint16
+	// Port is the port the Scribe is listening on for HTTP requests.
+	Port uint16
 	// URL is the URL for the connection.
 	URL string
 }
@@ -31,9 +29,8 @@ type EmbeddedScribe struct {
 func NewEmbeddedScribe(database, path string) EmbeddedScribe {
 	return EmbeddedScribe{
 		ScribeClient: ScribeClient{
-			HTTPPort: uint16(freeport.GetPort()),
-			GRPCPort: uint16(freeport.GetPort()),
-			URL:      "localhost",
+			Port: uint16(freeport.GetPort()),
+			URL:  "localhost",
 		},
 		database: database,
 		path:     path,
@@ -48,10 +45,9 @@ func (r RemoteScribe) OverrideURL(url string) {
 // Start starts the EmbeddedScribe.
 func (e EmbeddedScribe) Start(ctx context.Context) error {
 	apiConfig := api.Config{
-		HTTPPort: e.HTTPPort,
+		Port:     e.Port,
 		Database: e.database,
 		Path:     e.path,
-		GRPCPort: e.GRPCPort,
 	}
 	err := api.Start(ctx, apiConfig)
 	if err != nil {
@@ -68,12 +64,11 @@ type RemoteScribe struct {
 }
 
 // NewRemoteScribe creates a new RemoteScribe.
-func NewRemoteScribe(httpPort uint16, grpcPort uint16, url string) RemoteScribe {
+func NewRemoteScribe(httpPort uint16, url string) RemoteScribe {
 	return RemoteScribe{
 		ScribeClient: ScribeClient{
-			HTTPPort: httpPort,
-			GRPCPort: grpcPort,
-			URL:      url,
+			Port: httpPort,
+			URL:  url,
 		},
 	}
 }

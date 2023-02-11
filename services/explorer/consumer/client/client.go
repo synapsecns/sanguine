@@ -49,6 +49,24 @@ type GetLogsRange struct {
 		Removed         bool     "json:\"removed\" graphql:\"removed\""
 	} "json:\"response\" graphql:\"response\""
 }
+type GetTransactions struct {
+	Response []*struct {
+		ChainID   int    "json:\"chain_id\" graphql:\"chain_id\""
+		TxHash    string "json:\"tx_hash\" graphql:\"tx_hash\""
+		Protected bool   "json:\"protected\" graphql:\"protected\""
+		Type      int    "json:\"type\" graphql:\"type\""
+		Data      string "json:\"data\" graphql:\"data\""
+		Gas       int    "json:\"gas\" graphql:\"gas\""
+		GasPrice  int    "json:\"gas_price\" graphql:\"gas_price\""
+		GasTipCap string "json:\"gas_tip_cap\" graphql:\"gas_tip_cap\""
+		GasFeeCap string "json:\"gas_fee_cap\" graphql:\"gas_fee_cap\""
+		Value     string "json:\"value\" graphql:\"value\""
+		Nonce     int    "json:\"nonce\" graphql:\"nonce\""
+		To        string "json:\"to\" graphql:\"to\""
+		Timestamp int    "json:\"timestamp\" graphql:\"timestamp\""
+		Sender    string "json:\"sender\" graphql:\"sender\""
+	} "json:\"response\" graphql:\"response\""
+}
 type GetBlockTime struct {
 	Response *int "json:\"response\" graphql:\"response\""
 }
@@ -104,6 +122,41 @@ func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, 
 
 	var res GetLogsRange
 	if err := c.Client.Post(ctx, "GetLogsRange", GetLogsRangeDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetTransactionsDocument = `query GetTransactions ($chain_id: Int!, $page: Int!, $tx_hash: String) {
+	response: transactions(chain_id: $chain_id, page: $page, tx_hash: $tx_hash) {
+		chain_id
+		tx_hash
+		protected
+		type
+		data
+		gas
+		gas_price
+		gas_tip_cap
+		gas_fee_cap
+		value
+		nonce
+		to
+		timestamp
+		sender
+	}
+}
+`
+
+func (c *Client) GetTransactions(ctx context.Context, chainID int, page int, txHash *string, httpRequestOptions ...client.HTTPRequestOption) (*GetTransactions, error) {
+	vars := map[string]interface{}{
+		"chain_id": chainID,
+		"page":     page,
+		"tx_hash":  txHash,
+	}
+
+	var res GetTransactions
+	if err := c.Client.Post(ctx, "GetTransactions", GetTransactionsDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

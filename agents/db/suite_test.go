@@ -24,15 +24,14 @@ import (
 
 // DBTestState holds the state of the test.
 type DBTestState struct {
-	fakeOrigin               uint32
-	fakeDestination          uint32
-	fakeNonces               []uint32
-	fakeRoots                []*common.Hash
-	fakeDispatchBlockNumbers []uint64
-	fakeSignatures           []types.Signature
-	fakeSubmittedTimes       []time.Time
-	fakeSigner               *localsigner.Signer
-	numMessages              int
+	fakeOrigin         uint32
+	fakeDestination    uint32
+	fakeNonces         []uint32
+	fakeRoots          []*common.Hash
+	fakeSignatures     []types.Signature
+	fakeSubmittedTimes []time.Time
+	fakeSigner         *localsigner.Signer
+	numMessages        int
 }
 
 type DBSuite struct {

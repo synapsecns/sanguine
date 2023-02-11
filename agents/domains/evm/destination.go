@@ -3,6 +3,10 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
@@ -14,7 +18,8 @@ import (
 )
 
 // NewDestinationContract returns a bound destination contract.
-// nolint: staticcheck
+//
+//nolint:staticcheck
 func NewDestinationContract(ctx context.Context, client chain.Chain, destinationAddress common.Address) (domains.DestinationContract, error) {
 	boundCountract, err := destination.NewDestinationRef(destinationAddress, client)
 	if err != nil {
@@ -40,17 +45,10 @@ type destinationContract struct {
 }
 
 func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
-	transactor, err := signer.GetTransactor(a.client.GetBigChainID())
+	transactOpts, err := a.transactOptsSetup(ctx, signer)
 	if err != nil {
-		return fmt.Errorf("could not sign tx: %w", err)
+		return fmt.Errorf("could not setup transact opts: %w", err)
 	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
 
 	encodedAttestation, err := types.EncodeSignedAttestation(attestation)
 	if err != nil {
@@ -62,5 +60,64 @@ func (a destinationContract) SubmitAttestation(ctx context.Context, signer signe
 		return fmt.Errorf("could not submit attestation: %w", err)
 	}
 
+	return nil
+}
+
+func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error {
+	transactOpts, err := a.transactOptsSetup(ctx, signer)
+	if err != nil {
+		return fmt.Errorf("could not setup transact opts: %w", err)
+	}
+
+	encodedMessage, err := types.EncodeMessage(message)
+	if err != nil {
+		return fmt.Errorf("could not encode message: %w", err)
+	}
+
+	_, err = a.contract.Execute(transactOpts, encodedMessage, proof, index)
+	if err != nil {
+		return fmt.Errorf("could not execute message: %w", err)
+	}
+
+	return nil
+}
+
+func (a destinationContract) transactOptsSetup(ctx context.Context, signer signer.Signer) (*bind.TransactOpts, error) {
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	if err != nil {
+		return nil, fmt.Errorf("could not sign tx: %w", err)
+	}
+
+	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not create tx: %w", err)
+	}
+
+	transactOpts.Context = ctx
+
+	return transactOpts, nil
+}
+
+func (a destinationContract) SubmittedAt(ctx context.Context, originID uint32, root [32]byte) (*time.Time, error) {
+	submittedAtBigInt, err := a.contract.SubmittedAt(&bind.CallOpts{Context: ctx}, originID, root)
+	if err != nil {
+		return nil, fmt.Errorf("could get submitted at for origin and root: %w", err)
+	}
+
+	if submittedAtBigInt == nil || submittedAtBigInt.Int64() == int64(0) {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	submittedAtTime := time.Unix(submittedAtBigInt.Int64(), 0)
+
+	return &submittedAtTime, nil
+}
+
+func (a destinationContract) PrimeNonce(ctx context.Context, signer signer.Signer) error {
+	_, err := a.nonceManager.GetNextNonce(signer.Address())
+	if err != nil {
+		return fmt.Errorf("could not prime nonce for signer on destination: %w", err)
+	}
 	return nil
 }

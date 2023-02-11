@@ -40,7 +40,9 @@ dependencies: yq-install helm-install ## install dependencies for all helm chart
 lint: ct-install dependencies ## lints helm charts
 	cd $(GIT_ROOT);	ct lint --all --validate-maintainers=false
 
-test-install: ct-install kind-install helm-install ## test chart installs on a local kubernetes cluster use make chart=<chart-name> test-install to select a specific chart to run.
+kind-create: kind-install ## create a local kubernetes cluster
 	@if [ "$(shell kind get clusters)" = "" ]; then kind create cluster; fi;
+
+test-install: ct-install kind-install helm-install kind-create ## test chart installs on a local kubernetes cluster use make chart=<chart-name> test-install to select a specific chart to run.
 	@if [ "$(chart)" == "" ]; then @eval $$(cd $(GIT_ROOT)); ct install --debug --chart-dirs $(CHART_DIRS) --charts $(CHART_DIRS); fi;
 	@if [ "$(chart)" != "" ]; then @eval $$(cd $(GIT_ROOT)); ct install --debug --chart-dirs $(chart) --charts $(chart); fi;

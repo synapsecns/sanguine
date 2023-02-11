@@ -1,4 +1,6 @@
 name: Go Workflows
+
+# note, because of generate tests using path filters here is too complicated
 on:
   pull_request:
   push:
@@ -12,33 +14,29 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       # Expose matched filters as job 'packages' output variable
-      packages: ${{ steps.filter_go.outputs.changes }}
-      package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
+      packages_deps: ${{ steps.filter_go_deps.outputs.changed_modules }}
+      packages_nodeps:  ${{ steps.filter_go_nodeps.outputs.changed_modules }}
+      package_count_deps: ${{ steps.length.outputs.FILTER_LENGTH_DEPS }}
+      package_count_nodeps: ${{ steps.length.outputs.FILTER_LENGTH_NODEPS }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
-      all_packages: ${{ steps.all.outputs.ALL }} # list of changed and unchanged packages
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           submodules: 'recursive'
-      - uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
 
-      # For pull requests it's not necessary to checkout the code
-      - uses: dorny/paths-filter@v2
-        name: 'Check for Go Changes'
-        id: filter_go
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
+        id: filter_go_deps
         with:
-          #  make sure to update run-goreleaser when adding a new package here
-          filters: |
-            agents: 'agents/**'
-            services/scribe: 'services/scribe/**'
-            services/explorer: 'services/explorer/**'
-            tools: 'tools/**'
-            core: 'core/**'
-            ethergo: 'ethergo/**'
-            services/omnirpc: 'services/omnirpc/**'
+          include_deps: true
+          github_token: ${{ secrets.github_token }}
+
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
+        id: filter_go_nodeps
+        with:
+          include_deps: false
+          github_token: ${{ secrets.github_token }}
+
       - name: Check For Solidity Changes
         id: filter_solidity
         uses: tj-actions/changed-files@v26.1
@@ -52,30 +50,28 @@ jobs:
 
       - id: length
         run: |
-          export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
-          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
+          export FILTER_LENGTH_DEPS=$(echo $FILTERED_PATHS_DEPS | jq '. | length')
+          echo "##[set-output name=FILTER_LENGTH_DEPS;]$(echo $FILTER_LENGTH_DEPS)"
+
+          export FILTER_LENGTH_NODEPS=$(echo $FILTERED_PATHS_NODEPS | jq '. | length')
+          echo "##[set-output name=FILTER_LENGTH_NODEPS;]$(echo $FILTER_LENGTH_NODEPS)"
         env:
-          FILTERED_PATHS: ${{ steps.filter_go.outputs.changes }}
-
-      # list all packages
-      - id: all
-        run: |
-          export ALL=$(go work edit -json | jq -c -r '[.Use[].DiskPath]')
-          echo "##[set-output name=ALL;]$(echo $ALL)"
-
+          FILTERED_PATHS_DEPS: ${{ steps.filter_go_deps.outputs.changed_modules }}
+          FILTERED_PATHS_NODEPS: ${{ steps.filter_go_nodeps.outputs.changed_modules }}
 
   test:
     name: Go Coverage
     runs-on: ${{ matrix.platform }}
+    if: ${{ needs.changes.outputs.package_count_deps > 0 }}
     needs: changes
     strategy:
       matrix:
         go-version:
-          - 1.19.x
+          - 1.20.x
         platform:
           - ubuntu-latest
         # only do on agents for now. Anything that relies on solidity in a package should do this
-        package: ${{ fromJSON(needs.changes.outputs.all_packages) }}
+        package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     services:
       mariadb:
         image: mariadb:latest
@@ -91,9 +87,9 @@ jobs:
       run:
         working-directory: ${{ matrix.package }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
           submodules: 'recursive'
 
       - name: Cache Docker images.
@@ -149,49 +145,40 @@ jobs:
           GOMAXPROCS: 18
           GANACHE_KEYS: /tmp/keys/rinkeby
           GANACHE_RPC_URL: http://0.0.0.0:8045
+          GOMEMLIMIT: 6GiB
+          GOGC: 2000
 
-      - name: Generate ignore list
-        # generate a list of files to ignore on goveralls
+      - name: Get Coverage name
+        id: coverage
         run: |
-          echo "IGNORED=$(find . \( -name "*_generated.go" -o -name "*.abigen.go"  -o -name "*_string.go"   \) -print0 | xargs -0 ls | sed 's/.\/*//' | tr '\n' ',' |  sed 's/,*\r*$//')" >> $GITHUB_ENV
+          echo "::set-output name=flag::$(echo "${{ matrix.package }}" | rev | cut -d/ -f1 | rev)"
 
       - uses: codecov/codecov-action@v3
         name: Send Coverage (Codecov)
         with:
           token: ${{ secrets.CODECOV }}
           files: profile.cov
+          flags: ${{ steps.coverage.outputs.flag }}
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
 
-      # We customize the build step because by default
-      # We can not use ** because goveralls uses filepath.Match
-      # to match ignore files and it does not support it.
-      - name: Send coverage (Coveralls)
-        uses: shogo82148/actions-goveralls@v1
-        with:
-          github-token: ${{ secrets.github_token }}
-          # coveralls will not respect default run
-          path-to-profile: ${{matrix.package}}/profile.cov
-          ignore: ${{ env.IGNORED }}
-          flag-name: Go-${{ matrix.go-version }}
 
   # make sure the build works
   build:
     name: Build
     needs: changes
     runs-on: ${{ matrix.platform }}
-    if: ${{ needs.changes.outputs.package_count > 0 }}
+    if: ${{ needs.changes.outputs.package_count_deps > 0 }}
     strategy:
       matrix:
         go-version:
-          - 1.19.x
+          - 1.20.x
         platform:
           - ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-          submodules: 'recursive'
+          fetch-depth: 1
       - name: Install Go
         uses: actions/setup-go@v3
         with:
@@ -212,33 +199,60 @@ jobs:
       - name: Build
         # go build all workspaces
         run: go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
+        # see: https://www.reddit.com/r/golang/comments/476pae/how_to_speed_up_go_compiler_and_many_other_go/
+        env:
+          GOGC: 2000
 
   #note: right now this is not run against all work dirs
   lint:
     name: Lint
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ needs.changes.outputs.package_count > 0 }}
+    if: ${{ needs.changes.outputs.package_count_nodeps > 0 }}
     strategy:
       matrix:
         # Parse JSON array containing names of all filters matching any of changed files
         # e.g. ['package1', 'package2'] if both package folders contains changes
-        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        package: ${{ fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          # see: https://github.com/golangci/golangci-lint/issues/3420, moving to go 1.20 requires a new golangci-lint version
+          go-version: 1.19.x
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          submodules: 'recursive'
 
       # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
       - name: Setup cache key
         run: cp ${{matrix.package}}/go.mod go.mod -v
 
       - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        if: ${{ !contains(matrix.package, 'tfcore') }}
+        with:
+          working-directory: ${{matrix.package}}/
+          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+          version: v1.48.0
+          # Path to your GolangCI-Lint config within the repo (optional)
+          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
+          # see: https://github.com/golangci/golangci-lint/issues/2654
+          args: --timeout=60m
+        env:
+          # GitHub token for annotations (optional)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOMEMLIMIT: 6GiB
+          GOGC: 2000
+
+      # IAP autogenerated files take too much time and memory to load,
+      # even if we skip them with skip-dirs.
+      # So we define this tag and use it in the autogenerated files.
+      # (See: https://stackoverflow.com/a/59865597 for full explanation)
+      # we add a build tag here (and here only, or other importing modules have trouble exporting)
+      # TODO: at some point it might make sense to put the common deps in a common lib
+      - name: golangci-lint (tfcore)
+        if: ${{ contains(matrix.package, 'tfcore') }}
         uses: golangci/golangci-lint-action@v2
         with:
           working-directory: ${{matrix.package}}/
@@ -247,28 +261,43 @@ jobs:
           # Path to your GolangCI-Lint config within the repo (optional)
           config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
           # see: https://github.com/golangci/golangci-lint/issues/2654
-          args: --timeout=15m
+          args: --timeout=60m --build-tags=codeanalysis
         env:
           # GitHub token for annotations (optional)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # see: https://github.com/golangci/golangci-lint/issues/337#issuecomment-510136513
-          GOGC: 20
+          GOMEMLIMIT: 6GiB
+          GOGC: 2000
+
+  issue_number:
+    # this is needed to prevent us from hitting the github api rate limit
+    name: Get The Issue Number
+    needs: changes
+    runs-on: ubuntu-latest
+    # currently, this matches the logic in the go generate check. If we ever add more checks that run on all packages, we should
+    # change this to run on those pushes
+    if: ${{ github.event_name != 'pull_request' && (needs.changes.outputs.solidity_changes == 'true' || needs.changes.outputs.package_count_deps > 0 ) }}
+    outputs:
+      issue_number: ${{ steps.find_pr.outputs.pr }}
+    steps:
+      - uses: jwalton/gh-find-current-pr@v1
+        id: find_pr
+
 
   # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
   # TODO: consolidate w/ go change check. This will run twice on agents
   check-generation-solidity:
     name: Go Generate (Solidity Only)
     runs-on: ubuntu-latest
-    needs: changes
-    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes }}
+    needs: [changes, issue_number]
+    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes == 'true' }}
     strategy:
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ['agents']
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
           submodules: 'recursive'
 
       - name: Cache Docker images.
@@ -313,7 +342,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          go-version: 1.20.x
 
       - name: Go modules cache
         uses: actions/cache@v2
@@ -343,6 +372,9 @@ jobs:
         working-directory: ${{matrix.package}}/
         run: |
           go generate ./...
+        env:
+          GOMEMLIMIT: 6GiB
+          GOGC: 2000
 
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v10.1
@@ -351,9 +383,6 @@ jobs:
           files: |
             *.go
 
-      - uses: jwalton/gh-find-current-pr@v1
-        id: find_pr
-
         # Fail if files need regeneration
       - name: Add Label
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -361,7 +390,7 @@ jobs:
         with:
           add-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ steps.find_pr.outputs.pr }}
+          issue-number: ${{ needs.issue_number.outputs.issue_number }}
 
       - name: Remove Label
         if: steps.verify-changed-files.outputs.files_changed != 'true'
@@ -369,21 +398,21 @@ jobs:
         with:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ steps.find_pr.outputs.pr }}
+          issue-number: ${{ needs.issue_number.outputs.issue_number }}
 
   check-generation:
     name: Go Generate (Module Changes)
     runs-on: ubuntu-latest
-    needs: changes
-    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.package_count > 0 }}
+    needs: [changes, issue_number]
+    if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.package_count_deps > 0 }}
     strategy:
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
-        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
           submodules: 'recursive'
 
 
@@ -396,19 +425,23 @@ jobs:
       - name: Read .nvmrc
         run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
         id: nvmrc
+        if: ${{ contains(matrix.package, 'agents') }}
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
+        if: ${{ contains(matrix.package, 'agents') }}
 
       - name: 'Use NodeJS by nvmrc'
         uses: actions/setup-node@v2
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+        if: ${{ contains(matrix.package, 'agents') }}
 
       - name: Initialize Yarn cache
         uses: actions/cache@v2
         id: yarn-cache
+        if: ${{ contains(matrix.package, 'agents') }}
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
@@ -417,19 +450,22 @@ jobs:
 
       - name: Install Node Dependencies
         run: yarn install --frozen-lockfile --check-files
+        if: ${{ contains(matrix.package, 'agents') }}
 
       - name: Install dependencies
+        if: ${{ contains(matrix.package, 'agents') }}
         run: |
           npx lerna bootstrap
 
       # Generate flattened files
       - name: Run flattener
         run: npx lerna exec npm run build:go
+        if: ${{ contains(matrix.package, 'agents') }}
 
       # Setup Go
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          go-version: 1.20.x
 
       - name: Go modules cache
         uses: actions/cache@v2
@@ -501,9 +537,6 @@ jobs:
           files: |
             *.go
 
-      - uses: jwalton/gh-find-current-pr@v1
-        id: find_pr
-
         # Fail if files need regeneration
       - name: Add Label
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -511,7 +544,7 @@ jobs:
         with:
           add-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ steps.find_pr.outputs.pr }}
+          issue-number: ${{ needs.issue_number.outputs.issue_number }}
 
       - name: Remove Label
         if: steps.verify-changed-files.outputs.files_changed != 'true'
@@ -519,4 +552,4 @@ jobs:
         with:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ steps.find_pr.outputs.pr }}
+          issue-number: ${{ needs.issue_number.outputs.issue_number }}

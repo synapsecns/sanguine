@@ -1,4 +1,4 @@
-// nolint: testpackage
+//nolint:testpackage
 package bytemap
 
 import (
@@ -7,7 +7,7 @@ import (
 
 func TestByteMap(t *testing.T) {
 	var m ByteSliceMap[int]
-	//nolint: asciicheck
+	//nolint:asciicheck
 	ಠ := []byte("fಠo")
 
 	m.Put(ಠ, 123)
