@@ -93,7 +93,7 @@ notary:
     - name: create-database
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 2; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -130,7 +130,7 @@ guard:
     - name: create-database
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 2; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -140,7 +140,7 @@ guard:
               fieldPath: metadata.namespace
 
 executor:
-  type: "embedded"
+  type: "remote-fresh"
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
@@ -229,7 +229,7 @@ executor_remote_fresh:
     - name: create-database-agents
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 2; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -277,7 +277,7 @@ executor_embedded:
     - name: create-database-agents
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 2; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -288,7 +288,7 @@ executor_embedded:
     - name: create-database-scribe
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do echo waiting for db; sleep 2; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do echo waiting for db; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
