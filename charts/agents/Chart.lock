@@ -1,0 +1,12 @@
+dependencies:
+- name: mysql
+  repository: https://charts.bitnami.com/bitnami
+  version: 9.3.2
+- name: omnirpc
+  repository: file://../omnirpc/
+  version: 0.2.0
+- name: scribe
+  repository: file://../scribe/
+  version: 0.2.1
+digest: sha256:c1c018c112a3c6018d34bb15ebf73467bbb66e4efb1180600d295d7ec75f7db8
+generated: "2023-02-10T22:38:22.798462-05:00"

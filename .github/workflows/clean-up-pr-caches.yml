@@ -13,7 +13,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Cleanup yarn caches
+      - name: Cleanup caches
         run: |
           gh extension install actions/gh-actions-cache
 

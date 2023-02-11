@@ -33,6 +33,8 @@ type Config struct {
 	// included if an embedded Scribe is being used. If a remote Scribe is being used,
 	// this can be left empty.
 	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
+	// DBPrefix is the prefix for the tables in the database.
+	DBPrefix string `yaml:"db_prefix"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -49,6 +51,10 @@ func (c *Config) IsValid(ctx context.Context) (ok bool, err error) {
 
 	if ok, err = c.UnbondedSigner.IsValid(ctx); !ok {
 		return false, fmt.Errorf("unbonded signer is invalid: %w", err)
+	}
+
+	if ok, err = c.EmbeddedScribeConfig.IsValid(ctx); !ok {
+		return false, fmt.Errorf("embedded scribe config is invalid: %w", err)
 	}
 
 	return true, nil
