@@ -9,6 +9,9 @@ var tokenIDToCoingeckoMap []byte
 //go:embed tokenSymbolToCoinGeckoID.yaml
 var tokenSymbolToCoingeckoMap []byte
 
+//go:embed tokenSymbolToTokenID.yaml
+var tokenSymbolToTokenIDMap []byte
+
 // GetTokenIDToCoingekoConfig returns the tokenID yaml files.
 func GetTokenIDToCoingekoConfig() []byte {
 	return tokenIDToCoingeckoMap
@@ -17,4 +20,9 @@ func GetTokenIDToCoingekoConfig() []byte {
 // GetTokenSymbolToCoingeckoConfig returns the token Symbol yaml files.
 func GetTokenSymbolToCoingeckoConfig() []byte {
 	return tokenSymbolToCoingeckoMap
+}
+
+// GetTokenSymbolToTokenIDConfig returns the token Symbol to token ID yaml files.
+func GetTokenSymbolToTokenIDConfig() []byte {
+	return tokenSymbolToTokenIDMap
 }

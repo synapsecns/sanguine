@@ -2,6 +2,11 @@ package geth
 
 import (
 	"context"
+	"math/big"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -28,10 +33,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/teivah/onecontext"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"math/big"
-	"os"
-	"testing"
-	"time"
 )
 
 const gasLimit = 10000000
@@ -242,18 +243,18 @@ func (w wrappedClient) ChainConfig() *params.ChainConfig {
 
 // CallContext calls the call context method on the underlying client.
 func (w wrappedClient) CallContext(ctx context.Context, result interface{}, method string, args ...interface{}) error {
-	// nolint: wrapcheck
+	//nolint:wrapcheck
 	return w.rpcClient.CallContext(ctx, result, method, args...)
 }
 
 // BatchCallContext calls the batch call method on the underlying client.
 func (w wrappedClient) BatchCallContext(ctx context.Context, b []rpc.BatchElem) error {
-	// nolint: wrapcheck
+	//nolint:wrapcheck
 	return w.rpcClient.BatchCallContext(ctx, b)
 }
 
 func (w wrappedClient) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
-	// nolint: wrapcheck
+	//nolint:wrapcheck
 	return w.w3Client.CallCtx(ctx, calls...)
 }
 

@@ -3,12 +3,13 @@ package config_test
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/assets"
 	"github.com/synapsecns/sanguine/core/config"
-	"os"
-	"time"
 )
 
 // testSuffix allows for easy bulk deleting in the case this isn't automatically taken care of.
@@ -22,7 +23,7 @@ func (c ConfigSuite) TestGetLogo() {
 	for i := 0; i < iterations; i++ {
 		NotPanics(c.T(), func() {
 			logoPath, _ := config.GetLogoPath()
-			// nolint: gosec
+			//nolint:gosec
 			logoContents, err := os.ReadFile(logoPath)
 			Nil(c.T(), err)
 			True(c.T(), bytes.Equal(logoContents, assets.Logo))

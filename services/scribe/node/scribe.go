@@ -46,43 +46,54 @@ func NewScribe(eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, 
 //
 //nolint:cyclop
 func (s Scribe) Start(ctx context.Context) error {
-	refreshRate := s.config.RefreshRate
+	confirmationRefreshRate := s.config.ConfirmationRefreshRate
 
-	if refreshRate == 0 {
-		refreshRate = 1
+	if confirmationRefreshRate == 0 {
+		confirmationRefreshRate = 1000
 	}
+	confirmationRefreshRateTime := time.Duration(confirmationRefreshRate) * time.Second
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	for i := range s.config.Chains {
 		chainConfig := s.config.Chains[i]
+		chainID := chainConfig.ChainID
 
+		// Livefill the chains
+		g.Go(func() error {
+			err := s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, nil, true)
+			if err != nil {
+				return fmt.Errorf("could not backfill: %w", err)
+			}
+			return nil
+		})
+
+		// Check confirmations
 		g.Go(func() error {
 			b := &backoff.Backoff{
 				Factor: 2,
 				Jitter: true,
-				Min:    1 * time.Second,
-				Max:    10 * time.Second,
+				Min:    30 * time.Millisecond,
+				Max:    2 * time.Second,
 			}
-
-			timeout := time.Duration(0)
-
+			timeout := confirmationRefreshRateTime
 			for {
 				select {
 				case <-groupCtx.Done():
 					logger.Warnf("scribe for chain %d shutting down", chainConfig.ChainID)
 					return nil
 				case <-time.After(timeout):
-					err := s.processRange(groupCtx, chainConfig.ChainID, chainConfig.RequiredConfirmations)
+					err := s.confirmBlocks(groupCtx, chainConfig.ChainID, chainConfig.RequiredConfirmations)
 					if err != nil {
 						timeout = b.Duration()
-						logger.Warnf("could not livefill chain %d: %v", chainConfig.ChainID, err)
+						logger.Warnf("could not confirm blocks on chain %d, retrying: %v", chainConfig.ChainID, err)
 
 						continue
 					}
 
+					// Set the timeout to the confirmation refresh rate.
+					timeout = confirmationRefreshRateTime
+					logger.Infof("processed blocks chain %d, continuing to confirm blocks", chainConfig.ChainID)
 					b.Reset()
-					timeout = time.Duration(refreshRate) * time.Second
-					logger.Infof("processed range for chain %d, continuing to livefill", chainConfig.ChainID)
 				}
 			}
 		})
@@ -95,17 +106,12 @@ func (s Scribe) Start(ctx context.Context) error {
 }
 
 //nolint:gocognit, cyclop
-func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfirmations uint32) error {
+func (s Scribe) confirmBlocks(ctx context.Context, chainID uint32, requiredConfirmations uint32) error {
+	logger.Infof("[LIVEFILL] start livefilling chain: %d", chainID)
 	newBlock, err := s.clients[chainID][0].BlockNumber(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get current block number: %w", err)
 	}
-
-	err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("could not backfill: %w", err)
-	}
-
 	// In the range (last confirmed block number, current block number - required confirmations],
 	// check the validity of the blocks, and modify the database accordingly.
 	lastBlockNumber, err := s.eventDB.RetrieveLastConfirmedBlock(ctx, chainID)
@@ -160,8 +166,7 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 		// If the block hash is not the same, then the block is invalid. Otherwise, mark the block as valid.
 		//nolint:nestif
 		if block.Hash() != receipts[0].BlockHash {
-			logger.Errorf(" [LIVEFILL] DELETING  %d chain: %d,  %v", receipts[0].BlockHash, chainID, err)
-
+			logger.Errorf(" [LIVEFILL] incorrect blockhash, deleting blockhash %s on chain %d. correct block hash: %s", receipts[0].BlockHash.String(), chainID, block.Hash().String())
 			g, groupCtx := errgroup.WithContext(ctx)
 
 			g.Go(func() error {
@@ -204,7 +209,7 @@ func (s Scribe) processRange(ctx context.Context, chainID uint32, requiredConfir
 			}
 
 			blockNumber := block.Number().Uint64()
-			err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, &blockNumber)
+			err = s.scribeBackfiller.ChainBackfillers[chainID].Backfill(ctx, &blockNumber, false)
 			if err != nil {
 				logger.Errorf(" [LIVEFILL] could not backfill %d chain: %d, block: %d, %v", newBlock-uint64(requiredConfirmations), chainID, i, err)
 

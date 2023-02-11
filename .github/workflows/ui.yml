@@ -2,41 +2,24 @@ name: Explorer UI Deploy
 on:
   push:
     branches: [master]
+    paths:
+      - 'packages/explorer-ui/**'
   pull_request:
     types: [opened, synchronize, reopened]
+    paths:
+      - 'packages/explorer-ui/**'
 
 jobs:
-  changes:
-    name: Change Detection
-    runs-on: ubuntu-latest
-    outputs:
-      folders: ${{ steps.filter_ui.outputs.changes }}
-      folder_count: ${{ steps.length.outputs.FILTER_LENGTH }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: dorny/paths-filter@v2
-        name: 'Check for Changes in each ui folder'
-        id: filter_ui
-        with:
-          #  make sure to update run-goreleaser when adding a new package here
-          filters: |
-            explorer-ui: 'packages/explorer-ui/**'
-      - id: length
-        run: |
-          export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
-          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
-        env:
-          FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
-
   deploy-explorer:
-    needs: changes
     runs-on: ubuntu-latest
-    if: ${{ needs.changes.outputs.folder_count > 0 && contains(fromJson(needs.changes.outputs.folders), 'explorer-ui') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Copy nvmrc
+        run: |
+          rm -rf packages/explorer-ui/.nvmrc
+          cp .nvmrc packages/explorer-ui/.nvmrc
 
       - name: Deploy to Vercel Action
         uses: BetaHuhn/deploy-to-vercel-action@v1

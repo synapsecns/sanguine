@@ -2,13 +2,15 @@ package originharness
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
 // OriginHarnessRef is a origin harness reference
-// nolint: golint
+//
+//nolint:golint
 type OriginHarnessRef struct {
 	*OriginHarness
 	address common.Address

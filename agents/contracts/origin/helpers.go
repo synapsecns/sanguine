@@ -2,13 +2,15 @@ package origin
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
 // OriginRef is a bound origin contract that returns the address of the contract.
-// nolint: golint
+//
+//nolint:golint
 type OriginRef struct {
 	*Origin
 	address common.Address

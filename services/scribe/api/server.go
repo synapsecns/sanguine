@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
+	"github.com/soheilhy/cmux"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/ginhelper"
-	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
@@ -25,16 +25,14 @@ var static embed.FS
 
 // Config contains the config for the api.
 type Config struct {
-	// HTTPPort is the http port for the api.
-	HTTPPort uint16
+	// Port is the http port for the api.
+	Port uint16
 	// Database is the database type.
 	// TODO: should be enum
 	Database string
 	// Path is the path to the database or db connection.
 	// TODO: should be renamed
 	Path string
-	// GRPCPort is the path to the grpc service.
-	GRPCPort uint16
 	// OmniRPCURL is the url of the omnirpc service.
 	OmniRPCURL string
 }
@@ -57,27 +55,33 @@ func Start(ctx context.Context, cfg Config) error {
 	}
 
 	router.GET("static", gin.WrapH(http.FileServer(http.FS(static))))
-	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.HTTPPort)
+	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.Port)
 	g, ctx := errgroup.WithContext(ctx)
 
+	var lc net.ListenConfig
+	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", cfg.Port))
+	if err != nil {
+		return fmt.Errorf("could not listen on port %d", cfg.Port)
+	}
+
+	m := cmux.New(listener)
+	httpListener := m.Match(cmux.HTTP1Fast())
+	// fallback to grpc
+	grpcListener := m.Match(cmux.Any())
+
 	g.Go(func() error {
-		connection := baseServer.Server{}
-		err = connection.ListenAndServe(ctx, fmt.Sprintf(":%d", cfg.HTTPPort), router)
+		//nolint: gosec
+		// TODO: consider setting timeouts here:  https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
+		err := http.Serve(httpListener, router)
 		if err != nil {
-			return fmt.Errorf("could not start gqlServer: %w", err)
+			return fmt.Errorf("could not serve http: %w", err)
 		}
 
 		return nil
 	})
 
 	g.Go(func() error {
-		var lc net.ListenConfig
-		listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
-		if err != nil {
-			return fmt.Errorf("could not start listener: %w", err)
-		}
-
-		err = grpcServer.Serve(listener)
+		err = grpcServer.Serve(grpcListener)
 		if err != nil {
 			return fmt.Errorf("could not start grpc server: %w", err)
 		}
@@ -86,8 +90,17 @@ func Start(ctx context.Context, cfg Config) error {
 	})
 
 	g.Go(func() error {
+		err := m.Serve()
+		if err != nil {
+			return fmt.Errorf("could not start server: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
 		<-ctx.Done()
 		grpcServer.Stop()
+		m.Close()
 
 		return nil
 	})
@@ -110,7 +123,6 @@ func InitDB(ctx context.Context, database string, path string) (db.EventDB, erro
 		}
 
 		return sqliteStore, nil
-
 	case database == "mysql":
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
 			dbname := os.Getenv("MYSQL_DATABASE")
@@ -129,7 +141,6 @@ func InitDB(ctx context.Context, database string, path string) (db.EventDB, erro
 		}
 
 		return mysqlStore, nil
-
 	default:
 		return nil, fmt.Errorf("invalid database type: %s", database)
 	}

@@ -1,15 +1,25 @@
 name: 'Helm Charts'
 
-on: [push, pull_request]
+on:
+  pull_request:
+    paths:
+      - 'charts/**'
+  push:
+    paths:
+      - 'charts/**'
 
 # TODO: it'd be nice to eventually work this into release process on new images
 # definitely not a right now thing
 jobs:
+
   lint-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chart: [ 'agents_embedded', 'agents_remote', 'scribe', 'explorer', 'omnirpc' ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -45,4 +55,16 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
 
       - name: Run chart-testing (install)
-        run: ct install --debug
+        working-directory: charts/
+        if: ${{ !contains(matrix.chart, 'agents_embedded') && !contains(matrix.chart, 'agents_remote') }}
+        run: ct install --debug --chart-dirs "${{ matrix.chart }}" --charts "${{ matrix.chart }}"
+
+      - name: Run chart-testing (install agents embedded)
+        working-directory: charts/
+        if: ${{ contains(matrix.chart, 'agents_embedded') }}
+        run: ct install --debug --helm-extra-set-args "--set=executor.type=embedded" --chart-dirs "agents" --charts "agents"
+
+      - name: Run chart-testing (install agents remote)
+        working-directory: charts/
+        if: ${{ contains(matrix.chart, 'agents_remote') }}
+        run: ct install --debug --helm-extra-set-args "--set=executor.type=remote-fresh --set=scribe.enabled=true" --chart-dirs "agents" --charts "agents"

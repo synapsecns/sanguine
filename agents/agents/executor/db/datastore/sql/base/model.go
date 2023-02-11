@@ -12,6 +12,9 @@ func init() {
 	NonceFieldName = namer.GetConsistentName("Nonce")
 	RootFieldName = namer.GetConsistentName("Root")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
+	ExecutedFieldName = namer.GetConsistentName("Executed")
+	MinimumTimeSetFieldName = namer.GetConsistentName("MinimumTimeSet")
+	MinimumTimeFieldName = namer.GetConsistentName("MinimumTime")
 }
 
 var (
@@ -25,6 +28,12 @@ var (
 	RootFieldName string
 	// BlockNumberFieldName is the index field name.
 	BlockNumberFieldName string
+	// ExecutedFieldName is the executed field name.
+	ExecutedFieldName string
+	// MinimumTimeSetFieldName is the minimum time set field name.
+	MinimumTimeSetFieldName string
+	// MinimumTimeFieldName is the minimum time field name.
+	MinimumTimeFieldName string
 )
 
 // PageSize is the amount of entries per page of logs.
@@ -38,12 +47,16 @@ type Message struct {
 	Destination uint32 `gorm:"column:destination;primaryKey"`
 	// Nonce is the nonce.
 	Nonce uint32 `gorm:"column:nonce;primaryKey"`
-	// Root is the root.
-	Root string `gorm:"column:root;primaryKey"`
 	// Message is the message.
 	Message []byte `gorm:"column:message"`
 	// BlockNumber is the block number.
 	BlockNumber uint64 `gorm:"column:block_number"`
+	// Executed is if the message has been executed.
+	Executed bool `gorm:"column:executed"`
+	// MinimumTimeSet is if the MinimumTime field has been set from an Attestation.
+	MinimumTimeSet bool `gorm:"column:minimum_time_set"`
+	// MinimumTime is the minimum time that the message can be executed.
+	MinimumTime uint64 `gorm:"column:minimum_time"`
 }
 
 // Attestation is the information about an attestation parsed by the Executor.

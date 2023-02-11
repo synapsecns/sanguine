@@ -106,7 +106,7 @@ indexer:
 server:
   enabled: true
   # this should use a secret in production, for testing only
-  args: ["server", "--port=80", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true"]
+  args: ["server", "--port=5080", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true", "--omnirpc=http://scribe-omnirpc"]
   replicaCount: 1
   autoscaling:
     enabled: false
@@ -151,6 +151,11 @@ server:
 
 mysql:
   # use a constant here to build a connection to the service
+  # uncomment these to speedup builds on arm64 based architectures
+  #  image:
+  #    registry: ghcr.io
+  #    repository: zcube/bitnami-compat/mysql
+  #    tag: 8.0-debian-11-r54
   enabled: true
   fullnameOverride: scribe-mysql
   architecture: standalone
@@ -213,7 +218,7 @@ files:
         required_confirmations: 50
         contracts:
           - address: 0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40
-            start_block:5152261
+            start_block: 5152261
           - address: 0xffd73E0642e8833cCE9854B963840A8cb2A218e8
             start_block: 738087
           - address: 0x544450Ffdfa5EA20528F21918E8aAC7B2C733381

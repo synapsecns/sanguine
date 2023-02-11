@@ -63,11 +63,11 @@ type Log struct {
 	// BlockNumber is the block in which the transaction was included
 	BlockNumber uint64 `gorm:"column:block_number;index:idx_block_number,priority:1,sort:desc"`
 	// TxHash is the hash of the transaction
-	TxHash string `gorm:"column:tx_hash;primaryKey"`
+	TxHash string `gorm:"column:tx_hash;primaryKey;index:idx_tx_hash,priority:1,sort:desc"`
 	// TxIndex is the index of the transaction in the block
 	TxIndex uint64 `gorm:"tx_index"`
 	// BlockHash is the hash of the block in which the transaction was included
-	BlockHash string `gorm:"block_hash"`
+	BlockHash string `gorm:"column:block_hash;index:idx_block_hash,priority:1,sort:desc"`
 	// Index is the index of the log in the block
 	BlockIndex uint64 `gorm:"column:block_index;primaryKey;index:idx_block_number,priority:2,sort:desc"`
 	// Removed is true if this log was reverted due to a chain re-organization

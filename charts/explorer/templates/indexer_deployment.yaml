@@ -53,10 +53,6 @@ spec:
             - backfill
             - '--address=clickhouse://default:clickhouse@{{ .Release.Namespace }}-clickhouse:9000'
             - '--config=/config/config.yaml'
-          ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- if .Values.indexer.env }}

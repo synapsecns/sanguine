@@ -16,12 +16,13 @@ import (
 // TestFilterLogsMaxAttempts ensures after the maximum number of attempts, an error is returned.
 func (b BackfillSuite) TestFilterLogsMaxAttempts() {
 	b.T().Skip("flake")
-	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(1)))
+	chainID := big.NewInt(int64(1))
+	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), chainID)
 	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress())
 	Nil(b.T(), err)
 	mockFilterer := new(mocks.EVMClient)
 	contractAddress := etherMocks.MockAddress()
-	rangeFilter := backfill.NewRangeFilter(contractAddress, simulatedClient, big.NewInt(1), big.NewInt(10), 1, true, 1)
+	rangeFilter := backfill.NewRangeFilter(contractAddress, simulatedClient, big.NewInt(1), big.NewInt(10), 1, true, 1, uint32(chainID.Uint64()))
 
 	// Use the range filterer created above to create a mock log filter.
 	mockFilterer.

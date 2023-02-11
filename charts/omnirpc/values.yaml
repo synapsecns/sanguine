@@ -14,7 +14,7 @@ image:
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-args: ["chainlist-server", "--port=80"]
+args: ["chainlist-server", "--port=5080"]
 
 serviceAccount:
   # Specifies whether a service account should be created
