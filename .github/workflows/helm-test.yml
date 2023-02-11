@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # only do on agents for now. Anything that relies on solidity in a package should do  this
+        # only do on agents for now. Anything that relies on solidity in a package should do this
         chart: [ 'agents_embedded', 'agents_remote', 'scribe', 'explorer', 'omnirpc' ]
     steps:
       - name: Checkout
