@@ -1,5 +1,6 @@
 // Package gcpsigner utilizes the Key Management Service (KMS) from the Google
 // Cloud Platform (GCP).
+// this package is loosely based on https://pkg.go.dev/github.com/pascaldekloe/etherkeyms
 package gcpsigner
 
 import (

@@ -8,17 +8,19 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[FileType-0]
-	_ = x[KMSType-1]
+	_ = x[FileType-1]
+	_ = x[AWSType-2]
+	_ = x[GCPType-3]
 }
 
-const _SignerType_name = "FileKMS"
+const _SignerType_name = "FileAWSGCP"
 
-var _SignerType_index = [...]uint8{0, 4, 7}
+var _SignerType_index = [...]uint8{0, 4, 7, 10}
 
 func (i SignerType) String() string {
+	i -= 1
 	if i < 0 || i >= SignerType(len(_SignerType_index)-1) {
-		return "SignerType(" + strconv.FormatInt(int64(i), 10) + ")"
+		return "SignerType(" + strconv.FormatInt(int64(i+1), 10) + ")"
 	}
 	return _SignerType_name[_SignerType_index[i]:_SignerType_index[i+1]]
 }
