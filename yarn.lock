@@ -3232,6 +3232,13 @@
   dependencies:
     antlr4ts "^0.5.0-alpha.4"
 
+"@solidity-parser/parser@^0.14.5":
+  version "0.14.5"
+  resolved "https://registry.yarnpkg.com/@solidity-parser/parser/-/parser-0.14.5.tgz#87bc3cc7b068e08195c219c91cd8ddff5ef1a804"
+  integrity sha512-6dKnHZn7fg/iQATVEzqyUOyEidbn05q7YA2mQ9hC0MMXhhV3/JrsxmFSYZAcr7j1yUP700LLhTruvJ3MiQmjJg==
+  dependencies:
+    antlr4ts "^0.5.0-alpha.4"
+
 "@surma/rollup-plugin-off-main-thread@^2.2.3":
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/@surma/rollup-plugin-off-main-thread/-/rollup-plugin-off-main-thread-2.2.3.tgz#ee34985952ca21558ab0d952f00298ad2190c053"
@@ -14298,12 +14305,12 @@ solhint-plugin-prettier@0.0.5:
   dependencies:
     prettier-linter-helpers "^1.0.0"
 
-solhint@3.3.7:
-  version "3.3.7"
-  resolved "https://registry.yarnpkg.com/solhint/-/solhint-3.3.7.tgz#b5da4fedf7a0fee954cb613b6c55a5a2b0063aa7"
-  integrity sha512-NjjjVmXI3ehKkb3aNtRJWw55SUVJ8HMKKodwe0HnejA+k0d2kmhw7jvpa+MCTbcEgt8IWSwx0Hu6aCo/iYOZzQ==
+solhint@3.3.8:
+  version "3.3.8"
+  resolved "https://registry.yarnpkg.com/solhint/-/solhint-3.3.8.tgz#b1773c881cfaf0b5008c78ad658a69603d3fa051"
+  integrity sha512-TkYyJ6uUJCaiqRKuhHhFuoAoyco9Ia+RDKhl3usjG/rkaNk8/LdLRla2Xln7MVdBTaPKNAU8ezTRSit50Yy4qw==
   dependencies:
-    "@solidity-parser/parser" "^0.14.1"
+    "@solidity-parser/parser" "^0.14.5"
     ajv "^6.6.1"
     antlr4 "4.7.1"
     ast-parents "0.0.1"
