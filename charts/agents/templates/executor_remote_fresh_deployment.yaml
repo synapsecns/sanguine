@@ -1,4 +1,5 @@
-{{- if and .Values.executor_remote_fresh.enabled ( eq .Values.executor.type "remote-fresh" ) -}}
+{{- with .Values.executor_remote_fresh }}
+{{- if and .enabled ( eq $.Values.executor.type "remote-fresh" ) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,7 +13,7 @@ spec:
       {{- include "agents.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.executor_remote_fresh.podAnnotations }}
+      {{- with .podAnnotations }}
       annotations:
         checksum/config: {{ include (print $.Chart.Name "/templates/" $.Chart.Name "-configmap.yaml") . | sha256sum }}
         {{- toYaml . | nindent 8 }}
@@ -20,33 +21,33 @@ spec:
       labels:
         {{- include "agents.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- with $.Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "agents.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.executor_remote_fresh.podSecurityContext | nindent 8 }}
-    {{- if .Values.executor_remote_fresh_files }}
+        {{- toYaml .podSecurityContext | nindent 8 }}
+    {{- if $.Values.executor_remote_fresh_files }}
       initContainers:
-        - name: copy-{{ .Release.Name }}-config
+        - name: copy-{{ $.Release.Name }}-config
           image: busybox
           command: [ 'sh', '-c', 'cp -v /configmap/* /config/' ]
           volumeMounts:
             - name: configmap
               mountPath: /configmap
-            - name: {{ .Release.Name }}-config
+            - name: {{ $.Release.Name }}-config
               mountPath: /config
-        {{- if .Values.executor_remote_fresh.extraInitContainers }}
-        {{- toYaml .Values.executor_remote_fresh.extraInitContainers | nindent 8 }}
+        {{- if .extraInitContainers }}
+        {{- toYaml .extraInitContainers | nindent 8 }}
         {{- end }}
     {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ $.Chart.Name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
           args:
             - "executor-run"
             - "--config=/config/config.yaml"
@@ -55,19 +56,19 @@ spec:
             - "--db=mysql"
             - "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents"
             - "--scribe-port=80"
-            - "--scribe-url=executor-scribe.{{ .Release.Namespace }}"
+            - "--scribe-url=executor-scribe.{{ $.Release.Namespace }}"
           ports:
             - name: http
               containerPort: 5080
               protocol: TCP
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.executor_remote_fresh.env }}
+            {{- toYaml $.Values.resources | nindent 12 }}
+          {{- if .env }}
           env:
-            {{- toYaml .Values.executor_remote_fresh.env | nindent 12 }}
+            {{- toYaml .env | nindent 12 }}
           {{- end }}
           livenessProbe:
-            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            initialDelaySeconds: {{ $.Values.initialDelaySeconds }}
             failureThreshold: 5
             timeoutSeconds: 30
             httpGet:
@@ -75,37 +76,38 @@ spec:
               port: http
           readinessProbe:
             failureThreshold: 5
-            initialDelaySeconds: {{ .Values.initialDelaySeconds }}
+            initialDelaySeconds: {{ $.Values.initialDelaySeconds }}
             timeoutSeconds: 30
             httpGet:
               path: /health-check
               port: http
-        {{- if .Values.executor_remote_fresh_files }}
+        {{- if $.Values.executor_remote_fresh_files }}
           volumeMounts:
             - name: configmap
               mountPath: /config
         {{- end }}
-        {{- if .Values.executor_remote_fresh.extraContainers }}
-        {{- toYaml .Values.executor_remote_fresh.extraContainers | nindent 8 }}
+        {{- if .extraContainers }}
+        {{- toYaml .extraContainers | nindent 8 }}
         {{- end }}
-      {{- with .Values.executor_remote_fresh.nodeSelector }}
+      {{- with .nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.executor_remote_fresh.affinity }}
+      {{- with .affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.executor_remote_fresh.tolerations }}
+      {{- with .tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-        {{- if .Values.executor_remote_fresh_files }}
-        - name: {{ .Release.Name }}-config
+        {{- if $.Values.executor_remote_fresh_files }}
+        - name: {{ $.Release.Name }}-config
           emptyDir: { }
         - name: configmap
           configMap:
-            name: {{ include "agents.fullname" . }}-{{ .Release.Name }}
+            name: {{ include "agents.fullname" . }}-{{ $.Release.Name }}
         {{- end }}
-{{- end}}
+{{- end }}
+{{- end }}
