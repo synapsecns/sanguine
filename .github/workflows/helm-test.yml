@@ -57,7 +57,7 @@ jobs:
 
       - name: Run chart-testing (install)
         working-directory: charts/
-        if: ${{ !contains(matrix.chart, 'agents') }}
+        if: ${{ !contains(matrix.chart, 'agents_embedded') && !contains(matrix.chart, 'agents_remote') }}
         run: ct install --debug --chart-dirs "${{ matrix.chart }}" --charts "${{ matrix.chart }}"
 
       - name: Run chart-testing (install agents embedded)
