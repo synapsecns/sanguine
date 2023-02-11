@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
-        chart: [ 'agents', 'scribe', 'explorer', 'omnirpc' ]
+        chart: [ 'agents', 'agents_embedded', 'agents_remote', 'scribe', 'explorer', 'omnirpc' ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -62,10 +62,10 @@ jobs:
 
       - name: Run chart-testing (install agents embedded)
         working-directory: charts/
-        if: ${{ contains(matrix.chart, 'agents') }}
+        if: ${{ contains(matrix.chart, 'agents_embedded') }}
         run: ct install --debug --helm-extra-set-args "--set=executor.type=embedded --set=scribe.enabled=true" --chart-dirs "${{ matrix.chart }}" --charts "${{ matrix.chart }}"
 
       - name: Run chart-testing (install agents remote)
         working-directory: charts/
-        if: ${{ contains(matrix.chart, 'agents') }}
+        if: ${{ contains(matrix.chart, 'agents_remote') }}
         run: ct install --debug --helm-extra-set-args "--set=executor.type=remote-fresh" --chart-dirs "${{ matrix.chart }}" --charts "${{ matrix.chart }}"
