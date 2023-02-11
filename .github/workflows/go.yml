@@ -158,7 +158,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV }}
           files: profile.cov
-          flags: ${{ steps.coverage.output.flag }}
+          flags: ${{ steps.coverage.outputs.flag }}
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
 
@@ -268,13 +268,25 @@ jobs:
           GOMEMLIMIT: 6GiB
           GOGC: 2000
 
+  issue_number:
+    # this is needed to prevent us from hitting the github api rate limit
+    name: Get The Issue Number
+    needs: changes
+    runs-on: ubuntu-latest
+    outputs:
+      issue_number: ${{ steps.find_pr.outputs.pr }}
+    steps:
+      - uses: jwalton/gh-find-current-pr@v1
+        id: find_pr
+        if: ${{ github.event_name != 'pull_request' }}
+
 
   # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
   # TODO: consolidate w/ go change check. This will run twice on agents
   check-generation-solidity:
     name: Go Generate (Solidity Only)
     runs-on: ubuntu-latest
-    needs: changes
+    needs: [changes, issue_number]
     if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.solidity_changes == 'true' }}
     strategy:
       matrix:
@@ -369,9 +381,6 @@ jobs:
           files: |
             *.go
 
-      - uses: jwalton/gh-find-current-pr@v1
-        id: find_pr
-
         # Fail if files need regeneration
       - name: Add Label
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -379,7 +388,7 @@ jobs:
         with:
           add-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ steps.find_pr.outputs.pr }}
+          issue-number: ${{ needs.issue_number.outputs.issue_number }}
 
       - name: Remove Label
         if: steps.verify-changed-files.outputs.files_changed != 'true'
@@ -387,12 +396,12 @@ jobs:
         with:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ steps.find_pr.outputs.pr }}
+          issue-number: ${{ needs.issue_number.outputs.issue_number }}
 
   check-generation:
     name: Go Generate (Module Changes)
     runs-on: ubuntu-latest
-    needs: changes
+    needs: [changes, issue_number]
     if: ${{ github.event_name != 'pull_request' && needs.changes.outputs.package_count_deps > 0 }}
     strategy:
       matrix:
@@ -526,9 +535,6 @@ jobs:
           files: |
             *.go
 
-      - uses: jwalton/gh-find-current-pr@v1
-        id: find_pr
-
         # Fail if files need regeneration
       - name: Add Label
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -536,7 +542,7 @@ jobs:
         with:
           add-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ steps.find_pr.outputs.pr }}
+          issue-number: ${{ needs.issue_number.outputs.issue_number }}
 
       - name: Remove Label
         if: steps.verify-changed-files.outputs.files_changed != 'true'
@@ -544,4 +550,4 @@ jobs:
         with:
           remove-labels: 'needs-go-generate-${{matrix.package}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ steps.find_pr.outputs.pr }}
+          issue-number: ${{ needs.issue_number.outputs.issue_number }}

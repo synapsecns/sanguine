@@ -1,4 +1,4 @@
-package kmssigner
+package awssigner
 
 import (
 	"context"

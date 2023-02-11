@@ -83,7 +83,7 @@ func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, 
 }
 
 func (a destinationContract) transactOptsSetup(ctx context.Context, signer signer.Signer) (*bind.TransactOpts, error) {
-	transactor, err := signer.GetTransactor(a.client.GetBigChainID())
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
 		return nil, fmt.Errorf("could not sign tx: %w", err)
 	}

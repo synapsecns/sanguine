@@ -46,7 +46,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
 
-	executorSigner, err := agentsConfig.SignerFromConfig(config.UnbondedSigner)
+	executorSigner, err := agentsConfig.SignerFromConfig(ctx, config.UnbondedSigner)
 	if err != nil {
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
