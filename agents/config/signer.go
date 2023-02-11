@@ -115,29 +115,33 @@ func SignerFromConfig(ctx context.Context, config SignerConfig) (signer.Signer, 
 			return nil, fmt.Errorf("could not decode gcp config: %w", err)
 		}
 
-		var options []option.ClientOption
-		if gcpConfig.CredentialFile != "" {
-			options = append(options, option.WithCredentialsFile(gcpConfig.CredentialFile))
-		}
-
-		if gcpConfig.Endpoint != "" {
-			options = append(options, option.WithEndpoint(gcpConfig.Endpoint))
-		}
-
-		keyClient, err := kms.NewKeyManagementClient(ctx, options...)
-		if err != nil {
-			return nil, fmt.Errorf("could not create key client: %w", err)
-		}
-
-		res, err := gcpsigner.NewManagedKey(ctx, keyClient, gcpConfig.KeyName)
-		if err != nil {
-			return nil, fmt.Errorf("could not create managed key: %w", err)
-		}
-
-		return res, nil
+		return makeGCPSigner(ctx, gcpConfig)
 	default:
 		return nil, fmt.Errorf("could not create signer: %w", ErrUnsupportedSignerType)
 	}
+}
+
+func makeGCPSigner(ctx context.Context, gcpConfig GCPConfig) (signer.Signer, error) {
+	var options []option.ClientOption
+	if gcpConfig.CredentialFile != "" {
+		options = append(options, option.WithCredentialsFile(gcpConfig.CredentialFile))
+	}
+
+	if gcpConfig.Endpoint != "" {
+		options = append(options, option.WithEndpoint(gcpConfig.Endpoint))
+	}
+
+	keyClient, err := kms.NewKeyManagementClient(ctx, options...)
+	if err != nil {
+		return nil, fmt.Errorf("could not create key client: %w", err)
+	}
+
+	res, err := gcpsigner.NewManagedKey(ctx, keyClient, gcpConfig.KeyName)
+	if err != nil {
+		return nil, fmt.Errorf("could not create managed key: %w", err)
+	}
+
+	return res, nil
 }
 
 // GCPConfig is the config for a GCP signer.
