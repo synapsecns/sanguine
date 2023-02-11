@@ -273,12 +273,14 @@ jobs:
     name: Get The Issue Number
     needs: changes
     runs-on: ubuntu-latest
+    # currently, this matches the logic in the go generate check. If we ever add more checks that run on all packages, we should
+    # change this to run on those pushes
+    if: ${{ github.event_name != 'pull_request' && (needs.changes.outputs.solidity_changes == 'true' || needs.changes.outputs.package_count_deps > 0 ) }}
     outputs:
       issue_number: ${{ steps.find_pr.outputs.pr }}
     steps:
       - uses: jwalton/gh-find-current-pr@v1
         id: find_pr
-        if: ${{ github.event_name != 'pull_request' }}
 
 
   # check if we need to rerun go generate as a result of solidity changes. Note, this will only run on solidity changes.
