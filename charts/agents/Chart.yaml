@@ -1,5 +1,5 @@
 apiVersion: v2
-name: scribe
+name: agents
 description: A Helm chart for Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.
@@ -15,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.2.1
+version: 0.1.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -32,3 +32,7 @@ dependencies:
     version: "0.2.0"
     repository: "file://../omnirpc/"
     condition: omnirpc.enabled
+  - name: scribe
+    version: "0.2.1"
+    repository: "file://../scribe/"
+    condition: scribe.enabled

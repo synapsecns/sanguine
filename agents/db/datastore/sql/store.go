@@ -3,6 +3,8 @@ package sql
 import (
 	"context"
 	"errors"
+	"fmt"
+	"gorm.io/gorm/schema"
 
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/mysql"
@@ -13,9 +15,15 @@ import (
 // NewStoreFromConfig creates a new datastore from a config file.
 //
 //nolint:wrapcheck
-func NewStoreFromConfig(ctx context.Context, dbType dbcommon.DBType, connString string) (db.SynapseDB, error) {
+func NewStoreFromConfig(ctx context.Context, dbType dbcommon.DBType, connString string, prefix string) (db.SynapseDB, error) {
 	switch dbType {
 	case dbcommon.Mysql:
+		if prefix != "" {
+			mysql.NamingStrategy = schema.NamingStrategy{
+				TablePrefix: fmt.Sprintf("%s_", prefix),
+			}
+		}
+
 		return mysql.NewMysqlStore(ctx, connString)
 	case dbcommon.Sqlite:
 		return sqlite.NewSqliteStore(ctx, connString)
