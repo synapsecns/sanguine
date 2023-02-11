@@ -102,6 +102,13 @@ func TestEncodeAttestationParity(t *testing.T) {
 	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(attestKey.GetRawKey(), root))
 	Nil(t, err)
 	Equal(t, contractData, goFormattedData)
+
+	attestationFromBytes, err := types.DecodeAttestation(goFormattedData)
+	Nil(t, err)
+	Equal(t, origin, attestationFromBytes.Origin())
+	Equal(t, destination, attestationFromBytes.Destination())
+	Equal(t, nonce, attestationFromBytes.Nonce())
+	Equal(t, root, common.Hash(attestationFromBytes.Root()))
 }
 
 func TestEncodeSignedAttestationParity(t *testing.T) {

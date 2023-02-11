@@ -19,46 +19,14 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	BridgeTransactions       []*model.BridgeTransaction      "json:\"bridgeTransactions\" graphql:\"bridgeTransactions\""
-	LatestBridgeTransactions []*model.BridgeTransaction      "json:\"latestBridgeTransactions\" graphql:\"latestBridgeTransactions\""
-	BridgeAmountStatistic    *model.ValueResult              "json:\"bridgeAmountStatistic\" graphql:\"bridgeAmountStatistic\""
-	CountByChainID           []*model.TransactionCountResult "json:\"countByChainId\" graphql:\"countByChainId\""
-	CountByTokenAddress      []*model.TokenCountResult       "json:\"countByTokenAddress\" graphql:\"countByTokenAddress\""
-	AddressRanking           []*model.AddressRanking         "json:\"addressRanking\" graphql:\"addressRanking\""
-	HistoricalStatistics     *model.HistoricalResult         "json:\"historicalStatistics\" graphql:\"historicalStatistics\""
+	BridgeTransactions    []*model.BridgeTransaction      "json:\"bridgeTransactions\" graphql:\"bridgeTransactions\""
+	BridgeAmountStatistic *model.ValueResult              "json:\"bridgeAmountStatistic\" graphql:\"bridgeAmountStatistic\""
+	CountByChainID        []*model.TransactionCountResult "json:\"countByChainId\" graphql:\"countByChainId\""
+	CountByTokenAddress   []*model.TokenCountResult       "json:\"countByTokenAddress\" graphql:\"countByTokenAddress\""
+	AddressRanking        []*model.AddressRanking         "json:\"addressRanking\" graphql:\"addressRanking\""
+	HistoricalStatistics  *model.HistoricalResult         "json:\"historicalStatistics\" graphql:\"historicalStatistics\""
 }
 type GetBridgeTransactions struct {
-	Response []*struct {
-		FromInfo *struct {
-			ChainID        *int     "json:\"chainId\" graphql:\"chainId\""
-			Address        *string  "json:\"address\" graphql:\"address\""
-			TxnHash        *string  "json:\"txnHash\" graphql:\"txnHash\""
-			Value          *string  "json:\"value\" graphql:\"value\""
-			FormattedValue *float64 "json:\"formattedValue\" graphql:\"formattedValue\""
-			USDValue       *float64 "json:\"USDValue\" graphql:\"USDValue\""
-			TokenAddress   *string  "json:\"tokenAddress\" graphql:\"tokenAddress\""
-			TokenSymbol    *string  "json:\"tokenSymbol\" graphql:\"tokenSymbol\""
-			BlockNumber    *int     "json:\"blockNumber\" graphql:\"blockNumber\""
-			Time           *int     "json:\"time\" graphql:\"time\""
-		} "json:\"fromInfo\" graphql:\"fromInfo\""
-		ToInfo *struct {
-			ChainID        *int     "json:\"chainId\" graphql:\"chainId\""
-			Address        *string  "json:\"address\" graphql:\"address\""
-			TxnHash        *string  "json:\"txnHash\" graphql:\"txnHash\""
-			Value          *string  "json:\"value\" graphql:\"value\""
-			FormattedValue *float64 "json:\"formattedValue\" graphql:\"formattedValue\""
-			USDValue       *float64 "json:\"USDValue\" graphql:\"USDValue\""
-			TokenAddress   *string  "json:\"tokenAddress\" graphql:\"tokenAddress\""
-			TokenSymbol    *string  "json:\"tokenSymbol\" graphql:\"tokenSymbol\""
-			BlockNumber    *int     "json:\"blockNumber\" graphql:\"blockNumber\""
-			Time           *int     "json:\"time\" graphql:\"time\""
-		} "json:\"toInfo\" graphql:\"toInfo\""
-		Kappa       *string "json:\"kappa\" graphql:\"kappa\""
-		Pending     *bool   "json:\"pending\" graphql:\"pending\""
-		SwapSuccess *bool   "json:\"swapSuccess\" graphql:\"swapSuccess\""
-	} "json:\"response\" graphql:\"response\""
-}
-type GetLatestBridgeTransactions struct {
 	Response []*struct {
 		FromInfo *struct {
 			ChainID        *int     "json:\"chainId\" graphql:\"chainId\""
@@ -170,53 +138,6 @@ func (c *Client) GetBridgeTransactions(ctx context.Context, chainID *int, addres
 
 	var res GetBridgeTransactions
 	if err := c.Client.Post(ctx, "GetBridgeTransactions", GetBridgeTransactionsDocument, &res, vars, httpRequestOptions...); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-const GetLatestBridgeTransactionsDocument = `query GetLatestBridgeTransactions ($includePending: Boolean, $page: Int) {
-	response: latestBridgeTransactions(includePending: $includePending, page: $page) {
-		fromInfo {
-			chainId
-			address
-			txnHash
-			value
-			formattedValue
-			USDValue
-			tokenAddress
-			tokenSymbol
-			blockNumber
-			time
-		}
-		toInfo {
-			chainId
-			address
-			txnHash
-			value
-			formattedValue
-			USDValue
-			tokenAddress
-			tokenSymbol
-			blockNumber
-			time
-		}
-		kappa
-		pending
-		swapSuccess
-	}
-}
-`
-
-func (c *Client) GetLatestBridgeTransactions(ctx context.Context, includePending *bool, page *int, httpRequestOptions ...client.HTTPRequestOption) (*GetLatestBridgeTransactions, error) {
-	vars := map[string]interface{}{
-		"includePending": includePending,
-		"page":           page,
-	}
-
-	var res GetLatestBridgeTransactions
-	if err := c.Client.Post(ctx, "GetLatestBridgeTransactions", GetLatestBridgeTransactionsDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

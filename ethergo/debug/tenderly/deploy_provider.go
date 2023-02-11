@@ -2,10 +2,11 @@ package tenderly
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/truffle"
-	"os"
 )
 
 // LocalTXDeploymentProviderName is the custom synapse deployment provider.
@@ -34,7 +35,8 @@ func (p *LocalTXDeploymentProvider) GetConfig(configName string, configDir strin
 }
 
 // MustGetConfig does nothing but conform to the interface.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (p *LocalTXDeploymentProvider) MustGetConfig() (*providers.Config, error) {
 	return p.DeploymentProvider.MustGetConfig()
 }

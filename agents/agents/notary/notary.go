@@ -28,6 +28,8 @@ type Notary struct {
 }
 
 // NewNotary creates a new notary.
+//
+//nolint:cyclop
 func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err error) {
 	if cfg.RefreshIntervalInSeconds == int64(0) {
 		return Notary{}, fmt.Errorf("cfg.refreshInterval cannot be 0")
@@ -40,12 +42,12 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
 	}
 
-	notary.bondedSigner, err = config.SignerFromConfig(cfg.BondedSigner)
+	notary.bondedSigner, err = config.SignerFromConfig(ctx, cfg.BondedSigner)
 	if err != nil {
 		return Notary{}, fmt.Errorf("error with bondedSigner, could not create notary: %w", err)
 	}
 
-	notary.unbondedSigner, err = config.SignerFromConfig(cfg.UnbondedSigner)
+	notary.unbondedSigner, err = config.SignerFromConfig(ctx, cfg.UnbondedSigner)
 	if err != nil {
 		return Notary{}, fmt.Errorf("error with unbondedSigner, could not create notary: %w", err)
 	}
@@ -55,7 +57,7 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 		return Notary{}, fmt.Errorf("could not get legacyDB type: %w", err)
 	}
 
-	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString)
+	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString, cfg.DBPrefix)
 	if err != nil {
 		return Notary{}, fmt.Errorf("could not connect to legacyDB: %w", err)
 	}
@@ -67,6 +69,16 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 	attestationClient, err := evm.NewEVM(ctx, "attestation_client", cfg.AttestationDomain)
 	if err != nil {
 		return Notary{}, fmt.Errorf("error with attestationClient, could not create notary for: %w", err)
+	}
+
+	err = attestationClient.AttestationCollector().PrimeNonce(ctx, notary.unbondedSigner)
+	if err != nil {
+		return Notary{}, fmt.Errorf("error trying to PrimeNonce for attestationClient, could not create notary for: %w", err)
+	}
+
+	err = destinationClient.Destination().PrimeNonce(ctx, notary.unbondedSigner)
+	if err != nil {
+		return Notary{}, fmt.Errorf("error trying to PrimeNonce for destinationClient, could not create notary for: %w", err)
 	}
 
 	for name, originDomain := range cfg.OriginDomains {
@@ -84,7 +96,7 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 	return notary, nil
 }
 
-// Start starts the notary.{.
+// Start starts the notary.
 func (u Notary) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -122,8 +134,10 @@ func (u Notary) Start(ctx context.Context) error {
 
 	err := g.Wait()
 	if err != nil {
+		logger.Errorf("Notary exiting with error: %v", err)
 		return fmt.Errorf("could not start the notary: %w", err)
 	}
 
+	logger.Info("Notary exiting without error")
 	return nil
 }

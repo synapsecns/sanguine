@@ -7,7 +7,8 @@ import (
 )
 
 // AttestationCollectorRef is a bound attestatoin collector contract that returns the address of the attestation collector contract.
-// nolint: golint
+//
+//nolint:golint
 type AttestationCollectorRef struct {
 	*AttestationCollector
 	address common.Address

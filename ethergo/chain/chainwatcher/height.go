@@ -3,9 +3,10 @@ package chainwatcher
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/core/prom"
-	"time"
 )
 
 // BlockSubscriberClient defines a method for getting a subscription to the chain-tip height on geth based rpc clients.
@@ -104,7 +105,8 @@ func (b *BlockBroadcaster) UpdateHeight(newHeight uint64) {
 var PollInterval = time.Second * 5
 
 // Subscribe subscribes to new block heights. The first height (current height) is sent immediately.
-// nolint: cyclop
+//
+//nolint:cyclop
 func (b *blockHeightWatcherImpl) startBlockSubscriber() (<-chan uint64, error) {
 	acquired := b.subscriberMux.TryAcquire(1)
 	if !acquired {

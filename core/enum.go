@@ -29,11 +29,11 @@ const EnumDataType = "integer"
 // EnumValue converts the enum to a value.
 func EnumValue(enum EnumInter) (driver.Value, error) {
 	converter := driver.NotNull{Converter: driver.DefaultParameterConverter}
-	driver, err := converter.ConvertValue(enum.Int())
+	drive, err := converter.ConvertValue(enum.Int())
 	if err != nil {
 		return nil, fmt.Errorf("could not convert enum value: %w", err)
 	}
-	return driver, nil
+	return drive, nil
 }
 
 // EnumScan converts the enum to a value.

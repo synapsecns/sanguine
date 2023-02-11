@@ -43,7 +43,7 @@ func (g *ClientSuite) TestEmbeddedScribe() {
 	}()
 
 	g.Eventually(func() bool {
-		conn, err := grpc.DialContext(g.GetSuiteContext(), fmt.Sprintf("%s:%d", embeddedClient.URL, embeddedClient.GRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err := grpc.DialContext(g.GetSuiteContext(), fmt.Sprintf("%s:%d", embeddedClient.URL, embeddedClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return false
 		}

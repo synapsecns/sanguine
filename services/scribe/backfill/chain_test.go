@@ -60,7 +60,7 @@ func (b BackfillSuite) TestChainBackfill() {
 		Contracts: contractConfigs,
 	}
 	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
-	chainBackfiller, err := backfill.NewChainBackfiller(chainID, b.testDB, simulatedChainArr, chainConfig)
+	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, simulatedChainArr, chainConfig, 1)
 	Nil(b.T(), err)
 	b.EmitEventsForAChain(contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)
 }
@@ -84,7 +84,7 @@ func (b BackfillSuite) EmitEventsForAChain(contracts []contracts.DeployedContrac
 	}
 
 	if backfill {
-		err := chainBackfiller.Backfill(b.GetTestContext(), nil)
+		err := chainBackfiller.Backfill(b.GetTestContext(), nil, false)
 		Nil(b.T(), err)
 
 		for _, contract := range contracts {

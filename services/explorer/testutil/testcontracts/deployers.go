@@ -3,6 +3,7 @@ package testcontracts
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -95,7 +96,8 @@ func (t TestSwapFlashLoanDeployer) Deploy(ctx context.Context) (contracts.Deploy
 }
 
 // Deploy deploys bridge config v3
-// nolint: dupl
+//
+//nolint:dupl
 func (n BridgeConfigV3Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		deployAddress, tx, handler, err := bridgeconfig.DeployBridgeConfigV3(transactOps, backend)

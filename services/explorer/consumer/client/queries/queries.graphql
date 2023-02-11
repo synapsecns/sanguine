@@ -13,6 +13,25 @@ query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page
   }
 }
 
+query GetTransactions ($chain_id: Int!, $page: Int!, $tx_hash: String) {
+  response: transactions (chain_id: $chain_id, page: $page, tx_hash: $tx_hash) {
+    chain_id
+    tx_hash
+    protected
+    type
+    data
+    gas
+    gas_price
+    gas_tip_cap
+    gas_fee_cap
+    value
+    nonce
+    to
+    timestamp
+    sender
+  }
+}
+
 query GetBlockTime ($chain_id: Int!, $block_number: Int!) {
   response: blockTime (chain_id: $chain_id, block_number: $block_number)
 }

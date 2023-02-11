@@ -1,0 +1,41 @@
+# This is a sample config file generated and dumped from notary_test.go.
+# This can be used as a reference.
+origindomains:
+  origin_client:
+    domainid: 4
+    type: EVM
+    requiredconfirmations: 0
+    originaddress: 0xfa576010a8b162222BB184A4653a8b9Ac36169ec
+    attestationcollectoraddress: ''
+    destinationaddress: ''
+    rpcurl: http://127.0.0.1:51145
+    startheight: 0
+attestationdomain:
+  domainid: 137
+  type: EVM
+  requiredconfirmations: 0
+  originaddress: ''
+  attestationcollectoraddress: 0x24f42bD0AF9eaC8E6BA714e29C7F31d2872Bbf54
+  destinationaddress: ''
+  rpcurl: http://127.0.0.1:51159
+  startheight: 0
+destinationdomain:
+  domainid: 97
+  type: EVM
+  requiredconfirmations: 0
+  originaddress: ''
+  attestationcollectoraddress: ''
+  destinationaddress: 0x0946Ef05Feaff6ec2Ca1cb5d3427fFAa2535c6d3
+  rpcurl: http://127.0.0.1:51140
+  startheight: 0
+unbondedsigner:
+  type: File
+  file: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/file833945998
+bondedsigner:
+  type: File
+  file: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/file994111531
+database:
+  type: sqlite
+  dbpath: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/dir970593173
+  connstring: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/dir731498480
+refreshintervalinseconds: 1

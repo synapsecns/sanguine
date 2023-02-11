@@ -58,7 +58,11 @@ func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestat
 		return nil, false
 	}
 
-	attestation := types.NewAttestationFromBytes(attestationCollectorAttestation.Attestation)
+	attestation, err := types.DecodeAttestation(attestationCollectorAttestation.Attestation)
+	if err != nil {
+		return nil, false
+	}
+
 	return attestation, true
 }
 
