@@ -182,7 +182,7 @@ executor_remote_existing:
 
 executor_remote_fresh:
   enabled: true
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=80", "--scribe-url=executor-scribe.${POD_NAMESPACE}"]
+  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=80", "--scribe-url=executor-scribe.$POD_NAMESPACE"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
