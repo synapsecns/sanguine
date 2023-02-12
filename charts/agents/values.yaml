@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "5e991dfddd7bdf190519c2cd00126bcbc3512fe4"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -93,7 +93,7 @@ notary:
     - name: create-database
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -130,7 +130,7 @@ guard:
     - name: create-database
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -144,7 +144,6 @@ executor:
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
-  enabled: false
   args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
   podAnnotations: {}
   nodeSelector: {}
@@ -181,7 +180,6 @@ executor_remote_existing:
               fieldPath: metadata.namespace
 
 executor_remote_fresh:
-  enabled: true
   args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=80", "--scribe-url=executor-scribe.$(POD_NAMESPACE)"]
   podAnnotations: {}
   nodeSelector: {}
@@ -234,7 +232,7 @@ executor_remote_fresh:
     - name: create-database-agents
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -244,7 +242,6 @@ executor_remote_fresh:
               fieldPath: metadata.namespace
 
 executor_embedded:
-  enabled: true
   args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-db=mysql", "--scribe-path=root:MysqlPassword@tcp(agents-mysql:3306)/scribe"]
   podAnnotations: {}
   nodeSelector: {}
@@ -282,7 +279,7 @@ executor_embedded:
     - name: create-database-agents
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do echo waiting for db; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -293,7 +290,7 @@ executor_embedded:
     - name: create-database-scribe
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do echo waiting for db; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -329,7 +326,7 @@ omnirpc:
   replicaCount: 3
 
 scribe:
-  enabled: false
+  enabled: true
   fullnameOverride: executor-scribe
 
 notary_files:
