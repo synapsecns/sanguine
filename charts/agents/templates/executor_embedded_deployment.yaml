@@ -1,5 +1,5 @@
 {{- with .Values.executor_embedded }}
-{{- if and .enabled ( eq $.Values.executor.type "embedded" ) -}}
+{{- if eq $.Values.executor.type "embedded" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

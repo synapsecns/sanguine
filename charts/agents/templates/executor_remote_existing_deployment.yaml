@@ -1,5 +1,5 @@
 {{- with .Values.executor_remote_existing }}
-{{- if and .enabled ( eq $.Values.executor.type "remote-existing" ) -}}
+{{- if eq $.Values.executor.type "remote-existing" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
