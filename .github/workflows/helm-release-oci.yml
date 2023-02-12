@@ -4,7 +4,7 @@ name: Release Charts (OCI)
 on:
   push:
     branches:
-      - feat/oci-workaround
+      - temp/publish_chart
 
 jobs:
   release-pages:
