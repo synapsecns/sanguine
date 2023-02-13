@@ -8,7 +8,7 @@ import { formatUSD } from '@utils/formatUSD'
 
 
 
-export default function HolisticStats({platform: parentPlatform, setPlatform:  parentSetPlatform, loading, chainID}) {
+export default function HolisticStats({platform: parentPlatform, setPlatform:  parentSetPlatform, loading, chainID, tokenAddress}) {
   const [volume, setVolume] = useState("--")
   const [revenue, setRevenue] = useState("--")
   const [addresses, setAddresses] = useState("--")
