@@ -5,6 +5,7 @@ env:
   VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
   VERCEL_PROJECT_ID: '${{ secrets.VERCEL_PROJECT_ID }}'
   WORKING_DIRECTORY: 'packages/explorer-ui'
+  NODE_ENV: "production"
 on:
   push:
     branches-ignore:
