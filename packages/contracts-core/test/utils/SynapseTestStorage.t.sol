@@ -13,7 +13,7 @@ import "./SynapseEvents.t.sol";
 import "./proof/HistoricalProofGenerator.t.sol";
 
 contract SynapseTestStorage is SynapseConstants, SynapseEvents {
-    struct Chain {
+    struct TestDeployments {
         DestinationHarness destination;
         OriginHarness origin;
         BondingManager bondingManager;
@@ -33,7 +33,7 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // domain => chain contracts
-    mapping(uint32 => Chain) internal chains;
+    mapping(uint32 => TestDeployments) internal chains;
     // All test domains
     uint32[] internal domains;
     // Names of test domains

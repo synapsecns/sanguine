@@ -2,11 +2,12 @@ package londinium
 
 import (
 	"context"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas/backend"
-	"math/big"
 )
 
 // wrappedOracleBackend is an oracle backend that wraps gasprice.OracleBackend.
@@ -21,13 +22,15 @@ func NewOracleBackendFromChain(unwrapped backend.OracleBackendChain) OracleBacke
 }
 
 // HeaderByNumber wraps oracle backend.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (w wrappedOracleBackend) HeaderByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Header, error) {
 	return w.chain.HeaderByNumber(ctx, big.NewInt(int64(number)))
 }
 
 // BlockByNumber wraps the oracle backend.
-// nolint: wrapcheck
+//
+//nolint:wrapcheck
 func (w wrappedOracleBackend) BlockByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Block, error) {
 	return w.chain.BlockByNumber(ctx, big.NewInt(int64(number)))
 }

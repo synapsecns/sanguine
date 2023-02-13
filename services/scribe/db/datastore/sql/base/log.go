@@ -56,14 +56,20 @@ func (s Store) StoreLogs(ctx context.Context, chainID uint32, logs ...types.Log)
 			Confirmed:       false,
 		})
 	}
-	dbTx := s.DB().WithContext(ctx).
+	dbTxPrefix := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
 				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: TxHashFieldName}, {Name: BlockIndexFieldName},
 			},
 			DoNothing: true,
-		}).
-		Create(&storeLogs)
+		})
+
+	var dbTx *gorm.DB
+	if s.db.Dialector.Name() == "sqlite" {
+		dbTx = dbTxPrefix.CreateInBatches(&storeLogs, 10)
+	} else {
+		dbTx = dbTxPrefix.Create(&storeLogs)
+	}
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store log: %w", dbTx.Error)
@@ -137,23 +143,29 @@ func (s Store) RetrieveLogsWithFilter(ctx context.Context, logFilter db.LogFilte
 		page = 1
 	}
 	dbLogs := []Log{}
-	query := logFilterToQuery(logFilter)
+	queryFilter := logFilterToQuery(logFilter)
+
+	// TODO DELETE
+	logger.Infof("RetrieveLogsWithFilter query: %v", queryFilter)
+
 	dbTx := s.DB().WithContext(ctx).
 		Model(&Log{}).
-		Where(&query).
+		Where(&queryFilter).
 		Order(fmt.Sprintf("%s desc, %s desc", BlockNumberFieldName, BlockIndexFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
 		Find(&dbLogs)
 
 	if dbTx.Error != nil {
+		logger.Infof("error while getting logs with queryFilter %v, err: %v", queryFilter, dbTx.Error)
+
 		if errors.Is(dbTx.Error, gorm.ErrRecordNotFound) {
 			return []*types.Log{}, fmt.Errorf("could not find logs with filter %v: %w", logFilter, db.ErrNotFound)
 		}
 		return []*types.Log{}, fmt.Errorf("could not retrieve logs: %w", dbTx.Error)
 	}
 	// TODO DELETE
-	logger.Infof("RetrieveLogsWithFilter query: %v, logs: %v", query, dbLogs)
+	logger.Infof("RetrieveLogsWithFilter query: %v, logs: %v", queryFilter, dbLogs)
 	return buildLogsFromDBLogs(dbLogs), nil
 }
 

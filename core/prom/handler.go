@@ -93,7 +93,7 @@ func (m *MetricHandler) Start(ctx context.Context) (err error) {
 	return err
 }
 
-// Handler gets the http handler for for the metrics handler. This can be used in combination with or instead of
+// Handler gets the http handler for the metrics handler. This can be used in combination with or instead of
 // the push gateway.
 func (m *MetricHandler) Handler() http.Handler {
 	return promhttp.HandlerFor(m.registry, promhttp.HandlerOpts{

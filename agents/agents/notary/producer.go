@@ -42,7 +42,7 @@ func (a AttestationProducer) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(a.interval): // TODO: a.interval
+		case <-time.After(a.interval):
 			err := a.update(ctx)
 			if err != nil {
 				return err
@@ -64,7 +64,8 @@ func (a AttestationProducer) FindLatestNonce(ctx context.Context) (nonce uint32,
 }
 
 // update runs the update producer to produce an update.
-// nolint: cyclop
+//
+//nolint:cyclop
 func (a AttestationProducer) update(ctx context.Context) error {
 	// TODO (joe): we want to go through and update attestations for each destination.
 	latestNonce, err := a.FindLatestNonce(ctx)

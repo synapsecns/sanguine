@@ -18,16 +18,7 @@ import (
 	"math/big"
 	"net/http"
 	"sync"
-	"testing"
 )
-
-func TestMakeRange(t *testing.T) {
-	testIntRange := backfill.MakeRange(0, 4)
-	Equal(t, []int{0, 1, 2, 3, 4}, testIntRange)
-
-	testUintRange := backfill.MakeRange(uint16(10), uint16(12))
-	Equal(t, testUintRange, []uint16{10, 11, 12})
-}
 
 // startOmnirpcServer boots an omnirpc server for an rpc address.
 // the url for this rpc is returned.
@@ -131,55 +122,8 @@ func (b *BackfillSuite) PopuluateWithLogs(ctx context.Context, backend backends.
 	}
 }
 
-func (b *BackfillSuite) TestBlockTimesInRange() {
-	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
-
-	// start an omnirpc proxy and run 10 test tranactions so we can batch call blocks
-	//  1-10
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	const desiredBlockHeight = 10
-
-	go func() {
-		defer wg.Done()
-		b.ReachBlockHeight(b.GetTestContext(), testBackend, desiredBlockHeight)
-	}()
-
-	var host string
-	go func() {
-		defer wg.Done()
-		host = b.startOmnirpcServer(b.GetTestContext(), testBackend)
-	}()
-
-	wg.Wait()
-
-	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host)
-	Nil(b.T(), err)
-
-	res, err := backfill.BlockTimesInRange(b.GetTestContext(), scribeBackend, 1, 10)
-	Nil(b.T(), err)
-
-	// use to make sure we don't double use values
-	intSet := sets.NewInt64()
-
-	itr := res.Iterator()
-
-	var lastValue uint64
-
-	for !itr.Done() {
-		index, value, _ := itr.Next()
-
-		Falsef(b.T(), intSet.Has(int64(index)), "%d appears at least twice", index)
-		intSet.Insert(int64(index))
-		GreaterOrEqual(b.T(), value, lastValue)
-		lastValue = value
-	}
-}
-
 func (b *BackfillSuite) TestLogsInRange() {
 	testBackend := geth.NewEmbeddedBackend(b.GetTestContext(), b.T())
-
 	// start an omnirpc proxy and run 10 test tranactions so we can batch call blocks
 	//  1-10
 	var wg sync.WaitGroup
@@ -203,7 +147,10 @@ func (b *BackfillSuite) TestLogsInRange() {
 	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host)
 	Nil(b.T(), err)
 
-	res, err := backfill.GetLogsInRange(b.GetTestContext(), scribeBackend, 1, 10, 1, commonAddress)
+	chainID, err := scribeBackend.ChainID(b.GetTestContext())
+	Nil(b.T(), err)
+
+	res, err := backfill.GetLogsInRange(b.GetTestContext(), scribeBackend, 1, 10, 1, commonAddress, chainID.Uint64())
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values

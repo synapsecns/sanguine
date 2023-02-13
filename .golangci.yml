@@ -1,15 +1,16 @@
 run:
-  concurrency: 1
   tests: true
   skip-dirs-use-default: false
   skip-dirs:
     - grpc/client/rest/*
+    - bundle/*
+    - generated/*
   timeout: 15m
   skip-files:
     - '.*\\.abigen\\.go$'
     - '.*\\.metadata\\.go$'
     - '.*\\.pb\\.go$'
-
+    - '.*_gen.go$'
 
 linters-settings:
   gofmt:

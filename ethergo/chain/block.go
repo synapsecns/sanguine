@@ -3,13 +3,14 @@ package chain
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/hashicorp/golang-lru"
-	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 	"math/big"
 	"time"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/core/types"
+	lru "github.com/hashicorp/golang-lru"
+	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 )
 
 // HeaderByTime gets the closest block to a given time.
@@ -18,7 +19,7 @@ import (
 // the user can optionally pass in a nullable startBlock *big.Int. If the block is left empty the search is performed from genesis
 // the worst case time complexity makes this a cheap operation on any chain, but if done frequently a startBlock should be passed in as a heuristic
 //
-// nolint: gocognit, cyclop // we ignore complexity warnings here: breaking this up makes it much harder to read.
+//nolint:gocognit,cyclop // we ignore complexity warnings here: breaking this up makes it much harder to read.
 func (b *baseChain) HeaderByTime(ctx context.Context, startHeight *big.Int, targetTime time.Time) (*types.Header, error) {
 	// grab the MeteredEVMClient explicitly to avoid ambiguous references
 	client, err := newHeaderCacheClient(b, 4)

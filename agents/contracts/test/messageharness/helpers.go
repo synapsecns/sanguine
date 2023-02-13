@@ -2,13 +2,15 @@ package messageharness
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
 // MessageHarnessRef is a message harness reference
-// nolint: golint
+//
+//nolint:golint
 type MessageHarnessRef struct {
 	*MessageHarness
 	address common.Address

@@ -1,7 +1,14 @@
 go 1.19
 
+// note: new paths should be added as flags to the .codecov.yaml
 use (
 	./agents
+	./contrib/git-changes-action
+	./contrib/release-copier-action
+	./contrib/terraform-provider-helmproxy
+	./contrib/terraform-provider-iap
+	./contrib/terraform-provider-kubeproxy
+	./contrib/tfcore
 	./core
 	./ethergo
 	./services/explorer

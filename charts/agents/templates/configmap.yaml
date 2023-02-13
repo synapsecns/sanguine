@@ -1,0 +1,69 @@
+{{- if .Values.notary_files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "agents.fullname" . }}-{{ .Release.Name }}
+  labels:
+    app: {{ include "agents.name" . }}
+    chart: "{{ .Chart.Name }}"
+    release: "{{ .Release.Name }}"
+    heritage: {{ .Release.Service }}
+data:
+{{ toYaml .Values.notary_files | indent 2}}
+{{- end }}
+
+{{- if .Values.guard_files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "agents.fullname" . }}-{{ .Release.Name }}
+  labels:
+    app: {{ include "agents.name" . }}
+    chart: "{{ .Chart.Name }}"
+    release: "{{ .Release.Name }}"
+    heritage: {{ .Release.Service }}
+data:
+{{ toYaml .Values.guard_files | indent 2}}
+{{- end }}
+
+{{- if .Values.executor_remote_existing_files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "agents.fullname" . }}-{{ .Release.Name }}
+  labels:
+    app: {{ include "agents.name" . }}
+    chart: "{{ .Chart.Name }}"
+    release: "{{ .Release.Name }}"
+    heritage: {{ .Release.Service }}
+data:
+{{ toYaml .Values.executor_remote_existing_files | indent 2}}
+{{- end }}
+
+{{- if .Values.executor_remote_fresh_files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "agents.fullname" . }}-{{ .Release.Name }}
+  labels:
+    app: {{ include "agents.name" . }}
+    chart: "{{ .Chart.Name }}"
+    release: "{{ .Release.Name }}"
+    heritage: {{ .Release.Service }}
+data:
+{{ toYaml .Values.executor_remote_fresh_files | indent 2}}
+{{- end }}
+
+{{- if .Values.executor_embedded_files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "agents.fullname" . }}-{{ .Release.Name }}
+  labels:
+    app: {{ include "agents.name" . }}
+    chart: "{{ .Chart.Name }}"
+    release: "{{ .Release.Name }}"
+    heritage: {{ .Release.Service }}
+data:
+{{ toYaml .Values.executor_embedded_files | indent 2}}
+{{- end }}

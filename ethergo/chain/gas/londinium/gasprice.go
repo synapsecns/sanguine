@@ -96,7 +96,8 @@ func NewOracle(backend OracleBackend, params Config) *Oracle {
 
 // SuggestPrice returns a gasprice so that newly created transaction can
 // have a very high chance to be included in the following blocks.
-// nolint: cyclop
+//
+//nolint:cyclop
 func (gpo *Oracle) SuggestPrice(ctx context.Context) (*big.Int, error) {
 	head, _ := gpo.backend.HeaderByNumber(ctx, rpc.LatestBlockNumber)
 	headHash := head.Hash()
@@ -187,7 +188,8 @@ func (t transactionsByGasPrice) Less(i, j int) bool { return t[i].GasPrice().Cmp
 // and sends it to the result channel. If the block is empty or all transactions
 // are sent by the miner itself(it doesn't make any sense to include this kind of
 // transaction prices for sampling), nil gasprice is returned.
-// nolint: cyclop
+//
+//nolint:cyclop
 func (gpo *Oracle) getBlockPrices(ctx context.Context, signer types.Signer, blockNum uint64, limit int, result chan getBlockPricesResult, quit chan struct{}) {
 	block, err := gpo.backend.BlockByNumber(ctx, rpc.BlockNumber(blockNum))
 	if block == nil {

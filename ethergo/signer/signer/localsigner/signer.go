@@ -24,7 +24,7 @@ func NewSigner(key *ecdsa.PrivateKey) *Signer {
 }
 
 // GetTransactor gets the transcator.
-func (s *Signer) GetTransactor(chainID *big.Int) (*bind.TransactOpts, error) {
+func (s *Signer) GetTransactor(ctx context.Context, chainID *big.Int) (*bind.TransactOpts, error) {
 	realSigner, err := bind.NewKeyedTransactorWithChainID(s.privateKey, chainID)
 	if err != nil {
 		return nil, fmt.Errorf("could not create signer: %w", err)

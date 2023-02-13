@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
 	rpcConfig "github.com/synapsecns/sanguine/services/omnirpc/config"
@@ -10,8 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
 	"github.com/urfave/cli/v2"
-	"os"
-	"time"
 )
 
 var latencyCommand = &cli.Command{
@@ -19,7 +20,7 @@ var latencyCommand = &cli.Command{
 	Usage: "checks latency for all rpc endpoints known for a chain id",
 	Flags: []cli.Flag{chainIDFlag},
 	Action: func(c *cli.Context) error {
-		rConfig, err := rpcConfig.GetPublicRPCConfig(c.Context)
+		rConfig, err := rpcConfig.GetPublicRPCConfig()
 		if err != nil {
 			return fmt.Errorf("could not get rpc map: %w", err)
 		}
@@ -45,7 +46,7 @@ var chainListCommand = &cli.Command{
 		// See: https://blog.twitch.tv/en/2019/04/10/go-memory-ballast-how-i-learnt-to-stop-worrying-and-love-the-heap/
 		_ = make([]byte, 10<<30)
 
-		rConfig, err := rpcConfig.GetPublicRPCConfig(c.Context)
+		rConfig, err := rpcConfig.GetPublicRPCConfig()
 		if err != nil {
 			return fmt.Errorf("could not get rpc map: %w", err)
 		}
@@ -71,7 +72,7 @@ var publicConfigCommand = &cli.Command{
 	Usage: "output a public config file from chainlist.org",
 	Flags: []cli.Flag{outputFlag},
 	Action: func(c *cli.Context) error {
-		rConfig, err := rpcConfig.GetPublicRPCConfig(c.Context)
+		rConfig, err := rpcConfig.GetPublicRPCConfig()
 		if err != nil {
 			return fmt.Errorf("could not get rpc map: %w", err)
 		}
@@ -148,7 +149,7 @@ var debugResponse = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("could not read file: %w", err)
 		}
-		// nolint: wrapcheck
+		//nolint:wrapcheck
 		return debug.HashDiff(diffFile)
 	},
 }

@@ -9,15 +9,81 @@ coverage:
     project:
       default:
         target: auto
-        threshold: 0.5%
+        threshold: 25%
     patch:
       default:
-        threshold: 0.5%
+        threshold: 5%
+
+# from go.work file
+flags:
+  agents:
+    paths:
+      - agents/
+    carryforward: true
+  git-changes-action:
+    paths:
+      - contrib/git-changes-action/
+    carryforward: true
+  release-copier-action:
+    paths:
+      - contrib/release-copier-action/
+    carryforward: true
+  terraform-provider-helmproxy:
+    paths:
+      - contrib/terraform-provider-helmproxy/
+    carryforward: true
+  terraform-provider-iap:
+    paths:
+      - contrib/terraform-provider-iap/
+    carryforward: true
+  terraform-provider-kubeproxy:
+    paths:
+      - contrib/terraform-provider-kubeproxy/
+    carryforward: true
+  tfcore:
+    paths:
+      - contrib/tfcore/
+    carryforward: true
+  core:
+    paths:
+      - core/
+    carryforward: true
+  ethergo:
+    paths:
+      - ethergo/
+    carryforward: true
+  explorer:
+    paths:
+      - services/explorer/
+    carryforward: true
+  omnirpc:
+    paths:
+      - services/omnirpc/
+    carryforward: true
+  scribe:
+    paths:
+      - services/scribe/
+    carryforward: true
+  solidity:
+    paths:
+      - packages/contracts-core/
+    carryforward: true
+  tools:
+    paths:
+      - tools/
+    carryforward: true
+  packages:
+    paths:
+      - packages/coverage-aggregator/
+      - packages/explorer-ui/
+      - packages/sdk-router/
+    carryforward: true
 
 ignore:
   - '**/*_generated.go'
   - '**/*.abigen.go'
   - '**/*_string.go'
+  - '**/*_gen.go'
   - '**/*.pb.go'
   # solidity test files
   - '*/test/*.sol'

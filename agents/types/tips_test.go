@@ -1,12 +1,13 @@
 package types_test
 
 import (
+	"math/big"
+	"testing"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/spatialcurrent/go-math/pkg/math"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/types"
-	"math/big"
-	"testing"
 )
 
 func TestTotalTips(t *testing.T) {
@@ -21,7 +22,7 @@ func TestTotalTips(t *testing.T) {
 		realSum, err := math.Sum(vals)
 		Nil(t, err)
 
-		// nolint: forcetypeassert
+		//nolint:forcetypeassert
 		Equal(t, types.TotalTips(tips).Uint64(), uint64(realSum.(int)))
 	}
 }

@@ -1,0 +1,92 @@
+{{- with .Values.executor_remote_existing }}
+{{- if eq $.Values.executor.type "remote-existing" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "agents.fullname" $ }}-executor
+  labels:
+    {{- include "agents.labels" $ | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "agents.selectorLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      {{- with .podAnnotations }}
+      annotations:
+        checksum/config: {{ include (print $.Chart.Name "/templates/" $.Chart.Name "-configmap.yaml") $ | sha256sum }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "agents.selectorLabels" $ | nindent 8 }}
+    spec:
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "agents.serviceAccountName" $ }}
+      securityContext:
+        {{- toYaml .podSecurityContext | nindent 8 }}
+    {{- if $.Values.executor_remote_existing_files }}
+      initContainers:
+        - name: copy-{{ $.Release.Name }}-config
+          image: busybox
+          command: [ 'sh', '-c', 'cp -v /configmap/* /config/' ]
+          volumeMounts:
+            - name: configmap
+              mountPath: /configmap
+            - name: {{ $.Release.Name }}-config
+              mountPath: /config
+        {{- if .extraInitContainers }}
+        {{- toYaml .extraInitContainers | nindent 8 }}
+        {{- end }}
+    {{- end }}
+      containers:
+        - name: {{ $.Chart.Name }}
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          args:
+            {{- toYaml .args | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ $.Values.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          {{- if .env }}
+          env:
+            {{- toYaml .env | nindent 12 }}
+          {{- end }}
+        {{- if $.Values.executor_remote_existing_files }}
+          volumeMounts:
+            - name: configmap
+              mountPath: /config
+        {{- end }}
+        {{- if .extraContainers }}
+        {{- toYaml .extraContainers | nindent 8 }}
+        {{- end }}
+      {{- with .nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{- if $.Values.executor_remote_existing_files }}
+        - name: {{ $.Release.Name }}-config
+          emptyDir: { }
+        - name: configmap
+          configMap:
+            name: {{ include "agents.fullname" $ }}-{{ $.Release.Name }}
+        {{- end }}
+{{- end }}
+{{- end }}

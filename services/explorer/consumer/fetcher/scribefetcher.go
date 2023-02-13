@@ -17,6 +17,8 @@ type ScribeFetcher struct {
 	FetchClient *client.Client
 }
 
+const retryThreshold = 5
+
 // NewFetcher creates a new fetcher.
 func NewFetcher(fetchClient *client.Client) *ScribeFetcher {
 	return &ScribeFetcher{
@@ -109,7 +111,13 @@ func (s ScribeFetcher) FetchBlockTime(ctx context.Context, chainID int, blockNum
 		Max:    10 * time.Second,
 	}
 	timeout := time.Duration(0)
+	attempts := 0
 RETRY:
+	attempts++
+	if attempts > retryThreshold {
+		logger.Errorf("could not get block time for block %d on chainID %d after %d attempts", blockNumber, chainID, retryThreshold)
+		return nil, fmt.Errorf("could not get block time for block %d on chainID %d after %d attempts", blockNumber, chainID, retryThreshold)
+	}
 	select {
 	case <-ctx.Done():
 
@@ -130,5 +138,49 @@ RETRY:
 		}
 
 		return timeStamp.Response, nil
+	}
+}
+
+// FetchTx fetches the transaction of a log.
+func (s ScribeFetcher) FetchTx(ctx context.Context, tx string, chainID int, blockNumber int) (*uint64, *string, error) {
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    1 * time.Second,
+		Max:    3 * time.Second,
+	}
+	attempts := 0
+	timeout := time.Duration(0)
+RETRY:
+	attempts++
+
+	if attempts > retryThreshold {
+		logger.Errorf("could not get tx after %d attempts for hash %s on chain %d trying blocktime", retryThreshold, tx, chainID)
+		auxiliaryBlocktime, err := s.FetchBlockTime(ctx, chainID, blockNumber)
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not get tx for log, after trying to get blocktime, invalid response %d: %s", chainID, tx)
+		}
+		sender := ""
+		blocktime := uint64(*auxiliaryBlocktime)
+		return &blocktime, &sender, nil
+	}
+
+	select {
+	case <-ctx.Done():
+		return nil, nil, fmt.Errorf("could not get tx for log, context canceled %d: %s", chainID, tx)
+	case <-time.After(timeout):
+
+		res, err := s.FetchClient.GetTransactions(ctx, chainID, 1, &tx)
+
+		if err != nil || res == nil || res.Response == nil {
+			logger.Errorf("could not get tx for log, trying again %s, chainID: %d: %v", tx, chainID, err)
+			timeout = b.Duration()
+			goto RETRY
+		}
+
+		resTx := res.Response[0]
+		sender := resTx.Sender
+		blocktime := uint64(resTx.Timestamp)
+		return &blocktime, &sender, nil
 	}
 }
