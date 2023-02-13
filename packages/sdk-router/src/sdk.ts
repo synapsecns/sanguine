@@ -3,12 +3,25 @@ import { AddressZero } from '@ethersproject/constants'
 import invariant from 'tiny-invariant'
 import { BigNumber } from '@ethersproject/bignumber'
 import { BytesLike } from '@ethersproject/bytes'
+import { PopulatedTransaction } from 'ethers'
 
 import { BigintIsh } from './constants'
 import { SynapseRouter } from './synapseRouter'
 
+type SynapseRouters = {
+  [key: number]: SynapseRouter
+}
+
+type Query = [string, string, BigNumber, BigNumber, string] & {
+  swapAdapter: string
+  tokenOut: string
+  minAmountOut: BigNumber
+  deadline: BigNumber
+  rawParams: string
+}
+
 export class SynapseSDK {
-  public synapseRouters: any
+  public synapseRouters: SynapseRouters
 
   constructor(chainIds: number[], providers: Provider[]) {
     invariant(
@@ -18,7 +31,7 @@ export class SynapseSDK {
     this.synapseRouters = {}
     for (let i = 0; i < chainIds.length; i++) {
       this.synapseRouters[chainIds[i]] = new SynapseRouter(
-        chainIds[i] as any,
+        chainIds[i],
         providers[i]
       )
     }
@@ -30,7 +43,10 @@ export class SynapseSDK {
     tokenIn: string,
     tokenOut: string,
     amountIn: BigintIsh
-  ): Promise<any> {
+  ): Promise<{
+    originQuery?: Query
+    destQuery?: Query
+  }> {
     let originQuery
     let destQuery
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
@@ -116,7 +132,7 @@ export class SynapseSDK {
       deadline: BigintIsh
       rawParams: BytesLike
     }
-  ): Promise<any> {
+  ): Promise<PopulatedTransaction> {
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
     console.log(originQuery)
     console.log(destQuery)

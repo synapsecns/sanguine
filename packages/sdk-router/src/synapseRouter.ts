@@ -3,6 +3,7 @@ import { Contract } from '@ethersproject/contracts'
 import { Provider } from '@ethersproject/abstract-provider'
 import { BytesLike } from '@ethersproject/bytes'
 import invariant from 'tiny-invariant'
+import { PopulatedTransaction } from 'ethers'
 
 import abi from './abi/SynapseRouter.json'
 import { BigintIsh, ROUTER_ADDRESS } from './constants'
@@ -76,7 +77,7 @@ export class SynapseRouter {
       deadline: BigintIsh
       rawParams: BytesLike
     }
-  ): Promise<any> {
+  ): Promise<PopulatedTransaction> {
     console.log(to)
     console.log(token)
     console.log(this.routerContract.address)
