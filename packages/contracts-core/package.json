@@ -9,10 +9,10 @@
     "build:slither": "hardhat compile",
     "build:typescript": "typechain --target ethers-v5 'artifacts/**/*json'",
     "test": "forge test",
-    "lint:contracts:fix": "yarn prettier --write '{contracts,test}/**/*.sol' && solhint --fix -c .solhint.json --ignore-path .prettierignore '{contracts,test}/**/*.sol'",
+    "lint:contracts:fix": "yarn prettier --write '{contracts,script,test}/**/*.sol' && solhint --fix -c .solhint.json --ignore-path .prettierignore '{contracts,script,test}/**/*.sol'",
     "lint:fix": "yarn lint:contracts:fix",
-    "lint": "yarn prettier '{contracts,test}/**/*.sol'",
-    "ci:lint": "yarn prettier '{contracts,test}/**/*.sol' --check && solhint -c .solhint.json --ignore-path .prettierignore contracts/**/*.sol test/**/*.sol"
+    "lint": "yarn prettier '{contracts,script,test}/**/*.sol'",
+    "ci:lint": "yarn prettier '{contracts,script,test}/**/*.sol' --check && solhint -c .solhint.json --ignore-path .prettierignore contracts/**/*.sol test/**/*.sol"
   },
   "license": "MIT",
   "devDependencies": {
