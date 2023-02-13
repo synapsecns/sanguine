@@ -1,215 +1,167 @@
-import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
-import {API_URL} from '@graphql'
-import numeral from 'numeral'
-import {BridgeTransactionTable} from "@components/BridgeTransaction/BridgeTransactionTable";
+import { TRANSACTIONS_PATH } from '@urls'
+import { useState, useEffect } from 'react'
+import { TableHeader } from '@components/TransactionTable/TableHeader'
+import { ChainInfo } from '@components/misc/ChainInfo'
+import { OverviewChart } from '@components/ChainChart'
+import { useSearchParams } from 'next/navigation'
 
+import { HorizontalDivider } from '@components/misc/HorizontalDivider'
+import { formatUSD } from '@utils/formatUSD'
+import { formatDate } from '@utils/formatDate'
+
+import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
+import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
+import { useLazyQuery, useQuery } from '@apollo/client'
+import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
+import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
+import { useRouter } from "next/router";
+
+import {
+  GET_BRIDGE_TRANSACTIONS_QUERY,
+  DAILY_STATISTICS_BY_CHAIN,
+} from '@graphql/queries'
+import HolisticStats from '@components/misc/HolisticStats'
 import _ from 'lodash'
-import {useEffect, useState} from 'react'
 
-import {useLazyQuery, useQuery} from '@apollo/client'
-
-import {AMOUNT_STATISTIC, GET_BRIDGE_TRANSACTIONS_QUERY,} from '@graphql/queries'
-import {StandardPageContainer} from '@components/layouts/StandardPageContainer'
-import {Pagination} from '@components/Pagination'
-
-import Grid from '@components/tailwind/Grid'
-
-import {TokenOnChain} from '@components/misc/TokenOnChain'
-
-import {StatCard} from '@components/pages/Home/Stats'
-
-import {useRouter} from 'next/router'
-import {useSearchParams} from 'next/navigation'
-
-
-const link = new HttpLink({
-  uri: API_URL,
-  useGETForQueries: true,
+const titles = {
+  VOLUME: 'Volume',
+  FEE: 'Fees',
+  ADDRESSES: 'Addrs',
+  TRANSACTIONS: 'TXs',
+}
+const platformTitles = {
+  BRIDGE: 'Bridge',
+  SWAP: 'Swap',
+  MESSAGE_BUS: 'Message Bus',
+}
+const formatCurrency = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
 })
 
-const client = new ApolloClient({
-  link: link,
-  cache: new InMemoryCache(),
-  fetchPolicy: 'network-only',
-  fetchOptions: {
-    mode: 'no-cors',
-  },
-})
-
-export default function tokenAddressRoute({
-  allTimeBridgeVolume,
-  allTimeTransactionCount,
-  allTimeAddresses,
-  bridgeTransactions,
-}) {
+export default function chainId() {
   const router = useRouter()
   const { tokenAddress } = router.query
   const search = useSearchParams()
-  const p = Number(search.get('page')) || 1
   const chainId = Number(search.get('chainId')) || 1
-  // const chainId = Number(search.get('chainId'))
 
-  const [page, setPage] = useState(p)
-  const [transactions, setTransactions] = useState([])
 
-  const [getBridgeTransactions, { error: pageError, data }] = useLazyQuery(
-    GET_BRIDGE_TRANSACTIONS_QUERY
-  )
+  const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
+  const [platform, setPlatform] = useState("ALL");
+  const [transactionsArr, setTransactionsArr] = useState([])
+  const [dailyDataArr, setDailyDataArr] = useState([])
+  const [variables, setVariables] = useState({})
+  const [completed, setCompleted] = useState(false)
+  const [address, setAddress] = useState('')
+  const [dailyStatisticDuration, SetDailyStatisticDuration] =
+    useState('PAST_MONTH')
+  const [dailyStatisticCumulative, SetDailyStatisticCumulative] =
+    useState(false)
+  const unSelectStyle =
+    'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
+  const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
 
-  const nextPage = () => {
-    let newPage = page + 1
-    setPage(newPage)
-    // setSearch({ page: newPage, chainId })
+  const {
+    loading,
+    error,
+    data: dataTx,
+    stopPolling,
+    startPolling,
+  } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
+    pollInterval: 5000,
+    variables: variables,
+    fetchPolicy: 'network-only',
+    onCompleted: (data) => {
+      let bridgeTransactionsTable = data.bridgeTransactions
 
-    getBridgeTransactions({
-      variables: {
-        tokenAddress,
-        chainId: Number(chainId),
-        page: newPage,
-      },
-    })
-  }
+      bridgeTransactionsTable = _.orderBy(
+        bridgeTransactionsTable,
+        'fromInfo.time',
+        ['desc']
+      ).slice(0, 10)
+      setTransactionsArr(bridgeTransactionsTable)
 
-  const prevPage = () => {
-    if (page > 1) {
-      let newPage = page - 1
-      setPage(newPage)
-      // setSearch({ page: newPage, chainId })
-      getBridgeTransactions({
-        variables: {
-          tokenAddress,
-          chainId: Number(chainId),
-          page: newPage,
-        },
-      })
+    },
+  })
+
+  useEffect(() => {
+    if (!completed) {
+      startPolling(10000)
+    } else {
+      stopPolling()
     }
-  }
+    return () => {
+      stopPolling()
+    }
+  }, [stopPolling, startPolling, completed])
 
-  const resetPage = () => {
-    setPage(1)
-    // setSearch({ page: 1, chainId })
-    getBridgeTransactions({
-      variables: {
-        tokenAddress,
-        chainId: Number(chainId),
-        page: 1,
-      },
-    })
-  }
-
-  let content
-
-    bridgeTransactions = _.orderBy(bridgeTransactions, 'fromInfo.time', [
-      'desc',
-    ]).slice(0, 10)
-
-    content = <BridgeTransactionTable queryResult={bridgeTransactions} />
-
-  let title = <TokenOnChain tokenAddress={tokenAddress} chainId={chainId} />
+  // Get initial data
+  useEffect(() => {
+    setAddress(tokenAddress)
+    console.log("chainId", chainId, tokenAddress)
+  setVariables({chainIDFrom: chainId, tokenAddress: [tokenAddress]})
+}, [chainId, tokenAddress])
 
   return (
-    <StandardPageContainer title={title}>
-      <Grid cols={{ sm: 1, md: 3, lg: 3 }} gap={4} className="my-5">
-        <StatCard title="Volume" active={true} duration="All-Time">
-          <div className="text-4xl font-bold text-white">
-            ${allTimeBridgeVolume}
-          </div>
-        </StatCard>
-        <StatCard title="Transaction Count" active={true} duration="All-Time">
-          <div className="text-4xl font-bold text-white">
-            {allTimeTransactionCount}
-          </div>
-        </StatCard>
-        <StatCard title="Addresses" active={true} duration="All-Time">
-          <div className="text-4xl font-bold text-white">
-            {allTimeAddresses}
-          </div>
-        </StatCard>
-      </Grid>
-      {content}
-      <Pagination
-        page={page}
-        resetPage={resetPage}
-        prevPage={prevPage}
-        nextPage={nextPage}
+    <StandardPageContainer title={'Synapse Analytics'}>
+      <div className="flex items-center mt-10 mb-2">
+      <h3 className="text-white text-2xl font-semibold">Token: {tokenAddress}</h3>
+
+      </div>
+      <HolisticStats
+        platform={platform}
+        chainID={chainId}
+        tokenAddress={tokenAddress}
+        loading={false}
+        setPlatform={setPlatform}
       />
+      <br />
+      <HorizontalDivider />
+
+      <HorizontalDivider />
+      <br /> <br />
+      <p className="text-white text-2xl font-bold">Recent Transactions</p>
+      <div className="h-full flex items-center mt-4">
+        <button
+          onClick={() =>  setVariables({chainIDFrom: chainId, tokenAddress: [address]})}
+
+          className={
+            'font-medium rounded-l-md px-4 py-2 border  h-fit  ' +
+            (variables?.chainIDFrom ? selectStyle : unSelectStyle) +
+            (loading ? ' pointer-events-none' : '')
+          }
+        >
+          Outgoing
+        </button>
+        <button
+          onClick={() => setVariables({chainIDTo: chainId, tokenAddress: [address]})
+        }
+
+          className={
+            'font-medium rounded-r-md px-4 py-2 border  h-fit ' +
+            (variables?.chainIDTo ? selectStyle : unSelectStyle) +
+            (loading ? ' pointer-events-none' : '')
+          }
+        >
+          Incoming
+        </button>
+      </div>
+      {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={transactionsArr} />}
+
+
+      <br />
+      <div className="text-center text-white my-6 ">
+        <div className="mt-2 mb-14 ">
+
+          <a
+            className="text-white rounded-md px-5 py-3 text-opacity-100 transition-all ease-in hover:bg-synapse-radial border-l-0 border-gray-700 border-opacity-30 bg-gray-700 bg-opacity-30 hover:border-[#BE78FF] cursor-pointer"
+            href={TRANSACTIONS_PATH}
+          >
+            {'Explore all transactions'}
+          </a>
+        </div>
+      </div>
+      <HorizontalDivider />
     </StandardPageContainer>
   )
-}
-
-export async function getServerSideProps(context) {
-  const { tokenAddress, chainId } = context.query
-  const { data: allTimeBridgeVolume } = await client.query({
-    query: AMOUNT_STATISTIC,
-    variables: {
-      chainId: chainId,
-      duration: 'ALL_TIME',
-      tokenAddress: tokenAddress,
-      type: 'TOTAL_VOLUME_USD',
-      platform: 'BRIDGE',
-    },
-  })
-
-  const { data: allTimeTransactionCount } = await client.query({
-    query: AMOUNT_STATISTIC,
-    variables: {
-      chainId: chainId,
-      duration: 'ALL_TIME',
-      tokenAddress: tokenAddress,
-      type: 'COUNT_TRANSACTIONS',
-      platform: 'BRIDGE',
-    },
-  })
-
-  const { data: allTimeAddresses } = await client.query({
-    query: AMOUNT_STATISTIC,
-    variables: {
-      chainId: chainId,
-      duration: 'ALL_TIME',
-      tokenAddress: tokenAddress,
-      type: 'COUNT_ADDRESSES',
-      platform: 'BRIDGE',
-    },
-  })
-
-  const { data: bridgeTransactions } = await client.query({
-    query: GET_BRIDGE_TRANSACTIONS_QUERY,
-    variables: {
-      chainId: [chainId],
-      tokenAddress: [tokenAddress],
-      page: 1,
-    },
-  })
-
-  return {
-    props: {
-      allTimeBridgeVolume: normalizeValue(
-        allTimeBridgeVolume?.amountStatistic?.value
-      ),
-      allTimeTransactionCount: normalizeValue(
-        allTimeTransactionCount?.amountStatistic?.value
-      ),
-      allTimeAddresses: normalizeValue(
-        allTimeAddresses?.amountStatistic?.value
-      ),
-      bridgeTransactions: bridgeTransactions,
-    },
-  }
-}
-
-function normalizeValue(value) {
-  if (value >= 1000000000) {
-    return (
-      numeral(value / 1000000000)
-        .format('0.00')
-        .toString() + 'B'
-    )
-  } else if (value >= 1000000) {
-    return (
-      numeral(value / 1000000)
-        .format('0.00')
-        .toString() + 'M'
-    )
-  }
-  return numeral(value).format('0,0').toString()
 }

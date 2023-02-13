@@ -1,17 +1,10 @@
-import { TRANSACTIONS_PATH, getChainUrl } from '@urls'
-import { useState, useEffect, memo, useCallback } from 'react'
-import { Stats } from './Stats'
-import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
+import { TRANSACTIONS_PATH } from '@urls'
+import { useState, useEffect } from 'react'
 import { TableHeader } from '@components/TransactionTable/TableHeader'
-import { TableBody } from '@components/TransactionTable/TableBody'
 import { ChainInfo } from '@components/misc/ChainInfo'
-
-import { Chart, ChartLoading } from '@components/Chart'
 import { OverviewChart } from '@components/ChainChart'
 
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-import { PageLink } from '@components/misc/PageLink'
-import Grid from '@components/tailwind/Grid'
 import { formatUSD } from '@utils/formatUSD'
 import { formatDate } from '@utils/formatDate'
 
@@ -24,12 +17,9 @@ import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
   DAILY_STATISTICS_BY_CHAIN,
-  RANKED_CHAINIDS_BY_VOLUME,
 } from '@graphql/queries'
-import { useSearchParams } from 'next/navigation'
 import HolisticStats from '@components/misc/HolisticStats'
 import _ from 'lodash'
-import { isCompositeType } from 'graphql'
 
 const titles = {
   VOLUME: 'Volume',
@@ -48,19 +38,10 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
 })
 
 export function Home() {
-
-  // console.log("here",totalVolumeSS, totalFeeSS, totalAddressesSS, totalTransactionsSS)
-
-  const search = useSearchParams()
   const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
   const [platform, setPlatform] = useState("ALL");
-
-  const [currentChainID, setCurrentChainID] = useState(0)
-
-  const [pending, setPending] = useState(false)
   const [transactionsArr, setTransactionsArr] = useState([])
   const [dailyDataArr, setDailyDataArr] = useState([])
-  const [holisticStats, setHolisticStats] = useState({})
 
   const [completed, setCompleted] = useState(false)
   const [dailyStatisticType, setDailyStatisticType] = useState('VOLUME')
@@ -68,8 +49,6 @@ export function Home() {
     useState('PAST_MONTH')
   const [dailyStatisticCumulative, SetDailyStatisticCumulative] =
     useState(false)
-  const [rankedChainIDs, setRankedChainIDs] = useState([])
-
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
@@ -116,7 +95,7 @@ export function Home() {
   // update chart
   useEffect(() => {
     let type = dailyStatisticType
-    if (platform === "MESSAGE_BUS" && dailyStatisticType === "VOLUME"){
+    if (platform === "MESSAGE_BUS" && dailyStatisticType === "VOLUME") {
       type = "FEE"
       setDailyStatisticType("FEE")
     }
@@ -156,10 +135,7 @@ export function Home() {
     }
   }
 
-
-
   useEffect(() => {
-    // versionRefetch()
     if (!completed) {
       startPolling(10000)
     } else {
@@ -207,7 +183,7 @@ export function Home() {
               </p>
             ) : null}
             {chartData?.length > 0 ?
-              <p className="pl-2 text-md font-medium text-default mt-2 text-white">{' '} {' '} Total {platform !== "ALL" ? platformTitles[platform]+" ": ""}{titles[dailyStatisticType]}: {' '}{formatUSD(totalChainVolume())}
+              <p className="pl-2 text-md font-medium text-default mt-2 text-white">{' '} {' '} Total {platform !== "ALL" ? platformTitles[platform] + " " : ""}{titles[dailyStatisticType]}: {' '}{formatUSD(totalChainVolume())}
               </p> : <div className="h-3 w-[50%] mt-4 bg-slate-700 rounded animate-pulse"></div>}
           </div>
         </div>
@@ -222,7 +198,7 @@ export function Home() {
                     ? selectStyle
                     : unSelectStyle) +
                   ((loadingDailyData || platform === "MESSAGE_BUS") ? ' pointer-events-none' : '') +
-                  ( platform === "MESSAGE_BUS" ? ' opacity-[0.6]' : '')
+                  (platform === "MESSAGE_BUS" ? ' opacity-[0.6]' : '')
                 }
               >
                 Vol
@@ -347,7 +323,7 @@ export function Home() {
                     <td className='w-[70%]'>
                       {key === "total" ? <p className="pl-2 whitespace-nowrap text-sm text-white">All Chains</p> :
                         <ChainInfo
-
+                          useExplorerLink={true}
                           chainId={CHAIN_ID_NAMES_REVERSE[key]}
                           imgClassName="w-4 h-4 ml-2"
                           textClassName="whitespace-nowrap px-2  text-sm  text-white"
@@ -368,7 +344,7 @@ export function Home() {
           <OverviewChart
             setCurrentTooltipIndex={setCurrentTooltipIndex}
             loading={loadingDailyData}
-            height={17 * 31}
+            height={Object.keys(CHAIN_ID_NAMES_REVERSE).length * 31}
             chartData={chartData}
             isCumulativeData={dailyStatisticCumulative}
             isUSD={
@@ -389,7 +365,7 @@ export function Home() {
       <HorizontalDivider />
       <br /> <br />
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
-      {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={transactionsArr}/>}
+      {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={transactionsArr} />}
 
 
       <br />

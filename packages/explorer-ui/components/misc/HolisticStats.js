@@ -8,7 +8,7 @@ import { formatUSD } from '@utils/formatUSD'
 
 
 
-export default function HolisticStats({platform: parentPlatform, setPlatform:  parentSetPlatform, loading}) {
+export default function HolisticStats({platform: parentPlatform, setPlatform:  parentSetPlatform, loading, chainID}) {
   const [volume, setVolume] = useState("--")
   const [revenue, setRevenue] = useState("--")
   const [addresses, setAddresses] = useState("--")
@@ -25,7 +25,13 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
   const { loading: loadingVolume, error: errorVolume, data: dataVolume } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
-    variables: {
+    variables: chainID? {
+      platform: platform,
+      duration: "ALL_TIME",
+      type: "TOTAL_VOLUME_USD",
+      useCache: true,
+      chainID: chainID
+    }: {
       platform: platform,
       duration: "ALL_TIME",
       type: "TOTAL_VOLUME_USD",
@@ -38,7 +44,13 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
   const { loading: loadingRevenue, error: errorRevenue, data: dataRevenue } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
-    variables: {
+    variables: chainID ? {
+      platform: platform,
+      duration: "ALL_TIME",
+      type: "TOTAL_FEE_USD",
+      useCache: true,
+      chainID: chainID
+    }: {
       platform: platform,
       duration: "ALL_TIME",
       type: "TOTAL_FEE_USD",
@@ -51,7 +63,13 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
   const { loading: loadingAddresses, error: errorAddresses, data: dataAddresses } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
-    variables: {
+    variables: chainID ? {
+      platform: platform,
+      duration: "ALL_TIME",
+      type: "COUNT_ADDRESSES",
+      useCache: useCache,
+      chainID: chainID,
+    }: {
       platform: platform,
       duration: "ALL_TIME",
       type: "COUNT_ADDRESSES",
@@ -59,11 +77,9 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
     },
     pollInterval: 5000,
     skip: skip,
-    // notifyOnNetworkStatusChange: true,
     onCompleted: (data) => {
       if (useCache) {
         setUseCache(false)
-        // setSkip(true)
       }
       setAddresses(data.amountStatistic.value)
 
@@ -73,7 +89,13 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
   const { loading: loadingTxs, error: errorTxs, data: dataTxs } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
-    variables: {
+    variables: chainID ? {
+      platform: platform,
+      duration: "ALL_TIME",
+      type: "COUNT_TRANSACTIONS",
+      useCache: useCache,
+      chainID: chainID
+    } : {
       platform: platform,
       duration: "ALL_TIME",
       type: "COUNT_TRANSACTIONS",
@@ -81,11 +103,9 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
     },
     pollInterval: 5000,
     skip: skip,
-    // notifyOnNetworkStatusChange: true,
     onCompleted: (data) => {
       if (useCache) {
         setUseCache(false)
-        // setSkip(true)
       }
       setTxs(data.amountStatistic.value)
     }
@@ -97,15 +117,7 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
     setPlatform(parentPlatform)
   }, [parentPlatform])
 
-  // useEffect(() => {
-  //   // versionRefetch()
-  //   startPollingTx(5000)
 
-  //   return () => {
-  //     stopPollingTx()
-  //   }
-  // }, [stopPollingTx, startPollingTx])
-  // // Get initial data
   useEffect(() => {
     setVolume("--")
     setRevenue("--")
