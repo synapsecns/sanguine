@@ -47,12 +47,12 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		refreshInterval:            time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
 	}
 
-	guard.bondedSigner, err = config.SignerFromConfig(cfg.BondedSigner)
+	guard.bondedSigner, err = config.SignerFromConfig(ctx, cfg.BondedSigner)
 	if err != nil {
 		return Guard{}, fmt.Errorf("error with bondedSigner, could not create guard: %w", err)
 	}
 
-	guard.unbondedSigner, err = config.SignerFromConfig(cfg.UnbondedSigner)
+	guard.unbondedSigner, err = config.SignerFromConfig(ctx, cfg.UnbondedSigner)
 	if err != nil {
 		return Guard{}, fmt.Errorf("error with unbondedSigner, could not create guard: %w", err)
 	}
@@ -62,7 +62,7 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		return Guard{}, fmt.Errorf("could not get legacyDB type: %w", err)
 	}
 
-	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString)
+	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString, cfg.DBPrefix)
 	if err != nil {
 		return Guard{}, fmt.Errorf("could not connect to legacyDB: %w", err)
 	}

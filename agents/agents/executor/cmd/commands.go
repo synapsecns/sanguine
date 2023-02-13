@@ -6,7 +6,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/jftuga/termsize"
+	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
+	"github.com/synapsecns/sanguine/agents/agents/executor/api"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
@@ -15,6 +17,7 @@ import (
 	scribeCmd "github.com/synapsecns/sanguine/services/scribe/cmd"
 	"github.com/synapsecns/sanguine/services/scribe/node"
 	"golang.org/x/sync/errgroup"
+	"gorm.io/gorm/schema"
 
 	// used to embed markdown.
 	_ "embed"
@@ -31,7 +34,7 @@ var help string
 
 // ExecutorInfoCommand gets info about using the executor agent.
 var ExecutorInfoCommand = &cli.Command{
-	Name:        "info",
+	Name:        "executor-info",
 	Description: "learn how to use executor cli",
 	Action: func(c *cli.Context) error {
 		fmt.Println(string(markdown.Render(help, termsize.Width(), 6)))
@@ -58,6 +61,12 @@ var pathFlag = &cli.StringFlag{
 	Usage:    "--path <path/to/database> or <database url>",
 	Value:    "",
 	Required: true,
+}
+
+var metricsPortFlag = &cli.UintFlag{
+	Name:  "metrics-port",
+	Usage: "--port 5121",
+	Value: 0,
 }
 
 var scribeTypeFlag = &cli.StringFlag{
@@ -93,14 +102,14 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 		return executorConfig, nil, nil, fmt.Errorf("failed to decode config: %w", err)
 	}
 
-	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name))
+	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix)
 	if err != nil {
 		return executorConfig, nil, nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
 
 	clients = make(map[uint32]executor.Backend)
 	for _, execClient := range executorConfig.Chains {
-		rpcDial, err := rpc.DialContext(c.Context, fmt.Sprintf("%s/confirmations/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, execClient.ChainID))
+		rpcDial, err := rpc.DialContext(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, execClient.ChainID))
 		if err != nil {
 			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
 		}
@@ -114,9 +123,9 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 
 // ExecutorRunCommand runs the executor.
 var ExecutorRunCommand = &cli.Command{
-	Name:        "run",
+	Name:        "executor-run",
 	Description: "runs the executor service",
-	Flags: []cli.Flag{configFlag, dbFlag, pathFlag, scribeTypeFlag,
+	Flags: []cli.Flag{configFlag, dbFlag, pathFlag, scribeTypeFlag, metricsPortFlag,
 		// The flags below are used when `scribeTypeFlag` is set to "embedded".
 		scribeDBFlag, scribePathFlag,
 		// The flags below are used when `scribeTypeFlag` is set to "remote".
@@ -142,9 +151,9 @@ var ExecutorRunCommand = &cli.Command{
 
 			for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/confirmations/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, confNum, client.ChainID))
+					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID))
 					if err != nil {
-						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/%s/%d/rpc/%d", executorConfig.EmbeddedScribeConfig.RPCURL, "confirmations", confNum, client.ChainID))
+						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID))
 					}
 
 					scribeClients[client.ChainID] = append(scribeClients[client.ChainID], backendClient)
@@ -189,7 +198,16 @@ var ExecutorRunCommand = &cli.Command{
 		}
 
 		g.Go(func() error {
-			err = executor.Run(c.Context)
+			err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
+			if err != nil {
+				return fmt.Errorf("failed to start api: %w", err)
+			}
+
+			return nil
+		})
+
+		g.Go(func() error {
+			err := executor.Run(c.Context)
 			if err != nil {
 				return fmt.Errorf("failed to run executor: %w", err)
 			}
@@ -206,7 +224,9 @@ var ExecutorRunCommand = &cli.Command{
 }
 
 // InitExecutorDB initializes a database given a database type and path.
-func InitExecutorDB(ctx context.Context, database string, path string) (db.ExecutorDB, error) {
+//
+//nolint:cyclop
+func InitExecutorDB(ctx context.Context, database string, path string, tablePrefix string) (db.ExecutorDB, error) {
 	switch {
 	case database == "sqlite":
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path)
@@ -220,6 +240,7 @@ func InitExecutorDB(ctx context.Context, database string, path string) (db.Execu
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
+
 			mysqlStore, err := mysql.NewMysqlStore(ctx, connString)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
@@ -227,6 +248,20 @@ func InitExecutorDB(ctx context.Context, database string, path string) (db.Execu
 
 			return mysqlStore, nil
 		}
+
+		var namingStrategy schema.NamingStrategy
+
+		if tablePrefix != "" {
+			namingStrategy = schema.NamingStrategy{
+				TablePrefix: fmt.Sprintf("%s_", tablePrefix),
+			}
+		} else {
+			namingStrategy = schema.NamingStrategy{
+				TablePrefix: "executor_",
+			}
+		}
+
+		mysql.NamingStrategy = namingStrategy
 
 		mysqlStore, err := mysql.NewMysqlStore(ctx, path)
 		if err != nil {
@@ -238,4 +273,8 @@ func InitExecutorDB(ctx context.Context, database string, path string) (db.Execu
 	default:
 		return nil, fmt.Errorf("invalid database type: %s", database)
 	}
+}
+
+func init() {
+	metricsPortFlag.Value = uint(freeport.GetPort())
 }

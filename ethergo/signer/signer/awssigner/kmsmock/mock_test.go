@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go-v2/service/kms/types"
 	. "github.com/stretchr/testify/assert"
-	kmsHelper "github.com/synapsecns/sanguine/ethergo/signer/signer/kmssigner/kmsmock"
+	kmsHelper "github.com/synapsecns/sanguine/ethergo/signer/signer/awssigner/kmsmock"
 	"sync"
 )
 

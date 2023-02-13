@@ -42,12 +42,12 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
 	}
 
-	notary.bondedSigner, err = config.SignerFromConfig(cfg.BondedSigner)
+	notary.bondedSigner, err = config.SignerFromConfig(ctx, cfg.BondedSigner)
 	if err != nil {
 		return Notary{}, fmt.Errorf("error with bondedSigner, could not create notary: %w", err)
 	}
 
-	notary.unbondedSigner, err = config.SignerFromConfig(cfg.UnbondedSigner)
+	notary.unbondedSigner, err = config.SignerFromConfig(ctx, cfg.UnbondedSigner)
 	if err != nil {
 		return Notary{}, fmt.Errorf("error with unbondedSigner, could not create notary: %w", err)
 	}
@@ -57,7 +57,7 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 		return Notary{}, fmt.Errorf("could not get legacyDB type: %w", err)
 	}
 
-	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString)
+	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString, cfg.DBPrefix)
 	if err != nil {
 		return Notary{}, fmt.Errorf("could not connect to legacyDB: %w", err)
 	}

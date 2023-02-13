@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
+	"gorm.io/gorm/schema"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -19,6 +20,9 @@ type Store struct {
 // MaxIdleConns is exported here for testing. Tests execute too slowly with a reconnect each time.
 var MaxIdleConns = 10
 
+// NamingStrategy is for table prefixes.
+var NamingStrategy = schema.NamingStrategy{}
+
 // NewMysqlStore creates a new mysql store for a given data store.
 func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 	logger.Debug("creating mysql store")
@@ -26,6 +30,7 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
 		Logger:               common_base.GetGormLogger(logger),
 		FullSaveAssociations: true,
+		NamingStrategy:       NamingStrategy,
 		NowFunc:              time.Now,
 	})
 

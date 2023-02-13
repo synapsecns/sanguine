@@ -18,6 +18,10 @@ func TestEncodeSigner(t *testing.T) {
 
 	rawSig := signer.Encode(sig)
 
+	// test decoding
+	decoded := signer.DecodeSignature(rawSig)
+	assert.True(t, signer.IsEqual(sig, decoded))
+
 	exampleSigner := ethTypes.FrontierSigner{}
 
 	newR, newS, _, err := exampleSigner.SignatureValues(ethTypes.NewTx(&ethTypes.LegacyTx{

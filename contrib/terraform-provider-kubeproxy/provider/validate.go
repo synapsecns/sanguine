@@ -15,6 +15,7 @@ import (
 // appears in a list-like attribute (list, set, tuple) will present a nil value
 // to helper/schema which can panic. Return an error to the user in this case,
 // indicating the attribute with the null value.
+// this function is copied from the grpc provider server with some modifications to avoid use of internals
 func validateConfigNulls(ctx context.Context, v cty.Value, path cty.Path) []*tfprotov5.Diagnostic {
 	var diags []*tfprotov5.Diagnostic
 	if v.IsNull() || !v.IsKnown() {

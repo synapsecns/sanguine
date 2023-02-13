@@ -51,7 +51,7 @@ func (a attestationCollectorContract) AddAgent(transactOpts *bind.TransactOpts, 
 }
 
 func (a attestationCollectorContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
-	transactor, err := signer.GetTransactor(a.client.GetBigChainID())
+	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
 		return fmt.Errorf("could not sign tx: %w", err)
 	}

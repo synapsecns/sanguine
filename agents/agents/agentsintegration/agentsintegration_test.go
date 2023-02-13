@@ -85,7 +85,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 	guardDBType, err := dbcommon.DBTypeFromString(guardTestConfig.Database.Type)
 	Nil(u.T(), err)
 
-	guardDBHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), guardDBType, guardTestConfig.Database.ConnString)
+	guardDBHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), guardDBType, guardTestConfig.Database.ConnString, "guard")
 	Nil(u.T(), err)
 
 	originAuth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
@@ -195,7 +195,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 	guardDBType, err := dbcommon.DBTypeFromString(guardTestConfig.Database.Type)
 	Nil(u.T(), err)
 
-	guardDBHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), guardDBType, guardTestConfig.Database.ConnString)
+	guardDBHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), guardDBType, guardTestConfig.Database.ConnString, "notary")
 	Nil(u.T(), err)
 
 	originAuth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
@@ -325,7 +325,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 	guardDBType, err := dbcommon.DBTypeFromString(guardTestConfig.Database.Type)
 	Nil(u.T(), err)
 
-	guardDBHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), guardDBType, guardTestConfig.Database.ConnString)
+	guardDBHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), guardDBType, guardTestConfig.Database.ConnString, "guard")
 	Nil(u.T(), err)
 
 	go func() {
@@ -614,7 +614,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 	guardDBType, err := dbcommon.DBTypeFromString(guardTestConfig.Database.Type)
 	Nil(u.T(), err)
 
-	guardDBHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), guardDBType, guardTestConfig.Database.ConnString)
+	guardDBHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), guardDBType, guardTestConfig.Database.ConnString, "guard")
 	Nil(u.T(), err)
 
 	go func() {

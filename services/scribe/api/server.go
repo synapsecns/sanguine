@@ -123,7 +123,6 @@ func InitDB(ctx context.Context, database string, path string) (db.EventDB, erro
 		}
 
 		return sqliteStore, nil
-
 	case database == "mysql":
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
 			dbname := os.Getenv("MYSQL_DATABASE")
@@ -142,7 +141,6 @@ func InitDB(ctx context.Context, database string, path string) (db.EventDB, erro
 		}
 
 		return mysqlStore, nil
-
 	default:
 		return nil, fmt.Errorf("invalid database type: %s", database)
 	}
