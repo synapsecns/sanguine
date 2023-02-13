@@ -319,14 +319,15 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     }
 
     /**
-     * @notice Inserts a merkle root for an empty merkle tree into the historical roots array
-     * for the given destination.
+     * @notice Initializes the arrays with historical data:
+     * - Inserts a merkle root for an empty merkle tree into the historical roots array
+     * - Inserts an empty RootMetadata struct into the historical metadata array
      * @dev This enables:
      * - Counting nonces from 1 (nonce=0 meaning no messages have been sent).
      * - Not slashing the Notaries for signing an attestation for an empty tree
-     * (assuming they sign the correct root outlined below).
+     * (assuming they sign the correct root+metadata combination outlined below).
      */
-    function _initializeHistoricalRoots(uint32 _destination) internal {
+    function _initializeHistoricalData() internal {
         // TODO: revisit once snapshots are implemented
         // This function should only be called only if the array is empty
         assert(historicalRoots.length == 0);
@@ -349,9 +350,6 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         bytes32 _messageHash
     ) internal returns (bytes32 newRoot) {
         // TODO: revisit once snapshots are implemented
-        // TODO: when Notary is active on Destination, initialize historical roots
-        // upon adding a first Notary for given destination
-        if (historicalRoots.length == 0) _initializeHistoricalRoots(_destination);
         /// @dev _messageNonce == tree.count() + 1
         // tree.insert() requires amount of leaves AFTER the leaf insertion (i.e. tree.count() + 1)
         tree.insert(_messageNonce, _messageHash);
