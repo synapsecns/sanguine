@@ -144,7 +144,6 @@ executor:
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
-  enabled: false
   args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
   podAnnotations: {}
   nodeSelector: {}
@@ -181,7 +180,6 @@ executor_remote_existing:
               fieldPath: metadata.namespace
 
 executor_remote_fresh:
-  enabled: true
   args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=80", "--scribe-url=executor-scribe.$(POD_NAMESPACE)"]
   podAnnotations: {}
   nodeSelector: {}
@@ -244,7 +242,6 @@ executor_remote_fresh:
               fieldPath: metadata.namespace
 
 executor_embedded:
-  enabled: true
   args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-db=mysql", "--scribe-path=root:MysqlPassword@tcp(agents-mysql:3306)/scribe"]
   podAnnotations: {}
   nodeSelector: {}
@@ -329,7 +326,7 @@ omnirpc:
   replicaCount: 3
 
 scribe:
-  enabled: false
+  enabled: true
   fullnameOverride: executor-scribe
 
 notary_files:
