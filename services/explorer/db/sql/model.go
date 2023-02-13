@@ -445,7 +445,7 @@ type HybridMessageBusEvent struct {
 	//// ContractAddress is the address of the contract that generated the event
 	// FContractAddress string `gorm:"column:contract_address"`
 	//// MessageId is the message id of the event.
-	//FMessageID sql.NullString `gorm:"column:message_id"`
+	// FMessageID sql.NullString `gorm:"column:message_id"`
 	//// Message is the message.
 	//FMessage sql.NullString `gorm:"column:message"`
 	//// TimeStamp is the timestamp in which the record was inserted.
