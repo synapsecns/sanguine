@@ -40,12 +40,13 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
 
 export default function chainId() {
   const router = useRouter()
-  const { chainId } = router.query
+  const { chainId: chainIdRouter } = router.query
   const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
   const [platform, setPlatform] = useState("ALL");
   const [transactionsArr, setTransactionsArr] = useState([])
   const [dailyDataArr, setDailyDataArr] = useState([])
   const [variables, setVariables] = useState({})
+  const [chainId, setChainId] = useState(0)
   const [completed, setCompleted] = useState(false)
   const [dailyStatisticType, setDailyStatisticType] = useState('VOLUME')
   const [dailyStatisticDuration, SetDailyStatisticDuration] =
@@ -123,11 +124,12 @@ export default function chainId() {
         type: dailyStatisticType,
         duration: dailyStatisticDuration,
         useCache: false,
-        chainID: chainId,
+        chainID: chainIdRouter,
       },
     })
-  setVariables({chainIDFrom: chainId})
-}, [chainId])
+    setVariables({ chainIDFrom: chainIdRouter })
+    setChainId(chainIdRouter)
+  }, [chainIdRouter])
   let chartData = dailyDataArr
   if (dailyStatisticCumulative) {
     chartData = JSON.parse(JSON.stringify(dailyDataArr))
@@ -321,23 +323,22 @@ export default function chainId() {
             {loadingDailyData ? <tbody> {Object.values(CHAIN_ID_NAMES_REVERSE).map((i) =>
               <tr
                 key={i}
-
               ><td className='w-[70%]'> <div className="h-3 w-full mt-4 bg-slate-700 rounded animate-pulse"></div></td><td className='w-[30%]'><div className="h-3 w-full mt-4 bg-slate-700 rounded animate-pulse"></div></td></tr>)}</tbody> :
               (<tbody>
 
                 {currentTooltipIndex >= 0 && chartData?.[currentTooltipIndex] ? returnChainData().map((key, i) => {
-                  return chartData[currentTooltipIndex][key] > 0 && key !== 'total'?  (<tr
+                  return chartData[currentTooltipIndex][key] > 0 && key !== 'total' ? (<tr
                     key={i}
                     className=" rounded-md w-[100%]"
                   >
                     <td className='w-[70%]'>
 
-                        <ChainInfo
-                          useExplorerLink={false}
-                          chainId={CHAIN_ID_NAMES_REVERSE[key]}
-                          imgClassName="w-4 h-4 ml-2"
-                          textClassName="whitespace-nowrap px-2  text-sm  text-white"
-                        />
+                      <ChainInfo
+                        useExplorerLink={false}
+                        chainId={CHAIN_ID_NAMES_REVERSE[key]}
+                        imgClassName="w-4 h-4 ml-2"
+                        textClassName="whitespace-nowrap px-2  text-sm  text-white"
+                      />
                     </td>
                     <td className='w-fit '>
                       <div className="ml-1 mr-2 self-center">
@@ -377,7 +378,7 @@ export default function chainId() {
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
       <div className="h-full flex items-center mt-4">
         <button
-          onClick={() =>  setVariables({ chainIDFrom: chainId })}
+          onClick={() => setVariables({ chainIDFrom: chainId })}
 
           className={
             'font-medium rounded-l-md px-4 py-2 border  h-fit  ' +

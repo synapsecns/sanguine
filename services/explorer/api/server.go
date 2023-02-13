@@ -60,7 +60,6 @@ func Start(ctx context.Context, cfg Config) error {
 	ticker := time.NewTicker(cacheRehydrationInterval * time.Second)
 	g, ctx := errgroup.WithContext(ctx)
 	client := gqlClient.NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d/graphql", cfg.HTTPPort))
-	rehydrateCache(ctx, client, responseCache)
 	// refill cache
 	go func() {
 		for {
@@ -82,6 +81,7 @@ func Start(ctx context.Context, cfg Config) error {
 		}
 		return nil
 	})
+	rehydrateCache(ctx, client, responseCache)
 
 	err = g.Wait()
 	if err != nil {
@@ -487,6 +487,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 	})
 
 	err := g.Wait()
+	fmt.Println("err", err)
 	if err != nil {
 		return err
 	}
