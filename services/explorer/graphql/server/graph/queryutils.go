@@ -609,7 +609,7 @@ func (r *queryResolver) GetBridgeTxsFromDestination2(ctx context.Context, chainI
 
 //
 //// nolint:gocognit,cyclop
-//func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txHash *string, page *int, tokenAddress []*string, pending bool, latest bool) ([]*model.BridgeTransaction, error) {
+// func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txHash *string, page *int, tokenAddress []*string, pending bool, latest bool) ([]*model.BridgeTransaction, error) {
 //	var err error
 //	var chainMap = make(map[uint32]bool)
 //	var results []*model.BridgeTransaction
@@ -1063,7 +1063,7 @@ func GenerateDailyStatisticByChainAllSQL(typeArg *model.DailyStatisticType, comp
 	return &query, nil
 }
 
-// TODO make this more dynamic
+// TODO make this more dynamic.
 func GenerateDailyStatisticByChainBridgeSQL(typeArg *model.DailyStatisticType, compositeFilters string, firstFilter *bool) (*string, error) {
 	var query string
 	switch *typeArg {

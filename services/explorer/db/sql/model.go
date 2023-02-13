@@ -441,9 +441,9 @@ type HybridMessageBusEvent struct {
 	//// FBlockNumber is the block number of the event
 	// FBlockNumber uint64 `gorm:"column:block_number"`
 	//// FTxHash is the transaction hash of the event
-	//FTxHash string `gorm:"column:tx_hash"`
+	// FTxHash string `gorm:"column:tx_hash"`
 	//// ContractAddress is the address of the contract that generated the event
-	//FContractAddress string `gorm:"column:contract_address"`
+	// FContractAddress string `gorm:"column:contract_address"`
 	//// MessageId is the message id of the event.
 	//FMessageID sql.NullString `gorm:"column:message_id"`
 	//// Message is the message.

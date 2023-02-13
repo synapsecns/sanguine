@@ -112,7 +112,7 @@ func InitDB(ctx context.Context, address string, readOnly bool) (db.ConsumerDB, 
 	return clickhouseDB, nil
 }
 
-// TODO make this nicer
+// TODO make this nicer.
 func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service cache.Service) error {
 	fmt.Println("rehydrating Cache")
 	totalVolumeType := model.StatisticTypeTotalVolumeUsd

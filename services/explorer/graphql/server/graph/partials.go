@@ -738,7 +738,7 @@ FROM (
 //	FROM (SELECT toDate(FROM_UNIXTIME(timestamp, '%Y/%m/%d')) as date,
 //	             chain_id,
 //
-// `
+// `.
 const dailyStatisticGenericSinglePlatform = `
 SELECT date,
        results[1]                   AS ethereum,

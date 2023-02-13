@@ -21,7 +21,6 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*i
 	var err error
 	var results []*model.BridgeTransaction
 	switch {
-
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
