@@ -65,7 +65,7 @@ export function BridgeTransactionTable({ queryResult }) {
           ? timeAgo({ timestamp: fromInfo.time })
           : timeAgo({ timestamp: toInfo?.time }),
         <a
-          className="underline"
+          className="underline transition ease-out hover:text-[#8FEBFF]"
           href={getBridgeTransactionUrl({
             hash: txn.kappa,
             chainIdFrom: txn.fromInfo.chainID,

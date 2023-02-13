@@ -61,7 +61,7 @@ export const ChainId = {
   AURORA: 1313161554,
   HARMONY: 1666600000,
   CANTO: 7700,
-  DOGE: 2000,
+  DOGECHAIN: 2000,
 
   TERRA: 121014925, //"columbus-5", the day columbus reportedly landed in america followed by 5
 }
@@ -208,10 +208,10 @@ export const CHAIN_INFO_MAP = {
     chainImg: cantoImg,
     layer: 2,
   },
-  [ChainId.DOGE]: {
-    chainId: ChainId.DOGE,
+  [ChainId.DOGECHAIN]: {
+    chainId: ChainId.DOGECHAIN,
     chainSymbol: 'DOGE',
-    chainName: 'Doge Chain',
+    chainName: 'Dogechain',
     chainLogo: dogeLogo,
     chainImg: dogeImg,
     layer: 2,
@@ -512,21 +512,22 @@ export const CHAIN_BLOCK_TIME = {
 export const CHAIN_ENUM_BY_ID = {
   [ChainId.ETH]: 'ethereum',
   [ChainId.OPTIMISM]: 'optimism',
+  [ChainId.CRONOS]: 'cronos',
   [ChainId.BSC]: 'bsc',
-  [ChainId.CANTO]: 'canto',
-  [ChainId.BOBA]: 'boba',
-  [ChainId.FANTOM]: 'fantom',
   [ChainId.POLYGON]: 'polygon',
+  [ChainId.FANTOM]: 'fantom',
+  [ChainId.BOBA]: 'boba',
+  [ChainId.METIS]: 'metis',
   [ChainId.MOONBEAM]: 'moonbeam',
   [ChainId.MOONRIVER]: 'moonriver',
+  [ChainId.KLAYTN]: 'klaytn',
   [ChainId.ARBITRUM]: 'arbitrum',
   [ChainId.AVALANCHE]: 'avalanche',
   [ChainId.DFK]: 'dfk',
   [ChainId.AURORA]: 'aurora',
   [ChainId.HARMONY]: 'harmony',
-  [ChainId.CRONOS]: 'cronos',
-  [ChainId.METIS]: 'metis',
-  [ChainId.KLAYTN]: 'klaytn',
+  [ChainId.CANTO]: 'canto',
+  [ChainId.DOGECHAIN]: 'dogechain',
 
 }
 

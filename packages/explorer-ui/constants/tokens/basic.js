@@ -9,7 +9,7 @@ import ethLogo from '@assets/icons/eth.svg'
 import wethLogo from '@assets/icons/weth.svg'
 import nethLogo from '@assets/icons/neth.svg'
 import avwethLogo from '@assets/icons/avweth.svg'
-
+import maticLogo from '@assets/icons/matic.svg'
 import mimLogo from '@assets/icons/mim.svg'
 
 import fraxLogo from '@assets/icons/frax.svg'
@@ -284,10 +284,9 @@ export const MIM = new Token({
   logo: mimLogo,
   swapableType: 'USD',
 })
-
 export const WETH = new Token({
   addresses: {
-    [ChainId.ETH]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    [ChainId.ETH]: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
     [ChainId.ARBITRUM]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
     [ChainId.BOBA]: '0xd203De32170130082896b4111eDF825a4774c18E',
     [ChainId.OPTIMISM]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
@@ -303,7 +302,7 @@ export const WETH = new Token({
 
 export const WETHE = new Token({
   addresses: {
-    [ChainId.AVALANCHE]: '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
+    [ChainId.AVALANCHE]: '0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB',
   },
   decimals: 18,
   symbol: 'WETH.e', // SHOULD BE WETH
@@ -331,7 +330,7 @@ export const WETHBEAM = new Token({
 
 export const AVWETH = new Token({
   addresses: {
-    [ChainId.AVALANCHE]: '0x53f7c5869a859f0aec3d334ee8b4cf01e3492f21',
+    [ChainId.AVALANCHE]: '0x53f7c5869a859F0AeC3D334ee8B4Cf01E3492f21',
   },
   decimals: 18,
   symbol: 'AVWETH', // AVALANCHE AAVE WETH
@@ -503,6 +502,8 @@ export const NETH = new Token({
     [ChainId.METIS]: '0x931B8f17764362A3325D30681009f0eDd6211231',
     [ChainId.KLAYTN]: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
     [ChainId.DOGECHAIN]: '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB',
+    [ChainId.CANTO]: '0x09fec30669d63a13c666d2129230dd5588e2e240',
+
   },
   decimals: 18,
   symbol: 'nETH',
@@ -729,13 +730,29 @@ export const XJEWEL = new Token({
 
 export const WMATIC = new Token({
   addresses: {
-    [ChainId.POLYGON]: '0x9b17bAADf0f21F03e35249e0e59723F34994F806',
+    [ChainId.POLYGON]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
   },
   decimals: 18,
-  symbol: 'MATIC', // SHOULD BE WETH
+  symbol: 'WMATIC', // SHOULD BE WETH
   name: 'Wrapped MATIC',
   description: 'ERC-20 Wrapped form of MATIC',
   swapableType: 'MATIC',
+  logo: maticLogo,
+
+})
+
+
+export const MATIC = new Token({
+  addresses: {
+    [ChainId.DFK]: '0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e',
+  },
+  decimals: 18,
+  symbol: 'MATIC', // SHOULD BE WETH
+  name: 'MATIC',
+  description: 'ERC-20 MATIC',
+  swapableType: 'MATIC',
+  logo: maticLogo,
+
 })
 
 export const WBNB = new Token({
@@ -813,6 +830,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     NFD,
     USDB,
     H2O,
+    WMATIC,
   ],
   [ChainId.FANTOM]: [
     MIM,
@@ -898,10 +916,10 @@ export const BASIC_TOKENS_BY_CHAIN = {
     NEWO,
     USDB,
     SFI,
-
+    AVWETH,
     SYNJEWEL,
   ],
-  [ChainId.DFK]: [JEWEL, WJEWEL, XJEWEL, WAVAX, DFK_USDC, WKLAY],
+  [ChainId.DFK]: [JEWEL, WJEWEL, XJEWEL, WAVAX, DFK_USDC, WKLAY, MATIC],
   [ChainId.AURORA]: [
     USDC,
     USDT,
@@ -976,7 +994,8 @@ export const BASIC_TOKENS_BY_CHAIN = {
     NUSD,
     NOTE,
     USDC,
-    USDT
+    USDT,
+    NETH,
   ]
 }
 

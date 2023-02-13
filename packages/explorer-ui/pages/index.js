@@ -1,13 +1,11 @@
-import {Home} from '@components/pages/Home'
-import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
+import { Home } from '@components/pages/Home'
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import {
   AMOUNT_STATISTIC,
-  COUNT_BY_CHAIN_ID,
-  COUNT_BY_TOKEN_ADDRESS,
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-  GET_DAILY_STATS,
+  DAILY_STATISTICS_BY_CHAIN,
+  RANKED_CHAINIDS_BY_VOLUME,
 } from '@graphql/queries'
-import {API_URL} from '@graphql'
+import { API_URL } from '@graphql'
 
 const link = new HttpLink({
   uri: API_URL,
@@ -16,29 +14,35 @@ const link = new HttpLink({
 
 const client = new ApolloClient({
   link: link,
+  ssrMode: true,
   cache: new InMemoryCache(),
-  fetchPolicy: 'network-only',
+  fetchPolicy: 'cache-and-network',
   fetchOptions: {
     mode: 'no-cors',
   },
 })
 
 function Index({
-  // bridgeVolume,
-  // transactions,
-  // addresses,
-  // latestBridgeTransactions,
-  // latestBridgeTransactionsPending,
-  // popularTokens,
-  // popularChains,
+  // dailyStats,
+  // rankedChainIDs,
+  // totalVolume,
+  // totalFee,
+  // totalAddresses,
+  // totalTransactions,
 }) {
+  // console.log("YO MAMA", totalVolume,
+  // totalFee,
+  // totalAddresses,
+  // totalTransactions)
+
   return (
     <Home
-      // bridgeVolume={bridgeVolume}
-      // transactions={transactions}
-      // addresses={addresses}
-      // popularTokens={popularTokens}
-      // popularChains={popularChains}
+      // dailyStats={dailyStats.dailyStatisticsByChain}
+      // rankedChainIDs={rankedChainIDs.rankedChainIDsByVolume}
+      // totalVolume={totalVolume.amountStatistic.value}
+      // totalFee={totalFee.amountStatistic.value}
+      // totalAddresses={totalAddresses.amountStatistic.value}
+      // totalTransactions={totalTransactions.amountStatistic.value}
     />
   )
 }
@@ -46,79 +50,63 @@ function Index({
 export default Index
 
 // export async function getServerSideProps() {
-//   const { data: bridgeVolume } = await client.query({
-//     query: GET_DAILY_STATS,
+//   const { data: dailyStats } = await client.query({
+//     query: DAILY_STATISTICS_BY_CHAIN,
 //     variables: {
-//       chainId: null,
 //       type: 'VOLUME',
-//       platform: 'BRIDGE',
-//       days: 30,
+//       duration: 'PAST_MONTH',
 //     },
 //   })
 
-//   const { data: transactions } = await client.query({
-//     query: GET_DAILY_STATS,
+//   const { data: rankedChainIDs } = await client.query({
+//     query: RANKED_CHAINIDS_BY_VOLUME,
 //     variables: {
-//       chainId: null,
-//       type: 'TRANSACTIONS',
-//       platform: 'BRIDGE',
-//       days: 30,
+//       duration: 'PAST_MONTH',
 //     },
 //   })
 
-//   const { data: addresses } = await client.query({
-//     query: GET_DAILY_STATS,
+//   const { data: totalVolume } = await client.query({
+//     query: AMOUNT_STATISTIC,
 //     variables: {
-//       chainId: null,
-//       type: 'ADDRESSES',
-//       platform: 'BRIDGE',
-//       days: 30,
+//       platform: "ALL",
+//       duration: "ALL_TIME",
+//       type: "TOTAL_VOLUME_USD",
 //     },
 //   })
-
-
-
-//   const { data: latestBridgeTransactions } = await client.query({
-//     query: GET_BRIDGE_TRANSACTIONS_QUERY,
+//   const { data: totalFee } = await client.query({
+//     query: AMOUNT_STATISTIC,
 //     variables: {
-//       pending: false,
-//       page: 1,
+//       platform: "ALL",
+//       duration: "ALL_TIME",
+//       type: "TOTAL_FEE_USD",
 //     },
 //   })
-//   const { data: latestBridgeTransactionsPending } = await client.query({
-//     query: GET_BRIDGE_TRANSACTIONS_QUERY,
+//   const { data: totalAddresses } = await client.query({
+//     query: AMOUNT_STATISTIC,
 //     variables: {
-//       pending: true,
-//       page: 1,
+//       platform: "ALL",
+//       duration: "ALL_TIME",
+//       type: "COUNT_ADDRESSES",
 //     },
 //   })
 
-//   const { data: popularTokens } = await client.query({
-//     query: COUNT_BY_TOKEN_ADDRESS,
+//   const { data: totalTransactions } = await client.query({
+//     query: AMOUNT_STATISTIC,
 //     variables: {
-//       direction: 'IN',
-//       hours: 720,
+//       platform: "ALL",
+//       duration: "ALL_TIME",
+//       type: "COUNT_TRANSACTIONS",
 //     },
 //   })
-//   const { countByTokenAddress } = popularTokens ?? {}
-
-//   const { data: popularChains } = await client.query({
-//     query: COUNT_BY_CHAIN_ID,
-//     variables: {
-//       direction: 'IN',
-//       hours: 720,
-//     },
-//   })
-
-//   const { countByChainId } = popularChains ?? {}
 
 //   return {
 //     props: {
-//       bridgeVolume: bridgeVolume,
-//       transactions: transactions,
-//       addresses: addresses,
-//       popularTokens: countByTokenAddress,
-//       popularChains: countByChainId,
+//       dailyStats: dailyStats,
+//       rankedChainIDs: rankedChainIDs,
+//       totalVolume: totalVolume,
+//       totalFee: totalFee,
+//       totalAddresses: totalAddresses,
+//       totalTransactions: totalTransactions,
 //     }, // will be passed to the page component as props
 //   }
 // }

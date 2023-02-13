@@ -5,9 +5,10 @@ import { getNetworkTextColor } from '@styles/networks'
 import Image from 'next/image'
 
 export function ChainInfo({
+  keyy,
   chainId,
   imgClassName = 'w-4 h-4',
-  linkClassName = 'float-right text-white hover:bg-cyan-100/50 px-1.5  rounded-md ease-in-out bg-[#191919]',
+  linkClassName = 'float-right text-white transition ease-out hover:text-[#8FEBFF] px-1.5  rounded-md ease-in-out bg-[#191919]',
   textClassName = "pl-1 whitespace-nowrap text-sm text-white",
   txHash,
   noLink = false,
@@ -23,7 +24,7 @@ export function ChainInfo({
       <div className="flex justify-between">
         <div className='flex flex-row  items-center'>
           <Image
-            className={`inline mr-1 rounded-lg ${imgClassName}`}
+            className={`inline mr-[.5rem] rounded-lg ${imgClassName}`}
             src={chainImg}
             alt={chainImg}
           />

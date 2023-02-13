@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-export function formatUSD  (totalUsdVolumes) {
+export function formatUSD(totalUsdVolumes) {
   if (totalUsdVolumes > 1000000000) {
     return `${_.round(totalUsdVolumes / 1000000000, 2)}B`
   } else if (totalUsdVolumes > 100000) {
@@ -8,7 +8,5 @@ export function formatUSD  (totalUsdVolumes) {
   } else if (totalUsdVolumes > 1000) {
     return `${_.round(totalUsdVolumes / 1000, 1)}K`
   }
-return totalUsdVolumes
-
-
+  return `${_.round(totalUsdVolumes, 1)}`
 }

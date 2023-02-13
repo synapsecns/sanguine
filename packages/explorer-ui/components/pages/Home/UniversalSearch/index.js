@@ -7,7 +7,6 @@ import { validateAndParseHash } from '@utils/validateAndParseHash'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
-import OutlinedInput from '@mui/material/OutlinedInput';
 
 import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
@@ -31,6 +30,7 @@ export function UniversalSearch({
   minSize,
   setMaxSize,
   maxSize,
+
   setStartDate,
   startDate,
   setEndDate,
@@ -46,7 +46,13 @@ export function UniversalSearch({
   setChains,
   tokens,
   setTokens,
+  chainsLocale,
+  setChainsLocale,
+  walletLocale,
+  setWalletLocale
 }) {
+  // const search = useSearchParams()
+
   const [searchField, setSearchField] = useState('')
   const [showText, setShowText] = useState(false)
   // const [startDate, setStartDate] = useState("s");
@@ -74,12 +80,13 @@ export function UniversalSearch({
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
   const resetFields = () => {
     setWallet('')
-    setMinSize('')
-    setMaxSize('')
+    setMinSize({type: "USD", value: ""})
+    setMaxSize({type: "USD", value: ""})
     setStartDate(null)
     setEndDate(null)
     setToTx(true)
     setFromTx(true)
+    setChains([])
     setKappa('')
   }
   let isValid
@@ -152,11 +159,17 @@ export function UniversalSearch({
             <TextField size="small" value={kappa} onChange={(e) => {
               setKappa(e.target.value)
             }}
-              id="outlined-basic" label="Search by address / txid / token / chain / date" variant="outlined" sx={inputStyle} />
+              id="outlined-basic" label="Search by TXID / TXHash" variant="outlined" sx={inputStyle} />
 
           </div>
-          <button onClick={() => executeSearch()} className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ml-[-105px] pointer-cursor z-10">
-            Search
+          <button onClick={() => executeSearch()}
+          className={
+            'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ml-[-105px] pointer-cursor z-10' +
+            (loading ? ' pointer-events-none opacity-[0.4]' : '')
+          }
+ >
+
+          Search
           </button>
           {/* <button onClick={() => executeSearch()} className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200">
             <a href={searchLink}>Search</a>
@@ -213,16 +226,17 @@ export function UniversalSearch({
 
 
               </div>
-              <div class="flex justify-center rounded-md border-l-0 border-gray-700 border-opacity-70 bg-[#333333]  bg-opacity-30 py-3 px-3">
-                <div class="form-check form-check-inline mx-1">
-                  <input class="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
-                  <label class="form-check-label inline-block text-gray-500 " for="walletFrom">From</label>
+              <div className="flex justify-center rounded-md border-l-0 border-gray-700 border-opacity-70 bg-[#333333]  bg-opacity-30  py-[9px] px-3">
+                <div className="form-check form-check-inline mx-1" onClick={() => setWalletLocale(!walletLocale)}>
+                  <input checked={walletLocale}  className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
+                  <label className="form-check-label inline-block text-gray-500 " for="walletFrom">From</label>
                 </div>
-                <div class="form-check form-check-inline mx-1">
-                  <input class="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletTo" value="option2" />
-                  <label class="form-check-label inline-block text-gray-500  " for="walletTo">To</label>
+                <div className="form-check form-check-inline mx-1" onClick={() => setWalletLocale(!walletLocale)}>
+                  <input checked={!walletLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white  checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletTo" value="option2" />
+                  <label className="form-check-label inline-block text-gray-500  " for="walletTo">To</label>
                 </div>
               </div>
+
               {/* <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -241,7 +255,6 @@ export function UniversalSearch({
             </div>
 
 
-
             {/* THIS IS MIN/MAX SIZE */}
             <div className="flex justify-center items-center p-2 gap-x-14 py-4">
               <h3
@@ -254,14 +267,15 @@ export function UniversalSearch({
                 <div className="flex flex-row items-center ">
                   <TextField
                     select
+                    id="Chains"
                     name="Chains"
                     variant="outlined"
                     label="Chains"
                     size="small"
+                    value={chains}
                     sx={comboSelectStyle}
                     SelectProps={{
                       multiple: true,
-                      value: chains,
                       onChange: (e) => handleChains(e)
                     }}
                   >
@@ -276,14 +290,14 @@ export function UniversalSearch({
                     ))}
                   </TextField>
 
-                  <div class="ml-4 w-fit flex justify-center rounded-md border-l-0 border-gray-700 border-opacity-70 bg-[#333333]  bg-opacity-30 py-3 px-3">
-                    <div class="form-check form-check-inline mx-2">
-                      <input class="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
-                      <label class="form-check-label inline-block text-gray-500 " for="walletFrom">Origin</label>
+                  <div className="ml-4 w-fit flex justify-center rounded-md border-l-0 border-gray-700 border-opacity-70 bg-[#333333]  bg-opacity-30 py-[9px] px-3">
+                    <div className="form-check form-check-inline mx-2" onClick={() => setChainsLocale(!chainsLocale)}>
+                      <input checked ={chainsLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
+                      <label className="form-check-label inline-block text-gray-500 " for="walletFrom">From</label>
                     </div>
-                    <div class="form-check form-check-inline mx-2">
-                      <input class="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletTo" value="option2" />
-                      <label class="form-check-label inline-block text-gray-500  " for="walletTo">Destination</label>
+                    <div className="form-check form-check-inline mx-2" onClick={() => setChainsLocale(!chainsLocale)}>
+                      <input checked ={!chainsLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletTo" value="option2" />
+                      <label className="form-check-label inline-block text-gray-500  " for="walletTo">To</label>
                     </div>
                   </div>
                 </div>
@@ -318,26 +332,28 @@ export function UniversalSearch({
 
                 <div className="w-[49%] flex flex-row ">
                   <div className='w-[80%]'>
-                    <TextField size="small" value={minSize} onChange={(e) => {
-                      setMinSize(e.target.value)
+                    <TextField  type="number" size="small" value={minSize.value} onChange={(e) => {
+                      setMinSize({...minSize,value: e.target.value})
                     }} id="outlined-basic" label="Min Size" variant="outlined" sx={inputStyleRounded} />
                   </div>
                   <div className='w-[20%]'>
                     <TextField
                       select
-                      name="Units"
+                      id="UnitsMin"
+                      name="UnitsMin"
                       variant="outlined"
                       label="Units"
                       size="small"
                       sx={comboSelectStyleSmall}
                       SelectProps={{
-                        value: chains,
-                        onChange: (e) => handleChains(e)
+                        value:  minSize.type,
+                        onChange: (e) => setMinSize({...minSize, type: e.target.value})
                       }}
                     >
                       <MenuItem
                         key="USD"
                         value="USD"
+                        selected
                       >
                         USD
                       </MenuItem>
@@ -350,28 +366,29 @@ export function UniversalSearch({
                     </TextField>
                   </div>
                 </div>
-
                 <div className="w-[49%] flex flex-row">
                   <div className='w-[80%]'>
-                    <TextField size="small" onChange={(e) => { setMaxSize(e.target.value) }}
-                      value={maxSize} id="outlined-basic" label="Max Size" variant="outlined" sx={inputStyleRounded} />
+                    <TextField size="small" type="number" onChange={(e) => { setMaxSize({ ...maxSize,value: e.target.value}) }}
+                      value={maxSize.value} id="outlined-basic" label="Max Size" variant="outlined" sx={inputStyleRounded} />
                   </div>
                   <div className='w-[20%]'>
                     <TextField
                       select
-                      name="Units"
+                      id="UnitsMax"
+                      name="UnitsMax"
                       variant="outlined"
                       label="Units"
                       size="small"
                       sx={comboSelectStyleSmall}
                       SelectProps={{
-                        value: chains,
-                        onChange: (e) => handleChains(e)
+                        value:  maxSize.type,
+                        onChange: (e) => setMaxSize({...maxSize, type: e.target.value})
                       }}
                     >
                       <MenuItem
                         key="USD"
                         value="USD"
+
                       >
                         USD
                       </MenuItem>

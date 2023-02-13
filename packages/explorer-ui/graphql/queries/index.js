@@ -1,4 +1,4 @@
-import {gql} from '@apollo/client'
+import { gql } from '@apollo/client'
 
 const SINGLE_SIDE_INFO_FRAGMENT = gql`
   fragment SingleSideInfo on PartialInfo {
@@ -32,30 +32,40 @@ const BRIDGE_TRANSACTION_INFO_FRAGMENT = gql`
 
 export const GET_BRIDGE_TRANSACTIONS_QUERY = gql`
   query GetBridgeTransactionsQuery(
-    $chainID: [Int]
-    $address: String
+    $chainIDFrom: [Int]
+    $chainIDTo: [Int]
+    $addressFrom: String
+    $addressTo: String
     $maxAmount: Int
     $minAmount: Int
+    $maxAmountUsd: Int
+    $minAmountUsd: Int
     $startTime: Int
     $endTime: Int
-    $txHash: String
+    $txnHash: String
     $kappa: String
     $pending: Boolean
     $page: Int
-    $tokenAddress: [String]
+    $tokenAddressFrom: [String]
+    $tokenAddressTo: [String]
   ) {
     bridgeTransactions(
-      chainID: $chainID
-      address: $address
+      chainIDFrom: $chainIDFrom
+      chainIDTo: $chainIDTo
+      addressFrom: $addressFrom
+      addressTo: $addressTo
       maxAmount: $maxAmount
       minAmount: $minAmount
+      maxAmountUsd: $maxAmountUsd
+      minAmountUsd: $minAmountUsd
       startTime: $startTime
       endTime: $endTime
-      txnHash: $txHash
+      txnHash: $txnHash
       kappa: $kappa
       pending: $pending
       page: $page
-      tokenAddress: $tokenAddress
+      tokenAddressFrom: $tokenAddressFrom
+      tokenAddressTo: $tokenAddressTo
     ) {
       ...TransactionInfo
     }
@@ -153,6 +163,7 @@ export const AMOUNT_STATISTIC = gql`
     $chainID:       Int
     $address:       String
     $tokenAddress:  String
+    $useCache:  Boolean
   ) {
     amountStatistic(
       type: $type
@@ -161,6 +172,7 @@ export const AMOUNT_STATISTIC = gql`
       chainID: $chainID
       address: $address
       tokenAddress: $tokenAddress
+      useCache: $useCache
     ) {
       value
     }
@@ -172,11 +184,15 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
     $chainID:   Int
     $type:      DailyStatisticType
     $duration:  Duration
+    $useCache:  Boolean
+    $platform:  Platform
   ) {
     dailyStatisticsByChain(
       chainID: $chainID
       type: $type
       duration: $duration
+      useCache: $useCache
+      platform: $platform
     ) {
       date
       ethereum
@@ -196,6 +212,7 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
       aurora
       harmony
       canto
+      dogechain
       total
     }
   }

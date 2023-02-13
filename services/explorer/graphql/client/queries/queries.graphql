@@ -1,20 +1,27 @@
 
-query GetBridgeTransactions($chainID: [Int], $address: String, $maxAmount: Int, $minAmount: Int, $startTime: Int, $endTime: Int, $txHash: String, $kappa: String, $pending: Boolean, $page: Int, $tokenAddress: [String]) {
+query GetBridgeTransactions($chainIDTo: [Int],$chainIDFrom: [Int], $addressTo: String, $addressFrom: String, $maxAmount: Int, $minAmount: Int, $maxAmountUSD: Int, $minAmountUSD: Int, $startTime: Int, $endTime: Int, $txHash: String, $kappa: String, $pending: Boolean, $page: Int, $tokenAddressFrom: [String], $tokenAddressTo: [String]) {
   response: bridgeTransactions(
-    chainID: $chainID
-    address: $address
+    chainIDTo: $chainIDTo
+    chainIDFrom: $chainIDFrom
+    addressTo: $addressTo
+    addressFrom: $addressFrom
     maxAmount: $maxAmount
     minAmount: $minAmount
+    maxAmountUsd: $maxAmountUSD
+    minAmountUsd: $minAmountUSD
     startTime: $startTime
     endTime: $endTime
     txnHash: $txHash
     kappa: $kappa
     pending: $pending
     page: $page
-    tokenAddress: $tokenAddress
+    tokenAddressTo: $tokenAddressTo
+    tokenAddressFrom: $tokenAddressFrom
+
   ) {
     fromInfo {
       chainID
+      destinationChainID
       address
       txnHash
       value
@@ -105,11 +112,12 @@ query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: 
     value
   }
 }
-query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $duration: Duration) {
+query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $duration: Duration, $platform: Platform) {
   response: dailyStatisticsByChain(
     chainID: $chainID
     type: $type
     duration: $duration
+    platform: $platform
   ) {
     date
     ethereum

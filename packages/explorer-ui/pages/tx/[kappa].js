@@ -24,7 +24,7 @@ const link = new HttpLink({
 const client = new ApolloClient({
   link: link,
   cache: new InMemoryCache(),
-  fetchPolicy: 'network-only',
+  fetchPolicy: 'no-cache',
   fetchOptions: {
     mode: 'no-cors',
   },
@@ -41,6 +41,13 @@ export default function BridgeTransaction({ queryResult }) {
   const { chainName: oChainName } = CHAIN_INFO_MAP[fromInfo.chainID] ?? {}
   const { chainName: dChainName } = CHAIN_INFO_MAP[toInfo.chainID] ?? {}
 
+  const getTimeDifference = (start, end) => {
+    const diff = end - start
+    if (0 >= diff) {
+      return '1'
+    }
+    return diff.toString()
+  }
   let content
 
   if (!!transaction) {
@@ -65,15 +72,15 @@ export default function BridgeTransaction({ queryResult }) {
         </div>
         <div className="flex gap-x-4 py-1">
           <p className="text-white text-opacity-60">Requested</p>
-          <p className="text-white ">{new Date(toInfo.time * 1000).toISOString()}</p>
+          <p className="text-white ">{new Date(fromInfo.time * 1000).toISOString()}</p>
         </div>
         <div className="flex gap-x-4 py-1">
           <p className="text-white text-opacity-60">Confirmed</p>
-          <p className="text-white ">{new Date(fromInfo.time * 1000).toISOString()}</p>
+          <p className="text-white ">{new Date(toInfo.time * 1000).toISOString()}</p>
         </div>
         <div className="flex gap-x-8 py-1">
           <p className="text-white text-opacity-60">Elapsed</p>
-          <p className="text-white ">{toInfo.time - fromInfo.time} seconds</p>
+          <p className="text-white ">≈{getTimeDifference(fromInfo.time, toInfo.time)} seconds</p>
         </div>
         <div className="flex gap-y-2 flex-col">
 
@@ -161,7 +168,7 @@ export async function getServerSideProps(context) {
       kappa: context.params.kappa,
     },
   })
-
+  console.log("sds",data.bridgeTransactions)
   return {
     props: {
       queryResult: data

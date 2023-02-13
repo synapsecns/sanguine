@@ -4,18 +4,23 @@ import { AMOUNT_STATISTIC } from '@graphql/queries'
 import Card from '@components/tailwind/Card'
 import Grid from '@components/tailwind/Grid'
 import numeral from 'numeral'
-import {formatUSD} from '@utils/formatUSD'
+import { formatUSD } from '@utils/formatUSD'
 
 
 
-export default function HolisticStats(loading) {
+export default function HolisticStats({platform: parentPlatform, setPlatform:  parentSetPlatform, loading}) {
   const [volume, setVolume] = useState("--")
   const [revenue, setRevenue] = useState("--")
   const [addresses, setAddresses] = useState("--")
   const [txs, setTxs] = useState("--")
-  const [platform, setPlatform] = useState("ALL");
-  const unSelectStyle = "border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30"
-  const selectStyle = "text-white border-[#BE78FF] bg-synapse-radial"
+  const [useCache, setUseCache] = useState(true)
+  const [skip, setSkip] = useState(false)
+  const [platform, setPlatform] = useState(true)
+
+  const unSelectStyle =
+    'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
+  const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
+
 
   const { loading: loadingVolume, error: errorVolume, data: dataVolume } = useQuery(
     AMOUNT_STATISTIC, {
@@ -24,8 +29,10 @@ export default function HolisticStats(loading) {
       platform: platform,
       duration: "ALL_TIME",
       type: "TOTAL_VOLUME_USD",
+      useCache: true
     },
-    pollInterval: 10000,
+    onCompleted: (data) => { setVolume(data.amountStatistic.value) }
+
   }
   )
   const { loading: loadingRevenue, error: errorRevenue, data: dataRevenue } = useQuery(
@@ -35,8 +42,10 @@ export default function HolisticStats(loading) {
       platform: platform,
       duration: "ALL_TIME",
       type: "TOTAL_FEE_USD",
+      useCache: true
     },
-    pollInterval: 10000,
+    onCompleted: (data) => { setRevenue(data.amountStatistic.value) }
+
   }
   )
   const { loading: loadingAddresses, error: errorAddresses, data: dataAddresses } = useQuery(
@@ -46,35 +55,57 @@ export default function HolisticStats(loading) {
       platform: platform,
       duration: "ALL_TIME",
       type: "COUNT_ADDRESSES",
+      useCache: useCache,
     },
-    pollInterval: 10000,
-    notifyOnNetworkStatusChange: true,
+    pollInterval: 5000,
+    skip: skip,
+    // notifyOnNetworkStatusChange: true,
+    onCompleted: (data) => {
+      if (useCache) {
+        setUseCache(false)
+        // setSkip(true)
+      }
+      setAddresses(data.amountStatistic.value)
 
+    }
   }
   )
-  const { loading: loadingTxs, error: errorTxs, data: dataTxs, startPolling: stopPollingTx, stopPolling: startPollingTx } = useQuery(
+  const { loading: loadingTxs, error: errorTxs, data: dataTxs } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
     variables: {
       platform: platform,
       duration: "ALL_TIME",
       type: "COUNT_TRANSACTIONS",
+      useCache: useCache,
     },
-    pollInterval: 10000,
-    notifyOnNetworkStatusChange: true,
+    pollInterval: 5000,
+    skip: skip,
+    // notifyOnNetworkStatusChange: true,
+    onCompleted: (data) => {
+      if (useCache) {
+        setUseCache(false)
+        // setSkip(true)
+      }
+      setTxs(data.amountStatistic.value)
+    }
 
   }
   )
 
+  useEffect(() => {
+    setPlatform(parentPlatform)
+  }, [parentPlatform])
+
   // useEffect(() => {
   //   // versionRefetch()
-  //   startPollingTx(10000)
+  //   startPollingTx(5000)
 
   //   return () => {
   //     stopPollingTx()
   //   }
   // }, [stopPollingTx, startPollingTx])
-  // Get initial data
+  // // Get initial data
   useEffect(() => {
     setVolume("--")
     setRevenue("--")
@@ -83,27 +114,6 @@ export default function HolisticStats(loading) {
 
   }, [platform])
 
-  // Get data when search params change
-  useEffect(() => {
-    if (dataVolume) {
-      setVolume(dataVolume.amountStatistic.value)
-    }
-  }, [dataVolume])
-  useEffect(() => {
-    if (dataRevenue) {
-      setRevenue(dataRevenue.amountStatistic.value)
-    }
-  }, [dataRevenue])
-  useEffect(() => {
-    if (dataAddresses) {
-      setAddresses(dataAddresses.amountStatistic?.value)
-    }
-  }, [dataAddresses])
-  useEffect(() => {
-    if (dataTxs) {
-      setTxs(dataTxs.amountStatistic?.value)
-    }
-  }, [dataTxs])
 
   const handlePlatform = (arg) => {
     setPlatform(arg)
@@ -140,16 +150,16 @@ export default function HolisticStats(loading) {
   return (
     <>
       <div className="my-2 mt-8">
-        <button onClick={() => setPlatform("ALL")} className={"font-medium rounded-l-md px-4 py-2 border  " + (platform === "ALL" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+        <button onClick={() => parentSetPlatform("ALL")} className={"font-medium rounded-l-md px-4 py-2 border  " + (platform === "ALL" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
           All
         </button>
-        <button onClick={() => setPlatform("BRIDGE")} className={"font-medium  px-4 py-2 border  " + (platform === "BRIDGE" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+        <button onClick={() => parentSetPlatform("BRIDGE")} className={"font-medium  px-4 py-2 border  " + (platform === "BRIDGE" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
           Bridge
         </button>
-        <button onClick={() => setPlatform("SWAP")} className={"font-medium  px-4 py-2 border  " + (platform === "SWAP" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+        <button onClick={() => parentSetPlatform("SWAP")} className={"font-medium  px-4 py-2 border  " + (platform === "SWAP" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
           Swap
         </button>
-        <button onClick={() => setPlatform("MESSAGE_BUS")} className={"font-medium rounded-r-md px-4 py-2 border mr-5 " + (platform === "MESSAGE_BUS" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+        <button onClick={() => parentSetPlatform("MESSAGE_BUS")} className={"font-medium rounded-r-md px-4 py-2 border mr-5 " + (platform === "MESSAGE_BUS" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
           Messaging
         </button>
       </div>
@@ -159,8 +169,8 @@ export default function HolisticStats(loading) {
         >
           <div className="text-xl opacity-80">Volume</div>
           <div className="text-4xl font-bold text-white">
-            {loadingVolume? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>):
-           formatUSD(volume)}
+            {loadingVolume ? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>) :
+              formatUSD(volume)}
           </div>
           <div className="flex space-x-2 text-sm font-medium">
             <div className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-400">
@@ -173,8 +183,8 @@ export default function HolisticStats(loading) {
         >
           <div className="text-xl opacity-80">Fees</div>
           <div className="text-4xl font-bold text-white">
-          {loadingRevenue? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>):
-         formatUSD(revenue)}
+            {loadingRevenue ? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>) :
+              formatUSD(revenue)}
           </div>
           <div className="flex space-x-2 text-sm font-medium">
 
@@ -185,8 +195,7 @@ export default function HolisticStats(loading) {
         >
           <div className="text-xl opacity-80">Transactions</div>
           <div className="text-4xl font-bold text-white">
-          {loadingTxs? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>):
-        numeral(txs).format('0,0')}
+            {numeral(txs).format('0,0')}
           </div>
           <div className="flex space-x-2 text-sm font-medium">
 
@@ -197,8 +206,7 @@ export default function HolisticStats(loading) {
         >
           <div className="text-xl opacity-80">Addresses</div>
           <div className="text-4xl font-bold text-white">
-          {loadingAddresses? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>):
-        numeral(addresses).format('0,0')}
+            {numeral(addresses).format('0,0')}
           </div>
           <div className="flex space-x-2 text-sm font-medium">
 

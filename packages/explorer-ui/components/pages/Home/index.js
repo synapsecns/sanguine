@@ -1,5 +1,5 @@
 import { TRANSACTIONS_PATH, getChainUrl } from '@urls'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo, useCallback } from 'react'
 import { Stats } from './Stats'
 import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
 import { TableHeader } from '@components/TransactionTable/TableHeader'
@@ -12,7 +12,9 @@ import { OverviewChart } from '@components/ChainChart'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { PageLink } from '@components/misc/PageLink'
 import Grid from '@components/tailwind/Grid'
-import {formatUSD} from '@utils/formatUSD'
+import { formatUSD } from '@utils/formatUSD'
+import { formatDate } from '@utils/formatDate'
+
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
@@ -29,17 +31,37 @@ import HolisticStats from '@components/misc/HolisticStats'
 import _ from 'lodash'
 import { isCompositeType } from 'graphql'
 
+const titles = {
+  VOLUME: 'Volume',
+  FEE: 'Fees',
+  ADDRESSES: 'Addrs',
+  TRANSACTIONS: 'TXs',
+}
+const platformTitles = {
+  BRIDGE: 'Bridge',
+  SWAP: 'Swap',
+  MESSAGE_BUS: 'Message Bus',
+}
 const formatCurrency = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
 })
 
-export function Home({ }) {
+export function Home() {
+
+  // console.log("here",totalVolumeSS, totalFeeSS, totalAddressesSS, totalTransactionsSS)
+
   const search = useSearchParams()
+  const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
+  const [platform, setPlatform] = useState("ALL");
+
   const [currentChainID, setCurrentChainID] = useState(0)
+
   const [pending, setPending] = useState(false)
   const [transactionsArr, setTransactionsArr] = useState([])
   const [dailyDataArr, setDailyDataArr] = useState([])
+  const [holisticStats, setHolisticStats] = useState({})
+
   const [completed, setCompleted] = useState(false)
   const [dailyStatisticType, setDailyStatisticType] = useState('VOLUME')
   const [dailyStatisticDuration, SetDailyStatisticDuration] =
@@ -49,19 +71,14 @@ export function Home({ }) {
   const [rankedChainIDs, setRankedChainIDs] = useState([])
 
   const unSelectStyle =
-    'border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30'
+    'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
-  const formatDate = (date) => {
-    const d = new Date(date)
-    const month = d.getMonth() + 1
-    const day = d.getDate()
-    const year = d.getFullYear()
-    return `${month}/${day}/${year}`
+  const returnChainData = () => {
+    var items = Object.keys(dailyDataArr?.[currentTooltipIndex]).map((key) => { return [key, dailyDataArr?.[currentTooltipIndex][key]] })
+    items.sort((first, second) => { return second[1] - first[1] })
+    var keys = items.map((e) => { return e[0] })
+    return keys
   }
-  // var { loading, error, dataTx, refetch } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY)
-  // CHAIN_ID_NAMES_REVERSE.values().map((i)=>  console.log("SsdsadsSS", i)
-
-
   const {
     loading,
     error,
@@ -69,47 +86,52 @@ export function Home({ }) {
     stopPolling,
     startPolling,
   } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
-    pollInterval: 10000000,
-    notifyOnNetworkStatusChange: true,
-    onCompleted: () => console.log('called'),
+    pollInterval: 10000,
+    fetchPolicy: 'network-only',
+    onCompleted: (data) => {
+      let bridgeTransactionsTable = data.bridgeTransactions
+
+      bridgeTransactionsTable = _.orderBy(
+        bridgeTransactionsTable,
+        'fromInfo.time',
+        ['desc']
+      ).slice(0, 10)
+      setTransactionsArr(bridgeTransactionsTable)
+
+    },
   })
 
   const [
     getDailyStatisticsByChain,
     { loading: loadingDailyData, error: errorDailyData, data: dailyData },
-  ] = useLazyQuery(DAILY_STATISTICS_BY_CHAIN)
-
-  const [
-    getChainIDsRankedByVolume,
-    {
-      loading: loadingRankedChains,
-      error: errorRankedChains,
-      data: rankedChainsData,
-    },
-  ] = useLazyQuery(RANKED_CHAINIDS_BY_VOLUME)
-
-
-
-  useEffect(() => {
-    if (dailyData) {
-      setDailyDataArr(dailyData.dailyStatisticsByChain, {
-        variables: {
-          type: dailyStatisticType,
-          duration: dailyStatisticDuration,
-        },
-      })
+  ] = useLazyQuery(DAILY_STATISTICS_BY_CHAIN, {
+    onCompleted: (data) => {
+      console.log("platformport", platform)
+      setDailyDataArr(data.dailyStatisticsByChain);
+      setCurrentTooltipIndex(data.dailyStatisticsByChain.length - 1);
     }
-  }, [dailyData, loadingDailyData])
+  })
 
+
+  // update chart
   useEffect(() => {
-    if (rankedChainsData) {
-      setRankedChainIDs(rankedChainsData.rankedChainIDsByVolume, {
-        variables: {
-          duration: dailyStatisticDuration,
-        },
-      })
+    let type = dailyStatisticType
+    if (platform === "MESSAGE_BUS" && dailyStatisticType === "VOLUME"){
+      type = "FEE"
+      setDailyStatisticType("FEE")
     }
-  }, [rankedChainsData, loadingRankedChains])
+    getDailyStatisticsByChain({
+      variables: {
+        type: type,
+        duration: dailyStatisticDuration,
+        platform: platform,
+        useCache: true,
+      },
+    })
+
+  }, [dailyStatisticDuration, dailyStatisticType, dailyStatisticCumulative, platform])
+
+
 
   // Get initial data
   useEffect(() => {
@@ -117,52 +139,29 @@ export function Home({ }) {
       variables: {
         type: dailyStatisticType,
         duration: dailyStatisticDuration,
-      },
-    })
-    getChainIDsRankedByVolume({
-      variables: {
-        duration: dailyStatisticDuration,
+        useCache: true,
       },
     })
   }, [])
+  let chartData = dailyDataArr
+  if (dailyStatisticCumulative) {
+    chartData = JSON.parse(JSON.stringify(dailyDataArr))
+    for (let i = 1; i < chartData.length; i++) {
+      for (let key in dailyDataArr[i]) {
+        if (key !== 'date' && key !== '__typename') {
+          chartData[i][key] += (chartData[i - 1]?.[key] ? chartData[i - 1][key] : 0)
+        }
 
-  // update chart
-  useEffect(() => {
-    getDailyStatisticsByChain({
-      variables: {
-        type: dailyStatisticType,
-        duration: dailyStatisticDuration,
-      },
-    })
-  }, [dailyStatisticDuration, dailyStatisticType, dailyStatisticCumulative])
-
-  // update chart with chainID
-  useEffect(() => {
-    let variables = {
-      type: dailyStatisticType,
-      duration: dailyStatisticDuration,
+      }
     }
-    if (currentChainID > 0) {
-      variables["chainID"] = currentChainID
-    }
-    getDailyStatisticsByChain({
-      variables: variables,
-    })
-  }, [currentChainID])
+  }
 
-  // update ranked chains
-  useEffect(() => {
-    getChainIDsRankedByVolume({
-      variables: {
-        duration: dailyStatisticDuration,
-      },
-    })
-  }, [dailyStatisticDuration])
+
 
   useEffect(() => {
     // versionRefetch()
     if (!completed) {
-      startPolling(10000000)
+      startPolling(10000)
     } else {
       stopPolling()
     }
@@ -171,66 +170,45 @@ export function Home({ }) {
     }
   }, [stopPolling, startPolling, completed])
 
-  // Get data when search params change
-  useEffect(() => {
-    if (dataTx) {
-      setTransactionsArr(dataTx.bridgeTransactions, {
-        variables: {
-          pending: pending,
-        },
-      })
+
+  const totalChainVolume = () => {
+    if (dailyStatisticCumulative) {
+      return chartData[chartData.length - 1]["total"]
     }
-  }, [dataTx, search, pending])
+    let totalRankedChainVolume = 0
+    for (let i = 0; i < chartData.length; i++) {
+      totalRankedChainVolume += chartData[i]["total"]
 
+    }
+    return totalRankedChainVolume
 
-  let txContent
-  let bridgeTransactionsTable = transactionsArr
-
-  bridgeTransactionsTable = _.orderBy(
-    bridgeTransactionsTable,
-    'fromInfo.time',
-    ['desc']
-  ).slice(0, 10)
-
-  txContent = <BridgeTransactionTable queryResult={bridgeTransactionsTable} />
-
-  let totalRankedChainVolume = 0
-  for (let i = 0; i < rankedChainIDs.length; i++) {
-    totalRankedChainVolume += rankedChainIDs[i].total
   }
 
   return (
     <StandardPageContainer title={'Synapse Analytics'}>
-      <HolisticStats />
+      <HolisticStats
+        platform={platform}
+        loading={false}
+        setPlatform={setPlatform}
+      />
       <br />
       <HorizontalDivider />
       <div className="grid grid-cols-3 gap-4">
         <div className="col-span-1">
           <div className="my-5">
-            {currentChainID === 0 ? (
+            {currentTooltipIndex >= 0 && chartData?.[currentTooltipIndex] ? (
               <p
-                className="text-4xl font-medium text-default
+                className="text-2xl font-medium text-default
               font-bold
-              text-white"
+              text-white pl-2"
               >
-                All Transactions
+                {formatDate(chartData[0].date)} to{' '}
+                {formatDate(chartData[chartData.length - 1].date)}
               </p>
-            ) : (
-              <ChainInfo
-                chainId={currentChainID}
-                noLink={true}
-                imgClassName="w-8 h-8"
-                linkClassName="bg-gray-700 p-1 rounded-md ml-1 mt-2"
-                textClassName="text-4xl font-medium text-default
-            font-bold
-            text-white"
-              />
-            )}
-            {dailyDataArr?.length > 0 ?
-              <p className="text-md font-medium text-default mt-2 text-white">
-                {formatDate(dailyDataArr[0].date)} to{' '}
-                {formatDate(dailyDataArr[dailyDataArr.length - 1].date)}
-              </p> : <div class="h-3 w-[50%] mt-4 bg-slate-700 rounded animate-pulse"></div>}
+            ) : null}
+            {chartData?.length > 0 ?
+              <p className="pl-2 text-md font-medium text-default mt-2 text-white">{' '} {' '} Total {platform !== "ALL" ? platformTitles[platform]+" ": ""}{titles[dailyStatisticType]}: {' '}{formatUSD(totalChainVolume())}
+              </p> : <div className="h-3 w-[50%] mt-4 bg-slate-700 rounded animate-pulse"></div>}
           </div>
         </div>
         <div className="col-span-2 flex justify-end">
@@ -243,7 +221,8 @@ export function Home({ }) {
                   (dailyStatisticType === 'VOLUME'
                     ? selectStyle
                     : unSelectStyle) +
-                  (loadingDailyData ? ' pointer-events-none' : '')
+                  ((loadingDailyData || platform === "MESSAGE_BUS") ? ' pointer-events-none' : '') +
+                  ( platform === "MESSAGE_BUS" ? ' opacity-[0.6]' : '')
                 }
               >
                 Vol
@@ -349,63 +328,48 @@ export function Home({ }) {
       <HorizontalDivider />
       <div className="grid grid-cols-4 gap-4">
         <div className="col-span-1 w-[100%]">
+          <p className="text-lg font-bold text-white pl-2 pt-4 ">{titles[dailyStatisticType]} for {formatDate(chartData?.[currentTooltipIndex]?.date)}</p>
           <table className='min-w-full'>
-            <TableHeader headers={['Chain', 'Volume']} />
-            {loadingRankedChains ? <tbody> {Object.values(CHAIN_ID_NAMES_REVERSE).map((i) =>
+
+            <TableHeader headers={['Chain', titles[dailyStatisticType]]} />
+            {loadingDailyData ? <tbody> {Object.values(CHAIN_ID_NAMES_REVERSE).map((i) =>
               <tr
                 key={i}
 
               ><td className='w-[70%]'> <div className="h-3 w-full mt-4 bg-slate-700 rounded animate-pulse"></div></td><td className='w-[30%]'><div className="h-3 w-full mt-4 bg-slate-700 rounded animate-pulse"></div></td></tr>)}</tbody> :
               (<tbody>
-                <tr
-                  key={0}
-                  className="hover:bg-synapse-radial rounded-md cursor-pointer "
-                  onClick={() => setCurrentChainID(0)}
-                >
-                  <td>
-                    <p
-                      className="text-1xl font-medium text-default text-white ml-2"
-                    >All Chains</p>
-                  </td>
-                  <td>
-                    <div className="ml-1 mr-2 self-center">
-                      <p className='whitespace-nowrap px-2  text-sm  text-white'>{formatUSD(totalRankedChainVolume)}</p>
-                    </div>
-                  </td>
-                </tr>
-                {rankedChainIDs.map((row, i) => (
 
-                  <tr
+                {currentTooltipIndex >= 0 && chartData?.[currentTooltipIndex] ? returnChainData().map((key, i) => {
+                  return chartData[currentTooltipIndex][key] > 0 ? (<tr
                     key={i}
-                    className="hover:bg-synapse-radial rounded-md cursor-pointer w-[100%]"
-                    onClick={(event) => event.target.type !== "link" && setCurrentChainID(row.chainID)}
+                    className=" rounded-md w-[100%]"
                   >
-                    <td className='w-fit'>
-                      <ChainInfo
-                        chainId={row.chainID}
-                        imgClassName="w-4 h-4 ml-2"
-                        textClassName="whitespace-nowrap px-2  text-sm  text-white"
-                      />
-                    </td>
+                    <td className='w-[70%]'>
+                      {key === "total" ? <p className="pl-2 whitespace-nowrap text-sm text-white">All Chains</p> :
+                        <ChainInfo
 
-                    <td className='w-fit'>
+                          chainId={CHAIN_ID_NAMES_REVERSE[key]}
+                          imgClassName="w-4 h-4 ml-2"
+                          textClassName="whitespace-nowrap px-2  text-sm  text-white"
+                        />}
+                    </td>
+                    <td className='w-fit '>
                       <div className="ml-1 mr-2 self-center">
-                        <p className='whitespace-nowrap px-2  text-sm  text-white'>{formatUSD(row.total)}</p>
+                        <p className='whitespace-nowrap px-2  text-sm  text-white'>{formatUSD(chartData[currentTooltipIndex][key])}</p>
                       </div>
                     </td>
-                  </tr>
-                ))}
+                  </tr>) : null
+                }) : console.log("NOT REAL")}
               </tbody>)}
           </table>
         </div>
         <div className="col-span-3 ">
-            {/* { loadingDailyData ?  <div className={"flex justify-center align-center w-full animate-spin mt-[" + (Object.values(CHAIN_ID_NAMES_REVERSE).length * 10).toString() + "px]"}><SynapseLogoSvg /></div> : */}
-            { loadingDailyData ?  <div className="flex justify-center align-center w-full my-[240px]"><div className='animate-spin'><SynapseLogoSvg /></div></div> :
-
+          {/* { loadingDailyData ?  <div className={"flex justify-center align-center w-full animate-spin mt-[" + (Object.values(CHAIN_ID_NAMES_REVERSE).length * 10).toString() + "px]"}><SynapseLogoSvg /></div> : */}
           <OverviewChart
+            setCurrentTooltipIndex={setCurrentTooltipIndex}
             loading={loadingDailyData}
-            height={rankedChainIDs.length * 30}
-            data={dailyDataArr}
+            height={17 * 31}
+            chartData={chartData}
             isCumulativeData={dailyStatisticCumulative}
             isUSD={
               dailyStatisticType === 'TRANSACTIONS' ||
@@ -416,14 +380,16 @@ export function Home({ }) {
             showAggregated={false}
             monthlyData={false}
             currency
-          />}
+            currentIndex={currentTooltipIndex}
+          />
+
         </div>
       </div>
       <br /> <br />
       <HorizontalDivider />
       <br /> <br />
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
-      {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : txContent}
+      {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={transactionsArr}/>}
 
 
       <br />
@@ -432,9 +398,7 @@ export function Home({ }) {
 
           <a
             className="text-white rounded-md px-5 py-3 text-opacity-100 transition-all ease-in hover:bg-synapse-radial border-l-0 border-gray-700 border-opacity-30 bg-gray-700 bg-opacity-30 hover:border-[#BE78FF] cursor-pointer"
-            target="_blank"
             href={TRANSACTIONS_PATH}
-            rel="noreferrer"
           >
             {'Explore all transactions'}
           </a>

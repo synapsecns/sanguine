@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"github.com/synapsecns/sanguine/services/explorer/api/cache"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 )
@@ -15,4 +16,5 @@ import (
 type Resolver struct {
 	DB      db.ConsumerDB
 	Fetcher fetcher.ScribeFetcher
+	Cache   cache.Service
 }

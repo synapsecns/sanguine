@@ -15,6 +15,7 @@ PartialInfo is a transaction that occurred on one chain.
 """
 type PartialInfo {
   chainID: Int
+  destinationChainID: Int
   address: String
   txnHash: String
   value:          String
@@ -162,6 +163,7 @@ type DateResultByChain {
   aurora: Float
   harmony: Float
   canto: Float
+  dogechain: Float
   total:  Float
 }
 

@@ -76,6 +76,7 @@ type ComplexityRoot struct {
 		Cronos    func(childComplexity int) int
 		Date      func(childComplexity int) int
 		Dfk       func(childComplexity int) int
+		Dogechain func(childComplexity int) int
 		Ethereum  func(childComplexity int) int
 		Fantom    func(childComplexity int) int
 		Harmony   func(childComplexity int) int
@@ -107,17 +108,18 @@ type ComplexityRoot struct {
 	}
 
 	PartialInfo struct {
-		Address        func(childComplexity int) int
-		BlockNumber    func(childComplexity int) int
-		ChainID        func(childComplexity int) int
-		FormattedTime  func(childComplexity int) int
-		FormattedValue func(childComplexity int) int
-		Time           func(childComplexity int) int
-		TokenAddress   func(childComplexity int) int
-		TokenSymbol    func(childComplexity int) int
-		TxnHash        func(childComplexity int) int
-		USDValue       func(childComplexity int) int
-		Value          func(childComplexity int) int
+		Address            func(childComplexity int) int
+		BlockNumber        func(childComplexity int) int
+		ChainID            func(childComplexity int) int
+		DestinationChainID func(childComplexity int) int
+		FormattedTime      func(childComplexity int) int
+		FormattedValue     func(childComplexity int) int
+		Time               func(childComplexity int) int
+		TokenAddress       func(childComplexity int) int
+		TokenSymbol        func(childComplexity int) int
+		TxnHash            func(childComplexity int) int
+		USDValue           func(childComplexity int) int
+		Value              func(childComplexity int) int
 	}
 
 	PartialMessageBusInfo struct {
@@ -143,14 +145,14 @@ type ComplexityRoot struct {
 
 	Query struct {
 		AddressRanking         func(childComplexity int, hours *int) int
-		AmountStatistic        func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) int
-		BridgeTransactions     func(childComplexity int, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) int
+		AmountStatistic        func(childComplexity int, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string, useCache *bool) int
+		BridgeTransactions     func(childComplexity int, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) int
 		CountByChainID         func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		CountByTokenAddress    func(childComplexity int, chainID *int, address *string, direction *model.Direction, hours *int) int
 		DailyStatistics        func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) int
-		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration) int
+		DailyStatisticsByChain func(childComplexity int, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool) int
 		MessageBusTransactions func(childComplexity int, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) int
-		RankedChainIDsByVolume func(childComplexity int, duration *model.Duration) int
+		RankedChainIDsByVolume func(childComplexity int, duration *model.Duration, useCache *bool) int
 	}
 
 	TearType struct {
@@ -184,15 +186,15 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	BridgeTransactions(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error)
+	BridgeTransactions(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) ([]*model.BridgeTransaction, error)
 	MessageBusTransactions(ctx context.Context, chainID []*int, contractAddress *string, startTime *int, endTime *int, txnHash *string, messageID *string, pending *bool, reverted *bool, page *int) ([]*model.MessageBusTransaction, error)
 	CountByChainID(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TransactionCountResult, error)
 	CountByTokenAddress(ctx context.Context, chainID *int, address *string, direction *model.Direction, hours *int) ([]*model.TokenCountResult, error)
 	AddressRanking(ctx context.Context, hours *int) ([]*model.AddressRanking, error)
-	AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error)
+	AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string, useCache *bool) (*model.ValueResult, error)
 	DailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int) (*model.DailyResult, error)
-	DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration) ([]*model.DateResultByChain, error)
-	RankedChainIDsByVolume(ctx context.Context, duration *model.Duration) ([]*model.VolumeByChainID, error)
+	DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool) ([]*model.DateResultByChain, error)
+	RankedChainIDsByVolume(ctx context.Context, duration *model.Duration, useCache *bool) ([]*model.VolumeByChainID, error)
 }
 
 type executableSchema struct {
@@ -357,6 +359,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.DateResultByChain.Dfk(childComplexity), true
 
+	case "DateResultByChain.dogechain":
+		if e.complexity.DateResultByChain.Dogechain == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Dogechain(childComplexity), true
+
 	case "DateResultByChain.ethereum":
 		if e.complexity.DateResultByChain.Ethereum == nil {
 			break
@@ -510,6 +519,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PartialInfo.ChainID(childComplexity), true
+
+	case "PartialInfo.destinationChainID":
+		if e.complexity.PartialInfo.DestinationChainID == nil {
+			break
+		}
+
+		return e.complexity.PartialInfo.DestinationChainID(childComplexity), true
 
 	case "PartialInfo.formattedTime":
 		if e.complexity.PartialInfo.FormattedTime == nil {
@@ -694,7 +710,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.AmountStatistic(childComplexity, args["type"].(model.StatisticType), args["duration"].(*model.Duration), args["platform"].(*model.Platform), args["chainID"].(*int), args["address"].(*string), args["tokenAddress"].(*string)), true
+		return e.complexity.Query.AmountStatistic(childComplexity, args["type"].(model.StatisticType), args["duration"].(*model.Duration), args["platform"].(*model.Platform), args["chainID"].(*int), args["address"].(*string), args["tokenAddress"].(*string), args["useCache"].(*bool)), true
 
 	case "Query.bridgeTransactions":
 		if e.complexity.Query.BridgeTransactions == nil {
@@ -706,7 +722,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.BridgeTransactions(childComplexity, args["chainID"].([]*int), args["address"].(*string), args["maxAmount"].(*int), args["minAmount"].(*int), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["kappa"].(*string), args["pending"].(*bool), args["page"].(*int), args["tokenAddress"].([]*string)), true
+		return e.complexity.Query.BridgeTransactions(childComplexity, args["chainIDFrom"].([]*int), args["chainIDTo"].([]*int), args["addressFrom"].(*string), args["addressTo"].(*string), args["maxAmount"].(*int), args["minAmount"].(*int), args["maxAmountUsd"].(*int), args["minAmountUsd"].(*int), args["startTime"].(*int), args["endTime"].(*int), args["txnHash"].(*string), args["kappa"].(*string), args["pending"].(*bool), args["page"].(*int), args["tokenAddressFrom"].([]*string), args["tokenAddressTo"].([]*string)), true
 
 	case "Query.countByChainId":
 		if e.complexity.Query.CountByChainID == nil {
@@ -754,7 +770,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.DailyStatisticsByChain(childComplexity, args["chainID"].(*int), args["type"].(*model.DailyStatisticType), args["duration"].(*model.Duration)), true
+		return e.complexity.Query.DailyStatisticsByChain(childComplexity, args["chainID"].(*int), args["type"].(*model.DailyStatisticType), args["platform"].(*model.Platform), args["duration"].(*model.Duration), args["useCache"].(*bool)), true
 
 	case "Query.messageBusTransactions":
 		if e.complexity.Query.MessageBusTransactions == nil {
@@ -778,7 +794,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.RankedChainIDsByVolume(childComplexity, args["duration"].(*model.Duration)), true
+		return e.complexity.Query.RankedChainIDsByVolume(childComplexity, args["duration"].(*model.Duration), args["useCache"].(*bool)), true
 
 	case "TearType.amount":
 		if e.complexity.TearType.Amount == nil {
@@ -947,17 +963,22 @@ type UnknownType {
   Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
   """
   bridgeTransactions(
-    chainID:        [Int]
-    address:        String
+    chainIDFrom:        [Int]
+    chainIDTo:        [Int]
+    addressFrom:        String
+    addressTo:        String
     maxAmount:      Int
     minAmount:      Int
+    maxAmountUsd:      Int
+    minAmountUsd:      Int
     startTime:      Int
     endTime:        Int
     txnHash:        String
     kappa:          String
     pending:        Boolean = false
     page:           Int = 1
-    tokenAddress:   [String]
+    tokenAddressFrom:   [String]
+    tokenAddressTo:   [String]
   ): [BridgeTransaction]
 
   """
@@ -1013,6 +1034,7 @@ type UnknownType {
     chainID:      Int
     address:      String
     tokenAddress: String
+    useCache: Boolean = false
   ): ValueResult
   """
   Daily statistic data
@@ -1030,7 +1052,9 @@ type UnknownType {
   dailyStatisticsByChain(
     chainID:  Int
     type:     DailyStatisticType = VOLUME
+    platform: Platform = ALL
     duration:     Duration = ALL_TIME
+    useCache: Boolean = false
   ): [DateResultByChain]
 
   """
@@ -1038,6 +1062,7 @@ Ranked chainIDs by volume
   """
   rankedChainIDsByVolume(
     duration:     Duration = ALL_TIME
+    useCache: Boolean = false
   ): [VolumeByChainID]
 
 }
@@ -1059,6 +1084,7 @@ PartialInfo is a transaction that occurred on one chain.
 """
 type PartialInfo {
   chainID: Int
+  destinationChainID: Int
   address: String
   txnHash: String
   value:          String
@@ -1206,6 +1232,7 @@ type DateResultByChain {
   aurora: Float
   harmony: Float
   canto: Float
+  dogechain: Float
   total:  Float
 }
 
@@ -1308,6 +1335,15 @@ func (ec *executionContext) field_Query_amountStatistic_args(ctx context.Context
 		}
 	}
 	args["tokenAddress"] = arg5
+	var arg6 *bool
+	if tmp, ok := rawArgs["useCache"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("useCache"))
+		arg6, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["useCache"] = arg6
 	return args, nil
 }
 
@@ -1315,104 +1351,149 @@ func (ec *executionContext) field_Query_bridgeTransactions_args(ctx context.Cont
 	var err error
 	args := map[string]interface{}{}
 	var arg0 []*int
-	if tmp, ok := rawArgs["chainID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainID"))
+	if tmp, ok := rawArgs["chainIDFrom"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainIDFrom"))
 		arg0, err = ec.unmarshalOInt2ᚕᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["chainID"] = arg0
-	var arg1 *string
-	if tmp, ok := rawArgs["address"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+	args["chainIDFrom"] = arg0
+	var arg1 []*int
+	if tmp, ok := rawArgs["chainIDTo"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chainIDTo"))
+		arg1, err = ec.unmarshalOInt2ᚕᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["address"] = arg1
-	var arg2 *int
+	args["chainIDTo"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["addressFrom"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addressFrom"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["addressFrom"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["addressTo"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addressTo"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["addressTo"] = arg3
+	var arg4 *int
 	if tmp, ok := rawArgs["maxAmount"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxAmount"))
-		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["maxAmount"] = arg2
-	var arg3 *int
-	if tmp, ok := rawArgs["minAmount"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minAmount"))
-		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["minAmount"] = arg3
-	var arg4 *int
-	if tmp, ok := rawArgs["startTime"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startTime"))
 		arg4, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["startTime"] = arg4
+	args["maxAmount"] = arg4
 	var arg5 *int
-	if tmp, ok := rawArgs["endTime"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("endTime"))
+	if tmp, ok := rawArgs["minAmount"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minAmount"))
 		arg5, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["endTime"] = arg5
-	var arg6 *string
-	if tmp, ok := rawArgs["txnHash"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txnHash"))
-		arg6, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+	args["minAmount"] = arg5
+	var arg6 *int
+	if tmp, ok := rawArgs["maxAmountUsd"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxAmountUsd"))
+		arg6, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["txnHash"] = arg6
-	var arg7 *string
-	if tmp, ok := rawArgs["kappa"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kappa"))
-		arg7, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+	args["maxAmountUsd"] = arg6
+	var arg7 *int
+	if tmp, ok := rawArgs["minAmountUsd"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minAmountUsd"))
+		arg7, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["kappa"] = arg7
-	var arg8 *bool
-	if tmp, ok := rawArgs["pending"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pending"))
-		arg8, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+	args["minAmountUsd"] = arg7
+	var arg8 *int
+	if tmp, ok := rawArgs["startTime"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startTime"))
+		arg8, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["pending"] = arg8
+	args["startTime"] = arg8
 	var arg9 *int
-	if tmp, ok := rawArgs["page"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+	if tmp, ok := rawArgs["endTime"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("endTime"))
 		arg9, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["page"] = arg9
-	var arg10 []*string
-	if tmp, ok := rawArgs["tokenAddress"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tokenAddress"))
-		arg10, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+	args["endTime"] = arg9
+	var arg10 *string
+	if tmp, ok := rawArgs["txnHash"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txnHash"))
+		arg10, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["tokenAddress"] = arg10
+	args["txnHash"] = arg10
+	var arg11 *string
+	if tmp, ok := rawArgs["kappa"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kappa"))
+		arg11, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["kappa"] = arg11
+	var arg12 *bool
+	if tmp, ok := rawArgs["pending"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pending"))
+		arg12, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pending"] = arg12
+	var arg13 *int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg13, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg13
+	var arg14 []*string
+	if tmp, ok := rawArgs["tokenAddressFrom"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tokenAddressFrom"))
+		arg14, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tokenAddressFrom"] = arg14
+	var arg15 []*string
+	if tmp, ok := rawArgs["tokenAddressTo"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tokenAddressTo"))
+		arg15, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tokenAddressTo"] = arg15
 	return args, nil
 }
 
@@ -1521,15 +1602,33 @@ func (ec *executionContext) field_Query_dailyStatisticsByChain_args(ctx context.
 		}
 	}
 	args["type"] = arg1
-	var arg2 *model.Duration
-	if tmp, ok := rawArgs["duration"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
-		arg2, err = ec.unmarshalODuration2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDuration(ctx, tmp)
+	var arg2 *model.Platform
+	if tmp, ok := rawArgs["platform"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("platform"))
+		arg2, err = ec.unmarshalOPlatform2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐPlatform(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["duration"] = arg2
+	args["platform"] = arg2
+	var arg3 *model.Duration
+	if tmp, ok := rawArgs["duration"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
+		arg3, err = ec.unmarshalODuration2ᚖgithubᚗcomᚋsynapsecnsᚋsanguineᚋservicesᚋexplorerᚋgraphqlᚋserverᚋgraphᚋmodelᚐDuration(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["duration"] = arg3
+	var arg4 *bool
+	if tmp, ok := rawArgs["useCache"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("useCache"))
+		arg4, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["useCache"] = arg4
 	return args, nil
 }
 
@@ -1674,6 +1773,15 @@ func (ec *executionContext) field_Query_rankedChainIDsByVolume_args(ctx context.
 		}
 	}
 	args["duration"] = arg0
+	var arg1 *bool
+	if tmp, ok := rawArgs["useCache"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("useCache"))
+		arg1, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["useCache"] = arg1
 	return args, nil
 }
 
@@ -1835,6 +1943,8 @@ func (ec *executionContext) fieldContext_BridgeTransaction_fromInfo(ctx context.
 			switch field.Name {
 			case "chainID":
 				return ec.fieldContext_PartialInfo_chainID(ctx, field)
+			case "destinationChainID":
+				return ec.fieldContext_PartialInfo_destinationChainID(ctx, field)
 			case "address":
 				return ec.fieldContext_PartialInfo_address(ctx, field)
 			case "txnHash":
@@ -1900,6 +2010,8 @@ func (ec *executionContext) fieldContext_BridgeTransaction_toInfo(ctx context.Co
 			switch field.Name {
 			case "chainID":
 				return ec.fieldContext_PartialInfo_chainID(ctx, field)
+			case "destinationChainID":
+				return ec.fieldContext_PartialInfo_destinationChainID(ctx, field)
 			case "address":
 				return ec.fieldContext_PartialInfo_address(ctx, field)
 			case "txnHash":
@@ -2999,6 +3111,47 @@ func (ec *executionContext) fieldContext_DateResultByChain_canto(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _DateResultByChain_dogechain(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_dogechain(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Dogechain, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_dogechain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _DateResultByChain_total(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_DateResultByChain_total(ctx, field)
 	if err != nil {
@@ -3502,6 +3655,47 @@ func (ec *executionContext) _PartialInfo_chainID(ctx context.Context, field grap
 }
 
 func (ec *executionContext) fieldContext_PartialInfo_chainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PartialInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartialInfo_destinationChainID(ctx context.Context, field graphql.CollectedField, obj *model.PartialInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PartialInfo_destinationChainID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DestinationChainID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PartialInfo_destinationChainID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PartialInfo",
 		Field:      field,
@@ -4562,7 +4756,7 @@ func (ec *executionContext) _Query_bridgeTransactions(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().BridgeTransactions(rctx, fc.Args["chainID"].([]*int), fc.Args["address"].(*string), fc.Args["maxAmount"].(*int), fc.Args["minAmount"].(*int), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["pending"].(*bool), fc.Args["page"].(*int), fc.Args["tokenAddress"].([]*string))
+		return ec.resolvers.Query().BridgeTransactions(rctx, fc.Args["chainIDFrom"].([]*int), fc.Args["chainIDTo"].([]*int), fc.Args["addressFrom"].(*string), fc.Args["addressTo"].(*string), fc.Args["maxAmount"].(*int), fc.Args["minAmount"].(*int), fc.Args["maxAmountUsd"].(*int), fc.Args["minAmountUsd"].(*int), fc.Args["startTime"].(*int), fc.Args["endTime"].(*int), fc.Args["txnHash"].(*string), fc.Args["kappa"].(*string), fc.Args["pending"].(*bool), fc.Args["page"].(*int), fc.Args["tokenAddressFrom"].([]*string), fc.Args["tokenAddressTo"].([]*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4864,7 +5058,7 @@ func (ec *executionContext) _Query_amountStatistic(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().AmountStatistic(rctx, fc.Args["type"].(model.StatisticType), fc.Args["duration"].(*model.Duration), fc.Args["platform"].(*model.Platform), fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["tokenAddress"].(*string))
+		return ec.resolvers.Query().AmountStatistic(rctx, fc.Args["type"].(model.StatisticType), fc.Args["duration"].(*model.Duration), fc.Args["platform"].(*model.Platform), fc.Args["chainID"].(*int), fc.Args["address"].(*string), fc.Args["tokenAddress"].(*string), fc.Args["useCache"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4980,7 +5174,7 @@ func (ec *executionContext) _Query_dailyStatisticsByChain(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().DailyStatisticsByChain(rctx, fc.Args["chainID"].(*int), fc.Args["type"].(*model.DailyStatisticType), fc.Args["duration"].(*model.Duration))
+		return ec.resolvers.Query().DailyStatisticsByChain(rctx, fc.Args["chainID"].(*int), fc.Args["type"].(*model.DailyStatisticType), fc.Args["platform"].(*model.Platform), fc.Args["duration"].(*model.Duration), fc.Args["useCache"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5038,6 +5232,8 @@ func (ec *executionContext) fieldContext_Query_dailyStatisticsByChain(ctx contex
 				return ec.fieldContext_DateResultByChain_harmony(ctx, field)
 			case "canto":
 				return ec.fieldContext_DateResultByChain_canto(ctx, field)
+			case "dogechain":
+				return ec.fieldContext_DateResultByChain_dogechain(ctx, field)
 			case "total":
 				return ec.fieldContext_DateResultByChain_total(ctx, field)
 			}
@@ -5072,7 +5268,7 @@ func (ec *executionContext) _Query_rankedChainIDsByVolume(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().RankedChainIDsByVolume(rctx, fc.Args["duration"].(*model.Duration))
+		return ec.resolvers.Query().RankedChainIDsByVolume(rctx, fc.Args["duration"].(*model.Duration), fc.Args["useCache"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7737,6 +7933,10 @@ func (ec *executionContext) _DateResultByChain(ctx context.Context, sel ast.Sele
 
 			out.Values[i] = ec._DateResultByChain_canto(ctx, field, obj)
 
+		case "dogechain":
+
+			out.Values[i] = ec._DateResultByChain_dogechain(ctx, field, obj)
+
 		case "total":
 
 			out.Values[i] = ec._DateResultByChain_total(ctx, field, obj)
@@ -7870,6 +8070,10 @@ func (ec *executionContext) _PartialInfo(ctx context.Context, sel ast.SelectionS
 		case "chainID":
 
 			out.Values[i] = ec._PartialInfo_chainID(ctx, field, obj)
+
+		case "destinationChainID":
+
+			out.Values[i] = ec._PartialInfo_destinationChainID(ctx, field, obj)
 
 		case "address":
 

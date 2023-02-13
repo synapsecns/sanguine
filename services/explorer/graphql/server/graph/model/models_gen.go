@@ -62,6 +62,7 @@ type DateResultByChain struct {
 	Aurora    *float64 `json:"aurora"`
 	Harmony   *float64 `json:"harmony"`
 	Canto     *float64 `json:"canto"`
+	Dogechain *float64 `json:"dogechain"`
 	Total     *float64 `json:"total"`
 }
 
@@ -88,17 +89,18 @@ type MessageBusTransaction struct {
 
 // PartialInfo is a transaction that occurred on one chain.
 type PartialInfo struct {
-	ChainID        *int     `json:"chainID"`
-	Address        *string  `json:"address"`
-	TxnHash        *string  `json:"txnHash"`
-	Value          *string  `json:"value"`
-	FormattedValue *float64 `json:"formattedValue"`
-	USDValue       *float64 `json:"USDValue"`
-	TokenAddress   *string  `json:"tokenAddress"`
-	TokenSymbol    *string  `json:"tokenSymbol"`
-	BlockNumber    *int     `json:"blockNumber"`
-	Time           *int     `json:"time"`
-	FormattedTime  *string  `json:"formattedTime"`
+	ChainID            *int     `json:"chainID"`
+	DestinationChainID *int     `json:"destinationChainID"`
+	Address            *string  `json:"address"`
+	TxnHash            *string  `json:"txnHash"`
+	Value              *string  `json:"value"`
+	FormattedValue     *float64 `json:"formattedValue"`
+	USDValue           *float64 `json:"USDValue"`
+	TokenAddress       *string  `json:"tokenAddress"`
+	TokenSymbol        *string  `json:"tokenSymbol"`
+	BlockNumber        *int     `json:"blockNumber"`
+	Time               *int     `json:"time"`
+	FormattedTime      *string  `json:"formattedTime"`
 }
 
 type PartialMessageBusInfo struct {

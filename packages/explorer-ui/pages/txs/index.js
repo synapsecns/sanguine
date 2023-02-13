@@ -5,6 +5,8 @@ import { StandardPageContainer } from '@components/layouts/StandardPageContainer
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY
 } from "@graphql/queries";
+import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
+import { useSearchParams } from 'next/navigation'
 
 import { API_URL } from '@graphql'
 import { useState, useEffect } from "react";
@@ -30,33 +32,37 @@ const client = new ApolloClient({
 
 
 export default function Txs({ queryResult }) {
+  const search = useSearchParams()
+  const p = Number(search.get('p'))
+  console.log("p", p)
   const [transactionsArr, setTransactionsArr] = useState([])
   const [pending, setPending] = useState(false)
   const [wallet, setWallet] = useState("")
-  const [minSize, setMinSize] = useState("")
-  const [maxSize, setMaxSize] = useState("")
+  const [walletLocale, setWalletLocale] = useState(true)
+  const [minSize, setMinSize] = useState({ type: "USD", value: "" })
+  const [maxSize, setMaxSize] = useState({ type: "USD", value: "" })
   const [chains, setChains] = useState([])
+  const [chainsLocale, setChainsLocale] = useState(false)
   const [tokens, setTokens] = useState([])
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
   const [toTx, setToTx] = useState(true)
   const [fromTx, setFromTx] = useState(true)
   const [kappa, setKappa] = useState("")
-
-
-
-
-  const [getBridgeTransactions, { loading, error, data }] = useLazyQuery(
-    GET_BRIDGE_TRANSACTIONS_QUERY
-  )
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
-    if (data) {
-      setTransactionsArr(data.bridgeTransactions
-      )
-    }
+    setPage(p)
+    executeSearch()
+  }, [p])
 
-  }, [data, pending])
+  const [getBridgeTransactions, { loading, error, data }] = useLazyQuery(
+    GET_BRIDGE_TRANSACTIONS_QUERY, {
+    onCompleted: (data) => {
+      console.log("new query")
+      setTransactionsArr(data.bridgeTransactions);
+    }
+  })
 
 
   // Get initial data
@@ -68,6 +74,7 @@ export default function Txs({ queryResult }) {
       },
     })
   }, [])
+
   const handlePending = (arg) => {
     setPending(arg)
     getBridgeTransactions({
@@ -78,35 +85,72 @@ export default function Txs({ queryResult }) {
     })
   }
   const createQueryField = (field, value, query) => {
-    if (value !== "") {
-      // if (field === "endTime" || field === "startTime") {
-      //   query[field] = parseInt((new Date(field).getTime() / 1000).toFixed(0))
-      // } else {
-      //   query[field] = value
-      // }
-      query[field] = value
+    if (value && value !== "") {
+      if (field === "endTime" || field === "startTime") {
+        let timestamp = parseInt((new Date(value.$d).getTime() / 1000).toFixed(0))
+        query[field] = timestamp
+      } else if (field === "chainIDTo" || field === "chainIDFrom") {
+        let chainIDs = []
+        for (let i = 0; i < value.length; i++) {
+          chainIDs.push(parseInt(CHAIN_ID_NAMES_REVERSE[value[i]]))
+
+        }
+        query[field] = chainIDs
+
+      } else {
+        query[field] = value
+      }
     }
     return query
   }
   const executeSearch = () => {
-    let variables = { page: 1 }
-    variables = createQueryField("address", wallet, variables)
-    variables = createQueryField("minAmount", minSize, variables)
-    variables = createQueryField("maxAmount", maxSize, variables)
-    variables = createQueryField("startTime", startDate, variables)
-    variables = createQueryField("endTime", endDate, variables)
-    variables = createQueryField("kappa", kappa, variables)
+    let variables = { page: page }
+    if (chains.length > 0) {
+      if (chainsLocale) {
+        variables = createQueryField("chainIDFrom", chains, variables)
+      } else {
+        variables = createQueryField("chainIDTo", chains, variables)
+      }
+    }
+    if (walletLocale) {
+      variables = createQueryField("addressFrom", wallet, variables)
+    } else {
+      variables = createQueryField("addressTo", wallet, variables)
+    }
+
+    if (minSize.value !== "") {
+      if (minSize.type === "USD") {
+        variables = createQueryField("minAmountUsd", parseInt(minSize.value), variables)
+      } else {
+        variables = createQueryField("minAmount", parseInt(minSize.value), variables)
+      }
+    }
+    if (maxSize.value !== "") {
+      if (maxSize.type === "USD") {
+        variables = createQueryField("maxAmountUsd", parseInt(maxSize.value), variables)
+      } else {
+        variables = createQueryField("maxAmount", parseInt(maxSize.value), variables)
+      }
+    }
+    variables = createQueryField("startTime", parseInt(startDate), variables)
+    variables = createQueryField("endTime", parseInt(endDate), variables)
+    if (kappa.length === 64) {
+      variables = createQueryField("kappa", kappa, variables)
+    } else {
+      variables = createQueryField("txnHash", kappa, variables)
+
+    }
     variables = createQueryField("pending", pending, variables)
-    console.log(variables)
+    console.log("variables", variables)
     getBridgeTransactions({
       variables: variables,
     })
   }
-  let bridgeTransactionsTable = _.orderBy(
-    transactionsArr,
-    'fromInfo.time',
-    ['desc']
-  ).slice(0, 25)
+  // let bridgeTransactionsTable = _.orderBy(
+  //   transactionsArr,
+  //   'fromInfo.time',
+  //   ['desc']
+  // ).slice(0, 25)
 
   return (
     <>
@@ -141,8 +185,13 @@ export default function Txs({ queryResult }) {
           setChains={setChains}
           tokens={tokens}
           setTokens={setTokens}
+          chainsLocale={chainsLocale}
+          setChainsLocale={setChainsLocale}
+          walletLocale={walletLocale}
+          setWalletLocale={setWalletLocale}
+
         />
-        {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={bridgeTransactionsTable} />}
+        {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={transactionsArr} />}
 
 
         <HorizontalDivider />

@@ -17,14 +17,15 @@ import (
 )
 
 // BridgeTransactions is the resolver for the bridgeTransactions2 field.
-func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) ([]*model.BridgeTransaction, error) {
 	var err error
 	var results []*model.BridgeTransaction
 	switch {
+
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
-		results, err = r.GetBridgeTxsFromDestination(ctx, nil, address, maxAmount, minAmount, startTime, endTime, txnHash, kappa, page, tokenAddress)
+		results, err = r.GetBridgeTxsFromDestination2(ctx, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, txnHash, kappa, page, tokenAddressFrom, tokenAddressTo)
 		if err != nil {
 			return nil, err
 		}
@@ -36,13 +37,13 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID []*int, 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			fromResults, err = r.GetBridgeTxsFromOrigin(ctx, chainID, address, maxAmount, minAmount, startTime, endTime, txnHash, page, tokenAddress, *pending, false)
+			fromResults, err = r.GetBridgeTxsFromOrigin2(ctx, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, txnHash, page, tokenAddressFrom, tokenAddressTo, *pending, false)
 		}()
 		if !*pending {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				toResults, err = r.GetBridgeTxsFromDestination(ctx, chainID, address, maxAmount, minAmount, startTime, endTime, txnHash, kappa, page, tokenAddress)
+				toResults, err = r.GetBridgeTxsFromDestination2(ctx, chainIDTo, chainIDFrom, addressTo, addressFrom, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, txnHash, kappa, page, tokenAddressTo, tokenAddressFrom)
 			}()
 		}
 		wg.Wait()
@@ -59,7 +60,6 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainID []*int, 
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
 	sort.Sort(SortBridgeTxType(results))
-	fmt.Println(results)
 	return results, nil
 }
 
@@ -115,7 +115,15 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 }
 
 // AmountStatistic is the resolver for the amountStatistic field.
-func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string) (*model.ValueResult, error) {
+func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string, useCache *bool) (*model.ValueResult, error) {
+	if useCache != nil && *useCache {
+		cacheResult := r.Cache.GetCache(fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)))
+		if cacheResult != nil {
+			result := *(cacheResult.(*interface{}))
+			return result.(*model.ValueResult), nil
+		}
+	}
+
 	var err error
 	var timestampSpecifier string
 	firstFilter := true
@@ -200,6 +208,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 			if err != nil {
 				return fmt.Errorf("failed to get dateResults: %w", err)
 			}
+
 			return nil
 		})
 		if typeArg != model.StatisticTypeTotalVolumeUsd {
@@ -237,7 +246,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 	output := model.ValueResult{
 		Value: &value,
 	}
-
+	r.Cache.CacheResponse(fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)), &output)
 	return &output, nil
 }
 
@@ -410,7 +419,14 @@ func (r *queryResolver) DailyStatistics(ctx context.Context, chainID *int, typeA
 }
 
 // DailyStatisticsByChain is the resolver for the dailyStatisticsByChain field.
-func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration) ([]*model.DateResultByChain, error) {
+func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool) ([]*model.DateResultByChain, error) {
+	if useCache != nil && *useCache {
+		cacheResult := r.Cache.GetCache(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()))
+		if cacheResult != nil {
+			result := *(cacheResult.(*interface{}))
+			return result.([]*model.DateResultByChain), nil
+		}
+	}
 	var err error
 	var timestampSpecifier string
 	firstFilter := true
@@ -439,23 +455,31 @@ func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int
 	)
 
 	var res []*model.DateResultByChain
-	var query string
+	var query *string
 	g, groupCtx := errgroup.WithContext(ctx)
-
-	switch *typeArg {
-	case model.DailyStatisticTypeVolume:
-		query = GenerateDailyStatisticVolumeSQL(compositeFilters, &firstFilter)
-	case model.DailyStatisticTypeFee:
-		query = GenerateDailyStatisticFeeSQL(compositeFilters)
-	case model.DailyStatisticTypeAddresses:
-		query = GenerateDailyStatisticAddressesSQL(compositeFilters)
-	case model.DailyStatisticTypeTransactions:
-		query = GenerateDailyStatisticTransactionsSQL(compositeFilters, &firstFilter)
+	switch *platform {
+	case model.PlatformBridge:
+		query, err = GenerateDailyStatisticByChainBridgeSQL(typeArg, compositeFilters, &firstFilter)
+		if err != nil {
+			return nil, err
+		}
+	case model.PlatformSwap:
+		query, err = GenerateDailyStatisticByChainSwapSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
+	case model.PlatformMessageBus:
+		query, err = GenerateDailyStatisticByChainMessageBusSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
+	case model.PlatformAll:
+		query, err = GenerateDailyStatisticByChainAllSQL(typeArg, compositeFilters, &firstFilter)
 	default:
-		return nil, fmt.Errorf("unsupported statistic type")
+		return nil, fmt.Errorf("unsupported platform")
 	}
 	g.Go(func() error {
-		res, err = r.DB.GetDailyTotals(groupCtx, query)
+		res, err = r.DB.GetDailyTotals(groupCtx, *query)
 		if err != nil {
 			return fmt.Errorf("failed to get dateResults: %w", err)
 		}
@@ -463,16 +487,15 @@ func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int
 	})
 
 	err = g.Wait()
-
 	if err != nil {
 		return nil, fmt.Errorf("could not get daily data: %w", err)
 	}
-
+	r.Cache.CacheResponse(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()), res)
 	return res, nil
 }
 
 // RankedChainIDsByVolume is the resolver for the rankedChainIDsByVolume field.
-func (r *queryResolver) RankedChainIDsByVolume(ctx context.Context, duration *model.Duration) ([]*model.VolumeByChainID, error) {
+func (r *queryResolver) RankedChainIDsByVolume(ctx context.Context, duration *model.Duration, useCache *bool) ([]*model.VolumeByChainID, error) {
 	var err error
 	var timestampSpecifier string
 	firstFilter := true

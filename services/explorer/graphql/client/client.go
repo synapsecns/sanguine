@@ -32,17 +32,18 @@ type Query struct {
 type GetBridgeTransactions struct {
 	Response []*struct {
 		FromInfo *struct {
-			ChainID        *int     "json:\"chainID\" graphql:\"chainID\""
-			Address        *string  "json:\"address\" graphql:\"address\""
-			TxnHash        *string  "json:\"txnHash\" graphql:\"txnHash\""
-			Value          *string  "json:\"value\" graphql:\"value\""
-			FormattedValue *float64 "json:\"formattedValue\" graphql:\"formattedValue\""
-			USDValue       *float64 "json:\"USDValue\" graphql:\"USDValue\""
-			TokenAddress   *string  "json:\"tokenAddress\" graphql:\"tokenAddress\""
-			TokenSymbol    *string  "json:\"tokenSymbol\" graphql:\"tokenSymbol\""
-			BlockNumber    *int     "json:\"blockNumber\" graphql:\"blockNumber\""
-			Time           *int     "json:\"time\" graphql:\"time\""
-			FormattedTime  *string  "json:\"formattedTime\" graphql:\"formattedTime\""
+			ChainID            *int     "json:\"chainID\" graphql:\"chainID\""
+			DestinationChainID *int     "json:\"destinationChainID\" graphql:\"destinationChainID\""
+			Address            *string  "json:\"address\" graphql:\"address\""
+			TxnHash            *string  "json:\"txnHash\" graphql:\"txnHash\""
+			Value              *string  "json:\"value\" graphql:\"value\""
+			FormattedValue     *float64 "json:\"formattedValue\" graphql:\"formattedValue\""
+			USDValue           *float64 "json:\"USDValue\" graphql:\"USDValue\""
+			TokenAddress       *string  "json:\"tokenAddress\" graphql:\"tokenAddress\""
+			TokenSymbol        *string  "json:\"tokenSymbol\" graphql:\"tokenSymbol\""
+			BlockNumber        *int     "json:\"blockNumber\" graphql:\"blockNumber\""
+			Time               *int     "json:\"time\" graphql:\"time\""
+			FormattedTime      *string  "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"fromInfo\" graphql:\"fromInfo\""
 		ToInfo *struct {
 			ChainID        *int     "json:\"chainID\" graphql:\"chainID\""
@@ -155,10 +156,11 @@ type GetMessageBusTransactions struct {
 	} "json:\"response\" graphql:\"response\""
 }
 
-const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainID: [Int], $address: String, $maxAmount: Int, $minAmount: Int, $startTime: Int, $endTime: Int, $txHash: String, $kappa: String, $pending: Boolean, $page: Int, $tokenAddress: [String]) {
-	response: bridgeTransactions(chainID: $chainID, address: $address, maxAmount: $maxAmount, minAmount: $minAmount, startTime: $startTime, endTime: $endTime, txnHash: $txHash, kappa: $kappa, pending: $pending, page: $page, tokenAddress: $tokenAddress) {
+const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainIDTo: [Int], $chainIDFrom: [Int], $addressTo: String, $addressFrom: String, $maxAmount: Int, $minAmount: Int, $maxAmountUSD: Int, $minAmountUSD: Int, $startTime: Int, $endTime: Int, $txHash: String, $kappa: String, $pending: Boolean, $page: Int, $tokenAddressFrom: [String], $tokenAddressTo: [String]) {
+	response: bridgeTransactions(chainIDTo: $chainIDTo, chainIDFrom: $chainIDFrom, addressTo: $addressTo, addressFrom: $addressFrom, maxAmount: $maxAmount, minAmount: $minAmount, maxAmountUsd: $maxAmountUSD, minAmountUsd: $minAmountUSD, startTime: $startTime, endTime: $endTime, txnHash: $txHash, kappa: $kappa, pending: $pending, page: $page, tokenAddressTo: $tokenAddressTo, tokenAddressFrom: $tokenAddressFrom) {
 		fromInfo {
 			chainID
+			destinationChainID
 			address
 			txnHash
 			value
@@ -190,19 +192,24 @@ const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainID: [I
 }
 `
 
-func (c *Client) GetBridgeTransactions(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txHash *string, kappa *string, pending *bool, page *int, tokenAddress []*string, httpRequestOptions ...client.HTTPRequestOption) (*GetBridgeTransactions, error) {
+func (c *Client) GetBridgeTransactions(ctx context.Context, chainIDTo []*int, chainIDFrom []*int, addressTo *string, addressFrom *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, kappa *string, pending *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string, httpRequestOptions ...client.HTTPRequestOption) (*GetBridgeTransactions, error) {
 	vars := map[string]interface{}{
-		"chainID":      chainID,
-		"address":      address,
-		"maxAmount":    maxAmount,
-		"minAmount":    minAmount,
-		"startTime":    startTime,
-		"endTime":      endTime,
-		"txHash":       txHash,
-		"kappa":        kappa,
-		"pending":      pending,
-		"page":         page,
-		"tokenAddress": tokenAddress,
+		"chainIDTo":        chainIDTo,
+		"chainIDFrom":      chainIDFrom,
+		"addressTo":        addressTo,
+		"addressFrom":      addressFrom,
+		"maxAmount":        maxAmount,
+		"minAmount":        minAmount,
+		"maxAmountUSD":     maxAmountUsd,
+		"minAmountUSD":     minAmountUsd,
+		"startTime":        startTime,
+		"endTime":          endTime,
+		"txHash":           txHash,
+		"kappa":            kappa,
+		"pending":          pending,
+		"page":             page,
+		"tokenAddressFrom": tokenAddressFrom,
+		"tokenAddressTo":   tokenAddressTo,
 	}
 
 	var res GetBridgeTransactions
@@ -329,8 +336,8 @@ func (c *Client) GetAmountStatistic(ctx context.Context, typeArg model.Statistic
 	return &res, nil
 }
 
-const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($chainID: Int, $type: DailyStatisticType, $duration: Duration) {
-	response: dailyStatisticsByChain(chainID: $chainID, type: $type, duration: $duration) {
+const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($chainID: Int, $type: DailyStatisticType, $duration: Duration, $platform: Platform) {
+	response: dailyStatisticsByChain(chainID: $chainID, type: $type, duration: $duration, platform: $platform) {
 		date
 		ethereum
 		optimism
@@ -354,11 +361,12 @@ const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($cha
 }
 `
 
-func (c *Client) GetDailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration, httpRequestOptions ...client.HTTPRequestOption) (*GetDailyStatisticsByChain, error) {
+func (c *Client) GetDailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration, platform *model.Platform, httpRequestOptions ...client.HTTPRequestOption) (*GetDailyStatisticsByChain, error) {
 	vars := map[string]interface{}{
 		"chainID":  chainID,
 		"type":     typeArg,
 		"duration": duration,
+		"platform": platform,
 	}
 
 	var res GetDailyStatisticsByChain

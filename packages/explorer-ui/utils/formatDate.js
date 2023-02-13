@@ -1,0 +1,22 @@
+const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+const getUTCDay = (date) => {
+  let time = date.getTime()
+  return time - (time % 86400000)
+}
+
+export function formatDate(date) {
+  if (!date) {
+    return ""
+  } const d = new Date(date + " 00:00:00 AM UTC")
+  const month = monthNames[d.getUTCMonth()]
+  const day = d.getUTCDate()
+  const year = d.getUTCFullYear()
+
+  if (getUTCDay(d) === getUTCDay(new Date())) {
+    return "Today"
+  }
+  return `${month} ${day}, ${year}`
+}
+
+

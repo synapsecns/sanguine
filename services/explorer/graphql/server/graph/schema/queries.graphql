@@ -4,17 +4,22 @@ type Query {
   Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
   """
   bridgeTransactions(
-    chainID:        [Int]
-    address:        String
+    chainIDFrom:        [Int]
+    chainIDTo:        [Int]
+    addressFrom:        String
+    addressTo:        String
     maxAmount:      Int
     minAmount:      Int
+    maxAmountUsd:      Int
+    minAmountUsd:      Int
     startTime:      Int
     endTime:        Int
     txnHash:        String
     kappa:          String
     pending:        Boolean = false
     page:           Int = 1
-    tokenAddress:   [String]
+    tokenAddressFrom:   [String]
+    tokenAddressTo:   [String]
   ): [BridgeTransaction]
 
   """
@@ -70,6 +75,7 @@ type Query {
     chainID:      Int
     address:      String
     tokenAddress: String
+    useCache: Boolean = false
   ): ValueResult
   """
   Daily statistic data
@@ -87,7 +93,9 @@ type Query {
   dailyStatisticsByChain(
     chainID:  Int
     type:     DailyStatisticType = VOLUME
+    platform: Platform = ALL
     duration:     Duration = ALL_TIME
+    useCache: Boolean = false
   ): [DateResultByChain]
 
   """
@@ -95,6 +103,7 @@ Ranked chainIDs by volume
   """
   rankedChainIDsByVolume(
     duration:     Duration = ALL_TIME
+    useCache: Boolean = false
   ): [VolumeByChainID]
 
 }
