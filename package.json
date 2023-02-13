@@ -29,7 +29,7 @@
     "test:coverage": "yarn cover-all && yarn collect &&  nyc report --reporter lcov --report-dir=lcov",
     "cover-all": "yarn lerna exec npm run test:coverage --parallel",
     "collect": "rm -rf .nyc_output && mkdir -p .nyc_output && aggregate-coverage collectFiles --pattern='packages/**/!(node_modules)/**/coverage-final.json' --target='.nyc_output'",
-    "generate:docs": "typedoc --plugin typedoc-plugin-markdown --out package-docs "
+    "generate:docs": "typedoc --plugin typedoc-plugin-markdown --out package-docs"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.18.2",
