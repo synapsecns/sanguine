@@ -1,8 +1,10 @@
 name: Vercel Preview Deployment
 env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
+  GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+  VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}'
+  VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
+  VERCEL_PROJECT_ID: '${{ secrets.VERCEL_PROJECT_ID }}'
+  WORKING_DIRECTORY: 'packages/explorer-ui'
 on:
   push:
     branches-ignore:
@@ -27,9 +29,6 @@ jobs:
       # - name: vercel packages/explorer-ui
       #   run: vercel --cwd /home/runner/work/sanguine/sanguine/packages/explorer-ui --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Project Artifacts
-        run: |
-         cd packages/explorer-ui
-         pwd
-         vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        run:  vercel build --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
