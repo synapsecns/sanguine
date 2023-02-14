@@ -166,7 +166,7 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainID uint32, requiredConfi
 		// If the block hash is not the same, then the block is invalid. Otherwise, mark the block as valid.
 		//nolint:nestif
 		if block.Hash() != receipts[0].BlockHash {
-			logger.Errorf(" [LIVEFILL] incorrect blockhash, deleting blockhash %s on chain %d. correct block hash: %s", receipts[0].BlockHash.String(), chainID, block.Hash().String())
+			logger.Errorf(" [LIVEFILL] incorrect blockhash on chain %d.deleting blockhash \n%s (%d) correct block hash: %s", receipts[0].BlockHash.String(), chainID, block.Hash().String())
 			g, groupCtx := errgroup.WithContext(ctx)
 
 			g.Go(func() error {
