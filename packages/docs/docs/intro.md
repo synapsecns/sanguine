@@ -2,9 +2,12 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# SDK Intro
 
-Let's discover **Docusaurus in less than 5 minutes**.
+The Synapse SDK is a Javascript sdk that wraps Synapse Router. It allows routing from any token to any token as long as a route is supported by a provider.
+
+<!-- TODO: link to synapse router page -->
+<!-- TODO: link to document providers -->
 
 ## Getting Started
 
