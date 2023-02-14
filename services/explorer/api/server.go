@@ -84,7 +84,6 @@ func Start(ctx context.Context, cfg Config) error {
 		}
 		return nil
 	})
-	rehydrateCache(ctx, client, responseCache)
 
 	err = g.Wait()
 	if err != nil {
