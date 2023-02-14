@@ -16,22 +16,7 @@ import { Pagination } from "@components/Pagination";
 import { useLazyQuery } from '@apollo/client'
 import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
 
-const link = new HttpLink({
-  uri: API_URL,
-  useGETForQueries: true,
-})
-
-const client = new ApolloClient({
-  link: link,
-  cache: new InMemoryCache(),
-  fetchPolicy: 'network-only',
-  fetchOptions: {
-    mode: 'no-cors',
-  },
-})
-
-
-export default function Txs({ queryResult }) {
+export default function Txs() {
   const search = useSearchParams()
   const p = Number(search.get('p'))
   console.log("p", p)
@@ -202,43 +187,43 @@ export default function Txs({ queryResult }) {
 }
 
 
-export async function getServerSideProps(context) {
-  let result
+// export async function getServerSideProps(context) {
+//   let result
 
-  if (context.query.account) {
-    let { data } = await client.query({
-      query: GET_BRIDGE_TRANSACTIONS_QUERY,
-      variables: {
-        address: context.query.account,
-        pending: false,
-        page: context.query.p ?? 1,
-      },
-    })
-    result = data
-  } else if (context.query.chainId) {
-    let { data } = await client.query({
-      query: GET_BRIDGE_TRANSACTIONS_QUERY,
-      variables: {
-        chainID: [context.query.chainId],
-        pending: false,
-        page: context.query.p ?? 1,
-      },
-    })
-    result = data
-  } else {
-    let { data } = await client.query({
-      query: GET_BRIDGE_TRANSACTIONS_QUERY,
-      variables: {
-        pending: false,
-        page: context.query.p ?? 1,
-      },
-    })
-    result = data
-  }
+//   if (context.query.account) {
+//     let { data } = await client.query({
+//       query: GET_BRIDGE_TRANSACTIONS_QUERY,
+//       variables: {
+//         address: context.query.account,
+//         pending: false,
+//         page: context.query.p ?? 1,
+//       },
+//     })
+//     result = data
+//   } else if (context.query.chainId) {
+//     let { data } = await client.query({
+//       query: GET_BRIDGE_TRANSACTIONS_QUERY,
+//       variables: {
+//         chainID: [context.query.chainId],
+//         pending: false,
+//         page: context.query.p ?? 1,
+//       },
+//     })
+//     result = data
+//   } else {
+//     let { data } = await client.query({
+//       query: GET_BRIDGE_TRANSACTIONS_QUERY,
+//       variables: {
+//         pending: false,
+//         page: context.query.p ?? 1,
+//       },
+//     })
+//     result = data
+//   }
 
-  return {
-    props: {
-      queryResult: result,
-    },
-  }
-}
+//   return {
+//     props: {
+//       queryResult: result,
+//     },
+//   }
+// }
