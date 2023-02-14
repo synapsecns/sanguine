@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
+	"os"
 	"time"
 
 	baseServer "github.com/synapsecns/sanguine/core/server"
@@ -39,6 +40,8 @@ var logger = log.Logger("explorer-api")
 // Start starts the api server.
 func Start(ctx context.Context, cfg Config) error {
 	router := ginhelper.New(logger)
+	hostname, err := os.Hostname()
+	fmt.Println(hostname)
 	// initialize the database
 	consumerDB, err := InitDB(ctx, cfg.Address, true)
 	if err != nil {
@@ -55,11 +58,11 @@ func Start(ctx context.Context, cfg Config) error {
 	}
 	gqlServer.EnableGraphql(router, consumerDB, *fetcher, responseCache)
 
-	fmt.Printf("started graphiql gqlServer on port: http://localhost:%d/graphiql\n", cfg.HTTPPort)
+	fmt.Printf("started graphiql gqlServer on port: http://%s:%d/graphiql\n", hostname, cfg.HTTPPort)
 
 	ticker := time.NewTicker(cacheRehydrationInterval * time.Second)
 	g, ctx := errgroup.WithContext(ctx)
-	client := gqlClient.NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d/graphql", cfg.HTTPPort))
+	client := gqlClient.NewClient(http.DefaultClient, fmt.Sprintf("http://%s:%d/graphql", hostname, cfg.HTTPPort))
 	// refill cache
 	go func() {
 		for {
@@ -487,6 +490,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 	})
 
 	err := g.Wait()
+	fmt.Println(err)
 	if err != nil {
 		return err
 	}
