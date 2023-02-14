@@ -21,7 +21,6 @@ export function ChartFull(loading,
   // const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
   var currentTooltipIndexVar = 0
   const handleCurrentIndex = (index) => {
-    console.log("indexindexindexindex", index)
     currentTooltipIndex = index
   }
 
@@ -69,7 +68,7 @@ export function ChartFull(loading,
                   </div>
                 </td>
               </tr>) : null
-            }) : console.log("NOT REAL")}
+            }) : null}
           </tbody>)}
       </table>
     </div>

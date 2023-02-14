@@ -41,7 +41,6 @@ var logger = log.Logger("explorer-api")
 func Start(ctx context.Context, cfg Config) error {
 	router := ginhelper.New(logger)
 	hostname, err := os.Hostname()
-	fmt.Println(hostname)
 	// initialize the database
 	consumerDB, err := InitDB(ctx, cfg.Address, true)
 	if err != nil {

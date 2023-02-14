@@ -104,9 +104,6 @@ export const OverviewChart = ({
   // }
 const CustomTooltip = ({label }) => {
   return(<p className='rounded-md text-white opacity-[0.5] text-sm'>{formatDate(label)}</p>)
-  // useCallback(lodash.throttle(() => {console.log("Sds")}, 16), []);
-  // setTimeout(setCurrentTooltipIndex(index), 5000);
-
 }
   return (
     <ResponsiveContainer width={'99%'} height={height}>

@@ -168,7 +168,6 @@ export async function getServerSideProps(context) {
       kappa: context.params.kappa,
     },
   })
-  console.log("sds",data.bridgeTransactions)
   return {
     props: {
       queryResult: data

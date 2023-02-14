@@ -23,7 +23,6 @@ export function ChainInfo({
   }
   if (useExplorerLink){
     link = getChainUrl({chainId: chainId})
-    console.log(link,chainId)
   }
   if (chainName) {
     return (

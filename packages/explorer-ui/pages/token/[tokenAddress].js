@@ -98,7 +98,6 @@ export default function chainId() {
   // Get initial data
   useEffect(() => {
     setAddress(tokenAddress)
-    console.log("chainId", chainId, tokenAddress)
   setVariables({chainIDFrom: chainId, tokenAddress: [tokenAddress]})
 }, [chainId, tokenAddress])
 

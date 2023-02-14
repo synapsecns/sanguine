@@ -19,7 +19,6 @@ import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
 export default function Txs() {
   const search = useSearchParams()
   const p = Number(search.get('p'))
-  console.log("p", p)
   const [transactionsArr, setTransactionsArr] = useState([])
   const [pending, setPending] = useState(false)
   const [wallet, setWallet] = useState("")
@@ -44,7 +43,6 @@ export default function Txs() {
   const [getBridgeTransactions, { loading, error, data }] = useLazyQuery(
     GET_BRIDGE_TRANSACTIONS_QUERY, {
     onCompleted: (data) => {
-      console.log("new query")
       setTransactionsArr(data.bridgeTransactions);
     }
   })
@@ -126,7 +124,6 @@ export default function Txs() {
 
     }
     variables = createQueryField("pending", pending, variables)
-    console.log("variables", variables)
     getBridgeTransactions({
       variables: variables,
     })

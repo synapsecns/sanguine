@@ -79,7 +79,7 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
     skip: skip,
     onCompleted: (data) => {
       if (useCache) {
-        setUseCache(false)
+        setUseCache(true)
       }
       setAddresses(data.amountStatistic.value)
 
@@ -105,7 +105,7 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
     skip: skip,
     onCompleted: (data) => {
       if (useCache) {
-        setUseCache(false)
+        setUseCache(true)
       }
       setTxs(data.amountStatistic.value)
     }

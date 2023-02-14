@@ -85,7 +85,6 @@ export function Home() {
     { loading: loadingDailyData, error: errorDailyData, data: dailyData },
   ] = useLazyQuery(DAILY_STATISTICS_BY_CHAIN, {
     onCompleted: (data) => {
-      console.log("platformport", platform)
       setDailyDataArr(data.dailyStatisticsByChain);
       setCurrentTooltipIndex(data.dailyStatisticsByChain.length - 1);
     }
@@ -335,7 +334,7 @@ export function Home() {
                       </div>
                     </td>
                   </tr>) : null
-                }) : console.log("NOT REAL")}
+                }) : null}
               </tbody>)}
           </table>
         </div>

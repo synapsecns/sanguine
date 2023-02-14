@@ -346,7 +346,7 @@ export default function chainId() {
                       </div>
                     </td>
                   </tr>) : null
-                }) : console.log("NOT REAL")}
+                }) :null}
               </tbody>)}
           </table>
         </div>
