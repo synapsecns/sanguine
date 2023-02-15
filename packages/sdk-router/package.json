@@ -1,5 +1,5 @@
 {
-  "name": "sdk-router",
+  "name": "@synapsecns/sdk-router",
   "description": "An SDK for interacting with the Synapse Protocol",
   "version": "0.1.1",
   "license": "MIT",
