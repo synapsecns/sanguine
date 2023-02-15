@@ -1,0 +1,58 @@
+name: Publish Lerna
+on:
+  pull_request:
+    types: [closed]
+    paths:
+      - 'packages/**'
+    branches:
+      - development
+      - main
+  push:
+    branches:
+      - feat/sdk
+
+jobs:
+  publish:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          submodules: 'recursive'
+
+      - name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+        id: nvmrc
+
+      - name: 'Use NodeJS by nvmrc'
+        uses: actions/setup-node@v3
+        with:
+          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+          cache: 'yarn'
+
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install Node Dependencies
+        run: yarn install --immutable
+
+      - name: "Version and publish" # Interesting step
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # we're not authed with any repository yet so this shouldn't do anything
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor}}@users.noreply.github.com"
+
+          if [ ${{ github.base_ref }} = development ]; then
+            npx lerna version --conventional-commits --conventional-prerelease --preid beta --yes
+          else
+            npx lerna version --conventional-commits --conventional-graduate --yes
+          fi
+
+          npx lerna publish from-git --yes
