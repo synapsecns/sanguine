@@ -39,6 +39,9 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
       - name: Install Node Dependencies
         run: yarn install --immutable
 
