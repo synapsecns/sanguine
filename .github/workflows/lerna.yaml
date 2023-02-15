@@ -7,9 +7,6 @@ on:
     branches:
       - development
       - main
-  push:
-    branches:
-      - feat/sdk
 
 jobs:
   publish:
