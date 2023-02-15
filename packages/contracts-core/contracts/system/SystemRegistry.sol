@@ -71,7 +71,7 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
      */
     function _callLocalBondingManager(bytes memory _data) internal {
         systemRouter.systemCall({
-            _destination: _localDomain(),
+            _destination: localDomain,
             _optimisticSeconds: 0,
             _recipient: ISystemRouter.SystemEntity.BondingManager,
             _data: _data

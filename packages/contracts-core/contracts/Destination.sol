@@ -130,7 +130,7 @@ contract Destination is DestinationEvents, DestinationHub, Version0_0_1 {
         Header header = message.header();
         uint32 origin = header.origin();
         // ensure message was meant for this domain
-        require(header.destination() == _localDomain(), "!destination");
+        require(header.destination() == localDomain, "!destination");
         bytes32 leaf = message.leaf();
         // ensure message can be proven against a confirmed root,
         // and that message's optimistic period has passed
@@ -176,7 +176,7 @@ contract Destination is DestinationEvents, DestinationHub, Version0_0_1 {
         bytes29 _attestationView,
         bytes memory _report
     ) internal override {
-        _removeAgent({ _domain: _localDomain(), _account: _notary });
+        _removeAgent({ _domain: localDomain, _account: _notary });
         emit NotaryBlacklisted(_notary, _guard, msg.sender, _report);
         blacklistedNotaries[_notary] = Blacklist({
             guard: _guard,

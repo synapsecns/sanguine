@@ -96,7 +96,7 @@ contract Origin is OriginEvents, OriginHub, Version0_0_1 {
         messageNonce = nonce(_destination) + 1;
         // format the message into packed bytes
         bytes memory message = MessageLib.formatMessage({
-            _origin: _localDomain(),
+            _origin: localDomain,
             _sender: _checkForSystemRouter(_recipient),
             _nonce: messageNonce,
             _destination: _destination,

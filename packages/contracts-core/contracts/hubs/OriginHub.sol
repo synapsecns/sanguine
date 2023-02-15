@@ -108,7 +108,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         bytes32 historicalRoot = historicalRoots[_destination][_nonce];
         RootMetadata memory metadata = historicalMetadata[_destination][_nonce];
         attestationData = AttestationLib.formatAttestationData({
-            _origin: _localDomain(),
+            _origin: localDomain,
             _destination: _destination,
             _nonce: _nonce,
             _root: historicalRoot,
@@ -400,7 +400,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         returns (bool)
     {
         // Origin only keeps track of remote Notaries
-        return _domain == _localDomain();
+        return _domain == localDomain;
     }
 
     /**
@@ -419,7 +419,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         RootMetadata memory metadata
     ) internal view returns (bool) {
         // Attestation with origin domain not matching local domain should be discarded
-        require(_origin == _localDomain(), "!attestationOrigin: !local");
+        require(_origin == localDomain, "!attestationOrigin: !local");
         if (_nonce < historicalRoots[_destination].length) {
             RootMetadata memory histMetadata = historicalMetadata[_destination][_nonce];
             // If a nonce exists for a given destination,

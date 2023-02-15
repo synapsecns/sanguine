@@ -20,9 +20,4 @@ abstract contract DomainContext {
     function _assertLocalDomain(uint32 _domain) internal view {
         require(_domain == localDomain, "!localDomain");
     }
-
-    function _localDomain() internal view virtual returns (uint32) {
-        // TODO: remove this as well
-        return localDomain;
-    }
 }

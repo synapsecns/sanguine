@@ -341,7 +341,7 @@ contract SystemRouter is DomainContext, BasicClient, ISystemRouter, Version0_0_1
         // Performing a system call on origin chain,
         // Get a prefix for performing the call on origin chain, use the corresponding prefix
         bytes29 prefix = _prefixPerformCall(_caller).castToRawBytes();
-        if (_destination == _localDomain()) {
+        if (_destination == localDomain) {
             // Performing a local system multicall
             for (uint256 i = 0; i < amount; ++i) {
                 _localSystemCall(uint8(_recipients[i]), _callDataArray[i], prefix);
@@ -384,7 +384,7 @@ contract SystemRouter is DomainContext, BasicClient, ISystemRouter, Version0_0_1
     /// for making a system call on origin chain.
     function _prefixPerformCall(SystemEntity _caller) internal view returns (bytes memory) {
         // Origin chain: adjust (rootSubmittedAt, callOrigin, systemCaller)
-        return abi.encode(block.timestamp, _localDomain(), _caller);
+        return abi.encode(block.timestamp, localDomain, _caller);
         // Passing current timestamp for consistency
         // For a cross-chain call (rootSubmittedAt) will be later adjusted on destination chain
     }
