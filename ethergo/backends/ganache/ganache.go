@@ -2,6 +2,9 @@ package ganache
 
 import (
 	"context"
+	"math/big"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -13,8 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/teivah/onecontext"
-	"math/big"
-	"testing"
 )
 
 // Backend is the ganache backend.

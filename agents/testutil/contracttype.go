@@ -68,6 +68,8 @@ const (
 	DestinationType // Destination
 	// AgentsTestContractType is the type of the agents test contract.
 	AgentsTestContractType // AgentsTestContract
+	// TestClientType is the type of the test client.
+	TestClientType // TestClient
 )
 
 // ID gets the contract type as an id.
@@ -110,6 +112,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return headerharness.Contracts["solidity/HeaderHarness.t.sol:HeaderHarness"]
 	case AgentsTestContractType:
 		return agentstestcontract.Contracts["solidity/AgentsTestContract.sol:AgentsTestContract"]
+	case TestClientType:
+		return agentstestcontract.Contracts["solidity/TestClient.sol:TestClient"]
 	default:
 		panic("not yet implemented")
 	}

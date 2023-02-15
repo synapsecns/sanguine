@@ -5,6 +5,7 @@ import (
 
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
 	"github.com/stretchr/testify/assert"
@@ -133,4 +134,15 @@ func (d *DeployManager) GetAgentsTestContract(ctx context.Context, backend backe
 	assert.True(d.T(), ok)
 
 	return agentsTestContract, agentsTestContractHandle
+}
+
+// GetTestClient gets the test client.
+func (d *DeployManager) GetTestClient(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testclient.TestClientRef) {
+	d.T().Helper()
+
+	testClient := d.GetContractRegistry(backend).Get(ctx, TestClientType)
+	testClientHandle, ok := testClient.ContractHandle().(*testclient.TestClientRef)
+	assert.True(d.T(), ok)
+
+	return testClient, testClientHandle
 }

@@ -3,6 +3,8 @@ package backends
 import (
 	"context"
 	"crypto/ecdsa"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
@@ -10,7 +12,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"math/big"
 )
 
 // AuthType is the type used for authentication.

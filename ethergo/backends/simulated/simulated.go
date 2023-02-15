@@ -2,6 +2,10 @@ package simulated
 
 import (
 	"context"
+	"math/big"
+	"testing"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,9 +22,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/teivah/onecontext"
-	"math/big"
-	"testing"
-	"time"
 )
 
 var logger = log.Logger("simulated-logger")
