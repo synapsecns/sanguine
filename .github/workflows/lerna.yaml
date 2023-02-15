@@ -43,7 +43,7 @@ jobs:
         uses: lhotari/action-upterm@v1
 
       - name: Install Node Dependencies
-        run: yarn install --immutable
+        run: yarn install --immutable --immutable-cache --check-cache
 
       - name: 'Version and publish' # Interesting step
         env:
