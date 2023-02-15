@@ -1,4 +1,4 @@
-name: Explorer UI Deploy
+name: Docs Deploy
 on:
   push:
     branches: [master]
