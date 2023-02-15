@@ -584,7 +584,6 @@ func (r *queryResolver) GetBridgeTxsFromDestination2(ctx context.Context, chainI
 	var err error
 	var results []*model.BridgeTransaction
 	query := generateAllBridgeEventsQueryFromDestination2(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, kappa, txHash, *page, false)
-	fmt.Println("DEST", query)
 
 	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
 
@@ -646,7 +645,6 @@ func (r *queryResolver) GetBridgeTxsFromOrigin2(ctx context.Context, chainIDTo [
 	var chainMap = make(map[uint32]bool)
 	var results []*model.BridgeTransaction
 	query := generateAllBridgeEventsQueryFromOrigin2(chainIDTo, chainIDFrom, addressTo, addressFrom, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressTo, tokenAddressFrom, txHash, *page, pending, true)
-	fmt.Println("ORG", query)
 	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
 
 	if err != nil {
