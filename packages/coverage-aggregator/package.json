@@ -19,6 +19,7 @@
     "lint:check": "eslint . --max-warnings=0 --ext ts --ext tsx --ext js --ext jsx",
     "ci:lint": "npm run lint:check",
     "build:go": " ",
+    "build": " ",
     "build:slither": " ",
     "lint:fix": "npm run lint:check --fix"
   },

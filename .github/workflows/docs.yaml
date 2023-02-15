@@ -3,11 +3,11 @@ on:
   push:
     branches: [master]
     paths:
-      - 'packages/explorer-ui/**'
+      - 'packages/docs/**'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'packages/explorer-ui/**'
+      - 'packages/docs/**'
 
 jobs:
   deploy-explorer:
@@ -18,8 +18,8 @@ jobs:
 
       - name: Copy nvmrc
         run: |
-          rm -rf packages/explorer-ui/.nvmrc
-          cp .nvmrc packages/explorer-ui/.nvmrc
+          rm -rf packages/docs/.nvmrc
+          cp .nvmrc packages/docs/.nvmrc
 
       - name: Deploy to Vercel Action
         uses: BetaHuhn/deploy-to-vercel-action@v1
@@ -27,6 +27,5 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
           VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}'
           VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
-          # Legacy setting: this will be the explorer ui, but should be chagned.
-          VERCEL_PROJECT_ID: '${{ secrets.VERCEL_PROJECT_ID }}'
+          VERCEL_PROJECT_ID: '${{ secrets.DOCS_VERCEL_PROJECT_ID }}'
           WORKING_DIRECTORY: 'packages/explorer-ui'

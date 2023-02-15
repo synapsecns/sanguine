@@ -11,40 +11,47 @@ The Synapse SDK is a Javascript sdk that wraps Synapse Router. It allows routing
 
 ## Getting Started
 
-Get started by **creating a new site**.
+To install the sdk, run `npx install @synapsecns/sdk-router`.
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+### Usage
 
-### What you'll need
+```typescript
+import { Provider } from '@ethersproject/abstract-provider'
+import { BigNumber } from '@ethersproject/bignumber'
+import { SynapseSDK } from '@synapsecns/sdk'
 
-- [Node.js](https://nodejs.org/en/download/) version 16.14 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
 
-## Generate a new site
+const arbitrumProvider: Provider = new etherProvider.JsonRpcProvider(
+  'https://arb1.arbitrum.io/rpc'
+)
+const avalancheProvider: Provider = new etherProvider.JsonRpcProvider(
+  'https://api.avax.network/ext/bc/C/rpc'
+)
 
-Generate a new Docusaurus site using the **classic template**.
 
-The classic template will automatically be added to your project after you run the command:
+// get a bridge quote for asset bridge from chain a->b
+// for token 0xf->0xa
+const chainIds = [42161, 43114]
+const providers = [arbitrumProvider, avalancheProvider]
+const Synapse = new SynapseSDK(chainIds, providers)
+const quotes = await Synapse.bridgeQuote(
+  42161,
+  43114,
+  '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
+  '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
+  BigNumber.from('20000000')
+)
+console.log(quotes)
 
-```bash
-npm init docusaurus@latest my-website classic
+// bridge it
+await Synapse.bridge(
+  '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
+  42161,
+  43114,
+  '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
+  BigNumber.from('20000000'),
+  quotes.originQuery,
+  quotes.destQuery
+)
+
 ```
-
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
-
-The command also installs all necessary dependencies you need to run Docusaurus.
-
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
-```
-
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
