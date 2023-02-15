@@ -26,6 +26,9 @@
     "build:go": " ",
     "build:slither": " "
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "typedoc": {
     "entryPoint": "./src/sdk.ts",
     "readmeFile": "./README.md",
