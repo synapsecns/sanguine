@@ -8,11 +8,11 @@ const getUTCDay = (date) => {
 export function formatDate(date) {
   if (!date) {
     return ""
-  } const d = new Date(date + " 00:00:00 AM UTC")
+  }
+  const d = new Date(date.replaceAll("-", "/") + " 00:00:00 UTC")
   const month = monthNames[d.getUTCMonth()]
   const day = d.getUTCDate()
   const year = d.getUTCFullYear()
-
   if (getUTCDay(d) === getUTCDay(new Date())) {
     return "Today"
   }

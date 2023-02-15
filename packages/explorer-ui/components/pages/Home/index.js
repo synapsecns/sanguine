@@ -364,7 +364,7 @@ export function Home() {
       <HorizontalDivider />
       <br /> <br />
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
-      {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={transactionsArr} />}
+      {loading ? <div className="flex justify-center align-center w-full my-[100px] "><div className='mx-[1.5px] animate-spin'><SynapseLogoSvg /></div></div> : <BridgeTransactionTable queryResult={transactionsArr} />}
 
 
       <br />
