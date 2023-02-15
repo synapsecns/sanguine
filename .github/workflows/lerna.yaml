@@ -42,6 +42,12 @@ jobs:
       - name: Install Node Dependencies
         run: yarn install --immutable --immutable-cache --check-cache
 
+      - name: "Setup npm"
+        run: |
+          npm set @synapsecns:registry=https://npm.pkg.github.com/synapsecns
+          npm set "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}"
+
+
       - name: 'Version and publish' # Interesting step
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
