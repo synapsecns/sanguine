@@ -5,7 +5,7 @@ import "../Version.sol";
 import "../libs/SystemMessage.sol";
 import "../libs/Tips.sol";
 import { BasicClient } from "../client/BasicClient.sol";
-import { LocalDomainContext } from "../context/LocalDomainContext.sol";
+import { DomainContext } from "../context/DomainContext.sol";
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
@@ -55,7 +55,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * a "message to System Router". By enforcing a minimum optimistic latency for the recipient this
  * attack can be mitigated, assuming there is at least one honest Guard willing to report the fraud.
  */
-contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version0_0_1 {
+contract SystemRouter is DomainContext, BasicClient, ISystemRouter, Version0_0_1 {
     using Address for address;
     using ByteString for bytes;
     using SystemMessageLib for bytes;
@@ -101,7 +101,7 @@ contract SystemRouter is LocalDomainContext, BasicClient, ISystemRouter, Version
         address _origin,
         address _destination,
         address _bondingManager
-    ) BasicClient(_origin, _destination) LocalDomainContext(_domain) {
+    ) BasicClient(_origin, _destination) DomainContext(_domain) {
         bondingManager = _bondingManager;
     }
 

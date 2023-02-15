@@ -3,11 +3,11 @@ pragma solidity 0.8.17;
 
 import { ISystemRouter } from "../../../contracts/interfaces/ISystemRouter.sol";
 import { SystemContract } from "../../../contracts/system/SystemContract.sol";
-import { LocalDomainContext } from "../../../contracts/context/LocalDomainContext.sol";
+import { DomainContext } from "../../../contracts/context/DomainContext.sol";
 import "../events/SystemContractMockEvents.sol";
 
 // solhint-disable no-empty-blocks
-contract SystemContractMock is SystemContractMockEvents, SystemContract, LocalDomainContext {
+contract SystemContractMock is SystemContractMockEvents, SystemContract {
     // Expose internal constants for tests
     uint256 public constant ORIGIN_MASK = ORIGIN;
     uint256 public constant DESTINATION_MASK = DESTINATION;
@@ -15,7 +15,7 @@ contract SystemContractMock is SystemContractMockEvents, SystemContract, LocalDo
 
     uint256 public constant BONDING_OPTIMISTIC_PERIOD_PUB = BONDING_OPTIMISTIC_PERIOD;
 
-    constructor(uint32 _domain) LocalDomainContext(_domain) {}
+    constructor(uint32 _domain) DomainContext(_domain) {}
 
     function initialize() external initializer {
         __SystemContract_initialize();
