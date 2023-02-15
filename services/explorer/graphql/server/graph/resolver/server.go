@@ -1151,6 +1151,8 @@ type AddressRanking {
 enum Duration {
   PAST_DAY
   PAST_MONTH
+  PAST_3_MONTHS
+  PAST_6_MONTHS
   PAST_YEAR
   ALL_TIME
 }

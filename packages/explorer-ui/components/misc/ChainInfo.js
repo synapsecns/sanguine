@@ -21,29 +21,33 @@ export function ChainInfo({
   if (txHash) {
     link += '/tx/' + txHash
   }
-  if (useExplorerLink){
-    link = getChainUrl({chainId: chainId})
+  if (useExplorerLink) {
+    link = getChainUrl({ chainId: chainId })
   }
   if (chainName) {
     return (
-      <div className="flex justify-between">
-        <div className='flex flex-row  items-center'>
-          <Image
-            className={`inline mr-[.5rem] rounded-lg ${imgClassName}`}
-            src={chainImg}
-            alt={chainImg}
-          />
-          <span className={textClassName}>{chainName}</span></div>
-        {noLink ? null : (
-          <div className='flex items-center'>
-            <a
-            type="link"
-              target="_blank"
-              href={link}
-              className={linkClassName}
-            >
-              ↗
-            </a></div>)}
+      <div className="w-full relative">
+        <div className="flex justify-between ">
+          <div className='flex flex-row w-[90%] items-center'>
+            <Image
+              className={`inline mr-[.5rem] rounded-lg ${imgClassName}`}
+              src={chainImg}
+              alt={chainImg}
+            />
+            <p className={textClassName}>{chainName}</p>
+          </div>
+          {noLink ? null : (
+            <div className='flex items-center'>
+              <a
+                type="link"
+                target="_blank"
+                href={link}
+                className={linkClassName}
+              >
+                ↗
+              </a>
+            </div>)}
+        </div>
       </div>
     )
   } else {

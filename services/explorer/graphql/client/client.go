@@ -113,6 +113,7 @@ type GetDailyStatisticsByChain struct {
 		Aurora    *float64 "json:\"aurora\" graphql:\"aurora\""
 		Harmony   *float64 "json:\"harmony\" graphql:\"harmony\""
 		Canto     *float64 "json:\"canto\" graphql:\"canto\""
+		Dogechain *float64 "json:\"dogechain\" graphql:\"dogechain\""
 		Total     *float64 "json:\"total\" graphql:\"total\""
 	} "json:\"response\" graphql:\"response\""
 }
@@ -356,6 +357,7 @@ const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($cha
 		aurora
 		harmony
 		canto
+		dogechain
 		total
 	}
 }

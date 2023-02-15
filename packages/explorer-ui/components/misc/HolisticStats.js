@@ -17,7 +17,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
   const [platform, setPlatform] = useState(true)
 
   const unSelectStyle =
-    'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
+    'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 hover:text-white'
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
 
 
@@ -126,7 +126,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
   }, [platform])
 
 
-  const stats = [{ title: "Volume", loading: loadingVolume, value: formatUSD(volume) }, { title: "Fee", loading: loadingFee, value: formatUSD(fee) }, { title: "Transactions", loading: false, value: numeral(txs).format('0,0') }, { title: "Addresses", loading: false, value: numeral(addresses).format('0,0') }]
+  const stats = [{ title: "Volume", loading: loadingVolume, value: formatUSD(volume) }, { title: "Transactions", loading: false, value: numeral(txs).format('0,0') }, { title: "Addresses", loading: false, value: numeral(addresses).format('0,0') }, { title: "Fees", loading: loadingFee, value: formatUSD(fee) }]
 
   return (
     <>
@@ -147,7 +147,6 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
       <div className="flex flex-wrap flex-row min-h-[90px]">
 
         {stats.map((stat, i) => {
-          console.log(stat.value, stat.value !== "--")
           return stat.value !== "--" ?
             (<Card
               className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}

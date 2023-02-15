@@ -25,9 +25,9 @@ func generateDeDepQuery(filter string, page *int, offset *int) string {
 }
 
 func generateDeDepQueryCTE(filter string, page *int, offset *int, in bool) string {
-	minTimestamp := " (SELECT min(timestamp) - 86400 FROM baseQuery) AS minTimestamp"
+	minTimestamp := " (SELECT min(timestamp) - 86400 FROM baseQuery) AS minTimestamp, (SELECT count(*) FROM baseQuery) AS rowCount"
 	if in {
-		minTimestamp = " (SELECT min(timestamp) FROM baseQuery) AS minTimestamp"
+		minTimestamp = " (SELECT min(timestamp) FROM baseQuery) AS minTimestamp, (SELECT count(*) FROM baseQuery) AS rowCount"
 	}
 	if page != nil || offset != nil {
 		return fmt.Sprintf("WITH baseQuery AS (SELECT * FROM bridge_events %s ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash LIMIT %d OFFSET %d), %s, %s", filter, *page, *offset, minTimestamp, swapDeDup)
@@ -584,6 +584,8 @@ func (r *queryResolver) GetBridgeTxsFromDestination2(ctx context.Context, chainI
 	var err error
 	var results []*model.BridgeTransaction
 	query := generateAllBridgeEventsQueryFromDestination2(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, kappa, txHash, *page, false)
+	fmt.Println("DEST", query)
+
 	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
 
 	if err != nil {
@@ -644,6 +646,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin2(ctx context.Context, chainIDTo [
 	var chainMap = make(map[uint32]bool)
 	var results []*model.BridgeTransaction
 	query := generateAllBridgeEventsQueryFromOrigin2(chainIDTo, chainIDFrom, addressTo, addressFrom, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressTo, tokenAddressFrom, txHash, *page, pending, true)
+	fmt.Println("ORG", query)
 	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
 
 	if err != nil {

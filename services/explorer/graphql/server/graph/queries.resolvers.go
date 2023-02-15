@@ -439,6 +439,14 @@ func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int
 		hours := 720
 		targetTime := r.getTargetTime(&hours)
 		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPast3Months:
+		hours := 2160
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPast6Months:
+		hours := 4320
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
 	case model.DurationPastYear:
 		hours := 8760
 		targetTime := r.getTargetTime(&hours)

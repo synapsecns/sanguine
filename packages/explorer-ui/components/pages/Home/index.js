@@ -32,10 +32,7 @@ const platformTitles = {
   SWAP: 'Swap',
   MESSAGE_BUS: 'Message Bus',
 }
-const formatCurrency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
+
 
 export function Home() {
   const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
@@ -50,7 +47,7 @@ export function Home() {
   const [dailyStatisticCumulative, SetDailyStatisticCumulative] =
     useState(false)
   const unSelectStyle =
-    'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
+    'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 hover:text-white'
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
   const returnChainData = () => {
     var items = Object.keys(dailyDataArr?.[currentTooltipIndex]).map((key) => { return [key, dailyDataArr?.[currentTooltipIndex][key]] })
@@ -85,8 +82,8 @@ export function Home() {
     { loading: loadingDailyData, error: errorDailyData, data: dailyData },
   ] = useLazyQuery(DAILY_STATISTICS_BY_CHAIN, {
     onCompleted: (data) => {
+      console.log("data", data)
       setDailyDataArr(data.dailyStatisticsByChain);
-      setCurrentTooltipIndex(data.dailyStatisticsByChain.length - 1);
     }
   })
 
@@ -168,46 +165,37 @@ export function Home() {
       />
       <br />
       <HorizontalDivider />
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
+
         <div className="col-span-1">
-          <div className="my-5">
-            {currentTooltipIndex >= 0 && chartData?.[currentTooltipIndex] ? (
-              <p
-                className="text-2xl font-medium text-default
-              font-bold
-              text-white pl-2"
-              >
-                {formatDate(chartData[0].date)} to{' '}
-                {formatDate(chartData[chartData.length - 1].date)}
-              </p>
-            ) : null}
-            {chartData?.length > 0 ?
-              <p className="pl-2 text-md font-medium text-default mt-2 text-white">{' '} {' '} Total {platform !== "ALL" ? platformTitles[platform] + " " : ""}{titles[dailyStatisticType]}: {' '}{formatUSD(totalChainVolume())}
-              </p> : <div className="h-3 w-[50%] mt-4 bg-slate-700 rounded animate-pulse"></div>}
+
+          <div className="z-1 w-full h-full flex bg-synapse-logo bg-no-repeat bg-center">
+            <div id="tooltip-sidebar" className='w-full ' />
           </div>
         </div>
-        <div className="col-span-2 flex justify-end">
+        <div className="col-span-3 flex justify-end flex-col	">
           <div className="flex flex-wrap">
             <div className="h-full flex items-center mr-4">
-              <button
-                onClick={() => setDailyStatisticType('VOLUME')}
-                className={
-                  'font-medium rounded-l-md px-4 py-2 border h-fit  ' +
-                  (dailyStatisticType === 'VOLUME'
-                    ? selectStyle
-                    : unSelectStyle) +
-                  ((loadingDailyData || platform === "MESSAGE_BUS") ? ' pointer-events-none' : '') +
-                  (platform === "MESSAGE_BUS" ? ' opacity-[0.6]' : '')
-                }
-              >
-                Vol
-              </button>
+              {platform === "MESSAGE_BUS" ? null :
+
+                (<button
+                  onClick={() => setDailyStatisticType('VOLUME')}
+                  className={
+                    'font-medium rounded-l-md px-4 py-2 border h-fit  ' +
+                    (dailyStatisticType === 'VOLUME'
+                      ? selectStyle
+                      : unSelectStyle) +
+                    ((loadingDailyData || platform === "MESSAGE_BUS") ? ' pointer-events-none' : '')
+                  }
+                >
+                  Vol
+                </button>)}
               <button
                 onClick={() => setDailyStatisticType('FEE')}
                 className={
                   'font-medium px-4 py-2 border  h-fit ' +
                   (dailyStatisticType === 'FEE' ? selectStyle : unSelectStyle) +
-                  (loadingDailyData ? ' pointer-events-none' : '')
+                  (loadingDailyData ? ' pointer-events-none' : '') + (platform === "MESSAGE_BUS" ? ' rounded-l-md' : '')
                 }
               >
                 Fees
@@ -248,31 +236,31 @@ export function Home() {
                   (loadingDailyData ? ' pointer-events-none' : '')
                 }
               >
-                30d
+                1mo
               </button>
               <button
-                onClick={() => SetDailyStatisticDuration('PAST_YEAR')}
+                onClick={() => SetDailyStatisticDuration('PAST_3_MONTHS')}
                 className={
                   'font-medium  px-4 py-2 border  h-fit   ' +
-                  (dailyStatisticDuration === 'PAST_YEAR'
+                  (dailyStatisticDuration === 'PAST_3_MONTHS'
                     ? selectStyle
                     : unSelectStyle) +
                   (loadingDailyData ? ' pointer-events-none' : '')
                 }
               >
-                365d
+                3mo
               </button>
               <button
-                onClick={() => SetDailyStatisticDuration('ALL_TIME')}
+                onClick={() => SetDailyStatisticDuration('PAST_6_MONTHS')}
                 className={
                   'font-medium rounded-r-md px-4 py-2 border  h-fit ' +
-                  (dailyStatisticDuration === 'ALL_TIME'
+                  (dailyStatisticDuration === 'PAST_6_MONTHS'
                     ? selectStyle
                     : unSelectStyle) +
                   (loadingDailyData ? ' pointer-events-none' : '')
                 }
               >
-                All Time
+                6mo
               </button>
             </div>
             <div className="h-full flex items-center">
@@ -298,12 +286,39 @@ export function Home() {
               </button>
             </div>
           </div>
+
+          <OverviewChart
+            setCurrentTooltipIndex={setCurrentTooltipIndex}
+            loading={loadingDailyData}
+            height={Object.keys(CHAIN_ID_NAMES_REVERSE).length * 31}
+            chartData={chartData}
+            isCumulativeData={dailyStatisticCumulative}
+            dailyStatisticType={dailyStatisticType}
+            isUSD={
+              dailyStatisticType === 'TRANSACTIONS' ||
+                dailyStatisticType === 'ADDRESSES'
+                ? false
+                : true
+            }
+            showAggregated={false}
+            monthlyData={false}
+            currency
+            currentIndex={currentTooltipIndex}
+            platform={platform}
+          />
         </div>
       </div>
-      <HorizontalDivider />
-      <div className="grid grid-cols-4 gap-4">
+      {/* <div className="grid grid-cols-4 gap-4">
         <div className="col-span-1 w-[100%]">
-          <p className="text-lg font-bold text-white pl-2 pt-4 ">{titles[dailyStatisticType]} for {formatDate(chartData?.[currentTooltipIndex]?.date)}</p>
+          <div className="z-1 w-full h-full flex bg-synapse-logo bg-no-repeat bg-center">
+            <div id="tooltip-sidebar" className='w-full ' />
+          </div> */}
+      {/* <div className="z-10 w-full opacity-[0.2] h-full flex  justify-center items-center">
+            <div className='absolute'><SynapseLogoSvg /></div>
+          </div> */}
+
+
+      {/* <p className="text-lg font-bold text-white pl-2 pt-4 ">{titles[dailyStatisticType]} for {formatDate(chartData?.[currentTooltipIndex]?.date)}</p>
           <table className='min-w-full'>
 
             <TableHeader headers={['Chain', titles[dailyStatisticType]]} />
@@ -336,16 +351,17 @@ export function Home() {
                   </tr>) : null
                 }) : null}
               </tbody>)}
-          </table>
-        </div>
+          </table> */}
+      {/* </div>
         <div className="col-span-3 ">
-          {/* { loadingDailyData ?  <div className={"flex justify-center align-center w-full animate-spin mt-[" + (Object.values(CHAIN_ID_NAMES_REVERSE).length * 10).toString() + "px]"}><SynapseLogoSvg /></div> : */}
+          {/* { loadingDailyData ?  <div className={"flex justify-center align-center w-full animate-spin mt-[" + (Object.values(CHAIN_ID_NAMES_REVERSE).length * 10).toString() + "px]"}><SynapseLogoSvg /></div> :
           <OverviewChart
             setCurrentTooltipIndex={setCurrentTooltipIndex}
             loading={loadingDailyData}
             height={Object.keys(CHAIN_ID_NAMES_REVERSE).length * 31}
             chartData={chartData}
             isCumulativeData={dailyStatisticCumulative}
+            dailyStatisticType={dailyStatisticType}
             isUSD={
               dailyStatisticType === 'TRANSACTIONS' ||
                 dailyStatisticType === 'ADDRESSES'
@@ -356,10 +372,11 @@ export function Home() {
             monthlyData={false}
             currency
             currentIndex={currentTooltipIndex}
+            platform={platform}
           />
 
         </div>
-      </div>
+      </div> */}
       <br /> <br />
       <HorizontalDivider />
       <br /> <br />

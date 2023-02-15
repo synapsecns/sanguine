@@ -68,8 +68,12 @@ export default function Txs() {
     })
   }
   const createQueryField = (field, value, query) => {
+    console.log(field, value, query)
+
     if (value && value !== "") {
+
       if (field === "endTime" || field === "startTime") {
+        console.log("value", value, (new Date(value.$d).getTime() / 1000))
         let timestamp = parseInt((new Date(value.$d).getTime() / 1000).toFixed(0))
         query[field] = timestamp
       } else if (field === "chainIDTo" || field === "chainIDFrom") {
@@ -87,7 +91,8 @@ export default function Txs() {
     return query
   }
   const executeSearch = () => {
-    let variables = { page: page }
+
+    let variables = { page: page===0 ? 1: page }
     if (chains.length > 0) {
       if (chainsLocale) {
         variables = createQueryField("chainIDFrom", chains, variables)
@@ -115,8 +120,9 @@ export default function Txs() {
         variables = createQueryField("maxAmount", parseInt(maxSize.value), variables)
       }
     }
-    variables = createQueryField("startTime", parseInt(startDate), variables)
-    variables = createQueryField("endTime", parseInt(endDate), variables)
+    console.log("start", startDate)
+    variables = createQueryField("startTime", startDate, variables)
+    variables = createQueryField("endTime",endDate, variables)
     if (kappa.length === 64) {
       variables = createQueryField("kappa", kappa, variables)
     } else {
@@ -124,6 +130,8 @@ export default function Txs() {
 
     }
     variables = createQueryField("pending", pending, variables)
+    console.log(page, variables)
+
     getBridgeTransactions({
       variables: variables,
     })

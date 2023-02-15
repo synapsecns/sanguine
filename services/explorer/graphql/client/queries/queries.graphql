@@ -137,6 +137,7 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     aurora
     harmony
     canto
+    dogechain
     total
   }
 }
