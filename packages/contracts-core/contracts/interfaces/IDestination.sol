@@ -4,6 +4,25 @@ pragma solidity 0.8.17;
 /// @notice Minimal interface for Destination contract, required for sending messages.
 interface IDestination {
     /**
+     * @notice Emitted when an attestation is accepted by the Destination contract.
+     * @param notary        Notary who signed the attestation
+     * @param snapshot      Raw payload with snapshot data
+     * @param signature     Agent signature for the snapshot
+     */
+    event SnapshotAccepted(address indexed notary, bytes snapshot, bytes signature);
+
+    /**
+     * @notice Emitted when a message is successfully executed.
+     * @param origin        Domain where executed message originated
+     * @param messageHash   Hash of the executed message
+     */
+    event Executed(uint32 indexed origin, bytes32 indexed messageHash);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               EXTERNAL                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
      * @notice Executes a formatted message, by passing its contents to the recipient.
      * Origin merkle root is derived using:
      * - message hash

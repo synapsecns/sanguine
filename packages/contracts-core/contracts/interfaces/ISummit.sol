@@ -4,6 +4,40 @@ pragma solidity 0.8.17;
 /// @notice Minimal interface for Summit contract, required for sending messages.
 interface ISummit {
     /**
+     * @notice Emitted when a snapshot is accepted by the Summit contract.
+     * @param domain        Domain whether the signed Agent is active (ZERO for Guards)
+     * @param agent         Agent who signed the snapshot
+     * @param snapshot      Raw payload with snapshot data
+     * @param signature     Agent signature for the snapshot
+     */
+    event SnapshotAccepted(
+        uint32 indexed domain,
+        address indexed agent,
+        bytes snapshot,
+        bytes signature
+    );
+
+    /**
+     * @notice Emitted when an attestation is created from an accepted Notary snapshot.
+     * @param domain        Domain where the Notary is active
+     * @param notary        Notary who submitted the accepted snapshot
+     * @param attestation   Raw payload with attestation data
+     */
+    event AttestationCreated(uint32 indexed domain, address indexed notary, bytes attestation);
+
+    /**
+     * @notice Emitted when a proof of incorrect attestation is submitted.
+     * @param domain        Domain where the Notary is active
+     * @param attestation   Raw payload with attestation data
+     * @param signature     Notary signature for the attestation
+     */
+    event IncorrectAttestation(uint32 indexed domain, bytes attestation, bytes signature);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               EXTERNAL                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
      * @notice Submit a snapshot (list of states) signed by a Guard or a Notary.
      * Guard-signed snapshots: all the states in the snapshot become available for Notary signing.
      * Notary-signed snapshots: Attestation Merkle Root is saved for valid snapshots, i.e.

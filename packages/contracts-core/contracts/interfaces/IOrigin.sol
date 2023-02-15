@@ -4,6 +4,34 @@ pragma solidity 0.8.17;
 /// @notice Minimal interface for Origin contract, required for sending messages.
 interface IOrigin {
     /**
+     * @notice Emitted when a new message is dispatched.
+     * @param messageHash   Hash of message; the leaf inserted to the Merkle tree for the message
+     * @param nonce         Nonce of sent message (starts from 1)
+     * @param destination   Destination domain
+     * @param root          Merkle tree root after the new leaf was inserted
+     * @param message       Raw bytes of message
+     */
+    event Dispatched(
+        bytes32 indexed messageHash,
+        uint32 indexed nonce,
+        uint32 indexed destination,
+        bytes32 root,
+        bytes message
+    );
+
+    /**
+     * @notice Emitted when a proof of incorrect snapshot is submitted.
+     * @param stateIndex    Index of incorrect state in the snapshot
+     * @param snapshot      Raw payload with snapshot data
+     * @param signature     Agent signature for the snapshot
+     */
+    event IncorrectSnapshot(uint256 stateIndex, bytes snapshot, bytes signature);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               EXTERNAL                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
      * @notice Dispatch the message to the destination domain & recipient
      * @dev Format the message, insert its hash into Merkle tree,
      * enqueue the new Merkle root, and emit `Dispatch` event with message information.
