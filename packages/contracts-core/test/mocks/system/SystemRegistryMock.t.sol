@@ -6,7 +6,7 @@ import { SystemRegistry } from "../../../contracts/system/SystemRegistry.sol";
 import "../events/SystemContractMockEvents.sol";
 
 // solhint-disable no-empty-blocks
-contract SystemRegistryMock is SystemContractMockEvents, DomainContext, SystemRegistry {
+contract SystemRegistryMock is SystemContractMockEvents, SystemRegistry {
     constructor(uint32 _domain) DomainContext(_domain) {}
 
     function initialize() external initializer {

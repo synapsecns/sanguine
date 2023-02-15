@@ -16,7 +16,7 @@ interface IAttestationCollector {
  * @notice MVP for BondingManager. Controls agents status for local chain registries.
  * Doesn't do anything cross-chain related.
  */
-contract BondingMVP is DomainContext, BondingManager {
+contract BondingMVP is BondingManager {
     address public attestationCollector;
 
     constructor(uint32 _domain) DomainContext(_domain) {}

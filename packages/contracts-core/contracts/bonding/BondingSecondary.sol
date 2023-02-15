@@ -6,7 +6,7 @@ import { SystemContract } from "../system/SystemContract.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { BondingManager } from "./BondingManager.sol";
 
-contract BondingSecondary is DomainContext, BondingManager {
+contract BondingSecondary is BondingManager {
     constructor(uint32 _domain) DomainContext(_domain) {
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
     }

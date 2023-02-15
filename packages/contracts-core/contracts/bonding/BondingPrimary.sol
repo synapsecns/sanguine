@@ -7,7 +7,7 @@ import { DomainContext } from "../context/DomainContext.sol";
 import { BondingManager } from "./BondingManager.sol";
 import { AgentRegistry } from "../system/AgentRegistry.sol";
 
-contract BondingPrimary is DomainContext, AgentRegistry, BondingManager {
+contract BondingPrimary is AgentRegistry, BondingManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
