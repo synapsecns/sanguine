@@ -43,7 +43,9 @@ jobs:
         run: yarn install --immutable --immutable-cache --check-cache
 
       - name: Authenticate with private NPM package
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          echo "always-auth=true" >> ~/.npmrc
 
 
       - name: 'Version and publish' # Interesting step
