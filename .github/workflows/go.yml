@@ -103,7 +103,7 @@ jobs:
         run: docker run -p 8045:8545 -d -v /tmp/keys/:/tmp/keys/  --name rinkeby --restart always trufflesuite/ganache-cli ganache-cli --accounts 10 --account_keys_path /tmp/keys/rinkeby --chainId 4 # --fork https://rinkeby-light.eth.linkpool.io (no need to actually fork)
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -185,7 +185,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -316,7 +316,7 @@ jobs:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
           cache: 'yarn'
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
@@ -334,7 +334,7 @@ jobs:
           go-version: 1.20.x
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -424,7 +424,7 @@ jobs:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
           cache: 'yarn'
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
@@ -444,7 +444,7 @@ jobs:
           go-version: 1.20.x
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
