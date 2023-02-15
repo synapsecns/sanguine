@@ -13,7 +13,8 @@ on:
 
 jobs:
   publish:
-    if: github.event.pull_request.merged == true
+    # TODO: remove true at the end
+    if: github.event.pull_request.merged == true || true
     runs-on: ubuntu-latest
 
     steps:
