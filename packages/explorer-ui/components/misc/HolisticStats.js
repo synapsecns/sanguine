@@ -7,10 +7,9 @@ import numeral from 'numeral'
 import { formatUSD } from '@utils/formatUSD'
 
 
-
-export default function HolisticStats({platform: parentPlatform, setPlatform:  parentSetPlatform, loading, chainID, tokenAddress}) {
+export default function HolisticStats({ platform: parentPlatform, setPlatform: parentSetPlatform, loading, chainID, tokenAddress }) {
   const [volume, setVolume] = useState("--")
-  const [revenue, setRevenue] = useState("--")
+  const [fee, setFee] = useState("--")
   const [addresses, setAddresses] = useState("--")
   const [txs, setTxs] = useState("--")
   const [useCache, setUseCache] = useState(true)
@@ -25,13 +24,13 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
   const { loading: loadingVolume, error: errorVolume, data: dataVolume } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
-    variables: chainID? {
+    variables: chainID ? {
       platform: platform,
       duration: "ALL_TIME",
       type: "TOTAL_VOLUME_USD",
       useCache: true,
       chainID: chainID
-    }: {
+    } : {
       platform: platform,
       duration: "ALL_TIME",
       type: "TOTAL_VOLUME_USD",
@@ -41,7 +40,7 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
 
   }
   )
-  const { loading: loadingRevenue, error: errorRevenue, data: dataRevenue } = useQuery(
+  const { loading: loadingFee, error: errorFee, data: dataFee } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
     variables: chainID ? {
@@ -50,13 +49,13 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
       type: "TOTAL_FEE_USD",
       useCache: true,
       chainID: chainID
-    }: {
+    } : {
       platform: platform,
       duration: "ALL_TIME",
       type: "TOTAL_FEE_USD",
       useCache: true
     },
-    onCompleted: (data) => { setRevenue(data.amountStatistic.value) }
+    onCompleted: (data) => { setFee(data.amountStatistic.value) }
 
   }
   )
@@ -69,7 +68,7 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
       type: "COUNT_ADDRESSES",
       useCache: useCache,
       chainID: chainID,
-    }: {
+    } : {
       platform: platform,
       duration: "ALL_TIME",
       type: "COUNT_ADDRESSES",
@@ -120,44 +119,14 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
 
   useEffect(() => {
     setVolume("--")
-    setRevenue("--")
+    setFee("--")
     setAddresses("--")
     setTxs("--")
 
   }, [platform])
 
 
-  const handlePlatform = (arg) => {
-    setPlatform(arg)
-    getVolume({
-      variables: {
-        platform: arg,
-        duration: "ALL_TIME",
-        type: "TOTAL_VOLUME_USD",
-      },
-    })
-    getRevenue({
-      variables: {
-        platform: arg,
-        duration: "ALL_TIME",
-        type: "TOTAL_FEE_USD",
-      },
-    })
-    getAddresses({
-      variables: {
-        platform: arg,
-        duration: "ALL_TIME",
-        type: "COUNT_ADDRESSES",
-      },
-    })
-    getTxs({
-      variables: {
-        platform: arg,
-        duration: "ALL_TIME",
-        type: "COUNT_TRANSACTIONS",
-      },
-    })
-  }
+  const stats = [{ title: "Volume", loading: loadingVolume, value: formatUSD(volume) }, { title: "Fee", loading: loadingFee, value: formatUSD(fee) }, { title: "Transactions", loading: false, value: numeral(txs).format('0,0') }, { title: "Addresses", loading: false, value: numeral(addresses).format('0,0') }]
 
   return (
     <>
@@ -175,58 +144,31 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
           Messaging
         </button>
       </div>
-      <div className="flex flex-wrap flex-row">
-        <Card
-          className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
-        >
-          <div className="text-xl opacity-80">Volume</div>
-          <div className="text-4xl font-bold text-white">
-            {loadingVolume ? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>) :
-              formatUSD(volume)}
-          </div>
-          <div className="flex space-x-2 text-sm font-medium">
-            <div className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-400">
-              All Time
-            </div>
-          </div>
-        </Card>
-        <Card
-          className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
-        >
-          <div className="text-xl opacity-80">Fees</div>
-          <div className="text-4xl font-bold text-white">
-            {loadingRevenue ? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>) :
-              formatUSD(revenue)}
-          </div>
-          <div className="flex space-x-2 text-sm font-medium">
+      <div className="flex flex-wrap flex-row min-h-[90px]">
 
-          </div>
-        </Card>
-        <Card
-          className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
-        >
-          <div className="text-xl opacity-80">Transactions</div>
-          <div className="text-4xl font-bold text-white">
-            {numeral(txs).format('0,0')}
-          </div>
-          <div className="flex space-x-2 text-sm font-medium">
+        {stats.map((stat, i) => {
+          console.log(stat.value, stat.value !== "--")
+          return stat.value !== "--" ?
+            (<Card
+              className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
+            >
+              <div className="text-xl opacity-80">{stat.title}</div>
+              <div className="text-4xl font-bold text-white">
+                {stat.loading ? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>) :
+                  stat.value
+                }
+              </div>
 
-          </div>
-        </Card>
-        <Card
-          className={`px-0 pb-2 space-y-3 text-white bg-transparent min-w-[10%]`}
-        >
-          <div className="text-xl opacity-80">Addresses</div>
-          <div className="text-4xl font-bold text-white">
-            {numeral(addresses).format('0,0')}
-          </div>
-          <div className="flex space-x-2 text-sm font-medium">
+            </Card>) : null
+        })}
 
-          </div>
-        </Card>
 
       </div>
-
+      <div className="flex space-x-2 text-sm pt-3 font-medium">
+        <div className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-400">
+          All Time
+        </div>
+      </div>
       {/*
       <Grid cols={{ sm: 1, md: 4, lg: 4 }} gap={4} className="my-4">
         <AllTimeStatCard
@@ -238,7 +180,7 @@ export default function HolisticStats({platform: parentPlatform, setPlatform:  p
           title="Fees"
         >
           <div className="text-4xl font-bold text-white">
-            {numeral(revenue / 1000000).format('$0.0')}M
+            {numeral(fee / 1000000).format('$0.0')}M
           </div>
         </AllTimeStatCard>
         <AllTimeStatCard

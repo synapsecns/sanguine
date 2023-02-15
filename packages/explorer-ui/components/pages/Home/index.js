@@ -74,7 +74,7 @@ export function Home() {
         bridgeTransactionsTable,
         'fromInfo.time',
         ['desc']
-      ).slice(0, 10)
+      ).slice(0, 25)
       setTransactionsArr(bridgeTransactionsTable)
 
     },
