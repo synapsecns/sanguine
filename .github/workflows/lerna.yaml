@@ -42,7 +42,7 @@ jobs:
       - name: Install Node Dependencies
         run: yarn install --immutable
 
-      - name: "Version and publish" # Interesting step
+      - name: 'Version and publish' # Interesting step
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # we're not authed with any repository yet so this shouldn't do anything
