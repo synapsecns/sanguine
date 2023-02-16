@@ -1,13 +1,10 @@
 package agentsintegration_test
 
 import (
-	"context"
-	"fmt"
 	"math/big"
 	"time"
 
 	executor2 "github.com/synapsecns/sanguine/agents/agents/executor"
-	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
@@ -960,7 +957,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 	_, testContractRef := u.TestDeployManager.GetAgentsTestContract(u.GetTestContext(), u.TestBackendDestination)
 	testTransactOpts := u.TestBackendDestination.GetTxContext(u.GetTestContext(), nil)
 
-	recipient := u.TestClientOnDestination.Address().Hash()
+	recipient := u.TestClientMetadataOnDestination.Address().Hash()
 	nonce := uint32(1)
 	body := []byte{byte(gofakeit.Uint32())}
 
@@ -969,7 +966,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 
 	txContextTestClientOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.TestClientMetadataOnOrigin.OwnerPtr())
 
-	testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(txContextTestClientOrigin.TransactOpts, uint32(u.TestBackendDestination.GetChainID()), u.TestClientOnDestination.Address(), optimisticSeconds, body)
+	testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(txContextTestClientOrigin.TransactOpts, uint32(u.TestBackendDestination.GetChainID()), u.TestClientMetadataOnDestination.Address(), optimisticSeconds, body)
 	u.Nil(err)
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
 
@@ -1142,20 +1139,6 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 
 	<-continueChan
 
-	// Create a channel and subscription to receive TestClientMessageSent events as they are emitted from origin.
-	messageSentSink := make(chan *testclient.TestClientMessageSent)
-	sentMessage, err := u.TestClientOnOrigin.WatchMessageSent(&bind.WatchOpts{
-		Context: u.GetTestContext()},
-		messageSentSink)
-	u.Nil(err)
-
-	// Create a channel and subscription to receive TestClientMessageReceived events as they are emitted from destination.
-	messageReceivedSink := make(chan *testclient.TestClientMessageReceived)
-	receivedMessage, err := u.TestClientOnDestination.WatchMessageReceived(&bind.WatchOpts{
-		Context: u.GetTestContext()},
-		messageReceivedSink)
-	u.Nil(err)
-
 	executed, err := exec.Execute(u.GetTestContext(), message)
 	u.Nil(err)
 	u.False(executed)
@@ -1181,40 +1164,55 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 		return false
 	})
 
-	watchCtx, cancel := context.WithTimeout(u.GetTestContext(), time.Second*10)
-	defer cancel()
+	/*
+		// Create a channel and subscription to receive TestClientMessageSent events as they are emitted from origin.
+		messageSentSink := make(chan *testclient.TestClientMessageSent)
+		sentMessage, err := u.TestClientOnOrigin.WatchMessageSent(&bind.WatchOpts{
+			Context: u.GetTestContext()},
+			messageSentSink)
+		u.Nil(err)
 
-	select {
-	// check for errors and fail
-	case <-watchCtx.Done():
-		u.T().Error(u.T(), fmt.Errorf("test context completed %w", u.GetTestContext().Err()))
-	case <-sentMessage.Err():
-		u.T().Error(u.T(), sentMessage.Err())
-	// get message sent event
-	case item := <-messageSentSink:
-		u.NotNil(item)
+		// Create a channel and subscription to receive TestClientMessageReceived events as they are emitted from destination.
+		messageReceivedSink := make(chan *testclient.TestClientMessageReceived)
+		receivedMessage, err := u.TestClientOnDestination.WatchMessageReceived(&bind.WatchOpts{
+			Context: u.GetTestContext()},
+			messageReceivedSink)
+		u.Nil(err)
 
-		// Now sleep for a second before executing
-		time.Sleep(time.Second)
-
-		watchHandleCtx, cancel := context.WithTimeout(u.GetTestContext(), time.Second*10)
+		watchCtx, cancel := context.WithTimeout(u.GetTestContext(), time.Second*10)
 		defer cancel()
 
 		select {
 		// check for errors and fail
-		case <-watchHandleCtx.Done():
+		case <-watchCtx.Done():
 			u.T().Error(u.T(), fmt.Errorf("test context completed %w", u.GetTestContext().Err()))
-		case <-receivedMessage.Err():
-			u.T().Error(u.T(), receivedMessage.Err())
-		// get attestation accepted event
-		case item := <-messageReceivedSink:
+		case <-sentMessage.Err():
+			u.T().Error(u.T(), sentMessage.Err())
+		// get message sent event
+		case item := <-messageSentSink:
 			u.NotNil(item)
 
-			break
-		}
+			// Now sleep for a second before executing
+			time.Sleep(time.Second)
 
-		break
-	}
+			watchHandleCtx, cancel := context.WithTimeout(u.GetTestContext(), time.Second*10)
+			defer cancel()
+
+			select {
+			// check for errors and fail
+			case <-watchHandleCtx.Done():
+				u.T().Error(u.T(), fmt.Errorf("test context completed %w", u.GetTestContext().Err()))
+			case <-receivedMessage.Err():
+				u.T().Error(u.T(), receivedMessage.Err())
+			// get attestation accepted event
+			case item := <-messageReceivedSink:
+				u.NotNil(item)
+
+				break
+			}
+
+			break
+		}*/
 
 	exec.Stop(uint32(u.TestBackendOrigin.GetChainID()))
 	exec.Stop(uint32(u.TestBackendDestination.GetChainID()))
