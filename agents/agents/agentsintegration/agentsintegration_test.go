@@ -1,8 +1,6 @@
 package agentsintegration_test
 
 import (
-	"encoding/hex"
-	"fmt"
 	"math/big"
 	"time"
 
@@ -994,11 +992,6 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
 			retrievedInProgressAttestation.AttestationState() == types.AttestationStateConfirmedOnDestination
 
-		if isTrue {
-			root := retrievedInProgressAttestation.SignedAttestation().Attestation().Root()
-			fmt.Printf("\nCRONIN from Guard\n %s \nCRONIN\n", hex.EncodeToString(root[:]))
-		}
-
 		return isTrue
 	})
 
@@ -1122,8 +1115,6 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 	root, err := tree.Root(1)
 	u.Nil(err)
 
-	fmt.Printf("\nCRONIN from tree.Root()\n %s \nCRONIN\n", hex.EncodeToString(root[:]))
-
 	var rootB32 [32]byte
 	copy(rootB32[:], root)
 
@@ -1172,6 +1163,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 		return false
 	})
 
+	// TODO (joe): Get this working and validate that we received the TestClient message on the destination
 	// Create a channel and subscription to receive TestClientMessageSent events as they are emitted from origin.
 	/*messageSentSink := make(chan *testclient.TestClientMessageSent)
 	sentMessage, err := u.TestClientOnOrigin.WatchMessageSent(&bind.WatchOpts{

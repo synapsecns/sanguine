@@ -2,7 +2,6 @@ package testclient_test
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 	"time"
@@ -28,15 +27,6 @@ func (h TestClientSuite) TestSendMessage() {
 	h.Nil(err)
 	h.testBackend.WaitForConfirmation(h.GetTestContext(), testClientOnOriginTx)
 
-	sender := h.testClientContract.Address()
-
-	fmt.Printf("\nCRONIN from getting sender\n dest = %d, nonce = %d, sender = %s, recipient = %s, message = %s \nCRONIN\n",
-		h.destinationID,
-		1,
-		hex.EncodeToString(sender[:]),
-		hex.EncodeToString(recipient[:]),
-		hex.EncodeToString(body))
-
 	watchCtx, cancel := context.WithTimeout(h.GetTestContext(), time.Second*10)
 	defer cancel()
 
@@ -49,14 +39,6 @@ func (h TestClientSuite) TestSendMessage() {
 	// get dispatch event
 	case item := <-messageSentSink:
 		h.NotNil(item)
-
-		fmt.Printf("\nCRONIN from sink\n dest = %d, nonce = %d, sender = %s, recipient = %s, message = %s \nCRONIN\n",
-			item.Destination,
-			item.Nonce,
-			hex.EncodeToString(item.Sender[:]),
-			hex.EncodeToString(item.Recipient[:]),
-			hex.EncodeToString(item.Message))
-
 		break
 	}
 }
