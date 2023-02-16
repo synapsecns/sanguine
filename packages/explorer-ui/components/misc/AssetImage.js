@@ -7,7 +7,7 @@ export function AssetImage({ tokenAddress, chainId, className }) {
 
   if (hasRequiredData({ tokenAddress, chainId })) {
     const t = TOKEN_HASH_MAP[chainId][tokenAddress]
-
+    console.log(chainId, tokenAddress, TOKEN_HASH_MAP[chainId][tokenAddress])
     return (
       <Image
         className={`inline w-5 h-5 mr-2 rounded-md ${className}`}

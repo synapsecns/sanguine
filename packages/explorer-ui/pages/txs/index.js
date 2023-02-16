@@ -19,6 +19,8 @@ import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
 export default function Txs() {
   const search = useSearchParams()
   const p = Number(search.get('p'))
+  const chainIDFrom = Number(search.get('p'))
+
   const [transactionsArr, setTransactionsArr] = useState([])
   const [pending, setPending] = useState(false)
   const [wallet, setWallet] = useState("")
@@ -92,7 +94,7 @@ export default function Txs() {
   }
   const executeSearch = () => {
 
-    let variables = { page: page===0 ? 1: page }
+    let variables = { page: page===0 ? 1: page, pending: pending }
     if (chains.length > 0) {
       if (chainsLocale) {
         variables = createQueryField("chainIDFrom", chains, variables)
@@ -179,7 +181,6 @@ export default function Txs() {
           setChainsLocale={setChainsLocale}
           walletLocale={walletLocale}
           setWalletLocale={setWalletLocale}
-
         />
         {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={transactionsArr} />}
 

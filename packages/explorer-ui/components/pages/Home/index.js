@@ -1,8 +1,10 @@
-import { TRANSACTIONS_PATH } from '@urls'
+import { TRANSACTIONS_PATH, getBridgeTransactionUrl } from '@urls'
 import { useState, useEffect } from 'react'
 import { TableHeader } from '@components/TransactionTable/TableHeader'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { OverviewChart } from '@components/ChainChart'
+import TextField from '@mui/material/TextField'
+import { inputStyle } from '@utils/styles/muiStyles'
 
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { formatUSD } from '@utils/formatUSD'
@@ -39,6 +41,8 @@ export function Home() {
   const [platform, setPlatform] = useState("ALL");
   const [transactionsArr, setTransactionsArr] = useState([])
   const [dailyDataArr, setDailyDataArr] = useState([])
+  const [kappa, setKappa] = useState("")
+  const [pending, setPending] = useState(false)
 
   const [completed, setCompleted] = useState(false)
   const [dailyStatisticType, setDailyStatisticType] = useState('VOLUME')
@@ -49,12 +53,12 @@ export function Home() {
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 hover:text-white'
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
-  const returnChainData = () => {
-    var items = Object.keys(dailyDataArr?.[currentTooltipIndex]).map((key) => { return [key, dailyDataArr?.[currentTooltipIndex][key]] })
-    items.sort((first, second) => { return second[1] - first[1] })
-    var keys = items.map((e) => { return e[0] })
-    return keys
-  }
+  // const returnChainData = () => {
+  //   var items = Object.keys(dailyDataArr?.[currentTooltipIndex]).map((key) => { return [key, dailyDataArr?.[currentTooltipIndex][key]] })
+  //   items.sort((first, second) => { return second[1] - first[1] })
+  //   var keys = items.map((e) => { return e[0] })
+  //   return keys
+  // }
   const {
     loading,
     error,
@@ -64,6 +68,9 @@ export function Home() {
   } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
     pollInterval: 10000,
     fetchPolicy: 'network-only',
+    variables: {
+      pending: pending,
+    },
     onCompleted: (data) => {
       let bridgeTransactionsTable = data.bridgeTransactions
 
@@ -82,7 +89,18 @@ export function Home() {
     { loading: loadingDailyData, error: errorDailyData, data: dailyData },
   ] = useLazyQuery(DAILY_STATISTICS_BY_CHAIN, {
     onCompleted: (data) => {
-      console.log("data", data)
+      let chartData = data.dailyStatisticsByChain
+      if (dailyStatisticCumulative) {
+        chartData = JSON.parse(JSON.stringify(data.dailyStatisticsByChain))
+        for (let i = 1; i < chartData.length; i++) {
+          for (let key in data.dailyStatisticsByChain[i]) {
+            if (key !== 'date' && key !== '__typename') {
+              chartData[i][key] += (chartData[i - 1]?.[key] ? chartData[i - 1][key] : 0)
+            }
+
+          }
+        }
+      }
       setDailyDataArr(data.dailyStatisticsByChain);
     }
   })
@@ -118,18 +136,7 @@ export function Home() {
       },
     })
   }, [])
-  let chartData = dailyDataArr
-  if (dailyStatisticCumulative) {
-    chartData = JSON.parse(JSON.stringify(dailyDataArr))
-    for (let i = 1; i < chartData.length; i++) {
-      for (let key in dailyDataArr[i]) {
-        if (key !== 'date' && key !== '__typename') {
-          chartData[i][key] += (chartData[i - 1]?.[key] ? chartData[i - 1][key] : 0)
-        }
 
-      }
-    }
-  }
 
   useEffect(() => {
     if (!completed) {
@@ -156,6 +163,7 @@ export function Home() {
 
   }
 
+
   return (
     <StandardPageContainer title={'Synapse Analytics'}>
       <HolisticStats
@@ -173,8 +181,8 @@ export function Home() {
             <div id="tooltip-sidebar" className='w-full ' />
           </div>
         </div>
-        <div className="col-span-3 flex justify-end flex-col	">
-          <div className="flex flex-wrap">
+        <div className="col-span-3 flex justify-end flex-col my-6	">
+          <div className="flex flex-wrap justify-end ">
             <div className="h-full flex items-center mr-4">
               {platform === "MESSAGE_BUS" ? null :
 
@@ -288,10 +296,9 @@ export function Home() {
           </div>
 
           <OverviewChart
-            setCurrentTooltipIndex={setCurrentTooltipIndex}
             loading={loadingDailyData}
             height={Object.keys(CHAIN_ID_NAMES_REVERSE).length * 31}
-            chartData={chartData}
+            chartData={dailyDataArr}
             isCumulativeData={dailyStatisticCumulative}
             dailyStatisticType={dailyStatisticType}
             isUSD={
@@ -303,84 +310,58 @@ export function Home() {
             showAggregated={false}
             monthlyData={false}
             currency
-            currentIndex={currentTooltipIndex}
             platform={platform}
           />
         </div>
       </div>
-      {/* <div className="grid grid-cols-4 gap-4">
-        <div className="col-span-1 w-[100%]">
-          <div className="z-1 w-full h-full flex bg-synapse-logo bg-no-repeat bg-center">
-            <div id="tooltip-sidebar" className='w-full ' />
-          </div> */}
-      {/* <div className="z-10 w-full opacity-[0.2] h-full flex  justify-center items-center">
-            <div className='absolute'><SynapseLogoSvg /></div>
-          </div> */}
 
-
-      {/* <p className="text-lg font-bold text-white pl-2 pt-4 ">{titles[dailyStatisticType]} for {formatDate(chartData?.[currentTooltipIndex]?.date)}</p>
-          <table className='min-w-full'>
-
-            <TableHeader headers={['Chain', titles[dailyStatisticType]]} />
-            {loadingDailyData ? <tbody> {Object.values(CHAIN_ID_NAMES_REVERSE).map((i) =>
-              <tr
-                key={i}
-
-              ><td className='w-[70%]'> <div className="h-3 w-full mt-4 bg-slate-700 rounded animate-pulse"></div></td><td className='w-[30%]'><div className="h-3 w-full mt-4 bg-slate-700 rounded animate-pulse"></div></td></tr>)}</tbody> :
-              (<tbody>
-
-                {currentTooltipIndex >= 0 && chartData?.[currentTooltipIndex] ? returnChainData().map((key, i) => {
-                  return chartData[currentTooltipIndex][key] > 0 ? (<tr
-                    key={i}
-                    className=" rounded-md w-[100%]"
-                  >
-                    <td className='w-[70%]'>
-                      {key === "total" ? <p className="pl-2 whitespace-nowrap text-sm text-white">All Chains</p> :
-                        <ChainInfo
-                          useExplorerLink={true}
-                          chainId={CHAIN_ID_NAMES_REVERSE[key]}
-                          imgClassName="w-4 h-4 ml-2"
-                          textClassName="whitespace-nowrap px-2  text-sm  text-white"
-                        />}
-                    </td>
-                    <td className='w-fit '>
-                      <div className="ml-1 mr-2 self-center">
-                        <p className='whitespace-nowrap px-2  text-sm  text-white'>{formatUSD(chartData[currentTooltipIndex][key])}</p>
-                      </div>
-                    </td>
-                  </tr>) : null
-                }) : null}
-              </tbody>)}
-          </table> */}
-      {/* </div>
-        <div className="col-span-3 ">
-          {/* { loadingDailyData ?  <div className={"flex justify-center align-center w-full animate-spin mt-[" + (Object.values(CHAIN_ID_NAMES_REVERSE).length * 10).toString() + "px]"}><SynapseLogoSvg /></div> :
-          <OverviewChart
-            setCurrentTooltipIndex={setCurrentTooltipIndex}
-            loading={loadingDailyData}
-            height={Object.keys(CHAIN_ID_NAMES_REVERSE).length * 31}
-            chartData={chartData}
-            isCumulativeData={dailyStatisticCumulative}
-            dailyStatisticType={dailyStatisticType}
-            isUSD={
-              dailyStatisticType === 'TRANSACTIONS' ||
-                dailyStatisticType === 'ADDRESSES'
-                ? false
-                : true
-            }
-            showAggregated={false}
-            monthlyData={false}
-            currency
-            currentIndex={currentTooltipIndex}
-            platform={platform}
-          />
-
-        </div>
-      </div> */}
       <br /> <br />
       <HorizontalDivider />
       <br /> <br />
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
+      <div className="flex justify-center items-center pr-2 gap-x-4 py-6">
+
+        <div className="grow">
+          <TextField size="small" value={kappa} onChange={(e) => {
+            setKappa(e.target.value)
+          }}
+            id="outlined-basic" label="Search by TXID / TXHash" variant="outlined" sx={inputStyle} />
+        </div>
+        <a href={getBridgeTransactionUrl({hash: kappa})}
+          className={
+            'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ml-[-105px] pointer-cursor z-10' +
+            (loading ? ' pointer-events-none opacity-[0.4]' : '')
+          }
+        >
+
+          Search
+        </a>
+
+        <div className="">
+          <button
+            disabled={loading}
+            onClick={() => setPending(false)}
+            className={
+              'font-medium rounded-l-md px-4 py-2 border ' +
+              (pending ? unSelectStyle : selectStyle) +
+              (loading ? ' pointer-events-none' : '')
+            }
+          >
+            Confirmed
+          </button>
+          <button
+            disabled={loading}
+            onClick={() => setPending(true)}
+            className={
+              'font-medium rounded-r-md px-4 py-2 border ' +
+              (pending ? selectStyle : unSelectStyle) +
+              (loading ? ' pointer-events-none' : '')
+            }
+          >
+            Pending
+          </button>
+        </div>
+      </div>
       {loading ? <div className="flex justify-center align-center w-full my-[100px] "><div className='mx-[1.5px] animate-spin'><SynapseLogoSvg /></div></div> : <BridgeTransactionTable queryResult={transactionsArr} />}
 
 

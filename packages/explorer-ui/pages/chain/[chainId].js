@@ -56,12 +56,7 @@ export default function chainId() {
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
-  const returnChainData = () => {
-    var items = Object.keys(dailyDataArr?.[currentTooltipIndex]).map((key) => { return [key, dailyDataArr?.[currentTooltipIndex][key]] })
-    items.sort((first, second) => { return second[1] - first[1] })
-    var keys = items.map((e) => { return e[0] })
-    return keys
-  }
+
   const {
     loading,
     error,
@@ -90,8 +85,19 @@ export default function chainId() {
     { loading: loadingDailyData, error: errorDailyData, data: dailyData },
   ] = useLazyQuery(DAILY_STATISTICS_BY_CHAIN, {
     onCompleted: (data) => {
+      let chartData = data.dailyStatisticsByChain
+      if (dailyStatisticCumulative) {
+        chartData = JSON.parse(JSON.stringify(data.dailyStatisticsByChain))
+        for (let i = 1; i < chartData.length; i++) {
+          for (let key in data.dailyStatisticsByChain[i]) {
+            if (key !== 'date' && key !== '__typename') {
+              chartData[i][key] += (chartData[i - 1]?.[key] ? chartData[i - 1][key] : 0)
+            }
+
+          }
+        }
+      }
       setDailyDataArr(data.dailyStatisticsByChain);
-      setCurrentTooltipIndex(data.dailyStatisticsByChain.length - 1);
     }
   })
 
@@ -169,58 +175,55 @@ export default function chainId() {
   }
 
   return (
-    <StandardPageContainer title={'Synapse Analytics'}>
+    <StandardPageContainer title={''}>
       <div className="flex items-center mt-10 mb-2">
-        <h3 className="text-white text-2xl font-semibold"><ChainInfo chainId={chainId} imgClassName="w-6 h-6" textClassName='pl-1 whitespace-nowrap text-md text-white' linkClassName='float-right text-white transition ease-out hover:text-[#8FEBFF] px-1.2 ml-4  rounded-md ease-in-out bg-[#191919]' /></h3>
+        <h3 className="text-white text-2xl font-semibold"><ChainInfo chainId={chainId} imgClassName="w-10 h-10" textClassName='pl-1 whitespace-nowrap text-6xl text-white' linkClassName='float-right text-white transition ease-out hover:text-[#8FEBFF] px-2 ml-4 mt-4 rounded-md ease-in-out bg-[#191919]' /></h3>
       </div>
       <HolisticStats
+        noMessaging={true}
         platform={platform}
-        chainID={chainId}
         loading={false}
         setPlatform={setPlatform}
+        baseVariables={{
+          platform: platform,
+          duration: "ALL_TIME",
+          useCache: false,
+          chainID: chainId,
+        }}
       />
       <br />
       <HorizontalDivider />
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
+
         <div className="col-span-1">
-          <div className="my-5">
-            {currentTooltipIndex >= 0 && chartData?.[currentTooltipIndex] ? (
-              <p
-                className="text-2xl font-medium text-default
-              font-bold
-              text-white pl-2"
-              >
-                {formatDate(chartData[0].date)} to{' '}
-                {formatDate(chartData[chartData.length - 1].date)}
-              </p>
-            ) : null}
-            {chartData?.length > 0 ?
-              <p className="pl-2 text-md font-medium text-default mt-2 text-white">{' '} {' '} Total {platform !== "ALL" ? platformTitles[platform] + " " : ""}{titles[dailyStatisticType]}: {' '}{formatUSD(totalChainVolume())}
-              </p> : <div className="h-3 w-[50%] mt-4 bg-slate-700 rounded animate-pulse"></div>}
+
+          <div className="z-1 w-full h-full flex bg-synapse-logo bg-no-repeat bg-center">
+            <div id="tooltip-sidebar" className='w-full ' />
           </div>
         </div>
-        <div className="col-span-2 flex justify-end">
-          <div className="flex flex-wrap">
+        <div className="col-span-3 flex justify-end flex-col my-6	">
+          <div className="flex flex-wrap justify-end ">
             <div className="h-full flex items-center mr-4">
-              <button
-                onClick={() => setDailyStatisticType('VOLUME')}
-                className={
-                  'font-medium rounded-l-md px-4 py-2 border h-fit  ' +
-                  (dailyStatisticType === 'VOLUME'
-                    ? selectStyle
-                    : unSelectStyle) +
-                  ((loadingDailyData || platform === "MESSAGE_BUS") ? ' pointer-events-none' : '') +
-                  (platform === "MESSAGE_BUS" ? ' opacity-[0.6]' : '')
-                }
-              >
-                Vol
-              </button>
+              {platform === "MESSAGE_BUS" ? null :
+
+                (<button
+                  onClick={() => setDailyStatisticType('VOLUME')}
+                  className={
+                    'font-medium rounded-l-md px-4 py-2 border h-fit  ' +
+                    (dailyStatisticType === 'VOLUME'
+                      ? selectStyle
+                      : unSelectStyle) +
+                    ((loadingDailyData || platform === "MESSAGE_BUS") ? ' pointer-events-none' : '')
+                  }
+                >
+                  Vol
+                </button>)}
               <button
                 onClick={() => setDailyStatisticType('FEE')}
                 className={
                   'font-medium px-4 py-2 border  h-fit ' +
                   (dailyStatisticType === 'FEE' ? selectStyle : unSelectStyle) +
-                  (loadingDailyData ? ' pointer-events-none' : '')
+                  (loadingDailyData ? ' pointer-events-none' : '') + (platform === "MESSAGE_BUS" ? ' rounded-l-md' : '')
                 }
               >
                 Fees
@@ -261,31 +264,31 @@ export default function chainId() {
                   (loadingDailyData ? ' pointer-events-none' : '')
                 }
               >
-                30d
+                1mo
               </button>
               <button
-                onClick={() => SetDailyStatisticDuration('PAST_YEAR')}
+                onClick={() => SetDailyStatisticDuration('PAST_3_MONTHS')}
                 className={
                   'font-medium  px-4 py-2 border  h-fit   ' +
-                  (dailyStatisticDuration === 'PAST_YEAR'
+                  (dailyStatisticDuration === 'PAST_3_MONTHS'
                     ? selectStyle
                     : unSelectStyle) +
                   (loadingDailyData ? ' pointer-events-none' : '')
                 }
               >
-                365d
+                3mo
               </button>
               <button
-                onClick={() => SetDailyStatisticDuration('ALL_TIME')}
+                onClick={() => SetDailyStatisticDuration('PAST_6_MONTHS')}
                 className={
                   'font-medium rounded-r-md px-4 py-2 border  h-fit ' +
-                  (dailyStatisticDuration === 'ALL_TIME'
+                  (dailyStatisticDuration === 'PAST_6_MONTHS'
                     ? selectStyle
                     : unSelectStyle) +
                   (loadingDailyData ? ' pointer-events-none' : '')
                 }
               >
-                All Time
+                6mo
               </button>
             </div>
             <div className="h-full flex items-center">
@@ -311,53 +314,14 @@ export default function chainId() {
               </button>
             </div>
           </div>
-        </div>
-      </div>
-      <HorizontalDivider />
-      <div className="grid grid-cols-4 gap-4">
-        <div className="col-span-1 w-[100%]">
-          <p className="text-lg font-bold text-white pl-2 pt-4 ">{titles[dailyStatisticType]} for {formatDate(chartData?.[currentTooltipIndex]?.date)}</p>
-          <table className='min-w-full'>
 
-            <TableHeader headers={['Chain', titles[dailyStatisticType]]} />
-            {loadingDailyData ? <tbody> {Object.values(CHAIN_ID_NAMES_REVERSE).map((i) =>
-              <tr
-                key={i}
-              ><td className='w-[70%]'> <div className="h-3 w-full mt-4 bg-slate-700 rounded animate-pulse"></div></td><td className='w-[30%]'><div className="h-3 w-full mt-4 bg-slate-700 rounded animate-pulse"></div></td></tr>)}</tbody> :
-              (<tbody>
-
-                {currentTooltipIndex >= 0 && chartData?.[currentTooltipIndex] ? returnChainData().map((key, i) => {
-                  return chartData[currentTooltipIndex][key] > 0 && key !== 'total' ? (<tr
-                    key={i}
-                    className=" rounded-md w-[100%]"
-                  >
-                    <td className='w-[70%]'>
-
-                      <ChainInfo
-                        useExplorerLink={false}
-                        chainId={CHAIN_ID_NAMES_REVERSE[key]}
-                        imgClassName="w-4 h-4 ml-2"
-                        textClassName="whitespace-nowrap px-2  text-sm  text-white"
-                      />
-                    </td>
-                    <td className='w-fit '>
-                      <div className="ml-1 mr-2 self-center">
-                        <p className='whitespace-nowrap px-2  text-sm  text-white'>{formatUSD(chartData[currentTooltipIndex][key])}</p>
-                      </div>
-                    </td>
-                  </tr>) : null
-                }) :null}
-              </tbody>)}
-          </table>
-        </div>
-        <div className="col-span-3 ">
-          {/* { loadingDailyData ?  <div className={"flex justify-center align-center w-full animate-spin mt-[" + (Object.values(CHAIN_ID_NAMES_REVERSE).length * 10).toString() + "px]"}><SynapseLogoSvg /></div> : */}
           <OverviewChart
-            setCurrentTooltipIndex={setCurrentTooltipIndex}
+            singleChain={true}
             loading={loadingDailyData}
             height={Object.keys(CHAIN_ID_NAMES_REVERSE).length * 31}
-            chartData={chartData}
+            chartData={dailyDataArr}
             isCumulativeData={dailyStatisticCumulative}
+            dailyStatisticType={dailyStatisticType}
             isUSD={
               dailyStatisticType === 'TRANSACTIONS' ||
                 dailyStatisticType === 'ADDRESSES'
@@ -367,9 +331,8 @@ export default function chainId() {
             showAggregated={false}
             monthlyData={false}
             currency
-            currentIndex={currentTooltipIndex}
+            platform={platform}
           />
-
         </div>
       </div>
       <br /> <br />

@@ -80,8 +80,8 @@ export function UniversalSearch({
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
   const resetFields = () => {
     setWallet('')
-    setMinSize({type: "USD", value: ""})
-    setMaxSize({type: "USD", value: ""})
+    setMinSize({ type: "USD", value: "" })
+    setMaxSize({ type: "USD", value: "" })
     setStartDate(null)
     setEndDate(null)
     setToTx(true)
@@ -149,27 +149,19 @@ export function UniversalSearch({
             Filters
           </h3>
           <div className="grow">
-            {/* <SearchBox
-              searchField={kappa}
-              setSearchField={setKappa}
-              inputType={inputType}
-              extraStyling="pr-[98px]"
-              placeholder="Search by address / txid / token / chain / date"
-            /> */}
             <TextField size="small" value={kappa} onChange={(e) => {
               setKappa(e.target.value)
             }}
               id="outlined-basic" label="Search by TXID / TXHash" variant="outlined" sx={inputStyle} />
-
           </div>
           <button onClick={() => executeSearch()}
-          className={
-            'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ml-[-105px] pointer-cursor z-10' +
-            (loading ? ' pointer-events-none opacity-[0.4]' : '')
-          }
- >
+            className={
+              'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ml-[-105px] pointer-cursor z-10' +
+              (loading ? ' pointer-events-none opacity-[0.4]' : '')
+            }
+          >
 
-          Search
+            Search
           </button>
           {/* <button onClick={() => executeSearch()} className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200">
             <a href={searchLink}>Search</a>
@@ -228,7 +220,7 @@ export function UniversalSearch({
               </div>
               <div className="flex justify-center rounded-md border-l-0 border-gray-700 border-opacity-70 bg-[#333333]  bg-opacity-30  py-[9px] px-3">
                 <div className="form-check form-check-inline mx-1" onClick={() => setWalletLocale(!walletLocale)}>
-                  <input checked={walletLocale}  className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
+                  <input checked={walletLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
                   <label className="form-check-label inline-block text-gray-500 " for="walletFrom">From</label>
                 </div>
                 <div className="form-check form-check-inline mx-1" onClick={() => setWalletLocale(!walletLocale)}>
@@ -292,11 +284,11 @@ export function UniversalSearch({
 
                   <div className="ml-4 w-fit flex justify-center rounded-md border-l-0 border-gray-700 border-opacity-70 bg-[#333333]  bg-opacity-30 py-[9px] px-3">
                     <div className="form-check form-check-inline mx-2" onClick={() => setChainsLocale(!chainsLocale)}>
-                      <input checked ={chainsLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
+                      <input checked={chainsLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
                       <label className="form-check-label inline-block text-gray-500 " for="walletFrom">From</label>
                     </div>
                     <div className="form-check form-check-inline mx-2" onClick={() => setChainsLocale(!chainsLocale)}>
-                      <input checked ={!chainsLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletTo" value="option2" />
+                      <input checked={!chainsLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletTo" value="option2" />
                       <label className="form-check-label inline-block text-gray-500  " for="walletTo">To</label>
                     </div>
                   </div>
@@ -332,8 +324,8 @@ export function UniversalSearch({
 
                 <div className="w-[49%] flex flex-row ">
                   <div className='w-[80%]'>
-                    <TextField  type="number" size="small" value={minSize.value} onChange={(e) => {
-                      setMinSize({...minSize,value: e.target.value})
+                    <TextField type="number" size="small" value={minSize.value} onChange={(e) => {
+                      setMinSize({ ...minSize, value: e.target.value })
                     }} id="outlined-basic" label="Min Size" variant="outlined" sx={inputStyleRounded} />
                   </div>
                   <div className='w-[20%]'>
@@ -346,8 +338,8 @@ export function UniversalSearch({
                       size="small"
                       sx={comboSelectStyleSmall}
                       SelectProps={{
-                        value:  minSize.type,
-                        onChange: (e) => setMinSize({...minSize, type: e.target.value})
+                        value: minSize.type,
+                        onChange: (e) => setMinSize({ ...minSize, type: e.target.value })
                       }}
                     >
                       <MenuItem
@@ -368,7 +360,7 @@ export function UniversalSearch({
                 </div>
                 <div className="w-[49%] flex flex-row">
                   <div className='w-[80%]'>
-                    <TextField size="small" type="number" onChange={(e) => { setMaxSize({ ...maxSize,value: e.target.value}) }}
+                    <TextField size="small" type="number" onChange={(e) => { setMaxSize({ ...maxSize, value: e.target.value }) }}
                       value={maxSize.value} id="outlined-basic" label="Max Size" variant="outlined" sx={inputStyleRounded} />
                   </div>
                   <div className='w-[20%]'>
@@ -381,8 +373,8 @@ export function UniversalSearch({
                       size="small"
                       sx={comboSelectStyleSmall}
                       SelectProps={{
-                        value:  maxSize.type,
-                        onChange: (e) => setMaxSize({...maxSize, type: e.target.value})
+                        value: maxSize.type,
+                        onChange: (e) => setMaxSize({ ...maxSize, type: e.target.value })
                       }}
                     >
                       <MenuItem

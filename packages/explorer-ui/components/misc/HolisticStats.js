@@ -7,30 +7,35 @@ import numeral from 'numeral'
 import { formatUSD } from '@utils/formatUSD'
 
 
-export default function HolisticStats({ platform: parentPlatform, setPlatform: parentSetPlatform, loading, chainID, tokenAddress }) {
+export default function HolisticStats({ platform: parentPlatform, setPlatform: parentSetPlatform, loading, chainID, baseVariables, noMessaging }) {
   const [volume, setVolume] = useState("--")
   const [fee, setFee] = useState("--")
   const [addresses, setAddresses] = useState("--")
   const [txs, setTxs] = useState("--")
   const [useCache, setUseCache] = useState(true)
   const [skip, setSkip] = useState(false)
+  const [variables, setVariables] = useState({})
+
   const [platform, setPlatform] = useState(true)
 
+
+  useEffect(() => {
+    setVariables(baseVariables)
+  }, [baseVariables])
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 hover:text-white'
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
-
+  const handleVariable = (type) => {
+    let queryVariables = JSON.parse(JSON.stringify(variables))
+    queryVariables["type"] = type
+    console.log("queryVariables", queryVariables)
+    return queryVariables
+  }
 
   const { loading: loadingVolume, error: errorVolume, data: dataVolume } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
-    variables: chainID ? {
-      platform: platform,
-      duration: "ALL_TIME",
-      type: "TOTAL_VOLUME_USD",
-      useCache: true,
-      chainID: chainID
-    } : {
+    variables: baseVariables ? handleVariable("TOTAL_VOLUME_USD") : {
       platform: platform,
       duration: "ALL_TIME",
       type: "TOTAL_VOLUME_USD",
@@ -43,13 +48,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
   const { loading: loadingFee, error: errorFee, data: dataFee } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
-    variables: chainID ? {
-      platform: platform,
-      duration: "ALL_TIME",
-      type: "TOTAL_FEE_USD",
-      useCache: true,
-      chainID: chainID
-    } : {
+    variables: baseVariables ? handleVariable("TOTAL_FEE_USD") : {
       platform: platform,
       duration: "ALL_TIME",
       type: "TOTAL_FEE_USD",
@@ -62,13 +61,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
   const { loading: loadingAddresses, error: errorAddresses, data: dataAddresses } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
-    variables: chainID ? {
-      platform: platform,
-      duration: "ALL_TIME",
-      type: "COUNT_ADDRESSES",
-      useCache: useCache,
-      chainID: chainID,
-    } : {
+    variables: baseVariables ? handleVariable("COUNT_ADDRESSES") : {
       platform: platform,
       duration: "ALL_TIME",
       type: "COUNT_ADDRESSES",
@@ -88,13 +81,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
   const { loading: loadingTxs, error: errorTxs, data: dataTxs } = useQuery(
     AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
-    variables: chainID ? {
-      platform: platform,
-      duration: "ALL_TIME",
-      type: "COUNT_TRANSACTIONS",
-      useCache: useCache,
-      chainID: chainID
-    } : {
+    variables: baseVariables ? handleVariable("COUNT_TRANSACTIONS") : {
       platform: platform,
       duration: "ALL_TIME",
       type: "COUNT_TRANSACTIONS",
@@ -116,6 +103,13 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
     setPlatform(parentPlatform)
   }, [parentPlatform])
 
+  // useEffect(() => {
+  //   setVariables({
+  //     platform: platform,
+  //     duration: "ALL_TIME",
+  //     useCache: useCache,
+  //   })
+  // }, [parentPlatform])
 
   useEffect(() => {
     setVolume("--")
@@ -137,12 +131,13 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
         <button onClick={() => parentSetPlatform("BRIDGE")} className={"font-medium  px-4 py-2 border  " + (platform === "BRIDGE" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
           Bridge
         </button>
-        <button onClick={() => parentSetPlatform("SWAP")} className={"font-medium  px-4 py-2 border  " + (platform === "SWAP" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+        <button onClick={() => parentSetPlatform("SWAP")} className={"font-medium  px-4 py-2 border  " + (platform === "SWAP" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "") + (noMessaging ? " rounded-r-md" : "")}>
           Swap
         </button>
-        <button onClick={() => parentSetPlatform("MESSAGE_BUS")} className={"font-medium rounded-r-md px-4 py-2 border mr-5 " + (platform === "MESSAGE_BUS" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
-          Messaging
-        </button>
+        {noMessaging ? null :
+          <button onClick={() => parentSetPlatform("MESSAGE_BUS")} className={"font-medium rounded-r-md px-4 py-2 border " + (platform === "MESSAGE_BUS" ? selectStyle : unSelectStyle) + (loadingVolume ? " pointer-events-none" : "")}>
+            Messaging
+          </button>}
       </div>
       <div className="flex flex-wrap flex-row min-h-[90px]">
 

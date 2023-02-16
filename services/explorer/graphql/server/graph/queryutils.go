@@ -196,9 +196,11 @@ func generateSingleSpecifierStringArrSQL(values []*string, field string, firstFi
 	}
 
 	for i := range values {
-		final += fmt.Sprintf(" %s%s = '%s'", tablePrefix, field, *values[i])
-		if i < len(values)-1 {
-			final += " OR "
+		if values[i] != nil {
+			final += fmt.Sprintf(" %s%s = '%s'", tablePrefix, field, *values[i])
+			if i < len(values)-1 {
+				final += " OR "
+			}
 		}
 	}
 
@@ -431,7 +433,7 @@ func generateMessageBusQuery(chainID []*int, address *string, startTime *int, en
 	}
 	return finalQuery
 }
-func generateAllBridgeEventsQueryFromDestination2(chainIDTo []*int, chainIDFrom []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, kappa *string, txHash *string, page int, in bool) string {
+func generateAllBridgeEventsQueryFromDestination(chainIDTo []*int, chainIDFrom []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, kappa *string, txHash *string, page int, in bool) string {
 	firstFilter := true
 	chainIDToFilter := generateSingleSpecifierI32ArrSQL(chainIDTo, sql.ChainIDFieldName, &firstFilter, "")
 	minTimeFilter := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "", true)
@@ -449,7 +451,6 @@ func generateAllBridgeEventsQueryFromDestination2(chainIDTo []*int, chainIDFrom 
 
 	fromFilters := chainIDFromFilter + addressFromFilter
 
-	// TODO change these feuld names
 	firstFilter = true
 	minAmountFilter := generateEqualitySpecifierSQL(minAmount, "tamount", &firstFilter, "", true)
 	minAmountFilterUsd := generateEqualitySpecifierSQL(minAmountUsd, "tamount_usd", &firstFilter, "", true)
@@ -467,54 +468,10 @@ func generateAllBridgeEventsQueryFromDestination2(chainIDTo []*int, chainIDFrom 
 	return fmt.Sprintf("%s SELECT * FROM (SELECT %s FROM %s %s %s %s) %s LIMIT %d OFFSET %d", generateDeDepQueryCTE(toFilters, nil, nil, false), destToOriginCol, "baseQuery", destToOriginJoinsPt1, fromFilters, destToOriginJoinsPt2, postJoinFilters, pageValue, pageOffset)
 }
 
-func generateAllBridgeEventsQueryFromDestination(chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, tokenAddress []*string, kappa *string, txHash *string, page int, in bool) string {
-	firstFilter := true
-
-	chainIDSpecifier := generateSingleSpecifierI32ArrSQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
-	tokenAddressSpecifier := generateSingleSpecifierStringArrSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
-
-	minTimeSpecfier := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "", true)
-	maxTimeSpecfier := generateEqualitySpecifierSQL(endTime, sql.TimeStampFieldName, &firstFilter, "", false)
-
-	minAmountSpecfier := generateEqualitySpecifierSQL(minAmount, sql.AmountUSDFieldName, &firstFilter, "", true)
-	maxAmountSpecfier := generateEqualitySpecifierSQL(maxAmount, sql.AmountUSDFieldName, &firstFilter, "", false)
-
-	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "")
-	kappaSpecifier := generateKappaSpecifierSQL(kappa, sql.KappaFieldName, &firstFilter, "")
-	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "")
-	directionSpecifier := generateDirectionSpecifierSQL(in, &firstFilter, "")
-	compositeFilters := chainIDSpecifier + tokenAddressSpecifier + minTimeSpecfier + maxTimeSpecfier + minAmountSpecfier + maxAmountSpecfier + addressSpecifier + kappaSpecifier + txHashSpecifier + directionSpecifier
-	pageValue := sql.PageSize
-	pageOffset := (page - 1) * sql.PageSize
-	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, false), destToOriginCol, "baseQuery", destToOriginJoins)
-	return finalQuery
-}
-
 // generateAllBridgeEventsQueryFromOrigin gets all the filters for query from origin.
 //
 // nolint:dupl
-func generateAllBridgeEventsQueryFromOrigin(chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, tokenAddress []*string, txHash *string, page int, in bool) string {
-	firstFilter := true
-	chainIDSpecifier := generateSingleSpecifierI32ArrSQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
-	tokenAddressSpecifier := generateSingleSpecifierStringArrSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
-
-	minTimeSpecfier := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "", true)
-	maxTimeSpecfier := generateEqualitySpecifierSQL(endTime, sql.TimeStampFieldName, &firstFilter, "", false)
-
-	minAmountSpecfier := generateEqualitySpecifierSQL(minAmount, sql.AmountUSDFieldName, &firstFilter, "", true)
-	maxAmountSpecfier := generateEqualitySpecifierSQL(maxAmount, sql.AmountUSDFieldName, &firstFilter, "", false)
-
-	addressSpecifier := generateAddressSpecifierSQL(address, &firstFilter, "")
-	txHashSpecifier := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "")
-	directionSpecifier := generateDirectionSpecifierSQL(in, &firstFilter, "")
-	compositeFilters := chainIDSpecifier + tokenAddressSpecifier + minTimeSpecfier + maxTimeSpecfier + minAmountSpecfier + maxAmountSpecfier + addressSpecifier + txHashSpecifier + directionSpecifier
-	pageValue := sql.PageSize
-	pageOffset := (page - 1) * sql.PageSize
-	finalQuery := fmt.Sprintf("%s SELECT %s FROM %s %s", generateDeDepQueryCTE(compositeFilters, &pageValue, &pageOffset, true), originToDestCol, "baseQuery", originToDestJoins)
-	return finalQuery
-}
-
-func generateAllBridgeEventsQueryFromOrigin2(chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, txHash *string, page int, pending bool, in bool) string {
+func generateAllBridgeEventsQueryFromOrigin(chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, txHash *string, page int, pending bool, in bool) string {
 	firstFilter := true
 	chainIDFromFilter := generateSingleSpecifierI32ArrSQL(chainIDFrom, sql.ChainIDFieldName, &firstFilter, "")
 	minTimeFilter := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "", true)
@@ -554,37 +511,10 @@ func generateAllBridgeEventsQueryFromOrigin2(chainIDFrom []*int, chainIDTo []*in
 	return fmt.Sprintf("%s SELECT * FROM (SELECT %s FROM %s %s %s %s) %s LIMIT %d OFFSET %d", generateDeDepQueryCTE(fromFilters, nil, nil, false), originToDestCol, "baseQuery", originToDestJoinsPt1, toFilters, originToDestJoinsPt2, pendingFilter+postJoinFilters, pageValue, pageOffset)
 }
 
-// nolint:gocognit,cyclop
-func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txHash *string, kappa *string, page *int, tokenAddress []*string) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, kappa *string, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) ([]*model.BridgeTransaction, error) {
 	var err error
 	var results []*model.BridgeTransaction
-	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, generateAllBridgeEventsQueryFromDestination(chainID, address, maxAmount, minAmount, startTime, endTime, tokenAddress, kappa, txHash, *page, false))
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
-	}
-	if len(allBridgeEvents) == 0 {
-		return nil, nil
-	}
-
-	// Iterate through all bridge events and return all partials
-	for i := range allBridgeEvents {
-		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], false)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
-		}
-		if bridgeTx != nil {
-			results = append(results, bridgeTx)
-		}
-	}
-	return results, nil
-}
-
-func (r *queryResolver) GetBridgeTxsFromDestination2(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, kappa *string, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) ([]*model.BridgeTransaction, error) {
-	var err error
-	var results []*model.BridgeTransaction
-	query := generateAllBridgeEventsQueryFromDestination2(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, kappa, txHash, *page, false)
-
+	query := generateAllBridgeEventsQueryFromDestination(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, kappa, txHash, *page, false)
 	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
 
 	if err != nil {
@@ -640,11 +570,11 @@ func (r *queryResolver) GetBridgeTxsFromDestination2(ctx context.Context, chainI
 //	return results, nil
 //}
 
-func (r *queryResolver) GetBridgeTxsFromOrigin2(ctx context.Context, chainIDTo []*int, chainIDFrom []*int, addressTo *string, addressFrom *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, page *int, tokenAddressTo []*string, tokenAddressFrom []*string, pending bool, latest bool) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainIDTo []*int, chainIDFrom []*int, addressTo *string, addressFrom *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, page *int, tokenAddressTo []*string, tokenAddressFrom []*string, pending bool, latest bool) ([]*model.BridgeTransaction, error) {
 	var err error
 	var chainMap = make(map[uint32]bool)
 	var results []*model.BridgeTransaction
-	query := generateAllBridgeEventsQueryFromOrigin2(chainIDTo, chainIDFrom, addressTo, addressFrom, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressTo, tokenAddressFrom, txHash, *page, pending, true)
+	query := generateAllBridgeEventsQueryFromOrigin(chainIDTo, chainIDFrom, addressTo, addressFrom, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, txHash, *page, pending, true)
 	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
 
 	if err != nil {
@@ -860,7 +790,7 @@ func GenerateDailyStatisticMessageBusSQL(typeArg *model.DailyStatisticType, comp
 	return &subQuery, &query, nil
 }
 
-func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, compositeFilters string, firstFilter *bool) (*string, error) {
+func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, compositeFilters string, firstFilter *bool, tokenAddressSpecifier string) (*string, error) {
 	var operation string
 	var finalSQL string
 	switch typeArg {
@@ -904,7 +834,7 @@ func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, compositeFilt
 	}
 	return &finalSQL, nil
 }
-func GenerateAmountStatisticSwapSQL(typeArg model.StatisticType, compositeFilters string) (*string, error) {
+func GenerateAmountStatisticSwapSQL(typeArg model.StatisticType, compositeFilters string, tokenAddressSpecifier string) (*string, error) {
 	var operation string
 	var finalSQL string
 	switch typeArg {
@@ -939,7 +869,10 @@ func GenerateAmountStatisticSwapSQL(typeArg model.StatisticType, compositeFilter
 	return &finalSQL, nil
 }
 
-func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, compositeFilters string) (*string, error) {
+func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, compositeFilters string, tokenAddressSpecifier string) (*string, error) {
+	if tokenAddressSpecifier != "" {
+		return nil, fmt.Errorf("cannot filter by token on message bus events")
+	}
 	var operation string
 	var finalSQL string
 	switch typeArg {

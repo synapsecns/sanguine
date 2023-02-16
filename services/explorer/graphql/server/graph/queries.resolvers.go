@@ -24,7 +24,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*i
 	case kappa != nil:
 		// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
 		// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
-		results, err = r.GetBridgeTxsFromDestination2(ctx, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, txnHash, kappa, page, tokenAddressFrom, tokenAddressTo)
+		results, err = r.GetBridgeTxsFromDestination(ctx, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, txnHash, kappa, page, tokenAddressFrom, tokenAddressTo)
 		if err != nil {
 			return nil, err
 		}
@@ -36,13 +36,13 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*i
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			fromResults, err = r.GetBridgeTxsFromOrigin2(ctx, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, txnHash, page, tokenAddressFrom, tokenAddressTo, *pending, false)
+			fromResults, err = r.GetBridgeTxsFromOrigin(ctx, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, txnHash, page, tokenAddressTo, tokenAddressFrom, *pending, false)
 		}()
 		if !*pending {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				toResults, err = r.GetBridgeTxsFromDestination2(ctx, chainIDTo, chainIDFrom, addressTo, addressFrom, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, txnHash, kappa, page, tokenAddressTo, tokenAddressFrom)
+				toResults, err = r.GetBridgeTxsFromDestination(ctx, chainIDTo, chainIDFrom, addressTo, addressFrom, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, txnHash, kappa, page, tokenAddressFrom, tokenAddressTo)
 			}()
 		}
 		wg.Wait()
@@ -140,6 +140,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 		timestampSpecifier = ""
 	}
 	tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
+	firstFilter = true
 	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "")
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 
@@ -151,18 +152,18 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 	var finalSQL *string
 	switch *platform {
 	case model.PlatformBridge:
-		finalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, compositeFilters, &firstFilter)
+		finalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, compositeFilters, &firstFilter, tokenAddressSpecifier)
 		if err != nil {
 			return nil, err
 		}
 	case model.PlatformSwap:
-		finalSQL, err = GenerateAmountStatisticSwapSQL(typeArg, compositeFilters)
+		finalSQL, err = GenerateAmountStatisticSwapSQL(typeArg, compositeFilters, tokenAddressSpecifier)
 		if err != nil {
 			return nil, err
 		}
 	case model.PlatformMessageBus:
 
-		finalSQL, err = GenerateAmountStatisticMessageBusSQL(typeArg, compositeFilters)
+		finalSQL, err = GenerateAmountStatisticMessageBusSQL(typeArg, compositeFilters, tokenAddressSpecifier)
 
 		if err != nil {
 			return nil, err
@@ -179,17 +180,17 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 		var swapSum float64
 		var messageBusSum float64
 
-		bridgeFinalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, compositeFilters, &firstFilter)
+		bridgeFinalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, compositeFilters, &firstFilter, tokenAddressSpecifier)
 		if err != nil {
 			return nil, err
 		}
 
-		swapFinalSQL, err = GenerateAmountStatisticSwapSQL(typeArg, compositeFilters)
+		swapFinalSQL, err = GenerateAmountStatisticSwapSQL(typeArg, compositeFilters, tokenAddressSpecifier)
 		if err != nil {
 			return nil, err
 		}
 
-		messageBusFinalSQL, err = GenerateAmountStatisticMessageBusSQL(typeArg, compositeFilters)
+		messageBusFinalSQL, err = GenerateAmountStatisticMessageBusSQL(typeArg, compositeFilters, tokenAddressSpecifier)
 		if err != nil {
 			return nil, err
 		}

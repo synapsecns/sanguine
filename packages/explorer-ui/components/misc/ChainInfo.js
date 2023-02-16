@@ -8,7 +8,7 @@ import Image from 'next/image'
 export function ChainInfo({
   keyy,
   chainId,
-  imgClassName = 'w-4 h-4',
+  imgClassName = 'w-4 h-4 rounded-full',
   linkClassName = 'float-right text-white transition ease-out hover:text-[#8FEBFF] px-1.5  rounded-md ease-in-out bg-[#191919]',
   textClassName = "pl-1 whitespace-nowrap text-sm text-white",
   txHash,
@@ -30,7 +30,7 @@ export function ChainInfo({
         <div className="flex justify-between ">
           <div className='flex flex-row w-[90%] items-center'>
             <Image
-              className={`inline mr-[.5rem] rounded-lg ${imgClassName}`}
+              className={`inline mr-[.5rem] rounded-full ${imgClassName}`}
               src={chainImg}
               alt={chainImg}
             />

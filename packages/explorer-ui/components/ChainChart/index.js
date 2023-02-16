@@ -6,7 +6,7 @@ import { formatUSD } from '@utils/formatUSD'
 import ReactDOM from "react-dom";
 
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { CurrencyTooltip, NumericTooltip } from '@components/misc/ToolTip'
+import { CurrencyTooltip } from '@components/misc/ToolTip'
 const formatShort = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 })
 const formatMonth = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -21,27 +21,27 @@ export const addOrSetObject = (obj, key, value) => {
 export const OverviewChart = ({
   chartData,
   isUSD,
-  loading,
+  loading = false,
   showAggregated,
   height = 480,
   dailyStatisticType,
-  platform
+  platform,
+  singleChain = false
 }) => {
+  if (loading) {
+    return <div className="flex justify-center align-center w-full my-[240px]"><div className='animate-spin'><SynapseLogoSvg /></div></div>
+  }
   const initialData = (getNames) => {
     if (chartData.length === 0) return []
-
     let payload = chartData[chartData.length - 1]
-    console.log("SDSD", payload)
-    // Create items array
     var items = Object.keys(payload).map((key) => {
-      if (payload[key] > 0) {
-        console.log("key", key, payload[key])
-
+      if (payload[key] > 0 && key !== 'total') {
         return [key, payload[key]];
       } else {
         return [key, 0];
       }
     });
+    if (items.length === 0) return []
 
     // Sort the array based on the second element
     items.sort(function(first, second) {
@@ -49,48 +49,49 @@ export const OverviewChart = ({
     });
 
     if (getNames) {
-    console.log("items", items)
       let names= items.map((items)=>items[0])
-      console.log("names", names)
-
       return names
     }
     let values= items.map((items)=>items[1])
-    console.log("values", values)
-
     return values
 
   }
-  const [toolTipNames, setToolTipNames] = useState(initialData(true))
-  const [toolTipValues, setToolTipValues] = useState(initialData(false))
-  const [toolTipLabel, setToolTipLabel] = useState("")
+
+  const toolTipNamesRef = useRef();
+  const toolTipValuesRef = useRef();
+  const toolTipLabelRef = useRef();
+
+
 
   useEffect(() => {
-    setToolTipNames(initialData(true))
-    setToolTipValues(initialData(false))
-    console.log("DATSTTSTS",chartData[chartData.length - 1]?.date)
-    setToolTipLabel(chartData[chartData.length - 1]?.date)
+    toolTipNamesRef.current = initialData(true)
+    toolTipValuesRef.current = initialData(false)
+    toolTipLabelRef.current = chartData[chartData.length - 1]?.date
   }, [chartData])
-  if (loading) {
-    return <div className="flex justify-center align-center w-full my-[240px]"><div className='animate-spin'><SynapseLogoSvg /></div></div>
-  }
+
+
 
   const getToolTip = ({ active, payload, label,isUSD: isUSD}) => {
-    const domElement = document.getElementById("tooltip-subtitle"); //Reference to div#modals for create portal
-console.log("domElement", domElement)
-    payload.sort((a, b) => b.value - a.value);
+    payload?.sort((a, b) => b.value - a.value);
     const names = _.map(payload, 'name')
     const values = _.map(payload, 'value')
     if (active) {
-      setToolTipNames(names)
-      setToolTipValues(values)
-
-      return <CurrencyTooltip label={label} names={names} values={values} isUSD={isUSD} dailyStatisticType={dailyStatisticType}  platform={platform} />
+      if ( toolTipNamesRef.current !== names) {
+        toolTipNamesRef.current = names
+    }
+       if (toolTipValuesRef.current !== values) {
+        toolTipValuesRef.current = values
 
     }
-    // ReactDOM.createPortal(
-    //   <p className="pl-2 text-md font-medium text-default mt-2 text-white">{formatDate(toolTipLabel)}sadhjksahdjsahdkjsadjk </p>, domElement)
-    return <CurrencyTooltip label={toolTipLabel} names={toolTipNames} values={toolTipValues} isUSD={isUSD} dailyStatisticType={dailyStatisticType} platform={platform} />
+    if (toolTipLabelRef.current !== label) {
+      toolTipLabelRef.current = label
+
+  }
+      return <CurrencyTooltip label={label} names={names} values={values} isUSD={isUSD} dailyStatisticType={dailyStatisticType}  platform={platform} singleChain={singleChain} />
+
+    }
+
+    return <CurrencyTooltip label={toolTipLabelRef.current} names={toolTipNamesRef.current} values={toolTipValuesRef.current} isUSD={isUSD} dailyStatisticType={dailyStatisticType} platform={platform} singleChain={singleChain} />
 
   }
 

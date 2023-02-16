@@ -422,6 +422,10 @@ const baseSwap = `
 SELECT * FROM swap_events LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
 `
 
+const baseSwapWithToken = `
+SELECT * FROM swap_events LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
+`
+
 const baseMessageBus = `
 SELECT * FROM message_bus_events LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
 `
@@ -811,7 +815,7 @@ LEFT JOIN (
   SELECT
     *
   FROM
-    bridge_events WHERE timestamp >= minTimestamp
+    bridge_events WHERE timestamp >= minTimestamp AND destination_chain_id > 0
 `
 
 const destToOriginJoinsPt2 = `
@@ -861,7 +865,7 @@ LEFT JOIN (
   SELECT
     *
   from
-    bridge_events WHERE timestamp >= minTimestamp
+    bridge_events WHERE timestamp >= minTimestamp  AND destination_chain_id = 0
 `
 
 const originToDestJoinsPt2 = `

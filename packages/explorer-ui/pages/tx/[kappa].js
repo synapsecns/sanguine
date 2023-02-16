@@ -1,5 +1,6 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import { TRANSACTIONS_PATH } from '@urls'
+import { ChainInfo } from "@components/misc/ChainInfo";
 
 import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
@@ -52,10 +53,13 @@ export default function BridgeTransaction({ queryResult }) {
 
   if (!!transaction) {
     content = <>
-      <div className="flex items-center mt-10 mb-2">
-        <h3 className="text-white text-2xl font-semibold">Bridge TXID: {kappa}</h3>
+      <div className=' mt-5 mb-1'><a className='text-white cursor-pointer hover:underline' href={TRANSACTIONS_PATH}>← Analytics</a></div>
+
+      <div className=" mb-2">
+        <h3 className="text-white text-5xl mb-2 font-semibold">TXID</h3>
+        <h3 className="text-white text-2xl font-semibold">{kappa}</h3>
+
       </div>
-      <div className='mb-3'><a className='text-white cursor-pointer hover:underline' href={TRANSACTIONS_PATH}>← Back to search</a></div>
       <br />
       <HorizontalDivider />
       {/* <UniversalSearch placeholder={`txid: ${kappa}`} /> */}
@@ -72,21 +76,42 @@ export default function BridgeTransaction({ queryResult }) {
         </div>
         <div className="flex gap-x-4 py-1">
           <p className="text-white text-opacity-60">Requested</p>
-          <p className="text-white ">{new Date(fromInfo.time * 1000).toISOString()}</p>
+          <p className="text-white ">{new Date(fromInfo.time * 1000).toTimeString()}</p>
         </div>
         <div className="flex gap-x-4 py-1">
           <p className="text-white text-opacity-60">Confirmed</p>
-          <p className="text-white ">{new Date(toInfo.time * 1000).toISOString()}</p>
+          <p className="text-white ">{new Date(toInfo.time * 1000).toTimeString()}</p>
         </div>
-        <div className="flex gap-x-8 py-1">
-          <p className="text-white text-opacity-60">Elapsed</p>
-          <p className="text-white ">≈{getTimeDifference(fromInfo.time, toInfo.time)} seconds</p>
+        <div className="flex gap-x-[1.1rem] py-1">
+          <p className="text-white text-opacity-60">Total Time</p>
+          <p className="text-white ">{getTimeDifference(fromInfo.time, toInfo.time)} seconds</p>
         </div>
-        <div className="flex gap-y-2 flex-col">
+        <br />
 
-          <div className="flex mt-4">
-            <div className='flex flex-col  w-1/2'>
-              <div className="flex gap-x-10">
+        <div className="flex gap-y-2 flex-col">
+          <HorizontalDivider />
+
+          <div className="flex mt-4 flex-col">
+            <div className='flex flex-col'>
+              <div className="flex gap-x-[3rem] py-1 ">
+                <p className="text-white text-opacity-60">Origin</p>
+                <ChainInfo
+                  chainId={fromInfo.chainID}
+                  noLink={true}
+                  imgClassName="w-6 h-6 rounded-full"
+                />
+              </div>
+              <div className="flex gap-x-[3.4rem] py-1 ">
+                <p className="text-white text-opacity-60">From</p>
+                <p className="text-white break-all text-sm">{fromInfo.address}</p>
+              </div>
+
+              <div className="flex gap-x-[1.8rem] py-1">
+                <p className="text-white text-opacity-60">TX Hash</p>
+                <a target="_blank"
+                  rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[fromInfo.chainID] + "/tx/" + fromInfo.hash}>{fromInfo.hash}</a>
+              </div>
+              <div className="flex gap-x-11 mt-3">
                 <h1 className="text-white text-2xl text-opacity-60">Sent</h1>
                 <IconAndAmount
                   formattedValue={fromInfo.formattedValue}
@@ -97,23 +122,31 @@ export default function BridgeTransaction({ queryResult }) {
                   textSize="text-sm"
                   styledCoin={true}
                 /></div>
-              <div className="flex gap-x-8 py-1 ">
-                <p className="text-white text-opacity-60">Address</p>
-                <p className="text-white break-all text-sm">{fromInfo.address}</p>
+            </div>
+            <br />
+
+            <HorizontalDivider />
+
+            <div className='flex  mt-8  flex-col'>
+              <div className="flex gap-x-2 py-1 ">
+                <p className="text-white text-opacity-60">Destination</p>
+                <ChainInfo
+                  chainId={toInfo.chainID}
+                  noLink={true}
+                  imgClassName="w-6 h-6 rounded-full"
+                />
               </div>
-              <div className="flex gap-x-12 py-1 ">
-                <p className="text-white text-opacity-60">Chain</p>
-                <p className="text-white text-sm">{oChainName}</p>
+              <div className="flex gap-x-[4.5rem] py-1">
+                <p className="text-white text-opacity-60">To</p>
+                <p className="text-white break-all text-sm">{toInfo.address}</p>
               </div>
-              <div className="flex gap-x-7 py-1 mb-2">
+
+              <div className="flex gap-x-[1.7rem] py-1 ">
                 <p className="text-white text-opacity-60">TX Hash</p>
                 <a target="_blank"
-                  rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[fromInfo.chainID] + "/tx/" + fromInfo.hash}>{fromInfo.hash}</a>
+                  rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/tx/" + toInfo.hash}>{toInfo.hash}</a>
               </div>
-            </div>
-            <div className='flex flex-col  w-1/2'>
-              <div className="flex gap-x-8">
-
+              <div className="flex gap-x-8 mt-3">
                 <h1 className="text-white text-2xl text-opacity-60">
                   Received
                 </h1>
@@ -122,23 +155,10 @@ export default function BridgeTransaction({ queryResult }) {
                   tokenAddress={toInfo.tokenAddress}
                   chainId={toInfo.chainID}
                   tokenSymbol={toInfo.tokenSymbol}
-                  iconSize="w-4 h-4"
-                  textSize="text-sm"
+                  iconSize="w-7 h-7"
+                  textSize="text-md"
                   styledCoin={true}
                 />
-              </div>
-              <div className="flex gap-x-[72px] py-1">
-                <p className="text-white text-opacity-60">Sent To</p>
-                <p className="text-white break-all text-sm">{toInfo.address}</p>
-              </div>
-              <div className="flex gap-x-[86px] py-1 ">
-                <p className="text-white text-opacity-60">Chain</p>
-                <p className="text-white break-all text-sm">{dChainName}</p>
-              </div>
-              <div className="flex gap-x-[66px] py-1 ">
-                <p className="text-white text-opacity-60">TX Hash</p>
-                <a target="_blank"
-                  rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/tx/" + toInfo.hash}>{toInfo.hash}</a>
               </div>
             </div>
           </div>
@@ -158,7 +178,7 @@ export default function BridgeTransaction({ queryResult }) {
     )
   }
 
-  return <StandardPageContainer title="Synapse Analytics">{content}</StandardPageContainer>
+  return <StandardPageContainer >{content}</StandardPageContainer>
 }
 export async function getServerSideProps(context) {
   const { data } = await client.query({

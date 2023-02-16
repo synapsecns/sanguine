@@ -39,9 +39,9 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 })
 
-export default function chainId() {
+export default function address() {
   const router = useRouter()
-  const { tokenAddress } = router.query
+  const { address } = router.query
   const search = useSearchParams()
   const chainId = Number(search.get('chainId')) || 1
 
@@ -52,12 +52,7 @@ export default function chainId() {
   const [tokenChainID, setTokenChainID] = useState([])
   const [variables, setVariables] = useState({ page: 1 })
   const [completed, setCompleted] = useState(false)
-  const [address, setAddress] = useState("")
-
-  const [dailyStatisticDuration, SetDailyStatisticDuration] =
-    useState('PAST_MONTH')
-  const [dailyStatisticCumulative, SetDailyStatisticCumulative] =
-    useState(false)
+  const [walletAddress, setWalletAddress] = useState("")
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
@@ -74,12 +69,11 @@ export default function chainId() {
     fetchPolicy: 'network-only',
     onCompleted: (data) => {
       let bridgeTransactionsTable = data.bridgeTransactions
-
       bridgeTransactionsTable = _.orderBy(
         bridgeTransactionsTable,
         'fromInfo.time',
         ['desc']
-      ).slice(0, 10)
+      )
       setTransactionsArr(bridgeTransactionsTable)
 
     },
@@ -98,43 +92,26 @@ export default function chainId() {
 
   // Get initial data
   useEffect(() => {
-    console.log("tokenAddress", tokenAddress)
-    setAddress(tokenAddress)
-    setTokenChainID(chainId)
-    setVariables({ page: 1, tokenAddressFrom: [tokenAddress] })
-  }, [chainId, tokenAddress])
+    console.log("address", address)
+    setWalletAddress(address)
+    setVariables({ page: 1, addressFrom: address})
+  }, [address])
 
   return (
-    <StandardPageContainer title={''}>
-      <div className='rounded-md py-1 px-2 bg-stone-800/50 mb-2 w-fit'>
-      <ChainInfo
-        chainId={tokenChainID}
-        imgClassName="w-6 h-6 rounded-full"
-        noLink={true}
-      /></div>
-      <div className="flex items-center mb-2">
-        <AssetImage
-          tokenAddress={address}
-          chainId={tokenChainID}
-          className={`w-9 h-9 inline mr-3 rounded-lg`}
-        />
-        <h3 className="text-white text-5xl font-semibold">{TOKEN_HASH_MAP[tokenChainID]?.[address?.toLowerCase()]?.symbol
-        } </h3></div>
+    <StandardPageContainer title={"Address"}>
+       <h3 className="text-white text-2xl">{walletAddress}</h3>
 
-      <h3 className="text-white text-xl">{address}</h3>
+
 
       <HolisticStats
         platform={platform}
-        chainID={variables?.chainId}
-        tokenAddress={address}
         loading={false}
         setPlatform={setPlatform}
         baseVariables={{
           platform: platform,
           duration: "ALL_TIME",
           useCache: false,
-          chainID: tokenChainID,
-          tokenAddress: address
+          address: walletAddress
         }}
       />
       <br />
@@ -145,23 +122,23 @@ export default function chainId() {
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
       <div className="h-full flex items-center mt-4">
         <button
-          onClick={() => setVariables({ page: 1, tokenAddressFrom: [address] })}
+          onClick={() => setVariables({ page: 1, addressFrom: walletAddress })}
 
           className={
             'font-medium rounded-l-md px-4 py-2 border  h-fit  ' +
-            (variables?.tokenAddressFrom ? selectStyle : unSelectStyle) +
+            (variables?.addressFrom ? selectStyle : unSelectStyle) +
             (loading ? ' pointer-events-none' : '')
           }
         >
           Outgoing
         </button>
         <button
-          onClick={() => setVariables({ page: 1, tokenAddressTo: [address] })
+          onClick={() => setVariables({ page: 1,  addressTo: walletAddress })
           }
 
           className={
             'font-medium rounded-r-md px-4 py-2 border  h-fit ' +
-            (variables?.tokenAddressTo ? selectStyle : unSelectStyle) +
+            (variables?.addressTo ? selectStyle : unSelectStyle) +
             (loading ? ' pointer-events-none' : '')
           }
         >

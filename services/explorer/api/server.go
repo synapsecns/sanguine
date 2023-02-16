@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
-	"os"
-	"time"
+
+	"net/http"
 
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
@@ -20,7 +23,6 @@ import (
 	gqlServer "github.com/synapsecns/sanguine/services/explorer/graphql/server"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/clickhouse"
 	"golang.org/x/sync/errgroup"
-	"net/http"
 )
 
 // Config contains the config for the api.
@@ -250,22 +252,22 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_YEAR, ALL", handleJsonDailyStat(dailyVolYear))
+		service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_3_MONTHS, ALL", handleJsonDailyStat(dailyVolYear))
 		dailyFeeYear, err := client.GetDailyStatisticsByChain(ctx, nil, &feeType, &yearType, &allPlatformType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_YEAR, ALL", handleJsonDailyStat(dailyFeeYear))
+		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, ALL", handleJsonDailyStat(dailyFeeYear))
 		dailyTxYear, err := client.GetDailyStatisticsByChain(ctx, nil, &txType, &yearType, &allPlatformType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_YEAR, ALL", handleJsonDailyStat(dailyTxYear))
+		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, ALL", handleJsonDailyStat(dailyTxYear))
 		dailyAddrYear, err := client.GetDailyStatisticsByChain(ctx, nil, &addrType, &yearType, &allPlatformType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_YEAR, ALL", handleJsonDailyStat(dailyAddrYear))
+		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, ALL", handleJsonDailyStat(dailyAddrYear))
 		return nil
 	})
 	g.Go(func() error {
@@ -273,22 +275,22 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , VOLUME, ALL_TIME, ALL", handleJsonDailyStat(dailyVolAllTime))
+		service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_6_MONTHS, ALL", handleJsonDailyStat(dailyVolAllTime))
 		dailyFeeAllTime, err := client.GetDailyStatisticsByChain(ctx, nil, &feeType, &allTimeType, &allPlatformType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , FEE, ALL_TIME, ALL", handleJsonDailyStat(dailyFeeAllTime))
+		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, ALL", handleJsonDailyStat(dailyFeeAllTime))
 		dailyTxAllTime, err := client.GetDailyStatisticsByChain(ctx, nil, &txType, &allTimeType, &allPlatformType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, ALL_TIME, ALL", handleJsonDailyStat(dailyTxAllTime))
+		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, ALL", handleJsonDailyStat(dailyTxAllTime))
 		dailyAddrAllTime, err := client.GetDailyStatisticsByChain(ctx, nil, &addrType, &allTimeType, &allPlatformType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, ALL_TIME, ALL", handleJsonDailyStat(dailyAddrAllTime))
+		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, ALL", handleJsonDailyStat(dailyAddrAllTime))
 		return nil
 	})
 
@@ -320,22 +322,22 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_YEAR, BRIDGE", handleJsonDailyStat(dailyVolYearBridge))
+		service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_3_MONTHS, BRIDGE", handleJsonDailyStat(dailyVolYearBridge))
 		dailyFeeYearBridge, err := client.GetDailyStatisticsByChain(ctx, nil, &feeType, &yearType, &bridgeType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_YEAR, BRIDGE", handleJsonDailyStat(dailyFeeYearBridge))
+		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, BRIDGE", handleJsonDailyStat(dailyFeeYearBridge))
 		dailyTxYearBridge, err := client.GetDailyStatisticsByChain(ctx, nil, &txType, &yearType, &bridgeType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_YEAR, BRIDGE", handleJsonDailyStat(dailyTxYearBridge))
+		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, BRIDGE", handleJsonDailyStat(dailyTxYearBridge))
 		dailyAddrYearBridge, err := client.GetDailyStatisticsByChain(ctx, nil, &addrType, &yearType, &bridgeType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_YEAR, BRIDGE", handleJsonDailyStat(dailyAddrYearBridge))
+		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, BRIDGE", handleJsonDailyStat(dailyAddrYearBridge))
 		return nil
 	})
 	g.Go(func() error {
@@ -343,22 +345,22 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , VOLUME, ALL_TIME, BRIDGE", handleJsonDailyStat(dailyVolAllTimeBridge))
+		service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_6_MONTHS, BRIDGE", handleJsonDailyStat(dailyVolAllTimeBridge))
 		dailyFeeAllTimeBridge, err := client.GetDailyStatisticsByChain(ctx, nil, &feeType, &allTimeType, &bridgeType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , FEE, ALL_TIME, BRIDGE", handleJsonDailyStat(dailyFeeAllTimeBridge))
+		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, BRIDGE", handleJsonDailyStat(dailyFeeAllTimeBridge))
 		dailyTxAllTimeBridge, err := client.GetDailyStatisticsByChain(ctx, nil, &txType, &allTimeType, &bridgeType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, ALL_TIME, BRIDGE", handleJsonDailyStat(dailyTxAllTimeBridge))
+		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, BRIDGE", handleJsonDailyStat(dailyTxAllTimeBridge))
 		dailyAddrAllTimeBridge, err := client.GetDailyStatisticsByChain(ctx, nil, &addrType, &allTimeType, &bridgeType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, ALL_TIME, BRIDGE", handleJsonDailyStat(dailyAddrAllTimeBridge))
+		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, BRIDGE", handleJsonDailyStat(dailyAddrAllTimeBridge))
 		return nil
 	})
 
@@ -390,22 +392,22 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_YEAR, SWAP", handleJsonDailyStat(dailyVolYearSwap))
+		service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_3_MONTHS, SWAP", handleJsonDailyStat(dailyVolYearSwap))
 		dailyFeeYearSwap, err := client.GetDailyStatisticsByChain(ctx, nil, &feeType, &yearType, &swapType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_YEAR, SWAP", handleJsonDailyStat(dailyFeeYearSwap))
+		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, SWAP", handleJsonDailyStat(dailyFeeYearSwap))
 		dailyTxYearSwap, err := client.GetDailyStatisticsByChain(ctx, nil, &txType, &yearType, &swapType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_YEAR, SWAP", handleJsonDailyStat(dailyTxYearSwap))
+		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, SWAP", handleJsonDailyStat(dailyTxYearSwap))
 		dailyAddrYearSwap, err := client.GetDailyStatisticsByChain(ctx, nil, &addrType, &yearType, &swapType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_YEAR, SWAP", handleJsonDailyStat(dailyAddrYearSwap))
+		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, SWAP", handleJsonDailyStat(dailyAddrYearSwap))
 		return nil
 	})
 	g.Go(func() error {
@@ -413,22 +415,22 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , VOLUME, ALL_TIME, SWAP", handleJsonDailyStat(dailyVolAllTimeSwap))
+		service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_6_MONTHS, SWAP", handleJsonDailyStat(dailyVolAllTimeSwap))
 		dailyFeeAllTimeSwap, err := client.GetDailyStatisticsByChain(ctx, nil, &feeType, &allTimeType, &swapType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , FEE, ALL_TIME, SWAP", handleJsonDailyStat(dailyFeeAllTimeSwap))
+		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, SWAP", handleJsonDailyStat(dailyFeeAllTimeSwap))
 		dailyTxAllTimeSwap, err := client.GetDailyStatisticsByChain(ctx, nil, &txType, &allTimeType, &swapType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, ALL_TIME, SWAP", handleJsonDailyStat(dailyTxAllTimeSwap))
+		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, SWAP", handleJsonDailyStat(dailyTxAllTimeSwap))
 		dailyAddrAllTimeSwap, err := client.GetDailyStatisticsByChain(ctx, nil, &addrType, &allTimeType, &swapType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, ALL_TIME, SWAP", handleJsonDailyStat(dailyAddrAllTimeSwap))
+		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, SWAP", handleJsonDailyStat(dailyAddrAllTimeSwap))
 		return nil
 	})
 
@@ -455,17 +457,17 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_YEAR, MESSAGE_BUS", handleJsonDailyStat(dailyFeeYearMessageBus))
+		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, MESSAGE_BUS", handleJsonDailyStat(dailyFeeYearMessageBus))
 		dailyTxYearMessageBus, err := client.GetDailyStatisticsByChain(ctx, nil, &txType, &yearType, &messagingType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_YEAR, MESSAGE_BUS", handleJsonDailyStat(dailyTxYearMessageBus))
+		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, MESSAGE_BUS", handleJsonDailyStat(dailyTxYearMessageBus))
 		dailyAddrYearMessageBus, err := client.GetDailyStatisticsByChain(ctx, nil, &addrType, &yearType, &messagingType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_YEAR, MESSAGE_BUS", handleJsonDailyStat(dailyAddrYearMessageBus))
+		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, MESSAGE_BUS", handleJsonDailyStat(dailyAddrYearMessageBus))
 		return nil
 	})
 	g.Go(func() error {
@@ -473,17 +475,17 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , FEE, ALL_TIME, MESSAGE_BUS", handleJsonDailyStat(dailyFeeAllTimeMessageBus))
+		service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, MESSAGE_BUS", handleJsonDailyStat(dailyFeeAllTimeMessageBus))
 		dailyTxAllTimeMessageBus, err := client.GetDailyStatisticsByChain(ctx, nil, &txType, &allTimeType, &messagingType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, ALL_TIME, MESSAGE_BUS", handleJsonDailyStat(dailyTxAllTimeMessageBus))
+		service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, MESSAGE_BUS", handleJsonDailyStat(dailyTxAllTimeMessageBus))
 		dailyAddrAllTimeMessageBus, err := client.GetDailyStatisticsByChain(ctx, nil, &addrType, &allTimeType, &messagingType)
 		if err != nil {
 			return err
 		}
-		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, ALL_TIME, MESSAGE_BUS", handleJsonDailyStat(dailyAddrAllTimeMessageBus))
+		service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, MESSAGE_BUS", handleJsonDailyStat(dailyAddrAllTimeMessageBus))
 		return nil
 	})
 
