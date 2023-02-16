@@ -6,10 +6,10 @@ interface IDestination {
     /**
      * @notice Emitted when an attestation is accepted by the Destination contract.
      * @param notary        Notary who signed the attestation
-     * @param snapshot      Raw payload with snapshot data
-     * @param signature     Agent signature for the snapshot
+     * @param attestation   Raw payload with attestation data
+     * @param signature     Notary signature for the attestation
      */
-    event SnapshotAccepted(address indexed notary, bytes snapshot, bytes signature);
+    event AttestationAccepted(address indexed notary, bytes attestation, bytes signature);
 
     /**
      * @notice Emitted when a message is successfully executed.
