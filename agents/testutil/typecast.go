@@ -140,7 +140,8 @@ func (d *DeployManager) GetAgentsTestContract(ctx context.Context, backend backe
 func (d *DeployManager) GetTestClient(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testclient.TestClientRef) {
 	d.T().Helper()
 
-	testClient := d.GetContractRegistry(backend).Get(ctx, TestClientType)
+	registry := d.GetContractRegistry(backend)
+	testClient := registry.Get(ctx, TestClientType)
 	testClientHandle, ok := testClient.ContractHandle().(*testclient.TestClientRef)
 	assert.True(d.T(), ok)
 

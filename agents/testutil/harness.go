@@ -186,7 +186,7 @@ func (h AgentsTestContractDeployer) Deploy(ctx context.Context) (contracts.Deplo
 	})
 }
 
-// TestClienttDeployer deploys the test client.
+// TestClientDeployer deploys the test client.
 type TestClientDeployer struct {
 	*deployer.BaseDeployer
 }
@@ -198,10 +198,12 @@ func NewTestClientDeployer(registry deployer.GetOnlyContractRegistry, backend ba
 
 // Deploy deploys the test client.
 func (h TestClientDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	originHarnessContract := h.Registry().Get(ctx, OriginHarnessType)
+	destinationHarnessContract := h.Registry().Get(ctx, DestinationHarnessType)
+	originAddress := originHarnessContract.Address()
+	destinationAddress := destinationHarnessContract.Address()
 	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		originHarnessContract := h.Registry().Get(ctx, OriginHarnessType)
-		destinationHarnessContract := h.Registry().Get(ctx, OriginHarnessType)
-		return testclient.DeployTestClient(transactOps, backend, originHarnessContract.Address(), destinationHarnessContract.Address())
+		return testclient.DeployTestClient(transactOps, backend, originAddress, destinationAddress)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return testclient.NewTestClientRef(address, backend)
 	})

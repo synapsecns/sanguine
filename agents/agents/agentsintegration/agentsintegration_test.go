@@ -883,7 +883,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 // TestAllAgentsSingleMessageWithTestClientIntegrationE2E is an integration involving just a guard, notary
 // and executor executing a single message to the destination using the TestClient as the origin client and destination client.
 //
-//nolint:dupl,cyclop,maintidx
+//nolint:dupl,cyclop,maintidx,gocognit
 func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrationE2E() {
 	notaryTestConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
@@ -973,9 +973,9 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 	u.Nil(err)
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
 
-	//tx, err := u.OriginContract.Dispatch(txContextOrigin.TransactOpts, uint32(u.TestBackendDestination.GetChainID()), recipient, optimisticSeconds, encodedTips, body)
-	//u.Nil(err)
-	//u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
+	// tx, err := u.OriginContract.Dispatch(txContextOrigin.TransactOpts, uint32(u.TestBackendDestination.GetChainID()), recipient, optimisticSeconds, encodedTips, body)
+	// u.Nil(err)
+	// u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)

@@ -93,7 +93,6 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 //
 //nolint:dupl
 func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
-	a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
 	a.OriginContractMetadata, a.OriginContract = deployManager.GetOriginHarness(a.GetTestContext(), a.TestBackendOrigin)
 	a.DestinationContractMetadataOnOrigin, a.DestinationContractOnOrigin = deployManager.GetDestinationHarness(a.GetTestContext(), a.TestBackendOrigin)
 	a.TestClientMetadataOnOrigin, a.TestClientOnOrigin = deployManager.GetTestClient(a.GetTestContext(), a.TestBackendOrigin)
@@ -153,7 +152,6 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 //
 //nolint:dupl
 func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManager) {
-	a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
 	a.DestinationContractMetadata, a.DestinationContract = deployManager.GetDestinationHarness(a.GetTestContext(), a.TestBackendDestination)
 	a.OriginContractMetadataOnDestination, a.OriginContractOnDestination = deployManager.GetOriginHarness(a.GetTestContext(), a.TestBackendDestination)
 	a.TestClientMetadataOnDestination, a.TestClientOnDestination = deployManager.GetTestClient(a.GetTestContext(), a.TestBackendDestination)
@@ -211,7 +209,6 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 
 // SetupAttestation sets up the backend that will have the attestation collector contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *DeployManager) {
-	a.TestBackendAttestation = preset.GetMaticMumbai().Geth(a.GetTestContext(), a.T())
 	_, a.AttestationHarness = deployManager.GetAttestationHarness(a.GetTestContext(), a.TestBackendAttestation)
 	a.AttestationContractMetadata, a.AttestationContract = deployManager.GetAttestationCollector(a.GetTestContext(), a.TestBackendAttestation)
 
@@ -226,6 +223,11 @@ func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *DeployManag
 		a.T().Fatal(err)
 	}
 	a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddNotary)
+	txAddNotaryOnOrigin, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(a.TestBackendOrigin.GetChainID()), a.NotaryOnOriginBondedSigner.Address())
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddNotaryOnOrigin)
 	txAddGuard, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
@@ -317,6 +319,10 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.SetupExecutor()
 
 	a.TestDeployManager = NewDeployManager(a.T())
+
+	a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
+	a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
+	a.TestBackendAttestation = preset.GetMaticMumbai().Geth(a.GetTestContext(), a.T())
 
 	a.SetupDestination(a.TestDeployManager)
 	a.SetupOrigin(a.TestDeployManager)

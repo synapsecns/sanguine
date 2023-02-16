@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -113,7 +114,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case AgentsTestContractType:
 		return agentstestcontract.Contracts["solidity/AgentsTestContract.sol:AgentsTestContract"]
 	case TestClientType:
-		return agentstestcontract.Contracts["solidity/TestClient.sol:TestClient"]
+		return testclient.Contracts["solidity/TestClient.sol:TestClient"]
 	default:
 		panic("not yet implemented")
 	}
