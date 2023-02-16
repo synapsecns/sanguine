@@ -1,6 +1,8 @@
 package agentsintegration_test
 
 import (
+	"encoding/hex"
+	"fmt"
 	"math/big"
 	"time"
 
@@ -992,6 +994,11 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
 			retrievedInProgressAttestation.AttestationState() == types.AttestationStateConfirmedOnDestination
 
+		if isTrue {
+			root := retrievedInProgressAttestation.SignedAttestation().Attestation().Root()
+			fmt.Printf("\nCRONIN from Guard\n %s \nCRONIN\n", hex.EncodeToString(root[:]))
+		}
+
 		return isTrue
 	})
 
@@ -1100,8 +1107,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 		}
 	}()
 
-	sender, err := u.TestBackendOrigin.Signer().Sender(testClientOnOriginTx)
-	u.Nil(err)
+	sender := u.TestClientOnOrigin.Address()
 
 	header := types.NewHeader(uint32(u.TestBackendOrigin.GetChainID()), sender.Hash(), nonce, uint32(u.TestBackendDestination.GetChainID()), recipient, optimisticSeconds)
 	message := types.NewMessage(header, tips, body)
@@ -1115,6 +1121,8 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 
 	root, err := tree.Root(1)
 	u.Nil(err)
+
+	fmt.Printf("\nCRONIN from tree.Root()\n %s \nCRONIN\n", hex.EncodeToString(root[:]))
 
 	var rootB32 [32]byte
 	copy(rootB32[:], root)
@@ -1164,55 +1172,61 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 		return false
 	})
 
-	/*
-		// Create a channel and subscription to receive TestClientMessageSent events as they are emitted from origin.
-		messageSentSink := make(chan *testclient.TestClientMessageSent)
-		sentMessage, err := u.TestClientOnOrigin.WatchMessageSent(&bind.WatchOpts{
-			Context: u.GetTestContext()},
-			messageSentSink)
-		u.Nil(err)
+	// Create a channel and subscription to receive TestClientMessageSent events as they are emitted from origin.
+	/*messageSentSink := make(chan *testclient.TestClientMessageSent)
+	sentMessage, err := u.TestClientOnOrigin.WatchMessageSent(&bind.WatchOpts{
+		Context: u.GetTestContext()},
+		messageSentSink)
+	u.Nil(err)
 
-		// Create a channel and subscription to receive TestClientMessageReceived events as they are emitted from destination.
-		messageReceivedSink := make(chan *testclient.TestClientMessageReceived)
-		receivedMessage, err := u.TestClientOnDestination.WatchMessageReceived(&bind.WatchOpts{
-			Context: u.GetTestContext()},
-			messageReceivedSink)
-		u.Nil(err)
+	// Create a channel and subscription to receive TestClientMessageReceived events as they are emitted from destination.
+	messageReceivedSink := make(chan *testclient.TestClientMessageReceived)
+	receivedMessage, err := u.TestClientOnDestination.WatchMessageReceived(&bind.WatchOpts{
+		Context: u.GetTestContext()},
+		messageReceivedSink)
+	u.Nil(err)
 
-		watchCtx, cancel := context.WithTimeout(u.GetTestContext(), time.Second*10)
+	watchCtx, cancel := context.WithTimeout(u.GetTestContext(), time.Second*10)
+	defer cancel()
+
+	select {
+	// check for errors and fail
+	case <-watchCtx.Done():
+		u.T().Error(u.T(), fmt.Errorf("test context completed %w", u.GetTestContext().Err()))
+	case <-sentMessage.Err():
+		u.T().Error(u.T(), sentMessage.Err())
+	// get message sent event
+	case item := <-messageSentSink:
+		u.NotNil(item)
+
+		fmt.Printf("\nCRONIN\n dest = %d, nonce = %d, sender = %s, recipient = %s, message = %s \nCRONIN\n",
+			item.Destination,
+			item.Nonce,
+			hex.EncodeToString(item.Sender[:]),
+			hex.EncodeToString(item.Recipient[:]),
+			hex.EncodeToString(item.Message))
+
+		// Now sleep for a second before executing
+		time.Sleep(time.Second)
+
+		watchHandleCtx, cancel := context.WithTimeout(u.GetTestContext(), time.Second*10)
 		defer cancel()
 
 		select {
 		// check for errors and fail
-		case <-watchCtx.Done():
+		case <-watchHandleCtx.Done():
 			u.T().Error(u.T(), fmt.Errorf("test context completed %w", u.GetTestContext().Err()))
-		case <-sentMessage.Err():
-			u.T().Error(u.T(), sentMessage.Err())
-		// get message sent event
-		case item := <-messageSentSink:
+		case <-receivedMessage.Err():
+			u.T().Error(u.T(), receivedMessage.Err())
+		// get attestation accepted event
+		case item := <-messageReceivedSink:
 			u.NotNil(item)
 
-			// Now sleep for a second before executing
-			time.Sleep(time.Second)
-
-			watchHandleCtx, cancel := context.WithTimeout(u.GetTestContext(), time.Second*10)
-			defer cancel()
-
-			select {
-			// check for errors and fail
-			case <-watchHandleCtx.Done():
-				u.T().Error(u.T(), fmt.Errorf("test context completed %w", u.GetTestContext().Err()))
-			case <-receivedMessage.Err():
-				u.T().Error(u.T(), receivedMessage.Err())
-			// get attestation accepted event
-			case item := <-messageReceivedSink:
-				u.NotNil(item)
-
-				break
-			}
-
 			break
-		}*/
+		}
+
+		break
+	}*/
 
 	exec.Stop(uint32(u.TestBackendOrigin.GetChainID()))
 	exec.Stop(uint32(u.TestBackendDestination.GetChainID()))
