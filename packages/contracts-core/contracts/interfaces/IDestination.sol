@@ -5,11 +5,17 @@ pragma solidity 0.8.17;
 interface IDestination {
     /**
      * @notice Emitted when an attestation is accepted by the Destination contract.
+     * @param attestationID Unique identifier for the submitted attestation
      * @param notary        Notary who signed the attestation
      * @param attestation   Raw payload with attestation data
      * @param signature     Notary signature for the attestation
      */
-    event AttestationAccepted(address indexed notary, bytes attestation, bytes signature);
+    event AttestationAccepted(
+        uint256 indexed attestationID,
+        address indexed notary,
+        bytes attestation,
+        bytes signature
+    );
 
     /**
      * @notice Emitted when a message is successfully executed.
@@ -71,4 +77,19 @@ interface IDestination {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // TODO: draft some views for the Executor / Guards / Notaries
+
+    /**
+     * @notice Retrieves a Notary-submitted attestation with a given index.
+     * @dev All Attestations submitted by all Notaries are saved in a list.
+     * This is a getter for this list.
+     * @param _index            Index of the submitted attestation
+     * @return attestationData  Formatted Attestation payload
+     */
+    function getAttestation(uint256 _index) external view returns (bytes memory attestationData);
+
+    /**
+     * @notice Returns the total amount of Attestations submitted by any of the Notaries.
+     * @return amount   Total amount of Notary-submitted attestations
+     */
+    function getAttestationsAmount() external view returns (uint256 amount);
 }

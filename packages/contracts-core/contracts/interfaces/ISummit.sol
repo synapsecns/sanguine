@@ -5,12 +5,14 @@ pragma solidity 0.8.17;
 interface ISummit {
     /**
      * @notice Emitted when a snapshot is accepted by the Summit contract.
+     * @param snapshotID    Unique identifier for the submitted snapshot
      * @param domain        Domain whether the signed Agent is active (ZERO for Guards)
      * @param agent         Agent who signed the snapshot
      * @param snapshot      Raw payload with snapshot data
      * @param signature     Agent signature for the snapshot
      */
     event SnapshotAccepted(
+        uint256 indexed snapshotID,
         uint32 indexed domain,
         address indexed agent,
         bytes snapshot,
@@ -18,12 +20,27 @@ interface ISummit {
     );
 
     /**
+     * @notice Emitted when a state is saved from an accepted Guard snapshot.
+     * @dev Notaries will need to use saved states for have their snapshots accepted.
+     * @param snapshotID    Unique identifier for the snapshot that state belongs to
+     * @param guard         Guard who signed the snapshot
+     * @param state         Raw payload with state data
+     */
+    event StateSaved(uint256 indexed snapshotID, address indexed guard, bytes state);
+
+    /**
      * @notice Emitted when an attestation is created from an accepted Notary snapshot.
+     * @param snapshotID    Unique identifier for the snapshot that attestation was created from
      * @param domain        Domain where the Notary is active
      * @param notary        Notary who submitted the accepted snapshot
      * @param attestation   Raw payload with attestation data
      */
-    event AttestationCreated(uint32 indexed domain, address indexed notary, bytes attestation);
+    event AttestationCreated(
+        uint256 indexed snapshotID,
+        uint32 indexed domain,
+        address indexed notary,
+        bytes attestation
+    );
 
     /**
      * @notice Emitted when a proof of incorrect attestation is submitted.
@@ -110,4 +127,24 @@ interface ISummit {
      *                          Empty states are removed from the list.
      */
     function getLatestStates(uint32 _origin) external view returns (bytes[] memory stateDataArray);
+
+    /**
+     * @notice Retrieves a Guard-submitted state for a given domain with a given index.
+     * @dev All States submitted by all Guards for a single domain are saved in a list.
+     * This is a getter for this list.
+     * @param _origin       Domain of origin chain
+     * @param _index        Index of the submitted state
+     * @return stateData    Formatted State payload containing data about state of the Origin
+     */
+    function getState(uint32 _origin, uint256 _index)
+        external
+        view
+        returns (bytes memory stateData);
+
+    /**
+     * @notice Returns the total amount of States submitted for a given domain by any of the Guards.
+     * @param _origin   Domain of origin chain
+     * @return amount   Total amount of Guard-submitted states for the origin domain
+     */
+    function getStatesAmount(uint32 _origin) external view returns (uint256 amount);
 }
