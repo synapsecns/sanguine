@@ -1,4 +1,3 @@
-// import { Stats } from './Stats'
 import { TableHeader } from '@components/TransactionTable/TableHeader'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { OverviewChart } from '@components/ChainChart'
@@ -18,7 +17,6 @@ export function ChartFull(loading,
   currency,
   dailyStatisticType,
   setCurrentTooltipIndex) {
-  // const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
   var currentTooltipIndexVar = 0
   const handleCurrentIndex = (index) => {
     currentTooltipIndex = index
@@ -51,7 +49,6 @@ export function ChartFull(loading,
               return dailyDataArr[currentTooltipIndex][key] > 0 ? (<tr
                 key={i}
                 className=" rounded-md w-[100%]"
-              // onClick={(event) => event.target.type !== "link" && setCurrentChainID(row.chainID)}
               >
                 <td className='w-[70%]'>
                   {key === "total" ? <p className="pl-2 whitespace-nowrap text-sm text-white">All Chains</p> :

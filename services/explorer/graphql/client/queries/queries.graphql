@@ -1,5 +1,5 @@
 
-query GetBridgeTransactions($chainIDTo: [Int],$chainIDFrom: [Int], $addressTo: String, $addressFrom: String, $maxAmount: Int, $minAmount: Int, $maxAmountUSD: Int, $minAmountUSD: Int, $startTime: Int, $endTime: Int, $txHash: String, $kappa: String, $pending: Boolean, $page: Int, $tokenAddressFrom: [String], $tokenAddressTo: [String]) {
+query GetBridgeTransactions($chainIDTo: [Int],$chainIDFrom: [Int], $addressTo: String, $addressFrom: String, $maxAmount: Int, $minAmount: Int, $maxAmountUSD: Int, $minAmountUSD: Int, $startTime: Int, $endTime: Int, $txHash: String, $kappa: String, $pending: Boolean, $page: Int, $tokenAddressFrom: [String], $tokenAddressTo: [String], $useMv: Boolean) {
   response: bridgeTransactions(
     chainIDTo: $chainIDTo
     chainIDFrom: $chainIDFrom
@@ -17,7 +17,7 @@ query GetBridgeTransactions($chainIDTo: [Int],$chainIDFrom: [Int], $addressTo: S
     page: $page
     tokenAddressTo: $tokenAddressTo
     tokenAddressFrom: $tokenAddressFrom
-
+    useMv: $useMv
   ) {
     fromInfo {
       chainID
@@ -100,7 +100,7 @@ query GetRankedChainIDsByVolume($duration: Duration) {
 
 
 
-query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
+query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String, $useMv: Boolean) {
   response: amountStatistic(
     type: $type
     duration: $duration
@@ -108,16 +108,18 @@ query GetAmountStatistic($type: StatisticType!, $platform: Platform, $duration: 
     chainID: $chainID
     address: $address
     tokenAddress: $tokenAddress
+    useMv: $useMv
   ) {
     value
   }
 }
-query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $duration: Duration, $platform: Platform) {
+query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $duration: Duration, $platform: Platform, $useMv: Boolean) {
   response: dailyStatisticsByChain(
     chainID: $chainID
     type: $type
     duration: $duration
     platform: $platform
+    useMv: $useMv
   ) {
     date
     ethereum
@@ -139,22 +141,6 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     canto
     dogechain
     total
-  }
-}
-
-query GetDailyStatistics($chainID: Int, $type: DailyStatisticType, $platform: Platform, $days: Int) {
-  response: dailyStatistics(
-    chainID: $chainID
-    type: $type
-    days: $days
-    platform: $platform
-  ) {
-    total
-    dateResults {
-      date
-      total
-    }
-    type
   }
 }
 

@@ -70,6 +70,7 @@ export function Home() {
     fetchPolicy: 'network-only',
     variables: {
       pending: pending,
+      useMv: true,
     },
     onCompleted: (data) => {
       let bridgeTransactionsTable = data.bridgeTransactions
@@ -93,6 +94,7 @@ export function Home() {
       if (dailyStatisticCumulative) {
         chartData = JSON.parse(JSON.stringify(data.dailyStatisticsByChain))
         for (let i = 1; i < chartData.length; i++) {
+
           for (let key in data.dailyStatisticsByChain[i]) {
             if (key !== 'date' && key !== '__typename') {
               chartData[i][key] += (chartData[i - 1]?.[key] ? chartData[i - 1][key] : 0)
@@ -101,7 +103,7 @@ export function Home() {
           }
         }
       }
-      setDailyDataArr(data.dailyStatisticsByChain);
+      setDailyDataArr(chartData);
     }
   })
 
@@ -325,7 +327,7 @@ export function Home() {
           <TextField size="small" value={kappa} onChange={(e) => {
             setKappa(e.target.value)
           }}
-            id="outlined-basic" label="Search by TXID / TXHash" variant="outlined" sx={inputStyle} />
+            id="outlined-basic" label="Search by TXID" variant="outlined" sx={inputStyle} />
         </div>
         <a href={getBridgeTransactionUrl({hash: kappa})}
           className={

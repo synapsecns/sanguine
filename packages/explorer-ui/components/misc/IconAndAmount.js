@@ -30,7 +30,6 @@ export function IconAndAmount({
   } else {
     showToken = <span className={`${textSize} text-slate-400`}>--</span>
   }
-
   return (
     <div className="flex justify-between items-center ">
       <div className="flex flex-row items-center ">

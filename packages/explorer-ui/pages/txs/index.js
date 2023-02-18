@@ -19,7 +19,9 @@ import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
 export default function Txs() {
   const search = useSearchParams()
   const p = Number(search.get('p'))
-  const chainIDFrom = Number(search.get('p'))
+  // const kappaSearch = Number(search.get('kappa'))
+  // const txhashSearch = Number(search.get('txhash'))
+
 
   const [transactionsArr, setTransactionsArr] = useState([])
   const [pending, setPending] = useState(false)
@@ -39,8 +41,13 @@ export default function Txs() {
 
   useEffect(() => {
     setPage(p)
-    executeSearch()
+    // setKappa(kappaSearch)
+    // setToTx(txhashSearch)
+    // setFromTx(txhashSearch)
+    executeSearch(p)
   }, [p])
+
+  // }, [p, kappaSearch, txhashSearch])
 
   const [getBridgeTransactions, { loading, error, data }] = useLazyQuery(
     GET_BRIDGE_TRANSACTIONS_QUERY, {
@@ -56,6 +63,7 @@ export default function Txs() {
       variables: {
         pending: pending,
         page: 1,
+        useMv: true,
       },
     })
   }, [])
@@ -66,16 +74,15 @@ export default function Txs() {
       variables: {
         pending: arg,
         page: 1,
+        useMv: true,
       },
     })
   }
   const createQueryField = (field, value, query) => {
-    console.log(field, value, query)
 
     if (value && value !== "") {
 
       if (field === "endTime" || field === "startTime") {
-        console.log("value", value, (new Date(value.$d).getTime() / 1000))
         let timestamp = parseInt((new Date(value.$d).getTime() / 1000).toFixed(0))
         query[field] = timestamp
       } else if (field === "chainIDTo" || field === "chainIDFrom") {
@@ -92,9 +99,9 @@ export default function Txs() {
     }
     return query
   }
-  const executeSearch = () => {
-
-    let variables = { page: page===0 ? 1: page, pending: pending }
+  const executeSearch = (p) => {
+    let queryPage = p ? p : page
+    let variables = { page: queryPage===0 ? 1: queryPage, pending: pending, useMv: true }
     if (chains.length > 0) {
       if (chainsLocale) {
         variables = createQueryField("chainIDFrom", chains, variables)
@@ -103,9 +110,9 @@ export default function Txs() {
       }
     }
     if (walletLocale) {
-      variables = createQueryField("addressFrom", wallet, variables)
+      variables = createQueryField("addressFrom", wallet?.toLowerCase(), variables)
     } else {
-      variables = createQueryField("addressTo", wallet, variables)
+      variables = createQueryField("addressTo", wallet?.toLowerCase(), variables)
     }
 
     if (minSize.value !== "") {
@@ -122,27 +129,20 @@ export default function Txs() {
         variables = createQueryField("maxAmount", parseInt(maxSize.value), variables)
       }
     }
-    console.log("start", startDate)
     variables = createQueryField("startTime", startDate, variables)
     variables = createQueryField("endTime",endDate, variables)
     if (kappa.length === 64) {
-      variables = createQueryField("kappa", kappa, variables)
+      variables = createQueryField("kappa", kappa?.toLowerCase(), variables)
     } else {
-      variables = createQueryField("txnHash", kappa, variables)
+      variables = createQueryField("txnHash", kappa?.toLowerCase(), variables)
 
     }
     variables = createQueryField("pending", pending, variables)
-    console.log(page, variables)
-
     getBridgeTransactions({
       variables: variables,
     })
   }
-  // let bridgeTransactionsTable = _.orderBy(
-  //   transactionsArr,
-  //   'fromInfo.time',
-  //   ['desc']
-  // ).slice(0, 25)
+
 
   return (
     <>
@@ -192,44 +192,3 @@ export default function Txs() {
   )
 }
 
-
-// export async function getServerSideProps(context) {
-//   let result
-
-//   if (context.query.account) {
-//     let { data } = await client.query({
-//       query: GET_BRIDGE_TRANSACTIONS_QUERY,
-//       variables: {
-//         address: context.query.account,
-//         pending: false,
-//         page: context.query.p ?? 1,
-//       },
-//     })
-//     result = data
-//   } else if (context.query.chainId) {
-//     let { data } = await client.query({
-//       query: GET_BRIDGE_TRANSACTIONS_QUERY,
-//       variables: {
-//         chainID: [context.query.chainId],
-//         pending: false,
-//         page: context.query.p ?? 1,
-//       },
-//     })
-//     result = data
-//   } else {
-//     let { data } = await client.query({
-//       query: GET_BRIDGE_TRANSACTIONS_QUERY,
-//       variables: {
-//         pending: false,
-//         page: context.query.p ?? 1,
-//       },
-//     })
-//     result = data
-//   }
-
-//   return {
-//     props: {
-//       queryResult: result,
-//     },
-//   }
-// }

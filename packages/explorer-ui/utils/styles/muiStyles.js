@@ -80,11 +80,6 @@ export const comboSelectStyle = {
   borderRadius: 2,
   backgroundColor: "rgba(255, 255, 255, 0.03)",
   svg: { color: "rgba(255, 255, 255, 0.6) " },
-  // input: {
-  //   "&::placeholder": {
-  //     color: 'rgba(255, 255, 255, 0.6)'
-  //   },
-  // },
 
   "& label": {
     color: "rgba(255, 255, 255, 0.6)",
@@ -118,12 +113,6 @@ export const comboSelectStyleSmall = {
   width: "100%",
   backgroundColor: "rgba(255, 255, 255, 0.03)",
   svg: { color: "rgba(255, 255, 255, 0.6) " },
-  // input: {
-  //   "&::placeholder": {
-  //     color: 'rgba(255, 255, 255, 0.6)'
-  //   },
-  // },
-
   "& label": {
     color: "rgba(255, 255, 255, 0.6)",
   },

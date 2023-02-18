@@ -39,7 +39,7 @@ const formatTooltipName = (name) => {
   return name
 }
 
-export const CurrencyTooltip = ({ names: names, values: values, label, dailyStatisticType: dailyStatisticType, isUSD: isUSD, singleChain, platform: platform }) => {
+export const CurrencyTooltip = ({ names: names, values: values, label, dailyStatisticType: dailyStatisticType, isUSD: isUSD, singleChain, platform: platform, noTooltipLink:noTooltipLink }) => {
 
   const domElement = document.getElementById("tooltip-sidebar");
   return (
@@ -86,6 +86,7 @@ export const CurrencyTooltip = ({ names: names, values: values, label, dailyStat
                     {name === "total" ?
                       <p className="pl-2 whitespace-nowrap text-sm text-white">All Chains</p> :
                       <ChainInfo
+                        noLink={noTooltipLink}
                         useExplorerLink={true}
                         chainId={CHAIN_ID_NAMES_REVERSE[name]}
                         imgClassName="w-4 h-4 ml-2"

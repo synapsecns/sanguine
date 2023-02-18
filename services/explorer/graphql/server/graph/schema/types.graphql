@@ -42,14 +42,7 @@ type HistoricalResult {
   dateResults:  [DateResult]
   type:         HistoricalResultType
 }
-"""
-DailyResult is a given statistic for dates.
-"""
-type DailyResult {
-  total:        Float
-  dateResults:  [DateResult]
-  type:         DailyStatisticType
-}
+
 """
 ValueResult is a value result of either USD or numeric value.
 """

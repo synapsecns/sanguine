@@ -25,7 +25,6 @@ type Query struct {
 	CountByTokenAddress    []*model.TokenCountResult       "json:\"countByTokenAddress\" graphql:\"countByTokenAddress\""
 	AddressRanking         []*model.AddressRanking         "json:\"addressRanking\" graphql:\"addressRanking\""
 	AmountStatistic        *model.ValueResult              "json:\"amountStatistic\" graphql:\"amountStatistic\""
-	DailyStatistics        *model.DailyResult              "json:\"dailyStatistics\" graphql:\"dailyStatistics\""
 	DailyStatisticsByChain []*model.DateResultByChain      "json:\"dailyStatisticsByChain\" graphql:\"dailyStatisticsByChain\""
 	RankedChainIDsByVolume []*model.VolumeByChainID        "json:\"rankedChainIDsByVolume\" graphql:\"rankedChainIDsByVolume\""
 }
@@ -117,16 +116,6 @@ type GetDailyStatisticsByChain struct {
 		Total     *float64 "json:\"total\" graphql:\"total\""
 	} "json:\"response\" graphql:\"response\""
 }
-type GetDailyStatistics struct {
-	Response *struct {
-		Total       *float64 "json:\"total\" graphql:\"total\""
-		DateResults []*struct {
-			Date  *string  "json:\"date\" graphql:\"date\""
-			Total *float64 "json:\"total\" graphql:\"total\""
-		} "json:\"dateResults\" graphql:\"dateResults\""
-		Type *model.DailyStatisticType "json:\"type\" graphql:\"type\""
-	} "json:\"response\" graphql:\"response\""
-}
 type GetMessageBusTransactions struct {
 	Response []*struct {
 		FromInfo *struct {
@@ -157,8 +146,8 @@ type GetMessageBusTransactions struct {
 	} "json:\"response\" graphql:\"response\""
 }
 
-const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainIDTo: [Int], $chainIDFrom: [Int], $addressTo: String, $addressFrom: String, $maxAmount: Int, $minAmount: Int, $maxAmountUSD: Int, $minAmountUSD: Int, $startTime: Int, $endTime: Int, $txHash: String, $kappa: String, $pending: Boolean, $page: Int, $tokenAddressFrom: [String], $tokenAddressTo: [String]) {
-	response: bridgeTransactions(chainIDTo: $chainIDTo, chainIDFrom: $chainIDFrom, addressTo: $addressTo, addressFrom: $addressFrom, maxAmount: $maxAmount, minAmount: $minAmount, maxAmountUsd: $maxAmountUSD, minAmountUsd: $minAmountUSD, startTime: $startTime, endTime: $endTime, txnHash: $txHash, kappa: $kappa, pending: $pending, page: $page, tokenAddressTo: $tokenAddressTo, tokenAddressFrom: $tokenAddressFrom) {
+const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainIDTo: [Int], $chainIDFrom: [Int], $addressTo: String, $addressFrom: String, $maxAmount: Int, $minAmount: Int, $maxAmountUSD: Int, $minAmountUSD: Int, $startTime: Int, $endTime: Int, $txHash: String, $kappa: String, $pending: Boolean, $page: Int, $tokenAddressFrom: [String], $tokenAddressTo: [String], $useMv: Boolean) {
+	response: bridgeTransactions(chainIDTo: $chainIDTo, chainIDFrom: $chainIDFrom, addressTo: $addressTo, addressFrom: $addressFrom, maxAmount: $maxAmount, minAmount: $minAmount, maxAmountUsd: $maxAmountUSD, minAmountUsd: $minAmountUSD, startTime: $startTime, endTime: $endTime, txnHash: $txHash, kappa: $kappa, pending: $pending, page: $page, tokenAddressTo: $tokenAddressTo, tokenAddressFrom: $tokenAddressFrom, useMv: $useMv) {
 		fromInfo {
 			chainID
 			destinationChainID
@@ -193,7 +182,7 @@ const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainIDTo: 
 }
 `
 
-func (c *Client) GetBridgeTransactions(ctx context.Context, chainIDTo []*int, chainIDFrom []*int, addressTo *string, addressFrom *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, kappa *string, pending *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string, httpRequestOptions ...client.HTTPRequestOption) (*GetBridgeTransactions, error) {
+func (c *Client) GetBridgeTransactions(ctx context.Context, chainIDTo []*int, chainIDFrom []*int, addressTo *string, addressFrom *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, kappa *string, pending *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string, useMv *bool, httpRequestOptions ...client.HTTPRequestOption) (*GetBridgeTransactions, error) {
 	vars := map[string]interface{}{
 		"chainIDTo":        chainIDTo,
 		"chainIDFrom":      chainIDFrom,
@@ -211,6 +200,7 @@ func (c *Client) GetBridgeTransactions(ctx context.Context, chainIDTo []*int, ch
 		"page":             page,
 		"tokenAddressFrom": tokenAddressFrom,
 		"tokenAddressTo":   tokenAddressTo,
+		"useMv":            useMv,
 	}
 
 	var res GetBridgeTransactions
@@ -312,14 +302,14 @@ func (c *Client) GetRankedChainIDsByVolume(ctx context.Context, duration *model.
 	return &res, nil
 }
 
-const GetAmountStatisticDocument = `query GetAmountStatistic ($type: StatisticType!, $platform: Platform, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String) {
-	response: amountStatistic(type: $type, duration: $duration, platform: $platform, chainID: $chainID, address: $address, tokenAddress: $tokenAddress) {
+const GetAmountStatisticDocument = `query GetAmountStatistic ($type: StatisticType!, $platform: Platform, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String, $useMv: Boolean) {
+	response: amountStatistic(type: $type, duration: $duration, platform: $platform, chainID: $chainID, address: $address, tokenAddress: $tokenAddress, useMv: $useMv) {
 		value
 	}
 }
 `
 
-func (c *Client) GetAmountStatistic(ctx context.Context, typeArg model.StatisticType, platform *model.Platform, duration *model.Duration, chainID *int, address *string, tokenAddress *string, httpRequestOptions ...client.HTTPRequestOption) (*GetAmountStatistic, error) {
+func (c *Client) GetAmountStatistic(ctx context.Context, typeArg model.StatisticType, platform *model.Platform, duration *model.Duration, chainID *int, address *string, tokenAddress *string, useMv *bool, httpRequestOptions ...client.HTTPRequestOption) (*GetAmountStatistic, error) {
 	vars := map[string]interface{}{
 		"type":         typeArg,
 		"platform":     platform,
@@ -327,6 +317,7 @@ func (c *Client) GetAmountStatistic(ctx context.Context, typeArg model.Statistic
 		"chainID":      chainID,
 		"address":      address,
 		"tokenAddress": tokenAddress,
+		"useMv":        useMv,
 	}
 
 	var res GetAmountStatistic
@@ -337,8 +328,8 @@ func (c *Client) GetAmountStatistic(ctx context.Context, typeArg model.Statistic
 	return &res, nil
 }
 
-const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($chainID: Int, $type: DailyStatisticType, $duration: Duration, $platform: Platform) {
-	response: dailyStatisticsByChain(chainID: $chainID, type: $type, duration: $duration, platform: $platform) {
+const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($chainID: Int, $type: DailyStatisticType, $duration: Duration, $platform: Platform, $useMv: Boolean) {
+	response: dailyStatisticsByChain(chainID: $chainID, type: $type, duration: $duration, platform: $platform, useMv: $useMv) {
 		date
 		ethereum
 		optimism
@@ -363,44 +354,17 @@ const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($cha
 }
 `
 
-func (c *Client) GetDailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration, platform *model.Platform, httpRequestOptions ...client.HTTPRequestOption) (*GetDailyStatisticsByChain, error) {
+func (c *Client) GetDailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, duration *model.Duration, platform *model.Platform, useMv *bool, httpRequestOptions ...client.HTTPRequestOption) (*GetDailyStatisticsByChain, error) {
 	vars := map[string]interface{}{
 		"chainID":  chainID,
 		"type":     typeArg,
 		"duration": duration,
 		"platform": platform,
+		"useMv":    useMv,
 	}
 
 	var res GetDailyStatisticsByChain
 	if err := c.Client.Post(ctx, "GetDailyStatisticsByChain", GetDailyStatisticsByChainDocument, &res, vars, httpRequestOptions...); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-const GetDailyStatisticsDocument = `query GetDailyStatistics ($chainID: Int, $type: DailyStatisticType, $platform: Platform, $days: Int) {
-	response: dailyStatistics(chainID: $chainID, type: $type, days: $days, platform: $platform) {
-		total
-		dateResults {
-			date
-			total
-		}
-		type
-	}
-}
-`
-
-func (c *Client) GetDailyStatistics(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, days *int, httpRequestOptions ...client.HTTPRequestOption) (*GetDailyStatistics, error) {
-	vars := map[string]interface{}{
-		"chainID":  chainID,
-		"type":     typeArg,
-		"platform": platform,
-		"days":     days,
-	}
-
-	var res GetDailyStatistics
-	if err := c.Client.Post(ctx, "GetDailyStatistics", GetDailyStatisticsDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

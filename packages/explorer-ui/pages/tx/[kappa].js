@@ -39,8 +39,8 @@ export default function BridgeTransaction({ queryResult }) {
 
   let transaction = queryResult.bridgeTransactions[0]
   const { pending, fromInfo, toInfo } = transaction
-  const { chainName: oChainName } = CHAIN_INFO_MAP[fromInfo.chainID] ?? {}
-  const { chainName: dChainName } = CHAIN_INFO_MAP[toInfo.chainID] ?? {}
+
+
 
   const getTimeDifference = (start, end) => {
     const diff = end - start
@@ -71,7 +71,7 @@ export default function BridgeTransaction({ queryResult }) {
           <h3 className="text-white text-xl font-medium ">
             {fromInfo.time
               ? timeAgo({ timestamp: fromInfo.time })
-              : timeAgo({ timestamp: toInfo.time })} ago
+              : timeAgo({ timestamp: toInfo?.time })} ago
           </h3>
         </div>
         <div className="flex gap-x-4 py-1">
@@ -80,11 +80,11 @@ export default function BridgeTransaction({ queryResult }) {
         </div>
         <div className="flex gap-x-4 py-1">
           <p className="text-white text-opacity-60">Confirmed</p>
-          <p className="text-white ">{new Date(toInfo.time * 1000).toTimeString()}</p>
+          <p className="text-white ">{toInfo ? new Date(toInfo.time * 1000).toTimeString(): "Pending"}</p>
         </div>
         <div className="flex gap-x-[1.1rem] py-1">
           <p className="text-white text-opacity-60">Total Time</p>
-          <p className="text-white ">{getTimeDifference(fromInfo.time, toInfo.time)} seconds</p>
+          <p className="text-white ">{toInfo ?getTimeDifference(fromInfo.time, toInfo.time) :  "Pending"} seconds</p>
         </div>
         <br />
 
@@ -127,40 +127,47 @@ export default function BridgeTransaction({ queryResult }) {
 
             <HorizontalDivider />
 
-            <div className='flex  mt-8  flex-col'>
-              <div className="flex gap-x-2 py-1 ">
-                <p className="text-white text-opacity-60">Destination</p>
-                <ChainInfo
-                  chainId={toInfo.chainID}
+              <div className='flex  mt-8  flex-col'>
+                <div className="flex gap-x-2 py-1 ">
+                  <p className="text-white text-opacity-60">Destination</p>
+                  {toInfo ?
+                  <ChainInfo
+                    chainId={toInfo.chainID}
+                    noLink={true}
+                    imgClassName="w-6 h-6 rounded-full"
+                  />: <ChainInfo
+                  chainId={fromInfo.destinationChainID}
                   noLink={true}
                   imgClassName="w-6 h-6 rounded-full"
-                />
-              </div>
-              <div className="flex gap-x-[4.5rem] py-1">
-                <p className="text-white text-opacity-60">To</p>
-                <p className="text-white break-all text-sm">{toInfo.address}</p>
-              </div>
+                />}
+                </div>
+                <div className="flex gap-x-[4.5rem] py-1">
+                  <p className="text-white text-opacity-60">To</p>
+                  <p className="text-white break-all text-sm">{  toInfo ?toInfo.address : "Pending"}</p>
+                </div>
 
-              <div className="flex gap-x-[1.7rem] py-1 ">
-                <p className="text-white text-opacity-60">TX Hash</p>
-                <a target="_blank"
-                  rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/tx/" + toInfo.hash}>{toInfo.hash}</a>
+                <div className="flex gap-x-[1.7rem] py-1 ">
+                  <p className="text-white text-opacity-60">TX Hash</p>
+                  {toInfo ?
+                  <a target="_blank"
+                    rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/tx/" + toInfo.hash}>{toInfo.hash}</a> : <p className="text-white break-all text-sm ">Pending</p>}
+                </div>
+                <div className="flex gap-x-8 mt-3">
+                  <h1 className="text-white text-2xl text-opacity-60">
+                    Received
+                  </h1>
+                  {toInfo ?
+                  <IconAndAmount
+                    formattedValue={toInfo.formattedValue}
+                    tokenAddress={toInfo.tokenAddress}
+                    chainId={toInfo.chainID}
+                    tokenSymbol={toInfo.tokenSymbol}
+                    iconSize="w-7 h-7"
+                    textSize="text-md"
+                    styledCoin={true}
+                  /> : null }
+                </div>
               </div>
-              <div className="flex gap-x-8 mt-3">
-                <h1 className="text-white text-2xl text-opacity-60">
-                  Received
-                </h1>
-                <IconAndAmount
-                  formattedValue={toInfo.formattedValue}
-                  tokenAddress={toInfo.tokenAddress}
-                  chainId={toInfo.chainID}
-                  tokenSymbol={toInfo.tokenSymbol}
-                  iconSize="w-7 h-7"
-                  textSize="text-md"
-                  styledCoin={true}
-                />
-              </div>
-            </div>
           </div>
         </div>
         <br />
@@ -186,8 +193,10 @@ export async function getServerSideProps(context) {
     variables: {
       chainId: context.params.chainIdFrom,
       kappa: context.params.kappa,
+      useMv: true
     },
   })
+
   return {
     props: {
       queryResult: data

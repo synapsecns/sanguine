@@ -22,8 +22,8 @@ export function BridgeTransactionTable({ queryResult }) {
 
 
   let tableRows = []
-  let pendingContent = (<p>Pending</p>)
-  queryResult.map((txn) => {
+  let pendingContent = (<p>Pending/Indexing</p>)
+  queryResult?.map((txn) => {
     const { kappa, pending, fromInfo, toInfo } = txn
 
       let items = [
@@ -51,12 +51,22 @@ export function BridgeTransactionTable({ queryResult }) {
           chainId={fromInfo.chainID}
           imgClassName="w-6 h-6 rounded-full"
           txHash={fromInfo.hash}
+          useExplorerLink={true}
+
         />,
-        pending ? pendingContent :
+        pending ?  <ChainInfo
+        chainId={fromInfo.destinationChainID}
+        imgClassName="w-6 h-6 rounded-full"
+        txHash={""}
+        useExplorerLink={true}
+
+      /> :
         <ChainInfo
           chainId={toInfo.chainID}
           imgClassName="w-6 h-6 rounded-full"
           txHash={toInfo.hash}
+          useExplorerLink={true}
+
         />,
         <StyleAddress sourceInfo={fromInfo} />,
         pending ? pendingContent :

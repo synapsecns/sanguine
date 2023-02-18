@@ -16,7 +16,8 @@ type Query {
     endTime:        Int
     txnHash:        String
     kappa:          String
-    pending:        Boolean = false
+    pending:        Boolean
+    useMv:          Boolean = false
     page:           Int = 1
     tokenAddressFrom:   [String]
     tokenAddressTo:   [String]
@@ -76,16 +77,9 @@ type Query {
     address:      String
     tokenAddress: String
     useCache: Boolean = false
+    useMv:          Boolean = false
+
   ): ValueResult
-  """
-  Daily statistic data
-  """
-  dailyStatistics(
-    chainID:  Int
-    type:     DailyStatisticType = VOLUME
-    platform: Platform = BRIDGE
-    days:     Int = 30
-  ): DailyResult
 
   """
   Daily statistic data
@@ -96,6 +90,8 @@ type Query {
     platform: Platform = ALL
     duration:     Duration = ALL_TIME
     useCache: Boolean = false
+    useMv:          Boolean = false
+
   ): [DateResultByChain]
 
   """

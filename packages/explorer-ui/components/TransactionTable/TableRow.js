@@ -16,7 +16,7 @@ export function TableRow({ items, key }) {
   )
 }
 
-
+// TODO add animations to updated table
 // import { Transition } from 'react-transition-group'
 // export function TableRow({ items, key }) {
 

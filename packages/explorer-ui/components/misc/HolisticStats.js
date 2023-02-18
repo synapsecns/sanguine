@@ -28,7 +28,6 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
   const handleVariable = (type) => {
     let queryVariables = JSON.parse(JSON.stringify(variables))
     queryVariables["type"] = type
-    console.log("queryVariables", queryVariables)
     return queryVariables
   }
 
@@ -39,7 +38,9 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
       platform: platform,
       duration: "ALL_TIME",
       type: "TOTAL_VOLUME_USD",
-      useCache: true
+      useCache: true,
+      useMv: true
+
     },
     onCompleted: (data) => { setVolume(data.amountStatistic.value) }
 
@@ -53,6 +54,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
       duration: "ALL_TIME",
       type: "TOTAL_FEE_USD",
       useCache: true
+
     },
     onCompleted: (data) => { setFee(data.amountStatistic.value) }
 
@@ -67,12 +69,11 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
       type: "COUNT_ADDRESSES",
       useCache: useCache,
     },
-    pollInterval: 5000,
-    skip: skip,
+    // pollInterval: 5000,
     onCompleted: (data) => {
-      if (useCache) {
-        setUseCache(true)
-      }
+      // if (useCache) {
+      //   setUseCache(true)
+      // }
       setAddresses(data.amountStatistic.value)
 
     }
@@ -87,12 +88,11 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
       type: "COUNT_TRANSACTIONS",
       useCache: useCache,
     },
-    pollInterval: 5000,
-    skip: skip,
+    // pollInterval: 5000,
     onCompleted: (data) => {
-      if (useCache) {
-        setUseCache(true)
-      }
+      // if (useCache) {
+      //   setUseCache(true)
+      // }
       setTxs(data.amountStatistic.value)
     }
 
@@ -120,7 +120,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
   }, [platform])
 
 
-  const stats = [{ title: "Volume", loading: loadingVolume, value: formatUSD(volume) }, { title: "Transactions", loading: false, value: numeral(txs).format('0,0') }, { title: "Addresses", loading: false, value: numeral(addresses).format('0,0') }, { title: "Fees", loading: loadingFee, value: formatUSD(fee) }]
+  const stats = [{ title: "Volume", loading: loadingVolume, value: formatUSD(volume) }, { title: "Transactions", loading: false, value: formatUSD(txs) }, { title: "Addresses", loading: false, value: formatUSD(addresses) }, { title: "Fees", loading: loadingFee, value: formatUSD(fee) }]
 
   return (
     <>
@@ -142,7 +142,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
       <div className="flex flex-wrap flex-row min-h-[90px]">
 
         {stats.map((stat, i) => {
-          return stat.value !== "--" ?
+          return stat.value !== "--"?
             (<Card
               className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
             >
@@ -153,7 +153,9 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
                 }
               </div>
 
-            </Card>) : null
+            </Card>) : parentPlatform != "MESSAGE_BUS" ? <Card
+              className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
+            > <div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div></Card> : null
         })}
 
 

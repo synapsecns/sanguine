@@ -1,6 +1,5 @@
-import { TRANSACTIONS_PATH } from '@urls'
+import { TRANSACTIONS_PATH, getChainUrl } from '@urls'
 import { useState, useEffect } from 'react'
-import { TableHeader } from '@components/TransactionTable/TableHeader'
 import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
 import { AssetImage } from '@components/misc/AssetImage'
 import { useSearchParams } from 'next/navigation'
@@ -79,7 +78,7 @@ export default function chainId() {
         bridgeTransactionsTable,
         'fromInfo.time',
         ['desc']
-      ).slice(0, 10)
+      ).slice(0, 25)
       setTransactionsArr(bridgeTransactionsTable)
 
     },
@@ -98,20 +97,20 @@ export default function chainId() {
 
   // Get initial data
   useEffect(() => {
-    console.log("tokenAddress", tokenAddress)
-    setAddress(tokenAddress)
+    setAddress(tokenAddress?.toLowerCase())
     setTokenChainID(chainId)
-    setVariables({ page: 1, tokenAddressFrom: [tokenAddress] })
+    setVariables({ page: 1, tokenAddressFrom: [tokenAddress],chainIDFrom: chainId, useMv: true })
   }, [chainId, tokenAddress])
 
   return (
     <StandardPageContainer title={''}>
-      <div className='rounded-md py-1 px-2 bg-stone-800/50 mb-2 w-fit'>
+      <a href={getChainUrl({ chainId: tokenChainID })}>
+      <div className='rounded-md py-1 px-2 bg-gray-800/50 mb-2 w-fit hover:bg-gray-500/50'>
       <ChainInfo
         chainId={tokenChainID}
         imgClassName="w-6 h-6 rounded-full"
         noLink={true}
-      /></div>
+      /></div></a>
       <div className="flex items-center mb-2">
         <AssetImage
           tokenAddress={address}
@@ -124,6 +123,7 @@ export default function chainId() {
       <h3 className="text-white text-xl">{address}</h3>
 
       <HolisticStats
+      noMessaging={true}
         platform={platform}
         chainID={variables?.chainId}
         tokenAddress={address}
@@ -134,7 +134,8 @@ export default function chainId() {
           duration: "ALL_TIME",
           useCache: false,
           chainID: tokenChainID,
-          tokenAddress: address
+          tokenAddress: address,
+          useMv: true
         }}
       />
       <br />
@@ -145,7 +146,7 @@ export default function chainId() {
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
       <div className="h-full flex items-center mt-4">
         <button
-          onClick={() => setVariables({ page: 1, tokenAddressFrom: [address] })}
+          onClick={() => setVariables({ page: 1, tokenAddressFrom: [address],chainIDFrom: tokenChainID, useMv: true  })}
 
           className={
             'font-medium rounded-l-md px-4 py-2 border  h-fit  ' +
@@ -156,7 +157,7 @@ export default function chainId() {
           Outgoing
         </button>
         <button
-          onClick={() => setVariables({ page: 1, tokenAddressTo: [address] })
+          onClick={() => setVariables({ page: 1, tokenAddressTo: [address],chainIDTo: tokenChainID, useMv: true  })
           }
 
           className={

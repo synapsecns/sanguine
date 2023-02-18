@@ -144,53 +144,6 @@ IF(
       be.insert_time AS pre_finsert_time
 `
 
-const originToDestJoins = `
-be
-LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
-AND be.chain_id = se.swap_chain_id
-LEFT JOIN (
-  SELECT
-    DISTINCT ON (
-      chain_id, token_index, contract_address
-    ) *
-  FROM
-    token_indices
-) ti ON be.chain_id = ti.chain_id
-AND se.swap_address = ti.contract_address
-AND ti.token_index = be.sold_id
-) AS f
-LEFT JOIN (
-  SELECT
-    *
-  from
-    bridge_events WHERE timestamp >= minTimestamp
-  ORDER BY
-    block_number DESC,
-    event_index DESC,
-    insert_time DESC
-  LIMIT
-    1 BY chain_id,
-    contract_address,
-    event_type,
-    block_number,
-    event_index,
-    tx_hash
-) be ON fdestination_chain_id = be.chain_id
-AND fdestination_kappa = be.kappa
-LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
-AND be.chain_id = se.swap_chain_id
-LEFT JOIN (
-  SELECT
-    DISTINCT ON (
-      chain_id, token_index, contract_address
-    ) *
-  FROM
-    token_indices
-) ti ON be.chain_id = ti.chain_id
-AND se.swap_address = ti.contract_address
-AND ti.token_index = se.bought_id
-`
-
 const destToOriginCol = `
 t.pre_ttoken AS ttoken,
 t.pre_tamount AS tamount,
@@ -308,52 +261,6 @@ IF(
       be.destination_chain_id AS pre_tdestination_chain_id,
       be.insert_time AS pre_tinsert_time
 `
-const destToOriginJoins = `
-be
-LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
-AND be.chain_id = se.swap_chain_id
-LEFT JOIN (
-  SELECT
-    DISTINCT ON (
-      chain_id, token_index, contract_address
-    ) *
-  FROM
-    token_indices
-) ti ON be.chain_id = ti.chain_id
-AND se.swap_address = ti.contract_address
-AND ti.token_index = be.bought_id
-) AS t
-LEFT JOIN (
-  SELECT
-    *
-  from
-    bridge_events WHERE timestamp >= minTimestamp
-  ORDER BY
-    block_number DESC,
-    event_index DESC,
-    insert_time DESC
-  LIMIT
-    1 BY chain_id,
-    contract_address,
-    event_type,
-    block_number,
-    event_index,
-    tx_hash
-) be ON pre_tchain_id = be.destination_chain_id
-AND pre_tkappa = be.destination_kappa
-LEFT JOIN swapDeDup se ON be.tx_hash = se.swap_tx_hash
-AND be.chain_id = se.swap_chain_id
-LEFT JOIN (
-  SELECT
-    DISTINCT ON (
-      chain_id, token_index, contract_address
-    ) *
-  FROM
-    token_indices
-) ti ON be.chain_id = ti.chain_id
-AND se.swap_address = ti.contract_address
-AND ti.token_index = se.sold_id
-`
 
 const singleSideCol = `
 IF(
@@ -414,30 +321,60 @@ AND se.swap_address = ti.contract_address
 AND ti.token_index = be.sold_id
 `
 
-const baseBridge = `
-SELECT * FROM bridge_events LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
-`
-
 const baseSwap = `
 SELECT * FROM swap_events LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
 `
 
-const baseSwapWithToken = `
-SELECT * FROM swap_events LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
+const baseSwapWithTokenPt1 = `
+SELECT
+        if(amount_id >= 0 and tokens_sold = 0, toUInt256(amount_id), sold_id)     AS sold_id,
+        if(amount_id >= 0 and tokens_sold = 0, toUInt256(amount[toUInt256(amount_id)]), tokens_sold)     AS tokens_sold,
+        if(amount_id >= 0 and tokens_bought = 0, toUInt256(amount_id), bought_id) AS bought_id,
+        if(amount_id >= 0 and tokens_bought = 0, toUInt256(amount[toUInt256(amount_id)]), tokens_bought)     AS tokens_bought,
+       *
+FROM (
+         SELECT tokens_bought,
+                tokens_sold,
+                sold_id,
+                event_type,
+                chain_id,
+                bought_id,
+                token_decimal,
+                amount,
+                amount_usd,
+                fee_usd,
+                sender,
+                tx_hash,
+                contract_address                              AS swap_address,
+                chain_id                                      AS swap_chain_id,
+                if(notEmpty(amount.keys), amount.keys[1], -1) AS amount_id
+
+         FROM swap_events
+`
+const baseSwapWithTokenPt2 = `
+         LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)
+) se
+         LEFT JOIN (
+    SELECT DISTINCT ON(
+                            chain_id, token_index, contract_address
+                        ) token_address AS token, *
+                    FROM
+                        token_indices
+    ) ti ON se.chain_id = ti.chain_id
+    AND se.swap_address = ti.contract_address
+    AND ti.token_index = se.bought_id
 `
 
 const baseMessageBus = `
 SELECT * FROM message_bus_events LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
 `
+
+const baseMvBridgeEvents = `
+SELECT * FROM mv_bridge_events ORDER BY finsert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash
+`
 const swapVolumeSelect = `
 multiIf(event_type = 0, amount_usd[sold_id],event_type = 1, arraySum(mapValues(amount_usd)),event_type = 9, arraySum(mapValues(amount_usd)),event_type = 10,amount_usd[sold_id],0)
 `
-const messageBusCTE = `
-WITH baseQuery AS (
-	SELECT * FROM message_bus_events
-	ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC
-	LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
-), (SELECT min(timestamp) FROM baseQuery) AS minTimestamp`
 
 // TODO MAKE MORE DYNAMIC
 
@@ -630,119 +567,6 @@ FROM (
          order by pre_fchain_id) b
          `
 
-const rankedChainsTotalVolume = `
-WITH baseQuery AS (SELECT *
-                   FROM bridge_events
-                   WHERE destination_chain_id > 0
-                   ORDER BY timestamp DESC, block_number DESC, event_index DESC, insert_time DESC
-                   LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash), (SELECT min(timestamp) FROM baseQuery) AS minTimestamp,
-     swapDeDup AS (SELECT if(amount_id >= 0 and tokens_sold = 0, toUInt256(amount_id), sold_id)     AS sold_id,
-                          if(amount_id >= 0 and tokens_sold = 0, toUInt256(amount[toUInt256(amount_id)]),
-                             tokens_sold)                                                           AS tokens_sold,
-                          if(amount_id >= 0 and tokens_bought = 0, toUInt256(amount_id), bought_id) AS bought_id,
-                          if(amount_id >= 0 and tokens_bought = 0, toUInt256(amount[toUInt256(amount_id)]),
-                             tokens_bought)                                                         AS tokens_bought,
-                          *
-                   FROM (
-                            SELECT amount_usd                                    AS swap_amount_usd,
-                                   tokens_bought,
-                                   tokens_sold,
-                                   sold_id,
-                                   bought_id,
-                                   token_decimal,
-                                   amount,
-                                   amount_usd,
-                                   contract_address                              AS swap_address,
-                                   tx_hash                                       AS swap_tx_hash,
-                                   chain_id                                      AS swap_chain_id,
-                                   if(notEmpty(amount.keys), amount.keys[1], -1) AS amount_id
-
-                            FROM swap_events
-                            WHERE timestamp >= minTimestamp
-                            LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash))
-
-SELECT toInt64(coalesce(pre_fchain_id, s.chain_id, 0)) as chain_id,
-       (toFloat64(coalesce(b.usdTotal, 0)) +
-        toFloat64(coalesce(s.usdTotal, 0)))           as total
-FROM (
-         SELECT pre_fchain_id,
-                sumKahan(pre_famount_usd) as usdTotal
-
-
-         FROM (
-                  SELECT IF(
-                                     se.amount_usd[se.sold_id] > 0,
-                                     se.amount_usd[se.sold_id],
-                                     be.amount_usd
-                             )                   AS amount_usd,
-                         be.tx_hash              AS tx_hash,
-                         be.sender               AS sender,
-                         be.fee_usd              AS fee_usd,
-                  FROM baseQuery be
-                           LEFT JOIN swapDeDup se
-                                     ON be.tx_hash = se.swap_tx_hash
-                                         AND be.chain_id = se.swap_chain_id
-                           LEFT JOIN (
-                      SELECT DISTINCT ON(
-                                              chain_id, token_index,
-                                              contract_address
-                                          ) *
-                                      FROM
-                          token_indices
-                      ) ti ON be.chain_id = ti.chain_id
-                      AND se.swap_address = ti.contract_address
-                      AND ti.token_index = be.sold_id)
-         group by pre_fchain_id
-         order by pre_fchain_id) b
-         FULL OUTER JOIN (SELECT chain_id,
-                                 sumKahan(multiIf(event_type = 0,
-                                                  amount_usd[sold_id],
-                                                  event_type = 1,
-                                                  arraySum(mapValues(amount_usd)),
-                                                  event_type = 9,
-                                                  arraySum(mapValues(amount_usd)),
-                                                  event_type = 10,
-                                                  amount_usd[sold_id],
-                                                  0)) as usdTotal
-                          FROM (SELECT *
-                                FROM swap_events
-                                LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)
-                          group by chain_id) s
-                         ON b.pre_fchain_id = s.chain_id
-    SETTINGS join_use_nulls = 1
-`
-
-// const dailyStatisticBridgeSinglePlatform = `
-// SELECT date,
-//
-//	results[1]                   AS ethereum,
-//	results[10]                  AS optimism,
-//	results[25]                  AS cronos,
-//	results[56]                  AS bsc,
-//	results[137]                 AS polygon,
-//	results[250]                 AS fantom,
-//	results[288]                 AS boba,
-//	results[1088]                AS metis,
-//	results[1284]                AS moonbeam,
-//	results[1285]                AS moonriver,
-//	results[8217]                AS klaytn,
-//	results[42161]               AS arbitrum,
-//	results[43114]               AS avalanche,
-//	results[53935]               AS dfk,
-//	results[1313161554]          AS aurora,
-//	results[1666600000]          AS harmony,
-//	results[7700]                AS canto,
-//	results[2000]                AS dogechain,
-//	arraySum(mapValues(results)) AS total
-//
-// FROM (
-//
-//	SELECT date,
-//	       maxMap(map(chain_id, total)) AS results
-//	FROM (SELECT toDate(FROM_UNIXTIME(timestamp, '%Y/%m/%d')) as date,
-//	             chain_id,
-//
-// `.
 const dailyStatisticGenericSinglePlatform = `
 SELECT date,
        results[1]                   AS ethereum,

@@ -42,8 +42,6 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
 export default function address() {
   const router = useRouter()
   const { address } = router.query
-  const search = useSearchParams()
-  const chainId = Number(search.get('chainId')) || 1
 
 
   const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
@@ -92,9 +90,8 @@ export default function address() {
 
   // Get initial data
   useEffect(() => {
-    console.log("address", address)
     setWalletAddress(address)
-    setVariables({ page: 1, addressFrom: address})
+    setVariables({ page: 1, addressFrom: address, useMv: true })
   }, [address])
 
   return (
@@ -102,7 +99,7 @@ export default function address() {
        <h3 className="text-white text-2xl">{walletAddress}</h3>
 
 
-
+      {walletAddress != ""?
       <HolisticStats
         platform={platform}
         loading={false}
@@ -111,9 +108,10 @@ export default function address() {
           platform: platform,
           duration: "ALL_TIME",
           useCache: false,
-          address: walletAddress
+          address: walletAddress,
+           useMv: true
         }}
-      />
+      /> : null}
       <br />
       <HorizontalDivider />
 
@@ -122,7 +120,7 @@ export default function address() {
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
       <div className="h-full flex items-center mt-4">
         <button
-          onClick={() => setVariables({ page: 1, addressFrom: walletAddress })}
+          onClick={() => setVariables({ page: 1, addressFrom: walletAddress, useMv: true })}
 
           className={
             'font-medium rounded-l-md px-4 py-2 border  h-fit  ' +
@@ -133,7 +131,7 @@ export default function address() {
           Outgoing
         </button>
         <button
-          onClick={() => setVariables({ page: 1,  addressTo: walletAddress })
+          onClick={() => setVariables({ page: 1,  addressTo: walletAddress, useMv: true })
           }
 
           className={

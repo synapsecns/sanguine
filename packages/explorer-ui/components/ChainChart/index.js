@@ -26,7 +26,8 @@ export const OverviewChart = ({
   height = 480,
   dailyStatisticType,
   platform,
-  singleChain = false
+  singleChain = false,
+  noTooltipLink = false
 }) => {
   if (loading) {
     return <div className="flex justify-center align-center w-full my-[240px]"><div className='animate-spin'><SynapseLogoSvg /></div></div>
@@ -87,11 +88,11 @@ export const OverviewChart = ({
       toolTipLabelRef.current = label
 
   }
-      return <CurrencyTooltip label={label} names={names} values={values} isUSD={isUSD} dailyStatisticType={dailyStatisticType}  platform={platform} singleChain={singleChain} />
+      return <CurrencyTooltip label={label} names={names} values={values} isUSD={isUSD} dailyStatisticType={dailyStatisticType}  platform={platform} singleChain={singleChain} noTooltipLink={noTooltipLink} />
 
     }
 
-    return <CurrencyTooltip label={toolTipLabelRef.current} names={toolTipNamesRef.current} values={toolTipValuesRef.current} isUSD={isUSD} dailyStatisticType={dailyStatisticType} platform={platform} singleChain={singleChain} />
+    return <CurrencyTooltip label={toolTipLabelRef.current} names={toolTipNamesRef.current} values={toolTipValuesRef.current} isUSD={isUSD} dailyStatisticType={dailyStatisticType} platform={platform} singleChain={singleChain} noTooltipLink={noTooltipLink} />
 
   }
 

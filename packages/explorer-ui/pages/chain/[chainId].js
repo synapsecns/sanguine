@@ -74,7 +74,7 @@ export default function chainId() {
         bridgeTransactionsTable,
         'fromInfo.time',
         ['desc']
-      ).slice(0, 10)
+      ).slice(0, 25)
       setTransactionsArr(bridgeTransactionsTable)
 
     },
@@ -114,8 +114,9 @@ export default function chainId() {
         type: type,
         duration: dailyStatisticDuration,
         platform: platform,
-        useCache: false,
+        useCache: true,
         chainID: chainId,
+        useMv: true
       },
     })
 
@@ -129,11 +130,11 @@ export default function chainId() {
       variables: {
         type: dailyStatisticType,
         duration: dailyStatisticDuration,
-        useCache: false,
+        useCache: true,
         chainID: chainIdRouter,
       },
     })
-    setVariables({ chainIDFrom: chainIdRouter })
+    setVariables({ chainIDFrom: chainIdRouter, useMv: true })
     setChainId(chainIdRouter)
   }, [chainIdRouter])
   let chartData = dailyDataArr
@@ -187,8 +188,9 @@ export default function chainId() {
         baseVariables={{
           platform: platform,
           duration: "ALL_TIME",
-          useCache: false,
+          useCache: true,
           chainID: chainId,
+          useMv: true,
         }}
       />
       <br />
@@ -330,8 +332,8 @@ export default function chainId() {
             }
             showAggregated={false}
             monthlyData={false}
-            currency
             platform={platform}
+            noTooltipLink={true}
           />
         </div>
       </div>
@@ -341,7 +343,7 @@ export default function chainId() {
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
       <div className="h-full flex items-center mt-4">
         <button
-          onClick={() => setVariables({ chainIDFrom: chainId })}
+          onClick={() => setVariables({ chainIDFrom: chainId,useMv: true })}
 
           className={
             'font-medium rounded-l-md px-4 py-2 border  h-fit  ' +
@@ -352,7 +354,7 @@ export default function chainId() {
           Outgoing
         </button>
         <button
-          onClick={() => setVariables({ chainIDTo: chainId })}
+          onClick={() => setVariables({ chainIDTo: chainId,useMv: true })}
 
           className={
             'font-medium rounded-r-md px-4 py-2 border  h-fit ' +

@@ -3,6 +3,7 @@ import { gql } from '@apollo/client'
 const SINGLE_SIDE_INFO_FRAGMENT = gql`
   fragment SingleSideInfo on PartialInfo {
     chainID
+    destinationChainID
     address
     hash: txnHash
     value
@@ -48,6 +49,7 @@ export const GET_BRIDGE_TRANSACTIONS_QUERY = gql`
     $page: Int
     $tokenAddressFrom: [String]
     $tokenAddressTo: [String]
+    $useMv: Boolean
   ) {
     bridgeTransactions(
       chainIDFrom: $chainIDFrom
@@ -64,6 +66,7 @@ export const GET_BRIDGE_TRANSACTIONS_QUERY = gql`
       kappa: $kappa
       pending: $pending
       page: $page
+      useMv: $useMv
       tokenAddressFrom: $tokenAddressFrom
       tokenAddressTo: $tokenAddressTo
     ) {
@@ -164,6 +167,7 @@ export const AMOUNT_STATISTIC = gql`
     $address:       String
     $tokenAddress:  String
     $useCache:  Boolean
+    $useMv: Boolean
   ) {
     amountStatistic(
       type: $type
@@ -173,6 +177,7 @@ export const AMOUNT_STATISTIC = gql`
       address: $address
       tokenAddress: $tokenAddress
       useCache: $useCache
+      useMv: $useMv
     ) {
       value
     }

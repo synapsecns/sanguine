@@ -29,13 +29,6 @@ type BridgeTransaction struct {
 	SwapSuccess *bool        `json:"swapSuccess"`
 }
 
-// DailyResult is a given statistic for dates.
-type DailyResult struct {
-	Total       *float64            `json:"total"`
-	DateResults []*DateResult       `json:"dateResults"`
-	Type        *DailyStatisticType `json:"type"`
-}
-
 // DateResult is a given statistic for a given date.
 type DateResult struct {
 	Date  *string  `json:"date"`

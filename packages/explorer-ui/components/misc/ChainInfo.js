@@ -6,7 +6,6 @@ import { getNetworkTextColor } from '@styles/networks'
 import Image from 'next/image'
 
 export function ChainInfo({
-  keyy,
   chainId,
   imgClassName = 'w-4 h-4 rounded-full',
   linkClassName = 'float-right text-white transition ease-out hover:text-[#8FEBFF] px-1.5  rounded-md ease-in-out bg-[#191919]',

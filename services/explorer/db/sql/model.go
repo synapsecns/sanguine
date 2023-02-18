@@ -447,13 +447,13 @@ type HybridMessageBusEvent struct {
 	//// MessageId is the message id of the event.
 	// FMessageID sql.NullString `gorm:"column:message_id"`
 	//// Message is the message.
-	//FMessage sql.NullString `gorm:"column:message"`
+	// FMessage sql.NullString `gorm:"column:message"`
 	//// TimeStamp is the timestamp in which the record was inserted.
-	//FTimeStamp *uint64 `gorm:"column:timestamp"`
+	// FTimeStamp *uint64 `gorm:"column:timestamp"`
 	//// ChainID is the chain id of the contract that generated the event
-	//TChainID uint32 `gorm:"column:t.chain_id"`
+	// TChainID uint32 `gorm:"column:t.chain_id"`
 	//// BlockNumber is the block number of the event
-	//TBlockNumber uint64 `gorm:"column:t.block_number"`
+	// TBlockNumber uint64 `gorm:"column:t.block_number"`
 	//// TxHash is the transaction hash of the event
 	//TTxHash string `gorm:"column:t.tx_hash"`
 	//// ContractAddress is the address of the contract that generated the event

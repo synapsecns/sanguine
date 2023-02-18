@@ -84,14 +84,113 @@ func (r *queryResolver) mergeBridgeTransactions(origin []*model.BridgeTransactio
 //
 // nolint:unparam
 func generateAddressSpecifierSQL(address *string, firstFilter *bool, tablePrefix string) string {
+	// if address != nil {
+	//	if *firstFilter {
+	//		*firstFilter = false
+	//
+	//		return fmt.Sprintf(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//	}
+	//
+	//	return fmt.Sprintf(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//}
+	//
+	// return ""
 	if address != nil {
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
 		}
 
-		return fmt.Sprintf(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
+	}
+
+	return ""
+}
+
+// generateAddressSpecifierSQL generates a where function with an string.
+//
+// nolint:unparam
+func generateAddressSpecifierSQLMv(address *string, firstFilter *bool, firstInLocale *bool, tablePrefix string) string {
+	// if address != nil {
+	//	if *firstFilter {
+	//		*firstFilter = false
+	//
+	//		return fmt.Sprintf(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//	}
+	//
+	//	return fmt.Sprintf(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//}
+	//
+	// return ""
+	if address != nil {
+		if *firstInLocale {
+			*firstFilter = false
+			*firstInLocale = false
+			return fmt.Sprintf("  %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
+		}
+		if *firstFilter {
+			*firstFilter = false
+
+			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
+		}
+
+		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, sql.SenderFieldName, *address)
+	}
+
+	return ""
+}
+
+func generateRecipientSpecifierSQL(address *string, firstFilter *bool, tablePrefix string) string {
+	// if address != nil {
+	//	if *firstFilter {
+	//		*firstFilter = false
+	//
+	//		return fmt.Sprintf(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//	}
+	//
+	//	return fmt.Sprintf(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//}
+	//
+	// return ""
+	if address != nil {
+		if *firstFilter {
+			*firstFilter = false
+
+			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
+		}
+
+		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
+	}
+
+	return ""
+}
+
+func generateRecipientSpecifierSQLMv(address *string, firstFilter *bool, firstInLocale *bool, tablePrefix string) string {
+	// if address != nil {
+	//	if *firstFilter {
+	//		*firstFilter = false
+	//
+	//		return fmt.Sprintf(" WHERE (%s%s = '%s' OR  %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//	}
+	//
+	//	return fmt.Sprintf(" AND (%s%s = '%s' OR %s%s = '%s')", tablePrefix, sql.RecipientFieldName, *address, tablePrefix, sql.SenderFieldName, *address)
+	//}
+	//
+	// return ""
+	if address != nil {
+		if *firstInLocale {
+			*firstFilter = false
+			*firstInLocale = false
+			return fmt.Sprintf(" %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
+		}
+		if *firstFilter {
+			*firstFilter = false
+
+			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
+		}
+
+		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, sql.RecipientFieldName, *address)
 	}
 
 	return ""
@@ -106,6 +205,32 @@ func generateEqualitySpecifierSQL(value *int, field string, firstFilter *bool, t
 		operator = ">"
 	}
 	if value != nil {
+		if *firstFilter {
+			*firstFilter = false
+
+			return fmt.Sprintf(" WHERE %s%s %s %d", tablePrefix, field, operator, *value)
+		}
+
+		return fmt.Sprintf(" AND %s%s %s %d", tablePrefix, field, operator, *value)
+	}
+
+	return ""
+}
+
+// generateEqualitySpecifierSQL generates a where function with an equality.
+//
+// nolint:unparam
+func generateEqualitySpecifierSQLMv(value *int, field string, firstFilter *bool, firstInLocale *bool, tablePrefix string, greaterThan bool) string {
+	operator := "<"
+	if greaterThan {
+		operator = ">"
+	}
+	if value != nil {
+		if *firstInLocale {
+			*firstFilter = false
+			*firstInLocale = false
+			return fmt.Sprintf(" %s%s %s %d", tablePrefix, field, operator, *value)
+		}
 		if *firstFilter {
 			*firstFilter = false
 
@@ -180,6 +305,34 @@ func generateSingleSpecifierI32ArrSQL(values []*int, field string, firstFilter *
 	return final + ")"
 }
 
+// generateSingleSpecifierI32ArrSQL generates a where function with an uint32.
+//
+// nolint:unparam
+func generateSingleSpecifierI32ArrSQLMv(values []*int, field string, firstFilter *bool, firstInLocale *bool, tablePrefix string) string {
+	if len(values) == 0 {
+		return ""
+	}
+	var final string
+	if *firstInLocale {
+		*firstInLocale = false
+		*firstFilter = false
+		final += " ("
+	} else {
+		if *firstFilter {
+			*firstFilter = false
+			final += " WHERE ("
+		}
+	}
+	for i := range values {
+		final += fmt.Sprintf(" %s%s = %d", tablePrefix, field, *values[i])
+		if i < len(values)-1 {
+			final += " OR "
+		}
+	}
+
+	return final + ")"
+}
+
 // GenerateSingleSpecifierStringSQL generates a where function with a string.
 //
 // nolint:unparam
@@ -198,6 +351,38 @@ func generateSingleSpecifierStringArrSQL(values []*string, field string, firstFi
 	for i := range values {
 		if values[i] != nil {
 			final += fmt.Sprintf(" %s%s = '%s'", tablePrefix, field, *values[i])
+			if i < len(values)-1 {
+				final += " OR "
+			}
+		}
+	}
+
+	return final + ")"
+}
+
+// GenerateSingleSpecifierStringSQL generates a where function with a string.
+//
+// nolint:unparam
+func generateSingleSpecifierStringArrSQLMv(values []*string, field string, firstFilter *bool, firstInLocale *bool, tablePrefix string) string {
+	if len(values) == 0 {
+		return ""
+	}
+	var final string
+	if *firstInLocale {
+		*firstInLocale = false
+		*firstFilter = false
+		final += " ("
+	} else {
+		if *firstFilter {
+			*firstFilter = false
+			final += " WHERE ("
+		} else {
+			final += " AND ("
+		}
+	}
+	for i := range values {
+		if values[i] != nil {
+			final += fmt.Sprintf(" lower(%s%s) = '%s'", tablePrefix, field, *values[i])
 			if i < len(values)-1 {
 				final += " OR "
 			}
@@ -232,6 +417,28 @@ func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *
 		if *firstFilter {
 			*firstFilter = false
 
+			return fmt.Sprintf(" WHERE lower(%s%s) = '%s'", tablePrefix, field, *value)
+		}
+
+		return fmt.Sprintf(" AND lower(%s%s) = '%s'", tablePrefix, field, *value)
+	}
+
+	return ""
+}
+
+// GenerateSingleSpecifierStringSQL generates a where function with a string.
+//
+// nolint:unparam
+func generateSingleSpecifierStringSQLMv(value *string, field string, firstFilter *bool, firstLocale *bool, tablePrefix string) string {
+	if value != nil {
+		if *firstLocale {
+			*firstFilter = false
+			*firstLocale = false
+			return fmt.Sprintf(" %s%s = '%s'", tablePrefix, field, *value)
+		}
+		if *firstFilter {
+			*firstFilter = false
+
 			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, field, *value)
 		}
 
@@ -251,6 +458,26 @@ func generateKappaSpecifierSQL(value *string, field string, firstFilter *bool, t
 		}
 
 		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, field, *value)
+	}
+
+	return ""
+}
+
+// generateKappaSpecifierSQL generates a where function with a string.
+func generateKappaSpecifierSQLMv(value *string, field string, firstFilter *bool, firstInLocale *bool, tablePrefix string) string {
+	if value != nil {
+		if *firstInLocale {
+			*firstFilter = false
+			*firstInLocale = false
+			return fmt.Sprintf(" lower(%s%s) = '%s'", tablePrefix, field, *value)
+		}
+		if *firstFilter {
+			*firstFilter = false
+
+			return fmt.Sprintf(" WHERE lower(%s%s) = '%s'", tablePrefix, field, *value)
+		}
+
+		return fmt.Sprintf(" AND lower(%s%s) = '%s'", tablePrefix, field, *value)
 	}
 
 	return ""
@@ -304,13 +531,14 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 // GetPartialInfoFromBridgeEventHybrid returns the partial info from bridge event.
 //
 // nolint:cyclop
-func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, includePending bool) (*model.BridgeTransaction, error) {
-	if includePending && bridgeEvent.TTxHash != "" {
+func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, includePending *bool) (*model.BridgeTransaction, error) {
+	if includePending != nil && *includePending && bridgeEvent.TTxHash != "" {
 		// nolint:nilnil
 		return nil, nil
 	}
 	var bridgeTx model.BridgeTransaction
 	fromChainID := int(bridgeEvent.FChainID)
+	fromDestinationChainID := int(bridgeEvent.FDestinationChainID.Uint64())
 	fromBlockNumber := int(bridgeEvent.FBlockNumber)
 	fromValue := bridgeEvent.FAmount.String()
 	var fromTimestamp int
@@ -329,17 +557,18 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	}
 
 	fromInfos := &model.PartialInfo{
-		ChainID:        &fromChainID,
-		Address:        &bridgeEvent.FRecipient.String,
-		TxnHash:        &bridgeEvent.FTxHash,
-		Value:          &fromValue,
-		FormattedValue: fromFormattedValue,
-		USDValue:       bridgeEvent.FAmountUSD,
-		TokenAddress:   &bridgeEvent.FToken,
-		TokenSymbol:    &bridgeEvent.FTokenSymbol.String,
-		BlockNumber:    &fromBlockNumber,
-		Time:           &fromTimestamp,
-		FormattedTime:  &fromTimeStampFormatted,
+		ChainID:            &fromChainID,
+		DestinationChainID: &fromDestinationChainID,
+		Address:            &bridgeEvent.FRecipient.String,
+		TxnHash:            &bridgeEvent.FTxHash,
+		Value:              &fromValue,
+		FormattedValue:     fromFormattedValue,
+		USDValue:           bridgeEvent.FAmountUSD,
+		TokenAddress:       &bridgeEvent.FToken,
+		TokenSymbol:        &bridgeEvent.FTokenSymbol.String,
+		BlockNumber:        &fromBlockNumber,
+		Time:               &fromTimestamp,
+		FormattedTime:      &fromTimeStampFormatted,
 	}
 
 	// If not pending, return a destination partial, otherwise toInfos will be null.
@@ -386,7 +615,7 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	if bridgeEvent.TSwapSuccess.Uint64() == 1 {
 		swapSuccess = true
 	}
-	if !includePending && pending {
+	if includePending != nil && !*includePending && pending {
 		// nolint:nilnil
 		return nil, nil
 	}
@@ -468,10 +697,55 @@ func generateAllBridgeEventsQueryFromDestination(chainIDTo []*int, chainIDFrom [
 	return fmt.Sprintf("%s SELECT * FROM (SELECT %s FROM %s %s %s %s) %s LIMIT %d OFFSET %d", generateDeDepQueryCTE(toFilters, nil, nil, false), destToOriginCol, "baseQuery", destToOriginJoinsPt1, fromFilters, destToOriginJoinsPt2, postJoinFilters, pageValue, pageOffset)
 }
 
+func generateAllBridgeEventsQueryFromDestinationMv(chainIDTo []*int, addressTo *string, minAmount *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressTo []*string, kappa *string, txHash *string, pending *bool, page int, in bool) string {
+	firstFilter := true
+	chainIDToFilter := generateSingleSpecifierI32ArrSQL(chainIDTo, sql.ChainIDFieldName, &firstFilter, "t")
+	minTimeFilter := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "t", true)
+	maxTimeFilter := generateEqualitySpecifierSQL(endTime, sql.TimeStampFieldName, &firstFilter, "t", false)
+	addressToFilter := generateRecipientSpecifierSQL(addressTo, &firstFilter, "t")
+	kappaFilter := generateKappaSpecifierSQL(kappa, sql.KappaFieldName, &firstFilter, "t")
+	txHashFilter := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "t")
+	minAmountFilter := generateEqualitySpecifierSQL(minAmount, "tamount", &firstFilter, "", true)
+	minAmountFilterUsd := generateEqualitySpecifierSQL(minAmountUsd, "tamount_usd", &firstFilter, "", true)
+	tokenAddressToFilter := generateSingleSpecifierStringArrSQL(tokenAddressTo, "ttoken", &firstFilter, "")
+
+	// firstFilter = false
+	// chainIDFromFilter := generateSingleSpecifierI32ArrSQL(chainIDFrom, sql.ChainIDFieldName, &firstFilter, "")
+	// addressFromFilter := generateAddressSpecifierSQL(addressFrom, &firstFilter, "")
+	// maxAmountFilter := generateEqualitySpecifierSQL(maxAmount, "famount", &firstFilter, "", false)
+	//maxAmountFilterUsd := generateEqualitySpecifierSQL(maxAmountUsd, "famount_usd", &firstFilter, "", false)
+	//tokenAddressFromFilter := generateSingleSpecifierStringArrSQL(tokenAddressFrom, "ftoken", &firstFilter, "")
+
+	// fromFilters := chainIDFromFilter + addressFromFilter
+
+	// firstFilter = true
+	// minAmountFilter := generateEqualitySpecifierSQL(minAmount, "tamount", &firstFilter, "", true)
+	// minAmountFilterUsd := generateEqualitySpecifierSQL(minAmountUsd, "tamount_usd", &firstFilter, "", true)
+	pendingFilter := ""
+	if pending != nil {
+		prefix := " AND "
+		if firstFilter {
+			prefix = " WHERE "
+		}
+		if *pending {
+			pendingFilter = prefix + "fdestination_kappa = ''"
+		} else {
+			pendingFilter = prefix + "fdestination_tkappa != ''"
+		}
+	}
+
+	toFilters := chainIDToFilter + minTimeFilter + maxTimeFilter + addressToFilter + kappaFilter + txHashFilter + minAmountFilter + minAmountFilterUsd + tokenAddressToFilter + pendingFilter
+
+	pageValue := sql.PageSize
+	pageOffset := (page - 1) * sql.PageSize
+
+	return fmt.Sprintf("SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash LIMIT %d OFFSET %d ", toFilters, pageValue, pageOffset)
+}
+
 // generateAllBridgeEventsQueryFromOrigin gets all the filters for query from origin.
 //
 // nolint:dupl
-func generateAllBridgeEventsQueryFromOrigin(chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, txHash *string, page int, pending bool, in bool) string {
+func generateAllBridgeEventsQueryFromOrigin(chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, txHash *string, pending *bool, page int, in bool) string {
 	firstFilter := true
 	chainIDFromFilter := generateSingleSpecifierI32ArrSQL(chainIDFrom, sql.ChainIDFieldName, &firstFilter, "")
 	minTimeFilter := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "", true)
@@ -497,7 +771,7 @@ func generateAllBridgeEventsQueryFromOrigin(chainIDFrom []*int, chainIDTo []*int
 	tokenAddressFromFilter := generateSingleSpecifierStringArrSQL(tokenAddressFrom, "ftoken", &firstFilter, "")
 
 	operation := " = ''"
-	if !pending {
+	if pending != nil && !*pending {
 		operation = " != ''"
 	}
 	pendingFilter := fmt.Sprintf(" WHERE t%s %s", sql.KappaFieldName, operation)
@@ -505,16 +779,111 @@ func generateAllBridgeEventsQueryFromOrigin(chainIDFrom []*int, chainIDTo []*int
 
 	pageValue := sql.PageSize
 	pageOffset := (page - 1) * sql.PageSize
-	if !pending && postJoinFilters == "" {
+	if pending != nil && !*pending && postJoinFilters == "" {
 		return fmt.Sprintf("%s SELECT %s FROM %s %s %s %s", generateDeDepQueryCTE(fromFilters, &pageValue, &pageOffset, false), originToDestCol, "baseQuery", originToDestJoinsPt1, toFilters, originToDestJoinsPt2)
 	}
 	return fmt.Sprintf("%s SELECT * FROM (SELECT %s FROM %s %s %s %s) %s LIMIT %d OFFSET %d", generateDeDepQueryCTE(fromFilters, nil, nil, false), originToDestCol, "baseQuery", originToDestJoinsPt1, toFilters, originToDestJoinsPt2, pendingFilter+postJoinFilters, pageValue, pageOffset)
 }
 
-func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, kappa *string, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) ([]*model.BridgeTransaction, error) {
+// generateAllBridgeEventsQueryFromOriginMv gets all the filters for query from origin.
+//
+// nolint:dupl
+func generateAllBridgeEventsQueryFromOriginMv(chainIDFrom []*int, addressFrom *string, maxAmount *int, maxAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, txHash *string, kappa *string, pending *bool, page int, in bool) string {
+	firstFilter := true
+	chainIDFromFilter := generateSingleSpecifierI32ArrSQL(chainIDFrom, sql.ChainIDFieldName, &firstFilter, "f")
+	minTimeFilter := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "f", true)
+	maxTimeFilter := generateEqualitySpecifierSQL(endTime, sql.TimeStampFieldName, &firstFilter, "f", false)
+	addressFromFilter := generateAddressSpecifierSQL(addressFrom, &firstFilter, "f")
+	txHashFilter := generateSingleSpecifierStringSQL(txHash, sql.TxHashFieldName, &firstFilter, "f")
+	tokenAddressFromFilter := generateSingleSpecifierStringArrSQL(tokenAddressFrom, "ftoken", &firstFilter, "")
+	maxAmountFilter := generateEqualitySpecifierSQL(maxAmount, "famount", &firstFilter, "", false)
+	maxAmountFilterUsd := generateEqualitySpecifierSQL(maxAmountUsd, "famount_usd", &firstFilter, "", false)
+	kappaFilter := generateKappaSpecifierSQL(kappa, sql.DestinationKappaFieldName, &firstFilter, "f")
+	// firstFilter = false
+	// chainIDToFilter := generateSingleSpecifierI32ArrSQL(chainIDTo, sql.ChainIDFieldName, &firstFilter, "")
+	// addressToFilter := generateAddressSpecifierSQL(addressTo, &firstFilter, "")
+	// minAmountFilter := generateEqualitySpecifierSQL(minAmount, "tamount", &firstFilter, "", true)
+	//minAmountFilterUsd := generateEqualitySpecifierSQL(minAmountUsd, "tamount_usd", &firstFilter, "", true)
+	//tokenAddressToFilter := generateSingleSpecifierStringArrSQL(tokenAddressTo, "ttoken", &firstFilter, "")
+
+	pendingFilter := ""
+	if pending != nil {
+		prefix := " AND "
+		if firstFilter {
+			prefix = " WHERE "
+		}
+		if *pending {
+			pendingFilter = prefix + "tkappa = ''"
+		} else {
+			pendingFilter = prefix + "tkappa != ''"
+		}
+	}
+
+	fromFilters := chainIDFromFilter + minTimeFilter + maxTimeFilter + addressFromFilter + txHashFilter + tokenAddressFromFilter + maxAmountFilter + maxAmountFilterUsd + pendingFilter + kappaFilter
+	pageValue := sql.PageSize
+	pageOffset := (page - 1) * sql.PageSize
+	return fmt.Sprintf("SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash LIMIT %d OFFSET %d ", fromFilters, pageValue, pageOffset)
+}
+func generateAllBridgeEventsQueryMv(chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, tokenAddressTo []*string, txHash *string, kappa *string, pending *bool, page int) string {
+	firstFilter := true
+	firstInLocale := true
+	chainIDFromFilter := generateSingleSpecifierI32ArrSQLMv(chainIDFrom, sql.ChainIDFieldName, &firstFilter, &firstInLocale, "f")
+	addressFromFilter := generateAddressSpecifierSQLMv(addressFrom, &firstFilter, &firstInLocale, "f")
+	txHashFromFilter := generateSingleSpecifierStringSQLMv(txHash, sql.TxHashFieldName, &firstFilter, &firstInLocale, "f")
+	tokenAddressFromFilter := generateSingleSpecifierStringArrSQLMv(tokenAddressFrom, sql.TokenFieldName, &firstFilter, &firstInLocale, "f")
+	maxAmountFilter := generateEqualitySpecifierSQLMv(maxAmount, sql.AmountFieldName, &firstFilter, &firstInLocale, "f", false)
+	maxAmountFilterUsd := generateEqualitySpecifierSQLMv(maxAmountUsd, sql.AmountUSDFieldName, &firstFilter, &firstInLocale, "f", false)
+	kappaFromFilter := generateKappaSpecifierSQLMv(kappa, sql.DestinationKappaFieldName, &firstFilter, &firstInLocale, "f")
+	// firstFilter = false
+	firstInLocale = true
+	chainIDToFilter := generateSingleSpecifierI32ArrSQLMv(chainIDTo, sql.ChainIDFieldName, &firstFilter, &firstInLocale, "t")
+	addressToFilter := generateRecipientSpecifierSQLMv(addressTo, &firstFilter, &firstInLocale, "t")
+	txHashToFilter := generateSingleSpecifierStringSQLMv(txHash, sql.TxHashFieldName, &firstFilter, &firstInLocale, "t")
+	tokenAddressToFilter := generateSingleSpecifierStringArrSQLMv(tokenAddressTo, sql.TokenFieldName, &firstFilter, &firstInLocale, "t")
+	minAmountFilter := generateEqualitySpecifierSQLMv(minAmount, sql.AmountFieldName, &firstFilter, &firstInLocale, "t", true)
+	minAmountFilterUsd := generateEqualitySpecifierSQLMv(minAmountUsd, sql.AmountUSDFieldName, &firstFilter, &firstInLocale, "t", true)
+	kappaToFilter := generateKappaSpecifierSQLMv(kappa, sql.KappaFieldName, &firstFilter, &firstInLocale, "t")
+
+	toFilters := chainIDFromFilter + addressFromFilter + txHashFromFilter + tokenAddressFromFilter + maxAmountFilter + maxAmountFilterUsd + kappaFromFilter
+	fromFilters := chainIDToFilter + addressToFilter + txHashToFilter + tokenAddressToFilter + minAmountFilter + minAmountFilterUsd + kappaToFilter
+
+	minTimeFilter := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "f", true)
+	maxTimeFilter := generateEqualitySpecifierSQL(endTime, sql.TimeStampFieldName, &firstFilter, "f", false)
+
+	var allFilters string
+	if fromFilters != "" && toFilters != "" {
+		allFilters = fmt.Sprintf("WHERE ((%s) OR (%s)) %s", fromFilters, toFilters, minTimeFilter+maxTimeFilter)
+	} else if fromFilters != "" && toFilters == "" {
+		allFilters = fmt.Sprintf("WHERE (%s) %s", fromFilters, minTimeFilter+maxTimeFilter)
+	} else if fromFilters == "" && toFilters != "" {
+		allFilters = fmt.Sprintf("WHERE (%s) %s ", toFilters, minTimeFilter+maxTimeFilter)
+	} else {
+		allFilters = minTimeFilter + maxTimeFilter
+	}
+	var pendingFilter string
+	if pending != nil {
+		if *pending {
+			pendingFilter = "WHERE tkappa = ''"
+		} else {
+			pendingFilter = " WHERE tkappa != ''"
+		}
+	}
+	pageValue := sql.PageSize
+	pageOffset := (page - 1) * sql.PageSize
+	return fmt.Sprintf("SELECT * FROM(SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) %s LIMIT %d OFFSET %d ", allFilters, pendingFilter, pageValue, pageOffset)
+}
+func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, useMv *bool, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, kappa *string, tokenAddressFrom []*string, tokenAddressTo []*string, page *int, pending *bool) ([]*model.BridgeTransaction, error) {
 	var err error
 	var results []*model.BridgeTransaction
-	query := generateAllBridgeEventsQueryFromDestination(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, kappa, txHash, *page, false)
+	var query string
+	if useMv != nil && *useMv {
+		if chainIDTo == nil && addressTo == nil && minAmount == nil && minAmountUsd == nil && startTime == nil && endTime == nil && tokenAddressTo == nil && kappa == nil && txHash == nil {
+			return nil, nil
+		}
+		query = generateAllBridgeEventsQueryFromDestinationMv(chainIDTo, addressTo, minAmount, minAmountUsd, startTime, endTime, tokenAddressTo, kappa, txHash, pending, *page, false)
+	} else {
+		query = generateAllBridgeEventsQueryFromDestination(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, kappa, txHash, *page, false)
+	}
 	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
 
 	if err != nil {
@@ -526,7 +895,7 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID
 
 	// Iterate through all bridge events and return all partials
 	for i := range allBridgeEvents {
-		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], false)
+		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
 		}
@@ -537,44 +906,16 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, chainID
 	return results, nil
 }
 
-//
-//// nolint:gocognit,cyclop
-// func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainID []*int, address *string, maxAmount *int, minAmount *int, startTime *int, endTime *int, txHash *string, page *int, tokenAddress []*string, pending bool, latest bool) ([]*model.BridgeTransaction, error) {
-//	var err error
-//	var chainMap = make(map[uint32]bool)
-//	var results []*model.BridgeTransaction
-//	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, generateAllBridgeEventsQueryFromOrigin2(chainID, address, maxAmount, minAmount, startTime, endTime, tokenAddress, txHash, *page, true))
-//
-//	if err != nil {
-//		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
-//	}
-//	if len(allBridgeEvents) == 0 {
-//		return nil, nil
-//	}
-//
-//	// Iterate through all bridge events and return all partials
-//	for i := range allBridgeEvents {
-//		if latest && chainMap[allBridgeEvents[i].FChainID] {
-//			continue
-//		}
-//
-//		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], pending)
-//		if err != nil {
-//			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
-//		}
-//		if bridgeTx != nil {
-//			results = append(results, bridgeTx)
-//			chainMap[allBridgeEvents[i].FChainID] = true
-//		}
-//	}
-//	return results, nil
-//}
-
-func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainIDTo []*int, chainIDFrom []*int, addressTo *string, addressFrom *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, page *int, tokenAddressTo []*string, tokenAddressFrom []*string, pending bool, latest bool) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, useMv *bool, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, tokenAddressTo []*string, tokenAddressFrom []*string, kappa *string, pending *bool, page *int, latest bool) ([]*model.BridgeTransaction, error) {
 	var err error
 	var chainMap = make(map[uint32]bool)
 	var results []*model.BridgeTransaction
-	query := generateAllBridgeEventsQueryFromOrigin(chainIDTo, chainIDFrom, addressTo, addressFrom, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, txHash, *page, pending, true)
+	var query string
+	if useMv != nil && *useMv {
+		query = generateAllBridgeEventsQueryFromOriginMv(chainIDFrom, addressFrom, maxAmount, maxAmountUsd, startTime, endTime, tokenAddressFrom, txHash, kappa, pending, *page, true)
+	} else {
+		query = generateAllBridgeEventsQueryFromOrigin(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, txHash, pending, *page, true)
+	}
 	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
 
 	if err != nil {
@@ -597,6 +938,33 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, chainIDTo []
 		if bridgeTx != nil {
 			results = append(results, bridgeTx)
 			chainMap[allBridgeEvents[i].FChainID] = true
+		}
+	}
+	return results, nil
+}
+
+func (r *queryResolver) GetBridgeTxs(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, tokenAddressTo []*string, tokenAddressFrom []*string, kappa *string, pending *bool, page *int) ([]*model.BridgeTransaction, error) {
+	var err error
+	var results []*model.BridgeTransaction
+	var query string
+	query = generateAllBridgeEventsQueryMv(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, txHash, kappa, pending, *page)
+	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get destinationbridge events from identifiers: %w", err)
+	}
+	if len(allBridgeEvents) == 0 {
+		return nil, nil
+	}
+
+	// Iterate through all bridge events and return all partials
+	for i := range allBridgeEvents {
+		bridgeTx, err := GetPartialInfoFromBridgeEventHybrid(allBridgeEvents[i], pending)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get partial info from bridge event: %w", err)
+		}
+		if bridgeTx != nil {
+			results = append(results, bridgeTx)
 		}
 	}
 	return results, nil
@@ -790,89 +1158,81 @@ func GenerateDailyStatisticMessageBusSQL(typeArg *model.DailyStatisticType, comp
 	return &subQuery, &query, nil
 }
 
-func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, compositeFilters string, firstFilter *bool, tokenAddressSpecifier string) (*string, error) {
+func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, address *string, chainID *int, tokenAddress *string, compositeFilters string) (*string, error) {
 	var operation string
 	var finalSQL string
+	firstFilter2 := true
+	addressFilter := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter2, "f")
+	chainIDFilter := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter2, "f")
+	tokenAddressFilter := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter2, "f")
+	compositeFilters = addressFilter + chainIDFilter + tokenAddressFilter
 	switch typeArg {
 	case model.StatisticTypeMeanVolumeUsd:
-		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-		compositeFilters += directionSpecifier
-		operation = fmt.Sprintf("AVG(%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
+		operation = fmt.Sprintf("AVG(f%s)", sql.AmountUSDFieldName)
+		finalSQL = fmt.Sprintf("SELECT %s from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)  ", operation, compositeFilters)
 	case model.StatisticTypeMedianVolumeUsd:
-		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-		compositeFilters += directionSpecifier
-		operation = fmt.Sprintf("median(%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
+		operation = fmt.Sprintf("median(f%s)", sql.AmountUSDFieldName)
+		finalSQL = fmt.Sprintf("SELECT %s FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash  ", operation, compositeFilters)
 	case model.StatisticTypeTotalVolumeUsd:
-		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-		compositeFilters += directionSpecifier
-		operation = fmt.Sprintf("sumKahan(%s)", sql.AmountUSDFieldName)
-		finalSQL = fmt.Sprintf("%s SELECT %s FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), operation, singleSideCol, "baseQuery", singleSideJoinsCTE)
+		operation = fmt.Sprintf("sumKahan(f%s)", sql.AmountUSDFieldName)
+		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 	case model.StatisticTypeCountTransactions:
-		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-		compositeFilters += directionSpecifier
-		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil))
+		operation = fmt.Sprintf("uniq(f%s, f%s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
+		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 	case model.StatisticTypeCountAddresses:
-		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-		compositeFilters += directionSpecifier
-		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s)", operation, generateDeDepQuery(compositeFilters, nil, nil))
+		operation = fmt.Sprintf("uniq(f%s, f%s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
+		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 	case model.StatisticTypeMeanFeeUsd:
-		operation = fmt.Sprintf("AVG(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseBridge, compositeFilters)
+		operation = fmt.Sprintf("AVG(%s)", "tfee_amount_usd")
+		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 	case model.StatisticTypeMedianFeeUsd:
-		operation = fmt.Sprintf("median(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseBridge, compositeFilters)
+		operation = fmt.Sprintf("median(%s)", "tfee_amount_usd")
+		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 	case model.StatisticTypeTotalFeeUsd:
-		operation = fmt.Sprintf("sumKahan(%s)", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseBridge, compositeFilters)
+		operation = fmt.Sprintf("sumKahan(%s)", "tfee_amount_usd")
+		finalSQL = fmt.Sprintf("SELECT %s from ( select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)", operation, compositeFilters)
 
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
 	return &finalSQL, nil
 }
-func GenerateAmountStatisticSwapSQL(typeArg model.StatisticType, compositeFilters string, tokenAddressSpecifier string) (*string, error) {
+
+func GenerateAmountStatisticSwapSQL(typeArg model.StatisticType, compositeFilters string, tokenAddress *string) (*string, error) {
 	var operation string
 	var finalSQL string
+
 	switch typeArg {
 	case model.StatisticTypeMeanVolumeUsd:
 		operation = fmt.Sprintf("AVG(%s)", swapVolumeSelect)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeMedianVolumeUsd:
 		operation = fmt.Sprintf("median(%s)", swapVolumeSelect)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeTotalVolumeUsd:
 		operation = fmt.Sprintf("sumKahan(%s)", swapVolumeSelect)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeCountTransactions:
 		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeCountAddresses:
 		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.SenderFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeMeanFeeUsd:
 		operation = fmt.Sprintf("AVG(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeMedianFeeUsd:
 		operation = fmt.Sprintf("median(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	case model.StatisticTypeTotalFeeUsd:
 		operation = fmt.Sprintf("sumKahan(arraySum(mapValues(%s)))", sql.FeeUSDFieldName)
-		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseSwap, compositeFilters)
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
-
+	if tokenAddress == nil {
+		finalSQL = fmt.Sprintf("SELECT %s FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash)", operation, compositeFilters)
+	} else {
+		firstFilter := true
+		tokenAddressSpecifier := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter, "")
+		finalSQL = fmt.Sprintf("SELECT %s FROM (%s %s %s %s", operation, baseSwapWithTokenPt1, compositeFilters, baseSwapWithTokenPt2, tokenAddressSpecifier)
+	}
 	return &finalSQL, nil
 }
 
-func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, compositeFilters string, tokenAddressSpecifier string) (*string, error) {
-	if tokenAddressSpecifier != "" {
-		return nil, fmt.Errorf("cannot filter by token on message bus events")
-	}
+func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, compositeFilters string) (*string, error) {
 	var operation string
 	var finalSQL string
 	switch typeArg {
@@ -900,6 +1260,7 @@ func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, composite
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
+	fmt.Println("MESG", finalSQL)
 	return &finalSQL, nil
 }
 
