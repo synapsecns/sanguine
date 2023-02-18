@@ -1796,10 +1796,36 @@
   "resolved" "https://registry.npmjs.org/@sinclair/typebox/-/typebox-0.24.51.tgz"
   "version" "0.24.51"
 
-"@storybook/addon-actions@^6.5.15", "@storybook/addon-actions@6.5.15":
-  "integrity" "sha512-cnLzVK1S+EydFDSuvxMmMAxVqNXijBGdV9QTgsu6ys5sOkoiXRETKZmxuN8/ZRbkfc4N+1KAylSCZOOHzBQTBQ=="
-  "resolved" "https://registry.npmjs.org/@storybook/addon-actions/-/addon-actions-6.5.15.tgz"
-  "version" "6.5.15"
+"@sindresorhus/is@^0.14.0":
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
+  integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
+
+"@solidity-parser/parser@^0.14.0", "@solidity-parser/parser@^0.14.1":
+  version "0.14.1"
+  resolved "https://registry.yarnpkg.com/@solidity-parser/parser/-/parser-0.14.1.tgz#179afb29f4e295a77cc141151f26b3848abc3c46"
+  integrity sha512-eLjj2L6AuQjBB6s/ibwCAc0DwrR5Ge+ys+wgWo+bviU7fV2nTMQhU63CGaDKXg9iTmMxwhkyoggdIR7ZGRfMgw==
+  dependencies:
+    antlr4ts "^0.5.0-alpha.4"
+
+"@solidity-parser/parser@^0.14.3":
+  version "0.14.3"
+  resolved "https://registry.yarnpkg.com/@solidity-parser/parser/-/parser-0.14.3.tgz#0d627427b35a40d8521aaa933cc3df7d07bfa36f"
+  integrity sha512-29g2SZ29HtsqA58pLCtopI1P/cPy5/UAzlcAXO6T/CNJimG6yA8kx4NaseMyJULiC+TEs02Y9/yeHzClqoA0hw==
+  dependencies:
+    antlr4ts "^0.5.0-alpha.4"
+
+"@solidity-parser/parser@^0.14.5":
+  version "0.14.5"
+  resolved "https://registry.yarnpkg.com/@solidity-parser/parser/-/parser-0.14.5.tgz#87bc3cc7b068e08195c219c91cd8ddff5ef1a804"
+  integrity sha512-6dKnHZn7fg/iQATVEzqyUOyEidbn05q7YA2mQ9hC0MMXhhV3/JrsxmFSYZAcr7j1yUP700LLhTruvJ3MiQmjJg==
+  dependencies:
+    antlr4ts "^0.5.0-alpha.4"
+
+"@storybook/addon-actions@6.5.15", "@storybook/addon-actions@^6.5.15":
+  version "6.5.15"
+  resolved "https://registry.yarnpkg.com/@storybook/addon-actions/-/addon-actions-6.5.15.tgz#ba737561dbf8a358ea8bc588f3da9fddd1a4267e"
+  integrity sha512-cnLzVK1S+EydFDSuvxMmMAxVqNXijBGdV9QTgsu6ys5sOkoiXRETKZmxuN8/ZRbkfc4N+1KAylSCZOOHzBQTBQ==
   dependencies:
     "@storybook/addons" "6.5.15"
     "@storybook/api" "6.5.15"
@@ -10739,23 +10765,27 @@
   dependencies:
     "escape-string-regexp" "^2.0.0"
 
-"stackframe@^1.3.4":
-  "integrity" "sha512-oeVtt7eWQS+Na6F//S4kJ2K2VbRlS9D43mAlMyVpVWovy9o+jfgH8O9agzANzaiLjclA0oYzUXEM4PurhSUChw=="
-  "resolved" "https://registry.npmjs.org/stackframe/-/stackframe-1.3.4.tgz"
-  "version" "1.3.4"
-
-"state-toggle@^1.0.0":
-  "integrity" "sha512-d/5Z4/2iiCnHw6Xzghyhb+GcmF89bxwgXG60wjIiZaxnymbyOmI8Hk4VqHXiVVp6u2ysaskFfXg3ekCj4WNftQ=="
-  "resolved" "https://registry.npmjs.org/state-toggle/-/state-toggle-1.0.3.tgz"
-  "version" "1.0.3"
-
-"static-extend@^0.1.1":
-  "integrity" "sha512-72E9+uLc27Mt718pMHt9VMNiAL4LMsmDbBva8mxWUCkT07fSzEGMYUCk0XWY6lp0j6RBAG4cJ3mWuZv2OE3s0g=="
-  "resolved" "https://registry.npmjs.org/static-extend/-/static-extend-0.1.2.tgz"
-  "version" "0.1.2"
+solhint@3.3.8:
+  version "3.3.8"
+  resolved "https://registry.yarnpkg.com/solhint/-/solhint-3.3.8.tgz#b1773c881cfaf0b5008c78ad658a69603d3fa051"
+  integrity sha512-TkYyJ6uUJCaiqRKuhHhFuoAoyco9Ia+RDKhl3usjG/rkaNk8/LdLRla2Xln7MVdBTaPKNAU8ezTRSit50Yy4qw==
   dependencies:
-    "define-property" "^0.2.5"
-    "object-copy" "^0.1.0"
+    "@solidity-parser/parser" "^0.14.5"
+    ajv "^6.6.1"
+    antlr4 "4.7.1"
+    ast-parents "0.0.1"
+    chalk "^2.4.2"
+    commander "2.18.0"
+    cosmiconfig "^5.0.7"
+    eslint "^5.6.0"
+    fast-diff "^1.1.2"
+    glob "^7.1.3"
+    ignore "^4.0.6"
+    js-yaml "^3.12.0"
+    lodash "^4.17.11"
+    semver "^6.3.0"
+  optionalDependencies:
+    prettier "^1.14.3"
 
 "statuses@2.0.1":
   "integrity" "sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ=="
