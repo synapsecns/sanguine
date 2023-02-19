@@ -47,7 +47,8 @@ func (r *queryResolver) getDirectionIn(direction *model.Direction) bool {
 	return directionIn
 }
 
-func (r *queryResolver) getTargetTime(hours *int) uint64 {
+// GetTargetTime converts the number of hours into a timestamp.
+func GetTargetTime(hours *int) uint64 {
 	var targetTime uint64
 
 	if hours == nil {
@@ -1343,4 +1344,97 @@ func (r *queryResolver) getDateResultByChainFromCache(key string) ([]*model.Date
 		return res, nil
 	}
 	return nil, fmt.Errorf("could not get cached data")
+}
+
+// GetDurationFilter creates a filter for the various time ranges for analysis.
+func GetDurationFilter(duration *model.Duration, firstFilter *bool) string {
+	var timestampSpecifier string
+	switch *duration {
+	case model.DurationPastDay:
+		hours := 24
+		targetTime := GetTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, "")
+	case model.DurationPastMonth:
+		hours := 720
+		targetTime := GetTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, "")
+	case model.DurationPast3Months:
+		hours := 2190
+		targetTime := GetTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, "")
+	case model.DurationPast6Months:
+		hours := 4380
+		targetTime := GetTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, "")
+	case model.DurationPastYear:
+		hours := 8760
+		targetTime := GetTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, "")
+	case model.DurationAllTime:
+		timestampSpecifier = ""
+	}
+	return timestampSpecifier
+}
+
+// nolint:cyclop
+func (r *queryResolver) getAmountStatisticsAll(ctx context.Context, typeArg model.StatisticType, chainID *int, address *string, tokenAddress *string, compositeFilters string) (*string, error) {
+	if typeArg == model.StatisticTypeMedianVolumeUsd || typeArg == model.StatisticTypeMeanVolumeUsd || typeArg == model.StatisticTypeMedianFeeUsd || typeArg == model.StatisticTypeMeanFeeUsd {
+		return nil, fmt.Errorf("cannot calculate averages or medians across all platforms")
+	}
+	var bridgeFinalSQL *string
+	var swapFinalSQL *string
+	var messageBusFinalSQL *string
+	var err error
+	var bridgeSum float64
+	var swapSum float64
+	var messageBusSum float64
+
+	bridgeFinalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, address, chainID, tokenAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	swapFinalSQL, err = GenerateAmountStatisticSwapSQL(typeArg, compositeFilters, tokenAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	g, groupCtx := errgroup.WithContext(ctx)
+
+	if tokenAddress == nil && typeArg != model.StatisticTypeTotalVolumeUsd && typeArg != model.StatisticTypeMedianVolumeUsd && typeArg != model.StatisticTypeMeanVolumeUsd {
+		messageBusFinalSQL, err = GenerateAmountStatisticMessageBusSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
+		g.Go(func() error {
+			messageBusSum, err = r.DB.GetFloat64(groupCtx, *messageBusFinalSQL)
+
+			if err != nil {
+				return fmt.Errorf("failed to get dateResults: %w", err)
+			}
+			return nil
+		})
+	}
+	g.Go(func() error {
+		bridgeSum, err = r.DB.GetFloat64(groupCtx, *bridgeFinalSQL)
+		if err != nil {
+			return fmt.Errorf("failed to get dateResults: %w", err)
+		}
+		return nil
+	})
+	g.Go(func() error {
+		swapSum, err = r.DB.GetFloat64(groupCtx, *swapFinalSQL)
+		if err != nil {
+			return fmt.Errorf("failed to get dateResults: %w", err)
+		}
+
+		return nil
+	})
+
+	err = g.Wait()
+	if err != nil {
+		return nil, fmt.Errorf("error getting data from all platforms, %w", err)
+	}
+	value := fmt.Sprintf("%f", bridgeSum+swapSum+messageBusSum)
+	return &value, nil
 }
