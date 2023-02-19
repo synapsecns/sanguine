@@ -155,7 +155,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 	var endHeight uint64
 	err = c.retryWithBackoff(parentCtx, func(ctx context.Context) error {
 		endHeight, err = c.Fetcher.FetchLastIndexed(parentCtx, c.chainConfig.ChainID, contract.Address)
-		return err
+		return fmt.Errorf("could not get last indexed height, %w", err)
 	})
 	if err != nil {
 		return fmt.Errorf("could not get last indexed for contract %s: %w", contract.Address, err)
@@ -226,7 +226,8 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 
 		// Store the last block in clickhouse
 		err = c.retryWithBackoff(parentCtx, func(ctx context.Context) error {
-			return c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
+			err = c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
+			return fmt.Errorf("error storing last block, %w", err)
 		})
 		if err != nil {
 			logger.Errorf("could not store last block for chain %d: %s %d, %s, %s", c.chainConfig.ChainID, err, chunkEnd, contract.Address, contract.ContractType)
@@ -292,7 +293,6 @@ func (c *ChainBackfiller) storeParsedLogs(ctx context.Context, parsedEvents []in
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled while storing events: %w", ctx.Err())
 		case <-time.After(timeout):
-			fmt.Println("stpromg!!")
 			err := c.consumerDB.StoreEvents(ctx, parsedEvents)
 			if err != nil {
 				logger.Errorf("Error storing events: %v", err)
@@ -309,7 +309,7 @@ const maxAttempt = 20
 type retryableFunc func(ctx context.Context) error
 
 // retryWithBackoff will retry to get data with a backoff.
-func (t *ChainBackfiller) retryWithBackoff(ctx context.Context, doFunc retryableFunc) error {
+func (c *ChainBackfiller) retryWithBackoff(ctx context.Context, doFunc retryableFunc) error {
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,

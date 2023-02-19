@@ -40,6 +40,7 @@ func init() {
 	}()
 }
 
+// Decode decodes message hex data.
 func Decode(ctx context.Context, hexMessage string) model.MessageType {
 	globMux.RLock()
 	defer globMux.RUnlock()
@@ -93,13 +94,13 @@ func deployParseNet() error {
 
 	privateKey, err := crypto.GenerateKey()
 	if err != nil {
-		return fmt.Errorf("failed to generate private key: %v", err)
+		return fmt.Errorf("failed to generate private key: %w", err)
 	}
 
 	chainID := params.AllEthashProtocolChanges.ChainID
 	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
 	if err != nil {
-		return fmt.Errorf("failed to create authorized transactor: %v", err)
+		return fmt.Errorf("failed to create authorized transactor: %w", err)
 	}
 
 	genesisAlloc := map[common.Address]core.GenesisAccount{

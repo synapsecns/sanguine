@@ -531,6 +531,7 @@ func getAdjustedFee(fee uint64, decimal uint8) float64 {
 }
 
 // TODO make more dynamic
+
 // GetCorrectSwapFee returns the correct swap fee for the given pool contract.
 func (p *SwapParser) GetCorrectSwapFee(ctx context.Context, swapEvent model.SwapEvent) (uint64, uint64, error) {
 	var dbAdminFee uint64

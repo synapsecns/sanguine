@@ -455,15 +455,15 @@ type HybridMessageBusEvent struct {
 	//// BlockNumber is the block number of the event
 	// TBlockNumber uint64 `gorm:"column:t.block_number"`
 	//// TxHash is the transaction hash of the event
-	//TTxHash string `gorm:"column:t.tx_hash"`
+	// TTxHash string `gorm:"column:t.tx_hash"`
 	//// ContractAddress is the address of the contract that generated the event
-	//TContractAddress string `gorm:"column:t.contract_address"`
+	// TContractAddress string `gorm:"column:t.contract_address"`
 	//// MessageId is the message id of the event.
-	//TMessageID sql.NullString `gorm:"column:t.message_id"`
+	// TMessageID sql.NullString `gorm:"column:t.message_id"`
 	//// Message is the message.
-	//TMessage sql.NullString `gorm:"column:t.message"`
+	// TMessage sql.NullString `gorm:"column:t.message"`
 	//// TimeStamp is the timestamp in which the record was inserted.
-	//TTimeStamp *uint64 `gorm:"column:t.timestamp"`
+	// TTimeStamp *uint64 `gorm:"column:t.timestamp"`
 	// InsertTime is the time the event was inserted into the database
 	FInsertTime uint64 `gorm:"column:insert_time"`
 	// ContractAddress is the address of the contract that generated the event

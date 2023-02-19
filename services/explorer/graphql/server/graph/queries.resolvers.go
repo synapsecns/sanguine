@@ -18,16 +18,6 @@ import (
 // BridgeTransactions is the resolver for the bridgeTransactions2 field.
 func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) ([]*model.BridgeTransaction, error) {
 	var results []*model.BridgeTransaction
-	// switch {
-	// case kappa != nil:
-	//	// If we are given a kappa, we search for the bridge transaction on the destination chain, then locate
-	//	// its counterpart on the origin chain using a query to find a transaction hash given a kappa.
-	//	results, err = r.GetBridgeTxsFromDestination(ctx, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, txnHash, kappa, page, tokenAddressFrom, tokenAddressTo)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//default:
-
 	if useMv != nil && *useMv {
 		var mvResults []*model.BridgeTransaction
 		var err error
@@ -78,7 +68,7 @@ func (r *queryResolver) MessageBusTransactions(ctx context.Context, chainID []*i
 	var results []*model.MessageBusTransaction
 	results, err = r.GetMessageBusTxs(ctx, chainID, contractAddress, startTime, endTime, txnHash, messageID, *pending, *reverted, page)
 	if err != nil {
-		fmt.Errorf("could not get message bus transactions %v", err)
+		return nil, fmt.Errorf("could not get message bus transactions %w", err)
 	}
 	sort.Sort(SortMessageBusTxType(results))
 	return results, nil
@@ -124,13 +114,13 @@ func (r *queryResolver) AddressRanking(ctx context.Context, hours *int) ([]*mode
 }
 
 // AmountStatistic is the resolver for the amountStatistic field.
+//
+// nolint:gocognit
 func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.StatisticType, duration *model.Duration, platform *model.Platform, chainID *int, address *string, tokenAddress *string, useCache *bool, useMv *bool) (*model.ValueResult, error) {
 	if useCache != nil && *useCache {
-		fmt.Println("KEY", fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)))
-		cacheResult := r.Cache.GetCache(fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)))
-		if cacheResult != nil {
-			result := *(cacheResult.(*interface{}))
-			return result.(*model.ValueResult), nil
+		res, err := r.getValueResultFromCache(fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)))
+		if err == nil {
+			return res, nil
 		}
 	}
 
@@ -147,6 +137,18 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 		hours := 720
 		targetTime := r.getTargetTime(&hours)
 		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPast3Months:
+		hours := 2190
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPast6Months:
+		hours := 4380
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPastYear:
+		hours := 8760
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
 	case model.DurationAllTime:
 		timestampSpecifier = ""
 	}
@@ -157,11 +159,10 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 		`%s%s%s`,
 		timestampSpecifier, addressSpecifier, chainIDSpecifier,
 	)
-	fmt.Println("compositeFilters", compositeFilters)
 	var finalSQL *string
 	switch *platform {
 	case model.PlatformBridge:
-		finalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, address, chainID, tokenAddress, compositeFilters)
+		finalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, address, chainID, tokenAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -174,6 +175,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 		if tokenAddress != nil {
 			return nil, fmt.Errorf("cannot filter by token on message bus events")
 		}
+
 		finalSQL, err = GenerateAmountStatisticMessageBusSQL(typeArg, compositeFilters)
 
 		if err != nil {
@@ -192,7 +194,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 		var swapSum float64
 		var messageBusSum float64
 
-		bridgeFinalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, address, chainID, tokenAddress, compositeFilters)
+		bridgeFinalSQL, err = GenerateAmountStatisticBridgeSQL(typeArg, address, chainID, tokenAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -204,21 +206,19 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 
 		g, groupCtx := errgroup.WithContext(ctx)
 
-		if tokenAddress == nil {
+		if tokenAddress == nil && typeArg != model.StatisticTypeTotalVolumeUsd && typeArg != model.StatisticTypeMedianVolumeUsd && typeArg != model.StatisticTypeMeanVolumeUsd {
 			messageBusFinalSQL, err = GenerateAmountStatisticMessageBusSQL(typeArg, compositeFilters)
 			if err != nil {
 				return nil, err
 			}
-			if typeArg != model.StatisticTypeTotalVolumeUsd {
-				g.Go(func() error {
-					messageBusSum, err = r.DB.GetFloat64(groupCtx, *messageBusFinalSQL)
+			g.Go(func() error {
+				messageBusSum, err = r.DB.GetFloat64(groupCtx, *messageBusFinalSQL)
 
-					if err != nil {
-						return fmt.Errorf("failed to get dateResults: %w", err)
-					}
-					return nil
-				})
-			}
+				if err != nil {
+					return fmt.Errorf("failed to get dateResults: %w", err)
+				}
+				return nil
+			})
 		}
 		g.Go(func() error {
 			bridgeSum, err = r.DB.GetFloat64(groupCtx, *bridgeFinalSQL)
@@ -238,13 +238,16 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 
 		err = g.Wait()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error getting data from all platforms, %w", err)
 		}
 		value := fmt.Sprintf("%f", bridgeSum+swapSum+messageBusSum)
 		output := model.ValueResult{
 			Value: &value,
 		}
-		r.Cache.CacheResponse(fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)), &output)
+		err = r.Cache.CacheResponse(fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)), &output)
+		if err != nil {
+			return nil, fmt.Errorf("error caching results, %w", err)
+		}
 		return &output, nil
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
@@ -261,17 +264,19 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 	output := model.ValueResult{
 		Value: &value,
 	}
-	r.Cache.CacheResponse(fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)), &output)
+	err = r.Cache.CacheResponse(fmt.Sprintf("amountStatistic, %s, %s, %s, %s, %s, %s", typeArg.String(), platform.String(), duration.String(), keyGenHandleNilInt(chainID), keyGenHandleNilString(address), keyGenHandleNilString(tokenAddress)), &output)
+	if err != nil {
+		return nil, fmt.Errorf("error storing cache data, %w", err)
+	}
 	return &output, nil
 }
 
 // DailyStatisticsByChain is the resolver for the dailyStatisticsByChain field.
 func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool, useMv *bool) ([]*model.DateResultByChain, error) {
 	if useCache != nil && *useCache {
-		cacheResult := r.Cache.GetCache(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()))
-		if cacheResult != nil {
-			result := *(cacheResult.(*interface{}))
-			return result.([]*model.DateResultByChain), nil
+		res, err := r.getDateResultByChainFromCache(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()))
+		if err == nil {
+			return res, nil
 		}
 	}
 	var err error
@@ -345,7 +350,10 @@ func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int
 	if err != nil {
 		return nil, fmt.Errorf("could not get daily data by chain: %w", err)
 	}
-	r.Cache.CacheResponse(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()), res)
+	err = r.Cache.CacheResponse(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()), res)
+	if err != nil {
+		return nil, fmt.Errorf("error cahcing response, %w", err)
+	}
 	return res, nil
 }
 
@@ -362,6 +370,14 @@ func (r *queryResolver) RankedChainIDsByVolume(ctx context.Context, duration *mo
 		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
 	case model.DurationPastMonth:
 		hours := 720
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPast3Months:
+		hours := 2190
+		targetTime := r.getTargetTime(&hours)
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
+	case model.DurationPast6Months:
+		hours := 4380
 		targetTime := r.getTargetTime(&hours)
 		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, &firstFilter, "")
 	case model.DurationPastYear:

@@ -292,13 +292,13 @@ func generateSingleSpecifierI32ArrSQL(values []*int, field string, firstFilter *
 	var final string
 	if *firstFilter {
 		*firstFilter = false
-		final += " WHERE ("
+		final += whereString
 	}
 
 	for i := range values {
 		final += fmt.Sprintf(" %s%s = %d", tablePrefix, field, *values[i])
 		if i < len(values)-1 {
-			final += " OR "
+			final += orString
 		}
 	}
 
@@ -317,16 +317,14 @@ func generateSingleSpecifierI32ArrSQLMv(values []*int, field string, firstFilter
 		*firstInLocale = false
 		*firstFilter = false
 		final += " ("
-	} else {
-		if *firstFilter {
-			*firstFilter = false
-			final += " WHERE ("
-		}
+	} else if *firstFilter {
+		*firstFilter = false
+		final += whereString
 	}
 	for i := range values {
 		final += fmt.Sprintf(" %s%s = %d", tablePrefix, field, *values[i])
 		if i < len(values)-1 {
-			final += " OR "
+			final += orString
 		}
 	}
 
@@ -343,7 +341,7 @@ func generateSingleSpecifierStringArrSQL(values []*string, field string, firstFi
 	var final string
 	if *firstFilter {
 		*firstFilter = false
-		final += " WHERE ("
+		final += whereString
 	} else {
 		final += " AND ("
 	}
@@ -352,7 +350,7 @@ func generateSingleSpecifierStringArrSQL(values []*string, field string, firstFi
 		if values[i] != nil {
 			final += fmt.Sprintf(" %s%s = '%s'", tablePrefix, field, *values[i])
 			if i < len(values)-1 {
-				final += " OR "
+				final += orString
 			}
 		}
 	}
@@ -375,7 +373,7 @@ func generateSingleSpecifierStringArrSQLMv(values []*string, field string, first
 	} else {
 		if *firstFilter {
 			*firstFilter = false
-			final += " WHERE ("
+			final += whereString
 		} else {
 			final += " AND ("
 		}
@@ -384,7 +382,7 @@ func generateSingleSpecifierStringArrSQLMv(values []*string, field string, first
 		if values[i] != nil {
 			final += fmt.Sprintf(" lower(%s%s) = '%s'", tablePrefix, field, *values[i])
 			if i < len(values)-1 {
-				final += " OR "
+				final += orString
 			}
 		}
 	}
@@ -697,7 +695,7 @@ func generateAllBridgeEventsQueryFromDestination(chainIDTo []*int, chainIDFrom [
 	return fmt.Sprintf("%s SELECT * FROM (SELECT %s FROM %s %s %s %s) %s LIMIT %d OFFSET %d", generateDeDepQueryCTE(toFilters, nil, nil, false), destToOriginCol, "baseQuery", destToOriginJoinsPt1, fromFilters, destToOriginJoinsPt2, postJoinFilters, pageValue, pageOffset)
 }
 
-func generateAllBridgeEventsQueryFromDestinationMv(chainIDTo []*int, addressTo *string, minAmount *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressTo []*string, kappa *string, txHash *string, pending *bool, page int, in bool) string {
+func generateAllBridgeEventsQueryFromDestinationMv(chainIDTo []*int, addressTo *string, minAmount *int, minAmountUsd *int, startTime *int, endTime *int, tokenAddressTo []*string, kappa *string, txHash *string, pending *bool, page int) string {
 	firstFilter := true
 	chainIDToFilter := generateSingleSpecifierI32ArrSQL(chainIDTo, sql.ChainIDFieldName, &firstFilter, "t")
 	minTimeFilter := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "t", true)
@@ -713,8 +711,8 @@ func generateAllBridgeEventsQueryFromDestinationMv(chainIDTo []*int, addressTo *
 	// chainIDFromFilter := generateSingleSpecifierI32ArrSQL(chainIDFrom, sql.ChainIDFieldName, &firstFilter, "")
 	// addressFromFilter := generateAddressSpecifierSQL(addressFrom, &firstFilter, "")
 	// maxAmountFilter := generateEqualitySpecifierSQL(maxAmount, "famount", &firstFilter, "", false)
-	//maxAmountFilterUsd := generateEqualitySpecifierSQL(maxAmountUsd, "famount_usd", &firstFilter, "", false)
-	//tokenAddressFromFilter := generateSingleSpecifierStringArrSQL(tokenAddressFrom, "ftoken", &firstFilter, "")
+	// maxAmountFilterUsd := generateEqualitySpecifierSQL(maxAmountUsd, "famount_usd", &firstFilter, "", false)
+	// tokenAddressFromFilter := generateSingleSpecifierStringArrSQL(tokenAddressFrom, "ftoken", &firstFilter, "")
 
 	// fromFilters := chainIDFromFilter + addressFromFilter
 
@@ -788,7 +786,7 @@ func generateAllBridgeEventsQueryFromOrigin(chainIDFrom []*int, chainIDTo []*int
 // generateAllBridgeEventsQueryFromOriginMv gets all the filters for query from origin.
 //
 // nolint:dupl
-func generateAllBridgeEventsQueryFromOriginMv(chainIDFrom []*int, addressFrom *string, maxAmount *int, maxAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, txHash *string, kappa *string, pending *bool, page int, in bool) string {
+func generateAllBridgeEventsQueryFromOriginMv(chainIDFrom []*int, addressFrom *string, maxAmount *int, maxAmountUsd *int, startTime *int, endTime *int, tokenAddressFrom []*string, txHash *string, kappa *string, pending *bool, page int) string {
 	firstFilter := true
 	chainIDFromFilter := generateSingleSpecifierI32ArrSQL(chainIDFrom, sql.ChainIDFieldName, &firstFilter, "f")
 	minTimeFilter := generateEqualitySpecifierSQL(startTime, sql.TimeStampFieldName, &firstFilter, "f", true)
@@ -803,8 +801,8 @@ func generateAllBridgeEventsQueryFromOriginMv(chainIDFrom []*int, addressFrom *s
 	// chainIDToFilter := generateSingleSpecifierI32ArrSQL(chainIDTo, sql.ChainIDFieldName, &firstFilter, "")
 	// addressToFilter := generateAddressSpecifierSQL(addressTo, &firstFilter, "")
 	// minAmountFilter := generateEqualitySpecifierSQL(minAmount, "tamount", &firstFilter, "", true)
-	//minAmountFilterUsd := generateEqualitySpecifierSQL(minAmountUsd, "tamount_usd", &firstFilter, "", true)
-	//tokenAddressToFilter := generateSingleSpecifierStringArrSQL(tokenAddressTo, "ttoken", &firstFilter, "")
+	// minAmountFilterUsd := generateEqualitySpecifierSQL(minAmountUsd, "tamount_usd", &firstFilter, "", true)
+	// tokenAddressToFilter := generateSingleSpecifierStringArrSQL(tokenAddressTo, "ttoken", &firstFilter, "")
 
 	pendingFilter := ""
 	if pending != nil {
@@ -851,15 +849,17 @@ func generateAllBridgeEventsQueryMv(chainIDFrom []*int, chainIDTo []*int, addres
 	maxTimeFilter := generateEqualitySpecifierSQL(endTime, sql.TimeStampFieldName, &firstFilter, "f", false)
 
 	var allFilters string
-	if fromFilters != "" && toFilters != "" {
+	switch {
+	case fromFilters != "" && toFilters != "":
 		allFilters = fmt.Sprintf("WHERE ((%s) OR (%s)) %s", fromFilters, toFilters, minTimeFilter+maxTimeFilter)
-	} else if fromFilters != "" && toFilters == "" {
+	case fromFilters != "" && toFilters == "":
 		allFilters = fmt.Sprintf("WHERE (%s) %s", fromFilters, minTimeFilter+maxTimeFilter)
-	} else if fromFilters == "" && toFilters != "" {
+	case fromFilters == "" && toFilters != "":
 		allFilters = fmt.Sprintf("WHERE (%s) %s ", toFilters, minTimeFilter+maxTimeFilter)
-	} else {
+	default:
 		allFilters = minTimeFilter + maxTimeFilter
 	}
+
 	var pendingFilter string
 	if pending != nil {
 		if *pending {
@@ -872,6 +872,8 @@ func generateAllBridgeEventsQueryMv(chainIDFrom []*int, chainIDTo []*int, addres
 	pageOffset := (page - 1) * sql.PageSize
 	return fmt.Sprintf("SELECT * FROM(SELECT * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) %s LIMIT %d OFFSET %d ", allFilters, pendingFilter, pageValue, pageOffset)
 }
+
+// nolint:cyclop
 func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, useMv *bool, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, kappa *string, tokenAddressFrom []*string, tokenAddressTo []*string, page *int, pending *bool) ([]*model.BridgeTransaction, error) {
 	var err error
 	var results []*model.BridgeTransaction
@@ -880,7 +882,7 @@ func (r *queryResolver) GetBridgeTxsFromDestination(ctx context.Context, useMv *
 		if chainIDTo == nil && addressTo == nil && minAmount == nil && minAmountUsd == nil && startTime == nil && endTime == nil && tokenAddressTo == nil && kappa == nil && txHash == nil {
 			return nil, nil
 		}
-		query = generateAllBridgeEventsQueryFromDestinationMv(chainIDTo, addressTo, minAmount, minAmountUsd, startTime, endTime, tokenAddressTo, kappa, txHash, pending, *page, false)
+		query = generateAllBridgeEventsQueryFromDestinationMv(chainIDTo, addressTo, minAmount, minAmountUsd, startTime, endTime, tokenAddressTo, kappa, txHash, pending, *page)
 	} else {
 		query = generateAllBridgeEventsQueryFromDestination(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, kappa, txHash, *page, false)
 	}
@@ -910,11 +912,9 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, useMv *bool,
 	var err error
 	var chainMap = make(map[uint32]bool)
 	var results []*model.BridgeTransaction
-	var query string
+	query := generateAllBridgeEventsQueryFromOrigin(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, txHash, pending, *page, true)
 	if useMv != nil && *useMv {
-		query = generateAllBridgeEventsQueryFromOriginMv(chainIDFrom, addressFrom, maxAmount, maxAmountUsd, startTime, endTime, tokenAddressFrom, txHash, kappa, pending, *page, true)
-	} else {
-		query = generateAllBridgeEventsQueryFromOrigin(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, txHash, pending, *page, true)
+		query = generateAllBridgeEventsQueryFromOriginMv(chainIDFrom, addressFrom, maxAmount, maxAmountUsd, startTime, endTime, tokenAddressFrom, txHash, kappa, pending, *page)
 	}
 	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
 
@@ -946,8 +946,7 @@ func (r *queryResolver) GetBridgeTxsFromOrigin(ctx context.Context, useMv *bool,
 func (r *queryResolver) GetBridgeTxs(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txHash *string, tokenAddressTo []*string, tokenAddressFrom []*string, kappa *string, pending *bool, page *int) ([]*model.BridgeTransaction, error) {
 	var err error
 	var results []*model.BridgeTransaction
-	var query string
-	query = generateAllBridgeEventsQueryMv(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, txHash, kappa, pending, *page)
+	query := generateAllBridgeEventsQueryMv(chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, tokenAddressFrom, tokenAddressTo, txHash, kappa, pending, *page)
 	allBridgeEvents, err := r.DB.GetAllBridgeEvents(ctx, query)
 
 	if err != nil {
@@ -1089,83 +1088,15 @@ func keyGen(chainID string, kappa string) string {
 	return fmt.Sprintf("%s-%s", chainID, kappa)
 }
 
-func GenerateDailyStatisticBridgeSQL(typeArg *model.DailyStatisticType, compositeFilters string, firstFilter *bool) (*string, *string, error) {
-	var subQuery string
-	var query string
-	switch *typeArg {
-	case model.DailyStatisticTypeVolume:
-		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-		compositeFilters += directionSpecifier
-		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
-		query = fmt.Sprintf("%s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
-	case model.DailyStatisticTypeAddresses:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
-		query = fmt.Sprintf("%s SELECT toFloat64(uniq(%s, %s )) AS total FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.SenderFieldName, singleSideCol, "baseQuery", singleSideJoinsCTE)
-	case model.DailyStatisticTypeTransactions:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
-		query = fmt.Sprintf(" %s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
-	case model.DailyStatisticTypeFee:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FtoDate(ROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
-		query = fmt.Sprintf(" %s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
-
-	default:
-		return nil, nil, fmt.Errorf("invalid type argument")
-	}
-	return &subQuery, &query, nil
-}
-
-func GenerateDailyStatisticSwapSQL(typeArg *model.DailyStatisticType, compositeFilters string) (*string, *string, error) {
-	var subQuery string
-	var query string
-	switch *typeArg {
-	case model.DailyStatisticTypeVolume:
-		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", swapVolumeSelect, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
-		query = fmt.Sprintf("%s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
-	case model.DailyStatisticTypeAddresses:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
-		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-	case model.DailyStatisticTypeTransactions:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
-		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-	case model.DailyStatisticTypeFee:
-		subQuery = fmt.Sprintf("SELECT sumKahan(arraySum(mapValues(%s))) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.FeeUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
-		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-
-	default:
-		return nil, nil, fmt.Errorf("invalid type argument")
-	}
-	return &subQuery, &query, nil
-}
-
-func GenerateDailyStatisticMessageBusSQL(typeArg *model.DailyStatisticType, compositeFilters string) (*string, *string, error) {
-	var subQuery string
-	var query string
-	switch *typeArg {
-	case model.DailyStatisticTypeVolume:
-		return nil, nil, nil
-	case model.DailyStatisticTypeAddresses:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseMessageBus, compositeFilters)
-		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-	case model.DailyStatisticTypeTransactions:
-		subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseMessageBus, compositeFilters)
-		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-	case model.DailyStatisticTypeFee:
-		subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.FeeUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseMessageBus, compositeFilters)
-		query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-	default:
-		return nil, nil, fmt.Errorf("invalid type argument")
-	}
-	return &subQuery, &query, nil
-}
-
-func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, address *string, chainID *int, tokenAddress *string, compositeFilters string) (*string, error) {
+// GenerateAmountStatisticBridgeSQL generate sql for the bridge platform.
+func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, address *string, chainID *int, tokenAddress *string) (*string, error) {
 	var operation string
 	var finalSQL string
 	firstFilter2 := true
 	addressFilter := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter2, "f")
 	chainIDFilter := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter2, "f")
 	tokenAddressFilter := generateSingleSpecifierStringSQL(tokenAddress, sql.TokenFieldName, &firstFilter2, "f")
-	compositeFilters = addressFilter + chainIDFilter + tokenAddressFilter
+	compositeFilters := addressFilter + chainIDFilter + tokenAddressFilter
 	switch typeArg {
 	case model.StatisticTypeMeanVolumeUsd:
 		operation = fmt.Sprintf("AVG(f%s)", sql.AmountUSDFieldName)
@@ -1198,6 +1129,9 @@ func GenerateAmountStatisticBridgeSQL(typeArg model.StatisticType, address *stri
 	return &finalSQL, nil
 }
 
+// GenerateAmountStatisticSwapSQL generates sql to get statistics on the swap platform.
+//
+// nolint:cyclop
 func GenerateAmountStatisticSwapSQL(typeArg model.StatisticType, compositeFilters string, tokenAddress *string) (*string, error) {
 	var operation string
 	var finalSQL string
@@ -1232,16 +1166,17 @@ func GenerateAmountStatisticSwapSQL(typeArg model.StatisticType, compositeFilter
 	return &finalSQL, nil
 }
 
+// GenerateAmountStatisticMessageBusSQL generates sql for getting stats on the message bus platform.
 func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, compositeFilters string) (*string, error) {
 	var operation string
 	var finalSQL string
 	switch typeArg {
 	case model.StatisticTypeMeanVolumeUsd:
-		return nil, nil
+		return nil, fmt.Errorf("cannot calculate volume data for messagebus events")
 	case model.StatisticTypeMedianVolumeUsd:
-		return nil, nil
+		return nil, fmt.Errorf("cannot calculate volume data for messagebus events")
 	case model.StatisticTypeTotalVolumeUsd:
-		return nil, nil
+		return nil, fmt.Errorf("cannot calculate volume data for messagebus events")
 	case model.StatisticTypeCountTransactions:
 		operation = fmt.Sprintf("uniq(%s, %s) AS res", sql.ChainIDFieldName, sql.TxHashFieldName)
 		finalSQL = fmt.Sprintf("SELECT %s FROM (%s) %s", operation, baseMessageBus, compositeFilters)
@@ -1264,79 +1199,13 @@ func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, composite
 	return &finalSQL, nil
 }
 
-//	func GenerateDailyStatisticBridgeSQL(typeArg *model.DailyStatisticType, compositeFilters string, firstFilter *bool) (*string, *string, error) {
-//		var subQuery string
-//		var query string
-//		switch *typeArg {
-//		case model.DailyStatisticTypeVolume:
-//			directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
-//			compositeFilters += directionSpecifier
-//			subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.AmountUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
-//			query = fmt.Sprintf("%s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
-//		case model.DailyStatisticTypeAddresses:
-//			subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
-//			query = fmt.Sprintf("%s SELECT toFloat64(uniq(%s, %s )) AS total FROM (SELECT %s FROM %s %s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.SenderFieldName, singleSideCol, "baseQuery", singleSideJoinsCTE)
-//		case model.DailyStatisticTypeTransactions:
-//			subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
-//			query = fmt.Sprintf(" %s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
-//		case model.DailyStatisticTypeFee:
-//			subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s)) AS total, FtoDate(ROM_UNIXTIME(%s, %s)) AS date FROM (SELECT %s FROM %s %s) GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", singleSideCol, "baseQuery", singleSideJoinsCTE)
-//			query = fmt.Sprintf(" %s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
-//
-//		default:
-//			return nil, nil, fmt.Errorf("invalid type argument")
-//		}
-//		return &subQuery, &query, nil
-//	}
-//
-//	func GenerateDailyStatisticSwapSQL(typeArg *model.DailyStatisticType, compositeFilters string) (*string, *string, error) {
-//		var subQuery string
-//		var query string
-//		switch *typeArg {
-//		case model.DailyStatisticTypeVolume:
-//			subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", swapVolumeSelect, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
-//			query = fmt.Sprintf("%s SELECT sumKahan(total) FROM (%s)", generateDeDepQueryCTE(compositeFilters, nil, nil, true), subQuery)
-//		case model.DailyStatisticTypeAddresses:
-//			subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
-//			query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-//		case model.DailyStatisticTypeTransactions:
-//			subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
-//			query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-//		case model.DailyStatisticTypeFee:
-//			subQuery = fmt.Sprintf("SELECT sumKahan(arraySum(mapValues(%s))) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.FeeUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseSwap, compositeFilters)
-//			query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-//
-//		default:
-//			return nil, nil, fmt.Errorf("invalid type argument")
-//		}
-//		return &subQuery, &query, nil
-//	}
-//
-//	func GenerateDailyStatisticMessageBusSQL(typeArg *model.DailyStatisticType, compositeFilters string) (*string, *string, error) {
-//		var subQuery string
-//		var query string
-//		switch *typeArg {
-//		case model.DailyStatisticTypeVolume:
-//			return nil, nil, nil
-//		case model.DailyStatisticTypeAddresses:
-//			subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.SenderFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseMessageBus, compositeFilters)
-//			query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-//		case model.DailyStatisticTypeTransactions:
-//			subQuery = fmt.Sprintf("SELECT toFloat64(uniq(%s, %s )) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.ChainIDFieldName, sql.TxHashFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseMessageBus, compositeFilters)
-//			query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-//		case model.DailyStatisticTypeFee:
-//			subQuery = fmt.Sprintf("SELECT sumKahan(%s) AS total, toDate(FROM_UNIXTIME(%s, %s)) AS date FROM (%s) %s GROUP BY date ORDER BY date ASC", sql.FeeUSDFieldName, sql.TimeStampFieldName, "'%Y/%m/%d'", baseMessageBus, compositeFilters)
-//			query = fmt.Sprintf("SELECT sumKahan(total) FROM (%s)", subQuery)
-//		default:
-//			return nil, nil, fmt.Errorf("invalid type argument")
-//		}
-//		return &subQuery, &query, nil
-//	}
+// GenerateRankedChainsByVolumeSQL generates sql for getting all chains ranked in order of volume.
 func GenerateRankedChainsByVolumeSQL(compositeFilters string, firstFilter *bool) string {
 	directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
 	return fmt.Sprintf("%s %s FULL OUTER JOIN (SELECT chain_id, sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1, arraySum(mapValues(amount_usd)), event_type = 9, arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id], 0)) as usdTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by chain_id) s ON b.pre_fchain_id = s.chain_id ORDER BY total DESC SETTINGS join_use_nulls = 1", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), rankedChainsBridgeVolume, compositeFilters)
 }
 
+// GenerateDailyStatisticByChainAllSQL generates sql for getting daily stats across all chains.
 func GenerateDailyStatisticByChainAllSQL(typeArg *model.DailyStatisticType, compositeFilters string, firstFilter *bool) (*string, error) {
 	var query string
 	switch *typeArg {
@@ -1357,6 +1226,8 @@ func GenerateDailyStatisticByChainAllSQL(typeArg *model.DailyStatisticType, comp
 }
 
 // TODO make this more dynamic.
+
+// GenerateDailyStatisticByChainBridgeSQL generates sql for getting data for daily stats across the bridge platform.
 func GenerateDailyStatisticByChainBridgeSQL(typeArg *model.DailyStatisticType, compositeFilters string, firstFilter *bool) (*string, error) {
 	var query string
 	switch *typeArg {
@@ -1376,6 +1247,7 @@ func GenerateDailyStatisticByChainBridgeSQL(typeArg *model.DailyStatisticType, c
 	return &query, nil
 }
 
+// GenerateDailyStatisticByChainSwapSQL generates sql for getting daily stats across the swap platform.
 func GenerateDailyStatisticByChainSwapSQL(typeArg *model.DailyStatisticType, compositeFilters string) (*string, error) {
 	var query string
 	switch *typeArg {
@@ -1393,6 +1265,7 @@ func GenerateDailyStatisticByChainSwapSQL(typeArg *model.DailyStatisticType, com
 	return &query, nil
 }
 
+// GenerateDailyStatisticByChainMessageBusSQL generates sql for getting daily stats across the message bus platform.
 func GenerateDailyStatisticByChainMessageBusSQL(typeArg *model.DailyStatisticType, compositeFilters string) (*string, error) {
 	var query string
 	switch *typeArg {
@@ -1410,12 +1283,14 @@ func GenerateDailyStatisticByChainMessageBusSQL(typeArg *model.DailyStatisticTyp
 	return &query, nil
 }
 
+// SortBridgeTxType sorts bridge transactions by time.
 type SortBridgeTxType []*model.BridgeTransaction
 
 func (s SortBridgeTxType) Len() int           { return len(s) }
 func (s SortBridgeTxType) Less(i, j int) bool { return *s[i].FromInfo.Time > *s[j].FromInfo.Time }
 func (s SortBridgeTxType) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
+// SortMessageBusTxType sorts message bus transactions by time.
 type SortMessageBusTxType []*model.MessageBusTransaction
 
 func (s SortMessageBusTxType) Len() int           { return len(s) }
@@ -1431,7 +1306,41 @@ func keyGenHandleNilInt(item *int) string {
 
 func keyGenHandleNilString(item *string) string {
 	if item != nil {
-		return fmt.Sprintf("%s", *item)
+		return *item
 	}
 	return ""
+}
+
+// Gets the value result from cache.
+func (r *queryResolver) getValueResultFromCache(key string) (*model.ValueResult, error) {
+	cacheResult := r.Cache.GetCache(key)
+	if cacheResult != nil {
+		rawCache, ok := cacheResult.(*interface{})
+		if !ok || rawCache == nil {
+			return nil, fmt.Errorf("type assertion error when converting to *interface{}, rawCache %v", rawCache)
+		}
+		res, ok := (*rawCache).(*model.ValueResult)
+		if !ok || res == nil {
+			return nil, fmt.Errorf("type assertion error when converting to *model.ValueResult, res %v", res)
+		}
+		return res, nil
+	}
+	return nil, fmt.Errorf("could not get cached data")
+}
+
+// Gets the value result from cache.
+func (r *queryResolver) getDateResultByChainFromCache(key string) ([]*model.DateResultByChain, error) {
+	cacheResult := r.Cache.GetCache(key)
+	if cacheResult != nil {
+		rawCache, ok := cacheResult.(*interface{})
+		if !ok || rawCache == nil {
+			return nil, fmt.Errorf("type assertion error when converting to *interface{}, rawCache %v", rawCache)
+		}
+		res, ok := (*rawCache).([]*model.DateResultByChain)
+		if !ok || res == nil {
+			return nil, fmt.Errorf("type assertion error when converting to []*model.DateResultByChain, res %v", res)
+		}
+		return res, nil
+	}
+	return nil, fmt.Errorf("could not get cached data")
 }

@@ -21,8 +21,8 @@ type apiCacheServiceImpl struct {
 	responseCache *lru.TwoQueueCache[string, any]
 }
 
-// NewApiCacheService creates a new api response data service.
-func NewApiCacheService() (Service, error) {
+// NewAPICacheService creates a new api response data service.
+func NewAPICacheService() (Service, error) {
 	cache, err := lru.New2Q[string, any](cacheSize)
 	if err != nil {
 		return nil, fmt.Errorf("could not create api response data service: %w", err)

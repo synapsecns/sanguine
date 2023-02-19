@@ -369,12 +369,11 @@ const baseMessageBus = `
 SELECT * FROM message_bus_events LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash
 `
 
-const baseMvBridgeEvents = `
-SELECT * FROM mv_bridge_events ORDER BY finsert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash
-`
 const swapVolumeSelect = `
 multiIf(event_type = 0, amount_usd[sold_id],event_type = 1, arraySum(mapValues(amount_usd)),event_type = 9, arraySum(mapValues(amount_usd)),event_type = 10,amount_usd[sold_id],0)
 `
+const orString = " OR "
+const whereString = " WHERE ("
 
 // TODO MAKE MORE DYNAMIC
 

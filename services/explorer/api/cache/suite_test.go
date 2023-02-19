@@ -1,4 +1,4 @@
-package cache
+package cache_test
 
 import (
 	"github.com/stretchr/testify/suite"
@@ -6,17 +6,18 @@ import (
 	"testing"
 )
 
-type TokenDataSuite struct {
+type APICacheSuite struct {
 	*testsuite.TestSuite
 }
 
-func NewTokenDataSuite(tb testing.TB) *TokenDataSuite {
+func NewAPICacheSuite(tb testing.TB) *APICacheSuite {
 	tb.Helper()
-	return &TokenDataSuite{
+
+	return &APICacheSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 	}
 }
 
-func TestTokenDataSuite(t *testing.T) {
-	suite.Run(t, NewTokenDataSuite(t))
+func TestAPICacheDataSuite(t *testing.T) {
+	suite.Run(t, NewAPICacheSuite(t))
 }
