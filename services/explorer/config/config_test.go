@@ -30,7 +30,7 @@ func (c ConfigSuite) TestConfigEncodeDecode() {
 
 	// Put everything into one Config
 	testConfig := config.Config{
-		RefreshRate:         uint(gofakeit.Uint8()),
+		RefreshRate:         int(gofakeit.Uint8()),
 		ScribeURL:           gofakeit.URL(),
 		RPCURL:              gofakeit.URL(),
 		BridgeConfigAddress: etherMocks.MockAddress().String(),

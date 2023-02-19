@@ -1,209 +1,386 @@
-import {GET_BRIDGE_TRANSACTIONS_QUERY, GET_HISTORICAL_STATS,} from '@graphql/queries'
-import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client'
-import {API_URL} from '@graphql'
-
-import _ from 'lodash'
+import { TRANSACTIONS_PATH } from '@urls'
 import { useState, useEffect } from 'react'
-import { useQuery, useLazyQuery } from '@apollo/client'
-
-import { Pagination } from '@components/Pagination'
+import { TableHeader } from '@components/TransactionTable/TableHeader'
 import { ChainInfo } from '@components/misc/ChainInfo'
+import { OverviewChart } from '@components/ChainChart'
 
-import { StandardPageContainer } from '@layouts/StandardPageContainer'
+import { HorizontalDivider } from '@components/misc/HorizontalDivider'
+import { formatUSD } from '@utils/formatUSD'
+import { formatDate } from '@utils/formatDate'
 
-import { Stats } from '@components/pages/Home/Stats'
-import { Chart, ChartLoading } from '@components/Chart'
-import {BridgeTransactionTable} from "@components/BridgeTransaction/BridgeTransactionTable";
-import {useRouter} from "next/router";
-import {useSearchParams} from 'next/navigation'
+import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
+import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
+import { useLazyQuery, useQuery } from '@apollo/client'
+import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
+import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
+import { useRouter } from "next/router";
 
+import {
+  GET_BRIDGE_TRANSACTIONS_QUERY,
+  DAILY_STATISTICS_BY_CHAIN,
+} from '@graphql/queries'
+import HolisticStats from '@components/misc/HolisticStats'
+import _ from 'lodash'
 
-
-const link = new HttpLink({
-  uri: API_URL,
-  useGETForQueries: true,
+const titles = {
+  VOLUME: 'Volume',
+  FEE: 'Fees',
+  ADDRESSES: 'Addrs',
+  TRANSACTIONS: 'TXs',
+}
+const platformTitles = {
+  BRIDGE: 'Bridge',
+  SWAP: 'Swap',
+  MESSAGE_BUS: 'Message Bus',
+}
+const formatCurrency = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
 })
 
-const client = new ApolloClient({
-  link: link,
-  cache: new InMemoryCache(),
-  fetchPolicy: 'network-only',
-  fetchOptions: {
-    mode: 'no-cors',
-  },
-})
-
-export default function chainId({
-  bridgeVolume,
-  transactionsData,
-  addresses,
-  latestBridgeTransactions,
-}) {
+export default function chainId() {
   const router = useRouter()
-  const { chainId } = router.query
+  const { chainId: chainIdRouter } = router.query
+  const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
+  const [platform, setPlatform] = useState("ALL");
+  const [transactionsArr, setTransactionsArr] = useState([])
+  const [dailyDataArr, setDailyDataArr] = useState([])
+  const [variables, setVariables] = useState({})
+  const [chainId, setChainId] = useState(0)
+  const [completed, setCompleted] = useState(false)
+  const [dailyStatisticType, setDailyStatisticType] = useState('VOLUME')
+  const [dailyStatisticDuration, SetDailyStatisticDuration] =
+    useState('PAST_MONTH')
+  const [dailyStatisticCumulative, SetDailyStatisticCumulative] =
+    useState(false)
+  const unSelectStyle =
+    'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
+  const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
 
-  const [chartType, setChartType] = useState('BRIDGEVOLUME')
+  const {
+    loading,
+    error,
+    data: dataTx,
+    stopPolling,
+    startPolling,
+  } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
+    pollInterval: 5000,
+    variables: variables,
+    fetchPolicy: 'network-only',
+    onCompleted: (data) => {
+      let bridgeTransactionsTable = data.bridgeTransactions
 
-  let chartData
+      bridgeTransactionsTable = _.orderBy(
+        bridgeTransactionsTable,
+        'fromInfo.time',
+        ['desc']
+      ).slice(0, 25)
+      setTransactionsArr(bridgeTransactionsTable)
 
-  if (chartType === 'BRIDGEVOLUME') {
-    chartData = bridgeVolume && bridgeVolume.historicalStatistics.dateResults
-  } else if (chartType === 'TRANSACTIONS') {
-    chartData =
-      transactionsData && transactionsData.historicalStatistics.dateResults
-  } else if (chartType === 'ADDRESSES') {
-    chartData = addresses && addresses.historicalStatistics.dateResults
+    },
+  })
+
+  const [
+    getDailyStatisticsByChain,
+    { loading: loadingDailyData, error: errorDailyData, data: dailyData },
+  ] = useLazyQuery(DAILY_STATISTICS_BY_CHAIN, {
+    onCompleted: (data) => {
+      let chartData = data.dailyStatisticsByChain
+      if (dailyStatisticCumulative) {
+        chartData = JSON.parse(JSON.stringify(data.dailyStatisticsByChain))
+        for (let i = 1; i < chartData.length; i++) {
+          for (let key in data.dailyStatisticsByChain[i]) {
+            if (key !== 'date' && key !== '__typename') {
+              chartData[i][key] += (chartData[i - 1]?.[key] ? chartData[i - 1][key] : 0)
+            }
+
+          }
+        }
+      }
+      setDailyDataArr(data.dailyStatisticsByChain);
+    }
+  })
+
+
+  // update chart
+  useEffect(() => {
+    let type = dailyStatisticType
+    if (platform === "MESSAGE_BUS" && dailyStatisticType === "VOLUME") {
+      type = "FEE"
+      setDailyStatisticType("FEE")
+    }
+    getDailyStatisticsByChain({
+      variables: {
+        type: type,
+        duration: dailyStatisticDuration,
+        platform: platform,
+        useCache: true,
+        chainID: chainId,
+        useMv: true
+      },
+    })
+
+  }, [dailyStatisticDuration, dailyStatisticType, dailyStatisticCumulative, platform])
+
+
+
+  // Get initial data
+  useEffect(() => {
+    getDailyStatisticsByChain({
+      variables: {
+        type: dailyStatisticType,
+        duration: dailyStatisticDuration,
+        useCache: true,
+        chainID: chainIdRouter,
+      },
+    })
+    setVariables({ chainIDFrom: chainIdRouter, useMv: true })
+    setChainId(chainIdRouter)
+  }, [chainIdRouter])
+  let chartData = dailyDataArr
+  if (dailyStatisticCumulative) {
+    chartData = JSON.parse(JSON.stringify(dailyDataArr))
+    for (let i = 1; i < chartData.length; i++) {
+      for (let key in dailyDataArr[i]) {
+        if (key !== 'date' && key !== '__typename') {
+          chartData[i][key] += (chartData[i - 1]?.[key] ? chartData[i - 1][key] : 0)
+        }
+
+      }
+    }
   }
-
-  const search = useSearchParams()
-  const p = Number(search.get('page')) || 1
-
-  const [page, setPage] = useState(p)
-  const [transactions, setTransactions] = useState([])
-
-  const [getBridgeTransactions, { error: pageError, data }] = useLazyQuery(
-    GET_BRIDGE_TRANSACTIONS_QUERY
-  )
 
   useEffect(() => {
-    if (data) {
-      setTransactions(data.bridgeTransactions, {
-        variables: {
-          chainId: Number(chainId),
-        },
-      })
-    }
-
-    const num = Number(search.get('page'))
-
-    if (num === 0) {
-      setPage(1)
-      getBridgeTransactions({
-        variables: {
-          chainId: Number(chainId),
-          page: 1,
-        },
-      })
+    if (!completed) {
+      startPolling(10000)
     } else {
-      setPage(num)
-      getBridgeTransactions({
-        variables: {
-          chainId: Number(chainId),
-          page: num,
-        },
-      })
+      stopPolling()
     }
-  }, [data, search, chainId])
-
-  const nextPage = () => {
-    let newPage = page + 1
-    setPage(newPage)
-    // setSearch({ page: newPage })
-
-    getBridgeTransactions({
-      variables: { chainId: Number(chainId), page: newPage },
-    })
-  }
-
-  const prevPage = () => {
-    if (page > 1) {
-      let newPage = page - 1
-      setPage(newPage)
-      // setSearch({ page: newPage })
-      getBridgeTransactions({
-        variables: { chainId: Number(chainId), page: newPage },
-      })
+    return () => {
+      stopPolling()
     }
+  }, [stopPolling, startPolling, completed])
+
+
+  const totalChainVolume = () => {
+    if (dailyStatisticCumulative) {
+      return chartData[chartData.length - 1]["total"]
+    }
+    let totalRankedChainVolume = 0
+    for (let i = 0; i < chartData.length; i++) {
+      totalRankedChainVolume += chartData[i]["total"]
+
+    }
+    return totalRankedChainVolume
+
   }
-
-  const resetPage = () => {
-    setPage(1)
-    // setSearch({ page: 1 })
-    getBridgeTransactions({
-      variables: { chainId: Number(chainId), page: 1 },
-    })
-  }
-
-  let content
-
-
-    let bridgeTransactions = transactions
-
-    bridgeTransactions = _.orderBy(bridgeTransactions, 'fromInfo.time', [
-      'desc',
-    ]).slice(0, 10)
-
-  content=<BridgeTransactionTable queryResult={bridgeTransactions} />
-
-  let title = <ChainInfo chainId={chainId} imgClassName="w-7 h-7" />
 
   return (
-    <StandardPageContainer title={title}>
-      <Chart data={chartData} />
-      {bridgeVolume && transactionsData && addresses ? (
-        <Stats
-          bridgeVolume={bridgeVolume.historicalStatistics.total}
-          transactions={transactionsData.historicalStatistics.total}
-          addresses={addresses.historicalStatistics.total}
-          setChartType={setChartType}
-        />
-      ) : (
-        <ChartLoading />
-      )}
-      <div className="mb-10" />
-      {content}
-      <Pagination
-        page={page}
-        resetPage={resetPage}
-        prevPage={prevPage}
-        nextPage={nextPage}
+    <StandardPageContainer title={''}>
+      <div className="flex items-center mt-10 mb-2">
+        <h3 className="text-white text-2xl font-semibold"><ChainInfo chainId={chainId} imgClassName="w-10 h-10" textClassName='pl-1 whitespace-nowrap text-6xl text-white' linkClassName='float-right text-white transition ease-out hover:text-[#8FEBFF] px-2 ml-4 mt-4 rounded-md ease-in-out bg-[#191919]' /></h3>
+      </div>
+      <HolisticStats
+        noMessaging={true}
+        platform={platform}
+        loading={false}
+        setPlatform={setPlatform}
+        baseVariables={{
+          platform: platform,
+          duration: "ALL_TIME",
+          useCache: true,
+          chainID: chainId,
+          useMv: true,
+        }}
       />
+      <br />
+      <HorizontalDivider />
+      <div className="grid grid-cols-4 gap-4">
+
+        <div className="col-span-1">
+
+          <div className="z-1 w-full h-full flex bg-synapse-logo bg-no-repeat bg-center">
+            <div id="tooltip-sidebar" className='w-full ' />
+          </div>
+        </div>
+        <div className="col-span-3 flex justify-end flex-col my-6	">
+          <div className="flex flex-wrap justify-end ">
+            <div className="h-full flex items-center mr-4">
+              {platform === "MESSAGE_BUS" ? null :
+
+                (<button
+                  onClick={() => setDailyStatisticType('VOLUME')}
+                  className={
+                    'font-medium rounded-l-md px-4 py-2 border h-fit  ' +
+                    (dailyStatisticType === 'VOLUME'
+                      ? selectStyle
+                      : unSelectStyle) +
+                    ((loadingDailyData || platform === "MESSAGE_BUS") ? ' pointer-events-none' : '')
+                  }
+                >
+                  Vol
+                </button>)}
+              <button
+                onClick={() => setDailyStatisticType('FEE')}
+                className={
+                  'font-medium px-4 py-2 border  h-fit ' +
+                  (dailyStatisticType === 'FEE' ? selectStyle : unSelectStyle) +
+                  (loadingDailyData ? ' pointer-events-none' : '') + (platform === "MESSAGE_BUS" ? ' rounded-l-md' : '')
+                }
+              >
+                Fees
+              </button>
+              <button
+                onClick={() => setDailyStatisticType('TRANSACTIONS')}
+                className={
+                  'font-medium  px-4 py-2 border  h-fit ' +
+                  (dailyStatisticType === 'TRANSACTIONS'
+                    ? selectStyle
+                    : unSelectStyle) +
+                  (loadingDailyData ? ' pointer-events-none' : '')
+                }
+              >
+                TXs
+              </button>
+              <button
+                onClick={() => setDailyStatisticType('ADDRESSES')}
+                className={
+                  'font-medium rounded-r-md px-4 py-2 border h-fit  ' +
+                  (dailyStatisticType === 'ADDRESSES'
+                    ? selectStyle
+                    : unSelectStyle) +
+                  (loadingDailyData ? ' pointer-events-none' : '')
+                }
+              >
+                Addr
+              </button>
+            </div>
+            <div className="h-full flex items-center mr-4">
+              <button
+                onClick={() => SetDailyStatisticDuration('PAST_MONTH')}
+                className={
+                  'font-medium rounded-l-md px-4 py-2 border  h-fit  ' +
+                  (dailyStatisticDuration === 'PAST_MONTH'
+                    ? selectStyle
+                    : unSelectStyle) +
+                  (loadingDailyData ? ' pointer-events-none' : '')
+                }
+              >
+                1mo
+              </button>
+              <button
+                onClick={() => SetDailyStatisticDuration('PAST_3_MONTHS')}
+                className={
+                  'font-medium  px-4 py-2 border  h-fit   ' +
+                  (dailyStatisticDuration === 'PAST_3_MONTHS'
+                    ? selectStyle
+                    : unSelectStyle) +
+                  (loadingDailyData ? ' pointer-events-none' : '')
+                }
+              >
+                3mo
+              </button>
+              <button
+                onClick={() => SetDailyStatisticDuration('PAST_6_MONTHS')}
+                className={
+                  'font-medium rounded-r-md px-4 py-2 border  h-fit ' +
+                  (dailyStatisticDuration === 'PAST_6_MONTHS'
+                    ? selectStyle
+                    : unSelectStyle) +
+                  (loadingDailyData ? ' pointer-events-none' : '')
+                }
+              >
+                6mo
+              </button>
+            </div>
+            <div className="h-full flex items-center">
+              <button
+                onClick={() => SetDailyStatisticCumulative(false)}
+                className={
+                  'font-medium rounded-l-md px-4 py-2 border  h-fit  ' +
+                  (!dailyStatisticCumulative ? selectStyle : unSelectStyle) +
+                  (loadingDailyData ? ' pointer-events-none' : '')
+                }
+              >
+                Daily
+              </button>
+              <button
+                onClick={() => SetDailyStatisticCumulative(true)}
+                className={
+                  'font-medium rounded-r-md px-4 py-2 border  h-fit ' +
+                  (dailyStatisticCumulative ? selectStyle : unSelectStyle) +
+                  (loadingDailyData ? ' pointer-events-none' : '')
+                }
+              >
+                Cumulative
+              </button>
+            </div>
+          </div>
+
+          <OverviewChart
+            singleChain={true}
+            loading={loadingDailyData}
+            height={Object.keys(CHAIN_ID_NAMES_REVERSE).length * 31}
+            chartData={dailyDataArr}
+            isCumulativeData={dailyStatisticCumulative}
+            dailyStatisticType={dailyStatisticType}
+            isUSD={
+              dailyStatisticType === 'TRANSACTIONS' ||
+                dailyStatisticType === 'ADDRESSES'
+                ? false
+                : true
+            }
+            showAggregated={false}
+            monthlyData={false}
+            platform={platform}
+            noTooltipLink={true}
+          />
+        </div>
+      </div>
+      <br /> <br />
+      <HorizontalDivider />
+      <br /> <br />
+      <p className="text-white text-2xl font-bold">Recent Transactions</p>
+      <div className="h-full flex items-center mt-4">
+        <button
+          onClick={() => setVariables({ chainIDFrom: chainId,useMv: true })}
+
+          className={
+            'font-medium rounded-l-md px-4 py-2 border  h-fit  ' +
+            (variables?.chainIDFrom ? selectStyle : unSelectStyle) +
+            (loadingDailyData ? ' pointer-events-none' : '')
+          }
+        >
+          Outgoing
+        </button>
+        <button
+          onClick={() => setVariables({ chainIDTo: chainId,useMv: true })}
+
+          className={
+            'font-medium rounded-r-md px-4 py-2 border  h-fit ' +
+            (variables?.chainIDTo ? selectStyle : unSelectStyle) +
+            (loadingDailyData ? ' pointer-events-none' : '')
+          }
+        >
+          Incoming
+        </button>
+      </div>
+      {loading ? <div className="flex justify-center align-center w-full my-[100px] animate-spin"><SynapseLogoSvg /></div> : <BridgeTransactionTable queryResult={transactionsArr} />}
+
+
+      <br />
+      <div className="text-center text-white my-6 ">
+        <div className="mt-2 mb-14 ">
+
+          <a
+            className="text-white rounded-md px-5 py-3 text-opacity-100 transition-all ease-in hover:bg-synapse-radial border-l-0 border-gray-700 border-opacity-30 bg-gray-700 bg-opacity-30 hover:border-[#BE78FF] cursor-pointer"
+            href={TRANSACTIONS_PATH}
+          >
+            {'Explore all transactions'}
+          </a>
+        </div>
+      </div>
+      <HorizontalDivider />
     </StandardPageContainer>
   )
-}
-
-export async function getServerSideProps(context) {
-  const { data: bridgeVolume } = await client.query({
-    query: GET_HISTORICAL_STATS,
-    variables: {
-      type: 'BRIDGEVOLUME',
-      days: 30,
-      chainId: Number(context.params.chainId),
-    },
-  })
-
-  const { data: transactionsData } = await client.query({
-    query: GET_HISTORICAL_STATS,
-    variables: {
-      type: 'TRANSACTIONS',
-      days: 30,
-      chainId: Number(context.params.chainId),
-    },
-  })
-
-  const { data: addresses } = await client.query({
-    query: GET_HISTORICAL_STATS,
-    variables: {
-      type: 'ADDRESSES',
-      days: 30,
-      chainId: Number(context.params.chainId),
-    },
-  })
-
-  const { data: latestBridgeTransactions } = await client.query({
-    query: GET_BRIDGE_TRANSACTIONS_QUERY,
-    variables: {
-      chainId: Number(context.params.chainId),
-      page: 1,
-    },
-  })
-
-  return {
-    props: {
-      bridgeVolume: bridgeVolume,
-      transactionsData: transactionsData,
-      addresses: addresses,
-      latestBridgeTransactions: latestBridgeTransactions,
-    },
-  }
 }

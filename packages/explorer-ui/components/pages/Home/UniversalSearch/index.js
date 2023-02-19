@@ -1,17 +1,94 @@
 import _ from 'lodash'
-import {useState} from 'react'
+import { useState } from 'react'
+import TextField from '@mui/material/TextField'
+import { inputStyle, dateInputStyle, comboSelectStyle, comboSelectStyleSmall, inputStyleRounded } from '@utils/styles/muiStyles'
+import { validateAndParseAddress } from '@utils/validateAndParseAddress'
+import { validateAndParseHash } from '@utils/validateAndParseHash'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 
-import {validateAndParseAddress} from '@utils/validateAndParseAddress'
-import {validateAndParseHash} from '@utils/validateAndParseHash'
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import { ChainId } from '@constants/networks'
+import dayjs from "dayjs"
+import { CHAIN_ENUM_BY_ID } from '@constants/networks'
 
-import {ChainId} from '@constants/networks'
+import { SearchBox } from './SearchBox'
 
-import {SearchBox} from './SearchBox'
+export function UniversalSearch({
+  placeholder,
+  setPending,
+  pending,
+  loading,
+  setWallet,
+  wallet,
+  setMinSize,
+  minSize,
+  setMaxSize,
+  maxSize,
 
-export function UniversalSearch({ placeholder }) {
+  setStartDate,
+  startDate,
+  setEndDate,
+  endDate,
+  setToTx,
+  toTx,
+  setFromTx,
+  fromTx,
+  setKappa,
+  kappa,
+  executeSearch,
+  chains,
+  setChains,
+  tokens,
+  setTokens,
+  chainsLocale,
+  setChainsLocale,
+  walletLocale,
+  setWalletLocale
+}) {
+  // const search = useSearchParams()
+
   const [searchField, setSearchField] = useState('')
   const [showText, setShowText] = useState(false)
+  // const [startDate, setStartDate] = useState("s");
+  const handleChains = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setChains(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
 
+  const handleTokens = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setTokens(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
+  const unSelectStyle =
+    'border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30'
+  const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
+  const resetFields = () => {
+    setWallet('')
+    setMinSize({ type: "USD", value: "" })
+    setMaxSize({ type: "USD", value: "" })
+    setStartDate(null)
+    setEndDate(null)
+    setToTx(true)
+    setFromTx(true)
+    setChains([])
+    setKappa('')
+  }
   let isValid
   let error
   let inputType
@@ -72,23 +149,44 @@ export function UniversalSearch({ placeholder }) {
             Filters
           </h3>
           <div className="grow">
-            <SearchBox
-              searchField={searchField}
-              setSearchField={setSearchField}
-              inputType={inputType}
-              placeholder={placeholder}
-            />
+            <TextField size="small" value={kappa} onChange={(e) => {
+              setKappa(e.target.value)
+            }}
+              id="outlined-basic" label="Search by TXID / TXHash" variant="outlined" sx={inputStyle} />
           </div>
-          <button className="font-medium rounded-r-md border border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 px-4 py-2">
-            <a href={searchLink}>
-              Search
-            </a>
+          <button onClick={() => executeSearch()}
+            className={
+              'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ml-[-105px] pointer-cursor z-10' +
+              (loading ? ' pointer-events-none opacity-[0.4]' : '')
+            }
+          >
+
+            Search
           </button>
+          {/* <button onClick={() => executeSearch()} className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200">
+            <a href={searchLink}>Search</a>
+          </button> */}
           <div className="">
-            <button className="font-medium rounded-l-md text-white border  border-[#BE78FF] bg-synapse-radial px-4 py-2">
+            <button
+              disabled={loading}
+              onClick={() => setPending(false)}
+              className={
+                'font-medium rounded-l-md px-4 py-2 border ' +
+                (pending ? unSelectStyle : selectStyle) +
+                (loading ? ' pointer-events-none' : '')
+              }
+            >
               Confirmed
             </button>
-            <button className="font-medium rounded-r-md border border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 px-4 py-2">
+            <button
+              disabled={loading}
+              onClick={() => setPending(true)}
+              className={
+                'font-medium rounded-r-md px-4 py-2 border ' +
+                (pending ? selectStyle : unSelectStyle) +
+                (loading ? ' pointer-events-none' : '')
+              }
+            >
               Pending
             </button>
           </div>
@@ -104,7 +202,7 @@ export function UniversalSearch({ placeholder }) {
         )} */}
         </div>
         {showText ? (
-          <div>
+          <div >
             {/* THIS IS WALLET ADDRESS */}
             <div className="flex justify-center items-center p-2 gap-x-4 py-4">
               <h3
@@ -114,174 +212,228 @@ export function UniversalSearch({ placeholder }) {
                 Wallet
               </h3>
               <div className="grow">
-                <form className="flex items-center">
-                  <div className="relative w-full group">
-                    <input
-                      type="text"
-                      id="simple-search"
-                      className={`
-                        bg-white bg-opacity-5
-                        rounded-md
-                        border border-white border-opacity-20
-                        focus:outline-none focus-within:border-gray-500
-                        block w-full  px-4 py-2
-                        text-white
-                        placeholder:text-white placeholder:text-opacity-60
-                      `}
-                      placeholder="Wallet Address"
-                      onChange={(e) => {
-                        setSearchField(e.target.value)
-                      }}
-                      value={searchField}
-                    />
-                  </div>
-                </form>
+                <TextField size="small" value={wallet} onChange={(e) => {
+                  setWallet(e.target.value)
+                }} id="outlined-basic" label="Wallet Address" variant="outlined" sx={inputStyle} />
+
+
               </div>
-              <input
+              <div className="flex justify-center rounded-md border-l-0 border-gray-700 border-opacity-70 bg-[#333333]  bg-opacity-30  py-[9px] px-3">
+                <div className="form-check form-check-inline mx-1" onClick={() => setWalletLocale(!walletLocale)}>
+                  <input checked={walletLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
+                  <label className="form-check-label inline-block text-gray-500 " for="walletFrom">From</label>
+                </div>
+                <div className="form-check form-check-inline mx-1" onClick={() => setWalletLocale(!walletLocale)}>
+                  <input checked={!walletLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white  checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletTo" value="option2" />
+                  <label className="form-check-label inline-block text-gray-500  " for="walletTo">To</label>
+                </div>
+              </div>
+
+              {/* <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                checked
+                checked={toTx}
+                onClick={() => { setToTx(!toTx) }}
+
               />
               <h3 className="text-white font-semibold">To</h3>
               <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                checked
+                checked={fromTx}
+                onClick={() => { setFromTx(!fromTx) }}
               />
-              <h3 className="text-white font-semibold">From</h3>
+              <h3 className="text-white font-semibold">From</h3> */}
             </div>
+
+
             {/* THIS IS MIN/MAX SIZE */}
-            <div className="flex justify-center items-center p-2 gap-x-4 py-4">
+            <div className="flex justify-center items-center p-2 gap-x-14 py-4">
+              <h3
+                className="text-white flex items-center mr-1"
+                onClick={() => setShowText(!showText)}
+              >
+                Chain
+              </h3>
+              <div className="grow">
+                <div className="flex flex-row items-center ">
+                  <TextField
+                    select
+                    id="Chains"
+                    name="Chains"
+                    variant="outlined"
+                    label="Chains"
+                    size="small"
+                    value={chains}
+                    sx={comboSelectStyle}
+                    SelectProps={{
+                      multiple: true,
+                      onChange: (e) => handleChains(e)
+                    }}
+                  >
+
+                    {Object.values(CHAIN_ENUM_BY_ID).map((chain) => (
+                      <MenuItem
+                        key={chain}
+                        value={chain}
+                      >
+                        {chain}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  <div className="ml-4 w-fit flex justify-center rounded-md border-l-0 border-gray-700 border-opacity-70 bg-[#333333]  bg-opacity-30 py-[9px] px-3">
+                    <div className="form-check form-check-inline mx-2" onClick={() => setChainsLocale(!chainsLocale)}>
+                      <input checked={chainsLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletFrom" value="option1" />
+                      <label className="form-check-label inline-block text-gray-500 " for="walletFrom">From</label>
+                    </div>
+                    <div className="form-check form-check-inline mx-2" onClick={() => setChainsLocale(!chainsLocale)}>
+                      <input checked={!chainsLocale} className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-purple-300 checked:bg-opacity-90 checked:border-purple-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer" type="checkbox" id="walletTo" value="option2" />
+                      <label className="form-check-label inline-block text-gray-500  " for="walletTo">To</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* <div className="flex justify-center items-center p-2 gap-x-14 py-4">
+              <h3
+                className="text-white flex items-center mr-1"
+                onClick={() => setShowText(!showText)}
+              >
+                Token
+              </h3>
+              <div className="grow">
+                <div className="flex flex-row items-center ">
+                <TextField size="small" value={token} onChange={(e) => {
+                  setToken(e.target.value)
+                }} id="outlined-basic" label="Token Address" variant="outlined" sx={inputStyle} />
+
+
+                </div>
+              </div>
+            </div> */}
+            {/* THIS IS MIN/MAX SIZE */}
+            <div className="flex justify-center items-center p-2 gap-x-6 py-4">
               <h3
                 className="text-white flex items-center mr-6"
                 onClick={() => setShowText(!showText)}
               >
-                Min Size
+                Volume
               </h3>
-              <div className="grow mr-12">
-                <form className="flex items-center">
-                  <div className="relative w-full group">
-                    <input
-                      type="text"
-                      id="simple-search"
-                      className={`
-                        bg-white bg-opacity-5
-                        rounded-md
-                        border border-white border-opacity-20
-                        focus:outline-none focus-within:border-gray-500
-                        block w-full  px-4 py-2
-                        text-white
-                        placeholder:text-white placeholder:text-opacity-60
-                      `}
-                      placeholder="Min Size"
-                      onChange={(e) => {
-                        setSearchField(e.target.value)
-                      }}
-                      value={searchField}
-                    />
+              <div className="flex flex-row w-full justify-between">
+
+                <div className="w-[49%] flex flex-row ">
+                  <div className='w-[80%]'>
+                    <TextField type="number" size="small" value={minSize.value} onChange={(e) => {
+                      setMinSize({ ...minSize, value: e.target.value })
+                    }} id="outlined-basic" label="Min Size" variant="outlined" sx={inputStyleRounded} />
                   </div>
-                </form>
-              </div>
-              <h3
-                className="text-white flex items-center"
-                onClick={() => setShowText(!showText)}
-              >
-                Max Size
-              </h3>
-              <div className="grow">
-                <form className="flex items-center">
-                  <div className="relative w-full group ">
-                    <input
-                      type="text"
-                      id="simple-search"
-                      className={`
-                        bg-white bg-opacity-5
-                        rounded-md
-                        border border-white border-opacity-20
-                        focus:outline-none focus-within:border-gray-500
-                        block w-full  px-4 py-2
-                        text-white
-                        placeholder:text-white placeholder:text-opacity-60
-                      `}
-                      placeholder="Max Size"
-                      onChange={(e) => {
-                        setSearchField(e.target.value)
+                  <div className='w-[20%]'>
+                    <TextField
+                      select
+                      id="UnitsMin"
+                      name="UnitsMin"
+                      variant="outlined"
+                      label="Units"
+                      size="small"
+                      sx={comboSelectStyleSmall}
+                      SelectProps={{
+                        value: minSize.type,
+                        onChange: (e) => setMinSize({ ...minSize, type: e.target.value })
                       }}
-                      value={searchField}
-                    />
+                    >
+                      <MenuItem
+                        key="USD"
+                        value="USD"
+                        selected
+                      >
+                        USD
+                      </MenuItem>
+                      <MenuItem
+                        key="Amount"
+                        value="Amount"
+                      >
+                        Amount
+                      </MenuItem>
+                    </TextField>
                   </div>
-                </form>
+                </div>
+                <div className="w-[49%] flex flex-row">
+                  <div className='w-[80%]'>
+                    <TextField size="small" type="number" onChange={(e) => { setMaxSize({ ...maxSize, value: e.target.value }) }}
+                      value={maxSize.value} id="outlined-basic" label="Max Size" variant="outlined" sx={inputStyleRounded} />
+                  </div>
+                  <div className='w-[20%]'>
+                    <TextField
+                      select
+                      id="UnitsMax"
+                      name="UnitsMax"
+                      variant="outlined"
+                      label="Units"
+                      size="small"
+                      sx={comboSelectStyleSmall}
+                      SelectProps={{
+                        value: maxSize.type,
+                        onChange: (e) => setMaxSize({ ...maxSize, type: e.target.value })
+                      }}
+                    >
+                      <MenuItem
+                        key="USD"
+                        value="USD"
+
+                      >
+                        USD
+                      </MenuItem>
+                      <MenuItem
+                        key="Amount"
+                        value="Amount"
+                      >
+                        Amount
+                      </MenuItem>
+                    </TextField>
+                  </div>
+                </div>
               </div>
             </div>
             {/* THIS IS START/DATE */}
-            <div className="flex justify-center items-center p-2 gap-x-4 py-4">
+            <div className="flex justify-center items-center p-2 gap-x-14 py-4">
               <h3
                 className="text-white flex items-center mr-2"
                 onClick={() => setShowText(!showText)}
               >
-                Start date
+                Time
               </h3>
-              <div className="grow mr-12">
-                <form className="flex items-center">
-                  <div className="relative w-full group">
-                    <input
-                      type="text"
-                      id="simple-search"
-                      className={`
-                        bg-white bg-opacity-5
-                        rounded-md
-                        border border-white border-opacity-20
-                        focus:outline-none focus-within:border-gray-500
-                        block w-full  px-4 py-2
-                        text-white
-                        placeholder:text-white placeholder:text-opacity-60
-                      `}
-                      placeholder="yyyy-mm-dd"
-                      onChange={(e) => {
-                        setSearchField(e.target.value)
+              <div className="flex flex-row w-full justify-between">
+                <div className="w-[49%]">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Start Date"
+                      value={startDate}
+                      onChange={(newValue) => {
+                        setStartDate(newValue);
                       }}
-                      value={searchField}
+                      renderInput={(params) => <TextField size="small" sx={dateInputStyle} {...params} />}
                     />
-                  </div>
-                </form>
-              </div>
-              <h3
-                className="text-white flex items-center"
-                onClick={() => setShowText(!showText)}
-              >
-                End date
-              </h3>
-              <div className="grow">
-                <form className="flex items-center">
-                  <div className="relative w-full group ">
-                    <input
-                      type="text"
-                      id="simple-search"
-                      className={`
-                        bg-white bg-opacity-5
-                        rounded-md
-                        border border-white border-opacity-20
-                        focus:outline-none focus-within:border-gray-500
-                        block w-full  px-4 py-2
-                        text-white
-                        placeholder:text-white placeholder:text-opacity-60
-                      `}
-                      placeholder="yyyy-mm-dd"
-                      onChange={(e) => {
-                        setSearchField(e.target.value)
+                  </LocalizationProvider>
+                </div>
+                <div className="w-[49%]">
+                  <LocalizationProvider sx={{ width: "100%" }} dateAdapter={AdapterDayjs}>
+                    <DatePicker
+
+                      label="End Date"
+                      value={endDate}
+                      onChange={(newValue) => {
+                        setEndDate(newValue);
                       }}
-                      value={searchField}
+                      renderInput={(params) => <TextField size="small" sx={dateInputStyle} {...params} />}
                     />
-                  </div>
-                </form>
-              </div>
-            </div>
+                  </LocalizationProvider>
+                </div>
+              </div> </div>
             {/* THIS IS BUTTONS */}
             <div className="flex items-center p-2 gap-x-4 mb-3">
-              <button className="font-medium rounded-[4px] text-white bg-[#333333] px-4 py-2">
-                Apply
-              </button>
-              <button className="font-medium rounded-[4px] text-[#333333]  bg-opacity-40 bg-[#333333] px-4 py-2">
+
+              <button className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200" onClick={() => resetFields()}>
                 Reset
               </button>
             </div>

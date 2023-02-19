@@ -3,6 +3,7 @@ package testcontracts
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -43,12 +44,17 @@ type TestMessageBusUpgradeableDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// TestMetaSwapDeployer is the type of the test meta swap deployer.
+type TestMetaSwapDeployer struct {
+	*deployer.BaseDeployer
+}
+
 // NewTestSynapseBridgeDeployer creates a new test bridge deployer.
 func NewTestSynapseBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return TestSynapseBridgeDeployer{deployer.NewSimpleDeployer(registry, backend, TestSynapseBridgeType)}
 }
 
-// NewTestSynapseBridgeV1Deployer creates a new test bridge deployer.
+// NewTestSynapseBridgeV1Deployer creates a new test bridge v1 deployer.
 func NewTestSynapseBridgeV1Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return TestSynapseBridgeV1Deployer{deployer.NewSimpleDeployer(registry, backend, TestSynapseBridgeV1Type)}
 }
@@ -63,9 +69,14 @@ func NewBridgeConfigV3Deployer(registry deployer.GetOnlyContractRegistry, backen
 	return BridgeConfigV3Deployer{deployer.NewSimpleDeployer(registry, backend, testutil.BridgeConfigTypeV3)}
 }
 
-// NewTestMessageBusDeployer creates a new test bridge deployer.
+// NewTestMessageBusDeployer creates a new test message bus deployer.
 func NewTestMessageBusDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return TestMessageBusUpgradeableDeployer{deployer.NewSimpleDeployer(registry, backend, TestMessageBusType)}
+}
+
+// NewTestMetaSwapDeployer creates a new test meta swap deployer.
+func NewTestMetaSwapDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return TestMetaSwapDeployer{deployer.NewSimpleDeployer(registry, backend, TestMetaSwapType)}
 }
 
 // Deploy deploys a test bridge.
@@ -130,7 +141,7 @@ func (n BridgeConfigV3Deployer) Deploy(ctx context.Context) (contracts.DeployedC
 	})
 }
 
-// Deploy deploys a test message.
+// Deploy deploys a test message bus contract.
 func (t TestMessageBusUpgradeableDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return t.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return testmessagebus.DeployTestMessageBusUpgradeable(transactOps, backend)
@@ -139,8 +150,18 @@ func (t TestMessageBusUpgradeableDeployer) Deploy(ctx context.Context) (contract
 	})
 }
 
+// Deploy deploys a test meta swap contract.
+func (t TestMetaSwapDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return t.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return testmetaswap.DeployTestMetaSwap(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return testmetaswap.NewTestMetaSwapRef(address, backend)
+	})
+}
+
 var _ deployer.ContractDeployer = &TestSynapseBridgeDeployer{}
 var _ deployer.ContractDeployer = &TestSynapseBridgeV1Deployer{}
 var _ deployer.ContractDeployer = &TestSwapFlashLoanDeployer{}
 var _ deployer.ContractDeployer = &BridgeConfigV3Deployer{}
 var _ deployer.ContractDeployer = &TestMessageBusUpgradeableDeployer{}
+var _ deployer.ContractDeployer = &TestMetaSwapDeployer{}

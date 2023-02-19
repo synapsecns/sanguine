@@ -10,6 +10,8 @@ import optimismLogo from '@assets/icons/optimism.svg'
 import bobaLogo from '@assets/icons/boba.svg'
 import cronosLogo from '@assets/icons/cronos.svg'
 import metisLogo from '@assets/icons/metis.svg'
+import cantoLogo from '@assets/icons/canto.svg'
+import dogeLogo from '@assets/icons/doge.svg'
 
 import ethImg from '@assets/networks/eth.jpg'
 import bscImg from '@assets/networks/bsc.jpg'
@@ -27,6 +29,8 @@ import moonriverImg from '@assets/networks/moonriver.jpeg'
 import cronosImg from '@assets/networks/cronos.png'
 import metisImg from '@assets/networks/metis.png'
 import klaytnImg from '@assets/networks/klaytn.jpeg'
+import cantoImg from '@assets/networks/canto.png'
+import dogeImg from '@assets/networks/doge.png'
 
 import terraImg from '@assets/networks/terra.png'
 
@@ -56,6 +60,8 @@ export const ChainId = {
   DFK: 53935,
   AURORA: 1313161554,
   HARMONY: 1666600000,
+  CANTO: 7700,
+  DOGECHAIN: 2000,
 
   TERRA: 121014925, //"columbus-5", the day columbus reportedly landed in america followed by 5
 }
@@ -194,6 +200,22 @@ export const CHAIN_INFO_MAP = {
     chainImg: klaytnImg,
     layer: 1,
   },
+  [ChainId.CANTO]: {
+    chainId: ChainId.CANTO,
+    chainSymbol: 'CANTO',
+    chainName: 'Canto',
+    chainLogo: cantoLogo,
+    chainImg: cantoImg,
+    layer: 2,
+  },
+  [ChainId.DOGECHAIN]: {
+    chainId: ChainId.DOGECHAIN,
+    chainSymbol: 'DOGE',
+    chainName: 'Dogechain',
+    chainLogo: dogeLogo,
+    chainImg: dogeImg,
+    layer: 2,
+  },
   // NON_EVM
   [ChainId.TERRA]: {
     chainId: ChainId.TERRA,
@@ -268,8 +290,8 @@ export const CHAIN_EXPLORER_URLS = {
   [ChainId.FANTOM]: 'https://ftmscan.com',
   [ChainId.HARMONY]: 'https://explorer.harmony.one',
   [ChainId.AURORA]: 'https://explorer.mainnet.aurora.dev',
-  [ChainId.CRONOS]: 'https://cronoscan.com/',
-  [ChainId.METIS]: 'https://andromeda-explorer.metis.io/',
+  [ChainId.CRONOS]: 'https://cronoscan.com',
+  [ChainId.METIS]: 'https://andromeda-explorer.metis.io',
   [ChainId.KLAYTN]: 'https://scope.klaytn.com',
   [ChainId.TERRA]: 'https://terrasco.pe/mainnet', //'https://finder.terra.money/mainnet',
 }
@@ -490,18 +512,23 @@ export const CHAIN_BLOCK_TIME = {
 export const CHAIN_ENUM_BY_ID = {
   [ChainId.ETH]: 'ethereum',
   [ChainId.OPTIMISM]: 'optimism',
+  [ChainId.CRONOS]: 'cronos',
   [ChainId.BSC]: 'bsc',
   [ChainId.POLYGON]: 'polygon',
   [ChainId.FANTOM]: 'fantom',
   [ChainId.BOBA]: 'boba',
+  [ChainId.METIS]: 'metis',
   [ChainId.MOONBEAM]: 'moonbeam',
   [ChainId.MOONRIVER]: 'moonriver',
+  [ChainId.KLAYTN]: 'klaytn',
   [ChainId.ARBITRUM]: 'arbitrum',
   [ChainId.AVALANCHE]: 'avalanche',
   [ChainId.DFK]: 'dfk',
   [ChainId.AURORA]: 'aurora',
   [ChainId.HARMONY]: 'harmony',
-  [ChainId.CRONOS]: 'cronos',
-  [ChainId.METIS]: 'metis',
-  [ChainId.KLAYTN]: 'klaytn',
+  [ChainId.CANTO]: 'canto',
+  [ChainId.DOGECHAIN]: 'dogechain',
+
 }
+
+export const CHAIN_ID_NAMES_REVERSE = Object.fromEntries(Object.entries(CHAIN_ENUM_BY_ID).map(([k, v]) => [v, k]))

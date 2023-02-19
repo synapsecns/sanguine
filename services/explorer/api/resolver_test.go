@@ -124,7 +124,7 @@ func (g APISuite) TestAddressRanking() {
 }
 
 // nolint:cyclop
-func (g APISuite) TestBridgeAmountStatistic() {
+func (g APISuite) TestAmountStatistic() {
 	chainID := g.chainIDs[0]
 	destinationChainIDA := g.chainIDs[1]
 	destinationChainIDB := g.chainIDs[2]
@@ -197,32 +197,33 @@ func (g APISuite) TestBridgeAmountStatistic() {
 
 	statType := model.StatisticTypeTotalVolumeUsd
 	duration := model.DurationPastDay
-	result, err := g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
+	platform := model.PlatformBridge
+	result, err := g.client.GetAmountStatistic(g.GetTestContext(), statType, &platform, &duration, nil, nil, nil, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 
 	Equal(g.T(), fmt.Sprintf("%f", total), *result.Response.Value)
 
 	statType = model.StatisticTypeCountTransactions
-	result, err = g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
+	result, err = g.client.GetAmountStatistic(g.GetTestContext(), statType, &platform, &duration, nil, nil, nil, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), fmt.Sprintf("%f", count), *result.Response.Value)
 
 	statType = model.StatisticTypeMeanVolumeUsd
-	result, err = g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
+	result, err = g.client.GetAmountStatistic(g.GetTestContext(), statType, &platform, &duration, nil, nil, nil, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), fmt.Sprintf("%f", mean), *result.Response.Value)
 
 	statType = model.StatisticTypeMedianVolumeUsd
-	result, err = g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
+	result, err = g.client.GetAmountStatistic(g.GetTestContext(), statType, &platform, &duration, nil, nil, nil, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), fmt.Sprintf("%f", median), *result.Response.Value)
 
 	statType = model.StatisticTypeCountAddresses
-	result, err = g.client.GetBridgeAmountStatistic(g.GetTestContext(), statType, &duration, nil, nil, nil)
+	result, err = g.client.GetAmountStatistic(g.GetTestContext(), statType, &platform, &duration, nil, nil, nil, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), "1.000000", *result.Response.Value)
@@ -436,7 +437,7 @@ func (g APISuite) TestGetCountByTokenAddress() {
 }
 
 // nolint:cyclop
-func (g APISuite) TestHistoricalStatistics() {
+func (g APISuite) TestDailyStatisticsByChain() {
 	chainID := g.chainIDs[0]
 	destinationChainIDA := g.chainIDs[1]
 	destinationChainIDB := g.chainIDs[2]
@@ -484,32 +485,33 @@ func (g APISuite) TestHistoricalStatistics() {
 		Nil(g.T(), err)
 	}
 
-	days := 120
 	chainIDInt := int(chainID)
 	total := 0.0
 	for _, v := range cumulativePrice {
 		total += v
 	}
-	typeArg := model.HistoricalResultTypeBridgevolume
-	result, err := g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
+	platform := model.PlatformBridge
+	days := model.DurationPast3Months
+	typeArg := model.DailyStatisticTypeVolume
+	result, err := g.client.GetDailyStatisticsByChain(g.GetTestContext(), &chainIDInt, &typeArg, &days, &platform, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
-	Equal(g.T(), total, *result.Response.Total)
-	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
+	Equal(g.T(), total, *result.Response[0].Total)
+	Equal(g.T(), len(cumulativePrice), len(result.Response))
 
-	typeArg = model.HistoricalResultTypeAddresses
-	result, err = g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
+	typeArg = model.DailyStatisticTypeAddresses
+	result, err = g.client.GetDailyStatisticsByChain(g.GetTestContext(), &chainIDInt, &typeArg, &days, &platform, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
-	Equal(g.T(), float64(3), *result.Response.Total)
-	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
+	Equal(g.T(), float64(3), *result.Response[0].Total)
+	Equal(g.T(), len(cumulativePrice), len(result.Response))
 
-	typeArg = model.HistoricalResultTypeTransactions
-	result, err = g.client.GetHistoricalStatistics(g.GetTestContext(), &chainIDInt, &typeArg, &days)
+	typeArg = model.DailyStatisticTypeTransactions
+	result, err = g.client.GetDailyStatisticsByChain(g.GetTestContext(), &chainIDInt, &typeArg, &days, &platform, nil)
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
-	Equal(g.T(), float64(len(cumulativePrice)), *result.Response.Total)
-	Equal(g.T(), len(cumulativePrice), len(result.Response.DateResults))
+	Equal(g.T(), float64(len(cumulativePrice)), *result.Response[0].Total)
+	Equal(g.T(), len(cumulativePrice), len(result.Response))
 }
 
 func (g APISuite) TestGetBridgeTransactions() {
@@ -587,7 +589,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Nil(g.T(), err)
 	pending := true
 
-	originRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, &txHashString, nil, &pending, &page, nil)
+	originRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, &txHashString, nil, &pending, &page, nil, nil, nil)
 	Nil(g.T(), err)
 	Equal(g.T(), 1, len(originRes.Response))
 	originResOne := *originRes.Response[0]
@@ -605,7 +607,7 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Equal(g.T(), formattedValue, uint64(*fromInfo.FormattedValue*1000000))
 	Equal(g.T(), tokenSymbol, *fromInfo.TokenSymbol)
 	Equal(g.T(), tokenAddress, *fromInfo.TokenAddress)
-	Equal(g.T(), 0, *fromInfo.BlockNumber)
+	Equal(g.T(), 1, *fromInfo.BlockNumber)
 	Equal(g.T(), int(timestamp), *fromInfo.Time)
 
 	toInfo := *originResOne.ToInfo
@@ -617,19 +619,19 @@ func (g APISuite) TestGetBridgeTransactions() {
 	Equal(g.T(), formattedValue, uint64(*toInfo.FormattedValue*1000000))
 	Equal(g.T(), tokenSymbol, *toInfo.TokenSymbol)
 	Equal(g.T(), tokenAddress, *toInfo.TokenAddress)
-	Equal(g.T(), 0, *toInfo.BlockNumber)
+	Equal(g.T(), 1, *toInfo.BlockNumber)
 	Equal(g.T(), int(timestamp), *toInfo.Time)
 
 	pending = false
 
-	destinationRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, nil, &kappaString, &pending, &page, nil)
+	destinationRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, &kappaString, &pending, &page, nil, nil, nil)
 	Nil(g.T(), err)
 	Equal(g.T(), 1, len(destinationRes.Response))
 	destinationResOne := *destinationRes.Response[0]
 	Equal(g.T(), originResOne, destinationResOne)
 
 	pending = true
-	addressRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, &senderString, nil, nil, &pending, &page, nil)
+	addressRes, err := g.client.GetBridgeTransactions(g.GetTestContext(), nil, nil, nil, &senderString, nil, nil, nil, nil, nil, nil, nil, nil, &pending, &page, nil, nil, nil)
 	Nil(g.T(), err)
 	Equal(g.T(), 1, len(addressRes.Response))
 
