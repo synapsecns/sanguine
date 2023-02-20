@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/scribe
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "7c180394a51f57b69eee77ed73b8032966d9edbd"
+  tag: "f89e4184780445a96b1761e10dd1ca1eb3ff7ade"
 
 imagePullSecrets: []
 nameOverride: ""
