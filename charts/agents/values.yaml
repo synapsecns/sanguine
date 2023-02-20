@@ -140,7 +140,7 @@ guard:
               fieldPath: metadata.namespace
 
 executor:
-  type: "remote-fresh"
+  type: "embedded"
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
