@@ -49,12 +49,8 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*i
 	if err != nil {
 		return nil, err
 	}
-	// If we have either just a chain ID or an address, or both a chain ID and an address, we need to search for
-	// both the origin -> destination transactions that match the search parameters, and the destination -> origin
-	// transactions that match the search parameters. Then we need to merge the results and remove duplicates.
-
 	results = r.mergeBridgeTransactions(fromResults, toResults)
-	//}
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 	}
@@ -90,6 +86,7 @@ func (r *queryResolver) CountByTokenAddress(ctx context.Context, chainID *int, a
 	directionIn := r.getDirectionIn(direction)
 	targetTime := GetTargetTime(hours)
 	results, err := r.DB.GetTokenCounts(ctx, generateBridgeEventCountQuery(chainID, address, nil, directionIn, &targetTime, true))
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to get count by chain ID: %w", err)
 	}
@@ -199,6 +196,7 @@ func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int
 			return res, nil
 		}
 	}
+
 	var err error
 	firstFilter := true
 	timestampSpecifier := GetDurationFilter(duration, &firstFilter)

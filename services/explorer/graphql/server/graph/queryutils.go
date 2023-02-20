@@ -260,10 +260,10 @@ func generateDirectionSpecifierSQL(in bool, firstFilter *bool, tablePrefix strin
 	if *firstFilter {
 		*firstFilter = false
 
-		return fmt.Sprintf(" WHERE %s%s == 0", tablePrefix, sql.DestinationChainIDFieldName)
+		return fmt.Sprintf(" WHERE %s%s = 0", tablePrefix, sql.DestinationChainIDFieldName)
 	}
 
-	return fmt.Sprintf(" AND %s%s == 0", tablePrefix, sql.DestinationChainIDFieldName)
+	return fmt.Sprintf(" AND %s%s = 0", tablePrefix, sql.DestinationChainIDFieldName)
 }
 
 // generateSingleSpecifierI32SQL generates a where function with an uint32.
@@ -381,7 +381,7 @@ func generateSingleSpecifierStringArrSQLMv(values []*string, field string, first
 	}
 	for i := range values {
 		if values[i] != nil {
-			final += fmt.Sprintf(" lower(%s%s) = '%s'", tablePrefix, field, *values[i])
+			final += fmt.Sprintf(" lower(%s%s) = lower('%s')", tablePrefix, field, *values[i])
 			if i < len(values)-1 {
 				final += orString
 			}
@@ -416,10 +416,10 @@ func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE lower(%s%s) = '%s'", tablePrefix, field, *value)
+			return fmt.Sprintf(" WHERE lower(%s%s) =  lower('%s')", tablePrefix, field, *value)
 		}
 
-		return fmt.Sprintf(" AND lower(%s%s) = '%s'", tablePrefix, field, *value)
+		return fmt.Sprintf(" AND lower(%s%s) =  lower('%s')", tablePrefix, field, *value)
 	}
 
 	return ""
@@ -468,15 +468,15 @@ func generateKappaSpecifierSQLMv(value *string, field string, firstFilter *bool,
 		if *firstInLocale {
 			*firstFilter = false
 			*firstInLocale = false
-			return fmt.Sprintf(" lower(%s%s) = '%s'", tablePrefix, field, *value)
+			return fmt.Sprintf(" lower(%s%s) = lower('%s')", tablePrefix, field, *value)
 		}
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE lower(%s%s) = '%s'", tablePrefix, field, *value)
+			return fmt.Sprintf(" WHERE lower(%s%s) = lower('%s')", tablePrefix, field, *value)
 		}
 
-		return fmt.Sprintf(" AND lower(%s%s) = '%s'", tablePrefix, field, *value)
+		return fmt.Sprintf(" AND lower(%s%s) = lower('%s')", tablePrefix, field, *value)
 	}
 
 	return ""
@@ -524,6 +524,7 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 		query = fmt.Sprintf(`%s SELECT %s, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM %s %s) GROUP BY %s ORDER BY Count Desc`,
 			generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.TxHashFieldName, singleSideCol, "baseQuery", singleSideJoinsCTE, sql.ChainIDFieldName)
 	}
+	fmt.Println("QQQ", query)
 	return query
 }
 
@@ -1245,6 +1246,7 @@ func GenerateDailyStatisticByChainBridgeSQL(typeArg *model.DailyStatisticType, c
 	default:
 		return nil, fmt.Errorf("unsupported statistic type")
 	}
+	fmt.Println("+++++++", query)
 	return &query, nil
 }
 

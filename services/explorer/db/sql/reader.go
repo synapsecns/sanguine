@@ -102,8 +102,7 @@ func (s *Store) GetAllMessageBusEvents(ctx context.Context, query string) ([]Hyb
 // GetTxCounts returns Tx counts.
 func (s *Store) GetTxCounts(ctx context.Context, query string) ([]*model.TransactionCountResult, error) {
 	var res []*model.TransactionCountResult
-	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
-
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}
@@ -114,7 +113,7 @@ func (s *Store) GetTxCounts(ctx context.Context, query string) ([]*model.Transac
 // GetTokenCounts returns Tx counts.
 func (s *Store) GetTokenCounts(ctx context.Context, query string) ([]*model.TokenCountResult, error) {
 	var res []*model.TokenCountResult
-	dbTx := s.db.WithContext(ctx).Raw(query + " SETTINGS readonly=1").Find(&res)
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
 	}

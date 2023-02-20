@@ -104,9 +104,10 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRa
 		}
 	}
 	if err := contractsGroup.Wait(); err != nil {
-		logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-eeeerrbackfilling chain %d completed", c.chainConfig.ChainID)
+		logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-eeeerrbackfilling chain %d completed %v", c.chainConfig.ChainID, err)
 
 		return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
+
 	}
 	logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-backfilling chain %d completed", c.chainConfig.ChainID)
 	return nil
@@ -155,10 +156,13 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 	var endHeight uint64
 	err = c.retryWithBackoff(parentCtx, func(ctx context.Context) error {
 		endHeight, err = c.Fetcher.FetchLastIndexed(parentCtx, c.chainConfig.ChainID, contract.Address)
-		return fmt.Errorf("could not get last indexed height, %w", err)
+		if err != nil {
+			return fmt.Errorf("could not get last indexed height, %w", err)
+		}
+		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("could not get last indexed for contract %s: %w", contract.Address, err)
+		return fmt.Errorf("could not get last indexed for contract %s: %w, %v", contract.Address, err, c.chainConfig)
 	}
 
 	currentHeight := startHeight
@@ -227,15 +231,20 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 		// Store the last block in clickhouse
 		err = c.retryWithBackoff(parentCtx, func(ctx context.Context) error {
 			err = c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
-			return fmt.Errorf("error storing last block, %w", err)
+			if err != nil {
+				return fmt.Errorf("error storing last block, %w", err)
+
+			}
+			return nil
 		})
 		if err != nil {
 			logger.Errorf("could not store last block for chain %d: %s %d, %s, %s", c.chainConfig.ChainID, err, chunkEnd, contract.Address, contract.ContractType)
 			return fmt.Errorf("could not store last block for chain %d: %w", c.chainConfig.ChainID, err)
 		}
 		currentHeight = chunkEnd + 1
+		fmt.Println("DONE WITH CHUNK", contract.Address)
 	}
-
+	fmt.Println("DONE WITH BACKFILLING", contract.Address)
 	return nil
 }
 
@@ -322,6 +331,7 @@ func (c *ChainBackfiller) retryWithBackoff(ctx context.Context, doFunc retryable
 	for attempts < maxAttempt {
 		select {
 		case <-ctx.Done():
+			fmt.Println("CONEXT CANCELED ", ctx.Err(), attempts)
 			return fmt.Errorf("%w while retrying", ctx.Err())
 		case <-time.After(timeout):
 			err := doFunc(ctx)
@@ -333,5 +343,5 @@ func (c *ChainBackfiller) retryWithBackoff(ctx context.Context, doFunc retryable
 			}
 		}
 	}
-	return fmt.Errorf("max attempts reached while retrying swap fetcher")
+	return fmt.Errorf("max attempts reached while retrying")
 }
