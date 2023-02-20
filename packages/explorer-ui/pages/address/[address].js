@@ -1,20 +1,16 @@
 import { TRANSACTIONS_PATH } from '@urls'
 import { useState, useEffect } from 'react'
-import { TableHeader } from '@components/TransactionTable/TableHeader'
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
-import { AssetImage } from '@components/misc/AssetImage'
-import { useSearchParams } from 'next/navigation'
 
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-import { formatUSD } from '@utils/formatUSD'
-import { ChainInfo } from "@components/misc/ChainInfo";
+
 
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
-import { useLazyQuery, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
 import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import { useRouter } from "next/router";
+import { checksumAddress } from '@utils/checksum'
 
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
@@ -90,28 +86,28 @@ export default function address() {
 
   // Get initial data
   useEffect(() => {
-    setWalletAddress(address)
-    setVariables({ page: 1, addressFrom: address, useMv: true })
+    setWalletAddress(checksumAddress(address))
+    setVariables({ page: 1, addressFrom: checksumAddress(address), useMv: true })
   }, [address])
 
   return (
     <StandardPageContainer title={"Address"}>
-       <h3 className="text-white text-2xl">{walletAddress}</h3>
+      <h3 className="text-white text-2xl">{walletAddress}</h3>
 
 
-      {walletAddress != ""?
-      <HolisticStats
-        platform={platform}
-        loading={false}
-        setPlatform={setPlatform}
-        baseVariables={{
-          platform: platform,
-          duration: "ALL_TIME",
-          useCache: false,
-          address: walletAddress,
-           useMv: true
-        }}
-      /> : null}
+      {walletAddress != "" ?
+        <HolisticStats
+          platform={platform}
+          loading={false}
+          setPlatform={setPlatform}
+          baseVariables={{
+            platform: platform,
+            duration: "ALL_TIME",
+            useCache: false,
+            address: walletAddress,
+            useMv: true
+          }}
+        /> : null}
       <br />
       <HorizontalDivider />
 
@@ -131,7 +127,7 @@ export default function address() {
           Outgoing
         </button>
         <button
-          onClick={() => setVariables({ page: 1,  addressTo: walletAddress, useMv: true })
+          onClick={() => setVariables({ page: 1, addressTo: walletAddress, useMv: true })
           }
 
           className={
