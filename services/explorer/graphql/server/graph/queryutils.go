@@ -381,7 +381,7 @@ func generateSingleSpecifierStringArrSQLMv(values []*string, field string, first
 	}
 	for i := range values {
 		if values[i] != nil {
-			final += fmt.Sprintf(" lower(%s%s) = lower('%s')", tablePrefix, field, *values[i])
+			final += fmt.Sprintf(" %s%s = '%s'", tablePrefix, field, *values[i])
 			if i < len(values)-1 {
 				final += orString
 			}
@@ -416,10 +416,10 @@ func generateSingleSpecifierStringSQL(value *string, field string, firstFilter *
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE lower(%s%s) =  lower('%s')", tablePrefix, field, *value)
+			return fmt.Sprintf(" WHERE %s%s =  '%s'", tablePrefix, field, *value)
 		}
 
-		return fmt.Sprintf(" AND lower(%s%s) =  lower('%s')", tablePrefix, field, *value)
+		return fmt.Sprintf(" AND %s%s =  '%s'", tablePrefix, field, *value)
 	}
 
 	return ""
@@ -468,15 +468,15 @@ func generateKappaSpecifierSQLMv(value *string, field string, firstFilter *bool,
 		if *firstInLocale {
 			*firstFilter = false
 			*firstInLocale = false
-			return fmt.Sprintf(" lower(%s%s) = lower('%s')", tablePrefix, field, *value)
+			return fmt.Sprintf(" %s%s) = '%s'", tablePrefix, field, *value)
 		}
 		if *firstFilter {
 			*firstFilter = false
 
-			return fmt.Sprintf(" WHERE lower(%s%s) = lower('%s')", tablePrefix, field, *value)
+			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, field, *value)
 		}
 
-		return fmt.Sprintf(" AND lower(%s%s) = lower('%s')", tablePrefix, field, *value)
+		return fmt.Sprintf(" AND %s%s) = '%s'", tablePrefix, field, *value)
 	}
 
 	return ""

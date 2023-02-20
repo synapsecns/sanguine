@@ -15,6 +15,7 @@ import _ from "lodash";
 import { Pagination } from "@components/Pagination";
 import { useLazyQuery } from '@apollo/client'
 import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
+import {checksumAddress} from '@utils/checksum'
 
 export default function Txs() {
   const search = useSearchParams()
@@ -110,9 +111,9 @@ export default function Txs() {
       }
     }
     if (walletLocale) {
-      variables = createQueryField("addressFrom", wallet?.toLowerCase(), variables)
+      variables = createQueryField("addressFrom",checksumAddress(wallet), variables)
     } else {
-      variables = createQueryField("addressTo", wallet?.toLowerCase(), variables)
+      variables = createQueryField("addressTo", checksumAddress(wallet), variables)
     }
 
     if (minSize.value !== "") {
@@ -132,9 +133,9 @@ export default function Txs() {
     variables = createQueryField("startTime", startDate, variables)
     variables = createQueryField("endTime",endDate, variables)
     if (kappa.length === 64) {
-      variables = createQueryField("kappa", kappa?.toLowerCase(), variables)
+      variables = createQueryField("kappa", kappa, variables)
     } else {
-      variables = createQueryField("txnHash", kappa?.toLowerCase(), variables)
+      variables = createQueryField("txnHash", kappa, variables)
 
     }
     variables = createQueryField("pending", pending, variables)
