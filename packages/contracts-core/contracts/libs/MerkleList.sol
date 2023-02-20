@@ -3,25 +3,19 @@ pragma solidity 0.8.17;
 
 library MerkleList {
     /**
-     * @notice Calculates merkle root for a list of given leafs
-     * using ZERO as a value for an "empty leaf".
-     */
-    function calculateRoot(bytes32[] memory hashes) internal pure {
-        calculateRoot(hashes, bytes32(0));
-    }
-
-    /**
      * @notice Calculates merkle root for a list of given leafs.
-     * Merkle Tree is constructed  by appending the list with "zero leafs"
+     * Merkle Tree is constructed by padding the list with ZERO values for leafs
      * until list length is a power of two.
      * Merkle Root is calculated for the constructed tree, and recorded in leafs[0].
      * Note: `leafs` values are overwritten in the process to avoid excessive memory allocations.
      * Caller is expected not to allocate memory for the leafs list, and only use leafs[0] value,
      * which is guaranteed to contain the calculated merkle root.
      * @param hashes    List of leafs for the merkle tree (to be overwritten)
-     * @param zeroHash  Value representing an empty (zero) leaf
      */
-    function calculateRoot(bytes32[] memory hashes, bytes32 zeroHash) internal pure {
+    function calculateRoot(bytes32[] memory hashes) internal pure {
+        // Use ZERO as value for "extra leafs".
+        // Later this will be tracking the value of a "zero node" on the current tree level.
+        bytes32 zeroHash = bytes32(0);
         uint256 levelLength = hashes.length;
         // We will be iterating from the "leafs level" up to the "root level" of the Merkle Tree.
         // For every level we will only record "significant values", i.e. not equal to `zeroHash`

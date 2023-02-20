@@ -18,19 +18,9 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
         // length should be in [1 .. MAX_LENGTH] range
         length = bound(length, 1, MAX_LENGTH);
         bytes32[] memory hashes = _generateHashes(length);
-        bytes32[] memory extended = _extendHashes(hashes, bytes32(0));
+        bytes32[] memory extended = _extendHashes(hashes);
         bytes32 expectedRoot = _calculateRoot(extended);
         bytes32 root = libHarness.calculateRoot(hashes);
-        assertEq(root, expectedRoot, "Merkle Root incorrect");
-    }
-
-    function test_calculateRoot(uint256 length, bytes32 zeroHash) public {
-        // length should be in [1 .. MAX_LENGTH] range
-        length = bound(length, 1, MAX_LENGTH);
-        bytes32[] memory hashes = _generateHashes(length);
-        bytes32[] memory extended = _extendHashes(hashes, zeroHash);
-        bytes32 expectedRoot = _calculateRoot(extended);
-        bytes32 root = libHarness.calculateRoot(hashes, zeroHash);
         assertEq(root, expectedRoot, "Merkle Root incorrect");
     }
 
@@ -54,7 +44,7 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
     }
 
     /// @dev Extend `hashes` with `zeroHash` values until list length is a power of two.
-    function _extendHashes(bytes32[] memory hashes, bytes32 zeroHash)
+    function _extendHashes(bytes32[] memory hashes)
         internal
         pure
         returns (bytes32[] memory extended)
@@ -69,8 +59,6 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
         for (uint256 i = 0; i < length; ++i) {
             extended[i] = hashes[i];
         }
-        for (uint256 i = length; i < lengthExtended; ++i) {
-            extended[i] = zeroHash;
-        }
+        // The remaining items are bytes32(0)
     }
 }

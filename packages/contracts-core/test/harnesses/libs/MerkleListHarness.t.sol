@@ -9,13 +9,4 @@ contract MerkleListHarness {
         MerkleList.calculateRoot(hashes);
         return hashes[0];
     }
-
-    function calculateRoot(bytes32[] memory hashes, bytes32 zeroHash)
-        public
-        pure
-        returns (bytes32)
-    {
-        MerkleList.calculateRoot(hashes, zeroHash);
-        return hashes[0];
-    }
 }
