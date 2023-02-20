@@ -19,9 +19,9 @@ contract AgentSetHarness {
         return value;
     }
 
-    function contains(address account) external view returns (bool) {
-        bool value = AgentSet.contains(set, account);
-        return value;
+    function contains(address account) external view returns (bool, uint32) {
+        (bool isActive, uint32 domain) = AgentSet.contains(set, account);
+        return (isActive, domain);
     }
 
     function contains(uint32 domain, address account) external view returns (bool) {

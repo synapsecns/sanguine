@@ -61,9 +61,9 @@ contract OriginHarness is Origin, AgentRegistryExtended, SystemContractHarness {
         if (latestNonce == 0) {
             latestRoot = EMPTY_TREE_ROOT;
         } else {
-            latestRoot = historicalRoots[_destination][latestNonce];
-            blockNumber = historicalMetadata[_destination][latestNonce].blockNumber;
-            timestamp = historicalMetadata[_destination][latestNonce].timestamp;
+            latestRoot = historicalRoots[latestNonce];
+            blockNumber = historicalMetadata[latestNonce].blockNumber;
+            timestamp = historicalMetadata[latestNonce].timestamp;
         }
     }
 
