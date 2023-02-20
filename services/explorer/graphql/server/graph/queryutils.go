@@ -524,7 +524,6 @@ func generateBridgeEventCountQuery(chainID *int, address *string, tokenAddress *
 		query = fmt.Sprintf(`%s SELECT %s, COUNT(DISTINCT (%s)) AS Count FROM (SELECT %s FROM %s %s) GROUP BY %s ORDER BY Count Desc`,
 			generateDeDepQueryCTE(compositeFilters, nil, nil, true), sql.ChainIDFieldName, sql.TxHashFieldName, singleSideCol, "baseQuery", singleSideJoinsCTE, sql.ChainIDFieldName)
 	}
-	fmt.Println("QQQ", query)
 	return query
 }
 
@@ -1197,7 +1196,6 @@ func GenerateAmountStatisticMessageBusSQL(typeArg model.StatisticType, composite
 	default:
 		return nil, fmt.Errorf("invalid statistic type: %s", typeArg)
 	}
-	fmt.Println("MESG", finalSQL)
 	return &finalSQL, nil
 }
 
@@ -1246,7 +1244,6 @@ func GenerateDailyStatisticByChainBridgeSQL(typeArg *model.DailyStatisticType, c
 	default:
 		return nil, fmt.Errorf("unsupported statistic type")
 	}
-	fmt.Println("+++++++", query)
 	return &query, nil
 }
 

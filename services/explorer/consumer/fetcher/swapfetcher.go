@@ -44,7 +44,6 @@ func NewSwapFetcher(swapAddress common.Address, backend bind.ContractBackend, is
 	return &swapFetcher{swap, nil, backend, swapAddress}, nil
 }
 func (s *swapFetcher) GetTokenAddress(ctx context.Context, tokenIndex uint8) (*common.Address, error) {
-
 	if s.metaSwap != nil {
 		tokenAddress, err := s.metaSwap.GetToken(&bind.CallOpts{
 			Context: ctx,

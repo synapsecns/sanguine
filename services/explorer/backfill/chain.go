@@ -107,7 +107,6 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRa
 		logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-eeeerrbackfilling chain %d completed %v", c.chainConfig.ChainID, err)
 
 		return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
-
 	}
 	logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-backfilling chain %d completed", c.chainConfig.ChainID)
 	return nil
@@ -233,7 +232,6 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 			err = c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
 			if err != nil {
 				return fmt.Errorf("error storing last block, %w", err)
-
 			}
 			return nil
 		})

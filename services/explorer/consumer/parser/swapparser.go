@@ -360,8 +360,8 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	// TODO: need to deploy the test swap contracts with token indexes that match the test token address
+	// nolint:nestif
 	if !core.IsTest() || os.Getenv("CI") != "" {
-		// nolint:nestif
 		for i := range totalTokenIndexRange {
 			tokenIndex := i
 			g.Go(func() error {
@@ -378,32 +378,14 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 					return fmt.Errorf("could not get pool token data: %w", err)
 				}
 				tokenSymbolsArr[tokenIndex] = tokenData.TokenID()
-
-				// TODO DELETE
-				if tokenData.TokenID() == "" {
-					fmt.Println("SWAP - TOKEN ID", tokenData.TokenID(), chainID, tokenIndex, tokenAddress, swapEvent.TxHash)
-				}
-
 				tokenDecimalsArr[tokenIndex] = tokenData.Decimals()
-
-				// TODO DELETE
-				if tokenData.Decimals() == 0 {
-					fmt.Println("SWAP - DECIMALS IS ZERO", tokenData.Decimals(), chainID, tokenIndex, tokenAddress)
-				}
 				coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
-
-				// TODO DELETE
-				if coinGeckoID == "" {
-					fmt.Println("SWAP - EMPTY TOKEN ID", p.coinGeckoIDs[tokenData.TokenID()], "U", tokenData.TokenID())
-				}
 				tokenCoinGeckoIDsArr[tokenIndex] = coinGeckoID
 
 				if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
 					tokenPrice := p.tokenPriceService.GetPriceData(groupCtx, int(*swapEvent.TimeStamp), coinGeckoID)
 					if (tokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
 						if coinGeckoID != "usd-coin" && coinGeckoID != "tether" && coinGeckoID != "dai" || coinGeckoID == "binance-usd" {
-							// TODO DELETE
-							fmt.Println("SWAP - TOKEN PRICE NULL", coinGeckoID, swapEvent.TimeStamp, timeStamp, tokenPrice, swapEvent.TokenDecimal, chainID, swapEvent.TxHash)
 							return fmt.Errorf("SWAP could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, swapEvent.TxHash, swapEvent.TimeStamp)
 						}
 						one := 1.0
@@ -414,7 +396,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 
 				// TODO DELETE
 				if tokenPricesArr[tokenIndex] == 0 {
-					fmt.Println("SWAP - TOKEN PRICE IS ZERO", tokenPricesArr[tokenIndex], chainID, tokenIndex, tokenAddress)
+					logger.Warnf("SWAP - TOKEN PRICE IS ZERO tokenPricesArr[tokenIndex]: s%s, chainID: %d, tokenIndex: %d, tokenAddress: %s", tokenPricesArr[tokenIndex], chainID, tokenIndex, tokenAddress)
 				}
 				return nil
 			})
@@ -428,11 +410,11 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 				return fmt.Errorf("could not process swap event: %w", err)
 			}
 			if dbAdminFee > 0 {
-				fmt.Println("USING DIFFERENT ADMIN FEE", dbAdminFee)
+				logger.Infof("USING DIFFERENT ADMIN FEE: %d", dbAdminFee)
 				adminFee = dbAdminFee
 			}
 			if dbSwapFee > 0 {
-				fmt.Println("USING DIFFERENT SWAP FEE", dbSwapFee)
+				logger.Infof("USING DIFFERENT SWAP FEE: %d", dbSwapFee)
 				swapFee = dbSwapFee
 			}
 		}
