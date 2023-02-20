@@ -104,8 +104,10 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     /**
      * @notice Returns true if the agent is active on any domain.
      * Note: that includes both Guards and Notaries.
+     * @return isActive Whether the account is an active agent on any of the domains
+     * @return domain   Domain, where the account is an active agent
      */
-    function isActiveAgent(address _account) external view returns (bool) {
+    function isActiveAgent(address _account) external view returns (bool isActive, uint32 domain) {
         return _isActiveAgent(_account);
     }
 
@@ -275,9 +277,9 @@ abstract contract AgentRegistry is AgentRegistryEvents {
 
     /**
      * @dev Checks if agent is active on any of the domains.
-     * Note: this checks if agent is an active Guard or Notary.
+     * Note: this returns if agent is active, and the domain where they're active.
      */
-    function _isActiveAgent(address _account) internal view returns (bool) {
+    function _isActiveAgent(address _account) internal view returns (bool, uint32) {
         // Check the list of global agents in the current epoch
         return agents[_currentEpoch()].contains(_account);
     }

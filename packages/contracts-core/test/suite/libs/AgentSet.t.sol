@@ -49,13 +49,13 @@ contract AgentSetTest is EnumerableSetTools, Test {
             toBeAdded || wasActiveDomain,
             "!add: contains(domain, account)"
         );
+        (bool isActive, uint32 _domain) = libHarness.contains(account);
         // Agent should be marked as active globally
-        assertTrue(libHarness.contains(account), "!add: contains(account)");
+        assertEq(isActive, agents[account].isActive, "!add: contains(account), isActive");
+        assertEq(_domain, agents[account].domain, "!add: contains(account), domain");
     }
 
     function test_removeAgent(uint32 domain, address account) public {
-        // Check if agent was active anywhere
-        bool wasActiveGlobal = _isActive(account);
         // Agent will be removed only they were active on the given domain
         bool toBeRemoved = _isActive(domain, account);
         _removeAgent(domain, account);
@@ -63,11 +63,9 @@ contract AgentSetTest is EnumerableSetTools, Test {
         // Agent should be marked as not active on given domain
         assertFalse(libHarness.contains(domain, account), "!remove: contains(domain, account)");
         // Agent should be marked as active globally only if they were active on another domain
-        assertEq(
-            libHarness.contains(account),
-            !toBeRemoved && wasActiveGlobal,
-            "!remove: contains(domain)"
-        );
+        (bool isActive, uint32 _domain) = libHarness.contains(account);
+        assertEq(isActive, agents[account].isActive, "!remove: contains(account), isActive");
+        assertEq(_domain, agents[account].domain, "!remove: contains(account), domain");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
