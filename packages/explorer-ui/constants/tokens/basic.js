@@ -937,6 +937,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     SYN,
     GOHM,
     NETH,
+    SYN_FRAX,
 
     WJEWEL,
     SYNJEWEL,

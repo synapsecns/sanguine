@@ -864,7 +864,7 @@ func generateAllBridgeEventsQueryMv(chainIDFrom []*int, chainIDTo []*int, addres
 	var pendingFilter string
 	if pending != nil {
 		if *pending {
-			pendingFilter = "WHERE tkappa = ''"
+			pendingFilter = "WHERE tkappa = '' AND fdestination_chain_id != 121014925"
 		} else {
 			pendingFilter = " WHERE tkappa != ''"
 		}
