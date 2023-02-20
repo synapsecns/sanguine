@@ -3,11 +3,11 @@ on:
   push:
     branches: [master]
     paths:
-      - 'packages/explorer-ui/**'
+      - '**'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'packages/explorer-ui/**'
+      - '**'
 
 jobs:
   deploy-explorer:
@@ -18,8 +18,8 @@ jobs:
 
       - name: Copy nvmrc
         run: |
-          rm -rf packages/explorer-ui/.nvmrc
-          cp .nvmrc packages/explorer-ui/.nvmrc
+          rm -rf .nvmrc
+          cp .nvmrc .nvmrc
 
       - name: Deploy to Vercel Action
         uses: BetaHuhn/deploy-to-vercel-action@v1
@@ -28,4 +28,4 @@ jobs:
           VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}'
           VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
           VERCEL_PROJECT_ID: '${{ secrets.VERCEL_PROJECT_ID }}'
-          WORKING_DIRECTORY: 'packages/explorer-ui'
+          WORKING_DIRECTORY: ''
