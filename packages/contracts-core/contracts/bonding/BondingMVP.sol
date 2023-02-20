@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
 import { SystemContract } from "../system/SystemContract.sol";
-import { LocalDomainContext } from "../context/LocalDomainContext.sol";
+import { DomainContext } from "../context/DomainContext.sol";
 import { BondingManager } from "./BondingManager.sol";
 
 interface IAttestationCollector {
@@ -16,10 +16,10 @@ interface IAttestationCollector {
  * @notice MVP for BondingManager. Controls agents status for local chain registries.
  * Doesn't do anything cross-chain related.
  */
-contract BondingMVP is LocalDomainContext, BondingManager {
+contract BondingMVP is BondingManager {
     address public attestationCollector;
 
-    constructor(uint32 _domain) LocalDomainContext(_domain) {}
+    constructor(uint32 _domain) DomainContext(_domain) {}
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              OWNER ONLY                              ║*▕

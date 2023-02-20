@@ -17,7 +17,7 @@ contract OriginHarness is Origin, AgentRegistryExtended, SystemContractHarness {
     constructor(uint32 _domain) Origin(_domain) {}
 
     function addLocalNotary(address _notary) external {
-        agents[_currentEpoch()].add(_localDomain(), _notary);
+        agents[_currentEpoch()].add(localDomain, _notary);
     }
 
     function removeAllAgents(uint32 _domain) public {
@@ -36,7 +36,7 @@ contract OriginHarness is Origin, AgentRegistryExtended, SystemContractHarness {
         bytes memory _messageBody
     ) public view returns (bytes memory message) {
         message = MessageLib.formatMessage(
-            _localDomain(),
+            localDomain,
             _checkForSystemRouter(_recipientAddress),
             nonce(_destination) + 1,
             _destination,

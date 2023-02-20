@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 
 import { SystemContract } from "../../../contracts/system/SystemContract.sol";
 import { ISystemRouter } from "../../../contracts/interfaces/ISystemRouter.sol";
-import { LocalDomainContext } from "../../../contracts/context/LocalDomainContext.sol";
+import { DomainContext } from "../../../contracts/context/DomainContext.sol";
 import { SystemContractHarnessEvents } from "../events/SystemContractHarnessEvents.sol";
 
 abstract contract SystemContractHarness is SystemContractHarnessEvents, SystemContract {

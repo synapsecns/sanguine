@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "./Version.sol";
 import "./libs/Message.sol";
 import "./libs/SystemMessage.sol";
-import { LocalDomainContext } from "./context/LocalDomainContext.sol";
+import { DomainContext } from "./context/DomainContext.sol";
 import { DestinationHub } from "./hubs/DestinationHub.sol";
 import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
@@ -15,7 +15,7 @@ import { MerkleLib } from "./libs/Merkle.sol";
  * @notice Track merkle root state of Origin contracts on other chains,
  * prove and dispatch messages to end recipients.
  */
-contract Destination is DestinationEvents, DestinationHub, LocalDomainContext, Version0_0_1 {
+contract Destination is DestinationEvents, DestinationHub, Version0_0_1 {
     using HeaderLib for Header;
     using MessageLib for bytes;
     using MessageLib for Message;
@@ -68,7 +68,7 @@ contract Destination is DestinationEvents, DestinationHub, LocalDomainContext, V
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     //solhint-disable-next-line no-empty-blocks
-    constructor(uint32 _domain) LocalDomainContext(_domain) {}
+    constructor(uint32 _domain) DomainContext(_domain) {}
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕
@@ -130,7 +130,7 @@ contract Destination is DestinationEvents, DestinationHub, LocalDomainContext, V
         Header header = message.header();
         uint32 origin = header.origin();
         // ensure message was meant for this domain
-        require(header.destination() == _localDomain(), "!destination");
+        require(header.destination() == localDomain, "!destination");
         bytes32 leaf = message.leaf();
         // ensure message can be proven against a confirmed root,
         // and that message's optimistic period has passed
@@ -176,7 +176,7 @@ contract Destination is DestinationEvents, DestinationHub, LocalDomainContext, V
         bytes29 _attestationView,
         bytes memory _report
     ) internal override {
-        _removeAgent({ _domain: _localDomain(), _account: _notary });
+        _removeAgent({ _domain: localDomain, _account: _notary });
         emit NotaryBlacklisted(_notary, _guard, msg.sender, _report);
         blacklistedNotaries[_notary] = Blacklist({
             guard: _guard,
