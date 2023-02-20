@@ -57,6 +57,8 @@ contract Origin is OriginEvents, OriginHub, LocalDomainContext, Version0_0_1 {
 
     function initialize() external initializer {
         __SystemContract_initialize();
+        // Insert "empty merkle tree" state into historical data arrays
+        _initializeHistoricalData();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
