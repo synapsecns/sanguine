@@ -349,12 +349,12 @@ export function UniversalSearch({
                       >
                         USD
                       </MenuItem>
-                      <MenuItem
+                      {/* <MenuItem
                         key="Amount"
                         value="Amount"
                       >
                         Amount
-                      </MenuItem>
+                      </MenuItem> */}
                     </TextField>
                   </div>
                 </div>
@@ -384,12 +384,12 @@ export function UniversalSearch({
                       >
                         USD
                       </MenuItem>
-                      <MenuItem
+                      {/* <MenuItem
                         key="Amount"
                         value="Amount"
                       >
                         Amount
-                      </MenuItem>
+                      </MenuItem> */}
                     </TextField>
                   </div>
                 </div>
