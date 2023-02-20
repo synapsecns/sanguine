@@ -56,6 +56,7 @@ func (s Store) RetrieveLastIndexed(ctx context.Context, contractAddress common.A
 			ContractAddress: contractAddress.String(),
 			ChainID:         chainID,
 		}).
+		Limit(1).
 		Scan(&entry)
 	if dbTx.RowsAffected == 0 {
 		logger.Warnf("no last indexed info found for contract %s on chain %d. Providing 0.", contractAddress.String(), chainID)

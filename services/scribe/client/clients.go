@@ -30,7 +30,7 @@ func NewEmbeddedScribe(database, path string) EmbeddedScribe {
 	return EmbeddedScribe{
 		ScribeClient: ScribeClient{
 			Port: uint16(freeport.GetPort()),
-			URL:  "docker.for.mac.localhost",
+			URL:  "localhost",
 		},
 		database: database,
 		path:     path,
