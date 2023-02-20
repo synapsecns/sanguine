@@ -45,12 +45,12 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // [destination domain] => [Merkle Tree containing all hashes of sent messages to that domain]
-    mapping(uint32 => MerkleLib.Tree) internal trees;
-    // [destination domain] => [Merkle tree roots after inserting a sent message to that domain]
-    mapping(uint32 => bytes32[]) internal historicalRoots;
-    // [destination domain] => [block numbers for each nonce written so far]
-    mapping(uint32 => RootMetadata[]) internal historicalMetadata;
+    // Merkle Tree containing all hashes of all dispatched messages
+    MerkleLib.Tree internal tree;
+    // Merkle Tree root after inserting a dispatched message
+    bytes32[] internal historicalRoots;
+    // Block number and timestamp after inserting a dispatched message
+    RootMetadata[] internal historicalMetadata;
 
     // gap for upgrade safety
     uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -64,6 +64,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
      * Returns attestation data for every destination domain having at least one active Notary.
      */
     function suggestAttestations() external view returns (bytes[] memory attestationDataArray) {
+        // TODO: revisit once snapshots are implemented
         uint256 amount = amountDomains();
         attestationDataArray = new bytes[](amount);
         for (uint256 i = 0; i < amount; ++i) {
@@ -85,6 +86,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         view
         returns (bytes memory attestationData)
     {
+        // TODO: revisit once snapshots are implemented
         uint32 latestNonce = nonce(_destination);
         require(latestNonce != 0, "No messages to destination");
         attestationData = suggestHistoricalAttestation(_destination, latestNonce);
@@ -103,10 +105,11 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         view
         returns (bytes memory attestationData)
     {
+        // TODO: revisit once snapshots are implemented
         // Check if nonce exists
-        require(_nonce < historicalRoots[_destination].length, "!nonce");
-        bytes32 historicalRoot = historicalRoots[_destination][_nonce];
-        RootMetadata memory metadata = historicalMetadata[_destination][_nonce];
+        require(_nonce < historicalRoots.length, "!nonce");
+        bytes32 historicalRoot = historicalRoots[_nonce];
+        RootMetadata memory metadata = historicalMetadata[_nonce];
         attestationData = AttestationLib.formatAttestationData({
             _origin: _localDomain(),
             _destination: _destination,
@@ -138,12 +141,13 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
             uint40 timestamp
         )
     {
+        // TODO: revisit once snapshots are implemented
         // Check if destination is known
-        if (historicalRoots[_destination].length > 0) {
+        if (historicalRoots.length > 0) {
             // Check if nonce exists
-            require(_nonce < historicalRoots[_destination].length, "!nonce: existing destination");
-            RootMetadata memory metadata = historicalMetadata[_destination][_nonce];
-            historicalRoot = historicalRoots[_destination][_nonce];
+            require(_nonce < historicalRoots.length, "!nonce: existing destination");
+            RootMetadata memory metadata = historicalMetadata[_nonce];
+            historicalRoot = historicalRoots[_nonce];
             blockNumber = metadata.blockNumber;
             timestamp = metadata.timestamp;
         } else {
@@ -159,6 +163,7 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
      * which is also the number of inserted leaves in the destination merkle tree (current index).
      */
     function nonce(uint32 _destination) public view returns (uint32 latestNonce) {
+        // TODO: revisit once snapshots are implemented
         latestNonce = uint32(_getTreeCount(_destination));
     }
 
@@ -166,7 +171,8 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
      * @notice Calculates and returns tree's current root for the given destination.
      */
     function root(uint32 _destination) public view returns (bytes32) {
-        return trees[_destination].root(_getTreeCount(_destination));
+        // TODO: revisit once snapshots are implemented
+        return tree.root(_getTreeCount(_destination));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -313,20 +319,22 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
     }
 
     /**
-     * @notice Inserts a merkle root for an empty merkle tree into the historical roots array
-     * for the given destination.
+     * @notice Initializes the arrays with historical data:
+     * - Inserts a merkle root for an empty merkle tree into the historical roots array
+     * - Inserts an empty RootMetadata struct into the historical metadata array
      * @dev This enables:
      * - Counting nonces from 1 (nonce=0 meaning no messages have been sent).
      * - Not slashing the Notaries for signing an attestation for an empty tree
-     * (assuming they sign the correct root outlined below).
+     * (assuming they sign the correct root+metadata combination outlined below).
      */
-    function _initializeHistoricalRoots(uint32 _destination) internal {
+    function _initializeHistoricalData() internal {
+        // TODO: revisit once snapshots are implemented
         // This function should only be called only if the array is empty
-        assert(historicalRoots[_destination].length == 0);
+        assert(historicalRoots.length == 0);
         // Insert a historical root so nonces start at 1 rather then 0.
         // Here we insert the root of an empty merkle tree
-        historicalRoots[_destination].push(EMPTY_TREE_ROOT);
-        historicalMetadata[_destination].push(RootMetadata(0, 0));
+        historicalRoots.push(EMPTY_TREE_ROOT);
+        historicalMetadata.push(RootMetadata(0, 0));
     }
 
     /**
@@ -341,17 +349,15 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         uint32 _messageNonce,
         bytes32 _messageHash
     ) internal returns (bytes32 newRoot) {
-        // TODO: when Notary is active on Destination, initialize historical roots
-        // upon adding a first Notary for given destination
-        if (historicalRoots[_destination].length == 0) _initializeHistoricalRoots(_destination);
+        // TODO: revisit once snapshots are implemented
         /// @dev _messageNonce == tree.count() + 1
         // tree.insert() requires amount of leaves AFTER the leaf insertion (i.e. tree.count() + 1)
-        trees[_destination].insert(_messageNonce, _messageHash);
+        tree.insert(_messageNonce, _messageHash);
         /// @dev leaf is inserted => _messageNonce == tree.count()
         // tree.root() requires current amount of leaves (i.e. tree.count())
-        newRoot = trees[_destination].root(_messageNonce);
-        historicalRoots[_destination].push(newRoot);
-        historicalMetadata[_destination].push(
+        newRoot = tree.root(_messageNonce);
+        historicalRoots.push(newRoot);
+        historicalMetadata.push(
             RootMetadata({ blockNumber: uint40(block.number), timestamp: uint40(block.timestamp) })
         );
     }
@@ -418,16 +424,15 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
         bytes32 _root,
         RootMetadata memory metadata
     ) internal view returns (bool) {
+        // TODO: revisit once snapshots are implemented
         // Attestation with origin domain not matching local domain should be discarded
         require(_origin == _localDomain(), "!attestationOrigin: !local");
-        if (_nonce < historicalRoots[_destination].length) {
-            RootMetadata memory histMetadata = historicalMetadata[_destination][_nonce];
+        if (_nonce < historicalRoots.length) {
+            RootMetadata memory histMetadata = historicalMetadata[_nonce];
             // If a nonce exists for a given destination,
             // a root should match the historical root,
             // and the metadata should match the historical one.
-            return
-                _root == historicalRoots[_destination][_nonce] &&
-                _isSameMetadata(histMetadata, metadata);
+            return _root == historicalRoots[_nonce] && _isSameMetadata(histMetadata, metadata);
         }
         // If a nonce doesn't exist for a given destination,
         // it should be a zero nonce with a root of an empty merkle tree
@@ -442,11 +447,12 @@ abstract contract OriginHub is OriginHubEvents, SystemRegistry, ReportHub {
      * thus actual amount of leaves is lower by one.
      */
     function _getTreeCount(uint32 _destination) internal view returns (uint256) {
+        // TODO: revisit once snapshots are implemented
         // if no historical roots are saved, destination is unknown, and there were
         // no dispatched messages to that destination
-        if (historicalRoots[_destination].length == 0) return 0;
+        if (historicalRoots.length == 0) return 0;
         // We subtract 1, as the very first inserted root is EMPTY_TREE_ROOT
-        return historicalRoots[_destination].length - 1;
+        return historicalRoots.length - 1;
     }
 
     /**
