@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { LocalDomainContext } from "../../../contracts/context/LocalDomainContext.sol";
+import { DomainContext } from "../../../contracts/context/DomainContext.sol";
 import { SystemRegistry } from "../../../contracts/system/SystemRegistry.sol";
 import "../events/SystemContractMockEvents.sol";
 
 // solhint-disable no-empty-blocks
-contract SystemRegistryMock is SystemContractMockEvents, LocalDomainContext, SystemRegistry {
-    constructor(uint32 _domain) LocalDomainContext(_domain) {}
+contract SystemRegistryMock is SystemContractMockEvents, SystemRegistry {
+    constructor(uint32 _domain) DomainContext(_domain) {}
 
     function initialize() external initializer {
         __SystemContract_initialize();

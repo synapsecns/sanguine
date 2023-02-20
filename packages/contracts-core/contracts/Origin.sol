@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import "./Version.sol";
 import "./libs/Message.sol";
 import "./libs/SystemMessage.sol";
-import { LocalDomainContext } from "./context/LocalDomainContext.sol";
+import { DomainContext } from "./context/DomainContext.sol";
 import { OriginEvents } from "./events/OriginEvents.sol";
 import { OriginHub } from "./hubs/OriginHub.sol";
 // ============ External Imports ============
@@ -25,7 +25,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * Origin accepts submissions of fraudulent signatures by the Guard in the form
  * of a Guard's report with said signature and slashes Guard in that case.
  */
-contract Origin is OriginEvents, OriginHub, LocalDomainContext, Version0_0_1 {
+contract Origin is OriginEvents, OriginHub, Version0_0_1 {
     using TipsLib for bytes;
     using TipsLib for Tips;
 
@@ -49,7 +49,7 @@ contract Origin is OriginEvents, OriginHub, LocalDomainContext, Version0_0_1 {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // solhint-disable-next-line no-empty-blocks
-    constructor(uint32 _domain) LocalDomainContext(_domain) {}
+    constructor(uint32 _domain) DomainContext(_domain) {}
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕
@@ -98,7 +98,7 @@ contract Origin is OriginEvents, OriginHub, LocalDomainContext, Version0_0_1 {
         messageNonce = nonce(_destination) + 1;
         // format the message into packed bytes
         bytes memory message = MessageLib.formatMessage({
-            _origin: _localDomain(),
+            _origin: localDomain,
             _sender: _checkForSystemRouter(_recipient),
             _nonce: messageNonce,
             _destination: _destination,

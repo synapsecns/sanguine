@@ -3,11 +3,11 @@ pragma solidity 0.8.17;
 
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
 import { SystemContract } from "../system/SystemContract.sol";
-import { LocalDomainContext } from "../context/LocalDomainContext.sol";
+import { DomainContext } from "../context/DomainContext.sol";
 import { BondingManager } from "./BondingManager.sol";
 
-contract BondingSecondary is LocalDomainContext, BondingManager {
-    constructor(uint32 _domain) LocalDomainContext(_domain) {
+contract BondingSecondary is BondingManager {
+    constructor(uint32 _domain) DomainContext(_domain) {
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
     }
 

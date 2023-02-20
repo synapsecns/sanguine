@@ -32,7 +32,7 @@ abstract contract BondingManager is SystemContract, Version0_0_1 {
         AgentInfo memory _info
     ) external override onlySystemRouter {
         bool forwardUpdate;
-        if (_callOrigin == _localDomain()) {
+        if (_callOrigin == localDomain) {
             // Forward information about slashed agent to remote chains
             forwardUpdate = true;
             // Only Origin can slash agents on local domain
@@ -66,7 +66,7 @@ abstract contract BondingManager is SystemContract, Version0_0_1 {
         // every Registry is responsible for ignoring the data it already has. This makes Registries
         // a bit more complex, but greatly reduces the complexity of BondingManager.
         systemRouter.systemMultiCall({
-            _destination: _localDomain(),
+            _destination: localDomain,
             _optimisticSeconds: 0,
             _recipients: _localSystemRegistries(),
             _data: _data

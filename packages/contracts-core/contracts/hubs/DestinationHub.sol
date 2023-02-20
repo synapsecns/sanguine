@@ -81,7 +81,7 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
         require(rootInfo.submittedAt != 0, "Invalid root");
         // Check if Notary is active on the local chain
         require(
-            _isActiveAgent({ _domain: _localDomain(), _account: rootInfo.notary }),
+            _isActiveAgent({ _domain: localDomain, _account: rootInfo.notary }),
             "Inactive notary"
         );
         // Check if optimistic period has passed
@@ -170,7 +170,7 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
         // attestation was signed by a notary that is no longer active on the local domain.
         require(
             _nonce > mirror.latestNonce ||
-                !_isActiveAgent({ _domain: _localDomain(), _account: mirror.latestNotary }),
+                !_isActiveAgent({ _domain: localDomain, _account: mirror.latestNotary }),
             "Outdated attestation"
         );
         (mirror.latestNonce, mirror.latestNotary) = (_nonce, _notary);
@@ -207,11 +207,11 @@ abstract contract DestinationHub is SystemRegistry, ReportHub {
         returns (bool)
     {
         // Destination only keeps track of local Notaries and Guards
-        return _domain != _localDomain() && _domain != 0;
+        return _domain != localDomain && _domain != 0;
     }
 
     function _checkAttestationDomains(AttestationData _attData) internal view {
-        uint32 local = _localDomain();
+        uint32 local = localDomain;
         // Attestation must have Origin as remote chain and Destination as local
         require(_attData.origin() != local, "!attestationOrigin: local");
         require(_attData.destination() == local, "!attestationDestination: !local");
