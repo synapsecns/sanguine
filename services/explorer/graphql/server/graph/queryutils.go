@@ -468,7 +468,7 @@ func generateKappaSpecifierSQLMv(value *string, field string, firstFilter *bool,
 		if *firstInLocale {
 			*firstFilter = false
 			*firstInLocale = false
-			return fmt.Sprintf(" %s%s) = '%s'", tablePrefix, field, *value)
+			return fmt.Sprintf(" %s%s = '%s'", tablePrefix, field, *value)
 		}
 		if *firstFilter {
 			*firstFilter = false
@@ -476,7 +476,7 @@ func generateKappaSpecifierSQLMv(value *string, field string, firstFilter *bool,
 			return fmt.Sprintf(" WHERE %s%s = '%s'", tablePrefix, field, *value)
 		}
 
-		return fmt.Sprintf(" AND %s%s) = '%s'", tablePrefix, field, *value)
+		return fmt.Sprintf(" AND %s%s = '%s'", tablePrefix, field, *value)
 	}
 
 	return ""
