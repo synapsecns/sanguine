@@ -4,13 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
-	"golang.org/x/sync/errgroup"
 	"math"
 	"math/big"
 	"os"
 	"time"
+
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokenpool"
@@ -361,7 +362,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 
 	// TODO: need to deploy the test swap contracts with token indexes that match the test token address
 	// nolint:nestif
-	if !core.IsTest() || os.Getenv("CI") != "" {
+	if !core.IsTest() && os.Getenv("CI") != "" {
 		for i := range totalTokenIndexRange {
 			tokenIndex := i
 			g.Go(func() error {
