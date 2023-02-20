@@ -341,7 +341,7 @@ executor_remote_existing_files:
   signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   config.yaml: |-
-    base_omnirpc_url: "http://omnirpc/confirmations"
+    base_omnirpc_url: "http://executor-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
       file: "/config/signer.txt"
@@ -350,7 +350,7 @@ executor_remote_fresh_files:
   signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   config.yaml: |-
-    base_omnirpc_url: "http://omnirpc/confirmations"
+    base_omnirpc_url: "http://executor-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
       file: "/config/signer.txt"
@@ -359,7 +359,7 @@ executor_embedded_files:
   signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   config.yaml: |-
-    base_omnirpc_url: "http://omnirpc/confirmations"
+    base_omnirpc_url: "http://executor-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
       file: "/config/signer.txt"
@@ -1131,5 +1131,5 @@ executor_embedded_files:
               start_block: 17319781
             - address: 0xa12A034fe81A17d11593C1f85930D20090Ec1747
               start_block: 18439425
-          rpc_url: "http://omnirpc/confirmations"
+          rpc_url: "http://executor-omnirpc/confirmations"
           refresh_rate: 0
