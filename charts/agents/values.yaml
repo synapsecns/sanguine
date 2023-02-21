@@ -386,5 +386,5 @@ executor_embedded_files:
               start_block: 26091228
             - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
               start_block: 26091231
-          rpc_url: "http://executor-omnirpc/confirmations"
-         refresh_rate: 0
+      rpc_url: "http://executor-omnirpc/confirmations"
+      refresh_rate: 0
