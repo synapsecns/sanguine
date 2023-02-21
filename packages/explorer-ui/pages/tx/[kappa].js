@@ -6,16 +6,16 @@ import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { useRouter } from 'next/router'
 import { useSearchParams } from 'next/navigation'
-import { CHAIN_INFO_MAP, CHAIN_EXPLORER_URLS } from '@constants/networks'
+import {  CHAIN_EXPLORER_URLS } from '@constants/networks'
 
 import { GET_BRIDGE_TRANSACTIONS_QUERY, } from '@graphql/queries'
 import { API_URL } from '@graphql'
 import { HorizontalDivider } from "@components/misc/HorizontalDivider";
-import { UniversalSearch } from "@components/pages/Home/UniversalSearch";
 import { timeAgo } from "@utils/timeAgo";
+import {formatDateTime} from "@utils/formatDate";
+
 import { IconAndAmount } from "@components/misc/IconAndAmount";
 import { BridgeTransactionTable } from "@components/BridgeTransaction/BridgeTransactionTable";
-import { ellipsizeString } from "@utils/ellipsizeString";
 
 const link = new HttpLink({
   uri: API_URL,
@@ -76,15 +76,15 @@ export default function BridgeTransaction({ queryResult }) {
         </div>
         <div className="flex gap-x-4 py-1">
           <p className="text-white text-opacity-60">Requested</p>
-          <p className="text-white ">{new Date(fromInfo.time * 1000).toTimeString()}</p>
+          <p className="text-white ">{formatDateTime(new Date(fromInfo.time * 1000))}</p>
         </div>
         <div className="flex gap-x-4 py-1">
           <p className="text-white text-opacity-60">Confirmed</p>
-          <p className="text-white ">{toInfo ? new Date(toInfo.time * 1000).toTimeString(): "Pending"}</p>
+          <p className="text-white ">{toInfo ? formatDateTime(new Date(toInfo.time * 1000)): "Pending"}</p>
         </div>
         <div className="flex gap-x-[1.1rem] py-1">
           <p className="text-white text-opacity-60">Total Time</p>
-          <p className="text-white ">{toInfo ?getTimeDifference(fromInfo.time, toInfo.time) :  "Pending"} seconds</p>
+          <p className="text-white ">{toInfo ?getTimeDifference(fromInfo.time, toInfo.time) + " seconds":  "Pending"} </p>
         </div>
         <br />
 
