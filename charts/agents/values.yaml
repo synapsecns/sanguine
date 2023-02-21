@@ -140,7 +140,7 @@ guard:
               fieldPath: metadata.namespace
 
 executor:
-  type: "remote-fresh"
+  type: "embedded"
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
@@ -328,6 +328,32 @@ omnirpc:
 scribe:
   enabled: true
   fullnameOverride: executor-scribe
+  files:
+    config.yaml: |-
+      chains:
+        - chain_id: 137
+          required_confirmations: 50
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 39145588
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 39145588
+        - chain_id: 10
+          required_confirmations: 50
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 73536295
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 73537265
+        - chain_id: 43114
+          required_confirmations: 50
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 26091228
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 26091231
+      rpc_url: "http://executor-omnirpc/confirmations"
+      refresh_rate: 0
 
 notary_files:
   config.yaml: |-
@@ -341,7 +367,7 @@ executor_remote_existing_files:
   signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   config.yaml: |-
-    base_omnirpc_url: "http://omnirpc/confirmations"
+    base_omnirpc_url: "http://executor-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
       file: "/config/signer.txt"
@@ -350,7 +376,7 @@ executor_remote_fresh_files:
   signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   config.yaml: |-
-    base_omnirpc_url: "http://omnirpc/confirmations"
+    base_omnirpc_url: "http://executor-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
       file: "/config/signer.txt"
@@ -359,777 +385,32 @@ executor_embedded_files:
   signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   config.yaml: |-
-    base_omnirpc_url: "http://omnirpc/confirmations"
+    base_omnirpc_url: "http://executor-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
       file: "/config/signer.txt"
     embedded_scribe_config:
       chains:
-        - chain_id: 1285
-          required_confirmations: 50
-          contracts:
-            - address: 0xd5609cD0e1675331E4Fb1d43207C8d9D83AAb17C
-              start_block: 890965
-            - address: 0x22cdc93F53Ee3F6b8Ad66faD6f98915a5349950E
-              start_block: 890946
-            - address: 0xfA28DdB74b08B2b6430f5F61A1Dd5104268CC29e
-              start_block: 1300138
-            - address: 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9
-              start_block: 890961
-            - address: 0x432036208d2717394d2614d6697c46DF3Ed69540
-              start_block: 890957
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 890942
-            - address: 0xDB9F78F5dD41B73b5020e841B29B5983408f5069
-              start_block: 890971
-            - address: 0x5d5F01AaEc428356B54Ee091502dBBEaA935F21A
-              start_block: 890969
-            - address: 0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89
-              start_block: 890974
-            - address: 0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0
-              start_block: 890967
-            - address: 0xaeD5b25BE1c3163c907a471082640450F928DDFE
-              start_block: 890949
-            - address: 0xebDe9A95FC0d36bcf12037C6F234E4a51f64d223
-              start_block: 1493807
-            - address: 0xaeD5b25BE1c3163c907a471082640450F928DDFE
-              start_block: 890949
-            - address: 0x84A420459cd31C3c34583F67E0f0fB191067D32f
-              start_block: 890951
-            - address: 0xf07d1C752fAb503E47FEF309bf14fbDD3E867089
-              start_block: 890953
-            - address: 0x9508BF380c1e6f751D97604732eF1Bae6673f299
-              start_block: 890944
-        - chain_id: 42161
-          required_confirmations: 50
-          contracts:
-            - address: 0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40
-              start_block: 5152261
-            - address: 0xffd73E0642e8833cCE9854B963840A8cb2A218e8
-              start_block: 738087
-            - address: 0x544450Ffdfa5EA20528F21918E8aAC7B2C733381
-              start_block: 767893
-            - address: 0x432036208d2717394d2614d6697c46DF3Ed69540
-              start_block: 657392
-            - address: 0x37f9aE2e0Ea6742b9CAD5AbCfB6bBC3475b3862B
-              start_block: 5261157
-            - address: 0xE1e1e6711bDfa0b8DEC900F9E677D85aA7F3049d
-              start_block: 738062
-            - address: 0x911766fA1a425Cb7cCCB0377BC152f37F276f8d6
-              start_block: 742755
-            - address: 0x9f72004d0Ff5cCF2857a3564F7B3329057D15599
-              start_block: 742766
-            - address: 0xc36501845A90FC7D9B4B08F3aeBBC27B1401d586
-              start_block: 738709
-            - address: 0xfFC2d603fde1F99ad94026c00B6204Bb9b8c36E9
-              start_block: 738687
-            - address: 0x73186f2Cf2493f20836b17b21ae79fc12934E207
-              start_block: 1365303
-            - address: 0xf07d1C752fAb503E47FEF309bf14fbDD3E867089
-              start_block: 228310
-            - address: 0xE1b8800c33672A495ae2CBC882c14E7c9438166C
-              start_block: 1836938
-            - address: 0x4cDacbb74E86e2E18c35ae9D97B9427A0ADA8007
-              start_block: 738716
-            - address: 0x9695FA23b27022c7DD752B7d64bB5900677ECC21
-              start_block: 738699
-            - address: 0xCe762CC8138F4fa55427403A33E95a3D492c0166
-              start_block: 742743
-            - address: 0xE74f2e89d993a31B21A714Dcc531b34049373EF0
-              start_block: 738694
-            - address: 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9
-              start_block: 657404
-            - address: 0x97a7af2A0323e2a40B866Df3A5F1F389427C9b68
-              start_block: 6218636
-            - address: 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9
-              start_block: 657404
-            - address: 0x809DC529f07651bD43A172e8dB6f4a7a0d771036
-              start_block: 657412
-            - address: 0xd5609cD0e1675331E4Fb1d43207C8d9D83AAb17C
-              start_block: 657416
-            - address: 0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B
-              start_block: 657383
-            - address: 0x1c3fe783a7c06bfAbd124F2708F5Cc51fA42E102
-              start_block: 992358
-        - chain_id: 1313161554
-          required_confirmations: 50
-          contracts:
-            - address: 0xCCd87854f58773fe75CdDa542457aC48E46c2D65
-              start_block: 67351766
-            - address: 0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89
-              start_block: 56092386
-            - address: 0x22cdc93F53Ee3F6b8Ad66faD6f98915a5349950E
-              start_block: 56092161
-            - address: 0x2D8Ee8d6951cB4Eecfe4a79eb9C2F973C02596Ed
-              start_block: 56441617
-            - address: 0x5d5F01AaEc428356B54Ee091502dBBEaA935F21A
-              start_block: 56092365
-            - address: 0x809DC529f07651bD43A172e8dB6f4a7a0d771036
-              start_block: 56092335
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 56092031
-            - address: 0xffd73E0642e8833cCE9854B963840A8cb2A218e8
-              start_block: 56092419
-            - address: 0x104127CCd4b1378898916894EB59c97E690b6E9E
-              start_block: 56092407
-            - address: 0xfFC2d603fde1F99ad94026c00B6204Bb9b8c36E9
-              start_block: 56092428
-            - address: 0xE1e1e6711bDfa0b8DEC900F9E677D85aA7F3049d
-              start_block: 56092395
-            - address: 0xaeD5b25BE1c3163c907a471082640450F928DDFE
-              start_block: 56092180
-            - address: 0xebDe9A95FC0d36bcf12037C6F234E4a51f64d223
-              start_block: 59688401
-            - address: 0xaeD5b25BE1c3163c907a471082640450F928DDFE
-              start_block: 56092180
-            - address: 0x84A420459cd31C3c34583F67E0f0fB191067D32f
-              start_block: 56092190
-            - address: 0xf07d1C752fAb503E47FEF309bf14fbDD3E867089
-              start_block: 56092200
-            - address: 0x9508BF380c1e6f751D97604732eF1Bae6673f299
-              start_block: 56092043
-        - chain_id: 250
-          required_confirmations: 50
-          contracts:
-            - address: 0x85662fd123280827e11C59973Ac9fcBE838dC3B4
-              start_block: 29236172
-            - address: 0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9
-              start_block: 18504007
-            - address: 0x8745773CC6e70577819BB76f51FA7640cece505F
-              start_block: 18503464
-            - address: 0xB003e75f7E0B5365e814302192E99b4EE08c0DEd
-              start_block: 29537881
-            - address: 0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B
-              start_block: 18503994
-            - address: 0xE1e1e6711bDfa0b8DEC900F9E677D85aA7F3049d
-              start_block: 18504214
-            - address: 0x104127CCd4b1378898916894EB59c97E690b6E9E
-              start_block: 18504260
-            - address: 0x5d5F01AaEc428356B54Ee091502dBBEaA935F21A
-              start_block: 18504078
-            - address: 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9
-              start_block: 18504026
-            - address: 0xaeD5b25BE1c3163c907a471082640450F928DDFE
-              start_block: 18503606
-            - address: 0x266557A864680A1401A3506c0eb72934BD13Bf59
-              start_block: 18503424
-            - address: 0xE910dfaa50094C6BC1bF68E3CD7B244E9eC09D57
-              start_block: 20173344
-            - address: 0xDB9F78F5dD41B73b5020e841B29B5983408f5069
-              start_block: 18504098
-            - address: 0xd5609cD0e1675331E4Fb1d43207C8d9D83AAb17C
-              start_block: 18504058
-            - address: 0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89
-              start_block: 18504174
-            - address: 0x809DC529f07651bD43A172e8dB6f4a7a0d771036
-              start_block: 18504043
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 18503502
-            - address: 0xf46837caB330Fdb14943cee6a119D0e4FCb0C1D1
-              start_block: 31197624
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 18503502
-            - address: 0x9508BF380c1e6f751D97604732eF1Bae6673f299
-              start_block: 18503511
-            - address: 0x22cdc93F53Ee3F6b8Ad66faD6f98915a5349950E
-              start_block: 18503520
-            - address: 0x003107B3aeee133804eaBE7D1df200DdFbb51dCE
-              start_block: 18503430
-        - chain_id: 1666600000
-          required_confirmations: 50
-          contracts:
-            - address: 0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e
-              start_block: 19163634
-            - address: 0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9
-              start_block: 18646530
-            - address: 0x1cB25d8fa2B2478e0606d58Aa4859498519E4Ae9
-              start_block: 26108958
-            - address: 0xf9E8FA936B4C2CC96aaD30c9756575406547d61F
-              start_block: 26112222
-            - address: 0x4004face380B24802b6Dfc8060830c1010369193
-              start_block: 26109759
-            - address: 0x889898D937CD5e4502Ea6E600578B8650E4043c0
-              start_block: 26108968
-            - address: 0x573e407Be90a50EAbA28748cbb62Ff9d6038A3e9
-              start_block: 26109769
-            - address: 0x67D27E4D7d27721F235Ff96fDaEBBd3173Deef7B
-              start_block: 26109764
-            - address: 0x573e407Be90a50EAbA28748cbb62Ff9d6038A3e9
-              start_block: 26109769
-            - address: 0x7bE461cce1501f07969BCE24Ccb2140fCA0a35b3
-              start_block: 24549054
-            - address: 0xB003e75f7E0B5365e814302192E99b4EE08c0DEd
-              start_block: 24804355
-            - address: 0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B
-              start_block: 18646484
-            - address: 0x4F437be4A3448fCf394e513FC1A8EF92E190D1ba
-              start_block: 26108972
-            - address: 0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89
-              start_block: 18646612
-            - address: 0xE1e1e6711bDfa0b8DEC900F9E677D85aA7F3049d
-              start_block: 18646624
-            - address: 0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0
-              start_block: 18646568
-            - address: 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9
-              start_block: 18646542
-            - address: 0xaeD5b25BE1c3163c907a471082640450F928DDFE
-              start_block: 18646369
-            - address: 0x266557A864680A1401A3506c0eb72934BD13Bf59
-              start_block: 18646261
-            - address: 0x9695FA23b27022c7DD752B7d64bB5900677ECC21
-              start_block: 18647618
-            - address: 0x5d5F01AaEc428356B54Ee091502dBBEaA935F21A
-              start_block: 18646575
-            - address: 0xd5609cD0e1675331E4Fb1d43207C8d9D83AAb17C
-              start_block: 18646558
-            - address: 0xDB9F78F5dD41B73b5020e841B29B5983408f5069
-              start_block: 18646587
-            - address: 0x809DC529f07651bD43A172e8dB6f4a7a0d771036
-              start_block: 18646551
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 18646320
-            - address: 0xBe394900Ad6f64155318F8EaBE3708754dBAb95E
-              start_block: 23078594
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 18646320
-            - address: 0x9508BF380c1e6f751D97604732eF1Bae6673f299
-              start_block: 18646340
-            - address: 0x22cdc93F53Ee3F6b8Ad66faD6f98915a5349950E
-              start_block: 18646352
-            - address: 0x27B7C0C87B9ecA92E5101852709e63685bF9d299
-              start_block: 26110265
-            - address: 0x003107B3aeee133804eaBE7D1df200DdFbb51dCE
-              start_block: 18646276
-            - address: 0x8745773CC6e70577819BB76f51FA7640cece505F
-              start_block: 18646296
-        - chain_id: 1088
-          required_confirmations: 50
-          contracts:
-            - address: 0x555982d2E211745b96736665e19D9308B615F78e
-              start_block: 1251758
-            - address: 0xDB9F78F5dD41B73b5020e841B29B5983408f5069
-              start_block: 957525
-            - address: 0x9f72004d0Ff5cCF2857a3564F7B3329057D15599
-              start_block: 1029276
-            - address: 0x6571D58b3BF2469DF5878e213453E28dC1A4DA81
-              start_block: 1702903
-            - address: 0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0
-              start_block: 957523
-            - address: 0xaB0D8Fc46249DaAcd5cB36c5F0bC4f0DAF34EBf5
-              start_block: 1029297
-            - address: 0xb6032677A85F65Ea4932ADb25f7514BF04A721Af
-              start_block: 1029198
-            - address: 0x266557A864680A1401A3506c0eb72934BD13Bf59
-              start_block: 957502
-            - address: 0x104127CCd4b1378898916894EB59c97E690b6E9E
-              start_block: 957528
-            - address: 0xE1e1e6711bDfa0b8DEC900F9E677D85aA7F3049d
-              start_block: 957527
-            - address: 0xffd73E0642e8833cCE9854B963840A8cb2A218e8
-              start_block: 957530
-            - address: 0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89
-              start_block: 957526
-            - address: 0x06Fea8513FF03a0d3f61324da709D4cf06F42A5c
-              start_block: 1029278
-            - address: 0x6C8c6E68604e78B549C96907bfe9EBdaaC04e3B3
-              start_block: 1029277
-            - address: 0x06Fea8513FF03a0d3f61324da709D4cf06F42A5c
-              start_block: 1029278
-            - address: 0x9508BF380c1e6f751D97604732eF1Bae6673f299
-              start_block: 957509
-            - address: 0x22cdc93F53Ee3F6b8Ad66faD6f98915a5349950E
-              start_block: 957510
-            - address: 0x911766fA1a425Cb7cCCB0377BC152f37F276f8d6
-              start_block: 1029274
-        - chain_id: 288
-          required_confirmations: 50
-          contracts:
-            - address: 0x75FF037256b36F15919369AC58695550bE72fead
-              start_block: 16221
-            - address: 0xE1e1e6711bDfa0b8DEC900F9E677D85aA7F3049d
-              start_block: 16210
-            - address: 0xf07d1C752fAb503E47FEF309bf14fbDD3E867089
-              start_block: 16183
-            - address: 0x64B4097bCCD27D49BC2A081984C39C3EeC427a2d
-              start_block: 49493
-            - address: 0xDB9F78F5dD41B73b5020e841B29B5983408f5069
-              start_block: 16203
-            - address: 0xd5609cD0e1675331E4Fb1d43207C8d9D83AAb17C
-              start_block: 16196
-            - address: 0xaeD5b25BE1c3163c907a471082640450F928DDFE
-              start_block: 16178
-            - address: 0xfFC2d603fde1F99ad94026c00B6204Bb9b8c36E9
-              start_block: 16218
-            - address: 0xffd73E0642e8833cCE9854B963840A8cb2A218e8
-              start_block: 16217
-            - address: 0x4F4f66964335D7bef23C16a62Fcd3d1E89f02959
-              start_block: 49330
-            - address: 0xE74f2e89d993a31B21A714Dcc531b34049373EF0
-              start_block: 16219
-            - address: 0x104127CCd4b1378898916894EB59c97E690b6E9E
-              start_block: 16213
-            - address: 0x432036208d2717394d2614d6697c46DF3Ed69540
-              start_block: 16188
-            - address: 0x9007A80247D23Cc5C213A6DAcB385c632c4e19F2
-              start_block: 338131
-            - address: 0x432036208d2717394d2614d6697c46DF3Ed69540
-              start_block: 16188
-            - address: 0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9
-              start_block: 16189
-            - address: 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9
-              start_block: 16190
-            - address: 0x84A420459cd31C3c34583F67E0f0fB191067D32f
-              start_block: 16181
-            - address: 0xd203De32170130082896b4111eDF825a4774c18E
-              start_block: 49328
-        - chain_id: 53935
-          required_confirmations: 50
-          contracts:
-            - address: 0xCe02a6238EdaD228CF6Bd2504ccF1283e7D94866
-              start_block: 1513453
-            - address: 0xf0284FB86adA5E4D82555C529677eEA3B2C3E022
-              start_block: 1516665
-            - address: 0xcCaBe4f1DaBcDa1ffb3EB3335c022DefF51dc1Db
-              start_block: 1514158
-            - address: 0x93616BE16Cf1aa4A138bfCb2320875148429713c
-              start_block: 1513460
-            - address: 0x739B1666c2956f601f095298132773074c3E184b
-              start_block: 1514165
-            - address: 0x5f300aEc9573BeC1ed161E07bB6564e03154e68A
-              start_block: 1514162
-            - address: 0x739B1666c2956f601f095298132773074c3E184b
-              start_block: 1514165
-            - address: 0x75224b0f245Fe51d5bf47A898DbB6720D4150BA7
-              start_block: 47294
-            - address: 0x33d90B6ce7e0bFC42BCD35d05c443c6915296987
-              start_block: 89
-            - address: 0x7bc5fD6b80067d6052A4550c69f152877bF7C748
-              start_block: 1513462
-            - address: 0x164c02a681282faaddf4bb10cfab599a8999ed20
-              start_block: 67
-            - address: 0xE2F6d34fd09D21F4121d648E191e842Ac95Ac0Dc
-              start_block: 19
-            - address: 0x7F1Baeb399997e1ecA9A090a4Df6DecBD4f125e2
-              start_block: 18
-            - address: 0xE05c976d3f045D0E6E7A6f61083d98A15603cF6A
-              start_block: 66
-            - address: 0x159F2A9D7304Da210bE99F3d704B9823486DE24E
-              start_block: 65
-            - address: 0xE05c976d3f045D0E6E7A6f61083d98A15603cF6A
-              start_block: 66
-            - address: 0x3a01521F8E7F012eB37eAAf1cb9490a5d9e18249
-              start_block: 26
-            - address: 0x42c08394E5491B3065CDae1eD1a31D069114CfE8
-              start_block: 27
-            - address: 0x6a00Dc976a7291a1E9F5380FE6F96fE006dCdD3c
-              start_block: 1514780
-            - address: 0x1BFE50bb2A8a75fefa46892dB10313898dDbFf8F
-              start_block: 22
-            - address: 0x587AEf47a56224B5775Ff289Fb259d59F35ADdF9
-              start_block: 64
-            - address: 0x9596A3C6a4B2597adCC5D6d69b281A7C49e3Fe6A
-              start_block: 36
-        - chain_id: 10
-          required_confirmations: 50
-          contracts:
-            - address: 0x84A420459cd31C3c34583F67E0f0fB191067D32f
-              start_block: 30814
-            - address: 0x8745773CC6e70577819BB76f51FA7640cece505F
-              start_block: 30715
-            - address: 0xaC9b0B65e7CFc1DD482Ed9249a44e58c9C9086ed
-              start_block: 203044
-            - address: 0x73783F028c60D463bc604cc53852C37C31dEC5e9
-              start_block: 203195
-            - address: 0x061605c4Ad8825E3B6731875B409D77f19FD75C9
-              start_block: 203191
-            - address: 0x73783F028c60D463bc604cc53852C37C31dEC5e9
-              start_block: 203195
-            - address: 0x8c7d5f8A8e154e1B59C92D8FB71314A43F32ef7B
-              start_block: 204439
-            - address: 0x470f9522ff620eE45DF86C58E54E6A645fE3b4A7
-              start_block: 6102224
-            - address: 0xe0fa08834465EcC36c494F2b6C87b82Ab7970413
-              start_block: 30811
-            - address: 0xe8c610fcb63A4974F02Da52f0B4523937012Aaa0
-              start_block: 241167
-            - address: 0x266557A864680A1401A3506c0eb72934BD13Bf59
-              start_block: 30713
-            - address: 0xBD9b39B8cE8EC403a4B4F277a88d2dc4a44BACa1
-              start_block: 198442
-            - address: 0x432036208d2717394d2614d6697c46DF3Ed69540
-              start_block: 30818
-            - address: 0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B
-              start_block: 30817
-            - address: 0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9
-              start_block: 30819
-            - address: 0xf07d1C752fAb503E47FEF309bf14fbDD3E867089
-              start_block: 30816
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 30718
-            - address: 0x7ef7560789eE2cB301eC38c3C8B91bA8a94Cd1e4
-              start_block: 3627175
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 30718
-            - address: 0x9508BF380c1e6f751D97604732eF1Bae6673f299
-              start_block: 30720
-            - address: 0x22cdc93F53Ee3F6b8Ad66faD6f98915a5349950E
-              start_block: 30721
-            - address: 0x5A5fFf6F753d7C11A56A52FE47a177a87e431655
-              start_block: 192842
-            - address: 0x003107B3aeee133804eaBE7D1df200DdFbb51dCE
-              start_block: 30714
-            - address: 0x121ab82b49B2BC4c7901CA46B8277962b4350204
-              start_block: 203472
-            - address: 0x809DC529f07651bD43A172e8dB6f4a7a0d771036
-              start_block: 50509
-        - chain_id: 56
-          required_confirmations: 50
-          contracts:
-            - address: 0x28ec0B36F0819ecB5005cAB836F4ED5a2eCa4D13
-              start_block: 12431591
-            - address: 0xbE183e2Bd155D5e216e62De331Ab63Fd556ee0E2
-              start_block: 8394405
-            - address: 0x35e4edD1F12aBa7D0c46a8e48513a5B0B679C89c
-              start_block: 10065468
-            - address: 0xf0284FB86adA5E4D82555C529677eEA3B2C3E022
-              start_block: 10058313
-            - address: 0x749F37Df06A99D6A8E065dd065f8cF947ca23697
-              start_block: 12433270
-            - address: 0x2f6087c8cde8C866cafe44d0f32Ff27501Edcaeb
-              start_block: 8394399
-            - address: 0x6F6978e551B62d7E8Db2fe27d8dB8bFE5d94d009
-              start_block: 8394430
-            - address: 0x31F46645948567d44f151e7E18AF6Fc5F0b3EAC6
-              start_block: 8394433
-            - address: 0x6E42e97Dd28b3D531048202D29C4fD81d193344b
-              start_block: 8394420
-            - address: 0x907a1A777a7eE13A0d11728127f9B97C02Fa479d
-              start_block: 8394409
-            - address: 0xDE27892BAbFc5c30D4FE4e3478897F76D261cAeB
-              start_block: 10160005
-            - address: 0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280
-              start_block: 10326697
-            - address: 0x527a2ead8d1799d24d1889B33e98522970f9221F
-              start_block: 8394442
-            - address: 0x8027a7Fa5753c8873E130F1205DA9fB8691726Ab
-              start_block: 11406034
-            - address: 0x2eB78584b26a1E6dF23dB0b9c9D9034fe356D6c7
-              start_block: 11561279
-            - address: 0x1FB7B429e0713F77f038699001548062F4Bb242e
-              start_block: 8394423
-            - address: 0x37f9aE2e0Ea6742b9CAD5AbCfB6bBC3475b3862B
-              start_block: 8394415
-            - address: 0x5F10b4FC66331f53912a5B5EBA4E4e79a6fDAe93
-              start_block: 8394427
-            - address: 0x74c30263AD6723029CE302046EFe262bE7301C12
-              start_block: 8394412
-            - address: 0xd123f70AE324d34A9E76b67a27bf77593bA8749f
-              start_block: 10065475
-            - address: 0x2264C28147BA42A687B5F223C8CaD704Fefc11be
-              start_block: 15324382
-            - address: 0xd123f70AE324d34A9E76b67a27bf77593bA8749f
-              start_block: 10065475
-            - address: 0x5f300aEc9573BeC1ed161E07bB6564e03154e68A
-              start_block: 9519616
-            - address: 0xcCaBe4f1DaBcDa1ffb3EB3335c022DefF51dc1Db
-              start_block: 9519539
-            - address: 0x5B01dD15658EBA8CD294aC5dd59176D57d97d50c
-              start_block: 10384972
-            - address: 0xB6a9b0Be9b087716aCFd4805C2bB5b736aC62b38
-              start_block: 11727382
-        - chain_id: 1
-          required_confirmations: 50
-          contracts:
-            - address: 0x1116898DdA4015eD8dDefb84b6e8Bc24528Af2d8
-              start_block: 13033711
-            - address: 0xFE986b20d34df3Aa9fA2e4d18b8EBe5AC6c753b0
-              start_block: 12656274
-            - address: 0x5217c83ca75559B1f8a8803824E5b7ac233A12a1
-              start_block: 14259367
-            - address: 0x7b3c1f09088bdc9f136178e170ac668c8ed095f2
-              start_block: 13033197
-            - address: 0x07cA54031c81a76fc943d00CE2423FA8f60C7B17
-              start_block: 12688536
-            - address: 0x1BFE50bb2A8a75fefa46892dB10313898dDbFf8F
-              start_block: 12688530
-            - address: 0x6571d6be3d8460CF5F7d6711Cd9961860029D85F
-              start_block: 13674290
-            - address: 0x6C8c6E68604e78B549C96907bfe9EBdaaC04e3B3
-              start_block: 12656269
-            - address: 0x47B35974cDC9Bb460e71aFf6C7B4FC758f3Bd932
-              start_block: 12656294
-            - address: 0x9413b54f04c90ed8EB59a08323D767b72Dcd278e
-              start_block: 12656304
-            - address: 0x544450Ffdfa5EA20528F21918E8aAC7B2C733381
-              start_block: 12656283
-            - address: 0x88E7af57270F70BCF32CD61fff0Ff635775C8f7c
-              start_block: 12656276
-            - address: 0xd10eF2A513cEE0Db54E959eF16cAc711470B62cF
-              start_block: 13105716
-            - address: 0x2D8Ee8d6951cB4Eecfe4a79eb9C2F973C02596Ed
-              start_block: 12656316
-            - address: 0xa2569370A9D4841c9a62Fc51269110F2eB7E0171
-              start_block: 13220541
-            - address: 0xbCefB397a13528F693D929931248C94c4263B763
-              start_block: 12915246
-            - address: 0xB34C67DB5F0Fd8D3D4238FD0A1cBbfD50a72e177
-              start_block: 12758947
-            - address: 0x244268b9082E05a8BcF18b3b0e83999EA4Fc9fCf
-              start_block: 12656286
-            - address: 0x93124c923dA389Bc0f13840fB822Ce715ca67ED6
-              start_block: 12656280
-            - address: 0x5A5fFf6F753d7C11A56A52FE47a177a87e431655
-              start_block: 12656291
-            - address: 0x11199A9eE50127F335B84A1eEb961D8A85147f5F
-              start_block: 12656277
-            - address: 0x2796317b0fF8538F253012862c06787Adfb8cEb6
-              start_block: 13033669
-            - address: 0x31fe393815822edacBd81C2262467402199EFD0D
-              start_block: 14221421
-            - address: 0x2796317b0fF8538F253012862c06787Adfb8cEb6
-              start_block: 13033669
-            - address: 0x3c726E4eb2e0b36cA3097EE4F5Cd4739D7Cdc750
-              start_block: 12907619
-            - address: 0x846E607B930Ea1F5DDE6c4a9D9104d5fbfAfa157
-              start_block: 12907623
-            - address: 0x647489df0673E17dB3163c47d5233EBB6F5cAc70
-              start_block: 13105394
-        - chain_id: 43114
-          required_confirmations: 50
-          contracts:
-            - address: 0xED2a7edd7413021d440b09D654f3b87712abAB66
-              start_block: 6619002
-            - address: 0x77a7e60555bC18B4Be44C181b2575eee46212d44
-              start_block: 7378400
-            - address: 0xdd60483Ace9B215a7c019A44Be2F22Aa9982652E
-              start_block: 7684951
-            - address: 0x20B587484E75752Adac381aE577a7562E7f358c5
-              start_block: 3346712
-            - address: 0x55A0D01a419471DBC0d118966b703e21799B6824
-              start_block: 14224457
-            - address: 0x82d4aCF0DA013Ee3649C7eAdF5Db9093A7EFa7B0
-              start_block: 12754121
-            - address: 0xa6Fa14A446B1b86619De3c27D10eeaAd84a0FcCd
-              start_block: 12926465
-            - address: 0xE2F6d34fd09D21F4121d648E191e842Ac95Ac0Dc
-              start_block: 3376668
-            - address: 0x20A9DC684B4d0407EF8C9A302BEAaA18ee15F656
-              start_block: 9677352
-            - address: 0xAeEDaA1B2C4281CB938b7D64f17C832c0160A6B2
-              start_block: 14224461
-            - address: 0x0EF812f4c68DC84c22A4821EF30ba2ffAB9C2f3A
-              start_block: 12925828
-            - address: 0x003107B3aeee133804eaBE7D1df200DdFbb51dCE
-              start_block: 3346685
-            - address: 0xAe5C1c2E5778f40185A9580ACa4061B42De6f74B
-              start_block: 14224464
-            - address: 0xf07d1C752fAb503E47FEF309bf14fbDD3E867089
-              start_block: 3346842
-            - address: 0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B
-              start_block: 3346876
-            - address: 0xe0fa08834465EcC36c494F2b6C87b82Ab7970413
-              start_block: 3346785
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 3346729
-            - address: 0x3a01521F8E7F012eB37eAAf1cb9490a5d9e18249
-              start_block: 3381721
-            - address: 0x432036208d2717394d2614d6697c46DF3Ed69540
-              start_block: 3346915
-            - address: 0xECD72d039362fbFC52F8A8724E720753c50aa3B1
-              start_block: 5096225
-            - address: 0xaeD5b25BE1c3163c907a471082640450F928DDFE
-              start_block: 3346818
-            - address: 0x22cdc93F53Ee3F6b8Ad66faD6f98915a5349950E
-              start_block: 3346748
-            - address: 0x84A420459cd31C3c34583F67E0f0fB191067D32f
-              start_block: 3346824
-            - address: 0x9508BF380c1e6f751D97604732eF1Bae6673f299
-              start_block: 3346736
-            - address: 0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE
-              start_block: 3376709
-            - address: 0xA8240475Cc153944974DCE4D13C3b8E27effA8D5
-              start_block: 11021985
-            - address: 0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE
-              start_block: 3376709
-            - address: 0x1BFE50bb2A8a75fefa46892dB10313898dDbFf8F
-              start_block: 3376721
-            - address: 0x07cA54031c81a76fc943d00CE2423FA8f60C7B17
-              start_block: 3376731
-            - address: 0xa4666f8E6DBf504BBC2dB7B005743ce7d8efacBB
-              start_block: 3446550
-        - chain_id: 25
-          required_confirmations: 50
-          contracts:
-            - address: 0xCb6674548586F20ca39C97A52A0ded86f48814De
-              start_block: 2511054
-            - address: 0x4cDacbb74E86e2E18c35ae9D97B9427A0ADA8007
-              start_block: 1578368
-            - address: 0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B
-              start_block: 1578329
-            - address: 0x991adb00eF4c4a6D1eA6036811138Db4379377C2
-              start_block: 2520413
-            - address: 0x9695FA23b27022c7DD752B7d64bB5900677ECC21
-              start_block: 1578362
-            - address: 0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89
-              start_block: 1578350
-            - address: 0x8745773CC6e70577819BB76f51FA7640cece505F
-              start_block: 1578197
-            - address: 0x003107B3aeee133804eaBE7D1df200DdFbb51dCE
-              start_block: 1578073
-            - address: 0xb6032677A85F65Ea4932ADb25f7514BF04A721Af
-              start_block: 1578375
-            - address: 0x4bC93fA3BeaC48B9Fc9d018709C4632071C67596
-              start_block: 1578372
-            - address: 0xCe762CC8138F4fa55427403A33E95a3D492c0166
-              start_block: 1578378
-            - address: 0x0783A772277C70cA529cd65194CA12AcF0c095a2
-              start_block: 1578370
-            - address: 0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9
-              start_block: 1578335
-            - address: 0x432036208d2717394d2614d6697c46DF3Ed69540
-              start_block: 1578332
-            - address: 0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9
-              start_block: 1578335
-            - address: 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9
-              start_block: 1578337
-            - address: 0x809DC529f07651bD43A172e8dB6f4a7a0d771036
-              start_block: 1578339
-            - address: 0xf07d1C752fAb503E47FEF309bf14fbDD3E867089
-              start_block: 1578327
-            - address: 0x41E95B1F1c7849c50Bb9Caf92AB33302c0de945F
-              start_block: 2263766
-        - chain_id: 8217
-          required_confirmations: 50
-          contracts:
-            - address: 0x72b614cB34d010a097bbf7E492479195DBAE7BB4
-              start_block: 94109651
-            - address: 0x8745773CC6e70577819BB76f51FA7640cece505F
-              start_block: 93622358
-            - address: 0x911766fA1a425Cb7cCCB0377BC152f37F276f8d6
-              start_block: 93635360
-            - address: 0x19A8793F7b0820fE1f32AaC2F7DdaE1f125346e2
-              start_block: 94109575
-            - address: 0xF68cD56cF9a9e1cDa181fb2C44C5F0E98B5cC541
-              start_block: 94110985
-            - address: 0x15aDA3716A7e589B1c31b7131A0cC546203e100f
-              start_block: 93615098
-            - address: 0xCe762CC8138F4fa55427403A33E95a3D492c0166
-              start_block: 93624143
-            - address: 0x991adb00eF4c4a6D1eA6036811138Db4379377C2
-              start_block: 94109740
-            - address: 0x995Abc3EEf2894E8923E1d58e5E62f2BCF90cd4E
-              start_block: 94109701
-            - address: 0x3b081263CD149739E1b44A354f925180d52dE92a
-              start_block: 94110445
-            - address: 0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F
-              start_block: 94109678
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 93622381
-            - address: 0x20B587484E75752Adac381aE577a7562E7f358c5
-              start_block: 93622370
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 93622381
-            - address: 0x9508BF380c1e6f751D97604732eF1Bae6673f299
-              start_block: 93622445
-            - address: 0xe0fa08834465EcC36c494F2b6C87b82Ab7970413
-              start_block: 93622480
-            - address: 0x003107B3aeee133804eaBE7D1df200DdFbb51dCE
-              start_block: 93622336
-        - chain_id: 1284
-          required_confirmations: 50
-          contracts:
-            - address: 0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3
-              start_block: 175159
-            - address: 0xfFC2d603fde1F99ad94026c00B6204Bb9b8c36E9
-              start_block: 173385
-            - address: 0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b
-              start_block: 173334
-            - address: 0x73783F028c60D463bc604cc53852C37C31dEC5e9
-              start_block: 188661
-            - address: 0x104127CCd4b1378898916894EB59c97E690b6E9E
-              start_block: 173381
-            - address: 0x1d4C2a246311bB9f827F4C768e277FF5787B7D7E
-              start_block: 175178
-            - address: 0xd5609cD0e1675331E4Fb1d43207C8d9D83AAb17C
-              start_block: 173369
-            - address: 0x003107B3aeee133804eaBE7D1df200DdFbb51dCE
-              start_block: 173321
-            - address: 0x15aDA3716A7e589B1c31b7131A0cC546203e100f
-              start_block: 173317
-            - address: 0xc36501845A90FC7D9B4B08F3aeBBC27B1401d586
-              start_block: 173391
-            - address: 0x9695FA23b27022c7DD752B7d64bB5900677ECC21
-              start_block: 173389
-            - address: 0x4cDacbb74E86e2E18c35ae9D97B9427A0ADA8007
-              start_block: 173393
-            - address: 0xE74f2e89d993a31B21A714Dcc531b34049373EF0
-              start_block: 173387
-            - address: 0x84A420459cd31C3c34583F67E0f0fB191067D32f
-              start_block: 173355
-            - address: 0xe1a77ce68DFf2f847c469b8c67Dc2A6d668D5E6F
-              start_block: 425466
-            - address: 0x84A420459cd31C3c34583F67E0f0fB191067D32f
-              start_block: 173355
-            - address: 0xf07d1C752fAb503E47FEF309bf14fbDD3E867089
-              start_block: 173357
-            - address: 0xA67b7147DcE20D6F25Fd9ABfBCB1c3cA74E11f0B
-              start_block: 173359
-            - address: 0x20B587484E75752Adac381aE577a7562E7f358c5
-              start_block: 173332
-            - address: 0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A
-              start_block: 175197
-            - address: 0xD2666441443DAa61492FFe0F37717578714a4521
-              start_block: 175168
-            - address: 0xBf180C122D85831dcb55DC673aB47C8aB9BCEFb4
-              start_block: 175206
-            - address: 0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F
-              start_block: 175188
         - chain_id: 137
           required_confirmations: 50
           contracts:
-            - address: 0x85fCD7Dd0a1e1A9FCD5FD886ED522dE8221C3EE5
-              start_block: 21071348
-            - address: 0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3
-              start_block: 15848427
-            - address: 0x612f3a0226463599CCBCAbFf89623904ef38BcB9
-              start_block: 18026789
-            - address: 0x1c6aE197fF4BF7BA96c66C5FD64Cb22450aF9cC8
-              start_block: 21073277
-            - address: 0x77aA7CB4B348f4b99C6364e40Bc5bF615FC6feb3
-              start_block: 15848423
-            - address: 0xe599161573d3eF4f767F696857A00C65Ac35bEdf
-              start_block: 15848443
-            - address: 0x1259aDC9f2a0410d0dB5e226563920A2d49f4454
-              start_block: 15848445
-            - address: 0x41E95B1F1c7849c50Bb9Caf92AB33302c0de945F
-              start_block: 15848437
-            - address: 0xe21a31315ddeA8200d73945AA06ACBb15DB92bFb
-              start_block: 15848429
-            - address: 0x7875Af1a6878bdA1C129a4e2356A3fD040418Be5
-              start_block: 18369237
-            - address: 0x1d4C2a246311bB9f827F4C768e277FF5787B7D7E
-              start_block: 15848449
-            - address: 0x0775632F3d2b8aa764E833C0E3Db6382882D0f48
-              start_block: 19736110
-            - address: 0xD2666441443DAa61492FFe0F37717578714a4521
-              start_block: 15848439
-            - address: 0xBa1001B33bB8294880bE56323d9D8634827Bcb0f
-              start_block: 15848433
-            - address: 0xAa959Ea09a10d1FACED135Cb4268AA942F64892C
-              start_block: 15848441
-            - address: 0xaB0D8Fc46249DaAcd5cB36c5F0bC4f0DAF34EBf5
-              start_block: 15848431
-            - address: 0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280
-              start_block: 18026806
-            - address: 0x966e35C01842D029cFceDdc7a7fEB937C2F62A8a
-              start_block: 25033813
-            - address: 0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280
-              start_block: 18026806
-            - address: 0xca3281e99E2b7A2a889158944c409bF41F3c140d
-              start_block: 17319850
-            - address: 0x0aDf879BD8215654AbDC354B66DBFdfB013d2362
-              start_block: 17319781
-            - address: 0xa12A034fe81A17d11593C1f85930D20090Ec1747
-              start_block: 18439425
-          rpc_url: "http://omnirpc/confirmations"
-          refresh_rate: 0
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 39145588
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 39145588
+        - chain_id: 10
+          required_confirmations: 50
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 73536295
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 73537265
+        - chain_id: 43114
+          required_confirmations: 50
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 26091228
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 26091231
+      rpc_url: "http://executor-omnirpc/confirmations"
+      refresh_rate: 0
