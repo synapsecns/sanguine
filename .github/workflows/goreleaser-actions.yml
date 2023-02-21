@@ -76,7 +76,7 @@ jobs:
   changes:
     name: Change Detection
     runs-on: ubuntu-latest
-    if: ${{ format('refs/heads/{0}', ) == github.ref || contains(github.event.head_commit.message, '[goreleaser]') }}
+    if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[goreleaser]') }}
     outputs:
       # Expose matched filters as job 'packages' output variable
       packages: ${{ steps.filter_go.outputs.changed_modules }}
