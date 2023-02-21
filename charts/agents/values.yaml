@@ -160,7 +160,7 @@ executor_remote_existing:
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
       env:
         - name: POD_NAME
-          value: executor-omnirpc
+          value: agents-omnirpc
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -200,7 +200,7 @@ executor_remote_fresh:
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
       env:
         - name: POD_NAME
-          value: executor-omnirpc
+          value: agents-omnirpc
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -258,7 +258,7 @@ executor_embedded:
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
       env:
         - name: POD_NAME
-          value: executor-omnirpc
+          value: agents-omnirpc
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -322,7 +322,7 @@ mysql:
 omnirpc:
   # this can be remote in production, we just want to use the public rpc servers here
   enabled: true
-  fullnameOverride: executor-omnirpc
+  fullnameOverride: agents-omnirpc
   replicaCount: 3
 
 scribe:
@@ -352,7 +352,7 @@ scribe:
               start_block: 26091228
             - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
               start_block: 26091231
-      rpc_url: "http://executor-omnirpc/confirmations"
+      rpc_url: "http://agents-omnirpc/confirmations"
       refresh_rate: 0
 
 notary_files:
@@ -360,6 +360,8 @@ notary_files:
     sam: ple
 
 guard_files:
+  signer.txt: |-
+    dd03ef81893502797024462da191deaf1e90f30879b3b7673acb11ce72f73094
   config.yaml: |-
     sam: ple
 
@@ -367,7 +369,7 @@ executor_remote_existing_files:
   signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   config.yaml: |-
-    base_omnirpc_url: "http://executor-omnirpc/confirmations"
+    base_omnirpc_url: "http://agents-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
       file: "/config/signer.txt"
@@ -376,7 +378,7 @@ executor_remote_fresh_files:
   signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   config.yaml: |-
-    base_omnirpc_url: "http://executor-omnirpc/confirmations"
+    base_omnirpc_url: "http://agents-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
       file: "/config/signer.txt"
@@ -385,7 +387,7 @@ executor_embedded_files:
   signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   config.yaml: |-
-    base_omnirpc_url: "http://executor-omnirpc/confirmations"
+    base_omnirpc_url: "http://agents-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
       file: "/config/signer.txt"
@@ -412,5 +414,5 @@ executor_embedded_files:
               start_block: 26091228
             - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
               start_block: 26091231
-      rpc_url: "http://executor-omnirpc/confirmations"
+      rpc_url: "http://agents-omnirpc/confirmations"
       refresh_rate: 0
