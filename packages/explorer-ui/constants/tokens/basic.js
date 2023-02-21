@@ -535,6 +535,7 @@ export const ETH = new Token({
     [ChainId.BOBA]: '',
     [ChainId.ARBITRUM]: '',
     [ChainId.OPTIMISM]: '',
+    [ChainId.DFK]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
   },
   decimals: 18,
   symbol: 'ETH',
@@ -919,7 +920,7 @@ export const BASIC_TOKENS_BY_CHAIN = {
     AVWETH,
     SYNJEWEL,
   ],
-  [ChainId.DFK]: [JEWEL, WJEWEL, XJEWEL, WAVAX, DFK_USDC, WKLAY, MATIC],
+  [ChainId.DFK]: [JEWEL, WJEWEL, XJEWEL, WAVAX, DFK_USDC, WKLAY, MATIC, ETH],
   [ChainId.AURORA]: [
     USDC,
     USDT,

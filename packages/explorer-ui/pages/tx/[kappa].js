@@ -143,7 +143,9 @@ export default function BridgeTransaction({ queryResult }) {
               </div>
               <div className="flex gap-x-[4.5rem] py-1">
                 <p className="text-white text-opacity-60">To</p>
-                <p className="text-white break-all text-sm">{toInfo ? toInfo.address : "Pending"}</p>
+                <a target="_blank"
+                  rel="noreferrer" className="text-white break-all text-sm underline" href={toInfo ? ACCOUNTS_PATH + "/" + toInfo.address: ""}>{toInfo ? toInfo.address : "Pending"}
+                </a>
               </div>
 
               <div className="flex gap-x-[1.7rem] py-1 ">

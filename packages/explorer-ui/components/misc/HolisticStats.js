@@ -12,7 +12,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
   const [fee, setFee] = useState("--")
   const [addresses, setAddresses] = useState("--")
   const [txs, setTxs] = useState("--")
-  const [useCache, setUseCache] = useState(false)
+  const [useCache, setUseCache] = useState(true)
   const [skip, setSkip] = useState(false)
   const [variables, setVariables] = useState({})
 
@@ -122,7 +122,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
   }, [platform])
 
 
-  const stats = [parentPlatform === "MESSAGE_BUS" ? null : { title: "Volume", loading: loadingVolume, value: "$"+formatUSD(volume) }, { title: "Transactions", loading: false, value: formatUSD(txs) }, parentPlatform === "MESSAGE_BUS" ? null : { title: "Addresses", loading: false, value: formatUSD(addresses) }, parentPlatform === "MESSAGE_BUS" ? null : { title: "Fees", loading: loadingFee, value: "$"+formatUSD(fee) }]
+  const stats = [parentPlatform === "MESSAGE_BUS" ? null : { title: "Volume", usd: true, loading: loadingVolume, value: formatUSD(volume) }, { title: "Transactions", loading: false, usd: false,value: formatUSD(txs) }, parentPlatform === "MESSAGE_BUS" ? null : { title: "Addresses", loading: false, usd: false,value: formatUSD(addresses) }, parentPlatform === "MESSAGE_BUS" ? null : { title: "Fees", loading: loadingFee, usd: true,value: formatUSD(fee) }]
 
   return (
     <>
@@ -151,7 +151,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
               <div className="text-xl opacity-80">{stat.title}</div>
               <div className="text-4xl font-bold text-white">
                 {stat.loading ? (<div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>) :
-                  stat.value
+                 stat.usd? "$" + stat.value : stat.value
                 }
               </div>
 
