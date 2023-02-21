@@ -1,5 +1,5 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { getChainUrl } from '@urls'
+import { getChainUrl, getExplorerTxUrl } from '@urls'
 
 import { CHAIN_EXPLORER_URLS, CHAIN_INFO_MAP } from '@constants/networks'
 import Image from 'next/image'
@@ -14,14 +14,14 @@ export function ChainInfo({
   noLink = false,
 }) {
   const { chainName, chainImg } = CHAIN_INFO_MAP[chainId] ?? {}
-  const explorer = CHAIN_EXPLORER_URLS[chainId] ?? ''
-  var link = explorer
+  var link = ""
   if (txHash) {
-    link += '/tx/' + txHash
+    link = getExplorerTxUrl({ hash: txHash, chainId: chainId })
   }
   if (useExplorerLink) {
     link = getChainUrl({ chainId: chainId })
   }
+  console.log(";link", link)
   if (chainName) {
     return (
       <div className="w-full relative">

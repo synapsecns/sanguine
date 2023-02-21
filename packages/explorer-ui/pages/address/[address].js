@@ -11,6 +11,7 @@ import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
 import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import { useRouter } from "next/router";
 import { checksumAddress } from '@utils/checksum'
+import CopyTitle from '@components/misc/CopyTitle';
 
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
@@ -92,8 +93,7 @@ export default function address() {
 
   return (
     <StandardPageContainer title={"Address"}>
-      <h3 className="text-white text-2xl">{walletAddress}</h3>
-
+<CopyTitle title={walletAddress} />
 
       {walletAddress != "" ?
         <HolisticStats

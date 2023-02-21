@@ -4,7 +4,7 @@ export function StyleAddress({ sourceInfo, limiter = 4 }) {
   if (sourceInfo.address) {
     return (
       <a
-        className="hover:underline"
+        className="underline hover:text-[#8FEBFF] transition ease-out hover:"
         href={getAddressesUrl({
           address: sourceInfo.address,
           chainIdTo: sourceInfo.chainId,

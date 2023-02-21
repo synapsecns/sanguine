@@ -1,18 +1,17 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import { TRANSACTIONS_PATH, ACCOUNTS_PATH } from '@urls'
 import { ChainInfo } from "@components/misc/ChainInfo";
-
 import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { useRouter } from 'next/router'
 import { useSearchParams } from 'next/navigation'
 import { CHAIN_EXPLORER_URLS } from '@constants/networks'
-
 import { GET_BRIDGE_TRANSACTIONS_QUERY, } from '@graphql/queries'
 import { API_URL } from '@graphql'
 import { HorizontalDivider } from "@components/misc/HorizontalDivider";
 import { timeAgo } from "@utils/timeAgo";
 import { formatDateTime } from "@utils/formatDate";
+import CopyTitle from '@components/misc/CopyTitle';
 
 import { IconAndAmount } from "@components/misc/IconAndAmount";
 import { BridgeTransactionTable } from "@components/BridgeTransaction/BridgeTransactionTable";
@@ -41,7 +40,6 @@ export default function BridgeTransaction({ queryResult }) {
   const { pending, fromInfo, toInfo } = transaction
 
 
-
   const getTimeDifference = (start, end) => {
     const diff = end - start
     if (0 >= diff) {
@@ -57,8 +55,7 @@ export default function BridgeTransaction({ queryResult }) {
 
       <div className=" mb-2">
         <h3 className="text-white text-5xl mb-2 font-semibold">TXID</h3>
-        <h3 className="text-white text-2xl font-semibold">{kappa}</h3>
-
+        <CopyTitle title={kappa} />
       </div>
       <br />
       <HorizontalDivider />
@@ -104,7 +101,7 @@ export default function BridgeTransaction({ queryResult }) {
               <div className="flex gap-x-[3.4rem] py-1 ">
                 <p className="text-white text-opacity-60">From</p>
                 <a target="_blank"
-                  rel="noreferrer" className="text-white break-all text-sm underline" href={ACCOUNTS_PATH + "/" +fromInfo.address}>{fromInfo.address}
+                  rel="noreferrer" className="text-white break-all text-sm underline" href={ACCOUNTS_PATH + "/" + fromInfo.address}>{fromInfo.address}
                 </a>
               </div>
 

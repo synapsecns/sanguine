@@ -51,21 +51,21 @@ export function BridgeTransactionTable({ queryResult }) {
           chainId={fromInfo.chainID}
           imgClassName="w-6 h-6 rounded-full"
           txHash={fromInfo.hash}
-          useExplorerLink={true}
+          useExplorerLink={false}
 
         />,
         pending ?  <ChainInfo
         chainId={fromInfo.destinationChainID}
         imgClassName="w-6 h-6 rounded-full"
         txHash={""}
-        useExplorerLink={true}
+        useExplorerLink={false}
 
       /> :
         <ChainInfo
           chainId={toInfo.chainID}
           imgClassName="w-6 h-6 rounded-full"
           txHash={toInfo.hash}
-          useExplorerLink={true}
+          useExplorerLink={false}
 
         />,
         <StyleAddress sourceInfo={fromInfo} />,

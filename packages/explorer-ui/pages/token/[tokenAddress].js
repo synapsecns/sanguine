@@ -14,6 +14,8 @@ import { useLazyQuery, useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
 import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import { useRouter } from "next/router";
+import CopyTitle from '@components/misc/CopyTitle'
+import { checksumAddress } from '@utils/checksum'
 
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
@@ -57,6 +59,7 @@ export default function chainId() {
     useState('PAST_MONTH')
   const [dailyStatisticCumulative, SetDailyStatisticCumulative] =
     useState(false)
+
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
@@ -78,7 +81,7 @@ export default function chainId() {
         bridgeTransactionsTable,
         'fromInfo.time',
         ['desc']
-      ).slice(0, 25)
+      )
       setTransactionsArr(bridgeTransactionsTable)
 
     },
@@ -97,20 +100,20 @@ export default function chainId() {
 
   // Get initial data
   useEffect(() => {
-    setAddress(tokenAddress?.toLowerCase())
+    setAddress(checksumAddress(tokenAddress))
     setTokenChainID(chainId)
-    setVariables({ page: 1, tokenAddressFrom: [tokenAddress],chainIDFrom: chainId, useMv: true })
+    setVariables({ page: 1, tokenAddressFrom: [checksumAddress(tokenAddress)], chainIDFrom: chainId, useMv: true })
   }, [chainId, tokenAddress])
 
   return (
     <StandardPageContainer title={''}>
       <a href={getChainUrl({ chainId: tokenChainID })}>
-      <div className='rounded-md py-1 px-2 bg-gray-800/50 mb-2 w-fit hover:bg-gray-500/50'>
-      <ChainInfo
-        chainId={tokenChainID}
-        imgClassName="w-6 h-6 rounded-full"
-        noLink={true}
-      /></div></a>
+        <div className='rounded-md py-1 px-2 bg-gray-800/50 mb-2 w-fit hover:bg-gray-500/50'>
+          <ChainInfo
+            chainId={tokenChainID}
+            imgClassName="w-6 h-6 rounded-full"
+            noLink={true}
+          /></div></a>
       <div className="flex items-center mb-2">
         <AssetImage
           tokenAddress={address}
@@ -120,10 +123,10 @@ export default function chainId() {
         <h3 className="text-white text-5xl font-semibold">{TOKEN_HASH_MAP[tokenChainID]?.[address?.toLowerCase()]?.symbol
         } </h3></div>
 
-      <h3 className="text-white text-xl">{address}</h3>
+<CopyTitle title={address} />
 
       <HolisticStats
-      noMessaging={true}
+        noMessaging={true}
         platform={platform}
         chainID={variables?.chainId}
         tokenAddress={address}
@@ -146,7 +149,7 @@ export default function chainId() {
       <p className="text-white text-2xl font-bold">Recent Transactions</p>
       <div className="h-full flex items-center mt-4">
         <button
-          onClick={() => setVariables({ page: 1, tokenAddressFrom: [address],chainIDFrom: tokenChainID, useMv: true  })}
+          onClick={() => setVariables({ page: 1, tokenAddressFrom: [address], chainIDFrom: tokenChainID, useMv: true })}
 
           className={
             'font-medium rounded-l-md px-4 py-2 border  h-fit  ' +
@@ -157,7 +160,7 @@ export default function chainId() {
           Outgoing
         </button>
         <button
-          onClick={() => setVariables({ page: 1, tokenAddressTo: [address],chainIDTo: tokenChainID, useMv: true  })
+          onClick={() => setVariables({ page: 1, tokenAddressTo: [address], chainIDTo: tokenChainID, useMv: true })
           }
 
           className={

@@ -36,7 +36,7 @@ export function IconAndAmount({
         <AssetImage
           tokenAddress={tokenAddress}
           chainId={chainId}
-          className={`${iconSize} inline mr-1 rounded-lg`}
+          className={`${iconSize} inline mr-1 rounded-lg hover:opacity-[0.8] transition-all ease-in-out`}
         />
         <div className={`${textSize} pl-1 whitespace-nowrap text-white`}>
           {formatAmount(formattedValue)}

@@ -267,8 +267,11 @@ export const CHAIN_RPC = {
   [ChainId.HARMONY]: 'https://harmony-0-rpc.gateway.pokt.network/', // 'https://api.harmony.one',
   [ChainId.CRONOS]: 'https://evm-cronos.crypto.org',
   [ChainId.METIS]: 'https://andromeda.metis.io/?owner=1088',
-  [ChainId.KLAYTN]: 'https://cypress.chain.thebifrost.io/',
+  [ChainId.KLAYTN]: 'https://cypress.chain.thebifrost.io/'
+
+
   // [ChainId.XDAI]: 'https://rpc.xdaichain.com',
+
 }
 
 export const NON_EVM_CHAIN_RPC = {
@@ -294,6 +297,8 @@ export const CHAIN_EXPLORER_URLS = {
   [ChainId.METIS]: 'https://andromeda-explorer.metis.io',
   [ChainId.KLAYTN]: 'https://scope.klaytn.com',
   [ChainId.TERRA]: 'https://terrasco.pe/mainnet', //'https://finder.terra.money/mainnet',
+  [ChainId.DOGECHAIN]: 'https://explorer.dogechain.dog',
+  [ChainId.CANTO]: 'https://evm.explorer.canto.io',
 }
 
 /** write rpcs */
@@ -467,6 +472,28 @@ export const CHAIN_PARAMS = {
     nativeCurrency: {
       name: 'Klaytn',
       symbol: 'KLAY',
+      decimals: 18,
+    },
+    rpcUrls: [CHAIN_RPC[ChainId.KLAYTN]],
+    blockExplorerUrls: [CHAIN_EXPLORER_URLS[ChainId.KLAYTN]],
+  },
+  [ChainId.CANTO]: {
+    chainId: toHexStr(ChainId.CANTO),
+    chainName: CHAIN_INFO_MAP[ChainId.CANTO].chainName,
+    nativeCurrency: {
+      name: 'Canto',
+      symbol: 'CANTO',
+      decimals: 18,
+    },
+    rpcUrls: [CHAIN_RPC[ChainId.KLAYTN]],
+    blockExplorerUrls: [CHAIN_EXPLORER_URLS[ChainId.KLAYTN]],
+  },
+  [ChainId.DOGECHAIN]: {
+    chainId: toHexStr(ChainId.DOGECHAIN),
+    chainName: CHAIN_INFO_MAP[ChainId.DOGECHAIN].chainName,
+    nativeCurrency: {
+      name: 'Doge Chain',
+      symbol: 'DC',
       decimals: 18,
     },
     rpcUrls: [CHAIN_RPC[ChainId.KLAYTN]],
