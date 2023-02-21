@@ -9,6 +9,7 @@ type State is bytes29;
 /// @dev Attach library functions to State
 using {
     StateLib.unwrap,
+    StateLib.leaf,
     StateLib.root,
     StateLib.origin,
     StateLib.nonce,
@@ -97,6 +98,24 @@ library StateLib {
     /// @notice Convenience shortcut for unwrapping a view.
     function unwrap(State _state) internal pure returns (bytes29) {
         return State.unwrap(_state);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            STATE HASHING                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Returns a "state leaf": a unique hash for every unique state, that is
+    /// going to be used as a leaf in the "Snapshot Merkle Tree".
+    /// @dev We use the hashing technique similar to a Merkle tree here and return hash for a node
+    /// having two children: (root, origin) and (nonce, blockNumber, timestamp).
+    function leaf(State _state) internal pure returns (bytes32) {
+        bytes29 _view = unwrap(_state);
+        // Derive hash for (root, origin) bytestring
+        bytes32 rootOriginHash = _view.prefix({ _len: OFFSET_NONCE, newType: 0 }).keccak();
+        // Derive hash for (nonce, blockNumber, timestamp) bytestring
+        bytes32 metadataHash = _view.sliceFrom({ _index: OFFSET_NONCE, newType: 0 }).keccak();
+        // Final hash is two hashes concatenated, and then hashed
+        return keccak256(bytes.concat(rootOriginHash, metadataHash));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

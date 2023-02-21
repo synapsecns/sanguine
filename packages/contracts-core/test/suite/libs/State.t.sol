@@ -43,6 +43,10 @@ contract StateLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.nonce(payload), rs.nonce, "!nonce");
         assertEq(libHarness.blockNumber(payload), rs.blockNumber, "!blockNumber");
         assertEq(libHarness.timestamp(payload), rs.timestamp, "!timestamp");
+        // Test creating a leaf
+        bytes32 leftChild = keccak256(abi.encodePacked(rs.root, rs.origin));
+        bytes32 rightChild = keccak256(abi.encodePacked(rs.nonce, rs.blockNumber, rs.timestamp));
+        assertEq(libHarness.leaf(payload), keccak256(bytes.concat(leftChild, rightChild)), "!leaf");
     }
 
     function test_isState(uint8 length) public {
