@@ -77,6 +77,17 @@ notary:
       value: "json"
   tolerations: {}
   extraInitContainers:
+    - name: wait-for-omnirpc
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;' ]
+      env:
+        - name: POD_NAME
+          value: agents-omnirpc
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
     # Wait for mysql to show up
     # this is mostly for testing
     - name: wait-for-mysql
@@ -104,7 +115,7 @@ notary:
 
 guard:
   enabled: true
-  args: ["guard-run", "--config=/config/config.yaml", "--metrics-port=5082", "--ignore-init-errors"]
+  args: ["guard-run", "--config=/config/config.yaml", "--metrics-port=5082"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -114,6 +125,17 @@ guard:
       value: "json"
   tolerations: {}
   extraInitContainers:
+    - name: wait-for-omnirpc
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;' ]
+      env:
+        - name: POD_NAME
+          value: agents-omnirpc
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
     # Wait for mysql to show up
     # this is mostly for testing
     - name: wait-for-mysql
@@ -363,7 +385,78 @@ guard_files:
   signer.txt: |-
     dd03ef81893502797024462da191deaf1e90f30879b3b7673acb11ce72f73094
   config.yaml: |-
-    sam: ple
+    origindomains:
+      origin_client:
+        - domainid: 137
+          type: EVM
+          requiredconfirmations: 50
+          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestationcollectoraddress: ''
+          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/137"
+          startheight: 39145588
+        - domainid: 10
+          type: EVM
+          requiredconfirmations: 50
+          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestationcollectoraddress: ''
+          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/10"
+          startheight: 73536295
+        - domainid: 43114
+          type: EVM
+          requiredconfirmations: 50
+          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestationcollectoraddress: ''
+          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/43114"
+          startheight: 26091228
+    attestationdomain:
+      domainid: 137
+      type: EVM
+      requiredconfirmations: 50
+      originaddress: ''
+      attestationcollectoraddress: 0xF77D000a80940700ea63aB76A249c5625bDceADC
+      destinationaddress: ''
+      rpcurl: "http://agents-omnirpc/confirmations/1/rpc/137"
+      startheight: 73537407
+    destinationdomains:
+      destination_client:
+        - domainid: 137
+          type: EVM
+          requiredconfirmations: 50
+          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestationcollectoraddress: ''
+          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/137"
+          startheight: 39145588
+        - domainid: 10
+          type: EVM
+          requiredconfirmations: 50
+          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestationcollectoraddress: ''
+          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/10"
+          startheight: 73536295
+        - domainid: 43114
+          type: EVM
+          requiredconfirmations: 50
+          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestationcollectoraddress: ''
+          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/43114"
+          startheight: 26091228
+    unbondedsigner:
+      type: "File"
+      file: "/config/signer.txt"
+    bondedsigner:
+      type: "File"
+      file: "/config/signer.txt"
+    database:
+      type: mysql
+      dbpath: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
+      connstring: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
+    refreshintervalinseconds: 1
 
 executor_remote_existing_files:
   signer.txt: |-

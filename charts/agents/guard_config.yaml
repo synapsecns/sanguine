@@ -1,10 +1,10 @@
-origindomains:
+origin_domains:
   origin_client:
-    - domainid: 137
+    - domain_id: 137
       type: EVM
-      requiredconfirmations: 50
-      originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-      attestationcollectoraddress: ''
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collector_address: ''
       destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
       rpcurl: "http://agents-omnirpc/confirmations/1/rpc/137"
       startheight: 39145588
