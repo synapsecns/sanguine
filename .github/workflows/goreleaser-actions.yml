@@ -90,7 +90,7 @@ jobs:
         id: filter_go
         with:
           include_deps: true
-          github_token: ${{ secrets.github_token }}
+          github_token: ${{ secrets.WORKFLOW_PAT }}
 
       - id: length
         run: |
