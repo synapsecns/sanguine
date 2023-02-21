@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { State, StateLib } from "../../../contracts/libs/State.sol";
+import { MerkleList } from "../../../contracts/libs/MerkleList.sol";
 import "../../utils/SynapseLibraryTest.t.sol";
 import "../../harnesses/libs/SnapshotHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract SnapshotLibraryTest is SynapseLibraryTest {
+    using StateLib for bytes;
     using TypedMemView for bytes;
 
     uint256 internal constant MAX_STATES = 32;
@@ -21,6 +24,7 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         statesAmount = bound(statesAmount, 1, MAX_STATES);
         bytes memory payload = new bytes(statesAmount * STATE_LENGTH);
         bytes[] memory statePayloads = new bytes[](statesAmount);
+        bytes32[] memory stateLeafs = new bytes32[](statesAmount);
         // Construct fake states having different byte representation
         for (uint256 i = 0; i < statesAmount; ++i) {
             statePayloads[i] = new bytes(STATE_LENGTH);
@@ -29,6 +33,8 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
                 statePayloads[i][j] = b;
                 payload[i * STATE_LENGTH + j] = b;
             }
+            // State library is covered in a separate uint test, we assume it is working fine
+            stateLeafs[i] = statePayloads[i].castToState().leaf();
         }
         bytes32 hashedSnapshot = keccak256(payload);
         // Test formatting of snapshot
@@ -41,6 +47,11 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         }
         // Test hashing
         assertEq(libHarness.hash(payload), hashedSnapshot, "!hash");
+        // Test root
+        // MerkleList library is covered in a separate uint test, we assume it is working fine
+        MerkleList.calculateRoot(stateLeafs);
+        // Expected merkle root value is stateLeafs[0]
+        assertEq(libHarness.root(payload), stateLeafs[0], "!root");
     }
 
     function test_isSnapshot_length(uint16 length) public {

@@ -39,6 +39,10 @@ contract SnapshotHarness {
         return _payload.castToSnapshot().statesAmount();
     }
 
+    function root(bytes memory _payload) public pure returns (bytes32) {
+        return _payload.castToSnapshot().root();
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         SNAPSHOT FORMATTERS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

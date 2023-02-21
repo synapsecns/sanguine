@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { MerkleList } from "./MerkleList.sol";
 import "./State.sol";
 
 /// @dev Snapshot is a memory view over a formatted snapshot payload: a list of states.
@@ -10,7 +11,8 @@ using {
     SnapshotLib.unwrap,
     SnapshotLib.hash,
     SnapshotLib.state,
-    SnapshotLib.statesAmount
+    SnapshotLib.statesAmount,
+    SnapshotLib.root
 } for Snapshot global;
 
 library SnapshotLib {
@@ -127,6 +129,23 @@ library SnapshotLib {
     function statesAmount(Snapshot _snapshot) internal pure returns (uint256) {
         bytes29 _view = unwrap(_snapshot);
         return _view.len() / STATE_LENGTH;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            SNAPSHOT ROOT                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
+    function root(Snapshot _snapshot) internal pure returns (bytes32) {
+        uint256 _statesAmount = statesAmount(_snapshot);
+        // Get the leaf values for all states from the snapshot
+        bytes32[] memory leafs = new bytes32[](_statesAmount);
+        for (uint256 i = 0; i < _statesAmount; ++i) {
+            leafs[i] = state(_snapshot, i).leaf();
+        }
+        MerkleList.calculateRoot(leafs);
+        // Merkle Root for the list is leafs[0]
+        return leafs[0];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
