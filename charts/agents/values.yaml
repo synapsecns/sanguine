@@ -328,6 +328,32 @@ omnirpc:
 scribe:
   enabled: true
   fullnameOverride: executor-scribe
+  files:
+    config.yaml: |-
+      chains:
+        - chain_id: 137
+          required_confirmations: 50
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 39145588
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 39145588
+        - chain_id: 10
+          required_confirmations: 50
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 73536295
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 73537265
+        - chain_id: 43114
+          required_confirmations: 50
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 26091228
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 26091231
+      rpc_url: "http://executor-omnirpc/confirmations"
+      refresh_rate: 0
 
 notary_files:
   config.yaml: |-
