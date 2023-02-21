@@ -1,3 +1,4 @@
+// Package main has the main file for the testcli utility
 package main
 
 import (
@@ -12,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
 
+//nolint:gosec
 func main() {
 	fmt.Println("Enter Sending Chain URL: ")
 	var sendingChainURL string
