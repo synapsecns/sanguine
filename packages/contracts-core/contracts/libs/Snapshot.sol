@@ -19,8 +19,24 @@ library SnapshotLib {
     using TypedMemView for bytes29;
 
     /**
-     * @dev Snapshot structure represent the historical state of multiple Origin contracts deployed on multiple chains.
-     * In short, snapshot is a list of "State" structs.
+     * @dev Snapshot structure represents the state of multiple Origin contracts deployed on multiple chains.
+     * In short, snapshot is a list of "State" structs. See State.sol for details about the "State" structs.
+     *
+     * Snapshot is considered "valid" in Origin, if every state referring to that Origin is valid there.
+     * Snapshot is considered "globally valid", if it is "valid" in every Origin contract.
+     *
+     * Both Guards and Notaries are supposed to form snapshots and sign snapshot.hash() to verify its validity.
+     * Each Guard should be monitoring a set of Origin contracts chosen as they see fit. They are expected
+     * to form snapshots with Origin states for this set of chains, sign and submit them to Summit contract.
+     *
+     * Notaries are expected to monitor the Summit contract for new snapshots submitted by the Guards.
+     * They should be forming their own snapshots using states from snapshots of any of the Guards.
+     * The states for the Notary snapshots don't have to come from the same Guard snapshot,
+     * or don't even have to be submitted by the same Guard.
+     *
+     * With their signature, Notary effectively "notarizes" the work that some Guards have done in Summit contract.
+     * Notary signature on a snapshot doesn't only verify the validity of the Origins, but also serves as
+     * a proof of liveliness for Guards monitoring these Origins.
      *
      * @dev Snapshot memory layout
      * [000 .. 050) states[0]   bytes   50 bytes
