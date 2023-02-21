@@ -103,7 +103,7 @@ library SnapshotLib {
     ▏*║                           SNAPSHOT HASHING                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @notice Returns the hash of a snapshot.
+    /// @notice Returns the hash of a Snapshot, that could be later signed by an Agent.
     function hash(Snapshot _snapshot) internal pure returns (bytes32 hashedSnapshot) {
         // Get the underlying memory view
         bytes29 _view = unwrap(_snapshot);
@@ -133,7 +133,7 @@ library SnapshotLib {
     ▏*║                          PRIVATE FUNCTIONS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Returns if snapshot's states amount is valid.
+    /// @dev Checks if snapshot's states amount is valid.
     function _isValidAmount(uint256 _statesAmount) internal pure returns (bool) {
         // Need to have at least one state in a snapshot.
         // Also need to have no more than `SNAPSHOT_MAX_STATES` states in a snapshot.

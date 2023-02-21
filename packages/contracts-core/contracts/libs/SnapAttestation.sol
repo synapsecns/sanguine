@@ -53,11 +53,11 @@ library SnapAttestationLib {
      * SnapAttestation is considered "globally valid", if it is valid in the Summit and all the Origin contracts.
      *
      * @dev Memory layout of SnapAttestation fields
-     * [000 .. 032): root           bytes32 32 bytes
-     * [032 .. 033): depth          uint8    1 byte
-     * [033 .. 037): nonce          uint32   4 bytes
-     * [037 .. 042): blockNumber    uint40   5 bytes
-     * [042 .. 047): timestamp      uint40   5 bytes
+     * [000 .. 032): root           bytes32 32 bytes    Root for "Snapshot Merkle Tree" created from a Notary snapshot
+     * [032 .. 033): depth          uint8    1 byte     Depth of "Snapshot Merkle Tree" created from a Notary snapshot
+     * [033 .. 037): nonce          uint32   4 bytes    Total amount of all accepted Notary snapshots
+     * [037 .. 042): blockNumber    uint40   5 bytes    Block when this Notary snapshot was accepted in Summit
+     * [042 .. 047): timestamp      uint40   5 bytes    Time when this Notary snapshot was accepted in Summit
      *
      * The variables below are not supposed to be used outside of the library directly.
      */
@@ -122,6 +122,7 @@ library SnapAttestationLib {
     ▏*║                         ATTESTATION HASHING                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @notice Returns the hash of a SnapAttestation, that could be later signed by a Notary.
     function hash(SnapAttestation _snapAtt) internal pure returns (bytes32) {
         // Get the underlying memory view
         bytes29 _view = unwrap(_snapAtt);
