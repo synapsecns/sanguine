@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       goreleaser-image: ${{ steps.name-export.outputs.TAG_NAME }}
+    if: ${{ github.ref == 'ref/heads/master' || contains(github.event.head_commit.message, '[goreleaser]') }}
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
