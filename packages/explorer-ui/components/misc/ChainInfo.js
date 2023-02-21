@@ -21,7 +21,6 @@ export function ChainInfo({
   if (useExplorerLink) {
     link = getChainUrl({ chainId: chainId })
   }
-  console.log(";link", link)
   if (chainName) {
     return (
       <div className="w-full relative">

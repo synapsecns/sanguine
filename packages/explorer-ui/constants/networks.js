@@ -485,8 +485,8 @@ export const CHAIN_PARAMS = {
       symbol: 'CANTO',
       decimals: 18,
     },
-    rpcUrls: [CHAIN_RPC[ChainId.KLAYTN]],
-    blockExplorerUrls: [CHAIN_EXPLORER_URLS[ChainId.KLAYTN]],
+    rpcUrls: [CHAIN_RPC[ChainId.CANTO]],
+    blockExplorerUrls: [CHAIN_EXPLORER_URLS[ChainId.CANTO]],
   },
   [ChainId.DOGECHAIN]: {
     chainId: toHexStr(ChainId.DOGECHAIN),
@@ -496,8 +496,8 @@ export const CHAIN_PARAMS = {
       symbol: 'DC',
       decimals: 18,
     },
-    rpcUrls: [CHAIN_RPC[ChainId.KLAYTN]],
-    blockExplorerUrls: [CHAIN_EXPLORER_URLS[ChainId.KLAYTN]],
+    rpcUrls: [CHAIN_RPC[ChainId.DOGECHAIN]],
+    blockExplorerUrls: [CHAIN_EXPLORER_URLS[ChainId.DOGECHAIN]],
   },
   [ChainId.TERRA]: {
     chainId: toHexStr(ChainId.TERRA),

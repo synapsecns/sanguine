@@ -107,7 +107,6 @@ export default function Txs() {
 
     let queryPage = p ? p : page
     let queryKappa = txOrKappaHash ? txOrKappaHash : kappa
-console.log(queryPage, queryKappa)
     if (queryKappa && queryKappa != '' && queryKappa.length < 64) {
       alert("Invalid hash entered")
       return
