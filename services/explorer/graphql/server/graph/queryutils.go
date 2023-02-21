@@ -1276,7 +1276,7 @@ func GenerateDailyStatisticByChainMessageBusSQL(typeArg *model.DailyStatisticTyp
 	case model.DailyStatisticTypeAddresses:
 		query = fmt.Sprintf("%s uniq(%s, %s) AS sumTotal FROM (%s)%s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.ChainIDFieldName, sql.SenderFieldName, baseMessageBus, compositeFilters)
 	case model.DailyStatisticTypeTransactions:
-		query = fmt.Sprintf("%s uniq(%s, %s) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.ChainIDFieldName, sql.SenderFieldName, baseMessageBus, compositeFilters)
+		query = fmt.Sprintf("%s uniq(%s, %s) AS sumTotal FROM (%s) %s group by date, chain_id) group by date order by date)", dailyStatisticGenericSinglePlatform, sql.ChainIDFieldName, sql.TxHashFieldName, baseMessageBus, compositeFilters)
 	default:
 		return nil, fmt.Errorf("unsupported statistic type")
 	}

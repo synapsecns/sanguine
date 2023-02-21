@@ -111,9 +111,9 @@ export function Home() {
   // update chart
   useEffect(() => {
     let type = dailyStatisticType
-    if (platform === "MESSAGE_BUS" && dailyStatisticType === "VOLUME") {
-      type = "FEE"
-      setDailyStatisticType("FEE")
+    if (platform === "MESSAGE_BUS" && dailyStatisticType !== "TRANSACTIONS") {
+      type = "TRANSACTIONS"
+      setDailyStatisticType("TRANSACTIONS")
     }
     getDailyStatisticsByChain({
       variables: {
@@ -200,16 +200,7 @@ export function Home() {
                 >
                   Vol
                 </button>)}
-              <button
-                onClick={() => setDailyStatisticType('FEE')}
-                className={
-                  'font-medium px-4 py-2 border  h-fit ' +
-                  (dailyStatisticType === 'FEE' ? selectStyle : unSelectStyle) +
-                  (loadingDailyData ? ' pointer-events-none' : '') + (platform === "MESSAGE_BUS" ? ' rounded-l-md' : '')
-                }
-              >
-                Fees
-              </button>
+
               <button
                 onClick={() => setDailyStatisticType('TRANSACTIONS')}
                 className={
@@ -217,15 +208,18 @@ export function Home() {
                   (dailyStatisticType === 'TRANSACTIONS'
                     ? selectStyle
                     : unSelectStyle) +
-                  (loadingDailyData ? ' pointer-events-none' : '')
+                  (loadingDailyData ? ' pointer-events-none' : '')+ (platform === "MESSAGE_BUS" ? ' rounded-l-md rounded-r-md' : '')
                 }
               >
                 TXs
               </button>
+                {platform === "MESSAGE_BUS" ? null :
+
+                (<>
               <button
                 onClick={() => setDailyStatisticType('ADDRESSES')}
                 className={
-                  'font-medium rounded-r-md px-4 py-2 border h-fit  ' +
+                  'font-medium  px-4 py-2 border h-fit  ' +
                   (dailyStatisticType === 'ADDRESSES'
                     ? selectStyle
                     : unSelectStyle) +
@@ -234,6 +228,16 @@ export function Home() {
               >
                 Addr
               </button>
+              <button
+                onClick={() => setDailyStatisticType('FEE')}
+                className={
+                  'font-medium px-4 py-2 border  h-fit rounded-r-md ' +
+                  (dailyStatisticType === 'FEE' ? selectStyle : unSelectStyle) +
+                  (loadingDailyData ? ' pointer-events-none' : '')
+                }
+              >
+                Fees
+              </button></>)}
             </div>
             <div className="h-full flex items-center mr-4">
               <button
@@ -327,9 +331,9 @@ export function Home() {
           <TextField size="small" value={kappa} onChange={(e) => {
             setKappa(e.target.value)
           }}
-            id="outlined-basic" label="Search by TXID" variant="outlined" sx={inputStyle} />
+            id="outlined-basic" label="Search by TXID / TXHash" variant="outlined" sx={inputStyle} />
         </div>
-        <a href={getBridgeTransactionUrl({hash: kappa})}
+        <a href={TRANSACTIONS_PATH + (kappa ? "?hash=" +kappa : '')}
           className={
             'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ml-[-105px] pointer-cursor z-10' +
             (loading ? ' pointer-events-none opacity-[0.4]' : '')

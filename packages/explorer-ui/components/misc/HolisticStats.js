@@ -12,7 +12,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
   const [fee, setFee] = useState("--")
   const [addresses, setAddresses] = useState("--")
   const [txs, setTxs] = useState("--")
-  const [useCache, setUseCache] = useState(true)
+  const [useCache, setUseCache] = useState(false)
   const [skip, setSkip] = useState(false)
   const [variables, setVariables] = useState({})
 
@@ -39,7 +39,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
       duration: "ALL_TIME",
       type: "TOTAL_VOLUME_USD",
       useCache: true,
-      useMv: true
+      useMv: true,
 
     },
     onCompleted: (data) => { setVolume(data.amountStatistic.value) }
@@ -53,7 +53,8 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
       platform: platform,
       duration: "ALL_TIME",
       type: "TOTAL_FEE_USD",
-      useCache: true
+      useCache: true,
+
 
     },
     onCompleted: (data) => { setFee(data.amountStatistic.value) }
@@ -68,6 +69,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
       duration: "ALL_TIME",
       type: "COUNT_ADDRESSES",
       useCache: useCache,
+
     },
     // pollInterval: 5000,
     onCompleted: (data) => {
@@ -120,7 +122,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
   }, [platform])
 
 
-  const stats = [{ title: "Volume", loading: loadingVolume, value: formatUSD(volume) }, { title: "Transactions", loading: false, value: formatUSD(txs) }, { title: "Addresses", loading: false, value: formatUSD(addresses) }, { title: "Fees", loading: loadingFee, value: formatUSD(fee) }]
+  const stats = [parentPlatform === "MESSAGE_BUS" ? null : { title: "Volume", loading: loadingVolume, value: "$"+formatUSD(volume) }, { title: "Transactions", loading: false, value: formatUSD(txs) }, parentPlatform === "MESSAGE_BUS" ? null : { title: "Addresses", loading: false, value: formatUSD(addresses) }, parentPlatform === "MESSAGE_BUS" ? null : { title: "Fees", loading: loadingFee, value: "$"+formatUSD(fee) }]
 
   return (
     <>
@@ -142,7 +144,7 @@ export default function HolisticStats({ platform: parentPlatform, setPlatform: p
       <div className="flex flex-wrap flex-row min-h-[90px]">
 
         {stats.map((stat, i) => {
-          return stat.value !== "--"?
+          return stat && stat.value !== "--" ?
             (<Card
               className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
             >

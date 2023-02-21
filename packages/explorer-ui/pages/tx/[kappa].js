@@ -1,18 +1,18 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
-import { TRANSACTIONS_PATH } from '@urls'
+import { TRANSACTIONS_PATH, ACCOUNTS_PATH } from '@urls'
 import { ChainInfo } from "@components/misc/ChainInfo";
 
 import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { useRouter } from 'next/router'
 import { useSearchParams } from 'next/navigation'
-import {  CHAIN_EXPLORER_URLS } from '@constants/networks'
+import { CHAIN_EXPLORER_URLS } from '@constants/networks'
 
 import { GET_BRIDGE_TRANSACTIONS_QUERY, } from '@graphql/queries'
 import { API_URL } from '@graphql'
 import { HorizontalDivider } from "@components/misc/HorizontalDivider";
 import { timeAgo } from "@utils/timeAgo";
-import {formatDateTime} from "@utils/formatDate";
+import { formatDateTime } from "@utils/formatDate";
 
 import { IconAndAmount } from "@components/misc/IconAndAmount";
 import { BridgeTransactionTable } from "@components/BridgeTransaction/BridgeTransactionTable";
@@ -80,11 +80,11 @@ export default function BridgeTransaction({ queryResult }) {
         </div>
         <div className="flex gap-x-4 py-1">
           <p className="text-white text-opacity-60">Confirmed</p>
-          <p className="text-white ">{toInfo ? formatDateTime(new Date(toInfo.time * 1000)): "Pending"}</p>
+          <p className="text-white ">{toInfo ? formatDateTime(new Date(toInfo.time * 1000)) : "Pending"}</p>
         </div>
         <div className="flex gap-x-[1.1rem] py-1">
           <p className="text-white text-opacity-60">Total Time</p>
-          <p className="text-white ">{toInfo ?getTimeDifference(fromInfo.time, toInfo.time) + " seconds":  "Pending"} </p>
+          <p className="text-white ">{toInfo ? getTimeDifference(fromInfo.time, toInfo.time) + " seconds" : "Pending"} </p>
         </div>
         <br />
 
@@ -103,13 +103,16 @@ export default function BridgeTransaction({ queryResult }) {
               </div>
               <div className="flex gap-x-[3.4rem] py-1 ">
                 <p className="text-white text-opacity-60">From</p>
-                <p className="text-white break-all text-sm">{fromInfo.address}</p>
+                <a target="_blank"
+                  rel="noreferrer" className="text-white break-all text-sm underline" href={ACCOUNTS_PATH + "/" +fromInfo.address}>{fromInfo.address}
+                </a>
               </div>
 
               <div className="flex gap-x-[1.8rem] py-1">
                 <p className="text-white text-opacity-60">TX Hash</p>
                 <a target="_blank"
-                  rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[fromInfo.chainID] + "/tx/" + fromInfo.hash}>{fromInfo.hash}</a>
+                  rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[fromInfo.chainID] + "/tx/" + fromInfo.hash}>{fromInfo.hash}
+                </a>
               </div>
               <div className="flex gap-x-11 mt-3">
                 <h1 className="text-white text-2xl text-opacity-60">Sent</h1>
@@ -127,36 +130,36 @@ export default function BridgeTransaction({ queryResult }) {
 
             <HorizontalDivider />
 
-              <div className='flex  mt-8  flex-col'>
-                <div className="flex gap-x-2 py-1 ">
-                  <p className="text-white text-opacity-60">Destination</p>
-                  {toInfo ?
+            <div className='flex  mt-8  flex-col'>
+              <div className="flex gap-x-2 py-1 ">
+                <p className="text-white text-opacity-60">Destination</p>
+                {toInfo ?
                   <ChainInfo
                     chainId={toInfo.chainID}
                     noLink={true}
                     imgClassName="w-6 h-6 rounded-full"
-                  />: <ChainInfo
-                  chainId={fromInfo.destinationChainID}
-                  noLink={true}
-                  imgClassName="w-6 h-6 rounded-full"
-                />}
-                </div>
-                <div className="flex gap-x-[4.5rem] py-1">
-                  <p className="text-white text-opacity-60">To</p>
-                  <p className="text-white break-all text-sm">{  toInfo ?toInfo.address : "Pending"}</p>
-                </div>
+                  /> : <ChainInfo
+                    chainId={fromInfo.destinationChainID}
+                    noLink={true}
+                    imgClassName="w-6 h-6 rounded-full"
+                  />}
+              </div>
+              <div className="flex gap-x-[4.5rem] py-1">
+                <p className="text-white text-opacity-60">To</p>
+                <p className="text-white break-all text-sm">{toInfo ? toInfo.address : "Pending"}</p>
+              </div>
 
-                <div className="flex gap-x-[1.7rem] py-1 ">
-                  <p className="text-white text-opacity-60">TX Hash</p>
-                  {toInfo ?
+              <div className="flex gap-x-[1.7rem] py-1 ">
+                <p className="text-white text-opacity-60">TX Hash</p>
+                {toInfo ?
                   <a target="_blank"
                     rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/tx/" + toInfo.hash}>{toInfo.hash}</a> : <p className="text-white break-all text-sm ">Pending</p>}
-                </div>
-                <div className="flex gap-x-8 mt-3">
-                  <h1 className="text-white text-2xl text-opacity-60">
-                    Received
-                  </h1>
-                  {toInfo ?
+              </div>
+              <div className="flex gap-x-8 mt-3">
+                <h1 className="text-white text-2xl text-opacity-60">
+                  Received
+                </h1>
+                {toInfo ?
                   <IconAndAmount
                     formattedValue={toInfo.formattedValue}
                     tokenAddress={toInfo.tokenAddress}
@@ -165,9 +168,9 @@ export default function BridgeTransaction({ queryResult }) {
                     iconSize="w-7 h-7"
                     textSize="text-md"
                     styledCoin={true}
-                  /> : null }
-                </div>
+                  /> : null}
               </div>
+            </div>
           </div>
         </div>
         <br />

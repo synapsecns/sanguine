@@ -15,13 +15,12 @@ import _ from "lodash";
 import { Pagination } from "@components/Pagination";
 import { useLazyQuery } from '@apollo/client'
 import { SynapseLogoSvg } from "@components/layouts/MainLayout/SynapseLogoSvg";
-import {checksumAddress} from '@utils/checksum'
+import { checksumAddress, checkAddressChecksum } from '@utils/checksum'
 
 export default function Txs() {
   const search = useSearchParams()
   const p = Number(search.get('p'))
-  // const kappaSearch = Number(search.get('kappa'))
-  // const txhashSearch = Number(search.get('txhash'))
+  const hashSearch = String(search.get('hash'))
 
 
   const [transactionsArr, setTransactionsArr] = useState([])
@@ -42,13 +41,15 @@ export default function Txs() {
 
   useEffect(() => {
     setPage(p)
-    // setKappa(kappaSearch)
-    // setToTx(txhashSearch)
-    // setFromTx(txhashSearch)
-    executeSearch(p)
-  }, [p])
+    let hash = hashSearch === "null" ? "" : hashSearch
+    setKappa(hash)
+    executeSearch(p, hash)
+  }, [p, hashSearch])
 
-  // }, [p, kappaSearch, txhashSearch])
+
+  useEffect(() => {
+    executeSearch()
+  }, [pending])
 
   const [getBridgeTransactions, { loading, error, data }] = useLazyQuery(
     GET_BRIDGE_TRANSACTIONS_QUERY, {
@@ -68,6 +69,8 @@ export default function Txs() {
       },
     })
   }, [])
+
+
 
   const handlePending = (arg) => {
     setPending(arg)
@@ -100,9 +103,20 @@ export default function Txs() {
     }
     return query
   }
-  const executeSearch = (p) => {
+  const executeSearch = (p, txOrKappaHash) => {
+
     let queryPage = p ? p : page
-    let variables = { page: queryPage===0 ? 1: queryPage, pending: pending, useMv: true }
+    let queryKappa = txOrKappaHash ? txOrKappaHash : kappa
+console.log(queryPage, queryKappa)
+    if (queryKappa && queryKappa != '' && queryKappa.length < 64) {
+      alert("Invalid hash entered")
+      return
+    }
+    if (wallet && wallet != '' && wallet.length !==42) {
+      alert("Invalid wallet address entered")
+      return
+    }
+    let variables = { page: queryPage === 0 ? 1 : queryPage, pending: pending, useMv: true }
     if (chains.length > 0) {
       if (chainsLocale) {
         variables = createQueryField("chainIDFrom", chains, variables)
@@ -110,8 +124,8 @@ export default function Txs() {
         variables = createQueryField("chainIDTo", chains, variables)
       }
     }
-    if (walletLocale) {
-      variables = createQueryField("addressFrom",checksumAddress(wallet), variables)
+    if (wallet) {
+      variables = createQueryField("addressFrom", checksumAddress(wallet), variables)
     } else {
       variables = createQueryField("addressTo", checksumAddress(wallet), variables)
     }
@@ -131,11 +145,11 @@ export default function Txs() {
       }
     }
     variables = createQueryField("startTime", startDate, variables)
-    variables = createQueryField("endTime",endDate, variables)
-    if (kappa.length === 64) {
-      variables = createQueryField("kappa", kappa, variables)
+    variables = createQueryField("endTime", endDate, variables)
+    if (queryKappa.length === 64) {
+      variables = createQueryField("kappa", queryKappa, variables)
     } else {
-      variables = createQueryField("txnHash", kappa, variables)
+      variables = createQueryField("txnHash", queryKappa, variables)
 
     }
     variables = createQueryField("pending", pending, variables)

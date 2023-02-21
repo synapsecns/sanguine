@@ -26,6 +26,27 @@ export function checksumAddress (address, chainId = null) {
   return checksumAddress
 }
 
+
+export function checkAddressChecksum (address) {
+  const stripAddress = stripHexPrefix(address).toLowerCase()
+  const prefix = '0x'
+  const keccakHash = keccak('keccak256')
+    .update(prefix + stripAddress)
+    .digest('hex')
+
+  for (let i = 0; i < stripAddress.length; i++) {
+    let output =
+      parseInt(keccakHash[i], 16) >= 8
+        ? stripAddress[i].toUpperCase()
+        : stripAddress[i]
+    if (stripHexPrefix(address)[i] !== output) {
+      return false
+    }
+  }
+  return true
+}
+
+
 function stripHexPrefix (value) {
   return value.slice(0, 2) === '0x' ? value.slice(2) : value
 }

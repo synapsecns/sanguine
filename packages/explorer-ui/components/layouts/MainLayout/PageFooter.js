@@ -122,7 +122,7 @@ export function PageFooter() {
 
 function FooterBlock({ elements }) {
   return (
-    <div className="text-left text-white md:text-left lg:text-right">
+    <div className="text-left text-white md:text-left lg:text-right hover:cursor-pointer">
       {elements.map((element, i) => (
         <DisplayText element={element} key={i} />
       ))}
