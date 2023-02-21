@@ -8,6 +8,7 @@ on:
     paths:
       - 'packages/contracts-core/**'
 
+
 jobs:
   check:
     name: Foundry Coverage
