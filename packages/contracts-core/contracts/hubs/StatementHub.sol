@@ -97,4 +97,23 @@ abstract contract StatementHub is AgentRegistry {
         (domain, agent) = _recoverAgent(snapshot.hash(), _snapSignature);
         // Guards and Notaries for all domains could sign Snapshots, no further checks are needed.
     }
+
+    /**
+     * @dev Internal function to verify that snapshot root matches the root from SnapAttestation.
+     * Reverts if either of this is true:
+     *  - Snapshot payload is not properly formatted.
+     *  - Attestation root is not equal to root derived from the snapshot.
+     * @param _snapAtt      Typed memory view over SnapAttestation
+     * @param _snapPayload  Raw payload with snapshot data
+     * @return snapshot     Typed memory view over snapshot payload
+     */
+    function _verifySnapshotRoot(SnapAttestation _snapAtt, bytes memory _snapPayload)
+        internal
+        pure
+        returns (Snapshot snapshot)
+    {
+        // This will revert if payload is not a formatted snapshot
+        snapshot = _snapPayload.castToSnapshot();
+        require(_snapAtt.root() == snapshot.root(), "Incorrect snapshot root");
+    }
 }
