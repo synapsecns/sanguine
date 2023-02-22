@@ -80,6 +80,11 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
 
+		tree, err := newTreeFromDB(ctx, chain.ChainID, executorDB)
+		if err != nil {
+			return nil, fmt.Errorf("could not get tree from db: %w", err)
+		}
+
 		chainExecutors[chain.ChainID] = &chainExecutor{
 			chainID: chain.ChainID,
 			lastLog: &logOrderInfo{
@@ -91,22 +96,9 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			originParser:      originParser,
 			destinationParser: destinationParser,
 			logChan:           make(chan *ethTypes.Log, logChanSize),
-			merkleTrees:       make(map[uint32]*merkle.HistoricalTree),
+			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
-		}
-
-		for _, destinationChain := range config.Chains {
-			if destinationChain.ChainID == chain.ChainID {
-				continue
-			}
-
-			tree, err := newTreeFromDB(ctx, chain.ChainID, destinationChain.ChainID, executorDB)
-			if err != nil {
-				return nil, fmt.Errorf("could not get tree from db: %w", err)
-			}
-
-			chainExecutors[chain.ChainID].merkleTrees[destinationChain.ChainID] = tree
 		}
 	}
 
@@ -122,8 +114,8 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 }
 
 // NewTreeFromDB builds a merkle tree from the db.
-func NewTreeFromDB(ctx context.Context, chainID uint32, domain uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
-	return newTreeFromDB(ctx, chainID, domain, executorDB)
+func NewTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
+	return newTreeFromDB(ctx, chainID, executorDB)
 }
 
 // -------- [ EXECUTOR ] -------- \\
@@ -140,8 +132,8 @@ func (e Executor) GetLogChan(chainID uint32) chan *ethTypes.Log {
 }
 
 // GetMerkleTree gets a merkle tree.
-func (e Executor) GetMerkleTree(chainID uint32, domain uint32) *merkle.HistoricalTree {
-	return e.chainExecutors[chainID].merkleTrees[domain]
+func (e Executor) GetMerkleTree(chainID uint32) *merkle.HistoricalTree {
+	return e.chainExecutors[chainID].merkleTree
 }
 
 // VerifyMessageMerkleProof verifies message merkle proof.
@@ -155,8 +147,8 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 }
 
 // OverrideMerkleTree overrides the merkle tree for the chainID and domain.
-func (e Executor) OverrideMerkleTree(chainID uint32, domain uint32, tree *merkle.HistoricalTree) {
-	e.chainExecutors[chainID].merkleTrees[domain] = tree
+func (e Executor) OverrideMerkleTree(chainID uint32, tree *merkle.HistoricalTree) {
+	e.chainExecutors[chainID].merkleTree = tree
 }
 
 // Start runs the executor.

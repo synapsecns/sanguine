@@ -326,7 +326,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
-	_, err = exec.GetMerkleTree(chainID, destination).Root(1)
+	_, err = exec.GetMerkleTree(chainID).Root(1)
 	e.NotNil(err)
 
 	testTree := merkle.NewTree()
@@ -385,7 +385,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	waitChan := make(chan bool, 2)
 
 	e.Eventually(func() bool {
-		rootA, err := exec.GetMerkleTree(chainID, destination).Root(1)
+		rootA, err := exec.GetMerkleTree(chainID).Root(1)
 		if err != nil {
 			return false
 		}
@@ -425,7 +425,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Nil(err)
 
 	e.Eventually(func() bool {
-		rootB, err := exec.GetMerkleTree(chainID, destination).Root(2)
+		rootB, err := exec.GetMerkleTree(chainID).Root(2)
 		if err != nil {
 			return false
 		}
@@ -448,16 +448,16 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	<-waitChan
 	exec.Stop(chainID)
 
-	oldTreeItems := exec.GetMerkleTree(chainID, destination).Items()
+	oldTreeItems := exec.GetMerkleTree(chainID).Items()
 
 	var newRoot []byte
 	e.Eventually(func() bool {
-		dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
+		dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, e.ExecutorTestDB)
 		e.Nil(err)
 
-		exec.OverrideMerkleTree(chainID, destination, dbTree)
+		exec.OverrideMerkleTree(chainID, dbTree)
 
-		newRoot, err = exec.GetMerkleTree(chainID, destination).Root(2)
+		newRoot, err = exec.GetMerkleTree(chainID).Root(2)
 		if err != nil {
 			return false
 		}
@@ -467,7 +467,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	})
 	<-waitChan
 
-	newTreeItems := exec.GetMerkleTree(chainID, destination).Items()
+	newTreeItems := exec.GetMerkleTree(chainID).Items()
 
 	e.Equal(oldTreeItems, newTreeItems)
 
@@ -579,10 +579,10 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2], false, 0)
 	e.Nil(err)
 
-	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
+	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, e.ExecutorTestDB)
 	e.Nil(err)
 
-	exec.OverrideMerkleTree(chainID, destination, dbTree)
+	exec.OverrideMerkleTree(chainID, dbTree)
 
 	inTree0, err := exec.VerifyMessageMerkleProof(message0)
 	e.Nil(err)
@@ -603,10 +603,10 @@ func (e *ExecutorSuite) TestVerifyMessage() {
 	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3], false, 0)
 	e.Nil(err)
 
-	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), chainID, destination, e.ExecutorTestDB)
+	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), chainID, e.ExecutorTestDB)
 	e.Nil(err)
 
-	exec.OverrideMerkleTree(chainID, destination, dbTree)
+	exec.OverrideMerkleTree(chainID, dbTree)
 
 	inTree3, err := exec.VerifyMessageMerkleProof(message3)
 	e.Nil(err)

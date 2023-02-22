@@ -47,8 +47,8 @@ type chainExecutor struct {
 	destinationParser destination.Parser
 	// logChan is the log channel.
 	logChan chan *ethTypes.Log
-	// merkleTrees is a map from destination chain ID -> merkle tree.
-	merkleTrees map[uint32]*merkle.HistoricalTree
+	// merkleTree is a merkle tree for a specific origin chain.
+	merkleTree *merkle.HistoricalTree
 	// rpcClient is an RPC client.
 	rpcClient Backend
 	// boundDestination is a bound destination contract.
@@ -61,7 +61,7 @@ type Executor struct {
 	config config.Config
 	// executorDB is the executor agent database.
 	executorDB db.ExecutorDB
-	// scribeClient is the client to the Scribe gRPC  server.
+	// scribeClient is the client to the Scribe gRPC server.
 	scribeClient client.ScribeClient
 	// grpcClient is the gRPC client.
 	grpcClient pbscribe.ScribeServiceClient
@@ -126,7 +126,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
 		}
 
-		chainRPCURL := fmt.Sprintf("%s/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
+		chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
 		if err != nil {
@@ -136,6 +136,11 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		boundDestination, err := evm.NewDestinationContract(ctx, underlyingClient, common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
+		}
+
+		tree, err := newTreeFromDB(ctx, chain.ChainID, executorDB)
+		if err != nil {
+			return nil, fmt.Errorf("could not get tree from db: %w", err)
 		}
 
 		chainExecutors[chain.ChainID] = &chainExecutor{
@@ -149,22 +154,9 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			originParser:      originParser,
 			destinationParser: destinationParser,
 			logChan:           make(chan *ethTypes.Log, logChanSize),
-			merkleTrees:       make(map[uint32]*merkle.HistoricalTree),
+			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
-		}
-
-		for _, destinationChain := range config.Chains {
-			if destinationChain.ChainID == chain.ChainID {
-				continue
-			}
-
-			tree, err := newTreeFromDB(ctx, chain.ChainID, destinationChain.ChainID, executorDB)
-			if err != nil {
-				return nil, fmt.Errorf("could not get tree from db: %w", err)
-			}
-
-			chainExecutors[chain.ChainID].merkleTrees[destinationChain.ChainID] = tree
 		}
 	}
 
@@ -238,7 +230,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		ChainID:     &originDomain,
 		Destination: &destinationDomain,
 	}
-	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].NumOfItems()
+	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
 	itemCountNonce, err := e.executorDB.GetEarliestAttestationsNonceInNonceRange(ctx, attestationMask, *nonce, maximumNonce)
 	if err != nil {
 		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
@@ -248,7 +240,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *itemCountNonce)
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(*nonce-1, *itemCountNonce)
 
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
@@ -289,12 +281,12 @@ const (
 
 // verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
 func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) {
-	root, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].Root(message.Nonce())
+	root, err := e.chainExecutors[message.OriginDomain()].merkleTree.Root(message.Nonce())
 	if err != nil {
 		return false, fmt.Errorf("could not get root: %w", err)
 	}
 
-	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(message.Nonce()-1, message.Nonce())
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(message.Nonce()-1, message.Nonce())
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
@@ -345,12 +337,11 @@ func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message typ
 }
 
 // newTreeFromDB creates a new merkle tree from the database's messages.
-func newTreeFromDB(ctx context.Context, chainID uint32, destination uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
+func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
 	var allMessages []types.Message
 
 	messageMask := execTypes.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
+		ChainID: &chainID,
 	}
 	page := 1
 
@@ -476,7 +467,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		}
 
 		destination := (*message).DestinationDomain()
-		merkleIndex := e.chainExecutors[chainID].merkleTrees[destination].NumOfItems()
+		merkleIndex := e.chainExecutors[chainID].merkleTree.NumOfItems()
 		leaf, err := (*message).ToLeaf()
 		if err != nil {
 			return fmt.Errorf("could not convert message to leaf: %w", err)
@@ -487,7 +478,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			return fmt.Errorf("nonce of message is not equal to the merkle index: %d != %d", (*message).Nonce(), merkleIndex+1)
 		}
 
-		e.chainExecutors[chainID].merkleTrees[destination].Insert(leaf[:])
+		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
 
 		messageNonce := (*message).Nonce()
 		attestationMask := execTypes.DBAttestation{
