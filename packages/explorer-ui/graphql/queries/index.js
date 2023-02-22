@@ -191,6 +191,7 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
     $duration:  Duration
     $useCache:  Boolean
     $platform:  Platform
+    $useMv: Boolean
   ) {
     dailyStatisticsByChain(
       chainID: $chainID
@@ -198,6 +199,7 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
       duration: $duration
       useCache: $useCache
       platform: $platform
+      useMv: $useMv
     ) {
       date
       ethereum
