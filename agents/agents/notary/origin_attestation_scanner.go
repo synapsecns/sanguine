@@ -98,6 +98,10 @@ func (a OriginAttestationScanner) update(ctx context.Context) error {
 		return fmt.Errorf("could not get suggested attestation: %w", err)
 	}
 
+	if attestation.Nonce() == 0 {
+		return nil
+	}
+
 	if latestNonce > uint32(0) && attestation.Nonce() <= latestNonce {
 		// We already have seen this nonce
 		return nil
