@@ -85,6 +85,7 @@ const logChanSize = 1000
 //
 //nolint:cyclop
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
+	logger.Errorf("starting executor init")
 	chainExecutors := make(map[uint32]*chainExecutor)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -115,6 +116,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		config.SetMinimumTimeInterval = 2
 	}
 
+	logger.Errorf("starting chain loop")
 	for _, chain := range config.Chains {
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
@@ -167,6 +169,8 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			chainExecutors[chain.ChainID].merkleTrees[destinationChain.ChainID] = tree
 		}
 	}
+
+	logger.Errorf("done with executor init")
 
 	return &Executor{
 		config:         config,
@@ -405,6 +409,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	}
 
 	fromBlock := strconv.FormatUint(lastStoredBlock, 10)
+	logger.Errorf("streaming logs on chain %d from block %s for the contract type of %d", chain.ChainID, fromBlock, contract)
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
@@ -548,6 +553,7 @@ func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
 		case <-e.chainExecutors[chainID].stopListenChan:
 			return nil
 		case log := <-e.chainExecutors[chainID].logChan:
+			logger.Errorf("got a log on chainID %d", chainID)
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}

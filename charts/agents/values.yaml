@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "3679bfeaa8396feff57c10ba72d29d4558ee725f"
+  tag: "5b8c03a1766ef8be792e058df51e7119d127f243"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -509,7 +509,7 @@ executor_embedded_files:
     base_omnirpc_url: "http://agents-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
-      file: "/config/executor_signer.txt"
+      file: "/config/notary_signer.txt"
     embedded_scribe_config:
       chains:
         - chain_id: 137
@@ -530,7 +530,7 @@ executor_embedded_files:
           required_confirmations: 50
           contracts:
             - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-              start_block: 26091228
+              start_block: 26091227
             - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
               start_block: 26091231
       rpc_url: "http://agents-omnirpc/confirmations"
