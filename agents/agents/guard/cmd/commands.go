@@ -2,6 +2,7 @@ package cmd
 
 import (
 	markdown "github.com/MichaelMure/go-term-markdown"
+	"github.com/ipfs/go-log"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
@@ -59,6 +60,10 @@ var GuardRunCommand = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("failed to decode config: %w", err)
 		}
+
+		var logger = log.Logger("guarddd-logger")
+
+		logger.Errorf("guardConfig: %v", guardConfig)
 
 		g, _ := errgroup.WithContext(c.Context)
 
