@@ -1,41 +1,57 @@
-# This is a sample config file generated and dumped from notary_test.go.
-# This can be used as a reference.
-origindomains:
+refresh_interval_in_seconds: 1
+origin_domains:
   origin_client:
-    domainid: 4
+    domain_id: 137
     type: EVM
-    requiredconfirmations: 0
-    originaddress: 0xfa576010a8b162222BB184A4653a8b9Ac36169ec
-    attestationcollectoraddress: ''
-    destinationaddress: ''
-    rpcurl: http://127.0.0.1:51145
-    startheight: 0
-attestationdomain:
-  domainid: 137
+    required_confirmations: 50
+    origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+    attestation_collector_address: ''
+    destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+    rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+    start_height: 39145588
+  origin_client2:
+    domain_id: 10
+    type: EVM
+    required_confirmations: 50
+    origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+    attestation_collector_address: ''
+    destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+    rpc_url: "https://optimism-rpc.gateway.pokt.network"
+    start_height: 73536295
+  origin_client3:
+    domain_id: 43114
+    type: EVM
+    required_confirmations: 50
+    origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+    attestation_collector_address: ''
+    destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+    rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+    start_height: 26091228
+attestation_domain:
+  domain_id: 10
   type: EVM
-  requiredconfirmations: 0
-  originaddress: ''
-  attestationcollectoraddress: 0x24f42bD0AF9eaC8E6BA714e29C7F31d2872Bbf54
-  destinationaddress: ''
-  rpcurl: http://127.0.0.1:51159
-  startheight: 0
-destinationdomain:
-  domainid: 97
+  required_confirmations: 50
+  origin_address: ''
+  attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
+  destination_address: ''
+  rpc_url: "https://optimism-rpc.gateway.pokt.network"
+  start_height: 73537448
+destination_domain:
+  domain_id: 43114
   type: EVM
-  requiredconfirmations: 0
-  originaddress: ''
-  attestationcollectoraddress: ''
-  destinationaddress: 0x0946Ef05Feaff6ec2Ca1cb5d3427fFAa2535c6d3
-  rpcurl: http://127.0.0.1:51140
-  startheight: 0
-unbondedsigner:
-  type: File
-  file: /config/signer.txt
-bondedsigner:
-  type: File
-  file: /config/signer.txt
+  required_confirmations: 50
+  origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+  attestation_collectoraddress: ''
+  destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+  rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+  start_height: 0
+unbonded_signer:
+  type: "File"
+  file: "/config/notary_signer.txt"
+bonded_signer:
+  type: "File"
+  file: "/config/notary_signer.txt"
 database:
   type: mysql
-  dbpath: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/dir970593173
-  connstring: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/dir731498480
-refreshintervalinseconds: 1
+  db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
+  conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"

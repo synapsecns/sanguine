@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "a9a606f5b6af38c6021302f11cd3c6fcae9ef376"
+  tag: "36aabc2afb422562d08cbf2f98d968b3b1a0c674"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -67,7 +67,7 @@ resources: {}
 
 notary:
   enabled: true
-  args: ["notary-run", "--config=/config/config.yaml", "--metrics-port=5080", "--ignore-init-errors"]
+  args: ["notary-run", "--config=/config/notary_config.yaml", "--metrics-port=5080"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -115,7 +115,7 @@ notary:
 
 guard:
   enabled: true
-  args: ["guard-run", "--config=/config/config.yaml", "--metrics-port=5082"]
+  args: ["guard-run", "--config=/config/guard_config.yaml", "--metrics-port=5082"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -166,7 +166,7 @@ executor:
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
+  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -202,7 +202,7 @@ executor_remote_existing:
               fieldPath: metadata.namespace
 
 executor_remote_fresh:
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=80", "--scribe-url=executor-scribe.$(POD_NAMESPACE)"]
+  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=80", "--scribe-url=executor-scribe.$(POD_NAMESPACE)"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -264,7 +264,7 @@ executor_remote_fresh:
               fieldPath: metadata.namespace
 
 executor_embedded:
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-db=mysql", "--scribe-path=root:MysqlPassword@tcp(agents-mysql:3306)/scribe"]
+  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-db=mysql", "--scribe-path=root:MysqlPassword@tcp(agents-mysql:3306)/scribe"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -378,112 +378,165 @@ scribe:
       refresh_rate: 0
 
 notary_files:
-  config.yaml: |-
-    sam: ple
-
-guard_files:
-  signer.txt: |-
-    dd03ef81893502797024462da191deaf1e90f30879b3b7673acb11ce72f73094
-  config.yaml: |-
+  notary_signer.txt: |-
+    16c909570a212af6a328a1cf594a20d7cf6edf56fafa0b50967f2039b1f68445
+  notary_config.yaml: |-
     refresh_interval_in_seconds: 1
     origin_domains:
       origin_client:
-        - domain_id: 137
-          type: EVM
-          required_confirmations: 50
-          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestation_collector_address: ''
-          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/137"
-          start_height: 39145588
-        - domain_id: 10
-          type: EVM
-          required_confirmations: 50
-          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestation_collector_address: ''
-          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/10"
-          start_height: 73536295
-        - domain_id: 43114
-          type: EVM
-          required_confirmations: 50
-          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestation_collector_address: ''
-          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/43114"
-          start_height: 26091228
+        domain_id: 137
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+        start_height: 39145588
+      origin_client2:
+        domain_id: 10
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        start_height: 73536295
     attestation_domain:
-      domain_id: 137
+      domain_id: 10
       type: EVM
       required_confirmations: 50
       origin_address: ''
       attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
       destination_address: ''
-      rpc_url: "http://agents-omnirpc/confirmations/1/rpc/137"
+      rpc_url: "https://optimism-rpc.gateway.pokt.network"
+      start_height: 73537448
+    destination_domain:
+      domain_id: 43114
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collectoraddress: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+      start_height: 0
+    unbonded_signer:
+      type: "File"
+      file: "/config/notary_signer.txt"
+    bonded_signer:
+      type: "File"
+      file: "/config/notary_signer.txt"
+    database:
+      type: mysql
+      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
+      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
+
+guard_files:
+  guard_signer.txt: |-
+    dd03ef81893502797024462da191deaf1e90f30879b3b7673acb11ce72f73094
+  guard_config.yaml: |-
+    refresh_interval_in_seconds: 1
+    origin_domains:
+      origin_client:
+        domain_id: 137
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+        start_height: 39145588
+      origin_client2:
+        domain_id: 10
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        start_height: 73536295
+      origin_client3:
+        domain_id: 43114
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+        start_height: 26091228
+    attestation_domain:
+      domain_id: 10
+      type: EVM
+      required_confirmations: 50
+      origin_address: ''
+      attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
+      destination_address: ''
+      rpc_url: "https://optimism-rpc.gateway.pokt.network"
       start_height: 73537407
     destination_domains:
       destination_client:
-        - domain_id: 137
-          type: EVM
-          required_confirmations: 50
-          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestation_collectoraddress: ''
-          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/137"
-          start_height: 39145588
-        - domain_id: 10
-          type: EVM
-          required_confirmations: 50
-          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestation_collector_address: ''
-          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/10"
-          start_height: 73536295
-        - domain_id: 43114
-          type: EVM
-          required_confirmations: 50
-          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestation_collector_address: ''
-          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/43114"
-          start_height: 26091228
+        domain_id: 137
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collectoraddress: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+        start_height: 39145588
+      destination_client2:
+        domain_id: 10
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        start_height: 73536295
+      destination_client3:
+        domain_id: 43114
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+        start_height: 26091228
     unbonded_signer:
       type: "File"
-      file: "/config/signer.txt"
+      file: "/config/guard_signer.txt"
     bonded_signer:
       type: "File"
-      file: "/config/signer.txt"
+      file: "/config/guard_signer.txt"
     database:
       type: mysql
       db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
       conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
 
 executor_remote_existing_files:
-  signer.txt: |-
+  executor_signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
-  config.yaml: |-
+  executor_config.yaml: |-
     base_omnirpc_url: "http://agents-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
-      file: "/config/signer.txt"
+      file: "/config/executor_signer.txt"
 
 executor_remote_fresh_files:
-  signer.txt: |-
+  executor_signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
-  config.yaml: |-
+  executor_config.yaml: |-
     base_omnirpc_url: "http://agents-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
-      file: "/config/signer.txt"
+      file: "/config/executor_signer.txt"
 
 executor_embedded_files:
-  signer.txt: |-
+  executor_signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
-  config.yaml: |-
+  executor_config.yaml: |-
     base_omnirpc_url: "http://agents-omnirpc/confirmations"
     unbonded_signer:
       type: "File"
-      file: "/config/signer.txt"
+      file: "/config/executor_signer.txt"
     embedded_scribe_config:
       chains:
         - chain_id: 137

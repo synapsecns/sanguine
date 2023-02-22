@@ -1,72 +1,76 @@
+refresh_interval_in_seconds: 1
 origin_domains:
   origin_client:
-    - domain_id: 137
-      type: EVM
-      required_confirmations: 50
-      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-      attestation_collector_address: ''
-      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-      rpc_url: "http://agents-omnirpc/confirmations/1/rpc/137"
-      start_height: 39145588
-    - domain_id: 10
-      type: EVM
-      required_confirmations: 50
-      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-      attestation_collector_address: ''
-      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-      rpc_url: "http://agents-omnirpc/confirmations/1/rpc/10"
-      start_height: 73536295
-    - domain_id: 43114
-      type: EVM
-      required_confirmations: 50
-      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-      attestation_collector_address: ''
-      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-      rpc_url: "http://agents-omnirpc/confirmations/1/rpc/43114"
-      start_height: 26091228
+    domain_id: 137
+    type: EVM
+    required_confirmations: 50
+    origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+    attestation_collector_address: ''
+    destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+    rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+    start_height: 39145588
+  origin_client2:
+    domain_id: 10
+    type: EVM
+    required_confirmations: 50
+    origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+    attestation_collector_address: ''
+    destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+    rpc_url: "https://optimism-rpc.gateway.pokt.network"
+    start_height: 73536295
+  origin_client3:
+    domain_id: 43114
+    type: EVM
+    required_confirmations: 50
+    origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+    attestation_collector_address: ''
+    destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+    rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+    start_height: 26091228
 attestation_domain:
-  domain_id: 137
+  domain_id: 10
   type: EVM
   required_confirmations: 50
   origin_address: ''
   attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
   destination_address: ''
-  rpc_url: "http://agents-omnirpc/confirmations/1/rpc/137"
+  rpc_url: "https://optimism-rpc.gateway.pokt.network"
   start_height: 73537407
 destination_domains:
   destination_client:
-    - domain_id: 137
-      type: EVM
-      required_confirmations: 50
-      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-      attestation_collectoraddress: ''
-      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-      rpc_url: "http://agents-omnirpc/confirmations/1/rpc/137"
-      start_height: 39145588
-    - domain_id: 10
-      type: EVM
-      required_confirmations: 50
-      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-      attestation_collector_address: ''
-      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-      rpc_url: "http://agents-omnirpc/confirmations/1/rpc/10"
-      start_height: 73536295
-    - domain_id: 43114
-      type: EVM
-      required_confirmations: 50
-      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-      attestation_collector_address: ''
-      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-      rpc_url: "http://agents-omnirpc/confirmations/1/rpc/43114"
-      start_height: 26091228
+    domain_id: 137
+    type: EVM
+    required_confirmations: 50
+    origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+    attestation_collectoraddress: ''
+    destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+    rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+    start_height: 39145588
+  destination_client2:
+    domain_id: 10
+    type: EVM
+    required_confirmations: 50
+    origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+    attestation_collector_address: ''
+    destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+    rpc_url: "https://optimism-rpc.gateway.pokt.network"
+    start_height: 73536295
+  destination_client3:
+    domain_id: 43114
+    type: EVM
+    required_confirmations: 50
+    origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+    attestation_collector_address: ''
+    destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+    rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+    start_height: 26091228
 unbonded_signer:
   type: "File"
-  file: "/config/signer.txt"
+  file: "/config/guard_signer.txt"
 bonded_signer:
   type: "File"
-  file: "/config/signer.txt"
+  file: "/config/guard_signer.txt"
 database:
   type: mysql
   db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
   conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
-refresh_interval_in_seconds: 1
