@@ -61,7 +61,7 @@ type Executor struct {
 	config config.Config
 	// executorDB is the executor agent database.
 	executorDB db.ExecutorDB
-	// scribeClient is the client to the Scribe gRPC server.
+	// scribeClient is the client to the Scribe gRPC  server.
 	scribeClient client.ScribeClient
 	// grpcClient is the gRPC client.
 	grpcClient pbscribe.ScribeServiceClient
