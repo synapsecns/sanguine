@@ -3,11 +3,14 @@ package executor
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/types"
+	"math/big"
 )
 
 // logToMessage converts the log to a leaf data.
@@ -92,4 +95,19 @@ func (l logOrderInfo) verifyAfter(log ethTypes.Log) bool {
 	}
 
 	return true
+}
+
+// hashTogether hashes a left and right item together.
+func hashTogether(left, right []byte) []byte {
+	return crypto.Keccak256(append(left, right...))
+}
+
+// getChainLeaf gets the leaf data for a chain within the snapshot root Merkle tree.
+func (e Executor) getChainLeaf(originRoot []byte, chainID uint32, snapshot []byte) ([]byte, error) {
+	// TODO: snapshot to snapshot type
+	originRootAndChainID := hashTogether(originRoot, common.BigToHash(big.NewInt(int64(chainID))).Bytes())
+	// TODO: extract actual snapshot data
+	chainLeaf := hashTogether(originRootAndChainID, snapshot)
+
+	return chainLeaf, nil
 }
