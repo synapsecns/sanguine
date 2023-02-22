@@ -277,7 +277,7 @@ export function UniversalSearch({
                         key={chain}
                         value={chain}
                       >
-                        {chain}
+                        {chain.charAt(0).toUpperCase() + chain.slice(1)}
                       </MenuItem>
                     ))}
                   </TextField>
