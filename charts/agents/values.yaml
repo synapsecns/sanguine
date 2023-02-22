@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "5b8c03a1766ef8be792e058df51e7119d127f243"
+  tag: "bb95a49cdc115101351246dcb935661e6ee071a0"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -166,7 +166,7 @@ executor:
 
 executor_remote_existing:
   # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
-  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
+  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents?parseTime=true", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -202,7 +202,7 @@ executor_remote_existing:
               fieldPath: metadata.namespace
 
 executor_remote_fresh:
-  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=80", "--scribe-url=executor-scribe.$(POD_NAMESPACE)"]
+  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents?parseTime=true", "--scribe-port=80", "--scribe-url=executor-scribe.$(POD_NAMESPACE)"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -264,7 +264,7 @@ executor_remote_fresh:
               fieldPath: metadata.namespace
 
 executor_embedded:
-  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-db=mysql", "--scribe-path=root:MysqlPassword@tcp(agents-mysql:3306)/scribe"]
+  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents?parseTime=true", "--scribe-db=mysql", "--scribe-path=root:MysqlPassword@tcp(agents-mysql:3306)/scribe?parseTime=true"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
