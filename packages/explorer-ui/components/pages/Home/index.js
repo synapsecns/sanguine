@@ -47,9 +47,9 @@ export function Home() {
   const [completed, setCompleted] = useState(false)
   const [dailyStatisticType, setDailyStatisticType] = useState('VOLUME')
   const [dailyStatisticDuration, SetDailyStatisticDuration] =
-    useState('PAST_MONTH')
+    useState('PAST_6_MONTHS')
   const [dailyStatisticCumulative, SetDailyStatisticCumulative] =
-    useState(false)
+    useState(true)
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 hover:text-white'
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'

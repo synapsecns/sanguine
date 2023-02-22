@@ -50,9 +50,9 @@ export default function chainId() {
   const [completed, setCompleted] = useState(false)
   const [dailyStatisticType, setDailyStatisticType] = useState('VOLUME')
   const [dailyStatisticDuration, SetDailyStatisticDuration] =
-    useState('PAST_MONTH')
+    useState('PAST_6_MONTHS')
   const [dailyStatisticCumulative, SetDailyStatisticCumulative] =
-    useState(false)
+    useState(true)
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
@@ -89,6 +89,7 @@ export default function chainId() {
       if (dailyStatisticCumulative) {
         chartData = JSON.parse(JSON.stringify(data.dailyStatisticsByChain))
         for (let i = 1; i < chartData.length; i++) {
+
           for (let key in data.dailyStatisticsByChain[i]) {
             if (key !== 'date' && key !== '__typename') {
               chartData[i][key] += (chartData[i - 1]?.[key] ? chartData[i - 1][key] : 0)
@@ -97,7 +98,7 @@ export default function chainId() {
           }
         }
       }
-      setDailyDataArr(data.dailyStatisticsByChain);
+      setDailyDataArr(chartData);
     }
   })
 
@@ -137,18 +138,7 @@ export default function chainId() {
     setVariables({ chainIDFrom: chainIdRouter, useMv: true })
     setChainId(chainIdRouter)
   }, [chainIdRouter])
-  let chartData = dailyDataArr
-  if (dailyStatisticCumulative) {
-    chartData = JSON.parse(JSON.stringify(dailyDataArr))
-    for (let i = 1; i < chartData.length; i++) {
-      for (let key in dailyDataArr[i]) {
-        if (key !== 'date' && key !== '__typename') {
-          chartData[i][key] += (chartData[i - 1]?.[key] ? chartData[i - 1][key] : 0)
-        }
 
-      }
-    }
-  }
 
   useEffect(() => {
     if (!completed) {
