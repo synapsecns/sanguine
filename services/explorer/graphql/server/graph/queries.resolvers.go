@@ -121,7 +121,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 
 	var err error
 	firstFilter := true
-	timestampSpecifier := GetDurationFilter(duration, &firstFilter)
+	timestampSpecifier := GetDurationFilter(duration, &firstFilter, "")
 	addressSpecifier := generateSingleSpecifierStringSQL(address, sql.SenderFieldName, &firstFilter, "")
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 
@@ -197,9 +197,17 @@ func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int
 		}
 	}
 
+	if useMv != nil && *useMv {
+		mvResult, err := r.getDateResultByChainMv(ctx, chainID, typeArg, platform, duration)
+		if err != nil {
+			return nil, fmt.Errorf("error getting mv data, %w", err)
+		}
+		return mvResult, nil
+	}
+
 	var err error
 	firstFilter := true
-	timestampSpecifier := GetDurationFilter(duration, &firstFilter)
+	timestampSpecifier := GetDurationFilter(duration, &firstFilter, "")
 	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
 	compositeFilters := fmt.Sprintf(
 		`%s%s`,
@@ -253,7 +261,7 @@ func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int
 func (r *queryResolver) RankedChainIDsByVolume(ctx context.Context, duration *model.Duration, useCache *bool) ([]*model.VolumeByChainID, error) {
 	var err error
 	firstFilter := true
-	timestampSpecifier := GetDurationFilter(duration, &firstFilter)
+	timestampSpecifier := GetDurationFilter(duration, &firstFilter, "")
 
 	query := GenerateRankedChainsByVolumeSQL(timestampSpecifier, &firstFilter)
 

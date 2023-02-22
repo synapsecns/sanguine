@@ -1212,6 +1212,7 @@ func GenerateDailyStatisticByChainAllSQL(typeArg *model.DailyStatisticType, comp
 	case model.DailyStatisticTypeVolume:
 		directionSpecifier := generateDirectionSpecifierSQL(true, firstFilter, "")
 		query = fmt.Sprintf("%s %s FULL OUTER JOIN (SELECT %s, chain_id, sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1,    arraySum(mapValues(amount_usd)), event_type = 9,    arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],    0) )     as usdTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.pre_fchain_id = s.chain_id) group by date order by date) SETTINGS join_use_nulls=1", generateDeDepQueryCTE(compositeFilters+directionSpecifier, nil, nil, true), dailyVolumeBridge, toDateSelect, compositeFilters)
+		fmt.Println(query)
 	case model.DailyStatisticTypeFee:
 		query = fmt.Sprintf("%s FROM ( SELECT %s, chain_id, sumKahan(fee_usd) as sumTotal FROM (SELECT * FROM bridge_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) GROUP BY date, chain_id) b  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(arraySum(mapValues(fee_usd))) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(fee_usd) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelect, compositeFilters, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
 	case model.DailyStatisticTypeAddresses:
@@ -1346,29 +1347,29 @@ func (r *queryResolver) getDateResultByChainFromCache(key string) ([]*model.Date
 }
 
 // GetDurationFilter creates a filter for the various time ranges for analysis.
-func GetDurationFilter(duration *model.Duration, firstFilter *bool) string {
+func GetDurationFilter(duration *model.Duration, firstFilter *bool, prefix string) string {
 	var timestampSpecifier string
 	switch *duration {
 	case model.DurationPastDay:
 		hours := 24
 		targetTime := GetTargetTime(&hours)
-		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, "")
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, prefix)
 	case model.DurationPastMonth:
 		hours := 720
 		targetTime := GetTargetTime(&hours)
-		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, "")
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, prefix)
 	case model.DurationPast3Months:
 		hours := 2190
 		targetTime := GetTargetTime(&hours)
-		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, "")
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, prefix)
 	case model.DurationPast6Months:
 		hours := 4380
 		targetTime := GetTargetTime(&hours)
-		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, "")
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, prefix)
 	case model.DurationPastYear:
 		hours := 8760
 		targetTime := GetTargetTime(&hours)
-		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, "")
+		timestampSpecifier = generateTimestampSpecifierSQL(&targetTime, sql.TimeStampFieldName, firstFilter, prefix)
 	case model.DurationAllTime:
 		timestampSpecifier = ""
 	}
@@ -1436,4 +1437,100 @@ func (r *queryResolver) getAmountStatisticsAll(ctx context.Context, typeArg mode
 	}
 	value := fmt.Sprintf("%f", bridgeSum+swapSum+messageBusSum)
 	return &value, nil
+}
+
+func (r *queryResolver) getDateResultByChainMv(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration) ([]*model.DateResultByChain, error) {
+	var err error
+	firstFilter := true
+	timestampSpecifierMv := GetDurationFilter(duration, &firstFilter, "f")
+	chainIDSpecifierMv := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "f")
+	compositeFiltersMv := fmt.Sprintf(
+		`%s%s`,
+		timestampSpecifierMv, chainIDSpecifierMv,
+	)
+	firstFilter = true
+	timestampSpecifier := GetDurationFilter(duration, &firstFilter, "")
+	chainIDSpecifier := generateSingleSpecifierI32SQL(chainID, sql.ChainIDFieldName, &firstFilter, "")
+	compositeFilters := fmt.Sprintf(
+		`%s%s`,
+		timestampSpecifier, chainIDSpecifier,
+	)
+
+	var res []*model.DateResultByChain
+	var query *string
+	g, groupCtx := errgroup.WithContext(ctx)
+	switch *platform {
+	case model.PlatformBridge:
+		query, err = GenerateDailyStatisticByChainBridgeSQLMv(typeArg, compositeFiltersMv)
+		if err != nil {
+			return nil, err
+		}
+	case model.PlatformSwap:
+		query, err = GenerateDailyStatisticByChainSwapSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
+	case model.PlatformMessageBus:
+		query, err = GenerateDailyStatisticByChainMessageBusSQL(typeArg, compositeFilters)
+		if err != nil {
+			return nil, err
+		}
+	case model.PlatformAll:
+		query, err = GenerateDailyStatisticByChainAllSQLMv(typeArg, compositeFilters, compositeFiltersMv)
+	default:
+		return nil, fmt.Errorf("unsupported platform")
+	}
+	g.Go(func() error {
+		res, err = r.DB.GetDailyTotals(groupCtx, *query)
+		if err != nil {
+			return fmt.Errorf("failed to get dateResults: %w", err)
+		}
+		return nil
+	})
+
+	err = g.Wait()
+	if err != nil {
+		return nil, fmt.Errorf("could not get daily data by chain: %w", err)
+	}
+	err = r.Cache.CacheResponse(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()), res)
+	if err != nil {
+		return nil, fmt.Errorf("error caching response, %w", err)
+	}
+	return res, nil
+}
+
+// GenerateDailyStatisticByChainBridgeSQLMv generates sql for getting data for daily stats across the bridge platform.
+func GenerateDailyStatisticByChainBridgeSQLMv(typeArg *model.DailyStatisticType, compositeFilters string) (*string, error) {
+	var query string
+	switch *typeArg {
+	case model.DailyStatisticTypeVolume:
+		query = fmt.Sprintf("%s  sumKahan(famount_usd) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date)  ", dailyStatisticGenericSinglePlatformMv, compositeFilters)
+	case model.DailyStatisticTypeFee:
+		query = fmt.Sprintf("%s  sumKahan(tfee_amount_usd) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date)  ", dailyStatisticGenericSinglePlatformMv, compositeFilters)
+	case model.DailyStatisticTypeAddresses:
+		query = fmt.Sprintf("%s  uniq(fchain_id, fsender) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date)  ", dailyStatisticGenericSinglePlatformMv, compositeFilters)
+	case model.DailyStatisticTypeTransactions:
+		query = fmt.Sprintf("%s  uniq(fchain_id, ftx_hash) AS sumTotal from (select * FROM mv_bridge_events %s ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) group by date, chain_id) group by date order by date) ", dailyStatisticGenericSinglePlatformMv, compositeFilters)
+	default:
+		return nil, fmt.Errorf("unsupported statistic type")
+	}
+	return &query, nil
+}
+
+// GenerateDailyStatisticByChainAllSQLMv generates sql for getting daily stats across all chains.
+func GenerateDailyStatisticByChainAllSQLMv(typeArg *model.DailyStatisticType, compositeFilters string, compositeFiltersMv string) (*string, error) {
+	var query string
+	switch *typeArg {
+	case model.DailyStatisticTypeVolume:
+		query = fmt.Sprintf("%s %s %s FULL OUTER JOIN (SELECT %s, chain_id, sumKahan(multiIf(event_type = 0, amount_usd[sold_id], event_type = 1,    arraySum(mapValues(amount_usd)), event_type = 9,    arraySum(mapValues(amount_usd)), event_type = 10, amount_usd[sold_id],    0) )     as usdTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id) group by date order by date) SETTINGS join_use_nulls=1", dailyVolumeBridgeMvPt1, compositeFiltersMv, dailyVolumeBridgeMvPt2, toDateSelect, compositeFilters)
+	case model.DailyStatisticTypeFee:
+		query = fmt.Sprintf("%s FROM ( SELECT %s, fchain_id AS chain_id, sumKahan(ffee_amount_usd) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(arraySum(mapValues(fee_usd))) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, sumKahan(fee_usd) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+	case model.DailyStatisticTypeAddresses:
+		query = fmt.Sprintf("%s FROM ( SELECT %s, fchain_id AS chain_id, uniq(fchain_id, fsender) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, sender) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, source_address) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+	case model.DailyStatisticTypeTransactions:
+		query = fmt.Sprintf("%s FROM ( SELECT %s, fchain_id AS chain_id, uniq(fchain_id, ftx_hash) as sumTotal FROM (SELECT * FROM mv_bridge_events %s LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash) GROUP BY date, chain_id) b FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM swap_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) s ON b.date = s.date AND b.chain_id = s.chain_id  FULL OUTER JOIN ( SELECT %s, chain_id, uniq(chain_id, tx_hash) AS sumTotal FROM (SELECT * FROM message_bus_events %s LIMIT 1 BY chain_id, contract_address, event_type, block_number, event_index, tx_hash) group by date, chain_id ) m ON b.date = m.date AND b.chain_id = m.chain_id) group by date order by date ) SETTINGS join_use_nulls = 1", dailyStatisticGenericSelect, toDateSelectMv, compositeFiltersMv, toDateSelect, compositeFilters, toDateSelect, compositeFilters)
+	default:
+		return nil, fmt.Errorf("unsupported statistic type")
+	}
+	return &query, nil
 }

@@ -377,6 +377,46 @@ const whereString = " WHERE ("
 
 // TODO MAKE MORE DYNAMIC
 
+const dailyVolumeBridgeMvPt1 = `
+         SELECT date,
+       results[1]                   AS ethereum,
+       results[10]                  AS optimism,
+       results[25]                  AS cronos,
+       results[56]                  AS bsc,
+       results[137]                 AS polygon,
+       results[250]                 AS fantom,
+       results[288]                 AS boba,
+       results[1088]                AS metis,
+       results[1284]                AS moonbeam,
+       results[1285]                AS moonriver,
+       results[8217]                AS klaytn,
+       results[42161]               AS arbitrum,
+       results[43114]               AS avalanche,
+       results[53935]               AS dfk,
+       results[1313161554]          AS aurora,
+       results[1666600000]          AS harmony,
+       results[7700]                AS canto,
+       results[2000]                AS dogechain,
+       arraySum(mapValues(results)) AS total
+         FROM (SELECT date, maxMap(map(chain_id, total)) AS results
+      FROM (SELECT coalesce(toString(b.date), toString(s.date))   AS date,
+                   toInt64(coalesce(b.chain_id, s.chain_id, 0)) as chain_id,
+                   (toFloat64(coalesce(b.usdTotal, 0)) + toFloat64(coalesce(s.usdTotal, 0)) )                      as total
+                     FROM (
+                                SELECT toDate(FROM_UNIXTIME(ftimestamp, '%Y/%m/%d')) as date,
+                                     fchain_id AS chain_id,
+                                     sumKahan(famount_usd)                         as usdTotal
+                              FROM (SELECT *
+                        FROM mv_bridge_events
+
+`
+
+const dailyVolumeBridgeMvPt2 = `
+ORDER BY ftimestamp DESC, fblock_number DESC, fevent_index DESC, insert_time DESC
+LIMIT 1 BY fchain_id, fcontract_address, fevent_type, fblock_number, fevent_index, ftx_hash)
+GROUP BY date, chain_id  order by date, chain_id) b
+`
+
 const dailyVolumeBridge = `
          SELECT date,
        results[1]                   AS ethereum,
@@ -466,6 +506,7 @@ const dailyVolumeBridge = `
                               order by date, pre_fchain_id) b
 `
 const toDateSelect = `toDate(FROM_UNIXTIME(timestamp, '%Y/%m/%d')) as date`
+const toDateSelectMv = `toDate(FROM_UNIXTIME(ftimestamp, '%Y/%m/%d')) as date`
 
 // TODO MAKE MORE DYNAMIC.
 const dailyStatisticGenericSelect = `
@@ -592,6 +633,33 @@ FROM (
                 maxMap(map(chain_id, sumTotal)) AS results
             FROM (SELECT toString(toDate(FROM_UNIXTIME(timestamp, '%Y/%m/%d')))                                                as date,
                          chain_id,
+`
+const dailyStatisticGenericSinglePlatformMv = `
+SELECT date,
+       results[1]                   AS ethereum,
+       results[10]                  AS optimism,
+       results[25]                  AS cronos,
+       results[56]                  AS bsc,
+       results[137]                 AS polygon,
+       results[250]                 AS fantom,
+       results[288]                 AS boba,
+       results[1088]                AS metis,
+       results[1284]                AS moonbeam,
+       results[1285]                AS moonriver,
+       results[8217]                AS klaytn,
+       results[42161]               AS arbitrum,
+       results[43114]               AS avalanche,
+       results[53935]               AS dfk,
+       results[1313161554]          AS aurora,
+       results[1666600000]          AS harmony,
+       results[7700]                AS canto,
+       results[2000]                AS dogechain,
+       arraySum(mapValues(results)) AS total
+FROM (
+         SELECT date,
+                maxMap(map(chain_id, sumTotal)) AS results
+            FROM (SELECT toString(toDate(FROM_UNIXTIME(ftimestamp, '%Y/%m/%d')))                                                as date,
+                         fchain_id AS chain_id,
 `
 const dailyStatisticBridge = `
 FROM (
