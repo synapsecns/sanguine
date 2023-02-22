@@ -27,6 +27,9 @@ export const CAREERS_URL =
 export const TERMS_OF_SERVICE_URL = 'https://docs.google.com/document/d/1X5XjH23amj7ZbOLk0DICiHPQ7yyoZCWF/edit?usp=sharing&ouid=113997473479243481559&rtpof=true&sd=true'
 export const PRIVACY_POLICY_URL = 'https://docs.google.com/document/d/1X5XjH23amj7ZbOLk0DICiHPQ7yyoZCWF/edit?usp=sharing&ouid=113997473479243481559&rtpof=true&sd=true'
 
+export const TERMS_OF_SERVICE_PATH = '/terms'
+export const PRIVACY_POLICY_PATH  = '/privacy'
+
 export const ACCOUNTS_PATH = '/address'
 export const TRANSACTIONS_PATH = '/txs'
 export const TRANSACTION_PATH = '/tx'

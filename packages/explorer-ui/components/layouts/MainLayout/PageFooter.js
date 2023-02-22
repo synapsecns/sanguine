@@ -1,9 +1,9 @@
 import {
   BRIDGE_PATH,
-  TERMS_OF_SERVICE_URL,
+  TERMS_OF_SERVICE_PATH,
   DISCORD_URL,
   DOCS_URL,
-  PRIVACY_POLICY_URL,
+  PRIVACY_POLICY_PATH,
   GITHUB_URL,
   MEDIUM_URL,
   POOLS_PATH,
@@ -92,13 +92,13 @@ const admin = [
 
   {
     text: 'Terms of Use',
-    type: 'url',
-    url: TERMS_OF_SERVICE_URL,
+    type: 'path',
+    url: TERMS_OF_SERVICE_PATH,
   },
   {
     text: 'Privacy Policy',
-    type: 'url',
-    url: PRIVACY_POLICY_URL,
+    type: 'path',
+    url: PRIVACY_POLICY_PATH,
   }
 ]
 
@@ -120,7 +120,7 @@ export function PageFooter() {
           <FooterBlock elements={support} />
         </Grid>
       </div>
-      <div className='text-white pb-10 flex direction-row justify-center align-middle'>
+      <div className='text-white pb-[70px] flex direction-row justify-center align-middle'>
         <div className='mr-2'> <DisplayText element={admin[0]} /> </div>   <p>｜</p>  <div className='ml-2'><DisplayText element={admin[1]} />  </div>
       </div>
     </footer>
@@ -155,7 +155,7 @@ function DisplayText({ element }) {
   } else if (type === 'path') {
     return (
       <div className="opacity-50">
-        <a className="hover:opacity-40 hover:underline" to={url}>
+        <a className="hover:opacity-40 hover:underline" href={url}>
           {text}
         </a>
       </div>
