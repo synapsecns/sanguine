@@ -1216,7 +1216,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 			u.Equal(uint32(1), receivedItem.Nonce)
 			u.Equal(receivedItem.Sender, sentItem.Sender)
 			u.Equal(receivedItem.Message, sentItem.Message)
-			u.Greater(uint64(1), rootSubmittedAt)
+			u.Greater(rootSubmittedAt, uint64(1))
 			break
 		}
 
