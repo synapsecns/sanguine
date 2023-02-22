@@ -9,6 +9,16 @@ import { getBridgeTransactionUrl } from "@urls";
 import { ellipsizeString } from "@utils/ellipsizeString";
 
 export function BridgeTransactionTable({ queryResult }) {
+  const handlePending = (date) => {
+    let now = new Date().getTime()
+    let timeDiff = now - date *1000
+    if (timeDiff > 86400000) {
+      return <p>Indexing</p>
+    } else {
+      return <p>Pending</p>
+    }
+
+  }
   let headers = [
     'Initial',
     'Final',
@@ -22,7 +32,6 @@ export function BridgeTransactionTable({ queryResult }) {
 
 
   let tableRows = []
-  let pendingContent = (<p>Pending/Indexing</p>)
   queryResult?.map((txn) => {
     const { kappa, pending, fromInfo, toInfo } = txn
 
@@ -37,7 +46,7 @@ export function BridgeTransactionTable({ queryResult }) {
           textSize="text-sm"
           styledCoin={true}
         />,
-        pending ? pendingContent :
+        pending ? handlePending(fromInfo.time) :
         <IconAndAmount
           formattedValue={toInfo.formattedValue}
           tokenAddress={toInfo.tokenAddress}
@@ -69,7 +78,7 @@ export function BridgeTransactionTable({ queryResult }) {
 
         />,
         <StyleAddress sourceInfo={fromInfo} />,
-        pending ? pendingContent :
+        pending ? handlePending(fromInfo.time) :
         <StyleAddress sourceInfo={toInfo} />,
         fromInfo.time
           ? timeAgo({ timestamp: fromInfo.time })

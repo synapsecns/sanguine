@@ -35,7 +35,16 @@ export default function BridgeTransaction({ queryResult }) {
   const search = useSearchParams()
   const { kappa } = router.query
   const chainId = Number(search.get('chainIdFrom'))
+  const handlePending = (date) => {
+    let now = new Date().getTime()
+    let timeDiff = now - date *1000
+    if (timeDiff > 86400000) {
+      return "Indexing"
+    } else {
+      return "Pending"
+    }
 
+  }
   let transaction = queryResult.bridgeTransactions[0]
   const { pending, fromInfo, toInfo } = transaction
 
@@ -48,6 +57,7 @@ export default function BridgeTransaction({ queryResult }) {
     return diff.toString()
   }
   let content
+  let pendingContent = handlePending(fromInfo?.time)
 
   if (!!transaction) {
     content = <>
@@ -77,11 +87,11 @@ export default function BridgeTransaction({ queryResult }) {
         </div>
         <div className="flex gap-x-4 py-1">
           <p className="text-white text-opacity-60">Confirmed</p>
-          <p className="text-white ">{toInfo ? formatDateTime(new Date(toInfo.time * 1000)) : "Pending"}</p>
+          <p className="text-white ">{toInfo ? formatDateTime(new Date(toInfo.time * 1000)) : pendingContent}</p>
         </div>
         <div className="flex gap-x-[1.1rem] py-1">
           <p className="text-white text-opacity-60">Total Time</p>
-          <p className="text-white ">{toInfo ? getTimeDifference(fromInfo.time, toInfo.time) + " seconds" : "Pending"} </p>
+          <p className="text-white ">{toInfo ? getTimeDifference(fromInfo.time, toInfo.time) + " seconds" :pendingContent} </p>
         </div>
         <br />
 
@@ -144,7 +154,7 @@ export default function BridgeTransaction({ queryResult }) {
               <div className="flex gap-x-[4.5rem] py-1">
                 <p className="text-white text-opacity-60">To</p>
                 <a target="_blank"
-                  rel="noreferrer" className="text-white break-all text-sm underline" href={toInfo ? ACCOUNTS_PATH + "/" + toInfo.address: ""}>{toInfo ? toInfo.address : "Pending"}
+                  rel="noreferrer" className="text-white break-all text-sm underline" href={toInfo ? ACCOUNTS_PATH + "/" + toInfo.address: ""}>{toInfo ? toInfo.address : pendingContent}
                 </a>
               </div>
 
@@ -152,7 +162,7 @@ export default function BridgeTransaction({ queryResult }) {
                 <p className="text-white text-opacity-60">TX Hash</p>
                 {toInfo ?
                   <a target="_blank"
-                    rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/tx/" + toInfo.hash}>{toInfo.hash}</a> : <p className="text-white break-all text-sm ">Pending</p>}
+                    rel="noreferrer" className="text-white break-all text-sm underline" href={CHAIN_EXPLORER_URLS[toInfo.chainID] + "/tx/" + toInfo.hash}>{toInfo.hash}</a> : <p className="text-white break-all text-sm ">{pendingContent}</p>}
               </div>
               <div className="flex gap-x-8 mt-3">
                 <h1 className="text-white text-2xl text-opacity-60">
