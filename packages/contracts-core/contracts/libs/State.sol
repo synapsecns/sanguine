@@ -9,6 +9,7 @@ type State is bytes29;
 /// @dev Attach library functions to State
 using {
     StateLib.unwrap,
+    StateLib.equalToOrigin,
     StateLib.leaf,
     StateLib.root,
     StateLib.origin,
@@ -16,6 +17,14 @@ using {
     StateLib.blockNumber,
     StateLib.timestamp
 } for State global;
+
+/// @dev Struct representing State, as it is stored in the Origin contract.
+struct OriginState {
+    bytes32 root;
+    uint40 blockNumber;
+    uint40 timestamp;
+    // 176 bits left for tight packing
+}
 
 library StateLib {
     using ByteString for bytes;
@@ -98,6 +107,52 @@ library StateLib {
     /// @notice Convenience shortcut for unwrapping a view.
     function unwrap(State _state) internal pure returns (bytes29) {
         return State.unwrap(_state);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             ORIGIN STATE                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Returns a formatted State payload with provided fields.
+     * @param _origin       Domain of Origin's chain
+     * @param _nonce        Nonce of the merkle root
+     * @param _originState  State struct as it is stored in Origin contract
+     * @return Formatted state
+     */
+    function formatState(
+        uint32 _origin,
+        uint32 _nonce,
+        OriginState memory _originState
+    ) internal pure returns (bytes memory) {
+        return
+            formatState({
+                _root: _originState.root,
+                _origin: _origin,
+                _nonce: _nonce,
+                _blockNumber: _originState.blockNumber,
+                _timestamp: _originState.timestamp
+            });
+    }
+
+    /// @notice Returns a struct to save in the Origin contract.
+    /// Current block number and timestamp are used.
+    function originState(bytes32 currentRoot) internal view returns (OriginState memory state) {
+        state.root = currentRoot;
+        state.blockNumber = uint40(block.number);
+        state.timestamp = uint40(block.timestamp);
+    }
+
+    /// @notice Checks that a state and its Origin representation are equal.
+    function equalToOrigin(State _state, OriginState memory _originState)
+        internal
+        pure
+        returns (bool)
+    {
+        return
+            root(_state) == _originState.root &&
+            blockNumber(_state) == _originState.blockNumber &&
+            timestamp(_state) == _originState.timestamp;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

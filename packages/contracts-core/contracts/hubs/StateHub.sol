@@ -1,0 +1,84 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.17;
+
+import { DomainContext } from "../context/DomainContext.sol";
+import { Snapshot } from "../libs/Snapshot.sol";
+import { State, StateLib, OriginState } from "../libs/State.sol";
+import { EMPTY_ROOT } from "../libs/Structures.sol";
+
+/**
+ * @notice Hub to accept, save and verify states for a local contract.
+ * The State logic is fully outsourced to the State library, which defines
+ * - What a "state" is
+ * - How "state" getters work
+ * - How to compare "states" to one another
+ */
+abstract contract StateHub is DomainContext {
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               STORAGE                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev All historical contract States
+    OriginState[] private originStates;
+
+    /// @dev gap for upgrade safety
+    uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                VIEWS                                 ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function suggestLatestState() external view returns (bytes memory stateData) {
+        // This never underflows, assuming the contract was initialized
+        return suggestState(uint32(_statesAmount() - 1));
+    }
+
+    function suggestState(uint32 _nonce) public view returns (bytes memory stateData) {
+        require(_nonce < _statesAmount(), "Nonce out of range");
+        return
+            StateLib.formatState({
+                _origin: localDomain,
+                _nonce: _nonce,
+                _originState: originStates[_nonce]
+            });
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           SAVE STATE DATA                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Initializes the saved states list by inserting a state for an empty Merkle Tree.
+    function _initializeStates() internal {
+        // This should only be called once, when the contract is initialized
+        assert(_statesAmount() == 0);
+        // Save root for empty merkle tree with block number and timestamp of initialization
+        _saveState(StateLib.originState(EMPTY_ROOT));
+    }
+
+    /// @dev Saves an updated state of the Origin contract
+    function _saveState(OriginState memory _state) internal {
+        originStates.push(_state);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          VERIFY STATE DATA                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Returns the amount of saved States so far.
+    /// This always equals to "total amount of dispatched messages" plus 1.
+    function _statesAmount() internal view returns (uint256) {
+        return originStates.length;
+    }
+
+    /// @dev Checks if a state is valid, i.e. if it matches the historical one.
+    /// Reverts, if state refers to another Origin contract.
+    function _isValidState(State _state) internal view returns (bool) {
+        // Check if state refers to this contract
+        require(_state.origin() == localDomain, "Wrong origin");
+        // Check if nonce exists
+        uint32 nonce = _state.nonce();
+        if (nonce >= originStates.length) return false;
+        // Check if state matches the historical one
+        return _state.equalToOrigin(originStates[nonce]);
+    }
+}

@@ -49,7 +49,31 @@ contract StateHarness {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         STATE FORMATTERS                          ║*▕
+    ▏*║                             ORIGIN STATE                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function formatState(
+        uint32 _origin,
+        uint32 _nonce,
+        OriginState memory _originState
+    ) public pure returns (bytes memory) {
+        return StateLib.formatState(_origin, _nonce, _originState);
+    }
+
+    function originState(bytes32 _root) public view returns (OriginState memory state) {
+        return StateLib.originState(_root);
+    }
+
+    function equalToOrigin(bytes memory _payload, OriginState memory _originState)
+        public
+        pure
+        returns (bool)
+    {
+        return _payload.castToState().equalToOrigin(_originState);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           STATE FORMATTERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatState(
