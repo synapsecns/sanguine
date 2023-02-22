@@ -385,78 +385,78 @@ guard_files:
   signer.txt: |-
     dd03ef81893502797024462da191deaf1e90f30879b3b7673acb11ce72f73094
   config.yaml: |-
-    origindomains:
+    refresh_interval_in_seconds: 1
+    origin_domains:
       origin_client:
-        - domainid: 137
+        - domain_id: 137
           type: EVM
-          requiredconfirmations: 50
-          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestationcollectoraddress: ''
-          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/137"
-          startheight: 39145588
-        - domainid: 10
+          required_confirmations: 50
+          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestation_collector_address: ''
+          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/137"
+          start_height: 39145588
+        - domain_id: 10
           type: EVM
-          requiredconfirmations: 50
-          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestationcollectoraddress: ''
-          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/10"
-          startheight: 73536295
-        - domainid: 43114
+          required_confirmations: 50
+          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestation_collector_address: ''
+          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/10"
+          start_height: 73536295
+        - domain_id: 43114
           type: EVM
-          requiredconfirmations: 50
-          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestationcollectoraddress: ''
-          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/43114"
-          startheight: 26091228
-    attestationdomain:
-      domainid: 137
+          required_confirmations: 50
+          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestation_collector_address: ''
+          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/43114"
+          start_height: 26091228
+    attestation_domain:
+      domain_id: 137
       type: EVM
-      requiredconfirmations: 50
-      originaddress: ''
-      attestationcollectoraddress: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-      destinationaddress: ''
-      rpcurl: "http://agents-omnirpc/confirmations/1/rpc/137"
-      startheight: 73537407
-    destinationdomains:
+      required_confirmations: 50
+      origin_address: ''
+      attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
+      destination_address: ''
+      rpc_url: "http://agents-omnirpc/confirmations/1/rpc/137"
+      start_height: 73537407
+    destination_domains:
       destination_client:
-        - domainid: 137
+        - domain_id: 137
           type: EVM
-          requiredconfirmations: 50
-          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestationcollectoraddress: ''
-          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/137"
-          startheight: 39145588
-        - domainid: 10
+          required_confirmations: 50
+          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestation_collectoraddress: ''
+          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/137"
+          start_height: 39145588
+        - domain_id: 10
           type: EVM
-          requiredconfirmations: 50
-          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestationcollectoraddress: ''
-          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/10"
-          startheight: 73536295
-        - domainid: 43114
+          required_confirmations: 50
+          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestation_collector_address: ''
+          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/10"
+          start_height: 73536295
+        - domain_id: 43114
           type: EVM
-          requiredconfirmations: 50
-          originaddress: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-          attestationcollectoraddress: ''
-          destinationaddress: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-          rpcurl: "http://agents-omnirpc/confirmations/1/rpc/43114"
-          startheight: 26091228
-    unbondedsigner:
+          required_confirmations: 50
+          origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+          attestation_collector_address: ''
+          destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+          rpc_url: "http://agents-omnirpc/confirmations/1/rpc/43114"
+          start_height: 26091228
+    unbonded_signer:
       type: "File"
       file: "/config/signer.txt"
-    bondedsigner:
+    bonded_signer:
       type: "File"
       file: "/config/signer.txt"
     database:
       type: mysql
-      dbpath: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
-      connstring: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
-    refreshintervalinseconds: 1
+      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
+      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
 
 executor_remote_existing_files:
   signer.txt: |-

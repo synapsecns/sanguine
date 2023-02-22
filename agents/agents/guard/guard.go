@@ -33,6 +33,7 @@ type Guard struct {
 //
 //nolint:cyclop
 func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) {
+	logger.Errorf("creating new guard with config: %+v", cfg)
 	if cfg.RefreshIntervalInSeconds == int64(0) {
 		return Guard{}, fmt.Errorf("cfg.refreshInterval cannot be 0")
 	}
