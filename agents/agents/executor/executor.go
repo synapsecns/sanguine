@@ -126,7 +126,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
 		}
 
-		chainRPCURL := fmt.Sprintf("%s/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
+		chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
 		if err != nil {

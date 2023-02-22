@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "36aabc2afb422562d08cbf2f98d968b3b1a0c674"
+  tag: "3b1f99b6b268ba19ea055323ef0f8b2d403de5ae"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -379,7 +379,7 @@ scribe:
 
 notary_files:
   notary_signer.txt: |-
-    16c909570a212af6a328a1cf594a20d7cf6edf56fafa0b50967f2039b1f68445
+    04486fc4ef3f3fb489c9f4ed4ff07cb9aa998abc0a244f2464c76164bcfad41d
   notary_config.yaml: |-
     refresh_interval_in_seconds: 1
     origin_domains:
@@ -392,15 +392,6 @@ notary_files:
         destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         start_height: 39145588
-      origin_client2:
-        domain_id: 10
-        type: EVM
-        required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: ''
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-        rpc_url: "https://optimism-rpc.gateway.pokt.network"
-        start_height: 73536295
     attestation_domain:
       domain_id: 10
       type: EVM
@@ -445,24 +436,6 @@ guard_files:
         destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         start_height: 39145588
-      origin_client2:
-        domain_id: 10
-        type: EVM
-        required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: ''
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-        rpc_url: "https://optimism-rpc.gateway.pokt.network"
-        start_height: 73536295
-      origin_client3:
-        domain_id: 43114
-        type: EVM
-        required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: ''
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
-        start_height: 26091228
     attestation_domain:
       domain_id: 10
       type: EVM
