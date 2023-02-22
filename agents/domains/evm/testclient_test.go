@@ -8,7 +8,7 @@ import (
 func (i ContractSuite) TestClientSendMessage() {
 	destinationDomain := uint32(i.TestBackendDestination.GetChainID())
 
-	auth := i.TestBackendDestination.GetTxContext(i.GetTestContext(), nil)
+	auth := i.TestBackendOrigin.GetTxContext(i.GetTestContext(), nil)
 
 	recipient := i.TestClientMetadataOnDestination.Address()
 	optimisticSeconds := uint32(10)
@@ -16,5 +16,5 @@ func (i ContractSuite) TestClientSendMessage() {
 	tx, err := i.TestClientOnOrigin.SendMessage(auth.TransactOpts, destinationDomain, recipient, optimisticSeconds, message)
 	Nil(i.T(), err)
 
-	i.TestBackendDestination.WaitForConfirmation(i.GetTestContext(), tx)
+	i.TestBackendOrigin.WaitForConfirmation(i.GetTestContext(), tx)
 }
