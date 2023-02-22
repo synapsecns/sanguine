@@ -414,6 +414,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 		ToBlock:   "latest",
 	})
 	if err != nil {
+		logger.Errorf("could not stream logs: %s", err)
 		return fmt.Errorf("could not stream logs: %w", err)
 	}
 

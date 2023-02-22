@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "d66f00073443c93c88be60b88b9e4f35171e8d3f"
+  tag: "3679bfeaa8396feff57c10ba72d29d4558ee725f"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -104,7 +104,7 @@ notary:
     - name: create-database
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS notary\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -152,7 +152,7 @@ guard:
     - name: create-database
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS guard\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -418,8 +418,8 @@ notary_files:
       file: "/config/notary_signer.txt"
     database:
       type: mysql
-      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
-      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
+      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
 
 guard_files:
   guard_signer.txt: |-
@@ -475,14 +475,14 @@ guard_files:
         start_height: 26091228
     unbonded_signer:
       type: "File"
-      file: "/config/guard_signer.txt"
+      file: "/config/notary_signer.txt"
     bonded_signer:
       type: "File"
       file: "/config/guard_signer.txt"
     database:
       type: mysql
-      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
-      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/agents"
+      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/guard?parseTime=true"
+      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/guard?parseTime=true"
 
 executor_remote_existing_files:
   executor_signer.txt: |-
