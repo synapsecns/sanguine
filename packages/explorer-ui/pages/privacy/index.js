@@ -8,7 +8,6 @@ export default function Terms() {
   return (
     <>
       <StandardPageContainer title="Privacy Policy">
-        <h1 className="text-3xl font-bold">Terms of Service</h1>
         <p className="text-lg font-medium">Last updated: January, 2023</p>
         <div className="text-md  font-medium text-white pt-2"><p>
 
