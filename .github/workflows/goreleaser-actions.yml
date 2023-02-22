@@ -4,7 +4,7 @@ on: [push]
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
   # the next run since build-goreleaser and run-goreleaser are run concurrently. We expect github actions
-  # to fix this in a future verison
+  # to fix this in a future version.
   build-goreleaser:
     runs-on: ubuntu-latest
     outputs:
@@ -76,6 +76,8 @@ jobs:
   changes:
     name: Change Detection
     runs-on: ubuntu-latest
+    # see: https://stackoverflow.com/a/68414395
+    if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[goreleaser]') }}
     outputs:
       # Expose matched filters as job 'packages' output variable
       packages: ${{ steps.filter_go.outputs.changed_modules }}
@@ -90,7 +92,7 @@ jobs:
         id: filter_go
         with:
           include_deps: true
-          github_token: ${{ secrets.github_token }}
+          github_token: ${{ secrets.WORKFLOW_PAT }}
 
       - id: length
         run: |
