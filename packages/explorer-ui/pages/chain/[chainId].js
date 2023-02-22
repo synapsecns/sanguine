@@ -133,6 +133,7 @@ export default function chainId() {
         duration: dailyStatisticDuration,
         useCache: true,
         chainID: chainIdRouter,
+        useMv: true,
       },
     })
     setVariables({ chainIDFrom: chainIdRouter, useMv: true })

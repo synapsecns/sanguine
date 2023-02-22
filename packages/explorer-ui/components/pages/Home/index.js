@@ -121,6 +121,8 @@ export function Home() {
         duration: dailyStatisticDuration,
         platform: platform,
         useCache: true,
+        useMv: true,
+
       },
     })
 
@@ -135,6 +137,7 @@ export function Home() {
         type: dailyStatisticType,
         duration: dailyStatisticDuration,
         useCache: true,
+        useMv: true,
       },
     })
   }, [])
