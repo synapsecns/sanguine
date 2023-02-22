@@ -157,12 +157,12 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 	yearType := model.DurationPast3Months
 	allTimeType := model.DurationPast6Months
 
-	//dontUseMv := false
+	dontUseMv := false
 	useMv := true
 
 	g, ctx := errgroup.WithContext(parentCtx)
 	g.Go(func() error {
-		statsVolAll, err := client.GetAmountStatistic(ctx, totalVolumeType, &allPlatformType, &allTimeType, nil, nil, nil, &useMv)
+		statsVolAll, err := client.GetAmountStatistic(ctx, totalVolumeType, &allPlatformType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -170,7 +170,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		statsFeeAll, err := client.GetAmountStatistic(ctx, totalFeeType, &allPlatformType, &allTimeType, nil, nil, nil, &useMv)
+		statsFeeAll, err := client.GetAmountStatistic(ctx, totalFeeType, &allPlatformType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -178,7 +178,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		statsAddrAll, err := client.GetAmountStatistic(ctx, countAddressType, &allPlatformType, &allTimeType, nil, nil, nil, &useMv)
+		statsAddrAll, err := client.GetAmountStatistic(ctx, countAddressType, &allPlatformType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -186,7 +186,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		statsTxAll, err := client.GetAmountStatistic(ctx, countTxType, &allPlatformType, &allTimeType, nil, nil, nil, &useMv)
+		statsTxAll, err := client.GetAmountStatistic(ctx, countTxType, &allPlatformType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -197,7 +197,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		return nil
 	})
 	g.Go(func() error {
-		statsVolBridge, err := client.GetAmountStatistic(ctx, totalVolumeType, &bridgeType, &allTimeType, nil, nil, nil, &useMv)
+		statsVolBridge, err := client.GetAmountStatistic(ctx, totalVolumeType, &bridgeType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -205,7 +205,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		statsFeeBridge, err := client.GetAmountStatistic(ctx, totalFeeType, &bridgeType, &allTimeType, nil, nil, nil, &useMv)
+		statsFeeBridge, err := client.GetAmountStatistic(ctx, totalFeeType, &bridgeType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -213,7 +213,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		statsAddrBridge, err := client.GetAmountStatistic(ctx, countAddressType, &bridgeType, &allTimeType, nil, nil, nil, &useMv)
+		statsAddrBridge, err := client.GetAmountStatistic(ctx, countAddressType, &bridgeType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -221,7 +221,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		statsTxBridge, err := client.GetAmountStatistic(ctx, countTxType, &bridgeType, &allTimeType, nil, nil, nil, &useMv)
+		statsTxBridge, err := client.GetAmountStatistic(ctx, countTxType, &bridgeType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -232,7 +232,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		return nil
 	})
 	g.Go(func() error {
-		statsVolSwap, err := client.GetAmountStatistic(ctx, totalVolumeType, &swapType, &allTimeType, nil, nil, nil, &useMv)
+		statsVolSwap, err := client.GetAmountStatistic(ctx, totalVolumeType, &swapType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -240,7 +240,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		statsFeeSwap, err := client.GetAmountStatistic(ctx, totalFeeType, &swapType, &allTimeType, nil, nil, nil, &useMv)
+		statsFeeSwap, err := client.GetAmountStatistic(ctx, totalFeeType, &swapType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -248,7 +248,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		statsAddrSwap, err := client.GetAmountStatistic(ctx, countAddressType, &swapType, &allTimeType, nil, nil, nil, &useMv)
+		statsAddrSwap, err := client.GetAmountStatistic(ctx, countAddressType, &swapType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -256,7 +256,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		statsTxSwap, err := client.GetAmountStatistic(ctx, countTxType, &swapType, &allTimeType, nil, nil, nil, &useMv)
+		statsTxSwap, err := client.GetAmountStatistic(ctx, countTxType, &swapType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -267,7 +267,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		return nil
 	})
 	g.Go(func() error {
-		statsFeeMsg, err := client.GetAmountStatistic(ctx, totalFeeType, &messagingType, &allTimeType, nil, nil, nil, &useMv)
+		statsFeeMsg, err := client.GetAmountStatistic(ctx, totalFeeType, &messagingType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -275,7 +275,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		statsAddrMsg, err := client.GetAmountStatistic(ctx, countAddressType, &messagingType, &allTimeType, nil, nil, nil, &useMv)
+		statsAddrMsg, err := client.GetAmountStatistic(ctx, countAddressType, &messagingType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -283,7 +283,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		statsTxMsg, err := client.GetAmountStatistic(ctx, countTxType, &messagingType, &allTimeType, nil, nil, nil, &useMv)
+		statsTxMsg, err := client.GetAmountStatistic(ctx, countTxType, &messagingType, &allTimeType, nil, nil, nil, &dontUseMv)
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
