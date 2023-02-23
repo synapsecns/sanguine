@@ -583,6 +583,8 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 		case <-time.After(time.Duration(e.config.ExecuteInterval)):
 			page := 1
 			currentTime := uint64(time.Now().Unix())
+			logger.Errorf("currentTime: %d", currentTime)
+
 			messageMask := execTypes.DBMessage{
 				ChainID: &chainID,
 			}
