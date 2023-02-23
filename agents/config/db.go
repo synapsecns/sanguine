@@ -5,11 +5,11 @@ import "context"
 // DBConfig is used for configuring the.
 type DBConfig struct {
 	// Type of the database to use for sql. This does not affect hte pebble db
-	Type string `toml:"Type"`
+	Type string `yaml:"type"`
 	// DBPath is the db path used for the pebble db
-	DBPath string `toml:"DBPath"`
+	DBPath string `yaml:"db_path"`
 	// ConnString is the connection string used for mysql
-	ConnString string `toml:"ConnString"`
+	ConnString string `yaml:"conn_string"`
 }
 
 // IsValid asserts the database connection is valid.

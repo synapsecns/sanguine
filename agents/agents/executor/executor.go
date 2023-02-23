@@ -126,7 +126,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
 		}
 
-		chainRPCURL := fmt.Sprintf("%s/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
+		chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
 		if err != nil {
@@ -567,9 +567,10 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(time.Duration(e.config.ExecuteInterval)):
+		case <-time.After(time.Duration(e.config.ExecuteInterval) * time.Second):
 			page := 1
 			currentTime := uint64(time.Now().Unix())
+
 			messageMask := execTypes.DBMessage{
 				ChainID: &chainID,
 			}
@@ -587,7 +588,8 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 				for _, message := range messages {
 					executed, err := e.Execute(ctx, message)
 					if err != nil {
-						return fmt.Errorf("could not execute message: %w", err)
+						logger.Errorf("could not execute message, retrying: %s", err)
+						continue
 					}
 
 					if !executed {
@@ -621,7 +623,7 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval)):
+		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval) * time.Second):
 			page := 1
 			messageMask := execTypes.DBMessage{
 				ChainID: &chainID,
