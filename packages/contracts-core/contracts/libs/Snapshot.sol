@@ -17,6 +17,16 @@ using {
     SnapshotLib.root
 } for Snapshot global;
 
+/// @dev Struct representing Snapshot, as it is stored in the Summit contract.
+/// Summit contract is supposed to store states. Snapshot is a list of states,
+/// so we are storing a list of references to already stored states.
+struct SummitSnapshot {
+    // TODO: compress this - indexes might as well be uint32/uint64
+    uint256[] stateRefs;
+}
+/// @dev Attach library functions to SummitSnapshot
+using { SnapshotLib.getStatesAmount, SnapshotLib.getStateRef } for SummitSnapshot global;
+
 library SnapshotLib {
     using ByteString for bytes;
     using StateLib for bytes29;
@@ -101,6 +111,31 @@ library SnapshotLib {
     /// @notice Convenience shortcut for unwrapping a view.
     function unwrap(Snapshot _snapshot) internal pure returns (bytes29) {
         return Snapshot.unwrap(_snapshot);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           SUMMIT SNAPSHOT                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function summitSnapshot(uint256[] memory _stateRefs)
+        internal
+        pure
+        returns (SummitSnapshot memory snapshot)
+    {
+        snapshot.stateRefs = _stateRefs;
+    }
+
+    function getStatesAmount(SummitSnapshot memory _snapshot) internal pure returns (uint256) {
+        return _snapshot.stateRefs.length;
+    }
+
+    function getStateRef(SummitSnapshot memory _snapshot, uint256 _index)
+        internal
+        pure
+        returns (uint256)
+    {
+        require(_index < getStatesAmount(_snapshot), "Out of range");
+        return _snapshot.stateRefs[_index];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
