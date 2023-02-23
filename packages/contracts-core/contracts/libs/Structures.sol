@@ -4,6 +4,9 @@ pragma solidity 0.8.17;
 // Here we define common constants for Structures Libraries
 // to enable their easier reusing later.
 
+/// @dev See SnapAttestation.sol: (bytes32,uint8,uint32,uint40,uint40): 32+1+4+5+5
+uint256 constant SNAP_ATTESTATION_LENGTH = 47;
+
 /// @dev See State.sol: (bytes32,uint32,uint32,uint40,uint40): 32+4+4+5+5
 uint256 constant STATE_LENGTH = 50;
 

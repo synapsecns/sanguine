@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/State.sol";
+import "../../../contracts/libs/SnapAttestation.sol";
 
 /**
- * @notice Exposes State methods for testing against golang.
+ * @notice Exposes Attestation methods for testing against golang.
  */
-contract StateHarness {
-    using StateLib for bytes;
-    using StateLib for bytes29;
+contract SnapAttestationHarness {
+    using SnapAttestationLib for bytes;
+    using SnapAttestationLib for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
@@ -17,52 +17,55 @@ contract StateHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToState(bytes memory _payload) public view returns (bytes memory) {
+    function castToSnapAttestation(bytes memory _payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        State _state = StateLib.castToState(_payload);
-        return _state.unwrap().clone();
-    }
-
-    function leaf(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToState().leaf();
+        SnapAttestation _attestation = SnapAttestationLib.castToSnapAttestation(_payload);
+        return _attestation.unwrap().clone();
     }
 
     function root(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToState().root();
+        return _payload.castToSnapAttestation().root();
     }
 
-    function origin(bytes memory _payload) public pure returns (uint32) {
-        return _payload.castToState().origin();
+    function depth(bytes memory _payload) public pure returns (uint8) {
+        return _payload.castToSnapAttestation().depth();
     }
 
     function nonce(bytes memory _payload) public pure returns (uint32) {
-        return _payload.castToState().nonce();
+        return _payload.castToSnapAttestation().nonce();
     }
 
     function blockNumber(bytes memory _payload) public pure returns (uint40) {
-        return _payload.castToState().blockNumber();
+        return _payload.castToSnapAttestation().blockNumber();
     }
 
     function timestamp(bytes memory _payload) public pure returns (uint40) {
-        return _payload.castToState().timestamp();
+        return _payload.castToSnapAttestation().timestamp();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         STATE FORMATTERS                          ║*▕
+    ▏*║                         ATTESTATION FORMATTERS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatState(
+    function formatSnapAttestation(
         bytes32 _root,
-        uint32 _origin,
+        uint8 _depth,
         uint32 _nonce,
         uint40 _blockNumber,
         uint40 _timestamp
     ) public pure returns (bytes memory) {
-        return StateLib.formatState(_root, _origin, _nonce, _blockNumber, _timestamp);
+        return
+            SnapAttestationLib.formatSnapAttestation(
+                _root,
+                _depth,
+                _nonce,
+                _blockNumber,
+                _timestamp
+            );
     }
 
-    function isState(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isState();
+    function isAttestation(bytes memory _payload) public pure returns (bool) {
+        return _payload.ref(0).isSnapAttestation();
     }
 }

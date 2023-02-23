@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./ByteString.sol";
-import "./Structures.sol";
+import { ByteString, TypedMemView } from "./ByteString.sol";
+import { STATE_LENGTH } from "./Structures.sol";
 
 /// @dev State is a memory view over a formatted state payload.
 type State is bytes29;
 /// @dev Attach library functions to State
 using {
     StateLib.unwrap,
+    StateLib.leaf,
     StateLib.root,
     StateLib.origin,
     StateLib.nonce,
@@ -21,15 +22,24 @@ library StateLib {
     using TypedMemView for bytes29;
 
     /**
-     * @dev State structure represents the state of Origin contract at some point of time,
-     * aka the "historical state".
+     * @dev State structure represents the state of Origin contract at some point of time.
+     * State is structured in a way to track the updates of the Origin Merkle Tree. State includes
+     * root of the Origin Merkle Tree, origin domain and some additional metadata.
      *
-     * @dev State memory layout
-     * [000 .. 032): root           bytes32 32 bytes
-     * [032 .. 036): origin         uint32   4 bytes
-     * [036 .. 040): nonce          uint32   4 bytes
-     * [040 .. 045): blockNumber    uint40   5 bytes
-     * [045 .. 050): timestamp      uint40   5 bytes
+     * Hash of every dispatched message is inserted in the Origin Merkle Tree, which changes the
+     * value of Origin Merkle Root (which is the root for the mentioned tree).
+     * Origin has a single Merkle Tree for all messages, regardless of their destination domain.
+     * This leads to Origin state being updated if and only if a message was dispatched in a block.
+     *
+     * Origin contract is a "source of truth" for states: a state is considered "valid" in its Origin,
+     * if it matches the state of the Origin contract after the N-th (nonce) message was dispatched.
+     *
+     * @dev Memory layout of State fields
+     * [000 .. 032): root           bytes32 32 bytes    Root of the Origin Merkle Tree
+     * [032 .. 036): origin         uint32   4 bytes    Domain where Origin is located
+     * [036 .. 040): nonce          uint32   4 bytes    Amount of dispatched messages
+     * [040 .. 045): blockNumber    uint40   5 bytes    Block of last dispatched message
+     * [045 .. 050): timestamp      uint40   5 bytes    Time of last dispatched message
      *
      * The variables below are not supposed to be used outside of the library directly.
      */
@@ -88,6 +98,24 @@ library StateLib {
     /// @notice Convenience shortcut for unwrapping a view.
     function unwrap(State _state) internal pure returns (bytes29) {
         return State.unwrap(_state);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            STATE HASHING                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Returns a "state leaf": a unique hash for every unique state, that is
+    /// going to be used as a leaf in the "Snapshot Merkle Tree".
+    /// @dev We use the hashing technique similar to a Merkle tree here and return hash for a node
+    /// having two children: (root, origin) and (nonce, blockNumber, timestamp).
+    function leaf(State _state) internal pure returns (bytes32) {
+        bytes29 _view = unwrap(_state);
+        // Derive hash for (root, origin) bytestring
+        bytes32 rootOriginHash = _view.prefix({ _len: OFFSET_NONCE, newType: 0 }).keccak();
+        // Derive hash for (nonce, blockNumber, timestamp) bytestring
+        bytes32 metadataHash = _view.sliceFrom({ _index: OFFSET_NONCE, newType: 0 }).keccak();
+        // Final hash is two hashes concatenated, and then hashed
+        return keccak256(bytes.concat(rootOriginHash, metadataHash));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
