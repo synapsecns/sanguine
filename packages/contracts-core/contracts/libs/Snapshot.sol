@@ -148,7 +148,7 @@ library SnapshotLib {
     /// @notice Returns the hash of a Snapshot, that could be later signed by an Agent.
     function hash(Snapshot _snapshot) internal pure returns (bytes32 hashedSnapshot) {
         // Get the underlying memory view
-        bytes29 _view = unwrap(_snapshot);
+        bytes29 _view = _snapshot.unwrap();
         // TODO: include Snapshot-unique salt in the hash
         return _view.keccak();
     }
@@ -159,7 +159,7 @@ library SnapshotLib {
 
     /// @notice Returns a state with a given index from the snapshot.
     function state(Snapshot _snapshot, uint256 _stateIndex) internal pure returns (State) {
-        bytes29 _view = unwrap(_snapshot);
+        bytes29 _view = _snapshot.unwrap();
         uint256 indexFrom = _stateIndex * STATE_LENGTH;
         require(indexFrom < _view.len(), "Out of range");
         return _view.slice({ _index: indexFrom, _len: STATE_LENGTH, newType: 0 }).castToState();
@@ -167,7 +167,7 @@ library SnapshotLib {
 
     /// @notice Returns the amount of states in the snapshot.
     function statesAmount(Snapshot _snapshot) internal pure returns (uint256) {
-        bytes29 _view = unwrap(_snapshot);
+        bytes29 _view = _snapshot.unwrap();
         return _view.len() / STATE_LENGTH;
     }
 
@@ -183,7 +183,7 @@ library SnapshotLib {
     function height(Snapshot _snapshot) internal pure returns (uint8 treeHeight) {
         // Account for the fact that every "state leaf" is a node with two sub-leafs
         treeHeight = 1;
-        uint256 _statesAmount = statesAmount(_snapshot);
+        uint256 _statesAmount = _snapshot.statesAmount();
         for (uint256 amount = 1; amount < _statesAmount; amount <<= 1) {
             ++treeHeight;
         }
@@ -191,7 +191,7 @@ library SnapshotLib {
 
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
     function root(Snapshot _snapshot) internal pure returns (bytes32) {
-        uint256 _statesAmount = statesAmount(_snapshot);
+        uint256 _statesAmount = _snapshot.statesAmount();
         bytes32[] memory hashes = new bytes32[](_statesAmount);
         for (uint256 i = 0; i < _statesAmount; ++i) {
             // Each State has two sub-leafs, their hash is used as "leaf" in "Snapshot Merkle Tree"

@@ -139,10 +139,10 @@ library SnapAttestationLib {
         returns (bool)
     {
         return
-            root(_snapAtt) == _summitAtt.root &&
-            height(_snapAtt) == _summitAtt.height &&
-            blockNumber(_snapAtt) == _summitAtt.blockNumber &&
-            timestamp(_snapAtt) == _summitAtt.timestamp;
+            _snapAtt.root() == _summitAtt.root &&
+            _snapAtt.height() == _summitAtt.height &&
+            _snapAtt.blockNumber() == _summitAtt.blockNumber &&
+            _snapAtt.timestamp() == _summitAtt.timestamp;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -152,7 +152,7 @@ library SnapAttestationLib {
     /// @notice Returns the hash of a SnapAttestation, that could be later signed by a Notary.
     function hash(SnapAttestation _snapAtt) internal pure returns (bytes32) {
         // Get the underlying memory view
-        bytes29 _view = unwrap(_snapAtt);
+        bytes29 _view = _snapAtt.unwrap();
         // TODO: include Attestation-unique salt in the hash
         return _view.keccak();
     }
@@ -163,32 +163,32 @@ library SnapAttestationLib {
 
     /// @notice Returns root of the Snapshot merkle tree created in the Summit contract.
     function root(SnapAttestation _snapAtt) internal pure returns (bytes32) {
-        bytes29 _view = unwrap(_snapAtt);
+        bytes29 _view = _snapAtt.unwrap();
         return _view.index({ _index: OFFSET_ROOT, _bytes: 32 });
     }
 
     /// @notice Returns height of the Snapshot merkle tree created in the Summit contract.
     function height(SnapAttestation _snapAtt) internal pure returns (uint8) {
-        bytes29 _view = unwrap(_snapAtt);
+        bytes29 _view = _snapAtt.unwrap();
         return uint8(_view.indexUint({ _index: OFFSET_DEPTH, _bytes: 1 }));
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.
     function nonce(SnapAttestation _snapAtt) internal pure returns (uint32) {
-        bytes29 _view = unwrap(_snapAtt);
+        bytes29 _view = _snapAtt.unwrap();
         return uint32(_view.indexUint({ _index: OFFSET_NONCE, _bytes: 4 }));
     }
 
     /// @notice Returns a block number when attestation was created in Summit.
     function blockNumber(SnapAttestation _snapAtt) internal pure returns (uint40) {
-        bytes29 _view = unwrap(_snapAtt);
+        bytes29 _view = _snapAtt.unwrap();
         return uint40(_view.indexUint({ _index: OFFSET_BLOCK_NUMBER, _bytes: 5 }));
     }
 
     /// @notice Returns a block timestamp when attestation was created in Summit.
     /// @dev This is the timestamp according to the Synapse Chain.
     function timestamp(SnapAttestation _snapAtt) internal pure returns (uint40) {
-        bytes29 _view = unwrap(_snapAtt);
+        bytes29 _view = _snapAtt.unwrap();
         return uint40(_view.indexUint({ _index: OFFSET_TIMESTAMP, _bytes: 5 }));
     }
 }

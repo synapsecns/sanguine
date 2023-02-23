@@ -166,9 +166,9 @@ library StateLib {
         returns (bool)
     {
         return
-            root(_state) == _originState.root &&
-            blockNumber(_state) == _originState.blockNumber &&
-            timestamp(_state) == _originState.timestamp;
+            _state.root() == _originState.root &&
+            _state.blockNumber() == _originState.blockNumber &&
+            _state.timestamp() == _originState.timestamp;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -211,7 +211,7 @@ library StateLib {
     /// @notice Returns the hash of the State.
     /// @dev We are using the Merkle Root of a tree with two leafs (see below) as state hash.
     function hash(State _state) internal pure returns (bytes32) {
-        (bytes32 leftLeaf, bytes32 rightLeaf) = leafs(_state);
+        (bytes32 leftLeaf, bytes32 rightLeaf) = _state.leafs();
         // Final hash is the parent of these leafs
         return keccak256(bytes.concat(leftLeaf, rightLeaf));
     }
@@ -221,7 +221,7 @@ library StateLib {
     /// This enables proving that leftLeaf = (root, origin) was a part of the "Snapshot Merkle Tree",
     /// by combining `rightLeaf` with the remainder of the "Snapshot Merkle Proof".
     function leafs(State _state) internal pure returns (bytes32 leftLeaf, bytes32 rightLeaf) {
-        bytes29 _view = unwrap(_state);
+        bytes29 _view = _state.unwrap();
         // Left leaf is (root, origin)
         leftLeaf = _view.prefix({ _len: OFFSET_NONCE, newType: 0 }).keccak();
         // Right leaf is (metadata), or (nonce, blockNumber, timestamp)
@@ -234,32 +234,32 @@ library StateLib {
 
     /// @notice Returns a historical Merkle root from the Origin contract.
     function root(State _state) internal pure returns (bytes32) {
-        bytes29 _view = unwrap(_state);
+        bytes29 _view = _state.unwrap();
         return _view.index({ _index: OFFSET_ROOT, _bytes: 32 });
     }
 
     /// @notice Returns domain of chain where the Origin contract is deployed.
     function origin(State _state) internal pure returns (uint32) {
-        bytes29 _view = unwrap(_state);
+        bytes29 _view = _state.unwrap();
         return uint32(_view.indexUint({ _index: OFFSET_ORIGIN, _bytes: 4 }));
     }
 
     /// @notice Returns nonce of Origin contract at the time, when `root` was the Merkle root.
     function nonce(State _state) internal pure returns (uint32) {
-        bytes29 _view = unwrap(_state);
+        bytes29 _view = _state.unwrap();
         return uint32(_view.indexUint({ _index: OFFSET_NONCE, _bytes: 4 }));
     }
 
     /// @notice Returns a block number when `root` was saved in Origin.
     function blockNumber(State _state) internal pure returns (uint40) {
-        bytes29 _view = unwrap(_state);
+        bytes29 _view = _state.unwrap();
         return uint40(_view.indexUint({ _index: OFFSET_BLOCK_NUMBER, _bytes: 5 }));
     }
 
     /// @notice Returns a block timestamp when `root` was saved in Origin.
     /// @dev This is the timestamp according to the origin chain.
     function timestamp(State _state) internal pure returns (uint40) {
-        bytes29 _view = unwrap(_state);
+        bytes29 _view = _state.unwrap();
         return uint40(_view.indexUint({ _index: OFFSET_TIMESTAMP, _bytes: 5 }));
     }
 }
