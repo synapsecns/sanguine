@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { SnapAttestation, SnapAttestationLib } from "../libs/SnapAttestation.sol";
 import { Snapshot, SnapshotLib } from "../libs/Snapshot.sol";
 
 import { AgentRegistry } from "../system/AgentRegistry.sol";
@@ -19,6 +20,7 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
  * - Signer being allowed to sign the particular type of statement
  */
 abstract contract StatementHub is AgentRegistry {
+    using SnapAttestationLib for bytes;
     using SnapshotLib for bytes;
 
     /**
@@ -42,17 +44,45 @@ abstract contract StatementHub is AgentRegistry {
     }
 
     /**
+     * @dev Internal function to verify the signed "snapshot attestation" payload.
+     * Reverts if either of this is true:
+     *  - Attestation payload is not properly formatted.
+     *  - Attestation signer is not an active Notary.
+     * @param _attPayload       Raw payload with SnapshotAttestation data
+     * @param _attSignature     Notary signature for the attestation
+     * @return snapAttestation  Typed memory view over attestation payload
+     * @return domain           Domain where the signed Notary is active
+     * @return notary           Notary that signed the snapshot
+     */
+    function _verifyAttestation(bytes memory _attPayload, bytes memory _attSignature)
+        internal
+        view
+        returns (
+            SnapAttestation snapAttestation,
+            uint32 domain,
+            address notary
+        )
+    {
+        // This will revert if payload is not a formatted attestation
+        snapAttestation = _attPayload.castToSnapAttestation();
+        // This will revert if signer is not an active agent
+        (domain, notary) = _recoverAgent(snapAttestation.hash(), _attSignature);
+        // SnapAttestation signer needs to be a Notary, not a Guard
+        require(domain != 0, "Signer is not a Notary");
+    }
+
+    /**
      * @dev Internal function to verify the signed snapshot payload.
      * Reverts if either of this is true:
      *  - Snapshot payload is not properly formatted.
      *  - Snapshot signer is not an active Agent.
-     * @param _payload      Raw payload with snapshot data
-     * @param _signature    Agent signature for the snapshot
-     * @return snapshot     Typed memory view over snapshot payload
-     * @return domain       Domain where the signed Agent is active
-     * @return agent        Agent that signed the snapshot
+     * @param _snapPayload      Raw payload with snapshot data
+     * @param _snapSignature    Agent signature for the snapshot
+     * @return snapshot         Typed memory view over snapshot payload
+     * @return domain           Domain where the signed Agent is active
+     * @return agent            Agent that signed the snapshot
      */
-    function _verifySnapshot(bytes memory _payload, bytes memory _signature)
+    function _verifySnapshot(bytes memory _snapPayload, bytes memory _snapSignature)
         internal
         view
         returns (
@@ -62,9 +92,28 @@ abstract contract StatementHub is AgentRegistry {
         )
     {
         // This will revert if payload is not a formatted snapshot
-        snapshot = _payload.castToSnapshot();
+        snapshot = _snapPayload.castToSnapshot();
         // This will revert if signer is not an active agent
-        (domain, agent) = _recoverAgent(snapshot.hash(), _signature);
+        (domain, agent) = _recoverAgent(snapshot.hash(), _snapSignature);
         // Guards and Notaries for all domains could sign Snapshots, no further checks are needed.
+    }
+
+    /**
+     * @dev Internal function to verify that snapshot root matches the root from SnapAttestation.
+     * Reverts if either of this is true:
+     *  - Snapshot payload is not properly formatted.
+     *  - Attestation root is not equal to root derived from the snapshot.
+     * @param _snapAtt      Typed memory view over SnapAttestation
+     * @param _snapPayload  Raw payload with snapshot data
+     * @return snapshot     Typed memory view over snapshot payload
+     */
+    function _verifySnapshotRoot(SnapAttestation _snapAtt, bytes memory _snapPayload)
+        internal
+        pure
+        returns (Snapshot snapshot)
+    {
+        // This will revert if payload is not a formatted snapshot
+        snapshot = _snapPayload.castToSnapshot();
+        require(_snapAtt.root() == snapshot.root(), "Incorrect snapshot root");
     }
 }
