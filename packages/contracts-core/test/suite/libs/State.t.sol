@@ -52,7 +52,14 @@ contract StateLibraryTest is SynapseLibraryTest {
         // Test creating a leaf
         bytes32 leftChild = keccak256(abi.encodePacked(rs.root, rs.origin));
         bytes32 rightChild = keccak256(abi.encodePacked(rs.nonce, rs.blockNumber, rs.timestamp));
-        assertEq(libHarness.leaf(payload), keccak256(bytes.concat(leftChild, rightChild)), "!leaf");
+        (bytes32 leftLeaf, bytes32 rightLeaf) = libHarness.leafs(payload);
+        assertEq(leftLeaf, leftChild, "!leafs: left");
+        assertEq(rightLeaf, rightChild, "!leafs: right");
+        assertEq(
+            libHarness.hash(payload),
+            keccak256(abi.encodePacked(leftChild, rightChild)),
+            "!hash"
+        );
     }
 
     function test_originState_parity(RawState memory rs) public {

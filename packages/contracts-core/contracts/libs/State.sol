@@ -10,7 +10,8 @@ type State is bytes29;
 using {
     StateLib.unwrap,
     StateLib.equalToOrigin,
-    StateLib.leaf,
+    StateLib.hash,
+    StateLib.leafs,
     StateLib.toSummitState,
     StateLib.root,
     StateLib.origin,
@@ -207,18 +208,24 @@ library StateLib {
     ▏*║                            STATE HASHING                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @notice Returns a "state leaf": a unique hash for every unique state, that is
-    /// going to be used as a leaf in the "Snapshot Merkle Tree".
-    /// @dev We use the hashing technique similar to a Merkle tree here and return hash for a node
-    /// having two children: (root, origin) and (nonce, blockNumber, timestamp).
-    function leaf(State _state) internal pure returns (bytes32) {
+    /// @notice Returns the hash of the State.
+    /// @dev We are using the Merkle Root of a tree with two leafs (see below) as state hash.
+    function hash(State _state) internal pure returns (bytes32) {
+        (bytes32 leftLeaf, bytes32 rightLeaf) = leafs(_state);
+        // Final hash is the parent of these leafs
+        return keccak256(bytes.concat(leftLeaf, rightLeaf));
+    }
+
+    /// @notice Returns "sub-leafs" of the State. A node having these "sub leafs" as children
+    /// is going to be used as a "state leaf" in the "Snapshot Merkle Tree".
+    /// This enables proving that leftLeaf = (root, origin) was a part of the "Snapshot Merkle Tree",
+    /// by combining `rightLeaf` with the remainder of the "Snapshot Merkle Proof".
+    function leafs(State _state) internal pure returns (bytes32 leftLeaf, bytes32 rightLeaf) {
         bytes29 _view = unwrap(_state);
-        // Derive hash for (root, origin) bytestring
-        bytes32 rootOriginHash = _view.prefix({ _len: OFFSET_NONCE, newType: 0 }).keccak();
-        // Derive hash for (nonce, blockNumber, timestamp) bytestring
-        bytes32 metadataHash = _view.sliceFrom({ _index: OFFSET_NONCE, newType: 0 }).keccak();
-        // Final hash is two hashes concatenated, and then hashed
-        return keccak256(bytes.concat(rootOriginHash, metadataHash));
+        // Left leaf is (root, origin)
+        leftLeaf = _view.prefix({ _len: OFFSET_NONCE, newType: 0 }).keccak();
+        // Right leaf is (metadata), or (nonce, blockNumber, timestamp)
+        rightLeaf = _view.sliceFrom({ _index: OFFSET_NONCE, newType: 0 }).keccak();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

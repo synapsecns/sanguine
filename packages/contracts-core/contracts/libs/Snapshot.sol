@@ -22,10 +22,10 @@ using {
 /// so we are storing a list of references to already stored states.
 struct SummitSnapshot {
     // TODO: compress this - indexes might as well be uint32/uint64
-    uint256[] stateRefs;
+    uint256[] statePtrs;
 }
 /// @dev Attach library functions to SummitSnapshot
-using { SnapshotLib.getStatesAmount, SnapshotLib.getStateRef } for SummitSnapshot global;
+using { SnapshotLib.getStatesAmount, SnapshotLib.getStatePtr } for SummitSnapshot global;
 
 library SnapshotLib {
     using ByteString for bytes;
@@ -117,25 +117,25 @@ library SnapshotLib {
     ▏*║                           SUMMIT SNAPSHOT                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function summitSnapshot(uint256[] memory _stateRefs)
+    function summitSnapshot(uint256[] memory _statePtrs)
         internal
         pure
         returns (SummitSnapshot memory snapshot)
     {
-        snapshot.stateRefs = _stateRefs;
+        snapshot.statePtrs = _statePtrs;
     }
 
     function getStatesAmount(SummitSnapshot memory _snapshot) internal pure returns (uint256) {
-        return _snapshot.stateRefs.length;
+        return _snapshot.statePtrs.length;
     }
 
-    function getStateRef(SummitSnapshot memory _snapshot, uint256 _index)
+    function getStatePtr(SummitSnapshot memory _snapshot, uint256 _index)
         internal
         pure
         returns (uint256)
     {
         require(_index < getStatesAmount(_snapshot), "Out of range");
-        return _snapshot.stateRefs[_index];
+        return _snapshot.statePtrs[_index];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -175,14 +175,14 @@ library SnapshotLib {
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
     function root(Snapshot _snapshot) internal pure returns (bytes32) {
         uint256 _statesAmount = statesAmount(_snapshot);
-        // Get the leaf values for all states from the snapshot
-        bytes32[] memory leafs = new bytes32[](_statesAmount);
+        bytes32[] memory hashes = new bytes32[](_statesAmount);
         for (uint256 i = 0; i < _statesAmount; ++i) {
-            leafs[i] = state(_snapshot, i).leaf();
+            // Each State has two sub-leafs, their hash is used as "leaf" in "Snapshot Merkle Tree"
+            hashes[i] = _snapshot.state(i).hash();
         }
-        MerkleList.calculateRoot(leafs);
-        // Merkle Root for the list is leafs[0]
-        return leafs[0];
+        MerkleList.calculateRoot(hashes);
+        // hashes[0] now stores the value for the Merkle Root of the list
+        return hashes[0];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -72,13 +72,13 @@ abstract contract SnapshotHub {
         // Snapshot Signer is a Notary: construct an Attestation Merkle Tree,
         // while checking that the states were previously saved.
         uint256 statesAmount = _snapshot.statesAmount();
-        uint256[] memory stateRefs = new uint256[](statesAmount);
+        uint256[] memory statePtrs = new uint256[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
-            stateRefs[i] = _stateRef(_snapshot.state(i));
-            require(stateRefs[i] != 0, "State doesn't exist");
+            statePtrs[i] = _statePtr(_snapshot.state(i));
+            require(statePtrs[i] != 0, "State doesn't exist");
         }
         // Save Notary snapshot for later retrieval
-        _saveSnapshot(stateRefs);
+        _saveSnapshot(statePtrs);
         // Derive attestation merkle root and save it for a Notary attestation.
         _saveAttestation(_snapshot.root(), _notary);
     }
@@ -91,29 +91,29 @@ abstract contract SnapshotHub {
     function _saveAttestation(bytes32 _root, address _notary) internal {}
 
     /// @dev Saves the list of states that Notary chosen for their snapshot
-    function _saveSnapshot(uint256[] memory stateRefs) internal {
-        SummitSnapshot memory snapshot = SnapshotLib.summitSnapshot(stateRefs);
+    function _saveSnapshot(uint256[] memory statePtrs) internal {
+        SummitSnapshot memory snapshot = SnapshotLib.summitSnapshot(statePtrs);
         notarySnapshots.push(snapshot);
     }
 
     /// @dev Saves the state signed by a Guard.
-    function _saveState(State _state, address _guard) internal returns (uint256 stateRef) {
+    function _saveState(State _state, address _guard) internal returns (uint256 statePtr) {
         uint32 origin = _state.origin();
         // Check that Guard hasn't submitted a fresher State before
         require(_state.nonce() > _latestState(origin, _guard).nonce, "Outdated nonce");
-        bytes32 leaf = _state.leaf();
-        stateRef = leafPtr[origin][leaf];
+        bytes32 stateHash = _state.hash();
+        statePtr = leafPtr[origin][stateHash];
         // Save state only if it wasn't previously submitted
-        if (stateRef == 0) {
+        if (statePtr == 0) {
             // Extract data that needs to be saved
             SummitState memory state = _state.toSummitState();
             guardStates.push(state);
             // State is stored at (length - 1), but we are tracking "index PLUS 1" as "pointer"
-            stateRef = guardStates.length;
-            leafPtr[origin][leaf] = stateRef;
+            statePtr = guardStates.length;
+            leafPtr[origin][stateHash] = statePtr;
         }
         // Update latest guard state for origin
-        latestStatePtr[origin][_guard] = stateRef;
+        latestStatePtr[origin][_guard] = statePtr;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -124,8 +124,8 @@ abstract contract SnapshotHub {
     function _isValidAttestation(SnapAttestation _snapAtt) internal view returns (bool) {}
 
     /// @dev Returns the pointer for a matching Guard State, if it exists.
-    function _stateRef(State _state) internal view returns (uint256) {
-        return leafPtr[_state.origin()][_state.leaf()];
+    function _statePtr(State _state) internal view returns (uint256) {
+        return leafPtr[_state.origin()][_state.hash()];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
