@@ -81,7 +81,7 @@ indexer:
     - name: wait-for-omnirpc
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for mysql..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: scribe-omnirpc
@@ -105,7 +105,7 @@ indexer:
     - name: create-database-scribe
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do 'echo waiting for db'; sleep 5; done" ]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: scribe-mysql
@@ -140,7 +140,7 @@ server:
     - name: wait-for-omnirpc
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for mysql..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: scribe-omnirpc
@@ -162,7 +162,7 @@ server:
     - name: create-database-scribe
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do 'echo waiting for db'; sleep 5; done" ]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do 'echo waiting for db'; sleep 5; done"]
       env:
         - name: POD_NAME
           value: scribe-mysql
