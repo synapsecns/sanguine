@@ -20,8 +20,13 @@ abstract contract SnapshotHub {
     // (origin => (stateLeaf => {state index in guardStates PLUS 1}))
     mapping(uint32 => mapping(bytes32 => uint256)) private leafPtr;
 
+    /// @dev Pointer for the latest Guard State of a given origin
+    /// with ZERO as a sentinel value for "no states submitted yet".
+    // (origin => (guard => {latest state index in guardStates PLUS 1}))
+    mapping(uint32 => mapping(address => uint256)) private latestStatePtr;
+
     /// @dev gap for upgrade safety
-    uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
@@ -64,16 +69,21 @@ abstract contract SnapshotHub {
     /// @dev Saves the state signed by a Guard.
     function _saveState(State _state, address _guard) internal returns (uint256 stateRef) {
         uint32 origin = _state.origin();
+        // Check that Guard hasn't submitted a fresher State before
+        require(_state.nonce() > _latestState(origin, _guard).nonce, "Outdated nonce");
         bytes32 leaf = _state.leaf();
         stateRef = leafPtr[origin][leaf];
-        // Save nothing and return pointer to existing state instead of saving a duplicate
-        if (stateRef != 0) return stateRef;
-        // Extract data that needs to be saved
-        SummitState memory state = _state.toSummitState();
-        guardStates.push(state);
-        // State is stored at (length - 1), but we are tracking "index PLUS 1" as "pointer"
-        stateRef = guardStates.length;
-        leafPtr[origin][leaf] = stateRef;
+        // Save state only if it wasn't previously submitted
+        if (stateRef == 0) {
+            // Extract data that needs to be saved
+            SummitState memory state = _state.toSummitState();
+            guardStates.push(state);
+            // State is stored at (length - 1), but we are tracking "index PLUS 1" as "pointer"
+            stateRef = guardStates.length;
+            leafPtr[origin][leaf] = stateRef;
+        }
+        // Update latest guard state for origin
+        latestStatePtr[origin][_guard] = stateRef;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -93,5 +103,13 @@ abstract contract SnapshotHub {
         internal
         view
         returns (SummitState memory state)
-    {}
+    {
+        // Get value for "index in guardStates PLUS 1"
+        uint256 latestPtr = latestStatePtr[_origin][_guard];
+        // Check if the Guard has submitted at least one State for origin
+        if (latestPtr != 0) {
+            state = guardStates[latestPtr - 1];
+        }
+        // An empty struct is returned if the Guard hasn't submitted a single State for origin yet.
+    }
 }
