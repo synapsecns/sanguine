@@ -55,7 +55,7 @@ abstract contract SnapshotHub {
      * @return stateData    Raw payload with guard latest state for origin
      */
     function getLatestState(uint32 _origin, address _guard)
-        public
+        external
         view
         returns (bytes memory stateData)
     {
@@ -202,6 +202,8 @@ abstract contract SnapshotHub {
     ▏*║                          LATEST STATE VIEWS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @dev Returns the latest state submitted by the Guard for the origin.
+    /// Will return an empty struct, if a Guard hasn't submitted a single origin State yet.
     function _latestState(uint32 _origin, address _guard)
         internal
         view
