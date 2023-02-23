@@ -153,7 +153,7 @@ var ExecutorRunCommand = &cli.Command{
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
 					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID))
 					if err != nil {
-						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID))
+						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.BaseOmnirpcURL, client.ChainID))
 					}
 
 					scribeClients[client.ChainID] = append(scribeClients[client.ChainID], backendClient)
