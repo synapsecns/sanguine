@@ -15,6 +15,7 @@ import { State, StateLib, SummitState } from "../libs/State.sol";
 abstract contract SnapshotHub {
     using SnapAttestationLib for bytes;
     using SnapshotLib for uint256[];
+    using StateLib for bytes;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
@@ -61,6 +62,38 @@ abstract contract SnapshotHub {
         SummitState memory latestState = _latestState(_origin, _guard);
         if (latestState.nonce == 0) return bytes("");
         return latestState.formatSummitState();
+    }
+
+    /**
+     * @notice Returns Notary snapshot that was used for creating an attestation with a given nonce.
+     * @dev Reverts if attestation with given nonce hasn't been created yet.
+     * @param _nonce            Nonce for the attestation
+     * @return snapshotPayload  Raw payload with Notary snapshot used for creating the attestation
+     */
+    function getSnapshot(uint256 _nonce) external view returns (bytes memory snapshotPayload) {
+        require(_nonce < attestations.length, "Nonce out of range");
+        return _restoreSnapshot(notarySnapshots[_nonce]);
+    }
+
+    /**
+     * @notice Returns Notary snapshot that was used for creating a given attestation.
+     * @dev Reverts if either of this is true:
+     *  - Attestation payload is not properly formatted.
+     *  - Attestation is invalid (doesn't have a matching Notary snapshot).
+     * @param _snapAttPayload   Raw payload with attestation data
+     * @return snapshotPayload  Raw payload with Notary snapshot used for creating the attestation
+     */
+    function getSnapshot(bytes memory _snapAttPayload)
+        external
+        view
+        returns (bytes memory snapshotPayload)
+    {
+        // This will revert if payload is not a formatted attestation
+        SnapAttestation attestation = _snapAttPayload.castToSnapAttestation();
+        require(_isValidAttestation(attestation), "Invalid attestation");
+        // Attestation is valid => attestations[nonce] exists
+        // notarySnapshots.length == attestations.length => notarySnapshots[nonce] exists
+        return _restoreSnapshot(notarySnapshots[attestation.nonce()]);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -138,6 +171,26 @@ abstract contract SnapshotHub {
         if (nonce >= attestations.length) return false;
         // Check if Attestation matches the historical one
         return _snapAtt.equalToSummit(attestations[nonce]);
+    }
+
+    /// @dev Restores Snapshot payload from a list of state pointers used for the snapshot.
+    function _restoreSnapshot(SummitSnapshot memory _snapshot)
+        internal
+        view
+        returns (bytes memory)
+    {
+        uint256 statesAmount = _snapshot.getStatesAmount();
+        State[] memory states = new State[](statesAmount);
+        for (uint256 i = 0; i < statesAmount; ++i) {
+            // Get value for "index in guardStates PLUS 1"
+            uint256 statePtr = _snapshot.getStatePtr(i);
+            // We are never saving zero values in _acceptNotarySnapshot, so this holds
+            assert(statePtr != 0);
+            SummitState memory state = guardStates[statePtr - 1];
+            // Get the state that Notary used for the snapshot
+            states[i] = state.formatSummitState().castToState();
+        }
+        return SnapshotLib.formatSnapshot(states);
     }
 
     /// @dev Returns the pointer for a matching Guard State, if it exists.
