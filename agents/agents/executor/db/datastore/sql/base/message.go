@@ -3,7 +3,6 @@ package base
 import (
 	"context"
 	"fmt"
-	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"gorm.io/gorm/clause"
@@ -167,8 +166,6 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, 
 	return lastBlockNumber, nil
 }
 
-var logger = log.Logger("exec-db")
-
 // GetExecutableMessages gets executable messages from the database.
 func (s Store) GetExecutableMessages(ctx context.Context, messageMask types.DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error) {
 	if page < 1 {
@@ -191,15 +188,7 @@ func (s Store) GetExecutableMessages(ctx context.Context, messageMask types.DBMe
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get messages: %w", dbTx.Error)
 	}
-	if len(messages) != 0 {
-		logger.Errorf("got %d messages", len(messages))
-		logger.Errorf("db rows affected is %d", dbTx.RowsAffected)
-	}
-	//if dbTx.RowsAffected == 0 {
-	//	//nolint:nilnil
-	//	return nil, nil
-	//}
-	if len(messages) == 0 {
+	if dbTx.RowsAffected == 0 {
 		//nolint:nilnil
 		return nil, nil
 	}
@@ -208,7 +197,6 @@ func (s Store) GetExecutableMessages(ctx context.Context, messageMask types.DBMe
 	for i, message := range messages {
 		decodedMessage, err := agentsTypes.DecodeMessage(message.Message)
 		if err != nil {
-			logger.Errorf("failed to decode message: %s", err.Error())
 			return nil, fmt.Errorf("failed to decode message: %w", err)
 		}
 		decodedMessages[i] = decodedMessage

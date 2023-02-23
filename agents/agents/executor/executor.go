@@ -85,7 +85,6 @@ const logChanSize = 1000
 //
 //nolint:cyclop
 func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
-	logger.Errorf("starting executor init")
 	chainExecutors := make(map[uint32]*chainExecutor)
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -116,7 +115,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		config.SetMinimumTimeInterval = 2
 	}
 
-	logger.Errorf("starting chain loop")
 	for _, chain := range config.Chains {
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
@@ -169,8 +167,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			chainExecutors[chain.ChainID].merkleTrees[destinationChain.ChainID] = tree
 		}
 	}
-
-	logger.Errorf("done with executor init")
 
 	return &Executor{
 		config:         config,
@@ -227,10 +223,8 @@ func (e Executor) Stop(chainID uint32) {
 // Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
 // TODO: Use multi-call to batch execute.
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
-	logger.Errorf("Starting the EXECUTE function")
 	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
-		logger.Errorf("could not verify optimistic period: %v", err)
 		return false, fmt.Errorf("could not verify optimistic period: %w", err)
 	}
 
@@ -247,7 +241,6 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].NumOfItems()
 	itemCountNonce, err := e.executorDB.GetEarliestAttestationsNonceInNonceRange(ctx, attestationMask, *nonce, maximumNonce)
 	if err != nil {
-		logger.Errorf("could not get earliest attestation nonce: %v", err)
 		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
 	}
 
@@ -258,13 +251,11 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *itemCountNonce)
 
 	if err != nil {
-		logger.Errorf("could not get merkle proof: %v", err)
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
 	verified, err := e.verifyMessageMerkleProof(message)
 	if err != nil {
-		logger.Errorf("could not verify merkle proof: %v", err)
 		return false, fmt.Errorf("could not verify merkle proof: %w", err)
 	}
 
@@ -414,7 +405,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	}
 
 	fromBlock := strconv.FormatUint(lastStoredBlock, 10)
-	logger.Errorf("streaming logs on chain %d from block %s for the contract type of %d", chain.ChainID, fromBlock, contract)
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
@@ -424,7 +414,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 		ToBlock:   "latest",
 	})
 	if err != nil {
-		logger.Errorf("could not stream logs: %s", err)
 		return fmt.Errorf("could not stream logs: %w", err)
 	}
 
@@ -558,7 +547,6 @@ func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
 		case <-e.chainExecutors[chainID].stopListenChan:
 			return nil
 		case log := <-e.chainExecutors[chainID].logChan:
-			logger.Errorf("got a log on chainID %d", chainID)
 			if log == nil {
 				return fmt.Errorf("log is nil")
 			}
@@ -578,12 +566,10 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Errorf("context canceled: %s", ctx.Err())
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(time.Duration(e.config.ExecuteInterval) * time.Second):
 			page := 1
 			currentTime := uint64(time.Now().Unix())
-			logger.Errorf("currentTime: %d", currentTime)
 
 			messageMask := execTypes.DBMessage{
 				ChainID: &chainID,
@@ -592,7 +578,6 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 			for {
 				messages, err := e.executorDB.GetExecutableMessages(ctx, messageMask, currentTime, page)
 				if err != nil {
-					logger.Errorf("could not get executable messages: %s", err)
 					return fmt.Errorf("could not get executable messages: %w", err)
 				}
 
@@ -600,14 +585,11 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 					break
 				}
 
-				logger.Errorf("Got an executable message on chainID %d", chainID)
-
 				for _, message := range messages {
 					executed, err := e.Execute(ctx, message)
 					if err != nil {
-						logger.Errorf("could not execute message: %s", err)
+						logger.Errorf("could not execute message, retrying: %s", err)
 						continue
-						//return fmt.Errorf("could not execute message: %w", err)
 					}
 
 					if !executed {
@@ -623,7 +605,6 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 					}
 					err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
 					if err != nil {
-						logger.Errorf("could not execute message: %s", err)
 						return fmt.Errorf("could not execute message: %w", err)
 					}
 				}

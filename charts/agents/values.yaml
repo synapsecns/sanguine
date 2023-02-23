@@ -80,7 +80,7 @@ notary:
     - name: wait-for-omnirpc
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;' ]
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: agents-omnirpc
@@ -128,7 +128,7 @@ guard:
     - name: wait-for-omnirpc
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;' ]
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: agents-omnirpc
@@ -269,9 +269,9 @@ executor_embedded:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
-#  env:
-#    - name: GOLOG_LOG_FMT
-#      value: "json"
+  env:
+    - name: GOLOG_LOG_FMT
+      value: "json"
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -399,7 +399,7 @@ notary_files:
       origin_address: ''
       attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
       destination_address: ''
-      rpc_url: "https://optimism-rpc.gateway.pokt.network"
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/10"
       start_height: 73537448
     destination_domain:
       domain_id: 43114
@@ -443,7 +443,7 @@ guard_files:
       origin_address: ''
       attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
       destination_address: ''
-      rpc_url: "https://optimism-rpc.gateway.pokt.network"
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/10"
       start_height: 73537407
     destination_domains:
       destination_client:
@@ -488,19 +488,78 @@ executor_remote_existing_files:
   executor_signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   executor_config.yaml: |-
-    base_omnirpc_url: "http://agents-omnirpc/confirmations"
+    base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
+    execute_interval: 10
+    chains:
+      - chain_id: 137
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 10
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 43114
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
     unbonded_signer:
       type: "File"
-      file: "/config/executor_signer.txt"
+      file: "/config/notary_signer.txt"
 
 executor_remote_fresh_files:
   executor_signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   executor_config.yaml: |-
-    base_omnirpc_url: "http://agents-omnirpc/confirmations"
+    base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
+    execute_interval: 10
+    chains:
+      - chain_id: 137
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 10
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 43114
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
     unbonded_signer:
       type: "File"
-      file: "/config/executor_signer.txt"
+      file: "/config/notary_signer.txt"
+    embedded_scribe_config:
+      chains:
+        - chain_id: 137
+          required_confirmations: 50
+          contract_sub_chunk_size: 1000
+          contract_chunk_size: 1000
+          store_concurrency: 1
+          store_concurrency_threshold: 500
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 39145588
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 39145588
+        - chain_id: 10
+          required_confirmations: 50
+          contract_sub_chunk_size: 500
+          contract_chunk_size: 500
+          store_concurrency: 1
+          store_concurrency_threshold: 500
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 73536295
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 73537265
+        - chain_id: 43114
+          required_confirmations: 50
+          contract_sub_chunk_size: 2000
+          contract_chunk_size: 10000
+          store_concurrency: 1
+          store_concurrency_threshold: 500
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 26091227
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 26091231
+      rpc_url: "https://rpc.interoperability.institute/confirmations"
+      refresh_rate: 0
 
 executor_embedded_files:
   executor_signer.txt: |-
