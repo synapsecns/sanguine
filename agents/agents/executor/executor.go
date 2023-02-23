@@ -594,7 +594,9 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 				for _, message := range messages {
 					executed, err := e.Execute(ctx, message)
 					if err != nil {
-						return fmt.Errorf("could not execute message: %w", err)
+						logger.Errorf("could not execute message: %s", err)
+						continue
+						//return fmt.Errorf("could not execute message: %w", err)
 					}
 
 					if !executed {
