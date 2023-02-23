@@ -108,7 +108,7 @@ func (a AttestationGuardDestinationSubmitter) update(ctx context.Context) error 
 		return fmt.Errorf("could not get SubmittedAt on destination to check if root was already submitted: %w", err)
 	}
 
-	if submittedAtTime != nil && submittedAtTime.Unix() != int64(0) {
+	if submittedAtTime == nil || submittedAtTime.Unix() == int64(0) {
 		// Only submit if we already submitted
 		err = a.destinationDomain.Destination().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToSubmitToDestination.SignedAttestation())
 		if err != nil {
