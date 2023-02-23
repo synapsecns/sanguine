@@ -33,6 +33,6 @@ dependencies:
     repository: "file://../omnirpc/"
     condition: omnirpc.enabled
   - name: scribe
-    version: "0.2.2"
+    version: "0.2.3"
     repository: "file://../scribe/"
     condition: scribe.enabled
