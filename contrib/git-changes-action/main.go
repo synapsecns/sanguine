@@ -70,6 +70,7 @@ func main() {
 }
 
 // getIncludeDeps gets the include deps setting.
+// If it is not set, it defaults to false.
 func getIncludeDeps() (includeDeps bool) {
 	rawIncludeDeps := githubactions.GetInput("include_deps")
 
@@ -80,6 +81,8 @@ func getIncludeDeps() (includeDeps bool) {
 	return
 }
 
+// getTimeout gets the timeout setting. If it is not set, it defaults to 1 minute.
+// Errors if the timeout is not a valid duration.
 func getTimeout() (timeout time.Duration, err error) {
 	rawTimeout := githubactions.GetInput("timeout")
 	if rawTimeout == "" {
