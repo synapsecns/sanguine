@@ -209,6 +209,7 @@ func (e Executor) SetMinimumTime(ctx context.Context) error {
 		chain := chain
 
 		for _, destinationChain := range e.config.Chains {
+			destinationChain := destinationChain
 			if destinationChain.ChainID == chain.ChainID {
 				continue
 			}

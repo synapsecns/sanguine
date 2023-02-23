@@ -199,6 +199,7 @@ func (e Executor) Run(ctx context.Context) error {
 		})
 
 		for _, destinationChain := range e.config.Chains {
+			destinationChain := destinationChain
 			if destinationChain.ChainID == chain.ChainID {
 				continue
 			}

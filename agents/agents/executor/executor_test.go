@@ -1555,6 +1555,17 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation, 1, 10)
 	e.Nil(err)
 
+	// Store a dud attestation for nonce 1 on a different destination.
+	attestKey = types.AttestationKey{
+		Origin:      originDomain,
+		Destination: destinationDomain + 1,
+		Nonce:       1,
+	}
+	root = common.BigToHash(big.NewInt(gofakeit.Int64()))
+	attestation = types.NewAttestation(attestKey.GetRawKey(), root)
+	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation, 1, 0)
+	e.Nil(err)
+
 	waitChan := make(chan bool, 1)
 
 	e.Eventually(func() bool {
