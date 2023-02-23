@@ -88,6 +88,21 @@ contract StateLibraryTest is SynapseLibraryTest {
         );
     }
 
+    function test_summitState_parity(RawState memory rs) public {
+        // State -> SummitState -> State trip test
+        vm.roll(rs.blockNumber);
+        vm.warp(rs.timestamp);
+        bytes memory payload = libHarness.formatState(
+            rs.root,
+            rs.origin,
+            rs.nonce,
+            rs.blockNumber,
+            rs.timestamp
+        );
+        SummitState memory state = libHarness.toSummitState(payload);
+        assertEq(libHarness.formatState(rs.origin, state), payload, "!summitState");
+    }
+
     function test_isState(uint8 length) public {
         bytes memory payload = new bytes(length);
         checkCastToState({ payload: payload, isState: length == STATE_LENGTH });

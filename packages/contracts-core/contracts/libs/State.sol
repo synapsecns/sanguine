@@ -11,6 +11,7 @@ using {
     StateLib.unwrap,
     StateLib.equalToOrigin,
     StateLib.leaf,
+    StateLib.toSummitState,
     StateLib.root,
     StateLib.origin,
     StateLib.nonce,
@@ -24,6 +25,15 @@ struct OriginState {
     uint40 blockNumber;
     uint40 timestamp;
     // 176 bits left for tight packing
+}
+
+/// @dev Struct representing State, as it is stored in the Summit contract.
+struct SummitState {
+    bytes32 root;
+    uint32 nonce;
+    uint40 blockNumber;
+    uint40 timestamp;
+    // 144 bits left for tight packing
 }
 
 library StateLib {
@@ -153,6 +163,39 @@ library StateLib {
             root(_state) == _originState.root &&
             blockNumber(_state) == _originState.blockNumber &&
             timestamp(_state) == _originState.timestamp;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             SUMMIT STATE                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Returns a formatted State payload with provided fields.
+     * @param _origin       Domain of Origin's chain
+     * @param _summitState  State struct as it is stored in Summit contract
+     * @return Formatted state
+     */
+    function formatState(uint32 _origin, SummitState memory _summitState)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return
+            formatState({
+                _root: _summitState.root,
+                _origin: _origin,
+                _nonce: _summitState.nonce,
+                _blockNumber: _summitState.blockNumber,
+                _timestamp: _summitState.timestamp
+            });
+    }
+
+    /// @notice Returns a struct to save in the Summit contract.
+    function toSummitState(State _state) internal pure returns (SummitState memory state) {
+        state.root = _state.root();
+        state.nonce = _state.nonce();
+        state.blockNumber = _state.blockNumber();
+        state.timestamp = _state.timestamp();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

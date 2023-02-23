@@ -73,6 +73,22 @@ contract StateHarness {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             SUMMIT STATE                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function formatState(uint32 _origin, SummitState memory _summitState)
+        public
+        pure
+        returns (bytes memory)
+    {
+        return StateLib.formatState(_origin, _summitState);
+    }
+
+    function toSummitState(bytes memory _payload) public pure returns (SummitState memory state) {
+        return _payload.castToState().toSummitState();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           STATE FORMATTERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
