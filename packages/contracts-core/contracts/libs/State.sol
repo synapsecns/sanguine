@@ -30,10 +30,11 @@ struct OriginState {
 /// @dev Struct representing State, as it is stored in the Summit contract.
 struct SummitState {
     bytes32 root;
+    uint32 origin;
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
-    // 144 bits left for tight packing
+    // 112 bits left for tight packing
 }
 
 library StateLib {
@@ -171,19 +172,14 @@ library StateLib {
 
     /**
      * @notice Returns a formatted State payload with provided fields.
-     * @param _origin       Domain of Origin's chain
      * @param _summitState  State struct as it is stored in Summit contract
      * @return Formatted state
      */
-    function formatState(uint32 _origin, SummitState memory _summitState)
-        internal
-        pure
-        returns (bytes memory)
-    {
+    function formatState(SummitState memory _summitState) internal pure returns (bytes memory) {
         return
             formatState({
                 _root: _summitState.root,
-                _origin: _origin,
+                _origin: _summitState.origin,
                 _nonce: _summitState.nonce,
                 _blockNumber: _summitState.blockNumber,
                 _timestamp: _summitState.timestamp
@@ -193,6 +189,7 @@ library StateLib {
     /// @notice Returns a struct to save in the Summit contract.
     function toSummitState(State _state) internal pure returns (SummitState memory state) {
         state.root = _state.root();
+        state.origin = _state.origin();
         state.nonce = _state.nonce();
         state.blockNumber = _state.blockNumber();
         state.timestamp = _state.timestamp();

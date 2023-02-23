@@ -45,7 +45,7 @@ abstract contract SnapshotHub {
     {
         SummitState memory latestState = _latestState(_origin, _guard);
         if (latestState.nonce == 0) return bytes("");
-        return StateLib.formatState(_origin, latestState);
+        return StateLib.formatState(latestState);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

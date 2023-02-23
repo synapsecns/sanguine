@@ -100,7 +100,7 @@ contract StateLibraryTest is SynapseLibraryTest {
             rs.timestamp
         );
         SummitState memory state = libHarness.toSummitState(payload);
-        assertEq(libHarness.formatState(rs.origin, state), payload, "!summitState");
+        assertEq(libHarness.formatState(state), payload, "!summitState");
     }
 
     function test_isState(uint8 length) public {
