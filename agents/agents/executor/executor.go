@@ -619,6 +619,7 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 //
 //nolint:gocognit,cyclop
 func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
+	// TODO: Make for origin-dest, not just origin
 	for {
 		select {
 		case <-ctx.Done():
