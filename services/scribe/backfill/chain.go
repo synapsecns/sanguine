@@ -118,7 +118,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 		contractBackfiller := c.contractBackfillers[i]
 		startHeight := c.startHeights[contractBackfiller.address]
 
-		LogEvent(ErrorLevel, "Starting livefilling contracts", LogData{"cid": c.chainID})
+		LogEvent(InfoLevel, "Starting livefilling contracts", LogData{"cid": c.chainID})
 		backfillGroup.Go(func() error {
 			timeout = time.Duration(0)
 
@@ -146,7 +146,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 					err = contractBackfiller.Backfill(backfillCtx, startHeight, *latestBlock)
 					if err != nil {
 						timeout = b.Duration()
-						LogEvent(ErrorLevel, "Could not backfill contract, retrying", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
+						LogEvent(WarnLevel, "Could not backfill contract, retrying", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
 
 						continue
 					}
@@ -155,7 +155,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 						return nil
 					}
 					timeout = time.Duration(c.refreshRate) * time.Second
-					LogEvent(ErrorLevel, "Continuing to livefill contract", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt()})
+					LogEvent(InfoLevel, "Continuing to livefill contract", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt()})
 				}
 			}
 		})
@@ -166,7 +166,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 
 		return fmt.Errorf("could not backfill: %w", err)
 	}
-	LogEvent(ErrorLevel, "Finished backfilling blocktimes and contracts", LogData{"cid": c.chainID, "t": time.Since(startTime).Hours()})
+	LogEvent(WarnLevel, "Finished backfilling blocktimes and contracts", LogData{"cid": c.chainID, "t": time.Since(startTime).Hours()})
 
 	return nil
 }
@@ -192,7 +192,7 @@ func (c *ChainBackfiller) getLatestBlock(ctx context.Context) (*uint64, error) {
 
 			if err != nil {
 				timeout = b.Duration()
-				LogEvent(ErrorLevel, "Could not get block number, bad connection to rpc likely", LogData{"cid": c.chainID, "e": err.Error()})
+				LogEvent(InfoLevel, "Could not get block number, bad connection to rpc likely", LogData{"cid": c.chainID, "e": err.Error()})
 				continue
 			}
 		}

@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/gin-gonic/gin"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
@@ -44,15 +43,12 @@ type server struct {
 	pbscribe.UnimplementedScribeServiceServer
 }
 
-var logger = log.Logger("scribe-grpc")
-
 func (s *server) FilterLogs(ctx context.Context, req *pbscribe.FilterLogsRequest) (*pbscribe.FilterLogsResponse, error) {
 	logFilter := req.Filter.ToNative()
 	logFilter.ChainID = req.Filter.ChainId
 
 	logs, err := s.db.RetrieveLogsWithFilter(ctx, logFilter, int(req.Page))
 	if err != nil {
-		logger.Errorf("error retreiving logs: %v", err)
 		return nil, fmt.Errorf("error retreiving logs: %w", err)
 	}
 
@@ -66,7 +62,6 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 	streamNewBlocks := false
 	fromBlock, toBlock, err := s.setBlocks(res.Context(), req)
 	if err != nil {
-		logger.Errorf("could not set blocks: %v", err)
 		return fmt.Errorf("could not set blocks: %w", err)
 	}
 
@@ -91,7 +86,6 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 		for {
 			logs, err := s.db.RetrieveLogsInRangeAsc(res.Context(), logFilter, fromBlock, toBlock, page)
 			if err != nil {
-				logger.Errorf("could not retrieve logs: %v", err)
 				return fmt.Errorf("could not retrieve logs: %w", err)
 			}
 
@@ -111,7 +105,6 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 				Log: pbscribe.FromNativeLog(log),
 			})
 			if err != nil {
-				logger.Errorf("could not send log: %v", err)
 				return fmt.Errorf("could not send log: %w", err)
 			}
 		}
@@ -129,7 +122,6 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 				time.Sleep(time.Duration(wait) * time.Second)
 				latestScribeBlock, err := s.db.RetrieveLastIndexed(res.Context(), common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
 				if err != nil {
-					logger.Errorf("could not retrieve last indexed block: %v", err)
 					return fmt.Errorf("could not retrieve last indexed block: %w", err)
 				}
 
@@ -176,7 +168,6 @@ func (s *server) setBlocks(ctx context.Context, req *pbscribe.StreamLogsRequest)
 		case "latest":
 			lastIndexed, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
 			if err != nil {
-				logger.Errorf("could not retrieve last indexed block: %v", err)
 				return 0, 0, fmt.Errorf("could not retrieve last indexed block: %w", err)
 			}
 
@@ -186,7 +177,6 @@ func (s *server) setBlocks(ctx context.Context, req *pbscribe.StreamLogsRequest)
 		default:
 			blockNum, err := strconv.ParseUint(block, 16, 64)
 			if err != nil {
-				logger.Errorf("could not parse %s block: %v", block, err)
 				return 0, 0, fmt.Errorf("could not parse %s block: %w", block, err)
 			}
 

@@ -46,7 +46,6 @@ func NewScribe(eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, 
 //
 //nolint:cyclop
 func (s Scribe) Start(ctx context.Context) error {
-	logger.Errorf("Starting scribe")
 	confirmationRefreshRate := s.config.ConfirmationRefreshRate
 
 	if confirmationRefreshRate == 0 {
