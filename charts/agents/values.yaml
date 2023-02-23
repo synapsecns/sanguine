@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "40094de848f2d0c68a762efb4aa1d3b6d63ee77c"
+  tag: "1c9bc6d0a57600d81d1a996bcccb3a4baef2e9e0"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -269,9 +269,9 @@ executor_embedded:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
-  env:
-    - name: GOLOG_LOG_FMT
-      value: "json"
+#  env:
+#    - name: GOLOG_LOG_FMT
+#      value: "json"
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -506,7 +506,18 @@ executor_embedded_files:
   executor_signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   executor_config.yaml: |-
-    base_omnirpc_url: "http://agents-omnirpc/confirmations"
+    base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
+    execute_interval: 10
+    chains:
+      - chain_id: 137
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 10
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 43114
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
     unbonded_signer:
       type: "File"
       file: "/config/notary_signer.txt"
@@ -514,6 +525,10 @@ executor_embedded_files:
       chains:
         - chain_id: 137
           required_confirmations: 50
+          contract_sub_chunk_size: 1000
+          contract_chunk_size: 1000
+          store_concurrency: 1
+          store_concurrency_threshold: 500
           contracts:
             - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
               start_block: 39145588
@@ -521,6 +536,10 @@ executor_embedded_files:
               start_block: 39145588
         - chain_id: 10
           required_confirmations: 50
+          contract_sub_chunk_size: 500
+          contract_chunk_size: 500
+          store_concurrency: 1
+          store_concurrency_threshold: 500
           contracts:
             - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
               start_block: 73536295
@@ -528,10 +547,14 @@ executor_embedded_files:
               start_block: 73537265
         - chain_id: 43114
           required_confirmations: 50
+          contract_sub_chunk_size: 2000
+          contract_chunk_size: 10000
+          store_concurrency: 1
+          store_concurrency_threshold: 500
           contracts:
             - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
               start_block: 26091227
             - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
               start_block: 26091231
-      rpc_url: "http://agents-omnirpc/confirmations"
+      rpc_url: "https://rpc.interoperability.institute/confirmations"
       refresh_rate: 0
