@@ -580,7 +580,7 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 		case <-ctx.Done():
 			logger.Errorf("context canceled: %s", ctx.Err())
 			return fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(time.Duration(e.config.ExecuteInterval)):
+		case <-time.After(time.Duration(e.config.ExecuteInterval) * time.Second):
 			page := 1
 			currentTime := uint64(time.Now().Unix())
 			logger.Errorf("currentTime: %d", currentTime)
@@ -642,7 +642,7 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval)):
+		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval) * time.Second):
 			page := 1
 			messageMask := execTypes.DBMessage{
 				ChainID: &chainID,
