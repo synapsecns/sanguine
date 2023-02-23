@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import { ByteString, TypedMemView } from "./ByteString.sol";
 import { MerkleList } from "./MerkleList.sol";
+import { SummitAttestation } from "./SnapAttestation.sol";
 import { State, StateLib } from "./State.sol";
 import { SNAPSHOT_MAX_STATES, STATE_LENGTH } from "./Structures.sol";
 
@@ -14,7 +15,9 @@ using {
     SnapshotLib.hash,
     SnapshotLib.state,
     SnapshotLib.statesAmount,
-    SnapshotLib.root
+    SnapshotLib.height,
+    SnapshotLib.root,
+    SnapshotLib.toSummitAttestation
 } for Snapshot global;
 
 /// @dev Struct representing Snapshot, as it is stored in the Summit contract.
@@ -117,7 +120,7 @@ library SnapshotLib {
     ▏*║                           SUMMIT SNAPSHOT                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function summitSnapshot(uint256[] memory _statePtrs)
+    function toSummitSnapshot(uint256[] memory _statePtrs)
         internal
         pure
         returns (SummitSnapshot memory snapshot)
@@ -172,6 +175,20 @@ library SnapshotLib {
     ▏*║                            SNAPSHOT ROOT                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @notice Returns the height of the extended "Snapshot Merkle Tree":
+    /// every "state leaf" is in fact a node with two sub-leafs.
+    /// @dev snapshot.height() is the length of the "extended merkle proof" for (root, origin) leaf:
+    /// keccak256(metadata) is the first item in the "extended proof" list,
+    /// followed by the remainder of the "merkle proof" from the "Snapshot Merkle Tree"
+    function height(Snapshot _snapshot) internal pure returns (uint8 treeHeight) {
+        // Account for the fact that every "state leaf" is a node with two sub-leafs
+        treeHeight = 1;
+        uint256 _statesAmount = statesAmount(_snapshot);
+        for (uint256 amount = 1; amount < _statesAmount; amount <<= 1) {
+            ++treeHeight;
+        }
+    }
+
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
     function root(Snapshot _snapshot) internal pure returns (bytes32) {
         uint256 _statesAmount = statesAmount(_snapshot);
@@ -183,6 +200,23 @@ library SnapshotLib {
         MerkleList.calculateRoot(hashes);
         // hashes[0] now stores the value for the Merkle Root of the list
         return hashes[0];
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SUMMIT ATTESTATION                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Returns an Attestation struct to save in the Summit contract.
+    /// Current block number and timestamp are used.
+    function toSummitAttestation(Snapshot _snapshot)
+        internal
+        view
+        returns (SummitAttestation memory attestation)
+    {
+        attestation.root = _snapshot.root();
+        attestation.height = _snapshot.height();
+        attestation.blockNumber = uint40(block.number);
+        attestation.timestamp = uint40(block.timestamp);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

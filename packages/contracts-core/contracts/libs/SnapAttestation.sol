@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 // TODO: rename to just "Attestation" once older version is deprecated?
 import { ByteString, TypedMemView } from "./ByteString.sol";
+import { Snapshot } from "./Snapshot.sol";
 import { SNAP_ATTESTATION_LENGTH } from "./Structures.sol";
 
 /// @dev SnapAttestation is a memory view over a formatted snapshot attestation payload.
@@ -10,6 +11,7 @@ type SnapAttestation is bytes29;
 /// @dev Attach library functions to SnapAttestation
 using {
     SnapAttestationLib.unwrap,
+    SnapAttestationLib.equalToSummit,
     SnapAttestationLib.hash,
     SnapAttestationLib.root,
     SnapAttestationLib.height,
@@ -17,6 +19,14 @@ using {
     SnapAttestationLib.blockNumber,
     SnapAttestationLib.timestamp
 } for SnapAttestation global;
+
+/// @dev Struct representing SnapAttestation, as it is stored in the Summit contract.
+struct SummitAttestation {
+    bytes32 root;
+    uint8 height;
+    uint40 blockNumber;
+    uint40 timestamp;
+}
 
 library SnapAttestationLib {
     using ByteString for bytes;
@@ -116,6 +126,23 @@ library SnapAttestationLib {
     /// @notice Convenience shortcut for unwrapping a view.
     function unwrap(SnapAttestation _snapAtt) internal pure returns (bytes29) {
         return SnapAttestation.unwrap(_snapAtt);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SUMMIT ATTESTATION                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Checks that a SnapshotAttestation and its Summit representation are equal.
+    function equalToSummit(SnapAttestation _snapAtt, SummitAttestation memory _summitAtt)
+        internal
+        pure
+        returns (bool)
+    {
+        return
+            root(_snapAtt) == _summitAtt.root &&
+            height(_snapAtt) == _summitAtt.height &&
+            blockNumber(_snapAtt) == _summitAtt.blockNumber &&
+            timestamp(_snapAtt) == _summitAtt.timestamp;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -49,6 +49,13 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         }
         // Test hashing
         assertEq(libHarness.hash(payload), hashedSnapshot, "!hash");
+        // Test height
+        uint256 height = libHarness.height(payload);
+        // This is the amount of leafs in the "extended" "Snapshot Merkle Tree",
+        // where we state sub-leafs as leafs.
+        uint256 amount = (1 << height);
+        // Amount / 2 should the minimum power of two that is: >= statesAmount
+        assertTrue((amount >> 1) >= statesAmount && (amount >> 2) < statesAmount, "!height");
         // Test root
         // MerkleList library is covered in a separate uint test, we assume it is working fine
         MerkleList.calculateRoot(stateHashes);

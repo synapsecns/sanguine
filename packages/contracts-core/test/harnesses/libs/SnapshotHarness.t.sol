@@ -43,6 +43,10 @@ contract SnapshotHarness {
         return _payload.castToSnapshot().root();
     }
 
+    function height(bytes memory _payload) public pure returns (uint8) {
+        return _payload.castToSnapshot().height();
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         SNAPSHOT FORMATTERS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

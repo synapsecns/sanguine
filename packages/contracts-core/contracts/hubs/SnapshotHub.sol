@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SnapAttestation } from "../libs/SnapAttestation.sol";
+import {
+    SnapAttestation,
+    SnapAttestationLib,
+    SummitAttestation
+} from "../libs/SnapAttestation.sol";
 import { Snapshot, SnapshotLib, SummitSnapshot } from "../libs/Snapshot.sol";
 import { State, StateLib, SummitState } from "../libs/State.sol";
 
@@ -9,6 +13,9 @@ import { State, StateLib, SummitState } from "../libs/State.sol";
  * @notice Hub to accept and save snapshots, as well as verify attestations.
  */
 abstract contract SnapshotHub {
+    using SnapAttestationLib for bytes;
+    using SnapshotLib for uint256[];
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -18,6 +25,10 @@ abstract contract SnapshotHub {
 
     /// @dev All Snapshots submitted by any of the Notaries
     SummitSnapshot[] private notarySnapshots;
+
+    /// @dev All Attestations created from Notary-submitted Snapshots
+    /// Invariant: attestations.length == notarySnapshots.length
+    SummitAttestation[] private attestations;
 
     /// @dev Pointer for the given State Leaf of the origin
     /// with ZERO as a sentinel value for "state not submitted yet".
@@ -30,7 +41,7 @@ abstract contract SnapshotHub {
     mapping(uint32 => mapping(address => uint256)) private latestStatePtr;
 
     /// @dev gap for upgrade safety
-    uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[45] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
@@ -69,6 +80,8 @@ abstract contract SnapshotHub {
     /// @dev Accepts a Snapshot signed by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
     function _acceptNotarySnapshot(Snapshot _snapshot, address _notary) internal {
+        // TODO: Save Notary address?
+        _notary;
         // Snapshot Signer is a Notary: construct an Attestation Merkle Tree,
         // while checking that the states were previously saved.
         uint256 statesAmount = _snapshot.statesAmount();
@@ -77,23 +90,21 @@ abstract contract SnapshotHub {
             statePtrs[i] = _statePtr(_snapshot.state(i));
             require(statePtrs[i] != 0, "State doesn't exist");
         }
-        // Save Notary snapshot for later retrieval
-        _saveSnapshot(statePtrs);
         // Derive attestation merkle root and save it for a Notary attestation.
-        _saveAttestation(_snapshot.root(), _notary);
+        // Save Notary snapshot for later retrieval
+        _saveSnapshotAttestation(_snapshot, statePtrs);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         SAVE STATEMENT DATA                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Saves Attestation derived from a signed Notary snapshot.
-    function _saveAttestation(bytes32 _root, address _notary) internal {}
-
-    /// @dev Saves the list of states that Notary chosen for their snapshot
-    function _saveSnapshot(uint256[] memory statePtrs) internal {
-        SummitSnapshot memory snapshot = SnapshotLib.summitSnapshot(statePtrs);
-        notarySnapshots.push(snapshot);
+    /// @dev Saves the Notary snapshot and the attestation created from it.
+    function _saveSnapshotAttestation(Snapshot _snapshot, uint256[] memory statePtrs) internal {
+        /// @dev Add a single element to both `attestations` and `notarySnapshots`,
+        /// enforcing the (attestations.length == notarySnapshots.length) invariant.
+        attestations.push(_snapshot.toSummitAttestation());
+        notarySnapshots.push(statePtrs.toSummitSnapshot());
     }
 
     /// @dev Saves the state signed by a Guard.
@@ -121,7 +132,13 @@ abstract contract SnapshotHub {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @dev Checks if attestation was previously submitted by a Notary (as a signed snapshot).
-    function _isValidAttestation(SnapAttestation _snapAtt) internal view returns (bool) {}
+    function _isValidAttestation(SnapAttestation _snapAtt) internal view returns (bool) {
+        // Check if nonce exists
+        uint32 nonce = _snapAtt.nonce();
+        if (nonce >= attestations.length) return false;
+        // Check if Attestation matches the historical one
+        return _snapAtt.equalToSummit(attestations[nonce]);
+    }
 
     /// @dev Returns the pointer for a matching Guard State, if it exists.
     function _statePtr(State _state) internal view returns (uint256) {
