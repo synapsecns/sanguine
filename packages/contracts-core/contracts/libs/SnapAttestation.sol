@@ -12,7 +12,7 @@ using {
     SnapAttestationLib.unwrap,
     SnapAttestationLib.hash,
     SnapAttestationLib.root,
-    SnapAttestationLib.depth,
+    SnapAttestationLib.height,
     SnapAttestationLib.nonce,
     SnapAttestationLib.blockNumber,
     SnapAttestationLib.timestamp
@@ -25,7 +25,7 @@ library SnapAttestationLib {
     /**
      * @dev SnapAttestation structure represents the "Snapshot Merkle Tree" created from
      * every Notary snapshot accepted by the Summit contract. SnapAttestation includes
-     * the root and depth of "Snapshot Merkle Tree", as well as additional metadata.
+     * the root and height of "Snapshot Merkle Tree", as well as additional metadata.
      *
      * Steps for creation of "Snapshot Merkle Tree":
      * 1. The list of hashes is composed for states in the Notary snapshot.
@@ -54,7 +54,7 @@ library SnapAttestationLib {
      *
      * @dev Memory layout of SnapAttestation fields
      * [000 .. 032): root           bytes32 32 bytes    Root for "Snapshot Merkle Tree" created from a Notary snapshot
-     * [032 .. 033): depth          uint8    1 byte     Depth of "Snapshot Merkle Tree" created from a Notary snapshot
+     * [032 .. 033): height         uint8    1 byte     Height of "Snapshot Merkle Tree" created from a Notary snapshot
      * [033 .. 037): nonce          uint32   4 bytes    Total amount of all accepted Notary snapshots
      * [037 .. 042): blockNumber    uint40   5 bytes    Block when this Notary snapshot was accepted in Summit
      * [042 .. 047): timestamp      uint40   5 bytes    Time when this Notary snapshot was accepted in Summit
@@ -75,7 +75,7 @@ library SnapAttestationLib {
     /**
      * @notice Returns a formatted Attestation payload with provided fields.
      * @param _root         Snapshot merkle tree's root
-     * @param _depth        Snapshot merkle tree's depth
+     * @param _depth        Snapshot merkle tree's height
      * @param _nonce        Attestation Nonce
      * @param _blockNumber  Block number when attestation was created in Summit
      * @param _timestamp    Block timestamp when attestation was created in Summit
@@ -140,8 +140,8 @@ library SnapAttestationLib {
         return _view.index({ _index: OFFSET_ROOT, _bytes: 32 });
     }
 
-    /// @notice Returns depth of the Snapshot merkle tree created in the Summit contract.
-    function depth(SnapAttestation _snapAtt) internal pure returns (uint8) {
+    /// @notice Returns height of the Snapshot merkle tree created in the Summit contract.
+    function height(SnapAttestation _snapAtt) internal pure returns (uint8) {
         bytes29 _view = unwrap(_snapAtt);
         return uint8(_view.indexUint({ _index: OFFSET_DEPTH, _bytes: 1 }));
     }

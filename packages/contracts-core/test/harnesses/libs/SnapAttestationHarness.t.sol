@@ -28,8 +28,8 @@ contract SnapAttestationHarness {
         return _payload.castToSnapAttestation().root();
     }
 
-    function depth(bytes memory _payload) public pure returns (uint8) {
-        return _payload.castToSnapAttestation().depth();
+    function height(bytes memory _payload) public pure returns (uint8) {
+        return _payload.castToSnapAttestation().height();
     }
 
     function nonce(bytes memory _payload) public pure returns (uint32) {
