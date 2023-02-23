@@ -52,12 +52,12 @@ contract StateHarness {
     ▏*║                             ORIGIN STATE                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatState(
+    function formatOriginState(
+        OriginState memory _originState,
         uint32 _origin,
-        uint32 _nonce,
-        OriginState memory _originState
+        uint32 _nonce
     ) public pure returns (bytes memory) {
-        return StateLib.formatState(_origin, _nonce, _originState);
+        return _originState.formatOriginState(_origin, _nonce);
     }
 
     function originState(bytes32 _root) public view returns (OriginState memory state) {
@@ -76,8 +76,8 @@ contract StateHarness {
     ▏*║                             SUMMIT STATE                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatState(SummitState memory _summitState) public pure returns (bytes memory) {
-        return StateLib.formatState(_summitState);
+    function formatSummitState(SummitState memory _summitState) public pure returns (bytes memory) {
+        return _summitState.formatSummitState();
     }
 
     function toSummitState(bytes memory _payload) public pure returns (SummitState memory state) {

@@ -35,12 +35,8 @@ abstract contract StateHub is DomainContext {
 
     function suggestState(uint32 _nonce) public view returns (bytes memory stateData) {
         require(_nonce < _statesAmount(), "Nonce out of range");
-        return
-            StateLib.formatState({
-                _origin: localDomain,
-                _nonce: _nonce,
-                _originState: originStates[_nonce]
-            });
+        OriginState memory state = originStates[_nonce];
+        return state.formatOriginState({ _origin: localDomain, _nonce: _nonce });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

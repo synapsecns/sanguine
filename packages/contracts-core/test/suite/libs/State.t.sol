@@ -62,7 +62,7 @@ contract StateLibraryTest is SynapseLibraryTest {
         assertEq(originState.root, rs.root, "!root");
         assertEq(originState.blockNumber, rs.blockNumber, "!blockNumber");
         assertEq(originState.timestamp, rs.timestamp, "!timestamp");
-        bytes memory payload = libHarness.formatState(rs.origin, rs.nonce, originState);
+        bytes memory payload = libHarness.formatOriginState(originState, rs.origin, rs.nonce);
         assertEq(
             payload,
             libHarness.formatState(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp),
@@ -100,7 +100,7 @@ contract StateLibraryTest is SynapseLibraryTest {
             rs.timestamp
         );
         SummitState memory state = libHarness.toSummitState(payload);
-        assertEq(libHarness.formatState(state), payload, "!summitState");
+        assertEq(libHarness.formatSummitState(state), payload, "!summitState");
     }
 
     function test_isState(uint8 length) public {

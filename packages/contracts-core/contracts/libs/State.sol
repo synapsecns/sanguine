@@ -26,6 +26,8 @@ struct OriginState {
     uint40 timestamp;
     // 176 bits left for tight packing
 }
+/// @dev Attach library functions to OriginState
+using { StateLib.formatOriginState } for OriginState global;
 
 /// @dev Struct representing State, as it is stored in the Summit contract.
 struct SummitState {
@@ -36,6 +38,8 @@ struct SummitState {
     uint40 timestamp;
     // 112 bits left for tight packing
 }
+/// @dev Attach library functions to SummitState
+using { StateLib.formatSummitState } for SummitState global;
 
 library StateLib {
     using ByteString for bytes;
@@ -131,10 +135,10 @@ library StateLib {
      * @param _originState  State struct as it is stored in Origin contract
      * @return Formatted state
      */
-    function formatState(
+    function formatOriginState(
+        OriginState memory _originState,
         uint32 _origin,
-        uint32 _nonce,
-        OriginState memory _originState
+        uint32 _nonce
     ) internal pure returns (bytes memory) {
         return
             formatState({
@@ -175,7 +179,11 @@ library StateLib {
      * @param _summitState  State struct as it is stored in Summit contract
      * @return Formatted state
      */
-    function formatState(SummitState memory _summitState) internal pure returns (bytes memory) {
+    function formatSummitState(SummitState memory _summitState)
+        internal
+        pure
+        returns (bytes memory)
+    {
         return
             formatState({
                 _root: _summitState.root,
