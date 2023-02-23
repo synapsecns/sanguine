@@ -104,8 +104,8 @@ func (a AttestationGuardCollectorSubmitter) update(ctx context.Context) error {
 		inProgressAttestationToSubmitToCollector.SignedAttestation().Attestation().Destination(),
 		inProgressAttestationToSubmitToCollector.SignedAttestation().Attestation().Nonce())
 	if err != nil {
-		if errors.Is(err, domains.ErrNoUpdate) {
-			return fmt.Errorf("could GetAttestation from collector to see if we already signed and submitted: %w", err)
+		if !errors.Is(err, domains.ErrNoUpdate) {
+			return fmt.Errorf("could not GetAttestation from collector to see if we already signed and submitted: %w", err)
 		}
 	}
 
