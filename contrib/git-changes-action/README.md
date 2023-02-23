@@ -3,7 +3,6 @@
 This GitHub Action exports a variable that contains the list of Go modules changed in the current pull request, along with any dependent modules. This can be useful for automating build, test, or deployment workflows that involve Go projects.
 
 
-
 ## Usage:
 
 1. To use this action, add the following steps to your workflow:
