@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "bb95a49cdc115101351246dcb935661e6ee071a0"
+  tag: "40094de848f2d0c68a762efb4aa1d3b6d63ee77c"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -475,7 +475,7 @@ guard_files:
         start_height: 26091228
     unbonded_signer:
       type: "File"
-      file: "/config/notary_signer.txt"
+      file: "/config/guard_signer.txt"
     bonded_signer:
       type: "File"
       file: "/config/guard_signer.txt"
