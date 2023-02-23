@@ -102,7 +102,7 @@ func (a OriginAttestationSubmitter) update(ctx context.Context) error {
 		inProgressAttestationToSubmit.SignedAttestation().Attestation().Destination(),
 		inProgressAttestationToSubmit.SignedAttestation().Attestation().Nonce())
 	if err != nil {
-		if err != domains.ErrNoUpdate {
+		if errors.Is(err, domains.ErrNoUpdate) {
 			return fmt.Errorf("could GetAttestation from collector to see if we already signed and submitted: %w", err)
 		}
 	}
