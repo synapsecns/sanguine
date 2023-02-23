@@ -115,7 +115,7 @@ export default function chainId() {
         type: type,
         duration: dailyStatisticDuration,
         platform: platform,
-        useCache: true,
+        useCache: false,
         chainID: chainId,
         useMv: true
       },
@@ -131,7 +131,7 @@ export default function chainId() {
       variables: {
         type: dailyStatisticType,
         duration: dailyStatisticDuration,
-        useCache: true,
+        useCache: false,
         chainID: chainIdRouter,
         useMv: true,
       },
@@ -179,7 +179,7 @@ export default function chainId() {
         baseVariables={{
           platform: platform,
           duration: "ALL_TIME",
-          useCache: true,
+          useCache: false,
           chainID: chainId,
           useMv: true,
         }}
