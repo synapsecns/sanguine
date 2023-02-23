@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "2e0291952dbcd118abf6fc6409510d2a4135c12c"
+  tag: "1c9bc6d0a57600d81d1a996bcccb3a4baef2e9e0"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -507,6 +507,7 @@ executor_embedded_files:
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   executor_config.yaml: |-
     base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
+    execute_interval: 10
     chains:
       - chain_id: 137
         origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F

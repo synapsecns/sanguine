@@ -227,8 +227,10 @@ func (e Executor) Stop(chainID uint32) {
 // Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
 // TODO: Use multi-call to batch execute.
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
+	logger.Errorf("Starting the EXECUTE function")
 	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
+		logger.Errorf("could not verify optimistic period: %v", err)
 		return false, fmt.Errorf("could not verify optimistic period: %w", err)
 	}
 
@@ -245,6 +247,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].NumOfItems()
 	itemCountNonce, err := e.executorDB.GetEarliestAttestationsNonceInNonceRange(ctx, attestationMask, *nonce, maximumNonce)
 	if err != nil {
+		logger.Errorf("could not get earliest attestation nonce: %v", err)
 		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
 	}
 
@@ -255,11 +258,13 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *itemCountNonce)
 
 	if err != nil {
+		logger.Errorf("could not get merkle proof: %v", err)
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
 	verified, err := e.verifyMessageMerkleProof(message)
 	if err != nil {
+		logger.Errorf("could not verify merkle proof: %v", err)
 		return false, fmt.Errorf("could not verify merkle proof: %w", err)
 	}
 
@@ -573,10 +578,12 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 	for {
 		select {
 		case <-ctx.Done():
+			logger.Errorf("context canceled: %s", ctx.Err())
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(time.Duration(e.config.ExecuteInterval)):
 			page := 1
 			currentTime := uint64(time.Now().Unix())
+			logger.Errorf("current time: %d", currentTime)
 			messageMask := execTypes.DBMessage{
 				ChainID: &chainID,
 			}
@@ -584,6 +591,7 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 			for {
 				messages, err := e.executorDB.GetExecutableMessages(ctx, messageMask, currentTime, page)
 				if err != nil {
+					logger.Errorf("could not get executable messages: %s", err)
 					return fmt.Errorf("could not get executable messages: %w", err)
 				}
 
