@@ -198,9 +198,14 @@ func (e Executor) Run(ctx context.Context) error {
 			return e.receiveLogs(ctx, chain.ChainID)
 		})
 
-		g.Go(func() error {
-			return e.setMinimumTime(ctx, chain.ChainID)
-		})
+		for _, destinationChain := range e.config.Chains {
+			if destinationChain.ChainID == chain.ChainID {
+				continue
+			}
+			g.Go(func() error {
+				return e.setMinimumTime(ctx, chain.ChainID, destinationChain.ChainID)
+			})
+		}
 
 		g.Go(func() error {
 			return e.executeExecutable(ctx, chain.ChainID)
@@ -618,7 +623,7 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 // setMinimumTime sets the minimum time for the message to be executed by checking for associated attestations.
 //
 //nolint:gocognit,cyclop
-func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
+func (e Executor) setMinimumTime(ctx context.Context, chainID uint32, destinationDomain uint32) error {
 	// TODO: Make for origin-dest, not just origin
 	for {
 		select {
@@ -627,7 +632,8 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval) * time.Second):
 			page := 1
 			messageMask := execTypes.DBMessage{
-				ChainID: &chainID,
+				ChainID:     &chainID,
+				Destination: &destinationDomain,
 			}
 
 			var unsetMessages []types.Message
@@ -655,7 +661,8 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 			page = 1
 			minNonce := unsetMessages[0].Nonce()
 			attestationMask := execTypes.DBAttestation{
-				ChainID: &chainID,
+				ChainID:     &chainID,
+				Destination: &destinationDomain,
 			}
 
 			var attestations []execTypes.DBAttestation

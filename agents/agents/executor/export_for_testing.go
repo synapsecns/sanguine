@@ -208,9 +208,14 @@ func (e Executor) SetMinimumTime(ctx context.Context) error {
 	for _, chain := range e.config.Chains {
 		chain := chain
 
-		g.Go(func() error {
-			return e.setMinimumTime(ctx, chain.ChainID)
-		})
+		for _, destinationChain := range e.config.Chains {
+			if destinationChain.ChainID == chain.ChainID {
+				continue
+			}
+			g.Go(func() error {
+				return e.setMinimumTime(ctx, chain.ChainID, destinationChain.ChainID)
+			})
+		}
 	}
 
 	if err := g.Wait(); err != nil {
