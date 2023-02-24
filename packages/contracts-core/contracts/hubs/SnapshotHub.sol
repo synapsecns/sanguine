@@ -155,6 +155,7 @@ abstract contract SnapshotHub {
             // State is stored at (length - 1), but we are tracking "index PLUS 1" as "pointer"
             statePtr = guardStates.length;
             leafPtr[origin][stateHash] = statePtr;
+            // TODO: Emit event that state was saved for origin chain?
         }
         // Update latest guard state for origin
         latestStatePtr[origin][_guard] = statePtr;
