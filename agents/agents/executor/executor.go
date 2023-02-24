@@ -229,6 +229,8 @@ func (e Executor) Stop(chainID uint32) {
 
 // Execute calls execute on `Destination.sol` on the destination chain, after verifying the message.
 // TODO: Use multi-call to batch execute.
+//
+//nolint:cyclop
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
 	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
@@ -289,7 +291,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	for {
 		select {
 		case <-ctx.Done():
-			return false, fmt.Errorf("context cancelled: %w", ctx.Err())
+			return false, fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(timeout):
 			if b.Attempt() >= 5 {
 				return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
