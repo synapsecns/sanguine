@@ -14,6 +14,8 @@ type Parser interface {
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
 	// ParseAttestationAccepted parses an AttestationAccepted event
 	ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool)
+	// ParseExecuted parses an Executed event.
+	ParseExecuted(log ethTypes.Log) (origin *uint32, leaf *[32]byte, ok bool)
 }
 
 type parserImpl struct {
@@ -58,6 +60,16 @@ func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestat
 	return attestation.Attestation(), true
 }
 
+// ParseExecuted parses an Executed event.
+func (p parserImpl) ParseExecuted(log ethTypes.Log) (origin *uint32, leaf *[32]byte, ok bool) {
+	destinationExecuted, err := p.filterer.ParseExecuted(log)
+	if err != nil {
+		return nil, nil, false
+	}
+
+	return &destinationExecuted.RemoteDomain, &destinationExecuted.MessageHash, true
+}
+
 // EventType is the type of the destination event
 //
 //go:generate go run golang.org/x/tools/cmd/stringer -type=EventType
@@ -66,6 +78,7 @@ type EventType uint
 const (
 	// AttestationAcceptedEvent is an AttestationAccepted event.
 	AttestationAcceptedEvent EventType = 0
+	ExecutedEvent            EventType = 1
 )
 
 // Int gets the int for an event type.

@@ -94,6 +94,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			merkleTrees:       make(map[uint32]*merkle.HistoricalTree),
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
+			executed:          make(map[[32]byte]bool),
 		}
 
 		for _, destinationChain := range config.Chains {
@@ -167,11 +168,17 @@ func (e Executor) Start(ctx context.Context) error {
 		chain := chain
 
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, originContract)
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, contractEventType{
+				contractType:         originContract,
+				destinationEventType: otherEvent,
+			})
 		})
 
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, destinationContract)
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, contractEventType{
+				contractType:         destinationContract,
+				destinationEventType: attestationAcceptedEvent,
+			})
 		})
 	}
 

@@ -55,7 +55,7 @@ type chainExecutor struct {
 	// boundDestination is a bound destination contract.
 	boundDestination domains.DestinationContract
 	// executed is a map from hash(origin chain ID, destination chain ID, nonce) -> bool.
-	executed map[uint64]bool
+	executed map[[32]byte]bool
 }
 
 // Executor is the executor agent.
@@ -155,7 +155,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			merkleTrees:       make(map[uint32]*merkle.HistoricalTree),
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
-			executed:          make(map[uint64]bool),
+			executed:          make(map[[32]byte]bool),
 		}
 
 		for _, destinationChain := range config.Chains {
@@ -185,17 +185,24 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 
 // Run starts the executor agent. It calls `Start` and `Listen`.
 func (e Executor) Run(ctx context.Context) error {
+	// Backfill executed messages.
 	g, _ := errgroup.WithContext(ctx)
 
 	for _, chain := range e.config.Chains {
 		chain := chain
 
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, originContract)
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, contractEventType{
+				contractType:         originContract,
+				destinationEventType: otherEvent,
+			})
 		})
 
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, destinationContract)
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, contractEventType{
+				contractType:         destinationContract,
+				destinationEventType: attestationAcceptedEvent,
+			})
 		})
 
 		g.Go(func() error {
@@ -314,11 +321,24 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 
 type contractType int
 
+type destinationEventType int
+
 const (
 	originContract contractType = iota
 	destinationContract
 	other
 )
+
+const (
+	attestationAcceptedEvent destinationEventType = iota
+	executedEvent
+	otherEvent
+)
+
+type contractEventType struct {
+	contractType         contractType
+	destinationEventType destinationEventType
+}
 
 // verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
 func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) {
@@ -425,11 +445,11 @@ func (e Executor) markAsExecuted(ctx context.Context) error {
 // streamLogs uses gRPC to stream logs into a channel.
 //
 //nolint:cyclop
-func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chain config.ChainConfig, contract contractType) error {
+func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chain config.ChainConfig, contractEvent contractEventType) error {
 	var address string
 
 	//nolint:exhaustive
-	switch contract {
+	switch contractEvent.contractType {
 	case originContract:
 		address = chain.OriginAddress
 	case destinationContract:
@@ -501,9 +521,9 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 //
 //nolint:cyclop
 func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	logType := e.logType(log, chainID)
+	contractEvent := e.logType(log, chainID)
 
-	switch logType {
+	switch contractEvent.contractType {
 	case originContract:
 		message, err := e.logToMessage(log, chainID)
 		if err != nil {
@@ -550,24 +570,39 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			}
 		}
 	case destinationContract:
-		attestation, err := e.logToAttestation(log, chainID)
-		if err != nil {
-			return fmt.Errorf("could not convert log to attestation: %w", err)
+		switch contractEvent.destinationEventType {
+		case attestationAcceptedEvent:
+			attestation, err := e.logToAttestation(log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not convert log to attestation: %w", err)
+			}
+
+			if attestation == nil {
+				return nil
+			}
+
+			logHeader, err := e.chainExecutors[(*attestation).Destination()].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
+			if err != nil {
+				return fmt.Errorf("could not get log header: %w", err)
+			}
+
+			err = e.executorDB.StoreAttestation(ctx, *attestation, log.BlockNumber, logHeader.Time)
+			if err != nil {
+				return fmt.Errorf("could not store attestation: %w", err)
+			}
+		case executedEvent:
+			originDomain, messageLeaf, ok := e.chainExecutors[chainID].destinationParser.ParseExecuted(log)
+			if !ok || originDomain == nil || messageLeaf == nil {
+				return fmt.Errorf("could not parse executed event")
+			}
+
+			e.chainExecutors[chainID].executed[*messageLeaf] = true
+		case otherEvent:
+			logger.Warnf("the log's event type is not supported")
+		default:
+			return fmt.Errorf("log type not supported")
 		}
 
-		if attestation == nil {
-			return nil
-		}
-
-		logHeader, err := e.chainExecutors[(*attestation).Destination()].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
-		if err != nil {
-			return fmt.Errorf("could not get log header: %w", err)
-		}
-
-		err = e.executorDB.StoreAttestation(ctx, *attestation, log.BlockNumber, logHeader.Time)
-		if err != nil {
-			return fmt.Errorf("could not store attestation: %w", err)
-		}
 	case other:
 		logger.Warnf("the log's event type is not supported")
 	default:
