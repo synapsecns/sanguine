@@ -28,8 +28,20 @@ contract StateHarness {
         return _payload.castToState().hash();
     }
 
-    function leafs(bytes memory _payload) public pure returns (bytes32, bytes32) {
-        return _payload.castToState().leafs();
+    function subLeafs(bytes memory _payload) public pure returns (bytes32, bytes32) {
+        return _payload.castToState().subLeafs();
+    }
+
+    function leftLeaf(bytes32 _root, uint32 _origin) public pure returns (bytes32) {
+        return StateLib.leftLeaf(_root, _origin);
+    }
+
+    function rightLeaf(
+        uint32 _nonce,
+        uint40 _blockNumber,
+        uint40 _timestamp
+    ) public pure returns (bytes32) {
+        return StateLib.rightLeaf(_nonce, _blockNumber, _timestamp);
     }
 
     function root(bytes memory _payload) public pure returns (bytes32) {

@@ -52,9 +52,15 @@ contract StateLibraryTest is SynapseLibraryTest {
         // Test creating a leaf
         bytes32 leftChild = keccak256(abi.encodePacked(rs.root, rs.origin));
         bytes32 rightChild = keccak256(abi.encodePacked(rs.nonce, rs.blockNumber, rs.timestamp));
-        (bytes32 leftLeaf, bytes32 rightLeaf) = libHarness.leafs(payload);
-        assertEq(leftLeaf, leftChild, "!leafs: left");
-        assertEq(rightLeaf, rightChild, "!leafs: right");
+        (bytes32 leftLeaf, bytes32 rightLeaf) = libHarness.subLeafs(payload);
+        assertEq(libHarness.leftLeaf(rs.root, rs.origin), leftChild, "!leftLeaf");
+        assertEq(leftLeaf, leftChild, "!subLeafs: left");
+        assertEq(
+            libHarness.rightLeaf(rs.nonce, rs.blockNumber, rs.timestamp),
+            rightChild,
+            "!rightLeaf"
+        );
+        assertEq(rightLeaf, rightChild, "!subLeafs: right");
         assertEq(
             libHarness.hash(payload),
             keccak256(abi.encodePacked(leftChild, rightChild)),

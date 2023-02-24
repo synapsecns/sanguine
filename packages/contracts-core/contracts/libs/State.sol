@@ -11,7 +11,7 @@ using {
     StateLib.unwrap,
     StateLib.equalToOrigin,
     StateLib.hash,
-    StateLib.leafs,
+    StateLib.subLeafs,
     StateLib.toSummitState,
     StateLib.root,
     StateLib.origin,
@@ -211,21 +211,37 @@ library StateLib {
     /// @notice Returns the hash of the State.
     /// @dev We are using the Merkle Root of a tree with two leafs (see below) as state hash.
     function hash(State _state) internal pure returns (bytes32) {
-        (bytes32 leftLeaf, bytes32 rightLeaf) = _state.leafs();
+        (bytes32 _leftLeaf, bytes32 _rightLeaf) = _state.subLeafs();
         // Final hash is the parent of these leafs
-        return keccak256(bytes.concat(leftLeaf, rightLeaf));
+        return keccak256(bytes.concat(_leftLeaf, _rightLeaf));
     }
 
-    /// @notice Returns "sub-leafs" of the State. A node having these "sub leafs" as children
-    /// is going to be used as a "state leaf" in the "Snapshot Merkle Tree".
+    /// @notice Returns "sub-leafs" of the State. Hash of these "sub leafs" is going to be used
+    /// as a "state leaf" in the "Snapshot Merkle Tree".
     /// This enables proving that leftLeaf = (root, origin) was a part of the "Snapshot Merkle Tree",
     /// by combining `rightLeaf` with the remainder of the "Snapshot Merkle Proof".
-    function leafs(State _state) internal pure returns (bytes32 leftLeaf, bytes32 rightLeaf) {
+    function subLeafs(State _state) internal pure returns (bytes32 _leftLeaf, bytes32 _rightLeaf) {
         bytes29 _view = _state.unwrap();
         // Left leaf is (root, origin)
-        leftLeaf = _view.prefix({ _len: OFFSET_NONCE, newType: 0 }).keccak();
+        _leftLeaf = _view.prefix({ _len: OFFSET_NONCE, newType: 0 }).keccak();
         // Right leaf is (metadata), or (nonce, blockNumber, timestamp)
-        rightLeaf = _view.sliceFrom({ _index: OFFSET_NONCE, newType: 0 }).keccak();
+        _rightLeaf = _view.sliceFrom({ _index: OFFSET_NONCE, newType: 0 }).keccak();
+    }
+
+    /// @notice Returns the left "sub-leaf" of the State.
+    function leftLeaf(bytes32 _root, uint32 _origin) internal pure returns (bytes32) {
+        // We use encodePacked here to simulate the State memory layout
+        return keccak256(abi.encodePacked(_root, _origin));
+    }
+
+    /// @notice Returns the right "sub-leaf" of the State.
+    function rightLeaf(
+        uint32 _nonce,
+        uint40 _blockNumber,
+        uint40 _timestamp
+    ) internal pure returns (bytes32) {
+        // We use encodePacked here to simulate the State memory layout
+        return keccak256(abi.encodePacked(_nonce, _blockNumber, _timestamp));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -34,7 +34,7 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
                 payload[i * STATE_LENGTH + j] = b;
             }
             // State library is covered in a separate uint test, we assume it is working fine
-            (bytes32 leftLeaf, bytes32 rightLeaf) = statePayloads[i].castToState().leafs();
+            (bytes32 leftLeaf, bytes32 rightLeaf) = statePayloads[i].castToState().subLeafs();
             // For Snapshot Merkle Tree we use the hash of two sub-leafs as "leaf"
             stateHashes[i] = keccak256(bytes.concat(leftLeaf, rightLeaf));
         }
