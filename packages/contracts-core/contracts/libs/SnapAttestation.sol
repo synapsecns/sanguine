@@ -12,6 +12,7 @@ type SnapAttestation is bytes29;
 using {
     SnapAttestationLib.unwrap,
     SnapAttestationLib.equalToSummit,
+    SnapAttestationLib.toDestinationAttestation,
     SnapAttestationLib.hash,
     SnapAttestationLib.root,
     SnapAttestationLib.height,
@@ -27,6 +28,18 @@ struct SummitAttestation {
     uint40 blockNumber;
     uint40 timestamp;
 }
+
+/// @dev Struct representing SnapAttestation, as it is stored in the Destination contract.
+/// mapping (bytes32 root => DestinationAttestation) is supposed to be used
+struct DestinationAttestation {
+    address notary;
+    uint8 height;
+    uint32 nonce;
+    uint40 destTimestamp;
+    // 16 bits left for tight packing
+}
+/// @dev Attach library functions to DestinationAttestation
+using { SnapAttestationLib.isEmpty } for DestinationAttestation global;
 
 library SnapAttestationLib {
     using ByteString for bytes;
@@ -143,6 +156,26 @@ library SnapAttestationLib {
             _snapAtt.height() == _summitAtt.height &&
             _snapAtt.blockNumber() == _summitAtt.blockNumber &&
             _snapAtt.timestamp() == _summitAtt.timestamp;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                       DESTINATION ATTESTATION                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function toDestinationAttestation(SnapAttestation _snapAtt, address _notary)
+        internal
+        view
+        returns (DestinationAttestation memory attestation)
+    {
+        attestation.notary = _notary;
+        attestation.height = _snapAtt.height();
+        attestation.nonce = _snapAtt.nonce();
+        // We need to store the timestamp when attestation was submitted to Destination
+        attestation.destTimestamp = uint40(block.timestamp);
+    }
+
+    function isEmpty(DestinationAttestation memory _destAtt) internal pure returns (bool) {
+        return _destAtt.notary == address(0);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

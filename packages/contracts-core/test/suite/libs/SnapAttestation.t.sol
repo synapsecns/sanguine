@@ -54,6 +54,41 @@ contract SnapAttestationLibraryTest is SynapseLibraryTest {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                       DESTINATION ATTESTATION                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_toDestinationAttestation(
+        RawSnapAttestation memory rs,
+        address notary,
+        uint40 destTimestamp
+    ) public {
+        vm.warp(destTimestamp);
+        bytes memory payload = libHarness.formatSnapAttestation(
+            rs.root,
+            rs.height,
+            rs.nonce,
+            rs.blockNumber,
+            rs.timestamp
+        );
+        DestinationAttestation memory destAtt = libHarness.toDestinationAttestation(
+            payload,
+            notary
+        );
+        assertEq(destAtt.notary, notary, "!notary");
+        assertEq(destAtt.height, rs.height, "!height");
+        assertEq(destAtt.nonce, rs.nonce, "!nonce");
+        assertEq(destAtt.destTimestamp, destTimestamp, "!destTimestamp");
+    }
+
+    function test_isEmpty(DestinationAttestation memory destAtt) public {
+        if (destAtt.notary == address(0)) {
+            assertTrue(libHarness.isEmpty(destAtt), "!isEmpty: when Empty");
+        } else {
+            assertFalse(libHarness.isEmpty(destAtt), "!isEmpty: when non-Empty");
+        }
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               HELPERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 

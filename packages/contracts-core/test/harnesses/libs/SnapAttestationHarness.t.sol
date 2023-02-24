@@ -45,7 +45,23 @@ contract SnapAttestationHarness {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         ATTESTATION FORMATTERS                          ║*▕
+    ▏*║                       DESTINATION ATTESTATION                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function toDestinationAttestation(bytes memory _payload, address _notary)
+        public
+        view
+        returns (DestinationAttestation memory)
+    {
+        return _payload.castToSnapAttestation().toDestinationAttestation(_notary);
+    }
+
+    function isEmpty(DestinationAttestation memory _destAtt) public pure returns (bool) {
+        return _destAtt.isEmpty();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        ATTESTATION FORMATTERS                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatSnapAttestation(
