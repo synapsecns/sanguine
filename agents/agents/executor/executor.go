@@ -54,6 +54,8 @@ type chainExecutor struct {
 	rpcClient Backend
 	// boundDestination is a bound destination contract.
 	boundDestination domains.DestinationContract
+	// executed is a map from hash(origin chain ID, destination chain ID, nonce) -> bool.
+	executed map[uint64]bool
 }
 
 // Executor is the executor agent.
@@ -153,6 +155,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			merkleTrees:       make(map[uint32]*merkle.HistoricalTree),
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
+			executed:          make(map[uint64]bool),
 		}
 
 		for _, destinationChain := range config.Chains {
@@ -411,6 +414,12 @@ func newTreeFromDB(ctx context.Context, chainID uint32, destination uint32, exec
 	merkleTree := merkle.NewTreeFromItems(rawMessages)
 
 	return merkleTree, nil
+}
+
+// markAsExecuted marks a message as executed via the `executed` mapping.
+func (e Executor) markAsExecuted(ctx context.Context) error {
+
+	return nil
 }
 
 // streamLogs uses gRPC to stream logs into a channel.
