@@ -44,11 +44,15 @@ func createServer(es graphql.ExecutableSchema) *handler.Server {
 	srv.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,
 	})
+
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.MultipartForm{})
 	srv.SetQueryCache(lru.New(1000))
+	srv.Use(extension.Introspection{})
+	srv.Use(extension.FixedComplexityLimit(300)) // Prevent ddos
+
 	srv.Use(extension.AutomaticPersistedQuery{
 		Cache: lru.New(100),
 	})
