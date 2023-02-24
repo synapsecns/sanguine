@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/jpillora/backoff"
 	"io"
 	"math/big"
 	"strconv"
@@ -226,7 +227,7 @@ func (e Executor) Stop(chainID uint32) {
 	e.chainExecutors[chainID].stopListenChan <- true
 }
 
-// Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
+// Execute calls execute on `Destination.sol` on the destination chain, after verifying the message.
 // TODO: Use multi-call to batch execute.
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
 	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
@@ -276,13 +277,34 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		copy(proofB32[i][:], p)
 	}
 
-	err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
-	if err != nil {
-		logger.Errorf("Error trying to execute message on destination: %v", err)
-		return false, fmt.Errorf("could not execute message: %w", err)
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    3 * time.Millisecond,
+		Max:    3 * time.Second,
 	}
 
-	return true, nil
+	timeout := time.Duration(0)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return false, fmt.Errorf("context cancelled: %w", ctx.Err())
+		case <-time.After(timeout):
+			if b.Attempt() >= 5 {
+				return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
+			}
+
+			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
+			if err != nil {
+				timeout = b.Duration()
+				logger.Errorf("got error %v when trying to execute the message on chain %d. trying again in %f seconds", err, message.DestinationDomain(), timeout.Seconds())
+				continue
+			}
+
+			return true, nil
+		}
+	}
 }
 
 type contractType int
