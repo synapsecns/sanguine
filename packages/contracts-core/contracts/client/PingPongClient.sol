@@ -67,7 +67,7 @@ contract PingPongClient is IMessageRecipient {
         uint256,
         bytes memory _message
     ) external {
-        require(msg.sender == destination, "TestClient: !destination");
+        require(msg.sender == destination, "PingPongClient: !destination");
         PingMessage memory _msg = abi.decode(_message, (PingMessage));
         ++totalReceived;
         emit Pong(_msg.pingId, _msg.pongsLeft);
