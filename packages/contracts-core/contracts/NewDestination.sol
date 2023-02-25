@@ -35,7 +35,7 @@ contract DestinationNew is StatementHub, SnapAttestationHub, SystemRegistry {
 
     /**
      * @notice Submit a SnapAttestation signed by a Notary.
-     * @dev Will revert if either of these is true:
+     * @dev Will revert if any of these is true:
      *  - Attestation payload is not properly formatted.
      *  - Attestation signer is not an active Notary for local domain.
      *  - Attestation's snapshot root has been previously submitted.

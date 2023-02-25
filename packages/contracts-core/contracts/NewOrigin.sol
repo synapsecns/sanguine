@@ -58,7 +58,7 @@ contract OriginNew is StatementHub, StateHub, SystemRegistry {
      * @notice Verifies a state from the snapshot (a list of states) signed by a Guard or a Notary.
      * Does nothing, if the state is valid (matches the historical state of this contract).
      * Slashes the snapshot signer, if the state is invalid.
-     * @dev Will revert if either of these is true:
+     * @dev Will revert if any of these is true:
      *  - Snapshot payload is not properly formatted.
      *  - Attestation payload is not properly formatted.
      *  - Attestation signer is not an active Notary.
@@ -97,7 +97,7 @@ contract OriginNew is StatementHub, StateHub, SystemRegistry {
      * @notice Verifies a state from the snapshot (a list of states) signed by a Guard or a Notary.
      * Does nothing, if the state is valid (matches the historical state of this contract).
      * Slashes the snapshot signer, if the state is invalid.
-     * @dev Will revert if either of these is true:
+     * @dev Will revert if any of these is true:
      *  - Snapshot payload is not properly formatted.
      *  - Snapshot signer is not an active Agent.
      *  - State index is out of range.

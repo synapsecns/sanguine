@@ -40,7 +40,7 @@ contract Summit is StatementHub, SnapshotHub {
      * snapshots which are only using states previously submitted by any of the Guards.
      * Notary doesn't have to use states submitted by a single Guard in their snapshot.
      * Notary could then proceed to sign the attestation for their submitted snapshot.
-     * @dev Will revert if either of these is true:
+     * @dev Will revert if any of these is true:
      *  - Snapshot payload is not properly formatted.
      *  - Snapshot signer is not an active Agent.
      *  - Guard snapshot contains a state older then they have previously submitted
@@ -80,7 +80,7 @@ contract Summit is StatementHub, SnapshotHub {
      * @notice Verifies an attestation signed by a Notary.
      *  - Does nothing, if the attestation is valid (was submitted by this Notary as a snapshot).
      *  - Slashes the Notary otherwise (meaning the attestation is invalid).
-     * @dev Will revert if either of these is true:
+     * @dev Will revert if any of these is true:
      *  - Attestation payload is not properly formatted.
      *  - Attestation signer is not an active Notary.
      * @param _attPayload       Raw payload with SnapAttestation data
