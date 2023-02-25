@@ -30,7 +30,9 @@ contract PingPongClient is IMessageRecipient {
 
     uint256 public random;
 
-    uint256 public pingsInitiated;
+    uint256 public totalSent;
+
+    uint256 public totalReceived;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
@@ -67,6 +69,7 @@ contract PingPongClient is IMessageRecipient {
     ) external {
         require(msg.sender == destination, "TestClient: !destination");
         PingMessage memory _msg = abi.decode(_message, (PingMessage));
+        ++totalReceived;
         emit Pong(_msg.pingId, _msg.pongsLeft);
         // Send the message back, if there are pongs left to do
         if (_msg.pongsLeft != 0) {
@@ -96,7 +99,7 @@ contract PingPongClient is IMessageRecipient {
         address _recipient,
         uint16 _pongsTotal
     ) public {
-        uint256 pingId = pingsInitiated++;
+        uint256 pingId = totalSent++;
         _sendPing(_destination, _recipient.addressToBytes32(), PingMessage(pingId, _pongsTotal));
     }
 

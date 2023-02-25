@@ -39,7 +39,7 @@ contract PingPongTest is Test {
         address recipient,
         uint16 pongsTotal
     ) public {
-        uint256 pingId = client.pingsInitiated();
+        uint256 pingId = client.totalSent();
         uint32 nextPeriod = client.nextOptimisticPeriod();
         // Should call Origin
         _expectOriginCall(destination, recipient, nextPeriod, pingId, pongsTotal);
@@ -47,7 +47,7 @@ contract PingPongTest is Test {
         vm.expectEmit(true, true, true, true);
         emit Ping(pingId, pongsTotal);
         client.doPing(destination, recipient, pongsTotal);
-        assertEq(client.pingsInitiated(), 1);
+        assertEq(client.totalSent(), 1);
     }
 
     function test_pings(
@@ -56,7 +56,7 @@ contract PingPongTest is Test {
         address recipient,
         uint16 pongsTotal
     ) public {
-        uint256 pingId = client.pingsInitiated();
+        uint256 pingId = client.totalSent();
         uint256 random = client.random();
         uint32[] memory periods = new uint32[](pingCount);
         for (uint256 i = 0; i < pingCount; ++i) {
@@ -71,7 +71,7 @@ contract PingPongTest is Test {
             emit Ping(pingId + i, pongsTotal);
         }
         client.doPings(pingCount, destination, recipient, pongsTotal);
-        assertEq(client.pingsInitiated(), pingCount);
+        assertEq(client.totalSent(), pingCount);
     }
 
     function test_pong(
@@ -96,6 +96,7 @@ contract PingPongTest is Test {
             0,
             _messageBody(pingId, pongsLeft)
         );
+        assertEq(client.totalReceived(), 1);
     }
 
     function _expectOriginCall(
