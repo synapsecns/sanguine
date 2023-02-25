@@ -28,7 +28,7 @@ contract PingPongClient is IMessageRecipient {
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    uint256 private random;
+    uint256 public random;
 
     uint256 public pingsInitiated;
 
