@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"time"
+
 	markdown "github.com/MichaelMure/go-term-markdown"
+	"github.com/hedzr/log"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
@@ -60,33 +63,41 @@ var NotaryRunCommand = &cli.Command{
 			return fmt.Errorf("failed to decode config: %w", err)
 		}
 
-		g, _ := errgroup.WithContext(c.Context)
+		shouldRetry := true
 
-		notary, err := notary.NewNotary(c.Context, notaryConfig)
-		if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
-			return fmt.Errorf("failed to create notary: %w", err)
-		}
+		for shouldRetry {
+			shouldRetry = false
+			g, _ := errgroup.WithContext(c.Context)
 
-		g.Go(func() error {
-			err = notary.Start(c.Context)
+			notary, err := notary.NewNotary(c.Context, notaryConfig)
 			if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
+				return fmt.Errorf("failed to create notary: %w", err)
+			}
+
+			g.Go(func() error {
+				err = notary.Start(c.Context)
+				if err != nil {
+					shouldRetry = true
+					log.Errorf("Error running guard, will sleep for a minute and retry: %v", err)
+					time.Sleep(60 * time.Second)
+					return fmt.Errorf("failed to create notary: %w", err)
+				}
+
+				return nil
+			})
+
+			g.Go(func() error {
+				err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
+				if err != nil {
+					return fmt.Errorf("failed to start api: %w", err)
+				}
+
+				return nil
+			})
+
+			if err := g.Wait(); err != nil {
 				return fmt.Errorf("failed to run notary: %w", err)
 			}
-
-			return nil
-		})
-
-		g.Go(func() error {
-			err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
-			if err != nil {
-				return fmt.Errorf("failed to start api: %w", err)
-			}
-
-			return nil
-		})
-
-		if err := g.Wait(); err != nil {
-			return fmt.Errorf("failed to run notary: %w", err)
 		}
 
 		return nil
