@@ -100,10 +100,8 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 	return notary, nil
 }
 
-// tryRun attempts to run the notary.
-//
-//nolint:cyclop
-func (u Notary) tryRun(ctx context.Context) error {
+// Start starts the notary.
+func (u Notary) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	for name := range u.scanners {
@@ -144,25 +142,6 @@ func (u Notary) tryRun(ctx context.Context) error {
 		return fmt.Errorf("could not start the notary: %w", err)
 	}
 
-	logger.Info("Notary run attempt finished without error")
+	logger.Info("Notary exiting without error")
 	return nil
-}
-
-// Start starts the notary.
-func (u Notary) Start(ctx context.Context) error {
-	for {
-		select {
-		case <-ctx.Done():
-			logger.Info("Notary exiting without error")
-			return nil
-		case <-time.After(time.Duration(60*5) * time.Second):
-			err := u.tryRun(ctx)
-			if err != nil {
-				logger.Errorf("Notary run attempt got an error: %v, will retry after 5 minutes", err)
-			} else {
-				logger.Infof("Notary finished run attempt without error, so exiting normally.")
-				return nil
-			}
-		}
-	}
 }
