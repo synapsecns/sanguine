@@ -171,10 +171,10 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 	return guard, nil
 }
 
-// TryRun attempts to run the guard.
+// tryRun attempts to run the guard.
 //
 //nolint:cyclop
-func (u Guard) TryRun(ctx context.Context) error {
+func (u Guard) tryRun(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	for originName, originScanners := range u.originScanners {
@@ -272,7 +272,7 @@ func (u Guard) Start(ctx context.Context) error {
 			logger.Info("Guard exiting without error")
 			return nil
 		case <-time.After(time.Duration(60*5) * time.Second):
-			err := u.TryRun(ctx)
+			err := u.tryRun(ctx)
 			if err != nil {
 				logger.Errorf("Guard run attempt got an error: %v, will retry after 5 minutes", err)
 			} else {
