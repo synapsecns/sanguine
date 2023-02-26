@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"sync"
 	"time"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -63,10 +64,17 @@ var NotaryRunCommand = &cli.Command{
 			return fmt.Errorf("failed to decode config: %w", err)
 		}
 
+		var retryLock sync.Mutex
+
+		retryLock.Lock()
 		shouldRetry := true
+		retryLock.Unlock()
 
 		for shouldRetry {
+			retryLock.Lock()
 			shouldRetry = false
+			retryLock.Unlock()
+
 			g, _ := errgroup.WithContext(c.Context)
 
 			notary, err := notary.NewNotary(c.Context, notaryConfig)
@@ -77,7 +85,10 @@ var NotaryRunCommand = &cli.Command{
 			g.Go(func() error {
 				err = notary.Start(c.Context)
 				if err != nil {
+					retryLock.Lock()
 					shouldRetry = true
+					retryLock.Unlock()
+
 					log.Errorf("Error running guard, will sleep for a minute and retry: %v", err)
 					time.Sleep(60 * time.Second)
 					return fmt.Errorf("failed to create notary: %w", err)
