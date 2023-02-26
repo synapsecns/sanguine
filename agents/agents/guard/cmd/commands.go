@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"sync"
+	"sync/atomic"
 	"time"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -64,16 +64,11 @@ var GuardRunCommand = &cli.Command{
 			return fmt.Errorf("failed to decode config: %w", err)
 		}
 
-		var retryLock sync.Mutex
+		var shouldRetryAtomic atomic.Bool
+		shouldRetryAtomic.Store(true)
 
-		retryLock.Lock()
-		shouldRetry := true
-		retryLock.Unlock()
-
-		for shouldRetry {
-			retryLock.Lock()
-			shouldRetry = false
-			retryLock.Unlock()
+		for shouldRetryAtomic.Load() {
+			shouldRetryAtomic.Store(false)
 
 			g, _ := errgroup.WithContext(c.Context)
 
@@ -85,9 +80,7 @@ var GuardRunCommand = &cli.Command{
 			g.Go(func() error {
 				err = guard.Start(c.Context)
 				if err != nil {
-					retryLock.Lock()
-					shouldRetry = true
-					retryLock.Unlock()
+					shouldRetryAtomic.Store(true)
 
 					log.Errorf("Error running guard, will sleep for a minute and retry: %v", err)
 					time.Sleep(60 * time.Second)
