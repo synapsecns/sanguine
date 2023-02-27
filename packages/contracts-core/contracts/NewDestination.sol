@@ -23,6 +23,15 @@ contract DestinationNew is StatementHub, SnapAttestationHub, SystemRegistry, IDe
     // TODO: move Events to a separate contract, once the old Destination is deprecated
 
     /**
+     * @notice Emitted when a snapshot is accepted by the Destination contract.
+     * @param domain        Domain where the signed Notary is active
+     * @param notary        Notary who signed the attestation
+     * @param attestation   Raw payload with attestation data
+     * @param attSignature  Notary signature for the attestation
+     */
+    event AttestationAccepted(uint32 domain, address notary, bytes attestation, bytes attSignature);
+
+    /**
      * @notice Emitted when message is executed.
      * @param remoteDomain  Remote domain where message originated
      * @param messageHash   The keccak256 hash of the message that was executed
@@ -61,6 +70,7 @@ contract DestinationNew is StatementHub, SnapAttestationHub, SystemRegistry, IDe
         require(domain == localDomain, "Wrong Notary domain");
         // This will revert if snapshot root has been previously submitted
         _acceptAttestation(snapAtt, notary);
+        emit AttestationAccepted(domain, notary, _attPayload, _attSignature);
         return true;
     }
 
