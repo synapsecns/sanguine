@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import { DomainContext } from "../context/DomainContext.sol";
+import { IStateHub } from "../interfaces/IStateHub.sol";
 import { Snapshot } from "../libs/Snapshot.sol";
 import { State, StateLib, OriginState } from "../libs/State.sol";
 import { EMPTY_ROOT } from "../libs/Structures.sol";
@@ -13,7 +14,7 @@ import { EMPTY_ROOT } from "../libs/Structures.sol";
  * - How "state" getters work
  * - How to compare "states" to one another
  */
-abstract contract StateHub is DomainContext {
+abstract contract StateHub is DomainContext, IStateHub {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -28,11 +29,13 @@ abstract contract StateHub is DomainContext {
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @inheritdoc IStateHub
     function suggestLatestState() external view returns (bytes memory stateData) {
         // This never underflows, assuming the contract was initialized
         return suggestState(uint32(_statesAmount() - 1));
     }
 
+    /// @inheritdoc IStateHub
     function suggestState(uint32 _nonce) public view returns (bytes memory stateData) {
         require(_nonce < _statesAmount(), "Nonce out of range");
         OriginState memory state = originStates[_nonce];

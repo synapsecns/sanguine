@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { ISnapAttestationHub } from "../interfaces/ISnapAttestationHub.sol";
 import { DestinationAttestation, SnapAttestation } from "../libs/SnapAttestation.sol";
 
 /**
  * @notice Hub to accept and save attestations.
  */
-abstract contract SnapAttestationHub {
+abstract contract SnapAttestationHub is ISnapAttestationHub {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -25,16 +26,12 @@ abstract contract SnapAttestationHub {
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @notice Returns the total amount of Notaries attestations that have been accepted.
+    /// @inheritdoc ISnapAttestationHub
     function attestationsAmount() external view returns (uint256) {
         return roots.length;
     }
 
-    /// @notice Returns an attestation from the list of all accepted Notary attestations.
-    /// @dev Index refers to attestation's snapshot root position in `roots` array.
-    /// @param _index   Attestation index
-    /// @return root    Snapshot root for the attestation
-    /// @return destAtt Rest of attestation data that Destination keeps track of
+    /// @inheritdoc ISnapAttestationHub
     function getAttestation(uint256 _index)
         external
         view

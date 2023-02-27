@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { ISnapshotHub } from "../interfaces/ISnapshotHub.sol";
 import {
     SnapAttestation,
     SnapAttestationLib,
@@ -12,7 +13,7 @@ import { State, StateLib, SummitState } from "../libs/State.sol";
 /**
  * @notice Hub to accept and save snapshots, as well as verify attestations.
  */
-abstract contract SnapshotHub {
+abstract contract SnapshotHub is ISnapshotHub {
     using SnapAttestationLib for bytes;
     using SnapshotLib for uint256[];
     using StateLib for bytes;
@@ -48,12 +49,7 @@ abstract contract SnapshotHub {
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Returns the state with the highest known nonce submitted by a given Guard.
-     * @param _origin       Domain of origin chain
-     * @param _guard        Guard address
-     * @return stateData    Raw payload with guard latest state for origin
-     */
+    /// @inheritdoc ISnapshotHub
     function getLatestState(uint32 _origin, address _guard)
         external
         view
@@ -64,25 +60,13 @@ abstract contract SnapshotHub {
         return latestState.formatSummitState();
     }
 
-    /**
-     * @notice Returns Notary snapshot that was used for creating an attestation with a given nonce.
-     * @dev Reverts if attestation with given nonce hasn't been created yet.
-     * @param _nonce            Nonce for the attestation
-     * @return snapshotPayload  Raw payload with Notary snapshot used for creating the attestation
-     */
+    /// @inheritdoc ISnapshotHub
     function getSnapshot(uint256 _nonce) external view returns (bytes memory snapshotPayload) {
         require(_nonce < attestations.length, "Nonce out of range");
         return _restoreSnapshot(notarySnapshots[_nonce]);
     }
 
-    /**
-     * @notice Returns Notary snapshot that was used for creating a given attestation.
-     * @dev Reverts if either of this is true:
-     *  - Attestation payload is not properly formatted.
-     *  - Attestation is invalid (doesn't have a matching Notary snapshot).
-     * @param _snapAttPayload   Raw payload with attestation data
-     * @return snapshotPayload  Raw payload with Notary snapshot used for creating the attestation
-     */
+    /// @inheritdoc ISnapshotHub
     function getSnapshot(bytes memory _snapAttPayload)
         external
         view
