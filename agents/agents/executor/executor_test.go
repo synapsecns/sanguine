@@ -1173,7 +1173,7 @@ func (e *ExecutorSuite) TestExecute() {
 
 	txContextOrigin.Value = types.TotalTips(tips3)
 
-	tx, err = e.OriginContract.Dispatch(txContextOrigin.TransactOpts, chainID, recipient, optimisticSeconds3, encodedTips3, body3)
+	tx, err = e.OriginContract.Dispatch(txContextOrigin.TransactOpts, destination, recipient, optimisticSeconds3, encodedTips3, body3)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
