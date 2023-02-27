@@ -99,8 +99,6 @@ func (s Store) GetAttestationBlockTime(ctx context.Context, attestationMask type
 }
 
 // GetLastAttestationBlockNumber gets the last block number that had an attestation in the database.
-//
-//molint:dupl
 func (s Store) GetLastAttestationBlockNumber(ctx context.Context, chainID uint32) (uint64, error) {
 	var attestation Attestation
 	var lastBlockNumber uint64
