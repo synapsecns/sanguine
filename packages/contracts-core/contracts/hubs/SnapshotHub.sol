@@ -46,6 +46,16 @@ abstract contract SnapshotHub is ISnapshotHub {
     uint256[45] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                EVENTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Emitted when an attestation created for a Notary snapshot is saved.
+     * @param attestation   Raw payload with attestation data
+     */
+    event AttestationSaved(bytes attestation);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -118,9 +128,14 @@ abstract contract SnapshotHub is ISnapshotHub {
 
     /// @dev Saves the Notary snapshot and the attestation created from it.
     function _saveSnapshotAttestation(Snapshot _snapshot, uint256[] memory statePtrs) internal {
+        // Attestation nonce is its index in `attestations` array
+        uint32 attNonce = uint32(attestations.length);
+        SummitAttestation memory summitAtt = _snapshot.toSummitAttestation();
+        // Emit event with raw attestation data
+        emit AttestationSaved(summitAtt.formatSummitAttestation(attNonce));
         /// @dev Add a single element to both `attestations` and `notarySnapshots`,
         /// enforcing the (attestations.length == notarySnapshots.length) invariant.
-        attestations.push(_snapshot.toSummitAttestation());
+        attestations.push(summitAtt);
         notarySnapshots.push(statePtrs.toSummitSnapshot());
     }
 

@@ -28,6 +28,8 @@ struct SummitAttestation {
     uint40 blockNumber;
     uint40 timestamp;
 }
+/// @dev Attach library functions to SummitAttestation
+using { SnapAttestationLib.formatSummitAttestation } for SummitAttestation global;
 
 /// @dev Struct representing SnapAttestation, as it is stored in the Destination contract.
 /// mapping (bytes32 root => DestinationAttestation) is supposed to be used
@@ -98,7 +100,7 @@ library SnapAttestationLib {
     /**
      * @notice Returns a formatted Attestation payload with provided fields.
      * @param _root         Snapshot merkle tree's root
-     * @param _depth        Snapshot merkle tree's height
+     * @param _height       Snapshot merkle tree's height
      * @param _nonce        Attestation Nonce
      * @param _blockNumber  Block number when attestation was created in Summit
      * @param _timestamp    Block timestamp when attestation was created in Summit
@@ -106,12 +108,12 @@ library SnapAttestationLib {
      **/
     function formatSnapAttestation(
         bytes32 _root,
-        uint8 _depth,
+        uint8 _height,
         uint32 _nonce,
         uint40 _blockNumber,
         uint40 _timestamp
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(_root, _depth, _nonce, _blockNumber, _timestamp);
+        return abi.encodePacked(_root, _height, _nonce, _blockNumber, _timestamp);
     }
 
     /**
@@ -144,6 +146,27 @@ library SnapAttestationLib {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          SUMMIT ATTESTATION                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Returns a formatted Attestation payload with provided fields.
+     * @param _summitAtt    SnapAttestation struct as it stored in Summit contract
+     * @param _nonce        Attestation nonce
+     * @return Formatted attestation
+     */
+    function formatSummitAttestation(SummitAttestation memory _summitAtt, uint32 _nonce)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return
+            formatSnapAttestation({
+                _root: _summitAtt.root,
+                _height: _summitAtt.height,
+                _nonce: _nonce,
+                _blockNumber: _summitAtt.blockNumber,
+                _timestamp: _summitAtt.timestamp
+            });
+    }
 
     /// @notice Checks that a SnapshotAttestation and its Summit representation are equal.
     function equalToSummit(SnapAttestation _snapAtt, SummitAttestation memory _summitAtt)

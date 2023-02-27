@@ -61,6 +61,18 @@ contract SnapAttestationHarness {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SUMMIT ATTESTATION                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function formatSummitAttestation(SummitAttestation memory _summitAtt, uint32 _nonce)
+        public
+        pure
+        returns (bytes memory)
+    {
+        return _summitAtt.formatSummitAttestation(_nonce);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                        ATTESTATION FORMATTERS                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 

@@ -89,6 +89,31 @@ contract SnapAttestationLibraryTest is SynapseLibraryTest {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SUMMIT ATTESTATION                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_formatSummitAttestation(RawSnapAttestation memory rs) public {
+        SummitAttestation memory att = SummitAttestation(
+            rs.root,
+            rs.height,
+            rs.blockNumber,
+            rs.timestamp
+        );
+        bytes memory payload = libHarness.formatSummitAttestation(att, rs.nonce);
+        assertEq(
+            payload,
+            libHarness.formatSnapAttestation(
+                rs.root,
+                rs.height,
+                rs.nonce,
+                rs.blockNumber,
+                rs.timestamp
+            ),
+            "!formatSummitAttestation"
+        );
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               HELPERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
