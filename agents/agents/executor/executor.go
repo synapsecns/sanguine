@@ -465,7 +465,7 @@ func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) 
 
 // streamLogs uses gRPC to stream logs into a channel.
 //
-//nolint:cyclop,gocognit
+//nolint:cyclop
 func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chain config.ChainConfig, toBlockNumber *uint64, contractEvent contractEventType) error {
 	var address string
 
