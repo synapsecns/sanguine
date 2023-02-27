@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "6213369efb316c9ca86573441375f1a15bf4f822"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -381,7 +381,7 @@ notary_files:
   notary_signer.txt: |-
     04486fc4ef3f3fb489c9f4ed4ff07cb9aa998abc0a244f2464c76164bcfad41d
   notary_config.yaml: |-
-    refresh_interval_in_seconds: 1
+    refresh_interval_in_seconds: 10
     origin_domains:
       origin_client:
         domain_id: 137
@@ -425,7 +425,7 @@ guard_files:
   guard_signer.txt: |-
     dd03ef81893502797024462da191deaf1e90f30879b3b7673acb11ce72f73094
   guard_config.yaml: |-
-    refresh_interval_in_seconds: 1
+    refresh_interval_in_seconds: 10
     origin_domains:
       origin_client:
         domain_id: 137

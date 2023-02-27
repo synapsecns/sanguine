@@ -38,4 +38,4 @@ database:
   type: sqlite
   dbpath: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/dir970593173
   connstring: /var/folders/bh/xt_fq0lj2p31xm5t9my6k8p40000gn/T/dir731498480
-refreshintervalinseconds: 1
+refreshintervalinseconds: 10
