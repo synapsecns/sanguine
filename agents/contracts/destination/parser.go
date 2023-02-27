@@ -78,7 +78,8 @@ type EventType uint
 const (
 	// AttestationAcceptedEvent is an AttestationAccepted event.
 	AttestationAcceptedEvent EventType = 0
-	ExecutedEvent            EventType = 1
+	// ExecutedEvent is an Executed event.
+	ExecutedEvent EventType = 1
 )
 
 // Int gets the int for an event type.

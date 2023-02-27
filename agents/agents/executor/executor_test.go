@@ -2014,11 +2014,11 @@ func (e *ExecutorSuite) TestSetMinimumTimes() {
 
 	e.Len(messages, 6)
 
-	minNonce := messages[0].Nonce
+	minNonce := messages[0].Nonce()
 	attestationMask := types2.DBAttestation{
 		ChainID: &chainID,
 	}
-	attestations, err := e.ExecutorTestDB.GetAttestationsAboveOrEqualNonce(e.GetTestContext(), attestationMask, minNonce(), 1)
+	attestations, err := e.ExecutorTestDB.GetAttestationsAboveOrEqualNonce(e.GetTestContext(), attestationMask, minNonce, 1)
 	e.Nil(err)
 
 	e.Len(attestations, 4)

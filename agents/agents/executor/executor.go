@@ -185,23 +185,43 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 
 // Run starts the executor agent. It calls `Start` and `Listen`.
 func (e Executor) Run(ctx context.Context) error {
-	// Backfill executed messages.
 	g, _ := errgroup.WithContext(ctx)
+
+	// Backfill executed messages.
+	for _, chain := range e.config.Chains {
+		g.Go(func() error {
+			latestHeader, err := e.chainExecutors[chain.ChainID].rpcClient.HeaderByNumber(ctx, nil)
+			if err != nil {
+				return fmt.Errorf("could not get latest header: %w", err)
+			}
+
+			blockNumber := latestHeader.Number.Uint64()
+
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, &blockNumber, contractEventType{
+				contractType:         destinationContract,
+				destinationEventType: executedEvent,
+			})
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("could not backfill executed messages: %w", err)
+	}
 
 	for _, chain := range e.config.Chains {
 		chain := chain
 
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, contractEventType{
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
 				contractType:         originContract,
 				destinationEventType: otherEvent,
 			})
 		})
 
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, contractEventType{
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
 				contractType:         destinationContract,
-				destinationEventType: attestationAcceptedEvent,
+				destinationEventType: otherEvent,
 			})
 		})
 
@@ -438,14 +458,13 @@ func newTreeFromDB(ctx context.Context, chainID uint32, destination uint32, exec
 
 // markAsExecuted marks a message as executed via the `executed` mapping.
 func (e Executor) markAsExecuted(ctx context.Context) error {
-
 	return nil
 }
 
 // streamLogs uses gRPC to stream logs into a channel.
 //
 //nolint:cyclop
-func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chain config.ChainConfig, contractEvent contractEventType) error {
+func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chain config.ChainConfig, toBlockNumber *uint64, contractEvent contractEventType) error {
 	var address string
 
 	//nolint:exhaustive
@@ -464,13 +483,19 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	}
 
 	fromBlock := strconv.FormatUint(lastStoredBlock, 10)
+
+	toBlock := "latest"
+	if toBlockNumber != nil {
+		toBlock = strconv.FormatUint(*toBlockNumber, 10)
+	}
+
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
 			ChainId:         chain.ChainID,
 		},
 		FromBlock: fromBlock,
-		ToBlock:   "latest",
+		ToBlock:   toBlock,
 	})
 	if err != nil {
 		return fmt.Errorf("could not stream logs: %w", err)
@@ -519,7 +544,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 // processLog processes the log and updates the merkle tree.
 //
-//nolint:cyclop
+//nolint:cyclop,gocognit
 func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
 	contractEvent := e.logType(log, chainID)
 
@@ -660,14 +685,21 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 				}
 
 				for _, message := range messages {
-					executed, err := e.Execute(ctx, message)
+					leaf, err := message.ToLeaf()
 					if err != nil {
-						logger.Errorf("could not execute message, retrying: %s", err)
-						continue
+						return fmt.Errorf("could not convert message to leaf: %w", err)
 					}
 
-					if !executed {
-						continue
+					if !e.chainExecutors[chainID].executed[leaf] {
+						executed, err := e.Execute(ctx, message)
+						if err != nil {
+							logger.Errorf("could not execute message, retrying: %s", err)
+							continue
+						}
+
+						if !executed {
+							continue
+						}
 					}
 
 					destinationDomain := message.DestinationDomain()
