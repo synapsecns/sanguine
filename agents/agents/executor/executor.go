@@ -189,18 +189,10 @@ func (e Executor) Run(ctx context.Context) error {
 
 	// Backfill executed messages.
 	for _, chain := range e.config.Chains {
+		chain := chain
+
 		g.Go(func() error {
-			latestHeader, err := e.chainExecutors[chain.ChainID].rpcClient.HeaderByNumber(ctx, nil)
-			if err != nil {
-				return fmt.Errorf("could not get latest header: %w", err)
-			}
-
-			blockNumber := latestHeader.Number.Uint64()
-
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, &blockNumber, contractEventType{
-				contractType:         destinationContract,
-				destinationEventType: executedEvent,
-			})
+			return e.markAsExecuted(ctx, chain)
 		})
 	}
 
@@ -312,7 +304,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    3 * time.Millisecond,
+		Min:    30 * time.Millisecond,
 		Max:    3 * time.Second,
 	}
 
@@ -457,8 +449,18 @@ func newTreeFromDB(ctx context.Context, chainID uint32, destination uint32, exec
 }
 
 // markAsExecuted marks a message as executed via the `executed` mapping.
-func (e Executor) markAsExecuted(ctx context.Context) error {
-	return nil
+func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) error {
+	latestHeader, err := e.chainExecutors[chain.ChainID].rpcClient.HeaderByNumber(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("could not get latest header: %w", err)
+	}
+
+	blockNumber := latestHeader.Number.Uint64()
+
+	return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, &blockNumber, contractEventType{
+		contractType:         destinationContract,
+		destinationEventType: executedEvent,
+	})
 }
 
 // streamLogs uses gRPC to stream logs into a channel.
@@ -529,6 +531,13 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 				return fmt.Errorf("could not convert log")
 			}
 
+			// If we are filtering for `executed` events, we do not need to `verifyAfter`
+			// since we are backfilling.
+			if contractEvent.destinationEventType == executedEvent {
+				e.chainExecutors[chain.ChainID].logChan <- log
+
+				continue
+			}
 			if !e.chainExecutors[chain.ChainID].lastLog.verifyAfter(*log) {
 				logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chain.ChainID].lastLog.blockNumber, e.chainExecutors[chain.ChainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 
@@ -690,7 +699,9 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 						return fmt.Errorf("could not convert message to leaf: %w", err)
 					}
 
-					if !e.chainExecutors[chainID].executed[leaf] {
+					destinationDomain := message.DestinationDomain()
+
+					if !e.chainExecutors[destinationDomain].executed[leaf] {
 						executed, err := e.Execute(ctx, message)
 						if err != nil {
 							logger.Errorf("could not execute message, retrying: %s", err)
@@ -702,7 +713,6 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 						}
 					}
 
-					destinationDomain := message.DestinationDomain()
 					nonce := message.Nonce()
 					executedMessageMask := execTypes.DBMessage{
 						ChainID:     &chainID,

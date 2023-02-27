@@ -145,6 +145,11 @@ func (e Executor) GetMerkleTree(chainID uint32, domain uint32) *merkle.Historica
 	return e.chainExecutors[chainID].merkleTrees[domain]
 }
 
+// GetExecuted gets the executed mapping.
+func (e Executor) GetExecuted(chainID uint32) map[[32]byte]bool {
+	return e.chainExecutors[chainID].executed
+}
+
 // VerifyMessageMerkleProof verifies message merkle proof.
 func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) {
 	return e.verifyMessageMerkleProof(message)
