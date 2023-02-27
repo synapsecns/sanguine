@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import { IOrigin } from "./interfaces/IOrigin.sol";
 import { DomainContext, StateHub } from "./hubs/StateHub.sol";
 import { SnapAttestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
-contract OriginNew is StatementHub, StateHub, SystemRegistry {
+contract OriginNew is StatementHub, StateHub, SystemRegistry, IOrigin {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -54,24 +55,7 @@ contract OriginNew is StatementHub, StateHub, SystemRegistry {
     ▏*║                          VERIFY STATEMENTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Verifies a state from the snapshot (a list of states) signed by a Guard or a Notary.
-     * Does nothing, if the state is valid (matches the historical state of this contract).
-     * Slashes the snapshot signer, if the state is invalid.
-     * @dev Will revert if any of these is true:
-     *  - Snapshot payload is not properly formatted.
-     *  - Attestation payload is not properly formatted.
-     *  - Attestation signer is not an active Notary.
-     *  - Attestation root is not equal to root derived from the snapshot.
-     *  - State index is out of range.
-     *  - Snapshot state does not refer to this chain.
-     * @param _snapPayload      Raw payload with snapshot data
-     * @param _stateIndex       State index to check
-     * @param _attPayload       Raw payload with SnapAttestation data
-     * @param _attSignature     Notary signature for the attestation
-     * @return isValid          Whether the requested state is valid.
-     *                          Notary is slashed, if return value is FALSE.
-     */
+    /// @inheritdoc IOrigin
     function verifyAttestation(
         bytes memory _snapPayload,
         uint256 _stateIndex,
@@ -93,21 +77,7 @@ contract OriginNew is StatementHub, StateHub, SystemRegistry {
         }
     }
 
-    /**
-     * @notice Verifies a state from the snapshot (a list of states) signed by a Guard or a Notary.
-     * Does nothing, if the state is valid (matches the historical state of this contract).
-     * Slashes the snapshot signer, if the state is invalid.
-     * @dev Will revert if any of these is true:
-     *  - Snapshot payload is not properly formatted.
-     *  - Snapshot signer is not an active Agent.
-     *  - State index is out of range.
-     *  - Snapshot state does not refer to this chain.
-     * @param _snapPayload      Raw payload with snapshot data
-     * @param _stateIndex       State index to check
-     * @param _snapSignature    Agent signature for the snapshot
-     * @return isValid          Whether the requested state is valid.
-     *                          Agent is slashed, if return value is FALSE.
-     */
+    /// @inheritdoc IOrigin
     function verifySnapshot(
         bytes memory _snapPayload,
         uint256 _stateIndex,
@@ -124,6 +94,21 @@ contract OriginNew is StatementHub, StateHub, SystemRegistry {
             emit InvalidSnapshotState(_stateIndex, _snapPayload, _snapSignature);
             _slashAgent(domain, agent);
         }
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          DISPATCH MESSAGES                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc IOrigin
+    function dispatch(
+        uint32 _destination,
+        bytes32 _recipient,
+        uint32 _optimisticSeconds,
+        bytes memory _tips,
+        bytes memory _messageBody
+    ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
+        // TODO: implement
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

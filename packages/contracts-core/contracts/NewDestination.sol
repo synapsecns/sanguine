@@ -4,14 +4,14 @@ pragma solidity 0.8.17;
 import { DomainContext } from "./context/DomainContext.sol";
 import { DestinationAttestation, SnapAttestationHub } from "./hubs/SnapAttestationHub.sol";
 import { SnapAttestation, StatementHub } from "./hubs/StatementHub.sol";
+import { IDestination, ORIGIN_TREE_DEPTH } from "./interfaces/IDestination.sol";
 import { Header, HeaderLib } from "./libs/Header.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Message, MessageLib } from "./libs/Message.sol";
 import { StateLib } from "./libs/State.sol";
-import { ORIGIN_TREE_DEPTH } from "./libs/Structures.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
-contract DestinationNew is StatementHub, SnapAttestationHub, SystemRegistry {
+contract DestinationNew is StatementHub, SnapAttestationHub, SystemRegistry, IDestination {
     // TODO: Attach library functions to custom types globally
     using HeaderLib for Header;
     using MessageLib for Message;
@@ -33,13 +33,7 @@ contract DestinationNew is StatementHub, SnapAttestationHub, SystemRegistry {
     ▏*║                          ACCEPT STATEMENTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Submit a SnapAttestation signed by a Notary.
-     * @dev Will revert if any of these is true:
-     *  - Attestation payload is not properly formatted.
-     *  - Attestation signer is not an active Notary for local domain.
-     *  - Attestation's snapshot root has been previously submitted.
-     */
+    /// @inheritdoc IDestination
     function submitAttestation(bytes memory _attPayload, bytes memory _attSignature)
         external
         returns (bool wasAccepted)
@@ -54,6 +48,20 @@ contract DestinationNew is StatementHub, SnapAttestationHub, SystemRegistry {
         // This will revert if snapshot root has been previously submitted
         _acceptAttestation(snapAtt, notary);
         return true;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           EXECUTE MESSAGES                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc IDestination
+    function execute(
+        bytes memory _message,
+        bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
+        bytes32[] calldata _snapProof,
+        uint256 _snapIndex
+    ) external {
+        // TODO: implement
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
