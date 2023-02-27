@@ -26,6 +26,16 @@ abstract contract StateHub is DomainContext, IStateHub {
     uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                EVENTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Emitted when a new Origin State is saved after a message was dispatched.
+     * @param state     Raw payload with state data
+     */
+    event StateSaved(bytes state);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -56,7 +66,11 @@ abstract contract StateHub is DomainContext, IStateHub {
 
     /// @dev Saves an updated state of the Origin contract
     function _saveState(OriginState memory _state) internal {
+        // State nonce is its index in `originStates` array
+        uint32 stateNonce = uint32(originStates.length);
         originStates.push(_state);
+        // Emit event with raw state data
+        emit StateSaved(_state.formatOriginState({ _origin: localDomain, _nonce: stateNonce }));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

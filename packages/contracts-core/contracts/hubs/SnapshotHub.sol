@@ -9,6 +9,7 @@ import {
 } from "../libs/SnapAttestation.sol";
 import { Snapshot, SnapshotLib, SummitSnapshot } from "../libs/Snapshot.sol";
 import { State, StateLib, SummitState } from "../libs/State.sol";
+import { TypedMemView } from "../libs/TypedMemView.sol";
 
 /**
  * @notice Hub to accept and save snapshots, as well as verify attestations.
@@ -17,6 +18,7 @@ abstract contract SnapshotHub is ISnapshotHub {
     using SnapAttestationLib for bytes;
     using SnapshotLib for uint256[];
     using StateLib for bytes;
+    using TypedMemView for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
@@ -54,6 +56,12 @@ abstract contract SnapshotHub is ISnapshotHub {
      * @param attestation   Raw payload with attestation data
      */
     event AttestationSaved(bytes attestation);
+
+    /**
+     * @notice Emitted when a new Origin State is saved from a Guard snapshot.
+     * @param state     Raw payload with state data
+     */
+    event StateSaved(bytes state);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
@@ -131,12 +139,12 @@ abstract contract SnapshotHub is ISnapshotHub {
         // Attestation nonce is its index in `attestations` array
         uint32 attNonce = uint32(attestations.length);
         SummitAttestation memory summitAtt = _snapshot.toSummitAttestation();
-        // Emit event with raw attestation data
-        emit AttestationSaved(summitAtt.formatSummitAttestation(attNonce));
         /// @dev Add a single element to both `attestations` and `notarySnapshots`,
         /// enforcing the (attestations.length == notarySnapshots.length) invariant.
         attestations.push(summitAtt);
         notarySnapshots.push(statePtrs.toSummitSnapshot());
+        // Emit event with raw attestation data
+        emit AttestationSaved(summitAtt.formatSummitAttestation(attNonce));
     }
 
     /// @dev Saves the state signed by a Guard.
@@ -154,7 +162,8 @@ abstract contract SnapshotHub is ISnapshotHub {
             // State is stored at (length - 1), but we are tracking "index PLUS 1" as "pointer"
             statePtr = guardStates.length;
             leafPtr[origin][stateHash] = statePtr;
-            // TODO: Emit event that state was saved for origin chain?
+            // Emit event with raw state data
+            emit StateSaved(_state.unwrap().clone());
         }
         // Update latest guard state for origin
         latestStatePtr[origin][_guard] = statePtr;
