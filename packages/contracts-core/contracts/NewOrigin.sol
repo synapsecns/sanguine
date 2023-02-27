@@ -35,6 +35,20 @@ contract OriginNew is StatementHub, StateHub, SystemRegistry, IOrigin {
      */
     event InvalidSnapshotState(uint256 stateIndex, bytes snapshot, bytes snapSignature);
 
+    /**
+     * @notice Emitted when a new message is dispatched.
+     * @param messageHash   Hash of message; the leaf inserted to the Merkle tree for the message
+     * @param nonce         Nonce of sent message (starts from 1)
+     * @param destination   Destination domain
+     * @param message       Raw bytes of message
+     */
+    event Dispatched(
+        bytes32 indexed messageHash,
+        uint32 indexed nonce,
+        uint32 indexed destination,
+        bytes message
+    );
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

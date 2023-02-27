@@ -17,6 +17,20 @@ contract DestinationNew is StatementHub, SnapAttestationHub, SystemRegistry, IDe
     using MessageLib for Message;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                EVENTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // TODO: move Events to a separate contract, once the old Destination is deprecated
+
+    /**
+     * @notice Emitted when message is executed.
+     * @param remoteDomain  Remote domain where message originated
+     * @param messageHash   The keccak256 hash of the message that was executed
+     * @param tips          Raw payload with tips paid for the off-chain agents
+     */
+    event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash, bytes tips);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
