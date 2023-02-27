@@ -47,7 +47,7 @@ func (u GuardSuite) TestGuardE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	encodedTestConfig, err := testConfig.Encode()
 	Nil(u.T(), err)
