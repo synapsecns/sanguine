@@ -34,6 +34,10 @@ contract PingPongClient is IMessageRecipient {
     /// @notice Amount of "Ping" messages sent.
     uint256 public pingsSent;
 
+    /// @notice Amount of "Ping" messages received.
+    /// Every received Ping message leads to sending a Pong message back to initial sender.
+    uint256 public pingsReceived;
+
     /// @notice Amount of "Pong" messages received.
     /// When all messages are delivered, should be equal to `pingsSent`
     uint256 public pongsReceived;
@@ -85,6 +89,7 @@ contract PingPongClient is IMessageRecipient {
         PingPongMessage memory _msg = abi.decode(_message, (PingPongMessage));
         if (_msg.isPing) {
             // Ping is received
+            ++pingsReceived;
             emit PingReceived(_msg.pingId);
             // Send Pong back
             _pong(_origin, _sender, _msg);

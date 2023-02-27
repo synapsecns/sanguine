@@ -49,7 +49,10 @@ contract PingPongTest is Test {
         vm.expectEmit(true, true, true, true);
         emit PingSent(pingId);
         client.doPing(destination, recipient, counter);
+        // Pings sent: 1
         assertEq(client.pingsSent(), 1);
+        // Received pings: 0, pongs: 0
+        assertEq(client.pingsReceived(), 0);
         assertEq(client.pongsReceived(), 0);
     }
 
@@ -74,7 +77,10 @@ contract PingPongTest is Test {
             emit PingSent(pingId + i);
         }
         client.doPings(pingCount, destination, recipient, counter);
+        // Pings sent: pingCount
         assertEq(client.pingsSent(), pingCount);
+        // Received pings: 0, pongs: 0
+        assertEq(client.pingsReceived(), 0);
         assertEq(client.pongsReceived(), 0);
     }
 
@@ -99,7 +105,10 @@ contract PingPongTest is Test {
             0,
             _messageBody(pingId, true, counter)
         );
+        // Pings sent: 0
         assertEq(client.pingsSent(), 0);
+        // Received pings: 1, pongs: 0
+        assertEq(client.pingsReceived(), 1);
         assertEq(client.pongsReceived(), 0);
     }
 
@@ -128,7 +137,10 @@ contract PingPongTest is Test {
             0,
             _messageBody(pingId, false, counter)
         );
+        // Pings sent: 0/1 (based on counter being zero / non-zero)
         assertEq(client.pingsSent(), counter == 0 ? 0 : 1);
+        // Received pings: 0, pongs: 1
+        assertEq(client.pingsReceived(), 0);
         assertEq(client.pongsReceived(), 1);
     }
 
