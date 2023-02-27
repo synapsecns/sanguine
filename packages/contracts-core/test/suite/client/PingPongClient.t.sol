@@ -22,11 +22,13 @@ contract PingPongTest is Test {
     address internal originMock;
     address internal destinationMock;
 
-    // Emitted when "Ping" is sent
-    event Ping(uint256 indexed pingId, uint16 pongsLeft);
+    event PingSent(uint256 pingId);
 
-    // Emitted when "Ping" is received
-    event Pong(uint256 indexed pingId, uint16 pongsLeft);
+    event PingReceived(uint256 pingId);
+
+    event PongSent(uint256 pingId);
+
+    event PongReceived(uint256 pingId);
 
     function setUp() public {
         originMock = address(new OriginMock());
@@ -37,26 +39,27 @@ contract PingPongTest is Test {
     function test_ping(
         uint32 destination,
         address recipient,
-        uint16 pongsTotal
+        uint16 counter
     ) public {
-        uint256 pingId = client.totalSent();
+        uint256 pingId = client.pingsSent();
         uint32 nextPeriod = client.nextOptimisticPeriod();
         // Should call Origin
-        _expectOriginCall(destination, recipient, nextPeriod, pingId, pongsTotal);
-        // Should emit Ping
+        _expectOriginCall(destination, recipient, nextPeriod, pingId, true, counter);
+        // Should emit PingSent
         vm.expectEmit(true, true, true, true);
-        emit Ping(pingId, pongsTotal);
-        client.doPing(destination, recipient, pongsTotal);
-        assertEq(client.totalSent(), 1);
+        emit PingSent(pingId);
+        client.doPing(destination, recipient, counter);
+        assertEq(client.pingsSent(), 1);
+        assertEq(client.pongsReceived(), 0);
     }
 
     function test_pings(
         uint8 pingCount,
         uint32 destination,
         address recipient,
-        uint16 pongsTotal
+        uint16 counter
     ) public {
-        uint256 pingId = client.totalSent();
+        uint256 pingId = client.pingsSent();
         uint256 random = client.random();
         uint32[] memory periods = new uint32[](pingCount);
         for (uint256 i = 0; i < pingCount; ++i) {
@@ -65,28 +68,57 @@ contract PingPongTest is Test {
         }
         for (uint256 i = 0; i < pingCount; ++i) {
             // Should call Origin
-            _expectOriginCall(destination, recipient, periods[i], pingId + i, pongsTotal);
-            // Should emit Ping
+            _expectOriginCall(destination, recipient, periods[i], pingId + i, true, counter);
+            // Should emit PingSent
             vm.expectEmit(true, true, true, true);
-            emit Ping(pingId + i, pongsTotal);
+            emit PingSent(pingId + i);
         }
-        client.doPings(pingCount, destination, recipient, pongsTotal);
-        assertEq(client.totalSent(), pingCount);
+        client.doPings(pingCount, destination, recipient, counter);
+        assertEq(client.pingsSent(), pingCount);
+        assertEq(client.pongsReceived(), 0);
     }
 
-    function test_pong(
+    function test_receivePing(
         uint32 origin,
         address sender,
         uint256 pingId,
-        uint16 pongsLeft
+        uint16 counter
     ) public {
         uint32 nextPeriod = client.nextOptimisticPeriod();
-        // Should emit Pong
+        // Should emit PingReceived
         vm.expectEmit(true, true, true, true);
-        emit Pong(pingId, pongsLeft);
-        if (pongsLeft != 0) {
-            // Should call Origin if amount of pongs > 0
-            _expectOriginCall(origin, sender, nextPeriod, pingId, pongsLeft - 1);
+        emit PingReceived(pingId);
+        // Should emit PongSent
+        emit PongSent(pingId);
+        _expectOriginCall(origin, sender, nextPeriod, pingId, false, counter);
+        vm.prank(destinationMock);
+        client.handle(
+            origin,
+            0,
+            bytes32(uint256(uint160(sender))),
+            0,
+            _messageBody(pingId, true, counter)
+        );
+        assertEq(client.pingsSent(), 0);
+        assertEq(client.pongsReceived(), 0);
+    }
+
+    function test_receivePong(
+        uint32 origin,
+        address sender,
+        uint256 pingId,
+        uint16 counter
+    ) public {
+        uint256 localPingId = client.pingsSent();
+        uint32 nextPeriod = client.nextOptimisticPeriod();
+        // Should emit PongReceived
+        vm.expectEmit(true, true, true, true);
+        emit PongReceived(pingId);
+        if (counter > 0) {
+            // Should emit PingSent
+            vm.expectEmit(true, true, true, true);
+            emit PingSent(localPingId);
+            _expectOriginCall(origin, sender, nextPeriod, localPingId, true, counter - 1);
         }
         vm.prank(destinationMock);
         client.handle(
@@ -94,9 +126,10 @@ contract PingPongTest is Test {
             0,
             bytes32(uint256(uint160(sender))),
             0,
-            _messageBody(pingId, pongsLeft)
+            _messageBody(pingId, false, counter)
         );
-        assertEq(client.totalReceived(), 1);
+        assertEq(client.pingsSent(), counter == 0 ? 0 : 1);
+        assertEq(client.pongsReceived(), 1);
     }
 
     function _expectOriginCall(
@@ -104,10 +137,11 @@ contract PingPongTest is Test {
         address recipient,
         uint32 optimisticPeriod,
         uint256 pingId,
-        uint16 pongsLeft
+        bool isPing,
+        uint16 counter
     ) internal {
         bytes memory tips = Tips.emptyTips();
-        bytes memory body = _messageBody(pingId, pongsLeft);
+        bytes memory body = _messageBody(pingId, isPing, counter);
         vm.expectCall(
             originMock,
             abi.encodeWithSelector(
@@ -121,7 +155,11 @@ contract PingPongTest is Test {
         );
     }
 
-    function _messageBody(uint256 pingId, uint16 pongsLeft) internal pure returns (bytes memory) {
-        return abi.encode(pingId, pongsLeft);
+    function _messageBody(
+        uint256 pingId,
+        bool isPing,
+        uint16 counter
+    ) internal pure returns (bytes memory) {
+        return abi.encode(pingId, isPing, counter);
     }
 }
