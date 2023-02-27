@@ -3,6 +3,16 @@ pragma solidity 0.8.17;
 
 interface ISnapshotHub {
     /**
+     * @notice Check that a given attestation is valid: matches the historical attestation
+     * derived from an accepted Notary snapshot.
+     * @dev Will revert if any of these is true:
+     *  - Attestation payload is not properly formatted.
+     * @param _snapAttPayload   Raw payload with attestation data
+     * @return isValid          Whether the provided attestation is valid
+     */
+    function isValidAttestation(bytes memory _snapAttPayload) external view returns (bool isValid);
+
+    /**
      * @notice Returns the state with the highest known nonce submitted by a given Guard.
      * @param _origin       Domain of origin chain
      * @param _guard        Guard address

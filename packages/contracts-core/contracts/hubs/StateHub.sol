@@ -15,6 +15,8 @@ import { EMPTY_ROOT } from "../libs/Structures.sol";
  * - How to compare "states" to one another
  */
 abstract contract StateHub is DomainContext, IStateHub {
+    using StateLib for bytes;
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -38,6 +40,13 @@ abstract contract StateHub is DomainContext, IStateHub {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc IStateHub
+    function isValidState(bytes memory _statePayload) external view returns (bool isValid) {
+        // This will revert if payload is not a formatted state
+        State state = _statePayload.castToState();
+        return _isValidState(state);
+    }
 
     /// @inheritdoc IStateHub
     function suggestLatestState() external view returns (bytes memory stateData) {

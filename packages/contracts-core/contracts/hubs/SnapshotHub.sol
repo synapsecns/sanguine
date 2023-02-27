@@ -68,6 +68,12 @@ abstract contract SnapshotHub is ISnapshotHub {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc ISnapshotHub
+    function isValidAttestation(bytes memory _snapAttPayload) external view returns (bool isValid) {
+        // This will revert if payload is not a formatted attestation
+        SnapAttestation attestation = _snapAttPayload.castToSnapAttestation();
+        return _isValidAttestation(attestation);
+    }
+
     function getLatestState(uint32 _origin, address _guard)
         external
         view
