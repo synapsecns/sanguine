@@ -486,7 +486,7 @@ guard_files:
 
 executor_remote_existing_files:
   executor_signer.txt: |-
-    b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
+    16c909570a212af6a328a1cf594a20d7cf6edf56fafa0b50967f2039b1f68445
   executor_config.yaml: |-
     base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
     execute_interval: 10
@@ -502,7 +502,7 @@ executor_remote_existing_files:
         destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
     unbonded_signer:
       type: "File"
-      file: "/config/notary_signer.txt"
+      file: "/config/executor_signer.txt"
 
 executor_remote_fresh_files:
   executor_signer.txt: |-
@@ -522,7 +522,7 @@ executor_remote_fresh_files:
         destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
     unbonded_signer:
       type: "File"
-      file: "/config/notary_signer.txt"
+      file: "/config/executor_signer.txt"
     embedded_scribe_config:
       chains:
         - chain_id: 137
