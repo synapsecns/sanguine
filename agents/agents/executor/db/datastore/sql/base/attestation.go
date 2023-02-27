@@ -98,6 +98,37 @@ func (s Store) GetAttestationBlockTime(ctx context.Context, attestationMask type
 	return &attestation.DestinationBlockTime, nil
 }
 
+// GetLastAttestationBlockNumber gets the last block number that had an attestation in the database.
+func (s Store) GetLastAttestationBlockNumber(ctx context.Context, chainID uint32) (uint64, error) {
+	var attestation Attestation
+	var lastBlockNumber uint64
+	var numAttestations int64
+
+	// Get the total amount of attestations stored in the database.
+	dbTx := s.DB().WithContext(ctx).
+		Model(&attestation).
+		Where(&Attestation{ChainID: chainID}).
+		Count(&numAttestations)
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("failed to get last attestation block number: %w", dbTx.Error)
+	}
+	if numAttestations == 0 {
+		return 0, nil
+	}
+
+	// Get the last block number that had an attestation.
+	dbTx = s.DB().WithContext(ctx).
+		Model(&attestation).
+		Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
+		Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
+		Find(&lastBlockNumber)
+	if dbTx.Error != nil {
+		return 0, fmt.Errorf("failed to get last attestation block number: %w", dbTx.Error)
+	}
+
+	return lastBlockNumber, nil
+}
+
 // GetAttestationForNonceOrGreater gets the lowest nonce attestation that is greater than or equal to the given nonce.
 func (s Store) GetAttestationForNonceOrGreater(ctx context.Context, attestationMask types.DBAttestation) (nonce *uint32, blockTime *uint64, err error) {
 	var attestation Attestation

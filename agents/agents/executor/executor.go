@@ -479,12 +479,25 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 		return fmt.Errorf("contract type not supported")
 	}
 
-	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chain.ChainID)
+	lastStoredMessageBlock, err := e.executorDB.GetLastMessageBlockNumber(ctx, chain.ChainID)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
 	}
 
-	fromBlock := strconv.FormatUint(lastStoredBlock, 10)
+	lastStoredAttestationBlock, err := e.executorDB.GetLastAttestationBlockNumber(ctx, chain.ChainID)
+	if err != nil {
+		return fmt.Errorf("could not get last stored block: %w", err)
+	}
+
+	var lastBlock uint64
+
+	if lastStoredMessageBlock > lastStoredAttestationBlock {
+		lastBlock = lastStoredMessageBlock
+	} else {
+		lastBlock = lastStoredAttestationBlock
+	}
+
+	fromBlock := strconv.FormatUint(lastBlock, 10)
 
 	toBlock := "latest"
 	if toBlockNumber != nil {

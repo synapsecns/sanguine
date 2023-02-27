@@ -29,8 +29,8 @@ type ExecutorDBReader interface {
 	GetMessages(ctx context.Context, messageMask types.DBMessage, page int) ([]agentsTypes.Message, error)
 	// GetBlockNumber gets the block number of a message from the database.
 	GetBlockNumber(ctx context.Context, messageMask types.DBMessage) (uint64, error)
-	// GetLastBlockNumber gets the last block number that had a message in the database.
-	GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
+	// GetLastMessageBlockNumber gets the last block number that had a message in the database.
+	GetLastMessageBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
 	// GetExecutableMessages gets executable messages from the database.
 	GetExecutableMessages(ctx context.Context, messageMask types.DBMessage, currentTime uint64, page int) ([]agentsTypes.Message, error)
 	// GetUnsetMinimumTimeMessages gets messages from the database that have not had their minimum time set.
@@ -44,6 +44,8 @@ type ExecutorDBReader interface {
 	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 	// GetAttestationBlockTime gets the block time of an attestation.
 	GetAttestationBlockTime(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
+	// GetLastAttestationBlockNumber gets the last block number that had an attestation in the database.
+	GetLastAttestationBlockNumber(ctx context.Context, chainID uint32) (uint64, error)
 	// GetAttestationForNonceOrGreater gets the lowest nonce attestation that is greater than or equal to the given nonce.
 	GetAttestationForNonceOrGreater(ctx context.Context, attestationMask types.DBAttestation) (nonce *uint32, blockTime *uint64, err error)
 	// GetAttestationsAboveOrEqualNonce gets attestations in a nonce range.

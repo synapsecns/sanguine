@@ -70,7 +70,7 @@ type Attestation struct {
 	// Root is the root.
 	Root string `gorm:"column:root;primaryKey"`
 	// DestinationBlockNumber is the block number that the attestation was submitted on the destination.
-	DestinationBlockNumber uint64 `gorm:"column:block_number"`
+	DestinationBlockNumber uint64 `gorm:"column:destination_block_number"`
 	// DestinationBlockTime is the timestamp of the block that the attestation was submitted on the destination.
 	DestinationBlockTime uint64 `gorm:"column:destination_block_time"`
 }
