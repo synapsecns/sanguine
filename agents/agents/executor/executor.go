@@ -491,9 +491,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 	var lastBlock uint64
 
-	// This reduces the search window if there is a large gap between either the last message
-	// or last attestation.
-	if lastStoredMessageBlock > lastStoredAttestationBlock {
+	if lastStoredMessageBlock < lastStoredAttestationBlock {
 		lastBlock = lastStoredMessageBlock
 	} else {
 		lastBlock = lastStoredAttestationBlock
