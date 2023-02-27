@@ -1242,9 +1242,7 @@ func (e *ExecutorSuite) TestExecute() {
 		if len(executableMessages) == 0 {
 			return true
 		}
-		// if len(executableMessages) > 1 {
-		//	e.Fail("too many executable messages")
-		//}
+
 		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
 		// increase the `time`.
 		countBeforeIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: e.GetTestContext()})
