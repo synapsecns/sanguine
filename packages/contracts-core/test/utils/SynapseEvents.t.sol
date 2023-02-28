@@ -5,7 +5,6 @@ pragma solidity 0.8.17;
 import "../../contracts/events/AgentRegistryEvents.sol";
 import "../../contracts/events/AttestationHubEvents.sol";
 import "../../contracts/events/AttestationCollectorEvents.sol";
-import "../../contracts/events/DestinationEvents.sol";
 import "../../contracts/events/GuardRegistryEvents.sol";
 import "../../contracts/events/NotaryRegistryEvents.sol";
 // ============ Harness events ============
@@ -13,7 +12,6 @@ import "../harnesses/events/AgentRegistryHarnessEvents.sol";
 import "../harnesses/events/AttestationHubHarnessEvents.sol";
 import "../harnesses/events/BasicClientHarnessEvents.sol";
 import "../harnesses/events/ClientHarnessEvents.sol";
-import "../harnesses/events/DestinationHarnessEvents.sol";
 import "../harnesses/events/NotaryRegistryHarnessEvents.sol";
 import "../harnesses/events/ReportHubHarnessEvents.sol";
 import "../harnesses/events/SystemContractHarnessEvents.sol";
@@ -25,7 +23,6 @@ abstract contract SynapseEvents is
     AgentRegistryEvents,
     AttestationCollectorEvents,
     AttestationHubEvents,
-    DestinationEvents,
     GuardRegistryEvents,
     NotaryRegistryEvents,
     // Harnesses events
@@ -33,7 +30,6 @@ abstract contract SynapseEvents is
     AttestationHubHarnessEvents,
     BasicClientHarnessEvents,
     ClientHarnessEvents,
-    DestinationHarnessEvents,
     NotaryRegistryHarnessEvents,
     ReportHubHarnessEvents,
     SystemContractHarnessEvents,

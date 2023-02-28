@@ -71,17 +71,14 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     // solhint-disable-next-line code-complexity
     function setupChain(uint32 domain, string memory chainName) public {
         // Deploy messaging contracts
-        DestinationHarness destination = new DestinationHarness(domain);
         BondingMVP bondingManager = new BondingMVP(domain);
         SystemRouterHarness systemRouter = new SystemRouterHarness(
             domain,
             address(0), // TODO: add origin
-            address(destination),
+            address(0), // TODO: add destination
             address(bondingManager)
         );
-        // Setup destination
-        destination.initialize();
-        destination.setSystemRouter(systemRouter);
+        // TODO: Setup destination
         // TODO: Setup origin
         // Setup BondingManager
         bondingManager.initialize();
@@ -102,16 +99,15 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // Deploy app
         AppHarness app = new AppHarness(APP_OPTIMISTIC_SECONDS);
         // Transfer ownership everywhere
-        destination.transferOwnership(owner);
         bondingManager.transferOwnership(owner);
         // Label deployments
-        vm.label(address(destination), string.concat("Destination ", chainName));
+        // vm.label(address(destination), string.concat("Destination ", chainName));
         // vm.label(address(origin), string.concat("Origin ", chainName));
         vm.label(address(bondingManager), string.concat("BondingManager ", chainName));
         vm.label(address(systemRouter), string.concat("SystemRouter ", chainName));
         vm.label(address(app), string.concat("App ", chainName));
         // Save deployments
-        chains[domain].destination = destination;
+        // chains[domain].destination = destination;
         // chains[domain].origin = origin;
         chains[domain].bondingManager = bondingManager;
         chains[domain].systemRouter = systemRouter;
