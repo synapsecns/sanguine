@@ -38,7 +38,7 @@ func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher
 	engine.GET(GraphiqlEndpoint, graphiqlHandler())
 }
 
-// Create a server without introspection
+// Create a server without introspection.
 func createServer(es graphql.ExecutableSchema) *handler.Server {
 	srv := handler.New(es)
 	srv.AddTransport(transport.Websocket{

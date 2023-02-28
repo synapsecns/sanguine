@@ -1438,6 +1438,7 @@ func (r *queryResolver) getAmountStatisticsAll(ctx context.Context, typeArg mode
 	return &value, nil
 }
 
+// nolint:cyclop
 func (r *queryResolver) getDateResultByChainMv(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration) ([]*model.DateResultByChain, error) {
 	var err error
 	firstFilter := true

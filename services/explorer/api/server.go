@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"os"
 	"time"
 
@@ -40,6 +41,8 @@ const cacheRehydrationInterval = 1800
 var logger = log.Logger("explorer-api")
 
 // Start starts the api server.
+//
+// nolint:cyclop
 func Start(ctx context.Context, cfg Config) error {
 	router := ginhelper.New(logger)
 	hostname, err := os.Hostname()
@@ -69,7 +72,7 @@ func Start(ctx context.Context, cfg Config) error {
 	first := make(chan bool, 1)
 	first <- true
 	g, ctx := errgroup.WithContext(ctx)
-	url := fmt.Sprintf("http://%s:%d/graphql", hostname, cfg.HTTPPort)
+	url := fmt.Sprintf("http://%s/graphql", net.JoinHostPort(hostname, fmt.Sprintf("%d", cfg.HTTPPort)))
 	client := gqlClient.NewClient(http.DefaultClient, url)
 
 	// refill cache
@@ -158,7 +161,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 	sixMonthType := model.DurationPast6Months
 	allTimeType := model.DurationAllTime
 
-	//dontUseMv := false
+	// dontUseMv := false
 	useMv := true
 
 	g, ctx := errgroup.WithContext(parentCtx)
