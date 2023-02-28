@@ -15,7 +15,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: cp .nvmrc packages/docs/.nvmrc
+      - name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+        id: nvmrc
+
+      - name: 'Use NodeJS by nvmrc'
+        uses: actions/setup-node@v3
+        with:
+          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+          cache: 'yarn'
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
