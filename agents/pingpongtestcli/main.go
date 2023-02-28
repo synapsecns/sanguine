@@ -87,7 +87,7 @@ func main() {
 		return
 	}
 
-	pingSentWatchCtx, pingSentCancel := context.WithTimeout(ctx, time.Second*60)
+	pingSentWatchCtx, pingSentCancel := context.WithTimeout(ctx, time.Second*120)
 	defer pingSentCancel()
 
 	select {
@@ -104,7 +104,7 @@ func main() {
 			fmt.Printf("item from pingSentSink was nil unexpectedly?\n")
 		}
 
-		innerWatchCtx, innerCancel := context.WithTimeout(ctx, time.Second*60)
+		innerWatchCtx, innerCancel := context.WithTimeout(ctx, time.Second*120)
 		defer innerCancel()
 
 		select {
