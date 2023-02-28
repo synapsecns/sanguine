@@ -71,29 +71,23 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     function setupChain(uint32 domain, string memory chainName) public {
         // Deploy messaging contracts
         BondingMVP bondingManager = new BondingMVP(domain);
-        SystemRouterHarness systemRouter = new SystemRouterHarness(
-            domain,
-            address(0), // TODO: add origin
-            address(0), // TODO: add destination
-            address(bondingManager)
-        );
         // TODO: Setup destination
         // TODO: Setup origin
         // Setup BondingManager
         bondingManager.initialize();
-        bondingManager.setSystemRouter(systemRouter);
+        // bondingManager.setSystemRouter(systemRouter);
         // Add global notaries via BondingManager
         for (uint256 i = 0; i < DOMAINS; ++i) {
             uint32 domainToAdd = domains[i];
             // Origin and Destination will filter our agents themselves
             for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
                 address notary = suiteNotary(domainToAdd, j);
-                bondingManager.addAgent(domainToAdd, notary);
+                // bondingManager.addAgent(domainToAdd, notary);
             }
         }
         // Add guards  via BondingManager
         for (uint256 i = 0; i < GUARDS; ++i) {
-            bondingManager.addAgent({ _domain: 0, _account: guards[i] });
+            // bondingManager.addAgent({ _domain: 0, _account: guards[i] });
         }
         // Deploy app
         AppHarness app = new AppHarness(APP_OPTIMISTIC_SECONDS);
@@ -103,13 +97,13 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // vm.label(address(destination), string.concat("Destination ", chainName));
         // vm.label(address(origin), string.concat("Origin ", chainName));
         vm.label(address(bondingManager), string.concat("BondingManager ", chainName));
-        vm.label(address(systemRouter), string.concat("SystemRouter ", chainName));
+        // vm.label(address(systemRouter), string.concat("SystemRouter ", chainName));
         vm.label(address(app), string.concat("App ", chainName));
         // Save deployments
         // chains[domain].destination = destination;
         // chains[domain].origin = origin;
         chains[domain].bondingManager = bondingManager;
-        chains[domain].systemRouter = systemRouter;
+        // chains[domain].systemRouter = systemRouter;
         chains[domain].app = app;
     }
 
