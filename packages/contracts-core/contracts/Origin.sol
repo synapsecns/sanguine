@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { IOrigin } from "./interfaces/IOrigin.sol";
 import { DomainContext, StateHub } from "./hubs/StateHub.sol";
-import { SnapAttestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
+import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
 contract Origin is StatementHub, StateHub, SystemRegistry, IOrigin {
@@ -17,7 +17,7 @@ contract Origin is StatementHub, StateHub, SystemRegistry, IOrigin {
      * @notice Emitted when a proof of invalid state in the signed attestation is submitted.
      * @param stateIndex    Index of invalid state in the snapshot
      * @param snapshot      Raw payload with snapshot data
-     * @param attestation   Raw payload with SnapAttestation data for snapshot
+     * @param attestation   Raw payload with Attestation data for snapshot
      * @param attSignature  Notary signature for the attestation
      */
     event InvalidAttestationState(
@@ -77,12 +77,12 @@ contract Origin is StatementHub, StateHub, SystemRegistry, IOrigin {
         bytes memory _attSignature
     ) external returns (bool isValid) {
         // This will revert if payload is not an attestation, or signer is not an active Notary
-        (SnapAttestation snapAtt, uint32 domain, address notary) = _verifyAttestation(
+        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
             _attPayload,
             _attSignature
         );
         // This will revert if payload is not a snapshot, or snapshot/attestation roots don't match
-        Snapshot snapshot = _verifySnapshotRoot(snapAtt, _snapPayload);
+        Snapshot snapshot = _verifySnapshotRoot(att, _snapPayload);
         // This will revert, if state index is out of range, or state refers to another domain
         isValid = _isValidState(snapshot.state(_stateIndex));
         if (!isValid) {

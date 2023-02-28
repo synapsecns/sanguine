@@ -35,7 +35,7 @@ interface IOrigin is IStateHub {
      *  - Snapshot state does not refer to this chain.
      * @param _snapPayload      Raw payload with snapshot data
      * @param _stateIndex       State index to check
-     * @param _attPayload       Raw payload with SnapAttestation data
+     * @param _attPayload       Raw payload with Attestation data
      * @param _attSignature     Notary signature for the attestation
      * @return isValid          Whether the requested state is valid.
      *                          Notary is slashed, if return value is FALSE.

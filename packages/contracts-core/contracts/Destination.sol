@@ -2,8 +2,8 @@
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "./context/DomainContext.sol";
-import { DestinationAttestation, SnapAttestationHub } from "./hubs/SnapAttestationHub.sol";
-import { SnapAttestation, StatementHub } from "./hubs/StatementHub.sol";
+import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
+import { Attestation, StatementHub } from "./hubs/StatementHub.sol";
 import { IDestination, ORIGIN_TREE_DEPTH } from "./interfaces/IDestination.sol";
 import { Header, HeaderLib } from "./libs/Header.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
@@ -11,7 +11,7 @@ import { Message, MessageLib } from "./libs/Message.sol";
 import { StateLib } from "./libs/State.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
-contract Destination is StatementHub, SnapAttestationHub, SystemRegistry, IDestination {
+contract Destination is StatementHub, AttestationHub, SystemRegistry, IDestination {
     // TODO: Attach library functions to custom types globally
     using HeaderLib for Header;
     using MessageLib for Message;
@@ -62,14 +62,14 @@ contract Destination is StatementHub, SnapAttestationHub, SystemRegistry, IDesti
         returns (bool wasAccepted)
     {
         // This will revert if payload is not an attestation, or signer is not an active Notary
-        (SnapAttestation snapAtt, uint32 domain, address notary) = _verifyAttestation(
+        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
             _attPayload,
             _attSignature
         );
         // Check that Notary is active on local domain
         require(domain == localDomain, "Wrong Notary domain");
         // This will revert if snapshot root has been previously submitted
-        _acceptAttestation(snapAtt, notary);
+        _acceptAttestation(att, notary);
         emit AttestationAccepted(domain, notary, _attPayload, _attSignature);
         return true;
     }

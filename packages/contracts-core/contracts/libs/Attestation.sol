@@ -1,27 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-// TODO: rename to just "Attestation" once older version is deprecated?
 import { ByteString, TypedMemView } from "./ByteString.sol";
 import { Snapshot } from "./Snapshot.sol";
-import { SNAP_ATTESTATION_LENGTH } from "./Structures.sol";
+import { ATTESTATION_LENGTH } from "./Structures.sol";
 
-/// @dev SnapAttestation is a memory view over a formatted snapshot attestation payload.
-type SnapAttestation is bytes29;
-/// @dev Attach library functions to SnapAttestation
+/// @dev Attestation is a memory view over a formatted attestation payload.
+type Attestation is bytes29;
+/// @dev Attach library functions to Attestation
 using {
-    SnapAttestationLib.unwrap,
-    SnapAttestationLib.equalToSummit,
-    SnapAttestationLib.toDestinationAttestation,
-    SnapAttestationLib.hash,
-    SnapAttestationLib.root,
-    SnapAttestationLib.height,
-    SnapAttestationLib.nonce,
-    SnapAttestationLib.blockNumber,
-    SnapAttestationLib.timestamp
-} for SnapAttestation global;
+    AttestationLib.unwrap,
+    AttestationLib.equalToSummit,
+    AttestationLib.toDestinationAttestation,
+    AttestationLib.hash,
+    AttestationLib.root,
+    AttestationLib.height,
+    AttestationLib.nonce,
+    AttestationLib.blockNumber,
+    AttestationLib.timestamp
+} for Attestation global;
 
-/// @dev Struct representing SnapAttestation, as it is stored in the Summit contract.
+/// @dev Struct representing Attestation, as it is stored in the Summit contract.
 struct SummitAttestation {
     bytes32 root;
     uint8 height;
@@ -29,9 +28,9 @@ struct SummitAttestation {
     uint40 timestamp;
 }
 /// @dev Attach library functions to SummitAttestation
-using { SnapAttestationLib.formatSummitAttestation } for SummitAttestation global;
+using { AttestationLib.formatSummitAttestation } for SummitAttestation global;
 
-/// @dev Struct representing SnapAttestation, as it is stored in the Destination contract.
+/// @dev Struct representing Attestation, as it is stored in the Destination contract.
 /// mapping (bytes32 root => DestinationAttestation) is supposed to be used
 struct DestinationAttestation {
     address notary;
@@ -41,15 +40,15 @@ struct DestinationAttestation {
     // 16 bits left for tight packing
 }
 /// @dev Attach library functions to DestinationAttestation
-using { SnapAttestationLib.isEmpty } for DestinationAttestation global;
+using { AttestationLib.isEmpty } for DestinationAttestation global;
 
-library SnapAttestationLib {
+library AttestationLib {
     using ByteString for bytes;
     using TypedMemView for bytes29;
 
     /**
-     * @dev SnapAttestation structure represents the "Snapshot Merkle Tree" created from
-     * every Notary snapshot accepted by the Summit contract. SnapAttestation includes
+     * @dev Attestation structure represents the "Snapshot Merkle Tree" created from
+     * every Notary snapshot accepted by the Summit contract. Attestation includes
      * the root and height of "Snapshot Merkle Tree", as well as additional metadata.
      *
      * Steps for creation of "Snapshot Merkle Tree":
@@ -64,20 +63,20 @@ library SnapAttestationLib {
      * "Snapshot Merkle Root".
      *
      * Origin's State is "state of Origin Merkle Tree after N-th message was dispatched".
-     * Summit's SnapAttestation is "data for the N-th accepted Notary Snapshot".
+     * Summit's Attestation is "data for the N-th accepted Notary Snapshot".
      *
-     * SnapAttestation is considered "valid" in Summit contract, if it matches the N-th (nonce)
+     * Attestation is considered "valid" in Summit contract, if it matches the N-th (nonce)
      * snapshot submitted by Notaries.
-     * SnapAttestation is considered "valid" in Origin contract, if its underlying Snapshot is "valid".
+     * Attestation is considered "valid" in Origin contract, if its underlying Snapshot is "valid".
      *
      * This means that a snapshot could be "valid" in Summit contract and "invalid" in Origin, if the underlying
      * snapshot is invalid (i.e. one of the states in the list is invalid).
      * The opposite could also be true. If a perfectly valid snapshot was never submitted to Summit, its attestation
      * would be valid in Origin, but invalid in Summit (it was never accepted, so the metadata would be incorrect).
      *
-     * SnapAttestation is considered "globally valid", if it is valid in the Summit and all the Origin contracts.
+     * Attestation is considered "globally valid", if it is valid in the Summit and all the Origin contracts.
      *
-     * @dev Memory layout of SnapAttestation fields
+     * @dev Memory layout of Attestation fields
      * [000 .. 032): root           bytes32 32 bytes    Root for "Snapshot Merkle Tree" created from a Notary snapshot
      * [032 .. 033): height         uint8    1 byte     Height of "Snapshot Merkle Tree" created from a Notary snapshot
      * [033 .. 037): nonce          uint32   4 bytes    Total amount of all accepted Notary snapshots
@@ -106,7 +105,7 @@ library SnapAttestationLib {
      * @param _timestamp    Block timestamp when attestation was created in Summit
      * @return Formatted attestation
      **/
-    function formatSnapAttestation(
+    function formatAttestation(
         bytes32 _root,
         uint8 _height,
         uint32 _nonce,
@@ -117,30 +116,30 @@ library SnapAttestationLib {
     }
 
     /**
-     * @notice Returns a Attestation view over the given payload.
-     * @dev Will revert if the payload is not a attestation.
+     * @notice Returns an Attestation view over the given payload.
+     * @dev Will revert if the payload is not an attestation.
      */
-    function castToSnapAttestation(bytes memory _payload) internal pure returns (SnapAttestation) {
-        return castToSnapAttestation(_payload.castToRawBytes());
+    function castToAttestation(bytes memory _payload) internal pure returns (Attestation) {
+        return castToAttestation(_payload.castToRawBytes());
     }
 
     /**
-     * @notice Casts a memory view to a Attestation view.
-     * @dev Will revert if the memory view is not over a attestation.
+     * @notice Casts a memory view to an Attestation view.
+     * @dev Will revert if the memory view is not over an attestation.
      */
-    function castToSnapAttestation(bytes29 _view) internal pure returns (SnapAttestation) {
-        require(isSnapAttestation(_view), "Not a snapshot attestation");
-        return SnapAttestation.wrap(_view);
+    function castToAttestation(bytes29 _view) internal pure returns (Attestation) {
+        require(isAttestation(_view), "Not an attestation");
+        return Attestation.wrap(_view);
     }
 
-    /// @notice Checks that a payload is a formatted SnapAttestation.
-    function isSnapAttestation(bytes29 _view) internal pure returns (bool) {
-        return _view.len() == SNAP_ATTESTATION_LENGTH;
+    /// @notice Checks that a payload is a formatted Attestation.
+    function isAttestation(bytes29 _view) internal pure returns (bool) {
+        return _view.len() == ATTESTATION_LENGTH;
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(SnapAttestation _snapAtt) internal pure returns (bytes29) {
-        return SnapAttestation.unwrap(_snapAtt);
+    function unwrap(Attestation _att) internal pure returns (bytes29) {
+        return Attestation.unwrap(_att);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -149,7 +148,7 @@ library SnapAttestationLib {
 
     /**
      * @notice Returns a formatted Attestation payload with provided fields.
-     * @param _summitAtt    SnapAttestation struct as it stored in Summit contract
+     * @param _summitAtt    Attestation struct as it stored in Summit contract
      * @param _nonce        Attestation nonce
      * @return Formatted attestation
      */
@@ -159,7 +158,7 @@ library SnapAttestationLib {
         returns (bytes memory)
     {
         return
-            formatSnapAttestation({
+            formatAttestation({
                 _root: _summitAtt.root,
                 _height: _summitAtt.height,
                 _nonce: _nonce,
@@ -168,31 +167,31 @@ library SnapAttestationLib {
             });
     }
 
-    /// @notice Checks that a SnapshotAttestation and its Summit representation are equal.
-    function equalToSummit(SnapAttestation _snapAtt, SummitAttestation memory _summitAtt)
+    /// @notice Checks that an Attestation and its Summit representation are equal.
+    function equalToSummit(Attestation _att, SummitAttestation memory _summitAtt)
         internal
         pure
         returns (bool)
     {
         return
-            _snapAtt.root() == _summitAtt.root &&
-            _snapAtt.height() == _summitAtt.height &&
-            _snapAtt.blockNumber() == _summitAtt.blockNumber &&
-            _snapAtt.timestamp() == _summitAtt.timestamp;
+            _att.root() == _summitAtt.root &&
+            _att.height() == _summitAtt.height &&
+            _att.blockNumber() == _summitAtt.blockNumber &&
+            _att.timestamp() == _summitAtt.timestamp;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       DESTINATION ATTESTATION                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function toDestinationAttestation(SnapAttestation _snapAtt, address _notary)
+    function toDestinationAttestation(Attestation _att, address _notary)
         internal
         view
         returns (DestinationAttestation memory attestation)
     {
         attestation.notary = _notary;
-        attestation.height = _snapAtt.height();
-        attestation.nonce = _snapAtt.nonce();
+        attestation.height = _att.height();
+        attestation.nonce = _att.nonce();
         // We need to store the timestamp when attestation was submitted to Destination
         attestation.destTimestamp = uint40(block.timestamp);
     }
@@ -205,10 +204,10 @@ library SnapAttestationLib {
     ▏*║                         ATTESTATION HASHING                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @notice Returns the hash of a SnapAttestation, that could be later signed by a Notary.
-    function hash(SnapAttestation _snapAtt) internal pure returns (bytes32) {
+    /// @notice Returns the hash of an Attestation, that could be later signed by a Notary.
+    function hash(Attestation _att) internal pure returns (bytes32) {
         // Get the underlying memory view
-        bytes29 _view = _snapAtt.unwrap();
+        bytes29 _view = _att.unwrap();
         // TODO: include Attestation-unique salt in the hash
         return _view.keccak();
     }
@@ -218,33 +217,33 @@ library SnapAttestationLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns root of the Snapshot merkle tree created in the Summit contract.
-    function root(SnapAttestation _snapAtt) internal pure returns (bytes32) {
-        bytes29 _view = _snapAtt.unwrap();
+    function root(Attestation _att) internal pure returns (bytes32) {
+        bytes29 _view = _att.unwrap();
         return _view.index({ _index: OFFSET_ROOT, _bytes: 32 });
     }
 
     /// @notice Returns height of the Snapshot merkle tree created in the Summit contract.
-    function height(SnapAttestation _snapAtt) internal pure returns (uint8) {
-        bytes29 _view = _snapAtt.unwrap();
+    function height(Attestation _att) internal pure returns (uint8) {
+        bytes29 _view = _att.unwrap();
         return uint8(_view.indexUint({ _index: OFFSET_DEPTH, _bytes: 1 }));
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.
-    function nonce(SnapAttestation _snapAtt) internal pure returns (uint32) {
-        bytes29 _view = _snapAtt.unwrap();
+    function nonce(Attestation _att) internal pure returns (uint32) {
+        bytes29 _view = _att.unwrap();
         return uint32(_view.indexUint({ _index: OFFSET_NONCE, _bytes: 4 }));
     }
 
     /// @notice Returns a block number when attestation was created in Summit.
-    function blockNumber(SnapAttestation _snapAtt) internal pure returns (uint40) {
-        bytes29 _view = _snapAtt.unwrap();
+    function blockNumber(Attestation _att) internal pure returns (uint40) {
+        bytes29 _view = _att.unwrap();
         return uint40(_view.indexUint({ _index: OFFSET_BLOCK_NUMBER, _bytes: 5 }));
     }
 
     /// @notice Returns a block timestamp when attestation was created in Summit.
     /// @dev This is the timestamp according to the Synapse Chain.
-    function timestamp(SnapAttestation _snapAtt) internal pure returns (uint40) {
-        bytes29 _view = _snapAtt.unwrap();
+    function timestamp(Attestation _att) internal pure returns (uint40) {
+        bytes29 _view = _att.unwrap();
         return uint40(_view.indexUint({ _index: OFFSET_TIMESTAMP, _bytes: 5 }));
     }
 }

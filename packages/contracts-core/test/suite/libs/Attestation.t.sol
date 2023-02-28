@@ -2,13 +2,13 @@
 pragma solidity 0.8.17;
 
 import "../../utils/SynapseLibraryTest.t.sol";
-import "../../harnesses/libs/SnapAttestationHarness.t.sol";
+import "../../harnesses/libs/AttestationHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
-contract SnapAttestationLibraryTest is SynapseLibraryTest {
+contract AttestationLibraryTest is SynapseLibraryTest {
     using TypedMemView for bytes;
 
-    struct RawSnapAttestation {
+    struct RawAttestation {
         bytes32 root;
         uint8 height;
         uint32 nonce;
@@ -16,41 +16,38 @@ contract SnapAttestationLibraryTest is SynapseLibraryTest {
         uint40 timestamp;
     }
 
-    SnapAttestationHarness internal libHarness;
+    AttestationHarness internal libHarness;
 
     function setUp() public override {
-        libHarness = new SnapAttestationHarness();
+        libHarness = new AttestationHarness();
     }
 
-    function test_formatSnapAttestation(RawSnapAttestation memory rs) public {
-        bytes memory payload = libHarness.formatSnapAttestation(
-            rs.root,
-            rs.height,
-            rs.nonce,
-            rs.blockNumber,
-            rs.timestamp
+    function test_formatAttestation(RawAttestation memory ra) public {
+        bytes memory payload = libHarness.formatAttestation(
+            ra.root,
+            ra.height,
+            ra.nonce,
+            ra.blockNumber,
+            ra.timestamp
         );
         // Test formatting of state
         assertEq(
             payload,
-            abi.encodePacked(rs.root, rs.height, rs.nonce, rs.blockNumber, rs.timestamp),
-            "!formatSnapAttestation"
+            abi.encodePacked(ra.root, ra.height, ra.nonce, ra.blockNumber, ra.timestamp),
+            "!formatAttestation"
         );
         checkCastToAttestation({ payload: payload, isAttestation: true });
-        // Test getters
-        assertEq(libHarness.root(payload), rs.root, "!root");
-        assertEq(libHarness.height(payload), rs.height, "!height");
-        assertEq(libHarness.nonce(payload), rs.nonce, "!nonce");
-        assertEq(libHarness.blockNumber(payload), rs.blockNumber, "!blockNumber");
-        assertEq(libHarness.timestamp(payload), rs.timestamp, "!timestamp");
+        // Test gettera
+        assertEq(libHarness.root(payload), ra.root, "!root");
+        assertEq(libHarness.height(payload), ra.height, "!height");
+        assertEq(libHarness.nonce(payload), ra.nonce, "!nonce");
+        assertEq(libHarness.blockNumber(payload), ra.blockNumber, "!blockNumber");
+        assertEq(libHarness.timestamp(payload), ra.timestamp, "!timestamp");
     }
 
     function test_isAttestation(uint8 length) public {
         bytes memory payload = new bytes(length);
-        checkCastToAttestation({
-            payload: payload,
-            isAttestation: length == SNAP_ATTESTATION_LENGTH
-        });
+        checkCastToAttestation({ payload: payload, isAttestation: length == ATTESTATION_LENGTH });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -58,25 +55,25 @@ contract SnapAttestationLibraryTest is SynapseLibraryTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_toDestinationAttestation(
-        RawSnapAttestation memory rs,
+        RawAttestation memory ra,
         address notary,
         uint40 destTimestamp
     ) public {
         vm.warp(destTimestamp);
-        bytes memory payload = libHarness.formatSnapAttestation(
-            rs.root,
-            rs.height,
-            rs.nonce,
-            rs.blockNumber,
-            rs.timestamp
+        bytes memory payload = libHarness.formatAttestation(
+            ra.root,
+            ra.height,
+            ra.nonce,
+            ra.blockNumber,
+            ra.timestamp
         );
         DestinationAttestation memory destAtt = libHarness.toDestinationAttestation(
             payload,
             notary
         );
         assertEq(destAtt.notary, notary, "!notary");
-        assertEq(destAtt.height, rs.height, "!height");
-        assertEq(destAtt.nonce, rs.nonce, "!nonce");
+        assertEq(destAtt.height, ra.height, "!height");
+        assertEq(destAtt.nonce, ra.nonce, "!nonce");
         assertEq(destAtt.destTimestamp, destTimestamp, "!destTimestamp");
     }
 
@@ -92,43 +89,43 @@ contract SnapAttestationLibraryTest is SynapseLibraryTest {
     ▏*║                          SUMMIT ATTESTATION                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_formatSummitAttestation(RawSnapAttestation memory rs) public {
+    function test_formatSummitAttestation(RawAttestation memory ra) public {
         SummitAttestation memory att = SummitAttestation(
-            rs.root,
-            rs.height,
-            rs.blockNumber,
-            rs.timestamp
+            ra.root,
+            ra.height,
+            ra.blockNumber,
+            ra.timestamp
         );
-        bytes memory payload = libHarness.formatSummitAttestation(att, rs.nonce);
+        bytes memory payload = libHarness.formatSummitAttestation(att, ra.nonce);
         assertEq(
             payload,
-            libHarness.formatSnapAttestation(
-                rs.root,
-                rs.height,
-                rs.nonce,
-                rs.blockNumber,
-                rs.timestamp
+            libHarness.formatAttestation(
+                ra.root,
+                ra.height,
+                ra.nonce,
+                ra.blockNumber,
+                ra.timestamp
             ),
             "!formatSummitAttestation"
         );
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPERS                                ║*▕
+    ▏*║                               HELPEra                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function checkCastToAttestation(bytes memory payload, bool isAttestation) public {
         if (isAttestation) {
             assertTrue(libHarness.isAttestation(payload), "!isAttestation: when valid");
             assertEq(
-                libHarness.castToSnapAttestation(payload),
+                libHarness.castToAttestation(payload),
                 payload,
-                "!castToSnapAttestation: when valid"
+                "!castToAttestation: when valid"
             );
         } else {
             assertFalse(libHarness.isAttestation(payload), "!isAttestation: when valid");
-            vm.expectRevert("Not a snapshot attestation");
-            libHarness.castToSnapAttestation(payload);
+            vm.expectRevert("Not an attestation");
+            libHarness.castToAttestation(payload);
         }
     }
 }

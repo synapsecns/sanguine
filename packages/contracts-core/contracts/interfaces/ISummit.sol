@@ -32,7 +32,7 @@ interface ISummit is ISnapshotHub {
      * @dev Will revert if any of these is true:
      *  - Attestation payload is not properly formatted.
      *  - Attestation signer is not an active Notary.
-     * @param _attPayload       Raw payload with SnapAttestation data
+     * @param _attPayload       Raw payload with Attestation data
      * @param _attSignature     Notary signature for the attestation
      * @return isValid          Whether the provided attestation is valid.
      *                          Notary is slashed, if return value is FALSE.

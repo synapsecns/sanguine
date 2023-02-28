@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ISnapAttestationHub } from "../interfaces/ISnapAttestationHub.sol";
-import { DestinationAttestation, SnapAttestation } from "../libs/SnapAttestation.sol";
+import { IAttestationHub } from "../interfaces/IAttestationHub.sol";
+import { DestinationAttestation, Attestation } from "../libs/Attestation.sol";
 
 /**
  * @notice Hub to accept and save attestations.
  */
-abstract contract SnapAttestationHub is ISnapAttestationHub {
+abstract contract AttestationHub is IAttestationHub {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -26,12 +26,12 @@ abstract contract SnapAttestationHub is ISnapAttestationHub {
     ▏*║                                VIEWS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @inheritdoc ISnapAttestationHub
+    /// @inheritdoc IAttestationHub
     function attestationsAmount() external view returns (uint256) {
         return roots.length;
     }
 
-    /// @inheritdoc ISnapAttestationHub
+    /// @inheritdoc IAttestationHub
     function getAttestation(uint256 _index)
         external
         view
@@ -46,12 +46,12 @@ abstract contract SnapAttestationHub is ISnapAttestationHub {
     ▏*║                             ACCEPT DATA                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Accepts a SnapAttestation signed by a Notary.
+    /// @dev Accepts an Attestation signed by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
-    function _acceptAttestation(SnapAttestation _snapAtt, address _notary) internal {
-        bytes32 root = _snapAtt.root();
+    function _acceptAttestation(Attestation _att, address _notary) internal {
+        bytes32 root = _att.root();
         require(_rootAttestation(root).isEmpty(), "Root already exists");
-        rootAttestations[root] = _snapAtt.toDestinationAttestation(_notary);
+        rootAttestations[root] = _att.toDestinationAttestation(_notary);
         roots.push(root);
     }
 

@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { ISummit } from "./interfaces/ISummit.sol";
-import { SnapAttestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
+import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 import { SnapshotHub } from "./hubs/SnapshotHub.sol";
 
 /**
@@ -67,11 +67,11 @@ contract Summit is StatementHub, SnapshotHub, ISummit {
         returns (bool isValid)
     {
         // This will revert if payload is not an attestation, or signer is not an active Notary
-        (SnapAttestation snapAtt, uint32 domain, address notary) = _verifyAttestation(
+        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
             _attPayload,
             _attSignature
         );
-        isValid = _isValidAttestation(snapAtt);
+        isValid = _isValidAttestation(att);
         if (!isValid) {
             emit InvalidAttestation(_attPayload, _attSignature);
             _slashAgent(domain, notary);

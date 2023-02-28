@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { ByteString, TypedMemView } from "./ByteString.sol";
 import { MerkleList } from "./MerkleList.sol";
-import { SummitAttestation } from "./SnapAttestation.sol";
+import { SummitAttestation } from "./Attestation.sol";
 import { State, StateLib } from "./State.sol";
 import { SNAPSHOT_MAX_STATES, STATE_LENGTH } from "./Structures.sol";
 
