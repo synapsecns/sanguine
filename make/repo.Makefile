@@ -1,5 +1,8 @@
 default: help
 
+# set variables
+GIT_ROOT := $(shell git rev-parse --show-toplevel)
+
 help: ## This help dialog.
 	@IFS=$$'\n' ; \
 	help_lines=(`fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//'`); \
@@ -23,7 +26,7 @@ full-reset: check_reset reset-submodules ## Fully reset the repository to it's c
 	git clean -xfdf
 	git reset --hard
 
-go-  :
-	find . \( -name vendor -o -name '[._].*' -o -name node_modules \) -prune -o -name go.mod -print | sed 's:/go.mod$::'
+tidy: ## Runs go mod tidy on all go.mod files in the repo
+	$(GIT_ROOT)/make/scripts/tidy.sh
 
 .PHONY: full-reset check_reset
