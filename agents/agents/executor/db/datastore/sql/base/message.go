@@ -178,12 +178,12 @@ func (s Store) GetExecutableMessages(ctx context.Context, messageMask types.DBMe
 	dbTx := s.DB().WithContext(ctx).
 		Model(&messages).
 		Where(&dbMessageMask).
-		Where(fmt.Sprintf("%s > ?", MinimumTimeFieldName), currentTime).
+		Where(fmt.Sprintf("%s < ?", MinimumTimeFieldName), currentTime).
 		Where(fmt.Sprintf("%s = ?", MinimumTimeSetFieldName), true).
 		Where(fmt.Sprintf("%s = ?", ExecutedFieldName), false).
 		Order(fmt.Sprintf("%s ASC", MinimumTimeFieldName)).
-		Offset((page - 1) * PageSize).
 		Limit(PageSize).
+		Offset((page - 1) * PageSize).
 		Scan(&messages)
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get messages: %w", dbTx.Error)

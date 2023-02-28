@@ -54,7 +54,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -77,7 +77,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -164,7 +164,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -187,7 +187,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -294,7 +294,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -317,7 +317,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -583,7 +583,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -606,7 +606,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -904,7 +904,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -927,7 +927,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/jpillora/backoff"
 	"io"
 	"math/big"
 	"strconv"
@@ -53,6 +54,8 @@ type chainExecutor struct {
 	rpcClient Backend
 	// boundDestination is a bound destination contract.
 	boundDestination domains.DestinationContract
+	// executed is a map from hash(origin chain ID, destination chain ID, nonce) -> bool.
+	executed map[[32]byte]bool
 }
 
 // Executor is the executor agent.
@@ -157,6 +160,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
+			executed:          make(map[[32]byte]bool),
 		}
 	}
 
@@ -175,24 +179,49 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 func (e Executor) Run(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
+	// Backfill executed messages.
 	for _, chain := range e.config.Chains {
 		chain := chain
 
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, originContract)
+			return e.markAsExecuted(ctx, chain)
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("could not backfill executed messages: %w", err)
+	}
+
+	for _, chain := range e.config.Chains {
+		chain := chain
+
+		g.Go(func() error {
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
+				contractType:         originContract,
+				destinationEventType: otherEvent,
+			})
 		})
 
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, destinationContract)
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
+				contractType:         destinationContract,
+				destinationEventType: otherEvent,
+			})
 		})
 
 		g.Go(func() error {
 			return e.receiveLogs(ctx, chain.ChainID)
 		})
 
-		g.Go(func() error {
-			return e.setMinimumTime(ctx, chain.ChainID)
-		})
+		for _, destinationChain := range e.config.Chains {
+			destinationChain := destinationChain
+			if destinationChain.ChainID == chain.ChainID {
+				continue
+			}
+			g.Go(func() error {
+				return e.setMinimumTime(ctx, chain.ChainID, destinationChain.ChainID)
+			})
+		}
 
 		g.Go(func() error {
 			return e.executeExecutable(ctx, chain.ChainID)
@@ -212,8 +241,10 @@ func (e Executor) Stop(chainID uint32) {
 	e.chainExecutors[chainID].stopListenChan <- true
 }
 
-// Execute calls execute on `destination.sol` on the destination chain, after verifying the message.
+// Execute calls execute on `Destination.sol` on the destination chain, after verifying the message.
 // TODO: Use multi-call to batch execute.
+//
+//nolint:cyclop
 func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
 	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
@@ -262,22 +293,56 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		copy(proofB32[i][:], p)
 	}
 
-	err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
-	if err != nil {
-		logger.Errorf("Error trying to execute message on destination: %v", err)
-		return false, fmt.Errorf("could not execute message: %w", err)
+	b := &backoff.Backoff{
+		Factor: 2,
+		Jitter: true,
+		Min:    30 * time.Millisecond,
+		Max:    3 * time.Second,
 	}
 
-	return true, nil
+	timeout := time.Duration(0)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return false, fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-time.After(timeout):
+			if b.Attempt() >= 5 {
+				return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
+			}
+
+			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
+			if err != nil {
+				timeout = b.Duration()
+				logger.Errorf("got error %v when trying to execute the message on chain %d. trying again in %f seconds", err, message.DestinationDomain(), timeout.Seconds())
+				continue
+			}
+
+			return true, nil
+		}
+	}
 }
 
 type contractType int
+
+type destinationEventType int
 
 const (
 	originContract contractType = iota
 	destinationContract
 	other
 )
+
+const (
+	attestationAcceptedEvent destinationEventType = iota
+	executedEvent
+	otherEvent
+)
+
+type contractEventType struct {
+	contractType         contractType
+	destinationEventType destinationEventType
+}
 
 // verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
 func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) {
@@ -374,14 +439,29 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 	return merkleTree, nil
 }
 
+// markAsExecuted marks a message as executed via the `executed` mapping.
+func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) error {
+	latestHeader, err := e.chainExecutors[chain.ChainID].rpcClient.HeaderByNumber(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("could not get latest header: %w", err)
+	}
+
+	blockNumber := latestHeader.Number.Uint64()
+
+	return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, &blockNumber, contractEventType{
+		contractType:         destinationContract,
+		destinationEventType: executedEvent,
+	})
+}
+
 // streamLogs uses gRPC to stream logs into a channel.
 //
 //nolint:cyclop
-func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chain config.ChainConfig, contract contractType) error {
+func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chain config.ChainConfig, toBlockNumber *uint64, contractEvent contractEventType) error {
 	var address string
 
 	//nolint:exhaustive
-	switch contract {
+	switch contractEvent.contractType {
 	case originContract:
 		address = chain.OriginAddress
 	case destinationContract:
@@ -396,13 +476,19 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	}
 
 	fromBlock := strconv.FormatUint(lastStoredBlock, 10)
+
+	toBlock := "latest"
+	if toBlockNumber != nil {
+		toBlock = strconv.FormatUint(*toBlockNumber, 10)
+	}
+
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
 			ChainId:         chain.ChainID,
 		},
 		FromBlock: fromBlock,
-		ToBlock:   "latest",
+		ToBlock:   toBlock,
 	})
 	if err != nil {
 		return fmt.Errorf("could not stream logs: %w", err)
@@ -436,6 +522,13 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 				return fmt.Errorf("could not convert log")
 			}
 
+			// If we are filtering for `executed` events, we do not need to `verifyAfter`
+			// since we are backfilling.
+			if contractEvent.destinationEventType == executedEvent {
+				e.chainExecutors[chain.ChainID].logChan <- log
+
+				continue
+			}
 			if !e.chainExecutors[chain.ChainID].lastLog.verifyAfter(*log) {
 				logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chain.ChainID].lastLog.blockNumber, e.chainExecutors[chain.ChainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 
@@ -451,11 +544,11 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 // processLog processes the log and updates the merkle tree.
 //
-//nolint:cyclop
+//nolint:cyclop,gocognit
 func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	logType := e.logType(log, chainID)
+	contractEvent := e.logType(log, chainID)
 
-	switch logType {
+	switch contractEvent.contractType {
 	case originContract:
 		message, err := e.logToMessage(log, chainID)
 		if err != nil {
@@ -502,24 +595,39 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			}
 		}
 	case destinationContract:
-		attestation, err := e.logToAttestation(log, chainID)
-		if err != nil {
-			return fmt.Errorf("could not convert log to attestation: %w", err)
+		switch contractEvent.destinationEventType {
+		case attestationAcceptedEvent:
+			attestation, err := e.logToAttestation(log, chainID)
+			if err != nil {
+				return fmt.Errorf("could not convert log to attestation: %w", err)
+			}
+
+			if attestation == nil {
+				return nil
+			}
+
+			logHeader, err := e.chainExecutors[(*attestation).Destination()].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
+			if err != nil {
+				return fmt.Errorf("could not get log header: %w", err)
+			}
+
+			err = e.executorDB.StoreAttestation(ctx, *attestation, log.BlockNumber, logHeader.Time)
+			if err != nil {
+				return fmt.Errorf("could not store attestation: %w", err)
+			}
+		case executedEvent:
+			originDomain, messageLeaf, ok := e.chainExecutors[chainID].destinationParser.ParseExecuted(log)
+			if !ok || originDomain == nil || messageLeaf == nil {
+				return fmt.Errorf("could not parse executed event")
+			}
+
+			e.chainExecutors[chainID].executed[*messageLeaf] = true
+		case otherEvent:
+			logger.Warnf("the log's event type is not supported")
+		default:
+			return fmt.Errorf("log type not supported")
 		}
 
-		if attestation == nil {
-			return nil
-		}
-
-		logHeader, err := e.chainExecutors[(*attestation).Destination()].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
-		if err != nil {
-			return fmt.Errorf("could not get log header: %w", err)
-		}
-
-		err = e.executorDB.StoreAttestation(ctx, *attestation, log.BlockNumber, logHeader.Time)
-		if err != nil {
-			return fmt.Errorf("could not store attestation: %w", err)
-		}
 	case other:
 		logger.Warnf("the log's event type is not supported")
 	default:
@@ -558,9 +666,10 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(time.Duration(e.config.ExecuteInterval)):
+		case <-time.After(time.Duration(e.config.ExecuteInterval) * time.Second):
 			page := 1
 			currentTime := uint64(time.Now().Unix())
+
 			messageMask := execTypes.DBMessage{
 				ChainID: &chainID,
 			}
@@ -576,16 +685,25 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 				}
 
 				for _, message := range messages {
-					executed, err := e.Execute(ctx, message)
+					leaf, err := message.ToLeaf()
 					if err != nil {
-						return fmt.Errorf("could not execute message: %w", err)
-					}
-
-					if !executed {
-						continue
+						return fmt.Errorf("could not convert message to leaf: %w", err)
 					}
 
 					destinationDomain := message.DestinationDomain()
+
+					if !e.chainExecutors[destinationDomain].executed[leaf] {
+						executed, err := e.Execute(ctx, message)
+						if err != nil {
+							logger.Errorf("could not execute message, retrying: %s", err)
+							continue
+						}
+
+						if !executed {
+							continue
+						}
+					}
+
 					nonce := message.Nonce()
 					executedMessageMask := execTypes.DBMessage{
 						ChainID:     &chainID,
@@ -607,15 +725,17 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 // setMinimumTime sets the minimum time for the message to be executed by checking for associated attestations.
 //
 //nolint:gocognit,cyclop
-func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
+func (e Executor) setMinimumTime(ctx context.Context, chainID uint32, destinationDomain uint32) error {
+	// TODO: Make for origin-dest, not just origin
 	for {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval)):
+		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval) * time.Second):
 			page := 1
 			messageMask := execTypes.DBMessage{
-				ChainID: &chainID,
+				ChainID:     &chainID,
+				Destination: &destinationDomain,
 			}
 
 			var unsetMessages []types.Message
@@ -643,7 +763,8 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 			page = 1
 			minNonce := unsetMessages[0].Nonce()
 			attestationMask := execTypes.DBAttestation{
-				ChainID: &chainID,
+				ChainID:     &chainID,
+				Destination: &destinationDomain,
 			}
 
 			var attestations []execTypes.DBAttestation

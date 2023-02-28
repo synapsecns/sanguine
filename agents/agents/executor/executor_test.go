@@ -1,25 +1,25 @@
 package executor_test
 
 import (
-	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/agents/executor"
-	"math/big"
-	"time"
-
 	"github.com/Flaque/filet"
+	"github.com/synapsecns/sanguine/agents/agents/executor"
+	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	agentsConfig "github.com/synapsecns/sanguine/agents/config"
-
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
+	"math/big"
+	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/merkle"
 
+	"context"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
@@ -812,12 +812,9 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 	})
 }
 
-//nolint:maintidx
+//nolint:maintidx,cyclop
 func (e *ExecutorSuite) TestExecute() {
 	testDone := false
-	defer func() {
-		testDone = true
-	}()
 
 	testContractDest, testContractRef := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
 	testTransactOpts := e.TestBackendDestination.GetTxContext(e.GetTestContext(), nil)
@@ -1120,6 +1117,144 @@ func (e *ExecutorSuite) TestExecute() {
 
 	exec.Stop(uint32(e.TestBackendOrigin.GetChainID()))
 	exec.Stop(uint32(e.TestBackendDestination.GetChainID()))
+
+	testDone = true
+
+	// This now concludes testing execute on its own. Now we will test execute when we have a
+	// new executor picking up from where another one left off.
+
+	secondTestDone := false
+	defer func() {
+		secondTestDone = true
+	}()
+
+	newExecDBPath := filet.TmpDir(e.T(), "")
+	newExecDB, err := executorsqllite.NewSqliteStore(e.GetTestContext(), newExecDBPath)
+	e.Nil(err)
+
+	newExec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, newExecDB, scribeClient.ScribeClient, executorClients, urls)
+	e.Nil(err)
+
+	// Ensure that there was nothing in the new executor's DB.
+	e.Equal(uint32(0), newExec.GetMerkleTree(chainID, destination).NumOfItems())
+
+	go func() {
+		err = newExec.Run(e.GetTestContext())
+		if !secondTestDone {
+			e.Nil(err)
+		}
+	}()
+
+	waitChan := make(chan bool, 1)
+
+	// Wait for both executed messages to be in the executed mapping.
+	e.Eventually(func() bool {
+		executedMap := newExec.GetExecuted(destination)
+		if len(executedMap) == 2 {
+			waitChan <- true
+
+			return true
+		}
+
+		return false
+	})
+
+	<-waitChan
+
+	// Execute one more message to ensure that the new executor is still working.
+	tips3 := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+	encodedTips3, err := types.EncodeTips(tips3)
+	e.Nil(err)
+
+	optimisticSeconds3 := uint32(5)
+
+	nonce3 := uint32(3)
+	body3 := []byte{byte(gofakeit.Uint32())}
+
+	txContextOrigin.Value = types.TotalTips(tips3)
+
+	tx, err = e.OriginContract.Dispatch(txContextOrigin.TransactOpts, destination, recipient, optimisticSeconds3, encodedTips3, body3)
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
+	header3 := types.NewHeader(chainID, sender.Hash(), nonce3, destination, recipient, optimisticSeconds3)
+	message3 := types.NewMessage(header3, tips3, body3)
+
+	attestKey3 := types.AttestationKey{
+		Origin:      chainID,
+		Destination: destination,
+		Nonce:       nonce3,
+	}
+
+	leaf3, err := message3.ToLeaf()
+	e.Nil(err)
+
+	tree.Insert(leaf3[:])
+
+	root3, err := tree.Root(3)
+	e.Nil(err)
+
+	var root3B32 [32]byte
+	copy(root3B32[:], root3)
+
+	unsignedAttestation3 := types.NewAttestation(attestKey3.GetRawKey(), root3B32)
+	hashedAttestation3, err := types.Hash(unsignedAttestation3)
+	e.Nil(err)
+
+	guardSignature3, err := e.GuardBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation3), false)
+	e.Nil(err)
+
+	notarySignature3, err := e.NotaryBondedSigner.SignMessage(e.GetTestContext(), core.BytesToSlice(hashedAttestation3), false)
+	e.Nil(err)
+
+	signedAttestation3 := types.NewSignedAttestation(unsignedAttestation3, []types.Signature{guardSignature3}, []types.Signature{notarySignature3})
+
+	rawSignedAttestation3, err := types.EncodeSignedAttestation(signedAttestation3)
+	e.Nil(err)
+
+	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation3)
+	e.Nil(err)
+	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
+
+	// Make sure there is one executable message in the database.
+	e.Eventually(func() bool {
+		mask := types2.DBMessage{
+			ChainID: &chainID,
+		}
+		executableMessages, err := newExecDB.GetExecutableMessages(e.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
+		e.Nil(err)
+		if len(executableMessages) == 3 {
+			return false
+		}
+		waitChan <- true
+		return true
+	})
+
+	<-waitChan
+
+	// Ensure that the message that was previously executable in the database has been executed.
+	e.Eventually(func() bool {
+		mask := types2.DBMessage{
+			ChainID: &chainID,
+		}
+		executableMessages, err := newExecDB.GetExecutableMessages(e.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
+		e.Nil(err)
+		if len(executableMessages) == 0 {
+			return true
+		}
+
+		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
+		// increase the `time`.
+		countBeforeIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: e.GetTestContext()})
+		e.Nil(err)
+		testTx, err := testContractRef.IncrementCounter(testTransactOpts.TransactOpts)
+		e.Nil(err)
+		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), testTx)
+		countAfterIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: e.GetTestContext()})
+		e.Nil(err)
+		e.Greater(countAfterIncrement.Uint64(), countBeforeIncrement.Uint64())
+		return false
+	})
 }
 
 // TestDestinationExecute test executing on destination.
@@ -1553,6 +1688,17 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	attestation := types.NewAttestation(attestKey.GetRawKey(), root)
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation, 1, 10)
+	e.Nil(err)
+
+	// Store a dud attestation for nonce 1 on a different destination.
+	attestKey = types.AttestationKey{
+		Origin:      originDomain,
+		Destination: destinationDomain + 1,
+		Nonce:       1,
+	}
+	root = common.BigToHash(big.NewInt(gofakeit.Int64()))
+	attestation = types.NewAttestation(attestKey.GetRawKey(), root)
+	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation, 1, 0)
 	e.Nil(err)
 
 	waitChan := make(chan bool, 1)
@@ -2003,11 +2149,11 @@ func (e *ExecutorSuite) TestSetMinimumTimes() {
 
 	e.Len(messages, 6)
 
-	minNonce := messages[0].Nonce
+	minNonce := messages[0].Nonce()
 	attestationMask := types2.DBAttestation{
 		ChainID: &chainID,
 	}
-	attestations, err := e.ExecutorTestDB.GetAttestationsAboveOrEqualNonce(e.GetTestContext(), attestationMask, minNonce(), 1)
+	attestations, err := e.ExecutorTestDB.GetAttestationsAboveOrEqualNonce(e.GetTestContext(), attestationMask, minNonce, 1)
 	e.Nil(err)
 
 	e.Len(attestations, 4)
