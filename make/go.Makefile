@@ -8,17 +8,6 @@ GIT_ROOT := $(shell git rev-parse --show-toplevel)
 CURRENT_PATH := $(shell pwd)
 
 
-# TODO tag a version
-golangci-install:
-	@#Travis (has sudo)
-	@if [ "$(shell which golangci-lint)" = "" ] && [ $(TRAVIS) ]; then curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b && sudo cp ./bin/golangci-lint $(go env GOPATH)/bin/; fi;
-	@#AWS CodePipeline
-	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(CODEBUILD_BUILD_ID)" != "" ]; then curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin; fi;
-	@#Github Actions
-	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(GITHUB_WORKFLOW)" != "" ]; then curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b $(go env GOPATH)/bin; fi;
-	@#Brew - MacOS
-	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(shell which brew)" != "" ] && [ "$(GITHUB_WORKFLOW)" == "" ]; then brew install golangci-lint; fi;
-
 
 help: ## This help dialog.
 	@IFS=$$'\n' ; \
@@ -30,6 +19,18 @@ help: ## This help dialog.
 		help_info=`echo $${help_split[2]} | sed -e 's/^ *//' -e 's/ *$$//'` ; \
 		printf "%-30s %s\n" $$help_command $$help_info ; \
 	done
+
+# TODO tag a version
+golangci-install:
+	@#Travis (has sudo)
+	@if [ "$(shell which golangci-lint)" = "" ] && [ $(TRAVIS) ]; then curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b && sudo cp ./bin/golangci-lint $(go env GOPATH)/bin/; fi;
+	@#AWS CodePipeline
+	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(CODEBUILD_BUILD_ID)" != "" ]; then curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin; fi;
+	@#Github Actions
+	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(GITHUB_WORKFLOW)" != "" ]; then curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b $(go env GOPATH)/bin; fi;
+	@#Brew - MacOS
+	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(shell which brew)" != "" ] && [ "$(GITHUB_WORKFLOW)" == "" ]; then brew install golangci-lint; fi;
+
 
 lint: golangci-install ## Run golangci-lint and go fmt ./...
 	go mod tidy
