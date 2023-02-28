@@ -36,18 +36,27 @@ func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (*types.Att
 }
 
 // logType determines whether a log is a `Dispatch` from Origin.sol or `AttestationAccepted` from Destination.sol.
-func (e Executor) logType(log ethTypes.Log, chainID uint32) contractType {
-	contract := other
+func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
+	contractEvent := contractEventType{
+		contractType:         other,
+		destinationEventType: otherEvent,
+	}
 
 	if eventType, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && eventType == origin.DispatchEvent {
-		contract = originContract
+		contractEvent.contractType = originContract
+		contractEvent.destinationEventType = otherEvent
 	}
 
-	if eventType, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok && eventType == destination.AttestationAcceptedEvent {
-		contract = destinationContract
+	if eventType, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok {
+		contractEvent.contractType = destinationContract
+		if eventType == destination.AttestationAcceptedEvent {
+			contractEvent.destinationEventType = attestationAcceptedEvent
+		} else if eventType == destination.ExecutedEvent {
+			contractEvent.destinationEventType = executedEvent
+		}
 	}
 
-	return contract
+	return contractEvent
 }
 
 // setMinimumTimes goes through a list of messages and sets the minimum time for each message

@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/ethergo/backends"
@@ -176,11 +177,34 @@ func NewAgentsTestContractDeployer(registry deployer.GetOnlyContractRegistry, ba
 	return AgentsTestContractDeployer{deployer.NewSimpleDeployer(registry, backend, AgentsTestContractType)}
 }
 
-// Deploy deploys the header harness.
+// Deploy deploys the agents test contract.
 func (h AgentsTestContractDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return agentstestcontract.DeployAgentsTestContract(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return agentstestcontract.NewAgentsTestContractRef(address, backend)
+	})
+}
+
+// TestClientDeployer deploys the test client.
+type TestClientDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewTestClientDeployer gets the test client.
+func NewTestClientDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return TestClientDeployer{deployer.NewSimpleDeployer(registry, backend, TestClientType)}
+}
+
+// Deploy deploys the test client.
+func (h TestClientDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	originHarnessContract := h.Registry().Get(ctx, OriginHarnessType)
+	destinationHarnessContract := h.Registry().Get(ctx, DestinationHarnessType)
+	originAddress := originHarnessContract.Address()
+	destinationAddress := destinationHarnessContract.Address()
+	return h.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return testclient.DeployTestClient(transactOps, backend, originAddress, destinationAddress)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return testclient.NewTestClientRef(address, backend)
 	})
 }

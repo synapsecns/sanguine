@@ -100,9 +100,20 @@ func (a AttestationGuardDestinationSubmitter) update(ctx context.Context) error 
 
 	// TODO (joe): Double check that attestation has both guard and notary signatures.
 
-	err = a.destinationDomain.Destination().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToSubmitToDestination.SignedAttestation())
+	submittedAtTime, err := a.destinationDomain.Destination().SubmittedAt(
+		ctx,
+		inProgressAttestationToSubmitToDestination.SignedAttestation().Attestation().Origin(),
+		inProgressAttestationToSubmitToDestination.SignedAttestation().Attestation().Root())
 	if err != nil {
-		return fmt.Errorf("could not submit attestation to destination: %w", err)
+		return fmt.Errorf("could not get SubmittedAt on destination to check if root was already submitted: %w", err)
+	}
+
+	if submittedAtTime == nil || submittedAtTime.Unix() == int64(0) {
+		// Only submit if we already submitted
+		err = a.destinationDomain.Destination().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToSubmitToDestination.SignedAttestation())
+		if err != nil {
+			return fmt.Errorf("could not submit attestation to destination: %w", err)
+		}
 	}
 
 	submittedInProgressAttestation := types.NewInProgressAttestation(

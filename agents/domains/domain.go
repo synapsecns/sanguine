@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -71,6 +72,12 @@ type DestinationContract interface {
 	SubmittedAt(ctx context.Context, origin uint32, root [32]byte) (*time.Time, error)
 	// PrimeNonce primes the nonce for the signer
 	PrimeNonce(ctx context.Context, signer signer.Signer) error
+}
+
+// TestClientContract contains the interface for the test client.
+type TestClientContract interface {
+	// SendMessage sends a message through the TestClient.
+	SendMessage(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, optimisticSeconds uint32, message []byte) error
 }
 
 // ErrNoUpdate indicates no update has been produced.

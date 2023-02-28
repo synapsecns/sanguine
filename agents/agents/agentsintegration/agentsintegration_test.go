@@ -1,10 +1,13 @@
 package agentsintegration_test
 
 import (
+	"context"
 	"fmt"
-	executor2 "github.com/synapsecns/sanguine/agents/agents/executor"
 	"math/big"
 	"time"
+
+	executor2 "github.com/synapsecns/sanguine/agents/agents/executor"
+	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
@@ -51,7 +54,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -74,7 +77,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -161,7 +164,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -184,7 +187,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -291,7 +294,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -314,7 +317,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -580,7 +583,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
 		AttestationDomain: u.AttestationDomainClient.Config(),
@@ -603,7 +606,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 			DBPath:     filet.TmpDir(u.T(), ""),
 			ConnString: filet.TmpDir(u.T(), ""),
 		},
-		RefreshIntervalInSeconds: 1,
+		RefreshIntervalInSeconds: 10,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -684,9 +687,6 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
 			retrievedInProgressAttestation.AttestationState() == types.AttestationStateConfirmedOnDestination
 
-		if isTrue {
-			fmt.Printf("\nCRONIN\n isTrue is true \nCRONIN\n")
-		}
 		return isTrue
 	})
 
@@ -873,6 +873,355 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 		}
 		return trueCount == numMessages
 	})
+
+	exec.Stop(uint32(u.TestBackendOrigin.GetChainID()))
+	exec.Stop(uint32(u.TestBackendDestination.GetChainID()))
+
+	// End of executor part that was pasted.
+}
+
+// TestAllAgentsSingleMessageWithTestClientIntegrationE2E is an integration involving just a guard, notary
+// and executor executing a single message to the destination using the TestClient as the origin client and destination client.
+//
+//nolint:dupl,cyclop,maintidx,gocognit
+func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrationE2E() {
+	notaryTestConfig := config.NotaryConfig{
+		DestinationDomain: u.DestinationDomainClient.Config(),
+		AttestationDomain: u.AttestationDomainClient.Config(),
+		OriginDomains: map[string]config.DomainConfig{
+			"origin_client": u.OriginDomainClient.Config(),
+		},
+		BondedSigner: config.SignerConfig{
+			Type: config.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
+		},
+		UnbondedSigner: config.SignerConfig{
+			Type: config.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+		Database: config.DBConfig{
+			Type:       dbcommon.Sqlite.String(),
+			DBPath:     filet.TmpDir(u.T(), ""),
+			ConnString: filet.TmpDir(u.T(), ""),
+		},
+		RefreshIntervalInSeconds: 10,
+	}
+	guardTestConfig := config.GuardConfig{
+		AttestationDomain: u.AttestationDomainClient.Config(),
+		OriginDomains: map[string]config.DomainConfig{
+			"origin_client": u.OriginDomainClient.Config(),
+		},
+		DestinationDomains: map[string]config.DomainConfig{
+			"destination_client": u.DestinationDomainClient.Config(),
+		},
+		BondedSigner: config.SignerConfig{
+			Type: config.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
+		},
+		UnbondedSigner: config.SignerConfig{
+			Type: config.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+		Database: config.DBConfig{
+			Type:       dbcommon.Sqlite.String(),
+			DBPath:     filet.TmpDir(u.T(), ""),
+			ConnString: filet.TmpDir(u.T(), ""),
+		},
+		RefreshIntervalInSeconds: 10,
+	}
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
+	Nil(u.T(), err)
+
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig)
+	Nil(u.T(), err)
+
+	guardDBType, err := dbcommon.DBTypeFromString(guardTestConfig.Database.Type)
+	Nil(u.T(), err)
+
+	guardDBHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), guardDBType, guardTestConfig.Database.ConnString, "guard")
+	Nil(u.T(), err)
+
+	go func() {
+		// we don't check errors here since this will error on cancellation at the end of the test
+		_ = notary.Start(u.GetTestContext())
+	}()
+
+	go func() {
+		// we don't check errors here since this will error on cancellation at the end of the test
+		_ = guard.Start(u.GetTestContext())
+	}()
+
+	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
+
+	optimisticSeconds := uint32(10)
+
+	// We use the agents test contract to simply force transactions on the destination chain
+	// in order to advance the time.
+	_, testContractRef := u.TestDeployManager.GetAgentsTestContract(u.GetTestContext(), u.TestBackendDestination)
+	testTransactOpts := u.TestBackendDestination.GetTxContext(u.GetTestContext(), nil)
+
+	recipient := u.TestClientMetadataOnDestination.Address().Hash()
+	nonce := uint32(1)
+	body := []byte{byte(gofakeit.Uint32())}
+
+	txContextOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.OriginContractMetadata.OwnerPtr())
+	txContextOrigin.Value = types.TotalTips(tips)
+
+	txContextTestClientOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.TestClientMetadataOnOrigin.OwnerPtr())
+
+	// Create a channel and subscription to receive TestClientMessageSent events as they are emitted from origin.
+	messageSentSink := make(chan *testclient.TestClientMessageSent)
+	sentMessage, err := u.TestClientOnOrigin.WatchMessageSent(&bind.WatchOpts{
+		Context: u.GetTestContext()},
+		messageSentSink)
+	u.Nil(err)
+
+	// Create a channel and subscription to receive TestClientMessageReceived events as they are emitted from destination.
+	messageReceivedSink := make(chan *testclient.TestClientMessageReceived)
+	receivedMessage, err := u.TestClientOnDestination.WatchMessageReceived(&bind.WatchOpts{
+		Context: u.GetTestContext()},
+		messageReceivedSink)
+	u.Nil(err)
+
+	testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(txContextTestClientOrigin.TransactOpts, uint32(u.TestBackendDestination.GetChainID()), u.TestClientMetadataOnDestination.Address(), optimisticSeconds, body)
+	u.Nil(err)
+	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+		retrievedInProgressAttestation, err := guardDBHandle.RetrieveNewestInProgressAttestationIfInState(
+			u.GetTestContext(),
+			u.OriginDomainClient.Config().DomainID,
+			u.DestinationDomainClient.Config().DomainID,
+			types.AttestationStateConfirmedOnDestination)
+
+		isTrue := err == nil &&
+			retrievedInProgressAttestation != nil &&
+			retrievedInProgressAttestation.SignedAttestation().Attestation().Nonce() == nonce &&
+			u.OriginDomainClient.Config().DomainID == retrievedInProgressAttestation.SignedAttestation().Attestation().Origin() &&
+			u.DestinationDomainClient.Config().DomainID == retrievedInProgressAttestation.SignedAttestation().Attestation().Destination() &&
+			[32]byte{} != retrievedInProgressAttestation.SignedAttestation().Attestation().Root() &&
+			len(retrievedInProgressAttestation.SignedAttestation().NotarySignatures()) == 1 &&
+			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
+			retrievedInProgressAttestation.AttestationState() == types.AttestationStateConfirmedOnDestination
+
+		return isTrue
+	})
+
+	// Beginning of executor part that was pasted.
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+
+	originClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress())
+	u.Nil(err)
+	destinationClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress())
+	u.Nil(err)
+
+	originConfig := scribeConfig.ContractConfig{
+		Address:    u.OriginContract.Address().String(),
+		StartBlock: 0,
+	}
+	originChainConfig := scribeConfig.ChainConfig{
+		ChainID:               uint32(u.TestBackendOrigin.GetChainID()),
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig.ContractConfig{originConfig},
+	}
+	destinationConfig := scribeConfig.ContractConfig{
+		Address:    u.DestinationContract.Address().String(),
+		StartBlock: 0,
+	}
+	destinationChainConfig := scribeConfig.ChainConfig{
+		ChainID:               uint32(u.TestBackendDestination.GetChainID()),
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig.ContractConfig{destinationConfig},
+	}
+	scribeConf := scribeConfig.Config{
+		Chains: []scribeConfig.ChainConfig{originChainConfig, destinationChainConfig},
+	}
+	clients := map[uint32][]backfill.ScribeBackend{
+		uint32(u.TestBackendOrigin.GetChainID()):      {originClient, originClient},
+		uint32(u.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
+	}
+
+	scribe, err := node.NewScribe(u.ScribeTestDB, clients, scribeConf)
+	u.Nil(err)
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath)
+	go func() {
+		scribeErr := scribeClient.Start(u.GetTestContext())
+		u.Nil(scribeErr)
+	}()
+
+	// Start the Scribe.
+	go func() {
+		_ = scribe.Start(u.GetTestContext())
+	}()
+
+	excCfg := executorCfg.Config{
+		Chains: []executorCfg.ChainConfig{
+			{
+				ChainID:       uint32(u.TestBackendOrigin.GetChainID()),
+				OriginAddress: u.OriginContract.Address().String(),
+			},
+			{
+				ChainID:            uint32(u.TestBackendDestination.GetChainID()),
+				DestinationAddress: u.DestinationContract.Address().String(),
+			},
+		},
+		BaseOmnirpcURL: gofakeit.URL(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+	}
+
+	executorClients := map[uint32]executor2.Backend{
+		uint32(u.TestBackendOrigin.GetChainID()):      u.TestBackendOrigin,
+		uint32(u.TestBackendDestination.GetChainID()): u.TestBackendDestination,
+	}
+
+	urls := map[uint32]string{
+		uint32(u.TestBackendOrigin.GetChainID()):      u.TestBackendOrigin.RPCAddress(),
+		uint32(u.TestBackendDestination.GetChainID()): u.TestBackendDestination.RPCAddress(),
+	}
+
+	exec, err := executor2.NewExecutorInjectedBackend(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	u.Nil(err)
+
+	// Start the exec.
+	go func() {
+		execErr := exec.Start(u.GetTestContext())
+		if !testDone {
+			u.Nil(execErr)
+		}
+	}()
+
+	// Listen with the exec.
+	go func() {
+		execErr := exec.Listen(u.GetTestContext())
+		if !testDone {
+			u.Nil(execErr)
+		}
+	}()
+
+	go func() {
+		execErr := exec.SetMinimumTime(u.GetTestContext())
+		if !testDone {
+			u.Nil(execErr)
+		}
+	}()
+
+	sender := u.TestClientOnOrigin.Address()
+
+	header := types.NewHeader(uint32(u.TestBackendOrigin.GetChainID()), sender.Hash(), nonce, uint32(u.TestBackendDestination.GetChainID()), recipient, optimisticSeconds)
+	message := types.NewMessage(header, tips, body)
+
+	tree := merkle.NewTree()
+
+	leaf, err := message.ToLeaf()
+	u.Nil(err)
+
+	tree.Insert(leaf[:])
+
+	root, err := tree.Root(1)
+	u.Nil(err)
+
+	var rootB32 [32]byte
+	copy(rootB32[:], root)
+
+	continueChan := make(chan bool, 1)
+
+	chainID := uint32(u.TestBackendOrigin.GetChainID())
+	destinationID := uint32(u.TestBackendDestination.GetChainID())
+	// Wait for message to be stored in the database.
+	u.Eventually(func() bool {
+		_, err = u.ExecutorTestDB.GetAttestationBlockNumber(u.GetTestContext(), types2.DBAttestation{
+			ChainID:     &chainID,
+			Destination: &destinationID,
+			Nonce:       &nonce,
+		})
+		if err == nil {
+			continueChan <- true
+			return true
+		}
+		return false
+	})
+
+	<-continueChan
+
+	executed, err := exec.Execute(u.GetTestContext(), message)
+	u.Nil(err)
+	u.False(executed)
+
+	u.Eventually(func() bool {
+		executed, err := exec.Execute(u.GetTestContext(), message)
+		if err != nil {
+			return false
+		}
+		if executed {
+			return true
+		}
+		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
+		// increase the `time`.
+		countBeforeIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: u.GetTestContext()})
+		u.Nil(err)
+		testTx, err := testContractRef.IncrementCounter(testTransactOpts.TransactOpts)
+		u.Nil(err)
+		u.TestBackendDestination.WaitForConfirmation(u.GetTestContext(), testTx)
+		countAfterIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: u.GetTestContext()})
+		u.Nil(err)
+		u.Greater(countAfterIncrement.Uint64(), countBeforeIncrement.Uint64())
+		return false
+	})
+
+	watchCtx, cancel := context.WithTimeout(u.GetTestContext(), time.Second*10)
+	defer cancel()
+
+	select {
+	// check for errors and fail
+	case <-watchCtx.Done():
+		u.T().Error(u.T(), fmt.Errorf("test context completed %w", u.GetTestContext().Err()))
+	case <-sentMessage.Err():
+		u.T().Error(u.T(), sentMessage.Err())
+	// get message sent event
+	case sentItem := <-messageSentSink:
+		u.NotNil(sentItem)
+
+		u.Equal(destinationChainConfig.ChainID, sentItem.Destination)
+
+		// Now sleep for a second before executing
+		time.Sleep(time.Second)
+
+		watchHandleCtx, cancel := context.WithTimeout(u.GetTestContext(), time.Second*10)
+		defer cancel()
+
+		select {
+		// check for errors and fail
+		case <-watchHandleCtx.Done():
+			u.T().Error(u.T(), fmt.Errorf("test context completed %w", u.GetTestContext().Err()))
+		case <-receivedMessage.Err():
+			u.T().Error(u.T(), receivedMessage.Err())
+		// get attestation accepted event
+		case receivedItem := <-messageReceivedSink:
+			u.NotNil(receivedItem)
+
+			rootSubmittedAt := uint64(0)
+			if receivedItem.RootSubmittedAt != nil {
+				rootSubmittedAt = receivedItem.RootSubmittedAt.Uint64()
+			}
+
+			u.Equal(originChainConfig.ChainID, receivedItem.Origin)
+			u.Equal(uint32(1), receivedItem.Nonce)
+			u.Equal(receivedItem.Sender, sentItem.Sender)
+			u.Equal(receivedItem.Message, sentItem.Message)
+			u.Greater(rootSubmittedAt, uint64(1))
+			break
+		}
+
+		break
+	}
 
 	exec.Stop(uint32(u.TestBackendOrigin.GetChainID()))
 	exec.Stop(uint32(u.TestBackendDestination.GetChainID()))
