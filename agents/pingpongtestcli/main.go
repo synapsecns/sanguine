@@ -15,7 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
 
-//nolint:gosec
+//nolint:gosec,cyclop
 func main() {
 	fmt.Println("Enter Sending Chain URL: ")
 	var sendingChainURL string
