@@ -16,6 +16,12 @@ contract StateLibraryTest is SynapseLibraryTest {
         uint40 timestamp;
     }
 
+    struct OriginStateMask {
+        bool diffRoot;
+        bool diffBlockNumber;
+        bool diffTimestamp;
+    }
+
     StateHarness internal libHarness;
 
     function setUp() public override {
@@ -46,7 +52,68 @@ contract StateLibraryTest is SynapseLibraryTest {
         // Test creating a leaf
         bytes32 leftChild = keccak256(abi.encodePacked(rs.root, rs.origin));
         bytes32 rightChild = keccak256(abi.encodePacked(rs.nonce, rs.blockNumber, rs.timestamp));
-        assertEq(libHarness.leaf(payload), keccak256(bytes.concat(leftChild, rightChild)), "!leaf");
+        (bytes32 leftLeaf, bytes32 rightLeaf) = libHarness.subLeafs(payload);
+        assertEq(libHarness.leftLeaf(rs.root, rs.origin), leftChild, "!leftLeaf");
+        assertEq(leftLeaf, leftChild, "!subLeafs: left");
+        assertEq(
+            libHarness.rightLeaf(rs.nonce, rs.blockNumber, rs.timestamp),
+            rightChild,
+            "!rightLeaf"
+        );
+        assertEq(rightLeaf, rightChild, "!subLeafs: right");
+        assertEq(
+            libHarness.hash(payload),
+            keccak256(abi.encodePacked(leftChild, rightChild)),
+            "!hash"
+        );
+    }
+
+    function test_originState_parity(RawState memory rs) public {
+        vm.roll(rs.blockNumber);
+        vm.warp(rs.timestamp);
+        OriginState memory originState = libHarness.originState(rs.root);
+        assertEq(originState.root, rs.root, "!root");
+        assertEq(originState.blockNumber, rs.blockNumber, "!blockNumber");
+        assertEq(originState.timestamp, rs.timestamp, "!timestamp");
+        bytes memory payload = libHarness.formatOriginState(originState, rs.origin, rs.nonce);
+        assertEq(
+            payload,
+            libHarness.formatState(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp),
+            "!formatState(originState)"
+        );
+        assertTrue(libHarness.equalToOrigin(payload, originState), "!equalToOrigin");
+    }
+
+    function test_equalToOrigin(RawState memory a, OriginStateMask memory mask) public {
+        // OriginState is equal if and only if all three fields match
+        bool isEqual = !(mask.diffRoot || mask.diffBlockNumber || mask.diffTimestamp);
+        RawState memory b;
+        // Set some of the OriginState fields to different values depending on the mask
+        b.root = bytes32(uint256(a.root) ^ (mask.diffRoot ? 1 : 0));
+        b.blockNumber = a.blockNumber ^ (mask.diffBlockNumber ? 1 : 0);
+        b.timestamp = a.timestamp ^ (mask.diffTimestamp ? 1 : 0);
+        assertEq(
+            libHarness.equalToOrigin(
+                libHarness.formatState(a.root, a.origin, a.nonce, a.blockNumber, a.timestamp),
+                OriginState(b.root, b.blockNumber, b.timestamp)
+            ),
+            isEqual
+        );
+    }
+
+    function test_summitState_parity(RawState memory rs) public {
+        // State -> SummitState -> State trip test
+        vm.roll(rs.blockNumber);
+        vm.warp(rs.timestamp);
+        bytes memory payload = libHarness.formatState(
+            rs.root,
+            rs.origin,
+            rs.nonce,
+            rs.blockNumber,
+            rs.timestamp
+        );
+        SummitState memory state = libHarness.toSummitState(payload);
+        assertEq(libHarness.formatSummitState(state), payload, "!summitState");
     }
 
     function test_isState(uint8 length) public {

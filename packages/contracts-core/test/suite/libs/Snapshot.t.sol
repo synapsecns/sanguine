@@ -24,7 +24,7 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         statesAmount = bound(statesAmount, 1, MAX_STATES);
         bytes memory payload = new bytes(statesAmount * STATE_LENGTH);
         bytes[] memory statePayloads = new bytes[](statesAmount);
-        bytes32[] memory stateLeafs = new bytes32[](statesAmount);
+        bytes32[] memory stateHashes = new bytes32[](statesAmount);
         // Construct fake states having different byte representation
         for (uint256 i = 0; i < statesAmount; ++i) {
             statePayloads[i] = new bytes(STATE_LENGTH);
@@ -34,7 +34,9 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
                 payload[i * STATE_LENGTH + j] = b;
             }
             // State library is covered in a separate uint test, we assume it is working fine
-            stateLeafs[i] = statePayloads[i].castToState().leaf();
+            (bytes32 leftLeaf, bytes32 rightLeaf) = statePayloads[i].castToState().subLeafs();
+            // For Snapshot Merkle Tree we use the hash of two sub-leafs as "leaf"
+            stateHashes[i] = keccak256(bytes.concat(leftLeaf, rightLeaf));
         }
         bytes32 hashedSnapshot = keccak256(payload);
         // Test formatting of snapshot
@@ -47,11 +49,18 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         }
         // Test hashing
         assertEq(libHarness.hash(payload), hashedSnapshot, "!hash");
+        // Test height
+        uint256 height = libHarness.height(payload);
+        // This is the amount of leafs in the "extended" "Snapshot Merkle Tree",
+        // where we state sub-leafs as leafs.
+        uint256 amount = (1 << height);
+        // Amount / 2 should the minimum power of two that is: >= statesAmount
+        assertTrue((amount >> 1) >= statesAmount && (amount >> 2) < statesAmount, "!height");
         // Test root
         // MerkleList library is covered in a separate uint test, we assume it is working fine
-        MerkleList.calculateRoot(stateLeafs);
-        // Expected merkle root value is stateLeafs[0]
-        assertEq(libHarness.root(payload), stateLeafs[0], "!root");
+        MerkleList.calculateRoot(stateHashes);
+        // Expected merkle root value is stateHashes[0]
+        assertEq(libHarness.root(payload), stateHashes[0], "!root");
     }
 
     function test_isSnapshot_length(uint16 length) public {

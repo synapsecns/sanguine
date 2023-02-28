@@ -24,8 +24,24 @@ contract StateHarness {
         return _state.unwrap().clone();
     }
 
-    function leaf(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToState().leaf();
+    function hash(bytes memory _payload) public pure returns (bytes32) {
+        return _payload.castToState().hash();
+    }
+
+    function subLeafs(bytes memory _payload) public pure returns (bytes32, bytes32) {
+        return _payload.castToState().subLeafs();
+    }
+
+    function leftLeaf(bytes32 _root, uint32 _origin) public pure returns (bytes32) {
+        return StateLib.leftLeaf(_root, _origin);
+    }
+
+    function rightLeaf(
+        uint32 _nonce,
+        uint40 _blockNumber,
+        uint40 _timestamp
+    ) public pure returns (bytes32) {
+        return StateLib.rightLeaf(_nonce, _blockNumber, _timestamp);
     }
 
     function root(bytes memory _payload) public pure returns (bytes32) {
@@ -49,7 +65,43 @@ contract StateHarness {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         STATE FORMATTERS                          ║*▕
+    ▏*║                             ORIGIN STATE                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function formatOriginState(
+        OriginState memory _originState,
+        uint32 _origin,
+        uint32 _nonce
+    ) public pure returns (bytes memory) {
+        return _originState.formatOriginState(_origin, _nonce);
+    }
+
+    function originState(bytes32 _root) public view returns (OriginState memory state) {
+        return StateLib.originState(_root);
+    }
+
+    function equalToOrigin(bytes memory _payload, OriginState memory _originState)
+        public
+        pure
+        returns (bool)
+    {
+        return _payload.castToState().equalToOrigin(_originState);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             SUMMIT STATE                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function formatSummitState(SummitState memory _summitState) public pure returns (bytes memory) {
+        return _summitState.formatSummitState();
+    }
+
+    function toSummitState(bytes memory _payload) public pure returns (SummitState memory state) {
+        return _payload.castToState().toSummitState();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           STATE FORMATTERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatState(

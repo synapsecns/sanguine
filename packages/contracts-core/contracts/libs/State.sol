@@ -9,13 +9,38 @@ type State is bytes29;
 /// @dev Attach library functions to State
 using {
     StateLib.unwrap,
-    StateLib.leaf,
+    StateLib.equalToOrigin,
+    StateLib.hash,
+    StateLib.subLeafs,
+    StateLib.toSummitState,
     StateLib.root,
     StateLib.origin,
     StateLib.nonce,
     StateLib.blockNumber,
     StateLib.timestamp
 } for State global;
+
+/// @dev Struct representing State, as it is stored in the Origin contract.
+struct OriginState {
+    bytes32 root;
+    uint40 blockNumber;
+    uint40 timestamp;
+    // 176 bits left for tight packing
+}
+/// @dev Attach library functions to OriginState
+using { StateLib.formatOriginState } for OriginState global;
+
+/// @dev Struct representing State, as it is stored in the Summit contract.
+struct SummitState {
+    bytes32 root;
+    uint32 origin;
+    uint32 nonce;
+    uint40 blockNumber;
+    uint40 timestamp;
+    // 112 bits left for tight packing
+}
+/// @dev Attach library functions to SummitState
+using { StateLib.formatSummitState } for SummitState global;
 
 library StateLib {
     using ByteString for bytes;
@@ -101,21 +126,122 @@ library StateLib {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             ORIGIN STATE                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Returns a formatted State payload with provided fields.
+     * @param _origin       Domain of Origin's chain
+     * @param _nonce        Nonce of the merkle root
+     * @param _originState  State struct as it is stored in Origin contract
+     * @return Formatted state
+     */
+    function formatOriginState(
+        OriginState memory _originState,
+        uint32 _origin,
+        uint32 _nonce
+    ) internal pure returns (bytes memory) {
+        return
+            formatState({
+                _root: _originState.root,
+                _origin: _origin,
+                _nonce: _nonce,
+                _blockNumber: _originState.blockNumber,
+                _timestamp: _originState.timestamp
+            });
+    }
+
+    /// @notice Returns a struct to save in the Origin contract.
+    /// Current block number and timestamp are used.
+    function originState(bytes32 currentRoot) internal view returns (OriginState memory state) {
+        state.root = currentRoot;
+        state.blockNumber = uint40(block.number);
+        state.timestamp = uint40(block.timestamp);
+    }
+
+    /// @notice Checks that a state and its Origin representation are equal.
+    function equalToOrigin(State _state, OriginState memory _originState)
+        internal
+        pure
+        returns (bool)
+    {
+        return
+            _state.root() == _originState.root &&
+            _state.blockNumber() == _originState.blockNumber &&
+            _state.timestamp() == _originState.timestamp;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             SUMMIT STATE                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Returns a formatted State payload with provided fields.
+     * @param _summitState  State struct as it is stored in Summit contract
+     * @return Formatted state
+     */
+    function formatSummitState(SummitState memory _summitState)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return
+            formatState({
+                _root: _summitState.root,
+                _origin: _summitState.origin,
+                _nonce: _summitState.nonce,
+                _blockNumber: _summitState.blockNumber,
+                _timestamp: _summitState.timestamp
+            });
+    }
+
+    /// @notice Returns a struct to save in the Summit contract.
+    function toSummitState(State _state) internal pure returns (SummitState memory state) {
+        state.root = _state.root();
+        state.origin = _state.origin();
+        state.nonce = _state.nonce();
+        state.blockNumber = _state.blockNumber();
+        state.timestamp = _state.timestamp();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            STATE HASHING                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @notice Returns a "state leaf": a unique hash for every unique state, that is
-    /// going to be used as a leaf in the "Snapshot Merkle Tree".
-    /// @dev We use the hashing technique similar to a Merkle tree here and return hash for a node
-    /// having two children: (root, origin) and (nonce, blockNumber, timestamp).
-    function leaf(State _state) internal pure returns (bytes32) {
-        bytes29 _view = unwrap(_state);
-        // Derive hash for (root, origin) bytestring
-        bytes32 rootOriginHash = _view.prefix({ _len: OFFSET_NONCE, newType: 0 }).keccak();
-        // Derive hash for (nonce, blockNumber, timestamp) bytestring
-        bytes32 metadataHash = _view.sliceFrom({ _index: OFFSET_NONCE, newType: 0 }).keccak();
-        // Final hash is two hashes concatenated, and then hashed
-        return keccak256(bytes.concat(rootOriginHash, metadataHash));
+    /// @notice Returns the hash of the State.
+    /// @dev We are using the Merkle Root of a tree with two leafs (see below) as state hash.
+    function hash(State _state) internal pure returns (bytes32) {
+        (bytes32 _leftLeaf, bytes32 _rightLeaf) = _state.subLeafs();
+        // Final hash is the parent of these leafs
+        return keccak256(bytes.concat(_leftLeaf, _rightLeaf));
+    }
+
+    /// @notice Returns "sub-leafs" of the State. Hash of these "sub leafs" is going to be used
+    /// as a "state leaf" in the "Snapshot Merkle Tree".
+    /// This enables proving that leftLeaf = (root, origin) was a part of the "Snapshot Merkle Tree",
+    /// by combining `rightLeaf` with the remainder of the "Snapshot Merkle Proof".
+    function subLeafs(State _state) internal pure returns (bytes32 _leftLeaf, bytes32 _rightLeaf) {
+        bytes29 _view = _state.unwrap();
+        // Left leaf is (root, origin)
+        _leftLeaf = _view.prefix({ _len: OFFSET_NONCE, newType: 0 }).keccak();
+        // Right leaf is (metadata), or (nonce, blockNumber, timestamp)
+        _rightLeaf = _view.sliceFrom({ _index: OFFSET_NONCE, newType: 0 }).keccak();
+    }
+
+    /// @notice Returns the left "sub-leaf" of the State.
+    function leftLeaf(bytes32 _root, uint32 _origin) internal pure returns (bytes32) {
+        // We use encodePacked here to simulate the State memory layout
+        return keccak256(abi.encodePacked(_root, _origin));
+    }
+
+    /// @notice Returns the right "sub-leaf" of the State.
+    function rightLeaf(
+        uint32 _nonce,
+        uint40 _blockNumber,
+        uint40 _timestamp
+    ) internal pure returns (bytes32) {
+        // We use encodePacked here to simulate the State memory layout
+        return keccak256(abi.encodePacked(_nonce, _blockNumber, _timestamp));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -124,32 +250,32 @@ library StateLib {
 
     /// @notice Returns a historical Merkle root from the Origin contract.
     function root(State _state) internal pure returns (bytes32) {
-        bytes29 _view = unwrap(_state);
+        bytes29 _view = _state.unwrap();
         return _view.index({ _index: OFFSET_ROOT, _bytes: 32 });
     }
 
     /// @notice Returns domain of chain where the Origin contract is deployed.
     function origin(State _state) internal pure returns (uint32) {
-        bytes29 _view = unwrap(_state);
+        bytes29 _view = _state.unwrap();
         return uint32(_view.indexUint({ _index: OFFSET_ORIGIN, _bytes: 4 }));
     }
 
     /// @notice Returns nonce of Origin contract at the time, when `root` was the Merkle root.
     function nonce(State _state) internal pure returns (uint32) {
-        bytes29 _view = unwrap(_state);
+        bytes29 _view = _state.unwrap();
         return uint32(_view.indexUint({ _index: OFFSET_NONCE, _bytes: 4 }));
     }
 
     /// @notice Returns a block number when `root` was saved in Origin.
     function blockNumber(State _state) internal pure returns (uint40) {
-        bytes29 _view = unwrap(_state);
+        bytes29 _view = _state.unwrap();
         return uint40(_view.indexUint({ _index: OFFSET_BLOCK_NUMBER, _bytes: 5 }));
     }
 
     /// @notice Returns a block timestamp when `root` was saved in Origin.
     /// @dev This is the timestamp according to the origin chain.
     function timestamp(State _state) internal pure returns (uint40) {
-        bytes29 _view = unwrap(_state);
+        bytes29 _view = _state.unwrap();
         return uint40(_view.indexUint({ _index: OFFSET_TIMESTAMP, _bytes: 5 }));
     }
 }

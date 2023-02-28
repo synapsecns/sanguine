@@ -12,3 +12,9 @@ uint256 constant STATE_LENGTH = 50;
 
 /// @dev Maximum amount of states in a single snapshot
 uint256 constant SNAPSHOT_MAX_STATES = 32;
+
+/// @dev Root for an empty Origin Merkle Tree.
+bytes32 constant EMPTY_ROOT = hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757";
+
+/// @dev Depth of the Origin Merkle Tree
+uint256 constant ORIGIN_TREE_DEPTH = 32;
