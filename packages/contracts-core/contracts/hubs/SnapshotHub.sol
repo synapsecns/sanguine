@@ -27,6 +27,9 @@ abstract contract SnapshotHub is ISnapshotHub {
     /// @dev All States submitted by any of the Guards
     SummitState[] private guardStates;
 
+    /// @dev All Snapshots submitted by any of the Guards
+    SummitSnapshot[] private guardSnapshots;
+
     /// @dev All Snapshots submitted by any of the Notaries
     SummitSnapshot[] private notarySnapshots;
 
@@ -45,7 +48,7 @@ abstract contract SnapshotHub is ISnapshotHub {
     mapping(uint32 => mapping(address => uint256)) private latestStatePtr;
 
     /// @dev gap for upgrade safety
-    uint256[45] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[44] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
@@ -113,9 +116,15 @@ abstract contract SnapshotHub is ISnapshotHub {
     function _acceptGuardSnapshot(Snapshot _snapshot, address _guard) internal {
         // Snapshot Signer is a Guard: save the states for later use.
         uint256 statesAmount = _snapshot.statesAmount();
+        uint256[] memory statePtrs = new uint256[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
-            _saveState(_snapshot.state(i), _guard);
+            statePtrs[i] = _saveState(_snapshot.state(i), _guard);
+            // Guard either submitted a fresh state, or reused state submitted by another Guard
+            // In any case, the "state pointer" would never be zero
+            assert(statePtrs[i] != 0);
         }
+        // Save Guard snapshot for later retrieval
+        _saveGuardSnapshot(statePtrs);
     }
 
     /// @dev Accepts a Snapshot signed by a Notary.
@@ -133,15 +142,20 @@ abstract contract SnapshotHub is ISnapshotHub {
         }
         // Derive attestation merkle root and save it for a Notary attestation.
         // Save Notary snapshot for later retrieval
-        _saveSnapshotAttestation(_snapshot, statePtrs);
+        _saveNotarySnapshot(_snapshot, statePtrs);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         SAVE STATEMENT DATA                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @dev Saves the Guard snapshot.
+    function _saveGuardSnapshot(uint256[] memory statePtrs) internal {
+        guardSnapshots.push(statePtrs.toSummitSnapshot());
+    }
+
     /// @dev Saves the Notary snapshot and the attestation created from it.
-    function _saveSnapshotAttestation(Snapshot _snapshot, uint256[] memory statePtrs) internal {
+    function _saveNotarySnapshot(Snapshot _snapshot, uint256[] memory statePtrs) internal {
         // Attestation nonce is its index in `attestations` array
         uint32 attNonce = uint32(attestations.length);
         SummitAttestation memory summitAtt = _snapshot.toSummitAttestation();
