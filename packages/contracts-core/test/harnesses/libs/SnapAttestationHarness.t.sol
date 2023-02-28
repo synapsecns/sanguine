@@ -28,8 +28,8 @@ contract SnapAttestationHarness {
         return _payload.castToSnapAttestation().root();
     }
 
-    function depth(bytes memory _payload) public pure returns (uint8) {
-        return _payload.castToSnapAttestation().depth();
+    function height(bytes memory _payload) public pure returns (uint8) {
+        return _payload.castToSnapAttestation().height();
     }
 
     function nonce(bytes memory _payload) public pure returns (uint32) {
@@ -45,7 +45,35 @@ contract SnapAttestationHarness {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         ATTESTATION FORMATTERS                          ║*▕
+    ▏*║                       DESTINATION ATTESTATION                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function toDestinationAttestation(bytes memory _payload, address _notary)
+        public
+        view
+        returns (DestinationAttestation memory)
+    {
+        return _payload.castToSnapAttestation().toDestinationAttestation(_notary);
+    }
+
+    function isEmpty(DestinationAttestation memory _destAtt) public pure returns (bool) {
+        return _destAtt.isEmpty();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SUMMIT ATTESTATION                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function formatSummitAttestation(SummitAttestation memory _summitAtt, uint32 _nonce)
+        public
+        pure
+        returns (bytes memory)
+    {
+        return _summitAtt.formatSummitAttestation(_nonce);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        ATTESTATION FORMATTERS                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatSnapAttestation(

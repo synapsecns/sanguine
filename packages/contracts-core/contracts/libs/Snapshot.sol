@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import { ByteString, TypedMemView } from "./ByteString.sol";
 import { MerkleList } from "./MerkleList.sol";
+import { SummitAttestation } from "./SnapAttestation.sol";
 import { State, StateLib } from "./State.sol";
 import { SNAPSHOT_MAX_STATES, STATE_LENGTH } from "./Structures.sol";
 
@@ -14,8 +15,20 @@ using {
     SnapshotLib.hash,
     SnapshotLib.state,
     SnapshotLib.statesAmount,
-    SnapshotLib.root
+    SnapshotLib.height,
+    SnapshotLib.root,
+    SnapshotLib.toSummitAttestation
 } for Snapshot global;
+
+/// @dev Struct representing Snapshot, as it is stored in the Summit contract.
+/// Summit contract is supposed to store states. Snapshot is a list of states,
+/// so we are storing a list of references to already stored states.
+struct SummitSnapshot {
+    // TODO: compress this - indexes might as well be uint32/uint64
+    uint256[] statePtrs;
+}
+/// @dev Attach library functions to SummitSnapshot
+using { SnapshotLib.getStatesAmount, SnapshotLib.getStatePtr } for SummitSnapshot global;
 
 library SnapshotLib {
     using ByteString for bytes;
@@ -104,13 +117,38 @@ library SnapshotLib {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           SUMMIT SNAPSHOT                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function toSummitSnapshot(uint256[] memory _statePtrs)
+        internal
+        pure
+        returns (SummitSnapshot memory snapshot)
+    {
+        snapshot.statePtrs = _statePtrs;
+    }
+
+    function getStatesAmount(SummitSnapshot memory _snapshot) internal pure returns (uint256) {
+        return _snapshot.statePtrs.length;
+    }
+
+    function getStatePtr(SummitSnapshot memory _snapshot, uint256 _index)
+        internal
+        pure
+        returns (uint256)
+    {
+        require(_index < getStatesAmount(_snapshot), "Out of range");
+        return _snapshot.statePtrs[_index];
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           SNAPSHOT HASHING                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns the hash of a Snapshot, that could be later signed by an Agent.
     function hash(Snapshot _snapshot) internal pure returns (bytes32 hashedSnapshot) {
         // Get the underlying memory view
-        bytes29 _view = unwrap(_snapshot);
+        bytes29 _view = _snapshot.unwrap();
         // TODO: include Snapshot-unique salt in the hash
         return _view.keccak();
     }
@@ -121,7 +159,7 @@ library SnapshotLib {
 
     /// @notice Returns a state with a given index from the snapshot.
     function state(Snapshot _snapshot, uint256 _stateIndex) internal pure returns (State) {
-        bytes29 _view = unwrap(_snapshot);
+        bytes29 _view = _snapshot.unwrap();
         uint256 indexFrom = _stateIndex * STATE_LENGTH;
         require(indexFrom < _view.len(), "Out of range");
         return _view.slice({ _index: indexFrom, _len: STATE_LENGTH, newType: 0 }).castToState();
@@ -129,7 +167,7 @@ library SnapshotLib {
 
     /// @notice Returns the amount of states in the snapshot.
     function statesAmount(Snapshot _snapshot) internal pure returns (uint256) {
-        bytes29 _view = unwrap(_snapshot);
+        bytes29 _view = _snapshot.unwrap();
         return _view.len() / STATE_LENGTH;
     }
 
@@ -137,17 +175,48 @@ library SnapshotLib {
     ▏*║                            SNAPSHOT ROOT                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @notice Returns the height of the extended "Snapshot Merkle Tree":
+    /// every "state leaf" is in fact a node with two sub-leafs.
+    /// @dev snapshot.height() is the length of the "extended merkle proof" for (root, origin) leaf:
+    /// keccak256(metadata) is the first item in the "extended proof" list,
+    /// followed by the remainder of the "merkle proof" from the "Snapshot Merkle Tree"
+    function height(Snapshot _snapshot) internal pure returns (uint8 treeHeight) {
+        // Account for the fact that every "state leaf" is a node with two sub-leafs
+        treeHeight = 1;
+        uint256 _statesAmount = _snapshot.statesAmount();
+        for (uint256 amount = 1; amount < _statesAmount; amount <<= 1) {
+            ++treeHeight;
+        }
+    }
+
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
     function root(Snapshot _snapshot) internal pure returns (bytes32) {
-        uint256 _statesAmount = statesAmount(_snapshot);
-        // Get the leaf values for all states from the snapshot
-        bytes32[] memory leafs = new bytes32[](_statesAmount);
+        uint256 _statesAmount = _snapshot.statesAmount();
+        bytes32[] memory hashes = new bytes32[](_statesAmount);
         for (uint256 i = 0; i < _statesAmount; ++i) {
-            leafs[i] = state(_snapshot, i).leaf();
+            // Each State has two sub-leafs, their hash is used as "leaf" in "Snapshot Merkle Tree"
+            hashes[i] = _snapshot.state(i).hash();
         }
-        MerkleList.calculateRoot(leafs);
-        // Merkle Root for the list is leafs[0]
-        return leafs[0];
+        MerkleList.calculateRoot(hashes);
+        // hashes[0] now stores the value for the Merkle Root of the list
+        return hashes[0];
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SUMMIT ATTESTATION                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Returns an Attestation struct to save in the Summit contract.
+    /// Current block number and timestamp are used.
+    function toSummitAttestation(Snapshot _snapshot)
+        internal
+        view
+        returns (SummitAttestation memory attestation)
+    {
+        attestation.root = _snapshot.root();
+        attestation.height = _snapshot.height();
+        attestation.blockNumber = uint40(block.number);
+        attestation.timestamp = uint40(block.timestamp);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
