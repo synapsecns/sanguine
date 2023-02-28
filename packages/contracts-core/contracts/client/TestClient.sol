@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
-import { Origin } from "../Origin.sol";
+import { IOrigin } from "../interfaces/IOrigin.sol";
 
 import { TipsLib } from "../libs/Tips.sol";
 import { TypeCasts } from "../libs/TypeCasts.sol";
@@ -74,7 +74,7 @@ contract TestClient is IMessageRecipient {
     ) external {
         bytes32 recipient = TypeCasts.addressToBytes32(_recipient);
         bytes memory tips = TipsLib.emptyTips();
-        (uint32 nonce, ) = Origin(origin).dispatch(
+        (uint32 nonce, ) = IOrigin(origin).dispatch(
             _destination,
             recipient,
             _optimisticSeconds,

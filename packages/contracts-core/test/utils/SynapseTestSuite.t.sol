@@ -72,20 +72,17 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     function setupChain(uint32 domain, string memory chainName) public {
         // Deploy messaging contracts
         DestinationHarness destination = new DestinationHarness(domain);
-        OriginHarness origin = new OriginHarness(domain);
         BondingMVP bondingManager = new BondingMVP(domain);
         SystemRouterHarness systemRouter = new SystemRouterHarness(
             domain,
-            address(origin),
+            address(0), // TODO: add origin
             address(destination),
             address(bondingManager)
         );
         // Setup destination
         destination.initialize();
         destination.setSystemRouter(systemRouter);
-        // Setup origin
-        origin.initialize();
-        origin.setSystemRouter(systemRouter);
+        // TODO: Setup origin
         // Setup BondingManager
         bondingManager.initialize();
         bondingManager.setSystemRouter(systemRouter);
@@ -106,17 +103,16 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         AppHarness app = new AppHarness(APP_OPTIMISTIC_SECONDS);
         // Transfer ownership everywhere
         destination.transferOwnership(owner);
-        origin.transferOwnership(owner);
         bondingManager.transferOwnership(owner);
         // Label deployments
         vm.label(address(destination), string.concat("Destination ", chainName));
-        vm.label(address(origin), string.concat("Origin ", chainName));
+        // vm.label(address(origin), string.concat("Origin ", chainName));
         vm.label(address(bondingManager), string.concat("BondingManager ", chainName));
         vm.label(address(systemRouter), string.concat("SystemRouter ", chainName));
         vm.label(address(app), string.concat("App ", chainName));
         // Save deployments
         chains[domain].destination = destination;
-        chains[domain].origin = origin;
+        // chains[domain].origin = origin;
         chains[domain].bondingManager = bondingManager;
         chains[domain].systemRouter = systemRouter;
         chains[domain].app = app;

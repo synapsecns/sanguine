@@ -8,8 +8,6 @@ import "../../contracts/events/AttestationCollectorEvents.sol";
 import "../../contracts/events/DestinationEvents.sol";
 import "../../contracts/events/GuardRegistryEvents.sol";
 import "../../contracts/events/NotaryRegistryEvents.sol";
-import "../../contracts/events/OriginEvents.sol";
-import "../../contracts/events/OriginHubEvents.sol";
 // ============ Harness events ============
 import "../harnesses/events/AgentRegistryHarnessEvents.sol";
 import "../harnesses/events/AttestationHubHarnessEvents.sol";
@@ -30,8 +28,6 @@ abstract contract SynapseEvents is
     DestinationEvents,
     GuardRegistryEvents,
     NotaryRegistryEvents,
-    OriginEvents,
-    OriginHubEvents,
     // Harnesses events
     AgentRegistryHarnessEvents,
     AttestationHubHarnessEvents,
