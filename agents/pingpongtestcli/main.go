@@ -102,6 +102,8 @@ func main() {
 	case pingSentItem := <-pingSentSink:
 		if pingSentItem == nil {
 			fmt.Printf("item from pingSentSink was nil unexpectedly?\n")
+		} else {
+			fmt.Printf("We got a pingSentItem!!!\n")
 		}
 
 		innerWatchCtx, innerCancel := context.WithTimeout(ctx, time.Second*120)
@@ -119,6 +121,8 @@ func main() {
 		case pongReceivedItem := <-pongReceivedSink:
 			if pongReceivedItem == nil {
 				fmt.Printf("item from pongReceivedSink was nil unexpectedly?\n")
+			} else {
+				fmt.Printf("We got a pongReceivedItem!!!\n")
 			}
 			break
 		}
