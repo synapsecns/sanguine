@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/avast/retry-go"
 	"github.com/google/go-github/v41/github"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/actionscore"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
@@ -11,6 +12,7 @@ import (
 	"golang.org/x/oauth2"
 	"os"
 	"strings"
+	"time"
 )
 
 // GetChangeTree returns the ref for the given event name.
@@ -63,13 +65,25 @@ func getChangedFilesFromAPI(ctx context.Context, ghContext *actionscore.Context,
 	ct = tree.NewTree()
 
 	page := 1
+	const retryCount = 10
 	for {
-		files, res, err := client.PullRequests.ListFiles(ctx, repoOwner, repoName, prNumber, &github.ListOptions{
-			Page:    page,
-			PerPage: 100,
-		})
+		var files []*github.CommitFile
+		var res *github.Response
+		err = retry.Do(func() error {
+			reqCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+			defer cancel()
+
+			files, res, err = client.PullRequests.ListFiles(reqCtx, repoOwner, repoName, prNumber, &github.ListOptions{
+				Page:    page,
+				PerPage: 100,
+			})
+			if err != nil {
+				return fmt.Errorf("could not get files: %w", err)
+			}
+			return nil
+		}, retry.Context(ctx), retry.Attempts(retryCount))
 		if err != nil {
-			return nil, fmt.Errorf("could not get files: %w", err)
+			return nil, fmt.Errorf("could not get files after %d retries: %w", retryCount, err)
 		}
 
 		for _, file := range files {
