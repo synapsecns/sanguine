@@ -10,6 +10,7 @@
     "deploy": "docusaurus deploy",
     "ci:lint": "tsc",
     "clear": "docusaurus clear",
+    "test:coverage": " ",
     "build:slither": " ",
     "build:go": " ",
     "serve": "docusaurus serve",
