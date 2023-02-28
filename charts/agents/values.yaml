@@ -67,7 +67,7 @@ resources: {}
 
 notary:
   enabled: true
-  args: ["notary-run", "--config=/config/notary_config.yaml", "--metrics-port=5080"]
+  args: ["notary-run", "--config=/config/notary_config1.yaml", "--metrics-port=5080"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -378,9 +378,9 @@ scribe:
       refresh_rate: 0
 
 notary_files:
-  notary_signer.txt: |-
+  notary_signer1.txt: |-
     04486fc4ef3f3fb489c9f4ed4ff07cb9aa998abc0a244f2464c76164bcfad41d
-  notary_config.yaml: |-
+  notary_config1.yaml: |-
     refresh_interval_in_seconds: 10
     origin_domains:
       origin_client:
@@ -392,6 +392,24 @@ notary_files:
         destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         start_height: 39145588
+      origin_client2:
+        domain_id: 10
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        start_height: 73536295
+      origin_client3:
+        domain_id: 43114
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+        start_height: 26091228
     attestation_domain:
       domain_id: 10
       type: EVM
@@ -412,14 +430,135 @@ notary_files:
       start_height: 0
     unbonded_signer:
       type: "File"
-      file: "/config/notary_signer.txt"
+      file: "/config/notary_signer1.txt"
     bonded_signer:
       type: "File"
-      file: "/config/notary_signer.txt"
+      file: "/config/notary_signer1.txt"
     database:
       type: mysql
       db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
       conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+  notary_signer2.txt: |-
+    479cc41efe8ccb6dd3fd96951db601beacd7bdade60e6dbd8ae6fab02020cf92
+  notary_config2.yaml: |-
+    refresh_interval_in_seconds: 10
+    origin_domains:
+      origin_client:
+        domain_id: 137
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+        start_height: 39145588
+      origin_client2:
+        domain_id: 10
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        start_height: 73536295
+      origin_client3:
+        domain_id: 43114
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+        start_height: 26091228
+    attestation_domain:
+      domain_id: 10
+      type: EVM
+      required_confirmations: 50
+      origin_address: ''
+      attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
+      destination_address: ''
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/10"
+      start_height: 73537448
+    destination_domain:
+      domain_id: 137
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collector_address: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+      start_height: 39145588
+    unbonded_signer:
+      type: "File"
+      file: "/config/notary_signer2.txt"
+    bonded_signer:
+      type: "File"
+      file: "/config/notary_signer2.txt"
+    database:
+      type: mysql
+      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+  notary_signer3.txt: |-
+    2633f34da513bb717df6262fb5db89aa4db081a44c1d9ffc30ee38941dd58c0b
+  notary_config3.yaml: |-
+    refresh_interval_in_seconds: 10
+    origin_domains:
+    origin_client:
+      domain_id: 137
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collector_address: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+      start_height: 39145588
+    origin_client2:
+      domain_id: 10
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collector_address: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://optimism-rpc.gateway.pokt.network"
+      start_height: 73536295
+    origin_client3:
+      domain_id: 43114
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collector_address: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+      start_height: 26091228
+    attestation_domain:
+      domain_id: 10
+      type: EVM
+      required_confirmations: 50
+      origin_address: ''
+      attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
+      destination_address: ''
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/10"
+      start_height: 73537448
+    destination_domain:
+      domain_id: 10
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collector_address: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://optimism-rpc.gateway.pokt.network"
+      start_height: 73536295
+    unbonded_signer:
+      type: "File"
+      file: "/config/notary_signer3.txt"
+    bonded_signer:
+      type: "File"
+      file: "/config/notary_signer3.txt"
+    database:
+      type: mysql
+      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+
 
 guard_files:
   guard_signer.txt: |-
@@ -436,6 +575,24 @@ guard_files:
         destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         start_height: 39145588
+      origin_client2:
+        domain_id: 10
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        start_height: 73536295
+      origin_client3:
+        domain_id: 43114
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+        start_height: 26091228
     attestation_domain:
       domain_id: 10
       type: EVM
@@ -579,7 +736,7 @@ executor_embedded_files:
         destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
     unbonded_signer:
       type: "File"
-      file: "/config/notary_signer.txt"
+      file: "/config/executor_signer.txt"
     embedded_scribe_config:
       chains:
         - chain_id: 137
