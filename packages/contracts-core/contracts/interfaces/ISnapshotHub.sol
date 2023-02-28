@@ -24,12 +24,20 @@ interface ISnapshotHub {
         returns (bytes memory statePayload);
 
     /**
+     * @notice Returns Guard snapshot for the list of all accepted Guard snapshots.
+     * @dev Reverts if snapshot with given index hasn't been accepted yet.
+     * @param _index            Snapshot index in the list of all Guard snapshots
+     * @return snapshotPayload  Raw payload with Guard snapshot
+     */
+    function getGuardSnapshot(uint256 _index) external view returns (bytes memory snapshotPayload);
+
+    /**
      * @notice Returns Notary snapshot that was used for creating an attestation with a given nonce.
      * @dev Reverts if attestation with given nonce hasn't been created yet.
      * @param _nonce            Nonce for the attestation
      * @return snapshotPayload  Raw payload with Notary snapshot used for creating the attestation
      */
-    function getSnapshot(uint256 _nonce) external view returns (bytes memory snapshotPayload);
+    function getNotarySnapshot(uint256 _nonce) external view returns (bytes memory snapshotPayload);
 
     /**
      * @notice Returns Notary snapshot that was used for creating a given attestation.
@@ -39,7 +47,7 @@ interface ISnapshotHub {
      * @param _snapAttPayload   Raw payload with attestation data
      * @return snapshotPayload  Raw payload with Notary snapshot used for creating the attestation
      */
-    function getSnapshot(bytes memory _snapAttPayload)
+    function getNotarySnapshot(bytes memory _snapAttPayload)
         external
         view
         returns (bytes memory snapshotPayload);

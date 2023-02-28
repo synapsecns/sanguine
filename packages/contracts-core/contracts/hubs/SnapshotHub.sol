@@ -88,13 +88,23 @@ abstract contract SnapshotHub is ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getSnapshot(uint256 _nonce) external view returns (bytes memory snapshotPayload) {
-        require(_nonce < attestations.length, "Nonce out of range");
+    function getGuardSnapshot(uint256 _index) external view returns (bytes memory snapshotPayload) {
+        require(_index < guardSnapshots.length, "Index out of range");
+        return _restoreSnapshot(guardSnapshots[_index]);
+    }
+
+    /// @inheritdoc ISnapshotHub
+    function getNotarySnapshot(uint256 _nonce)
+        external
+        view
+        returns (bytes memory snapshotPayload)
+    {
+        require(_nonce < notarySnapshots.length, "Nonce out of range");
         return _restoreSnapshot(notarySnapshots[_nonce]);
     }
 
     /// @inheritdoc ISnapshotHub
-    function getSnapshot(bytes memory _snapAttPayload)
+    function getNotarySnapshot(bytes memory _snapAttPayload)
         external
         view
         returns (bytes memory snapshotPayload)
@@ -213,10 +223,10 @@ abstract contract SnapshotHub is ISnapshotHub {
         for (uint256 i = 0; i < statesAmount; ++i) {
             // Get value for "index in guardStates PLUS 1"
             uint256 statePtr = _snapshot.getStatePtr(i);
-            // We are never saving zero values in _acceptNotarySnapshot, so this holds
+            // We are never saving zero values when accepting Guard/Notary snapshots, so this holds
             assert(statePtr != 0);
             SummitState memory state = guardStates[statePtr - 1];
-            // Get the state that Notary used for the snapshot
+            // Get the state that Agent used for the snapshot
             states[i] = state.formatSummitState().castToState();
         }
         return SnapshotLib.formatSnapshot(states);
