@@ -6,7 +6,7 @@ import { DomainContext, StateHub } from "./hubs/StateHub.sol";
 import { SnapAttestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
-contract OriginNew is StatementHub, StateHub, SystemRegistry, IOrigin {
+contract Origin is StatementHub, StateHub, SystemRegistry, IOrigin {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

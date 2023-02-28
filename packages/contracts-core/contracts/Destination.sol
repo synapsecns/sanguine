@@ -11,7 +11,7 @@ import { Message, MessageLib } from "./libs/Message.sol";
 import { StateLib } from "./libs/State.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
-contract DestinationNew is StatementHub, SnapAttestationHub, SystemRegistry, IDestination {
+contract Destination is StatementHub, SnapAttestationHub, SystemRegistry, IDestination {
     // TODO: Attach library functions to custom types globally
     using HeaderLib for Header;
     using MessageLib for Message;
