@@ -8,7 +8,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/event"
 	"github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
@@ -78,6 +80,14 @@ type DestinationContract interface {
 type TestClientContract interface {
 	// SendMessage sends a message through the TestClient.
 	SendMessage(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, optimisticSeconds uint32, message []byte) error
+}
+
+// PingPongClientContract contains the interface for the ping pong test client.
+type PingPongClientContract interface {
+	// DoPing sends a ping message through the PingPongClient.
+	DoPing(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, pings uint16) error
+	WatchPingSent(ctx context.Context, sink chan<- *pingpongclient.PingPongClientPingSent) (event.Subscription, error)
+	WatchPongReceived(ctx context.Context, sink chan<- *pingpongclient.PingPongClientPongReceived) (event.Subscription, error)
 }
 
 // ErrNoUpdate indicates no update has been produced.
