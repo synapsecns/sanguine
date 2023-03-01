@@ -11,7 +11,6 @@ contract MessageHarness {
     using TipsLib for Tips;
     using MessageLib for bytes;
     using MessageLib for bytes29;
-    using MessageLib for Message;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 

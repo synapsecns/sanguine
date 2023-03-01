@@ -19,9 +19,6 @@ contract Destination is
     DestinationEvents,
     InterfaceDestination
 {
-    // TODO: Attach library functions to custom types globally
-    using MessageLib for Message;
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
