@@ -10,7 +10,6 @@ import "../../../contracts/libs/Header.sol";
 contract HeaderHarness {
     using HeaderLib for bytes;
     using HeaderLib for bytes29;
-    using HeaderLib for Header;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 

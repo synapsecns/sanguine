@@ -20,7 +20,6 @@ contract Destination is
     InterfaceDestination
 {
     // TODO: Attach library functions to custom types globally
-    using HeaderLib for Header;
     using MessageLib for Message;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
