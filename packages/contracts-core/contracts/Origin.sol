@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "./libs/Message.sol";
+import "./libs/Merkle.sol";
+import "./libs/State.sol";
+import "./libs/Structures.sol";
+import "./libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { OriginEvents } from "./events/OriginEvents.sol";
 import { InterfaceOrigin } from "./interfaces/InterfaceOrigin.sol";
@@ -8,6 +14,15 @@ import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
 contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, InterfaceOrigin {
+    using MerkleLib for MerkleLib.Tree;
+    using TipsLib for bytes;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               STORAGE                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    MerkleLib.Tree private tree;
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -80,8 +95,45 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
-    ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
-        // TODO: implement
+    )
+        external
+        payable
+        haveActiveGuard
+        haveActiveNotary(_destination)
+        returns (uint32 messageNonce, bytes32 messageHash)
+    {
+        require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
+        // This will revert if payload is not a formatted tips payload
+        Tips tips = _tips.castToTips();
+        // Total tips must exactly match msg.value
+        require(tips.totalTips() == msg.value, "!tips: totalTips");
+        // Format the message header
+        messageNonce = _nextNonce();
+        bytes memory header = HeaderLib.formatHeader({
+            _origin: localDomain,
+            _sender: _checkForSystemRouter(_recipient),
+            _nonce: messageNonce,
+            _destination: _destination,
+            _recipient: _recipient,
+            _optimisticSeconds: _optimisticSeconds
+        });
+        // Format the full message payload
+        bytes memory message = MessageLib.formatMessage(header, _tips, _messageBody);
+
+        // Insert new leaf into the Origin Merkle Tree
+        messageHash = keccak256(message);
+        /// @dev Before insertion: messageNonce == tree.count() - 1
+        /// tree.insert() requires amount of leaves AFTER the leaf insertion
+        tree.insert(messageNonce, messageHash);
+
+        // Save new State of Origin contract
+        /// @dev After insertion: messageNonce == tree.count()
+        /// tree.root() requires current amount of leaves
+        bytes32 newRoot = tree.root(messageNonce);
+        _saveState(StateLib.originState(newRoot));
+
+        // Emit Dispatched event with message information
+        emit Dispatched(messageHash, messageNonce, _destination, message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -92,6 +144,29 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         // TODO: Move to SystemRegistry?
         // TODO: send a system call indicating agent was slashed
         _removeAgent(_domain, _account);
+    }
+
+    /**
+     * @notice Returns adjusted "sender" field.
+     * @dev By default, "sender" field is msg.sender address casted to bytes32.
+     * However, if SYSTEM_ROUTER is used for "recipient" field, and msg.sender is SystemRouter,
+     * SYSTEM_ROUTER is also used as "sender" field.
+     * Note: tx will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
+     */
+    function _checkForSystemRouter(bytes32 _recipient) internal view returns (bytes32 sender) {
+        if (_recipient != SYSTEM_ROUTER) {
+            sender = TypeCasts.addressToBytes32(msg.sender);
+            /**
+             * @dev Note: SYSTEM_ROUTER has only the highest 12 bytes set,
+             * whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
+             * Thus, in this branch: sender != SYSTEM_ROUTER
+             */
+        } else {
+            // Check that SystemRouter specified SYSTEM_ROUTER as recipient, revert otherwise.
+            _assertSystemRouter();
+            // Adjust "sender" field for correct processing on remote chain.
+            sender = SYSTEM_ROUTER;
+        }
     }
 
     function _isIgnoredAgent(uint32, address) internal view virtual override returns (bool) {
