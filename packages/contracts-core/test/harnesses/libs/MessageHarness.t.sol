@@ -8,7 +8,6 @@ import "../../../contracts/libs/Message.sol";
  * @notice Exposes Message methods for testing against golang.
  */
 contract MessageHarness {
-    using TipsLib for Tips;
     using MessageLib for bytes;
     using MessageLib for bytes29;
     using TypedMemView for bytes;
