@@ -5,11 +5,36 @@ import { SummitEvents } from "./events/SummitEvents.sol";
 import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
 import { SnapshotHub } from "./hubs/SnapshotHub.sol";
 import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
+import {
+    OwnableUpgradeable
+} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  * @notice Accepts snapshots signed by Guards and Notaries. Verifies Notaries attestations.
  */
-contract Summit is StatementHub, SnapshotHub, SummitEvents, InterfaceSummit {
+contract Summit is StatementHub, SnapshotHub, OwnableUpgradeable, SummitEvents, InterfaceSummit {
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             INITIALIZER                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function initialize() external initializer {
+        __Ownable_init_unchained();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            ADDING AGENTS                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // TODO (Chi): merge Summit with BondingPrimary
+    function addAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
+        return _addAgent(_domain, _account);
+    }
+
+    function removeAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
+        return _removeAgent(_domain, _account);
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          ACCEPT STATEMENTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
