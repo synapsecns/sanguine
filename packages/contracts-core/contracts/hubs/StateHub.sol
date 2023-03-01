@@ -6,6 +6,7 @@ import "../libs/State.sol";
 import "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "../context/DomainContext.sol";
+import { StateHubEvents } from "../events/StateHubEvents.sol";
 import { IStateHub } from "../interfaces/IStateHub.sol";
 
 /**
@@ -15,7 +16,7 @@ import { IStateHub } from "../interfaces/IStateHub.sol";
  * - How "state" getters work
  * - How to compare "states" to one another
  */
-abstract contract StateHub is DomainContext, IStateHub {
+abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     using StateLib for bytes;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -27,16 +28,6 @@ abstract contract StateHub is DomainContext, IStateHub {
 
     /// @dev gap for upgrade safety
     uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Emitted when a new Origin State is saved after a message was dispatched.
-     * @param state     Raw payload with state data
-     */
-    event StateSaved(bytes state);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕

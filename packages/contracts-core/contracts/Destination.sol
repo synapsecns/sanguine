@@ -6,38 +6,22 @@ import "./libs/Message.sol";
 import "./libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "./context/DomainContext.sol";
+import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "./interfaces/InterfaceDestination.sol";
 import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
 import { Attestation, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
-contract Destination is StatementHub, AttestationHub, SystemRegistry, InterfaceDestination {
+contract Destination is
+    StatementHub,
+    AttestationHub,
+    SystemRegistry,
+    DestinationEvents,
+    InterfaceDestination
+{
     // TODO: Attach library functions to custom types globally
     using HeaderLib for Header;
     using MessageLib for Message;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // TODO: move Events to a separate contract, once the old Destination is deprecated
-
-    /**
-     * @notice Emitted when a snapshot is accepted by the Destination contract.
-     * @param domain        Domain where the signed Notary is active
-     * @param notary        Notary who signed the attestation
-     * @param attestation   Raw payload with attestation data
-     * @param attSignature  Notary signature for the attestation
-     */
-    event AttestationAccepted(uint32 domain, address notary, bytes attestation, bytes attSignature);
-
-    /**
-     * @notice Emitted when message is executed.
-     * @param remoteDomain  Remote domain where message originated
-     * @param messageHash   The keccak256 hash of the message that was executed
-     * @param tips          Raw payload with tips paid for the off-chain agents
-     */
-    event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash, bytes tips);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
