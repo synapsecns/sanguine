@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./Snapshot.sol";
+import "./ByteString.sol";
+import "./Structures.sol";
 
 /// @dev Attestation is a memory view over a formatted attestation payload.
 type Attestation is bytes29;

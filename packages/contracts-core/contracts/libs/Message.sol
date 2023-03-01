@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "./ByteString.sol";
 import "./Header.sol";
 import "./Tips.sol";
 

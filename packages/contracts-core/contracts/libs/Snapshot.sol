@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./MerkleList.sol";
 import "./Attestation.sol";
+import "./ByteString.sol";
+import "./MerkleList.sol";
 import "./State.sol";
 
 /// @dev Snapshot is a memory view over a formatted snapshot payload: a list of states.
