@@ -5,10 +5,8 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
@@ -67,7 +65,7 @@ func main() {
 
 	destinationID := uint32(destID64)
 
-	pingSentSink := make(chan *pingpongclient.PingPongClientPingSent)
+	/*pingSentSink := make(chan *pingpongclient.PingPongClientPingSent)
 	pingSentSub, err := boundPingPongClient.WatchPingSent(ctx, pingSentSink)
 	if err != nil {
 		fmt.Printf("could not create channel to watch for ping sent: %s", err)
@@ -79,7 +77,7 @@ func main() {
 	if err != nil {
 		fmt.Printf("could not create channel to watch for pong received: %s", err)
 		return
-	}
+	}*/
 
 	err = boundPingPongClient.DoPing(ctx, localSigner, destinationID, recipient, uint16(1))
 	if err != nil {
@@ -87,7 +85,7 @@ func main() {
 		return
 	}
 
-	pingSentWatchCtx, pingSentCancel := context.WithTimeout(ctx, time.Second*120)
+	/*pingSentWatchCtx, pingSentCancel := context.WithTimeout(ctx, time.Second*120)
 	defer pingSentCancel()
 
 	select {
@@ -128,5 +126,5 @@ func main() {
 		}
 
 		break
-	}
+	}*/
 }
