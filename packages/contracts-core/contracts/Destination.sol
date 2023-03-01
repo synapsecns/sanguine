@@ -63,7 +63,7 @@ contract Destination is
         bytes memory _message,
         bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
         bytes32[] calldata _snapProof,
-        uint256 _snapIndex
+        uint256 _stateIndex
     ) external {
         // TODO: implement
     }
@@ -93,7 +93,7 @@ contract Destination is
      * @param _msg          Typed memory view over message payload
      * @param _originProof  Proof of inclusion of message in the Origin Merkle Tree
      * @param _snapProof    Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
-     * @param _snapIndex    Index of Origin State Left Leaf in the Snapshot Merkle Tree
+     * @param _stateIndex   Index of Origin State in the Snapshot
      * @return snapshotRoot Derived merkle root of the Snapshot Merkle Tree
      * @return destAtt      Rest of attestation data that Destination keeps track of
      */
@@ -101,7 +101,7 @@ contract Destination is
         Message _msg,
         bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
         bytes32[] calldata _snapProof,
-        uint256 _snapIndex
+        uint256 _stateIndex
     ) internal view returns (bytes32 snapshotRoot, DestinationAttestation memory destAtt) {
         Header header = _msg.header();
         // Reconstruct Origin Merkle Root using the origin proof
@@ -109,10 +109,11 @@ contract Destination is
         bytes32 originRoot = MerkleLib.branchRoot(_msg.leaf(), _originProof, header.nonce() - 1);
         // Reconstruct left sub-leaf of the Origin State: (merkleRoot, originDomain)
         bytes32 leftLeaf = StateLib.leftLeaf(originRoot, header.origin());
-
-        // TODO: implement branchRoot function that takes dynamic sized proof as variable
-        // snapshotRoot = MerkleLib.branchRoot(leftLeaf, _snapProof, _snapIndex);
-
+        // Reconstruct Snapshot Merkle Root using the snapshot proof
+        // Index of "leftLeaf" is twice the state position in the snapshot
+        /// @dev We ask to provide state index instead of "leftLeaf" index to enforce
+        /// choice of State's left leaf for root reconstruction
+        snapshotRoot = MerkleLib.branchRoot(leftLeaf, _snapProof, _stateIndex << 1);
         // Fetch the attestation data for the snapshot root
         destAtt = _rootAttestation(snapshotRoot);
         // Check if snapshot root has been submitted

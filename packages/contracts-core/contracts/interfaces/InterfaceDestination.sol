@@ -20,13 +20,13 @@ interface InterfaceDestination is IAttestationHub {
      * @param _message      Raw payload with a formatted message to execute
      * @param _originProof  Proof of inclusion of message in the Origin Merkle Tree
      * @param _snapProof    Proof of inclusion of Origin State's Left Leaf into Snapshot Merkle Tree
-     * @param _snapIndex    Index of Origin State's Left Leaf in the Snapshot Merkle Tree
+     * @param _stateIndex   Index of Origin State in the Snapshot
      */
     function execute(
         bytes memory _message,
         bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
         bytes32[] calldata _snapProof,
-        uint256 _snapIndex
+        uint256 _stateIndex
     ) external;
 
     /**
