@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "../libs/Structures.sol";
 import "../libs/SystemMessage.sol";
 import "../libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -241,7 +242,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
          * Destination is supposed to reject messages
          * from unknown chains, so we can skip origin check here.
          */
-        return SystemMessageLib.SYSTEM_ROUTER;
+        return SYSTEM_ROUTER;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

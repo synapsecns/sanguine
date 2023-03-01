@@ -2,6 +2,7 @@
 
 pragma solidity 0.8.17;
 
+import "../../../contracts/libs/Structures.sol";
 import "../../../contracts/libs/SystemMessage.sol";
 
 /**
@@ -73,7 +74,7 @@ contract SystemMessageHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function systemRouter() public pure returns (bytes32) {
-        return SystemMessageLib.SYSTEM_ROUTER;
+        return SYSTEM_ROUTER;
     }
 
     function offsetRecipient() public pure returns (uint256) {
