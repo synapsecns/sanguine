@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-import "../Version.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
 import { SystemContract } from "../system/SystemContract.sol";
+import { Version0_0_1 } from "../Version.sol";
 
 abstract contract BondingManager is SystemContract, Version0_0_1 {
     /*╔══════════════════════════════════════════════════════════════════════╗*\

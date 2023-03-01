@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ByteString, TypedMemView } from "./ByteString.sol";
-import { STATE_LENGTH } from "./Structures.sol";
+import "./ByteString.sol";
+import "./Structures.sol";
 
 /// @dev State is a memory view over a formatted state payload.
 type State is bytes29;

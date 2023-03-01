@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "./libs/Merkle.sol";
+import "./libs/Message.sol";
+import "./libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "./context/DomainContext.sol";
+import { IDestination, ORIGIN_TREE_DEPTH } from "./interfaces/IDestination.sol";
 import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
 import { Attestation, StatementHub } from "./hubs/StatementHub.sol";
-import { IDestination, ORIGIN_TREE_DEPTH } from "./interfaces/IDestination.sol";
-import { Header, HeaderLib } from "./libs/Header.sol";
-import { MerkleLib } from "./libs/Merkle.sol";
-import { Message, MessageLib } from "./libs/Message.sol";
-import { StateLib } from "./libs/State.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
 contract Destination is StatementHub, AttestationHub, SystemRegistry, IDestination {

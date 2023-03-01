@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-import "../Version.sol";
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import "../libs/SystemMessage.sol";
 import "../libs/Tips.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { BasicClient } from "../client/BasicClient.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
-
+import { Version0_0_1 } from "../Version.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 /**

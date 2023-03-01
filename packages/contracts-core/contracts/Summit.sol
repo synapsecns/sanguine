@@ -2,8 +2,8 @@
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { ISummit } from "./interfaces/ISummit.sol";
-import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 import { SnapshotHub } from "./hubs/SnapshotHub.sol";
+import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 
 /**
  * @notice Accepts snapshots signed by Guards and Notaries. Verifies Notaries attestations.

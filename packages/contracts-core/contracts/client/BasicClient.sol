@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
 import { IOrigin } from "../interfaces/IOrigin.sol";
 

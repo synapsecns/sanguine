@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "./AgentRegistry.sol";
 import { SystemContract } from "./SystemContract.sol";
+import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
 
 /**
  * @notice Shared agents registry utilities for Origin, Destination.

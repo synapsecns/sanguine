@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "../context/DomainContext.sol";
-
+import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {
     OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";

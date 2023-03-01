@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import { BondingManager } from "./BondingManager.sol";
+import { DomainContext } from "../context/DomainContext.sol";
 import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
 import { SystemContract } from "../system/SystemContract.sol";
-import { DomainContext } from "../context/DomainContext.sol";
-import { BondingManager } from "./BondingManager.sol";
 
 interface IAttestationCollector {
     function addAgent(uint32 _domain, address _account) external returns (bool);

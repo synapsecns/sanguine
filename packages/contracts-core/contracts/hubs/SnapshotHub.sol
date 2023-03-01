@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "../libs/Attestation.sol";
+import "../libs/Snapshot.sol";
+import "../libs/State.sol";
+import "../libs/TypedMemView.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { ISnapshotHub } from "../interfaces/ISnapshotHub.sol";
-import { Attestation, AttestationLib, SummitAttestation } from "../libs/Attestation.sol";
-import { Snapshot, SnapshotLib, SummitSnapshot } from "../libs/Snapshot.sol";
-import { State, StateLib, SummitState } from "../libs/State.sol";
-import { TypedMemView } from "../libs/TypedMemView.sol";
 
 /**
  * @notice Hub to accept and save snapshots, as well as verify attestations.
