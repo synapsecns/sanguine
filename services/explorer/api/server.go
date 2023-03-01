@@ -83,14 +83,14 @@ func Start(ctx context.Context, cfg Config) error {
 				ticker.Stop()
 				return
 			case <-ticker.C:
-				err = rehydrateCache(ctx, client, responseCache)
+				err = RehydrateCache(ctx, client, responseCache)
 				if err != nil {
 					logger.Warnf("rehydration failed: %s", err)
 				}
 			case <-first:
 				// buffer to wait for everything to get initialized
 				time.Sleep(10 * time.Second)
-				err = rehydrateCache(ctx, client, responseCache)
+				err = RehydrateCache(ctx, client, responseCache)
 				if err != nil {
 					logger.Errorf("initial rehydration failed: %s", err)
 				}
@@ -137,9 +137,11 @@ func InitDB(ctx context.Context, address string, readOnly bool) (db.ConsumerDB, 
 }
 
 // TODO make this nicer. make a yaml of the queries needed for rehydration w/refresh rate and iterate on that.
+
+// RehydrateCache rehydrates the cache.
 //
 // nolint:dupl,gocognit,cyclop,maintidx
-func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service cache.Service) error {
+func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service cache.Service) error {
 	fmt.Println("rehydrating Cache")
 	totalVolumeType := model.StatisticTypeTotalVolumeUsd
 	totalFeeType := model.StatisticTypeTotalFeeUsd
@@ -170,7 +172,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, TOTAL_VOLUME_USD, ALL, ALL_TIME, , , ", handleJSONAmountStat(statsVolAll))
+		err = service.CacheResponse("amountStatistic, TOTAL_VOLUME_USD, ALL, ALL_TIME, , , ", HandleJSONAmountStat(statsVolAll))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -178,7 +180,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, TOTAL_FEE_USD, ALL, ALL_TIME, , , ", handleJSONAmountStat(statsFeeAll))
+		err = service.CacheResponse("amountStatistic, TOTAL_FEE_USD, ALL, ALL_TIME, , , ", HandleJSONAmountStat(statsFeeAll))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -186,7 +188,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, COUNT_ADDRESSES, ALL, ALL_TIME, , , ", handleJSONAmountStat(statsAddrAll))
+		err = service.CacheResponse("amountStatistic, COUNT_ADDRESSES, ALL, ALL_TIME, , , ", HandleJSONAmountStat(statsAddrAll))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -194,7 +196,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, COUNT_TRANSACTIONS, ALL, ALL_TIME, , , ", handleJSONAmountStat(statsTxAll))
+		err = service.CacheResponse("amountStatistic, COUNT_TRANSACTIONS, ALL, ALL_TIME, , , ", HandleJSONAmountStat(statsTxAll))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -205,7 +207,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, TOTAL_VOLUME_USD, BRIDGE, ALL_TIME, , , ", handleJSONAmountStat(statsVolBridge))
+		err = service.CacheResponse("amountStatistic, TOTAL_VOLUME_USD, BRIDGE, ALL_TIME, , , ", HandleJSONAmountStat(statsVolBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -213,7 +215,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, TOTAL_FEE_USD, BRIDGE, ALL_TIME, , , ", handleJSONAmountStat(statsFeeBridge))
+		err = service.CacheResponse("amountStatistic, TOTAL_FEE_USD, BRIDGE, ALL_TIME, , , ", HandleJSONAmountStat(statsFeeBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -221,7 +223,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, COUNT_ADDRESSES, BRIDGE, ALL_TIME, , , ", handleJSONAmountStat(statsAddrBridge))
+		err = service.CacheResponse("amountStatistic, COUNT_ADDRESSES, BRIDGE, ALL_TIME, , , ", HandleJSONAmountStat(statsAddrBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -229,7 +231,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, COUNT_TRANSACTIONS, BRIDGE, ALL_TIME, , , ", handleJSONAmountStat(statsTxBridge))
+		err = service.CacheResponse("amountStatistic, COUNT_TRANSACTIONS, BRIDGE, ALL_TIME, , , ", HandleJSONAmountStat(statsTxBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -240,7 +242,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, TOTAL_VOLUME_USD, SWAP, ALL_TIME, , , ", handleJSONAmountStat(statsVolSwap))
+		err = service.CacheResponse("amountStatistic, TOTAL_VOLUME_USD, SWAP, ALL_TIME, , , ", HandleJSONAmountStat(statsVolSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -248,7 +250,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, TOTAL_FEE_USD, SWAP, ALL_TIME, , , ", handleJSONAmountStat(statsFeeSwap))
+		err = service.CacheResponse("amountStatistic, TOTAL_FEE_USD, SWAP, ALL_TIME, , , ", HandleJSONAmountStat(statsFeeSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -256,7 +258,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, COUNT_ADDRESSES, SWAP, ALL_TIME, , , ", handleJSONAmountStat(statsAddrSwap))
+		err = service.CacheResponse("amountStatistic, COUNT_ADDRESSES, SWAP, ALL_TIME, , , ", HandleJSONAmountStat(statsAddrSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -264,7 +266,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, COUNT_TRANSACTIONS, SWAP, ALL_TIME, , , ", handleJSONAmountStat(statsTxSwap))
+		err = service.CacheResponse("amountStatistic, COUNT_TRANSACTIONS, SWAP, ALL_TIME, , , ", HandleJSONAmountStat(statsTxSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -275,7 +277,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, TOTAL_FEE_USD, MESSAGE_BUS, ALL_TIME, , , ", handleJSONAmountStat(statsFeeMsg))
+		err = service.CacheResponse("amountStatistic, TOTAL_FEE_USD, MESSAGE_BUS, ALL_TIME, , , ", HandleJSONAmountStat(statsFeeMsg))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -283,7 +285,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, COUNT_ADDRESSES, MESSAGE_BUS, ALL_TIME, , , ", handleJSONAmountStat(statsAddrMsg))
+		err = service.CacheResponse("amountStatistic, COUNT_ADDRESSES, MESSAGE_BUS, ALL_TIME, , , ", HandleJSONAmountStat(statsAddrMsg))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -291,7 +293,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("amountStatistic, COUNT_TRANSACTIONS, MESSAGE_BUS, ALL_TIME, , , ", handleJSONAmountStat(statsTxMsg))
+		err = service.CacheResponse("amountStatistic, COUNT_TRANSACTIONS, MESSAGE_BUS, ALL_TIME, , , ", HandleJSONAmountStat(statsTxMsg))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -302,7 +304,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_MONTH, ALL", handleJSONDailyStat(dailyVolMonth))
+		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_MONTH, ALL", HandleJSONDailyStat(dailyVolMonth))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -310,7 +312,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_MONTH, ALL", handleJSONDailyStat(dailyFeeMonth))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_MONTH, ALL", HandleJSONDailyStat(dailyFeeMonth))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -318,7 +320,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_MONTH, ALL", handleJSONDailyStat(dailyTxMonth))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_MONTH, ALL", HandleJSONDailyStat(dailyTxMonth))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -326,7 +328,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_MONTH, ALL", handleJSONDailyStat(dailyAddrMonth))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_MONTH, ALL", HandleJSONDailyStat(dailyAddrMonth))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -337,7 +339,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_3_MONTHS, ALL", handleJSONDailyStat(dailyVolYear))
+		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_3_MONTHS, ALL", HandleJSONDailyStat(dailyVolYear))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -345,7 +347,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, ALL", handleJSONDailyStat(dailyFeeYear))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, ALL", HandleJSONDailyStat(dailyFeeYear))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -353,7 +355,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, ALL", handleJSONDailyStat(dailyTxYear))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, ALL", HandleJSONDailyStat(dailyTxYear))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -361,7 +363,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, ALL", handleJSONDailyStat(dailyAddrYear))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, ALL", HandleJSONDailyStat(dailyAddrYear))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -372,7 +374,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_6_MONTHS, ALL", handleJSONDailyStat(dailyVolAllTime))
+		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_6_MONTHS, ALL", HandleJSONDailyStat(dailyVolAllTime))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -380,7 +382,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, ALL", handleJSONDailyStat(dailyFeeAllTime))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, ALL", HandleJSONDailyStat(dailyFeeAllTime))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -388,7 +390,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, ALL", handleJSONDailyStat(dailyTxAllTime))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, ALL", HandleJSONDailyStat(dailyTxAllTime))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -396,7 +398,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, ALL", handleJSONDailyStat(dailyAddrAllTime))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, ALL", HandleJSONDailyStat(dailyAddrAllTime))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -408,7 +410,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_MONTH, BRIDGE", handleJSONDailyStat(dailyVolMonthBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_MONTH, BRIDGE", HandleJSONDailyStat(dailyVolMonthBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -416,7 +418,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_MONTH, BRIDGE", handleJSONDailyStat(dailyFeeMonthBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_MONTH, BRIDGE", HandleJSONDailyStat(dailyFeeMonthBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -424,7 +426,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_MONTH, BRIDGE", handleJSONDailyStat(dailyTxMonthBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_MONTH, BRIDGE", HandleJSONDailyStat(dailyTxMonthBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -432,7 +434,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_MONTH, BRIDGE", handleJSONDailyStat(dailyAddrMonthBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_MONTH, BRIDGE", HandleJSONDailyStat(dailyAddrMonthBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -443,7 +445,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_3_MONTHS, BRIDGE", handleJSONDailyStat(dailyVolYearBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_3_MONTHS, BRIDGE", HandleJSONDailyStat(dailyVolYearBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -451,7 +453,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, BRIDGE", handleJSONDailyStat(dailyFeeYearBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, BRIDGE", HandleJSONDailyStat(dailyFeeYearBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -459,7 +461,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, BRIDGE", handleJSONDailyStat(dailyTxYearBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, BRIDGE", HandleJSONDailyStat(dailyTxYearBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -467,7 +469,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, BRIDGE", handleJSONDailyStat(dailyAddrYearBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, BRIDGE", HandleJSONDailyStat(dailyAddrYearBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -478,7 +480,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_6_MONTHS, BRIDGE", handleJSONDailyStat(dailyVolAllTimeBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_6_MONTHS, BRIDGE", HandleJSONDailyStat(dailyVolAllTimeBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -486,7 +488,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, BRIDGE", handleJSONDailyStat(dailyFeeAllTimeBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, BRIDGE", HandleJSONDailyStat(dailyFeeAllTimeBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -494,7 +496,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, BRIDGE", handleJSONDailyStat(dailyTxAllTimeBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, BRIDGE", HandleJSONDailyStat(dailyTxAllTimeBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -502,7 +504,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, BRIDGE", handleJSONDailyStat(dailyAddrAllTimeBridge))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, BRIDGE", HandleJSONDailyStat(dailyAddrAllTimeBridge))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -514,7 +516,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_MONTH, SWAP", handleJSONDailyStat(dailyVolMonthSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_MONTH, SWAP", HandleJSONDailyStat(dailyVolMonthSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -522,7 +524,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_MONTH, SWAP", handleJSONDailyStat(dailyFeeMonthSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_MONTH, SWAP", HandleJSONDailyStat(dailyFeeMonthSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -530,7 +532,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_MONTH, SWAP", handleJSONDailyStat(dailyTxMonthSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_MONTH, SWAP", HandleJSONDailyStat(dailyTxMonthSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -539,7 +541,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
 
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_MONTH, SWAP", handleJSONDailyStat(dailyAddrMonthSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_MONTH, SWAP", HandleJSONDailyStat(dailyAddrMonthSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -550,7 +552,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_3_MONTHS, SWAP", handleJSONDailyStat(dailyVolYearSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_3_MONTHS, SWAP", HandleJSONDailyStat(dailyVolYearSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -558,7 +560,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, SWAP", handleJSONDailyStat(dailyFeeYearSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, SWAP", HandleJSONDailyStat(dailyFeeYearSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -566,7 +568,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, SWAP", handleJSONDailyStat(dailyTxYearSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, SWAP", HandleJSONDailyStat(dailyTxYearSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -574,7 +576,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, SWAP", handleJSONDailyStat(dailyAddrYearSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, SWAP", HandleJSONDailyStat(dailyAddrYearSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -585,7 +587,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_6_MONTHS, SWAP", handleJSONDailyStat(dailyVolAllTimeSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , VOLUME, PAST_6_MONTHS, SWAP", HandleJSONDailyStat(dailyVolAllTimeSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -593,7 +595,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, SWAP", handleJSONDailyStat(dailyFeeAllTimeSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, SWAP", HandleJSONDailyStat(dailyFeeAllTimeSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -601,7 +603,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, SWAP", handleJSONDailyStat(dailyTxAllTimeSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, SWAP", HandleJSONDailyStat(dailyTxAllTimeSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -609,7 +611,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, SWAP", handleJSONDailyStat(dailyAddrAllTimeSwap))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, SWAP", HandleJSONDailyStat(dailyAddrAllTimeSwap))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -621,7 +623,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_MONTH, MESSAGE_BUS", handleJSONDailyStat(dailyFeeMonthMessageBus))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_MONTH, MESSAGE_BUS", HandleJSONDailyStat(dailyFeeMonthMessageBus))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -629,7 +631,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_MONTH, MESSAGE_BUS", handleJSONDailyStat(dailyTxMonthMessageBus))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_MONTH, MESSAGE_BUS", HandleJSONDailyStat(dailyTxMonthMessageBus))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -637,7 +639,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_MONTH, MESSAGE_BUS", handleJSONDailyStat(dailyAddrMonthMessageBus))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_MONTH, MESSAGE_BUS", HandleJSONDailyStat(dailyAddrMonthMessageBus))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -648,7 +650,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, MESSAGE_BUS", handleJSONDailyStat(dailyFeeYearMessageBus))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_3_MONTHS, MESSAGE_BUS", HandleJSONDailyStat(dailyFeeYearMessageBus))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -656,7 +658,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, MESSAGE_BUS", handleJSONDailyStat(dailyTxYearMessageBus))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_3_MONTHS, MESSAGE_BUS", HandleJSONDailyStat(dailyTxYearMessageBus))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -664,7 +666,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, MESSAGE_BUS", handleJSONDailyStat(dailyAddrYearMessageBus))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_3_MONTHS, MESSAGE_BUS", HandleJSONDailyStat(dailyAddrYearMessageBus))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -675,7 +677,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, MESSAGE_BUS", handleJSONDailyStat(dailyFeeAllTimeMessageBus))
+		err = service.CacheResponse("dailyStatisticsByChain, , FEE, PAST_6_MONTHS, MESSAGE_BUS", HandleJSONDailyStat(dailyFeeAllTimeMessageBus))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -683,7 +685,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, MESSAGE_BUS", handleJSONDailyStat(dailyTxAllTimeMessageBus))
+		err = service.CacheResponse("dailyStatisticsByChain, , TRANSACTIONS, PAST_6_MONTHS, MESSAGE_BUS", HandleJSONDailyStat(dailyTxAllTimeMessageBus))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -691,7 +693,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
-		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, MESSAGE_BUS", handleJSONDailyStat(dailyAddrAllTimeMessageBus))
+		err = service.CacheResponse("dailyStatisticsByChain, , ADDRESSES, PAST_6_MONTHS, MESSAGE_BUS", HandleJSONDailyStat(dailyAddrAllTimeMessageBus))
 		if err != nil {
 			return fmt.Errorf("error rehydrating cache: %w", err)
 		}
@@ -705,7 +707,7 @@ func rehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 	return nil
 }
 
-func handleJSONAmountStat(r *gqlClient.GetAmountStatistic) *model.ValueResult {
+func HandleJSONAmountStat(r *gqlClient.GetAmountStatistic) *model.ValueResult {
 	var res *model.ValueResult
 	jsonRes, err := json.Marshal(r.Response)
 	if err != nil {
@@ -718,7 +720,7 @@ func handleJSONAmountStat(r *gqlClient.GetAmountStatistic) *model.ValueResult {
 	return res
 }
 
-func handleJSONDailyStat(r *gqlClient.GetDailyStatisticsByChain) []*model.DateResultByChain {
+func HandleJSONDailyStat(r *gqlClient.GetDailyStatisticsByChain) []*model.DateResultByChain {
 	var res []*model.DateResultByChain
 	jsonRes, err := json.Marshal(r.Response)
 	if err != nil {

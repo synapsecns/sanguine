@@ -156,7 +156,7 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 		var value *string
 		value, err = r.getAmountStatisticsAll(ctx, typeArg, chainID, address, tokenAddress, compositeFilters)
 		if err != nil {
-			return nil, fmt.Errorf("could not calculate calue across all platforms, %w", err)
+			return nil, fmt.Errorf("could not calculate value across all platforms, %w", err)
 		}
 		output := model.ValueResult{
 			Value: value,
