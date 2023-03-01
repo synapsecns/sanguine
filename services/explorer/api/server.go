@@ -707,6 +707,7 @@ func RehydrateCache(parentCtx context.Context, client *gqlClient.Client, service
 	return nil
 }
 
+// HandleJSONAmountStat converts the gqlClient.GetAmountStatistic to model.ValueResul.
 func HandleJSONAmountStat(r *gqlClient.GetAmountStatistic) *model.ValueResult {
 	var res *model.ValueResult
 	jsonRes, err := json.Marshal(r.Response)
@@ -720,6 +721,7 @@ func HandleJSONAmountStat(r *gqlClient.GetAmountStatistic) *model.ValueResult {
 	return res
 }
 
+// HandleJSONDailyStat converts the gqlClient.GetDailyStatisticsByChain to the []*model.DateResultByChain type.
 func HandleJSONDailyStat(r *gqlClient.GetDailyStatisticsByChain) []*model.DateResultByChain {
 	var res []*model.DateResultByChain
 	jsonRes, err := json.Marshal(r.Response)

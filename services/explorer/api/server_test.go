@@ -15,7 +15,6 @@ import (
 )
 
 func TestHandleJSONAmountStat(t *testing.T) {
-
 	valueString := gofakeit.Word()
 	valueStruct := gqlClient.GetAmountStatistic{
 		Response: &struct {
@@ -30,7 +29,6 @@ func TestHandleJSONAmountStat(t *testing.T) {
 }
 
 func TestHandleJSONDailyStat(t *testing.T) {
-
 	valueFloat := gofakeit.Float64()
 	valueStruct := gqlClient.GetDailyStatisticsByChain{
 		Response: []*struct {
@@ -286,5 +284,4 @@ func (g APISuite) TestRehydrateCache() {
 	Nil(g.T(), err)
 	err = api.RehydrateCache(g.GetTestContext(), g.client, responseCache)
 	Nil(g.T(), err)
-
 }
