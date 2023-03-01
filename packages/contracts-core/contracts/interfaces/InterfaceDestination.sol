@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import { IAttestationHub } from "./IAttestationHub.sol";
-import { ORIGIN_TREE_DEPTH } from "../libs/Structures.sol";
+import { ORIGIN_TREE_DEPTH } from "../libs/Constants.sol";
 
 interface InterfaceDestination is IAttestationHub {
     /**

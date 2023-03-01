@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-// Here we define common constants for Structures Libraries
-// to enable their easier reusing later.
+// Here we define common constants to enable their easier reusing later.
 
 /// @dev See Attestation.sol: (bytes32,uint8,uint32,uint40,uint40): 32+1+4+5+5
 uint256 constant ATTESTATION_LENGTH = 47;

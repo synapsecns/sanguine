@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import "./ByteString.sol";
-import "./Structures.sol";
+import "./Constants.sol";
 
 /// @dev Attestation is a memory view over a formatted attestation payload.
 type Attestation is bytes29;

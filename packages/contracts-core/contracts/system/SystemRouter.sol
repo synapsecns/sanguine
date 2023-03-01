@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import "../libs/Structures.sol";
+import "../libs/Constants.sol";
 import "../libs/SystemMessage.sol";
 import "../libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
