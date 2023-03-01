@@ -8,6 +8,7 @@ import "./libs/State.sol";
 import { DomainContext } from "./context/DomainContext.sol";
 import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "./interfaces/InterfaceDestination.sol";
+import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
 import { Attestation, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
@@ -19,6 +20,28 @@ contract Destination is
     DestinationEvents,
     InterfaceDestination
 {
+    using MessageLib for bytes;
+    using TypedMemView for bytes29;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              CONSTANTS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    bytes32 internal constant MESSAGE_STATUS_NONE = bytes32(0);
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               STORAGE                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice (messageHash => status)
+    /// TODO: Store something else as "status"? Notary/timestamp?
+    /// - Message hasn't been executed: MESSAGE_STATUS_NONE
+    /// - Message has been executed: snapshot root used for proving when executed
+    /// @dev Messages coming from different origins will always have a different hash
+    /// as origin domain is encoded into the formatted message.
+    /// Thus we can use hash as a key instead of an (origin, hash) tuple.
+    mapping(bytes32 => bytes32) public messageStatus;
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -65,23 +88,38 @@ contract Destination is
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
     ) external {
-        // TODO: implement
+        // This will revert if payload is not a formatted message payload
+        Message message = _message.castToMessage();
+        Header header = message.header();
+        bytes32 msgLeaf = message.leaf();
+        // Check proofs validity and mark message as executed
+        DestinationAttestation memory destAtt = _prove(
+            header,
+            msgLeaf,
+            _originProof,
+            _snapProof,
+            _stateIndex
+        );
+        // Store message tips
+        Tips tips = message.tips();
+        _storeTips(destAtt.notary, tips);
+        // Get the specified recipient address
+        uint32 origin = header.origin();
+        address recipient = _checkForSystemRouter(header.recipient());
+        // Pass the message to the recipient
+        IMessageRecipient(recipient).handle(
+            origin,
+            header.nonce(),
+            header.sender(),
+            destAtt.destTimestamp,
+            message.body().clone()
+        );
+        emit Executed(origin, msgLeaf);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function _isIgnoredAgent(uint32 _domain, address)
-        internal
-        view
-        virtual
-        override
-        returns (bool)
-    {
-        // Destination only keeps track of local Notaries and Guards
-        return _domain != localDomain && _domain != 0;
-    }
 
     /**
      * @notice Attempts to prove the validity of the cross-chain message.
@@ -90,30 +128,35 @@ contract Destination is
      * After that the snapshot Merkle Root is reconstructed using the snapshot proof.
      * Finally, the optimistic period is checked for the derived snapshot root.
      * @dev Reverts if any of the checks fail.
-     * @param _msg          Typed memory view over message payload
-     * @param _originProof  Proof of inclusion of message in the Origin Merkle Tree
+     * @param _header       Typed memory view over message header payload
+     * @param _msgLeaf      Message Leaf that was inserted in the Origin Merkle Tree
+     * @param _originProof  Proof of inclusion of Message Leaf in the Origin Merkle Tree
      * @param _snapProof    Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
      * @param _stateIndex   Index of Origin State in the Snapshot
-     * @return snapshotRoot Derived merkle root of the Snapshot Merkle Tree
-     * @return destAtt      Rest of attestation data that Destination keeps track of
+     * @return destAtt      Attestation data for derived snapshot root
      */
     function _prove(
-        Message _msg,
+        Header _header,
+        bytes32 _msgLeaf,
         bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
-    ) internal view returns (bytes32 snapshotRoot, DestinationAttestation memory destAtt) {
-        Header header = _msg.header();
+    ) internal returns (DestinationAttestation memory destAtt) {
+        // TODO: split into a few smaller functions?
+        // Check that message has not been executed before
+        require(messageStatus[_msgLeaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
+        // Ensure message was meant for this domain
+        require(_header.destination() == localDomain, "!destination");
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
-        bytes32 originRoot = MerkleLib.branchRoot(_msg.leaf(), _originProof, header.nonce() - 1);
+        bytes32 originRoot = MerkleLib.branchRoot(_msgLeaf, _originProof, _header.nonce() - 1);
         // Reconstruct left sub-leaf of the Origin State: (merkleRoot, originDomain)
-        bytes32 leftLeaf = StateLib.leftLeaf(originRoot, header.origin());
+        bytes32 leftLeaf = StateLib.leftLeaf(originRoot, _header.origin());
         // Reconstruct Snapshot Merkle Root using the snapshot proof
         // Index of "leftLeaf" is twice the state position in the snapshot
         /// @dev We ask to provide state index instead of "leftLeaf" index to enforce
         /// choice of State's left leaf for root reconstruction
-        snapshotRoot = MerkleLib.branchRoot(leftLeaf, _snapProof, _stateIndex << 1);
+        bytes32 snapshotRoot = MerkleLib.branchRoot(leftLeaf, _snapProof, _stateIndex << 1);
         // Fetch the attestation data for the snapshot root
         destAtt = _rootAttestation(snapshotRoot);
         // Check if snapshot root has been submitted
@@ -124,8 +167,47 @@ contract Destination is
         require(_isActiveAgent(localDomain, destAtt.notary), "Inactive notary");
         // Check if optimistic period has passed
         require(
-            block.timestamp >= header.optimisticSeconds() + destAtt.destTimestamp,
+            block.timestamp >= _header.optimisticSeconds() + destAtt.destTimestamp,
             "!optimisticSeconds"
         );
+        // Mark message as executed against the snapshot root
+        messageStatus[_msgLeaf] = snapshotRoot;
+    }
+
+    function _storeTips(address _notary, Tips _tips) internal {
+        // TODO: implement tips logic
+        emit TipsStored(_notary, _tips.unwrap().clone());
+    }
+
+    /**
+     * @notice Returns adjusted "recipient" field.
+     * @dev By default, "recipient" field contains the recipient address padded to 32 bytes.
+     * But if SYSTEM_ROUTER value is used for "recipient" field, recipient is Synapse Router.
+     * Note: tx will revert in Origin if anyone but SystemRouter uses SYSTEM_ROUTER as recipient.
+     */
+    function _checkForSystemRouter(bytes32 _recipient) internal view returns (address recipient) {
+        // Check if SYSTEM_ROUTER was specified as message recipient
+        if (_recipient == SYSTEM_ROUTER) {
+            /**
+             * @dev Route message to SystemRouter.
+             * Note: Only SystemRouter contract on origin chain can send a message
+             * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
+             */
+            recipient = address(systemRouter);
+        } else {
+            // Cast bytes32 to address otherwise
+            recipient = TypeCasts.bytes32ToAddress(_recipient);
+        }
+    }
+
+    function _isIgnoredAgent(uint32 _domain, address)
+        internal
+        view
+        virtual
+        override
+        returns (bool)
+    {
+        // Destination only keeps track of local Notaries and Guards
+        return _domain != localDomain && _domain != 0;
     }
 }
