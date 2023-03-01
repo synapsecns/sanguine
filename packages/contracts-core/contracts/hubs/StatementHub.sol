@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "../system/AgentRegistry.sol";
+import "../Version.sol";
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import "../libs/Attestation.sol";
 import "../libs/Snapshot.sol";
@@ -19,7 +20,7 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
  * - Signer being an active agent
  * - Signer being allowed to sign the particular type of statement
  */
-abstract contract StatementHub is AgentRegistry {
+abstract contract StatementHub is AgentRegistry, Version0_0_2 {
     using AttestationLib for bytes;
     using SnapshotLib for bytes;
 

@@ -44,7 +44,7 @@ abstract contract Versioned {
     }
 }
 
-abstract contract Version0_0_1 is Versioned {
+abstract contract Version0_0_2 is Versioned {
     // solhint-disable-next-line no-empty-blocks
-    constructor() Versioned("0.0.1") {}
+    constructor() Versioned("0.0.2") {}
 }

@@ -7,7 +7,7 @@ import "../libs/Tips.sol";
 import { BasicClient } from "../client/BasicClient.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
-import { Version0_0_1 } from "../Version.sol";
+import "../Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
@@ -56,7 +56,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * a "message to System Router". By enforcing a minimum optimistic latency for the recipient this
  * attack can be mitigated, assuming there is at least one honest Guard willing to report the fraud.
  */
-contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Version0_0_1 {
+contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Version0_0_2 {
     using Address for address;
     using ByteString for bytes;
     using SystemMessageLib for bytes;
