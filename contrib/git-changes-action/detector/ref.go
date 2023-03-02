@@ -75,7 +75,7 @@ func getChangedFilesFromAPI(ctx context.Context, ghContext *actionscore.Context,
 
 			files, res, err = client.PullRequests.ListFiles(reqCtx, repoOwner, repoName, prNumber, &github.ListOptions{
 				Page:    page,
-				PerPage: 30,
+				PerPage: 10,
 			})
 			if err != nil {
 				return fmt.Errorf("could not get files: %w", err)
