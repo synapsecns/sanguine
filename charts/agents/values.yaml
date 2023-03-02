@@ -67,84 +67,7 @@ resources: {}
 
 notary:
   enabled: true
-  args: ["notary-run", "--config=/config/config.yaml", "--metrics-port=5080", "--ignore-init-errors"]
-  podAnnotations: {}
-  nodeSelector: {}
-  podSecurityContext: {}
-  affinity: {}
-  env:
-    - name: GOLOG_LOG_FMT
-      value: "json"
-  tolerations: {}
-  extraInitContainers:
-    # Wait for mysql to show up
-    # this is mostly for testing
-    - name: wait-for-mysql
-      image: busybox:latest
-      imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
-      env:
-        - name: POD_NAME
-          value: agents-mysql
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-    - name: create-database
-      image: mysql/mysql-server:latest
-      imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
-      env:
-        - name: POD_NAME
-          value: agents-mysql
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-
-guard:
-  enabled: true
-  args: ["guard-run", "--config=/config/config.yaml", "--metrics-port=5082", "--ignore-init-errors"]
-  podAnnotations: {}
-  nodeSelector: {}
-  podSecurityContext: {}
-  affinity: {}
-  env:
-    - name: GOLOG_LOG_FMT
-      value: "json"
-  tolerations: {}
-  extraInitContainers:
-    # Wait for mysql to show up
-    # this is mostly for testing
-    - name: wait-for-mysql
-      image: busybox:latest
-      imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
-      env:
-        - name: POD_NAME
-          value: agents-mysql
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-    - name: create-database
-      image: mysql/mysql-server:latest
-      imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
-      env:
-        - name: POD_NAME
-          value: agents-mysql
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-
-executor:
-  type: "embedded"
-
-executor_remote_existing:
-  # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
+  args: ["notary-run", "--config=/config/notary_config1.yaml", "--metrics-port=5080"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -160,7 +83,106 @@ executor_remote_existing:
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
       env:
         - name: POD_NAME
-          value: executor-omnirpc
+          value: agents-omnirpc
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    # Wait for mysql to show up
+    # this is mostly for testing
+    - name: wait-for-mysql
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: agents-mysql
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    - name: create-database
+      image: mysql/mysql-server:latest
+      imagePullPolicy: IfNotPresent
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS notary\"; do 'echo waiting for db'; sleep 10; done"]
+      env:
+        - name: POD_NAME
+          value: agents-mysql
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+
+guard:
+  enabled: true
+  args: ["guard-run", "--config=/config/guard_config.yaml", "--metrics-port=5082"]
+  podAnnotations: {}
+  nodeSelector: {}
+  podSecurityContext: {}
+  affinity: {}
+  env:
+    - name: GOLOG_LOG_FMT
+      value: "json"
+  tolerations: {}
+  extraInitContainers:
+    - name: wait-for-omnirpc
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: agents-omnirpc
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    # Wait for mysql to show up
+    # this is mostly for testing
+    - name: wait-for-mysql
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: agents-mysql
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    - name: create-database
+      image: mysql/mysql-server:latest
+      imagePullPolicy: IfNotPresent
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS guard\"; do 'echo waiting for db'; sleep 10; done"]
+      env:
+        - name: POD_NAME
+          value: agents-mysql
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+
+executor:
+  type: "embedded"
+
+executor_remote_existing:
+  # TODO: We need to figure out certificates or how to communicate with the gRPC scribe via gRPC gateway's REST capabilities.
+  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents?parseTime=true", "--scribe-port=443", "--scribe-url=https://scribe.interoperability.institute"]
+  podAnnotations: {}
+  nodeSelector: {}
+  podSecurityContext: {}
+  affinity: {}
+  env:
+    - name: GOLOG_LOG_FMT
+      value: "json"
+  tolerations: {}
+  extraInitContainers:
+    - name: wait-for-omnirpc
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: agents-omnirpc
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -180,7 +202,7 @@ executor_remote_existing:
               fieldPath: metadata.namespace
 
 executor_remote_fresh:
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-port=80", "--scribe-url=executor-scribe.$(POD_NAMESPACE)"]
+  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=remote", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents?parseTime=true", "--scribe-port=80", "--scribe-url=executor-scribe.$(POD_NAMESPACE)"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -200,7 +222,7 @@ executor_remote_fresh:
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
       env:
         - name: POD_NAME
-          value: executor-omnirpc
+          value: agents-omnirpc
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -211,6 +233,17 @@ executor_remote_fresh:
       image: busybox:latest
       imagePullPolicy: IfNotPresent
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
+      env:
+        - name: POD_NAME
+          value: agents-mysql
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    - name: create-database-agents
+      image: mysql/mysql-server:latest
+      imagePullPolicy: IfNotPresent
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 10; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -229,20 +262,9 @@ executor_remote_fresh:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-    - name: create-database-agents
-      image: mysql/mysql-server:latest
-      imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
-      env:
-        - name: POD_NAME
-          value: agents-mysql
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
 
 executor_embedded:
-  args: ["executor-run", "--config=/config/config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents", "--scribe-db=mysql", "--scribe-path=root:MysqlPassword@tcp(agents-mysql:3306)/scribe"]
+  args: ["executor-run", "--config=/config/executor_config.yaml", "--metrics-port=5080", "--scribe-type=embedded", "--db=mysql", "--path=root:MysqlPassword@tcp(agents-mysql:3306)/agents?parseTime=true", "--scribe-db=mysql", "--scribe-path=root:MysqlPassword@tcp(agents-mysql:3306)/scribe?parseTime=true"]
   podAnnotations: {}
   nodeSelector: {}
   podSecurityContext: {}
@@ -258,7 +280,7 @@ executor_embedded:
       command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 80; do echo "Waiting for omnirpc..."; sleep 1; done;']
       env:
         - name: POD_NAME
-          value: executor-omnirpc
+          value: agents-omnirpc
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -279,7 +301,7 @@ executor_embedded:
     - name: create-database-agents
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS agents\"; do 'echo waiting for db'; sleep 10; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -290,7 +312,7 @@ executor_embedded:
     - name: create-database-scribe
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do 'echo waiting for db'; sleep 5; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do 'echo waiting for db'; sleep 10; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -322,7 +344,7 @@ mysql:
 omnirpc:
   # this can be remote in production, we just want to use the public rpc servers here
   enabled: true
-  fullnameOverride: executor-omnirpc
+  fullnameOverride: agents-omnirpc
   replicaCount: 3
 
 scribe:
@@ -352,47 +374,320 @@ scribe:
               start_block: 26091228
             - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
               start_block: 26091231
-      rpc_url: "http://executor-omnirpc/confirmations"
+      rpc_url: "http://agents-omnirpc/confirmations"
       refresh_rate: 0
 
 notary_files:
-  config.yaml: |-
-    sam: ple
+  notary_signer1.txt: |-
+    04486fc4ef3f3fb489c9f4ed4ff07cb9aa998abc0a244f2464c76164bcfad41d
+  notary_config1.yaml: |-
+    refresh_interval_in_seconds: 10
+    origin_domains:
+      origin_client:
+        domain_id: 137
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+        start_height: 39145588
+      origin_client2:
+        domain_id: 10
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        start_height: 73536295
+      origin_client3:
+        domain_id: 43114
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+        start_height: 26091228
+    attestation_domain:
+      domain_id: 10
+      type: EVM
+      required_confirmations: 50
+      origin_address: ''
+      attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
+      destination_address: ''
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/10"
+      start_height: 73537448
+    destination_domain:
+      domain_id: 43114
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collectoraddress: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+      start_height: 0
+    unbonded_signer:
+      type: "File"
+      file: "/config/notary_signer1.txt"
+    bonded_signer:
+      type: "File"
+      file: "/config/notary_signer1.txt"
+    database:
+      type: mysql
+      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+  notary_signer2.txt: |-
+    479cc41efe8ccb6dd3fd96951db601beacd7bdade60e6dbd8ae6fab02020cf92
+  notary_config2.yaml: |-
+    refresh_interval_in_seconds: 10
+    origin_domains:
+      origin_client:
+        domain_id: 137
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+        start_height: 39145588
+      origin_client2:
+        domain_id: 10
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        start_height: 73536295
+      origin_client3:
+        domain_id: 43114
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+        start_height: 26091228
+    attestation_domain:
+      domain_id: 10
+      type: EVM
+      required_confirmations: 50
+      origin_address: ''
+      attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
+      destination_address: ''
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/10"
+      start_height: 73537448
+    destination_domain:
+      domain_id: 137
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collector_address: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+      start_height: 39145588
+    unbonded_signer:
+      type: "File"
+      file: "/config/notary_signer2.txt"
+    bonded_signer:
+      type: "File"
+      file: "/config/notary_signer2.txt"
+    database:
+      type: mysql
+      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+  notary_signer3.txt: |-
+    2633f34da513bb717df6262fb5db89aa4db081a44c1d9ffc30ee38941dd58c0b
+  notary_config3.yaml: |-
+    refresh_interval_in_seconds: 10
+    origin_domains:
+    origin_client:
+      domain_id: 137
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collector_address: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+      start_height: 39145588
+    origin_client2:
+      domain_id: 10
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collector_address: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://optimism-rpc.gateway.pokt.network"
+      start_height: 73536295
+    origin_client3:
+      domain_id: 43114
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collector_address: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+      start_height: 26091228
+    attestation_domain:
+      domain_id: 10
+      type: EVM
+      required_confirmations: 50
+      origin_address: ''
+      attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
+      destination_address: ''
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/10"
+      start_height: 73537448
+    destination_domain:
+      domain_id: 10
+      type: EVM
+      required_confirmations: 50
+      origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+      attestation_collector_address: ''
+      destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      rpc_url: "https://optimism-rpc.gateway.pokt.network"
+      start_height: 73536295
+    unbonded_signer:
+      type: "File"
+      file: "/config/notary_signer3.txt"
+    bonded_signer:
+      type: "File"
+      file: "/config/notary_signer3.txt"
+    database:
+      type: mysql
+      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/notary?parseTime=true"
+
 
 guard_files:
-  config.yaml: |-
-    sam: ple
+  guard_signer.txt: |-
+    dd03ef81893502797024462da191deaf1e90f30879b3b7673acb11ce72f73094
+  guard_config.yaml: |-
+    refresh_interval_in_seconds: 10
+    origin_domains:
+      origin_client:
+        domain_id: 137
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+        start_height: 39145588
+      origin_client2:
+        domain_id: 10
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        start_height: 73536295
+      origin_client3:
+        domain_id: 43114
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+        start_height: 26091228
+    attestation_domain:
+      domain_id: 10
+      type: EVM
+      required_confirmations: 50
+      origin_address: ''
+      attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
+      destination_address: ''
+      rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/10"
+      start_height: 73537407
+    destination_domains:
+      destination_client:
+        domain_id: 137
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collectoraddress: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
+        start_height: 39145588
+      destination_client2:
+        domain_id: 10
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://optimism-rpc.gateway.pokt.network"
+        start_height: 73536295
+      destination_client3:
+        domain_id: 43114
+        type: EVM
+        required_confirmations: 50
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        attestation_collector_address: ''
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
+        start_height: 26091228
+    unbonded_signer:
+      type: "File"
+      file: "/config/guard_signer.txt"
+    bonded_signer:
+      type: "File"
+      file: "/config/guard_signer.txt"
+    database:
+      type: mysql
+      db_path: "root:MysqlPassword@tcp(agents-mysql:3306)/guard?parseTime=true"
+      conn_string: "root:MysqlPassword@tcp(agents-mysql:3306)/guard?parseTime=true"
 
 executor_remote_existing_files:
-  signer.txt: |-
-    b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
-  config.yaml: |-
-    base_omnirpc_url: "http://executor-omnirpc/confirmations"
+  executor_signer.txt: |-
+    16c909570a212af6a328a1cf594a20d7cf6edf56fafa0b50967f2039b1f68445
+  executor_config.yaml: |-
+    base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
+    execute_interval: 10
+    chains:
+      - chain_id: 137
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 10
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 43114
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
     unbonded_signer:
       type: "File"
-      file: "/config/signer.txt"
+      file: "/config/executor_signer.txt"
 
 executor_remote_fresh_files:
-  signer.txt: |-
+  executor_signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
-  config.yaml: |-
-    base_omnirpc_url: "http://executor-omnirpc/confirmations"
+  executor_config.yaml: |-
+    base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
+    execute_interval: 10
+    chains:
+      - chain_id: 137
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 10
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 43114
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
     unbonded_signer:
       type: "File"
-      file: "/config/signer.txt"
-
-executor_embedded_files:
-  signer.txt: |-
-    b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
-  config.yaml: |-
-    base_omnirpc_url: "http://executor-omnirpc/confirmations"
-    unbonded_signer:
-      type: "File"
-      file: "/config/signer.txt"
+      file: "/config/executor_signer.txt"
     embedded_scribe_config:
       chains:
         - chain_id: 137
           required_confirmations: 50
+          contract_sub_chunk_size: 1000
+          contract_chunk_size: 1000
+          store_concurrency: 1
+          store_concurrency_threshold: 500
           contracts:
             - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
               start_block: 39145588
@@ -400,6 +695,10 @@ executor_embedded_files:
               start_block: 39145588
         - chain_id: 10
           required_confirmations: 50
+          contract_sub_chunk_size: 500
+          contract_chunk_size: 500
+          store_concurrency: 1
+          store_concurrency_threshold: 500
           contracts:
             - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
               start_block: 73536295
@@ -407,10 +706,71 @@ executor_embedded_files:
               start_block: 73537265
         - chain_id: 43114
           required_confirmations: 50
+          contract_sub_chunk_size: 2000
+          contract_chunk_size: 10000
+          store_concurrency: 1
+          store_concurrency_threshold: 500
           contracts:
             - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-              start_block: 26091228
+              start_block: 26091227
             - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
               start_block: 26091231
-      rpc_url: "http://executor-omnirpc/confirmations"
+      rpc_url: "https://rpc.interoperability.institute/confirmations"
+      refresh_rate: 0
+
+executor_embedded_files:
+  executor_signer.txt: |-
+    b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
+  executor_config.yaml: |-
+    base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
+    execute_interval: 10
+    chains:
+      - chain_id: 137
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 10
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+      - chain_id: 43114
+        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+    unbonded_signer:
+      type: "File"
+      file: "/config/executor_signer.txt"
+    embedded_scribe_config:
+      chains:
+        - chain_id: 137
+          required_confirmations: 50
+          contract_sub_chunk_size: 1000
+          contract_chunk_size: 1000
+          store_concurrency: 1
+          store_concurrency_threshold: 500
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 39145588
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 39145588
+        - chain_id: 10
+          required_confirmations: 50
+          contract_sub_chunk_size: 500
+          contract_chunk_size: 500
+          store_concurrency: 1
+          store_concurrency_threshold: 500
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 73536295
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 73537265
+        - chain_id: 43114
+          required_confirmations: 50
+          contract_sub_chunk_size: 2000
+          contract_chunk_size: 10000
+          store_concurrency: 1
+          store_concurrency_threshold: 500
+          contracts:
+            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+              start_block: 26091227
+            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
+              start_block: 26091231
+      rpc_url: "https://rpc.interoperability.institute/confirmations"
       refresh_rate: 0

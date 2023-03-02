@@ -113,7 +113,7 @@ contract DeployerUtils is Script {
     function tryLoadDeployment(string memory contractName) public returns (address deployment) {
         try vm.readFile(deploymentPath(contractName)) returns (string memory json) {
             // We assume that if a deployment file exists, the contract is indeed deployed
-            deployment = json.readAddress("address");
+            deployment = json.readAddress(".address");
         } catch {
             // Doesn't exist
             deployment = address(0);

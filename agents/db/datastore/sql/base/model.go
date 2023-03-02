@@ -324,11 +324,11 @@ type InProgressAttestation struct {
 	// IPGuardSignature stores the raw guard signature
 	IPGuardSignature []byte `gorm:"column:guard_signature;default:NULL"`
 	// IPSubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
-	IPSubmittedToAttestationCollectorTime sql.NullTime `gorm:"column:submitted_to_attestation_collector_time;type:TIMESTAMP NULL;<-:update"`
+	IPSubmittedToAttestationCollectorTime sql.NullTime `gorm:"column:submitted_to_attestation_collector_time;type:TIMESTAMP NULL"`
 	// IPSubmittedToDestinationTime is time when signed attestation was submitted to Destination
-	IPSubmittedToDestinationTime sql.NullTime `gorm:"column:submitted_to_destination_time;type:TIMESTAMP NULL;<-:update"`
+	IPSubmittedToDestinationTime sql.NullTime `gorm:"column:submitted_to_destination_time;type:TIMESTAMP NULL"`
 	// IPAttestationState is the current state of the attestation
-	IPAttestationState uint32 `gorm:"column:attestation_state;index:idx_origin_destination_state;autoIncrement:false;<-"`
+	IPAttestationState uint32 `gorm:"column:attestation_state;index:idx_origin_destination_state;autoIncrement:false"`
 }
 
 // Attestation gets the attestation.

@@ -96,10 +96,23 @@ func (a OriginAttestationSubmitter) update(ctx context.Context) error {
 		return nil
 	}
 
-	err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToSubmit.SignedAttestation())
+	signedAttestation, err := a.attestationDomain.AttestationCollector().GetAttestation(
+		ctx,
+		inProgressAttestationToSubmit.SignedAttestation().Attestation().Origin(),
+		inProgressAttestationToSubmit.SignedAttestation().Attestation().Destination(),
+		inProgressAttestationToSubmit.SignedAttestation().Attestation().Nonce())
 	if err != nil {
-		logger.Errorf("Error calling SubmitAttestation on AttestationCollector: %v", err)
-		return fmt.Errorf("could not submit attestation: %w", err)
+		if !errors.Is(err, domains.ErrNoUpdate) {
+			return fmt.Errorf("could not GetAttestation from collector to see if we already signed and submitted: %w", err)
+		}
+	}
+
+	if signedAttestation == nil || len(signedAttestation.NotarySignatures()) == 0 {
+		err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, inProgressAttestationToSubmit.SignedAttestation())
+		if err != nil {
+			logger.Errorf("Error calling SubmitAttestation on AttestationCollector: %v", err)
+			return fmt.Errorf("could not submit attestation: %w", err)
+		}
 	}
 
 	nowTime := time.Now()

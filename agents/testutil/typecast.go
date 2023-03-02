@@ -5,6 +5,7 @@ import (
 
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
@@ -146,4 +147,16 @@ func (d *DeployManager) GetTestClient(ctx context.Context, backend backends.Simu
 	assert.True(d.T(), ok)
 
 	return testClient, testClientHandle
+}
+
+// GetPingPongClient gets the ping pong test client.
+func (d *DeployManager) GetPingPongClient(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *pingpongclient.PingPongClientRef) {
+	d.T().Helper()
+
+	registry := d.GetContractRegistry(backend)
+	pingPongClient := registry.Get(ctx, PingPongClientType)
+	pingPongClientHandle, ok := pingPongClient.ContractHandle().(*pingpongclient.PingPongClientRef)
+	assert.True(d.T(), ok)
+
+	return pingPongClient, pingPongClientHandle
 }
