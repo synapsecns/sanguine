@@ -5,7 +5,7 @@ import "../libs/Tips.sol";
 import "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
-import { IOrigin } from "../interfaces/IOrigin.sol";
+import { InterfaceOrigin } from "../interfaces/InterfaceOrigin.sol";
 
 contract TestClient is IMessageRecipient {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -74,7 +74,7 @@ contract TestClient is IMessageRecipient {
     ) external {
         bytes32 recipient = TypeCasts.addressToBytes32(_recipient);
         bytes memory tips = TipsLib.emptyTips();
-        (uint32 nonce, ) = IOrigin(origin).dispatch(
+        (uint32 nonce, ) = InterfaceOrigin(origin).dispatch(
             _destination,
             recipient,
             _optimisticSeconds,

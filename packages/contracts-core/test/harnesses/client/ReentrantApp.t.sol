@@ -3,7 +3,7 @@
 pragma solidity 0.8.17;
 
 import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
-import "../../../contracts/interfaces/IDestination.sol";
+import "../../../contracts/interfaces/InterfaceDestination.sol";
 
 contract ReentrantApp is IMessageRecipient {
     bytes internal message;
@@ -30,6 +30,6 @@ contract ReentrantApp is IMessageRecipient {
         uint256,
         bytes memory
     ) external {
-        IDestination(msg.sender).execute(message, originProof, snapProof, snapIndex);
+        InterfaceDestination(msg.sender).execute(message, originProof, snapProof, snapIndex);
     }
 }

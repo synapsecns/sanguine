@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { IAttestationHub } from "./IAttestationHub.sol";
 import { ORIGIN_TREE_DEPTH } from "../libs/Structures.sol";
 
-interface IDestination is IAttestationHub {
+interface InterfaceDestination is IAttestationHub {
     /**
      * @notice Attempts to prove inclusion of message into one of Snapshot Merkle Trees,
      * previously submitted to this contract in a form of a signed Attestation.

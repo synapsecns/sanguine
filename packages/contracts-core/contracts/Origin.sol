@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { IOrigin } from "./interfaces/IOrigin.sol";
+import { InterfaceOrigin } from "./interfaces/InterfaceOrigin.sol";
 import { DomainContext, StateHub } from "./hubs/StateHub.sol";
 import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
-contract Origin is StatementHub, StateHub, SystemRegistry, IOrigin {
+contract Origin is StatementHub, StateHub, SystemRegistry, InterfaceOrigin {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                EVENTS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -69,7 +69,7 @@ contract Origin is StatementHub, StateHub, SystemRegistry, IOrigin {
     ▏*║                          VERIFY STATEMENTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @inheritdoc IOrigin
+    /// @inheritdoc InterfaceOrigin
     function verifyAttestation(
         bytes memory _snapPayload,
         uint256 _stateIndex,
@@ -91,7 +91,7 @@ contract Origin is StatementHub, StateHub, SystemRegistry, IOrigin {
         }
     }
 
-    /// @inheritdoc IOrigin
+    /// @inheritdoc InterfaceOrigin
     function verifySnapshot(
         bytes memory _snapPayload,
         uint256 _stateIndex,
@@ -114,7 +114,7 @@ contract Origin is StatementHub, StateHub, SystemRegistry, IOrigin {
     ▏*║                          DISPATCH MESSAGES                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @inheritdoc IOrigin
+    /// @inheritdoc InterfaceOrigin
     function dispatch(
         uint32 _destination,
         bytes32 _recipient,

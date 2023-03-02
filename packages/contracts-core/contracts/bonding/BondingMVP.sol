@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { BondingManager } from "./BondingManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
-import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
+import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
 import { SystemContract } from "../system/SystemContract.sol";
 
 interface IAttestationCollector {
@@ -66,7 +66,7 @@ contract BondingMVP is BondingManager {
     function syncAgents(
         uint256,
         uint32,
-        ISystemRouter.SystemEntity,
+        InterfaceSystemRouter.SystemEntity,
         uint256,
         bool,
         AgentInfo[] memory
@@ -110,7 +110,7 @@ contract BondingMVP is BondingManager {
     function _assertCrossChainSlashing(
         uint256,
         uint32,
-        ISystemRouter.SystemEntity
+        InterfaceSystemRouter.SystemEntity
     ) internal pure override {
         revert("Cross-chain disabled");
     }

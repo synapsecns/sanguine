@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ISystemRouter } from "../../../contracts/interfaces/ISystemRouter.sol";
+import { InterfaceSystemRouter } from "../../../contracts/interfaces/InterfaceSystemRouter.sol";
 import { SystemContract } from "../../../contracts/system/SystemContract.sol";
 import { DomainContext } from "../../../contracts/context/DomainContext.sol";
 import "../events/SystemContractMockEvents.sol";
@@ -26,7 +26,7 @@ contract SystemContractMock is SystemContractMockEvents, SystemContract {
 
     function mockOnlySynapseChain(uint32 domain) external onlySynapseChain(domain) {}
 
-    function mockOnlyCallers(uint256 mask, ISystemRouter.SystemEntity caller)
+    function mockOnlyCallers(uint256 mask, InterfaceSystemRouter.SystemEntity caller)
         external
         onlyCallers(mask, caller)
     {}
@@ -39,7 +39,7 @@ contract SystemContractMock is SystemContractMockEvents, SystemContract {
     function slashAgent(
         uint256,
         uint32,
-        ISystemRouter.SystemEntity,
+        InterfaceSystemRouter.SystemEntity,
         AgentInfo memory _info
     ) external override {
         emit SlashAgentCall(_info);
@@ -48,7 +48,7 @@ contract SystemContractMock is SystemContractMockEvents, SystemContract {
     function syncAgents(
         uint256,
         uint32,
-        ISystemRouter.SystemEntity,
+        InterfaceSystemRouter.SystemEntity,
         uint256 _requestID,
         bool _removeExisting,
         AgentInfo[] memory _infos

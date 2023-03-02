@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { ISnapshotHub } from "./ISnapshotHub.sol";
 
-interface ISummit is ISnapshotHub {
+interface InterfaceSummit is ISnapshotHub {
     /**
      * @notice Submit a snapshot (list of states) signed by a Guard or a Notary.
      * Guard-signed snapshots: all the states in the snapshot become available for Notary signing.

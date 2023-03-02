@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { IStateHub } from "./IStateHub.sol";
 
-interface IOrigin is IStateHub {
+interface InterfaceOrigin is IStateHub {
     /**
      * @notice Dispatch the message to the recipient located on destination domain.
      * @param _destination          Domain of destination chain

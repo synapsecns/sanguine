@@ -6,12 +6,12 @@ import "./libs/Message.sol";
 import "./libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "./context/DomainContext.sol";
-import { IDestination, ORIGIN_TREE_DEPTH } from "./interfaces/IDestination.sol";
+import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "./interfaces/InterfaceDestination.sol";
 import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
 import { Attestation, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
-contract Destination is StatementHub, AttestationHub, SystemRegistry, IDestination {
+contract Destination is StatementHub, AttestationHub, SystemRegistry, InterfaceDestination {
     // TODO: Attach library functions to custom types globally
     using HeaderLib for Header;
     using MessageLib for Message;
@@ -56,7 +56,7 @@ contract Destination is StatementHub, AttestationHub, SystemRegistry, IDestinati
     ▏*║                          ACCEPT STATEMENTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @inheritdoc IDestination
+    /// @inheritdoc InterfaceDestination
     function submitAttestation(bytes memory _attPayload, bytes memory _attSignature)
         external
         returns (bool wasAccepted)
@@ -78,7 +78,7 @@ contract Destination is StatementHub, AttestationHub, SystemRegistry, IDestinati
     ▏*║                           EXECUTE MESSAGES                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @inheritdoc IDestination
+    /// @inheritdoc InterfaceDestination
     function execute(
         bytes memory _message,
         bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,

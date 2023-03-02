@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { ISummit } from "./interfaces/ISummit.sol";
+import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
 import { SnapshotHub } from "./hubs/SnapshotHub.sol";
 import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 
 /**
  * @notice Accepts snapshots signed by Guards and Notaries. Verifies Notaries attestations.
  */
-contract Summit is StatementHub, SnapshotHub, ISummit {
+contract Summit is StatementHub, SnapshotHub, InterfaceSummit {
     /**
      * @notice Emitted when a proof of invalid attestation is submitted.
      * @param attestation   Raw payload with attestation data
@@ -34,7 +34,7 @@ contract Summit is StatementHub, SnapshotHub, ISummit {
     ▏*║                          ACCEPT STATEMENTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @inheritdoc ISummit
+    /// @inheritdoc InterfaceSummit
     function submitSnapshot(bytes memory _snapPayload, bytes memory _snapSignature)
         external
         returns (bool wasAccepted)
@@ -61,7 +61,7 @@ contract Summit is StatementHub, SnapshotHub, ISummit {
     ▏*║                          VERIFY STATEMENTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @inheritdoc ISummit
+    /// @inheritdoc InterfaceSummit
     function verifyAttestation(bytes memory _attPayload, bytes memory _attSignature)
         external
         returns (bool isValid)
