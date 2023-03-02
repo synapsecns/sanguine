@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "./AgentRegistry.sol";
 import { SystemContract } from "./SystemContract.sol";
+import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
 
 /**
  * @notice Shared agents registry utilities for Origin, Destination.
@@ -25,7 +25,7 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
     function slashAgent(
         uint256,
         uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
+        InterfaceSystemRouter.SystemEntity _caller,
         AgentInfo memory _info
     ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
         // TODO: decide if we need to store anything, as the slashing occurred on another chain
@@ -46,7 +46,7 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
     function syncAgents(
         uint256,
         uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
+        InterfaceSystemRouter.SystemEntity _caller,
         uint256 _requestID,
         bool _removeExisting,
         AgentInfo[] memory _infos
@@ -73,7 +73,7 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
         systemRouter.systemCall({
             _destination: localDomain,
             _optimisticSeconds: 0,
-            _recipient: ISystemRouter.SystemEntity.BondingManager,
+            _recipient: InterfaceSystemRouter.SystemEntity.BondingManager,
             _data: _data
         });
     }

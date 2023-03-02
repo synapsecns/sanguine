@@ -1,97 +1,68 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import "../libs/Attestation.sol";
-import { Auth } from "../libs/Auth.sol";
-import { AttestationHubEvents } from "../events/AttestationHubEvents.sol";
-import { AgentRegistry } from "../system/AgentRegistry.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import { IAttestationHub } from "../interfaces/IAttestationHub.sol";
 
 /**
- * @notice Keeps track of the agents and verifies signed attestations.
+ * @notice Hub to accept and save attestations.
  */
-abstract contract AttestationHub is AttestationHubEvents, AgentRegistry {
-    using AttestationLib for bytes;
-    using AttestationLib for Attestation;
-    using AttestationLib for AttestationData;
-
-    // TODO: implement a way to store the submitted Attestations, so that
-    // the off-chain actors don't need to rely on eth_getLogs in order to query the latest ones.
-
+abstract contract AttestationHub is IAttestationHub {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
+    ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Called by the external agent. Submits the signed attestation for handling.
-     * @dev Reverts if either of this is true:
-     *      - Attestation payload is not properly formatted.
-     *      - Attestation signer is not a Notary.
-     * @param _attPayload   Payload with Attestation data and signature (see Attestation.sol)
-     * @return TRUE if Attestation was handled correctly.
-     */
-    function submitAttestation(bytes memory _attPayload) external returns (bool) {
-        // Check if Attestation payload is properly formatted, i.e that it
-        // contains attestation data and at least one agent signature for that data
-        Attestation att = _attPayload.castToAttestation();
-        // Verify the attestation signature and recover an active notary address
-        (address[] memory guards, address[] memory notaries) = _verifyAttestation(att);
-        return _handleAttestation(guards, notaries, att, _attPayload);
+    /// @dev Tracks all accepted Notary attestations
+    // (root => attestation)
+    mapping(bytes32 => DestinationAttestation) private rootAttestations;
+
+    /// @dev All snapshot roots from the accepted Notary attestations
+    bytes32[] private roots;
+
+    /// @dev gap for upgrade safety
+    uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                VIEWS                                 ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc IAttestationHub
+    function attestationsAmount() external view returns (uint256) {
+        return roots.length;
+    }
+
+    /// @inheritdoc IAttestationHub
+    function getAttestation(uint256 _index)
+        external
+        view
+        returns (bytes32 root, DestinationAttestation memory destAtt)
+    {
+        require(_index < roots.length, "Index out of range");
+        root = roots[_index];
+        destAtt = rootAttestations[root];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
+    ▏*║                             ACCEPT DATA                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @dev Child contract should implement logic for handling the Attestation.
-     * @param _guards       Guard addresses (signatures&roles already verified)
-     * @param _notaries     Notary addresses (signatures&roles already verified)
-     * @param _att          Memory view over the Attestation for convenience
-     * @param _attPayload   Payload with Attestation data and signature
-     * @return TRUE if Attestation was handled correctly.
-     */
-    function _handleAttestation(
-        address[] memory _guards,
-        address[] memory _notaries,
-        Attestation _att,
-        bytes memory _attPayload
-    ) internal virtual returns (bool);
+    /// @dev Accepts an Attestation signed by a Notary.
+    /// It is assumed that the Notary signature has been checked outside of this contract.
+    function _acceptAttestation(Attestation _att, address _notary) internal {
+        bytes32 root = _att.root();
+        require(_rootAttestation(root).isEmpty(), "Root already exists");
+        rootAttestations[root] = _att.toDestinationAttestation(_notary);
+        roots.push(root);
+    }
 
-    /**
-     * @notice Checks if attestation signer is authorized.
-     * @dev Guard signers need to be active globally.
-     * Notary signers need to be active on destination domain.
-     * @param _att      Memory view over the Attestation to check
-     * @return guards   Addresses of the Guards who signed the Attestation
-     * @return notaries Addresses of the Notaries who signed the Attestation
-     */
-    function _verifyAttestation(Attestation _att)
-        internal
-        view
-        returns (address[] memory guards, address[] memory notaries)
-    {
-        AttestationData attData = _att.data();
-        bytes32 digest = Auth.toEthSignedMessageHash(attData.unwrap());
-        // Get amount of signatures, and initiate the returned arrays
-        (uint256 guardsAmount, uint256 notariesAmount) = _att.agentsAmount();
-        guards = new address[](guardsAmount);
-        notaries = new address[](notariesAmount);
-        // Check if all Guard signatures are valid. Guards are stored with `_domain == 0`.
-        for (uint256 i = 0; i < guardsAmount; ++i) {
-            guards[i] = _checkAgentAuth({
-                _domain: 0,
-                _digest: digest,
-                _signature: _att.guardSignature(i)
-            });
-        }
-        // Check if all Notary signatures are valid. Should be active on destination domain.
-        uint32 destination = attData.destination();
-        for (uint256 i = 0; i < notariesAmount; ++i) {
-            notaries[i] = _checkAgentAuth({
-                _domain: destination,
-                _digest: digest,
-                _signature: _att.notarySignature(i)
-            });
-        }
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                         CHECK STATEMENT DATA                         ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Returns the saved attestation for the "Snapshot Merkle Root".
+    /// Will return an empty struct, if the root hasn't been submitted in a Notary attestation yet.
+    function _rootAttestation(bytes32 _root) internal view returns (DestinationAttestation memory) {
+        return rootAttestations[_root];
     }
 }

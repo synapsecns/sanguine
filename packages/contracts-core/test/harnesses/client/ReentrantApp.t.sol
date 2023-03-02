@@ -3,21 +3,24 @@
 pragma solidity 0.8.17;
 
 import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
-import { Destination } from "../../../contracts/Destination.sol";
+import "../../../contracts/interfaces/InterfaceDestination.sol";
 
 contract ReentrantApp is IMessageRecipient {
     bytes internal message;
-    bytes32[32] internal proof;
-    uint256 internal index;
+    bytes32[ORIGIN_TREE_DEPTH] internal originProof;
+    bytes32[] internal snapProof;
+    uint256 internal snapIndex;
 
     function prepare(
         bytes memory _message,
-        bytes32[32] memory _proof,
-        uint256 _index
+        bytes32[ORIGIN_TREE_DEPTH] memory _originProof,
+        bytes32[] memory _snapProof,
+        uint256 _snapIndex
     ) external {
         message = _message;
-        proof = _proof;
-        index = _index;
+        originProof = _originProof;
+        snapProof = _snapProof;
+        snapIndex = _snapIndex;
     }
 
     function handle(
@@ -27,6 +30,6 @@ contract ReentrantApp is IMessageRecipient {
         uint256,
         bytes memory
     ) external {
-        Destination(msg.sender).execute(message, proof, index);
+        InterfaceDestination(msg.sender).execute(message, originProof, snapProof, snapIndex);
     }
 }

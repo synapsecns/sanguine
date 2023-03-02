@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-interface ISystemRouter {
+interface InterfaceSystemRouter {
     /// @dev Potential senders/recipients of a system message
     enum SystemEntity {
         Origin,

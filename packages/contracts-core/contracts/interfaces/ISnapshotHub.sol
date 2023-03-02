@@ -7,10 +7,10 @@ interface ISnapshotHub {
      * derived from an accepted Notary snapshot.
      * @dev Will revert if any of these is true:
      *  - Attestation payload is not properly formatted.
-     * @param _snapAttPayload   Raw payload with attestation data
-     * @return isValid          Whether the provided attestation is valid
+     * @param _attPayload   Raw payload with attestation data
+     * @return isValid      Whether the provided attestation is valid
      */
-    function isValidAttestation(bytes memory _snapAttPayload) external view returns (bool isValid);
+    function isValidAttestation(bytes memory _attPayload) external view returns (bool isValid);
 
     /**
      * @notice Returns the state with the highest known nonce submitted by a given Guard.
@@ -44,10 +44,10 @@ interface ISnapshotHub {
      * @dev Reverts if either of this is true:
      *  - Attestation payload is not properly formatted.
      *  - Attestation is invalid (doesn't have a matching Notary snapshot).
-     * @param _snapAttPayload   Raw payload with attestation data
+     * @param _attPayload       Raw payload with attestation data
      * @return snapshotPayload  Raw payload with Notary snapshot used for creating the attestation
      */
-    function getNotarySnapshot(bytes memory _snapAttPayload)
+    function getNotarySnapshot(bytes memory _attPayload)
         external
         view
         returns (bytes memory snapshotPayload);

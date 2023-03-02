@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-// ============ Internal Imports ============
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { Client } from "./Client.sol";
-// ============ External Imports ============
-
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {
     OwnableUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";

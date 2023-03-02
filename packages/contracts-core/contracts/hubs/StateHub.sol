@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "../libs/Snapshot.sol";
+import "../libs/State.sol";
+import "../libs/Structures.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "../context/DomainContext.sol";
 import { IStateHub } from "../interfaces/IStateHub.sol";
-import { Snapshot } from "../libs/Snapshot.sol";
-import { State, StateLib, OriginState } from "../libs/State.sol";
-import { EMPTY_ROOT } from "../libs/Structures.sol";
 
 /**
  * @notice Hub to accept, save and verify states for a local contract.

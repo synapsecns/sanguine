@@ -4,8 +4,6 @@ pragma solidity 0.8.17;
 import "../../contracts/bonding/BondingManager.sol";
 // ============ Harnesses ============
 import "../harnesses/client/AppHarness.t.sol";
-import "../harnesses/DestinationHarness.t.sol";
-import "../harnesses/OriginHarness.t.sol";
 import "../harnesses/system/SystemRouterHarness.t.sol";
 // ============ Utils ============
 import "./SynapseConstants.t.sol";
@@ -14,8 +12,6 @@ import "./proof/HistoricalProofGenerator.t.sol";
 
 contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     struct TestDeployments {
-        DestinationHarness destination;
-        OriginHarness origin;
         BondingManager bondingManager;
         SystemRouterHarness systemRouter;
         AppHarness app;
@@ -97,14 +93,6 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       GETTERS: CHAIN CONTRACTS                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function suiteDestination(uint32 domain) public view returns (DestinationHarness) {
-        return chains[domain].destination;
-    }
-
-    function suiteOrigin(uint32 domain) public view returns (OriginHarness) {
-        return chains[domain].origin;
-    }
 
     function suiteBondingManager(uint32 domain) public view returns (BondingManager) {
         return chains[domain].bondingManager;

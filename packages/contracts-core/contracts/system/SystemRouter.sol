@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-import "../Version.sol";
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import "../libs/SystemMessage.sol";
 import "../libs/Tips.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { BasicClient } from "../client/BasicClient.sol";
 import { DomainContext } from "../context/DomainContext.sol";
-import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
-
+import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
+import { Version0_0_1 } from "../Version.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
@@ -42,7 +43,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * to initiate a system call through the system router. However, every system contract that wants
  * to expose one of its external functions for the system calls, should do the following:
  * 1. Such functions should have the same first three arguments:
- * - foo(uint256 rootSubmittedAt, uint32 callOrigin, ISystemRouter.SystemEntity systemCaller, <...>)
+ * - foo(uint256 rootSubmittedAt, uint32 callOrigin, InterfaceSystemRouter.SystemEntity systemCaller, <...>)
  * These arguments are filled by the System Routers on origin and destination chain. This allows
  * the recipient to set the restrictions for receiving the call in a very granular way.
  * To perform a call, use any values for `(rootSubmittedAt, callOrigin,systemCaller)`
@@ -55,7 +56,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * a "message to System Router". By enforcing a minimum optimistic latency for the recipient this
  * attack can be mitigated, assuming there is at least one honest Guard willing to report the fraud.
  */
-contract SystemRouter is DomainContext, BasicClient, ISystemRouter, Version0_0_1 {
+contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Version0_0_1 {
     using Address for address;
     using ByteString for bytes;
     using SystemMessageLib for bytes;

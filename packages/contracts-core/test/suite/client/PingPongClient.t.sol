@@ -157,7 +157,7 @@ contract PingPongTest is Test {
         vm.expectCall(
             originMock,
             abi.encodeWithSelector(
-                IOrigin.dispatch.selector,
+                InterfaceOrigin.dispatch.selector,
                 destination,
                 recipient,
                 optimisticPeriod,

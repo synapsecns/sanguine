@@ -5,16 +5,6 @@ import "forge-std/Test.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract SynapseUtilities is Test {
-    struct RawAttestation {
-        uint32 origin;
-        uint32 destination;
-        uint32 nonce;
-        bytes32 root;
-        uint40 blockNumber;
-        uint40 timestamp;
-        bytes data;
-    }
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

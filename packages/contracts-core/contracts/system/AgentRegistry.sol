@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-import { AgentRegistryEvents } from "../events/AgentRegistryEvents.sol";
-import { AgentSet } from "../libs/AgentSet.sol";
-import { Auth } from "../libs/Auth.sol";
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "../libs/AgentSet.sol";
+import "../libs/Auth.sol";
 import "../libs/ByteString.sol";
-
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import { AgentRegistryEvents } from "../events/AgentRegistryEvents.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 

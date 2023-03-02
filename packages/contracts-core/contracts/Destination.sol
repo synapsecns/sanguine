@@ -1,244 +1,150 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-import "./Version.sol";
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "./libs/Merkle.sol";
 import "./libs/Message.sol";
-import "./libs/SystemMessage.sol";
+import "./libs/State.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "./context/DomainContext.sol";
-import { DestinationHub } from "./hubs/DestinationHub.sol";
-import { DestinationEvents } from "./events/DestinationEvents.sol";
-import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
-import { MerkleLib } from "./libs/Merkle.sol";
+import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "./interfaces/InterfaceDestination.sol";
+import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
+import { Attestation, StatementHub } from "./hubs/StatementHub.sol";
+import { SystemRegistry } from "./system/SystemRegistry.sol";
 
-/**
- * @title Destination
- * @notice Track merkle root state of Origin contracts on other chains,
- * prove and dispatch messages to end recipients.
- */
-contract Destination is DestinationEvents, DestinationHub, Version0_0_1 {
+contract Destination is StatementHub, AttestationHub, SystemRegistry, InterfaceDestination {
+    // TODO: Attach library functions to custom types globally
     using HeaderLib for Header;
-    using MessageLib for bytes;
     using MessageLib for Message;
-    using TypedMemView for bytes29;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                EVENTS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // TODO: move Events to a separate contract, once the old Destination is deprecated
 
     /**
-     * @notice Information stored for every blacklisted Notary.
-     * TODO: finalize structure
-     * @param guard				Guard who reported the Notary
-     * @param blacklistedAt		Timestamp when Notary was blacklisted
+     * @notice Emitted when a snapshot is accepted by the Destination contract.
+     * @param domain        Domain where the signed Notary is active
+     * @param notary        Notary who signed the attestation
+     * @param attestation   Raw payload with attestation data
+     * @param attSignature  Notary signature for the attestation
      */
-    struct Blacklist {
-        address guard; // 160 bits
-        uint96 blacklistedAt; // 96 bits
-    }
+    event AttestationAccepted(uint32 domain, address notary, bytes attestation, bytes attSignature);
+
+    /**
+     * @notice Emitted when message is executed.
+     * @param remoteDomain  Remote domain where message originated
+     * @param messageHash   The keccak256 hash of the message that was executed
+     * @param tips          Raw payload with tips paid for the off-chain agents
+     */
+    event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash, bytes tips);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              CONSTANTS                               ║*▕
+    ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    bytes32 internal constant MESSAGE_STATUS_NONE = bytes32(0);
-
-    // We're using uint256 instead of bool/uint8 here, because reading/writing is
-    // cheaper for the types that are using a full word of storage
-    uint256 internal constant NOT_ENTERED = 1;
-    // TODO: set up execute() tests with message recipients actually spending some gas
-    // to determine if ENTERED = 0 or ENTERED = 2 leads to lower median gas usage
-    uint256 internal constant ENTERED = 0;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // re-entrancy guard
-    uint256 private status;
-
-    // domain => [leaf => status]
-    // Message wasn't executed => MESSAGE_STATUS_NONE
-    // Message was executed => merkle root used for proving when executed
-    mapping(uint32 => mapping(bytes32 => bytes32)) public messageStatus;
-
-    // notary => blacklist info
-    mapping(address => Blacklist) public blacklistedNotaries;
-
-    // gap for upgrade safety
-    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             CONSTRUCTOR                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    //solhint-disable-next-line no-empty-blocks
     constructor(uint32 _domain) DomainContext(_domain) {}
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             INITIALIZER                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Initialize the mirror
-     * @dev Performs the following action:
-     *      - initializes inherited contracts
-     *      - initializes re-entrancy guard
-     */
+    /// @notice Initializes Origin contract:
+    /// - msg.sender is set as contract owner
     function initialize() external initializer {
+        // Initialize SystemContract: msg.sender is set as "owner"
         __SystemContract_initialize();
-        status = NOT_ENTERED;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                    EXTERNAL FUNCTIONS: RESTRICTED                    ║*▕
+    ▏*║                          ACCEPT STATEMENTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Set confirmAt for a given root
-     * @dev To be used if in the case that fraud is proven
-     * and roots need to be deleted / added. Only callable by owner (Governance)
-     * @param _root The root for which to modify confirm time
-     * @param _confirmAt The new confirmation time. Set to 0 to "delete" a root.
-     */
-    function setConfirmation(
-        uint32 _origin,
-        bytes32 _root,
-        uint256 _confirmAt
-    ) external onlyOwner {
-        uint256 _previousConfirmAt = mirrorRoots[_origin][_root].submittedAt;
-        mirrorRoots[_origin][_root].submittedAt = uint96(_confirmAt);
-        emit SetConfirmation(_origin, _root, _previousConfirmAt, _confirmAt);
+    /// @inheritdoc InterfaceDestination
+    function submitAttestation(bytes memory _attPayload, bytes memory _attSignature)
+        external
+        returns (bool wasAccepted)
+    {
+        // This will revert if payload is not an attestation, or signer is not an active Notary
+        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
+            _attPayload,
+            _attSignature
+        );
+        // Check that Notary is active on local domain
+        require(domain == localDomain, "Wrong Notary domain");
+        // This will revert if snapshot root has been previously submitted
+        _acceptAttestation(att, notary);
+        emit AttestationAccepted(domain, notary, _attPayload, _attSignature);
+        return true;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
+    ▏*║                           EXECUTE MESSAGES                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Given formatted message, attempts to dispatch
-     * message payload to end recipient.
-     * @dev Recipient must implement a `handle` method (refer to IMessageRecipient.sol)
-     * Reverts if formatted message's destination domain is not the Destination's domain,
-     * if message proof is invalid, or its optimistic period not yet passed.
-     * Also reverts if the recipient reverted upon receiving the message.
-     * @param _message  Formatted message
-     * @param _proof    Merkle proof of inclusion for message's leaf
-     * @param _index    Index of leaf in origin's merkle tree
-     */
+    /// @inheritdoc InterfaceDestination
     function execute(
         bytes memory _message,
-        bytes32[32] calldata _proof,
-        uint256 _index
+        bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
+        bytes32[] calldata _snapProof,
+        uint256 _snapIndex
     ) external {
-        Message message = _message.castToMessage();
-        Header header = message.header();
-        uint32 origin = header.origin();
-        // ensure message was meant for this domain
-        require(header.destination() == localDomain, "!destination");
-        bytes32 leaf = message.leaf();
-        // ensure message can be proven against a confirmed root,
-        // and that message's optimistic period has passed
-        bytes32 root = _prove(origin, leaf, _proof, _index, header.optimisticSeconds());
-        // check re-entrancy guard
-        require(status == NOT_ENTERED, "!reentrant");
-        status = ENTERED;
-        _storeTips(message.tips());
-        // it should not be possible to construct a merkle tree with a root = 0x0, but even then
-        // attestations with empty root would be rejected: see DestinationHub._handleAttestation()
-        // update message status as executed, new status is never bytes32(0)
-        messageStatus[origin][leaf] = root;
-        address recipient = _checkForSystemRouter(header.recipient());
-        IMessageRecipient(recipient).handle(
-            origin,
-            header.nonce(),
-            header.sender(),
-            mirrorRoots[origin][root].submittedAt,
-            message.body().clone()
-        );
-        emit Executed(origin, leaf);
-        // reset re-entrancy guard
-        status = NOT_ENTERED;
+        // TODO: implement
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
+    ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    function _isIgnoredAgent(uint32 _domain, address)
+        internal
+        view
+        virtual
+        override
+        returns (bool)
+    {
+        // Destination only keeps track of local Notaries and Guards
+        return _domain != localDomain && _domain != 0;
+    }
+
     /**
-     * @notice Blacklists Notary:
-     * - New attestations signed by Notary are not accepted
-     * - Any old roots attested by Notary can not be used for proving/executing
-     * @dev `_guard` is always an active Guard, `_notary` is always an active Notary.
-     * @param _guard            Guard address that reported the Notary
-     * @param _notary           Notary address who allegedly committed fraud attestation
-     * @param _attestationView  Memory view over reported Attestation
-     * @param _report           Payload with Report data and signature
+     * @notice Attempts to prove the validity of the cross-chain message.
+     * First, the origin Merkle Root is reconstructed using the origin proof.
+     * Then the origin state's "left leaf" is reconstructed using the origin domain.
+     * After that the snapshot Merkle Root is reconstructed using the snapshot proof.
+     * Finally, the optimistic period is checked for the derived snapshot root.
+     * @dev Reverts if any of the checks fail.
+     * @param _msg          Typed memory view over message payload
+     * @param _originProof  Proof of inclusion of message in the Origin Merkle Tree
+     * @param _snapProof    Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
+     * @param _snapIndex    Index of Origin State Left Leaf in the Snapshot Merkle Tree
+     * @return snapshotRoot Derived merkle root of the Snapshot Merkle Tree
+     * @return destAtt      Rest of attestation data that Destination keeps track of
      */
-    function _blacklistNotary(
-        address _guard,
-        address _notary,
-        bytes29 _attestationView,
-        bytes memory _report
-    ) internal override {
-        _removeAgent({ _domain: localDomain, _account: _notary });
-        emit NotaryBlacklisted(_notary, _guard, msg.sender, _report);
-        blacklistedNotaries[_notary] = Blacklist({
-            guard: _guard,
-            blacklistedAt: uint96(block.timestamp)
-        });
-        // TODO: save the reported attestation for dispute resolution
-        _attestationView;
-        // TODO: Send system message indicating that a Notary was reported?
-    }
-
-    // solhint-disable-next-line no-empty-blocks
-    function _storeTips(Tips _tips) internal virtual {
-        // TODO: implement storing & claiming logic
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL VIEWS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function _checkForSystemRouter(bytes32 _recipient) internal view returns (address recipient) {
-        // Check if SYSTEM_ROUTER was specified as message recipient
-        if (_recipient == SystemMessageLib.SYSTEM_ROUTER) {
-            /**
-             * @dev Route message to SystemRouter.
-             * Note: Only SystemRouter contract on origin chain can send a message
-             * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
-             */
-            recipient = address(systemRouter);
-        } else {
-            // Cast bytes32 to address otherwise
-            recipient = TypeCasts.bytes32ToAddress(_recipient);
-        }
-    }
-
-    /**
-     * @notice Attempts to prove the validity of message given its leaf, the
-     * merkle proof of inclusion for the leaf, and the index of the leaf.
-     * @dev Reverts if message's MessageStatus != None (i.e. if message was
-     * already proven or executed)
-     * @dev For convenience, we allow proving against any previous root.
-     * This means that witnesses never need to be updated for the new root
-     * @param _origin               Domain where message originated
-     * @param _leaf                 Leaf (hash) of the message
-     * @param _proof                Merkle proof of inclusion for leaf
-     * @param _index                Index of leaf in Origin's merkle tree
-     * @param _optimisticSeconds    Optimistic period of the message
-     * @return root                 Merkle root used for proving message inclusion
-     **/
     function _prove(
-        uint32 _origin,
-        bytes32 _leaf,
-        bytes32[32] calldata _proof,
-        uint256 _index,
-        uint32 _optimisticSeconds
-    ) internal view returns (bytes32 root) {
-        // ensure that mirror is active
-        require(mirrors[_origin].latestNonce != 0, "Mirror not active");
-        // ensure that message has not been executed
-        require(messageStatus[_origin][_leaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
-        // calculate the expected root based on the proof
-        root = MerkleLib.branchRoot(_leaf, _proof, _index);
-        // Sanity check: this either returns true or reverts
-        assert(acceptableRoot(_origin, _optimisticSeconds, root));
+        Message _msg,
+        bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
+        bytes32[] calldata _snapProof,
+        uint256 _snapIndex
+    ) internal view returns (bytes32 snapshotRoot, DestinationAttestation memory destAtt) {
+        Header header = _msg.header();
+        // Reconstruct Origin Merkle Root using the origin proof
+        // Message index in the tree is (nonce - 1), as nonce starts from 1
+        bytes32 originRoot = MerkleLib.branchRoot(_msg.leaf(), _originProof, header.nonce() - 1);
+        // Reconstruct left sub-leaf of the Origin State: (merkleRoot, originDomain)
+        bytes32 leftLeaf = StateLib.leftLeaf(originRoot, header.origin());
+
+        // TODO: implement branchRoot function that takes dynamic sized proof as variable
+        // snapshotRoot = MerkleLib.branchRoot(leftLeaf, _snapProof, _snapIndex);
+
+        // Fetch the attestation data for the snapshot root
+        destAtt = _rootAttestation(snapshotRoot);
+        // Check if snapshot root has been submitted
+        require(!destAtt.isEmpty(), "Invalid snapshot root");
+        // Check that snapshot proof length matches the height of Snapshot Merkle Tree
+        require(_snapProof.length == destAtt.height, "Invalid proof length");
+        // Check if Notary who submitted the snapshot is still active
+        require(_isActiveAgent(localDomain, destAtt.notary), "Inactive notary");
+        // Check if optimistic period has passed
+        require(
+            block.timestamp >= header.optimisticSeconds() + destAtt.destTimestamp,
+            "!optimisticSeconds"
+        );
     }
 }
