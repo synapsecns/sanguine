@@ -56,9 +56,9 @@ contract BondingMVPTest is BondingManagerTest {
         // Exclude local calls and calls from Synapse Chain
         vm.assume(callOrigin != DOMAIN_LOCAL);
         _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
             // Should reject all system calls from remote domains
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             vm.expectRevert("Cross-chain disabled");
             // Use mocked agent info
             _mockSlashAgentCall({
@@ -73,9 +73,9 @@ contract BondingMVPTest is BondingManagerTest {
         // Exclude local calls
         vm.assume(callOrigin != localDomain);
         _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
             // Should reject all system calls from remote domains
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             vm.expectRevert("Cross-chain disabled");
             // Use mocked list of agents
             _mockSyncAgentsCall({

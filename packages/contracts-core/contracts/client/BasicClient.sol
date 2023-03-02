@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
-import { Origin } from "../Origin.sol";
+import { InterfaceOrigin } from "../interfaces/InterfaceOrigin.sol";
 
 /**
  * @dev Basic implementation of IMessageRecipient interface, to be used as recipient of
@@ -112,7 +112,7 @@ abstract contract BasicClient is IMessageRecipient {
     ) internal {
         bytes32 recipient = trustedSender(_destination);
         require(recipient != bytes32(0), "BasicClient: !recipient");
-        Origin(origin).dispatch{ value: msg.value }(
+        InterfaceOrigin(origin).dispatch{ value: msg.value }(
             _destination,
             recipient,
             _optimisticSeconds,

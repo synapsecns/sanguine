@@ -23,10 +23,10 @@ contract BondingSecondaryTest is BondingManagerTest {
 
     function test_slashAgent_revert_synapseDomain_notBondingManager() public {
         _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
             // Should reject system calls from Synapse domain, if caller is not BondingManager
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
-            if (caller == ISystemRouter.SystemEntity.BondingManager) continue;
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
+            if (caller == InterfaceSystemRouter.SystemEntity.BondingManager) continue;
             vm.expectRevert("!allowedCaller");
             // Use mocked agent info
             _mockSlashAgentCall({
@@ -41,9 +41,9 @@ contract BondingSecondaryTest is BondingManagerTest {
         // Exclude local calls and calls from Synapse Chain
         vm.assume(callOrigin != DOMAIN_LOCAL && callOrigin != DOMAIN_SYNAPSE);
         _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
             // Should reject cross-chain system calls from domains other than Synapse domain
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             vm.expectRevert("!synapseDomain");
             // Use mocked agent info
             _mockSlashAgentCall({
@@ -59,9 +59,9 @@ contract BondingSecondaryTest is BondingManagerTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_syncAgents_revert_localDomain() public {
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
             // Should reject all system calls from local domain
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             // Calls from local domain never pass the optimistic period check
             vm.expectRevert("!optimisticPeriod");
             // Use mocked list of agents
@@ -79,9 +79,9 @@ contract BondingSecondaryTest is BondingManagerTest {
         // Exclude local calls and calls from Synapse Chain
         vm.assume(callOrigin != localDomain && callOrigin != DOMAIN_SYNAPSE);
         _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
             // Should reject all system calls from remote domains other than Synapse domain
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             vm.expectRevert("!synapseDomain");
             // Use mocked list of agents
             _mockSyncAgentsCall({
@@ -96,10 +96,10 @@ contract BondingSecondaryTest is BondingManagerTest {
 
     function test_syncAgents_revert_synapseDomain_notBondingManager() public {
         _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             // Should reject system calls from Synapse domain, if caller is not BondingManager
-            if (caller == ISystemRouter.SystemEntity.BondingManager) continue;
+            if (caller == InterfaceSystemRouter.SystemEntity.BondingManager) continue;
             vm.expectRevert("!allowedCaller");
             // Use mocked list of agents
             _mockSyncAgentsCall({
@@ -141,16 +141,16 @@ contract BondingSecondaryTest is BondingManagerTest {
                 SystemRouter.systemCall.selector,
                 DOMAIN_SYNAPSE, // destination
                 BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                ISystemRouter.SystemEntity.BondingManager, //recipient
+                InterfaceSystemRouter.SystemEntity.BondingManager, //recipient
                 data
             )
         );
         // Mock a local system call: [Local Origin] -> [Local BondingManager].slashAgent
         systemRouter.mockSystemCall({
-            _recipient: ISystemRouter.SystemEntity.BondingManager,
+            _recipient: InterfaceSystemRouter.SystemEntity.BondingManager,
             _rootSubmittedAt: block.timestamp,
             _callOrigin: localDomain,
-            _systemCaller: ISystemRouter.SystemEntity.Origin,
+            _systemCaller: InterfaceSystemRouter.SystemEntity.Origin,
             _data: data
         });
     }
@@ -200,16 +200,16 @@ contract BondingSecondaryTest is BondingManagerTest {
                 SystemRouter.systemCall.selector,
                 DOMAIN_SYNAPSE, // destination
                 BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                ISystemRouter.SystemEntity.BondingManager, //recipient
+                InterfaceSystemRouter.SystemEntity.BondingManager, //recipient
                 forwardedData
             )
         );
         // Mock a system call: [SynapseChain BondingManager] -> [Local BondingManager].syncAgents
         systemRouter.mockSystemCall({
-            _recipient: ISystemRouter.SystemEntity.BondingManager,
+            _recipient: InterfaceSystemRouter.SystemEntity.BondingManager,
             _rootSubmittedAt: rootSubmittedAt,
             _callOrigin: DOMAIN_SYNAPSE,
-            _systemCaller: ISystemRouter.SystemEntity.BondingManager,
+            _systemCaller: InterfaceSystemRouter.SystemEntity.BondingManager,
             _data: data
         });
     }

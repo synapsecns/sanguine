@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
-import { SystemContract } from "../system/SystemContract.sol";
-import { DomainContext } from "../context/DomainContext.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { BondingManager } from "./BondingManager.sol";
+import { DomainContext } from "../context/DomainContext.sol";
+import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
+import { SystemContract } from "../system/SystemContract.sol";
 
 contract BondingSecondary is BondingManager {
     constructor(uint32 _domain) DomainContext(_domain) {
@@ -28,7 +28,7 @@ contract BondingSecondary is BondingManager {
     function syncAgents(
         uint256 _rootSubmittedAt,
         uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
+        InterfaceSystemRouter.SystemEntity _caller,
         uint256 _requestID,
         bool _removeExisting,
         AgentInfo[] memory _infos
@@ -68,7 +68,7 @@ contract BondingSecondary is BondingManager {
         systemRouter.systemCall({
             _destination: SYNAPSE_DOMAIN,
             _optimisticSeconds: BONDING_OPTIMISTIC_PERIOD,
-            _recipient: ISystemRouter.SystemEntity.BondingManager,
+            _recipient: InterfaceSystemRouter.SystemEntity.BondingManager,
             _data: _data
         });
     }
@@ -84,7 +84,7 @@ contract BondingSecondary is BondingManager {
     function _assertCrossChainSlashing(
         uint256 _rootSubmittedAt,
         uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller
+        InterfaceSystemRouter.SystemEntity _caller
     ) internal view override {
         // Optimistic period should be over
         _assertOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD);

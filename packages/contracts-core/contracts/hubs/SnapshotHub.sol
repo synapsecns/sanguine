@@ -1,21 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "../libs/Attestation.sol";
+import "../libs/Snapshot.sol";
+import "../libs/State.sol";
+import "../libs/TypedMemView.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { ISnapshotHub } from "../interfaces/ISnapshotHub.sol";
-import {
-    SnapAttestation,
-    SnapAttestationLib,
-    SummitAttestation
-} from "../libs/SnapAttestation.sol";
-import { Snapshot, SnapshotLib, SummitSnapshot } from "../libs/Snapshot.sol";
-import { State, StateLib, SummitState } from "../libs/State.sol";
-import { TypedMemView } from "../libs/TypedMemView.sol";
 
 /**
  * @notice Hub to accept and save snapshots, as well as verify attestations.
  */
 abstract contract SnapshotHub is ISnapshotHub {
-    using SnapAttestationLib for bytes;
+    using AttestationLib for bytes;
     using SnapshotLib for uint256[];
     using StateLib for bytes;
     using TypedMemView for bytes29;
@@ -71,9 +68,9 @@ abstract contract SnapshotHub is ISnapshotHub {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc ISnapshotHub
-    function isValidAttestation(bytes memory _snapAttPayload) external view returns (bool isValid) {
+    function isValidAttestation(bytes memory _attPayload) external view returns (bool isValid) {
         // This will revert if payload is not a formatted attestation
-        SnapAttestation attestation = _snapAttPayload.castToSnapAttestation();
+        Attestation attestation = _attPayload.castToAttestation();
         return _isValidAttestation(attestation);
     }
 
@@ -104,13 +101,13 @@ abstract contract SnapshotHub is ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getNotarySnapshot(bytes memory _snapAttPayload)
+    function getNotarySnapshot(bytes memory _attPayload)
         external
         view
         returns (bytes memory snapshotPayload)
     {
         // This will revert if payload is not a formatted attestation
-        SnapAttestation attestation = _snapAttPayload.castToSnapAttestation();
+        Attestation attestation = _attPayload.castToAttestation();
         require(_isValidAttestation(attestation), "Invalid attestation");
         // Attestation is valid => attestations[nonce] exists
         // notarySnapshots.length == attestations.length => notarySnapshots[nonce] exists
@@ -204,12 +201,12 @@ abstract contract SnapshotHub is ISnapshotHub {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @dev Checks if attestation was previously submitted by a Notary (as a signed snapshot).
-    function _isValidAttestation(SnapAttestation _snapAtt) internal view returns (bool) {
+    function _isValidAttestation(Attestation _att) internal view returns (bool) {
         // Check if nonce exists
-        uint32 nonce = _snapAtt.nonce();
+        uint32 nonce = _att.nonce();
         if (nonce >= attestations.length) return false;
         // Check if Attestation matches the historical one
-        return _snapAtt.equalToSummit(attestations[nonce]);
+        return _att.equalToSummit(attestations[nonce]);
     }
 
     /// @dev Restores Snapshot payload from a list of state pointers used for the snapshot.

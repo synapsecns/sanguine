@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { TypedMemView } from "./TypedMemView.sol";
+import "./TypedMemView.sol";
 
 /// @dev CallData is a memory view over the payload to be used for an external call, i.e.
 /// recipient.call(callData). Its length is always (4 + 32 * N) bytes:

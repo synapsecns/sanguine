@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "../libs/Tips.sol";
+import "../libs/TypeCasts.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
-import { Origin } from "../Origin.sol";
-
-import { TipsLib } from "../libs/Tips.sol";
-import { TypeCasts } from "../libs/TypeCasts.sol";
+import { InterfaceOrigin } from "../interfaces/InterfaceOrigin.sol";
 
 contract TestClient is IMessageRecipient {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -74,7 +74,7 @@ contract TestClient is IMessageRecipient {
     ) external {
         bytes32 recipient = TypeCasts.addressToBytes32(_recipient);
         bytes memory tips = TipsLib.emptyTips();
-        (uint32 nonce, ) = Origin(origin).dispatch(
+        (uint32 nonce, ) = InterfaceOrigin(origin).dispatch(
             _destination,
             recipient,
             _optimisticSeconds,

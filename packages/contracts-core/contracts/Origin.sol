@@ -1,168 +1,152 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import { InterfaceOrigin } from "./interfaces/InterfaceOrigin.sol";
+import { DomainContext, StateHub } from "./hubs/StateHub.sol";
+import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
+import { SystemRegistry } from "./system/SystemRegistry.sol";
 
-// ============ Internal Imports ============
-import "./Version.sol";
-import "./libs/Message.sol";
-import "./libs/SystemMessage.sol";
-import { DomainContext } from "./context/DomainContext.sol";
-import { OriginEvents } from "./events/OriginEvents.sol";
-import { OriginHub } from "./hubs/OriginHub.sol";
-// ============ External Imports ============
-import { Address } from "@openzeppelin/contracts/utils/Address.sol";
-
-/**
- * @title Origin
- * @author Illusory Systems Inc.
- * @notice Accepts messages to be dispatched to remote chains and
- * constructs a Merkle tree of the messages.
- * Notaries are signing the attestations of the Merkle tree's root state (aka merkle state),
- * which are broadcasted to Destination, where the merkle root is used for proving that
- * the message has been indeed dispatched on Origin.
- * Origin accepts submissions of fraudulent signatures by the Notary,
- * directly or in the form of a Guard's Fraud report on such an attestation,
- * and slashes the Notary in this case.
- * Origin accepts submissions of fraudulent signatures by the Guard in the form
- * of a Guard's report with said signature and slashes Guard in that case.
- */
-contract Origin is OriginEvents, OriginHub, Version0_0_1 {
-    using TipsLib for bytes;
-    using TipsLib for Tips;
-
+contract Origin is StatementHub, StateHub, SystemRegistry, InterfaceOrigin {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              CONSTANTS                               ║*▕
+    ▏*║                                EVENTS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // Maximum bytes per message = 2 KiB
-    // (somewhat arbitrarily set to begin)
-    uint256 public constant MAX_MESSAGE_BODY_BYTES = 2 * 2**10;
+    // TODO: move Events to a separate contract, once the old Origin is deprecated
+
+    /**
+     * @notice Emitted when a proof of invalid state in the signed attestation is submitted.
+     * @param stateIndex    Index of invalid state in the snapshot
+     * @param snapshot      Raw payload with snapshot data
+     * @param attestation   Raw payload with Attestation data for snapshot
+     * @param attSignature  Notary signature for the attestation
+     */
+    event InvalidAttestationState(
+        uint256 stateIndex,
+        bytes snapshot,
+        bytes attestation,
+        bytes attSignature
+    );
+
+    /**
+     * @notice Emitted when a proof of invalid state in the signed snapshot is submitted.
+     * @param stateIndex    Index of invalid state in the snapshot
+     * @param snapshot      Raw payload with snapshot data
+     * @param snapSignature Agent signature for the snapshot
+     */
+    event InvalidSnapshotState(uint256 stateIndex, bytes snapshot, bytes snapSignature);
+
+    // Old Event to ensure that go generation works with the existing Agents
+    // TODO: remove once agents are updated to handle the new "Dispatched" event
+    event Dispatch(
+        bytes32 indexed messageHash,
+        uint32 indexed nonce,
+        uint32 indexed destination,
+        bytes tips,
+        bytes message
+    );
+
+    /**
+     * @notice Emitted when a new message is dispatched.
+     * @param messageHash   Hash of message; the leaf inserted to the Merkle tree for the message
+     * @param nonce         Nonce of sent message (starts from 1)
+     * @param destination   Destination domain
+     * @param message       Raw bytes of message
+     */
+    event Dispatched(
+        bytes32 indexed messageHash,
+        uint32 indexed nonce,
+        uint32 indexed destination,
+        bytes message
+    );
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
+    ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // gap for upgrade safety
-    uint256[50] private __GAP; //solhint-disable-line var-name-mixedcase
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             CONSTRUCTOR                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // solhint-disable-next-line no-empty-blocks
     constructor(uint32 _domain) DomainContext(_domain) {}
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             INITIALIZER                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
+    /// @notice Initializes Origin contract:
+    /// - msg.sender is set as contract owner
+    /// - State of "empty merkle tree" is saved
     function initialize() external initializer {
+        // Initialize SystemContract: msg.sender is set as "owner"
         __SystemContract_initialize();
-        // Insert "empty merkle tree" state into historical data arrays
-        _initializeHistoricalData();
+        // Initialize "states": state of an "empty merkle tree" is saved
+        _initializeStates();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
+    ▏*║                          VERIFY STATEMENTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Dispatch the message to the destination domain & recipient
-     * @dev Format the message, insert its hash into Merkle tree,
-     * enqueue the new Merkle root, and emit `Dispatch` event with message information.
-     * @param _destination      Domain of destination chain
-     * @param _recipient        Address of recipient on destination chain as bytes32
-     * @param _messageBody      Raw bytes content of message
-     */
+    /// @inheritdoc InterfaceOrigin
+    function verifyAttestation(
+        bytes memory _snapPayload,
+        uint256 _stateIndex,
+        bytes memory _attPayload,
+        bytes memory _attSignature
+    ) external returns (bool isValid) {
+        // This will revert if payload is not an attestation, or signer is not an active Notary
+        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
+            _attPayload,
+            _attSignature
+        );
+        // This will revert if payload is not a snapshot, or snapshot/attestation roots don't match
+        Snapshot snapshot = _verifySnapshotRoot(att, _snapPayload);
+        // This will revert, if state index is out of range, or state refers to another domain
+        isValid = _isValidState(snapshot.state(_stateIndex));
+        if (!isValid) {
+            emit InvalidAttestationState(_stateIndex, _snapPayload, _attPayload, _attSignature);
+            _slashAgent(domain, notary);
+        }
+    }
+
+    /// @inheritdoc InterfaceOrigin
+    function verifySnapshot(
+        bytes memory _snapPayload,
+        uint256 _stateIndex,
+        bytes memory _snapSignature
+    ) external returns (bool isValid) {
+        // This will revert if payload is not a snapshot, or signer is not an active Agent
+        (Snapshot snapshot, uint32 domain, address agent) = _verifySnapshot(
+            _snapPayload,
+            _snapSignature
+        );
+        // This will revert, if state index is out of range, or state refers to another domain
+        isValid = _isValidState(snapshot.state(_stateIndex));
+        if (!isValid) {
+            emit InvalidSnapshotState(_stateIndex, _snapPayload, _snapSignature);
+            _slashAgent(domain, agent);
+        }
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          DISPATCH MESSAGES                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc InterfaceOrigin
     function dispatch(
         uint32 _destination,
         bytes32 _recipient,
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
-    )
-        external
-        payable
-        // TODO: enable Guards check once Go tests are updated
-        // haveActiveGuard
-        haveActiveNotary(_destination)
-        returns (uint32 messageNonce, bytes32 messageHash)
-    {
-        // TODO: add unit tests covering return values
-        require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
-        // Check: tips payload is correctly formatted
-        Tips tips = _tips.castToTips();
-        // Check: total tips value matches msg.value
-        require(tips.totalTips() == msg.value, "!tips: totalTips");
-        // Latest nonce (i.e. "last message" nonce) is current amount of leaves in the tree.
-        // Message nonce is the amount of leaves after the leaf insertion
-        messageNonce = nonce(_destination) + 1;
-        // format the message into packed bytes
-        bytes memory message = MessageLib.formatMessage({
-            _origin: localDomain,
-            _sender: _checkForSystemRouter(_recipient),
-            _nonce: messageNonce,
-            _destination: _destination,
-            _recipient: _recipient,
-            _optimisticSeconds: _optimisticSeconds,
-            _tips: _tips,
-            _messageBody: _messageBody
-        });
-        messageHash = keccak256(message);
-        // insert the hashed message into the Merkle tree
-        bytes32 newRoot = _insertMessage(_destination, messageNonce, messageHash);
-        // Emit Dispatch event with message information
-        // note: leaf index in the tree is messageNonce - 1, meaning we don't need to emit that
-        emit Dispatch(messageHash, messageNonce, _destination, newRoot, _tips, message);
+    ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
+        // TODO: implement
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
+    ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Slash the fraudulent Agent.
-     * @dev Called when agent fraud is proven.
-     * @param _domain   Domain where the reported Agent is active
-     * @param _account  Address of the fraudulent Agent
-     * @param _guard    Guard who reported the fraudulent Agent [address(0) if not a Guard report]
-     */
-    function _slashAgent(
-        uint32 _domain,
-        address _account,
-        address _guard
-    ) internal override {
+    function _slashAgent(uint32 _domain, address _account) internal {
+        // TODO: Move to SystemRegistry?
+        // TODO: send a system call indicating agent was slashed
         _removeAgent(_domain, _account);
-        if (_domain == 0) {
-            emit GuardSlashed({ guard: _account, reporter: msg.sender });
-        } else {
-            emit NotarySlashed({ notary: _account, guard: _guard, reporter: msg.sender });
-        }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL VIEWS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Returns adjusted "sender" field.
-     * @dev By default, "sender" field is msg.sender address casted to bytes32.
-     * However, if SYSTEM_ROUTER is used for "recipient" field, and msg.sender is SystemRouter,
-     * SYSTEM_ROUTER is also used as "sender" field.
-     * Note: tx will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
-     */
-    function _checkForSystemRouter(bytes32 _recipient) internal view returns (bytes32 sender) {
-        if (_recipient != SystemMessageLib.SYSTEM_ROUTER) {
-            sender = TypeCasts.addressToBytes32(msg.sender);
-            /**
-             * @dev Note: SYSTEM_ROUTER has only the highest 12 bytes set,
-             * whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
-             * Thus, in this branch: sender != SystemMessageLib.SYSTEM_ROUTER
-             */
-        } else {
-            // Check that SystemRouter specified SYSTEM_ROUTER as recipient, revert otherwise.
-            _assertSystemRouter();
-            // Adjust "sender" field for correct processing on remote chain.
-            sender = SystemMessageLib.SYSTEM_ROUTER;
-        }
+    function _isIgnoredAgent(uint32, address) internal view virtual override returns (bool) {
+        // Origin keeps track of every agent
+        return false;
     }
 }

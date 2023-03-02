@@ -116,7 +116,7 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
         systemRegistry.syncAgents(
             block.timestamp,
             DOMAIN_LOCAL,
-            ISystemRouter.SystemEntity.BondingManager,
+            InterfaceSystemRouter.SystemEntity.BondingManager,
             0,
             false,
             new SystemContract.AgentInfo[](0)
@@ -131,7 +131,7 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
         systemRegistry.slashAgent(
             block.timestamp,
             DOMAIN_LOCAL,
-            ISystemRouter.SystemEntity.BondingManager,
+            InterfaceSystemRouter.SystemEntity.BondingManager,
             info
         );
     }
@@ -143,8 +143,8 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
     function test_syncAgents_revert_notLocalDomain(uint32 domain) public {
         vm.assume(domain != DOMAIN_LOCAL);
         // Should reject system call from other domains (regardless of the caller)
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             vm.expectRevert("!localDomain");
             _mockRevertedSyncAgentsCall({ callOrigin: domain, systemCaller: caller });
         }
@@ -153,8 +153,8 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
     function test_slashAgent_revert_notLocalDomain(uint32 domain) public {
         vm.assume(domain != DOMAIN_LOCAL);
         // Should reject system call from other domains (regardless of the caller)
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             vm.expectRevert("!localDomain");
             _mockRevertedSlashAgentCall({ callOrigin: domain, systemCaller: caller });
         }
@@ -165,20 +165,20 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_syncAgents_revert_localDomain_notBondingManager() public {
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
             // Should reject system calls from local domain, if caller is not BondingManager
-            if (c == uint8(ISystemRouter.SystemEntity.BondingManager)) continue;
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+            if (c == uint8(InterfaceSystemRouter.SystemEntity.BondingManager)) continue;
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             vm.expectRevert("!allowedCaller");
             _mockRevertedSyncAgentsCall({ callOrigin: DOMAIN_LOCAL, systemCaller: caller });
         }
     }
 
     function test_slashAgent_revert_localDomain_notBondingManager() public {
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
             // Should reject system calls from local domain, if caller is not BondingManager
-            if (c == uint8(ISystemRouter.SystemEntity.BondingManager)) continue;
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+            if (c == uint8(InterfaceSystemRouter.SystemEntity.BondingManager)) continue;
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             vm.expectRevert("!allowedCaller");
             _mockRevertedSlashAgentCall({ callOrigin: DOMAIN_LOCAL, systemCaller: caller });
         }
@@ -192,14 +192,15 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
         // Mock system call from local Bonding Manager by default
         _mockSyncAgentsCall({
             callOrigin: DOMAIN_LOCAL,
-            systemCaller: ISystemRouter.SystemEntity.BondingManager,
+            systemCaller: InterfaceSystemRouter.SystemEntity.BondingManager,
             infos: infos
         });
     }
 
-    function _mockRevertedSyncAgentsCall(uint32 callOrigin, ISystemRouter.SystemEntity systemCaller)
-        internal
-    {
+    function _mockRevertedSyncAgentsCall(
+        uint32 callOrigin,
+        InterfaceSystemRouter.SystemEntity systemCaller
+    ) internal {
         // Mock Agent data for the "revert tests"
         _mockSyncAgentsCall({
             callOrigin: callOrigin,
@@ -210,14 +211,14 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
 
     function _mockSyncAgentsCall(
         uint32 callOrigin,
-        ISystemRouter.SystemEntity systemCaller,
+        InterfaceSystemRouter.SystemEntity systemCaller,
         SystemContract.AgentInfo[] memory infos
     ) internal {
         // TODO: add coverage when these params are no longer ignored in SystemRegistry
         uint256 requestID = 0;
         bool removeExisting = false;
         systemRouter.mockSystemCall({
-            _recipient: ISystemRouter.SystemEntity.Origin,
+            _recipient: InterfaceSystemRouter.SystemEntity.Origin,
             _rootSubmittedAt: block.timestamp,
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
@@ -237,14 +238,15 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
         // Mock system call from local Bonding Manager by default
         _mockSlashAgentCall({
             callOrigin: DOMAIN_LOCAL,
-            systemCaller: ISystemRouter.SystemEntity.BondingManager,
+            systemCaller: InterfaceSystemRouter.SystemEntity.BondingManager,
             info: info
         });
     }
 
-    function _mockRevertedSlashAgentCall(uint32 callOrigin, ISystemRouter.SystemEntity systemCaller)
-        internal
-    {
+    function _mockRevertedSlashAgentCall(
+        uint32 callOrigin,
+        InterfaceSystemRouter.SystemEntity systemCaller
+    ) internal {
         // Mock Agent data for the "revert tests"
         _mockSlashAgentCall({
             callOrigin: callOrigin,
@@ -255,12 +257,12 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
 
     function _mockSlashAgentCall(
         uint32 callOrigin,
-        ISystemRouter.SystemEntity systemCaller,
+        InterfaceSystemRouter.SystemEntity systemCaller,
         SystemContract.AgentInfo memory info
     ) internal {
         // Mock system call: slashAgent(rootSubmittedAt, callOrigin, systemCaller, info)
         systemRouter.mockSystemCall({
-            _recipient: ISystemRouter.SystemEntity.Origin,
+            _recipient: InterfaceSystemRouter.SystemEntity.Origin,
             _rootSubmittedAt: block.timestamp,
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,

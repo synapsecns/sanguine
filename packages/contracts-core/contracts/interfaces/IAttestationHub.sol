@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { DestinationAttestation } from "../libs/SnapAttestation.sol";
+import { DestinationAttestation } from "../libs/Attestation.sol";
 
-interface ISnapAttestationHub {
+interface IAttestationHub {
     /**
      * @notice Returns the total amount of Notaries attestations that have been accepted.
      */

@@ -88,7 +88,7 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
         bondingManager.slashAgent(
             block.timestamp,
             DOMAIN_LOCAL,
-            ISystemRouter.SystemEntity.BondingManager,
+            InterfaceSystemRouter.SystemEntity.BondingManager,
             info
         );
     }
@@ -100,7 +100,7 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
         bondingManager.syncAgents(
             block.timestamp,
             DOMAIN_LOCAL,
-            ISystemRouter.SystemEntity.BondingManager,
+            InterfaceSystemRouter.SystemEntity.BondingManager,
             0,
             false,
             new SystemContract.AgentInfo[](0)
@@ -113,10 +113,10 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
 
     function test_slashAgent_revert_localDomain_notOrigin() public {
         // Only Origin on local domain is allowed to call slashNotary()
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             // Should reject system calls from local domain, if caller is not Origin
-            if (caller == ISystemRouter.SystemEntity.Origin) continue;
+            if (caller == InterfaceSystemRouter.SystemEntity.Origin) continue;
             vm.expectRevert("!allowedCaller");
             // Use mocked agent info
             _mockSlashAgentCall({
@@ -145,13 +145,13 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
 
     function _mockSyncAgentsCall(
         uint32 callOrigin,
-        ISystemRouter.SystemEntity systemCaller,
+        InterfaceSystemRouter.SystemEntity systemCaller,
         uint256 requestID,
         bool removeExisting,
         SystemContract.AgentInfo[] memory infos
     ) internal {
         systemRouter.mockSystemCall({
-            _recipient: ISystemRouter.SystemEntity.BondingManager,
+            _recipient: InterfaceSystemRouter.SystemEntity.BondingManager,
             _rootSubmittedAt: callOrigin == localDomain ? block.timestamp : rootSubmittedAt,
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
@@ -169,12 +169,12 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
 
     function _mockSlashAgentCall(
         uint32 callOrigin,
-        ISystemRouter.SystemEntity systemCaller,
+        InterfaceSystemRouter.SystemEntity systemCaller,
         SystemContract.AgentInfo memory info
     ) internal {
         // Mock system call: slashAgent(rootSubmittedAt, callOrigin, systemCaller, info)
         systemRouter.mockSystemCall({
-            _recipient: ISystemRouter.SystemEntity.BondingManager,
+            _recipient: InterfaceSystemRouter.SystemEntity.BondingManager,
             _rootSubmittedAt: callOrigin == localDomain ? block.timestamp : rootSubmittedAt,
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,

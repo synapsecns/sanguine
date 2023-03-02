@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-// ============ Internal Imports ============
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { Client } from "./Client.sol";
-// ============ External Imports ============
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 abstract contract SynapseClient is Client, Ownable {

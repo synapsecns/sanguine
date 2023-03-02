@@ -5,7 +5,6 @@ import "../../contracts/bonding/BondingMVP.sol";
 import "../../contracts/bonding/BondingPrimary.sol";
 import "../../contracts/bonding/BondingSecondary.sol";
 import "../../contracts/libs/SystemMessage.sol";
-import "../../contracts/libs/Report.sol";
 import "./SynapseTestStorage.t.sol";
 import "./SynapseUtilities.t.sol";
 
@@ -71,181 +70,41 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     // solhint-disable-next-line code-complexity
     function setupChain(uint32 domain, string memory chainName) public {
         // Deploy messaging contracts
-        DestinationHarness destination = new DestinationHarness(domain);
-        OriginHarness origin = new OriginHarness(domain);
         BondingMVP bondingManager = new BondingMVP(domain);
-        SystemRouterHarness systemRouter = new SystemRouterHarness(
-            domain,
-            address(origin),
-            address(destination),
-            address(bondingManager)
-        );
-        // Setup destination
-        destination.initialize();
-        destination.setSystemRouter(systemRouter);
-        // Setup origin
-        origin.initialize();
-        origin.setSystemRouter(systemRouter);
+        // TODO: Setup destination
+        // TODO: Setup origin
         // Setup BondingManager
         bondingManager.initialize();
-        bondingManager.setSystemRouter(systemRouter);
+        // bondingManager.setSystemRouter(systemRouter);
         // Add global notaries via BondingManager
         for (uint256 i = 0; i < DOMAINS; ++i) {
             uint32 domainToAdd = domains[i];
             // Origin and Destination will filter our agents themselves
             for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
                 address notary = suiteNotary(domainToAdd, j);
-                bondingManager.addAgent(domainToAdd, notary);
+                // bondingManager.addAgent(domainToAdd, notary);
             }
         }
         // Add guards  via BondingManager
         for (uint256 i = 0; i < GUARDS; ++i) {
-            bondingManager.addAgent({ _domain: 0, _account: guards[i] });
+            // bondingManager.addAgent({ _domain: 0, _account: guards[i] });
         }
         // Deploy app
         AppHarness app = new AppHarness(APP_OPTIMISTIC_SECONDS);
         // Transfer ownership everywhere
-        destination.transferOwnership(owner);
-        origin.transferOwnership(owner);
         bondingManager.transferOwnership(owner);
         // Label deployments
-        vm.label(address(destination), string.concat("Destination ", chainName));
-        vm.label(address(origin), string.concat("Origin ", chainName));
+        // vm.label(address(destination), string.concat("Destination ", chainName));
+        // vm.label(address(origin), string.concat("Origin ", chainName));
         vm.label(address(bondingManager), string.concat("BondingManager ", chainName));
-        vm.label(address(systemRouter), string.concat("SystemRouter ", chainName));
+        // vm.label(address(systemRouter), string.concat("SystemRouter ", chainName));
         vm.label(address(app), string.concat("App ", chainName));
         // Save deployments
-        chains[domain].destination = destination;
-        chains[domain].origin = origin;
+        // chains[domain].destination = destination;
+        // chains[domain].origin = origin;
         chains[domain].bondingManager = bondingManager;
-        chains[domain].systemRouter = systemRouter;
+        // chains[domain].systemRouter = systemRouter;
         chains[domain].app = app;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             ATTESTATIONS                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Attestation signed by the default Guard and chain's default Notary.
-     */
-    function signAttestation(RawAttestation memory ra)
-        public
-        returns (
-            bytes memory attData,
-            bytes memory attestation,
-            bytes memory guardSignatures,
-            bytes memory notarySignatures
-        )
-    {
-        return signAttestation(ra, 0, 0);
-    }
-
-    /**
-     * @notice Attestation signed by a given suite Guard and
-     * a given suite Notary for the destination chain.
-     * @dev Use indexes out of bound to not include any of the signers.
-     */
-    function signAttestation(
-        RawAttestation memory ra,
-        uint256 guardIndex,
-        uint256 notaryIndex
-    )
-        public
-        returns (
-            bytes memory attData,
-            bytes memory attestation,
-            bytes memory guardSignatures,
-            bytes memory notarySignatures
-        )
-    {
-        return
-            signAttestation(ra, suiteGuard(guardIndex), suiteNotary(ra.destination, notaryIndex));
-    }
-
-    /**
-     * @notice Attestation signed by a given Guard and Notary.
-     * @dev Use address(0) to not include any of the signers
-     */
-    function signAttestation(
-        RawAttestation memory ra,
-        address guardSigner,
-        address notarySigner
-    )
-        public
-        returns (
-            bytes memory attData,
-            bytes memory attestation,
-            bytes memory guardSignatures,
-            bytes memory notarySignatures
-        )
-    {
-        // castToArray() will return empty array for address(0)
-        return signAttestation(ra, castToArray(guardSigner), castToArray(notarySigner));
-    }
-
-    function signAttestation(
-        RawAttestation memory ra,
-        address[] memory guardSigners,
-        address[] memory notarySigners
-    )
-        public
-        returns (
-            bytes memory attData,
-            bytes memory attestation,
-            bytes memory guardSignatures,
-            bytes memory notarySignatures
-        )
-    {
-        attData = AttestationLib.formatAttestationData(
-            ra.origin,
-            ra.destination,
-            ra.nonce,
-            ra.root,
-            ra.blockNumber,
-            ra.timestamp
-        );
-        guardSignatures = signMessage(guardSigners, attData);
-        notarySignatures = signMessage(notarySigners, attData);
-        attestation = AttestationLib.formatAttestation(attData, guardSignatures, notarySignatures);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               REPORTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Report signed by the default Guard.
-     */
-    function signReport(ReportLib.Flag flag, bytes memory attestation)
-        public
-        returns (bytes memory report, bytes memory signature)
-    {
-        return signReport(flag, attestation, suiteGuard());
-    }
-
-    /**
-     * @notice Report signed by a given Guard.
-     */
-    function signReport(
-        ReportLib.Flag flag,
-        bytes memory attestation,
-        uint256 guardIndex
-    ) public returns (bytes memory report, bytes memory signature) {
-        return signReport(flag, attestation, suiteGuard(guardIndex));
-    }
-
-    /**
-     * @notice Report signed by a given signer.
-     */
-    function signReport(
-        ReportLib.Flag flag,
-        bytes memory attestation,
-        address signer
-    ) public returns (bytes memory report, bytes memory signature) {
-        bytes memory data = ReportLib.formatReportData(flag, attestation);
-        signature = signMessage(signer, data);
-        report = ReportLib.formatReport(flag, attestation, signature);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

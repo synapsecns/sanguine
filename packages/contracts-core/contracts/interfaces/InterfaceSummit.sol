@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { ISnapshotHub } from "./ISnapshotHub.sol";
 
-interface ISummit is ISnapshotHub {
+interface InterfaceSummit is ISnapshotHub {
     /**
      * @notice Submit a snapshot (list of states) signed by a Guard or a Notary.
      * Guard-signed snapshots: all the states in the snapshot become available for Notary signing.
@@ -32,7 +32,7 @@ interface ISummit is ISnapshotHub {
      * @dev Will revert if any of these is true:
      *  - Attestation payload is not properly formatted.
      *  - Attestation signer is not an active Notary.
-     * @param _attPayload       Raw payload with SnapAttestation data
+     * @param _attPayload       Raw payload with Attestation data
      * @param _attSignature     Notary signature for the attestation
      * @return isValid          Whether the provided attestation is valid.
      *                          Notary is slashed, if return value is FALSE.

@@ -76,10 +76,10 @@ contract BondingPrimaryTest is BondingManagerTest {
     function test_slashAgent_revert_remoteDomain_notBondingManager(uint32 callOrigin) public {
         vm.assume(callOrigin != localDomain);
         _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
             // Should reject system calls from a remote domain, if caller is not BondingManager
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
-            if (caller == ISystemRouter.SystemEntity.BondingManager) continue;
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
+            if (caller == InterfaceSystemRouter.SystemEntity.BondingManager) continue;
             vm.expectRevert("!allowedCaller");
             // Use mocked agent info
             _mockSlashAgentCall({
@@ -95,9 +95,9 @@ contract BondingPrimaryTest is BondingManagerTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_syncAgents_revert_localDomain() public {
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
             // Should reject all system calls from local domain
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             // Calls from local domain never pass the optimistic period check
             vm.expectRevert("!optimisticPeriod");
             // Use mocked list of agents
@@ -114,10 +114,10 @@ contract BondingPrimaryTest is BondingManagerTest {
     function test_syncAgents_revert_remoteDomain_notBondingManager(uint32 callOrigin) public {
         vm.assume(callOrigin != localDomain);
         _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(ISystemRouter.SystemEntity).max); ++c) {
-            ISystemRouter.SystemEntity caller = ISystemRouter.SystemEntity(c);
+        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
+            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
             // Should reject system calls from a remote domain, if caller is not BondingManager
-            if (caller == ISystemRouter.SystemEntity.BondingManager) continue;
+            if (caller == InterfaceSystemRouter.SystemEntity.BondingManager) continue;
             vm.expectRevert("!allowedCaller");
             // Use mocked list of agents
             _mockSyncAgentsCall({
@@ -157,7 +157,7 @@ contract BondingPrimaryTest is BondingManagerTest {
         // Mock a local system call: [Local Origin] -> [Local BondingManager].slashAgent
         _mockSlashAgentCall({
             callOrigin: localDomain,
-            systemCaller: ISystemRouter.SystemEntity.Origin,
+            systemCaller: InterfaceSystemRouter.SystemEntity.Origin,
             info: info
         });
     }
@@ -196,7 +196,7 @@ contract BondingPrimaryTest is BondingManagerTest {
         // Mock a local system call: [Remote BondingManager] -> [Local BondingManager].slashAgent
         _mockSlashAgentCall({
             callOrigin: callOrigin,
-            systemCaller: ISystemRouter.SystemEntity.BondingManager,
+            systemCaller: InterfaceSystemRouter.SystemEntity.BondingManager,
             info: info
         });
     }

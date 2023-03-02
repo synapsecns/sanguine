@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-import "../Version.sol";
-import { ISystemRouter } from "../interfaces/ISystemRouter.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
 import { SystemContract } from "../system/SystemContract.sol";
+import { Version0_0_1 } from "../Version.sol";
 
 abstract contract BondingManager is SystemContract, Version0_0_1 {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -28,7 +28,7 @@ abstract contract BondingManager is SystemContract, Version0_0_1 {
     function slashAgent(
         uint256 _rootSubmittedAt,
         uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller,
+        InterfaceSystemRouter.SystemEntity _caller,
         AgentInfo memory _info
     ) external override onlySystemRouter {
         bool forwardUpdate;
@@ -96,7 +96,7 @@ abstract contract BondingManager is SystemContract, Version0_0_1 {
     function _assertCrossChainSlashing(
         uint256 _rootSubmittedAt,
         uint32 _callOrigin,
-        ISystemRouter.SystemEntity _caller
+        InterfaceSystemRouter.SystemEntity _caller
     ) internal view virtual;
 
     /**
@@ -106,10 +106,10 @@ abstract contract BondingManager is SystemContract, Version0_0_1 {
     function _localSystemRegistries()
         internal
         pure
-        returns (ISystemRouter.SystemEntity[] memory recipients)
+        returns (InterfaceSystemRouter.SystemEntity[] memory recipients)
     {
-        recipients = new ISystemRouter.SystemEntity[](2);
-        recipients[0] = ISystemRouter.SystemEntity.Origin;
-        recipients[1] = ISystemRouter.SystemEntity.Destination;
+        recipients = new InterfaceSystemRouter.SystemEntity[](2);
+        recipients[0] = InterfaceSystemRouter.SystemEntity.Origin;
+        recipients[1] = InterfaceSystemRouter.SystemEntity.Destination;
     }
 }

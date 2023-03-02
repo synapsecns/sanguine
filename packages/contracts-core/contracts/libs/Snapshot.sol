@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ByteString, TypedMemView } from "./ByteString.sol";
-import { MerkleList } from "./MerkleList.sol";
-import { SummitAttestation } from "./SnapAttestation.sol";
-import { State, StateLib } from "./State.sol";
-import { SNAPSHOT_MAX_STATES, STATE_LENGTH } from "./Structures.sol";
+import "./Attestation.sol";
+import "./ByteString.sol";
+import "./MerkleList.sol";
+import "./State.sol";
 
 /// @dev Snapshot is a memory view over a formatted snapshot payload: a list of states.
 type Snapshot is bytes29;
