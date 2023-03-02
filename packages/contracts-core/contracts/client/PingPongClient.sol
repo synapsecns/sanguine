@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "../libs/Tips.sol";
+import "../libs/TypeCasts.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
 import { InterfaceOrigin } from "../interfaces/InterfaceOrigin.sol";
-import { TipsLib } from "../libs/Tips.sol";
-import { TypeCasts } from "../libs/TypeCasts.sol";
 
 contract PingPongClient is IMessageRecipient {
     using TypeCasts for address;
