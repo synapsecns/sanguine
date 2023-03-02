@@ -35,6 +35,16 @@ contract Origin is StatementHub, StateHub, SystemRegistry, InterfaceOrigin {
      */
     event InvalidSnapshotState(uint256 stateIndex, bytes snapshot, bytes snapSignature);
 
+    // Old Event to ensure that go generation works with the existing Agents
+    // TODO: remove once agents are updated to handle the new "Dispatched" event
+    event Dispatch(
+        bytes32 indexed messageHash,
+        uint32 indexed nonce,
+        uint32 indexed destination,
+        bytes tips,
+        bytes message
+    );
+
     /**
      * @notice Emitted when a new message is dispatched.
      * @param messageHash   Hash of message; the leaf inserted to the Merkle tree for the message
