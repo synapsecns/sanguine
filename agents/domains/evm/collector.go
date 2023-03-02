@@ -88,6 +88,9 @@ func (a attestationCollectorContract) GetLatestNonce(ctx context.Context, origin
 func (a attestationCollectorContract) GetAttestation(ctx context.Context, origin, destination, nonce uint32) (types.SignedAttestation, error) {
 	rawAttestation, err := a.contract.GetAttestation(&bind.CallOpts{Context: ctx}, origin, destination, nonce)
 	if err != nil {
+		if err.Error() == "execution reverted: Unknown nonce" {
+			return nil, domains.ErrNoUpdate
+		}
 		return nil, fmt.Errorf("could not retrieve attestation: %w", err)
 	}
 

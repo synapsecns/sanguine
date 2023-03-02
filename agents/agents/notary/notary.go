@@ -82,6 +82,10 @@ func NewNotary(ctx context.Context, cfg config.NotaryConfig) (_ Notary, err erro
 	}
 
 	for name, originDomain := range cfg.OriginDomains {
+		if originDomain.DomainID == cfg.DestinationDomain.DomainID {
+			continue
+		}
+
 		originClient, err := evm.NewEVM(ctx, name, originDomain)
 		if err != nil {
 			return Notary{}, fmt.Errorf("error with originClient, could not create notary for: %w", err)

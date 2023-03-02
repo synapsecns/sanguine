@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/types"
 	"time"
+
+	"github.com/synapsecns/sanguine/agents/types"
 
 	"github.com/synapsecns/sanguine/agents/db"
 	"github.com/synapsecns/sanguine/agents/domains"

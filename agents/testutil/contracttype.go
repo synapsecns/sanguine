@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
@@ -71,6 +72,8 @@ const (
 	AgentsTestContractType // AgentsTestContract
 	// TestClientType is the type of the test client.
 	TestClientType // TestClient
+	// PingPongClientType is the type of the test client.
+	PingPongClientType // PingPongClient
 )
 
 // ID gets the contract type as an id.
@@ -115,6 +118,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return agentstestcontract.Contracts["solidity/AgentsTestContract.sol:AgentsTestContract"]
 	case TestClientType:
 		return testclient.Contracts["solidity/TestClient.sol:TestClient"]
+	case PingPongClientType:
+		return pingpongclient.Contracts["solidity/PingPongClient.sol:PingPongClient"]
 	default:
 		panic("not yet implemented")
 	}

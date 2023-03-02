@@ -17,6 +17,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
@@ -45,12 +46,16 @@ type SimulatedBackendsTestSuite struct {
 	DestinationContractMetadataOnOrigin contracts.DeployedContract
 	TestClientOnOrigin                  *testclient.TestClientRef
 	TestClientMetadataOnOrigin          contracts.DeployedContract
+	PingPongClientOnOrigin              *pingpongclient.PingPongClientRef
+	PingPongClientMetadataOnOrigin      contracts.DeployedContract
 	DestinationContract                 *destinationharness.DestinationHarnessRef
 	DestinationContractMetadata         contracts.DeployedContract
 	OriginContractOnDestination         *originharness.OriginHarnessRef
 	OriginContractMetadataOnDestination contracts.DeployedContract
 	TestClientOnDestination             *testclient.TestClientRef
 	TestClientMetadataOnDestination     contracts.DeployedContract
+	PingPongClientOnDestination         *pingpongclient.PingPongClientRef
+	PingPongClientMetadataOnDestination contracts.DeployedContract
 	AttestationHarness                  *attestationharness.AttestationHarnessRef
 	AttestationContract                 *attestationcollector.AttestationCollectorRef
 	AttestationContractMetadata         contracts.DeployedContract
@@ -96,6 +101,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 	a.OriginContractMetadata, a.OriginContract = deployManager.GetOriginHarness(a.GetTestContext(), a.TestBackendOrigin)
 	a.DestinationContractMetadataOnOrigin, a.DestinationContractOnOrigin = deployManager.GetDestinationHarness(a.GetTestContext(), a.TestBackendOrigin)
 	a.TestClientMetadataOnOrigin, a.TestClientOnOrigin = deployManager.GetTestClient(a.GetTestContext(), a.TestBackendOrigin)
+	a.PingPongClientMetadataOnOrigin, a.PingPongClientOnOrigin = deployManager.GetPingPongClient(a.GetTestContext(), a.TestBackendOrigin)
 
 	originOwnerPtr, err := a.OriginContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
@@ -155,6 +161,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	a.DestinationContractMetadata, a.DestinationContract = deployManager.GetDestinationHarness(a.GetTestContext(), a.TestBackendDestination)
 	a.OriginContractMetadataOnDestination, a.OriginContractOnDestination = deployManager.GetOriginHarness(a.GetTestContext(), a.TestBackendDestination)
 	a.TestClientMetadataOnDestination, a.TestClientOnDestination = deployManager.GetTestClient(a.GetTestContext(), a.TestBackendDestination)
+	a.PingPongClientMetadataOnDestination, a.PingPongClientOnDestination = deployManager.GetPingPongClient(a.GetTestContext(), a.TestBackendDestination)
 
 	destOwnerPtr, err := a.DestinationContract.DestinationHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {

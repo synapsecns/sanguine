@@ -98,13 +98,26 @@ func (a AttestationGuardCollectorSubmitter) update(ctx context.Context) error {
 		return nil
 	}
 
-	guardOnlySignedAttestation := types.NewSignedAttestation(
-		inProgressAttestationToSubmitToCollector.SignedAttestation().Attestation(),
-		inProgressAttestationToSubmitToCollector.SignedAttestation().GuardSignatures(),
-		[]types.Signature{})
-	err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, guardOnlySignedAttestation)
+	signedAttestation, err := a.attestationDomain.AttestationCollector().GetAttestation(
+		ctx,
+		inProgressAttestationToSubmitToCollector.SignedAttestation().Attestation().Origin(),
+		inProgressAttestationToSubmitToCollector.SignedAttestation().Attestation().Destination(),
+		inProgressAttestationToSubmitToCollector.SignedAttestation().Attestation().Nonce())
 	if err != nil {
-		return fmt.Errorf("could not submit attestation to attestation collector: %w", err)
+		if !errors.Is(err, domains.ErrNoUpdate) {
+			return fmt.Errorf("could not GetAttestation from collector to see if we already signed and submitted: %w", err)
+		}
+	}
+
+	if signedAttestation == nil || len(signedAttestation.GuardSignatures()) == 0 {
+		guardOnlySignedAttestation := types.NewSignedAttestation(
+			inProgressAttestationToSubmitToCollector.SignedAttestation().Attestation(),
+			inProgressAttestationToSubmitToCollector.SignedAttestation().GuardSignatures(),
+			[]types.Signature{})
+		err = a.attestationDomain.AttestationCollector().SubmitAttestation(ctx, a.unbondedSigner, guardOnlySignedAttestation)
+		if err != nil {
+			return fmt.Errorf("could not submit attestation to attestation collector: %w", err)
+		}
 	}
 
 	nowTime := time.Now()

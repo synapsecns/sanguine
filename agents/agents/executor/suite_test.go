@@ -27,7 +27,7 @@ func (e *ExecutorSuite) SetupTest() {
 	chainwatcher.PollInterval = time.Second
 
 	e.SimulatedBackendsTestSuite.SetupTest()
-	e.SetTestTimeout(time.Minute * 3)
+	e.SetTestTimeout(time.Minute * 5)
 }
 
 func TestExecutorSuite(t *testing.T) {

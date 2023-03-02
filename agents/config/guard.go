@@ -15,7 +15,7 @@ import (
 type GuardConfig struct {
 	// OriginDomains stores all origin domains
 	OriginDomains DomainConfigs `yaml:"origin_domains"`
-	// AttestationDomain stores the attestaion domain
+	// AttestationDomain stores the attestation domain
 	AttestationDomain DomainConfig `yaml:"attestation_domain"`
 	// DestinationDomains stores all destination domains
 	DestinationDomains DomainConfigs `yaml:"destination_domains"`
