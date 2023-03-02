@@ -31,6 +31,8 @@ func GetChangeTree(ctx context.Context, repoPath, ref, token, base string) (tree
 		return strings.EqualFold(ghContext.EventName, eventType.String())
 	})
 
+	fmt.Println("isPrEvent", isPrEvent)
+
 	if isPrEvent {
 		return getChangedFilesFromAPI(ctx, ghContext, client)
 	}
@@ -72,6 +74,8 @@ func getChangedFilesFromAPI(ctx context.Context, ghContext *actionscore.Context,
 		err = retry.Do(func() error {
 			reqCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 			defer cancel()
+
+			fmt.Println("page ", page)
 
 			files, res, err = client.PullRequests.ListFiles(reqCtx, repoOwner, repoName, prNumber, &github.ListOptions{
 				Page:    page,
