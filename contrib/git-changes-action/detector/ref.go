@@ -99,7 +99,7 @@ func getChangedFilesFromAPI(ctx context.Context, ghContext *actionscore.Context,
 			}
 		}
 
-		if page == res.LastPage {
+		if res.NextPage == 0 {
 			break
 		}
 
