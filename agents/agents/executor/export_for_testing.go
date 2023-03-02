@@ -94,6 +94,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			merkleTrees:       make(map[uint32]*merkle.HistoricalTree),
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
+			executed:          make(map[[32]byte]bool),
 		}
 
 		for _, destinationChain := range config.Chains {
@@ -144,6 +145,11 @@ func (e Executor) GetMerkleTree(chainID uint32, domain uint32) *merkle.Historica
 	return e.chainExecutors[chainID].merkleTrees[domain]
 }
 
+// GetExecuted gets the executed mapping.
+func (e Executor) GetExecuted(chainID uint32) map[[32]byte]bool {
+	return e.chainExecutors[chainID].executed
+}
+
 // VerifyMessageMerkleProof verifies message merkle proof.
 func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) {
 	return e.verifyMessageMerkleProof(message)
@@ -167,11 +173,17 @@ func (e Executor) Start(ctx context.Context) error {
 		chain := chain
 
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, originContract)
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
+				contractType:         originContract,
+				destinationEventType: otherEvent,
+			})
 		})
 
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, destinationContract)
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
+				contractType:         destinationContract,
+				destinationEventType: attestationAcceptedEvent,
+			})
 		})
 	}
 
@@ -208,9 +220,15 @@ func (e Executor) SetMinimumTime(ctx context.Context) error {
 	for _, chain := range e.config.Chains {
 		chain := chain
 
-		g.Go(func() error {
-			return e.setMinimumTime(ctx, chain.ChainID)
-		})
+		for _, destinationChain := range e.config.Chains {
+			destinationChain := destinationChain
+			if destinationChain.ChainID == chain.ChainID {
+				continue
+			}
+			g.Go(func() error {
+				return e.setMinimumTime(ctx, chain.ChainID, destinationChain.ChainID)
+			})
+		}
 	}
 
 	if err := g.Wait(); err != nil {
