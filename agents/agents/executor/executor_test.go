@@ -2,6 +2,9 @@ package executor_test
 
 import (
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
@@ -9,8 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
-	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	types2 "github.com/synapsecns/sanguine/agents/agents/executor/types"
@@ -18,6 +19,7 @@ import (
 	"github.com/synapsecns/sanguine/core/merkle"
 
 	"context"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
@@ -767,7 +769,8 @@ func (e *ExecutorSuite) TestVerifyOptimisticPeriod() {
 
 	txContextDestination := e.TestBackendDestination.GetTxContext(e.GetTestContext(), e.DestinationContractMetadata.OwnerPtr())
 
-	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation)
+	// TODO (joeallen): FIX ME
+	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation, []byte{})
 	e.Nil(err)
 	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -977,7 +980,8 @@ func (e *ExecutorSuite) TestExecute() {
 
 	txContextDestination := e.TestBackendDestination.GetTxContext(e.GetTestContext(), e.DestinationContractMetadata.OwnerPtr())
 
-	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation)
+	// TODO (joeallen): FIX ME
+	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation, []byte{})
 	e.Nil(err)
 	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -1076,7 +1080,8 @@ func (e *ExecutorSuite) TestExecute() {
 	rawSignedAttestation2, err := types.EncodeSignedAttestation(signedAttestation2)
 	e.Nil(err)
 
-	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation2)
+	// TODO (joeallen): FIX ME
+	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation2, []byte{})
 	e.Nil(err)
 	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -1212,7 +1217,8 @@ func (e *ExecutorSuite) TestExecute() {
 	rawSignedAttestation3, err := types.EncodeSignedAttestation(signedAttestation3)
 	e.Nil(err)
 
-	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation3)
+	// TODO (joeallen): FIX ME
+	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation3, []byte{})
 	e.Nil(err)
 	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -1354,7 +1360,8 @@ func (e *ExecutorSuite) TestDestinationExecute() {
 	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
 	e.Nil(err)
 
-	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation)
+	// TODO (joeallen): FIX ME
+	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation, []byte{})
 	e.Nil(err)
 
 	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
@@ -1390,7 +1397,8 @@ func (e *ExecutorSuite) TestDestinationExecute() {
 		time.Sleep(time.Second)
 		index := big.NewInt(int64(0))
 
-		tx, err = e.DestinationContract.Execute(txContextDestination.TransactOpts, encodedMessage, proofToUse, index)
+		// TODO (joeallen): FIX ME
+		tx, err = e.DestinationContract.Execute(txContextDestination.TransactOpts, encodedMessage, proofToUse, [][32]byte{}, index)
 		e.Nil(err)
 
 		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
@@ -1513,7 +1521,8 @@ func (e *ExecutorSuite) TestDestinationBadProofExecute() {
 	rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
 	e.Nil(err)
 
-	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation)
+	// TODO (joeallen): FIX ME
+	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation, []byte{})
 	e.Nil(err)
 
 	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
@@ -1549,7 +1558,8 @@ func (e *ExecutorSuite) TestDestinationBadProofExecute() {
 		time.Sleep(time.Second)
 		index := big.NewInt(int64(0))
 
-		tx, err = e.DestinationContract.Execute(txContextDestination.TransactOpts, encodedMessage, badProofToUse, index)
+		// TODO (joeallen): FIX ME
+		tx, err = e.DestinationContract.Execute(txContextDestination.TransactOpts, encodedMessage, badProofToUse, [][32]byte{}, index)
 		e.Nil(err)
 
 		e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
@@ -1938,7 +1948,8 @@ func (e *ExecutorSuite) TestExecuteExecutable() {
 
 	txContextDestination := e.TestBackendDestination.GetTxContext(e.GetTestContext(), e.DestinationContractMetadata.OwnerPtr())
 
-	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation)
+	// TODO (joeallen): FIX ME
+	tx, err = e.DestinationContract.SubmitAttestation(txContextDestination.TransactOpts, rawSignedAttestation, []byte{})
 	e.Nil(err)
 	e.TestBackendDestination.WaitForConfirmation(e.GetTestContext(), tx)
 

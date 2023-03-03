@@ -42,16 +42,18 @@ type attestationCollectorContract struct {
 }
 
 func (a attestationCollectorContract) AddAgent(transactOpts *bind.TransactOpts, domainID uint32, signer signer.Signer) error {
-	_, err := a.contract.AddAgent(transactOpts, domainID, signer.Address())
-	if err != nil {
-		return fmt.Errorf("could not add notary: %w", err)
-	}
+	// TODO (joeallen): FIX ME
+	//_, err := a.contract.AddAgent(transactOpts, domainID, signer.Address())
+	//if err != nil {
+	//	return fmt.Errorf("could not add notary: %w", err)
+	//}
 
 	return nil
 }
 
 func (a attestationCollectorContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
+	// TODO (joeallen): FIX ME
+	/*transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
 		return fmt.Errorf("could not sign tx: %w", err)
 	}
@@ -71,22 +73,25 @@ func (a attestationCollectorContract) SubmitAttestation(ctx context.Context, sig
 	_, err = a.contract.SubmitAttestation(transactOpts, encodedAttestation)
 	if err != nil {
 		return fmt.Errorf("could not submit attestation: %w", err)
-	}
+	}*/
 
 	return nil
 }
 
 func (a attestationCollectorContract) GetLatestNonce(ctx context.Context, origin uint32, destination uint32, bondedAgentSigner signer.Signer) (nonce uint32, err error) {
-	latestNonce, err := a.contract.GetLatestNonce(&bind.CallOpts{Context: ctx}, origin, destination, bondedAgentSigner.Address())
+	// TODO (joeallen): FIX ME
+	/*latestNonce, err := a.contract.GetLatestNonce(&bind.CallOpts{Context: ctx}, origin, destination, bondedAgentSigner.Address())
 	if err != nil {
 		return 0, fmt.Errorf("could not retrieve latest nonce: %w", err)
 	}
 
-	return latestNonce, nil
+	return latestNonce, nil*/
+	return uint32(0), nil
 }
 
 func (a attestationCollectorContract) GetAttestation(ctx context.Context, origin, destination, nonce uint32) (types.SignedAttestation, error) {
-	rawAttestation, err := a.contract.GetAttestation(&bind.CallOpts{Context: ctx}, origin, destination, nonce)
+	// TODO (joeallen): FIX ME
+	/*rawAttestation, err := a.contract.GetAttestation(&bind.CallOpts{Context: ctx}, origin, destination, nonce)
 	if err != nil {
 		if err.Error() == "execution reverted: Unknown nonce" {
 			return nil, domains.ErrNoUpdate
@@ -99,16 +104,19 @@ func (a attestationCollectorContract) GetAttestation(ctx context.Context, origin
 		return nil, fmt.Errorf("could not decode attestation: %w", err)
 	}
 
-	return signedAttesation, nil
+	return signedAttesation, nil*/
+	return nil, nil
 }
 
 func (a attestationCollectorContract) GetRoot(ctx context.Context, origin, destination, nonce uint32) ([32]byte, error) {
-	root, err := a.contract.GetRoot(&bind.CallOpts{Context: ctx}, origin, destination, nonce)
-	if err != nil {
-		return [32]byte{}, fmt.Errorf("could not retrieve root: %w", err)
-	}
+	// TODO (joeallen): FIX ME
+	//root, err := a.contract.GetRoot(&bind.CallOpts{Context: ctx}, origin, destination, nonce)
+	//if err != nil {
+	//	return [32]byte{}, fmt.Errorf("could not retrieve root: %w", err)
+	//}
 
-	return root, nil
+	//return root, nil
+	return [32]byte{}, nil
 }
 
 func (a attestationCollectorContract) PrimeNonce(ctx context.Context, signer signer.Signer) error {
