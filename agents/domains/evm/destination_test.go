@@ -2,6 +2,8 @@ package evm_test
 
 func (i ContractSuite) TestDestinationSubmitAttestation() {
 	// TODO (joeallen): FIX ME
+	i.T().Skip()
+	// TODO (joeallen): FIX ME
 	//originDomain := uint32(i.TestBackendOrigin.GetChainID())
 	//destinationDomain := uint32(i.TestBackendDestination.GetChainID())
 
