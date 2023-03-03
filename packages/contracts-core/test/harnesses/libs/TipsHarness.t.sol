@@ -9,7 +9,6 @@ import "../../../contracts/libs/Tips.sol";
 contract TipsHarness {
     using TipsLib for bytes;
     using TipsLib for bytes29;
-    using TipsLib for Tips;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 

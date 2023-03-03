@@ -6,12 +6,13 @@ import "../libs/Snapshot.sol";
 import "../libs/State.sol";
 import "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import { SnapshotHubEvents } from "../events/SnapshotHubEvents.sol";
 import { ISnapshotHub } from "../interfaces/ISnapshotHub.sol";
 
 /**
  * @notice Hub to accept and save snapshots, as well as verify attestations.
  */
-abstract contract SnapshotHub is ISnapshotHub {
+abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     using AttestationLib for bytes;
     using SnapshotLib for uint256[];
     using StateLib for bytes;
@@ -46,22 +47,6 @@ abstract contract SnapshotHub is ISnapshotHub {
 
     /// @dev gap for upgrade safety
     uint256[44] private __GAP; // solhint-disable-line var-name-mixedcase
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Emitted when an attestation created for a Notary snapshot is saved.
-     * @param attestation   Raw payload with attestation data
-     */
-    event AttestationSaved(bytes attestation);
-
-    /**
-     * @notice Emitted when a new Origin State is saved from a Guard snapshot.
-     * @param state     Raw payload with state data
-     */
-    event StateSaved(bytes state);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕

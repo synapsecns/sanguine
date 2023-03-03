@@ -1,34 +1,39 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import { SummitEvents } from "./events/SummitEvents.sol";
 import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
 import { SnapshotHub } from "./hubs/SnapshotHub.sol";
 import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
+import {
+    OwnableUpgradeable
+} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  * @notice Accepts snapshots signed by Guards and Notaries. Verifies Notaries attestations.
  */
-contract Summit is StatementHub, SnapshotHub, InterfaceSummit {
-    /**
-     * @notice Emitted when a proof of invalid attestation is submitted.
-     * @param attestation   Raw payload with attestation data
-     * @param attSignature  Notary signature for the attestation
-     */
-    event InvalidAttestation(bytes attestation, bytes attSignature);
+contract Summit is StatementHub, SnapshotHub, OwnableUpgradeable, SummitEvents, InterfaceSummit {
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             INITIALIZER                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Emitted when a snapshot is accepted by the Summit contract.
-     * @param domain        Domain where the signed Agent is active (ZERO for Guards)
-     * @param agent         Agent who signed the snapshot
-     * @param snapshot      Raw payload with snapshot data
-     * @param snapSignature Agent signature for the snapshot
-     */
-    event SnapshotAccepted(
-        uint32 indexed domain,
-        address indexed agent,
-        bytes snapshot,
-        bytes snapSignature
-    );
+    function initialize() external initializer {
+        __Ownable_init_unchained();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            ADDING AGENTS                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // TODO (Chi): merge Summit with BondingPrimary
+    function addAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
+        return _addAgent(_domain, _account);
+    }
+
+    function removeAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
+        return _removeAgent(_domain, _account);
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          ACCEPT STATEMENTS                           ║*▕

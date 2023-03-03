@@ -6,6 +6,7 @@ import "../libs/State.sol";
 import "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "../context/DomainContext.sol";
+import { StateHubEvents } from "../events/StateHubEvents.sol";
 import { IStateHub } from "../interfaces/IStateHub.sol";
 
 /**
@@ -15,7 +16,7 @@ import { IStateHub } from "../interfaces/IStateHub.sol";
  * - How "state" getters work
  * - How to compare "states" to one another
  */
-abstract contract StateHub is DomainContext, IStateHub {
+abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     using StateLib for bytes;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -27,16 +28,6 @@ abstract contract StateHub is DomainContext, IStateHub {
 
     /// @dev gap for upgrade safety
     uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Emitted when a new Origin State is saved after a message was dispatched.
-     * @param state     Raw payload with state data
-     */
-    event StateSaved(bytes state);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
@@ -52,12 +43,12 @@ abstract contract StateHub is DomainContext, IStateHub {
     /// @inheritdoc IStateHub
     function suggestLatestState() external view returns (bytes memory stateData) {
         // This never underflows, assuming the contract was initialized
-        return suggestState(uint32(_statesAmount() - 1));
+        return suggestState(_nextNonce() - 1);
     }
 
     /// @inheritdoc IStateHub
     function suggestState(uint32 _nonce) public view returns (bytes memory stateData) {
-        require(_nonce < _statesAmount(), "Nonce out of range");
+        require(_nonce < _nextNonce(), "Nonce out of range");
         OriginState memory state = originStates[_nonce];
         return state.formatOriginState({ _origin: localDomain, _nonce: _nonce });
     }
@@ -69,7 +60,7 @@ abstract contract StateHub is DomainContext, IStateHub {
     /// @dev Initializes the saved states list by inserting a state for an empty Merkle Tree.
     function _initializeStates() internal {
         // This should only be called once, when the contract is initialized
-        assert(_statesAmount() == 0);
+        assert(originStates.length == 0);
         // Save root for empty merkle tree with block number and timestamp of initialization
         _saveState(StateLib.originState(EMPTY_ROOT));
     }
@@ -87,10 +78,10 @@ abstract contract StateHub is DomainContext, IStateHub {
     ▏*║                          VERIFY STATE DATA                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Returns the amount of saved States so far.
+    /// @dev Returns nonce of the next dispatched message: the amount of saved States so far.
     /// This always equals to "total amount of dispatched messages" plus 1.
-    function _statesAmount() internal view returns (uint256) {
-        return originStates.length;
+    function _nextNonce() internal view returns (uint32) {
+        return uint32(originStates.length);
     }
 
     /// @dev Checks if a state is valid, i.e. if it matches the historical one.
