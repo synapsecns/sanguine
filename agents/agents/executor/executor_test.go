@@ -1136,7 +1136,7 @@ func (e *ExecutorSuite) TestExecute() {
 	e.Nil(err)
 
 	// Ensure that there was nothing in the new executor's DB.
-	e.Equal(uint32(0), newExec.GetMerkleTree(chainID, destination).NumOfItems())
+	e.Equal(uint32(0), newExec.GetMerkleTree(chainID).NumOfItems())
 
 	go func() {
 		err = newExec.Run(e.GetTestContext())

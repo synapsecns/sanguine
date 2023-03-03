@@ -166,15 +166,15 @@ func (e Executor) Start(ctx context.Context) error {
 
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
-				contractType:         originContract,
-				destinationEventType: otherEvent,
+				contractType: originContract,
+				eventType:    otherEvent,
 			})
 		})
 
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
-				contractType:         destinationContract,
-				destinationEventType: attestationAcceptedEvent,
+				contractType: destinationContract,
+				eventType:    attestationAcceptedEvent,
 			})
 		})
 	}

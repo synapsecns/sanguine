@@ -41,23 +41,23 @@ func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (*types.Att
 // logType determines whether a log is a `Dispatch` from Origin.sol or `AttestationAccepted` from Destination.sol.
 func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 	contractEvent := contractEventType{
-		contractType:         other,
-		destinationEventType: otherEvent,
+		contractType: other,
+		eventType:    otherEvent,
 	}
 
 	if eventType, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && eventType == origin.DispatchEvent {
 		contractEvent.contractType = originContract
-		contractEvent.destinationEventType = otherEvent
-	}
-
-	if eventType, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok {
+		contractEvent.eventType = dispatchEvent
+	} else if eventType, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok {
 		contractEvent.contractType = destinationContract
 		if eventType == destination.AttestationAcceptedEvent {
-			contractEvent.destinationEventType = attestationAcceptedEvent
+			contractEvent.eventType = attestationAcceptedEvent
 		} else if eventType == destination.ExecutedEvent {
-			contractEvent.destinationEventType = executedEvent
+			contractEvent.eventType = executedEvent
 		}
 	}
+
+	// TODO: Add for summit.
 
 	return contractEvent
 }

@@ -197,15 +197,15 @@ func (e Executor) Run(ctx context.Context) error {
 
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
-				contractType:         originContract,
-				destinationEventType: otherEvent,
+				contractType: originContract,
+				eventType:    dispatchEvent,
 			})
 		})
 
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
-				contractType:         destinationContract,
-				destinationEventType: otherEvent,
+				contractType: destinationContract,
+				eventType:    attestationAcceptedEvent,
 			})
 		})
 
@@ -325,23 +325,30 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 
 type contractType int
 
-type destinationEventType int
+type eventType int
 
 const (
 	originContract contractType = iota
 	destinationContract
+	summitContract
 	other
 )
 
 const (
-	attestationAcceptedEvent destinationEventType = iota
+	// Origin's Dispatch event.
+	dispatchEvent eventType = iota
+	// Destination's AttestationAccepted event.
+	attestationAcceptedEvent
+	// Destination's AttestationExecuted event.
 	executedEvent
+	// Summit's SnapshotAccepted event.
+	snapshotAcceptedEvent
 	otherEvent
 )
 
 type contractEventType struct {
-	contractType         contractType
-	destinationEventType destinationEventType
+	contractType contractType
+	eventType    eventType
 }
 
 // verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
@@ -449,8 +456,8 @@ func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) 
 	blockNumber := latestHeader.Number.Uint64()
 
 	return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, &blockNumber, contractEventType{
-		contractType:         destinationContract,
-		destinationEventType: executedEvent,
+		contractType: destinationContract,
+		eventType:    executedEvent,
 	})
 }
 
@@ -524,7 +531,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 			// If we are filtering for `executed` events, we do not need to `verifyAfter`
 			// since we are backfilling.
-			if contractEvent.destinationEventType == executedEvent {
+			if contractEvent.eventType == executedEvent {
 				e.chainExecutors[chain.ChainID].logChan <- log
 
 				continue
@@ -595,8 +602,9 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			}
 		}
 	case destinationContract:
-		switch contractEvent.destinationEventType {
+		switch contractEvent.eventType {
 		case attestationAcceptedEvent:
+			// TODO: Change to populating the attestation table with the new attestation format.
 			attestation, err := e.logToAttestation(log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not convert log to attestation: %w", err)
@@ -627,7 +635,8 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		default:
 			return fmt.Errorf("log type not supported")
 		}
-
+	case summitContract:
+		// TODO: Parse the snapshot and put everything into the state table.
 	case other:
 		logger.Warnf("the log's event type is not supported")
 	default:
