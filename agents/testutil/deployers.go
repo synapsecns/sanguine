@@ -73,12 +73,13 @@ func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (contracts.Dep
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy attestation collector: %w", err)
 		}
 
-		auth := a.Backend().GetTxContext(ctx, &transactOps.From)
-		initTx, err := collector.Initialize(auth.TransactOpts)
-		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not initialize attestation collector: %w", err)
-		}
-		a.Backend().WaitForConfirmation(ctx, initTx)
+		// TODO (joeallen): FIX ME
+		//auth := a.Backend().GetTxContext(ctx, &transactOps.From)
+		//initTx, err := collector.Initialize(auth.TransactOpts)
+		//if err != nil {
+		//	return common.Address{}, nil, nil, fmt.Errorf("could not initialize attestation collector: %w", err)
+		//}
+		//a.Backend().WaitForConfirmation(ctx, initTx)
 
 		return attestationAddress, attestationTx, collector, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {

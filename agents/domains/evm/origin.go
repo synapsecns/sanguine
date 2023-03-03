@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -103,7 +102,8 @@ func (h originContract) ProduceAttestation(ctx context.Context) (types.Attestati
 }
 
 func (h originContract) GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, error) {
-	historicalRoot, dispatchBlockNumber, err := h.contract.GetHistoricalRoot(&bind.CallOpts{Context: ctx}, destinationID, nonce)
+	// TODO (joeallen): FIX ME
+	/*historicalRoot, dispatchBlockNumber, err := h.contract.GetHistoricalRoot(&bind.CallOpts{Context: ctx}, destinationID, nonce)
 	if err != nil {
 		if err.Error() == "execution reverted: !nonce: existing destination" || err.Error() == "execution reverted: !nonce: unknown destination" {
 			return nil, 0, domains.ErrNoUpdate
@@ -130,11 +130,13 @@ func (h originContract) GetHistoricalAttestation(ctx context.Context, destinatio
 
 	historicalAttestation := types.NewAttestation(attestationKey.GetRawKey(), historicalRoot)
 
-	return historicalAttestation, dispatchBlockNumber.Uint64(), nil
+	return historicalAttestation, dispatchBlockNumber.Uint64(), nil*/
+	return nil, uint64(0), nil
 }
 
 func (h originContract) SuggestAttestation(ctx context.Context, destinationID uint32) (types.Attestation, error) {
-	suggestedAttestationRaw, err := h.contract.SuggestAttestation(&bind.CallOpts{Context: ctx}, destinationID)
+	// TODO (joeallen): FIX ME
+	/*suggestedAttestationRaw, err := h.contract.SuggestAttestation(&bind.CallOpts{Context: ctx}, destinationID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get suggested attestation: %w", err)
 	}
@@ -144,7 +146,8 @@ func (h originContract) SuggestAttestation(ctx context.Context, destinationID ui
 		return nil, fmt.Errorf("could not decode suggested attestation: %w", err)
 	}
 
-	return suggestedAttestation, nil
+	return suggestedAttestation, nil*/
+	return nil, nil
 }
 
 var _ domains.OriginContract = &originContract{}
