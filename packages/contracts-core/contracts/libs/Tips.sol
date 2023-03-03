@@ -5,6 +5,16 @@ import "./ByteString.sol";
 
 /// @dev Tips is a memory over over a formatted message tips payload.
 type Tips is bytes29;
+/// @dev Attach library functions to Tips
+using {
+    TipsLib.unwrap,
+    TipsLib.version,
+    TipsLib.notaryTip,
+    TipsLib.broadcasterTip,
+    TipsLib.proverTip,
+    TipsLib.executorTip,
+    TipsLib.totalTips
+} for Tips global;
 
 /**
  * @notice Library for versioned formatting [the tips part]
@@ -104,31 +114,31 @@ library TipsLib {
     /// @notice Returns version of formatted tips
     function version(Tips _tips) internal pure returns (uint16) {
         // Get the underlying memory view
-        bytes29 _view = unwrap(_tips);
+        bytes29 _view = _tips.unwrap();
         return _getVersion(_view);
     }
 
     /// @notice Returns notaryTip field
     function notaryTip(Tips _tips) internal pure returns (uint96) {
-        bytes29 _view = unwrap(_tips);
+        bytes29 _view = _tips.unwrap();
         return uint96(_view.indexUint(OFFSET_NOTARY, 12));
     }
 
     /// @notice Returns broadcasterTip field
     function broadcasterTip(Tips _tips) internal pure returns (uint96) {
-        bytes29 _view = unwrap(_tips);
+        bytes29 _view = _tips.unwrap();
         return uint96(_view.indexUint(OFFSET_BROADCASTER, 12));
     }
 
     /// @notice Returns proverTip field
     function proverTip(Tips _tips) internal pure returns (uint96) {
-        bytes29 _view = unwrap(_tips);
+        bytes29 _view = _tips.unwrap();
         return uint96(_view.indexUint(OFFSET_PROVER, 12));
     }
 
     /// @notice Returns executorTip field
     function executorTip(Tips _tips) internal pure returns (uint96) {
-        bytes29 _view = unwrap(_tips);
+        bytes29 _view = _tips.unwrap();
         return uint96(_view.indexUint(OFFSET_EXECUTOR, 12));
     }
 

@@ -7,6 +7,15 @@ import "./Tips.sol";
 
 /// @dev Message is a memory over over a formatted message payload.
 type Message is bytes29;
+/// @dev Attach library functions to Message
+using {
+    MessageLib.unwrap,
+    MessageLib.version,
+    MessageLib.header,
+    MessageLib.tips,
+    MessageLib.body,
+    MessageLib.leaf
+} for Message global;
 
 /**
  * @notice  Library for versioned formatting the messages used by Origin and Destination.
@@ -164,25 +173,25 @@ library MessageLib {
     /// @notice Returns message's version field.
     function version(Message _msg) internal pure returns (uint16) {
         // Get the underlying memory view
-        bytes29 _view = unwrap(_msg);
+        bytes29 _view = _msg.unwrap();
         return _getVersion(_view);
     }
 
     /// @notice Returns message's header field as a Header view.
     function header(Message _msg) internal pure returns (Header) {
-        bytes29 _view = unwrap(_msg);
+        bytes29 _view = _msg.unwrap();
         return _getHeader(_view).castToHeader();
     }
 
     /// @notice Returns message's tips field as a Tips view.
     function tips(Message _msg) internal pure returns (Tips) {
-        bytes29 _view = unwrap(_msg);
+        bytes29 _view = _msg.unwrap();
         return _getTips(_view).castToTips();
     }
 
     /// @notice Returns message's body field as a generic memory view.
     function body(Message _msg) internal pure returns (bytes29) {
-        bytes29 _view = unwrap(_msg);
+        bytes29 _view = _msg.unwrap();
         // Determine index where message body payload starts
         uint256 index = OFFSET_HEADER + _getLen(_view, Parts.Header) + _getLen(_view, Parts.Tips);
         return _view.sliceFrom({ _index: index, newType: 0 });
@@ -190,7 +199,7 @@ library MessageLib {
 
     /// @notice Returns message's hash: a leaf to be inserted in the Merkle tree.
     function leaf(Message _msg) internal pure returns (bytes32) {
-        bytes29 _view = unwrap(_msg);
+        bytes29 _view = _msg.unwrap();
         return _view.keccak();
     }
 

@@ -9,18 +9,18 @@ contract ReentrantApp is IMessageRecipient {
     bytes internal message;
     bytes32[ORIGIN_TREE_DEPTH] internal originProof;
     bytes32[] internal snapProof;
-    uint256 internal snapIndex;
+    uint256 internal stateIndex;
 
     function prepare(
         bytes memory _message,
         bytes32[ORIGIN_TREE_DEPTH] memory _originProof,
         bytes32[] memory _snapProof,
-        uint256 _snapIndex
+        uint256 _stateIndex
     ) external {
         message = _message;
         originProof = _originProof;
         snapProof = _snapProof;
-        snapIndex = _snapIndex;
+        stateIndex = _stateIndex;
     }
 
     function handle(
@@ -30,6 +30,6 @@ contract ReentrantApp is IMessageRecipient {
         uint256,
         bytes memory
     ) external {
-        InterfaceDestination(msg.sender).execute(message, originProof, snapProof, snapIndex);
+        InterfaceDestination(msg.sender).execute(message, originProof, snapProof, stateIndex);
     }
 }

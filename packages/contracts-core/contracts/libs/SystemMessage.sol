@@ -13,17 +13,6 @@ library SystemMessageLib {
     using TypedMemView for bytes29;
 
     /**
-     * @dev Custom address, used for sending and receiving system messages.
-     *      Origin is supposed to dispatch messages from SystemRouter
-     *      as if they were sent by this address.
-     *      Destination is supposed to reroute messages for this address to SystemRouter.
-     *
-     *      Note: all bits except for lower 20 bytes are set to 1.
-     *      Note: TypeCasts.bytes32ToAddress(SYSTEM_ROUTER) == address(0)
-     */
-    bytes32 internal constant SYSTEM_ROUTER = bytes32(type(uint256).max << 160);
-
-    /**
      * @dev SystemMessage memory layout
      * [000 .. 001): recipient      uint8   1 bytes
      * [001 .. END]: calldata       bytes   ? bytes

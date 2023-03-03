@@ -6,6 +6,18 @@ import "./TypeCasts.sol";
 
 /// @dev Header is a memory over over a formatted message header payload.
 type Header is bytes29;
+/// @dev Attach library functions to Header
+using {
+    HeaderLib.unwrap,
+    HeaderLib.version,
+    HeaderLib.origin,
+    HeaderLib.sender,
+    HeaderLib.nonce,
+    HeaderLib.destination,
+    HeaderLib.recipient,
+    HeaderLib.optimisticSeconds,
+    HeaderLib.recipientAddress
+} for Header global;
 
 /**
  * @notice Library for versioned formatting [the header part]
@@ -112,43 +124,43 @@ library HeaderLib {
     /// @notice Returns header's version field.
     function version(Header _header) internal pure returns (uint16) {
         // Get the underlying memory view
-        bytes29 _view = Header.unwrap(_header);
+        bytes29 _view = unwrap(_header);
         return _getVersion(_view);
     }
 
     /// @notice Returns header's origin field
     function origin(Header _header) internal pure returns (uint32) {
-        bytes29 _view = Header.unwrap(_header);
+        bytes29 _view = unwrap(_header);
         return uint32(_view.indexUint(OFFSET_ORIGIN, 4));
     }
 
     /// @notice Returns header's sender field
     function sender(Header _header) internal pure returns (bytes32) {
-        bytes29 _view = Header.unwrap(_header);
+        bytes29 _view = unwrap(_header);
         return _view.index(OFFSET_SENDER, 32);
     }
 
     /// @notice Returns header's nonce field
     function nonce(Header _header) internal pure returns (uint32) {
-        bytes29 _view = Header.unwrap(_header);
+        bytes29 _view = unwrap(_header);
         return uint32(_view.indexUint(OFFSET_NONCE, 4));
     }
 
     /// @notice Returns header's destination field
     function destination(Header _header) internal pure returns (uint32) {
-        bytes29 _view = Header.unwrap(_header);
+        bytes29 _view = unwrap(_header);
         return uint32(_view.indexUint(OFFSET_DESTINATION, 4));
     }
 
     /// @notice Returns header's recipient field as bytes32
     function recipient(Header _header) internal pure returns (bytes32) {
-        bytes29 _view = Header.unwrap(_header);
+        bytes29 _view = unwrap(_header);
         return _view.index(OFFSET_RECIPIENT, 32);
     }
 
     /// @notice Returns header's optimistic seconds field
     function optimisticSeconds(Header _header) internal pure returns (uint32) {
-        bytes29 _view = Header.unwrap(_header);
+        bytes29 _view = unwrap(_header);
         return uint32(_view.indexUint(OFFSET_OPTIMISTIC_SECONDS, 4));
     }
 
