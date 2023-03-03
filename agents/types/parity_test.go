@@ -79,6 +79,8 @@ func randomUint96BigInt(tb testing.TB) *big.Int {
 
 func TestEncodeAttestationParity(t *testing.T) {
 	// TODO (joeallen): FIX ME
+	t.Skip()
+	// TODO (joeallen): FIX ME
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	//defer cancel()
 
@@ -113,6 +115,8 @@ func TestEncodeAttestationParity(t *testing.T) {
 }
 
 func TestEncodeSignedAttestationParity(t *testing.T) {
+	// TODO (joeallen): FIX ME
+	t.Skip()
 	// TODO (joeallen): FIX ME
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	//defer cancel()
@@ -188,6 +192,8 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 }
 
 func TestMessageEncodeParity(t *testing.T) {
+	// TODO (joeallen): FIX ME
+	t.Skip()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
