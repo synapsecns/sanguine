@@ -318,7 +318,7 @@ LEFT JOIN (
     token_indices
 ) ti ON be.chain_id = ti.chain_id
 AND se.swap_address = ti.contract_address
-AND ti.token_index = be.sold_id
+AND ti.token_index = se.sold_id
 `
 
 const baseSwap = `
@@ -501,7 +501,7 @@ const dailyVolumeBridge = `
                                                token_indices
                                            ) ti ON be.chain_id = ti.chain_id
                                            AND se.swap_address = ti.contract_address
-                                           AND ti.token_index = be.sold_id)
+                                           AND ti.token_index = se.sold_id)
                               group by date, pre_fchain_id
                               order by date, pre_fchain_id) b
 `
@@ -602,7 +602,7 @@ FROM (
                           token_indices
                       ) ti ON be.chain_id = ti.chain_id
                       AND se.swap_address = ti.contract_address
-                      AND ti.token_index = be.sold_id)
+                      AND ti.token_index = se.sold_id)
          group by pre_fchain_id
          order by pre_fchain_id) b
          `
@@ -684,7 +684,7 @@ FROM
 token_indices
 ) ti ON be.chain_id = ti.chain_id
 AND se.swap_address = ti.contract_address
-AND ti.token_index = be.sold_id)
+AND ti.token_index = se.sold_id)
 `
 
 const destToOriginJoinsPt1 = `
@@ -750,7 +750,7 @@ LEFT JOIN (
     token_indices
 ) ti ON be.chain_id = ti.chain_id
 AND se.swap_address = ti.contract_address
-AND ti.token_index = be.sold_id
+AND ti.token_index = se.sold_id
 ) AS f
 LEFT JOIN (
   SELECT
