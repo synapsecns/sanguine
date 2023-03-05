@@ -26,7 +26,7 @@ contract SystemContractMock is SystemContractMockEvents, SystemContract {
 
     function mockOnlySynapseChain(uint32 domain) external onlySynapseChain(domain) {}
 
-    function mockOnlyCallers(uint256 mask, InterfaceSystemRouter.SystemEntity caller)
+    function mockOnlyCallers(uint256 mask, SystemEntity caller)
         external
         onlyCallers(mask, caller)
     {}
@@ -39,7 +39,7 @@ contract SystemContractMock is SystemContractMockEvents, SystemContract {
     function slashAgent(
         uint256,
         uint32,
-        InterfaceSystemRouter.SystemEntity,
+        SystemEntity,
         AgentInfo memory _info
     ) external override {
         emit SlashAgentCall(_info);
@@ -48,7 +48,7 @@ contract SystemContractMock is SystemContractMockEvents, SystemContract {
     function syncAgents(
         uint256,
         uint32,
-        InterfaceSystemRouter.SystemEntity,
+        SystemEntity,
         uint256 _requestID,
         bool _removeExisting,
         AgentInfo[] memory _infos

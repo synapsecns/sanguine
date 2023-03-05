@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { BondingManager } from "./BondingManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
@@ -66,7 +68,7 @@ contract BondingMVP is BondingManager {
     function syncAgents(
         uint256,
         uint32,
-        InterfaceSystemRouter.SystemEntity,
+        SystemEntity,
         uint256,
         bool,
         AgentInfo[] memory
@@ -110,7 +112,7 @@ contract BondingMVP is BondingManager {
     function _assertCrossChainSlashing(
         uint256,
         uint32,
-        InterfaceSystemRouter.SystemEntity
+        SystemEntity
     ) internal pure override {
         revert("Cross-chain disabled");
     }
