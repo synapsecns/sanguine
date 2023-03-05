@@ -45,7 +45,7 @@ func (i ContractSuite) TestSubmitAttestation() {
 	// Equal(i.T(), signedAttestation.Attestation().Origin(), retrievedSignedAttestation.Attestation().Origin())
 	// Equal(i.T(), signedAttestation.Attestation().Destination(), retrievedSignedAttestation.Attestation().Destination())
 	// Equal(i.T(), signedAttestation.Attestation().Root(), retrievedSignedAttestation.Attestation().Root())
-	//Equal(i.T(), signedAttestation.Attestation().Nonce(), retrievedSignedAttestation.Attestation().Nonce())
+	// Equal(i.T(), signedAttestation.Attestation().Nonce(), retrievedSignedAttestation.Attestation().Nonce())
 
 	// retrievedRoot, err := i.AttestationContract.GetRoot(&bind.CallOpts{Context: i.GetTestContext()}, originDomain, destinationDomain, nonce)
 	// Nil(i.T(), err)

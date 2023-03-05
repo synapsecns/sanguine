@@ -145,7 +145,7 @@ func (u GuardSuite) TestAttestationGuardDestinationSubmitter() {
 	// Len(u.T(), retrievedAttestation.NotarySignatures(), 1)
 	// Len(u.T(), retrievedAttestation.GuardSignatures(), 1)
 	// Greater(u.T(), retrievedNewestGuardConfirmedOnCollector.SubmittedToAttestationCollectorTime().Unix(), int64(0))
-	//Equal(u.T(), types.AttestationStateSubmittedToDestinationUnconfirmed, retrievedNewestGuardConfirmedOnCollector.AttestationState())
+	// Equal(u.T(), types.AttestationStateSubmittedToDestinationUnconfirmed, retrievedNewestGuardConfirmedOnCollector.AttestationState())
 
 	// Nil(u.T(), err)
 }

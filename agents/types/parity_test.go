@@ -138,7 +138,7 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	// sigGuard2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 	// encodedGuardSignature2, err := types.EncodeSignature(sigGuard2)
 	// Nil(t, err)
-	//sigGuard3 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	// sigGuard3 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 	//encodedGuardSignature3, err := types.EncodeSignature(sigGuard3)
 	//Nil(t, err)
 

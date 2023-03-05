@@ -33,7 +33,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	//	Nonce:       nonce,
 	//}
 	// unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
-	//hashedAttestation, err := types.Hash(unsignedAttestation)
+	// hashedAttestation, err := types.Hash(unsignedAttestation)
 	//Nil(a.T(), err)
 
 	// TODO (joeallen): FIX ME
@@ -59,7 +59,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	//	notarySignatures)
 	// encodedGuardSignatures, err := types.EncodeSignatures(signedAttestation.GuardSignatures())
 	// Nil(a.T(), err)
-	//encodedNotarySignatures, err := types.EncodeSignatures(signedAttestation.NotarySignatures())
+	// encodedNotarySignatures, err := types.EncodeSignatures(signedAttestation.NotarySignatures())
 	//Nil(a.T(), err)
 
 	// attestation, err := a.AttestationHarness.FormatAttestation(

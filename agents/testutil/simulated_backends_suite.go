@@ -237,7 +237,7 @@ func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *DeployManag
 	//}
 	// a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddNotaryOnOrigin)
 	// txAddGuard, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
-	//if err != nil {
+	// if err != nil {
 	//	a.T().Fatal(err)
 	//}
 	//a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddGuard)
