@@ -38,7 +38,7 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	// suggestedAttestationRaw, err := u.OriginContract.SuggestAttestation(&bind.CallOpts{Context: u.GetTestContext()}, destination)
 	// Nil(u.T(), err)
 	// suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
-	//Nil(u.T(), err)
+	// Nil(u.T(), err)
 	//Equal(u.T(), origin, suggestedAttestation.Origin())
 	//Equal(u.T(), destination, suggestedAttestation.Destination())
 	//Equal(u.T(), nonce, suggestedAttestation.Nonce())
@@ -57,7 +57,7 @@ func (u GuardSuite) TestAttestationGuardSigner() {
 	//}
 	// unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
 	// hashedAttestation, err := types.Hash(unsignedAttestation)
-	//Nil(u.T(), err)
+	// Nil(u.T(), err)
 
 	// notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	// Nil(u.T(), err)

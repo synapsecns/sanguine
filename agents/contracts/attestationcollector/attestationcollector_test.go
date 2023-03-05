@@ -25,7 +25,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	// origin := uint32(a.TestBackendOrigin.GetBigChainID().Uint64())
 	// destination := uint32(a.TestBackendDestination.GetChainID())
 	// destination := origin + 1
-	//nonce := gofakeit.Uint32()
+	// nonce := gofakeit.Uint32()
 	//root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	//attestKey := types.AttestationKey{
 	//	Origin:      origin,
@@ -46,7 +46,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	//	Nil(a.T(), err)
 	//	notarySignatures = append(notarySignatures, notarySignature)
 	//}
-	//guardSignatures := []types.Signature{}
+	// guardSignatures := []types.Signature{}
 	//if amountGuards == 1 {
 	//	guardSignature, err := a.GuardBondedSigner.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	//	Nil(a.T(), err)
@@ -85,7 +85,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	// case <-subAttestation.Err():
 	//	a.T().Error(a.T(), subAttestation.Err())
 	// get AttestationSubmitted event
-	//case item := <-attestationSink:
+	// case item := <-attestationSink:
 	//	parser, err := attestationcollector.NewParser(a.AttestationContract.Address())
 	//	Nil(a.T(), err)
 	// Check to see if the event was an AttestationSubmitted event.

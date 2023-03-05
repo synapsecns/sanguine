@@ -224,7 +224,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 		// currRoot, currDispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, u.DestinationDomainClient.Config().DomainID, uint32(i+1))
 		// Nil(u.T(), err)
 		// Greater(u.T(), currDispatchBlockNumber.Uint64(), uint64(0))
-		//NotEqual(u.T(), [32]byte{}, currRoot)
+		// NotEqual(u.T(), [32]byte{}, currRoot)
 	}
 
 	go func() {
@@ -668,7 +668,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 		// currRoot, currDispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, u.DestinationDomainClient.Config().DomainID, uint32(i+1))
 		// Nil(u.T(), err)
 		// Greater(u.T(), currDispatchBlockNumber.Uint64(), uint64(0))
-		//NotEqual(u.T(), [32]byte{}, currRoot)
+		// NotEqual(u.T(), [32]byte{}, currRoot)
 
 		sender, err := u.TestBackendOrigin.Signer().Sender(tx)
 		u.Nil(err)

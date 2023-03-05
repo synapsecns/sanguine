@@ -127,7 +127,7 @@ func (u GuardSuite) TestGuardE2E() {
 	// Submit the attestation to get an AttestationSubmitted event.
 	// txSubmitAttestation, err := u.AttestationContract.SubmitAttestation(txContextAttestationCollector.TransactOpts, encodedSignedAttestation)
 	// Nil(u.T(), err)
-	//u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), txSubmitAttestation)
+	// u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), txSubmitAttestation)
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test

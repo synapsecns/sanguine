@@ -112,7 +112,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 	//	a.T().Fatal(err)
 	//}
 	// a.TestBackendOrigin.WaitForConfirmation(a.GetTestContext(), txOriginNotaryAdd)
-	//txOriginGuardAdd, err := a.OriginContract.AddAgent(originOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
+	// txOriginGuardAdd, err := a.OriginContract.AddAgent(originOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
 	//if err != nil {
 	//	a.T().Fatal(err)
 	//}
@@ -129,7 +129,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 	//	a.T().Fatal(err)
 	//}
 	// a.TestBackendOrigin.WaitForConfirmation(a.GetTestContext(), txDestinationNotaryAdd)
-	//txDestinationGuardAdd, err := a.DestinationContractOnOrigin.AddAgent(destinationOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
+	// txDestinationGuardAdd, err := a.DestinationContractOnOrigin.AddAgent(destinationOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
 	//if err != nil {
 	//	a.T().Fatal(err)
 	//}
@@ -173,7 +173,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	// if err != nil {
 	//	a.T().Fatal(err)
 	//}
-	//a.TestBackendDestination.WaitForConfirmation(a.GetTestContext(), txDestinationNotaryAdd)
+	// a.TestBackendDestination.WaitForConfirmation(a.GetTestContext(), txDestinationNotaryAdd)
 	//txDestinationGuardAdd, err := a.DestinationContract.AddAgent(destOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
 	//if err != nil {
 	//	a.T().Fatal(err)
@@ -190,7 +190,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	// if err != nil {
 	//	a.T().Fatal(err)
 	//}
-	//a.TestBackendDestination.WaitForConfirmation(a.GetTestContext(), txOriginNotaryAdd)
+	// a.TestBackendDestination.WaitForConfirmation(a.GetTestContext(), txOriginNotaryAdd)
 	//txOriginGuardAdd, err := a.OriginContractOnDestination.AddAgent(originOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
 	//if err != nil {
 	//	a.T().Fatal(err)
@@ -231,7 +231,7 @@ func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *DeployManag
 	//	a.T().Fatal(err)
 	//}
 	// a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddNotary)
-	//txAddNotaryOnOrigin, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(a.TestBackendOrigin.GetChainID()), a.NotaryOnOriginBondedSigner.Address())
+	// txAddNotaryOnOrigin, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(a.TestBackendOrigin.GetChainID()), a.NotaryOnOriginBondedSigner.Address())
 	//if err != nil {
 	//	a.T().Fatal(err)
 	//}

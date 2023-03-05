@@ -81,7 +81,7 @@ func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (contracts.Dep
 		// if err != nil {
 		//	return common.Address{}, nil, nil, fmt.Errorf("could not initialize attestation collector: %w", err)
 		//}
-		//a.Backend().WaitForConfirmation(ctx, initTx)
+		// a.Backend().WaitForConfirmation(ctx, initTx)
 
 		return attestationAddress, attestationTx, collector, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {

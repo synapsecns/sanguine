@@ -58,7 +58,7 @@ func (h *OriginSuite) SetupTest() {
 	// originOwnerAuth := h.testBackend.GetTxContext(h.GetTestContext(), &ownerPtr)
 	// tx, err := h.originContract.AddAgent(originOwnerAuth.TransactOpts, h.destinationID, h.notarySigner.Address())
 	// Nil(h.T(), err)
-	//h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)
+	// h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)
 
 	notaries, err := h.originContract.AllAgents(&bind.CallOpts{Context: h.GetTestContext()}, h.destinationID)
 	Nil(h.T(), err)

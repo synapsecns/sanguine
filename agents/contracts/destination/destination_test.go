@@ -44,7 +44,7 @@ func (d DestinationSuite) TestDestinationSuite() {
 	// originDomain := uint32(d.TestBackendOrigin.GetBigChainID().Uint64())
 	// destinationDomain := uint32(d.TestBackendDestination.GetBigChainID().Uint64())
 	// nonce := gofakeit.Uint32()
-	//attestationKey := types.AttestationKey{
+	// attestationKey := types.AttestationKey{
 	//	Origin:      originDomain,
 	//	Destination: destinationDomain,
 	//	Nonce:       nonce,
@@ -53,7 +53,7 @@ func (d DestinationSuite) TestDestinationSuite() {
 	// root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	// unsignedAttestation := types.NewAttestation(attestationKey.GetRawKey(), root)
 	// hashedAttestation, err := types.Hash(unsignedAttestation)
-	//Nil(d.T(), err)
+	// Nil(d.T(), err)
 
 	// notarySignature, err := d.NotaryBondedSigner.SignMessage(d.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	// Nil(d.T(), err)

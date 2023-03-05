@@ -36,7 +36,7 @@ func (u GuardSuite) TestAttestationGuardDestinationSubmitter() {
 	// suggestedAttestationRaw, err := u.OriginContract.SuggestAttestation(&bind.CallOpts{Context: u.GetTestContext()}, destination)
 	// Nil(u.T(), err)
 	// suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
-	//Nil(u.T(), err)
+	// Nil(u.T(), err)
 	//Equal(u.T(), origin, suggestedAttestation.Origin())
 	//Equal(u.T(), destination, suggestedAttestation.Destination())
 	//Equal(u.T(), nonce, suggestedAttestation.Nonce())
@@ -55,7 +55,7 @@ func (u GuardSuite) TestAttestationGuardDestinationSubmitter() {
 	//}
 	// unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
 	// hashedAttestation, err := types.Hash(unsignedAttestation)
-	//Nil(u.T(), err)
+	// Nil(u.T(), err)
 
 	// notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	// Nil(u.T(), err)
@@ -141,7 +141,7 @@ func (u GuardSuite) TestAttestationGuardDestinationSubmitter() {
 	// retrievedAttestation := retrievedNewestGuardConfirmedOnCollector.SignedAttestation()
 	// Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedAttestation.Attestation().Origin())
 	// Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedAttestation.Attestation().Destination())
-	//Equal(u.T(), root, retrievedAttestation.Attestation().Root())
+	// Equal(u.T(), root, retrievedAttestation.Attestation().Root())
 	//Len(u.T(), retrievedAttestation.NotarySignatures(), 1)
 	//Len(u.T(), retrievedAttestation.GuardSignatures(), 1)
 	//Greater(u.T(), retrievedNewestGuardConfirmedOnCollector.SubmittedToAttestationCollectorTime().Unix(), int64(0))

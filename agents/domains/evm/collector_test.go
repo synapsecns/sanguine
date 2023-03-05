@@ -14,7 +14,7 @@ func (i ContractSuite) TestSubmitAttestation() {
 	//	Destination: destinationDomain,
 	//	Nonce:       nonce,
 	//}
-	//unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
+	// unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
 	//hashedAttestation, err := types.Hash(unsignedAttestation)
 	//Nil(i.T(), err)
 
@@ -41,7 +41,7 @@ func (i ContractSuite) TestSubmitAttestation() {
 	// retrievedRawSignedAttestation, err := i.AttestationContract.GetAttestation(&bind.CallOpts{Context: i.GetTestContext()}, originDomain, destinationDomain, nonce)
 	// Nil(i.T(), err)
 	// retrievedSignedAttestation, err := types.DecodeSignedAttestation(retrievedRawSignedAttestation)
-	//Nil(i.T(), err)
+	// Nil(i.T(), err)
 	//Equal(i.T(), signedAttestation.Attestation().Origin(), retrievedSignedAttestation.Attestation().Origin())
 	//Equal(i.T(), signedAttestation.Attestation().Destination(), retrievedSignedAttestation.Attestation().Destination())
 	//Equal(i.T(), signedAttestation.Attestation().Root(), retrievedSignedAttestation.Attestation().Root())

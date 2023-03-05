@@ -38,7 +38,7 @@ func (u GuardSuite) TestAttestationGuardDestinationVerifier() {
 	// suggestedAttestationRaw, err := u.OriginContract.SuggestAttestation(&bind.CallOpts{Context: u.GetTestContext()}, destination)
 	// Nil(u.T(), err)
 	// suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
-	//Nil(u.T(), err)
+	// Nil(u.T(), err)
 	//Equal(u.T(), origin, suggestedAttestation.Origin())
 	//Equal(u.T(), destination, suggestedAttestation.Destination())
 	//Equal(u.T(), nonce, suggestedAttestation.Nonce())
@@ -57,7 +57,7 @@ func (u GuardSuite) TestAttestationGuardDestinationVerifier() {
 	//}
 	// unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
 	// hashedAttestation, err := types.Hash(unsignedAttestation)
-	//Nil(u.T(), err)
+	// Nil(u.T(), err)
 
 	// notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	// Nil(u.T(), err)
@@ -122,7 +122,7 @@ func (u GuardSuite) TestAttestationGuardDestinationVerifier() {
 	// rawSignedNotaryAndGuardAttestation, err := types.EncodeSignedAttestation(guardSignedAttestation)
 	// Nil(u.T(), err)
 	// destSubmitTx, err := u.DestinationContract.SubmitAttestation(destinationAuth.TransactOpts, rawSignedNotaryAndGuardAttestation)
-	//Nil(u.T(), err)
+	// Nil(u.T(), err)
 	//u.TestBackendDestination.WaitForConfirmation(u.GetTestContext(), destSubmitTx)
 
 	// err = testDB.UpdateSubmittedToDestinationTime(u.GetTestContext(), inProgressAttestationToSubmit)

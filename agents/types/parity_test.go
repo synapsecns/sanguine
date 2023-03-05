@@ -130,11 +130,11 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	// origin := gofakeit.Uint32()
 	// destination := origin + 1
 	// nonce := gofakeit.Uint32()
-	//root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+	// root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
 	// sigGuard1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 	// encodedGuardSignature1, err := types.EncodeSignature(sigGuard1)
-	//Nil(t, err)
+	// Nil(t, err)
 	//sigGuard2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 	//encodedGuardSignature2, err := types.EncodeSignature(sigGuard2)
 	//Nil(t, err)
@@ -144,7 +144,7 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 
 	// sigNotary1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 	// encodedNotarySignature1, err := types.EncodeSignature(sigNotary1)
-	//Nil(t, err)
+	// Nil(t, err)
 	//sigNotary2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 	//encodedNotarySignature2, err := types.EncodeSignature(sigNotary2)
 	//Nil(t, err)
@@ -164,7 +164,7 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 
 	// encodedGuardSignatures := []byte{}
 	// encodedNotarySignatures := []byte{}
-	//encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature1...)
+	// encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature1...)
 	//encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature2...)
 	//encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature3...)
 
@@ -177,7 +177,7 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	//	encodedGuardSignatures,
 	//	encodedNotarySignatures,
 	//)
-	//Nil(t, err)
+	// Nil(t, err)
 
 	// signedAttestation := types.NewSignedAttestation(
 	//	types.NewAttestation(attestKey.GetRawKey(), root),

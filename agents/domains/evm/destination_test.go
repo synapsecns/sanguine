@@ -14,14 +14,14 @@ func (i ContractSuite) TestDestinationSubmitAttestation() {
 	//	Destination: destinationDomain,
 	//	Nonce:       nonce,
 	//}
-	//unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
+	// unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
 	//hashedAttestation, err := types.Hash(unsignedAttestation)
 	//Nil(i.T(), err)
 
 	// notarySignature, err := i.NotaryBondedSigner.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	// Nil(i.T(), err)
 	// guardSignature, err := i.GuardBondedSigner.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
-	//Nil(i.T(), err)
+	// Nil(i.T(), err)
 
 	// signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{guardSignature}, []types.Signature{notarySignature})
 
