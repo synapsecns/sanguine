@@ -44,9 +44,20 @@ contract BondingPrimaryTest is BondingManagerTest {
         );
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
             // This is the first BondingPrimary request
-            emit SyncAgentsCall({ requestID: 1, removeExisting: false, infos: infos });
+            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+            vm.expectCall(
+                systemRegistries[r],
+                abi.encodeWithSelector(
+                    SystemContractMock.syncAgents.selector,
+                    block.timestamp,
+                    DOMAIN_SYNAPSE,
+                    SystemEntity.BondingManager,
+                    1,
+                    false,
+                    infos
+                )
+            );
         }
         vm.prank(owner);
         _castToPrimary().addAgent(domain, notary);
@@ -59,9 +70,20 @@ contract BondingPrimaryTest is BondingManagerTest {
         );
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
             // This is the second BondingPrimary request
-            emit SyncAgentsCall({ requestID: 2, removeExisting: false, infos: infos });
+            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+            vm.expectCall(
+                systemRegistries[r],
+                abi.encodeWithSelector(
+                    SystemContractMock.syncAgents.selector,
+                    block.timestamp,
+                    DOMAIN_SYNAPSE,
+                    SystemEntity.BondingManager,
+                    2,
+                    false,
+                    infos
+                )
+            );
         }
         vm.prank(owner);
         _castToPrimary().removeAgent(domain, notary);
@@ -145,8 +167,17 @@ contract BondingPrimaryTest is BondingManagerTest {
         );
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
-            emit SlashAgentCall(info);
+            // (_rootSubmittedAt, _callOrigin, _caller, _info)
+            vm.expectCall(
+                systemRegistries[r],
+                abi.encodeWithSelector(
+                    SystemContractMock.slashAgent.selector,
+                    block.timestamp,
+                    DOMAIN_SYNAPSE,
+                    SystemEntity.BondingManager,
+                    info
+                )
+            );
         }
         // TODO: add test for forwarding the data once implemented
         data;
@@ -180,8 +211,17 @@ contract BondingPrimaryTest is BondingManagerTest {
         );
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
-            emit SlashAgentCall(info);
+            // (_rootSubmittedAt, _callOrigin, _caller, _info)
+            vm.expectCall(
+                systemRegistries[r],
+                abi.encodeWithSelector(
+                    SystemContractMock.slashAgent.selector,
+                    block.timestamp,
+                    DOMAIN_SYNAPSE,
+                    SystemEntity.BondingManager,
+                    info
+                )
+            );
         }
         // TODO: add test for forwarding the data once implemented
         data;

@@ -23,8 +23,8 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
         super.setUp();
         localDomain = _getTestLocalDomain();
         // Deploy mocks for tests
-        origin = new OriginMock(localDomain);
-        destination = new SystemContractMock(localDomain);
+        origin = new OriginMock();
+        destination = new SystemContractMock();
         bondingManager = _deployBondingManager(localDomain);
         systemRouter = new SystemRouterHarness(
             localDomain,
@@ -36,16 +36,12 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
         systemRegistries.push(address(origin));
         systemRegistries.push(address(destination));
         // Initialize
-        origin.initialize();
-        destination.initialize();
         bondingManager.initialize();
         // Set router
         origin.setSystemRouter(systemRouter);
         destination.setSystemRouter(systemRouter);
         bondingManager.setSystemRouter(systemRouter);
         // Transfer ownership
-        origin.transferOwnership(owner);
-        destination.transferOwnership(owner);
         bondingManager.transferOwnership(owner);
         // Label everything
         vm.label(address(origin), "Origin Mock");

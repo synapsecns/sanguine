@@ -127,8 +127,17 @@ contract BondingSecondaryTest is BondingManagerTest {
         );
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
-            emit SlashAgentCall(info);
+            // (_rootSubmittedAt, _callOrigin, _caller, _info)
+            vm.expectCall(
+                systemRegistries[r],
+                abi.encodeWithSelector(
+                    SystemContractMock.slashAgent.selector,
+                    block.timestamp,
+                    DOMAIN_LOCAL,
+                    SystemEntity.BondingManager,
+                    info
+                )
+            );
         }
         // data should be forwarded to Synapse Chain
         vm.expectCall(
@@ -186,8 +195,19 @@ contract BondingSecondaryTest is BondingManagerTest {
         );
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
-            emit SyncAgentsCall(requestID, removeExisting, infos);
+            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+            vm.expectCall(
+                systemRegistries[r],
+                abi.encodeWithSelector(
+                    SystemContractMock.syncAgents.selector,
+                    block.timestamp,
+                    DOMAIN_LOCAL,
+                    SystemEntity.BondingManager,
+                    requestID,
+                    removeExisting,
+                    infos
+                )
+            );
         }
         // data should be forwarded to Synapse Chain
         vm.expectCall(

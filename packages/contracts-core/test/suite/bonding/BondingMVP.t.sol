@@ -28,9 +28,20 @@ contract BondingMVPTest is BondingManagerTest {
         AgentInfo[] memory infos = infoToArray(agentInfo(domain, agent, true));
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
             // Default values are used in MVP implementation
-            emit SyncAgentsCall({ requestID: 0, removeExisting: false, infos: infos });
+            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+            vm.expectCall(
+                systemRegistries[r],
+                abi.encodeWithSelector(
+                    SystemContractMock.syncAgents.selector,
+                    block.timestamp,
+                    DOMAIN_LOCAL,
+                    SystemEntity.BondingManager,
+                    0,
+                    false,
+                    infos
+                )
+            );
         }
         vm.prank(owner);
         _castToMVP().addAgent(domain, agent);
@@ -40,9 +51,20 @@ contract BondingMVPTest is BondingManagerTest {
         AgentInfo[] memory infos = infoToArray(agentInfo(domain, agent, false));
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
             // Default values are used in MVP implementation
-            emit SyncAgentsCall({ requestID: 0, removeExisting: false, infos: infos });
+            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+            vm.expectCall(
+                systemRegistries[r],
+                abi.encodeWithSelector(
+                    SystemContractMock.syncAgents.selector,
+                    block.timestamp,
+                    DOMAIN_LOCAL,
+                    SystemEntity.BondingManager,
+                    0,
+                    false,
+                    infos
+                )
+            );
         }
         vm.prank(owner);
         _castToMVP().removeAgent(domain, agent);

@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.17;
+
+import "../../../contracts/interfaces/IStateHub.sol";
+import "../ExcludeCoverage.sol";
+
+// solhint-disable no-empty-blocks
+contract StateHubMock is ExcludeCoverage, IStateHub {
+    function isValidState(bytes memory _statePayload) external view returns (bool isValid) {}
+
+    function suggestLatestState() external view returns (bytes memory statePayload) {}
+
+    function suggestState(uint32 _nonce) external view returns (bytes memory statePayload) {}
+}
