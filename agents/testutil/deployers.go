@@ -66,6 +66,8 @@ func NewAttestationCollectorDeployer(registry deployer.GetOnlyContractRegistry, 
 }
 
 // Deploy deploys the attestation collector.
+//
+//nolint:dupword
 func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		attestationAddress, attestationTx, collector, err := attestationcollector.DeployAttestationCollector(transactOps, backend)
@@ -74,12 +76,12 @@ func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (contracts.Dep
 		}
 
 		// TODO (joeallen): FIX ME
-		//auth := a.Backend().GetTxContext(ctx, &transactOps.From)
-		//initTx, err := collector.Initialize(auth.TransactOpts)
-		//if err != nil {
+		// auth := a.Backend().GetTxContext(ctx, &transactOps.From)
+		// initTx, err := collector.Initialize(auth.TransactOpts)
+		// if err != nil {
 		//	return common.Address{}, nil, nil, fmt.Errorf("could not initialize attestation collector: %w", err)
 		//}
-		//a.Backend().WaitForConfirmation(ctx, initTx)
+		// a.Backend().WaitForConfirmation(ctx, initTx)
 
 		return attestationAddress, attestationTx, collector, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
