@@ -41,7 +41,7 @@ func (u GuardSuite) TestAttestationGuardCollectorVerifier() {
 	// suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
 	// Nil(u.T(), err)
 	// Equal(u.T(), origin, suggestedAttestation.Origin())
-	//Equal(u.T(), destination, suggestedAttestation.Destination())
+	// Equal(u.T(), destination, suggestedAttestation.Destination())
 	//Equal(u.T(), nonce, suggestedAttestation.Nonce())
 
 	// err = testDB.StoreNewGuardInProgressAttestation(u.GetTestContext(), suggestedAttestation)

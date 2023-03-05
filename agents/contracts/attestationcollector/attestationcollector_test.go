@@ -27,7 +27,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	// destination := origin + 1
 	// nonce := gofakeit.Uint32()
 	// root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-	//attestKey := types.AttestationKey{
+	// attestKey := types.AttestationKey{
 	//	Origin:      origin,
 	//	Destination: destination,
 	//	Nonce:       nonce,
@@ -57,7 +57,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	//	unsignedAttestation,
 	//	guardSignatures,
 	//	notarySignatures)
-	//encodedGuardSignatures, err := types.EncodeSignatures(signedAttestation.GuardSignatures())
+	// encodedGuardSignatures, err := types.EncodeSignatures(signedAttestation.GuardSignatures())
 	//Nil(a.T(), err)
 	//encodedNotarySignatures, err := types.EncodeSignatures(signedAttestation.NotarySignatures())
 	//Nil(a.T(), err)
