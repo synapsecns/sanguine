@@ -240,7 +240,7 @@ func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *DeployManag
 	// if err != nil {
 	//	a.T().Fatal(err)
 	//}
-	//a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddGuard)
+	// a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddGuard)
 
 	// a.AttestationDomainClient, err = evm.NewEVM(a.GetTestContext(), "attestation_client", config.DomainConfig{
 	//	DomainID:                    uint32(a.TestBackendAttestation.GetBigChainID().Uint64()),
