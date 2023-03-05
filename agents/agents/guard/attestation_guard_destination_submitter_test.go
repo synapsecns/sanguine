@@ -39,7 +39,7 @@ func (u GuardSuite) TestAttestationGuardDestinationSubmitter() {
 	// Nil(u.T(), err)
 	// Equal(u.T(), origin, suggestedAttestation.Origin())
 	// Equal(u.T(), destination, suggestedAttestation.Destination())
-	//Equal(u.T(), nonce, suggestedAttestation.Nonce())
+	// Equal(u.T(), nonce, suggestedAttestation.Nonce())
 
 	// err = testDB.StoreNewGuardInProgressAttestation(u.GetTestContext(), suggestedAttestation)
 	// Nil(u.T(), err)
@@ -144,7 +144,7 @@ func (u GuardSuite) TestAttestationGuardDestinationSubmitter() {
 	// Equal(u.T(), root, retrievedAttestation.Attestation().Root())
 	// Len(u.T(), retrievedAttestation.NotarySignatures(), 1)
 	// Len(u.T(), retrievedAttestation.GuardSignatures(), 1)
-	//Greater(u.T(), retrievedNewestGuardConfirmedOnCollector.SubmittedToAttestationCollectorTime().Unix(), int64(0))
+	// Greater(u.T(), retrievedNewestGuardConfirmedOnCollector.SubmittedToAttestationCollectorTime().Unix(), int64(0))
 	//Equal(u.T(), types.AttestationStateSubmittedToDestinationUnconfirmed, retrievedNewestGuardConfirmedOnCollector.AttestationState())
 
 	// Nil(u.T(), err)

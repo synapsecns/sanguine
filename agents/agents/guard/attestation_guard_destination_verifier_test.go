@@ -41,7 +41,7 @@ func (u GuardSuite) TestAttestationGuardDestinationVerifier() {
 	// Nil(u.T(), err)
 	// Equal(u.T(), origin, suggestedAttestation.Origin())
 	// Equal(u.T(), destination, suggestedAttestation.Destination())
-	//Equal(u.T(), nonce, suggestedAttestation.Nonce())
+	// Equal(u.T(), nonce, suggestedAttestation.Nonce())
 
 	// err = testDB.StoreNewGuardInProgressAttestation(u.GetTestContext(), suggestedAttestation)
 	// Nil(u.T(), err)
