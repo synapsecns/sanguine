@@ -72,7 +72,7 @@ contract BondingMVP is BondingManager {
         uint256,
         bool,
         AgentInfo[] memory
-    ) external view override onlySystemRouter {
+    ) external view onlySystemRouter {
         revert("Cross-chain disabled");
     }
 

@@ -137,7 +137,7 @@ contract BondingPrimaryTest is BondingManagerTest {
     function test_slashAgent_localDomain_origin(uint32 domain, address account) public {
         AgentInfo memory info = agentInfo({ domain: domain, account: account, bonded: false });
         bytes memory data = abi.encodeWithSelector(
-            SystemContract.slashAgent.selector,
+            ISystemContract.slashAgent.selector,
             0, // rootSubmittedAt
             0, // callOrigin
             0, // systemCaller
@@ -172,7 +172,7 @@ contract BondingPrimaryTest is BondingManagerTest {
         _skipBondingOptimisticPeriod();
         AgentInfo memory info = agentInfo({ domain: domain, account: account, bonded: false });
         bytes memory data = abi.encodeWithSelector(
-            SystemContract.slashAgent.selector,
+            ISystemContract.slashAgent.selector,
             0, // rootSubmittedAt
             0, // callOrigin
             0, // systemCaller

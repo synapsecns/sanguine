@@ -36,7 +36,6 @@ contract BondingSecondary is BondingManager {
         AgentInfo[] memory _infos
     )
         external
-        override
         onlySystemRouter
         onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
         onlySynapseChainBondingManager(_callOrigin, _caller)

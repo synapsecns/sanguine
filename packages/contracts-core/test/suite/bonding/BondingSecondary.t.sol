@@ -119,7 +119,7 @@ contract BondingSecondaryTest is BondingManagerTest {
     function test_slashAgent_localDomain_origin(uint32 domain, address account) public {
         AgentInfo memory info = agentInfo({ domain: domain, account: account, bonded: false });
         bytes memory data = abi.encodeWithSelector(
-            SystemContract.slashAgent.selector,
+            ISystemContract.slashAgent.selector,
             0, // rootSubmittedAt
             0, // callOrigin
             0, // systemCaller
@@ -166,7 +166,7 @@ contract BondingSecondaryTest is BondingManagerTest {
         AgentInfo[] memory infos = infoToArray(agentInfo(domain, account, bonded));
         // Data for the system call
         bytes memory data = abi.encodeWithSelector(
-            SystemContract.syncAgents.selector,
+            ISystemContract.syncAgents.selector,
             0, // rootSubmittedAt
             0, // callOrigin
             0, // systemCaller
@@ -176,7 +176,7 @@ contract BondingSecondaryTest is BondingManagerTest {
         );
         // Empty array should be passed back
         bytes memory forwardedData = abi.encodeWithSelector(
-            SystemContract.syncAgents.selector,
+            ISystemContract.syncAgents.selector,
             0, // rootSubmittedAt
             0, // callOrigin
             0, // systemCaller

@@ -207,7 +207,7 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
             _data: abi.encodeWithSelector(
-                SystemContract.syncAgents.selector,
+                ISystemContract.syncAgents.selector,
                 0, // rootSubmittedAt
                 0, // callOrigin
                 0, // systemCaller
@@ -247,7 +247,7 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
             _rootSubmittedAt: block.timestamp,
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
-            _data: abi.encodeWithSelector(SystemContract.slashAgent.selector, 0, 0, 0, info)
+            _data: abi.encodeWithSelector(ISystemContract.slashAgent.selector, 0, 0, 0, info)
         });
     }
 }

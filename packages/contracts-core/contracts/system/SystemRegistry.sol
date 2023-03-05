@@ -29,7 +29,7 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
         uint32 _callOrigin,
         SystemEntity _caller,
         AgentInfo memory _info
-    ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
+    ) external onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
         // TODO: decide if we need to store anything, as the slashing occurred on another chain
         _beforeAgentSlashed(_info);
         _removeAgent(_info.domain, _info.account);
@@ -52,7 +52,7 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
         uint256 _requestID,
         bool _removeExisting,
         AgentInfo[] memory _infos
-    ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
+    ) external onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
         // TODO: do we need to store this in any way?
         _requestID;
         // TODO: implement removeAllGuards(), removeAllNotaries()

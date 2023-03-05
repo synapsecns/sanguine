@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "../context/DomainContext.sol";
+import { ISystemContract } from "../interfaces/ISystemContract.sol";
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {
@@ -13,7 +14,7 @@ import {
 /**
  * @notice Shared utilities between Synapse System Contracts: Origin, Destination, etc.
  */
-abstract contract SystemContract is DomainContext, OwnableUpgradeable {
+abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemContract {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -147,42 +148,6 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
     function renounceOwnership() public override onlyOwner {} //solhint-disable-line no-empty-blocks
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Receive a system call indicating the off-chain agent needs to be slashed.
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _info             Information about agent to slash
-     */
-    function slashAgent(
-        uint256 _rootSubmittedAt,
-        uint32 _callOrigin,
-        SystemEntity _caller,
-        AgentInfo memory _info
-    ) external virtual;
-
-    /**
-     * @notice Receive a system call indicating the list of off-chain agents needs to be synced.
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _requestID        Unique ID of the sync request
-     * @param _removeExisting   Whether the existing agents need to be removed first
-     * @param _infos            Information about a list of agents to sync
-     */
-    function syncAgents(
-        uint256 _rootSubmittedAt,
-        uint32 _callOrigin,
-        SystemEntity _caller,
-        uint256 _requestID,
-        bool _removeExisting,
-        AgentInfo[] memory _infos
-    ) external virtual;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                 INTERNAL VIEWS: SECURITY ASSERTIONS                  ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -250,7 +215,7 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
     function _dataSlashAgent(AgentInfo memory _info) internal pure returns (bytes memory) {
         return
             abi.encodeWithSelector(
-                SystemContract.slashAgent.selector,
+                ISystemContract.slashAgent.selector,
                 0, // rootSubmittedAt
                 0, // callOrigin
                 0, // systemCaller
@@ -268,7 +233,7 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable {
     ) internal pure returns (bytes memory) {
         return
             abi.encodeWithSelector(
-                SystemContract.syncAgents.selector,
+                ISystemContract.syncAgents.selector,
                 0, // rootSubmittedAt
                 0, // callOrigin
                 0, // systemCaller

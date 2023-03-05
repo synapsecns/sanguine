@@ -66,7 +66,6 @@ contract BondingPrimary is AgentRegistry, BondingManager {
         AgentInfo[] memory _infos
     )
         external
-        override
         onlySystemRouter
         onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
         onlyCallers(BONDING_MANAGER, _caller)

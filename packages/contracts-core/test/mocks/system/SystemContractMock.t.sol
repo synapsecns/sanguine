@@ -41,7 +41,7 @@ contract SystemContractMock is SystemContractMockEvents, SystemContract {
         uint32,
         SystemEntity,
         AgentInfo memory _info
-    ) external override {
+    ) external {
         emit SlashAgentCall(_info);
     }
 
@@ -52,7 +52,7 @@ contract SystemContractMock is SystemContractMockEvents, SystemContract {
         uint256 _requestID,
         bool _removeExisting,
         AgentInfo[] memory _infos
-    ) external override {
+    ) external {
         emit SyncAgentsCall(_requestID, _removeExisting, _infos);
     }
 }

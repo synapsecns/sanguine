@@ -32,7 +32,7 @@ abstract contract BondingManager is SystemContract, Version0_0_2 {
         uint32 _callOrigin,
         SystemEntity _caller,
         AgentInfo memory _info
-    ) external override onlySystemRouter {
+    ) external onlySystemRouter {
         bool forwardUpdate;
         if (_callOrigin == localDomain) {
             // Forward information about slashed agent to remote chains

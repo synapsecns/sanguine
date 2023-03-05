@@ -151,7 +151,7 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
             _data: abi.encodeWithSelector(
-                SystemContract.syncAgents.selector,
+                ISystemContract.syncAgents.selector,
                 0, // rootSubmittedAt
                 0, // callOrigin
                 0, // systemCaller
@@ -173,7 +173,7 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
             _rootSubmittedAt: callOrigin == localDomain ? block.timestamp : rootSubmittedAt,
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
-            _data: abi.encodeWithSelector(SystemContract.slashAgent.selector, 0, 0, 0, info)
+            _data: abi.encodeWithSelector(ISystemContract.slashAgent.selector, 0, 0, 0, info)
         });
     }
 
