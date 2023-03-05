@@ -221,10 +221,10 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 		Nil(u.T(), err)
 		u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 		// TODO (joeallen): FIX ME
-		//currRoot, currDispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, u.DestinationDomainClient.Config().DomainID, uint32(i+1))
-		//Nil(u.T(), err)
-		//Greater(u.T(), currDispatchBlockNumber.Uint64(), uint64(0))
-		//NotEqual(u.T(), [32]byte{}, currRoot)
+		// currRoot, currDispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, u.DestinationDomainClient.Config().DomainID, uint32(i+1))
+		// Nil(u.T(), err)
+		// Greater(u.T(), currDispatchBlockNumber.Uint64(), uint64(0))
+		// NotEqual(u.T(), [32]byte{}, currRoot)
 	}
 
 	go func() {
@@ -665,10 +665,10 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 		Nil(u.T(), err)
 		u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 		// TODO (joeallen): FIX ME
-		//currRoot, currDispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, u.DestinationDomainClient.Config().DomainID, uint32(i+1))
-		//Nil(u.T(), err)
-		//Greater(u.T(), currDispatchBlockNumber.Uint64(), uint64(0))
-		//NotEqual(u.T(), [32]byte{}, currRoot)
+		// currRoot, currDispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, u.DestinationDomainClient.Config().DomainID, uint32(i+1))
+		// Nil(u.T(), err)
+		// Greater(u.T(), currDispatchBlockNumber.Uint64(), uint64(0))
+		// NotEqual(u.T(), [32]byte{}, currRoot)
 
 		sender, err := u.TestBackendOrigin.Signer().Sender(tx)
 		u.Nil(err)

@@ -115,6 +115,7 @@ func (a destinationContract) SubmittedAt(ctx context.Context, originID uint32, r
 	submittedAtTime := time.Unix(submittedAtBigInt.Int64(), 0)
 
 	return &submittedAtTime, nil*/
+	//nolint:nilnil
 	return nil, nil
 }
 

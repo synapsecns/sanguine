@@ -21,7 +21,7 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 
 	origin := uint32(u.TestBackendOrigin.GetChainID())
 	destination := uint32(u.TestBackendDestination.GetChainID())
-	//nonce := uint32(1)
+	// nonce := uint32(1)
 
 	// dispatch a random update
 	originAuth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
@@ -35,41 +35,41 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
 	// TODO (joeallen): FIX ME
-	//suggestedAttestationRaw, err := u.OriginContract.SuggestAttestation(&bind.CallOpts{Context: u.GetTestContext()}, destination)
-	//Nil(u.T(), err)
-	//suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
-	//Nil(u.T(), err)
-	//Equal(u.T(), origin, suggestedAttestation.Origin())
-	//Equal(u.T(), destination, suggestedAttestation.Destination())
-	//Equal(u.T(), nonce, suggestedAttestation.Nonce())
+	// suggestedAttestationRaw, err := u.OriginContract.SuggestAttestation(&bind.CallOpts{Context: u.GetTestContext()}, destination)
+	// Nil(u.T(), err)
+	// suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
+	// Nil(u.T(), err)
+	// Equal(u.T(), origin, suggestedAttestation.Origin())
+	// Equal(u.T(), destination, suggestedAttestation.Destination())
+	// Equal(u.T(), nonce, suggestedAttestation.Nonce())
 
-	//err = testDB.StoreNewGuardInProgressAttestation(u.GetTestContext(), suggestedAttestation)
-	//Nil(u.T(), err)
+	// err = testDB.StoreNewGuardInProgressAttestation(u.GetTestContext(), suggestedAttestation)
+	// Nil(u.T(), err)
 
-	//auth := u.TestBackendAttestation.GetTxContext(u.GetTestContext(), nil)
+	// auth := u.TestBackendAttestation.GetTxContext(u.GetTestContext(), nil)
 
-	//root := suggestedAttestation.Root()
+	// root := suggestedAttestation.Root()
 
-	//attestKey := types.AttestationKey{
+	// attestKey := types.AttestationKey{
 	//	Origin:      origin,
 	//	Destination: destination,
 	//	Nonce:       nonce,
 	//}
 	// TODO (joeallen): FIX ME
-	//unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), [32]byte{})
-	//hashedAttestation, err := types.Hash(unsignedAttestation)
-	//Nil(u.T(), err)
+	// unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), [32]byte{})
+	// hashedAttestation, err := types.Hash(unsignedAttestation)
+	// Nil(u.T(), err)
 
-	//notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
-	//Nil(u.T(), err)
+	// notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	// Nil(u.T(), err)
 
-	//signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{}, []types.Signature{notarySignature})
+	// signedAttestation := types.NewSignedAttestation(unsignedAttestation, []types.Signature{}, []types.Signature{notarySignature})
 
-	//rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
-	//Nil(u.T(), err)
+	// rawSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
+	// Nil(u.T(), err)
 
-	//tx, err = u.AttestationContract.SubmitAttestation(auth.TransactOpts, rawSignedAttestation)
-	//Nil(u.T(), err)
+	// tx, err = u.AttestationContract.SubmitAttestation(auth.TransactOpts, rawSignedAttestation)
+	// Nil(u.T(), err)
 
 	u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), tx)
 
@@ -98,7 +98,7 @@ func (u GuardSuite) TestAttestationCollectorAttestationScanner() {
 	retrievedSignedAttestation := retrievedConfirmedInProgressAttestation.SignedAttestation()
 	Equal(u.T(), u.OriginDomainClient.Config().DomainID, retrievedSignedAttestation.Attestation().Origin())
 	Equal(u.T(), u.DestinationDomainClient.Config().DomainID, retrievedSignedAttestation.Attestation().Destination())
-	//Equal(u.T(), root, retrievedSignedAttestation.Attestation().Root())
+	// Equal(u.T(), root, retrievedSignedAttestation.Attestation().Root())
 	Len(u.T(), retrievedSignedAttestation.NotarySignatures(), 1)
 	Len(u.T(), retrievedSignedAttestation.GuardSignatures(), 0)
 	Equal(u.T(), types.AttestationStateGuardUnsignedAndVerified, retrievedConfirmedInProgressAttestation.AttestationState())
