@@ -81,21 +81,21 @@ func TestEncodeAttestationParity(t *testing.T) {
 	// TODO (joeallen): FIX ME
 	t.Skip()
 	// TODO (joeallen): FIX ME
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	//defer cancel()
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	// defer cancel()
 
-	//testBackend := simulated.NewSimulatedBackend(ctx, t)
-	//deployManager := testutil.NewDeployManager(t)
+	// testBackend := simulated.NewSimulatedBackend(ctx, t)
+	// deployManager := testutil.NewDeployManager(t)
 
 	origin := gofakeit.Uint32()
 	destination := origin + 1
 	nonce := gofakeit.Uint32()
 	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
-	//_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
+	// _, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
 
-	//contractData, err := attesationContract.FormatAttestationData(&bind.CallOpts{Context: ctx}, origin, destination, nonce, root)
-	//Nil(t, err)
+	// contractData, err := attesationContract.FormatAttestationData(&bind.CallOpts{Context: ctx}, origin, destination, nonce, root)
+	// Nil(t, err)
 
 	attestKey := types.AttestationKey{
 		Origin:      origin,
@@ -104,7 +104,7 @@ func TestEncodeAttestationParity(t *testing.T) {
 	}
 	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(attestKey.GetRawKey(), root))
 	Nil(t, err)
-	//Equal(t, contractData, goFormattedData)
+	// Equal(t, contractData, goFormattedData)
 
 	attestationFromBytes, err := types.DecodeAttestation(goFormattedData)
 	Nil(t, err)
@@ -118,60 +118,60 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	// TODO (joeallen): FIX ME
 	t.Skip()
 	// TODO (joeallen): FIX ME
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	//defer cancel()
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	// defer cancel()
 
-	//testBackend := simulated.NewSimulatedBackend(ctx, t)
-	//deployManager := testutil.NewDeployManager(t)
+	// testBackend := simulated.NewSimulatedBackend(ctx, t)
+	// deployManager := testutil.NewDeployManager(t)
 
 	// TODO (joeallen): FIX ME
-	//_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
+	// _, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
 
-	//origin := gofakeit.Uint32()
-	//destination := origin + 1
-	//nonce := gofakeit.Uint32()
+	// origin := gofakeit.Uint32()
+	// destination := origin + 1
+	// nonce := gofakeit.Uint32()
 	//root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 
-	sigGuard1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-	encodedGuardSignature1, err := types.EncodeSignature(sigGuard1)
-	Nil(t, err)
-	sigGuard2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-	encodedGuardSignature2, err := types.EncodeSignature(sigGuard2)
-	Nil(t, err)
-	sigGuard3 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-	encodedGuardSignature3, err := types.EncodeSignature(sigGuard3)
-	Nil(t, err)
+	// sigGuard1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	// encodedGuardSignature1, err := types.EncodeSignature(sigGuard1)
+	//Nil(t, err)
+	//sigGuard2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	//encodedGuardSignature2, err := types.EncodeSignature(sigGuard2)
+	//Nil(t, err)
+	//sigGuard3 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	//encodedGuardSignature3, err := types.EncodeSignature(sigGuard3)
+	//Nil(t, err)
 
-	sigNotary1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-	encodedNotarySignature1, err := types.EncodeSignature(sigNotary1)
-	Nil(t, err)
-	sigNotary2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-	encodedNotarySignature2, err := types.EncodeSignature(sigNotary2)
-	Nil(t, err)
+	// sigNotary1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	// encodedNotarySignature1, err := types.EncodeSignature(sigNotary1)
+	//Nil(t, err)
+	//sigNotary2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	//encodedNotarySignature2, err := types.EncodeSignature(sigNotary2)
+	//Nil(t, err)
 
 	// TODO (joeallen): FIX ME
-	//attestKey := types.AttestationKey{
+	// attestKey := types.AttestationKey{
 	//	Origin:      origin,
 	//	Destination: destination,
 	//	Nonce:       nonce,
 	//}
 
 	// TODO (joeallen): FIX ME
-	//attestation := types.NewAttestation(attestKey.GetRawKey(), root)
+	// attestation := types.NewAttestation(attestKey.GetRawKey(), root)
 
-	//encodedAttestation, err := types.EncodeAttestation(attestation)
-	//Nil(t, err)
+	// encodedAttestation, err := types.EncodeAttestation(attestation)
+	// Nil(t, err)
 
-	encodedGuardSignatures := []byte{}
-	encodedNotarySignatures := []byte{}
-	encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature1...)
-	encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature2...)
-	encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature3...)
+	// encodedGuardSignatures := []byte{}
+	// encodedNotarySignatures := []byte{}
+	//encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature1...)
+	//encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature2...)
+	//encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature3...)
 
-	encodedNotarySignatures = append(encodedNotarySignatures, encodedNotarySignature1...)
-	encodedNotarySignatures = append(encodedNotarySignatures, encodedNotarySignature2...)
+	// encodedNotarySignatures = append(encodedNotarySignatures, encodedNotarySignature1...)
+	// encodedNotarySignatures = append(encodedNotarySignatures, encodedNotarySignature2...)
 	// TODO (joeallen): FIX ME
-	//signedContractAttestation, err := attesationContract.FormatAttestation(
+	// signedContractAttestation, err := attesationContract.FormatAttestation(
 	//	&bind.CallOpts{Context: ctx},
 	//	encodedAttestation,
 	//	encodedGuardSignatures,
@@ -179,16 +179,16 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	//)
 	//Nil(t, err)
 
-	//signedAttestation := types.NewSignedAttestation(
+	// signedAttestation := types.NewSignedAttestation(
 	//	types.NewAttestation(attestKey.GetRawKey(), root),
 	//	[]types.Signature{sigGuard1, sigGuard2, sigGuard3},
 	//	[]types.Signature{sigNotary1, sigNotary2},
 	//)
 
-	//goData, err := types.EncodeSignedAttestation(signedAttestation)
-	//Nil(t, err)
+	// goData, err := types.EncodeSignedAttestation(signedAttestation)
+	// Nil(t, err)
 
-	//Equal(t, signedContractAttestation, goData)
+	// Equal(t, signedContractAttestation, goData)
 }
 
 func TestMessageEncodeParity(t *testing.T) {
@@ -203,9 +203,9 @@ func TestMessageEncodeParity(t *testing.T) {
 
 	// TODO (joeallen): FIX ME
 	// check constant parity
-	//version, err := messageContract.MessageVersion0(&bind.CallOpts{Context: ctx})
-	//Nil(t, err)
-	//Equal(t, version, types.MessageVersion)
+	// version, err := messageContract.MessageVersion0(&bind.CallOpts{Context: ctx})
+	// Nil(t, err)
+	// Equal(t, version, types.MessageVersion)
 
 	headerOffset, err := messageContract.OffsetHeader(&bind.CallOpts{Context: ctx})
 	Nil(t, err)

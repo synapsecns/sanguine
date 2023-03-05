@@ -60,13 +60,13 @@ func (h *TestClientSuite) SetupTest() {
 	h.notarySigner = localsigner.NewSigner(wllt.PrivateKey())
 
 	// TODO (joeallen): FIX ME
-	//ownerPtr, err := h.originContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: h.GetTestContext()})
-	//Nil(h.T(), err)
+	// ownerPtr, err := h.originContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: h.GetTestContext()})
+	// Nil(h.T(), err)
 
 	// TODO (joeallen): FIX ME
-	//originOwnerAuth := h.testBackend.GetTxContext(h.GetTestContext(), &ownerPtr)
-	//tx, err := h.originContract.AddAgent(originOwnerAuth.TransactOpts, h.destinationID, h.notarySigner.Address())
-	//Nil(h.T(), err)
+	// originOwnerAuth := h.testBackend.GetTxContext(h.GetTestContext(), &ownerPtr)
+	// tx, err := h.originContract.AddAgent(originOwnerAuth.TransactOpts, h.destinationID, h.notarySigner.Address())
+	// Nil(h.T(), err)
 	//h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)
 
 	notaries, err := h.originContract.AllAgents(&bind.CallOpts{Context: h.GetTestContext()}, h.destinationID)

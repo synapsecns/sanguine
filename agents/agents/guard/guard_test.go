@@ -95,38 +95,38 @@ func (u GuardSuite) TestGuardE2E() {
 	nonce := uint32(1)
 
 	// TODO (joeallen): FIX ME
-	//historicalRoot, dispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, u.DestinationDomainClient.Config().DomainID, nonce)
-	//Nil(u.T(), err)
+	// historicalRoot, dispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, u.DestinationDomainClient.Config().DomainID, nonce)
+	// Nil(u.T(), err)
 
-	//Greater(u.T(), dispatchBlockNumber.Uint64(), uint64(0))
+	// Greater(u.T(), dispatchBlockNumber.Uint64(), uint64(0))
 
-	//NotEqual(u.T(), historicalRoot, [32]byte{})
+	// NotEqual(u.T(), historicalRoot, [32]byte{})
 
-	//attestationKey := types.AttestationKey{
+	// attestationKey := types.AttestationKey{
 	//	Origin:      u.OriginDomainClient.Config().DomainID,
 	//	Destination: u.DestinationDomainClient.Config().DomainID,
 	//	Nonce:       nonce,
 	//}
 
-	//unsignedAttestation := types.NewAttestation(attestationKey.GetRawKey(), historicalRoot)
-	//hashedAttestation, err := types.Hash(unsignedAttestation)
-	//Nil(u.T(), err)
+	// unsignedAttestation := types.NewAttestation(attestationKey.GetRawKey(), historicalRoot)
+	// hashedAttestation, err := types.Hash(unsignedAttestation)
+	// Nil(u.T(), err)
 
-	//notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
-	//Nil(u.T(), err)
+	// notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
+	// Nil(u.T(), err)
 
-	//signedAttestation := types.NewSignedAttestation(
+	// signedAttestation := types.NewSignedAttestation(
 	//	unsignedAttestation,
 	//	[]types.Signature{},
 	//	[]types.Signature{notarySignature})
 
-	//encodedSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
-	//Nil(u.T(), err)
+	// encodedSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
+	// Nil(u.T(), err)
 
-	//txContextAttestationCollector := u.TestBackendAttestation.GetTxContext(u.GetTestContext(), u.AttestationContractMetadata.OwnerPtr())
+	// txContextAttestationCollector := u.TestBackendAttestation.GetTxContext(u.GetTestContext(), u.AttestationContractMetadata.OwnerPtr())
 	// Submit the attestation to get an AttestationSubmitted event.
-	//txSubmitAttestation, err := u.AttestationContract.SubmitAttestation(txContextAttestationCollector.TransactOpts, encodedSignedAttestation)
-	//Nil(u.T(), err)
+	// txSubmitAttestation, err := u.AttestationContract.SubmitAttestation(txContextAttestationCollector.TransactOpts, encodedSignedAttestation)
+	// Nil(u.T(), err)
 	//u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), txSubmitAttestation)
 
 	go func() {
@@ -147,7 +147,7 @@ func (u GuardSuite) TestGuardE2E() {
 			retrievedInProgressAttestation.SignedAttestation().Attestation().Nonce() == nonce &&
 			u.OriginDomainClient.Config().DomainID == retrievedInProgressAttestation.SignedAttestation().Attestation().Origin() &&
 			u.DestinationDomainClient.Config().DomainID == retrievedInProgressAttestation.SignedAttestation().Attestation().Destination() &&
-			//historicalRoot == retrievedInProgressAttestation.SignedAttestation().Attestation().Root() &&
+			// historicalRoot == retrievedInProgressAttestation.SignedAttestation().Attestation().Root() &&
 			len(retrievedInProgressAttestation.SignedAttestation().NotarySignatures()) == 1 &&
 			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
 			retrievedInProgressAttestation.AttestationState() == types.AttestationStateConfirmedOnDestination

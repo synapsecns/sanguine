@@ -43,8 +43,8 @@ type attestationCollectorContract struct {
 
 func (a attestationCollectorContract) AddAgent(transactOpts *bind.TransactOpts, domainID uint32, signer signer.Signer) error {
 	// TODO (joeallen): FIX ME
-	//_, err := a.contract.AddAgent(transactOpts, domainID, signer.Address())
-	//if err != nil {
+	// _, err := a.contract.AddAgent(transactOpts, domainID, signer.Address())
+	// if err != nil {
 	//	return fmt.Errorf("could not add notary: %w", err)
 	//}
 
@@ -110,12 +110,12 @@ func (a attestationCollectorContract) GetAttestation(ctx context.Context, origin
 
 func (a attestationCollectorContract) GetRoot(ctx context.Context, origin, destination, nonce uint32) ([32]byte, error) {
 	// TODO (joeallen): FIX ME
-	//root, err := a.contract.GetRoot(&bind.CallOpts{Context: ctx}, origin, destination, nonce)
-	//if err != nil {
+	// root, err := a.contract.GetRoot(&bind.CallOpts{Context: ctx}, origin, destination, nonce)
+	// if err != nil {
 	//	return [32]byte{}, fmt.Errorf("could not retrieve root: %w", err)
 	//}
 
-	//return root, nil
+	// return root, nil
 	return [32]byte{}, nil
 }
 

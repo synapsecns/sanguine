@@ -54,17 +54,17 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 // ParseAttestationAccepted parses an AttestationAccepted event.
 func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool) {
 	// TODO (joeallen): FIX ME
-	//attestationCollectorAttestation, err := p.filterer.ParseAttestationAccepted(log)
-	//if err != nil {
+	// attestationCollectorAttestation, err := p.filterer.ParseAttestationAccepted(log)
+	// if err != nil {
 	//	return nil, false
 	//}
 
-	//attestation, err := types.DecodeAttestation(attestationCollectorAttestation.Attestation)
-	//if err != nil {
+	// attestation, err := types.DecodeAttestation(attestationCollectorAttestation.Attestation)
+	// if err != nil {
 	//	return nil, false
 	//}
 
-	//return attestation, true
+	// return attestation, true
 	return nil, false
 }
 
