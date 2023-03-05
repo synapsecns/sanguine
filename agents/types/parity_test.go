@@ -135,7 +135,7 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	// sigGuard1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 	// encodedGuardSignature1, err := types.EncodeSignature(sigGuard1)
 	// Nil(t, err)
-	//sigGuard2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	// sigGuard2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 	//encodedGuardSignature2, err := types.EncodeSignature(sigGuard2)
 	//Nil(t, err)
 	//sigGuard3 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
@@ -145,7 +145,7 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	// sigNotary1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 	// encodedNotarySignature1, err := types.EncodeSignature(sigNotary1)
 	// Nil(t, err)
-	//sigNotary2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
+	// sigNotary2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
 	//encodedNotarySignature2, err := types.EncodeSignature(sigNotary2)
 	//Nil(t, err)
 
@@ -165,7 +165,7 @@ func TestEncodeSignedAttestationParity(t *testing.T) {
 	// encodedGuardSignatures := []byte{}
 	// encodedNotarySignatures := []byte{}
 	// encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature1...)
-	//encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature2...)
+	// encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature2...)
 	//encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature3...)
 
 	// encodedNotarySignatures = append(encodedNotarySignatures, encodedNotarySignature1...)

@@ -15,7 +15,7 @@ func (i ContractSuite) TestSubmitAttestation() {
 	//	Nonce:       nonce,
 	//}
 	// unsignedAttestation := types.NewAttestation(attestKey.GetRawKey(), root)
-	//hashedAttestation, err := types.Hash(unsignedAttestation)
+	// hashedAttestation, err := types.Hash(unsignedAttestation)
 	//Nil(i.T(), err)
 
 	// notarySignature, err := i.NotaryBondedSigner.SignMessage(i.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
@@ -42,7 +42,7 @@ func (i ContractSuite) TestSubmitAttestation() {
 	// Nil(i.T(), err)
 	// retrievedSignedAttestation, err := types.DecodeSignedAttestation(retrievedRawSignedAttestation)
 	// Nil(i.T(), err)
-	//Equal(i.T(), signedAttestation.Attestation().Origin(), retrievedSignedAttestation.Attestation().Origin())
+	// Equal(i.T(), signedAttestation.Attestation().Origin(), retrievedSignedAttestation.Attestation().Origin())
 	//Equal(i.T(), signedAttestation.Attestation().Destination(), retrievedSignedAttestation.Attestation().Destination())
 	//Equal(i.T(), signedAttestation.Attestation().Root(), retrievedSignedAttestation.Attestation().Root())
 	//Equal(i.T(), signedAttestation.Attestation().Nonce(), retrievedSignedAttestation.Attestation().Nonce())

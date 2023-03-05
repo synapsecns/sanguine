@@ -40,7 +40,7 @@ func (u GuardSuite) TestAttestationGuardCollectorVerifier() {
 	// Nil(u.T(), err)
 	// suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
 	// Nil(u.T(), err)
-	//Equal(u.T(), origin, suggestedAttestation.Origin())
+	// Equal(u.T(), origin, suggestedAttestation.Origin())
 	//Equal(u.T(), destination, suggestedAttestation.Destination())
 	//Equal(u.T(), nonce, suggestedAttestation.Nonce())
 

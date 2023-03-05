@@ -26,7 +26,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	// destination := uint32(a.TestBackendDestination.GetChainID())
 	// destination := origin + 1
 	// nonce := gofakeit.Uint32()
-	//root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+	// root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
 	//attestKey := types.AttestationKey{
 	//	Origin:      origin,
 	//	Destination: destination,
@@ -47,7 +47,7 @@ func (a AttestationCollectorSuite) launchTest(amountGuards, amountNotaries int) 
 	//	notarySignatures = append(notarySignatures, notarySignature)
 	//}
 	// guardSignatures := []types.Signature{}
-	//if amountGuards == 1 {
+	// if amountGuards == 1 {
 	//	guardSignature, err := a.GuardBondedSigner.SignMessage(a.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
 	//	Nil(a.T(), err)
 	//	guardSignatures = append(guardSignatures, guardSignature)
