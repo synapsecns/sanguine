@@ -14,7 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 )
 
-const defaultTimeout = "1m"
+const defaultTimeout = "15m"
 
 func main() {
 	token := githubactions.GetInput("github_token")
