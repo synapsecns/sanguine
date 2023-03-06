@@ -229,7 +229,7 @@ jobs:
         run: cp ${{matrix.package}}/go.mod go.mod -v
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         if: ${{ !contains(matrix.package, 'tfcore') }}
         with:
           working-directory: ${{matrix.package}}/
@@ -253,7 +253,7 @@ jobs:
       # TODO: at some point it might make sense to put the common deps in a common lib
       - name: golangci-lint (tfcore)
         if: ${{ contains(matrix.package, 'tfcore') }}
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
           working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
