@@ -3,10 +3,12 @@ pragma solidity 0.8.17;
 
 import "../../../contracts/libs/Merkle.sol";
 import "../../../contracts/libs/Snapshot.sol";
+import "../libs/FakeIt.t.sol";
 import "./AttestationProofGenerator.t.sol";
 
 import { Test } from "forge-std/Test.sol";
 
+// solhint-disable func-name-mixedcase
 contract AttestationProofGeneratorTest is Test {
     using SnapshotLib for bytes;
     using StateLib for bytes;
@@ -24,21 +26,7 @@ contract AttestationProofGeneratorTest is Test {
     ) public {
         statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
         stateIndex = bound(stateIndex, 0, statesAmount - 1);
-        bytes[] memory states = new bytes[](statesAmount);
-        State[] memory ptrs = new State[](statesAmount);
-        for (uint256 i = 0; i < statesAmount; ++i) {
-            if (i == stateIndex) {
-                states[i] = state.formatSummitState();
-            } else {
-                // Create different garbage values
-                states[i] = new bytes(STATE_LENGTH);
-                for (uint256 j = 0; j < STATE_LENGTH; ++j) {
-                    states[i][j] = bytes1(uint8(i));
-                }
-            }
-            ptrs[i] = states[i].castToState();
-        }
-
+        (bytes[] memory states, State[] memory ptrs) = fakeStates(state, statesAmount, stateIndex);
         Snapshot snapshot = SnapshotLib.formatSnapshot(ptrs).castToSnapshot();
 
         proofGen.acceptSnapshot(states);
