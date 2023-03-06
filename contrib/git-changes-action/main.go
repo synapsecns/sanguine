@@ -27,14 +27,16 @@ func main() {
 	ref := githubactions.GetInput("ref")
 	base := githubactions.GetInput("base")
 
-	timeout, err := getTimeout()
-	if err != nil {
-		panic(fmt.Errorf("failed to parse timeout: %w", err))
-	}
+	// TODO (joeallen): Figure this out later
+	//timeout, err := getTimeout()
+	//if err != nil {
+	//	panic(fmt.Errorf("failed to parse timeout: %w", err))
+	//}
 
 	includeDeps := getIncludeDeps()
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	//ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 
 	ct, err := detector.GetChangeTree(ctx, workingDirectory, ref, token, base)
