@@ -31,4 +31,11 @@ abstract contract SynapseTestConstants {
     // Default option for deploying Summit
     uint256 internal constant DEPLOY_MOCK_SUMMIT = 0x000;
     uint256 internal constant DEPLOY_PROD_SUMMIT = 0x100;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            MESSAGE TESTS                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    uint32 internal constant MESSAGES = 10;
+    uint256 internal constant BLOCK_TIME = 12 seconds;
 }

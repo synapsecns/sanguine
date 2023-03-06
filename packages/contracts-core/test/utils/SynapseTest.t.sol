@@ -12,13 +12,15 @@ import "../mocks/DestinationMock.t.sol";
 import "../mocks/OriginMock.t.sol";
 import "../mocks/SummitMock.t.sol";
 
+import "./events/ProductionEvents.t.sol";
+import "./libs/SynapseUtilities.t.sol";
 import "./SynapseTestConstants.t.sol";
 
 import { Test } from "forge-std/Test.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
 // solhint-disable ordering
-abstract contract SynapseTest is SynapseTestConstants, Test {
+abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
     struct Domain {
         string name;
         address agent;
@@ -56,6 +58,8 @@ abstract contract SynapseTest is SynapseTestConstants, Test {
         deploySystemRouter();
         // Setup agents on created contracts
         setupAgents();
+        // Skip block
+        skipBlock();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -172,5 +176,18 @@ abstract contract SynapseTest is SynapseTestConstants, Test {
         ISystemContract(origin).setSystemRouter(systemRouter);
         ISystemContract(destination).setSystemRouter(systemRouter);
         bondingManager.setSystemRouter(systemRouter);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               VM UTILS                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function skipBlock() public {
+        skipBlocks(1);
+    }
+
+    function skipBlocks(uint256 blocks) public {
+        vm.roll(block.number + blocks);
+        skip(blocks * 12 seconds);
     }
 }
