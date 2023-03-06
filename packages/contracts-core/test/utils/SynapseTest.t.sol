@@ -27,9 +27,9 @@ abstract contract SynapseTest is SynapseTestConstants, Test {
 
     uint256 private immutable deployMask;
 
-    InterfaceDestination internal destination;
-    InterfaceOrigin internal origin;
-    InterfaceSummit internal summit;
+    address internal destination;
+    address internal origin;
+    address internal summit;
     BondingMVP internal bondingManager;
     SystemRouterHarness internal systemRouter;
 
@@ -127,10 +127,10 @@ abstract contract SynapseTest is SynapseTestConstants, Test {
     function deployDestination() public virtual {
         uint256 option = deployMask & DEPLOY_MASK_DESTINATION;
         if (option == DEPLOY_MOCK_DESTINATION) {
-            destination = new DestinationMock();
+            destination = address(new DestinationMock());
         } else if (option == DEPLOY_PROD_DESTINATION) {
-            destination = new Destination(DOMAIN_LOCAL);
-            Destination(address(destination)).initialize();
+            destination = address(new Destination(DOMAIN_LOCAL));
+            Destination(destination).initialize();
         } else {
             revert("Unknown option: Destination");
         }
@@ -139,10 +139,10 @@ abstract contract SynapseTest is SynapseTestConstants, Test {
     function deployOrigin() public virtual {
         uint256 option = deployMask & DEPLOY_MASK_ORIGIN;
         if (option == DEPLOY_MOCK_ORIGIN) {
-            origin = new OriginMock();
+            origin = address(new OriginMock());
         } else if (option == DEPLOY_PROD_ORIGIN) {
-            origin = new Origin(DOMAIN_LOCAL);
-            Origin(address(origin)).initialize();
+            origin = address(new Origin(DOMAIN_LOCAL));
+            Origin(origin).initialize();
         } else {
             revert("Unknown option: Origin");
         }
@@ -151,10 +151,10 @@ abstract contract SynapseTest is SynapseTestConstants, Test {
     function deploySummit() public virtual {
         uint256 option = deployMask & DEPLOY_MASK_SUMMIT;
         if (option == DEPLOY_MOCK_SUMMIT) {
-            summit = new SummitMock();
+            summit = address(new SummitMock());
         } else if (option == DEPLOY_PROD_SUMMIT) {
-            summit = new Summit();
-            Summit(address(summit)).initialize();
+            summit = address(new Summit());
+            Summit(summit).initialize();
         } else {
             revert("Unknown option: Summit");
         }
@@ -169,8 +169,8 @@ abstract contract SynapseTest is SynapseTestConstants, Test {
             address(destination),
             address(bondingManager)
         );
-        origin.setSystemRouter(systemRouter);
-        destination.setSystemRouter(systemRouter);
+        ISystemContract(origin).setSystemRouter(systemRouter);
+        ISystemContract(destination).setSystemRouter(systemRouter);
         bondingManager.setSystemRouter(systemRouter);
     }
 }
