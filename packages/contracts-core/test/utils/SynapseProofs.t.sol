@@ -2,22 +2,26 @@
 pragma solidity 0.8.17;
 
 import "../../contracts/libs/Constants.sol";
-import { HistoricalProofGenerator } from "./proof/HistoricalProofGenerator.t.sol";
+
+import "./proof/AttestationProofGenerator.t.sol";
+import "./proof/HistoricalProofGenerator.t.sol";
 
 abstract contract SynapseProofs {
-    HistoricalProofGenerator internal proofGen;
+    HistoricalProofGenerator internal originGen;
+    AttestationProofGenerator internal summitGen;
 
     constructor() {
         clear();
     }
 
-    /// @notice Clears HistoricalProofGenerator
+    /// @notice Clears proof generators
     function clear() public {
-        proofGen = new HistoricalProofGenerator();
+        originGen = new HistoricalProofGenerator();
+        summitGen = new AttestationProofGenerator();
     }
 
     function insertMessage(bytes memory message) public {
-        proofGen.insert(keccak256(message));
+        originGen.insert(keccak256(message));
     }
 
     function getLatestProof(uint256 index)
@@ -25,7 +29,7 @@ abstract contract SynapseProofs {
         view
         returns (bytes32[ORIGIN_TREE_DEPTH] memory proof)
     {
-        return proofGen.getLatestProof(index);
+        return originGen.getLatestProof(index);
     }
 
     function getProof(uint256 index, uint256 count)
@@ -33,10 +37,18 @@ abstract contract SynapseProofs {
         view
         returns (bytes32[ORIGIN_TREE_DEPTH] memory)
     {
-        return proofGen.getProof(index, count);
+        return originGen.getProof(index, count);
     }
 
     function getRoot(uint256 count) public view returns (bytes32) {
-        return proofGen.getRoot(count);
+        return originGen.getRoot(count);
+    }
+
+    function acceptSnapshot(bytes[] memory snapshotStates) public {
+        summitGen.acceptSnapshot(snapshotStates);
+    }
+
+    function genSnapshotProof(uint256 index) public view returns (bytes32[] memory) {
+        return summitGen.generateProof(index);
     }
 }
