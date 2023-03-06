@@ -3,10 +3,11 @@ pragma solidity 0.8.17;
 
 import "../../contracts/interfaces/InterfaceOrigin.sol";
 import "./hubs/StateHubMock.t.sol";
+import "./system/AgentRegistryMock.t.sol";
 import "./system/SystemContractMock.t.sol";
 
 // solhint-disable no-empty-blocks
-contract OriginMock is StateHubMock, SystemContractMock, InterfaceOrigin {
+contract OriginMock is StateHubMock, AgentRegistryMock, SystemContractMock, InterfaceOrigin {
     function dispatch(
         uint32 _destination,
         bytes32 _recipient,
