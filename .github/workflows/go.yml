@@ -12,6 +12,7 @@ jobs:
   changes:
     name: Change Detection
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     outputs:
       # Expose matched filters as job 'packages' output variable
       packages_deps: ${{ steps.filter_go_deps.outputs.changed_modules }}
