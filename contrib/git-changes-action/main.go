@@ -5,15 +5,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/sethvargo/go-githubactions"
-	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 	"os"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/sethvargo/go-githubactions"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 )
 
-const defaultTimeout = "1m"
+const defaultTimeout = "15m"
 
 func main() {
 	token := githubactions.GetInput("github_token")
@@ -26,14 +27,16 @@ func main() {
 	ref := githubactions.GetInput("ref")
 	base := githubactions.GetInput("base")
 
-	timeout, err := getTimeout()
-	if err != nil {
-		panic(fmt.Errorf("failed to parse timeout: %w", err))
-	}
+	// TODO (joeallen): Figure this out later
+	//timeout, err := getTimeout()
+	//if err != nil {
+	//	panic(fmt.Errorf("failed to parse timeout: %w", err))
+	//}
 
 	includeDeps := getIncludeDeps()
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	//ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 
 	ct, err := detector.GetChangeTree(ctx, workingDirectory, ref, token, base)
