@@ -8,7 +8,7 @@ import { DomainContext } from "../context/DomainContext.sol";
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
 import { SystemContract } from "../system/SystemContract.sol";
 
-interface IAttestationCollector {
+interface ISummitMVP {
     function addAgent(uint32 _domain, address _account) external returns (bool);
 
     function removeAgent(uint32 _domain, address _account) external returns (bool);
@@ -19,7 +19,7 @@ interface IAttestationCollector {
  * Doesn't do anything cross-chain related.
  */
 contract BondingMVP is BondingManager {
-    address public attestationCollector;
+    address public summit;
 
     constructor(uint32 _domain) DomainContext(_domain) {}
 
@@ -33,9 +33,9 @@ contract BondingMVP is BondingManager {
      */
     function addAgent(uint32 _domain, address _account) external onlyOwner {
         _updateAgentStatus({ _domain: _domain, _agent: _account, _bonded: true });
-        // TODO: remove when AttestationCollector is merged with BondingPrimary
-        if (attestationCollector != address(0)) {
-            IAttestationCollector(attestationCollector).addAgent(_domain, _account);
+        // TODO: remove when Summit is merged with BondingPrimary
+        if (summit != address(0)) {
+            ISummitMVP(summit).addAgent(_domain, _account);
         }
     }
 
@@ -45,16 +45,16 @@ contract BondingMVP is BondingManager {
      */
     function removeAgent(uint32 _domain, address _account) external onlyOwner {
         _updateAgentStatus({ _domain: _domain, _agent: _account, _bonded: false });
-        // TODO: remove when AttestationCollector is merged with BondingPrimary
-        if (attestationCollector != address(0)) {
-            IAttestationCollector(attestationCollector).removeAgent(_domain, _account);
+        // TODO: remove when Summit is merged with BondingPrimary
+        if (summit != address(0)) {
+            ISummitMVP(summit).removeAgent(_domain, _account);
         }
     }
 
     /// @notice Sets Attestation Collector address.
-    /// @dev AttestationCollector.owner() needs to be BondingMVP.
-    function setAttestationCollector(address _attestationCollector) external onlyOwner {
-        attestationCollector = _attestationCollector;
+    /// @dev Summit.owner() needs to be BondingMVP.
+    function setSummit(address _summit) external onlyOwner {
+        summit = _summit;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
