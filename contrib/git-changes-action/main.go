@@ -14,7 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 )
 
-const defaultTimeout = "15m"
+const defaultTimeout = "1m"
 
 func main() {
 	token := githubactions.GetInput("github_token")
@@ -27,16 +27,14 @@ func main() {
 	ref := githubactions.GetInput("ref")
 	base := githubactions.GetInput("base")
 
-	// TODO (joeallen): Figure this out later
-	//timeout, err := getTimeout()
-	//if err != nil {
-	//	panic(fmt.Errorf("failed to parse timeout: %w", err))
-	//}
+	timeout, err := getTimeout()
+	if err != nil {
+		panic(fmt.Errorf("failed to parse timeout: %w", err))
+	}
 
 	includeDeps := getIncludeDeps()
 
-	//ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	ct, err := detector.GetChangeTree(ctx, workingDirectory, ref, token, base)
