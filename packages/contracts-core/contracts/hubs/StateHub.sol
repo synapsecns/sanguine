@@ -41,6 +41,11 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     }
 
     /// @inheritdoc IStateHub
+    function statesAmount() external view returns (uint256) {
+        return originStates.length;
+    }
+
+    /// @inheritdoc IStateHub
     function suggestLatestState() external view returns (bytes memory stateData) {
         // This never underflows, assuming the contract was initialized
         return suggestState(_nextNonce() - 1);

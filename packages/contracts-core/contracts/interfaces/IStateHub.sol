@@ -14,6 +14,12 @@ interface IStateHub {
     function isValidState(bytes memory _statePayload) external view returns (bool isValid);
 
     /**
+     * @notice Returns the amount of saved states so far.
+     * @dev This includes the initial state of "empty Origin Merkle Tree".
+     */
+    function statesAmount() external view returns (uint256);
+
+    /**
      * @notice Suggest the data (state after latest dispatched message) to sign for an Agent.
      * Note: signing the suggested state data will will never lead to slashing of the actor,
      * assuming they have confirmed that the block, which number is included in the data,
