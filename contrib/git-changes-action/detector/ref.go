@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/google/go-github/v41/github"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/actionscore"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
 	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2"
-	"os"
-	"strings"
 )
 
 // GetChangeTree returns the ref for the given event name.
@@ -66,7 +67,7 @@ func getChangedFilesFromAPI(ctx context.Context, ghContext *actionscore.Context,
 	for {
 		files, res, err := client.PullRequests.ListFiles(ctx, repoOwner, repoName, prNumber, &github.ListOptions{
 			Page:    page,
-			PerPage: 100,
+			PerPage: 300,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("could not get files: %w", err)
