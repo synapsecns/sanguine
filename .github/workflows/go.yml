@@ -30,14 +30,14 @@ jobs:
         with:
           include_deps: true
           github_token: ${{ secrets.WORKFLOW_PAT }}
-          args: --timeout=15m
+          max_attempts: 2
 
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go_nodeps
         with:
           include_deps: false
           github_token: ${{ secrets.WORKFLOW_PAT }}
-          args: --timeout=15m
+          max_attempts: 2
 
       - name: Check For Solidity Changes
         id: filter_solidity
