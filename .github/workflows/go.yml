@@ -12,7 +12,6 @@ jobs:
   changes:
     name: Change Detection
     runs-on: ubuntu-latest
-    timeout-minutes: 60
     outputs:
       # Expose matched filters as job 'packages' output variable
       packages_deps: ${{ steps.filter_go_deps.outputs.changed_modules }}
@@ -28,14 +27,12 @@ jobs:
 
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go_deps
-        timeout-minutes: 15
         with:
           include_deps: true
           github_token: ${{ secrets.WORKFLOW_PAT }}
 
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go_nodeps
-        timeout-minutes: 15
         with:
           include_deps: false
           github_token: ${{ secrets.WORKFLOW_PAT }}
