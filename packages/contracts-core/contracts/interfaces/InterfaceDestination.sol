@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { IAgentRegistry } from "./IAgentRegistry.sol";
 import { IAttestationHub } from "./IAttestationHub.sol";
 import { ISystemContract } from "./ISystemContract.sol";
 import { ORIGIN_TREE_DEPTH } from "../libs/Constants.sol";
 
-interface InterfaceDestination is IAttestationHub, ISystemContract {
+interface InterfaceDestination is IAttestationHub, IAgentRegistry, ISystemContract {
     /**
      * @notice Attempts to prove inclusion of message into one of Snapshot Merkle Trees,
      * previously submitted to this contract in a form of a signed Attestation.
