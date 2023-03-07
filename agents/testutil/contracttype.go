@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
+	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
@@ -61,6 +62,8 @@ const (
 	AttestationHarnessType
 	// StateHarnessType is the state harness type.
 	StateHarnessType
+	// SnapshotHarnessType is the snapshot harness type.
+	SnapshotHarnessType
 	// TipsHarnessType is the type of the tips harness.
 	TipsHarnessType
 	// HeaderHarnessType is the type of the header harness.
@@ -109,6 +112,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return attestationharness.Contracts["solidity/AttestationHarness.t.sol:AttestationHarness"]
 	case StateHarnessType:
 		return stateharness.Contracts["solidity/StateHarness.t.sol:StateHarness"]
+	case SnapshotHarnessType:
+		return snapshotharness.Contracts["solidity/SnapshotHarness.t.sol:SnapshotHarness"]
 	case DestinationHarnessType:
 		return destinationharness.Contracts["solidity/DestinationHarness.t.sol:DestinationHarness"]
 	case TipsHarnessType:
