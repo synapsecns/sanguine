@@ -1,11 +1,11 @@
 {
   "name": "sanguine",
   "version": "1.0.0",
+  "private": "true",
   "description": "Implementation of the Sanguine messaging standard",
   "workspaces": {
     "packages": [
-      "packages/*",
-      "core"
+      "packages/*"
     ],
     "nohoist": [
       "**/typechain",
@@ -14,7 +14,6 @@
       "**/@openzeppelin/contracts"
     ]
   },
-  "private": "true",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/synapsecns/sanguine.git"
@@ -24,12 +23,56 @@
     "url": "https://github.com/synapsecns/sanguine/issues"
   },
   "homepage": "https://github.com/synapsecns/sanguine#readme",
+  "scripts": {
+    "update:yarn": "GITHUB_TOKEN='' yarn set version 1.x",
+    "clean": "yarn lerna run clean --parallel",
+    "test:coverage": "yarn cover-all && yarn collect &&  nyc report --reporter lcov --report-dir=lcov",
+    "cover-all": "yarn lerna exec npm run test:coverage --parallel",
+    "collect": "rm -rf .nyc_output && mkdir -p .nyc_output && aggregate-coverage collectFiles --pattern='packages/**/!(node_modules)/**/coverage-final.json' --target='.nyc_output'",
+    "generate:docs": "typedoc --plugin typedoc-plugin-markdown --out package-docs"
+  },
   "devDependencies": {
-    "lerna": "4.0.0",
-    "prettier": "2.7.1",
-    "prettier-plugin-solidity": "1.0.0-dev.23"
+    "@babel/eslint-parser": "^7.18.2",
+    "@synapsecns/coverage-aggregator": "file:./packages/coverage-aggregator",
+    "@types/chai": "^4.2.18",
+    "@types/chai-as-promised": "^7.1.4",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^12.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.1",
+    "@typescript-eslint/parser": "^5.45.1",
+    "chai": "^4.2.0",
+    "codecov": "^3.8.3",
+    "copyfiles": "^2.3.0",
+    "depcheck": "^1.4.3",
+    "doctoc": "^2.2.0",
+    "eslint": "^8.16.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jsdoc": "^35.1.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-react": "^7.24.0",
+    "eslint-plugin-unicorn": "^42.0.0",
+    "lerna": "^4.0.0",
+    "lint-staged": "11.0.0",
+    "markdownlint": "^0.24.0",
+    "markdownlint-cli2": "0.4.0",
+    "mkdirp": "^1.0.4",
+    "mocha": "^8.4.0",
+    "nyc": "^15.1.0",
+    "prettier": "^2.8.0",
+    "prettier-plugin-solidity": "^1.0.0-beta.13",
+    "solhint-plugin-prettier": "^0.0.5",
+    "ts-mocha": "^10.0.0",
+    "typedoc": "^0.23.24",
+    "typedoc-plugin-markdown": "^3.14.0",
+    "typescript": "^4.9.3"
   },
   "dependencies": {
     "@changesets/cli": "2.22.0"
-  }
+  },
+  "packageManager": "yarn@1.22.19"
 }
