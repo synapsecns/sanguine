@@ -459,6 +459,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 		newRoot, err = exec.GetMerkleTree(chainID, destination).Root(2)
 		if err != nil {
+			time.Sleep(2 * time.Second)
 			return false
 		}
 
