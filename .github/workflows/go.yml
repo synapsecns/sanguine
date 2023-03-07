@@ -202,6 +202,7 @@ jobs:
         # see: https://www.reddit.com/r/golang/comments/476pae/how_to_speed_up_go_compiler_and_many_other_go/
         env:
           GOGC: 2000
+          GOMEMLIMIT: 6GiB
 
   #note: right now this is not run against all work dirs
   lint:
