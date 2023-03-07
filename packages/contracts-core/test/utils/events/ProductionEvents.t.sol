@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/events/OriginEvents.sol";
-import "../../../contracts/events/StateHubEvents.sol";
+import { OriginEvents } from "../../../contracts/events/OriginEvents.sol";
+import { SnapshotHubEvents } from "../../../contracts/events/SnapshotHubEvents.sol";
+import { SummitEvents } from "../../../contracts/events/SummitEvents.sol";
 
 // solhint-disable no-empty-blocks
-abstract contract ProductionEvents is OriginEvents, StateHubEvents {
+abstract contract ProductionEvents is OriginEvents, SnapshotHubEvents, SummitEvents {
 
 }

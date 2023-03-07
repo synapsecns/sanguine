@@ -51,4 +51,13 @@ abstract contract SynapseProofs {
     function genSnapshotProof(uint256 index) public view returns (bytes32[] memory) {
         return summitGen.generateProof(index);
     }
+
+    function getSnapshotRoot() public view returns (bytes32) {
+        return summitGen.root();
+    }
+
+    function getSnapshotHeight() public view returns (uint8) {
+        // Extra element in the proof list is "right sub-leaf of Origin State"
+        return uint8(summitGen.height() + 1);
+    }
 }

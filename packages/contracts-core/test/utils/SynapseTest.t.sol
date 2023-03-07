@@ -159,6 +159,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         } else if (option == DEPLOY_PROD_SUMMIT) {
             summit = address(new Summit());
             Summit(summit).initialize();
+            Summit(summit).transferOwnership(address(bondingManager));
         } else {
             revert("Unknown option: Summit");
         }

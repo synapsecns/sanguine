@@ -7,9 +7,9 @@ contract AttestationProofGenerator {
     using StateLib for bytes;
 
     uint256 internal leafs;
-    uint256 internal height;
     bytes[] internal states;
 
+    uint256 public height;
     bytes32 public root;
 
     // (height => (index => node))
