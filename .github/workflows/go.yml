@@ -30,12 +30,14 @@ jobs:
         with:
           include_deps: true
           github_token: ${{ secrets.WORKFLOW_PAT }}
+          timeout: '10m'
 
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go_nodeps
         with:
           include_deps: false
           github_token: ${{ secrets.WORKFLOW_PAT }}
+          timeout: '10m'
 
       - name: Check For Solidity Changes
         id: filter_solidity
@@ -103,7 +105,7 @@ jobs:
         run: docker run -p 8045:8545 -d -v /tmp/keys/:/tmp/keys/  --name rinkeby --restart always trufflesuite/ganache-cli ganache-cli --accounts 10 --account_keys_path /tmp/keys/rinkeby --chainId 4 # --fork https://rinkeby-light.eth.linkpool.io (no need to actually fork)
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -185,7 +187,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -311,34 +313,23 @@ jobs:
         run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
         id: nvmrc
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
       - name: 'Use NodeJS by nvmrc'
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+          cache: 'yarn'
 
-      - name: Initialize Yarn cache
-        uses: actions/cache@v2
-        id: yarn-cache
+      - uses: actions/cache@v3
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install Node Dependencies
-        run: yarn install --frozen-lockfile --check-files
-
-      - name: Install dependencies
-        run: |
-          npx lerna bootstrap
+        run: yarn install --immutable
 
       # Generate flattened files
       - name: Run flattener
-        run: npx lerna exec npm run build:go
+        run: npx lerna exec npm run build:go --parallel
 
       # Setup Go
       - uses: actions/setup-go@v3
@@ -346,7 +337,7 @@ jobs:
           go-version: 1.20.x
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -428,35 +419,22 @@ jobs:
         id: nvmrc
         if: ${{ contains(matrix.package, 'agents') }}
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-        if: ${{ contains(matrix.package, 'agents') }}
 
       - name: 'Use NodeJS by nvmrc'
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
+        if: ${{ contains(matrix.package, 'agents') }}
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-        if: ${{ contains(matrix.package, 'agents') }}
+          cache: 'yarn'
 
-      - name: Initialize Yarn cache
-        uses: actions/cache@v2
-        id: yarn-cache
-        if: ${{ contains(matrix.package, 'agents') }}
+      - uses: actions/cache@v3
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install Node Dependencies
-        run: yarn install --frozen-lockfile --check-files
+        run: yarn install --immutable
         if: ${{ contains(matrix.package, 'agents') }}
-
-      - name: Install dependencies
-        if: ${{ contains(matrix.package, 'agents') }}
-        run: |
-          npx lerna bootstrap
 
       # Generate flattened files
       - name: Run flattener
@@ -469,7 +447,7 @@ jobs:
           go-version: 1.20.x
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
