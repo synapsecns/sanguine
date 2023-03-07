@@ -31,7 +31,7 @@ var (
 // ByteStringMetaData contains all meta data concerning the ByteString contract.
 var ByteStringMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212207809a3e0bd154877989775684993f2f678f400e13e749234ba0360bfa831f90364736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212200b98959c65ebf5460a8cab42472beadf9aeb8c2c69ea5ba9d53411806a18366a64736f6c63430008110033",
 }
 
 // ByteStringABI is the input ABI used to generate the binding from.
@@ -380,267 +380,11 @@ func (_IMessageRecipient *IMessageRecipientTransactorSession) Handle(_origin uin
 	return _IMessageRecipient.Contract.Handle(&_IMessageRecipient.TransactOpts, _origin, _nonce, _sender, _rootTimestamp, _message)
 }
 
-// IStateHubMetaData contains all meta data concerning the IStateHub contract.
-var IStateHubMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_statePayload\",\"type\":\"bytes\"}],\"name\":\"isValidState\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isValid\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"suggestLatestState\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"statePayload\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"}],\"name\":\"suggestState\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"statePayload\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
-	Sigs: map[string]string{
-		"a9dcf22d": "isValidState(bytes)",
-		"c0b56f7c": "suggestLatestState()",
-		"b4596b4b": "suggestState(uint32)",
-	},
-}
-
-// IStateHubABI is the input ABI used to generate the binding from.
-// Deprecated: Use IStateHubMetaData.ABI instead.
-var IStateHubABI = IStateHubMetaData.ABI
-
-// Deprecated: Use IStateHubMetaData.Sigs instead.
-// IStateHubFuncSigs maps the 4-byte function signature to its string representation.
-var IStateHubFuncSigs = IStateHubMetaData.Sigs
-
-// IStateHub is an auto generated Go binding around an Ethereum contract.
-type IStateHub struct {
-	IStateHubCaller     // Read-only binding to the contract
-	IStateHubTransactor // Write-only binding to the contract
-	IStateHubFilterer   // Log filterer for contract events
-}
-
-// IStateHubCaller is an auto generated read-only Go binding around an Ethereum contract.
-type IStateHubCaller struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// IStateHubTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type IStateHubTransactor struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// IStateHubFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type IStateHubFilterer struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// IStateHubSession is an auto generated Go binding around an Ethereum contract,
-// with pre-set call and transact options.
-type IStateHubSession struct {
-	Contract     *IStateHub        // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts     // Call options to use throughout this session
-	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
-}
-
-// IStateHubCallerSession is an auto generated read-only Go binding around an Ethereum contract,
-// with pre-set call options.
-type IStateHubCallerSession struct {
-	Contract *IStateHubCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts    // Call options to use throughout this session
-}
-
-// IStateHubTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
-// with pre-set transact options.
-type IStateHubTransactorSession struct {
-	Contract     *IStateHubTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts    // Transaction auth options to use throughout this session
-}
-
-// IStateHubRaw is an auto generated low-level Go binding around an Ethereum contract.
-type IStateHubRaw struct {
-	Contract *IStateHub // Generic contract binding to access the raw methods on
-}
-
-// IStateHubCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type IStateHubCallerRaw struct {
-	Contract *IStateHubCaller // Generic read-only contract binding to access the raw methods on
-}
-
-// IStateHubTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type IStateHubTransactorRaw struct {
-	Contract *IStateHubTransactor // Generic write-only contract binding to access the raw methods on
-}
-
-// NewIStateHub creates a new instance of IStateHub, bound to a specific deployed contract.
-func NewIStateHub(address common.Address, backend bind.ContractBackend) (*IStateHub, error) {
-	contract, err := bindIStateHub(address, backend, backend, backend)
-	if err != nil {
-		return nil, err
-	}
-	return &IStateHub{IStateHubCaller: IStateHubCaller{contract: contract}, IStateHubTransactor: IStateHubTransactor{contract: contract}, IStateHubFilterer: IStateHubFilterer{contract: contract}}, nil
-}
-
-// NewIStateHubCaller creates a new read-only instance of IStateHub, bound to a specific deployed contract.
-func NewIStateHubCaller(address common.Address, caller bind.ContractCaller) (*IStateHubCaller, error) {
-	contract, err := bindIStateHub(address, caller, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &IStateHubCaller{contract: contract}, nil
-}
-
-// NewIStateHubTransactor creates a new write-only instance of IStateHub, bound to a specific deployed contract.
-func NewIStateHubTransactor(address common.Address, transactor bind.ContractTransactor) (*IStateHubTransactor, error) {
-	contract, err := bindIStateHub(address, nil, transactor, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &IStateHubTransactor{contract: contract}, nil
-}
-
-// NewIStateHubFilterer creates a new log filterer instance of IStateHub, bound to a specific deployed contract.
-func NewIStateHubFilterer(address common.Address, filterer bind.ContractFilterer) (*IStateHubFilterer, error) {
-	contract, err := bindIStateHub(address, nil, nil, filterer)
-	if err != nil {
-		return nil, err
-	}
-	return &IStateHubFilterer{contract: contract}, nil
-}
-
-// bindIStateHub binds a generic wrapper to an already deployed contract.
-func bindIStateHub(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(IStateHubABI))
-	if err != nil {
-		return nil, err
-	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_IStateHub *IStateHubRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _IStateHub.Contract.IStateHubCaller.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_IStateHub *IStateHubRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IStateHub.Contract.IStateHubTransactor.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_IStateHub *IStateHubRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _IStateHub.Contract.IStateHubTransactor.contract.Transact(opts, method, params...)
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_IStateHub *IStateHubCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _IStateHub.Contract.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_IStateHub *IStateHubTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IStateHub.Contract.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_IStateHub *IStateHubTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _IStateHub.Contract.contract.Transact(opts, method, params...)
-}
-
-// IsValidState is a free data retrieval call binding the contract method 0xa9dcf22d.
-//
-// Solidity: function isValidState(bytes _statePayload) view returns(bool isValid)
-func (_IStateHub *IStateHubCaller) IsValidState(opts *bind.CallOpts, _statePayload []byte) (bool, error) {
-	var out []interface{}
-	err := _IStateHub.contract.Call(opts, &out, "isValidState", _statePayload)
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// IsValidState is a free data retrieval call binding the contract method 0xa9dcf22d.
-//
-// Solidity: function isValidState(bytes _statePayload) view returns(bool isValid)
-func (_IStateHub *IStateHubSession) IsValidState(_statePayload []byte) (bool, error) {
-	return _IStateHub.Contract.IsValidState(&_IStateHub.CallOpts, _statePayload)
-}
-
-// IsValidState is a free data retrieval call binding the contract method 0xa9dcf22d.
-//
-// Solidity: function isValidState(bytes _statePayload) view returns(bool isValid)
-func (_IStateHub *IStateHubCallerSession) IsValidState(_statePayload []byte) (bool, error) {
-	return _IStateHub.Contract.IsValidState(&_IStateHub.CallOpts, _statePayload)
-}
-
-// SuggestLatestState is a free data retrieval call binding the contract method 0xc0b56f7c.
-//
-// Solidity: function suggestLatestState() view returns(bytes statePayload)
-func (_IStateHub *IStateHubCaller) SuggestLatestState(opts *bind.CallOpts) ([]byte, error) {
-	var out []interface{}
-	err := _IStateHub.contract.Call(opts, &out, "suggestLatestState")
-
-	if err != nil {
-		return *new([]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
-
-	return out0, err
-
-}
-
-// SuggestLatestState is a free data retrieval call binding the contract method 0xc0b56f7c.
-//
-// Solidity: function suggestLatestState() view returns(bytes statePayload)
-func (_IStateHub *IStateHubSession) SuggestLatestState() ([]byte, error) {
-	return _IStateHub.Contract.SuggestLatestState(&_IStateHub.CallOpts)
-}
-
-// SuggestLatestState is a free data retrieval call binding the contract method 0xc0b56f7c.
-//
-// Solidity: function suggestLatestState() view returns(bytes statePayload)
-func (_IStateHub *IStateHubCallerSession) SuggestLatestState() ([]byte, error) {
-	return _IStateHub.Contract.SuggestLatestState(&_IStateHub.CallOpts)
-}
-
-// SuggestState is a free data retrieval call binding the contract method 0xb4596b4b.
-//
-// Solidity: function suggestState(uint32 _nonce) view returns(bytes statePayload)
-func (_IStateHub *IStateHubCaller) SuggestState(opts *bind.CallOpts, _nonce uint32) ([]byte, error) {
-	var out []interface{}
-	err := _IStateHub.contract.Call(opts, &out, "suggestState", _nonce)
-
-	if err != nil {
-		return *new([]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
-
-	return out0, err
-
-}
-
-// SuggestState is a free data retrieval call binding the contract method 0xb4596b4b.
-//
-// Solidity: function suggestState(uint32 _nonce) view returns(bytes statePayload)
-func (_IStateHub *IStateHubSession) SuggestState(_nonce uint32) ([]byte, error) {
-	return _IStateHub.Contract.SuggestState(&_IStateHub.CallOpts, _nonce)
-}
-
-// SuggestState is a free data retrieval call binding the contract method 0xb4596b4b.
-//
-// Solidity: function suggestState(uint32 _nonce) view returns(bytes statePayload)
-func (_IStateHub *IStateHubCallerSession) SuggestState(_nonce uint32) ([]byte, error) {
-	return _IStateHub.Contract.SuggestState(&_IStateHub.CallOpts, _nonce)
-}
-
 // InterfaceOriginMetaData contains all meta data concerning the InterfaceOrigin contract.
 var InterfaceOriginMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_destination\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_recipient\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_optimisticSeconds\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"_tips\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_messageBody\",\"type\":\"bytes\"}],\"name\":\"dispatch\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"messageNonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"messageHash\",\"type\":\"bytes32\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_statePayload\",\"type\":\"bytes\"}],\"name\":\"isValidState\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isValid\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"suggestLatestState\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"statePayload\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"}],\"name\":\"suggestState\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"statePayload\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_snapPayload\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"_stateIndex\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_attPayload\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_attSignature\",\"type\":\"bytes\"}],\"name\":\"verifyAttestation\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isValid\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_snapPayload\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"_stateIndex\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_snapSignature\",\"type\":\"bytes\"}],\"name\":\"verifySnapshot\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isValid\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_destination\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_recipient\",\"type\":\"bytes32\"},{\"internalType\":\"uint32\",\"name\":\"_optimisticSeconds\",\"type\":\"uint32\"},{\"internalType\":\"bytes\",\"name\":\"_tips\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_messageBody\",\"type\":\"bytes\"}],\"name\":\"dispatch\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"messageNonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"messageHash\",\"type\":\"bytes32\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_snapPayload\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"_stateIndex\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_attPayload\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_attSignature\",\"type\":\"bytes\"}],\"name\":\"verifyAttestation\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isValid\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_snapPayload\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"_stateIndex\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_snapSignature\",\"type\":\"bytes\"}],\"name\":\"verifySnapshot\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isValid\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"f7560e40": "dispatch(uint32,bytes32,uint32,bytes,bytes)",
-		"a9dcf22d": "isValidState(bytes)",
-		"c0b56f7c": "suggestLatestState()",
-		"b4596b4b": "suggestState(uint32)",
 		"663a711b": "verifyAttestation(bytes,uint256,bytes,bytes)",
 		"538f5b98": "verifySnapshot(bytes,uint256,bytes)",
 	},
@@ -796,99 +540,6 @@ func (_InterfaceOrigin *InterfaceOriginTransactorRaw) Transact(opts *bind.Transa
 	return _InterfaceOrigin.Contract.contract.Transact(opts, method, params...)
 }
 
-// IsValidState is a free data retrieval call binding the contract method 0xa9dcf22d.
-//
-// Solidity: function isValidState(bytes _statePayload) view returns(bool isValid)
-func (_InterfaceOrigin *InterfaceOriginCaller) IsValidState(opts *bind.CallOpts, _statePayload []byte) (bool, error) {
-	var out []interface{}
-	err := _InterfaceOrigin.contract.Call(opts, &out, "isValidState", _statePayload)
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// IsValidState is a free data retrieval call binding the contract method 0xa9dcf22d.
-//
-// Solidity: function isValidState(bytes _statePayload) view returns(bool isValid)
-func (_InterfaceOrigin *InterfaceOriginSession) IsValidState(_statePayload []byte) (bool, error) {
-	return _InterfaceOrigin.Contract.IsValidState(&_InterfaceOrigin.CallOpts, _statePayload)
-}
-
-// IsValidState is a free data retrieval call binding the contract method 0xa9dcf22d.
-//
-// Solidity: function isValidState(bytes _statePayload) view returns(bool isValid)
-func (_InterfaceOrigin *InterfaceOriginCallerSession) IsValidState(_statePayload []byte) (bool, error) {
-	return _InterfaceOrigin.Contract.IsValidState(&_InterfaceOrigin.CallOpts, _statePayload)
-}
-
-// SuggestLatestState is a free data retrieval call binding the contract method 0xc0b56f7c.
-//
-// Solidity: function suggestLatestState() view returns(bytes statePayload)
-func (_InterfaceOrigin *InterfaceOriginCaller) SuggestLatestState(opts *bind.CallOpts) ([]byte, error) {
-	var out []interface{}
-	err := _InterfaceOrigin.contract.Call(opts, &out, "suggestLatestState")
-
-	if err != nil {
-		return *new([]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
-
-	return out0, err
-
-}
-
-// SuggestLatestState is a free data retrieval call binding the contract method 0xc0b56f7c.
-//
-// Solidity: function suggestLatestState() view returns(bytes statePayload)
-func (_InterfaceOrigin *InterfaceOriginSession) SuggestLatestState() ([]byte, error) {
-	return _InterfaceOrigin.Contract.SuggestLatestState(&_InterfaceOrigin.CallOpts)
-}
-
-// SuggestLatestState is a free data retrieval call binding the contract method 0xc0b56f7c.
-//
-// Solidity: function suggestLatestState() view returns(bytes statePayload)
-func (_InterfaceOrigin *InterfaceOriginCallerSession) SuggestLatestState() ([]byte, error) {
-	return _InterfaceOrigin.Contract.SuggestLatestState(&_InterfaceOrigin.CallOpts)
-}
-
-// SuggestState is a free data retrieval call binding the contract method 0xb4596b4b.
-//
-// Solidity: function suggestState(uint32 _nonce) view returns(bytes statePayload)
-func (_InterfaceOrigin *InterfaceOriginCaller) SuggestState(opts *bind.CallOpts, _nonce uint32) ([]byte, error) {
-	var out []interface{}
-	err := _InterfaceOrigin.contract.Call(opts, &out, "suggestState", _nonce)
-
-	if err != nil {
-		return *new([]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
-
-	return out0, err
-
-}
-
-// SuggestState is a free data retrieval call binding the contract method 0xb4596b4b.
-//
-// Solidity: function suggestState(uint32 _nonce) view returns(bytes statePayload)
-func (_InterfaceOrigin *InterfaceOriginSession) SuggestState(_nonce uint32) ([]byte, error) {
-	return _InterfaceOrigin.Contract.SuggestState(&_InterfaceOrigin.CallOpts, _nonce)
-}
-
-// SuggestState is a free data retrieval call binding the contract method 0xb4596b4b.
-//
-// Solidity: function suggestState(uint32 _nonce) view returns(bytes statePayload)
-func (_InterfaceOrigin *InterfaceOriginCallerSession) SuggestState(_nonce uint32) ([]byte, error) {
-	return _InterfaceOrigin.Contract.SuggestState(&_InterfaceOrigin.CallOpts, _nonce)
-}
-
 // Dispatch is a paid mutator transaction binding the contract method 0xf7560e40.
 //
 // Solidity: function dispatch(uint32 _destination, bytes32 _recipient, uint32 _optimisticSeconds, bytes _tips, bytes _messageBody) payable returns(uint32 messageNonce, bytes32 messageHash)
@@ -961,7 +612,7 @@ var TestClientMetaData = &bind.MetaData{
 		"938b5f32": "origin()",
 		"1d0a1d47": "sendMessage(uint32,address,uint32,bytes)",
 	},
-	Bin: "0x60c060405234801561001057600080fd5b5060405161074f38038061074f83398101604081905261002f91610062565b6001600160a01b039182166080521660a052610095565b80516001600160a01b038116811461005d57600080fd5b919050565b6000806040838503121561007557600080fd5b61007e83610046565b915061008c60208401610046565b90509250929050565b60805160a0516106896100c66000396000818160bb0152610270015260008181606b015261016c01526106896000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c80631d0a1d4714610051578063938b5f3214610066578063b269681d146100b6578063e4d16d62146100dd575b600080fd5b61006461005f366004610430565b6100f0565b005b61008d7f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b61008d7f000000000000000000000000000000000000000000000000000000000000000081565b6100646100eb3660046104be565b610258565b73ffffffffffffffffffffffffffffffffffffffff83166000610166604080517e010000000000000000000000000000000000000000000000000000000000006020820152600060228201819052602e8201819052603a8201819052604682015281518082036032018152605290910190915290565b905060007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff1663f7560e4088858886896040518663ffffffff1660e01b81526004016101cb959493929190610598565b60408051808303816000875af11580156101e9573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061020d91906105e5565b5090507ff17c656698e3361e14b0a2402b83112a3d8ffcc011ce6bae5e8368685d1432768782308688604051610247959493929190610613565b60405180910390a150505050505050565b3373ffffffffffffffffffffffffffffffffffffffff7f000000000000000000000000000000000000000000000000000000000000000016146102fb576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601860248201527f54657374436c69656e743a202164657374696e6174696f6e0000000000000000604482015260640160405180910390fd5b7ff69cea362bb12e70e5e44dd4c00e85e1ac2efa32715ae0ee130b209393b150908585858585604051610332959493929190610613565b60405180910390a15050505050565b63ffffffff8116811461035357600080fd5b50565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261039657600080fd5b813567ffffffffffffffff808211156103b1576103b1610356565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019082821181831017156103f7576103f7610356565b8160405283815286602085880101111561041057600080fd5b836020870160208301376000602085830101528094505050505092915050565b6000806000806080858703121561044657600080fd5b843561045181610341565b9350602085013573ffffffffffffffffffffffffffffffffffffffff8116811461047a57600080fd5b9250604085013561048a81610341565b9150606085013567ffffffffffffffff8111156104a657600080fd5b6104b287828801610385565b91505092959194509250565b600080600080600060a086880312156104d657600080fd5b85356104e181610341565b945060208601356104f181610341565b93506040860135925060608601359150608086013567ffffffffffffffff81111561051b57600080fd5b61052788828901610385565b9150509295509295909350565b6000815180845260005b8181101561055a5760208185018101518683018201520161053e565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b600063ffffffff808816835286602084015280861660408401525060a060608301526105c760a0830185610534565b82810360808401526105d98185610534565b98975050505050505050565b600080604083850312156105f857600080fd5b825161060381610341565b6020939093015192949293505050565b600063ffffffff808816835280871660208401525084604083015283606083015260a0608083015261064860a0830184610534565b97965050505050505056fea2646970667358221220a1fd2ae3dd7125f7358bd8354a55fecff4e9e252b07828684aa5d3ccb51db56864736f6c63430008110033",
+	Bin: "0x60c060405234801561001057600080fd5b5060405161074f38038061074f83398101604081905261002f91610062565b6001600160a01b039182166080521660a052610095565b80516001600160a01b038116811461005d57600080fd5b919050565b6000806040838503121561007557600080fd5b61007e83610046565b915061008c60208401610046565b90509250929050565b60805160a0516106896100c66000396000818160bb0152610270015260008181606b015261016c01526106896000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c80631d0a1d4714610051578063938b5f3214610066578063b269681d146100b6578063e4d16d62146100dd575b600080fd5b61006461005f366004610430565b6100f0565b005b61008d7f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b61008d7f000000000000000000000000000000000000000000000000000000000000000081565b6100646100eb3660046104be565b610258565b73ffffffffffffffffffffffffffffffffffffffff83166000610166604080517e010000000000000000000000000000000000000000000000000000000000006020820152600060228201819052602e8201819052603a8201819052604682015281518082036032018152605290910190915290565b905060007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff1663f7560e4088858886896040518663ffffffff1660e01b81526004016101cb959493929190610598565b60408051808303816000875af11580156101e9573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061020d91906105e5565b5090507ff17c656698e3361e14b0a2402b83112a3d8ffcc011ce6bae5e8368685d1432768782308688604051610247959493929190610613565b60405180910390a150505050505050565b3373ffffffffffffffffffffffffffffffffffffffff7f000000000000000000000000000000000000000000000000000000000000000016146102fb576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601860248201527f54657374436c69656e743a202164657374696e6174696f6e0000000000000000604482015260640160405180910390fd5b7ff69cea362bb12e70e5e44dd4c00e85e1ac2efa32715ae0ee130b209393b150908585858585604051610332959493929190610613565b60405180910390a15050505050565b63ffffffff8116811461035357600080fd5b50565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261039657600080fd5b813567ffffffffffffffff808211156103b1576103b1610356565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019082821181831017156103f7576103f7610356565b8160405283815286602085880101111561041057600080fd5b836020870160208301376000602085830101528094505050505092915050565b6000806000806080858703121561044657600080fd5b843561045181610341565b9350602085013573ffffffffffffffffffffffffffffffffffffffff8116811461047a57600080fd5b9250604085013561048a81610341565b9150606085013567ffffffffffffffff8111156104a657600080fd5b6104b287828801610385565b91505092959194509250565b600080600080600060a086880312156104d657600080fd5b85356104e181610341565b945060208601356104f181610341565b93506040860135925060608601359150608086013567ffffffffffffffff81111561051b57600080fd5b61052788828901610385565b9150509295509295909350565b6000815180845260005b8181101561055a5760208185018101518683018201520161053e565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b600063ffffffff808816835286602084015280861660408401525060a060608301526105c760a0830185610534565b82810360808401526105d98185610534565b98975050505050505050565b600080604083850312156105f857600080fd5b825161060381610341565b6020939093015192949293505050565b600063ffffffff808816835280871660208401525084604083015283606083015260a0608083015261064860a0830184610534565b97965050505050505056fea26469706673582212204f8731f0a734df383ee66b2ebd49073540af55cba488dcdc8ab44d831cfaa93264736f6c63430008110033",
 }
 
 // TestClientABI is the input ABI used to generate the binding from.
@@ -1518,7 +1169,7 @@ func (_TestClient *TestClientFilterer) ParseMessageSent(log types.Log) (*TestCli
 // TipsLibMetaData contains all meta data concerning the TipsLib contract.
 var TipsLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212203d69c0503224055de86f155a6fc07c2e53c2118c3ac12f6c74e6681b2192829964736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220f793558ded023baca2d4b2c8e64404aad8b5e3780dffea19d580f24b13de837664736f6c63430008110033",
 }
 
 // TipsLibABI is the input ABI used to generate the binding from.
@@ -1691,7 +1342,7 @@ func (_TipsLib *TipsLibTransactorRaw) Transact(opts *bind.TransactOpts, method s
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212203b1fcc64a88d91a35f4c638b334b756835e09d6b96ddd8b6ba13cbf553c35b5864736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205958a7c2170ced610518572bd3674a27974d72c50933bbf2a7eb530f88ebf0d264736f6c63430008110033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.
@@ -1875,7 +1526,7 @@ var TypedMemViewMetaData = &bind.MetaData{
 		"1bfe17ce": "SHIFT_LOC()",
 		"13090c5a": "SHIFT_TYPE()",
 	},
-	Bin: "0x6101f061003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600436106100ad5760003560e01c806397b8ad4a11610080578063eb74062811610065578063eb740628146100f8578063f26be3fc14610100578063fb734584146100f857600080fd5b806397b8ad4a146100cd578063b602d173146100e557600080fd5b806310153fce146100b25780631136e7ea146100cd57806313090c5a146100d55780631bfe17ce146100dd575b600080fd5b6100ba602881565b6040519081526020015b60405180910390f35b6100ba601881565b6100ba610158565b6100ba610172565b6100ba6bffffffffffffffffffffffff81565b6100ba606081565b6101277fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000090911681526020016100c4565b606061016581601861017a565b61016f919061017a565b81565b61016f606060185b808201808211156101b4577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b9291505056fea2646970667358221220ea61ce01d9423fe4d2ca412a6a1a56ca4706bd2efd12464d4ea53eb56ac620c164736f6c63430008110033",
+	Bin: "0x6101f061003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600436106100ad5760003560e01c806397b8ad4a11610080578063eb74062811610065578063eb740628146100f8578063f26be3fc14610100578063fb734584146100f857600080fd5b806397b8ad4a146100cd578063b602d173146100e557600080fd5b806310153fce146100b25780631136e7ea146100cd57806313090c5a146100d55780631bfe17ce146100dd575b600080fd5b6100ba602881565b6040519081526020015b60405180910390f35b6100ba601881565b6100ba610158565b6100ba610172565b6100ba6bffffffffffffffffffffffff81565b6100ba606081565b6101277fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000090911681526020016100c4565b606061016581601861017a565b61016f919061017a565b81565b61016f606060185b808201808211156101b4577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b9291505056fea2646970667358221220e4ecf2593c919d00db09691ec3ddcc193cd34f5bb05f98fe5b343933fb2aed6c64736f6c63430008110033",
 }
 
 // TypedMemViewABI is the input ABI used to generate the binding from.
