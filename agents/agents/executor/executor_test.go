@@ -93,13 +93,13 @@ func (e *ExecutorSuite) TestExecutor() {
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
 
 	go func() {
-		scribeErr := scribeClient.Start(e.GetSuiteContext())
+		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
 	}()
 
 	// Start the Scribe.
 	go func() {
-		_ = scribe.Start(e.GetSuiteContext())
+		_ = scribe.Start(e.GetTestContext())
 	}()
 
 	excCfg := executorCfg.Config{
@@ -136,7 +136,7 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	// Start the executor.
 	go func() {
-		excErr := exc.Start(e.GetSuiteContext())
+		excErr := exc.Start(e.GetTestContext())
 		if !testDone {
 			e.Nil(excErr)
 		}
