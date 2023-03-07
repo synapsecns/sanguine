@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import "../libs/Attestation.sol";
+import "../libs/MerkleList.sol";
 import "../libs/Snapshot.sol";
 import "../libs/State.sol";
 import "../libs/TypedMemView.sol";
@@ -97,6 +98,36 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         // Attestation is valid => attestations[nonce] exists
         // notarySnapshots.length == attestations.length => notarySnapshots[nonce] exists
         return _restoreSnapshot(notarySnapshots[attestation.nonce()]);
+    }
+
+    /// @inheritdoc ISnapshotHub
+    function getSnapshotProof(uint256 _nonce, uint256 _stateIndex)
+        external
+        view
+        returns (bytes32[] memory snapProof)
+    {
+        require(_nonce < notarySnapshots.length, "Nonce out of range");
+        snapProof = new bytes32[](attestations[_nonce].height);
+        SummitSnapshot memory snap = notarySnapshots[_nonce];
+        uint256 statesAmount = snap.getStatesAmount();
+        require(_stateIndex < statesAmount, "Index out of range");
+        // Reconstruct the leafs of Snapshot Merkle Tree
+        bytes32[] memory hashes = new bytes32[](statesAmount);
+        for (uint256 i = 0; i < statesAmount; ++i) {
+            // Get value for "index in guardStates PLUS 1"
+            uint256 statePtr = snap.getStatePtr(i);
+            // We are never saving zero values when accepting Guard/Notary snapshots, so this holds
+            assert(statePtr != 0);
+            SummitState memory guardState = guardStates[statePtr - 1];
+            State state = guardState.formatSummitState().castToState();
+            hashes[i] = state.hash();
+            if (i == _stateIndex) {
+                // First element of the proof is "right sub-leaf"
+                (, snapProof[0]) = state.subLeafs();
+            }
+        }
+        // This will fill the remaining values in the `snapProof` array
+        MerkleList.calculateProof(hashes, _stateIndex, snapProof);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -31,4 +31,10 @@ contract SnapshotHubMock is ExcludeCoverage, ISnapshotHub {
         view
         returns (bytes memory snapshotPayload)
     {}
+
+    function getSnapshotProof(uint256 _nonce, uint256 _stateIndex)
+        external
+        view
+        returns (bytes32[] memory snapProof)
+    {}
 }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import "../../contracts/libs/Merkle.sol";
 import "../../contracts/libs/Snapshot.sol";
 
 import "../utils/SynapseTest.t.sol";
@@ -108,6 +109,19 @@ contract SummitTest is SynapseTest, SynapseProofs {
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapshot, signature);
             InterfaceSummit(summit).submitSnapshot(snapshot, signature);
+
+            // Check proofs for every State in the Notary snapshot
+            for (uint256 j = 0; j < STATES; ++j) {
+                bytes32[] memory snapProof = ISnapshotHub(summit).getSnapshotProof(i, j);
+                // Item to prove is State's "left sub-leaf"
+                (bytes32 item, ) = states[j].subLeafs();
+                // Item index is twice the state index (since it's a left child)
+                assertEq(
+                    MerkleLib.branchRoot(item, snapProof, 2 * j),
+                    sa.root,
+                    "!getSnapshotProof"
+                );
+            }
         }
     }
 }
