@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import "../libs/Structures.sol";
+import "../libs/Constants.sol";
 import "../libs/SystemMessage.sol";
+import "../libs/Structures.sol";
 import "../libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { BasicClient } from "../client/BasicClient.sol";
@@ -44,7 +45,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * to initiate a system call through the system router. However, every system contract that wants
  * to expose one of its external functions for the system calls, should do the following:
  * 1. Such functions should have the same first three arguments:
- * - foo(uint256 rootSubmittedAt, uint32 callOrigin, InterfaceSystemRouter.SystemEntity systemCaller, <...>)
+ * - foo(uint256 rootSubmittedAt, uint32 callOrigin, SystemEntity systemCaller, <...>)
  * These arguments are filled by the System Routers on origin and destination chain. This allows
  * the recipient to set the restrictions for receiving the call in a very granular way.
  * To perform a call, use any values for `(rootSubmittedAt, callOrigin,systemCaller)`

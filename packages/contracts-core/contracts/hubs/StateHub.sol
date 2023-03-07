@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "../libs/Constants.sol";
 import "../libs/Snapshot.sol";
 import "../libs/State.sol";
-import "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "../context/DomainContext.sol";
 import { StateHubEvents } from "../events/StateHubEvents.sol";
@@ -38,6 +38,11 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         // This will revert if payload is not a formatted state
         State state = _statePayload.castToState();
         return _isValidState(state);
+    }
+
+    /// @inheritdoc IStateHub
+    function statesAmount() external view returns (uint256) {
+        return originStates.length;
     }
 
     /// @inheritdoc IStateHub

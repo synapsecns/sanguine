@@ -25,24 +25,46 @@ contract BondingMVPTest is BondingManagerTest {
     }
 
     function test_addAgent(uint32 domain, address agent) public {
-        SystemContract.AgentInfo[] memory infos = infoToArray(agentInfo(domain, agent, true));
+        AgentInfo[] memory infos = infoToArray(agentInfo(domain, agent, true));
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
             // Default values are used in MVP implementation
-            emit SyncAgentsCall({ requestID: 0, removeExisting: false, infos: infos });
+            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+            vm.expectCall(
+                systemRegistries[r],
+                abi.encodeWithSelector(
+                    SystemContractMock.syncAgents.selector,
+                    block.timestamp,
+                    DOMAIN_LOCAL,
+                    SystemEntity.BondingManager,
+                    0,
+                    false,
+                    infos
+                )
+            );
         }
         vm.prank(owner);
         _castToMVP().addAgent(domain, agent);
     }
 
     function test_removeAgent(uint32 domain, address agent) public {
-        SystemContract.AgentInfo[] memory infos = infoToArray(agentInfo(domain, agent, false));
+        AgentInfo[] memory infos = infoToArray(agentInfo(domain, agent, false));
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            vm.expectEmit(true, true, true, true, systemRegistries[r]);
             // Default values are used in MVP implementation
-            emit SyncAgentsCall({ requestID: 0, removeExisting: false, infos: infos });
+            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+            vm.expectCall(
+                systemRegistries[r],
+                abi.encodeWithSelector(
+                    SystemContractMock.syncAgents.selector,
+                    block.timestamp,
+                    DOMAIN_LOCAL,
+                    SystemEntity.BondingManager,
+                    0,
+                    false,
+                    infos
+                )
+            );
         }
         vm.prank(owner);
         _castToMVP().removeAgent(domain, agent);
@@ -56,9 +78,9 @@ contract BondingMVPTest is BondingManagerTest {
         // Exclude local calls and calls from Synapse Chain
         vm.assume(callOrigin != DOMAIN_LOCAL);
         _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             // Should reject all system calls from remote domains
-            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
+            SystemEntity caller = SystemEntity(c);
             vm.expectRevert("Cross-chain disabled");
             // Use mocked agent info
             _mockSlashAgentCall({
@@ -73,9 +95,9 @@ contract BondingMVPTest is BondingManagerTest {
         // Exclude local calls
         vm.assume(callOrigin != localDomain);
         _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             // Should reject all system calls from remote domains
-            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
+            SystemEntity caller = SystemEntity(c);
             vm.expectRevert("Cross-chain disabled");
             // Use mocked list of agents
             _mockSyncAgentsCall({
@@ -83,7 +105,7 @@ contract BondingMVPTest is BondingManagerTest {
                 systemCaller: caller,
                 requestID: 0,
                 removeExisting: false,
-                infos: new SystemContract.AgentInfo[](0)
+                infos: new AgentInfo[](0)
             });
         }
     }

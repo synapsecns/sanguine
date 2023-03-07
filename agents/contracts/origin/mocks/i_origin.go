@@ -950,11 +950,11 @@ func (_m *IOrigin) SetSystemRouter(opts *bind.TransactOpts, _systemRouter common
 }
 
 // SlashAgent provides a mock function with given fields: opts, arg0, _callOrigin, _caller, _info
-func (_m *IOrigin) SlashAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _info origin.SystemContractAgentInfo) (*types.Transaction, error) {
+func (_m *IOrigin) SlashAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _info origin.AgentInfo) (*types.Transaction, error) {
 	ret := _m.Called(opts, arg0, _callOrigin, _caller, _info)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, uint32, uint8, origin.SystemContractAgentInfo) *types.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, uint32, uint8, origin.AgentInfo) *types.Transaction); ok {
 		r0 = rf(opts, arg0, _callOrigin, _caller, _info)
 	} else {
 		if ret.Get(0) != nil {
@@ -963,8 +963,31 @@ func (_m *IOrigin) SlashAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigi
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, uint32, uint8, origin.SystemContractAgentInfo) error); ok {
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, uint32, uint8, origin.AgentInfo) error); ok {
 		r1 = rf(opts, arg0, _callOrigin, _caller, _info)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// StatesAmount provides a mock function with given fields: opts
+func (_m *IOrigin) StatesAmount(opts *bind.CallOpts) (*big.Int, error) {
+	ret := _m.Called(opts)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) *big.Int); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1019,11 +1042,11 @@ func (_m *IOrigin) SuggestState(opts *bind.CallOpts, _nonce uint32) ([]byte, err
 }
 
 // SyncAgents provides a mock function with given fields: opts, arg0, _callOrigin, _caller, _requestID, _removeExisting, _infos
-func (_m *IOrigin) SyncAgents(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _requestID *big.Int, _removeExisting bool, _infos []origin.SystemContractAgentInfo) (*types.Transaction, error) {
+func (_m *IOrigin) SyncAgents(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _requestID *big.Int, _removeExisting bool, _infos []origin.AgentInfo) (*types.Transaction, error) {
 	ret := _m.Called(opts, arg0, _callOrigin, _caller, _requestID, _removeExisting, _infos)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, uint32, uint8, *big.Int, bool, []origin.SystemContractAgentInfo) *types.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, uint32, uint8, *big.Int, bool, []origin.AgentInfo) *types.Transaction); ok {
 		r0 = rf(opts, arg0, _callOrigin, _caller, _requestID, _removeExisting, _infos)
 	} else {
 		if ret.Get(0) != nil {
@@ -1032,7 +1055,7 @@ func (_m *IOrigin) SyncAgents(opts *bind.TransactOpts, arg0 *big.Int, _callOrigi
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, uint32, uint8, *big.Int, bool, []origin.SystemContractAgentInfo) error); ok {
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, uint32, uint8, *big.Int, bool, []origin.AgentInfo) error); ok {
 		r1 = rf(opts, arg0, _callOrigin, _caller, _requestID, _removeExisting, _infos)
 	} else {
 		r1 = ret.Error(1)

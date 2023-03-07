@@ -9,6 +9,7 @@ replace (
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/go-git/go-git/v5 v5.5.2

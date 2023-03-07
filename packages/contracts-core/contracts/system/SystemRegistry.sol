@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "./AgentRegistry.sol";
 import { SystemContract } from "./SystemContract.sol";
@@ -25,9 +27,9 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
     function slashAgent(
         uint256,
         uint32 _callOrigin,
-        InterfaceSystemRouter.SystemEntity _caller,
+        SystemEntity _caller,
         AgentInfo memory _info
-    ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
+    ) external onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
         // TODO: decide if we need to store anything, as the slashing occurred on another chain
         _beforeAgentSlashed(_info);
         _removeAgent(_info.domain, _info.account);
@@ -46,11 +48,11 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
     function syncAgents(
         uint256,
         uint32 _callOrigin,
-        InterfaceSystemRouter.SystemEntity _caller,
+        SystemEntity _caller,
         uint256 _requestID,
         bool _removeExisting,
         AgentInfo[] memory _infos
-    ) external override onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
+    ) external onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
         // TODO: do we need to store this in any way?
         _requestID;
         // TODO: implement removeAllGuards(), removeAllNotaries()
@@ -73,7 +75,7 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
         systemRouter.systemCall({
             _destination: localDomain,
             _optimisticSeconds: 0,
-            _recipient: InterfaceSystemRouter.SystemEntity.BondingManager,
+            _recipient: SystemEntity.BondingManager,
             _data: _data
         });
     }
