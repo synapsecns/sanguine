@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -114,6 +115,25 @@ func (a StateHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedCon
 		return stateharness.DeployStateHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return stateharness.NewStateHarnessRef(address, backend)
+	})
+}
+
+// SnapshotHarnessDeployer deploys the snapshot harness.
+type SnapshotHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewSnapshotHarnessDeployer creates a new deployer for the snapshot harness.
+func NewSnapshotHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return SnapshotHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, SnapshotHarnessType)}
+}
+
+// Deploy deploys the snapshot harness.
+func (a SnapshotHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return snapshotharness.DeploySnapshotHarness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return snapshotharness.NewSnapshotHarnessRef(address, backend)
 	})
 }
 

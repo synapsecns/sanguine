@@ -14,7 +14,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 		NewOriginDeployer, NewMessageHarnessDeployer, NewOriginHarnessDeployer, NewAttestationCollectorDeployer,
 		NewAttestationHarnessDeployer, NewTipsHarnessDeployer, NewDestinationDeployer, NewDestinationHarnessDeployer,
 		NewHeaderHarnessDeployer, NewAgentsTestContractDeployer, NewTestClientDeployer, NewPingPongClientDeployer,
-		NewStateHarnessDeployer,
+		NewStateHarnessDeployer, NewSnapshotHarnessDeployer,
 	)
 	return &DeployManager{parentManager}
 }
