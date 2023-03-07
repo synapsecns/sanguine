@@ -220,6 +220,99 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 }
 
 const (
+	offsetRoot        = 32
+	offsetOrigin      = 36
+	offsetNonce       = 40
+	offsetBlockNumber = 45
+	offsetTimestamp   = 50
+	uint32Len         = 4
+	uint40Len         = 5
+)
+
+// EncodeState encodes a state.
+func EncodeState(state State) ([]byte, error) {
+	b := make([]byte, 0)
+	originBytes := make([]byte, uint32Len)
+	nonceBytes := make([]byte, uint32Len)
+
+	binary.BigEndian.PutUint32(originBytes, state.Origin())
+	binary.BigEndian.PutUint32(nonceBytes, state.Nonce())
+	root := state.Root()
+
+	b = append(b, root[:]...)
+	b = append(b, originBytes...)
+	b = append(b, nonceBytes...)
+	b = append(b, math.PaddedBigBytes(state.BlockNumber(), uint40Len)...)
+	b = append(b, math.PaddedBigBytes(state.Timestamp(), uint40Len)...)
+
+	return b, nil
+}
+
+// DecodeState decodes a state.
+func DecodeState(toDecode []byte) (State, error) {
+	if len(toDecode) != stateLength {
+		return nil, fmt.Errorf("invalid state length, expected %d, got %d", stateLength, len(toDecode))
+	}
+
+	root := toDecode[0:offsetRoot]
+	origin := binary.BigEndian.Uint32(toDecode[offsetRoot:offsetOrigin])
+	nonce := binary.BigEndian.Uint32(toDecode[offsetOrigin:offsetNonce])
+	blockNumber := new(big.Int).SetBytes(toDecode[offsetNonce:offsetBlockNumber])
+	timestamp := new(big.Int).SetBytes(toDecode[offsetBlockNumber:offsetTimestamp])
+
+	var rootB32 [32]byte
+	copy(rootB32[:], root)
+
+	return state{
+		root:        rootB32,
+		origin:      origin,
+		nonce:       nonce,
+		blockNumber: blockNumber,
+		timestamp:   timestamp,
+	}, nil
+}
+
+const stateLength = 50
+
+// EncodeSnapshot encodes a snapshot.
+func EncodeSnapshot(snapshot Snapshot) ([]byte, error) {
+	states := snapshot.States()
+
+	if len(states) == 0 {
+		return nil, fmt.Errorf("no states to encode")
+	}
+
+	encodedStates := make([]byte, 0)
+
+	for _, state := range states {
+		encodedState, err := EncodeState(state)
+		if err != nil {
+			return nil, fmt.Errorf("could not encode state: %w", err)
+		}
+		encodedStates = append(encodedStates, encodedState...)
+	}
+
+	return encodedStates, nil
+}
+
+// DecodeSnapshot decodes a snapshot.
+func DecodeSnapshot(toDecode []byte) (Snapshot, error) {
+	var states []State
+
+	for i := 0; i < len(toDecode); i += stateLength {
+		state, err := DecodeState(toDecode[i : i+stateLength])
+		if err != nil {
+			return nil, fmt.Errorf("could not decode state: %w", err)
+		}
+		states = append(states, state)
+	}
+
+	return snapshot{
+		states: states,
+	}, nil
+}
+
+const (
 	//nolint: staticcheck
 	tipsVersion       uint16 = 1
 	offsetNotary             = 2

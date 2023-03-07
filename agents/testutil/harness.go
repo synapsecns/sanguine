@@ -3,6 +3,8 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -94,6 +96,44 @@ func (a AttestationHarnessDeployer) Deploy(ctx context.Context) (contracts.Deplo
 		return attestationharness.DeployAttestationHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return attestationharness.NewAttestationHarnessRef(address, backend)
+	})
+}
+
+// StateHarnessDeployer deploys the state harness.
+type StateHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewStateHarnessDeployer creates a new deployer for the state harness.
+func NewStateHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return StateHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, StateHarnessType)}
+}
+
+// Deploy deploys the state harness.
+func (a StateHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return stateharness.DeployStateHarness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return stateharness.NewStateHarnessRef(address, backend)
+	})
+}
+
+// SnapshotHarnessDeployer deploys the snapshot harness.
+type SnapshotHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewSnapshotHarnessDeployer creates a new deployer for the snapshot harness.
+func NewSnapshotHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return SnapshotHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, SnapshotHarnessType)}
+}
+
+// Deploy deploys the snapshot harness.
+func (a SnapshotHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return snapshotharness.DeploySnapshotHarness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return snapshotharness.NewSnapshotHarnessRef(address, backend)
 	})
 }
 
