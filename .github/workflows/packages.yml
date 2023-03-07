@@ -1,0 +1,82 @@
+name: Typescript Packages
+
+on:
+  pull_request:
+    paths:
+      - 'packages/**'
+  push:
+    paths:
+      - 'packages/**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          submodules: 'recursive'
+
+      - name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+        id: nvmrc
+
+      - name: 'Use NodeJS by nvmrc'
+        uses: actions/setup-node@v3
+        with:
+          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+          cache: 'yarn'
+
+      - uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install Node Dependencies
+        run: yarn install --immutable
+
+      - name: Run tests # Run tests of all packages
+        run: npx lerna exec npm run ci:lint --parallel
+  test:
+      runs-on: ubuntu-latest
+      steps:
+        - name: 'Checkout'
+          uses: actions/checkout@v3
+          with:
+            fetch-depth: 1
+            submodules: 'recursive'
+
+        - name: Read .nvmrc
+          run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+          id: nvmrc
+
+        - name: 'Use NodeJS by nvmrc'
+          uses: actions/setup-node@v3
+          with:
+            node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+            cache: 'yarn'
+
+        - uses: actions/cache@v3
+          with:
+            path: '**/node_modules'
+            key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+        - name: Install Node Dependencies
+          run: yarn install --immutable
+
+        - name: Run tests # Run tests of all packages
+          run: yarn test:coverage
+
+        - name: LCOV move
+          run: mv lcov/lcov.info lcov.info
+
+        - uses: codecov/codecov-action@v3
+          name: Send Coverage (Codecov)
+          with:
+            token: ${{ secrets.CODECOV }}
+            fail_ci_if_error: true # optional (default = false)
+            verbose: true # optional (default = false)
+            flags: packages
+            files: lcov.info
