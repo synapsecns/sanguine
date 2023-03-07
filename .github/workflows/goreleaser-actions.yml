@@ -88,7 +88,7 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:3441cd70ad2f3b52e38159498abc5ce526c15a80
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go
         with:
           include_deps: true
