@@ -90,6 +90,14 @@ contract DestinationTest is SynapseTest, SynapseProofs {
 
         skip(skipTime);
         uint256 rootTimestamp = block.timestamp;
+        // Should emit event when attestation is accepted
+        vm.expectEmit(true, true, true, true);
+        emit AttestationAccepted(
+            DOMAIN_LOCAL,
+            domains[DOMAIN_LOCAL].agent,
+            attPayload,
+            attSignature
+        );
         InterfaceDestination(destination).submitAttestation(attPayload, attSignature);
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
@@ -106,6 +114,9 @@ contract DestinationTest is SynapseTest, SynapseProofs {
                     BODY
                 )
             );
+            // Should emit event when message is executed
+            vm.expectEmit(true, true, true, true);
+            emit Executed(DOMAIN_REMOTE, keccak256(messages[i]));
             vm.prank(executor);
             InterfaceDestination(destination).execute(
                 messages[i],
