@@ -64,13 +64,15 @@ func getChangedFilesFromAPI(ctx context.Context, ghContext *actionscore.Context,
 	ct = tree.NewTree()
 
 	page := 1
+	perPage := 20
 	for {
 		files, res, err := client.PullRequests.ListFiles(ctx, repoOwner, repoName, prNumber, &github.ListOptions{
 			Page:    page,
-			PerPage: 300,
+			PerPage: perPage,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("could not get files: %w", err)
+			return nil, fmt.Errorf("could not get files for repoOwner %s, repoName %s, prNumber %d, page number %d with page size %d: %w",
+				repoOwner, repoName, prNumber, page, perPage, err)
 		}
 
 		for _, file := range files {
