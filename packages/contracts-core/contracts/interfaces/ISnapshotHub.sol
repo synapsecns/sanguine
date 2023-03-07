@@ -51,4 +51,19 @@ interface ISnapshotHub {
         external
         view
         returns (bytes memory snapshotPayload);
+
+    /**
+     * @notice Returns proof of inclusion of (root, origin) fields of a given snapshot's state
+     * into the Snapshot Merkle Tree for a given attestation.
+     * @dev Reverts if either of this is true:
+     *  - Attestation with given nonce hasn't been created yet.
+     *  - State index is out of range of snapshot list.
+     * @param _nonce        Nonce for the attestation
+     * @param _stateIndex   Index of state in the attestation's snapshot
+     * @return snapProof    The snapshot proof
+     */
+    function getSnapshotProof(uint256 _nonce, uint256 _stateIndex)
+        external
+        view
+        returns (bytes32[] memory snapProof);
 }

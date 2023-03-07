@@ -1,14 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-interface InterfaceSystemRouter {
-    /// @dev Potential senders/recipients of a system message
-    enum SystemEntity {
-        Origin,
-        Destination,
-        BondingManager
-    }
+import "../libs/Structures.sol";
 
+interface InterfaceSystemRouter {
     /**
      * @notice Call a System Contract on the destination chain with a given data payload.
      * Note: for system calls on the local chain

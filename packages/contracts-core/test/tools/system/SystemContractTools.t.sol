@@ -10,20 +10,12 @@ abstract contract SystemContractTools {
     ▏*║                           CREATE TEST DATA                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function infoToArray(SystemContract.AgentInfo memory info)
-        public
-        pure
-        returns (SystemContract.AgentInfo[] memory infos)
-    {
-        infos = new SystemContract.AgentInfo[](1);
+    function infoToArray(AgentInfo memory info) public pure returns (AgentInfo[] memory infos) {
+        infos = new AgentInfo[](1);
         infos[0] = info;
     }
 
-    function guardInfo(address guard, bool bonded)
-        public
-        pure
-        returns (SystemContract.AgentInfo memory)
-    {
+    function guardInfo(address guard, bool bonded) public pure returns (AgentInfo memory) {
         return agentInfo(0, guard, bonded);
     }
 
@@ -31,7 +23,7 @@ abstract contract SystemContractTools {
         uint32 domain,
         address account,
         bool bonded
-    ) public pure returns (SystemContract.AgentInfo memory) {
-        return SystemContract.AgentInfo({ bonded: bonded, domain: domain, account: account });
+    ) public pure returns (AgentInfo memory) {
+        return AgentInfo({ bonded: bonded, domain: domain, account: account });
     }
 }

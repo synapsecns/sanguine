@@ -32,7 +32,7 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
         for (uint256 d = 0; d < DOMAINS; ++d) {
             uint32 domain = domains[d];
             address notary = suiteNotary(domain);
-            SystemContract.AgentInfo[] memory infos = infoToArray(
+            AgentInfo[] memory infos = infoToArray(
                 agentInfo({ domain: domain, account: notary, bonded: true })
             );
             assertFalse(systemRegistry.isNotary(domain, notary), "!bondNotary: already added");
@@ -46,7 +46,7 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
         for (uint256 d = 0; d < DOMAINS; ++d) {
             uint32 domain = domains[d];
             address notary = suiteNotary(domain);
-            SystemContract.AgentInfo[] memory infos = infoToArray(
+            AgentInfo[] memory infos = infoToArray(
                 agentInfo({ domain: domain, account: notary, bonded: false })
             );
             assertTrue(systemRegistry.isNotary(domain, notary), "!unbondNotary: not active");
@@ -60,11 +60,7 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
         for (uint256 d = 0; d < DOMAINS; ++d) {
             uint32 domain = domains[d];
             address notary = suiteNotary(domain);
-            SystemContract.AgentInfo memory info = agentInfo({
-                domain: domain,
-                account: notary,
-                bonded: false
-            });
+            AgentInfo memory info = agentInfo({ domain: domain, account: notary, bonded: false });
             assertTrue(systemRegistry.isNotary(domain, notary), "!slashNotary: not active");
             vm.expectEmit(true, true, true, true, address(systemRegistry));
             emit SlashAgentCall(info);
@@ -75,9 +71,7 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
 
     function test_bondGuard() public {
         address guard = suiteGuard();
-        SystemContract.AgentInfo[] memory infos = infoToArray(
-            guardInfo({ guard: guard, bonded: true })
-        );
+        AgentInfo[] memory infos = infoToArray(guardInfo({ guard: guard, bonded: true }));
         assertFalse(systemRegistry.isGuard(guard), "!bondGuard: already added");
         _mockValidSyncAgentsCall(infos);
         assertTrue(systemRegistry.isGuard(guard), "!bondGuard: not added");
@@ -86,9 +80,7 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
     function test_unbondGuard() public {
         test_bondGuard();
         address guard = suiteGuard();
-        SystemContract.AgentInfo[] memory infos = infoToArray(
-            guardInfo({ guard: guard, bonded: false })
-        );
+        AgentInfo[] memory infos = infoToArray(guardInfo({ guard: guard, bonded: false }));
         assertTrue(systemRegistry.isGuard(guard), "!unbondGuard: not added");
         _mockValidSyncAgentsCall(infos);
         assertFalse(systemRegistry.isGuard(guard), "!unbondGuard: not removed");
@@ -97,7 +89,7 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
     function test_slashGuard() public {
         test_bondGuard();
         address guard = suiteGuard();
-        SystemContract.AgentInfo memory info = guardInfo({ guard: guard, bonded: false });
+        AgentInfo memory info = guardInfo({ guard: guard, bonded: false });
         assertTrue(systemRegistry.isGuard(guard), "!slashGuard: not added");
         vm.expectEmit(true, true, true, true, address(systemRegistry));
         emit SlashAgentCall(info);
@@ -116,24 +108,19 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
         systemRegistry.syncAgents(
             block.timestamp,
             DOMAIN_LOCAL,
-            InterfaceSystemRouter.SystemEntity.BondingManager,
+            SystemEntity.BondingManager,
             0,
             false,
-            new SystemContract.AgentInfo[](0)
+            new AgentInfo[](0)
         );
     }
 
     function test_slashAgent_revert_notSystemRouter(address caller) public {
         vm.assume(caller != address(systemRouter));
-        SystemContract.AgentInfo memory info = guardInfo({ guard: address(0), bonded: false });
+        AgentInfo memory info = guardInfo({ guard: address(0), bonded: false });
         vm.expectRevert("!systemRouter");
         vm.prank(caller);
-        systemRegistry.slashAgent(
-            block.timestamp,
-            DOMAIN_LOCAL,
-            InterfaceSystemRouter.SystemEntity.BondingManager,
-            info
-        );
+        systemRegistry.slashAgent(block.timestamp, DOMAIN_LOCAL, SystemEntity.BondingManager, info);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -143,8 +130,8 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
     function test_syncAgents_revert_notLocalDomain(uint32 domain) public {
         vm.assume(domain != DOMAIN_LOCAL);
         // Should reject system call from other domains (regardless of the caller)
-        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
-            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
+        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
+            SystemEntity caller = SystemEntity(c);
             vm.expectRevert("!localDomain");
             _mockRevertedSyncAgentsCall({ callOrigin: domain, systemCaller: caller });
         }
@@ -153,8 +140,8 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
     function test_slashAgent_revert_notLocalDomain(uint32 domain) public {
         vm.assume(domain != DOMAIN_LOCAL);
         // Should reject system call from other domains (regardless of the caller)
-        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
-            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
+        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
+            SystemEntity caller = SystemEntity(c);
             vm.expectRevert("!localDomain");
             _mockRevertedSlashAgentCall({ callOrigin: domain, systemCaller: caller });
         }
@@ -165,20 +152,20 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_syncAgents_revert_localDomain_notBondingManager() public {
-        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             // Should reject system calls from local domain, if caller is not BondingManager
-            if (c == uint8(InterfaceSystemRouter.SystemEntity.BondingManager)) continue;
-            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
+            if (c == uint8(SystemEntity.BondingManager)) continue;
+            SystemEntity caller = SystemEntity(c);
             vm.expectRevert("!allowedCaller");
             _mockRevertedSyncAgentsCall({ callOrigin: DOMAIN_LOCAL, systemCaller: caller });
         }
     }
 
     function test_slashAgent_revert_localDomain_notBondingManager() public {
-        for (uint256 c = 0; c < uint8(type(InterfaceSystemRouter.SystemEntity).max); ++c) {
+        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             // Should reject system calls from local domain, if caller is not BondingManager
-            if (c == uint8(InterfaceSystemRouter.SystemEntity.BondingManager)) continue;
-            InterfaceSystemRouter.SystemEntity caller = InterfaceSystemRouter.SystemEntity(c);
+            if (c == uint8(SystemEntity.BondingManager)) continue;
+            SystemEntity caller = SystemEntity(c);
             vm.expectRevert("!allowedCaller");
             _mockRevertedSlashAgentCall({ callOrigin: DOMAIN_LOCAL, systemCaller: caller });
         }
@@ -188,19 +175,16 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
     ▏*║                           INTERNAL HELPERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _mockValidSyncAgentsCall(SystemContract.AgentInfo[] memory infos) internal {
+    function _mockValidSyncAgentsCall(AgentInfo[] memory infos) internal {
         // Mock system call from local Bonding Manager by default
         _mockSyncAgentsCall({
             callOrigin: DOMAIN_LOCAL,
-            systemCaller: InterfaceSystemRouter.SystemEntity.BondingManager,
+            systemCaller: SystemEntity.BondingManager,
             infos: infos
         });
     }
 
-    function _mockRevertedSyncAgentsCall(
-        uint32 callOrigin,
-        InterfaceSystemRouter.SystemEntity systemCaller
-    ) internal {
+    function _mockRevertedSyncAgentsCall(uint32 callOrigin, SystemEntity systemCaller) internal {
         // Mock Agent data for the "revert tests"
         _mockSyncAgentsCall({
             callOrigin: callOrigin,
@@ -211,19 +195,19 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
 
     function _mockSyncAgentsCall(
         uint32 callOrigin,
-        InterfaceSystemRouter.SystemEntity systemCaller,
-        SystemContract.AgentInfo[] memory infos
+        SystemEntity systemCaller,
+        AgentInfo[] memory infos
     ) internal {
         // TODO: add coverage when these params are no longer ignored in SystemRegistry
         uint256 requestID = 0;
         bool removeExisting = false;
         systemRouter.mockSystemCall({
-            _recipient: InterfaceSystemRouter.SystemEntity.Origin,
+            _recipient: SystemEntity.Origin,
             _rootSubmittedAt: block.timestamp,
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
             _data: abi.encodeWithSelector(
-                SystemContract.syncAgents.selector,
+                ISystemContract.syncAgents.selector,
                 0, // rootSubmittedAt
                 0, // callOrigin
                 0, // systemCaller
@@ -234,19 +218,16 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
         });
     }
 
-    function _mockValidSlashAgentCall(SystemContract.AgentInfo memory info) internal {
+    function _mockValidSlashAgentCall(AgentInfo memory info) internal {
         // Mock system call from local Bonding Manager by default
         _mockSlashAgentCall({
             callOrigin: DOMAIN_LOCAL,
-            systemCaller: InterfaceSystemRouter.SystemEntity.BondingManager,
+            systemCaller: SystemEntity.BondingManager,
             info: info
         });
     }
 
-    function _mockRevertedSlashAgentCall(
-        uint32 callOrigin,
-        InterfaceSystemRouter.SystemEntity systemCaller
-    ) internal {
+    function _mockRevertedSlashAgentCall(uint32 callOrigin, SystemEntity systemCaller) internal {
         // Mock Agent data for the "revert tests"
         _mockSlashAgentCall({
             callOrigin: callOrigin,
@@ -257,16 +238,16 @@ contract SystemRegistryTest is SystemContractTools, SynapseTestSuite {
 
     function _mockSlashAgentCall(
         uint32 callOrigin,
-        InterfaceSystemRouter.SystemEntity systemCaller,
-        SystemContract.AgentInfo memory info
+        SystemEntity systemCaller,
+        AgentInfo memory info
     ) internal {
         // Mock system call: slashAgent(rootSubmittedAt, callOrigin, systemCaller, info)
         systemRouter.mockSystemCall({
-            _recipient: InterfaceSystemRouter.SystemEntity.Origin,
+            _recipient: SystemEntity.Origin,
             _rootSubmittedAt: block.timestamp,
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
-            _data: abi.encodeWithSelector(SystemContract.slashAgent.selector, 0, 0, 0, info)
+            _data: abi.encodeWithSelector(ISystemContract.slashAgent.selector, 0, 0, 0, info)
         });
     }
 }

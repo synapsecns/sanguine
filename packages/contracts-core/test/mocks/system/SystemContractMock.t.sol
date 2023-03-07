@@ -1,58 +1,37 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { InterfaceSystemRouter } from "../../../contracts/interfaces/InterfaceSystemRouter.sol";
-import { SystemContract } from "../../../contracts/system/SystemContract.sol";
-import { DomainContext } from "../../../contracts/context/DomainContext.sol";
-import "../events/SystemContractMockEvents.sol";
+import "../../../contracts/interfaces/ISystemContract.sol";
+import "../ExcludeCoverage.sol";
+
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 // solhint-disable no-empty-blocks
-contract SystemContractMock is SystemContractMockEvents, SystemContract {
-    // Expose internal constants for tests
-    uint256 public constant ORIGIN_MASK = ORIGIN;
-    uint256 public constant DESTINATION_MASK = DESTINATION;
-    uint256 public constant BONDING_MANAGER_MASK = BONDING_MANAGER;
+contract SystemContractMock is ExcludeCoverage, Ownable, ISystemContract {
+    InterfaceSystemRouter public systemRouter;
 
-    uint256 public constant BONDING_OPTIMISTIC_PERIOD_PUB = BONDING_OPTIMISTIC_PERIOD;
-
-    constructor(uint32 _domain) DomainContext(_domain) {}
-
-    function initialize() external initializer {
-        __SystemContract_initialize();
+    modifier onlySystemRouter() {
+        require(msg.sender == address(systemRouter), "!systemRouter");
+        _;
     }
 
-    // Expose modifiers for tests
-    function mockOnlySystemRouter() external onlySystemRouter {}
-
-    function mockOnlySynapseChain(uint32 domain) external onlySynapseChain(domain) {}
-
-    function mockOnlyCallers(uint256 mask, InterfaceSystemRouter.SystemEntity caller)
-        external
-        onlyCallers(mask, caller)
-    {}
-
-    function mockOnlyOptimisticPeriodOver(uint256 rootSubmittedAt, uint256 optimisticSeconds)
-        external
-        onlyOptimisticPeriodOver(rootSubmittedAt, optimisticSeconds)
-    {}
+    function setSystemRouter(InterfaceSystemRouter _systemRouter) external {
+        systemRouter = _systemRouter;
+    }
 
     function slashAgent(
-        uint256,
-        uint32,
-        InterfaceSystemRouter.SystemEntity,
+        uint256 _rootSubmittedAt,
+        uint32 _callOrigin,
+        SystemEntity _caller,
         AgentInfo memory _info
-    ) external override {
-        emit SlashAgentCall(_info);
-    }
+    ) external onlySystemRouter {}
 
     function syncAgents(
-        uint256,
-        uint32,
-        InterfaceSystemRouter.SystemEntity,
+        uint256 _rootSubmittedAt,
+        uint32 _callOrigin,
+        SystemEntity _caller,
         uint256 _requestID,
         bool _removeExisting,
         AgentInfo[] memory _infos
-    ) external override {
-        emit SyncAgentsCall(_requestID, _removeExisting, _infos);
-    }
+    ) external onlySystemRouter {}
 }

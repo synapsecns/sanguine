@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/Structures.sol";
+import "../../../contracts/libs/Constants.sol";
 import "../../../contracts/libs/SystemMessage.sol";
 
 /**

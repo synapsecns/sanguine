@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "./libs/Constants.sol";
 import "./libs/Message.sol";
 import "./libs/Merkle.sol";
 import "./libs/State.sol";
-import "./libs/Structures.sol";
 import "./libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { OriginEvents } from "./events/OriginEvents.sol";

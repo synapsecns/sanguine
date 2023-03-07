@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import "./ByteString.sol";
-import "./Structures.sol";
+import "./Constants.sol";
 
 /// @dev State is a memory view over a formatted state payload.
 type State is bytes29;

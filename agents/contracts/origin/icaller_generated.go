@@ -66,6 +66,10 @@ type IOriginCaller interface {
 	//
 	// Solidity: function owner() view returns(address)
 	Owner(opts *bind.CallOpts) (common.Address, error)
+	// StatesAmount is a free data retrieval call binding the contract method 0xf2437942.
+	//
+	// Solidity: function statesAmount() view returns(uint256)
+	StatesAmount(opts *bind.CallOpts) (*big.Int, error)
 	// SuggestLatestState is a free data retrieval call binding the contract method 0xc0b56f7c.
 	//
 	// Solidity: function suggestLatestState() view returns(bytes stateData)

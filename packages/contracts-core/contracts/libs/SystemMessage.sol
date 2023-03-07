@@ -35,7 +35,7 @@ library SystemMessageLib {
     /**
      * @notice Returns a formatted SystemMessage payload with provided fields.
      * See: formatAdjustedCallData() for more details.
-     * @param _systemRecipient  System Contract to receive message (see InterfaceSystemRouter.SystemEntity)
+     * @param _systemRecipient  System Contract to receive message (see SystemEntity)
      * @param _callData         Calldata where the first arguments need to be replaced
      * @param _prefix           ABI-encoded arguments to use as the first arguments in the calldata
      * @return Formatted SystemMessage payload.
@@ -131,7 +131,7 @@ library SystemMessageLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns int value of System Message recipient (see InterfaceSystemRouter.SystemEntity).
+     * @notice Returns int value of System Message recipient (see SystemEntity).
      */
     function callRecipient(SystemMessage _systemMessage) internal pure returns (uint8) {
         // Get the underlying memory view
