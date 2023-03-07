@@ -6,7 +6,7 @@ default: help
 # set variables
 GIT_ROOT := $(shell git rev-parse --show-toplevel)
 CURRENT_PATH := $(shell pwd)
-
+RELPATH := $(shell realpath --relative-to="$(GIT_ROOT)" "$(CURRENT_PATH)")
 
 
 help: ## This help dialog.
@@ -20,22 +20,11 @@ help: ## This help dialog.
 		printf "%-30s %s\n" $$help_command $$help_info ; \
 	done
 
-# TODO tag a version
-golangci-install:
-	@#Travis (has sudo)
-	@if [ "$(shell which golangci-lint)" = "" ] && [ $(TRAVIS) ]; then curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b && sudo cp ./bin/golangci-lint $(go env GOPATH)/bin/; fi;
-	@#AWS CodePipeline
-	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(CODEBUILD_BUILD_ID)" != "" ]; then curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin; fi;
-	@#Github Actions
-	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(GITHUB_WORKFLOW)" != "" ]; then curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b $(go env GOPATH)/bin; fi;
-	@#Brew - MacOS
-	@if [ "$(shell which golangci-lint)" = "" ] && [ "$(shell which brew)" != "" ] && [ "$(GITHUB_WORKFLOW)" == "" ]; then brew install golangci-lint; fi;
 
-
-lint: golangci-install ## Run golangci-lint and go fmt ./...
+lint: ## Run golangci-lint and go fmt ./...
 	go mod tidy
 	go fmt ./...
 	cd $(GIT_ROOT)
 	go work sync
 	cd $(CURRENT_PATH)
-	@golangci-lint run --fix --config=$(GIT_ROOT)/.golangci.yml
+	docker run -t --rm -v ~/.cache/golangci-lint/:/root/.cache -v "$(GIT_ROOT)":/app -w "/app/$(RELPATH)" golangci/golangci-lint:v1.48.0 golangci-lint run -v --fix

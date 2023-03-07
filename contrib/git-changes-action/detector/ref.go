@@ -81,7 +81,6 @@ func getChangedFilesFromAPI(ctx context.Context, ghContext *actionscore.Context,
 			if err != nil {
 				return fmt.Errorf("could not get files for repoOwner %s, repoName %s, prNumber %d, page number %d with page size %d: %w",
 					repoOwner, repoName, prNumber, page, perPage, err)
-
 			}
 			return nil
 		}, retry.Context(ctx), retry.Attempts(retryCount))
