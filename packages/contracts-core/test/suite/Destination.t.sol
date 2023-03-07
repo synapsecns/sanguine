@@ -34,6 +34,37 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         recipient = address(new MessageRecipientMock());
     }
 
+    function test_setupCorrectly() public {
+        // Check Messaging addresses
+        assertEq(
+            address(ISystemContract(destination).systemRouter()),
+            address(systemRouter),
+            "!systemRouter"
+        );
+        // Check Agents
+        // Destination should know about local Notaries and Guards
+        for (uint256 d = 0; d < allDomains.length; ++d) {
+            uint32 domain = allDomains[d];
+            for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
+                address agent = domains[domain].agents[i];
+                if (domain == 0) {
+                    assertTrue(IAgentRegistry(destination).isActiveAgent(domain, agent), "!guard");
+                } else if (domain == DOMAIN_LOCAL) {
+                    assertTrue(
+                        IAgentRegistry(destination).isActiveAgent(domain, agent),
+                        "!local notary"
+                    );
+                } else {
+                    // Remote Notaries are unknown to Destination
+                    assertFalse(
+                        IAgentRegistry(destination).isActiveAgent(domain, agent),
+                        "!remote notary"
+                    );
+                }
+            }
+        }
+    }
+
     function test_execute(
         SummitState memory state,
         uint256 statesAmount,
