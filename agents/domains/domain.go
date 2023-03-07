@@ -52,12 +52,12 @@ type OriginContract interface {
 type AttestationCollectorContract interface {
 	// AddAgent adds an agent (guard or notary) to the attesation collector
 	AddAgent(transactOpts *bind.TransactOpts, domain uint32, signer signer.Signer) error
-	// SubmitAttestation submits an attestation to the attestation collector.
-	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
+	//// SubmitAttestation submits an attestation to the attestation collector.
+	//SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// GetLatestNonce gets the latest nonce signed by the bondedAgentSigner for the domain on the attestation collector
 	GetLatestNonce(ctx context.Context, origin uint32, destination uint32, bondedAgentSigner signer.Signer) (nonce uint32, err error)
-	// GetAttestation gets the attestation if any for the given origin, destination and nonce
-	GetAttestation(ctx context.Context, origin, destination, nonce uint32) (types.SignedAttestation, error)
+	//// GetAttestation gets the attestation if any for the given origin, destination and nonce
+	//GetAttestation(ctx context.Context, origin, destination, nonce uint32) (types.SignedAttestation, error)
 	// GetRoot gets the root if any for the given origin, destination and nonce
 	GetRoot(ctx context.Context, origin, destination, nonce uint32) ([32]byte, error)
 	// PrimeNonce primes the nonce for the signer
@@ -66,8 +66,8 @@ type AttestationCollectorContract interface {
 
 // DestinationContract contains the interface for the destination.
 type DestinationContract interface {
-	// SubmitAttestation submits an attestation to the destination.
-	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
+	//// SubmitAttestation submits an attestation to the destination.
+	//SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// Execute executes a message on the destination.
 	Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error
 	// SubmittedAt retrieves the time a given Merkle root from the given origin was submitted on the destination.

@@ -5,58 +5,56 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
-	agentsTypes "github.com/synapsecns/sanguine/agents/types"
-	"gorm.io/gorm/clause"
 )
 
-// StoreAttestation stores an attestation.
-func (s Store) StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error {
-	dbAttestation := agentsTypesAttestationToAttestation(attestation, blockNumber, blockTime)
+//// StoreAttestation stores an attestation.
+//func (s Store) StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error {
+//	dbAttestation := agentsTypesAttestationToAttestation(attestation, blockNumber, blockTime)
+//
+//	dbTx := s.DB().WithContext(ctx).
+//		Clauses(clause.OnConflict{
+//			Columns: []clause.Column{
+//				{Name: ChainIDFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName}, {Name: RootFieldName},
+//			},
+//			DoNothing: true,
+//		}).
+//		Create(&dbAttestation)
+//
+//	if dbTx.Error != nil {
+//		return fmt.Errorf("failed to store attestation: %w", dbTx.Error)
+//	}
+//
+//	return nil
+//}
 
-	dbTx := s.DB().WithContext(ctx).
-		Clauses(clause.OnConflict{
-			Columns: []clause.Column{
-				{Name: ChainIDFieldName}, {Name: DestinationFieldName}, {Name: NonceFieldName}, {Name: RootFieldName},
-			},
-			DoNothing: true,
-		}).
-		Create(&dbAttestation)
-
-	if dbTx.Error != nil {
-		return fmt.Errorf("failed to store attestation: %w", dbTx.Error)
-	}
-
-	return nil
-}
-
-// GetAttestation gets an attestation from the database.
-func (s Store) GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error) {
-	var attestation Attestation
-
-	dbAttestationMask := DBAttestationToAttestation(attestationMask)
-	dbTx := s.DB().WithContext(ctx).
-		Model(&attestation).
-		Where(&dbAttestationMask).
-		Limit(1).
-		Scan(&attestation)
-	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to get attestation: %w", dbTx.Error)
-	}
-	if dbTx.RowsAffected == 0 {
-		//nolint:nilnil
-		return nil, nil
-	}
-
-	attestKey := agentsTypes.AttestationKey{
-		Origin:      attestation.ChainID,
-		Destination: attestation.Destination,
-		Nonce:       attestation.Nonce,
-	}
-
-	receivedAttestation := agentsTypes.NewAttestation(attestKey.GetRawKey(), common.HexToHash(attestation.Root))
-
-	return &receivedAttestation, nil
-}
+//// GetAttestation gets an attestation from the database.
+//func (s Store) GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error) {
+//	var attestation Attestation
+//
+//	dbAttestationMask := DBAttestationToAttestation(attestationMask)
+//	dbTx := s.DB().WithContext(ctx).
+//		Model(&attestation).
+//		Where(&dbAttestationMask).
+//		Limit(1).
+//		Scan(&attestation)
+//	if dbTx.Error != nil {
+//		return nil, fmt.Errorf("failed to get attestation: %w", dbTx.Error)
+//	}
+//	if dbTx.RowsAffected == 0 {
+//		//nolint:nilnil
+//		return nil, nil
+//	}
+//
+//	attestKey := agentsTypes.AttestationKey{
+//		Origin:      attestation.ChainID,
+//		Destination: attestation.Destination,
+//		Nonce:       attestation.Nonce,
+//	}
+//
+//	receivedAttestation := agentsTypes.NewAttestation(attestKey.GetRawKey(), common.HexToHash(attestation.Root))
+//
+//	return &receivedAttestation, nil
+//}
 
 // GetAttestationBlockNumber gets the block number of an attestation.
 func (s Store) GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error) {
@@ -226,15 +224,15 @@ func AttestationToDBAttestation(attestation Attestation) types.DBAttestation {
 	}
 }
 
-// agentsTypesAttestationToAttestation converts an agentsTypes.Attestation to an Attestation.
-func agentsTypesAttestationToAttestation(attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) Attestation {
-	root := attestation.Root()
-	return Attestation{
-		ChainID:                attestation.Origin(),
-		Destination:            attestation.Destination(),
-		Nonce:                  attestation.Nonce(),
-		Root:                   common.BytesToHash(root[:]).String(),
-		DestinationBlockNumber: blockNumber,
-		DestinationBlockTime:   blockTime,
-	}
-}
+//// agentsTypesAttestationToAttestation converts an agentsTypes.Attestation to an Attestation.
+//func agentsTypesAttestationToAttestation(attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) Attestation {
+//	root := attestation.Root()
+//	return Attestation{
+//		ChainID:                attestation.Origin(),
+//		Destination:            attestation.Destination(),
+//		Nonce:                  attestation.Nonce(),
+//		Root:                   common.BytesToHash(root[:]).String(),
+//		DestinationBlockNumber: blockNumber,
+//		DestinationBlockTime:   blockTime,
+//	}
+//}

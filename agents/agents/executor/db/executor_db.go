@@ -15,8 +15,8 @@ type ExecutorDBWriter interface {
 	// SetMinimumTime sets the minimum time of a message.
 	SetMinimumTime(ctx context.Context, messageMask types.DBMessage, minimumTime uint64) error
 
-	// StoreAttestation stores an attestation.
-	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error
+	//// StoreAttestation stores an attestation.
+	//StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error
 }
 
 // ExecutorDBReader is the interface for reading from the executor database.
@@ -38,8 +38,8 @@ type ExecutorDBReader interface {
 	// GetMessageMinimumTime gets the minimum time for a message to be executed.
 	GetMessageMinimumTime(ctx context.Context, messageMask types.DBMessage) (*uint64, error)
 
-	// GetAttestation gets an attestation from the database.
-	GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error)
+	//// GetAttestation gets an attestation from the database.
+	//GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error)
 	// GetAttestationBlockNumber gets the block number of an attestation.
 	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 	// GetAttestationBlockTime gets the block time of an attestation.

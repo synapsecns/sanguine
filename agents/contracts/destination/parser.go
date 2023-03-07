@@ -5,15 +5,14 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/agents/types"
 )
 
 // Parser parses events from the destination contract.
 type Parser interface {
 	// EventType determines if an event was initiated by the bridge or the user.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
-	// ParseAttestationAccepted parses an AttestationAccepted event
-	ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool)
+	//// ParseAttestationAccepted parses an AttestationAccepted event
+	//ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool)
 	// ParseExecuted parses an Executed event.
 	ParseExecuted(log ethTypes.Log) (origin *uint32, leaf *[32]byte, ok bool)
 }
@@ -46,19 +45,19 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 	return EventType(len(topicMap()) + 2), false
 }
 
-// ParseAttestationAccepted parses an AttestationAccepted event.
-func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool) {
-	destinationAttestationAccepted, err := p.filterer.ParseAttestationAccepted(log)
-	if err != nil {
-		return nil, false
-	}
-
-	attestation, err := types.DecodeSignedAttestation(destinationAttestationAccepted.Attestation)
-	if err != nil {
-		return nil, false
-	}
-	return attestation.Attestation(), true
-}
+//// ParseAttestationAccepted parses an AttestationAccepted event.
+//func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestation, ok bool) {
+//	destinationAttestationAccepted, err := p.filterer.ParseAttestationAccepted(log)
+//	if err != nil {
+//		return nil, false
+//	}
+//
+//	attestation, err := types.DecodeSignedAttestation(destinationAttestationAccepted.Attestation)
+//	if err != nil {
+//		return nil, false
+//	}
+//	return attestation.Attestation(), true
+//}
 
 // ParseExecuted parses an Executed event.
 func (p parserImpl) ParseExecuted(log ethTypes.Log) (origin *uint32, leaf *[32]byte, ok bool) {

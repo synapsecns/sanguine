@@ -6,49 +6,48 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"github.com/libs4go/crypto/ecdsa"
 )
 
-// EncodeSignedAttestation encodes a signed attestation.
-func EncodeSignedAttestation(signed SignedAttestation) ([]byte, error) {
-	encodedAttestation, err := EncodeAttestation(signed.Attestation())
-	if err != nil {
-		return nil, fmt.Errorf("could not encode attestation: %w", err)
-	}
-
-	encodedAgentSignatures, err := EncodeAgentSignatures(signed.GuardSignatures(), signed.NotarySignatures())
-	if err != nil {
-		return nil, fmt.Errorf("could not encode agent signatures: %w", err)
-	}
-
-	return append(encodedAttestation, encodedAgentSignatures...), nil
-}
-
-// DecodeSignedAttestation decodes a signed attestation.
-func DecodeSignedAttestation(toDecode []byte) (SignedAttestation, error) {
-	var decAttestation attestation
-
-	signedAttestationSize := binary.Size(decAttestation)
-
-	attestationBin := toDecode[0:signedAttestationSize]
-	signBin := toDecode[signedAttestationSize:]
-
-	att, err := DecodeAttestation(attestationBin)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode attestation: %w", err)
-	}
-
-	guardSignatures, notarySignatures, err := DecodeAgentSignatures(signBin)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode agent signatures: %w", err)
-	}
-
-	return NewSignedAttestation(att, guardSignatures, notarySignatures), nil
-}
+//
+//// EncodeSignedAttestation encodes a signed attestation.
+//func EncodeSignedAttestation(signed SignedAttestation) ([]byte, error) {
+//	encodedAttestation, err := EncodeAttestation(signed.Attestation())
+//	if err != nil {
+//		return nil, fmt.Errorf("could not encode attestation: %w", err)
+//	}
+//
+//	encodedAgentSignatures, err := EncodeAgentSignatures(signed.GuardSignatures(), signed.NotarySignatures())
+//	if err != nil {
+//		return nil, fmt.Errorf("could not encode agent signatures: %w", err)
+//	}
+//
+//	return append(encodedAttestation, encodedAgentSignatures...), nil
+//}
+//
+//// DecodeSignedAttestation decodes a signed attestation.
+//func DecodeSignedAttestation(toDecode []byte) (SignedAttestation, error) {
+//	var decAttestation attestation
+//
+//	signedAttestationSize := binary.Size(decAttestation)
+//
+//	attestationBin := toDecode[0:signedAttestationSize]
+//	signBin := toDecode[signedAttestationSize:]
+//
+//	att, err := DecodeAttestation(attestationBin)
+//	if err != nil {
+//		return nil, fmt.Errorf("could not decode attestation: %w", err)
+//	}
+//
+//	guardSignatures, notarySignatures, err := DecodeAgentSignatures(signBin)
+//	if err != nil {
+//		return nil, fmt.Errorf("could not decode agent signatures: %w", err)
+//	}
+//
+//	return NewSignedAttestation(att, guardSignatures, notarySignatures), nil
+//}
 
 // EncodeSignature encodes a signature.
 func EncodeSignature(sig Signature) ([]byte, error) {
@@ -102,131 +101,182 @@ func DecodeSignatures(toDecode []byte) ([]Signature, error) {
 	return signatures, nil
 }
 
-// EncodeAgentSignatures encodes the guard and notary signatures.
-func EncodeAgentSignatures(guardSignatures, notarySignatures []Signature) ([]byte, error) {
-	guardCount := uint32(len(guardSignatures))
-	notaryCount := uint32(len(notarySignatures))
-	agentCounts := AttestationAgentCounts{
-		GuardCount:  guardCount,
-		NotaryCount: notaryCount,
-	}
-	rawBytes := agentCounts.GetRawAgentCounts()
+//// EncodeAgentSignatures encodes the guard and notary signatures.
+//func EncodeAgentSignatures(guardSignatures, notarySignatures []Signature) ([]byte, error) {
+//	guardCount := uint32(len(guardSignatures))
+//	notaryCount := uint32(len(notarySignatures))
+//	agentCounts := AttestationAgentCounts{
+//		GuardCount:  guardCount,
+//		NotaryCount: notaryCount,
+//	}
+//	rawBytes := agentCounts.GetRawAgentCounts()
+//
+//	rawGuardSignatures, err := EncodeSignatures(guardSignatures)
+//	if err != nil {
+//		return nil, fmt.Errorf("could not encode guard signatures: %w", err)
+//	}
+//	rawBytes = append(rawBytes, rawGuardSignatures...)
+//
+//	rawNotarySignatures, err := EncodeSignatures(notarySignatures)
+//	if err != nil {
+//		return nil, fmt.Errorf("could not encode notary signatures: %w", err)
+//	}
+//	rawBytes = append(rawBytes, rawNotarySignatures...)
+//	return rawBytes, nil
+//}
 
-	rawGuardSignatures, err := EncodeSignatures(guardSignatures)
-	if err != nil {
-		return nil, fmt.Errorf("could not encode guard signatures: %w", err)
-	}
-	rawBytes = append(rawBytes, rawGuardSignatures...)
+//// DecodeAgentSignatures decodes agent signatures.
+//func DecodeAgentSignatures(toDecode []byte) ([]Signature, []Signature, error) {
+//	toDecodeLen := len(toDecode)
+//	if toDecodeLen < 2 {
+//		return nil, nil, fmt.Errorf("could not decode signatures from raw bytes. Raw bytes size: %d", toDecodeLen)
+//	}
+//	// currOffset := 0
+//	guardCount := int(toDecode[attestationAgentCountsGuardCountStartingByte])
+//	notaryCount := int(toDecode[attestationAgentCountsNotaryCountStartingByte])
+//	currOffset := 2
+//
+//	guardSignatures, err := DecodeSignatures(toDecode[currOffset : currOffset+guardCount*SignatureLength])
+//	if err != nil {
+//		return nil, nil, fmt.Errorf("could not decode guard signatures: %w", err)
+//	}
+//	currOffset += guardCount * SignatureLength
+//
+//	notarySignatures, err := DecodeSignatures(toDecode[currOffset : currOffset+notaryCount*SignatureLength])
+//	if err != nil {
+//		return nil, nil, fmt.Errorf("could not decode notary signatures: %w", err)
+//	}
+//	// currOffset = currOffset + notaryCount*SignatureLength
+//
+//	return guardSignatures, notarySignatures, nil
+//}
 
-	rawNotarySignatures, err := EncodeSignatures(notarySignatures)
-	if err != nil {
-		return nil, fmt.Errorf("could not encode notary signatures: %w", err)
-	}
-	rawBytes = append(rawBytes, rawNotarySignatures...)
-	return rawBytes, nil
-}
+//// attestationEncoder encodes attestations.
+//type attestationEncoder struct {
+//	Origin, Destination, Nonce uint32
+//	Root                       [32]byte
+//}
+//
+//// EncodeAttestation encodes an attestation.
+//func EncodeAttestation(attestation Attestation) ([]byte, error) {
+//	buf := new(bytes.Buffer)
+//
+//	encodedUpdate := attestationEncoder{
+//		Origin:      attestation.Origin(),
+//		Destination: attestation.Destination(),
+//		Nonce:       attestation.Nonce(),
+//		Root:        attestation.Root(),
+//	}
+//
+//	err := binary.Write(buf, binary.BigEndian, encodedUpdate)
+//	if err != nil {
+//		return nil, fmt.Errorf("could not write binary: %w", err)
+//	}
+//
+//	return buf.Bytes(), nil
+//}
 
-// DecodeAgentSignatures decodes agent signatures.
-func DecodeAgentSignatures(toDecode []byte) ([]Signature, []Signature, error) {
-	toDecodeLen := len(toDecode)
-	if toDecodeLen < 2 {
-		return nil, nil, fmt.Errorf("could not decode signatures from raw bytes. Raw bytes size: %d", toDecodeLen)
-	}
-	// currOffset := 0
-	guardCount := int(toDecode[attestationAgentCountsGuardCountStartingByte])
-	notaryCount := int(toDecode[attestationAgentCountsNotaryCountStartingByte])
-	currOffset := 2
+//// Hash takes the hash of the encoded attestation.
+//func Hash(a Attestation) ([32]byte, error) {
+//	encodedAttestation, err := EncodeAttestation(a)
+//	if err != nil {
+//		return [32]byte{}, fmt.Errorf("could not encode attestation: %w", err)
+//	}
+//
+//	return HashRawBytes(encodedAttestation)
+//}
 
-	guardSignatures, err := DecodeSignatures(toDecode[currOffset : currOffset+guardCount*SignatureLength])
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not decode guard signatures: %w", err)
-	}
-	currOffset += guardCount * SignatureLength
+//// HashRawBytes takes the raw bytes and produces a hash.
+//func HashRawBytes(rawBytes []byte) (common.Hash, error) {
+//	hashedDigest := crypto.Keccak256Hash(rawBytes)
+//
+//	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
+//	return signedHash, nil
+//}
+//
+//// DecodeAttestation decodes an attestation.
+//func DecodeAttestation(toDecode []byte) (Attestation, error) {
+//	reader := bytes.NewReader(toDecode)
+//
+//	var encodedAttestation attestationEncoder
+//	dataSize := binary.Size(encodedAttestation)
+//
+//	if dataSize > len(toDecode) {
+//		return nil, fmt.Errorf("message too small, expected at least %d, got %d", dataSize, len(toDecode))
+//	}
+//
+//	err := binary.Read(reader, binary.BigEndian, &encodedAttestation)
+//	if err != nil {
+//		return nil, fmt.Errorf("could not read: %w", err)
+//	}
+//
+//	return attestation{
+//		origin:      encodedAttestation.Origin,
+//		destination: encodedAttestation.Destination,
+//		nonce:       encodedAttestation.Nonce,
+//		root:        encodedAttestation.Root,
+//	}, nil
+//}
 
-	notarySignatures, err := DecodeSignatures(toDecode[currOffset : currOffset+notaryCount*SignatureLength])
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not decode notary signatures: %w", err)
-	}
-	// currOffset = currOffset + notaryCount*SignatureLength
-
-	return guardSignatures, notarySignatures, nil
-}
-
-// attestationEncoder encodes attestations.
-type attestationEncoder struct {
-	Origin, Destination, Nonce uint32
-	Root                       [32]byte
-}
+const (
+	offsetAttestationRoot        = 32
+	offsetAttestationHeight      = 33
+	offsetAttestationNonce       = 37
+	offsetAttestationBlockNumber = 42
+	offsetAttestationTimestamp   = 47
+	attestationLen               = 47
+)
 
 // EncodeAttestation encodes an attestation.
 func EncodeAttestation(attestation Attestation) ([]byte, error) {
-	buf := new(bytes.Buffer)
+	b := make([]byte, 0)
+	height := []byte{attestation.Height()}
+	nonceBytes := make([]byte, uint32Len)
 
-	encodedUpdate := attestationEncoder{
-		Origin:      attestation.Origin(),
-		Destination: attestation.Destination(),
-		Nonce:       attestation.Nonce(),
-		Root:        attestation.Root(),
-	}
+	binary.BigEndian.PutUint32(nonceBytes, attestation.Nonce())
+	root := attestation.Root()
 
-	err := binary.Write(buf, binary.BigEndian, encodedUpdate)
-	if err != nil {
-		return nil, fmt.Errorf("could not write binary: %w", err)
-	}
+	b = append(b, root[:]...)
+	b = append(b, height...)
+	b = append(b, nonceBytes...)
+	b = append(b, math.PaddedBigBytes(attestation.BlockNumber(), uint40Len)...)
+	b = append(b, math.PaddedBigBytes(attestation.Timestamp(), uint40Len)...)
 
-	return buf.Bytes(), nil
-}
-
-// Hash takes the hash of the encoded attestation.
-func Hash(a Attestation) ([32]byte, error) {
-	encodedAttestation, err := EncodeAttestation(a)
-	if err != nil {
-		return [32]byte{}, fmt.Errorf("could not encode attestation: %w", err)
-	}
-
-	return HashRawBytes(encodedAttestation)
-}
-
-// HashRawBytes takes the raw bytes and produces a hash.
-func HashRawBytes(rawBytes []byte) (common.Hash, error) {
-	hashedDigest := crypto.Keccak256Hash(rawBytes)
-
-	signedHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), hashedDigest.Bytes())
-	return signedHash, nil
+	return b, nil
 }
 
 // DecodeAttestation decodes an attestation.
 func DecodeAttestation(toDecode []byte) (Attestation, error) {
-	reader := bytes.NewReader(toDecode)
-
-	var encodedAttestation attestationEncoder
-	dataSize := binary.Size(encodedAttestation)
-
-	if dataSize > len(toDecode) {
-		return nil, fmt.Errorf("message too small, expected at least %d, got %d", dataSize, len(toDecode))
+	if len(toDecode) != attestationLen {
+		return nil, fmt.Errorf("message too small, expected at least %d, got %d", attestationLen, len(toDecode))
 	}
 
-	err := binary.Read(reader, binary.BigEndian, &encodedAttestation)
-	if err != nil {
-		return nil, fmt.Errorf("could not read: %w", err)
-	}
+	var root [32]byte
+	copy(root[:], toDecode[:offsetAttestationRoot])
+
+	height := toDecode[offsetAttestationRoot:offsetAttestationHeight][0]
+	nonce := binary.BigEndian.Uint32(toDecode[offsetAttestationHeight:offsetAttestationNonce])
+	blockNumber := new(big.Int).SetBytes(toDecode[offsetAttestationNonce:offsetAttestationBlockNumber])
+	timestamp := new(big.Int).SetBytes(toDecode[offsetAttestationBlockNumber:offsetAttestationTimestamp])
 
 	return attestation{
-		origin:      encodedAttestation.Origin,
-		destination: encodedAttestation.Destination,
-		nonce:       encodedAttestation.Nonce,
-		root:        encodedAttestation.Root,
+		root:        root,
+		height:      height,
+		nonce:       nonce,
+		blockNumber: blockNumber,
+		timestamp:   timestamp,
 	}, nil
 }
 
 const (
-	offsetRoot        = 32
-	offsetOrigin      = 36
-	offsetNonce       = 40
-	offsetBlockNumber = 45
-	offsetTimestamp   = 50
-	uint32Len         = 4
-	uint40Len         = 5
+	offsetStateRoot        = 32
+	offsetStateOrigin      = 36
+	offsetStateNonce       = 40
+	offsetStateBlockNumber = 45
+	offsetStateTimestamp   = 50
+	uint32Len              = 4
+	uint40Len              = 5
+	stateLength            = 50
 )
 
 // EncodeState encodes a state.
@@ -254,11 +304,11 @@ func DecodeState(toDecode []byte) (State, error) {
 		return nil, fmt.Errorf("invalid state length, expected %d, got %d", stateLength, len(toDecode))
 	}
 
-	root := toDecode[0:offsetRoot]
-	origin := binary.BigEndian.Uint32(toDecode[offsetRoot:offsetOrigin])
-	nonce := binary.BigEndian.Uint32(toDecode[offsetOrigin:offsetNonce])
-	blockNumber := new(big.Int).SetBytes(toDecode[offsetNonce:offsetBlockNumber])
-	timestamp := new(big.Int).SetBytes(toDecode[offsetBlockNumber:offsetTimestamp])
+	root := toDecode[:offsetStateRoot]
+	origin := binary.BigEndian.Uint32(toDecode[offsetStateRoot:offsetStateOrigin])
+	nonce := binary.BigEndian.Uint32(toDecode[offsetStateOrigin:offsetStateNonce])
+	blockNumber := new(big.Int).SetBytes(toDecode[offsetStateNonce:offsetStateBlockNumber])
+	timestamp := new(big.Int).SetBytes(toDecode[offsetStateBlockNumber:offsetStateTimestamp])
 
 	var rootB32 [32]byte
 	copy(rootB32[:], root)
@@ -271,8 +321,6 @@ func DecodeState(toDecode []byte) (State, error) {
 		timestamp:   timestamp,
 	}, nil
 }
-
-const stateLength = 50
 
 // EncodeSnapshot encodes a snapshot.
 func EncodeSnapshot(snapshot Snapshot) ([]byte, error) {

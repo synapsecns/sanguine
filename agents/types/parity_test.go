@@ -126,7 +126,7 @@ func TestEncodeStateParity(t *testing.T) {
 	Equal(t, timestamp, stateFromBytes.Timestamp())
 }
 
-func TestEncodeSnapshot(t *testing.T) {
+func TestEncodeSnapshotParity(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
@@ -164,120 +164,56 @@ func TestEncodeSnapshot(t *testing.T) {
 	Nil(t, err)
 
 	Equal(t, contractData, goFormattedData)
+
+	snapshotFromBytes, err := types.DecodeSnapshot(goFormattedData)
+	Nil(t, err)
+	Equal(t, stateA.Root(), snapshotFromBytes.States()[0].Root())
+	Equal(t, stateA.Origin(), snapshotFromBytes.States()[0].Origin())
+	Equal(t, stateA.Nonce(), snapshotFromBytes.States()[0].Nonce())
+	Equal(t, stateA.BlockNumber(), snapshotFromBytes.States()[0].BlockNumber())
+	Equal(t, stateA.Timestamp(), snapshotFromBytes.States()[0].Timestamp())
+
+	Equal(t, stateB.Root(), snapshotFromBytes.States()[1].Root())
+	Equal(t, stateB.Origin(), snapshotFromBytes.States()[1].Origin())
+	Equal(t, stateB.Nonce(), snapshotFromBytes.States()[1].Nonce())
+	Equal(t, stateB.BlockNumber(), snapshotFromBytes.States()[1].BlockNumber())
+	Equal(t, stateB.Timestamp(), snapshotFromBytes.States()[1].Timestamp())
 }
 
 func TestEncodeAttestationParity(t *testing.T) {
-	// TODO (joeallen): FIX ME
-	t.Skip()
-	// TODO (joeallen): FIX ME
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	// defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 
-	// testBackend := simulated.NewSimulatedBackend(ctx, t)
-	// deployManager := testutil.NewDeployManager(t)
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
 
-	origin := gofakeit.Uint32()
-	destination := origin + 1
+	_, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
+
+	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
+
+	var rootB32 [32]byte
+	copy(rootB32[:], root[:])
+
+	height := gofakeit.Uint8()
 	nonce := gofakeit.Uint32()
-	root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
+	blockNumber := randomUint40BigInt(t)
+	timestamp := randomUint40BigInt(t)
 
-	// _, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
-
-	// contractData, err := attesationContract.FormatAttestationData(&bind.CallOpts{Context: ctx}, origin, destination, nonce, root)
-	// Nil(t, err)
-
-	attestKey := types.AttestationKey{
-		Origin:      origin,
-		Destination: destination,
-		Nonce:       nonce,
-	}
-	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(attestKey.GetRawKey(), root))
+	contractData, err := attesationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, rootB32, height, nonce, blockNumber, timestamp)
 	Nil(t, err)
-	// Equal(t, contractData, goFormattedData)
+
+	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(rootB32, height, nonce, blockNumber, timestamp))
+	Nil(t, err)
+
+	Equal(t, contractData, goFormattedData)
 
 	attestationFromBytes, err := types.DecodeAttestation(goFormattedData)
 	Nil(t, err)
-	Equal(t, origin, attestationFromBytes.Origin())
-	Equal(t, destination, attestationFromBytes.Destination())
+	Equal(t, rootB32, attestationFromBytes.Root())
+	Equal(t, height, attestationFromBytes.Height())
 	Equal(t, nonce, attestationFromBytes.Nonce())
-	Equal(t, root, common.Hash(attestationFromBytes.Root()))
-}
-
-func TestEncodeSignedAttestationParity(t *testing.T) {
-	// TODO (joeallen): FIX ME
-	t.Skip()
-	// TODO (joeallen): FIX ME
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	// defer cancel()
-
-	// testBackend := simulated.NewSimulatedBackend(ctx, t)
-	// deployManager := testutil.NewDeployManager(t)
-
-	// TODO (joeallen): FIX ME
-	// _, attesationContract := deployManager.GetAttestationHarness(ctx, testBackend)
-
-	// origin := gofakeit.Uint32()
-	// destination := origin + 1
-	// nonce := gofakeit.Uint32()
-	// root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-
-	// sigGuard1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-	// encodedGuardSignature1, err := types.EncodeSignature(sigGuard1)
-	// Nil(t, err)
-	// sigGuard2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-	// encodedGuardSignature2, err := types.EncodeSignature(sigGuard2)
-	// Nil(t, err)
-	// sigGuard3 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-	// encodedGuardSignature3, err := types.EncodeSignature(sigGuard3)
-	// Nil(t, err)
-
-	// sigNotary1 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-	// encodedNotarySignature1, err := types.EncodeSignature(sigNotary1)
-	// Nil(t, err)
-	// sigNotary2 := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-	// encodedNotarySignature2, err := types.EncodeSignature(sigNotary2)
-	// Nil(t, err)
-
-	// TODO (joeallen): FIX ME
-	// attestKey := types.AttestationKey{
-	//	Origin:      origin,
-	//	Destination: destination,
-	//	Nonce:       nonce,
-	//}
-
-	// TODO (joeallen): FIX ME
-	// attestation := types.NewAttestation(attestKey.GetRawKey(), root)
-
-	// encodedAttestation, err := types.EncodeAttestation(attestation)
-	// Nil(t, err)
-
-	// encodedGuardSignatures := []byte{}
-	// encodedNotarySignatures := []byte{}
-	// encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature1...)
-	// encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature2...)
-	// encodedGuardSignatures = append(encodedGuardSignatures, encodedGuardSignature3...)
-
-	// encodedNotarySignatures = append(encodedNotarySignatures, encodedNotarySignature1...)
-	// encodedNotarySignatures = append(encodedNotarySignatures, encodedNotarySignature2...)
-	// TODO (joeallen): FIX ME
-	// signedContractAttestation, err := attesationContract.FormatAttestation(
-	//	&bind.CallOpts{Context: ctx},
-	//	encodedAttestation,
-	//	encodedGuardSignatures,
-	//	encodedNotarySignatures,
-	//)
-	// Nil(t, err)
-
-	// signedAttestation := types.NewSignedAttestation(
-	//	types.NewAttestation(attestKey.GetRawKey(), root),
-	//	[]types.Signature{sigGuard1, sigGuard2, sigGuard3},
-	//	[]types.Signature{sigNotary1, sigNotary2},
-	//)
-
-	// goData, err := types.EncodeSignedAttestation(signedAttestation)
-	// Nil(t, err)
-
-	// Equal(t, signedContractAttestation, goData)
+	Equal(t, blockNumber, attestationFromBytes.BlockNumber())
+	Equal(t, timestamp, attestationFromBytes.Timestamp())
 }
 
 func TestMessageEncodeParity(t *testing.T) {
@@ -361,46 +297,4 @@ func TestHeaderEncodeParity(t *testing.T) {
 	Nil(t, err)
 
 	Equal(t, headerVersion, types.HeaderVersion)
-}
-
-func TestAttestationKey(t *testing.T) {
-	origin := uint32(1)
-	destination := uint32(2)
-	nonce := uint32(3)
-	attestKey := types.AttestationKey{
-		Origin:      origin,
-		Destination: destination,
-		Nonce:       nonce,
-	}
-	rawKey := attestKey.GetRawKey()
-	attestKeyFromRaw := types.NewAttestationKey(rawKey)
-	Equal(t, attestKey.Origin, attestKeyFromRaw.Origin)
-	Equal(t, attestKey.Destination, attestKeyFromRaw.Destination)
-	Equal(t, attestKey.Nonce, attestKeyFromRaw.Nonce)
-}
-
-func TestAttestedDomains(t *testing.T) {
-	origin := uint32(1)
-	destination := uint32(2)
-	attestDomains := types.AttestedDomains{
-		Origin:      origin,
-		Destination: destination,
-	}
-	rawDomains := attestDomains.GetRawDomains()
-	attestDomainsFromRaw := types.NewAttestedDomains(rawDomains)
-	Equal(t, attestDomains.Origin, attestDomainsFromRaw.Origin)
-	Equal(t, attestDomains.Destination, attestDomainsFromRaw.Destination)
-}
-
-func TestAttestedAgentCounts(t *testing.T) {
-	guardCount := uint32(1)
-	notaryCount := uint32(2)
-	attestationAgentCounts := types.AttestationAgentCounts{
-		GuardCount:  guardCount,
-		NotaryCount: notaryCount,
-	}
-	rawDomains := attestationAgentCounts.GetRawAgentCounts()
-	attestationAgentCountsFromRaw := types.NewAttestationAgentCounts(rawDomains)
-	Equal(t, attestationAgentCounts.GuardCount, attestationAgentCountsFromRaw.GuardCount)
-	Equal(t, attestationAgentCounts.NotaryCount, attestationAgentCountsFromRaw.NotaryCount)
 }
