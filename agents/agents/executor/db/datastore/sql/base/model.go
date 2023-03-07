@@ -59,18 +59,52 @@ type Message struct {
 	MinimumTime uint64 `gorm:"column:minimum_time"`
 }
 
+//// Attestation is the information about an attestation parsed by the Executor.
+//type Attestation struct {
+//	// ChainID is the chain id.
+//	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+//	// Destination is the destination.
+//	Destination uint32 `gorm:"column:destination;primaryKey"`
+//	// Nonce is the nonce.
+//	Nonce uint32 `gorm:"column:nonce;primaryKey"`
+//	// Root is the root.
+//	Root string `gorm:"column:root;primaryKey"`
+//	// DestinationBlockNumber is the block number that the attestation was submitted on the destination.
+//	DestinationBlockNumber uint64 `gorm:"column:block_number"`
+//	// DestinationBlockTime is the timestamp of the block that the attestation was submitted on the destination.
+//	DestinationBlockTime uint64 `gorm:"column:destination_block_time"`
+//}
+
+// State is the information about a state, received from the `Summit` and parsed by the Executor.
+type State struct {
+	// SnapshotRoot is the snapshot root.
+	SnapshotRoot string `gorm:"column:snapshot_root;primaryKey"`
+	// Root is the origin Merkle tree's root.
+	Root string `gorm:"column:root;primaryKey"`
+	// ChainID is the origin chain id.
+	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
+	// Nonce is the origin message nonce.
+	Nonce uint32 `gorm:"column:nonce;primaryKey"`
+	// OriginBlockNumber is the block number that the state was taken from on the origin.
+	OriginBlockNumber uint64 `gorm:"column:origin_block_number"`
+	// OriginTimestamp is the timestamp of the block that the state was taken from on the origin.
+	OriginTimestamp uint64 `gorm:"column:origin_timestamp"`
+}
+
 // Attestation is the information about an attestation parsed by the Executor.
 type Attestation struct {
-	// ChainID is the chain id.
+	// SnapshotRoot is the snapshot root.
+	SnapshotRoot string `gorm:"column:snapshot_root;primaryKey"`
+	// ChainID is the origin chain id.
 	ChainID uint32 `gorm:"column:chain_id;primaryKey"`
-	// Destination is the destination.
+	// Destination is the destination chain id.
 	Destination uint32 `gorm:"column:destination;primaryKey"`
-	// Nonce is the nonce.
-	Nonce uint32 `gorm:"column:nonce;primaryKey"`
-	// Root is the root.
-	Root string `gorm:"column:root;primaryKey"`
-	// DestinationBlockNumber is the block number that the attestation was submitted on the destination.
-	DestinationBlockNumber uint64 `gorm:"column:block_number"`
-	// DestinationBlockTime is the timestamp of the block that the attestation was submitted on the destination.
-	DestinationBlockTime uint64 `gorm:"column:destination_block_time"`
+	// Height is the height of the Snapshot Merkle Tree.
+	Height uint8 `gorm:"column:height;primaryKey"`
+	// OriginBlockNumber is the block number that the state was taken from on the origin.
+	OriginBlockNumber uint64 `gorm:"column:origin_block_number"`
+	// OriginTimestamp is the timestamp of the block that the state was taken from on the origin.
+	OriginTimestamp uint64 `gorm:"column:origin_timestamp"`
+	// NotValid is if the attestation is not valid.
+	NotValid bool `gorm:"column:not_valid"`
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
+	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 )
 
 //// StoreAttestation stores an attestation.
@@ -73,7 +74,7 @@ func (s Store) GetAttestationBlockNumber(ctx context.Context, attestationMask ty
 		return nil, nil
 	}
 
-	return &attestation.DestinationBlockNumber, nil
+	return &attestation.OriginBlockNumber, nil
 }
 
 // GetAttestationBlockTime gets the block time of an attestation.
@@ -93,7 +94,7 @@ func (s Store) GetAttestationBlockTime(ctx context.Context, attestationMask type
 		return nil, nil
 	}
 
-	return &attestation.DestinationBlockTime, nil
+	return &attestation.OriginTimestamp, nil
 }
 
 // GetAttestationForNonceOrGreater gets the lowest nonce attestation that is greater than or equal to the given nonce.
@@ -178,6 +179,10 @@ func (s Store) GetEarliestAttestationsNonceInNonceRange(ctx context.Context, att
 func DBAttestationToAttestation(dbAttestation types.DBAttestation) Attestation {
 	var attestation Attestation
 
+	if dbAttestation.SnapshotRoot != nil {
+		attestation.SnapshotRoot = (*dbAttestation.SnapshotRoot).String()
+	}
+
 	if dbAttestation.ChainID != nil {
 		attestation.ChainID = *dbAttestation.ChainID
 	}
@@ -186,20 +191,16 @@ func DBAttestationToAttestation(dbAttestation types.DBAttestation) Attestation {
 		attestation.Destination = *dbAttestation.Destination
 	}
 
-	if dbAttestation.Nonce != nil {
-		attestation.Nonce = *dbAttestation.Nonce
+	if dbAttestation.Height != nil {
+		attestation.Height = *dbAttestation.Height
 	}
 
-	if dbAttestation.Root != nil {
-		attestation.Root = dbAttestation.Root.String()
+	if dbAttestation.OriginBlockNumber != nil {
+		attestation.OriginBlockNumber = *dbAttestation.OriginBlockNumber
 	}
 
-	if dbAttestation.DestinationBlockNumber != nil {
-		attestation.DestinationBlockNumber = *dbAttestation.DestinationBlockNumber
-	}
-
-	if dbAttestation.DestinationBlockTime != nil {
-		attestation.DestinationBlockTime = *dbAttestation.DestinationBlockTime
+	if dbAttestation.OriginTimestamp != nil {
+		attestation.OriginTimestamp = *dbAttestation.OriginTimestamp
 	}
 
 	return attestation
@@ -207,32 +208,32 @@ func DBAttestationToAttestation(dbAttestation types.DBAttestation) Attestation {
 
 // AttestationToDBAttestation converts an Attestation to a DBAttestation.
 func AttestationToDBAttestation(attestation Attestation) types.DBAttestation {
+	snapshotRoot := common.HexToHash(attestation.SnapshotRoot)
 	chainID := attestation.ChainID
 	destination := attestation.Destination
-	nonce := attestation.Nonce
-	root := common.HexToHash(attestation.Root)
-	blockNumber := attestation.DestinationBlockNumber
-	blockTime := attestation.DestinationBlockTime
+	height := attestation.Height
+	originBlockNumber := attestation.OriginBlockNumber
+	originTimestamp := attestation.OriginTimestamp
 
 	return types.DBAttestation{
-		ChainID:                &chainID,
-		Destination:            &destination,
-		Nonce:                  &nonce,
-		Root:                   &root,
-		DestinationBlockNumber: &blockNumber,
-		DestinationBlockTime:   &blockTime,
+		SnapshotRoot:      &snapshotRoot,
+		ChainID:           &chainID,
+		Destination:       &destination,
+		Height:            &height,
+		OriginBlockNumber: &originBlockNumber,
+		OriginTimestamp:   &originTimestamp,
 	}
 }
 
-//// agentsTypesAttestationToAttestation converts an agentsTypes.Attestation to an Attestation.
-//func agentsTypesAttestationToAttestation(attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) Attestation {
-//	root := attestation.Root()
-//	return Attestation{
-//		ChainID:                attestation.Origin(),
-//		Destination:            attestation.Destination(),
-//		Nonce:                  attestation.Nonce(),
-//		Root:                   common.BytesToHash(root[:]).String(),
-//		DestinationBlockNumber: blockNumber,
-//		DestinationBlockTime:   blockTime,
-//	}
-//}
+// agentsTypesAttestationToAttestation converts an agentsTypes.Attestation to an Attestation.
+func agentsTypesAttestationToAttestation(attestation agentsTypes.Attestation, chainID, destination uint32) Attestation {
+	root := attestation.Root()
+	return Attestation{
+		SnapshotRoot:      common.BytesToHash(root[:]).String(),
+		ChainID:           chainID,
+		Destination:       destination,
+		Height:            attestation.Height(),
+		OriginBlockNumber: attestation.BlockNumber().Uint64(),
+		OriginTimestamp:   attestation.Timestamp().Uint64(),
+	}
+}
