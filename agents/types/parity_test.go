@@ -117,12 +117,53 @@ func TestEncodeStateParity(t *testing.T) {
 	Nil(t, err)
 	Equal(t, contractData, goFormattedData)
 
-	stateFromBytes := types.DecodeState(goFormattedData)
+	stateFromBytes, err := types.DecodeState(goFormattedData)
+	Nil(t, err)
 	Equal(t, rootB32, stateFromBytes.Root())
 	Equal(t, origin, stateFromBytes.Origin())
 	Equal(t, nonce, stateFromBytes.Nonce())
 	Equal(t, blockNumber, stateFromBytes.BlockNumber())
 	Equal(t, timestamp, stateFromBytes.Timestamp())
+}
+
+func TestEncodeSnapshot(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+
+	_, snapshotContract := deployManager.GetSnapshotHarness(ctx, testBackend)
+
+	rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	originA := gofakeit.Uint32()
+	originB := gofakeit.Uint32()
+	nonceA := gofakeit.Uint32()
+	nonceB := gofakeit.Uint32()
+	blockNumberA := randomUint40BigInt(t)
+	blockNumberB := randomUint40BigInt(t)
+	timestampA := randomUint40BigInt(t)
+	timestampB := randomUint40BigInt(t)
+
+	stateA := types.NewState(rootA, originA, nonceA, blockNumberA, timestampA)
+	stateB := types.NewState(rootB, originB, nonceB, blockNumberB, timestampB)
+
+	var statesAB [][]byte
+	stateABytes, err := types.EncodeState(stateA)
+	Nil(t, err)
+	statesAB = append(statesAB, stateABytes)
+	stateBBytes, err := types.EncodeState(stateB)
+	Nil(t, err)
+	statesAB = append(statesAB, stateBBytes)
+
+	contractData, err := snapshotContract.FormatSnapshot(&bind.CallOpts{Context: ctx}, statesAB)
+	Nil(t, err)
+
+	goFormattedData, err := types.EncodeSnapshot(types.NewSnapshot([]types.State{stateA, stateB}))
+	Nil(t, err)
+
+	Equal(t, contractData, goFormattedData)
 }
 
 func TestEncodeAttestationParity(t *testing.T) {
