@@ -4,13 +4,14 @@ module.exports = {
     browser: true,
     es6: true,
   },
-  ignorePatterns: ['dist', 'coverage', 'packages/contracts-core/hardhat'],
+  ignorePatterns: ['dist', 'coverage'],
   extends: ['plugin:prettier/recommended'],
-  parser: 'babel-eslint',
+  parser: '@babel/eslint-parser',
   parserOptions: {
     es6: true,
     ecmaVersion: 6,
     sourceType: 'module',
+    requireConfigFile: false,
   },
   plugins: [
     'eslint-plugin-import',
@@ -25,7 +26,7 @@ module.exports = {
       files: ['**/*.ts'],
       parser: '@typescript-eslint/parser',
       parserOptions: {
-        project: 'tsconfig.json',
+        project: './packages/**/tsconfig.json',
         sourceType: 'module',
         allowAutomaticSingleRunInference: true,
       },
