@@ -77,6 +77,54 @@ func randomUint96BigInt(tb testing.TB) *big.Int {
 	return n
 }
 
+func randomUint40BigInt(tb testing.TB) *big.Int {
+	tb.Helper()
+
+	// Max random value, a 130-bits integer, i.e 2^96 - 1
+	max := new(big.Int)
+	max.Exp(big.NewInt(2), big.NewInt(40), nil).Sub(max, big.NewInt(1))
+
+	// Generate cryptographically strong pseudo-random between 0 - max
+	n, err := rand.Int(rand.Reader, max)
+	Nil(tb, err)
+
+	return n
+}
+
+func TestEncodeStateParity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+
+	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
+
+	var rootB32 [32]byte
+	copy(rootB32[:], root[:])
+
+	origin := gofakeit.Uint32()
+	nonce := gofakeit.Uint32()
+	blockNumber := randomUint40BigInt(t)
+	timestamp := randomUint40BigInt(t)
+
+	_, stateContract := deployManager.GetStateHarness(ctx, testBackend)
+
+	contractData, err := stateContract.FormatState(&bind.CallOpts{Context: ctx}, rootB32, origin, nonce, blockNumber, timestamp)
+	Nil(t, err)
+
+	goFormattedData, err := types.EncodeState(types.NewState(rootB32, origin, nonce, blockNumber, timestamp))
+	Nil(t, err)
+	Equal(t, contractData, goFormattedData)
+
+	stateFromBytes := types.DecodeState(goFormattedData)
+	Equal(t, rootB32, stateFromBytes.Root())
+	Equal(t, origin, stateFromBytes.Origin())
+	Equal(t, nonce, stateFromBytes.Nonce())
+	Equal(t, blockNumber, stateFromBytes.BlockNumber())
+	Equal(t, timestamp, stateFromBytes.Timestamp())
+}
+
 func TestEncodeAttestationParity(t *testing.T) {
 	// TODO (joeallen): FIX ME
 	t.Skip()
