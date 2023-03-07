@@ -21,12 +21,6 @@ describe('SynapseSDK', () => {
       )
     })
 
-    it('succeeds with equal amount of chains to providers', async () => {
-      const chainIds = [42161, 43114]
-      const providers = [arbitrumProvider, avalancheProvider]
-      const Synapse = new SynapseSDK(chainIds, providers)
-      expect(() => Synapse.synapseRouters.length.toEqual(2))
-    })
   })
 
   describe('bridgeQuote', () => {
@@ -67,8 +61,8 @@ describe('SynapseSDK', () => {
           43114,
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
           BigNumber.from('20000000'),
-          quotes.originQuery,
-          quotes.destQuery
+          quotes.originQuery!,
+          quotes.destQuery!
         )
       )
     })
