@@ -7,7 +7,7 @@ import { useState } from 'react'
 export function usePendingTxWrapper() {
   const [isPending, setIsPending] = useState(false)
 
-  async function pendingTxWrapFunc(claimPromise) {
+  async function pendingTxWrapFunc(claimPromise: Promise<any>): Promise<any> {
     setIsPending(true)
     let tx
     try {
@@ -17,5 +17,5 @@ export function usePendingTxWrapper() {
     }
     return tx
   }
-  return [isPending, pendingTxWrapFunc]
+  return { isPending, pendingTxWrapFunc }
 }

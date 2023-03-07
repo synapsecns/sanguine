@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { Zero } from '@ethersproject/constants'
 import { parseUnits } from '@ethersproject/units'
+import { useBalance } from 'wagmi'
 
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
@@ -9,20 +10,13 @@ import { Transition } from '@headlessui/react'
 import { useSettings } from '@hooks/settings/useSettings'
 import { useGasDropAmount } from '@hooks/useGasDropAmount'
 import { useBridgeSwap } from '@hooks/actions/useBridgeSwap'
-import { useTerraUstBalance } from '@hooks/terra/useTerraUstBalance'
 import { useSynapseContract } from '@hooks/contracts/useSynapseContract'
 
-import { useBridgeZapContract } from '@hooks/contracts/useBridgeZapContract'
 import { APPROVAL_STATE, useApproveToken } from '@hooks/actions/useApproveToken'
-import { useTokenBalance } from '@hooks/tokens/useTokenBalances'
-
-import { ChainId } from '@constants/networks'
-
 import { sanitizeValue } from '@utils/sanitizeValue'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
 
-import { BRIDGABLE_TOKENS } from '@constants/bridge'
-import { GMX } from '@constants/tokens/mintable'
+import { BRIDGABLE_TOKENS } from '@constants/tokens'
 
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 
@@ -40,15 +34,13 @@ import { NetworkSlideOver } from '@components/misc/NetworkSlideOver'
 import SettingsSlideOver from './SettingsSlideOver'
 import { DestinationAddressInput } from './DestinationAddressInput'
 
-import { validateTerraAddress } from '@utils/validateTerraAddress'
-
 import { BigNumber } from '@ethersproject/bignumber'
-import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
+import { formatBNToString } from '@bignumber/format'
 
-const ACTION_BTN_CLASSNAME = `
-  w-full rounded-lg my-2 px-4 py-3 tracking-wide
-  text-white disabled:bg-gray-300 transition-all
-  `
+// const ACTION_BTN_CLASSNAME = `
+//   w-full rounded-lg my-2 px-4 py-3 tracking-wide
+//   text-white disabled:bg-gray-300 transition-all
+//   `
 
 const SECTION_TRANSITION_PROPS = {
   enter: 'transition duration-100 ease-out',
@@ -82,16 +74,42 @@ export default function BridgeCard({
   toRef,
   destinationAddress,
   setDestinationAddress,
+}: {
+  fromChainId: number
+  toChainId: number
+  fromCoin: any
+  fromValue: string
+  toCoin: any
+  toValue: string
+  onSelectFromChain: () => void
+  onSelectToChain: () => void
+  swapFromToChains: () => void
+  onSelectFromCoin: () => void
+  onSelectToCoin: () => void
+
+  onChangeFromAmount: (value: string) => void
+  onChangeToAmount: (value: string) => void
+
+  error?: string
+  priceImpact: BigNumber
+  exchangeRate: BigNumber
+  feeAmount: BigNumber
+
+  fromRef: any
+  toRef: any
+
+  destinationAddress: string
+  setDestinationAddress: (value: string) => void
 }) {
   // populates the selectable tokens using the from and to chain ids
-  const fromChainTokens = BRIDGABLE_TOKENS[fromChainId]
-  const toChainTokens = BRIDGABLE_TOKENS[toChainId]
+  const fromChainTokens = BRIDGABLE_TOKENS[Number(fromChainId)]
+  const toChainTokens = BRIDGABLE_TOKENS[Number(toChainId)]
 
   // can be replaced by get bridge quote
   const gasDropAmount = useGasDropAmount(toChainId)
 
   // augment settings
-  const [displayType, setDisplayType] = useState(undefined)
+  const [displayType, setDisplayType] = useState('')
 
   // settings
   const [settings, setSettings] = useSettings()
@@ -100,72 +118,54 @@ export default function BridgeCard({
   const [deadlineMinutes, setDeadlineMinutes] = useState()
 
   // gets the from amount from the props
-  let fromAmount
+  let fromAmount: BigNumber
   try {
     fromAmount = parseUnits(
       sanitizeValue(fromValue),
-      fromCoin.decimals[fromChainId]
+      fromCoin.decimals[Number(fromChainId)]
     )
   } catch (e) {
     fromAmount = Zero
   }
 
   // gets the to amount from the props
-  let toAmount
+  let toAmount: BigNumber
   try {
-    toAmount = parseUnits(sanitizeValue(toValue), toCoin.decimals[toChainId])
+    toAmount = parseUnits(
+      sanitizeValue(toValue),
+      toCoin.decimals[Number(toChainId)]
+    )
   } catch (e) {
     toAmount = Zero
   }
 
-  //
-  const bridgeZapContract = useBridgeZapContract()
-  const synapseBridgeContract = useSynapseContract()
+  // SDK
   const bridgeSwap = useBridgeSwap({ amount: fromAmount, token: fromCoin })
 
-  let targetApprovalContract
-  if (fromCoin.swapableType == 'UST' && fromChainId != ChainId.TERRA) {
-    targetApprovalContract = synapseBridgeContract
-  } else {
-    targetApprovalContract = bridgeZapContract
-  }
+  let targetApprovalContract = useSynapseContract()
 
   const [approvalState, approveToken] = useApproveToken(
     fromCoin,
-    targetApprovalContract.address,
+    String(targetApprovalContract?.address),
     fromAmount
   )
 
-  const evmFromTokenBalance = useTokenBalance(fromCoin)
-  const terraUstBalance = useTerraUstBalance()
+  const {
+    data: evmFromTokenBalance,
+    isError: balanceError,
+    isLoading: balanceLoading,
+  } = useBalance({
+    address: fromCoin.address,
+  })
 
-  let fromTokenBalance
-  if (fromCoin.symbol == 'UST' && fromChainId == ChainId.TERRA) {
-    fromTokenBalance = terraUstBalance
-  } else {
-    fromTokenBalance = evmFromTokenBalance
-  }
-  // start nonevm dest
-  let nonEvmBridge
-  if ([fromChainId, toChainId].includes(ChainId.TERRA)) {
-    nonEvmBridge = true
-  } else {
-    nonEvmBridge = false
-  }
+  let fromTokenBalance: BigNumber =
+    evmFromTokenBalance?.value ?? new BigNumber(0, '0')
 
-  // const expertMode = useMemo(() => settings.expertMode, [settings.expertMode])
-
-  useEffect(() => {
-    if (!nonEvmBridge) {
-      setDestinationAddress('')
-    }
-  }, [nonEvmBridge])
-
-  useEffect(() => {
-    if (!settings.expertMode) {
-      setDeadlineMinutes(undefined)
-    }
-  }, [settings.expertMode])
+  // useEffect(() => {
+  //   if (!settings.expertMode) {
+  //     setDeadlineMinutes(undefined)
+  //   }
+  // }, [settings.expertMode])
 
   // end nonevm dest
   const fromArgs = {
@@ -242,10 +242,7 @@ export default function BridgeCard({
     btnLabel = 'Why are you bridging to the same network?'
   } else if (
     destinationAddress &&
-    !(
-      validateAndParseAddress(destinationAddress) ||
-      validateTerraAddress(destinationAddress)
-    )
+    !validateAndParseAddress(destinationAddress)
   ) {
     destAddrNotValid = true
     btnLabel = 'Invalid Destination Address'
@@ -268,7 +265,7 @@ export default function BridgeCard({
     fromChainId == toChainId ||
     toAmount.eq(0) ||
     !isFromBalanceEnough ||
-    error ||
+    error != null ||
     destAddrNotValid
 
   const swapBtn = (
@@ -295,27 +292,25 @@ export default function BridgeCard({
     />
   )
 
-  let approvalRequired
-  if (fromChainId == ChainId.TERRA) {
-    approvalRequired = false
-  } else if (
-    fromChainId === ChainId.AVALANCHE &&
-    GMX.addresses[ChainId.AVALANCHE] === fromCoin.addresses[ChainId.AVALANCHE]
-  ) {
-    approvalRequired = false
-  } else {
-    approvalRequired = true
-  }
+  let approvalRequired = true
+  // if (
+  //   fromChainId === ChainId.AVALANCHE &&
+  //   GMX.addresses[ChainId.AVALANCHE] === fromCoin.addresses[ChainId.AVALANCHE]
+  // ) {
+  //   approvalRequired = false
+  // } else {
+  //   approvalRequired = true
+  // }
 
   let actionBtn
   if (approvalState === APPROVAL_STATE.NOT_APPROVED && approvalRequired) {
     actionBtn = approvalBtn
-//    } else if ([fromChainId, toChainId].includes(ChainId.POLYGON)) {
- //} else if ([toChainId, fromChainId].includes(ChainId.CANTO)) {
-//     actionBtn = <NetworkPausedButton networkName="Polygon" />
+    //    } else if ([fromChainId, toChainId].includes(ChainId.POLYGON)) {
+    //} else if ([toChainId, fromChainId].includes(ChainId.CANTO)) {
+    //     actionBtn = <NetworkPausedButton networkName="Polygon" />
   } else {
-      //   actionBtn = <PausedButton/> // PAUSE OVERRIDE
-     actionBtn = swapBtn
+    //   actionBtn = <PausedButton/> // PAUSE OVERRIDE
+    actionBtn = swapBtn
   }
   //  }
   // let actionBtn = <PausedButton/> // PAUSE OVERRIDE
@@ -349,13 +344,12 @@ export default function BridgeCard({
       <Transition
         appear={false}
         unmount={false}
-        show={settings.expertMode || nonEvmBridge}
+        show={settings.expertMode}
         {...SECTION_TRANSITION_PROPS}
       >
         <DestinationAddressInput
           fromChainId={fromChainId}
           toChainId={toChainId}
-          nonEvmBridge={nonEvmBridge}
           destinationAddress={destinationAddress}
           setDestinationAddress={setDestinationAddress}
         />
@@ -422,7 +416,7 @@ export default function BridgeCard({
               if (displayType !== 'settings') {
                 setDisplayType('settings')
               } else {
-                setDisplayType(undefined)
+                setDisplayType('')
               }
             }}
           >
@@ -474,60 +468,60 @@ export default function BridgeCard({
   )
 }
 
-// TODO: Fix the transition post ftm addition
-// TODO: Need to coordnate transition from approval => other action
+// // TODO: Fix the transition post ftm addition
+// // TODO: Need to coordnate transition from approval => other action
 
-function NetworkPausedButton({ networkName }) {
-  return (
-    <Button disabled={true} type="button" className={ACTION_BTN_CLASSNAME}>
-      {networkName} Undergoing Chain Downtime
-    </Button>
-  )
-}
-// Undergoing Network Upgrades
+// function NetworkPausedButton({ networkName }) {
+//   return (
+//     <Button disabled={true} type="button" className={ACTION_BTN_CLASSNAME}>
+//       {networkName} Undergoing Chain Downtime
+//     </Button>
+//   )
+// }
+// // Undergoing Network Upgrades
 
-const PAUSED_BASE_PROPERTIES = `
-    w-full rounded-lg my-2 px-4 py-3
-    text-white text-opacity-100 transition-all
-    hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C]
-    disabled:from-bgLight disabled:to-bgLight
-    bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
-  `
+// const PAUSED_BASE_PROPERTIES = `
+//     w-full rounded-lg my-2 px-4 py-3
+//     text-white text-opacity-100 transition-all
+//     hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C]
+//     disabled:from-bgLight disabled:to-bgLight
+//     bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
+//   `
 
-function PausedButton({ networkName }) {
-  return (
-    <Button
-      disabled={true}
-      fancy={true}
-      type="button"
-      className={`${PAUSED_BASE_PROPERTIES}`}
-    >
-     Temporarily paused due to chain connectivity issues
-    </Button>
-  )
-}
+// function PausedButton({ networkName }) {
+//   return (
+//     <Button
+//       disabled={true}
+//       fancy={true}
+//       type="button"
+//       className={`${PAUSED_BASE_PROPERTIES}`}
+//     >
+//      Temporarily paused due to chain connectivity issues
+//     </Button>
+//   )
+// }
 
-function HeavyLoadButton() {
-  return (
-    <Button
-      disabled={true}
-      fancy={true}
-      type="button"
-      className={ACTION_BTN_CLASSNAME}
-    >
-      Synapse is experiencing heavy load
-    </Button>
-  )
-}
+// function HeavyLoadButton() {
+//   return (
+//     <Button
+//       disabled={true}
+//       fancy={true}
+//       type="button"
+//       className={ACTION_BTN_CLASSNAME}
+//     >
+//       Synapse is experiencing heavy load
+//     </Button>
+//   )
+// }
 
-function AdvancedOptionsButton({ className, onClick }) {
-  return (
-    <div
-      className={`
-        group rounded-lg hover:bg-gray-900 ${className} p-1`}
-      onClick={onClick}
-    >
-      <CogIcon className="w-6 h-6 text-gray-500 group-hover:text-gray-300" />
-    </div>
-  )
-}
+// function AdvancedOptionsButton({ className, onClick }) {
+//   return (
+//     <div
+//       className={`
+//         group rounded-lg hover:bg-gray-900 ${className} p-1`}
+//       onClick={onClick}
+//     >
+//       <CogIcon className="w-6 h-6 text-gray-500 group-hover:text-gray-300" />
+//     </div>
+//   )
+// }

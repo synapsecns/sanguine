@@ -118,12 +118,17 @@ export default function BridgeCard({
     toAmount = Zero
   }
 
-  //
+  // nuke this bc no more terra
   const bridgeZapContract = useBridgeZapContract()
+
+  // gets the bridge contract (may no need bc of sdk)
   const synapseBridgeContract = useSynapseContract()
+
   const bridgeSwap = useBridgeSwap({ amount: fromAmount, token: fromCoin })
 
+  // targetApprovalContract = synapseBridgeContract
   let targetApprovalContract
+  // nuke this
   if (fromCoin.swapableType == 'UST' && fromChainId != ChainId.TERRA) {
     targetApprovalContract = synapseBridgeContract
   } else {
@@ -145,7 +150,8 @@ export default function BridgeCard({
   } else {
     fromTokenBalance = evmFromTokenBalance
   }
-  // start nonevm dest
+
+  // start nonevm dest NUKE EVERYTHING RELATED TO THIS
   let nonEvmBridge
   if ([fromChainId, toChainId].includes(ChainId.TERRA)) {
     nonEvmBridge = true
@@ -155,19 +161,22 @@ export default function BridgeCard({
 
   // const expertMode = useMemo(() => settings.expertMode, [settings.expertMode])
 
+  // nuke
   useEffect(() => {
     if (!nonEvmBridge) {
       setDestinationAddress('')
     }
   }, [nonEvmBridge])
 
+  // nuke
   useEffect(() => {
     if (!settings.expertMode) {
       setDeadlineMinutes(undefined)
     }
   }, [settings.expertMode])
 
-  // end nonevm dest
+  // end nonevm dest THE FUCK DOE Sjhfaskjh
+
   const fromArgs = {
     isSwapFrom: true,
     selected: fromCoin,
@@ -310,12 +319,12 @@ export default function BridgeCard({
   let actionBtn
   if (approvalState === APPROVAL_STATE.NOT_APPROVED && approvalRequired) {
     actionBtn = approvalBtn
-//    } else if ([fromChainId, toChainId].includes(ChainId.POLYGON)) {
- //} else if ([toChainId, fromChainId].includes(ChainId.CANTO)) {
-//     actionBtn = <NetworkPausedButton networkName="Polygon" />
+    //    } else if ([fromChainId, toChainId].includes(ChainId.POLYGON)) {
+    //} else if ([toChainId, fromChainId].includes(ChainId.CANTO)) {
+    //     actionBtn = <NetworkPausedButton networkName="Polygon" />
   } else {
-      //   actionBtn = <PausedButton/> // PAUSE OVERRIDE
-     actionBtn = swapBtn
+    //   actionBtn = <PausedButton/> // PAUSE OVERRIDE
+    actionBtn = swapBtn
   }
   //  }
   // let actionBtn = <PausedButton/> // PAUSE OVERRIDE
@@ -502,7 +511,7 @@ function PausedButton({ networkName }) {
       type="button"
       className={`${PAUSED_BASE_PROPERTIES}`}
     >
-     Temporarily paused due to chain connectivity issues
+      Temporarily paused due to chain connectivity issues
     </Button>
   )
 }

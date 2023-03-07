@@ -3,35 +3,111 @@ import Grid from '@tw/Grid'
 import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
 import { useRef, useState, useEffect } from 'react'
+import { Zero } from '@ethersproject/constants'
 
 // import BridgeCard from './BridgeCard'
 // import BridgeWatcher from './BridgeWatcher'
 import { ActionCardFooter } from '@components/ActionCardFooter'
 import { useAccount, useBalance, useNetwork } from 'wagmi'
-import { HOW_TO_BRIDGE_URL } from '@constants/urls'
+import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import { ChainId } from '@constants/networks'
+import {
+  BRIDGE_CHAINS_BY_TYPE,
+  BRIDGE_TYPES_BY_CHAIN,
+  BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
+  BRIDGABLE_TOKENS,
+  // BRIDGE_SWAPABLE_TOKENS_BY_CHAIN,
+} from '@constants/tokens'
 
+import {
+  DEFAULT_FROM_CHAIN,
+  DEFAULT_TO_CHAIN,
+  DEFAULT_FROM_COIN,
+  DEFAULT_TO_COIN,
+} from '@/constants/bridge'
 const sanitizeQueryData = (data: string) => {}
-
+console.log(
+  BRIDGE_CHAINS_BY_TYPE,
+  BRIDGE_TYPES_BY_CHAIN,
+  BRIDGE_SWAPABLE_TOKENS_BY_TYPE
+)
 export default function BridgePage() {
   // Get data from query url.
   const router = useRouter()
   const { outputChain, inputCurrency, outputCurrency } = router.query
-  const toChainQuery = String(outputChain)
-  const fromQuery = String(inputCurrency)
-  const toQuery = String(outputCurrency)
+  const toChainQuery =
+    outputChain && BRIDGABLE_TOKENS[Number(outputChain)]
+      ? Number(outputChain)
+      : DEFAULT_TO_CHAIN
+  const fromQuery = inputCurrency ? String(inputCurrency) : DEFAULT_FROM_COIN
+  const toQuery = outputCurrency ? String(outputCurrency) : DEFAULT_TO_COIN
 
   // Get data from wagmi.
   const { address } = useAccount()
   const { chain } = useNetwork()
 
-  // Set data from query url.
+  // set bridgeable tokens
+  const fromChainTokens = BRIDGABLE_TOKENS[Number(chain?.id)] // BRIDGE_SWAPABLE_TOKENS_BY_CHAIN[fromChainId]
+  const toChainTokens = BRIDGABLE_TOKENS[toChainQuery]
 
+  // console.log('FROMCHAIN', fromChainTokens)
+
+  // console.log('TO', toChainTokens, toChainQuery)
+
+  // gets the from/to token objects from the url params.
+  const defaultFrom = _.find(
+    fromChainTokens,
+    (token) => token.symbol === fromQuery
+  )
+  const defaultTo = _.find(toChainTokens, (token) => token.symbol === toQuery)
+
+  console.log('defaultTo', defaultTo)
+
+  // init state needed for bridge
+
+  const [fromCoin, setFromCoin] = useState(defaultFrom ?? fromChainTokens?.[0])
+  const [toCoin, setToCoin] = useState(defaultTo ?? toChainTokens?.[0])
+  const [swapableType, setSwapableType] = useState(
+    (defaultFrom ?? fromChainTokens?.[0])?.swapableType ?? 'USD'
+  )
+  const [fromValue, setFromValue] = useState('')
+  const [toValue, setToValue] = useState('')
+  const [priceImpact, setPriceImpact] = useState(Zero)
+  const [exchangeRate, setExchangeRate] = useState(Zero)
+  const [feeAmount, setFeeAmount] = useState(Zero)
+  const [error, setError] = useState(null)
+  const [destinationAddress, setDestinationAddress] = useState('')
+  const fromRef = useRef(null)
+  const toRef = useRef(null)
+  // const [lastChangeType, setLastChangeType] = useState('from')
+
+  const fromTokenSymbols = fromChainTokens?.map((i) => i.symbol)
+  const toTokenSymbols = toChainTokens?.map((i) => i.symbol)
+
+  // Set data from query url.
+  console.log('FROM', fromCoin)
+  console.log('TO', toCoin)
+  console.log('Swapable Type', swapableType)
   // Initialize state variables needed for bridging
-  const [fromChainId, setFromChainId] = useState(ChainId.ETH)
-  const [toChainId, setToChainId] = useState(ChainId.ARBITRUM)
-  const [fromCoin, setFromCoin] = useState('USDC')
-  const [toCoin, setToCoin] = useState<string>(toQuery)
+  // const [fromChainId, setFromChainId] = useState(DEFAULT_FROM_CHAIN)
+  // const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
+  // const [fromCoin, setFromCoin] = useState(DEFAULT_FROM_COIN)
+  // const [toCoin, setToCoin] = useState(DEFAULT_TO_COIN)
+
+  const updateUrlParams = () => {
+    router.push({
+      pathname: BRIDGE_PATH,
+      query: {
+        outputChain: toChainQuery,
+        inputCurrency: fromCoin.symbol,
+        outputCurrency: toCoin.symbol,
+      },
+    })
+  }
+
+  useEffect(() => {
+    updateUrlParams()
+  }, [fromCoin, toCoin])
 
   return (
     <LandingPageWrapper>
@@ -43,6 +119,14 @@ export default function BridgePage() {
               gap={6}
               className="justify-center px-2 py-16 sm:px-6 md:px-8"
             >
+              <button
+                onClick={() => {
+                  console.log(BRIDGABLE_TOKENS[toChainQuery], toChainQuery)
+                  setFromCoin(BRIDGABLE_TOKENS[toChainQuery][2])
+                }}
+              >
+                asdsadsa
+              </button>
               {/* <HarmonyCheck fromChainId={fromChainId} toChainId={toChainId} /> */}
               <div className="flex justify-center">
                 <div className="pb-3 place-self-center">

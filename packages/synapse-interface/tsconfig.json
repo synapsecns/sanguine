@@ -15,84 +15,37 @@
     "jsx": "preserve",
     "incremental": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@assets/": [
-        "./assets"
-      ],
-      "@assets/icons/": [
-        "./assets/icons"
-      ],
-      "@assets/networks/": [
-        "./assets/networks"
-      ],
-      "@assets/*": [
-        "./assets/*"
-      ],
-      "@components": [
-        "./components"
-      ],
-      "@components/*": [
-        "./components/*"
-      ],
-      "@tw": [
-        "./components/ui/tailwind"
-      ],
-      "@tw/*": [
-        "./components/ui/tailwind/*"
-      ],
-      "@layouts": [
-        "./components/layouts"
-      ],
-      "@layouts/*": [
-        "./components/layouts/*"
-      ],
-      "@icons": [
-        "./components/icons"
-      ],
-      "@icons/*": [
-        "./components/icons/*"
-      ],
-      "@urls": [
-        "./constants/urls"
-      ],
-      "@urls/*": [
-        "./constants/urls/*"
-      ],
-      "@utils": [
-        "./utils"
-      ],
-      "@utils/*": [
-        "./utils/*"
-      ],
-      "@constants": [
-        "./constants"
-      ],
-      "@constants/*": [
-        "./constants/*"
-      ],
-      "@graphql": [
-        "./graphql"
-      ],
-      "@graphql/*": [
-        "./graphql/*"
-      ],
+      "@/*": ["./*"],
+      "@assets/": ["./assets"],
+      "@assets/icons/": ["./assets/icons"],
+      "@assets/networks/": ["./assets/networks"],
+      "@assets/*": ["./assets/*"],
+      "@components": ["./components"],
+      "@components/*": ["./components/*"],
+      "@tw": ["./components/ui/tailwind"],
+      "@tw/*": ["./components/ui/tailwind/*"],
+      "@layouts": ["./components/layouts"],
+      "@layouts/*": ["./components/layouts/*"],
+      "@icons": ["./components/icons"],
+      "@icons/*": ["./components/icons/*"],
+      "@urls": ["./constants/urls"],
+      "@urls/*": ["./constants/urls/*"],
+      "@utils": ["./utils"],
+      "@utils/*": ["./utils/*"],
+      "@constants": ["./constants"],
+      "@constants/*": ["./constants/*"],
+      "@graphql": ["./graphql"],
+      "@graphql/*": ["./graphql/*"],
 
-      "@styles": [
-        "./styles"
-      ],
-      "@styles/*": [
-        "./styles/*"
-      ],
-      "@hooks": [
-        "./utils/hooks"
-      ],
-      "@hooks/*": [
-        "./utils/hooks/*"
-      ],
-    },
-
+      "@styles": ["./styles"],
+      "@styles/*": ["./styles/*"],
+      "@pages": ["./pages"],
+      "@pages/*": ["./pages/*"],
+      "@hooks": ["./utils/hooks"],
+      "@hooks/*": ["./utils/hooks/*"],
+      "@bignumber": ["./utils/bignumber"],
+      "@bignumber/*": ["./utils/bignumber/*"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]

@@ -481,18 +481,7 @@ export const CHAIN_PARAMS = {
     },
     rpcUrls: [CHAIN_RPC[ChainId.DOGECHAIN]],
     blockExplorerUrls: [CHAIN_EXPLORER_URLS[ChainId.DOGECHAIN]],
-  },
-  [ChainId.TERRA]: {
-    chainId: toHexStr(ChainId.TERRA),
-    chainName: CHAIN_INFO_MAP[ChainId.TERRA].chainName,
-    nativeCurrency: {
-      name: 'Luna',
-      symbol: 'LUNA',
-      decimals: 18,
-    },
-    rpcUrls: [NON_EVM_CHAIN_RPC[ChainId.TERRA]],
-    blockExplorerUrls: [CHAIN_EXPLORER_URLS[ChainId.TERRA]],
-  },
+  }
 }
 
 /**
