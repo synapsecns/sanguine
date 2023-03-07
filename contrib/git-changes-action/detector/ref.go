@@ -66,6 +66,7 @@ func getChangedFilesFromAPI(ctx context.Context, ghContext *actionscore.Context,
 
 	page := 1
 	const retryCount = 10
+	const perPage = 100
 	for {
 		var files []*github.CommitFile
 		var res *github.Response
@@ -75,10 +76,12 @@ func getChangedFilesFromAPI(ctx context.Context, ghContext *actionscore.Context,
 
 			files, res, err = client.PullRequests.ListFiles(reqCtx, repoOwner, repoName, prNumber, &github.ListOptions{
 				Page:    page,
-				PerPage: 100,
+				PerPage: perPage,
 			})
 			if err != nil {
-				return fmt.Errorf("could not get files: %w", err)
+				return fmt.Errorf("could not get files for repoOwner %s, repoName %s, prNumber %d, page number %d with page size %d: %w",
+					repoOwner, repoName, prNumber, page, perPage, err)
+
 			}
 			return nil
 		}, retry.Context(ctx), retry.Attempts(retryCount))
