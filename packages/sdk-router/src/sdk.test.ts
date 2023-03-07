@@ -20,7 +20,6 @@ describe('SynapseSDK', () => {
         'Amount of chains and providers does not equal'
       )
     })
-
   })
 
   describe('bridgeQuote', () => {
