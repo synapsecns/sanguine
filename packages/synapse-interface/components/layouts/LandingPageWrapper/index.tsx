@@ -18,7 +18,7 @@ import {
   getBuySynUrl,
   LANDING_PATH,
   ANALYTICS_PATH,
-} from '@urls'
+} from '@/constants/urls'
 
 import Grid from '@tw/Grid'
 

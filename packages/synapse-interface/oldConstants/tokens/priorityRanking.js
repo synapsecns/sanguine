@@ -1,0 +1,153 @@
+import { ChainId } from '@constants/networks'
+
+import {
+  BUSD,
+  USDC,
+  USDT,
+  DAI,
+  MIM,
+  NUSD,
+  NETH,
+  WETH,
+  WETHE,
+  ONEETH,
+  FTMETH,
+  METISETH,
+  WJEWEL,
+  SYNJEWEL,
+  MULTIAVAX,
+  SYNAVAX,
+  KLAYTN_USDT,
+  KLAYTN_oUSDT,
+  NOTE,
+  CANTOETH
+} from '@constants/tokens/basic'
+
+import {
+  ARBITRUM_ETH_SWAP_TOKEN,
+  BOBA_ETH_SWAP_TOKEN,
+  OPTIMISM_ETH_SWAP_TOKEN,
+  AVALANCHE_AVETH_SWAP_TOKEN,
+  HARMONY_ONEETH_SWAP_TOKEN,
+  FANTOM_WETH_SWAP_TOKEN,
+  METIS_WETH_SWAP_TOKEN,
+  CANTO_WETH_SWAP_TOKEN
+} from '@constants/tokens/ethswap'
+
+import {
+  ETH_POOL_SWAP_TOKEN,
+  BSC_POOL_SWAP_TOKEN,
+  OPTIMISM_POOL_SWAP_TOKEN,
+  POLYGON_POOL_SWAP_TOKEN,
+  AVALANCHE_POOL_SWAP_TOKEN,
+  HARMONY_POOL_SWAP_TOKEN,
+  BOBA_POOL_SWAP_TOKEN,
+  AURORA_TS_POOL_SWAP_TOKEN,
+  ARBITRUM_3POOL_SWAP_TOKEN,
+  FANTOM_3POOL_SWAP_TOKEN,
+  METIS_POOL_SWAP_TOKEN,
+  CRONOS_POOL_SWAP_TOKEN,
+  KLAYTN_ORBIT_SWAP_TOKEN,
+  CANTO_POOL_SWAP_TOKEN,
+  CANTO_WRAPPER_POOL_SWAP_TOKEN
+} from '@constants/tokens/poolswap'
+
+import { HARMONY_JEWEL_SWAP_TOKEN } from '@constants/tokens/jewelswap'
+import { HARMONY_AVAX_SWAP_TOKEN } from './avaxswap'
+
+
+export const PRIORITY_RANKING = {
+  [ChainId.BSC]: {
+    [BUSD.symbol]: [BSC_POOL_SWAP_TOKEN],
+    [USDC.symbol]: [BSC_POOL_SWAP_TOKEN],
+    [USDT.symbol]: [BSC_POOL_SWAP_TOKEN],
+    [NUSD.symbol]: [BSC_POOL_SWAP_TOKEN],
+  },
+  [ChainId.ETH]: {
+    [DAI.symbol]:  [ETH_POOL_SWAP_TOKEN],
+    [USDC.symbol]: [ETH_POOL_SWAP_TOKEN],
+    [USDT.symbol]: [ETH_POOL_SWAP_TOKEN],
+  },
+  [ChainId.CRONOS]: {
+    [USDC.symbol]: [CRONOS_POOL_SWAP_TOKEN],
+    [NUSD.symbol]: [CRONOS_POOL_SWAP_TOKEN],
+  },
+  [ChainId.POLYGON]: {
+    [DAI.symbol]:  [POLYGON_POOL_SWAP_TOKEN],
+    [USDC.symbol]: [POLYGON_POOL_SWAP_TOKEN],
+    [USDT.symbol]: [POLYGON_POOL_SWAP_TOKEN],
+    [NUSD.symbol]: [POLYGON_POOL_SWAP_TOKEN],
+  },
+  [ChainId.FANTOM]: {
+    [USDC.symbol]:   [FANTOM_3POOL_SWAP_TOKEN],
+    [USDT.symbol]:   [FANTOM_3POOL_SWAP_TOKEN],
+    [NUSD.symbol]:   [FANTOM_3POOL_SWAP_TOKEN],
+    [FTMETH.symbol]: [FANTOM_WETH_SWAP_TOKEN],
+    [NETH.symbol]:   [FANTOM_WETH_SWAP_TOKEN],
+  },
+  [ChainId.BOBA]: {
+    [WETH.symbol]: [BOBA_ETH_SWAP_TOKEN],
+    [NETH.symbol]: [BOBA_ETH_SWAP_TOKEN],
+    [DAI.symbol]:  [BOBA_POOL_SWAP_TOKEN],
+    [USDC.symbol]: [BOBA_POOL_SWAP_TOKEN],
+    [USDT.symbol]: [BOBA_POOL_SWAP_TOKEN],
+    [NUSD.symbol]: [BOBA_POOL_SWAP_TOKEN],
+  },
+  [ChainId.ARBITRUM]: {
+    [WETH.symbol]: [ARBITRUM_ETH_SWAP_TOKEN],
+    [NETH.symbol]: [ARBITRUM_ETH_SWAP_TOKEN],
+    [USDC.symbol]: [ARBITRUM_3POOL_SWAP_TOKEN],
+    [USDT.symbol]: [ARBITRUM_3POOL_SWAP_TOKEN],
+    [NUSD.symbol]: [ARBITRUM_3POOL_SWAP_TOKEN],
+  },
+  [ChainId.AVALANCHE]: {
+    [DAI.symbol]:   [AVALANCHE_POOL_SWAP_TOKEN],
+    [USDC.symbol]:  [AVALANCHE_POOL_SWAP_TOKEN],
+    [USDT.symbol]:  [AVALANCHE_POOL_SWAP_TOKEN],
+    [NUSD.symbol]:  [AVALANCHE_POOL_SWAP_TOKEN],
+    [WETHE.symbol]: [AVALANCHE_AVETH_SWAP_TOKEN],
+    [NETH.symbol]:  [AVALANCHE_AVETH_SWAP_TOKEN],
+  },
+  [ChainId.HARMONY]: {
+    [DAI.symbol]:      [HARMONY_POOL_SWAP_TOKEN],
+    [USDC.symbol]:     [HARMONY_POOL_SWAP_TOKEN],
+    [USDT.symbol]:     [HARMONY_POOL_SWAP_TOKEN],
+    [NUSD.symbol]:     [HARMONY_POOL_SWAP_TOKEN],
+    [ONEETH.symbol]:   [HARMONY_ONEETH_SWAP_TOKEN],
+    [NETH.symbol]:     [HARMONY_ONEETH_SWAP_TOKEN],
+    [WJEWEL.symbol]:   [HARMONY_JEWEL_SWAP_TOKEN],
+    [SYNJEWEL.symbol]: [HARMONY_JEWEL_SWAP_TOKEN],
+
+    [MULTIAVAX.symbol]: [HARMONY_AVAX_SWAP_TOKEN],
+    [SYNAVAX.symbol]:   [HARMONY_AVAX_SWAP_TOKEN],
+  },
+  [ChainId.AURORA]: {
+    [USDC.symbol]: [AURORA_TS_POOL_SWAP_TOKEN],
+    [USDT.symbol]: [AURORA_TS_POOL_SWAP_TOKEN],
+    [NUSD.symbol]: [AURORA_TS_POOL_SWAP_TOKEN],
+  },
+  [ChainId.OPTIMISM]: {
+    [WETH.symbol]: [OPTIMISM_ETH_SWAP_TOKEN],
+    [NETH.symbol]: [OPTIMISM_ETH_SWAP_TOKEN],
+    [USDC.symbol]: [OPTIMISM_POOL_SWAP_TOKEN],
+    [NUSD.symbol]: [OPTIMISM_POOL_SWAP_TOKEN],
+  },
+  [ChainId.METIS]: {
+    [USDC.symbol]:     [METIS_POOL_SWAP_TOKEN],
+    [NUSD.symbol]:     [METIS_POOL_SWAP_TOKEN],
+    [METISETH.symbol]: [METIS_WETH_SWAP_TOKEN],
+    [NETH.symbol]:     [METIS_WETH_SWAP_TOKEN],
+  },
+  [ChainId.KLAYTN]: {
+    [KLAYTN_USDT.symbol]:     [KLAYTN_ORBIT_SWAP_TOKEN],
+    [KLAYTN_oUSDT.symbol]:    [KLAYTN_ORBIT_SWAP_TOKEN]
+  },
+  [ChainId.CANTO]: {
+    [NOTE.symbol]:  [CANTO_WRAPPER_POOL_SWAP_TOKEN],
+    [NUSD.symbol]:  [CANTO_WRAPPER_POOL_SWAP_TOKEN],
+    [USDC.symbol]:  [CANTO_WRAPPER_POOL_SWAP_TOKEN],
+    [USDT.symbol]:  [CANTO_WRAPPER_POOL_SWAP_TOKEN],
+    [CANTOETH.symbol]:  [CANTO_WETH_SWAP_TOKEN],
+    [NETH.symbol]:  [CANTO_WETH_SWAP_TOKEN],
+  }
+}

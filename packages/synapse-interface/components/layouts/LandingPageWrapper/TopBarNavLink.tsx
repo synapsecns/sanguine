@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BASE_PATH } from '@urls'
+import { BASE_PATH } from '@/constants/urls'
 
 export function TopBarNavLink({ labelText, to, className }:{ labelText: string, to: string, className?: string}) {
 

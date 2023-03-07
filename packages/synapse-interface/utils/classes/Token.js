@@ -17,7 +17,7 @@ export class Token {
    * @param {(number|Object.<number,number>)} obj.decimals - decimals of the currency
    * @param {string} obj.symbol - symbol of the currency
    * @param {string} obj.name - human readable name of the currency
-   * @param {string} [obj.logo] - logo path
+   * @param {any} [obj.logo] - logo path
    * @param {string} [obj.poolName] - poolName for pool
    * @param {Object.<number,string>} [obj.swapAddresses] - standard
    * @param {Object.<number,string>} [obj.swapDepositAddresses] - for (metaswap)
@@ -29,6 +29,7 @@ export class Token {
    * @param {string} [obj.docUrl] - url link to the documentation
    * @param {boolean} [obj.forceMeta] - force the token to be treated as a
    * @param {string} [obj.swapableType] - the type of swap a la `SYN`, `ETH`, etc
+   * @param {boolean} [obj.isNative] - is the token native to the chain
    *  metaswap even if swapDepositAddresses isnt present
    */
   constructor({
@@ -62,25 +63,25 @@ export class Token {
     } else {
       isMeta = false
     }
-    this.addresses            = addresses
-    this.wrapperAddresses     = wrapperAddresses
+    this.addresses = addresses
+    this.wrapperAddresses = wrapperAddresses
     // this.decimals             = decimals
-    this.decimals             = makeMultiChainObj(decimals)
-    this.symbol               = symbol
-    this.name                 = name
-    this.icon                 = logo
-    this.poolName             = poolName
-    this.swapAddresses        = swapAddresses
+    this.decimals = makeMultiChainObj(decimals)
+    this.symbol = symbol
+    this.name = name
+    this.icon = logo
+    this.poolName = poolName
+    this.swapAddresses = swapAddresses
     this.swapWrapperAddresses = swapWrapperAddresses
     this.swapDepositAddresses = swapDepositAddresses
-    this.swapEthAddresses     = swapEthAddresses
-    this.routerIndex          = routerIndex
+    this.swapEthAddresses = swapEthAddresses
+    this.routerIndex = routerIndex
 
-    this.poolTokens     = poolTokens
-    this.nativeTokens   = nativeTokens ?? poolTokens
-    this.depositTokens  = depositTokens ?? this.nativeTokens
-    this.description    = description
-    this.docUrl         = docUrl ?? ''
+    this.poolTokens = poolTokens
+    this.nativeTokens = nativeTokens ?? poolTokens
+    this.depositTokens = depositTokens ?? this.nativeTokens
+    this.description = description
+    this.docUrl = docUrl ?? ''
 
     this.poolId = makeMultiChainObj(poolId)
     this.poolType = poolType

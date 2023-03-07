@@ -1,0 +1,184 @@
+import { ETH, SYN } from '@constants/tokens/basic'
+
+import { ChainId, CHAIN_EXPLORER_URLS } from '@constants/networks'
+import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/lp'
+// Hardcoding this shit for now until actual plan around routing
+console.log(process?.env?.NODE_ENV)
+let SYNAPSE_BASE_URL = ''
+if (process?.env?.NODE_ENV === 'development') {
+  SYNAPSE_BASE_URL = 'http://localhost:3000'
+} else {
+  SYNAPSE_BASE_URL = 'https://synapseprotocol.com'
+}
+
+export { SYNAPSE_BASE_URL }
+
+export const BASE_PATH = '/'
+
+export const ANALYTICS_PATH = 'https://explorer.synapseprotocol.com/'
+export const AIRDROP_PATH = '/claim'
+export const SWAP_PATH = '/swap'
+export const STAKE_PATH = '/stake'
+export const POOLS_PATH = '/pools'
+export const BRIDGE_PATH = '/'
+export const CONTRACTS_PATH = '/contracts'
+export const PORTFOLIO_PATH = '/portfolio'
+export const STATISTICS_PATH = '/statistics'
+export const LANDING_PATH = '/landing'
+export const TERMS_OF_SERVICE_PATH =
+  'https://explorer.synapseprotocol.com/terms'
+export const PRIVACY_POLICY_PATH =
+  'https://explorer.synapseprotocol.com/privacy'
+
+export const SYNAPSE_PFP_PATH = '/returntomonke'
+
+export function getPoolUrl({
+  token,
+  poolRouterIndex,
+}: {
+  token?: any
+  poolRouterIndex?: number
+}) {
+  if (token) {
+    if (token.symbol === SYN_ETH_SUSHI_TOKEN.symbol) {
+      return getSushiSwapUrl({
+        fromCoin: ETH,
+        toCoin: SYN,
+        chainId: ChainId.ETH,
+      })
+    } else {
+      return `${POOLS_PATH}/${token.routerIndex}`
+    }
+  }
+
+  return `${POOLS_PATH}/${poolRouterIndex}`
+}
+
+export function getExplorerTxUrl({
+  hash,
+  data,
+  chainId = 56,
+  type = 'tx',
+}: {
+  hash?: string
+  data?: string
+  chainId?: number
+  type?: string
+}) {
+  let baseUrl = CHAIN_EXPLORER_URLS[chainId] ?? CHAIN_EXPLORER_URLS[ChainId.ETH]
+
+  return `${baseUrl}/${type}/${hash ?? data}`
+}
+
+export function getCompleteUrl(uriPath: string) {
+  return `${SYNAPSE_BASE_URL}${uriPath}`
+}
+
+export const DOCS_URL = 'https://docs.synapseprotocol.com'
+export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
+export const TELEGRAM_URL = 'https://t.me/synapseprotocol'
+export const FORUM_URL = 'https://forum.synapseprotocol.com/'
+export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'
+
+export const GITHUB_URL = 'https://github.com/synapsecns'
+export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'
+export const CAREERS_URL =
+  'https://synapseprotocol.notion.site/synapseprotocol/Synapse-Job-Board-3851178379bf45b2b47c6ec8bf9d6753'
+export const MIRROR_URL = 'https://synapse.mirror.xyz/'
+
+export const HOW_TO_BRIDGE_URL =
+  'https://docs.synapseprotocol.com/how-to/bridge'
+export const HOW_TO_SWAP_URL = 'https://docs.synapseprotocol.com/how-to/swap'
+export const HOW_TO_STAKE_URL =
+  'https://docs.synapseprotocol.com/how-to/provide-liquidity'
+// Patching this as docs for now need to swap w/ git link
+
+export const SYNAPSE_DOCS_URL = 'https://docs.synapseprotocol.com'
+
+const SUSHISWAP_BASE_URL = 'https://app.sushi.com'
+// Need to switch this with fei url
+function getSushiSwapUrl({
+  fromCoin,
+  toCoin,
+  chainId,
+}: {
+  fromCoin?: any
+  toCoin?: any
+  chainId: number
+}) {
+  const inputCurrency = fromCoin?.addresses?.[chainId] ?? ''
+  const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
+  return `${SUSHISWAP_BASE_URL}/swap?inputCurrency=${inputCurrency}&outputCurrency=${outputCurrency}`
+}
+
+const TRADERJOE_BASE_URL = `https://www.traderjoexyz.com/#`
+
+function getTraderJoeSwapUrl({
+  fromCoin,
+  toCoin,
+  chainId,
+}: {
+  fromCoin?: any
+  toCoin?: any
+  chainId: number
+}) {
+  const inputCurrency = fromCoin?.addresses?.[chainId] ?? ''
+  const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
+  return `${TRADERJOE_BASE_URL}/trade?inputCurrency=${inputCurrency}&outputCurrency=${outputCurrency}`
+}
+
+const FIREBIRD_BASE_URL = 'https://app.firebird.finance'
+
+function getFirebirdSwapUrl({
+  fromCoin,
+  toCoin,
+  chainId,
+}: {
+  fromCoin?: any
+  toCoin?: any
+  chainId: number
+}) {
+  const inputCurrency = fromCoin?.addresses?.[chainId] ?? ''
+  const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
+  return `${FIREBIRD_BASE_URL}/swap?outputCurrency=${outputCurrency}&net=${chainId}`
+}
+
+const UNISWAP_BASE_URL = 'https://app.uniswap.org/#'
+
+function getUniswapSwapUrl({
+  fromCoin,
+  toCoin,
+  chainId,
+}: {
+  fromCoin?: any
+  toCoin?: any
+  chainId: number
+}) {
+  const inputCurrency = fromCoin?.addresses?.[chainId] ?? ''
+  const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
+  return `${UNISWAP_BASE_URL}/swap?outputCurrency=${outputCurrency}`
+}
+
+export function getBuySynUrl({ chainId }: { chainId: number }) {
+  const params = { toCoin: SYN, chainId }
+
+  switch (chainId) {
+    case ChainId.ETH:
+      return getUniswapSwapUrl(params)
+    case ChainId.AVALANCHE:
+      return getTraderJoeSwapUrl(params)
+    case ChainId.FANTOM:
+      return getFirebirdSwapUrl(params)
+    default:
+      return getSushiSwapUrl(params)
+  }
+}
+
+/** Thanks @blaze for building the analytics api */
+export const BLAZE_API_URL = 'https://synapse.dorime.org/api/v1/analytics'
+
+/** Thanks @0xngmi for building defillama as a whole, it may be a thankless job but we appreciate it */
+export const LLAMA_API_URL = 'https://api.llama.fi/protocol/synapse'
+
+export const BRIDGESYN_ANALYTICS_API =
+  'https://analytics-api.bridgesyn.com/api/v1/analytics'

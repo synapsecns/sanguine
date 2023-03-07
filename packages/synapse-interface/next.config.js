@@ -3,4 +3,16 @@ const nextConfig = {
   reactStrictMode: true,
 }
 
-module.exports = nextConfig
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/bridge',
+        destination: '/',
+        permanent: true,
+      },
+    ]
+  },
+  ...nextConfig
+}
+

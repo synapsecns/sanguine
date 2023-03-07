@@ -55,10 +55,10 @@
         "./components/icons/*"
       ],
       "@urls": [
-        "./utils/urls"
+        "./constants/urls"
       ],
       "@urls/*": [
-        "./utils/urls/*"
+        "./constants/urls/*"
       ],
       "@utils": [
         "./utils"

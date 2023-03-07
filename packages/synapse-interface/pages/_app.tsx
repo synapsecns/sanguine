@@ -9,6 +9,7 @@ import { configureChains, createClient, WagmiConfig } from 'wagmi'
 import { mainnet, arbitrum, aurora, avalanche, bsc, canto, celo,  fantom, harmonyOne,  metis,  moonbeam, moonriver,optimism, polygon } from 'wagmi/chains'
 
 import { getDefaultWallets, RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
+//import { Provider } from 'react-redux'
 
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'

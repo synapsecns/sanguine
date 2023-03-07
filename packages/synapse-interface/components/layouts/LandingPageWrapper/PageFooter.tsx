@@ -12,7 +12,7 @@ import {
   CAREERS_URL,
   TERMS_OF_SERVICE_PATH,
   PRIVACY_POLICY_PATH,
-} from '@urls'
+} from '@/constants/urls'
 
 import Grid from '@tw/Grid'
 import { SynapseTitleLogo } from '.'

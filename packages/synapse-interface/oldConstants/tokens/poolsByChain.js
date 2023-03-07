@@ -1,0 +1,191 @@
+import _ from 'lodash'
+import { ChainId } from '@constants/networks'
+
+
+import {
+  BOBA_ETH_SWAP_TOKEN,
+  ARBITRUM_ETH_SWAP_TOKEN,
+  OPTIMISM_ETH_SWAP_TOKEN,
+  AVALANCHE_AVETH_SWAP_TOKEN,
+  HARMONY_ONEETH_SWAP_TOKEN,
+  FANTOM_WETH_SWAP_TOKEN,
+  METIS_WETH_SWAP_TOKEN,
+  CANTO_WETH_SWAP_TOKEN
+} from '@constants/tokens/ethswap'
+
+import {
+  ETH_POOL_SWAP_TOKEN,
+  BSC_POOL_SWAP_TOKEN,
+  POLYGON_POOL_SWAP_TOKEN,
+  FANTOM_POOL_SWAP_TOKEN,
+  AVALANCHE_POOL_SWAP_TOKEN,
+  ARBITRUM_POOL_SWAP_TOKEN,
+  HARMONY_POOL_SWAP_TOKEN,
+  BOBA_POOL_SWAP_TOKEN,
+  AURORA_POOL_SWAP_TOKEN,
+  AURORA_TS_POOL_SWAP_TOKEN,
+  FANTOM_3POOL_SWAP_TOKEN,
+  ARBITRUM_3POOL_SWAP_TOKEN,
+  METIS_POOL_SWAP_TOKEN,
+  OPTIMISM_POOL_SWAP_TOKEN,
+  CRONOS_POOL_SWAP_TOKEN,
+  KLAYTN_ORBIT_SWAP_TOKEN,
+  CANTO_POOL_SWAP_TOKEN,
+  CANTO_WRAPPER_POOL_SWAP_TOKEN,
+  CANTO_USDC_SWAP_TOKEN,
+} from '@constants/tokens/poolswap'
+import { HARMONY_JEWEL_SWAP_TOKEN } from './jewelswap'
+import { HARMONY_AVAX_SWAP_TOKEN } from './avaxswap'
+
+
+export const POOLS_BY_CHAIN = {
+  [ChainId.ARBITRUM]:  [ARBITRUM_ETH_SWAP_TOKEN, ARBITRUM_3POOL_SWAP_TOKEN, ARBITRUM_POOL_SWAP_TOKEN],
+  [ChainId.AURORA]:    [AURORA_POOL_SWAP_TOKEN, AURORA_TS_POOL_SWAP_TOKEN],
+  [ChainId.AVALANCHE]: [AVALANCHE_POOL_SWAP_TOKEN, AVALANCHE_AVETH_SWAP_TOKEN],
+  [ChainId.BOBA]:      [BOBA_ETH_SWAP_TOKEN, BOBA_POOL_SWAP_TOKEN],
+  [ChainId.BSC]:       [BSC_POOL_SWAP_TOKEN],
+  [ChainId.ETH]:       [ETH_POOL_SWAP_TOKEN],
+  [ChainId.FANTOM]:    [FANTOM_3POOL_SWAP_TOKEN, FANTOM_POOL_SWAP_TOKEN, FANTOM_WETH_SWAP_TOKEN],
+  [ChainId.HARMONY]:   [HARMONY_POOL_SWAP_TOKEN, HARMONY_ONEETH_SWAP_TOKEN, HARMONY_AVAX_SWAP_TOKEN, HARMONY_JEWEL_SWAP_TOKEN],
+  [ChainId.DFK]:       [],
+  [ChainId.MOONBEAM]:  [],
+  [ChainId.MOONRIVER]: [],
+  [ChainId.KLAYTN]:    [KLAYTN_ORBIT_SWAP_TOKEN],
+  [ChainId.OPTIMISM]:  [OPTIMISM_ETH_SWAP_TOKEN, OPTIMISM_POOL_SWAP_TOKEN],
+  [ChainId.POLYGON]:   [POLYGON_POOL_SWAP_TOKEN],
+  [ChainId.CRONOS]:    [CRONOS_POOL_SWAP_TOKEN],
+  [ChainId.METIS]:     [METIS_POOL_SWAP_TOKEN, METIS_WETH_SWAP_TOKEN],
+  [ChainId.DOGECHAIN]: [],
+  [ChainId.CANTO]:     [CANTO_WRAPPER_POOL_SWAP_TOKEN, CANTO_POOL_SWAP_TOKEN, CANTO_USDC_SWAP_TOKEN, CANTO_WETH_SWAP_TOKEN]
+}
+
+export const DISPLAY_POOLS_BY_CHAIN = {
+  [ChainId.ARBITRUM]:  [ARBITRUM_ETH_SWAP_TOKEN, ARBITRUM_3POOL_SWAP_TOKEN, ARBITRUM_POOL_SWAP_TOKEN],
+  [ChainId.AURORA]:    [AURORA_POOL_SWAP_TOKEN],
+  [ChainId.AVALANCHE]: [AVALANCHE_POOL_SWAP_TOKEN, AVALANCHE_AVETH_SWAP_TOKEN],
+  [ChainId.BOBA]:      [BOBA_ETH_SWAP_TOKEN, BOBA_POOL_SWAP_TOKEN],
+  [ChainId.BSC]:       [BSC_POOL_SWAP_TOKEN],
+  [ChainId.ETH]:       [ETH_POOL_SWAP_TOKEN],
+  [ChainId.FANTOM]:    [FANTOM_3POOL_SWAP_TOKEN, FANTOM_POOL_SWAP_TOKEN, FANTOM_WETH_SWAP_TOKEN],
+  [ChainId.HARMONY]:   [HARMONY_POOL_SWAP_TOKEN, HARMONY_ONEETH_SWAP_TOKEN, HARMONY_AVAX_SWAP_TOKEN],
+  [ChainId.DFK]:       [],
+  [ChainId.MOONBEAM]:  [],
+  [ChainId.MOONRIVER]: [],
+  [ChainId.KLAYTN]:    [KLAYTN_ORBIT_SWAP_TOKEN],
+  [ChainId.OPTIMISM]:  [OPTIMISM_ETH_SWAP_TOKEN, OPTIMISM_POOL_SWAP_TOKEN],
+  [ChainId.POLYGON]:   [POLYGON_POOL_SWAP_TOKEN],
+  [ChainId.CRONOS]:    [CRONOS_POOL_SWAP_TOKEN],
+  [ChainId.METIS]:     [METIS_POOL_SWAP_TOKEN, METIS_WETH_SWAP_TOKEN],
+  [ChainId.DOGECHAIN]:       [],
+  [ChainId.CANTO]:     [CANTO_POOL_SWAP_TOKEN, CANTO_USDC_SWAP_TOKEN, CANTO_WETH_SWAP_TOKEN]
+}
+
+
+export const USD_POOLS_BY_CHAIN = {
+  [ChainId.ARBITRUM]:  [ARBITRUM_3POOL_SWAP_TOKEN, ARBITRUM_POOL_SWAP_TOKEN],
+  [ChainId.AURORA]:    [AURORA_POOL_SWAP_TOKEN],
+  [ChainId.AVALANCHE]: [AVALANCHE_POOL_SWAP_TOKEN],
+  [ChainId.BOBA]:      [BOBA_POOL_SWAP_TOKEN],
+  [ChainId.BSC]:       [BSC_POOL_SWAP_TOKEN],
+  [ChainId.ETH]:       [ETH_POOL_SWAP_TOKEN],
+  [ChainId.FANTOM]:    [FANTOM_3POOL_SWAP_TOKEN, FANTOM_POOL_SWAP_TOKEN],
+  [ChainId.HARMONY]:   [HARMONY_POOL_SWAP_TOKEN],
+  [ChainId.DFK]:       [],
+  [ChainId.MOONBEAM]:  [],
+  [ChainId.MOONRIVER]: [],
+  [ChainId.KLAYTN]:    [KLAYTN_ORBIT_SWAP_TOKEN],
+  [ChainId.OPTIMISM]:  [OPTIMISM_POOL_SWAP_TOKEN],
+  [ChainId.POLYGON]:   [POLYGON_POOL_SWAP_TOKEN],
+  [ChainId.CRONOS]:    [CRONOS_POOL_SWAP_TOKEN],
+  [ChainId.METIS]:     [METIS_POOL_SWAP_TOKEN],
+  [ChainId.DOGECHAIN]:       [],
+  [ChainId.CANTO]:     [CANTO_POOL_SWAP_TOKEN, CANTO_USDC_SWAP_TOKEN],
+}
+
+
+export const ETH_POOLS_BY_CHAIN = {
+  [ChainId.ARBITRUM]:  [ARBITRUM_ETH_SWAP_TOKEN],
+  [ChainId.AURORA]:    [],
+  [ChainId.AVALANCHE]: [AVALANCHE_AVETH_SWAP_TOKEN],
+  [ChainId.DFK]:       [],
+  [ChainId.BOBA]:      [BOBA_ETH_SWAP_TOKEN],
+  [ChainId.BSC]:       [],
+  [ChainId.ETH]:       [],
+  [ChainId.KLAYTN]:    [],
+  [ChainId.FANTOM]:    [FANTOM_WETH_SWAP_TOKEN],
+  [ChainId.HARMONY]:   [HARMONY_ONEETH_SWAP_TOKEN],
+  [ChainId.MOONBEAM]:  [],
+  [ChainId.MOONRIVER]: [],
+  [ChainId.OPTIMISM]:  [OPTIMISM_ETH_SWAP_TOKEN],
+  [ChainId.POLYGON]:   [],
+  [ChainId.CRONOS]:    [],
+  [ChainId.METIS]:     [METIS_WETH_SWAP_TOKEN],
+  [ChainId.DOGECHAIN]:       [],
+  [ChainId.CANTO]:       [CANTO_WETH_SWAP_TOKEN]
+}
+
+export const LEGACY_POOLS_BY_CHAIN = {
+  [ChainId.ARBITRUM]:  [ARBITRUM_POOL_SWAP_TOKEN],
+  [ChainId.AURORA]:    [AURORA_POOL_SWAP_TOKEN],
+  [ChainId.AVALANCHE]: [],
+  [ChainId.DFK]:       [],
+  [ChainId.BOBA]:      [],
+  [ChainId.BSC]:       [],
+  [ChainId.ETH]:       [],
+  [ChainId.FANTOM]:    [FANTOM_POOL_SWAP_TOKEN],
+  [ChainId.HARMONY]:   [],
+  [ChainId.MOONBEAM]:  [],
+  [ChainId.MOONRIVER]: [],
+  [ChainId.OPTIMISM]:  [],
+  [ChainId.POLYGON]:   [],
+  [ChainId.CRONOS]:    [],
+  [ChainId.METIS]:     [],
+  [ChainId.KLAYTN]:    [],
+  [ChainId.DOGECHAIN]:       [],
+  [ChainId.CANTO]:       []
+}
+
+
+export const FAKE_POOLS_BY_CHAIN = {
+  [ChainId.ARBITRUM]:  [],
+  [ChainId.AURORA]:    [],
+  [ChainId.AVALANCHE]: [],
+  [ChainId.DFK]:       [],
+  [ChainId.BOBA]:      [],
+  [ChainId.BSC]:       [],
+  [ChainId.ETH]:       [],
+  [ChainId.FANTOM]:    [],
+  [ChainId.HARMONY]:   [HARMONY_JEWEL_SWAP_TOKEN],
+  [ChainId.MOONBEAM]:  [],
+  [ChainId.MOONRIVER]: [],
+  [ChainId.OPTIMISM]:  [],
+  [ChainId.POLYGON]:   [],
+  [ChainId.CRONOS]:    [],
+  [ChainId.METIS]:     [],
+  [ChainId.KLAYTN]:     [],
+  [ChainId.DOGECHAIN]:       [],
+  [ChainId.CANTO]:       [CANTO_WRAPPER_POOL_SWAP_TOKEN]
+}
+
+
+
+
+
+
+
+
+let CHAINS_BY_POOL_NAME = {}
+for (const [chainId, swapTokens] of _.entries(POOLS_BY_CHAIN)) {
+
+  for (const swapToken of swapTokens) {
+    CHAINS_BY_POOL_NAME[swapToken.poolName] = chainId
+  }
+}
+
+
+
+
+export { CHAINS_BY_POOL_NAME }
+
+
+

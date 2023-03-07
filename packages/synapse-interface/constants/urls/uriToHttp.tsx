@@ -1,4 +1,4 @@
-import { SYNAPSE_BASE_URL } from '@urls'
+import { SYNAPSE_BASE_URL } from '@/constants/urls'
 
 const IPFS_URI_REGEXP = /^ipfs:(\/\/)?(.*)$/i
 const IPNS_URI_REGEXP = /^ipns:(\/\/)?(.*)$/i
@@ -10,7 +10,7 @@ const IPNS_URI_REGEXP = /^ipns:(\/\/)?(.*)$/i
  * @param {string} uri to convert to fetch-able http url
  * @return {string[]} array of urls
  */
-export function uriToHttp(uri){
+export function uriToHttp(uri: string) {
   let protocol
   if (uri[0] === '/') {
     protocol = '/'
@@ -19,14 +19,23 @@ export function uriToHttp(uri){
   }
 
   switch (protocol) {
-    case 'https': return [uri]
-    case 'http':  return [`https${uri.substr(4)}`, uri]
+    case 'https':
+      return [uri]
+    case 'http':
+      // udpate
+      return [`https${uri.substr(4)}`, uri]
     case 'ipfs':
       const hash = uri.match(IPFS_URI_REGEXP)?.[2]
-      return [`https://cloudflare-ipfs.com/ipfs/${hash}/`, `https://ipfs.io/ipfs/${hash}/`]
+      return [
+        `https://cloudflare-ipfs.com/ipfs/${hash}/`,
+        `https://ipfs.io/ipfs/${hash}/`,
+      ]
     case 'ipns':
       const name = uri.match(IPNS_URI_REGEXP)?.[2]
-      return [`https://cloudflare-ipfs.com/ipns/${name}/`, `https://ipfs.io/ipns/${name}/`]
+      return [
+        `https://cloudflare-ipfs.com/ipns/${name}/`,
+        `https://ipfs.io/ipns/${name}/`,
+      ]
     case 'data':
       return [uri]
     case '/':
