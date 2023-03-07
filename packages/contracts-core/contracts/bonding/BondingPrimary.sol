@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { BondingManager } from "./BondingManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
@@ -58,13 +60,12 @@ contract BondingPrimary is AgentRegistry, BondingManager {
     function syncAgents(
         uint256 _rootSubmittedAt,
         uint32 _callOrigin,
-        InterfaceSystemRouter.SystemEntity _caller,
+        SystemEntity _caller,
         uint256 _requestID,
         bool _removeExisting,
         AgentInfo[] memory _infos
     )
         external
-        override
         onlySystemRouter
         onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
         onlyCallers(BONDING_MANAGER, _caller)
@@ -123,7 +124,7 @@ contract BondingPrimary is AgentRegistry, BondingManager {
     function _assertCrossChainSlashing(
         uint256 _rootSubmittedAt,
         uint32 _callOrigin,
-        InterfaceSystemRouter.SystemEntity _caller
+        SystemEntity _caller
     ) internal view override {
         // Optimistic period should be over
         _assertOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD);

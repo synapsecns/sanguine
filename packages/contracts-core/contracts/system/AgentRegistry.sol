@@ -6,6 +6,7 @@ import "../libs/Auth.sol";
 import "../libs/ByteString.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistryEvents } from "../events/AgentRegistryEvents.sol";
+import { IAgentRegistry } from "../interfaces/IAgentRegistry.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -19,7 +20,7 @@ import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableS
  * 2. Notary is active on a single domain.
  * 3. Same account can't be both a Guard and a Notary.
  */
-abstract contract AgentRegistry is AgentRegistryEvents {
+abstract contract AgentRegistry is AgentRegistryEvents, IAgentRegistry {
     using AgentSet for AgentSet.DomainAddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -78,20 +79,12 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     ▏*║                            EXTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Returns all active Agents for a given domain in an array.
-     * Note: will return the list of active Guards, if `_domain == 0`.
-     * @dev This copies storage into memory, so can consume a lof of gas, if
-     * amount of agents is large (see EnumerableSet.values())
-     */
+    /// @inheritdoc IAgentRegistry
     function allAgents(uint32 _domain) external view returns (address[] memory) {
         return agents[_currentEpoch()].values(_domain);
     }
 
-    /**
-     * @notice Returns all domains having at least one active Notary in an array.
-     * @dev This always excludes the zero domain, which is used for storing the guards.
-     */
+    /// @inheritdoc IAgentRegistry
     function allDomains() external view returns (uint32[] memory domains_) {
         uint256[] memory values = domains[_currentEpoch()].values();
         // Use assembly to perform uint256 -> uint32 downcast
@@ -102,28 +95,17 @@ abstract contract AgentRegistry is AgentRegistryEvents {
         }
     }
 
-    /**
-     * @notice Returns true if the agent is active on any domain.
-     * Note: that includes both Guards and Notaries.
-     * @return isActive Whether the account is an active agent on any of the domains
-     * @return domain   Domain, where the account is an active agent
-     */
+    /// @inheritdoc IAgentRegistry
     function isActiveAgent(address _account) external view returns (bool isActive, uint32 domain) {
         return _isActiveAgent(_account);
     }
 
-    /**
-     * @notice Returns true if the agent is active on the given domain.
-     * Note: domain == 0 refers to a Guard, while _domain > 0 refers to a Notary.
-     */
+    /// @inheritdoc IAgentRegistry
     function isActiveAgent(uint32 _domain, address _account) external view returns (bool) {
         return _isActiveAgent(_domain, _account);
     }
 
-    /**
-     * @notice Returns true if there is at least one active notary for the domain
-     * Note: will return false for `_domain == 0`, even if there are active Guards.
-     */
+    /// @inheritdoc IAgentRegistry
     function isActiveDomain(uint32 _domain) external view returns (bool) {
         return _isActiveDomain(_domain);
     }
@@ -132,36 +114,22 @@ abstract contract AgentRegistry is AgentRegistryEvents {
     ▏*║                             PUBLIC VIEWS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Returns the amount of active agents for the given domain.
-     * Note: will return the amount of active Guards, if `_domain == 0`.
-     */
+    /// @inheritdoc IAgentRegistry
     function amountAgents(uint32 _domain) public view returns (uint256) {
         return agents[_currentEpoch()].length(_domain);
     }
 
-    /**
-     * @notice Returns the amount of active domains.
-     * @dev This always excludes the zero domain, which is used for storing the guards.
-     */
+    /// @inheritdoc IAgentRegistry
     function amountDomains() public view returns (uint256) {
         return domains[_currentEpoch()].length();
     }
 
-    /**
-     * @notice Returns i-th agent for a given domain.
-     * @dev Will revert if index is out of range.
-     * Note: domain == 0 refers to a Guard, while _domain > 0 refers to a Notary.
-     */
+    /// @inheritdoc IAgentRegistry
     function getAgent(uint32 _domain, uint256 _agentIndex) public view returns (address) {
         return agents[_currentEpoch()].at(_domain, _agentIndex);
     }
 
-    /**
-     * @notice Returns i-th domain from the list of active domains.
-     * @dev Will revert if index is out of range.
-     * Note: this never returns the zero domain, which is used for storing the guards.
-     */
+    /// @inheritdoc IAgentRegistry
     function getDomain(uint256 _domainIndex) public view returns (uint32) {
         return uint32(domains[_currentEpoch()].at(_domainIndex));
     }
