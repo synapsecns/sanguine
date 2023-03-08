@@ -38,4 +38,12 @@ interface InterfaceSummit {
     function verifyAttestation(bytes memory _attPayload, bytes memory _attSignature)
         external
         returns (bool isValid);
+
+    /**
+     * @notice Returns the state with the highest known nonce
+     * submitted by any of the currently active Guards.
+     * @param _origin       Domain of origin chain
+     * @return statePayload Raw payload with latest active Guard state for origin
+     */
+    function getLatestState(uint32 _origin) external view returns (bytes memory statePayload);
 }
