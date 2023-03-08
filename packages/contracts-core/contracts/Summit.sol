@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import "./libs/State.sol";
-import { AgentInfo } from "./libs/Structures.sol";
+import "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { BondingManager } from "./bonding/BondingManager.sol";
 import { DomainContext } from "./context/DomainContext.sol";
