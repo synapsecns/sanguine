@@ -83,8 +83,8 @@ export default function BridgeCard({
   fromValue: string
   toCoin: Token
   toValue: string
-  onSelectFromChain: () => void
-  onSelectToChain: () => void
+  onSelectFromChain: (v: number) => void
+  onSelectToChain: (v: number) => void
   swapFromToChains: () => void
   onSelectFromCoin: (v: Token) => void
   onSelectToCoin: (v: Token) => void

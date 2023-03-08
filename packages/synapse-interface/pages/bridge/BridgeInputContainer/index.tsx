@@ -31,14 +31,14 @@ export default function BridgeInputContainer({
   isSwapFrom: boolean
   selected: Token
   onChangeSelected: (v: Token) => void
-  onChangeAmount: (value: string) => void
+  onChangeAmount: (v: string) => void
   inputValue: string
   inputRef: any
   swapFromToChains?: () => void
   tokens: any[]
   chainId: number
-  setDisplayType: (value: string) => void
-  onChangeChain: () => void
+  setDisplayType: (v: string) => void
+  onChangeChain: (v: number) => void
 }) {
   const { address } = useAccount()
   const { chain } = useNetwork()

@@ -9,7 +9,7 @@ import { Token } from '@utils/classes/Token'
 // import BridgeCard from './BridgeCard'
 // import BridgeWatcher from './BridgeWatcher'
 import { ActionCardFooter } from '@components/ActionCardFooter'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import { ChainId } from '@constants/networks'
 import BridgeCard from './BridgeCard'
@@ -27,7 +27,8 @@ import {
   DEFAULT_FROM_TOKEN,
   DEFAULT_TO_TOKEN,
 } from '@/constants/bridge'
-
+console.log('BRIDGE_CHAINS_BY_TYPE', BRIDGE_CHAINS_BY_TYPE)
+console.log('BRIDGABLE_TOKENS', BRIDGABLE_TOKENS)
 export default function BridgePage() {
   // Get data from query url.
   const router = useRouter()
@@ -40,6 +41,7 @@ export default function BridgePage() {
   // Get data from wagmi.
   const { address } = useAccount()
   const { chain: fromChainIdRaw } = useNetwork()
+  const { switchNetwork } = useSwitchNetwork()
 
   // Init ChainIds
   const fromChainId = Number(fromChainIdRaw?.id)
@@ -93,6 +95,35 @@ export default function BridgePage() {
     setPriceImpact(Zero)
     setExchangeRate(Zero)
   }
+  const onChangeFromAmount = (value: string) => {
+    setLastChangeType('from')
+    if (
+      !(
+        value.split('.')[1]?.length >
+        fromToken[fromChainId as keyof Token['decimals']]
+      )
+    ) {
+      setFromValue(value)
+    }
+  }
+
+  const onChangeToAmount = (value: string) => {
+    setLastChangeType('to')
+    if (
+      !(
+        value.split('.')[1]?.length >
+        toToken[toChainId as keyof Token['decimals']]
+      )
+    ) {
+      setToValue(value)
+    }
+  }
+  const tokenSymbolToToken = (chainId: number, symbol: string) => {
+    const token = _.find(BRIDGABLE_TOKENS[chainId], (token) => {
+      return token.symbol === symbol
+    })
+    return token
+  }
 
   // Keeps the url in sync with the state
   const updateUrlParams = () => {
@@ -106,109 +137,53 @@ export default function BridgePage() {
     })
   }
 
-  const handleChainChange = (to: boolean, chainId: number) => {}
+  // Handles when chains are flipped or user creates toChainId == fromChainId condition
+  const handleChainFlip = () => {
+    switchNetwork?.(toChainId)
+    setToChainId(fromChainId)
+  }
 
-  // const toChainId =
-  //   outputChain && BRIDGABLE_TOKENS[Number(outputChain)]
-  //     ? Number(outputChain)
-  //     : DEFAULT_TO_CHAIN
-  // const fromQuery = inputCurrency ? String(inputCurrency) : DEFAULT_FROM_COIN
-  // const toQuery = outputCurrency ? String(outputCurrency) : DEFAULT_TO_COIN
+  // Changes destination change when the user changes the toChainId
+  const handleFromChainChange = (chainId: number) => {
+    setLastChangeType('from')
+    if (chainId == toChainId) {
+      handleChainFlip()
+    } else {
+      switchNetwork?.(chainId)
+    }
+  }
 
-  // const fromChainId =
-  //   fromChainIdUrl?.id && BRIDGABLE_TOKENS[Number(fromChainIdUrl?.id)]
-  //     ? fromChainIdUrl?.id
-  //     : DEFAULT_FROM_CHAIN
+  const handleToChainChange = (chainId: number) => {
+    setLastChangeType('to')
+    if (chainId == fromChainId) {
+      handleChainFlip()
+    } else {
+      setToChainId(chainId)
+    }
+  }
 
-  // // set bridgeable tokens
-  // const fromChainTokens = BRIDGABLE_TOKENS[fromChainId]
-  // const toChainTokens = BRIDGABLE_TOKENS[toChainQuery]
+  const handleTokenChange = (token: Token, type: 'from' | 'to') => {
+    const fromSwapableTypes =
+      BRIDGE_CHAINS_BY_TYPE[String(fromToken.swapableType)]
+    const toSwapableTypes = BRIDGE_CHAINS_BY_TYPE[String(toToken.swapableType)]
+    const validSwapableTypes = _.intersection(
+      fromSwapableTypes,
+      toSwapableTypes
+    )
+    // dont think i need this but will double check
+    // if (toCoin.symbol == 'WETH' && toChainId == ChainId.KLAYTN) {
+    //   setToCoin(KLAYTN_WETH)
+    // }
 
-  // console.log('FROMCHAIN', fromChainTokens)
-
-  // console.log('TO', toChainTokens, toChainQuery)
-
-  // gets the from/to token objects from the url params.
-
-  // init state needed for bridge
-
-  // const [fromChainId, setFromChainId] = useState(DEFAULT_FROM_CHAIN)
-  // const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
-
-  // const [fromCoin, setFromCoin] = useState(defaultFrom ?? fromChainTokens?.[0])
-  // const [toCoin, setToCoin] = useState(defaultTo ?? toChainTokens?.[0])
-
-  // const [lastChangeType, setLastChangeType] = useState('from')
-
-  // const fromTokenSymbols = fromChainTokens?.map((i) => i.symbol)
-  // const toTokenSymbols = toChainTokens?.map((i) => i.symbol)
-
-  // Set data from query url.
-
-  // Initialize state variables needed for bridging
-
-  // useEffect(() => {
-  //   updateUrlParams()
-  // }, [fromCoin, toCoin])
-  // console.log(
-  //   'GUMM',
-  //   fromChainTokens,
-  //   toChainTokens,
-  //   fromCoin,
-  //   fromValue,
-  //   toCoin,
-  //   toValue,
-
-  //   error,
-  //   priceImpact,
-  //   exchangeRate,
-  //   feeAmount,
-  //   fromRef,
-  //   toRef,
-  //   destinationAddress,
-  //   setDestinationAddress
-  // )
-
-  // const onSelectToCoin = (token: Token) => {
-  //   setLastChangeType('to')
-  //   setError('')
-  //   setToCoin(token)
-  //   setToValue('')
-  //   if (lastChangeType === 'to') {
-  //     setFromValue('')
-  //   }
-  //   resetRates()
-  // }
-  // async function onSelectFromChain(itemChainId: number) {
-  //   setLastChangeType('from')
-  //   itemChainId
-  //   if (itemChainId == toChainId) {
-  //     setToChainId(ch)
-  //   }
-  //   triggerChainSwitch(itemChainId)
-  //     .then(() => {
-  //       console.log({ itemChainId })
-  //       setFromChainId(itemChainId)
-  //       // if (itemChainId == ChainId.TERRA) {
-
-  //       // } else
-  //     })
-  //     .catch((e) => {
-  //       console.error(e)
-  //     })
-  // }
-
-  // async function onSelectToChain(itemChainId) {
-  //   setLastChangeType('to')
-  //   if (itemChainId == fromChainId) {
-  //     triggerChainSwitch(toChainId).then(() => {
-  //       setFromChainId(toChainId)
-  //       setToChainId(itemChainId)
-  //     })
-  //   } else {
-  //     setToChainId(itemChainId)
-  //   }
-  // }
+    // if (fromCoin.symbol == 'WETH' && fromChainId == ChainId.KLAYTN) {
+    //   setFromCoin(KLAYTN_WETH)
+    // }
+    if (type == 'from') {
+      setFromToken(token)
+    } else {
+      setToToken(token)
+    }
+  }
   return (
     <LandingPageWrapper>
       <main className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none">
@@ -234,13 +209,13 @@ export default function BridgePage() {
                     <BridgeCard
                       fromChainId={fromChainId}
                       toChainId={toChainId}
-                      onSelectFromCoin={() => null}
+                      onSelectFromChain={handleFromChainChange}
+                      onSelectToChain={handleToChainChange}
                       onSelectToCoin={() => null}
-                      onSelectFromChain={() => null}
-                      onSelectToChain={() => null}
-                      swapFromToChains={() => null}
-                      onChangeFromAmount={() => null}
-                      onChangeToAmount={() => null}
+                      onSelectFromCoin={() => null}
+                      swapFromToChains={handleChainFlip}
+                      onChangeFromAmount={onChangeFromAmount}
+                      onChangeToAmount={onChangeToAmount}
                       fromCoin={fromToken}
                       toCoin={toToken}
                       {...{
@@ -290,10 +265,3 @@ export default function BridgePage() {
 //     </>
 //   )
 // }
-
-const tokenSymbolToToken = (chainId: number, symbol: string) => {
-  const token = _.find(BRIDGABLE_TOKENS[chainId], (token) => {
-    return token.symbol === symbol
-  })
-  return token
-}

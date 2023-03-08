@@ -23,12 +23,14 @@ export default function TokenMenuItem({
   active,
   coin,
   selected,
+  tokenBalance,
   onClick,
 }: {
   chainId: number
   active: boolean
   coin: any
   selected: any
+  tokenBalance: BigNumber
   onClick: () => void
 }) {
   const ref = useRef<any>(null)
@@ -65,12 +67,24 @@ export default function TokenMenuItem({
         ${bgClassName}
       `}
     >
-      <ButtonContent token={coin} chainId={chainId} />
+      <ButtonContent
+        token={coin}
+        chainId={chainId}
+        tokenBalance={tokenBalance}
+      />
     </div>
   )
 }
 
-function ButtonContent({ token, chainId }: { token: Token; chainId: number }) {
+function ButtonContent({
+  token,
+  chainId,
+  tokenBalance,
+}: {
+  token: Token
+  chainId: number
+  tokenBalance: BigNumber
+}) {
   return (
     <div className="flex items-center w-full">
       <Image
@@ -79,7 +93,11 @@ function ButtonContent({ token, chainId }: { token: Token; chainId: number }) {
         src={token.icon}
       />
       <CoinOnChain token={token} chainId={chainId} />
-      <TokenBalance token={token} chainId={chainId} />
+      <TokenBalance
+        token={token}
+        chainId={chainId}
+        tokenBalance={tokenBalance}
+      />
     </div>
   )
 }
@@ -106,20 +124,20 @@ function CoinOnChain({ token, chainId }: { token: Token; chainId: number }) {
   )
 }
 
-function TokenBalance({ token, chainId }: { token: Token; chainId: number }) {
+function TokenBalance({
+  token,
+  chainId,
+  tokenBalance,
+}: {
+  token: Token
+  chainId: number
+  tokenBalance: BigNumber
+}) {
   const tokenInfo = getTokenOnChain(chainId, token)
-  const tokenAddr = token.addresses[chainId as keyof Token['addresses']]
-  const { data: rawTokenBalance } = useBalance({
-    address: `0x${tokenAddr.slice(2)}`,
-  })
-
-  let tokenBalance: BigNumber = rawTokenBalance?.value ?? Zero
-
   const formattedBalance = commify(formatBnMagic(tokenBalance, tokenInfo, 2))
-
   return (
     <div className="ml-auto mr-5 text-lg text-white">
-      {!tokenBalance.eq(0.0) ? null : (
+      {!tokenBalance.eq(0) && (
         <p>
           {formattedBalance}
           <span className="text-sm opacity-80">

@@ -15,10 +15,10 @@ export function ChainLabel({
 }: {
   isSwapFrom: boolean
   chainId: number
-  setDisplayType: (val: string) => void
+  setDisplayType: (v: string) => void
   labelClassNameOverride?: string
   titleText?: string
-  onChangeChain: (val: number) => void
+  onChangeChain: (v: number) => void
 }) {
   let displayType: string
   let title: string
@@ -73,7 +73,7 @@ function PossibleChain({
   onChangeChain,
 }: {
   chainId: number
-  onChangeChain: (val: number) => void
+  onChangeChain: (v: number) => void
 }) {
   const { chainImg, chainName } = CHAIN_INFO_MAP[chainId]
   const onClick = () => {
@@ -115,6 +115,7 @@ function SelectedChain({ chainId }: { chainId: number }) {
       `}
     >
       <Image
+        alt="chain image"
         src={chainImg}
         className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80"
       />
