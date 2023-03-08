@@ -20,10 +20,9 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // domain of the Synapse Chain
-    // Answer to the Ultimate Question of Life, the Universe, and Everything
-    // And answer to less important questions wink wink
-    uint32 public constant SYNAPSE_DOMAIN = 4269;
+    // For MVP this is Optimism chainId
     // TODO: replace the placeholder with actual value
+    uint32 public constant SYNAPSE_DOMAIN = 10;
 
     uint256 internal constant ORIGIN = 1 << uint8(SystemEntity.Origin);
     uint256 internal constant DESTINATION = 1 << uint8(SystemEntity.Destination);
