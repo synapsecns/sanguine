@@ -2,6 +2,7 @@ package base
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
@@ -12,7 +13,10 @@ import (
 
 // StoreState stores a state.
 func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight uint32) error {
-	dbState := AgentsTypesStateToState(state, snapshotRoot, proof, treeHeight)
+	dbState, err := AgentsTypesStateToState(state, snapshotRoot, proof, treeHeight)
+	if err != nil {
+		return fmt.Errorf("failed to convert state to db state: %w", err)
+	}
 
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
@@ -34,7 +38,12 @@ func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshot
 func (s Store) StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte, treeHeight uint32) error {
 	var dbStates []State
 	for i := range states {
-		dbStates = append(dbStates, AgentsTypesStateToState(states[i], snapshotRoot, proofs[i], treeHeight))
+		state, err := AgentsTypesStateToState(states[i], snapshotRoot, proofs[i], treeHeight)
+		if err != nil {
+			return fmt.Errorf("failed to convert state to db state: %w", err)
+		}
+
+		dbStates = append(dbStates, state)
 	}
 
 	dbTx := s.DB().WithContext(ctx).
@@ -83,7 +92,7 @@ func (s Store) GetState(ctx context.Context, stateMask types.DBState) (*agentsTy
 }
 
 // GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
-func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (snapshotRoot *[32]byte, proof *[][]byte, treeHeight *uint32, err error) {
+func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, treeHeight *uint32, err error) {
 	var state State
 
 	dbStateMask := DBStateToState(stateMask)
@@ -102,13 +111,8 @@ func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (s
 	var snapshotRootB32 [32]byte
 	copy(snapshotRoot[:], common.HexToHash(state.SnapshotRoot).Bytes())
 
-	var proofByteArray [][]byte
-	for _, proofElement := range state.Proof {
-		proofByteArray = append(proofByteArray, common.HexToHash(proofElement).Bytes())
-	}
-
 	snapshotRoot = &snapshotRootB32
-	proof = &proofByteArray
+	proof = &state.Proof
 	treeHeight = &state.TreeHeight
 
 	return
@@ -177,13 +181,16 @@ func StateToDBState(state State) types.DBState {
 }
 
 // AgentsTypesStateToState converts an agentsTypes.State to a State.
-func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight uint32) State {
+func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight uint32) (State, error) {
 	root := state.Root()
 
-	var proofDBFormat []string
-	for _, proofElement := range proof {
-		proofDBFormat = append(proofDBFormat, common.BytesToHash(proofElement).String())
+	// Convert the proof to a json
+	proofJSON, err := json.Marshal(proof)
+	if err != nil {
+		return State{}, fmt.Errorf("failed to marshal proof: %w", err)
 	}
+
+	proofDBFormat := json.RawMessage(proofJSON)
 
 	return State{
 		SnapshotRoot:      common.BytesToHash(snapshotRoot[:]).String(),
@@ -194,5 +201,5 @@ func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, pro
 		OriginTimestamp:   state.Timestamp().Uint64(),
 		Proof:             proofDBFormat,
 		TreeHeight:        treeHeight,
-	}
+	}, nil
 }

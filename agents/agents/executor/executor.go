@@ -2,6 +2,7 @@ package executor
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/jpillora/backoff"
@@ -410,7 +411,13 @@ func (e Executor) verifySnapshotMerkleProof(ctx context.Context, state types.Sta
 		return false, fmt.Errorf("could not hash state: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], state.Nonce(), *proof, *treeHeight)
+	var proofBytes [][]byte
+	err = json.Unmarshal(*proof, &proofBytes)
+	if err != nil {
+		return false, fmt.Errorf("could not unmarshal proof: %w", err)
+	}
+
+	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], state.Nonce(), proofBytes, *treeHeight)
 
 	return inTree, nil
 }

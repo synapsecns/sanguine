@@ -1,6 +1,9 @@
 package base
 
-import "github.com/synapsecns/sanguine/core/dbcommon"
+import (
+	"encoding/json"
+	"github.com/synapsecns/sanguine/core/dbcommon"
+)
 
 // define common field names. See package docs  for an explanation of why we have to do this.
 // note: some models share names. In cases where they do, we run the check against all names.
@@ -93,7 +96,7 @@ type State struct {
 	// OriginTimestamp is the timestamp of the block that the state was taken from on the origin.
 	OriginTimestamp uint64 `gorm:"column:origin_timestamp"`
 	// Proof is the Snapshot Merkle Tree proof for the state.
-	Proof []string `gorm:"column:proof"`
+	Proof json.RawMessage `gorm:"column:proof"`
 	// TreeHeight is the height of the Snapshot Merkle Tree that the state belongs to.
 	TreeHeight uint32 `gorm:"column:tree_height"`
 }

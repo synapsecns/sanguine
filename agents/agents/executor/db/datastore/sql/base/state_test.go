@@ -1,6 +1,7 @@
 package base_test
 
 import (
+	"encoding/json"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
@@ -20,6 +21,11 @@ func TestDBStateToState(t *testing.T) {
 	proof := []string{common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String()}
 	treeHeight := gofakeit.Uint32()
 
+	proofJSON, err := json.Marshal(proof)
+	if err != nil {
+		panic(err)
+	}
+
 	initialDBState := types.DBState{
 		SnapshotRoot:      &snapshotRoot,
 		Root:              &root,
@@ -27,7 +33,7 @@ func TestDBStateToState(t *testing.T) {
 		Nonce:             &nonce,
 		OriginBlockNumber: &originBlockNumber,
 		OriginTimestamp:   &originTimestamp,
-		Proof:             &proof,
+		Proof:             (*json.RawMessage)(&proofJSON),
 		TreeHeight:        &treeHeight,
 	}
 

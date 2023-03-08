@@ -1,5 +1,7 @@
 package types
 
+import "encoding/json"
+
 // DBState is the executor type for interacting with the database representation of a state.
 type DBState struct {
 	// SnapshotRoot is the snapshot root.
@@ -15,7 +17,7 @@ type DBState struct {
 	// OriginTimestamp is the timestamp of the block that the state was taken from on the origin.
 	OriginTimestamp *uint64
 	// Proof is the Snapshot Merkle Tree proof for the state.
-	Proof *[]string
+	Proof *json.RawMessage
 	// TreeHeight is the height of the Snapshot Merkle Tree that the state belongs to.
 	TreeHeight *uint32
 }
