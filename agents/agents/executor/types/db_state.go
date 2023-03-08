@@ -15,7 +15,7 @@ type DBState struct {
 	// OriginTimestamp is the timestamp of the block that the state was taken from on the origin.
 	OriginTimestamp *uint64
 	// Proof is the Snapshot Merkle Tree proof for the state.
-	Proof *[][]byte
+	Proof *[]string
 	// TreeHeight is the height of the Snapshot Merkle Tree that the state belongs to.
 	TreeHeight *uint32
 }

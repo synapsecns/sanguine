@@ -102,8 +102,13 @@ func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (s
 	var snapshotRootB32 [32]byte
 	copy(snapshotRoot[:], common.HexToHash(state.SnapshotRoot).Bytes())
 
+	var proofByteArray [][]byte
+	for _, proofElement := range state.Proof {
+		proofByteArray = append(proofByteArray, common.HexToHash(proofElement).Bytes())
+	}
+
 	snapshotRoot = &snapshotRootB32
-	proof = &state.Proof
+	proof = &proofByteArray
 	treeHeight = &state.TreeHeight
 
 	return
@@ -174,6 +179,12 @@ func StateToDBState(state State) types.DBState {
 // AgentsTypesStateToState converts an agentsTypes.State to a State.
 func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight uint32) State {
 	root := state.Root()
+
+	var proofDBFormat []string
+	for _, proofElement := range proof {
+		proofDBFormat = append(proofDBFormat, common.BytesToHash(proofElement).String())
+	}
+
 	return State{
 		SnapshotRoot:      common.BytesToHash(snapshotRoot[:]).String(),
 		Root:              common.BytesToHash(root[:]).String(),
@@ -181,7 +192,7 @@ func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, pro
 		Nonce:             state.Nonce(),
 		OriginBlockNumber: state.BlockNumber().Uint64(),
 		OriginTimestamp:   state.Timestamp().Uint64(),
-		Proof:             proof,
+		Proof:             proofDBFormat,
 		TreeHeight:        treeHeight,
 	}
 }

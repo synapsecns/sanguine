@@ -17,7 +17,7 @@ func TestDBStateToState(t *testing.T) {
 	nonce := gofakeit.Uint32()
 	originBlockNumber := gofakeit.Uint64()
 	originTimestamp := gofakeit.Uint64()
-	proof := [][]byte{{gofakeit.Uint8()}, {gofakeit.Uint8()}}
+	proof := []string{common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String()}
 	treeHeight := gofakeit.Uint32()
 
 	initialDBState := types.DBState{
