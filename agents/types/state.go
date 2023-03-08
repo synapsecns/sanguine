@@ -1,6 +1,18 @@
 package types
 
-import "math/big"
+import (
+	"github.com/ethereum/go-ethereum/crypto"
+	"math/big"
+)
+
+const (
+	stateOffsetRoot        = 0
+	stateOffsetOrigin      = 32
+	stateOffsetNonce       = 36
+	stateOffsetBlockNumber = 40
+	stateOffsetTimestamp   = 45
+	stateSize              = 50
+)
 
 // State is the state interface.
 type State interface {
@@ -14,6 +26,9 @@ type State interface {
 	BlockNumber() *big.Int
 	// Timestamp is the unix time of the last dispatched message.
 	Timestamp() *big.Int
+
+	// Hash returns the hash of the state.
+	Hash() ([32]byte, error)
 }
 
 type state struct {
@@ -53,6 +68,28 @@ func (s state) BlockNumber() *big.Int {
 
 func (s state) Timestamp() *big.Int {
 	return s.timestamp
+}
+
+func (s state) Hash() ([32]byte, error) {
+	leftLeaf, rightLeaf, err := s.subLeafs()
+	if err != nil {
+		return [32]byte{}, err
+	}
+
+	concatLeafs := append(leftLeaf[:], rightLeaf[:]...)
+
+	return crypto.Keccak256Hash(concatLeafs), nil
+}
+
+func (s state) subLeafs() (leftLeaf, rightLeaf [32]byte, err error) {
+	encodedState, err := EncodeState(s)
+	if err != nil {
+		return
+	}
+
+	leftLeaf = crypto.Keccak256Hash(encodedState[stateOffsetRoot:stateOffsetNonce])
+	rightLeaf = crypto.Keccak256Hash(encodedState[stateOffsetNonce:stateSize])
+	return
 }
 
 var _ State = state{}
