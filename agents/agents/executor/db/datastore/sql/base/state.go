@@ -83,7 +83,7 @@ func (s Store) GetState(ctx context.Context, stateMask types.DBState) (*agentsTy
 }
 
 // GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
-func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (*[32]byte, *[][]byte, *uint32, error) {
+func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (snapshotRoot *[32]byte, proof *[][]byte, treeHeight *uint32, err error) {
 	var state State
 
 	dbStateMask := DBStateToState(stateMask)
@@ -99,10 +99,14 @@ func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (*
 		return nil, nil, nil, nil
 	}
 
-	var snapshotRoot [32]byte
+	var snapshotRootB32 [32]byte
 	copy(snapshotRoot[:], common.HexToHash(state.SnapshotRoot).Bytes())
 
-	return &snapshotRoot, &state.Proof, &state.TreeHeight, nil
+	snapshotRoot = &snapshotRootB32
+	proof = &state.Proof
+	treeHeight = &state.TreeHeight
+
+	return
 }
 
 // DBStateToState converts a DBState to a State.

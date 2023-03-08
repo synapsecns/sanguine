@@ -59,7 +59,7 @@ type ExecutorDBReader interface {
 	// GetState gets a state from the database.
 	GetState(ctx context.Context, stateMask types.DBState) (*agentsTypes.State, error)
 	// GetStateMetadata gets the snapshot root and proof of a state from the database.
-	GetStateMetadata(ctx context.Context, stateMask types.DBState) (*[32]byte, *[][]byte, *uint32, error)
+	GetStateMetadata(ctx context.Context, stateMask types.DBState) (snapshotRoot *[32]byte, proof *[][]byte, treeHeight *uint32, err error)
 }
 
 // ExecutorDB is the interface for the executor database.

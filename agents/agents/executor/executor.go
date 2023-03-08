@@ -384,6 +384,8 @@ func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) 
 }
 
 // verifySnapshotMerkleProof verifies that a state is in the snapshot merkle tree.
+//
+//nolint:unused
 func (e Executor) verifySnapshotMerkleProof(ctx context.Context, state types.State) (bool, error) {
 	stateRoot := state.Root()
 	root := common.BytesToHash(stateRoot[:]).String()
