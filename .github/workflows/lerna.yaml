@@ -5,8 +5,7 @@ on:
     paths:
       - 'packages/**'
     branches:
-      - development
-      - main
+      - master
 
 jobs:
   publish:
