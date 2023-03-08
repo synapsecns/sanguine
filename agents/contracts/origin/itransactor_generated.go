@@ -32,10 +32,10 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function slashAgent(uint256 , uint32 _callOrigin, uint8 _caller, (uint32,address,bool) _info) returns()
 	SlashAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _info AgentInfo) (*types.Transaction, error)
-	// SyncAgents is a paid mutator transaction binding the contract method 0xcc118b4d.
+	// SyncAgent is a paid mutator transaction binding the contract method 0x81cfb5f1.
 	//
-	// Solidity: function syncAgents(uint256 , uint32 _callOrigin, uint8 _caller, uint256 _requestID, bool _removeExisting, (uint32,address,bool)[] _infos) returns()
-	SyncAgents(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _requestID *big.Int, _removeExisting bool, _infos []AgentInfo) (*types.Transaction, error)
+	// Solidity: function syncAgent(uint256 , uint32 _callOrigin, uint8 _caller, (uint32,address,bool) _info) returns()
+	SyncAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _info AgentInfo) (*types.Transaction, error)
 	// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()

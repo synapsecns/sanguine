@@ -26,12 +26,10 @@ contract SystemContractMock is ExcludeCoverage, Ownable, ISystemContract {
         AgentInfo memory _info
     ) external onlySystemRouter {}
 
-    function syncAgents(
+    function syncAgent(
         uint256 _rootSubmittedAt,
         uint32 _callOrigin,
         SystemEntity _caller,
-        uint256 _requestID,
-        bool _removeExisting,
-        AgentInfo[] memory _infos
+        AgentInfo memory _info
     ) external onlySystemRouter {}
 }

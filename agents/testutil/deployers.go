@@ -67,22 +67,22 @@ func NewSummitDeployer(registry deployer.GetOnlyContractRegistry, backend backen
 
 // Deploy deploys the summit.
 //
-//nolint:dupword
+//nolint:dupword,dupl
 func (a SummitDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		summitAddress, summitTx, collector, err := summit.DeploySummit(transactOps, backend)
+		summitAddress, summitTx, summit, err := summit.DeploySummit(transactOps, backend, uint32(a.Backend().GetChainID()))
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy summit: %w", err)
 		}
 
 		auth := a.Backend().GetTxContext(ctx, &transactOps.From)
-		initTx, err := collector.Initialize(auth.TransactOpts)
+		initTx, err := summit.Initialize(auth.TransactOpts)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not initialize attestation collector: %w", err)
 		}
 		a.Backend().WaitForConfirmation(ctx, initTx)
 
-		return summitAddress, summitTx, collector, nil
+		return summitAddress, summitTx, summit, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return summit.NewSummitRef(address, backend)
 	})
@@ -99,6 +99,8 @@ func NewDestinationDeployer(registry deployer.GetOnlyContractRegistry, backend b
 }
 
 // Deploy deploys the destination.
+//
+//nolint:dupl
 func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		destinationAddress, destinationTx, destination, err := destination.DeployDestination(transactOps, backend, uint32(d.Backend().GetChainID()))
