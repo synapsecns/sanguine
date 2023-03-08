@@ -45,7 +45,7 @@ contract BondingSecondaryTest is BondingManagerTest {
         uint256 submittedAt,
         uint32 callOrigin
     ) public {
-        vm.assume(caller != address(systemRouterSynapse));
+        vm.assume(caller != address(systemRouter));
         AgentInfo memory info;
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             SystemEntity systemCaller = SystemEntity(c);
@@ -60,7 +60,7 @@ contract BondingSecondaryTest is BondingManagerTest {
         uint256 submittedAt,
         uint32 callOrigin
     ) public {
-        vm.assume(caller != address(systemRouterSynapse));
+        vm.assume(caller != address(systemRouter));
         AgentInfo memory info;
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             SystemEntity systemCaller = SystemEntity(c);
