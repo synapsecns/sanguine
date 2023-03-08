@@ -13,12 +13,12 @@ interface ISnapshotHub {
     function isValidAttestation(bytes memory _attPayload) external view returns (bool isValid);
 
     /**
-     * @notice Returns the state with the highest known nonce submitted by a given Guard.
+     * @notice Returns the state with the highest known nonce submitted by a given Agent.
      * @param _origin       Domain of origin chain
-     * @param _guard        Guard address
-     * @return statePayload Raw payload with guard latest state for origin
+     * @param _agent        Agent address
+     * @return statePayload Raw payload with agent's latest state for origin
      */
-    function getLatestState(uint32 _origin, address _guard)
+    function getLatestAgentState(uint32 _origin, address _agent)
         external
         view
         returns (bytes memory statePayload);
