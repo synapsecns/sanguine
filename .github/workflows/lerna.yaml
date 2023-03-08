@@ -20,6 +20,8 @@ jobs:
         with:
           fetch-depth: 0
           submodules: 'recursive'
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
 
       - name: Read .nvmrc
         run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
