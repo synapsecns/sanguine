@@ -48,8 +48,8 @@ type chainExecutor struct {
 	destinationParser destination.Parser
 	// logChan is the log channel.
 	logChan chan *ethTypes.Log
-	// merkleTrees is a map from destination chain ID -> merkle tree.
-	merkleTrees map[uint32]*merkle.HistoricalTree
+	// merkleTree is a merkle tree for a specific origin chain.
+	merkleTree *merkle.HistoricalTree
 	// rpcClient is an RPC client.
 	rpcClient Backend
 	// boundDestination is a bound destination contract.
@@ -141,6 +141,11 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			return nil, fmt.Errorf("could not bind destination contract: %w", err)
 		}
 
+		tree, err := newTreeFromDB(ctx, chain.ChainID, executorDB)
+		if err != nil {
+			return nil, fmt.Errorf("could not get tree from db: %w", err)
+		}
+
 		chainExecutors[chain.ChainID] = &chainExecutor{
 			chainID: chain.ChainID,
 			lastLog: &logOrderInfo{
@@ -152,23 +157,10 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			originParser:      originParser,
 			destinationParser: destinationParser,
 			logChan:           make(chan *ethTypes.Log, logChanSize),
-			merkleTrees:       make(map[uint32]*merkle.HistoricalTree),
+			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
 			executed:          make(map[[32]byte]bool),
-		}
-
-		for _, destinationChain := range config.Chains {
-			if destinationChain.ChainID == chain.ChainID {
-				continue
-			}
-
-			tree, err := newTreeFromDB(ctx, chain.ChainID, destinationChain.ChainID, executorDB)
-			if err != nil {
-				return nil, fmt.Errorf("could not get tree from db: %w", err)
-			}
-
-			chainExecutors[chain.ChainID].merkleTrees[destinationChain.ChainID] = tree
 		}
 	}
 
@@ -205,15 +197,15 @@ func (e Executor) Run(ctx context.Context) error {
 
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
-				contractType:         originContract,
-				destinationEventType: otherEvent,
+				contractType: originContract,
+				eventType:    dispatchEvent,
 			})
 		})
 
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
-				contractType:         destinationContract,
-				destinationEventType: otherEvent,
+				contractType: destinationContract,
+				eventType:    attestationAcceptedEvent,
 			})
 		})
 
@@ -269,7 +261,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		ChainID:     &originDomain,
 		Destination: &destinationDomain,
 	}
-	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].NumOfItems()
+	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
 	itemCountNonce, err := e.executorDB.GetEarliestAttestationsNonceInNonceRange(ctx, attestationMask, *nonce, maximumNonce)
 	if err != nil {
 		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
@@ -279,7 +271,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(*nonce-1, *itemCountNonce)
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(*nonce-1, *itemCountNonce)
 
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
@@ -333,33 +325,41 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 
 type contractType int
 
-type destinationEventType int
+type eventType int
 
 const (
 	originContract contractType = iota
 	destinationContract
+	summitContract
 	other
 )
 
 const (
-	attestationAcceptedEvent destinationEventType = iota
+	// Origin's Dispatch event.
+	dispatchEvent eventType = iota
+	// Destination's AttestationAccepted event.
+	attestationAcceptedEvent
+	// Destination's AttestationExecuted event.
 	executedEvent
+	// Summit's SnapshotAccepted event.
+	//nolint:deadcode,varcheck
+	snapshotAcceptedEvent
 	otherEvent
 )
 
 type contractEventType struct {
-	contractType         contractType
-	destinationEventType destinationEventType
+	contractType contractType
+	eventType    eventType
 }
 
 // verifyMessageMerkleProof verifies a message against the merkle tree at the state of the given nonce.
 func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) {
-	root, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].Root(message.Nonce())
+	root, err := e.chainExecutors[message.OriginDomain()].merkleTree.Root(message.Nonce())
 	if err != nil {
 		return false, fmt.Errorf("could not get root: %w", err)
 	}
 
-	proof, err := e.chainExecutors[message.OriginDomain()].merkleTrees[message.DestinationDomain()].MerkleProof(message.Nonce()-1, message.Nonce())
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(message.Nonce()-1, message.Nonce())
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
@@ -410,12 +410,11 @@ func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message typ
 }
 
 // newTreeFromDB creates a new merkle tree from the database's messages.
-func newTreeFromDB(ctx context.Context, chainID uint32, destination uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
+func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
 	var allMessages []types.Message
 
 	messageMask := execTypes.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
+		ChainID: &chainID,
 	}
 	page := 1
 
@@ -458,8 +457,8 @@ func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) 
 	blockNumber := latestHeader.Number.Uint64()
 
 	return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, &blockNumber, contractEventType{
-		contractType:         destinationContract,
-		destinationEventType: executedEvent,
+		contractType: destinationContract,
+		eventType:    executedEvent,
 	})
 }
 
@@ -533,7 +532,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 			// If we are filtering for `executed` events, we do not need to `verifyAfter`
 			// since we are backfilling.
-			if contractEvent.destinationEventType == executedEvent {
+			if contractEvent.eventType == executedEvent {
 				e.chainExecutors[chain.ChainID].logChan <- log
 
 				continue
@@ -569,7 +568,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		}
 
 		destination := (*message).DestinationDomain()
-		merkleIndex := e.chainExecutors[chainID].merkleTrees[destination].NumOfItems()
+		merkleIndex := e.chainExecutors[chainID].merkleTree.NumOfItems()
 		leaf, err := (*message).ToLeaf()
 		if err != nil {
 			return fmt.Errorf("could not convert message to leaf: %w", err)
@@ -580,7 +579,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			return fmt.Errorf("nonce of message is not equal to the merkle index: %d != %d", (*message).Nonce(), merkleIndex+1)
 		}
 
-		e.chainExecutors[chainID].merkleTrees[destination].Insert(leaf[:])
+		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
 
 		messageNonce := (*message).Nonce()
 		attestationMask := execTypes.DBAttestation{
@@ -604,8 +603,10 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			}
 		}
 	case destinationContract:
-		switch contractEvent.destinationEventType {
+		//nolint:exhaustive
+		switch contractEvent.eventType {
 		case attestationAcceptedEvent:
+			// TODO: Change to populating the attestation table with the new attestation format.
 			attestation, err := e.logToAttestation(log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not convert log to attestation: %w", err)
@@ -636,7 +637,8 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		default:
 			return fmt.Errorf("log type not supported")
 		}
-
+	case summitContract:
+		// TODO: Parse the snapshot and put everything into the state table.
 	case other:
 		logger.Warnf("the log's event type is not supported")
 	default:
