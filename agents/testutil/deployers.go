@@ -67,7 +67,7 @@ func NewSummitDeployer(registry deployer.GetOnlyContractRegistry, backend backen
 
 // Deploy deploys the summit.
 //
-//nolint:dupword
+//nolint:dupword,dupl
 func (a SummitDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		summitAddress, summitTx, summit, err := summit.DeploySummit(transactOps, backend, uint32(a.Backend().GetChainID()))
