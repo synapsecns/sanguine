@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"github.com/synapsecns/sanguine/core/merkle"
 	"math"
 )
@@ -35,7 +36,7 @@ func (s snapshot) SnapshotRootAndProofs() ([32]byte, [][][]byte, error) {
 	for _, state := range s.states {
 		hash, err := state.Hash()
 		if err != nil {
-			return [32]byte{}, nil, err
+			return [32]byte{}, nil, fmt.Errorf("failed to hash state: %w", err)
 		}
 
 		tree.Insert(hash[:])
@@ -43,17 +44,17 @@ func (s snapshot) SnapshotRootAndProofs() ([32]byte, [][][]byte, error) {
 
 	snapshotRoot, err := tree.Root(uint32(len(s.states)))
 	if err != nil {
-		return [32]byte{}, nil, err
+		return [32]byte{}, nil, fmt.Errorf("failed to get snapshot root: %w", err)
 	}
 
 	var snapshotRootB32 [32]byte
-	copy(snapshotRootB32[:], snapshotRoot[:])
+	copy(snapshotRootB32[:], snapshotRoot)
 
 	proofs := make([][][]byte, len(s.states))
 	for i := 0; i < len(s.states); i++ {
 		proofs[i], err = tree.MerkleProof(uint32(i), uint32(len(s.states)))
 		if err != nil {
-			return [32]byte{}, nil, err
+			return [32]byte{}, nil, fmt.Errorf("failed to get merkle proof: %w", err)
 		}
 	}
 
@@ -63,7 +64,6 @@ func (s snapshot) SnapshotRootAndProofs() ([32]byte, [][][]byte, error) {
 // getTreeHeight returns the height of the merkle tree given `len(states)` leafs.
 func (s snapshot) getTreeHeight() uint32 {
 	return uint32(math.Log2(float64(len(s.states))))
-
 }
 
 var _ Snapshot = &snapshot{}
