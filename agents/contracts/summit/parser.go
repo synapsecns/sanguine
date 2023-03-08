@@ -52,20 +52,20 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 
 // ParseSnapshotAccepted parses a SnapshotAccepted event.
 func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, ok bool) {
-	snapshotAccepted, err := p.filterer.ParseSnapshotAccepted(log)
+	summitSnapshot, err := p.filterer.ParseSnapshotAccepted(log)
 	if err != nil {
 		return nil, 0, false
 	}
 
-	snapshot, err := types.DecodeSnapshot(snapshotAccepted.Snapshot)
+	snapshot, err := types.DecodeSnapshot(summitSnapshot.Snapshot)
 	if err != nil {
 		return nil, 0, false
 	}
 
-	return snapshot, snapshotAccepted.Domain, true
+	return snapshot, summitSnapshot.Domain, true
 }
 
-// EventType is the type of the attestation collector events
+// EventType is the type of the summit events
 //
 //go:generate go run golang.org/x/tools/cmd/stringer -type=EventType
 type EventType uint
