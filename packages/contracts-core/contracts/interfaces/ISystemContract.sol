@@ -20,6 +20,20 @@ interface ISystemContract {
     ) external;
 
     /**
+     * @notice Receive a system call indicating the off-chain agent status needs to be updated.
+     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
+     * @param _callOrigin       Domain where the system call originated
+     * @param _caller           Entity which performed the system call
+     * @param _info             Information about agent to sync
+     */
+    function syncAgent(
+        uint256 _rootSubmittedAt,
+        uint32 _callOrigin,
+        SystemEntity _caller,
+        AgentInfo memory _info
+    ) external;
+
+    /**
      * @notice Receive a system call indicating the list of off-chain agents needs to be synced.
      * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
      * @param _callOrigin       Domain where the system call originated

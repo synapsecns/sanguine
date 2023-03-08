@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "./AgentRegistry.sol";
-import { SystemContract } from "./SystemContract.sol";
+import { ISystemContract, SystemContract } from "./SystemContract.sol";
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
 
 /**
@@ -62,6 +62,17 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
         for (uint256 i = 0; i < amount; ++i) {
             _updateAgentStatus(_infos[i]);
         }
+    }
+
+    /// @inheritdoc ISystemContract
+    function syncAgent(
+        uint256,
+        uint32 _callOrigin,
+        SystemEntity _caller,
+        AgentInfo memory _info
+    ) external onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
+        /// @dev Must be called from a local BondingManager. Hence `_rootSubmittedAt` is ignored.
+        _updateAgentStatus(_info);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

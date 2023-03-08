@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
-import { SystemContract } from "../system/SystemContract.sol";
+import { ISystemContract, SystemContract } from "../system/SystemContract.sol";
 import "../Version.sol";
 
 abstract contract BondingManager is SystemContract, Version0_0_2 {
@@ -53,6 +53,16 @@ abstract contract BondingManager is SystemContract, Version0_0_2 {
             _forwardUpdate: forwardUpdate,
             _callOrigin: _callOrigin
         });
+    }
+
+    /// @inheritdoc ISystemContract
+    function syncAgent(
+        uint256 _rootSubmittedAt,
+        uint32 _callOrigin,
+        SystemEntity _caller,
+        AgentInfo memory _info
+    ) external {
+        // TODO: fill
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

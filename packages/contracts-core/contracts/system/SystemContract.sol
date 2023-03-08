@@ -243,12 +243,15 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
             );
     }
 
-    /**
-     * @notice Constructs a universal "Agent Information" structure for the given Guard.
-     */
-    function _guardInfo(address _guard, bool _bonded) internal pure returns (AgentInfo memory) {
-        // We are using domain value of 0 to illustrate the point
-        // that Guards are active on all domains
-        return AgentInfo({ domain: 0, account: _guard, bonded: _bonded });
+    /// @dev Constructs data for the system call to sync the given agent.
+    function _dataSyncAgent(AgentInfo memory _info) internal pure returns (bytes memory) {
+        return
+            abi.encodeWithSelector(
+                ISystemContract.syncAgent.selector,
+                0, // rootSubmittedAt
+                0, // callOrigin
+                0, // systemCaller
+                _info
+            );
     }
 }
