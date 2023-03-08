@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { BondingMVP } from "../../contracts/bonding/BondingMVP.sol";
+import { BondingSecondary } from "../../contracts/bonding/BondingSecondary.sol";
 import { Destination } from "../../contracts/Destination.sol";
 import { Origin } from "../../contracts/Origin.sol";
 import { Summit } from "../../contracts/Summit.sol";
@@ -29,10 +29,15 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
 
     uint256 private immutable deployMask;
 
+    address internal destinationSynapse;
+    address internal originSynapse;
+    address internal summit;
+    SystemRouterHarness internal systemRouterSynapse;
+
     address internal destination;
     address internal origin;
-    address internal summit;
-    BondingMVP internal bondingManager;
+    BondingSecondary internal bondingManager;
+
     SystemRouterHarness internal systemRouter;
 
     // domain => Domain's name
@@ -50,12 +55,16 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         setupDomain(DOMAIN_LOCAL, "Local");
         setupDomain(DOMAIN_REMOTE, "Remote");
         setupDomain(DOMAIN_SYNAPSE, "Synapse");
-        // Deploy a single set of messaging contracts
-        deployBondingMVP();
+        // Deploy a single set of messaging contracts for local chain
+        deployBondingS();
         deployDestination();
         deployOrigin();
-        deploySummit();
         deploySystemRouter();
+        // Deploy a single set of messaging contracts for synapse chain
+        deploySummit();
+        deployDestinationSynapse();
+        deployOriginSynapse();
+        deploySystemRouterSynapse();
         // Setup agents on created contracts
         setupAgents();
         // Skip block
@@ -84,7 +93,9 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
-                bondingManager.addAgent(domain, domains[domain].agents[i]);
+                address agent = domains[domain].agents[i];
+                bondingManager.addAgent(domain, agent);
+                Summit(summit).addAgent(domain, agent);
             }
         }
     }
@@ -123,9 +134,10 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
     ▏*║                           DEPLOY CONTRACTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function deployBondingMVP() public virtual {
-        bondingManager = new BondingMVP(DOMAIN_LOCAL);
+    function deployBondingS() public virtual {
+        bondingManager = new BondingSecondary(DOMAIN_LOCAL);
         bondingManager.initialize();
+        vm.label(address(bondingManager), "BondingSecondary");
     }
 
     function deployDestination() public virtual {
@@ -138,6 +150,20 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         } else {
             revert("Unknown option: Destination");
         }
+        vm.label(destination, "Destination Local");
+    }
+
+    function deployDestinationSynapse() public virtual {
+        uint256 option = deployMask & DEPLOY_MASK_DESTINATION_SYNAPSE;
+        if (option == DEPLOY_MOCK_DESTINATION_SYNAPSE) {
+            destinationSynapse = address(new DestinationMock());
+        } else if (option == DEPLOY_PROD_DESTINATION_SYNAPSE) {
+            destinationSynapse = address(new Destination(DOMAIN_LOCAL));
+            Destination(destinationSynapse).initialize();
+        } else {
+            revert("Unknown option: Destination");
+        }
+        vm.label(destinationSynapse, "Destination Synapse");
     }
 
     function deployOrigin() public virtual {
@@ -150,6 +176,20 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         } else {
             revert("Unknown option: Origin");
         }
+        vm.label(origin, "Origin Local");
+    }
+
+    function deployOriginSynapse() public virtual {
+        uint256 option = deployMask & DEPLOY_MASK_ORIGIN_SYNAPSE;
+        if (option == DEPLOY_MOCK_ORIGIN_SYNAPSE) {
+            originSynapse = address(new OriginMock());
+        } else if (option == DEPLOY_PROD_ORIGIN_SYNAPSE) {
+            originSynapse = address(new Origin(DOMAIN_LOCAL));
+            Origin(originSynapse).initialize();
+        } else {
+            revert("Unknown option: Origin");
+        }
+        vm.label(originSynapse, "Origin Synapse");
     }
 
     function deploySummit() public virtual {
@@ -157,14 +197,12 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         if (option == DEPLOY_MOCK_SUMMIT) {
             summit = address(new SummitMock());
         } else if (option == DEPLOY_PROD_SUMMIT) {
-            summit = address(new Summit());
+            summit = address(new Summit(DOMAIN_SYNAPSE));
             Summit(summit).initialize();
-            Summit(summit).transferOwnership(address(bondingManager));
         } else {
             revert("Unknown option: Summit");
         }
-        // TODO: remove when Summit is merged with Bonding Primary
-        bondingManager.setSummit(address(summit));
+        vm.label(summit, "Summit");
     }
 
     function deploySystemRouter() public virtual {
@@ -177,11 +215,29 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         ISystemContract(origin).setSystemRouter(systemRouter);
         ISystemContract(destination).setSystemRouter(systemRouter);
         bondingManager.setSystemRouter(systemRouter);
+        vm.label(address(systemRouter), "SystemRouter Local");
+    }
+
+    function deploySystemRouterSynapse() public virtual {
+        systemRouterSynapse = new SystemRouterHarness(
+            DOMAIN_SYNAPSE,
+            address(originSynapse),
+            address(destinationSynapse),
+            address(summit)
+        );
+        ISystemContract(originSynapse).setSystemRouter(systemRouterSynapse);
+        ISystemContract(destinationSynapse).setSystemRouter(systemRouterSynapse);
+        ISystemContract(summit).setSystemRouter(systemRouterSynapse);
+        vm.label(address(systemRouterSynapse), "SystemRouter Synapse");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               VM UTILS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function expectRevertNotOwner() public {
+        vm.expectRevert("Ownable: caller is not the owner");
+    }
 
     function skipBlock() public {
         skipBlocks(1);
