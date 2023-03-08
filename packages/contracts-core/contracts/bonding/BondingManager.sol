@@ -74,10 +74,10 @@ abstract contract BondingManager is AgentRegistry, SystemContract {
     /// @dev Passes an "update status" message to local Registries:
     /// that an Agent has been added / removed
     function _syncAgentLocalRegistries(AgentInfo memory _info) internal {
-        // Forward information about added/removed agent to remote chains
-        // only if BondingManager is deployed on Synapse Chain
-        // We set callOrigin to ZERO, as we don't need to exclude any of the chains for forwarding
-        _updateLocalRegistries(_dataSyncAgent(_info), _onSynapseChain(), 0);
+        // TODO: rework once Agent Merkle Tree is implemented
+        // In the MVP version we don't do any forwarding for agents added/removed
+        // Instead, BondingSecondary exposes owner-only addAgent() and removeAgent()
+        _updateLocalRegistries(_dataSyncAgent(_info), false, 0);
     }
 
     /// @dev Passes an "update status" message to local Registries:

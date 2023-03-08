@@ -81,8 +81,6 @@ contract BondingPrimaryTest is BondingManagerTest {
         // All system registries should be system called
         vm.expectCall(originSynapse, expectedCall);
         vm.expectCall(destinationSynapse, expectedCall);
-        // data should be forwarded to remote chains
-        _expectForwardCalls(0, data);
         bondingPrimary.addAgent(domain, agent);
     }
 
@@ -94,8 +92,6 @@ contract BondingPrimaryTest is BondingManagerTest {
         // All system registries should be system called
         vm.expectCall(originSynapse, expectedCall);
         vm.expectCall(destinationSynapse, expectedCall);
-        // data should be forwarded to remote chains
-        _expectForwardCalls(0, data);
         bondingPrimary.removeAgent(domain, agent);
     }
 
