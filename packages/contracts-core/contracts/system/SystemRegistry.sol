@@ -50,18 +50,6 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
     ▏*║                           INTERNAL HELPERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Perform a System Call to a local BondingManager with the given `_data`.
-     */
-    function _callLocalBondingManager(bytes memory _data) internal {
-        systemRouter.systemCall({
-            _destination: localDomain,
-            _optimisticSeconds: 0,
-            _recipient: SystemEntity.BondingManager,
-            _data: _data
-        });
-    }
-
     function _updateAgentStatus(AgentInfo memory _info) internal {
         if (_info.bonded) {
             _addAgent(_info.domain, _info.account);

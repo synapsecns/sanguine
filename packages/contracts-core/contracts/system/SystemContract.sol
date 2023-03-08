@@ -148,6 +148,30 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
     function renounceOwnership() public override onlyOwner {} //solhint-disable-line no-empty-blocks
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        SYSTEM CALL SHORTCUTS                         ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Perform a System Call to a BondingManager on a given domain
+    /// with the given optimistic period and data.
+    function _callBondingManager(
+        uint32 _domain,
+        uint32 _optimisticSeconds,
+        bytes memory _data
+    ) internal {
+        systemRouter.systemCall({
+            _destination: _domain,
+            _optimisticSeconds: _optimisticSeconds,
+            _recipient: SystemEntity.BondingManager,
+            _data: _data
+        });
+    }
+
+    /// @dev Perform a System Call to a local BondingManager with the given `_data`.
+    function _callLocalBondingManager(bytes memory _data) internal {
+        _callBondingManager(0, 0, _data);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                 INTERNAL VIEWS: SECURITY ASSERTIONS                  ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
