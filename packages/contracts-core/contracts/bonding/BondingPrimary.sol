@@ -64,7 +64,18 @@ contract BondingPrimary is AgentRegistry, BondingManager {
      * Otherwise, only Synapse Chain should be notified.
      */
     function _forwardUpdateData(bytes memory _data, uint32 _callOrigin) internal override {
-        // TODO: forward update data to all chains except `_callOrigin`
+        uint256 amount = amountDomains();
+        for (uint256 i = 0; i < amount; ++i) {
+            uint32 domain = getDomain(i);
+            if (domain != _callOrigin && domain != SYNAPSE_DOMAIN) {
+                systemRouter.systemCall({
+                    _destination: domain,
+                    _optimisticSeconds: BONDING_OPTIMISTIC_PERIOD,
+                    _recipient: SystemEntity.BondingManager,
+                    _data: _data
+                });
+            }
+        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

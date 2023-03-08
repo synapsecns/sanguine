@@ -5,6 +5,16 @@ import "./BondingManager.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract BondingPrimaryTest is BondingManagerTest {
+    function setUp() public virtual override {
+        super.setUp();
+        vm.startPrank(owner);
+        _castToPrimary().addAgent(0, suiteAgent(0));
+        _castToPrimary().addAgent(DOMAIN_LOCAL, suiteAgent(DOMAIN_LOCAL));
+        _castToPrimary().addAgent(DOMAIN_REMOTE, suiteAgent(DOMAIN_REMOTE));
+        _castToPrimary().addAgent(DOMAIN_SYNAPSE, suiteAgent(DOMAIN_SYNAPSE));
+        vm.stopPrank();
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             TESTS: SETUP                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -39,6 +49,13 @@ contract BondingPrimaryTest is BondingManagerTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_addAgent(uint32 domain, address notary) public {
+        // Should not be an already added agent
+        vm.assume(
+            notary != suiteAgent(0) &&
+                notary != suiteAgent(DOMAIN_LOCAL) &&
+                notary != suiteAgent(DOMAIN_REMOTE) &&
+                notary != suiteAgent(DOMAIN_SYNAPSE)
+        );
         AgentInfo memory info = agentInfo({ domain: domain, account: notary, bonded: true });
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
@@ -54,6 +71,8 @@ contract BondingPrimaryTest is BondingManagerTest {
                 )
             );
         }
+        // data should be forwarded to remote chains
+        _expectForwardCalls(0, _dataSyncAgentCall(info));
         vm.prank(owner);
         _castToPrimary().addAgent(domain, notary);
     }
@@ -75,6 +94,8 @@ contract BondingPrimaryTest is BondingManagerTest {
                 )
             );
         }
+        // data should be forwarded to remote chains
+        _expectForwardCalls(0, _dataSyncAgentCall(info));
         vm.prank(owner);
         _castToPrimary().removeAgent(domain, notary);
     }
@@ -164,13 +185,6 @@ contract BondingPrimaryTest is BondingManagerTest {
         vm.assume(callOrigin != 0 && callOrigin != DOMAIN_SYNAPSE);
         _skipBondingOptimisticPeriod();
         AgentInfo memory info = agentInfo({ domain: domain, account: account, bonded: false });
-        bytes memory data = abi.encodeWithSelector(
-            ISystemContract.slashAgent.selector,
-            0, // rootSubmittedAt
-            0, // callOrigin
-            0, // systemCaller
-            info
-        );
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
             // (_rootSubmittedAt, _callOrigin, _caller, _info)
@@ -185,14 +199,41 @@ contract BondingPrimaryTest is BondingManagerTest {
                 )
             );
         }
-        // TODO: add test for forwarding the data once implemented
-        data;
+        // data should be forwarded to remote chains
+        _expectForwardCalls(callOrigin, _dataSlashAgentCall(info));
         // Mock a local system call: [Remote BondingManager] -> [Local BondingManager].slashAgent
         _mockSlashAgentCall({
             callOrigin: callOrigin,
             systemCaller: SystemEntity.BondingManager,
             info: info
         });
+    }
+
+    function _expectForwardCalls(uint32 callOrigin, bytes memory data) internal {
+        if (callOrigin != DOMAIN_LOCAL) {
+            vm.expectCall(
+                address(systemRouter),
+                abi.encodeWithSelector(
+                    SystemRouter.systemCall.selector,
+                    DOMAIN_LOCAL, // destination
+                    BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
+                    SystemEntity.BondingManager, //recipient
+                    data
+                )
+            );
+        }
+        if (callOrigin != DOMAIN_REMOTE) {
+            vm.expectCall(
+                address(systemRouter),
+                abi.encodeWithSelector(
+                    SystemRouter.systemCall.selector,
+                    DOMAIN_REMOTE, // destination
+                    BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
+                    SystemEntity.BondingManager, //recipient
+                    data
+                )
+            );
+        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

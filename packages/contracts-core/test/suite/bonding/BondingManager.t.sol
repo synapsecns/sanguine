@@ -19,7 +19,7 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
     uint32 internal localDomain;
     uint256 internal rootSubmittedAt;
 
-    function setUp() public override {
+    function setUp() public virtual override {
         super.setUp();
         localDomain = _getTestLocalDomain();
         // Deploy mocks for tests
@@ -138,13 +138,7 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
             _rootSubmittedAt: callOrigin == localDomain ? block.timestamp : rootSubmittedAt,
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
-            _data: abi.encodeWithSelector(
-                ISystemContract.syncAgent.selector,
-                0, // rootSubmittedAt
-                0, // callOrigin
-                0, // systemCaller
-                info
-            )
+            _data: _dataSyncAgentCall(info)
         });
     }
 
@@ -159,8 +153,30 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
             _rootSubmittedAt: callOrigin == localDomain ? block.timestamp : rootSubmittedAt,
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
-            _data: abi.encodeWithSelector(ISystemContract.slashAgent.selector, 0, 0, 0, info)
+            _data: _dataSlashAgentCall(info)
         });
+    }
+
+    function _dataSyncAgentCall(AgentInfo memory info) internal view returns (bytes memory) {
+        return
+            abi.encodeWithSelector(
+                ISystemContract.syncAgent.selector,
+                0, // rootSubmittedAt
+                0, // callOrigin
+                0, // systemCaller
+                info
+            );
+    }
+
+    function _dataSlashAgentCall(AgentInfo memory info) internal view returns (bytes memory) {
+        return
+            abi.encodeWithSelector(
+                ISystemContract.slashAgent.selector,
+                0, // rootSubmittedAt
+                0, // callOrigin
+                0, // systemCaller
+                info
+            );
     }
 
     function _getTestLocalDomain() internal pure virtual returns (uint32);
