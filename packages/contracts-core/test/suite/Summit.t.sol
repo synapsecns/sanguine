@@ -43,7 +43,9 @@ contract SummitTest is SynapseTest, SynapseProofs {
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
             State[] memory states = new State[](STATES);
             for (uint32 j = 0; j < STATES; ++j) {
-                guardStates[i][j] = random.nextState({ origin: j + 1, nonce: i + j + 1 });
+                // Use random non-zero nonce for every state
+                uint32 nonce = uint32(bound(random.nextUint32(), 1, type(uint32).max));
+                guardStates[i][j] = random.nextState({ origin: j + 1, nonce: nonce });
                 states[j] = guardStates[i][j].formatSummitState().castToState();
             }
             bytes memory snapshot = SnapshotLib.formatSnapshot(states);
@@ -68,7 +70,18 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 guardSnapshots[i].snapshot,
                 guardSnapshots[i].signature
             );
+            // Check latest Guard States
+            for (uint32 j = 0; j < STATES; ++j) {
+                assertEq(
+                    ISnapshotHub(summit).getLatestAgentState(j + 1, domains[0].agents[i]),
+                    guardStates[i][j].formatSummitState(),
+                    "!latestState: guard"
+                );
+            }
         }
+
+        // Check global latest state
+        checkLatestState();
     }
 
     function test_notarySnapshots(Random memory random) public {
@@ -122,6 +135,35 @@ contract SummitTest is SynapseTest, SynapseProofs {
                     "!getSnapshotProof"
                 );
             }
+
+            // Check latest Notary States
+            for (uint32 j = 0; j < STATES; ++j) {
+                assertEq(
+                    ISnapshotHub(summit).getLatestAgentState(j + 1, notary),
+                    rawStates[j],
+                    "!latestState: notary"
+                );
+            }
+        }
+
+        // Check global latest state
+        checkLatestState();
+    }
+
+    function checkLatestState() public {
+        // Check global latest state
+        for (uint32 j = 0; j < STATES; ++j) {
+            SummitState memory latestState;
+            for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
+                if (guardStates[i][j].nonce > latestState.nonce) {
+                    latestState = guardStates[i][j];
+                }
+            }
+            assertEq(
+                InterfaceSummit(summit).getLatestState(j + 1),
+                latestState.formatSummitState(),
+                "!getLatestState"
+            );
         }
     }
 }
