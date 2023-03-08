@@ -42,8 +42,8 @@ type DomainConfig struct {
 	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// OriginAddress gets origin contract address
 	OriginAddress string `yaml:"origin_address"`
-	// AttestationCollectorAddress contains the attestation collector address (if present)
-	AttestationCollectorAddress string `yaml:"attestation_collector_address"`
+	// SummitAddress contains the summit address (if present)
+	SummitAddress string `yaml:"summit_address"`
 	// DestinationAddress gets destination contract address
 	DestinationAddress string `yaml:"destination_address"`
 	// RPCUrl to use for the chain

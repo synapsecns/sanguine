@@ -39,7 +39,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 	u.T().Skip()
 	notaryTestConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain:      u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},
@@ -59,7 +59,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain: u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},
@@ -151,7 +151,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 
 	notaryTestConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain:      u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},
@@ -171,7 +171,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain: u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},
@@ -284,7 +284,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 	u.T().Skip()
 	notaryTestConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain:      u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},
@@ -304,7 +304,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain: u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},
@@ -575,7 +575,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 
 	notaryTestConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain:      u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},
@@ -595,7 +595,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain: u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},
@@ -897,7 +897,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrationE2E() {
 	notaryTestConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain:      u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},
@@ -917,7 +917,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 		RefreshIntervalInSeconds: 10,
 	}
 	guardTestConfig := config.GuardConfig{
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain: u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},

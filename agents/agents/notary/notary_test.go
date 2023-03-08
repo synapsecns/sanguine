@@ -28,7 +28,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 	u.T().Skip()
 	testConfig := config.NotaryConfig{
 		DestinationDomain: u.DestinationDomainClient.Config(),
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain:      u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},

@@ -27,7 +27,7 @@ func (u GuardSuite) TestGuardE2E() {
 	// TODO (joeallen): FIX ME
 	u.T().Skip()
 	testConfig := config.GuardConfig{
-		AttestationDomain: u.AttestationDomainClient.Config(),
+		SummitDomain: u.SummitDomainClient.Config(),
 		OriginDomains: map[string]config.DomainConfig{
 			"origin_client": u.OriginDomainClient.Config(),
 		},
