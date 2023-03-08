@@ -383,6 +383,36 @@ func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) 
 	return inTree, nil
 }
 
+// verifySnapshotMerkleProof verifies that a state is in the snapshot merkle tree.
+func (e Executor) verifySnapshotMerkleProof(ctx context.Context, state types.State) (bool, error) {
+	stateRoot := state.Root()
+	root := common.BytesToHash(stateRoot[:]).String()
+	chainID := state.Origin()
+
+	stateMask := execTypes.DBState{
+		Root:    &root,
+		ChainID: &chainID,
+	}
+
+	snapshotRoot, proof, treeHeight, err := e.executorDB.GetStateMetadata(ctx, stateMask)
+	if err != nil {
+		return false, fmt.Errorf("could not get snapshot root: %w", err)
+	}
+
+	if snapshotRoot == nil || proof == nil || treeHeight == nil {
+		return false, nil
+	}
+
+	leaf, err := state.Hash()
+	if err != nil {
+		return false, fmt.Errorf("could not hash state: %w", err)
+	}
+
+	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], state.Nonce(), *proof, *treeHeight)
+
+	return inTree, nil
+}
+
 // verifyMessageOptimisticPeriod verifies that the optimistic period is valid.
 func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
 	chainID := message.OriginDomain()
@@ -666,7 +696,9 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 				return fmt.Errorf("could not get snapshot root and proofs: %w", err)
 			}
 
-			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs)
+			treeHeight := (*snapshot).TreeHeight()
+
+			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs, treeHeight)
 			if err != nil {
 				return fmt.Errorf("could not store states: %w", err)
 			}

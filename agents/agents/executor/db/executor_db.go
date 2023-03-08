@@ -19,9 +19,9 @@ type ExecutorDBWriter interface {
 	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error
 
 	// StoreState stores a state.
-	StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte) error
+	StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight uint32) error
 	// StoreStates stores multiple states with the same snapshot root.
-	StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte) error
+	StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte, treeHeight uint32) error
 }
 
 // ExecutorDBReader is the interface for reading from the executor database.
@@ -58,6 +58,8 @@ type ExecutorDBReader interface {
 
 	// GetState gets a state from the database.
 	GetState(ctx context.Context, stateMask types.DBState) (*agentsTypes.State, error)
+	// GetStateMetadata gets the snapshot root and proof of a state from the database.
+	GetStateMetadata(ctx context.Context, stateMask types.DBState) (*[32]byte, *[][]byte, *uint32, error)
 }
 
 // ExecutorDB is the interface for the executor database.

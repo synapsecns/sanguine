@@ -94,4 +94,6 @@ type State struct {
 	OriginTimestamp uint64 `gorm:"column:origin_timestamp"`
 	// Proof is the Snapshot Merkle Tree proof for the state.
 	Proof [][]byte `gorm:"column:proof"`
+	// TreeHeight is the height of the Snapshot Merkle Tree that the state belongs to.
+	TreeHeight uint32 `gorm:"column:tree_height"`
 }

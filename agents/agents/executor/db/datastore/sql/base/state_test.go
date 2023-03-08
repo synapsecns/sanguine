@@ -18,6 +18,7 @@ func TestDBStateToState(t *testing.T) {
 	originBlockNumber := gofakeit.Uint64()
 	originTimestamp := gofakeit.Uint64()
 	proof := [][]byte{{gofakeit.Uint8()}, {gofakeit.Uint8()}}
+	treeHeight := gofakeit.Uint32()
 
 	initialDBState := types.DBState{
 		SnapshotRoot:      &snapshotRoot,
@@ -27,6 +28,7 @@ func TestDBStateToState(t *testing.T) {
 		OriginBlockNumber: &originBlockNumber,
 		OriginTimestamp:   &originTimestamp,
 		Proof:             &proof,
+		TreeHeight:        &treeHeight,
 	}
 
 	initialState := base.DBStateToState(initialDBState)

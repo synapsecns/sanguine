@@ -11,8 +11,8 @@ import (
 )
 
 // StoreState stores a state.
-func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte) error {
-	dbState := AgentsTypesStateToState(state, snapshotRoot, proof)
+func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight uint32) error {
+	dbState := AgentsTypesStateToState(state, snapshotRoot, proof, treeHeight)
 
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
@@ -31,10 +31,10 @@ func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshot
 }
 
 // StoreStates stores multiple states with the same snapshot root.
-func (s Store) StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte) error {
+func (s Store) StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte, treeHeight uint32) error {
 	var dbStates []State
 	for i := range states {
-		dbStates = append(dbStates, AgentsTypesStateToState(states[i], snapshotRoot, proofs[i]))
+		dbStates = append(dbStates, AgentsTypesStateToState(states[i], snapshotRoot, proofs[i], treeHeight))
 	}
 
 	dbTx := s.DB().WithContext(ctx).
@@ -82,6 +82,29 @@ func (s Store) GetState(ctx context.Context, stateMask types.DBState) (*agentsTy
 	return &receivedState, nil
 }
 
+// GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
+func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (*[32]byte, *[][]byte, *uint32, error) {
+	var state State
+
+	dbStateMask := DBStateToState(stateMask)
+	dbTx := s.DB().WithContext(ctx).
+		Model(&state).
+		Where(&dbStateMask).
+		Limit(1).
+		Scan(&state)
+	if dbTx.Error != nil {
+		return nil, nil, nil, fmt.Errorf("failed to get state snapshot root: %w", dbTx.Error)
+	}
+	if dbTx.RowsAffected == 0 {
+		return nil, nil, nil, nil
+	}
+
+	var snapshotRoot [32]byte
+	copy(snapshotRoot[:], common.HexToHash(state.SnapshotRoot).Bytes())
+
+	return &snapshotRoot, &state.Proof, &state.TreeHeight, nil
+}
+
 // DBStateToState converts a DBState to a State.
 func DBStateToState(dbState types.DBState) State {
 	var state State
@@ -114,6 +137,10 @@ func DBStateToState(dbState types.DBState) State {
 		state.Proof = *dbState.Proof
 	}
 
+	if dbState.TreeHeight != nil {
+		state.TreeHeight = *dbState.TreeHeight
+	}
+
 	return state
 }
 
@@ -126,6 +153,7 @@ func StateToDBState(state State) types.DBState {
 	originBlockNumber := state.OriginBlockNumber
 	originTimestamp := state.OriginTimestamp
 	proof := state.Proof
+	treeHeight := state.TreeHeight
 
 	return types.DBState{
 		SnapshotRoot:      &snapshotRoot,
@@ -135,11 +163,12 @@ func StateToDBState(state State) types.DBState {
 		OriginBlockNumber: &originBlockNumber,
 		OriginTimestamp:   &originTimestamp,
 		Proof:             &proof,
+		TreeHeight:        &treeHeight,
 	}
 }
 
 // AgentsTypesStateToState converts an agentsTypes.State to a State.
-func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte) State {
+func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight uint32) State {
 	root := state.Root()
 	return State{
 		SnapshotRoot:      common.BytesToHash(snapshotRoot[:]).String(),
@@ -149,5 +178,6 @@ func AgentsTypesStateToState(state agentsTypes.State, snapshotRoot [32]byte, pro
 		OriginBlockNumber: state.BlockNumber().Uint64(),
 		OriginTimestamp:   state.Timestamp().Uint64(),
 		Proof:             proof,
+		TreeHeight:        treeHeight,
 	}
 }
