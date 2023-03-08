@@ -68,6 +68,14 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 guardSnapshots[i].snapshot,
                 guardSnapshots[i].signature
             );
+            // Check latest Guard States
+            for (uint32 j = 0; j < STATES; ++j) {
+                assertEq(
+                    ISnapshotHub(summit).getLatestAgentState(j + 1, domains[0].agents[i]),
+                    guardStates[i][j].formatSummitState(),
+                    "!latestState: guard"
+                );
+            }
         }
     }
 
@@ -120,6 +128,15 @@ contract SummitTest is SynapseTest, SynapseProofs {
                     MerkleLib.branchRoot(item, snapProof, 2 * j),
                     sa.root,
                     "!getSnapshotProof"
+                );
+            }
+
+            // Check latest Notary States
+            for (uint32 j = 0; j < STATES; ++j) {
+                assertEq(
+                    ISnapshotHub(summit).getLatestAgentState(j + 1, notary),
+                    rawStates[j],
+                    "!latestState: notary"
                 );
             }
         }

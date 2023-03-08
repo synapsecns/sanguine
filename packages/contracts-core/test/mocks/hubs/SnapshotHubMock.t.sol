@@ -8,7 +8,7 @@ import "../ExcludeCoverage.sol";
 contract SnapshotHubMock is ExcludeCoverage, ISnapshotHub {
     function isValidAttestation(bytes memory _attPayload) external view returns (bool isValid) {}
 
-    function getLatestState(uint32 _origin, address _guard)
+    function getLatestAgentState(uint32 _origin, address _agent)
         external
         view
         returns (bytes memory statePayload)
