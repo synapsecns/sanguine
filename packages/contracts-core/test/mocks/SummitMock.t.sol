@@ -20,4 +20,6 @@ contract SummitMock is SnapshotHubMock, SystemContractMock, InterfaceSummit {
     function addAgent(uint32 _domain, address _account) external returns (bool) {}
 
     function removeAgent(uint32 _domain, address _account) external returns (bool) {}
+
+    function getLatestState(uint32 _origin) external view returns (bytes memory statePayload) {}
 }

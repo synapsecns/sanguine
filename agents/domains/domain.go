@@ -28,8 +28,8 @@ type DomainClient interface {
 	BlockNumber(ctx context.Context) (uint32, error)
 	// Origin retrieves a handle for the origin contract
 	Origin() OriginContract
-	// AttestationCollector is the attestation collector
-	AttestationCollector() AttestationCollectorContract
+	// Summit is the summit
+	Summit() SummitContract
 	// Destination retrieves a handle for the destination contract
 	Destination() DestinationContract
 }
@@ -48,18 +48,16 @@ type OriginContract interface {
 	SuggestAttestation(ctx context.Context, destinationID uint32) (types.Attestation, error)
 }
 
-// AttestationCollectorContract contains the interface for the attestation collector.
-type AttestationCollectorContract interface {
-	// AddAgent adds an agent (guard or notary) to the attesation collector
+// SummitContract contains the interface for the summit.
+type SummitContract interface {
+	// AddAgent adds an agent (guard or notary) to the summit
 	AddAgent(transactOpts *bind.TransactOpts, domain uint32, signer signer.Signer) error
-	// SubmitAttestation submits an attestation to the attestation collector.
-	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
-	// GetLatestNonce gets the latest nonce signed by the bondedAgentSigner for the domain on the attestation collector
-	GetLatestNonce(ctx context.Context, origin uint32, destination uint32, bondedAgentSigner signer.Signer) (nonce uint32, err error)
-	// GetAttestation gets the attestation if any for the given origin, destination and nonce
-	GetAttestation(ctx context.Context, origin, destination, nonce uint32) (types.SignedAttestation, error)
-	// GetRoot gets the root if any for the given origin, destination and nonce
-	GetRoot(ctx context.Context, origin, destination, nonce uint32) ([32]byte, error)
+	// SubmitSnapshot submits a snapshot to the summit.
+	SubmitSnapshot(ctx context.Context, signer signer.Signer, snapshot types.Snapshot) error
+	// GetLatestState gets the latest state signed by any guard for the given origin
+	GetLatestState(ctx context.Context, origin uint32) (types.State, error)
+	// GetLatestAgentState gets the latest state signed by the bonded signer for the given origin
+	GetLatestAgentState(ctx context.Context, origin uint32, bondedAgentSigner signer.Signer) (types.State, error)
 	// PrimeNonce primes the nonce for the signer
 	PrimeNonce(ctx context.Context, signer signer.Signer) error
 }

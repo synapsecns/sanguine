@@ -10,7 +10,7 @@ import (
 // init serves as a static assertion that AllEventTypes are accounted for.
 func init() {
 	if len(_EventType_index)-1 != len(AllEventTypes) {
-		panic("add new events to alle vent types")
+		panic("add new events to all event types")
 	}
 }
 

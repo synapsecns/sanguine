@@ -41,9 +41,9 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     // (origin => (stateLeaf => {state index in guardStates PLUS 1}))
     mapping(uint32 => mapping(bytes32 => uint256)) private leafPtr;
 
-    /// @dev Pointer for the latest Guard State of a given origin
+    /// @dev Pointer for the latest Agent State of a given origin
     /// with ZERO as a sentinel value for "no states submitted yet".
-    // (origin => (guard => {latest state index in guardStates PLUS 1}))
+    // (origin => (agent => {latest state index in guardStates PLUS 1}))
     mapping(uint32 => mapping(address => uint256)) private latestStatePtr;
 
     /// @dev gap for upgrade safety
@@ -60,12 +60,13 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         return _isValidAttestation(attestation);
     }
 
-    function getLatestState(uint32 _origin, address _guard)
+    /// @inheritdoc ISnapshotHub
+    function getLatestAgentState(uint32 _origin, address _agent)
         external
         view
         returns (bytes memory stateData)
     {
-        SummitState memory latestState = _latestState(_origin, _guard);
+        SummitState memory latestState = _latestState(_origin, _agent);
         if (latestState.nonce == 0) return bytes("");
         return latestState.formatSummitState();
     }
@@ -153,15 +154,21 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// @dev Accepts a Snapshot signed by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
     function _acceptNotarySnapshot(Snapshot _snapshot, address _notary) internal {
-        // TODO: Save Notary address?
-        _notary;
         // Snapshot Signer is a Notary: construct an Attestation Merkle Tree,
         // while checking that the states were previously saved.
         uint256 statesAmount = _snapshot.statesAmount();
         uint256[] memory statePtrs = new uint256[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
-            statePtrs[i] = _statePtr(_snapshot.state(i));
-            require(statePtrs[i] != 0, "State doesn't exist");
+            State state = _snapshot.state(i);
+            uint256 statePtr = _statePtr(state);
+            // Notary can only used states previously submitted by any fo the Guards
+            require(statePtr != 0, "State doesn't exist");
+            statePtrs[i] = statePtr;
+            // Check that Notary hasn't used a fresher state for this origin before
+            uint32 origin = state.origin();
+            require(state.nonce() > _latestState(origin, _notary).nonce, "Outdated nonce");
+            // Update Notary latest state for origin
+            latestStatePtr[origin][_notary] = statePtrs[i];
         }
         // Derive attestation merkle root and save it for a Notary attestation.
         // Save Notary snapshot for later retrieval
@@ -254,19 +261,19 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     ▏*║                          LATEST STATE VIEWS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Returns the latest state submitted by the Guard for the origin.
-    /// Will return an empty struct, if a Guard hasn't submitted a single origin State yet.
-    function _latestState(uint32 _origin, address _guard)
+    /// @dev Returns the latest state submitted by the Agent for the origin.
+    /// Will return an empty struct, if the Agent hasn't submitted a single origin State yet.
+    function _latestState(uint32 _origin, address _agent)
         internal
         view
         returns (SummitState memory state)
     {
         // Get value for "index in guardStates PLUS 1"
-        uint256 latestPtr = latestStatePtr[_origin][_guard];
-        // Check if the Guard has submitted at least one State for origin
+        uint256 latestPtr = latestStatePtr[_origin][_agent];
+        // Check if the Agent has submitted at least one State for origin
         if (latestPtr != 0) {
             state = guardStates[latestPtr - 1];
         }
-        // An empty struct is returned if the Guard hasn't submitted a single State for origin yet.
+        // An empty struct is returned if the Agent hasn't submitted a single State for origin yet.
     }
 }

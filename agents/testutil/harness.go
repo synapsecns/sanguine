@@ -3,13 +3,13 @@ package testutil
 import (
 	"context"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
@@ -78,25 +78,6 @@ func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 // Dependencies gets a list of dependencies used to deploy the origin contract.
 func (o OriginHarnessDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{}
-}
-
-// AttestationHarnessDeployer deploys the attestation harness.
-type AttestationHarnessDeployer struct {
-	*deployer.BaseDeployer
-}
-
-// NewAttestationHarnessDeployer creates a new deployer for the attestation harness.
-func NewAttestationHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return AttestationHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, AttestationHarnessType)}
-}
-
-// Deploy deploys the attestation harness.
-func (a AttestationHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return attestationharness.DeployAttestationHarness(transactOps, backend)
-	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return attestationharness.NewAttestationHarnessRef(address, backend)
-	})
 }
 
 // StateHarnessDeployer deploys the state harness.
