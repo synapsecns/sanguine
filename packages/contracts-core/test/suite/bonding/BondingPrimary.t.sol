@@ -46,9 +46,10 @@ contract BondingPrimaryTest is BondingManagerTest {
             vm.expectCall(
                 systemRegistries[r],
                 abi.encodeWithSelector(
-                    SystemContractMock.syncAgent.selector,
+                    ISystemContract.syncAgent.selector,
                     block.timestamp,
                     DOMAIN_SYNAPSE,
+                    SystemEntity.BondingManager,
                     info
                 )
             );
@@ -66,7 +67,7 @@ contract BondingPrimaryTest is BondingManagerTest {
             vm.expectCall(
                 systemRegistries[r],
                 abi.encodeWithSelector(
-                    SystemContractMock.syncAgent.selector,
+                    ISystemContract.syncAgent.selector,
                     block.timestamp,
                     DOMAIN_SYNAPSE,
                     SystemEntity.BondingManager,
@@ -84,7 +85,10 @@ contract BondingPrimaryTest is BondingManagerTest {
 
     // slashAgent(): localDomain_notOrigin is tested in BondingManager.t.sol
 
-    function test_slashAgent_revert_remoteDomain_notBondingManager(uint32 callOrigin) public {
+    function test_slashAgent_revert_remoteDomain_notBondingManager(
+        uint32 callOrigin,
+        AgentInfo memory info
+    ) public {
         vm.assume(callOrigin != localDomain);
         _skipBondingOptimisticPeriod();
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
@@ -93,11 +97,7 @@ contract BondingPrimaryTest is BondingManagerTest {
             if (caller == SystemEntity.BondingManager) continue;
             vm.expectRevert("!allowedCaller");
             // Use mocked agent info
-            _mockSlashAgentCall({
-                callOrigin: callOrigin,
-                systemCaller: caller,
-                info: guardInfo({ guard: address(0), bonded: false })
-            });
+            _mockSlashAgentCall({ callOrigin: callOrigin, systemCaller: caller, info: info });
         }
     }
 
@@ -105,28 +105,11 @@ contract BondingPrimaryTest is BondingManagerTest {
     ▏*║                      TESTS: SYNC AGENTS REVERTS                      ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_syncAgent_revert_localDomain() public {
-        AgentInfo memory info;
-        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            // Should reject all system calls from local domain
-            SystemEntity caller = SystemEntity(c);
-            // Calls from local domain never pass the optimistic period check
-            vm.expectRevert("!optimisticPeriod");
-            // Use mocked list of agents
-            _mockSyncAgentCall({ callOrigin: localDomain, systemCaller: caller, info: info });
-        }
-    }
-
-    function test_syncAgent_revert_remoteDomain_notBondingManager(uint32 callOrigin) public {
-        AgentInfo memory info;
-        vm.assume(callOrigin != localDomain);
-        _skipBondingOptimisticPeriod();
+    function test_syncAgent_revert(uint32 callOrigin, AgentInfo memory info) public {
+        // Should reject all syncAgent calls
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             SystemEntity caller = SystemEntity(c);
-            // Should reject system calls from a remote domain, if caller is not BondingManager
-            if (caller == SystemEntity.BondingManager) continue;
-            vm.expectRevert("!allowedCaller");
-            // Use mocked list of agents
+            vm.expectRevert("Disabled for BondingPrimary");
             _mockSyncAgentCall({ callOrigin: callOrigin, systemCaller: caller, info: info });
         }
     }

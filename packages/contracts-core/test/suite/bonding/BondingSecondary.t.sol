@@ -22,6 +22,7 @@ contract BondingSecondaryTest is BondingManagerTest {
     // slashAgent(): localDomain_notOrigin is tested in BondingManager.t.sol
 
     function test_slashAgent_revert_synapseDomain_notBondingManager() public {
+        AgentInfo memory info;
         _skipBondingOptimisticPeriod();
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             // Should reject system calls from Synapse domain, if caller is not BondingManager
@@ -29,28 +30,21 @@ contract BondingSecondaryTest is BondingManagerTest {
             if (caller == SystemEntity.BondingManager) continue;
             vm.expectRevert("!allowedCaller");
             // Use mocked agent info
-            _mockSlashAgentCall({
-                callOrigin: DOMAIN_SYNAPSE,
-                systemCaller: caller,
-                info: guardInfo({ guard: address(0), bonded: false })
-            });
+            _mockSlashAgentCall({ callOrigin: DOMAIN_SYNAPSE, systemCaller: caller, info: info });
         }
     }
 
     function test_slashAgent_revert_remoteNotSynapseDomain(uint32 callOrigin) public {
         // Exclude local calls and calls from Synapse Chain
         vm.assume(callOrigin != DOMAIN_LOCAL && callOrigin != DOMAIN_SYNAPSE);
+        AgentInfo memory info;
         _skipBondingOptimisticPeriod();
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             // Should reject cross-chain system calls from domains other than Synapse domain
             SystemEntity caller = SystemEntity(c);
             vm.expectRevert("!synapseDomain");
             // Use mocked agent info
-            _mockSlashAgentCall({
-                callOrigin: callOrigin,
-                systemCaller: caller,
-                info: guardInfo({ guard: address(0), bonded: false })
-            });
+            _mockSlashAgentCall({ callOrigin: callOrigin, systemCaller: caller, info: info });
         }
     }
 

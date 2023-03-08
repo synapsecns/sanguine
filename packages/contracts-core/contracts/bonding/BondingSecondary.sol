@@ -6,11 +6,31 @@ import "../libs/Structures.sol";
 import { BondingManager } from "./BondingManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
-import { SystemContract } from "../system/SystemContract.sol";
+import { ISystemContract } from "../interfaces/ISystemContract.sol";
 
 contract BondingSecondary is BondingManager {
     constructor(uint32 _domain) DomainContext(_domain) {
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc ISystemContract
+    function syncAgent(
+        uint256 _rootSubmittedAt,
+        uint32 _callOrigin,
+        SystemEntity _caller,
+        AgentInfo memory _info
+    )
+        external
+        onlySystemRouter
+        onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
+        onlySynapseChainBondingManager(_callOrigin, _caller)
+    {
+        // Pass information to local Registries
+        _syncAgentLocalRegistries(_info, _callOrigin);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -48,27 +48,36 @@ abstract contract BondingManager is SystemContract, Version0_0_2 {
         }
         // Forward information about the slashed agent to local Registries
         // Forward information about slashed agent to remote chains if needed
-        _updateLocalRegistries({
-            _data: _dataSlashAgent(_info),
-            _forwardUpdate: forwardUpdate,
-            _callOrigin: _callOrigin
-        });
-    }
-
-    /// @inheritdoc ISystemContract
-    function syncAgent(
-        uint256 _rootSubmittedAt,
-        uint32 _callOrigin,
-        SystemEntity _caller,
-        AgentInfo memory _info
-    ) external {
-        // TODO: fill
+        _slashAgentLocalRegistries(_info, forwardUpdate, _callOrigin);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║          INTERNAL HELPERS: UPDATE AGENT (BOND/UNBOND/SLASH)          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // TODO: generalize this further when Agent Merkle Tree is implemented
+
+    /// @dev Passes an "update status" message to local Registries:
+    /// that an Agent has been slashed
+    function _slashAgentLocalRegistries(
+        AgentInfo memory _info,
+        bool _forwardUpdate,
+        uint32 _callOrigin
+    ) internal {
+        _updateLocalRegistries(_dataSlashAgent(_info), _forwardUpdate, _callOrigin);
+    }
+
+    /// @dev Passes an "update status" message to local Registries:
+    /// that an Agent has been added / removed
+    function _syncAgentLocalRegistries(AgentInfo memory _info, uint32 _callOrigin) internal {
+        // Forward information about added/removed agent to remote chains
+        // only if BondingManager is deployed on Synapse Chain
+        bool forwardUpdate = _onSynapseChain();
+        _updateLocalRegistries(_dataSyncAgent(_info), forwardUpdate, _callOrigin);
+    }
+
+    /// @dev Passes an "update status" message to local Registries:
+    /// that an Agent has been added / removed / slashed
     function _updateLocalRegistries(
         bytes memory _data,
         bool _forwardUpdate,
@@ -90,10 +99,10 @@ abstract contract BondingManager is SystemContract, Version0_0_2 {
     }
 
     /**
-     * @notice Forward data with an agent status update (due to
-     * a system call from `_callOrigin`).
-     * @dev If BondingManager is deployed on Synapse Chain, all other chains should be notified.
-     * Otherwise, only Synapse Chain should be notified.
+     * @notice Forward data with an agent status update (due to a system call from `_callOrigin`).
+     * @dev If BondingManager is deployed on Synapse Chain, all chains should be notified,
+     * excluding `_callOrigin` and Synapse Chain.
+     * If BondingManager ois not deployed on Synapse CHain, only Synapse Chain should be notified.
      */
     function _forwardUpdateData(bytes memory _data, uint32 _callOrigin) internal virtual;
 

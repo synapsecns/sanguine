@@ -6,8 +6,8 @@ import "../libs/Structures.sol";
 import { BondingManager } from "./BondingManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
+import { ISystemContract } from "../interfaces/ISystemContract.sol";
 import { AgentRegistry } from "../system/AgentRegistry.sol";
-import { SystemContract } from "../system/SystemContract.sol";
 
 contract BondingPrimary is AgentRegistry, BondingManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -28,35 +28,34 @@ contract BondingPrimary is AgentRegistry, BondingManager {
     function addAgent(uint32 _domain, address _account) external onlyOwner {
         // Add an Agent, break execution if they are already active
         if (!_addAgent(_domain, _account)) return;
-        _updateAgentStatus({ _domain: _domain, _agent: _account, _bonded: true });
+        // there was no system call that initiated the bonding => callOrigin == 0
+        _syncAgentLocalRegistries({ _info: AgentInfo(_domain, _account, true), _callOrigin: 0 });
     }
 
     function removeAgent(uint32 _domain, address _account) external onlyOwner {
         // Remove an Agent, break execution if they are not currently active
         if (!_removeAgent(_domain, _account)) return;
-        _updateAgentStatus({ _domain: _domain, _agent: _account, _bonded: false });
+        // there was no system call that initiated the unbonding => callOrigin == 0
+        _syncAgentLocalRegistries({ _info: AgentInfo(_domain, _account, false), _callOrigin: 0 });
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc ISystemContract
+    function syncAgent(
+        uint256,
+        uint32,
+        SystemEntity,
+        AgentInfo memory
+    ) external view onlySystemRouter {
+        revert("Disabled for BondingPrimary");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║          INTERNAL HELPERS: UPDATE AGENT (BOND/UNBOND/SLASH)          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function _updateAgentStatus(
-        uint32 _domain,
-        address _agent,
-        bool _bonded
-    ) internal {
-        // Pass information about the new agent status to the local registries
-        // Forward information about the new agent status to the remote chains
-        // We optimistically expect the system message to be delivered,
-        // and don't require sending a PONG back in the MVP.
-        // This will be reworked once Agent Merkle Tree is implemented
-        _updateLocalRegistries({
-            _data: _dataSyncAgent(AgentInfo(_domain, _agent, _bonded)),
-            _forwardUpdate: true,
-            _callOrigin: 0 // there was no system call that initiated the bonding
-        });
-    }
 
     /**
      * @notice Forward data with an agent status update (due to

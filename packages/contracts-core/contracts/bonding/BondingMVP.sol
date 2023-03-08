@@ -6,7 +6,7 @@ import "../libs/Structures.sol";
 import { BondingManager } from "./BondingManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
-import { SystemContract } from "../system/SystemContract.sol";
+import { ISystemContract } from "../interfaces/ISystemContract.sol";
 
 interface ISummitMVP {
     function addAgent(uint32 _domain, address _account) external returns (bool);
@@ -22,6 +22,20 @@ contract BondingMVP is BondingManager {
     address public summit;
 
     constructor(uint32 _domain) DomainContext(_domain) {}
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc ISystemContract
+    function syncAgent(
+        uint256,
+        uint32,
+        SystemEntity,
+        AgentInfo memory
+    ) external view onlySystemRouter {
+        revert("Disabled for BondingMVP");
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              OWNER ONLY                              ║*▕

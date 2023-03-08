@@ -85,15 +85,11 @@ contract BondingMVPTest is BondingManagerTest {
         }
     }
 
-    function test_syncAgent_revert_remoteDomain(uint32 callOrigin) public {
-        // Exclude local calls
-        vm.assume(callOrigin != localDomain);
-        _skipBondingOptimisticPeriod();
-        AgentInfo memory info;
+    function test_syncAgent_revert(uint32 callOrigin, AgentInfo memory info) public {
+        // Should reject all syncAgent calls
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            // Should reject all system calls from remote domains
             SystemEntity caller = SystemEntity(c);
-            vm.expectRevert("Cross-chain disabled");
+            vm.expectRevert("Disabled for BondingMVP");
             // Use mocked list of agents
             _mockSyncAgentCall({ callOrigin: callOrigin, systemCaller: caller, info: info });
         }
