@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jpillora/backoff"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"io"
 	"math/big"
 	"strconv"
@@ -72,6 +73,8 @@ type Executor struct {
 	grpcConn *grpc.ClientConn
 	// signer is the signer.
 	signer signer.Signer
+	// summitParser is the summit parser.
+	summitParser summit.Parser
 	// chainExecutors is a map from chain ID -> chain executor.
 	chainExecutors map[uint32]*chainExecutor
 }
@@ -116,6 +119,11 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 
 	if config.SetMinimumTimeInterval == 0 {
 		config.SetMinimumTimeInterval = 2
+	}
+
+	summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
+	if err != nil {
+		return nil, fmt.Errorf("could not create summit parser: %w", err)
 	}
 
 	for _, chain := range config.Chains {
@@ -171,6 +179,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		grpcConn:       conn,
 		grpcClient:     grpcClient,
 		signer:         executorSigner,
+		summitParser:   summitParser,
 		chainExecutors: chainExecutors,
 	}, nil
 }
@@ -638,11 +647,28 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			return fmt.Errorf("log type not supported")
 		}
 	case summitContract:
+		//nolint:gocritic,exhaustive
 		switch contractEvent.eventType {
 		case snapshotAcceptedEvent:
+			snapshot, err := e.logToSnapshot(log)
+			if err != nil {
+				return fmt.Errorf("could not convert log to snapshot: %w", err)
+			}
 
+			if snapshot == nil {
+				return nil
+			}
+
+			snapshotRoot, proofs, err := (*snapshot).SnapshotRootAndProofs()
+			if err != nil {
+				return fmt.Errorf("could not get snapshot root and proofs: %w", err)
+			}
+
+			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs)
+			if err != nil {
+				return fmt.Errorf("could not store states: %w", err)
+			}
 		}
-		// TODO: Parse the snapshot and put everything into the state table.
 	case other:
 		logger.Warnf("the log's event type is not supported")
 	default:

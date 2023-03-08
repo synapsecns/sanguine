@@ -16,6 +16,8 @@ import (
 type Config struct {
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
+	// SummitAddress is the address of the summit contract.
+	SummitAddress string `yaml:"summit_address"`
 	// BaseOmnirpcURL is the base url for omnirpc.
 	// The format is "https://omnirpc.url/". Notice the lack of "confirmations" on the URL
 	// in comparison to what `Scribe` uses.

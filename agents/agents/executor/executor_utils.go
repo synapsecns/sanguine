@@ -35,6 +35,21 @@ func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (*types.Att
 	return &attestation, nil
 }
 
+// logToSnapshot converts the log to a snapshot.
+func (e Executor) logToSnapshot(log ethTypes.Log) (*types.Snapshot, error) {
+	snapshot, domain, ok := e.summitParser.ParseSnapshotAccepted(log)
+	if !ok {
+		return nil, fmt.Errorf("could not parse snapshot")
+	}
+
+	if domain == 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	return &snapshot, nil
+}
+
 // logType determines whether a log is a `Dispatch` from Origin.sol or `AttestationAccepted` from Destination.sol.
 func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 	contractEvent := contractEventType{

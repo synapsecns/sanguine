@@ -30,6 +30,29 @@ func (s Store) StoreState(ctx context.Context, state agentsTypes.State, snapshot
 	return nil
 }
 
+// StoreStates stores multiple states with the same snapshot root.
+func (s Store) StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte) error {
+	var dbStates []State
+	for i := range states {
+		dbStates = append(dbStates, AgentsTypesStateToState(states[i], snapshotRoot, proofs[i]))
+	}
+
+	dbTx := s.DB().WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: SnapshotRootFieldName}, {Name: RootFieldName}, {Name: ChainIDFieldName}, {Name: NonceFieldName},
+			},
+			DoNothing: true,
+		}).
+		Create(&dbStates)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("failed to store states: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
 // GetState gets a state from the database.
 func (s Store) GetState(ctx context.Context, stateMask types.DBState) (*agentsTypes.State, error) {
 	var state State
@@ -49,7 +72,7 @@ func (s Store) GetState(ctx context.Context, stateMask types.DBState) (*agentsTy
 	}
 
 	receivedState := agentsTypes.NewState(
-		common.HexToHash(state.Root[:]),
+		common.HexToHash(state.Root),
 		state.ChainID,
 		state.Nonce,
 		big.NewInt(int64(state.OriginBlockNumber)),
