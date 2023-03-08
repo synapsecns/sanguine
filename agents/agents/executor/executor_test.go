@@ -337,7 +337,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	_, err = exec.GetMerkleTree(chainID, destination).Root(1)
 	e.NotNil(err)
 
-	testTree := merkle.NewTree()
+	testTree := merkle.NewTree(merkle.MessageTreeDepth)
 
 	recipients := [][32]byte{{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())}}
 	optimisticSeconds := []uint32{gofakeit.Uint32(), gofakeit.Uint32()}
@@ -963,7 +963,7 @@ func (e *ExecutorSuite) TestExecute() {
 		Nonce:       nonce,
 	}
 
-	tree := merkle.NewTree()
+	tree := merkle.NewTree(merkle.MessageTreeDepth)
 
 	leaf, err := message.ToLeaf()
 	e.Nil(err)
@@ -1340,12 +1340,12 @@ func (e *ExecutorSuite) TestDestinationExecute() {
 		rawMessages[i] = rawMessage[:]
 	}
 
-	historicalMerkleTree := merkle.NewTreeFromItems(rawMessages)
+	historicalMerkleTree := merkle.NewTreeFromItems(rawMessages, merkle.MessageTreeDepth)
 
 	rawProof, err := historicalMerkleTree.MerkleProof(0, 1)
 	e.Nil(err)
 	var proofToUse [32][32]byte
-	for i := 0; i < int(merkle.TreeDepth); i++ {
+	for i := 0; i < int(merkle.MessageTreeDepth); i++ {
 		copy(proofToUse[i][:], rawProof[i][:32])
 	}
 
@@ -1501,13 +1501,13 @@ func (e *ExecutorSuite) TestDestinationBadProofExecute() {
 		rawMessages[i] = rawMessage[:]
 	}
 
-	historicalMerkleTree := merkle.NewTreeFromItems(rawMessages)
+	historicalMerkleTree := merkle.NewTreeFromItems(rawMessages, merkle.MessageTreeDepth)
 
 	_, err = historicalMerkleTree.MerkleProof(0, 1)
 	e.Nil(err)
 	var badProofToUse [32][32]byte
-	for i := 0; i < int(merkle.TreeDepth); i++ {
-		for j := 0; j < int(merkle.TreeDepth); j++ {
+	for i := 0; i < int(merkle.MessageTreeDepth); i++ {
+		for j := 0; j < int(merkle.MessageTreeDepth); j++ {
 			badProofToUse[i][j] = 1
 		}
 	}
@@ -1939,7 +1939,7 @@ func (e *ExecutorSuite) TestExecuteExecutable() {
 		Nonce:       uint32(1),
 	}
 
-	tree := merkle.NewTree()
+	tree := merkle.NewTree(merkle.MessageTreeDepth)
 
 	leaf, err := message.ToLeaf()
 	e.Nil(err)

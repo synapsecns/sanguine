@@ -220,13 +220,8 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 }
 
 const (
-	offsetRoot        = 32
-	offsetOrigin      = 36
-	offsetNonce       = 40
-	offsetBlockNumber = 45
-	offsetTimestamp   = 50
-	uint32Len         = 4
-	uint40Len         = 5
+	uint32Len = 4
+	uint40Len = 5
 )
 
 // EncodeState encodes a state.
@@ -250,15 +245,15 @@ func EncodeState(state State) ([]byte, error) {
 
 // DecodeState decodes a state.
 func DecodeState(toDecode []byte) (State, error) {
-	if len(toDecode) != stateLength {
-		return nil, fmt.Errorf("invalid state length, expected %d, got %d", stateLength, len(toDecode))
+	if len(toDecode) != stateSize {
+		return nil, fmt.Errorf("invalid state length, expected %d, got %d", stateSize, len(toDecode))
 	}
 
-	root := toDecode[0:offsetRoot]
-	origin := binary.BigEndian.Uint32(toDecode[offsetRoot:offsetOrigin])
-	nonce := binary.BigEndian.Uint32(toDecode[offsetOrigin:offsetNonce])
-	blockNumber := new(big.Int).SetBytes(toDecode[offsetNonce:offsetBlockNumber])
-	timestamp := new(big.Int).SetBytes(toDecode[offsetBlockNumber:offsetTimestamp])
+	root := toDecode[stateOffsetRoot:stateOffsetOrigin]
+	origin := binary.BigEndian.Uint32(toDecode[stateOffsetOrigin:stateOffsetNonce])
+	nonce := binary.BigEndian.Uint32(toDecode[stateOffsetNonce:stateOffsetBlockNumber])
+	blockNumber := new(big.Int).SetBytes(toDecode[stateOffsetBlockNumber:stateOffsetTimestamp])
+	timestamp := new(big.Int).SetBytes(toDecode[stateOffsetTimestamp:stateSize])
 
 	var rootB32 [32]byte
 	copy(rootB32[:], root)
@@ -271,8 +266,6 @@ func DecodeState(toDecode []byte) (State, error) {
 		timestamp:   timestamp,
 	}, nil
 }
-
-const stateLength = 50
 
 // EncodeSnapshot encodes a snapshot.
 func EncodeSnapshot(snapshot Snapshot) ([]byte, error) {
@@ -299,8 +292,8 @@ func EncodeSnapshot(snapshot Snapshot) ([]byte, error) {
 func DecodeSnapshot(toDecode []byte) (Snapshot, error) {
 	var states []State
 
-	for i := 0; i < len(toDecode); i += stateLength {
-		state, err := DecodeState(toDecode[i : i+stateLength])
+	for i := 0; i < len(toDecode); i += stateSize {
+		state, err := DecodeState(toDecode[i : i+stateSize])
 		if err != nil {
 			return nil, fmt.Errorf("could not decode state: %w", err)
 		}
