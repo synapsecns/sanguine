@@ -342,6 +342,7 @@ const (
 	// Destination's AttestationExecuted event.
 	executedEvent
 	// Summit's SnapshotAccepted event.
+	//nolint:deadcode,varcheck
 	snapshotAcceptedEvent
 	otherEvent
 )
@@ -602,6 +603,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			}
 		}
 	case destinationContract:
+		//nolint:exhaustive
 		switch contractEvent.eventType {
 		case attestationAcceptedEvent:
 			// TODO: Change to populating the attestation table with the new attestation format.
