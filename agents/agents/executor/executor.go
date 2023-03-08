@@ -481,6 +481,8 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	switch contractEvent.contractType {
 	case originContract:
 		address = chain.OriginAddress
+	case summitContract:
+		address = e.config.SummitAddress
 	case destinationContract:
 		address = chain.DestinationAddress
 	default:
