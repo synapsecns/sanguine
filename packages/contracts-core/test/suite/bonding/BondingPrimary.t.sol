@@ -39,23 +39,17 @@ contract BondingPrimaryTest is BondingManagerTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_addAgent(uint32 domain, address notary) public {
-        AgentInfo[] memory infos = infoToArray(
-            agentInfo({ domain: domain, account: notary, bonded: true })
-        );
+        AgentInfo memory info = agentInfo({ domain: domain, account: notary, bonded: true });
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            // This is the first BondingPrimary request
-            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+            // (_rootSubmittedAt, _callOrigin, _caller, _info)
             vm.expectCall(
                 systemRegistries[r],
                 abi.encodeWithSelector(
-                    SystemContractMock.syncAgents.selector,
+                    SystemContractMock.syncAgent.selector,
                     block.timestamp,
                     DOMAIN_SYNAPSE,
-                    SystemEntity.BondingManager,
-                    1,
-                    false,
-                    infos
+                    info
                 )
             );
         }
@@ -65,23 +59,18 @@ contract BondingPrimaryTest is BondingManagerTest {
 
     function test_removeAgent(uint32 domain, address notary) public {
         test_addAgent(domain, notary);
-        AgentInfo[] memory infos = infoToArray(
-            agentInfo({ domain: domain, account: notary, bonded: false })
-        );
+        AgentInfo memory info = agentInfo({ domain: domain, account: notary, bonded: false });
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            // This is the second BondingPrimary request
-            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+            // (_rootSubmittedAt, _callOrigin, _caller, _info)
             vm.expectCall(
                 systemRegistries[r],
                 abi.encodeWithSelector(
-                    SystemContractMock.syncAgents.selector,
+                    SystemContractMock.syncAgent.selector,
                     block.timestamp,
                     DOMAIN_SYNAPSE,
                     SystemEntity.BondingManager,
-                    2,
-                    false,
-                    infos
+                    info
                 )
             );
         }
@@ -116,24 +105,20 @@ contract BondingPrimaryTest is BondingManagerTest {
     ▏*║                      TESTS: SYNC AGENTS REVERTS                      ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_syncAgents_revert_localDomain() public {
+    function test_syncAgent_revert_localDomain() public {
+        AgentInfo memory info;
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             // Should reject all system calls from local domain
             SystemEntity caller = SystemEntity(c);
             // Calls from local domain never pass the optimistic period check
             vm.expectRevert("!optimisticPeriod");
             // Use mocked list of agents
-            _mockSyncAgentsCall({
-                callOrigin: localDomain,
-                systemCaller: caller,
-                requestID: 0,
-                removeExisting: false,
-                infos: new AgentInfo[](0)
-            });
+            _mockSyncAgentCall({ callOrigin: localDomain, systemCaller: caller, info: info });
         }
     }
 
-    function test_syncAgents_revert_remoteDomain_notBondingManager(uint32 callOrigin) public {
+    function test_syncAgent_revert_remoteDomain_notBondingManager(uint32 callOrigin) public {
+        AgentInfo memory info;
         vm.assume(callOrigin != localDomain);
         _skipBondingOptimisticPeriod();
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
@@ -142,13 +127,7 @@ contract BondingPrimaryTest is BondingManagerTest {
             if (caller == SystemEntity.BondingManager) continue;
             vm.expectRevert("!allowedCaller");
             // Use mocked list of agents
-            _mockSyncAgentsCall({
-                callOrigin: callOrigin,
-                systemCaller: caller,
-                requestID: 0,
-                removeExisting: false,
-                infos: new AgentInfo[](0)
-            });
+            _mockSyncAgentCall({ callOrigin: callOrigin, systemCaller: caller, info: info });
         }
     }
 
@@ -232,8 +211,6 @@ contract BondingPrimaryTest is BondingManagerTest {
             info: info
         });
     }
-
-    // TODO: test for handling PONGs in syncAgents() once implemented
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL VIEWS                            ║*▕

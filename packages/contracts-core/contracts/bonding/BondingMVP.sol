@@ -58,25 +58,6 @@ contract BondingMVP is BondingManager {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Receive a system call indicating the list of off-chain agents needs to be synced.
-     * @dev Must be called from the BondingManager on Synapse Chain.
-     */
-    function syncAgents(
-        uint256,
-        uint32,
-        SystemEntity,
-        uint256,
-        bool,
-        AgentInfo[] memory
-    ) external view onlySystemRouter {
-        revert("Cross-chain disabled");
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -85,11 +66,8 @@ contract BondingMVP is BondingManager {
         address _agent,
         bool _bonded
     ) internal {
-        AgentInfo[] memory infos = new AgentInfo[](1);
-        infos[0] = AgentInfo(_domain, _agent, _bonded);
-        // RequestID is ignored at the moment
         _updateLocalRegistries({
-            _data: _dataSyncAgents({ _requestID: 0, _removeExisting: false, _infos: infos }),
+            _data: _dataSyncAgent(AgentInfo(_domain, _agent, _bonded)),
             _forwardUpdate: false, // cross-chain interactions are disabled
             _callOrigin: 0 // there was no system call that initiated the bonding
         });

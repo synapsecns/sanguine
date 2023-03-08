@@ -58,24 +58,20 @@ contract BondingSecondaryTest is BondingManagerTest {
     ▏*║                      TESTS: SYNC AGENTS REVERTS                      ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_syncAgents_revert_localDomain() public {
+    function test_syncAgent_revert_localDomain() public {
+        AgentInfo memory info;
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             // Should reject all system calls from local domain
             SystemEntity caller = SystemEntity(c);
             // Calls from local domain never pass the optimistic period check
             vm.expectRevert("!optimisticPeriod");
             // Use mocked list of agents
-            _mockSyncAgentsCall({
-                callOrigin: localDomain,
-                systemCaller: caller,
-                requestID: 0,
-                removeExisting: false,
-                infos: new AgentInfo[](0)
-            });
+            _mockSyncAgentCall({ callOrigin: localDomain, systemCaller: caller, info: info });
         }
     }
 
-    function test_syncAgents_revert_remoteNotSynapseDomain(uint32 callOrigin) public {
+    function test_syncAgent_revert_remoteNotSynapseDomain(uint32 callOrigin) public {
+        AgentInfo memory info;
         // Exclude local calls and calls from Synapse Chain
         vm.assume(callOrigin != localDomain && callOrigin != DOMAIN_SYNAPSE);
         _skipBondingOptimisticPeriod();
@@ -84,17 +80,12 @@ contract BondingSecondaryTest is BondingManagerTest {
             SystemEntity caller = SystemEntity(c);
             vm.expectRevert("!synapseDomain");
             // Use mocked list of agents
-            _mockSyncAgentsCall({
-                callOrigin: callOrigin,
-                systemCaller: caller,
-                requestID: 0,
-                removeExisting: false,
-                infos: new AgentInfo[](0)
-            });
+            _mockSyncAgentCall({ callOrigin: callOrigin, systemCaller: caller, info: info });
         }
     }
 
-    function test_syncAgents_revert_synapseDomain_notBondingManager() public {
+    function test_syncAgent_revert_synapseDomain_notBondingManager() public {
+        AgentInfo memory info;
         _skipBondingOptimisticPeriod();
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             SystemEntity caller = SystemEntity(c);
@@ -102,13 +93,7 @@ contract BondingSecondaryTest is BondingManagerTest {
             if (caller == SystemEntity.BondingManager) continue;
             vm.expectRevert("!allowedCaller");
             // Use mocked list of agents
-            _mockSyncAgentsCall({
-                callOrigin: DOMAIN_SYNAPSE,
-                systemCaller: caller,
-                requestID: 0,
-                removeExisting: false,
-                infos: new AgentInfo[](0)
-            });
+            _mockSyncAgentCall({ callOrigin: DOMAIN_SYNAPSE, systemCaller: caller, info: info });
         }
     }
 
@@ -156,76 +141,6 @@ contract BondingSecondaryTest is BondingManagerTest {
             _rootSubmittedAt: block.timestamp,
             _callOrigin: localDomain,
             _systemCaller: SystemEntity.Origin,
-            _data: data
-        });
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║             TESTS: RECEIVE SYSTEM CALLS (SYNAPSE CHAIN)              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_syncAgents_synapseDomain_bondingManager(
-        uint256 requestID,
-        bool removeExisting,
-        uint32 domain,
-        address account,
-        bool bonded
-    ) public {
-        _skipBondingOptimisticPeriod();
-        AgentInfo[] memory infos = infoToArray(agentInfo(domain, account, bonded));
-        // Data for the system call
-        bytes memory data = abi.encodeWithSelector(
-            ISystemContract.syncAgents.selector,
-            0, // rootSubmittedAt
-            0, // callOrigin
-            0, // systemCaller
-            requestID,
-            removeExisting,
-            infos
-        );
-        // Empty array should be passed back
-        bytes memory forwardedData = abi.encodeWithSelector(
-            ISystemContract.syncAgents.selector,
-            0, // rootSubmittedAt
-            0, // callOrigin
-            0, // systemCaller
-            requestID,
-            removeExisting,
-            new AgentInfo[](0)
-        );
-        // All system registries should be system called
-        for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
-            vm.expectCall(
-                systemRegistries[r],
-                abi.encodeWithSelector(
-                    SystemContractMock.syncAgents.selector,
-                    block.timestamp,
-                    DOMAIN_LOCAL,
-                    SystemEntity.BondingManager,
-                    requestID,
-                    removeExisting,
-                    infos
-                )
-            );
-        }
-        // data should be forwarded to Synapse Chain
-        vm.expectCall(
-            address(systemRouter),
-            abi.encodeWithSelector(
-                SystemRouter.systemCall.selector,
-                DOMAIN_SYNAPSE, // destination
-                BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                SystemEntity.BondingManager, //recipient
-                forwardedData
-            )
-        );
-        // Mock a system call: [SynapseChain BondingManager] -> [Local BondingManager].syncAgents
-        systemRouter.mockSystemCall({
-            _recipient: SystemEntity.BondingManager,
-            _rootSubmittedAt: rootSubmittedAt,
-            _callOrigin: DOMAIN_SYNAPSE,
-            _systemCaller: SystemEntity.BondingManager,
             _data: data
         });
     }

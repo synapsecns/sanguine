@@ -84,18 +84,12 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
         bondingManager.slashAgent(block.timestamp, DOMAIN_LOCAL, SystemEntity.BondingManager, info);
     }
 
-    function test_syncAgents_revert_notSystemRouter(address caller) public {
+    function test_syncAgent_revert_notSystemRouter(address caller) public {
         vm.assume(caller != address(systemRouter));
         vm.expectRevert("!systemRouter");
         vm.prank(caller);
-        bondingManager.syncAgents(
-            block.timestamp,
-            DOMAIN_LOCAL,
-            SystemEntity.BondingManager,
-            0,
-            false,
-            new AgentInfo[](0)
-        );
+        AgentInfo memory info;
+        bondingManager.syncAgent(block.timestamp, DOMAIN_LOCAL, SystemEntity.BondingManager, info);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -134,12 +128,10 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
         skip(period);
     }
 
-    function _mockSyncAgentsCall(
+    function _mockSyncAgentCall(
         uint32 callOrigin,
         SystemEntity systemCaller,
-        uint256 requestID,
-        bool removeExisting,
-        AgentInfo[] memory infos
+        AgentInfo memory info
     ) internal {
         systemRouter.mockSystemCall({
             _recipient: SystemEntity.BondingManager,
@@ -147,13 +139,11 @@ abstract contract BondingManagerTest is SystemContractTools, SynapseTestSuite {
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
             _data: abi.encodeWithSelector(
-                ISystemContract.syncAgents.selector,
+                ISystemContract.syncAgent.selector,
                 0, // rootSubmittedAt
                 0, // callOrigin
                 0, // systemCaller
-                requestID,
-                removeExisting,
-                infos
+                info
             )
         });
     }

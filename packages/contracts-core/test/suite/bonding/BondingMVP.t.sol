@@ -25,21 +25,18 @@ contract BondingMVPTest is BondingManagerTest {
     }
 
     function test_addAgent(uint32 domain, address agent) public {
-        AgentInfo[] memory infos = infoToArray(agentInfo(domain, agent, true));
+        AgentInfo memory info = agentInfo(domain, agent, true);
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            // Default values are used in MVP implementation
-            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+            // (_rootSubmittedAt, _callOrigin, _caller, _infos)
             vm.expectCall(
                 systemRegistries[r],
                 abi.encodeWithSelector(
-                    SystemContractMock.syncAgents.selector,
+                    SystemContractMock.syncAgent.selector,
                     block.timestamp,
                     DOMAIN_LOCAL,
                     SystemEntity.BondingManager,
-                    0,
-                    false,
-                    infos
+                    info
                 )
             );
         }
@@ -48,21 +45,18 @@ contract BondingMVPTest is BondingManagerTest {
     }
 
     function test_removeAgent(uint32 domain, address agent) public {
-        AgentInfo[] memory infos = infoToArray(agentInfo(domain, agent, false));
+        AgentInfo memory info = agentInfo(domain, agent, false);
         // All system registries should be system called
         for (uint256 r = 0; r < systemRegistries.length; ++r) {
-            // Default values are used in MVP implementation
-            // (_rootSubmittedAt, _callOrigin, _caller, _requestID, _removeExisting, _infos)
+            // (_rootSubmittedAt, _callOrigin, _caller, _infos)
             vm.expectCall(
                 systemRegistries[r],
                 abi.encodeWithSelector(
-                    SystemContractMock.syncAgents.selector,
+                    SystemContractMock.syncAgent.selector,
                     block.timestamp,
                     DOMAIN_LOCAL,
                     SystemEntity.BondingManager,
-                    0,
-                    false,
-                    infos
+                    info
                 )
             );
         }
@@ -91,22 +85,17 @@ contract BondingMVPTest is BondingManagerTest {
         }
     }
 
-    function test_syncAgents_revert_remoteDomain(uint32 callOrigin) public {
+    function test_syncAgent_revert_remoteDomain(uint32 callOrigin) public {
         // Exclude local calls
         vm.assume(callOrigin != localDomain);
         _skipBondingOptimisticPeriod();
+        AgentInfo memory info;
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             // Should reject all system calls from remote domains
             SystemEntity caller = SystemEntity(c);
             vm.expectRevert("Cross-chain disabled");
             // Use mocked list of agents
-            _mockSyncAgentsCall({
-                callOrigin: callOrigin,
-                systemCaller: caller,
-                requestID: 0,
-                removeExisting: false,
-                infos: new AgentInfo[](0)
-            });
+            _mockSyncAgentCall({ callOrigin: callOrigin, systemCaller: caller, info: info });
         }
     }
 

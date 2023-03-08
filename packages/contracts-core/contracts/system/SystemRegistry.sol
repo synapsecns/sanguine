@@ -35,35 +35,6 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
         _removeAgent(_info.domain, _info.account);
     }
 
-    /**
-     * @notice Receive a system call indicating the list of off-chain agents needs to be synced.
-     * @dev Must be called from a local BondingManager. Therefore
-     * `uint256 _rootSubmittedAt` is ignored.
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _requestID        Unique ID of the sync request
-     * @param _removeExisting   Whether the existing agents need to be removed first
-     * @param _infos            Information about a list of agents to sync
-     */
-    function syncAgents(
-        uint256,
-        uint32 _callOrigin,
-        SystemEntity _caller,
-        uint256 _requestID,
-        bool _removeExisting,
-        AgentInfo[] memory _infos
-    ) external onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
-        // TODO: do we need to store this in any way?
-        _requestID;
-        // TODO: implement removeAllGuards(), removeAllNotaries()
-        _removeExisting;
-        // Sync every agent status one by one
-        uint256 amount = _infos.length;
-        for (uint256 i = 0; i < amount; ++i) {
-            _updateAgentStatus(_infos[i]);
-        }
-    }
-
     /// @inheritdoc ISystemContract
     function syncAgent(
         uint256,

@@ -8,8 +8,6 @@ import "../harnesses/events/AgentRegistryHarnessEvents.sol";
 import "../harnesses/events/BasicClientHarnessEvents.sol";
 import "../harnesses/events/ClientHarnessEvents.sol";
 import "../harnesses/events/SystemContractHarnessEvents.sol";
-// ============ Mocks events ============
-import "../mocks/events/SystemContractMockEvents.sol";
 
 // solhint-disable-next-line no-empty-blocks
 abstract contract SynapseEvents is
@@ -18,9 +16,7 @@ abstract contract SynapseEvents is
     AgentRegistryHarnessEvents,
     BasicClientHarnessEvents,
     ClientHarnessEvents,
-    SystemContractHarnessEvents,
-    // Mocks events
-    SystemContractMockEvents
+    SystemContractHarnessEvents
 {
 
 }

@@ -11,13 +11,6 @@ import { SystemContract } from "../system/SystemContract.sol";
 
 contract BondingPrimary is AgentRegistry, BondingManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @notice id of the last "sync actors" request
-    uint256 internal requestID;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -45,35 +38,6 @@ contract BondingPrimary is AgentRegistry, BondingManager {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Receive a system call indicating the list of off-chain agents needs to be synced.
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _requestID        Unique ID of the sync request
-     * @param _removeExisting   Whether the existing agents need to be removed first
-     * @param _infos            Information about a list of agents to sync
-     */
-    function syncAgents(
-        uint256 _rootSubmittedAt,
-        uint32 _callOrigin,
-        SystemEntity _caller,
-        uint256 _requestID,
-        bool _removeExisting,
-        AgentInfo[] memory _infos
-    )
-        external
-        onlySystemRouter
-        onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
-        onlyCallers(BONDING_MANAGER, _caller)
-    {
-        // TODO: handle PONGs
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║          INTERNAL HELPERS: UPDATE AGENT (BOND/UNBOND/SLASH)          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -82,22 +46,13 @@ contract BondingPrimary is AgentRegistry, BondingManager {
         address _agent,
         bool _bonded
     ) internal {
-        // Increase the request counter and use it as the new request ID
-        uint256 _requestID = ++requestID;
-        // Construct the array with the given agent info
-        // TODO: bulk bond/unbond requests in a single message
-        AgentInfo[] memory infos = new AgentInfo[](1);
-        infos[0] = AgentInfo(_domain, _agent, _bonded);
         // Pass information about the new agent status to the local registries
-        // Forward information about the new agent status to the remote chains (PINGs)
-        // Existing agents don't need to be removed on remote chains
-        // See: this.syncAgents() for handling PONGs
+        // Forward information about the new agent status to the remote chains
+        // We optimistically expect the system message to be delivered,
+        // and don't require sending a PONG back in the MVP.
+        // This will be reworked once Agent Merkle Tree is implemented
         _updateLocalRegistries({
-            _data: _dataSyncAgents({
-                _requestID: _requestID,
-                _removeExisting: false,
-                _infos: infos
-            }),
+            _data: _dataSyncAgent(AgentInfo(_domain, _agent, _bonded)),
             _forwardUpdate: true,
             _callOrigin: 0 // there was no system call that initiated the bonding
         });
