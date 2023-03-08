@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "./AgentRegistry.sol";
-import { SystemContract } from "./SystemContract.sol";
+import { ISystemContract, SystemContract } from "./SystemContract.sol";
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
 
 /**
@@ -35,50 +35,20 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
         _removeAgent(_info.domain, _info.account);
     }
 
-    /**
-     * @notice Receive a system call indicating the list of off-chain agents needs to be synced.
-     * @dev Must be called from a local BondingManager. Therefore
-     * `uint256 _rootSubmittedAt` is ignored.
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _requestID        Unique ID of the sync request
-     * @param _removeExisting   Whether the existing agents need to be removed first
-     * @param _infos            Information about a list of agents to sync
-     */
-    function syncAgents(
+    /// @inheritdoc ISystemContract
+    function syncAgent(
         uint256,
         uint32 _callOrigin,
         SystemEntity _caller,
-        uint256 _requestID,
-        bool _removeExisting,
-        AgentInfo[] memory _infos
+        AgentInfo memory _info
     ) external onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
-        // TODO: do we need to store this in any way?
-        _requestID;
-        // TODO: implement removeAllGuards(), removeAllNotaries()
-        _removeExisting;
-        // Sync every agent status one by one
-        uint256 amount = _infos.length;
-        for (uint256 i = 0; i < amount; ++i) {
-            _updateAgentStatus(_infos[i]);
-        }
+        /// @dev Must be called from a local BondingManager. Hence `_rootSubmittedAt` is ignored.
+        _updateAgentStatus(_info);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           INTERNAL HELPERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @notice Perform a System Call to a local BondingManager with the given `_data`.
-     */
-    function _callLocalBondingManager(bytes memory _data) internal {
-        systemRouter.systemCall({
-            _destination: localDomain,
-            _optimisticSeconds: 0,
-            _recipient: SystemEntity.BondingManager,
-            _data: _data
-        });
-    }
 
     function _updateAgentStatus(AgentInfo memory _info) internal {
         if (_info.bonded) {

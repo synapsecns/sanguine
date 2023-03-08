@@ -326,7 +326,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 
 	a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
 	a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
-	a.TestBackendSummit = preset.GetMaticMumbai().Geth(a.GetTestContext(), a.T())
+	a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
 
 	a.SetupDestination(a.TestDeployManager)
 	a.SetupOrigin(a.TestDeployManager)

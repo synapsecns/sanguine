@@ -20,10 +20,9 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // domain of the Synapse Chain
-    // Answer to the Ultimate Question of Life, the Universe, and Everything
-    // And answer to less important questions wink wink
-    uint32 public constant SYNAPSE_DOMAIN = 4269;
+    // For MVP this is Optimism chainId
     // TODO: replace the placeholder with actual value
+    uint32 public constant SYNAPSE_DOMAIN = 10;
 
     uint256 internal constant ORIGIN = 1 << uint8(SystemEntity.Origin);
     uint256 internal constant DESTINATION = 1 << uint8(SystemEntity.Destination);
@@ -148,6 +147,30 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
     function renounceOwnership() public override onlyOwner {} //solhint-disable-line no-empty-blocks
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        SYSTEM CALL SHORTCUTS                         ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Perform a System Call to a BondingManager on a given domain
+    /// with the given optimistic period and data.
+    function _callBondingManager(
+        uint32 _domain,
+        uint32 _optimisticSeconds,
+        bytes memory _data
+    ) internal {
+        systemRouter.systemCall({
+            _destination: _domain,
+            _optimisticSeconds: _optimisticSeconds,
+            _recipient: SystemEntity.BondingManager,
+            _data: _data
+        });
+    }
+
+    /// @dev Perform a System Call to a local BondingManager with the given `_data`.
+    function _callLocalBondingManager(bytes memory _data) internal {
+        _callBondingManager(0, 0, _data);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                 INTERNAL VIEWS: SECURITY ASSERTIONS                  ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -223,32 +246,15 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
             );
     }
 
-    /**
-     * @notice Constructs data for the system call to sync the given agents.
-     */
-    function _dataSyncAgents(
-        uint256 _requestID,
-        bool _removeExisting,
-        AgentInfo[] memory _infos
-    ) internal pure returns (bytes memory) {
+    /// @dev Constructs data for the system call to sync the given agent.
+    function _dataSyncAgent(AgentInfo memory _info) internal pure returns (bytes memory) {
         return
             abi.encodeWithSelector(
-                ISystemContract.syncAgents.selector,
+                ISystemContract.syncAgent.selector,
                 0, // rootSubmittedAt
                 0, // callOrigin
                 0, // systemCaller
-                _requestID,
-                _removeExisting,
-                _infos
+                _info
             );
-    }
-
-    /**
-     * @notice Constructs a universal "Agent Information" structure for the given Guard.
-     */
-    function _guardInfo(address _guard, bool _bonded) internal pure returns (AgentInfo memory) {
-        // We are using domain value of 0 to illustrate the point
-        // that Guards are active on all domains
-        return AgentInfo({ domain: 0, account: _guard, bonded: _bonded });
     }
 }

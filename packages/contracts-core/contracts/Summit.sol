@@ -2,39 +2,51 @@
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import "./libs/State.sol";
+import "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import { BondingManager } from "./bonding/BondingManager.sol";
+import { DomainContext } from "./context/DomainContext.sol";
 import { SummitEvents } from "./events/SummitEvents.sol";
 import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
 import { SnapshotHub } from "./hubs/SnapshotHub.sol";
 import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
-// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
-import {
-    OwnableUpgradeable
-} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  * @notice Accepts snapshots signed by Guards and Notaries. Verifies Notaries attestations.
  */
-contract Summit is StatementHub, SnapshotHub, OwnableUpgradeable, SummitEvents, InterfaceSummit {
+contract Summit is StatementHub, SnapshotHub, BondingManager, SummitEvents, InterfaceSummit {
+    constructor(uint32 _domain) DomainContext(_domain) {
+        require(_onSynapseChain(), "Only deployed on SynChain");
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function initialize() external initializer {
-        __Ownable_init_unchained();
+        __SystemContract_initialize();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            ADDING AGENTS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // TODO (Chi): merge Summit with BondingPrimary
-    function addAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
-        return _addAgent(_domain, _account);
+    function addAgent(uint32 _domain, address _account) external onlyOwner returns (bool isAdded) {
+        isAdded = _addAgent(_domain, _account);
+        if (isAdded) {
+            _syncAgentLocalRegistries(AgentInfo(_domain, _account, true));
+        }
     }
 
-    function removeAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
-        return _removeAgent(_domain, _account);
+    function removeAgent(uint32 _domain, address _account)
+        external
+        onlyOwner
+        returns (bool isRemoved)
+    {
+        isRemoved = _removeAgent(_domain, _account);
+        if (isRemoved) {
+            _syncAgentLocalRegistries(AgentInfo(_domain, _account, false));
+        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -114,10 +126,5 @@ contract Summit is StatementHub, SnapshotHub, OwnableUpgradeable, SummitEvents, 
         // TODO: Move somewhere else?
         // TODO: send a system call indicating agent was slashed
         _removeAgent(_domain, _account);
-    }
-
-    function _isIgnoredAgent(uint32, address) internal view virtual override returns (bool) {
-        // Summit keeps track of every agent
-        return false;
     }
 }
