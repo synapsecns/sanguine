@@ -638,6 +638,10 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			return fmt.Errorf("log type not supported")
 		}
 	case summitContract:
+		switch contractEvent.eventType {
+		case snapshotAcceptedEvent:
+
+		}
 		// TODO: Parse the snapshot and put everything into the state table.
 	case other:
 		logger.Warnf("the log's event type is not supported")
