@@ -1,3 +1,4 @@
+//nolint:dupl
 package testutil
 
 import (
@@ -99,6 +100,8 @@ func NewDestinationDeployer(registry deployer.GetOnlyContractRegistry, backend b
 }
 
 // Deploy deploys the destination.
+//
+//nolint:dupl
 func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		destinationAddress, destinationTx, destination, err := destination.DeployDestination(transactOps, backend, uint32(d.Backend().GetChainID()))
