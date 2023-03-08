@@ -14,9 +14,9 @@ type SummitRef struct {
 	address common.Address
 }
 
-// Address gets the address of the summit.
-func (a SummitRef) Address() common.Address {
-	return a.address
+// Address gets the address of the summit contract.
+func (s SummitRef) Address() common.Address {
+	return s.address
 }
 
 // NewSummitRef creates a summit contract with a contract ref.

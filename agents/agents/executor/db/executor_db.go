@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 )
@@ -17,6 +18,11 @@ type ExecutorDBWriter interface {
 
 	// StoreAttestation stores an attestation.
 	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error
+
+	// StoreState stores a state.
+	StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight uint32) error
+	// StoreStates stores multiple states with the same snapshot root.
+	StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte, treeHeight uint32) error
 }
 
 // ExecutorDBReader is the interface for reading from the executor database.
@@ -50,6 +56,11 @@ type ExecutorDBReader interface {
 	GetAttestationsAboveOrEqualNonce(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, page int) ([]types.DBAttestation, error)
 	// GetEarliestAttestationsNonceInNonceRange gets the earliest attestation (by block number) in a nonce range.
 	GetEarliestAttestationsNonceInNonceRange(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, maxNonce uint32) (*uint32, error)
+
+	// GetState gets a state from the database.
+	GetState(ctx context.Context, stateMask types.DBState) (*agentsTypes.State, error)
+	// GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
+	GetStateMetadata(ctx context.Context, stateMask types.DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, treeHeight *uint32, err error)
 }
 
 // ExecutorDB is the interface for the executor database.

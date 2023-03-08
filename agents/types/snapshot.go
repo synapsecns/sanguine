@@ -13,6 +13,8 @@ type Snapshot interface {
 
 	// SnapshotRootAndProofs returns the snapshot root, calculated from the states, as well as each state's proof.
 	SnapshotRootAndProofs() ([32]byte, [][][]byte, error)
+	// TreeHeight returns the height of the merkle tree given `len(states)` leafs.
+	TreeHeight() uint32
 }
 
 type snapshot struct {
@@ -31,7 +33,7 @@ func (s snapshot) States() []State {
 }
 
 func (s snapshot) SnapshotRootAndProofs() ([32]byte, [][][]byte, error) {
-	tree := merkle.NewTree(s.getTreeHeight())
+	tree := merkle.NewTree(s.TreeHeight())
 
 	for _, state := range s.states {
 		hash, err := state.Hash()
@@ -61,8 +63,8 @@ func (s snapshot) SnapshotRootAndProofs() ([32]byte, [][][]byte, error) {
 	return snapshotRootB32, proofs, nil
 }
 
-// getTreeHeight returns the height of the merkle tree given `len(states)` leafs.
-func (s snapshot) getTreeHeight() uint32 {
+// TreeHeight returns the height of the merkle tree given `len(states)` leafs.
+func (s snapshot) TreeHeight() uint32 {
 	return uint32(math.Log2(float64(len(s.states))))
 }
 

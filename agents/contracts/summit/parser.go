@@ -2,7 +2,6 @@ package summit
 
 import (
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -17,10 +16,10 @@ func init() {
 
 // Parser parses events from the summit contract.
 type Parser interface {
-	// EventType determines if an event was initiated by the bridge or the user.
+	// EventType is the event type.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
-	// ParseStateAccepted parses an StateAccepted event
-	ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, ok bool)
+	// ParseSnapshotAccepted parses a SnapshotAccepted event.
+	ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, ok bool)
 }
 
 type parserImpl struct {
@@ -51,19 +50,19 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 	return EventType(len(AllEventTypes) + 2), false
 }
 
-// ParseSnapshotAccepted parses an SnapshotAccepted event.
-func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, ok bool) {
+// ParseSnapshotAccepted parses a SnapshotAccepted event.
+func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, ok bool) {
 	summitSnapshot, err := p.filterer.ParseSnapshotAccepted(log)
 	if err != nil {
-		return nil, false
+		return nil, 0, false
 	}
 
 	snapshot, err := types.DecodeSnapshot(summitSnapshot.Snapshot)
 	if err != nil {
-		return nil, false
+		return nil, 0, false
 	}
 
-	return snapshot, true
+	return snapshot, summitSnapshot.Domain, true
 }
 
 // EventType is the type of the summit events
@@ -73,7 +72,7 @@ type EventType uint
 
 const (
 	// SnapshotAcceptedEvent is a SnapshotAccepted event.
-	SnapshotAcceptedEvent EventType = 0
+	SnapshotAcceptedEvent EventType = iota
 )
 
 // Int gets the int for an event type.
