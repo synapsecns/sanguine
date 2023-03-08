@@ -500,7 +500,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 	header := types.NewHeader(uint32(u.TestBackendOrigin.GetChainID()), sender.Hash(), nonce, uint32(u.TestBackendDestination.GetChainID()), recipient, optimisticSeconds)
 	message := types.NewMessage(header, tips, body)
 
-	tree := merkle.NewTree()
+	tree := merkle.NewTree(merkle.MessageTreeDepth)
 
 	leaf, err := message.ToLeaf()
 	u.Nil(err)
@@ -805,7 +805,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 		}
 	}()
 
-	tree := merkle.NewTree()
+	tree := merkle.NewTree(merkle.MessageTreeDepth)
 
 	for i := 0; i < numMessages; i++ {
 		message := messages[i]
@@ -1128,7 +1128,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 	header := types.NewHeader(uint32(u.TestBackendOrigin.GetChainID()), sender.Hash(), nonce, uint32(u.TestBackendDestination.GetChainID()), recipient, optimisticSeconds)
 	message := types.NewMessage(header, tips, body)
 
-	tree := merkle.NewTree()
+	tree := merkle.NewTree(merkle.MessageTreeDepth)
 
 	leaf, err := message.ToLeaf()
 	u.Nil(err)

@@ -126,7 +126,7 @@ func TestEncodeStateParity(t *testing.T) {
 	Equal(t, timestamp, stateFromBytes.Timestamp())
 }
 
-func TestEncodeSnapshot(t *testing.T) {
+func TestEncodeSnapshotParity(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
@@ -164,6 +164,20 @@ func TestEncodeSnapshot(t *testing.T) {
 	Nil(t, err)
 
 	Equal(t, contractData, goFormattedData)
+
+	snapshotFromBytes, err := types.DecodeSnapshot(goFormattedData)
+	Nil(t, err)
+	Equal(t, stateA.Root(), snapshotFromBytes.States()[0].Root())
+	Equal(t, stateA.Origin(), snapshotFromBytes.States()[0].Origin())
+	Equal(t, stateA.Nonce(), snapshotFromBytes.States()[0].Nonce())
+	Equal(t, stateA.BlockNumber(), snapshotFromBytes.States()[0].BlockNumber())
+	Equal(t, stateA.Timestamp(), snapshotFromBytes.States()[0].Timestamp())
+
+	Equal(t, stateB.Root(), snapshotFromBytes.States()[1].Root())
+	Equal(t, stateB.Origin(), snapshotFromBytes.States()[1].Origin())
+	Equal(t, stateB.Nonce(), snapshotFromBytes.States()[1].Nonce())
+	Equal(t, stateB.BlockNumber(), snapshotFromBytes.States()[1].BlockNumber())
+	Equal(t, stateB.Timestamp(), snapshotFromBytes.States()[1].Timestamp())
 }
 
 func TestEncodeAttestationParity(t *testing.T) {
