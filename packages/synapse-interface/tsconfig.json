@@ -36,6 +36,8 @@
       "@constants/*": ["./constants/*"],
       "@graphql": ["./graphql"],
       "@graphql/*": ["./graphql/*"],
+      "@abis": ["./constants/abis"],
+      "@abis/*": ["./constants/abis/*"],
 
       "@styles": ["./styles"],
       "@styles/*": ["./styles/*"],

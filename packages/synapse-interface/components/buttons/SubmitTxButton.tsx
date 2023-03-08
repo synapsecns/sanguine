@@ -21,7 +21,7 @@ export function TransactionButton({
   ...props
 }: {
   className?: string
-  onClick: () => Promise<any>
+  onClick: () => Promise<void>
   pendingLabel: string
   label: string
   onSuccess?: () => void

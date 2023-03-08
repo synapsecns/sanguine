@@ -88,7 +88,7 @@ function PossibleChain({ chainId, onChangeChain }) {
   )
 }
 
-function SelectedChain({ chainId }) {
+function SelectedChain({ chainId }: { chainId: number }) {
   const { chainName, chainImg } = CHAIN_INFO_MAP[chainId]
   return (
     <div

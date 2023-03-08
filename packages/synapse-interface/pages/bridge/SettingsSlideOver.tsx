@@ -10,7 +10,6 @@ import Tooltip from '@tw/Tooltip'
 import Button from '@tw/Button'
 
 export default function SettingsSlideOver({
-  key,
   settings,
   setSettings,
   setDisplayType,
@@ -18,18 +17,17 @@ export default function SettingsSlideOver({
   deadlineMinutes,
   setDeadlineMinutes,
 }: {
-  key?: string
   settings: any
-  setSettings: any
-  setDisplayType: any
-  setDestinationAddress: any
-  deadlineMinutes: number
-  setDeadlineMinutes: any
+  setSettings: (v: any) => void
+  setDisplayType: (v: string) => void
+  setDestinationAddress: (v: string) => void
+  deadlineMinutes: string
+  setDeadlineMinutes: (v: string) => void
 }) {
   const escPressed = useKeyPress('Escape')
 
   function onClose() {
-    setDisplayType(undefined)
+    setDisplayType('')
   }
 
   function escFunc() {

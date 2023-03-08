@@ -1,6 +1,6 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { displaySymbol } from '@utils/displaySymbol'
-
+import Image from 'next/image'
 import {
   getMenuItemHoverBgForCoin,
   getBorderStyleForCoinHover,
@@ -44,7 +44,11 @@ export default function SelectTokenDropdown({
         >
           <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
             <div className="relative flex p-1 rounded-full">
-              <img className="rounded-md w-7 h-7" src={selected.icon} />
+              <Image
+                alt="token image"
+                className="rounded-md w-7 h-7"
+                src={selected.icon}
+              />
             </div>
           </div>
           <div className="text-left cursor-pointer">

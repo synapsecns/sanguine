@@ -168,7 +168,10 @@ export const BRIDGE_REQUIRED_CONFIRMATIONS = {
   [ChainId.CANTO]: 20,
 }
 
-export const DEFAULT_FROM_COIN = "USDC"
-export const DEFAULT_TO_COIN = "USDC"
+export const DEFAULT_FROM_TOKEN_SYMBOL = "USDC"
+export const DEFAULT_TO_TOKEN_SYMBOL = "USDC"
+export const DEFAULT_FROM_TOKEN = USDC
+export const DEFAULT_TO_TOKEN = USDC
+export const DEFAULT_SWAPABLE_TYPE = "USD"
 export const DEFAULT_FROM_CHAIN = ChainId.ETH
 export const DEFAULT_TO_CHAIN = ChainId.ARBITRUM

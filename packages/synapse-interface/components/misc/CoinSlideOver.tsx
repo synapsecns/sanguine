@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from 'react'
 import Fuse from 'fuse.js'
 
 import { ChevronUpIcon } from '@heroicons/react/outline'
+import { useBalance } from 'wagmi'
 
 import { useKeyPress } from '@hooks/useKeyPress'
-import { useGenericTokenBalance } from '@hooks/tokens/useTokenBalances'
+// import { useGenericTokenBalance } from '@hooks/tokens/useTokenBalances'
 
 import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
@@ -134,6 +135,7 @@ export function CoinSlideOver({
       >
         {resultTokens.map((coin, idx) => (
           <TokenMenuItem
+            key={idx}
             chainId={chainId}
             coin={coin}
             selected={selected}
@@ -160,17 +162,23 @@ export function CoinSlideOver({
   )
 }
 
-function sortByTokenBalance(tokens: any[], chainId: number) {
+function sortByTokenBalance(tokens: Token[], chainId: number) {
   let nonZeroTokens = tokens.filter((token) => {
-    let tokenBalance = useGenericTokenBalance(chainId, token)
-
-    return tokenBalance._hex !== '0x00'
+    const tokenAddr = token.addresses[chainId as keyof Token['addresses']]
+    const { data: rawTokenBalance } = useBalance({
+      address: `0x${tokenAddr.slice(2)}`,
+    })
+    rawTokenBalance?.value
+    return rawTokenBalance?.value._hex !== '0x00'
   })
 
   let zeroTokens = tokens.filter((token) => {
-    let tokenBalance = useGenericTokenBalance(chainId, token)
-
-    return tokenBalance._hex === '0x00'
+    const tokenAddr = token.addresses[chainId as keyof Token['addresses']]
+    const { data: rawTokenBalance } = useBalance({
+      address: `0x${tokenAddr.slice(2)}`,
+    })
+    rawTokenBalance?.value
+    return rawTokenBalance?.value._hex === '0x00'
   })
 
   return nonZeroTokens.concat(zeroTokens)

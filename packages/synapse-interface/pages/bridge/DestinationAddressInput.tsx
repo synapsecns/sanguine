@@ -1,17 +1,15 @@
-import { ChainId, CHAIN_INFO_MAP } from '@constants/networks'
-import { useNetworkController } from '@hooks/wallet/useNetworkController'
+import { CHAIN_INFO_MAP } from '@constants/networks'
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
+
+// import { useNetworkController } from '@hooks/wallet/useNetworkController'
 
 import Button from '@tw/Button'
 
 export function DestinationAddressInput({
-  nonEvmBridge,
-  fromChainId,
   toChainId,
   destinationAddress,
   setDestinationAddress,
 }: {
-  nonEvmBridge: boolean
-  fromChainId: number
   toChainId: number
   destinationAddress: string
   setDestinationAddress: (val: string) => void
@@ -55,7 +53,6 @@ export function DestinationAddressInput({
             }}
             value={destinationAddress}
           />
-          {nonEvmBridge && <ConnectChainButton toChainId={toChainId} />}
         </div>
       </div>
     </div>
@@ -63,24 +60,28 @@ export function DestinationAddressInput({
 }
 
 function ConnectChainButton({ toChainId }: { toChainId: number }) {
-  const { terraAddress, account, connectToChain, disconnectChain } =
-    useNetworkController()
+  // const { terraAddress, account, connectToChain, disconnectChain } =
+  //   useNetworkController()
+  const { address } = useAccount()
 
+  const { chain } = useNetwork()
+  const { chains, error, isLoading, pendingChainId, switchNetwork } =
+    useSwitchNetwork()
   let label
   let onClick
   let isConnected
 
-  if (account) {
+  if (address) {
     isConnected = true
     label = 'Disconnect'
     onClick = () => {
-      disconnectChain(toChainId)
+      switchNetwork?.(toChainId)
     }
   } else {
     isConnected = false
     label = 'Connect'
     onClick = () => {
-      connectToChain(toChainId)
+      switchNetwork?.(toChainId)
     }
   }
 

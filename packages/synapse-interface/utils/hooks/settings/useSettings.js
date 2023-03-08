@@ -1,5 +1,5 @@
-import { SettingsContext } from "@store/SettingsStore"
-import { useContext } from "react"
+// import { SettingsContext } from "@store/SettingsStore"
+// import { useContext } from "react"
 
 import createPersistedState from 'use-persisted-state'
 

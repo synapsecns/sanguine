@@ -2,7 +2,7 @@ export function DeadlineInput({
   deadlineMinutes,
   setDeadlineMinutes,
 }: {
-  deadlineMinutes: number
+  deadlineMinutes: string
   setDeadlineMinutes: (value: string) => void
 }) {
   return (

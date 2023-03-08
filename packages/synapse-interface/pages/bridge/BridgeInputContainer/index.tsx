@@ -4,15 +4,16 @@ import { formatBNToString } from '@bignumber/format'
 
 import SelectTokenDropdown from './SelectTokenDropdown'
 import { ChainLabel } from './ChainLabel'
+import { Token } from '@utils/classes/Token'
+import { useAccount, useBalance, useNetwork } from 'wagmi'
 
 import { ChainId } from '@constants/networks'
 
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
-
-import { useTerraUstBalance } from '@hooks/terra/useTerraUstBalance'
-import { useTokenBalance } from '@hooks/tokens/useTokenBalances'
-import { useNetworkController } from '@hooks/wallet/useNetworkController'
+import { BigNumber } from '@ethersproject/bignumber'
+// import { useTokenBalance } from '@hooks/tokens/useTokenBalances'
+// import { useNetworkController } from '@hooks/wallet/useNetworkController'
 
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 
@@ -28,8 +29,8 @@ export default function BridgeInputContainer({
   onChangeChain,
 }: {
   isSwapFrom: boolean
-  selected: any
-  onChangeSelected: () => void
+  selected: Token
+  onChangeSelected: (v: Token) => void
   onChangeAmount: (value: string) => void
   inputValue: string
   inputRef: any
@@ -39,17 +40,26 @@ export default function BridgeInputContainer({
   setDisplayType: (value: string) => void
   onChangeChain: () => void
 }) {
-  const { terraAddress, account } = useNetworkController()
-  const evmTokenBalance = useTokenBalance(selected) ?? Zero
-  const terraUstBalance = useTerraUstBalance()
-  const tokenBalance = evmTokenBalance
+  const { address } = useAccount()
+  const { chain } = useNetwork()
+  const tokenAddr = selected.addresses[chain?.id as keyof Token['addresses']]
+
+  const {
+    data: evmFromTokenBalance,
+    isError: balanceError,
+    isLoading: balanceLoading,
+  } = useBalance({
+    address: `0x${tokenAddr.slice(2)}`,
+  })
+
+  let tokenBalance: BigNumber = evmFromTokenBalance?.value ?? Zero
   const formattedBalance = formatBNToString(
     tokenBalance,
-    selected.decimals[chainId],
+    selected.decimals[chainId as keyof Token['decimals']],
     4
   )
 
-  let isConnected = account || terraAddress
+  let isConnected = address !== null
 
   function onChange(e: any) {
     let val = e.target.value
@@ -61,7 +71,11 @@ export default function BridgeInputContainer({
 
   function onClickBalance() {
     onChangeAmount(
-      formatBNToString(tokenBalance, 4, selected.decimals[chainId])
+      formatBNToString(
+        tokenBalance,
+        4,
+        selected.decimals[chainId as keyof Token['decimals']]
+      )
     )
   }
 
@@ -89,7 +103,7 @@ export default function BridgeInputContainer({
           {!isSwapFrom && (
             <div className="absolute">
               <div className="-mt-12">
-                <SwitchButton onClick={swapFromToChains} />
+                <SwitchButton onClick={swapFromToChains ?? (() => null)} />
               </div>
             </div>
           )}

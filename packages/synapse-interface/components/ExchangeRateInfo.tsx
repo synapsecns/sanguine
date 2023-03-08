@@ -3,13 +3,12 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
 import { ChainId, CHAIN_INFO_MAP, CHAIN_PARAMS } from '@constants/networks'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
-
+import Image from 'next/image'
 export default function ExchangeRateInfo({
   fromAmount,
   fromCoin,
   toCoin,
   exchangeRate,
-  feeAmount,
   gasDropAmount,
   fromChainId,
   toChainId,
@@ -18,7 +17,6 @@ export default function ExchangeRateInfo({
   fromCoin: any
   toCoin: any
   exchangeRate: BigNumber
-  feeAmount: BigNumber
   gasDropAmount: BigNumber
   fromChainId: number
   toChainId: number
@@ -151,7 +149,11 @@ function ChainInfoLabel({ chainId }: { chainId: number }) {
 
   return (
     <span className="flex items-center space-x-1">
-      <img src={chainImg} className="w-4 h-4 rounded-full" />
+      <Image
+        alt="chain image"
+        src={chainImg}
+        className="w-4 h-4 rounded-full"
+      />
       <span className="text-white">
         {chainName.length > 10 ? chainSymbol : chainName}
       </span>

@@ -1,24 +1,26 @@
 import { useEffect, useState } from 'react'
 
-import { Zero } from '@ethersproject/constants'
+import { Zero, One } from '@ethersproject/constants'
 import { parseUnits } from '@ethersproject/units'
 import { useBalance } from 'wagmi'
+import { useSettings } from '@hooks/settings/useSettings'
 
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
 
-import { useSettings } from '@hooks/settings/useSettings'
-import { useGasDropAmount } from '@hooks/useGasDropAmount'
-import { useBridgeSwap } from '@hooks/actions/useBridgeSwap'
-import { useSynapseContract } from '@hooks/contracts/useSynapseContract'
+// import { useSettings } from '@hooks/settings/useSettings'
+// import { useGasDropAmount } from '@hooks/useGasDropAmount'
+// import { useBridgeSwap } from '@hooks/actions/useBridgeSwap'
+// import { useSynapseContract } from '@hooks/contracts/useSynapseContract'
 
-import { APPROVAL_STATE, useApproveToken } from '@hooks/actions/useApproveToken'
+// import { APPROVAL_STATE, useApproveToken } from '@hooks/actions/useApproveToken'
 import { sanitizeValue } from '@utils/sanitizeValue'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
 
 import { BRIDGABLE_TOKENS } from '@constants/tokens'
 
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
+import { Token } from '@utils/classes/Token'
 
 import Grid from '@tw/Grid'
 import Card from '@tw/Card'
@@ -77,18 +79,18 @@ export default function BridgeCard({
 }: {
   fromChainId: number
   toChainId: number
-  fromCoin: any
+  fromCoin: Token
   fromValue: string
-  toCoin: any
+  toCoin: Token
   toValue: string
   onSelectFromChain: () => void
   onSelectToChain: () => void
   swapFromToChains: () => void
-  onSelectFromCoin: () => void
-  onSelectToCoin: () => void
+  onSelectFromCoin: (v: Token) => void
+  onSelectToCoin: (v: Token) => void
 
-  onChangeFromAmount: (value: string) => void
-  onChangeToAmount: (value: string) => void
+  onChangeFromAmount: (v: string) => void
+  onChangeToAmount: (v: string) => void
 
   error?: string
   priceImpact: BigNumber
@@ -106,23 +108,23 @@ export default function BridgeCard({
   const toChainTokens = BRIDGABLE_TOKENS[Number(toChainId)]
 
   // can be replaced by get bridge quote
-  const gasDropAmount = useGasDropAmount(toChainId)
+  // const gasDropAmount = useGasDropAmount(toChainId)
 
   // augment settings
   const [displayType, setDisplayType] = useState('')
 
   // settings
-  const [settings, setSettings] = useSettings()
+  // const [settings, setSettings] = useSettings()
 
   // deadline set in settings
-  const [deadlineMinutes, setDeadlineMinutes] = useState()
+  const [deadlineMinutes, setDeadlineMinutes] = useState('')
 
   // gets the from amount from the props
   let fromAmount: BigNumber
   try {
     fromAmount = parseUnits(
       sanitizeValue(fromValue),
-      fromCoin.decimals[Number(fromChainId)]
+      fromCoin.decimals?.[fromChainId as keyof Token['decimals']]
     )
   } catch (e) {
     fromAmount = Zero
@@ -133,33 +135,28 @@ export default function BridgeCard({
   try {
     toAmount = parseUnits(
       sanitizeValue(toValue),
-      toCoin.decimals[Number(toChainId)]
+      toCoin.decimals?.[toChainId as keyof Token['decimals']]
     )
   } catch (e) {
     toAmount = Zero
   }
 
   // SDK
-  const bridgeSwap = useBridgeSwap({ amount: fromAmount, token: fromCoin })
+  // const bridgeSwap = useBridgeSwap({ amount: fromAmount, token: fromCoin })
+  const bridgeSwap = null
 
-  let targetApprovalContract = useSynapseContract()
+  // let targetApprovalContract = useSynapseContract()
 
-  const [approvalState, approveToken] = useApproveToken(
-    fromCoin,
-    String(targetApprovalContract?.address),
-    fromAmount
-  )
-
-  const {
-    data: evmFromTokenBalance,
-    isError: balanceError,
-    isLoading: balanceLoading,
-  } = useBalance({
-    address: fromCoin.address,
+  // const { approvalState, approveToken } = useApproveToken(
+  //   fromCoin,
+  //   String(targetApprovalContract?.address),
+  //   fromAmount
+  // )
+  const tokenAddr = fromCoin.addresses[fromChainId as keyof Token['addresses']]
+  const { data: rawTokenBalance } = useBalance({
+    address: `0x${tokenAddr.slice(2)}`,
   })
-
-  let fromTokenBalance: BigNumber =
-    evmFromTokenBalance?.value ?? new BigNumber(0, '0')
+  let fromTokenBalance: BigNumber = rawTokenBalance?.value ?? Zero
 
   // useEffect(() => {
   //   if (!settings.expertMode) {
@@ -208,7 +205,7 @@ export default function BridgeCard({
     onChangeChain: onSelectToChain,
     setDisplayType,
   }
-
+  const [settings, setSettings] = useSettings()
   const settingsArgs = {
     settings,
     setSettings,
@@ -217,10 +214,12 @@ export default function BridgeCard({
     deadlineMinutes,
     setDeadlineMinutes,
   }
-
+  const deleteme = async () => {
+    await console.log('deleteme')
+  }
   const approvalBtn = (
     <TransactionButton
-      onClick={approveToken}
+      onClick={deleteme}
       label={`Approve ${fromCoin.symbol}`}
       pendingLabel={`Approving ${fromCoin.symbol}  `}
     />
@@ -267,23 +266,26 @@ export default function BridgeCard({
     !isFromBalanceEnough ||
     error != null ||
     destAddrNotValid
-
+  const sss = async (): Promise<any> => {
+    await console.log('s')
+  }
   const swapBtn = (
     <TransactionButton
       className={btnClassName}
       disabled={disabled}
-      onClick={() => {
-        return bridgeSwap({
-          destinationAddress,
-          fromChainId,
-          toChainId,
-          fromAmount,
-          fromCoin,
-          toAmount,
-          toCoin,
-          deadlineMinutes,
-        })
-      }}
+      onClick={sss}
+      // onClick={() => {
+      //   return bridgeSwap({
+      //     destinationAddress,
+      //     fromChainId,
+      //     toChainId,
+      //     fromAmount,
+      //     fromCoin,
+      //     toAmount,
+      //     toCoin,
+      //     deadlineMinutes,
+      //   })
+      // }}
       onSuccess={() => {
         onChangeFromAmount('')
       }}
@@ -302,18 +304,18 @@ export default function BridgeCard({
   //   approvalRequired = true
   // }
 
-  let actionBtn
-  if (approvalState === APPROVAL_STATE.NOT_APPROVED && approvalRequired) {
-    actionBtn = approvalBtn
-    //    } else if ([fromChainId, toChainId].includes(ChainId.POLYGON)) {
-    //} else if ([toChainId, fromChainId].includes(ChainId.CANTO)) {
-    //     actionBtn = <NetworkPausedButton networkName="Polygon" />
-  } else {
-    //   actionBtn = <PausedButton/> // PAUSE OVERRIDE
-    actionBtn = swapBtn
-  }
-  //  }
-  // let actionBtn = <PausedButton/> // PAUSE OVERRIDE
+  let actionBtn = swapBtn
+  // if (approvalState === APPROVAL_STATE.NOT_APPROVED && approvalRequired) {
+  //   actionBtn = approvalBtn
+  //   //    } else if ([fromChainId, toChainId].includes(ChainId.POLYGON)) {
+  //   //} else if ([toChainId, fromChainId].includes(ChainId.CANTO)) {
+  //   //     actionBtn = <NetworkPausedButton networkName="Polygon" />
+  // } else {
+  //   //   actionBtn = <PausedButton/> // PAUSE OVERRIDE
+  //   actionBtn = swapBtn
+  // }
+  // //  }
+  // // let actionBtn = <PausedButton/> // PAUSE OVERRIDE
 
   const bridgeCardMainContent = (
     <>
@@ -334,9 +336,7 @@ export default function BridgeCard({
         fromCoin={fromCoin}
         toCoin={toCoin}
         exchangeRate={exchangeRate}
-        priceImpact={priceImpact}
-        feeAmount={feeAmount}
-        gasDropAmount={gasDropAmount}
+        gasDropAmount={One}
         fromChainId={fromChainId}
         toChainId={toChainId}
       />
@@ -348,7 +348,6 @@ export default function BridgeCard({
         {...SECTION_TRANSITION_PROPS}
       >
         <DestinationAddressInput
-          fromChainId={fromChainId}
           toChainId={toChainId}
           destinationAddress={destinationAddress}
           setDestinationAddress={setDestinationAddress}

@@ -1,32 +1,40 @@
 import _ from 'lodash'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 
 import Fuse from 'fuse.js'
 
 import { useKeyPress } from '@hooks/useKeyPress'
 
-import { CHAIN_ID_DISPLAY_ORDER, CHAIN_INFO_MAP } from '@constants/networks'
+import {
+  CHAIN_ID_DISPLAY_ORDER,
+  CHAIN_INFO_MAP,
+  ChainInfoMap,
+  ChainInfo,
+} from '@constants/networks'
 
 import { SelectSpecificNetworkButton } from '@components/buttons/SelectSpecificNetworkButton'
-import SlideSearchBox from '../../pages/Bridge/SlideSearchBox'
+import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 
 export function NetworkSlideOver({
   selectedChainId,
   onChangeChain,
   setDisplayType,
+}: {
+  selectedChainId: number
+  onChangeChain: (v: number) => void
+  setDisplayType: (v: string) => void
 }) {
   const [currentIdx, setCurrentIdx] = useState(-1)
 
-  const [searchStr, setSearchStr] = useState(null)
+  const [searchStr, setSearchStr] = useState('')
 
-  const networks = CHAIN_ID_DISPLAY_ORDER.map((cid) => {
-    return [cid, CHAIN_INFO_MAP[cid]]
+  let networks: ChainInfo[] = []
+  CHAIN_ID_DISPLAY_ORDER.map((cid) => {
+    networks.push(CHAIN_INFO_MAP[cid])
   })
 
-  const networkList = networks.map(([cid, params]) => params)
-
-  const fuse = new Fuse(networkList, {
+  const fuse = new Fuse(networks, {
     includeScore: true,
     threshold: 0.0,
     keys: [
@@ -44,7 +52,7 @@ export function NetworkSlideOver({
   if (searchStr?.length > 0) {
     resultNetworks = fuse.search(searchStr).map((i) => i.item)
   } else {
-    resultNetworks = networkList
+    resultNetworks = networks
   }
 
   const ref = useRef(null)
@@ -54,10 +62,10 @@ export function NetworkSlideOver({
   const arrowDown = useKeyPress('ArrowDown')
   const enterPressed = useKeyPress('Enter')
 
-  function onClose() {
+  const onClose = useCallback(() => {
     setCurrentIdx(-1)
-    setDisplayType(undefined)
-  }
+    setDisplayType('')
+  }, [setDisplayType])
 
   function escFunc() {
     if (escPressed) {
@@ -69,7 +77,7 @@ export function NetworkSlideOver({
 
   function arrowDownFunc() {
     const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < networkList.length) {
+    if (arrowDown && nextIdx < networks.length) {
       setCurrentIdx(nextIdx)
     }
   }
@@ -87,7 +95,8 @@ export function NetworkSlideOver({
 
   function enterPressedFunc() {
     if (enterPressed && currentIdx > -1) {
-      onChangeChain(networkList[currentIdx].chainId)
+      let currentChain = networks[currentIdx]
+      onChangeChain(currentChain.chainId)
       onClose()
     }
   }
@@ -97,7 +106,7 @@ export function NetworkSlideOver({
   // useEffect(() => ref?.current?.scrollTo(0, 0), [])
   useEffect(() => window.scrollTo(0, 0), [])
 
-  function onSearch(str) {
+  function onSearch(str: string) {
     setSearchStr(str)
     setCurrentIdx(-1)
   }
@@ -118,8 +127,9 @@ export function NetworkSlideOver({
         ref={ref}
         className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6 rounded-xl"
       >
-        {resultNetworks.map(({ chainId }, idx) => {
-          const itemChainId = parseInt(chainId)
+        {resultNetworks.map((chainData, idx) => {
+          const itemChainId = chainData.chainId
+          let chaindata = itemChainId
           const isCurrentChain = selectedChainId === itemChainId
 
           let onClickSpecificNetwork
@@ -127,7 +137,7 @@ export function NetworkSlideOver({
             onClickSpecificNetwork = () => console.log('INCEPTION')
           } else {
             onClickSpecificNetwork = () => {
-              onChangeChain(chainId)
+              onChangeChain(chainData.chainId)
               onClose()
             }
           }

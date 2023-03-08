@@ -2,11 +2,15 @@ import { useRef, useEffect } from 'react'
 
 import { commify } from '@ethersproject/units'
 import { formatBnMagic } from '@bignumber/format'
-
+import { Token } from '@utils/classes/Token'
+import { BigNumber } from '@ethersproject/bignumber'
+import { Zero } from '@ethersproject/constants'
 import { CHAIN_INFO_MAP } from '@constants/networks'
-
-import { useGenericTokenBalance } from '@hooks/tokens/useTokenBalances'
+import Image from 'next/image'
+// import { useGenericTokenBalance } from '@hooks/tokens/useTokenBalances'
 import { getTokenOnChain } from '@hooks/tokens/useTokenInfo'
+import { useAccount, useBalance, useNetwork } from 'wagmi'
+
 import { displaySymbol } from '@utils/displaySymbol'
 
 import {
@@ -61,33 +65,37 @@ export default function TokenMenuItem({
         ${bgClassName}
       `}
     >
-      <ButtonContent coin={coin} chainId={chainId} />
+      <ButtonContent token={coin} chainId={chainId} />
     </div>
   )
 }
 
-function ButtonContent({ coin, chainId }: { coin: any; chainId: number }) {
+function ButtonContent({ token, chainId }: { token: Token; chainId: number }) {
   return (
     <div className="flex items-center w-full">
-      <img className="w-10 h-10 ml-2 mr-4 rounded-full" src={coin.icon} />
-      <CoinOnChain coin={coin} chainId={chainId} />
-      <TokenBalance coin={coin} chainId={chainId} />
+      <Image
+        alt="token image"
+        className="w-10 h-10 ml-2 mr-4 rounded-full"
+        src={token.icon}
+      />
+      <CoinOnChain token={token} chainId={chainId} />
+      <TokenBalance token={token} chainId={chainId} />
     </div>
   )
 }
 
-function CoinOnChain({ coin, chainId }: { coin: any; chainId: number }) {
+function CoinOnChain({ token, chainId }: { token: Token; chainId: number }) {
   const { chainImg, chainName } = CHAIN_INFO_MAP[chainId]
 
   return (
     <div className="flex-col text-left">
       <div className="text-lg font-medium text-white">
-        {displaySymbol(chainId, coin)}
+        {displaySymbol(chainId, token)}
       </div>
       <div className="flex items-center text-sm text-white">
-        <div className="mr-1 opacity-70">{coin.name}</div>
+        <div className="mr-1 opacity-70">{token.name}</div>
         <div className="opacity-60">on</div>
-        <img
+        <Image
           src={chainImg}
           alt={chainName}
           className="w-4 h-4 ml-2 mr-2 rounded-full"
@@ -98,20 +106,25 @@ function CoinOnChain({ coin, chainId }: { coin: any; chainId: number }) {
   )
 }
 
-function TokenBalance({ coin, chainId }: { coin: any; chainId: number }) {
-  const tokenBalance = useGenericTokenBalance(chainId, coin)
-  const tokenInfo = getTokenOnChain(chainId, coin)
+function TokenBalance({ token, chainId }: { token: Token; chainId: number }) {
+  const tokenInfo = getTokenOnChain(chainId, token)
+  const tokenAddr = token.addresses[chainId as keyof Token['addresses']]
+  const { data: rawTokenBalance } = useBalance({
+    address: `0x${tokenAddr.slice(2)}`,
+  })
+
+  let tokenBalance: BigNumber = rawTokenBalance?.value ?? Zero
 
   const formattedBalance = commify(formatBnMagic(tokenBalance, tokenInfo, 2))
 
   return (
     <div className="ml-auto mr-5 text-lg text-white">
-      {!tokenBalance.eq(0) && (
+      {!tokenBalance.eq(0.0) ? null : (
         <p>
           {formattedBalance}
           <span className="text-sm opacity-80">
             {' '}
-            {displaySymbol(chainId, coin)}
+            {displaySymbol(chainId, token)}
           </span>
         </p>
       )}

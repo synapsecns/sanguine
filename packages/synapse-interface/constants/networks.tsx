@@ -32,7 +32,6 @@ import cantoImg from '@assets/networks/canto.svg'
 
 import { toHexStr } from '@utils/toHexStr'
 
-
 export const NetworkContextName = 'DEFAULT_NETWORK'
 
 export const ChainId = {
@@ -65,8 +64,20 @@ export const ChainId = {
 export const INVERTED_CHAIN_ID_MAP = Object.fromEntries(
   Object.entries(ChainId).map(([k, v]) => [v, k])
 )
+export interface ChainInfo {
+  chainId: number
+  chainSymbol: string
+  chainName: string
+  chainLogo: any
+  chainImg: any
+  layer: number
+  chainShortName?: string
+}
+export interface ChainInfoMap {
+  [chainId: number]: ChainInfo
+}
 
-export const CHAIN_INFO_MAP = {
+export const CHAIN_INFO_MAP: ChainInfoMap = {
   [ChainId.ETH]: {
     chainId: ChainId.ETH,
     chainSymbol: 'ETH',
@@ -237,19 +248,19 @@ export const CHAIN_ID_DISPLAY_ORDER = [
 
 // main read rpcs, for write, it may be overridden
 export const CHAIN_RPC = {
-  [ChainId.ETH]: 'https://rpc.ankr.com/eth',   // 'https://eth-mainnet.alchemyapi.io/v2/0AovFRYl9L7l4YUf6nPaMrs7H2_pj_Pf',
-  [ChainId.OPTIMISM]: 'https://rpc.ankr.com/optimism',//'',
+  [ChainId.ETH]: 'https://rpc.ankr.com/eth', // 'https://eth-mainnet.alchemyapi.io/v2/0AovFRYl9L7l4YUf6nPaMrs7H2_pj_Pf',
+  [ChainId.OPTIMISM]: 'https://rpc.ankr.com/optimism', //'',
   [ChainId.BSC]: 'https://bsc-dataseed1.ninicoin.io/', //https://bscrpc.com/  // 'https://bsc-dataseed1.ninicoin.io/' 'https://bsc-mainnet.gateway.pokt.network/v1/lb/6136201a7bad1500343e248d',//'https://bsc-dataseed1.binance.org/',                                      // this will prob backfire but hey 'https://bsc-dataseed.binance.org/',
   [ChainId.FANTOM]: 'https://rpc.ftm.tools',
   [ChainId.BOBA]: 'https://replica-oolong.boba.network/',
-  [ChainId.MOONBEAM]: 'https://rpc.api.moonbeam.network',                               // 'https://replica-boba-synapse.boba.network/', /** read only rpc */
-  [ChainId.MOONRIVER]: 'https://rpc.api.moonriver.moonbeam.network',                             // 'https://moonriver.api.onfinality.io/public',
-  [ChainId.POLYGON]: 'https://rpc-mainnet.matic.quiknode.pro',                                                // NEED TO TEST POLYGON PRIOR TO DEPLOY
+  [ChainId.MOONBEAM]: 'https://rpc.api.moonbeam.network', // 'https://replica-boba-synapse.boba.network/', /** read only rpc */
+  [ChainId.MOONRIVER]: 'https://rpc.api.moonriver.moonbeam.network', // 'https://moonriver.api.onfinality.io/public',
+  [ChainId.POLYGON]: 'https://rpc-mainnet.matic.quiknode.pro', // NEED TO TEST POLYGON PRIOR TO DEPLOY
   [ChainId.AVALANCHE]: 'https://api.avax.network/ext/bc/C/rpc',
   [ChainId.DFK]: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
   [ChainId.ARBITRUM]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.AURORA]: 'https://mainnet.aurora.dev',
-  [ChainId.HARMONY]: 'https://harmony-mainnet.chainstacklabs.com',                             // 'https://api.harmony.one',
+  [ChainId.HARMONY]: 'https://harmony-mainnet.chainstacklabs.com', // 'https://api.harmony.one',
   [ChainId.CRONOS]: 'https://evm-cronos.crypto.org',
   [ChainId.METIS]: 'https://andromeda.metis.io/?owner=1088',
   [ChainId.KLAYTN]: 'https://klaytn.blockpi.network/v1/rpc/public',
@@ -258,8 +269,7 @@ export const CHAIN_RPC = {
   // [ChainId.XDAI]: 'https://rpc.xdaichain.com',
 }
 
-export const NON_EVM_CHAIN_RPC = {
-}
+export const NON_EVM_CHAIN_RPC = {}
 
 export const CHAIN_EXPLORER_URLS = {
   [ChainId.BSC]: 'https://bscscan.com',
@@ -285,7 +295,8 @@ export const CHAIN_EXPLORER_URLS = {
 /** write rpcs */
 const WRITE_CHAIN_RPC = {
   ...CHAIN_RPC,
-  [ChainId.ETH]: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+  [ChainId.ETH]:
+    'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
   [ChainId.BOBA]: 'https://mainnet.boba.network/',
 }
 
@@ -294,9 +305,6 @@ const ETH_NATIVE_CURRENCY = {
   symbol: 'ETH',
   decimals: 18,
 }
-
-
-
 
 /**
  * The below need to be MetaMask compatible keys/objects.
@@ -481,7 +489,7 @@ export const CHAIN_PARAMS = {
     },
     rpcUrls: [CHAIN_RPC[ChainId.DOGECHAIN]],
     blockExplorerUrls: [CHAIN_EXPLORER_URLS[ChainId.DOGECHAIN]],
-  }
+  },
 }
 
 /**
@@ -490,11 +498,11 @@ export const CHAIN_PARAMS = {
 export const BLOCK_TIME = 5000 // 30000   // 5000
 
 export const CHAIN_BLOCK_TIME = {
-  [ChainId.ETH]: 10000,        // BLOCK_TIME,   // 15000,
+  [ChainId.ETH]: 10000, // BLOCK_TIME,   // 15000,
   [ChainId.OPTIMISM]: 10000,
   [ChainId.CRONOS]: 10000,
-  [ChainId.BSC]: 10000,        // 5000,
-  [ChainId.POLYGON]: 10000,        // 5000,
+  [ChainId.BSC]: 10000, // 5000,
+  [ChainId.POLYGON]: 10000, // 5000,
   [ChainId.FANTOM]: BLOCK_TIME,
   [ChainId.BOBA]: 20000,
   [ChainId.METIS]: 10000,
@@ -511,22 +519,22 @@ export const CHAIN_BLOCK_TIME = {
 }
 
 export const CHAIN_ENUM_BY_ID = {
-  [ChainId.ETH]: "ethereum",
-  [ChainId.OPTIMISM]: "optimism",
-  [ChainId.BSC]: "bsc",
-  [ChainId.POLYGON]: "polygon",
-  [ChainId.FANTOM]: "fantom",
-  [ChainId.BOBA]: "boba",
-  [ChainId.MOONBEAM]: "moonbeam",
-  [ChainId.MOONRIVER]: "moonriver",
-  [ChainId.ARBITRUM]: "arbitrum",
-  [ChainId.AVALANCHE]: "avalanche",
-  [ChainId.DFK]: "dfk",
+  [ChainId.ETH]: 'ethereum',
+  [ChainId.OPTIMISM]: 'optimism',
+  [ChainId.BSC]: 'bsc',
+  [ChainId.POLYGON]: 'polygon',
+  [ChainId.FANTOM]: 'fantom',
+  [ChainId.BOBA]: 'boba',
+  [ChainId.MOONBEAM]: 'moonbeam',
+  [ChainId.MOONRIVER]: 'moonriver',
+  [ChainId.ARBITRUM]: 'arbitrum',
+  [ChainId.AVALANCHE]: 'avalanche',
+  [ChainId.DFK]: 'dfk',
   [ChainId.AURORA]: 'aurora',
-  [ChainId.HARMONY]: "harmony",
-  [ChainId.CRONOS]: "cronos",
-  [ChainId.METIS]: "metis",
-  [ChainId.KLAYTN]: "klaytn",
-  [ChainId.DOGECHAIN]: "dogechain",
-  [ChainId.CANTO]: "canto",
+  [ChainId.HARMONY]: 'harmony',
+  [ChainId.CRONOS]: 'cronos',
+  [ChainId.METIS]: 'metis',
+  [ChainId.KLAYTN]: 'klaytn',
+  [ChainId.DOGECHAIN]: 'dogechain',
+  [ChainId.CANTO]: 'canto',
 }

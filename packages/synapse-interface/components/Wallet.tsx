@@ -1,5 +1,6 @@
 import { ConnectButton, AuthenticationStatus } from '@rainbow-me/rainbowkit'
 import { useAccount } from 'wagmi'
+import Image from 'next/image'
 
 import { MetamaskIcon } from '@icons/WalletIcons/Metamask'
 import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
@@ -98,15 +99,13 @@ export const Wallet = () => {
                           borderRadius: 999,
                           overflow: 'hidden',
                           marginRight: 4,
-
                         }}
                       >
                         {chain.iconUrl && (
                           <img
                             alt={chain.name ?? 'Chain icon'}
                             src={chain.iconUrl}
-                            style={{ width: 12, height: 12}}
-
+                            style={{ width: 12, height: 12 }}
                           />
                         )}
                       </div>
@@ -114,7 +113,15 @@ export const Wallet = () => {
                     {chain.name}
                   </button>
 
-                  <button onClick={openAccountModal} type="button" style={{backgroundColor: 'gray', border: "1px black solid", borderRadius: "5px"}}>
+                  <button
+                    onClick={openAccountModal}
+                    type="button"
+                    style={{
+                      backgroundColor: 'gray',
+                      border: '1px black solid',
+                      borderRadius: '5px',
+                    }}
+                  >
                     {account.displayName}
                     {account.displayBalance
                       ? ` (${account.displayBalance})`

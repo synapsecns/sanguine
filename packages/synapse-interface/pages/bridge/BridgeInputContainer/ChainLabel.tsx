@@ -2,7 +2,7 @@ import { ChevronDownIcon } from '@heroicons/react/outline'
 import { CHAIN_INFO_MAP, CHAIN_ID_DISPLAY_ORDER } from '@constants/networks'
 import { getNetworkButtonBorder } from '@styles/networks'
 import { getOrderedChains } from '@utils/getOrderedChains'
-
+import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
 
 export function ChainLabel({
@@ -91,7 +91,7 @@ function PossibleChain({
       onClick={onClick}
     >
       <Tooltip content={chainName}>
-        <img
+        <Image
           src={chainImg}
           className="duration-300 rounded-full hover:scale-125"
           alt={chainName}
@@ -114,7 +114,7 @@ function SelectedChain({ chainId }: { chainId: number }) {
         rounded-full
       `}
     >
-      <img
+      <Image
         src={chainImg}
         className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80"
       />

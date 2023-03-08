@@ -19,8 +19,6 @@ interface BridgeSwapableTokensByType {
   }
 }
 
-// generates an object where the keys are "swapType" and the values are the chains that support that swapType
-
 const getBridgeableTokens = (): BridgeableTokens => {
   let bridgeableTokens: BridgeableTokens = {}
   Object.values(all).map((token) => {
@@ -106,24 +104,7 @@ const getBridgeSwapableTokensByType = (): BridgeSwapableTokensByType => {
   return bridgeSwapableTokensByType
 }
 
-// const getBridgeSwapableTokensByChain = () => {
-//   let bridgeSwapableTokensByChain = {}
-//   for (const [coinSymbol, chainIdArr] of _.entries(BRIDGE_CHAINS_BY_TYPE)) {
-//     for (const cID of chainIdArr) {
-//       if (bridgeSwapableTokensByChain[cID]) {
-//         bridgeSwapableTokensByChain[cID].push(coinSymbol)
-//       } else {
-//         bridgeSwapableTokensByChain[cID] = [coinSymbol]
-//       }
-//     }
-//   }
-//   return bridgeSwapableTokensByChain
-// }
 export const BRIDGABLE_TOKENS = getBridgeableTokens()
 export const BRIDGE_CHAINS_BY_TYPE = getBridgeChainsByType()
 export const BRIDGE_TYPES_BY_CHAIN = getBridgeTypeByChain()
-
 export const BRIDGE_SWAPABLE_TOKENS_BY_TYPE = getBridgeSwapableTokensByType()
-// export const BRIDGE_SWAPABLE_TOKENS_BY_CHAIN = getBridgeSwapableTokensByChain()
-
-// Get bridgeable

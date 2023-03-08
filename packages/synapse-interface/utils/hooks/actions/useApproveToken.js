@@ -7,7 +7,7 @@ import { useTokenContract } from '@hooks/contracts/useContract'
 import { useTxHistory } from '@hooks/store/useTxHistory'
 import { useBlockNumber } from '@hooks/useBlockNumber'
 import { ChainId, CHAIN_INFO_MAP } from '@constants/networks'
-import { useActiveWeb3React } from  '@hooks/wallet/useActiveWeb3React'
+import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 import { useTokenAllowance } from '@hooks/tokens/useTokenAllowance'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
@@ -15,10 +15,10 @@ import { txErrorHandler } from '@utils/txErrorHandler'
 import { useNetworkController } from '@hooks/wallet/useNetworkController'
 
 export const APPROVAL_STATE = {
-  UNKNOWN:      'UNKNOWN',
+  UNKNOWN: 'UNKNOWN',
   NOT_APPROVED: 'NOT_APPROVED',
-  PENDING:      'PENDING',
-  APPROVED:     'APPROVED',
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
 }
 
 /**
@@ -26,10 +26,10 @@ export const APPROVAL_STATE = {
  * @param {string} spender contract address
  */
 
-export function useApproveToken(token, spender, amountRequired, amountToApprove = MaxUint256 ) {
+export function useApproveToken(token, spender, amountRequired, amountToApprove = MaxUint256) {
   const { activeChainId } = useNetworkController()
   const { chainId, account } = useActiveWeb3React()
-  const {allowance: currentAllowance, totalSupply } = useTokenAllowance(token, spender)
+  const { allowance: currentAllowance, totalSupply } = useTokenAllowance(token, spender)
   const { addTransaction } = useTxHistory()
   const [blockNumber, setBlockNumber] = useBlockNumber(chainId)
 
@@ -41,7 +41,7 @@ export function useApproveToken(token, spender, amountRequired, amountToApprove 
   } else if (currentAllowance) {
     if (currentAllowance.gte(totalSupply)) {
       approvalState = APPROVAL_STATE.APPROVED
-    } else if (amountRequired?.lte(currentAllowance) ) {
+    } else if (amountRequired?.lte(currentAllowance)) {
       approvalState = APPROVAL_STATE.APPROVED
     } else {
       approvalState = APPROVAL_STATE.NOT_APPROVED
@@ -81,18 +81,19 @@ export function useApproveToken(token, spender, amountRequired, amountToApprove 
         return
       }
       let approvalTransaction
-      if (chainId == ChainId.KLAYTN) { 
-        approvalTransaction =  await tokenContract.approve(
-        spender,// swapAddress,
-        amountToApprove,
-        { gasPrice: 250000000000 }
-      ) } else {
-        approvalTransaction =  await tokenContract.approve(
+      if (chainId == ChainId.KLAYTN) {
+        approvalTransaction = await tokenContract.approve(
+          spender,// swapAddress,
+          amountToApprove,
+          { gasPrice: 250000000000 }
+        )
+      } else {
+        approvalTransaction = await tokenContract.approve(
           spender,// swapAddress,
           amountToApprove,
         )
       }
-      
+
       addTransaction({
         ...approvalTransaction,
         chainId
@@ -132,6 +133,6 @@ export function useApproveToken(token, spender, amountRequired, amountToApprove 
   ])
 
 
-  return [approvalState, approveToken]
+  return { approvalState, approveToken }
 }
 
