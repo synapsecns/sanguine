@@ -20,7 +20,7 @@ func init() {
 	SnapshotAcceptedTopic = parsedSummit.Events["SnapshotAccepted"].ID
 }
 
-// SummitTopic is the topic that gets emitted
+// SnapshotAcceptedTopic is the topic that gets emitted
 // when the SnapshotAccepted event is called.
 var SnapshotAcceptedTopic common.Hash
 

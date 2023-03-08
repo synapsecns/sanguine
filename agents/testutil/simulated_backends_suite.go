@@ -212,7 +212,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
 
-// SetupASummit sets up the backend that will have the summit contract deployed on it.
+// SetupSummit sets up the backend that will have the summit contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.SummitMetadata, a.SummitContract = deployManager.GetSummit(a.GetTestContext(), a.TestBackendSummit)
 

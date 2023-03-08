@@ -15,7 +15,6 @@ func init() {
 	}
 }
 
-// TODO (joeallen): parse events from summit
 // Parser parses events from the summit contract.
 type Parser interface {
 	// EventType determines if an event was initiated by the bridge or the user.
