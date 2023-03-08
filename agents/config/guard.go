@@ -15,8 +15,8 @@ import (
 type GuardConfig struct {
 	// OriginDomains stores all origin domains
 	OriginDomains DomainConfigs `yaml:"origin_domains"`
-	// AttestationDomain stores the attestation domain
-	AttestationDomain DomainConfig `yaml:"attestation_domain"`
+	// SummitDomain stores the summit domain
+	SummitDomain DomainConfig `yaml:"summit_domain"`
 	// DestinationDomains stores all destination domains
 	DestinationDomains DomainConfigs `yaml:"destination_domains"`
 	// UnbondedSigner contains the unbonded signer config for agents

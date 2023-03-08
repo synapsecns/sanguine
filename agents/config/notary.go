@@ -15,8 +15,8 @@ import (
 type NotaryConfig struct {
 	// OriginDomains stores all origin domains
 	OriginDomains DomainConfigs `yaml:"origin_domains"`
-	// AttestationDomain stores the attestaion domain
-	AttestationDomain DomainConfig `yaml:"attestation_domain"`
+	// SummitDomain stores the summit domain
+	SummitDomain DomainConfig `yaml:"summit_domain"`
 	// DestinationDomain stores  the destination domain
 	DestinationDomain DomainConfig `yaml:"destination_domain"`
 	// UnbondedSigner contains the unbonded signer config for agents

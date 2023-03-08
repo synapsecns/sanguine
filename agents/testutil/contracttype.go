@@ -2,10 +2,9 @@ package testutil
 
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
-	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
-	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
@@ -58,8 +57,6 @@ const (
 	MessageHarnessType // MessageHarness
 	// OriginHarnessType is the origin harness type.
 	OriginHarnessType // OriginHarness
-	// AttestationHarnessType is the attestation harness type.
-	AttestationHarnessType
 	// StateHarnessType is the state harness type.
 	StateHarnessType
 	// SnapshotHarnessType is the snapshot harness type.
@@ -70,8 +67,8 @@ const (
 	HeaderHarnessType
 	// DestinationHarnessType is the destination harness type.
 	DestinationHarnessType // DestinationHarness
-	// AttestationCollectorType is the type of the attestation collector.
-	AttestationCollectorType // AttestationCollector
+	// SummitType is the type of the summit.
+	SummitType // Summit
 	// DestinationType is the type of the destination.
 	DestinationType // Destination
 	// AgentsTestContractType is the type of the agents test contract.
@@ -108,8 +105,6 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return messageharness.Contracts["solidity/MessageHarness.t.sol:MessageHarness"]
 	case OriginHarnessType:
 		return originharness.Contracts["solidity/OriginHarness.t.sol:OriginHarness"]
-	case AttestationHarnessType:
-		return attestationharness.Contracts["solidity/AttestationHarness.t.sol:AttestationHarness"]
 	case StateHarnessType:
 		return stateharness.Contracts["solidity/StateHarness.t.sol:StateHarness"]
 	case SnapshotHarnessType:
@@ -118,8 +113,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return destinationharness.Contracts["solidity/DestinationHarness.t.sol:DestinationHarness"]
 	case TipsHarnessType:
 		return tipsharness.Contracts["solidity/TipsHarness.t.sol:TipsHarness"]
-	case AttestationCollectorType:
-		return attestationcollector.Contracts["solidity/AttestationCollector.sol:AttestationCollector"]
+	case SummitType:
+		return summit.Contracts["solidity/Summit.sol:Summit"]
 	case DestinationType:
 		return destination.Contracts["solidity/Destination.sol:Destination"]
 	case HeaderHarnessType:
