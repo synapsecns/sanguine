@@ -167,7 +167,7 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
 
     /// @dev Perform a System Call to a local BondingManager with the given `_data`.
     function _callLocalBondingManager(bytes memory _data) internal {
-        _callBondingManager(0, 0, _data);
+        _callBondingManager(localDomain, 0, _data);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
