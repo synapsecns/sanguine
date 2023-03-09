@@ -19,9 +19,6 @@ func init() {
 	NonceFieldName = namer.GetConsistentName("Nonce")
 	DomainIDFieldName = namer.GetConsistentName("DomainID")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
-	OriginFieldName = namer.GetConsistentName("IPOrigin")
-	DestinationFieldName = namer.GetConsistentName("IPDestination")
-	AttestationStateFieldName = namer.GetConsistentName("IPAttestationState")
 }
 
 var (
@@ -33,12 +30,6 @@ var (
 	BlockNumberFieldName string
 	// LeafIndexFieldName is the field name of the leaf index.
 	LeafIndexFieldName string
-	// OriginFieldName is the name of the origin field.
-	OriginFieldName string
-	// DestinationFieldName is the name of the destination field.
-	DestinationFieldName string
-	// AttestationStateFieldName is the name of the attestation state field.
-	AttestationStateFieldName string
 )
 
 // RawEthTX contains a raw evm transaction that is unsigned
