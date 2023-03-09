@@ -48,13 +48,14 @@ abstract contract BondingManagerTest is SynapseTest {
         view
         returns (bytes memory)
     {
-        abi.encodeWithSelector(
-            selector,
-            block.timestamp,
-            _localDomain(),
-            SystemEntity.BondingManager,
-            info
-        );
+        return
+            abi.encodeWithSelector(
+                selector,
+                block.timestamp,
+                _localDomain(),
+                SystemEntity.BondingManager,
+                info
+            );
     }
 
     function _dataSyncAgentCall(AgentInfo memory info) internal pure returns (bytes memory) {
