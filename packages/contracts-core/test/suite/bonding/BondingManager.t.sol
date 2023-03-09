@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../utils/SynapseTest.t.sol";
+import { AgentInfo } from "../../../contracts/libs/Structures.sol";
+
+import {
+    SystemEntity,
+    SystemRouterHarness
+} from "../../harnesses/system/SystemRouterHarness.t.sol";
+
+import { ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
 
 abstract contract BondingManagerTest is SynapseTest {
     uint256 internal rootSubmittedAt;

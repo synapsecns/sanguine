@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/State.sol";
+import { State, StateLib, STATE_LENGTH, SummitState } from "../../../contracts/libs/State.sol";
 
 // solhint-disable func-visibility
 // Collection of free functions to generate test data

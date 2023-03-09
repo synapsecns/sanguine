@@ -1,8 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../utils/SynapseLibraryTest.t.sol";
-import "../../harnesses/libs/AttestationHarness.t.sol";
+import { ATTESTATION_LENGTH } from "../../../contracts/libs/Constants.sol";
+
+import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
+import {
+    AttestationHarness,
+    DestinationAttestation,
+    SummitAttestation,
+    TypedMemView
+} from "../../harnesses/libs/AttestationHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract AttestationLibraryTest is SynapseLibraryTest {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/interfaces/IMessageRecipient.sol";
+import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
 
 // solhint-disable no-empty-blocks
 contract MessageRecipientMock is IMessageRecipient {

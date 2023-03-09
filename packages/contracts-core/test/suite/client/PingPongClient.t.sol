@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/client/PingPongClient.sol";
+import {
+    InterfaceOrigin,
+    PingPongClient,
+    TipsLib
+} from "../../../contracts/client/PingPongClient.sol";
 
 import { Test } from "forge-std/Test.sol";
 

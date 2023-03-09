@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../libs/Structures.sol";
+import { AgentInfo, SystemEntity } from "../libs/Structures.sol";
 import { InterfaceSystemRouter } from "./InterfaceSystemRouter.sol";
 
 interface ISystemContract {

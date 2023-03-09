@@ -2,7 +2,13 @@
 
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/Message.sol";
+import {
+    HeaderLib,
+    Message,
+    MessageLib,
+    TipsLib,
+    TypedMemView
+} from "../../../contracts/libs/Message.sol";
 
 /**
  * @notice Exposes Message methods for testing against golang.

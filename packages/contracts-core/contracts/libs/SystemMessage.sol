@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./ByteString.sol";
+import { ByteString, CallData } from "./ByteString.sol";
+import { TypedMemView } from "./TypedMemView.sol";
 
 /// @dev SystemMessage is a memory view over the message with instructions for a system call.
 type SystemMessage is bytes29;

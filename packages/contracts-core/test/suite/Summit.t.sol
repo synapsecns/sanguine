@@ -1,12 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../contracts/libs/Merkle.sol";
-import "../../contracts/libs/Snapshot.sol";
+import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
+import { ISnapshotHub } from "../../contracts/interfaces/ISnapshotHub.sol";
+import { MerkleLib } from "../../contracts/libs/Merkle.sol";
+import { SnapshotLib, SummitAttestation } from "../../contracts/libs/Snapshot.sol";
+import { State, StateLib, SummitState } from "../../contracts/libs/State.sol";
 
-import "../utils/SynapseTest.t.sol";
-import "../utils/SynapseProofs.t.sol";
-import "../utils/libs/Random.t.sol";
+import { InterfaceSummit } from "../../contracts/Summit.sol";
+
+import { SynapseTest } from "../utils/SynapseTest.t.sol";
+import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
+import { Random } from "../utils/libs/Random.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks

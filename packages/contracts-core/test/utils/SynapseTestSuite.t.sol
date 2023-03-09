@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../contracts/bonding/BondingSecondary.sol";
-import "../../contracts/libs/SystemMessage.sol";
-import "./SynapseTestStorage.t.sol";
-import "./SynapseUtilities.t.sol";
+import { BondingSecondary } from "../../contracts/bonding/BondingSecondary.sol";
+import { SystemMessage } from "../../contracts/libs/SystemMessage.sol";
+import { AppHarness, SynapseTestStorage } from "./SynapseTestStorage.t.sol";
+import { SynapseUtilities } from "./SynapseUtilities.t.sol";
 
 contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     /*╔══════════════════════════════════════════════════════════════════════╗*\

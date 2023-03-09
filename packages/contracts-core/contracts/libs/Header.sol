@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./ByteString.sol";
-import "./TypeCasts.sol";
+import { ByteString } from "./ByteString.sol";
+import { TypeCasts } from "./TypeCasts.sol";
+import { TypedMemView } from "./TypedMemView.sol";
 
 /// @dev Header is a memory over over a formatted message header payload.
 type Header is bytes29;

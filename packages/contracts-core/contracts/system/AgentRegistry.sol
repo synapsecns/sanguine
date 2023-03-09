@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import "../libs/AgentSet.sol";
-import "../libs/Auth.sol";
-import "../libs/ByteString.sol";
+import { AgentSet } from "../libs/AgentSet.sol";
+import { Auth } from "../libs/Auth.sol";
+import { Signature } from "../libs/ByteString.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistryEvents } from "../events/AgentRegistryEvents.sol";
 import { IAgentRegistry } from "../interfaces/IAgentRegistry.sol";

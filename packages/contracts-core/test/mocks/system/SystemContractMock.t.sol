@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/interfaces/ISystemContract.sol";
-import "../ExcludeCoverage.sol";
+import {
+    AgentInfo,
+    InterfaceSystemRouter,
+    ISystemContract,
+    SystemEntity
+} from "../../../contracts/interfaces/ISystemContract.sol";
+import { ExcludeCoverage } from "../ExcludeCoverage.sol";
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 

@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./BondingManager.t.sol";
+import { AgentInfo, SystemEntity } from "../../../contracts/libs/Structures.sol";
+
+import { BondingManagerTest } from "./BondingManager.t.sol";
+
+import { BondingSecondary, ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract BondingSecondaryTest is BondingManagerTest {
@@ -201,7 +205,7 @@ contract BondingSecondaryTest is BondingManagerTest {
         vm.expectCall(
             address(systemRouter),
             abi.encodeWithSelector(
-                SystemRouter.systemCall.selector,
+                systemRouter.systemCall.selector,
                 DOMAIN_SYNAPSE, // destination
                 BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
                 SystemEntity.BondingManager, //recipient

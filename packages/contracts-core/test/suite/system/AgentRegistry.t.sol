@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../tools/system/AgentRegistryTools.t.sol";
-import "../../tools/libs/EnumerableSetTools.t.sol";
+import { AgentRegistryTools } from "../../tools/system/AgentRegistryTools.t.sol";
+import { EnumerableSetTools } from "../../tools/libs/EnumerableSetTools.t.sol";
+
+import { AgentRegistryHarness } from "../../harnesses/system/AgentRegistryHarness.t.sol";
 
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 

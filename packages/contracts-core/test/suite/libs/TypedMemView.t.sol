@@ -3,7 +3,7 @@ pragma solidity >=0.8.12;
 
 import { TypedMemView } from "../../../contracts/libs/TypedMemView.sol";
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase, max-line-length
 contract TestMemView is Test {
