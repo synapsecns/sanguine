@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../contracts/libs/Constants.sol";
+import { ORIGIN_TREE_DEPTH } from "../../contracts/libs/Constants.sol";
 
-import "./proof/AttestationProofGenerator.t.sol";
-import "./proof/HistoricalProofGenerator.t.sol";
+import { AttestationProofGenerator } from "./proof/AttestationProofGenerator.t.sol";
+import { HistoricalProofGenerator } from "./proof/HistoricalProofGenerator.t.sol";
 
 abstract contract SynapseProofs {
     HistoricalProofGenerator internal originGen;

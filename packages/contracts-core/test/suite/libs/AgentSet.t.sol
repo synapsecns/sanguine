@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 import { AgentSetHarness } from "../../harnesses/libs/AgentSetHarness.t.sol";
 import { EnumerableSetTools } from "../../tools/libs/EnumerableSetTools.t.sol";
 

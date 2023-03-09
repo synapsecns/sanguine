@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/State.sol";
+import { StateLib } from "../../../contracts/libs/State.sol";
 
 contract AttestationProofGenerator {
     using StateLib for bytes;

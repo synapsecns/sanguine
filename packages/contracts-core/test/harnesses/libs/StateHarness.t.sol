@@ -2,7 +2,13 @@
 
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/State.sol";
+import {
+    OriginState,
+    State,
+    StateLib,
+    SummitState,
+    TypedMemView
+} from "../../../contracts/libs/State.sol";
 
 /**
  * @notice Exposes State methods for testing against golang.

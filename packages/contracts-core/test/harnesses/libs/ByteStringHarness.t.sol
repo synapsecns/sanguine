@@ -2,7 +2,12 @@
 
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/ByteString.sol";
+import {
+    ByteString,
+    CallData,
+    Signature,
+    TypedMemView
+} from "../../../contracts/libs/ByteString.sol";
 
 /**
  * @notice Exposes ByteString methods for testing against golang.

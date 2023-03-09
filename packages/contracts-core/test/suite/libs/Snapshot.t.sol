@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { State, StateLib } from "../../../contracts/libs/State.sol";
+import { State, StateLib, STATE_LENGTH } from "../../../contracts/libs/State.sol";
 import { MerkleList } from "../../../contracts/libs/MerkleList.sol";
-import "../../utils/SynapseLibraryTest.t.sol";
-import "../../harnesses/libs/SnapshotHarness.t.sol";
+import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
+import { SnapshotHarness } from "../../harnesses/libs/SnapshotHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract SnapshotLibraryTest is SynapseLibraryTest {

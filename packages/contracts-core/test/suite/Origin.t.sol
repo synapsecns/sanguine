@@ -1,11 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../contracts/libs/State.sol";
+import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
+import { IStateHub } from "../../contracts/interfaces/IStateHub.sol";
+import { EMPTY_ROOT } from "../../contracts/libs/Constants.sol";
+import { OriginState } from "../../contracts/libs/State.sol";
+import { TipsLib } from "../../contracts/libs/Tips.sol";
 
-import "../utils/libs/SynapseStructs.t.sol";
-import "../utils/SynapseProofs.t.sol";
-import "../utils/SynapseTest.t.sol";
+import { InterfaceOrigin } from "../../contracts/Origin.sol";
+
+import { RawHeader, RawMessage, RawTips } from "../utils/libs/SynapseStructs.t.sol";
+import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
+import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
+import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks

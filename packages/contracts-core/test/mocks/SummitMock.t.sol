@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../contracts/interfaces/InterfaceSummit.sol";
-import "./hubs/SnapshotHubMock.t.sol";
-import "./system/SystemContractMock.t.sol";
+import { InterfaceSummit } from "../../contracts/interfaces/InterfaceSummit.sol";
+import { SnapshotHubMock } from "./hubs/SnapshotHubMock.t.sol";
+import { SystemContractMock } from "./system/SystemContractMock.t.sol";
 
 // solhint-disable no-empty-blocks
 contract SummitMock is SnapshotHubMock, SystemContractMock, InterfaceSummit {

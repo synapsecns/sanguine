@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "forge-std/Test.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+import { Test } from "forge-std/Test.sol";
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract SynapseUtilities is Test {
     /*╔══════════════════════════════════════════════════════════════════════╗*\

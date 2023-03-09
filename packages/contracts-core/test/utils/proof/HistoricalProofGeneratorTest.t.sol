@@ -1,7 +1,7 @@
 //  SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
 import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
 import { HistoricalProofGenerator } from "./HistoricalProofGenerator.t.sol";

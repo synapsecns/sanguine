@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/interfaces/ISnapshotHub.sol";
-import "../ExcludeCoverage.sol";
+import { ISnapshotHub } from "../../../contracts/interfaces/ISnapshotHub.sol";
+import { ExcludeCoverage } from "../ExcludeCoverage.sol";
 
 // solhint-disable no-empty-blocks
 contract SnapshotHubMock is ExcludeCoverage, ISnapshotHub {

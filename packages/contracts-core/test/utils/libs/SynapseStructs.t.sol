@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/Message.sol";
+import {
+    Header,
+    HeaderLib,
+    Message,
+    MessageLib,
+    Tips,
+    TipsLib,
+    TypedMemView
+} from "../../../contracts/libs/Message.sol";
 
 struct RawHeader {
     uint32 origin;

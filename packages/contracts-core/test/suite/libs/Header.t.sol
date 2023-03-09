@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../utils/SynapseLibraryTest.t.sol";
-import "../../harnesses/libs/HeaderHarness.t.sol";
+import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
+import { HeaderHarness } from "../../harnesses/libs/HeaderHarness.t.sol";
 
-import "../../../contracts/libs/Header.sol";
+import { HeaderLib } from "../../../contracts/libs/Header.sol";
 
 // solhint-disable func-name-mixedcase
 contract HeaderLibraryTest is SynapseLibraryTest {

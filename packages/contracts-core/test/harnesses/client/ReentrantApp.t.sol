@@ -3,7 +3,10 @@
 pragma solidity 0.8.17;
 
 import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
-import "../../../contracts/interfaces/InterfaceDestination.sol";
+import {
+    InterfaceDestination,
+    ORIGIN_TREE_DEPTH
+} from "../../../contracts/interfaces/InterfaceDestination.sol";
 
 contract ReentrantApp is IMessageRecipient {
     bytes internal message;
