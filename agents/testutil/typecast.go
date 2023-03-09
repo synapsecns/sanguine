@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
@@ -83,6 +84,18 @@ func (d *DeployManager) GetSnapshotHarness(ctx context.Context, backend backends
 	assert.True(d.T(), ok)
 
 	return snapshotHarnessContract, snapshotHarness
+}
+
+// GetAttestationHarness gets the attestation harness.
+func (d *DeployManager) GetAttestationHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *attestationharness.AttestationHarnessRef) {
+	d.T().Helper()
+
+	attestationHarnessContract := d.GetContractRegistry(backend).Get(ctx, AttestationHarnessType)
+
+	attestationHarness, ok := attestationHarnessContract.ContractHandle().(*attestationharness.AttestationHarnessRef)
+	assert.True(d.T(), ok)
+
+	return attestationHarnessContract, attestationHarness
 }
 
 // GetDestinationHarness gets the destination harness.

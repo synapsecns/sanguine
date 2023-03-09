@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
@@ -115,6 +116,25 @@ func (a SnapshotHarnessDeployer) Deploy(ctx context.Context) (contracts.Deployed
 		return snapshotharness.DeploySnapshotHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return snapshotharness.NewSnapshotHarnessRef(address, backend)
+	})
+}
+
+// AttestationHarnessDeployer deploys the attestation harness for testing.
+type AttestationHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewAttestationHarnessDeployer creates a new deployer for the attestation harness.
+func NewAttestationHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return AttestationHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, AttestationHarnessType)}
+}
+
+// Deploy deploys the attestation harness.
+func (a AttestationHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return attestationharness.DeployAttestationHarness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return attestationharness.NewAttestationHarnessRef(address, backend)
 	})
 }
 

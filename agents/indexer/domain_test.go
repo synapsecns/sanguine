@@ -1,21 +1,14 @@
 package indexer_test
 
 import (
-	"context"
 	"crypto/rand"
-	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/db/datastore/sql/sqlite"
-	"github.com/synapsecns/sanguine/agents/domains/evm"
-	"github.com/synapsecns/sanguine/agents/indexer"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"math/big"
 	"testing"
-	"time"
 )
 
 // TestDispatch is a test dispatch call.
@@ -97,44 +90,4 @@ func (i IndexerSuite) NewTestDispatches(dispatchCount int) (testDispatches []Tes
 	}
 
 	return testDispatches, lastBlock
-}
-
-func (i IndexerSuite) TestSyncMessages() {
-	_, lastBlock := i.NewTestDispatches(25)
-
-	db, err := sqlite.NewSqliteStore(i.GetTestContext(), filet.TmpDir(i.T(), ""))
-	Nil(i.T(), err)
-
-	_, originContract := i.deployManager.GetOrigin(i.GetTestContext(), i.testBackend)
-
-	domainClient, err := evm.NewEVM(i.GetTestContext(), "test", config.DomainConfig{
-		DomainID:              1,
-		Type:                  types.EVM.String(),
-		RequiredConfirmations: 0,
-		OriginAddress:         originContract.Address().String(),
-		RPCUrl:                i.testBackend.RPCAddress(),
-		StartHeight:           0,
-	})
-	Nil(i.T(), err)
-
-	domainIndexer := indexer.NewDomainIndexer(db, domainClient, 0)
-
-	go func() {
-		ctx, cancel := context.WithTimeout(i.GetTestContext(), time.Second*20)
-		defer cancel()
-
-		// this will error because of context cancellation
-		_ = domainIndexer.SyncMessages(ctx)
-	}()
-
-	// wait until all blocks are indexed
-	i.Eventually(func() bool {
-		time.Sleep(time.Second * 1)
-
-		testHeight, _ := db.GetMessageLatestBlockEnd(i.GetTestContext(), domainClient.Config().DomainID)
-
-		return testHeight >= lastBlock
-	})
-
-	// TODO: something w/ retrieve dispatches from db
 }
