@@ -40,6 +40,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		RefreshIntervalSeconds: 5,
 	}
 	encodedTestConfig, err := testConfig.Encode()
 	Nil(u.T(), err)

@@ -51,6 +51,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		RefreshIntervalSeconds: 5,
 	}
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -68,6 +69,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyIntegrationE2E() {
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		RefreshIntervalSeconds: 5,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -132,6 +134,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		RefreshIntervalSeconds: 5,
 	}
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -149,6 +152,7 @@ func (u AgentsIntegrationSuite) TestGuardAndNotaryOnlyMultipleMessagesIntegratio
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		RefreshIntervalSeconds: 5,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -218,6 +222,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		RefreshIntervalSeconds: 5,
 	}
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -235,6 +240,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageIntegrationE2E() {
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		RefreshIntervalSeconds: 5,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -478,6 +484,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		RefreshIntervalSeconds: 5,
 	}
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -495,6 +502,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsMultipleMessagesIntegrationE2E() {
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		RefreshIntervalSeconds: 5,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
@@ -767,6 +775,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		RefreshIntervalSeconds: 5,
 	}
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -784,6 +793,7 @@ func (u AgentsIntegrationSuite) TestAllAgentsSingleMessageWithTestClientIntegrat
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
+		RefreshIntervalSeconds: 5,
 	}
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
