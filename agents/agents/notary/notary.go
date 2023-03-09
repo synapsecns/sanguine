@@ -12,7 +12,7 @@ import (
 )
 
 // Notary checks the Summit for that latest states signed by guards, validates those states on origin,
-// then signs and submits the snapshot to Summit
+// then signs and submits the snapshot to Summit.
 type Notary struct {
 	bondedSigner      signer.Signer
 	unbondedSigner    signer.Signer

@@ -38,12 +38,6 @@ type DomainClient interface {
 type OriginContract interface {
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
 	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
-	// ProduceAttestation suggests an update from the origin contract
-	// TODO (joe): this will be changed to "ProduceAttestations" and return an attestation per destination
-	ProduceAttestation(ctx context.Context) (types.Attestation, error)
-	// GetHistoricalAttestation gets the root corresponding to destination and nonce,
-	// as well as the block number the message was dispatched and the current block number
-	GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, error)
 	// SuggestLatestState gets the latest state on the origin
 	SuggestLatestState(ctx context.Context) (types.State, error)
 	// SuggestState gets the state on the origin with the given nonce if it exists

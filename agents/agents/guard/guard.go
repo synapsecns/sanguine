@@ -12,7 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
-// Guard scans origins for latest state and submits snapshots to the Summit
+// Guard scans origins for latest state and submits snapshots to the Summit.
 type Guard struct {
 	bondedSigner       signer.Signer
 	unbondedSigner     signer.Signer
@@ -59,7 +59,7 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig) (_ Guard, err error) 
 	return guard, nil
 }
 
-func (g Guard) LoadSummitLatestStates(ctx context.Context) {
+func (g Guard) loadSummitLatestStates(ctx context.Context) {
 	for _, domain := range g.domains {
 		originID := domain.Config().DomainID
 		latestState, err := domain.Summit().GetLatestAgentState(ctx, originID, g.bondedSigner)
@@ -73,7 +73,7 @@ func (g Guard) LoadSummitLatestStates(ctx context.Context) {
 	}
 }
 
-func (g Guard) LoadOriginLatestStates(ctx context.Context) {
+func (g Guard) loadOriginLatestStates(ctx context.Context) {
 	for _, domain := range g.domains {
 		originID := domain.Config().DomainID
 		latestState, err := domain.Origin().SuggestLatestState(ctx)
@@ -89,7 +89,7 @@ func (g Guard) LoadOriginLatestStates(ctx context.Context) {
 	}
 }
 
-func (g Guard) GetLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint32]types.State) {
+func (g Guard) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint32]types.State) {
 	statesToSubmit := make(map[uint32]types.State, len(g.domains))
 	for _, domain := range g.domains {
 		originID := domain.Config().DomainID
@@ -118,8 +118,8 @@ func (g Guard) GetLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint3
 	return nil, nil
 }
 
-func (g Guard) SubmitLatestSnapshot(ctx context.Context) {
-	snapshot, statesToSubmit := g.GetLatestSnapshot(ctx)
+func (g Guard) submitLatestSnapshot(ctx context.Context) {
+	snapshot, statesToSubmit := g.getLatestSnapshot(ctx)
 	if snapshot == nil {
 		return
 	}
@@ -144,7 +144,7 @@ func (g Guard) SubmitLatestSnapshot(ctx context.Context) {
 //nolint:cyclop
 func (g Guard) Start(ctx context.Context) error {
 	// First initialize a map to track what was the last state signed by this guard
-	g.LoadSummitLatestStates(ctx)
+	g.loadSummitLatestStates(ctx)
 
 	for {
 		select {
@@ -152,8 +152,8 @@ func (g Guard) Start(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case <-time.After(g.refreshInterval):
-			g.LoadOriginLatestStates(ctx)
-			g.SubmitLatestSnapshot(ctx)
+			g.loadOriginLatestStates(ctx)
+			g.submitLatestSnapshot(ctx)
 		}
 	}
 }
