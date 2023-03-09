@@ -5,7 +5,7 @@
   "private": "true",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
-    "build:go": "rimraf ./flattened/* && yarn sol-merger \"./contracts/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin && yarn sol-merger \"./test/harnesses/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin && yarn sol-merger \"./test/harnesses/libs/**.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin && yarn sol-merger \"./contracts/client/TestClient.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin && yarn sol-merger \"./contracts/client/PingPongClient.sol\" ./flattened --export-plugin SPDXLicenseRemovePlugin",
+    "build:go": "script/sh/flatten.sh contracts/*.sol test/harnesses/*.sol test/harnesses/libs/*.sol contracts/client/*.sol",
     "build:contracts": "forge build",
     "build:slither": "hardhat compile",
     "test:coverage": "echo 'Please use foundry'",
