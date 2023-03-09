@@ -262,27 +262,36 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
-	itemCountNonce, err := e.getEarliestAttestationNonceInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce)
+	state, err := e.getEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce)
 	if err != nil {
 		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
 	}
 
-	if itemCountNonce == nil {
+	if state == nil {
 		return false, nil
 	}
 
-	proof, err := e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(*nonce-1, *itemCountNonce)
+	proof, err := e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(*nonce-1, (*state).Nonce())
 
 	if err != nil {
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
-	verified, err := e.verifyMessageMerkleProof(message)
+	verifiedMessageProof, err := e.verifyMessageMerkleProof(message)
 	if err != nil {
 		return false, fmt.Errorf("could not verify merkle proof: %w", err)
 	}
 
-	if !verified {
+	if !verifiedMessageProof {
+		return false, nil
+	}
+
+	verifiedStateProof, err := e.verifyStateMerkleProof(ctx, *state)
+	if err != nil {
+		return false, fmt.Errorf("could not verify state merkle proof: %w", err)
+	}
+
+	if !verifiedStateProof {
 		return false, nil
 	}
 
@@ -373,10 +382,10 @@ func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) 
 	return inTree, nil
 }
 
-// verifySnapshotMerkleProof verifies that a state is in the snapshot merkle tree.
+// verifyStateMerkleProof verifies that a state is in the snapshot merkle tree.
 //
 //nolint:unused
-func (e Executor) verifySnapshotMerkleProof(ctx context.Context, state types.State) (bool, error) {
+func (e Executor) verifyStateMerkleProof(ctx context.Context, state types.State) (bool, error) {
 	stateRoot := state.Root()
 	root := common.BytesToHash(stateRoot[:]).String()
 	chainID := state.Origin()
@@ -627,7 +636,6 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		//nolint:exhaustive
 		switch contractEvent.eventType {
 		case attestationAcceptedEvent:
-			// TODO: Change to populating the attestation table with the new attestation format.
 			attestation, err := e.logToAttestation(log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not convert log to attestation: %w", err)
