@@ -22,6 +22,7 @@ help: ## This help dialog.
 
 
 lint: ## Run golangci-lint and go fmt ./...
+	$(GIT_ROOT)/make/scripts/bump-deps.sh
 	go mod tidy
 	go fmt ./...
 	cd $(GIT_ROOT)

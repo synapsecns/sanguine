@@ -29,4 +29,7 @@ full-reset: check_reset reset-submodules ## Fully reset the repository to it's c
 tidy: ## Runs go mod tidy on all go.mod files in the repo
 	$(GIT_ROOT)/make/scripts/tidy.sh
 
+lint:
+	$(GIT_ROOT)/make/scripts/go-lint.sh
+
 .PHONY: full-reset check_reset
