@@ -33,8 +33,9 @@ func NewConfigWithChainID(chainID *big.Int) *params.ChainConfig {
 		ArrowGlacierBlock:             params.AllEthashProtocolChanges.ArrowGlacierBlock,
 		GrayGlacierBlock:              params.AllEthashProtocolChanges.GrayGlacierBlock,
 		MergeNetsplitBlock:            params.AllEthashProtocolChanges.MergeNetsplitBlock,
-		ShanghaiBlock:                 params.AllEthashProtocolChanges.ShanghaiBlock,
-		CancunBlock:                   params.AllEthashProtocolChanges.CancunBlock,
+		ShanghaiTime:                  params.AllEthashProtocolChanges.ShanghaiTime,
+		CancunTime:                    params.AllEthashProtocolChanges.CancunTime,
+		PragueTime:                    params.AllEthashProtocolChanges.PragueTime,
 		TerminalTotalDifficulty:       params.AllEthashProtocolChanges.TerminalTotalDifficulty,
 		TerminalTotalDifficultyPassed: params.AllEthashProtocolChanges.TerminalTotalDifficultyPassed,
 		Ethash:                        params.AllEthashProtocolChanges.Ethash,
@@ -48,7 +49,7 @@ func NewSimulatedBackendWithConfig(alloc core.GenesisAlloc, gasLimit uint64, con
 
 	genesis := core.Genesis{Config: config, GasLimit: gasLimit, Alloc: alloc}
 	genesis.MustCommit(database)
-	blockchain, _ := core.NewBlockChain(database, nil, genesis.Config, ethash.NewFaker(), vm.Config{}, nil, nil)
+	blockchain, _ := core.NewBlockChain(database, nil, &genesis, nil, ethash.NewFaker(), vm.Config{}, nil, nil)
 
 	backend := &SimulatedBackend{
 		database:   database,
@@ -60,6 +61,9 @@ func NewSimulatedBackendWithConfig(alloc core.GenesisAlloc, gasLimit uint64, con
 	backend.filterSystem = filters.NewFilterSystem(filterBackend, filters.Config{})
 	backend.events = filters.NewEventSystem(backend.filterSystem, false)
 
-	backend.rollback(blockchain.CurrentBlock())
+	header := backend.blockchain.CurrentBlock()
+	block := backend.blockchain.GetBlock(header.Hash(), header.Number.Uint64())
+	backend.rollback(block)
+
 	return backend
 }

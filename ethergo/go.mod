@@ -39,7 +39,7 @@ require (
 	github.com/synapsecns/sanguine/core v0.0.34
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	github.com/teivah/onecontext v1.3.0
-	github.com/tenderly/tenderly-cli v1.4.6
+	github.com/tenderly/tenderly-cli v1.5.5
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/viant/toolbox v0.24.0
 	go.uber.org/atomic v1.10.0
@@ -214,6 +214,7 @@ require (
 	google.golang.org/grpc v1.53.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
+	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
