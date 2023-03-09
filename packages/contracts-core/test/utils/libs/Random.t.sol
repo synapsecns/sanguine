@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/State.sol";
+import { SummitState } from "../../../contracts/libs/State.sol";
 
 struct Random {
     bytes32 seed;

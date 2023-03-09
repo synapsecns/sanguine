@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../libs/ByteString.sol";
+import { ByteString, Signature } from "./ByteString.sol";
+import { TypedMemView } from "./TypedMemView.sol";
 
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 

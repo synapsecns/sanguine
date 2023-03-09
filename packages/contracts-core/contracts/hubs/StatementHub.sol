@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import { Attestation, AttestationLib } from "../libs/Attestation.sol";
+import { Snapshot, SnapshotLib } from "../libs/Snapshot.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "../system/AgentRegistry.sol";
-import "../Version.sol";
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import "../libs/Attestation.sol";
-import "../libs/Snapshot.sol";
+import { Version0_0_2 } from "../Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 

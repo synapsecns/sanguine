@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../utils/SynapseLibraryTest.t.sol";
-import "../../harnesses/libs/ByteStringHarness.t.sol";
-import "../../tools/libs/ByteStringTools.t.sol";
+import { SynapseLibraryTest } from "../../utils/SynapseLibraryTest.t.sol";
+import { ByteStringHarness } from "../../harnesses/libs/ByteStringHarness.t.sol";
+import { ByteStringTools } from "../../tools/libs/ByteStringTools.t.sol";
 
-import "../../../contracts/libs/ByteString.sol";
+import { ByteString } from "../../../contracts/libs/ByteString.sol";
+import { SystemMessageLib } from "../../../contracts/libs/SystemMessage.sol";
 
 // solhint-disable func-name-mixedcase
 contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {

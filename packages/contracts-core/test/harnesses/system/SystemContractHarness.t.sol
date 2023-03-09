@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import "../../../contracts/system/SystemContract.sol";
+import { SystemEntity, SystemContract } from "../../../contracts/system/SystemContract.sol";
 import { InterfaceSystemRouter } from "../../../contracts/interfaces/InterfaceSystemRouter.sol";
 import { DomainContext } from "../../../contracts/context/DomainContext.sol";
 import { SystemContractHarnessEvents } from "../events/SystemContractHarnessEvents.sol";

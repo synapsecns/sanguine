@@ -2,7 +2,13 @@
 
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/Attestation.sol";
+import {
+    Attestation,
+    AttestationLib,
+    DestinationAttestation,
+    SummitAttestation,
+    TypedMemView
+} from "../../../contracts/libs/Attestation.sol";
 
 /**
  * @notice Exposes Attestation methods for testing against golang.

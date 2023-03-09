@@ -2,12 +2,12 @@
 pragma solidity 0.8.17;
 
 // ============ Production events ============
-import "../../contracts/events/AgentRegistryEvents.sol";
+import { AgentRegistryEvents } from "../../contracts/events/AgentRegistryEvents.sol";
 // ============ Harness events ============
-import "../harnesses/events/AgentRegistryHarnessEvents.sol";
-import "../harnesses/events/BasicClientHarnessEvents.sol";
-import "../harnesses/events/ClientHarnessEvents.sol";
-import "../harnesses/events/SystemContractHarnessEvents.sol";
+import { AgentRegistryHarnessEvents } from "../harnesses/events/AgentRegistryHarnessEvents.sol";
+import { BasicClientHarnessEvents } from "../harnesses/events/BasicClientHarnessEvents.sol";
+import { ClientHarnessEvents } from "../harnesses/events/ClientHarnessEvents.sol";
+import { SystemContractHarnessEvents } from "../harnesses/events/SystemContractHarnessEvents.sol";
 
 // solhint-disable-next-line no-empty-blocks
 abstract contract SynapseEvents is

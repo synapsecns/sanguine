@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/Merkle.sol";
-import "../../../contracts/libs/Snapshot.sol";
-import "../libs/FakeIt.t.sol";
-import "./AttestationProofGenerator.t.sol";
+import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
+import {
+    Snapshot,
+    SnapshotLib,
+    SNAPSHOT_MAX_STATES,
+    State,
+    StateLib
+} from "../../../contracts/libs/Snapshot.sol";
+import { fakeStates, SummitState } from "../libs/FakeIt.t.sol";
+import { AttestationProofGenerator } from "./AttestationProofGenerator.t.sol";
 
 import { Test } from "forge-std/Test.sol";
 

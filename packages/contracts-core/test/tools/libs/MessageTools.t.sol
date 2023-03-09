@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/Message.sol";
+import { HeaderLib, MessageLib } from "../../../contracts/libs/Message.sol";
 
 import { TipsTools } from "./TipsTools.t.sol";
 import { SynapseUtilities } from "../../utils/SynapseUtilities.t.sol";

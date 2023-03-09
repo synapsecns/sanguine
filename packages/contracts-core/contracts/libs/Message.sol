@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./ByteString.sol";
-import "./Header.sol";
-import "./Tips.sol";
+import { ByteString } from "./ByteString.sol";
+import { Header, HeaderLib } from "./Header.sol";
+import { Tips, TipsLib } from "./Tips.sol";
+import { TypedMemView } from "./TypedMemView.sol";
 
 /// @dev Message is a memory over over a formatted message payload.
 type Message is bytes29;

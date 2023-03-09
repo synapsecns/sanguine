@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import "../libs/Attestation.sol";
+import { Attestation, DestinationAttestation } from "../libs/Attestation.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { IAttestationHub } from "../interfaces/IAttestationHub.sol";
 

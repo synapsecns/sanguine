@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../contracts/interfaces/InterfaceOrigin.sol";
-import "./hubs/StateHubMock.t.sol";
-import "./system/AgentRegistryMock.t.sol";
-import "./system/SystemContractMock.t.sol";
+import { InterfaceOrigin } from "../../contracts/interfaces/InterfaceOrigin.sol";
+import { StateHubMock } from "./hubs/StateHubMock.t.sol";
+import { AgentRegistryMock } from "./system/AgentRegistryMock.t.sol";
+import { SystemContractMock } from "./system/SystemContractMock.t.sol";
 
 // solhint-disable no-empty-blocks
 contract OriginMock is StateHubMock, AgentRegistryMock, SystemContractMock, InterfaceOrigin {
