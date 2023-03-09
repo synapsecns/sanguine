@@ -99,13 +99,11 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
-    )
-        external
-        payable
-        haveActiveGuard
-        haveActiveNotary(_destination)
-        returns (uint32 messageNonce, bytes32 messageHash)
-    {
+    ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
+        // Modifiers are removed because they prevent from slashing the last active Guard/Notary
+        // haveActiveGuard
+        // haveActiveNotary(_destination)
+        // TODO: figure out a way to filter out unknown domains once Agent Merkle Tree is implemented
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         // This will revert if payload is not a formatted tips payload
         Tips tips = _tips.castToTips();
