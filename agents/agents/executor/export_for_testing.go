@@ -155,35 +155,6 @@ func (e Executor) OverrideMerkleTree(chainID uint32, tree *merkle.HistoricalTree
 	e.chainExecutors[chainID].merkleTree = tree
 }
 
-// Start runs the executor.
-func (e Executor) Start(ctx context.Context) error {
-	g, _ := errgroup.WithContext(ctx)
-
-	for _, chain := range e.config.Chains {
-		chain := chain
-
-		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
-				contractType: originContract,
-				eventType:    otherEvent,
-			})
-		})
-
-		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
-				contractType: destinationContract,
-				eventType:    attestationAcceptedEvent,
-			})
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("error when streaming logs: %w", err)
-	}
-
-	return nil
-}
-
 // Listen scans for emitted logs from the various chains.
 func (e Executor) Listen(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
