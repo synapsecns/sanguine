@@ -327,6 +327,12 @@ jobs:
       - name: Install Node Dependencies
         run: yarn install --immutable
 
+      # Foundry is required for flattening
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
       # Generate flattened files
       - name: Run flattener
         run: npx lerna exec npm run build:go --parallel
@@ -435,6 +441,13 @@ jobs:
       - name: Install Node Dependencies
         run: yarn install --immutable
         if: ${{ contains(matrix.package, 'agents') }}
+
+      # Foundry is required for flattening
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        if: ${{ contains(matrix.package, 'agents') }}
+        with:
+          version: nightly
 
       # Generate flattened files
       - name: Run flattener
