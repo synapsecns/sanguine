@@ -23,11 +23,11 @@ count=0
 # If any argument was a glob, this will iterate over the files it specifies
 for var in "$@"; do
   # Strip contract name "Abc.sol" from the path
-  fn=$(basename $var)
+  fn=$(basename "$var")
   # Flatten the file and save it in ./flattened
   # Make sure that flattened contracts base names are unique!
-  forge flatten $var -o "./flattened/$fn"
-  let ++count
+  forge flatten "$var" -o "./flattened/$fn"
+  ((++count))
 done
 
 echo -e "${GREEN}Files flattened: $count${NC}"
