@@ -36,7 +36,7 @@ abstract contract BondingManager is AgentRegistry, SystemContract {
         }
         // Forward information about the slashed agent to local Registries
         // Forward information about slashed agent to remote chains if needed
-        _slashAgentLocalRegistries(_info, forwardUpdate, _callOrigin);
+        _updateLocalRegistries(_dataSlashAgent(_info), forwardUpdate, _callOrigin);
     }
 
     /// @inheritdoc ISystemContract
@@ -60,16 +60,6 @@ abstract contract BondingManager is AgentRegistry, SystemContract {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // TODO: generalize this further when Agent Merkle Tree is implemented
-
-    /// @dev Passes an "update status" message to local Registries:
-    /// that an Agent has been slashed
-    function _slashAgentLocalRegistries(
-        AgentInfo memory _info,
-        bool _forwardUpdate,
-        uint32 _callOrigin
-    ) internal {
-        _updateLocalRegistries(_dataSlashAgent(_info), _forwardUpdate, _callOrigin);
-    }
 
     /// @dev Passes an "update status" message to local Registries:
     /// that an Agent has been added / removed

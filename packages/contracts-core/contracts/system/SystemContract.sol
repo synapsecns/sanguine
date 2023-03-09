@@ -232,6 +232,11 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
     ▏*║                      INTERNAL VIEWS: AGENT DATA                      ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @dev Convenience shortcut for creating data for the slashAgent system call.
+    function _dataSlashAgent(uint32 _domain, address _agent) internal pure returns (bytes memory) {
+        return _dataSlashAgent(AgentInfo(_domain, _agent, false));
+    }
+
     /**
      * @notice Constructs data for the system call to slash a given agent.
      */

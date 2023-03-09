@@ -63,7 +63,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         isValid = _isValidState(snapshot.state(_stateIndex));
         if (!isValid) {
             emit InvalidAttestationState(_stateIndex, _snapPayload, _attPayload, _attSignature);
-            _slashAgent(domain, notary);
+            // Slash Notary and trigger a hook to send a slashAgent system call
+            _slashAgent(domain, notary, true);
         }
     }
 
@@ -82,7 +83,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         isValid = _isValidState(snapshot.state(_stateIndex));
         if (!isValid) {
             emit InvalidSnapshotState(_stateIndex, _snapPayload, _snapSignature);
-            _slashAgent(domain, agent);
+            // Slash Agent and trigger a hook to send a slashAgent system call
+            _slashAgent(domain, agent, true);
         }
     }
 
@@ -142,10 +144,12 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _slashAgent(uint32 _domain, address _account) internal {
-        // TODO: Move to SystemRegistry?
-        // TODO: send a system call indicating agent was slashed
-        _removeAgent(_domain, _account);
+    /// @dev Hook that is called after an existing agent was slashed,
+    /// when verification of an invalid agent statement was done in this contract.
+    function _afterAgentSlashed(uint32 _domain, address _agent) internal virtual override {
+        /// @dev We send a "slashAgent" system message
+        /// after the Agent is slashed by submitting an invalid statement.
+        _callLocalBondingManager(_dataSlashAgent(_domain, _agent));
     }
 
     /**
