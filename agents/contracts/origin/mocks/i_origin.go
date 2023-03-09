@@ -199,6 +199,29 @@ func (_m *IOrigin) FilterAgentRemoved(opts *bind.FilterOpts, domain []uint32, ac
 	return r0, r1
 }
 
+// FilterAgentSlashed provides a mock function with given fields: opts, domain, account
+func (_m *IOrigin) FilterAgentSlashed(opts *bind.FilterOpts, domain []uint32, account []common.Address) (*origin.OriginAgentSlashedIterator, error) {
+	ret := _m.Called(opts, domain, account)
+
+	var r0 *origin.OriginAgentSlashedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []uint32, []common.Address) *origin.OriginAgentSlashedIterator); ok {
+		r0 = rf(opts, domain, account)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*origin.OriginAgentSlashedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []uint32, []common.Address) error); ok {
+		r1 = rf(opts, domain, account)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterDispatch provides a mock function with given fields: opts, messageHash, nonce, destination
 func (_m *IOrigin) FilterDispatch(opts *bind.FilterOpts, messageHash [][32]byte, nonce []uint32, destination []uint32) (*origin.OriginDispatchIterator, error) {
 	ret := _m.Called(opts, messageHash, nonce, destination)
@@ -646,6 +669,29 @@ func (_m *IOrigin) ParseAgentRemoved(log types.Log) (*origin.OriginAgentRemoved,
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*origin.OriginAgentRemoved)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ParseAgentSlashed provides a mock function with given fields: log
+func (_m *IOrigin) ParseAgentSlashed(log types.Log) (*origin.OriginAgentSlashed, error) {
+	ret := _m.Called(log)
+
+	var r0 *origin.OriginAgentSlashed
+	if rf, ok := ret.Get(0).(func(types.Log) *origin.OriginAgentSlashed); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*origin.OriginAgentSlashed)
 		}
 	}
 
@@ -1215,6 +1261,29 @@ func (_m *IOrigin) WatchAgentRemoved(opts *bind.WatchOpts, sink chan<- *origin.O
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginAgentRemoved, []uint32, []common.Address) error); ok {
+		r1 = rf(opts, sink, domain, account)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchAgentSlashed provides a mock function with given fields: opts, sink, domain, account
+func (_m *IOrigin) WatchAgentSlashed(opts *bind.WatchOpts, sink chan<- *origin.OriginAgentSlashed, domain []uint32, account []common.Address) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, domain, account)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginAgentSlashed, []uint32, []common.Address) event.Subscription); ok {
+		r0 = rf(opts, sink, domain, account)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginAgentSlashed, []uint32, []common.Address) error); ok {
 		r1 = rf(opts, sink, domain, account)
 	} else {
 		r1 = ret.Error(1)
