@@ -8,10 +8,6 @@ replace (
 	github.com/brianvoe/gofakeit/v6 => github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/soheilhy/cmux => github.com/lepsta/cmux v0.0.0-20221204213707-47c4a1bf4a43
-	github.com/synapsecns/sanguine/core => ./../../core
-	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
-	github.com/synapsecns/sanguine/services/omnirpc => ../omnirpc
-	github.com/synapsecns/sanguine/tools => ./../../tools
 )
 
 require (
@@ -41,10 +37,6 @@ require (
 	github.com/richardwilkes/toolbox v1.74.0
 	github.com/soheilhy/cmux v0.1.5
 	github.com/stretchr/testify v1.8.1
-	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
-	github.com/synapsecns/sanguine/ethergo v0.0.2
-	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
-	github.com/synapsecns/sanguine/tools v0.0.0-00010101000000-000000000000
 	github.com/tenderly/tenderly-cli v1.4.6
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/vektah/gqlparser/v2 v2.5.1

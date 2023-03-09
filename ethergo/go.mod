@@ -36,7 +36,6 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cast v1.5.0
 	github.com/stretchr/testify v1.8.1
-	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	github.com/teivah/onecontext v1.3.0
 	github.com/tenderly/tenderly-cli v1.4.6
@@ -214,5 +213,4 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	// add secp256k1 support https://github.com/nsmithuk/local-kms/pull/29/files
 	github.com/nsmithuk/local-kms => github.com/eupn/local-kms v0.0.0-20210821122212-69cb524fc207
-	github.com/synapsecns/sanguine/core => ../core
 )

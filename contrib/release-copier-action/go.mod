@@ -8,7 +8,6 @@ require (
 	github.com/migueleliasweb/go-github-mock v0.0.16
 	github.com/sethvargo/go-githubactions v1.1.0
 	github.com/stretchr/testify v1.8.1
-	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	golang.org/x/oauth2 v0.4.0
 )
 
@@ -44,5 +43,4 @@ require (
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/synapsecns/sanguine/core => ../../core
 )

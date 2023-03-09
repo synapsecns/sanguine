@@ -25,10 +25,6 @@ require (
 	github.com/richardwilkes/toolbox v1.74.0
 	github.com/spatialcurrent/go-math v0.0.0-20211120210754-b3872f7000fe
 	github.com/stretchr/testify v1.8.1
-	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
-	github.com/synapsecns/sanguine/ethergo v0.0.0-00010101000000-000000000000
-	github.com/synapsecns/sanguine/services/scribe v0.0.63
-	github.com/synapsecns/sanguine/tools v0.0.0-00010101000000-000000000000
 	github.com/ugorji/go/codec v1.2.7
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/vburenin/ifacemaker v1.2.0
@@ -269,7 +265,4 @@ replace (
 	// later versions give erros on uint64 being too high.
 	github.com/brianvoe/gofakeit/v6 => github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/synapsecns/sanguine/core => ../core
-	github.com/synapsecns/sanguine/ethergo => ../ethergo
-	github.com/synapsecns/sanguine/tools => ../tools
 )

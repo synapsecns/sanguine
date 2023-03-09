@@ -4,8 +4,6 @@ go 1.19
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/synapsecns/sanguine/core => ../../core
-	github.com/synapsecns/sanguine/ethergo => ../../ethergo
 )
 
 require (
@@ -36,8 +34,6 @@ require (
 	github.com/richardwilkes/toolbox v1.74.0
 	github.com/stretchr/testify v1.8.1
 	github.com/synapsecns/fasthttp-http2 v1.0.0
-	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
-	github.com/synapsecns/sanguine/ethergo v0.0.2
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/valyala/fasthttp v1.41.0
 	go.uber.org/automaxprocs v1.5.1

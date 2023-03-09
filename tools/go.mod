@@ -13,7 +13,6 @@ require (
 	github.com/nanmu42/etherscan-api v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.1
-	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/thoas/go-funk v0.9.0
 	github.com/urfave/cli/v2 v2.16.3
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
@@ -96,5 +95,4 @@ require (
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/synapsecns/sanguine/core => ../core
 )

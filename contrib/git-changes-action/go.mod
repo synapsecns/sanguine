@@ -4,7 +4,6 @@ go 1.19
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/synapsecns/sanguine/core => ../../core
 )
 
 require (
@@ -19,7 +18,6 @@ require (
 	github.com/otiai10/copy v1.9.0
 	github.com/sethvargo/go-githubactions v1.1.0
 	github.com/stretchr/testify v1.8.1
-	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/vishalkuo/bimap v0.0.0-20220726225509-e0b4f20de28b
 	github.com/xlab/treeprint v1.1.0
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7

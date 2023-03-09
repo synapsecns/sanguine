@@ -6,7 +6,6 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
-	github.com/synapsecns/sanguine/contrib/tfcore v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -104,6 +103,5 @@ require (
 )
 
 replace (
-	github.com/synapsecns/sanguine/contrib/tfcore => ../tfcore
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
 )

@@ -15,7 +15,6 @@ require (
 	github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20220907163743-48d1f3528353
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/go-testing-interface v1.14.1
-	github.com/synapsecns/sanguine/contrib/tfcore v0.0.0-00010101000000-000000000000
 	github.com/zclconf/go-cty v1.12.1
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 	golang.org/x/mod v0.7.0
@@ -174,7 +173,6 @@ require (
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/synapsecns/sanguine/contrib/tfcore => ../tfcore
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
 	k8s.io/kubectl => k8s.io/kubectl v0.24.2
 )
