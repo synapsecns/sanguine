@@ -202,18 +202,28 @@ func (e Executor) Run(ctx context.Context) error {
 		return fmt.Errorf("could not backfill executed messages: %w", err)
 	}
 
+	// Listen for snapshotAcceptedEvents on summit.
+	g.Go(func() error {
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, nil, contractEventType{
+			contractType: summitContract,
+			eventType:    snapshotAcceptedEvent,
+		})
+	})
+
 	for _, chain := range e.config.Chains {
 		chain := chain
 
+		// Listen for dispatchEvents on origin.
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, nil, contractEventType{
 				contractType: originContract,
 				eventType:    dispatchEvent,
 			})
 		})
 
+		// Listen for attestationAcceptedEvents on destination.
 		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
+			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, nil, contractEventType{
 				contractType: destinationContract,
 				eventType:    attestationAcceptedEvent,
 			})
@@ -502,7 +512,7 @@ func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) 
 
 	blockNumber := latestHeader.Number.Uint64()
 
-	return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, &blockNumber, contractEventType{
+	return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, &blockNumber, contractEventType{
 		contractType: destinationContract,
 		eventType:    executedEvent,
 	})
@@ -511,22 +521,8 @@ func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) 
 // streamLogs uses gRPC to stream logs into a channel.
 //
 //nolint:cyclop
-func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chain config.ChainConfig, toBlockNumber *uint64, contractEvent contractEventType) error {
-	var address string
-
-	//nolint:exhaustive
-	switch contractEvent.contractType {
-	case originContract:
-		address = chain.OriginAddress
-	case summitContract:
-		address = e.config.SummitAddress
-	case destinationContract:
-		address = chain.DestinationAddress
-	default:
-		return fmt.Errorf("contract type not supported")
-	}
-
-	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chain.ChainID)
+func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64, contractEvent contractEventType) error {
+	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chainID)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
 	}
@@ -541,7 +537,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
-			ChainId:         chain.ChainID,
+			ChainId:         chainID,
 		},
 		FromBlock: fromBlock,
 		ToBlock:   toBlock,
@@ -552,7 +548,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 
 	for {
 		select {
-		case <-e.chainExecutors[chain.ChainID].closeConnection:
+		case <-e.chainExecutors[chainID].closeConnection:
 			err := stream.CloseSend()
 			if err != nil {
 				return fmt.Errorf("could not close stream: %w", err)
@@ -581,19 +577,19 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			// If we are filtering for `executed` events, we do not need to `verifyAfter`
 			// since we are backfilling.
 			if contractEvent.eventType == executedEvent {
-				e.chainExecutors[chain.ChainID].logChan <- log
+				e.chainExecutors[chainID].logChan <- log
 
 				continue
 			}
-			if !e.chainExecutors[chain.ChainID].lastLog.verifyAfter(*log) {
-				logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chain.ChainID].lastLog.blockNumber, e.chainExecutors[chain.ChainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+			if !e.chainExecutors[chainID].lastLog.verifyAfter(*log) {
+				logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chainID].lastLog.blockNumber, e.chainExecutors[chainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 
 				continue
 			}
 
-			e.chainExecutors[chain.ChainID].logChan <- log
-			e.chainExecutors[chain.ChainID].lastLog.blockNumber = log.BlockNumber
-			e.chainExecutors[chain.ChainID].lastLog.blockIndex = log.Index
+			e.chainExecutors[chainID].logChan <- log
+			e.chainExecutors[chainID].lastLog.blockNumber = log.BlockNumber
+			e.chainExecutors[chainID].lastLog.blockIndex = log.Index
 		}
 	}
 }
