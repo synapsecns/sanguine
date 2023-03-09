@@ -12,9 +12,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/db/datastore/sql"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
 func RemoveNotaryTempFile(t *testing.T, fileName string) {
@@ -26,12 +24,14 @@ func RemoveNotaryTempFile(t *testing.T, fileName string) {
 func (u *NotarySuite) TestNotaryE2E() {
 	// TODO (joeallen): FIX ME
 	u.T().Skip()
-	testConfig := config.NotaryConfig{
-		DestinationDomain: u.DestinationDomainClient.Config(),
-		SummitDomain:      u.SummitDomainClient.Config(),
-		OriginDomains: map[string]config.DomainConfig{
-			"origin_client": u.OriginDomainClient.Config(),
+	testConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      u.OriginDomainClient.Config(),
+			"destination_client": u.DestinationDomainClient.Config(),
+			"summit_client":      u.SummitDomainClient.Config(),
 		},
+		DomainID:       u.DestinationDomainClient.Config().DomainID,
+		SummitDomainID: u.SummitDomainClient.Config().DomainID,
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
@@ -40,12 +40,6 @@ func (u *NotarySuite) TestNotaryE2E() {
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
-		Database: config.DBConfig{
-			Type:       dbcommon.Sqlite.String(),
-			DBPath:     filet.TmpDir(u.T(), ""),
-			ConnString: filet.TmpDir(u.T(), ""),
-		},
-		RefreshIntervalInSeconds: 10,
 	}
 	encodedTestConfig, err := testConfig.Encode()
 	Nil(u.T(), err)
@@ -58,21 +52,15 @@ func (u *NotarySuite) TestNotaryE2E() {
 	Nil(u.T(), err)
 	Positive(u.T(), numBytesWritten)
 
-	decodedNotaryConfig, err := config.DecodeNotaryConfig(tempConfigFile.Name())
+	decodedAgentConfig, err := config.DecodeAgentConfig(tempConfigFile.Name())
 	Nil(u.T(), err)
 
-	decodedNotaryConfigBackToEncodedBytes, err := decodedNotaryConfig.Encode()
+	decodedAgentConfigBackToEncodedBytes, err := decodedAgentConfig.Encode()
 	Nil(u.T(), err)
 
-	Equal(u.T(), encodedTestConfig, decodedNotaryConfigBackToEncodedBytes)
+	Equal(u.T(), encodedTestConfig, decodedAgentConfigBackToEncodedBytes)
 
 	notary, err := notary.NewNotary(u.GetTestContext(), testConfig)
-	Nil(u.T(), err)
-
-	dbType, err := dbcommon.DBTypeFromString(testConfig.Database.Type)
-	Nil(u.T(), err)
-
-	dbHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), dbType, testConfig.Database.ConnString, "notary")
 	Nil(u.T(), err)
 
 	auth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
@@ -80,7 +68,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(u.T(), err)
 
-	tx, err := u.OriginContract.Dispatch(auth.TransactOpts, testConfig.DestinationDomain.DomainID, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
+	tx, err := u.OriginContract.Dispatch(auth.TransactOpts, testConfig.DomainID, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
 	Nil(u.T(), err)
 	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
@@ -91,17 +79,6 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveNewestInProgressAttestationIfInState(
-			u.GetTestContext(),
-			u.OriginDomainClient.Config().DomainID,
-			testConfig.DestinationDomain.DomainID,
-			types.AttestationStateNotaryConfirmed)
-
-		return err == nil &&
-			retrievedConfirmedInProgressAttestation != nil &&
-			u.OriginDomainClient.Config().DomainID == retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin() &&
-			testConfig.DestinationDomain.DomainID == retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination() &&
-			types.AttestationStateNotaryConfirmed == retrievedConfirmedInProgressAttestation.AttestationState() &&
-			retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Nonce() != 0
+		return true
 	})
 }

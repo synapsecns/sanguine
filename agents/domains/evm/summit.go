@@ -9,7 +9,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -51,7 +50,7 @@ func (a summitContract) AddAgent(transactOpts *bind.TransactOpts, domainID uint3
 	return nil
 }
 
-func (a summitContract) SubmitSnapshot(ctx context.Context, signer signer.Signer, snapshot types.Snapshot) error {
+func (a summitContract) SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {
 		return fmt.Errorf("could not sign tx: %w", err)
@@ -63,20 +62,6 @@ func (a summitContract) SubmitSnapshot(ctx context.Context, signer signer.Signer
 	}
 
 	transactOpts.Context = ctx
-
-	encodedSnapshot, err := types.EncodeSnapshot(snapshot)
-	if err != nil {
-		return fmt.Errorf("could not get signed attestations: %w", err)
-	}
-
-	hashedSnapshot, err := types.HashRawBytes(encodedSnapshot)
-	if err != nil {
-		return fmt.Errorf("could not hash snapshot: %w", err)
-	}
-	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedSnapshot), false)
-	if err != nil {
-		return fmt.Errorf("could not sign message: %w", err)
-	}
 
 	_, err = a.contract.SubmitSnapshot(transactOpts, encodedSnapshot, signature.R().Bytes())
 	if err != nil {
@@ -112,12 +97,4 @@ func (a summitContract) GetLatestAgentState(ctx context.Context, origin uint32, 
 	}
 
 	return state, nil
-}
-
-func (a summitContract) PrimeNonce(ctx context.Context, signer signer.Signer) error {
-	_, err := a.nonceManager.GetNextNonce(signer.Address())
-	if err != nil {
-		return fmt.Errorf("could not prime nonce for signer on collector: %w", err)
-	}
-	return nil
 }

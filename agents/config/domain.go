@@ -68,6 +68,10 @@ func (d DomainConfig) IsValid(_ context.Context) (ok bool, err error) {
 		return false, fmt.Errorf("field OriginAddress: %w", ErrRequiredField)
 	}
 
+	if d.DestinationAddress == "" {
+		return false, fmt.Errorf("field DestinationAddress: %w", ErrRequiredField)
+	}
+
 	if d.RPCUrl == "" {
 		return false, fmt.Errorf("field RPCURL: %w", ErrRequiredField)
 	}

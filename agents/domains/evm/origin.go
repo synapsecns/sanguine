@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -134,20 +135,42 @@ func (h originContract) GetHistoricalAttestation(ctx context.Context, destinatio
 	return nil, uint64(0), nil
 }
 
-func (h originContract) SuggestAttestation(ctx context.Context, destinationID uint32) (types.Attestation, error) {
-	// TODO (joeallen): FIX ME
-	/*suggestedAttestationRaw, err := h.contract.SuggestAttestation(&bind.CallOpts{Context: ctx}, destinationID)
+func (o originContract) SuggestLatestState(ctx context.Context) (types.State, error) {
+	suggestedStateRaw, err := o.contract.SuggestLatestState(&bind.CallOpts{Context: ctx})
 	if err != nil {
-		return nil, fmt.Errorf("could not get suggested attestation: %w", err)
+		return nil, fmt.Errorf("could not get suggested latest state: %w", err)
 	}
 
-	suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode suggested attestation: %w", err)
+	if len(suggestedStateRaw) == 0 {
+		//nolint:nilnil
+		return nil, nil
 	}
 
-	return suggestedAttestation, nil*/
-	return nil, nil
+	suggestedState, err := types.DecodeState(suggestedStateRaw)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode suggested state: %w", err)
+	}
+
+	return suggestedState, nil
+}
+
+func (o originContract) SuggestState(ctx context.Context, nonce uint32) (types.State, error) {
+	suggestedStateRaw, err := o.contract.SuggestState(&bind.CallOpts{Context: ctx}, nonce)
+	if err != nil {
+		return nil, fmt.Errorf("could not get suggested state: %w", err)
+	}
+
+	if len(suggestedStateRaw) == 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	suggestedState, err := types.DecodeState(suggestedStateRaw)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode suggested state: %w", err)
+	}
+
+	return suggestedState, nil
 }
 
 var _ domains.OriginContract = &originContract{}

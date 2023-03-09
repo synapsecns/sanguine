@@ -381,7 +381,7 @@ notary_files:
   notary_signer1.txt: |-
     04486fc4ef3f3fb489c9f4ed4ff07cb9aa998abc0a244f2464c76164bcfad41d
   notary_config1.yaml: |-
-    refresh_interval_in_seconds: 10
+    refresh_interval_seconds: 10
     origin_domains:
       origin_client:
         domain_id: 137
@@ -441,7 +441,7 @@ notary_files:
   notary_signer2.txt: |-
     479cc41efe8ccb6dd3fd96951db601beacd7bdade60e6dbd8ae6fab02020cf92
   notary_config2.yaml: |-
-    refresh_interval_in_seconds: 10
+    refresh_interval_seconds: 10
     origin_domains:
       origin_client:
         domain_id: 137
@@ -501,7 +501,7 @@ notary_files:
   notary_signer3.txt: |-
     2633f34da513bb717df6262fb5db89aa4db081a44c1d9ffc30ee38941dd58c0b
   notary_config3.yaml: |-
-    refresh_interval_in_seconds: 10
+    refresh_interval_seconds: 10
     origin_domains:
     origin_client:
       domain_id: 137
@@ -564,7 +564,7 @@ guard_files:
   guard_signer.txt: |-
     dd03ef81893502797024462da191deaf1e90f30879b3b7673acb11ce72f73094
   guard_config.yaml: |-
-    refresh_interval_in_seconds: 10
+    refresh_interval_seconds: 10
     origin_domains:
       origin_client:
         domain_id: 137
