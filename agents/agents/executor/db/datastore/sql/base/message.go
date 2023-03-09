@@ -157,7 +157,7 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32) (uint64, 
 	dbTx = s.DB().WithContext(ctx).
 		Model(&message).
 		Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
-		Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
+		Select(fmt.Sprintf("MAX(%s)", DestinationBlockNumberFieldName)).
 		Find(&lastBlockNumber)
 	if dbTx.Error != nil {
 		return 0, fmt.Errorf("failed to get last block number: %w", dbTx.Error)

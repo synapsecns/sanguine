@@ -223,15 +223,9 @@ func (e Executor) Run(ctx context.Context) error {
 			return e.receiveLogs(ctx, chain.ChainID)
 		})
 
-		for _, destinationChain := range e.config.Chains {
-			destinationChain := destinationChain
-			if destinationChain.ChainID == chain.ChainID {
-				continue
-			}
-			g.Go(func() error {
-				return e.setMinimumTime(ctx, chain.ChainID, destinationChain.ChainID)
-			})
-		}
+		g.Go(func() error {
+			return e.setMinimumTime(ctx, chain.ChainID)
+		})
 
 		g.Go(func() error {
 			return e.executeExecutable(ctx, chain.ChainID)
@@ -267,12 +261,8 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
-	attestationMask := execTypes.DBAttestation{
-		ChainID:     &originDomain,
-		Destination: &destinationDomain,
-	}
 	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
-	itemCountNonce, err := e.executorDB.GetEarliestAttestationsNonceInNonceRange(ctx, attestationMask, *nonce, maximumNonce)
+	itemCountNonce, err := e.getEarliestAttestationNonceInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce)
 	if err != nil {
 		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
 	}
@@ -352,7 +342,6 @@ const (
 	// Destination's AttestationExecuted event.
 	executedEvent
 	// Summit's SnapshotAccepted event.
-	//nolint:deadcode,varcheck
 	snapshotAcceptedEvent
 	otherEvent
 )
@@ -617,7 +606,6 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			return nil
 		}
 
-		destination := (*message).DestinationDomain()
 		merkleIndex := e.chainExecutors[chainID].merkleTree.NumOfItems()
 		leaf, err := (*message).ToLeaf()
 		if err != nil {
@@ -631,26 +619,9 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 
 		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
 
-		messageNonce := (*message).Nonce()
-		attestationMask := execTypes.DBAttestation{
-			ChainID:     &chainID,
-			Destination: &destination,
-			Nonce:       &messageNonce,
-		}
-		nonce, blockTime, err := e.executorDB.GetAttestationForNonceOrGreater(ctx, attestationMask)
+		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, false, 0)
 		if err != nil {
-			return fmt.Errorf("could not get attestation for nonce or greater: %w", err)
-		}
-		if nonce != nil && blockTime != nil {
-			err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, true, *blockTime+uint64((*message).OptimisticSeconds()))
-			if err != nil {
-				return fmt.Errorf("could not store message: %w", err)
-			}
-		} else {
-			err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, false, 0)
-			if err != nil {
-				return fmt.Errorf("could not store message: %w", err)
-			}
+			return fmt.Errorf("could not store message: %w", err)
 		}
 	case destinationContract:
 		//nolint:exhaustive
@@ -666,12 +637,12 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 				return nil
 			}
 
-			logHeader, err := e.chainExecutors[(*attestation).Destination()].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
+			logHeader, err := e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(log.BlockNumber)))
 			if err != nil {
 				return fmt.Errorf("could not get log header: %w", err)
 			}
 
-			err = e.executorDB.StoreAttestation(ctx, *attestation, log.BlockNumber, logHeader.Time)
+			err = e.executorDB.StoreAttestation(ctx, *attestation, chainID, log.BlockNumber, logHeader.Time)
 			if err != nil {
 				return fmt.Errorf("could not store attestation: %w", err)
 			}
@@ -809,7 +780,7 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 // setMinimumTime sets the minimum time for the message to be executed by checking for associated attestations.
 //
 //nolint:gocognit,cyclop
-func (e Executor) setMinimumTime(ctx context.Context, chainID uint32, destinationDomain uint32) error {
+func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 	// TODO: Make for origin-dest, not just origin
 	for {
 		select {
@@ -818,8 +789,7 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32, destinatio
 		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval) * time.Second):
 			page := 1
 			messageMask := execTypes.DBMessage{
-				ChainID:     &chainID,
-				Destination: &destinationDomain,
+				ChainID: &chainID,
 			}
 
 			var unsetMessages []types.Message
@@ -844,35 +814,74 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32, destinatio
 				continue
 			}
 
-			page = 1
-			minNonce := unsetMessages[0].Nonce()
-			attestationMask := execTypes.DBAttestation{
-				ChainID:     &chainID,
-				Destination: &destinationDomain,
-			}
+			for _, message := range unsetMessages {
+				nonce := message.Nonce()
 
-			var attestations []execTypes.DBAttestation
-
-			// Get all attestations for the unset messages.
-			for {
-				atts, err := e.executorDB.GetAttestationsAboveOrEqualNonce(ctx, attestationMask, minNonce, page)
+				potentialSnapshotRoots, err := e.executorDB.GetPotentialSnapshotRoots(ctx, chainID, nonce)
 				if err != nil {
-					return fmt.Errorf("could not get attestations: %w", err)
+					return fmt.Errorf("could not get potential snapshot roots: %w", err)
 				}
 
-				if len(atts) == 0 {
-					break
+				if len(potentialSnapshotRoots) == 0 {
+					continue
 				}
 
-				attestations = append(attestations, atts...)
+				destinationDomain := message.DestinationDomain()
 
-				page++
+				attestationMask := execTypes.DBAttestation{
+					Destination: &destinationDomain,
+				}
+
+				minimumTimestamp, err := e.executorDB.GetAttestationMinimumTimestamp(ctx, attestationMask, potentialSnapshotRoots)
+				if err != nil {
+					return fmt.Errorf("could not get attestation minimum timestamp: %w", err)
+				}
+
+				if minimumTimestamp == nil {
+					continue
+				}
+
+				setMessageMask := execTypes.DBMessage{
+					ChainID:     &chainID,
+					Destination: &destinationDomain,
+					Nonce:       &nonce,
+				}
+
+				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, *minimumTimestamp)
+				if err != nil {
+					return fmt.Errorf("could not set minimum time: %w", err)
+				}
 			}
 
-			err := e.setMinimumTimes(ctx, unsetMessages, attestations)
-			if err != nil {
-				return fmt.Errorf("could not set minimum times: %w", err)
-			}
+			//page = 1
+			//minNonce := unsetMessages[0].Nonce()
+			//attestationMask := execTypes.DBAttestation{
+			//	ChainID:     &chainID,
+			//	Destination: &destinationDomain,
+			//}
+			//
+			//var attestations []execTypes.DBAttestation
+			//
+			//// Get all attestations for the unset messages.
+			//for {
+			//	atts, err := e.executorDB.GetAttestationsAboveOrEqualNonce(ctx, attestationMask, minNonce, page)
+			//	if err != nil {
+			//		return fmt.Errorf("could not get attestations: %w", err)
+			//	}
+			//
+			//	if len(atts) == 0 {
+			//		break
+			//	}
+			//
+			//	attestations = append(attestations, atts...)
+			//
+			//	page++
+			//}
+			//
+			//err := e.setMinimumTimes(ctx, unsetMessages, attestations)
+			//if err != nil {
+			//	return fmt.Errorf("could not set minimum times: %w", err)
+			//}
 		}
 	}
 }

@@ -61,7 +61,7 @@ func (t *DBSuite) TestStoreRetrieveAttestation() {
 
 		attestationMaskB := types.DBAttestation{
 			DestinationBlockNumber: &blockNumberB,
-			DestinationBlockTime:   &blockTimeB,
+			DestinationTimestamp:   &blockTimeB,
 		}
 
 		retrievedAttestationB, err := testDB.GetAttestation(t.GetTestContext(), attestationMaskB)

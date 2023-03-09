@@ -44,25 +44,25 @@ type destinationContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
-	// TODO (joeallen): FIX ME
-	/*transactOpts, err := a.transactOptsSetup(ctx, signer)
-	if err != nil {
-		return fmt.Errorf("could not setup transact opts: %w", err)
-	}
-
-	encodedAttestation, err := types.EncodeSignedAttestation(attestation)
-	if err != nil {
-		return fmt.Errorf("could not get signed attestations: %w", err)
-	}
-
-	_, err = a.contract.SubmitAttestation(transactOpts, encodedAttestation)
-	if err != nil {
-		return fmt.Errorf("could not submit attestation: %w", err)
-	}*/
-
-	return nil
-}
+//func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
+//	// TODO (joeallen): FIX ME
+//	/*transactOpts, err := a.transactOptsSetup(ctx, signer)
+//	if err != nil {
+//		return fmt.Errorf("could not setup transact opts: %w", err)
+//	}
+//
+//	encodedAttestation, err := types.EncodeSignedAttestation(attestation)
+//	if err != nil {
+//		return fmt.Errorf("could not get signed attestations: %w", err)
+//	}
+//
+//	_, err = a.contract.SubmitAttestation(transactOpts, encodedAttestation)
+//	if err != nil {
+//		return fmt.Errorf("could not submit attestation: %w", err)
+//	}*/
+//
+//	return nil
+//}
 
 func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)

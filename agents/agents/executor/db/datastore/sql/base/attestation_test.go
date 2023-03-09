@@ -24,7 +24,7 @@ func TestAttestationDBAttestationParity(t *testing.T) {
 		Nonce:                  &nonce,
 		Root:                   &root,
 		DestinationBlockNumber: &blockNumberDestination,
-		DestinationBlockTime:   &destinationBlockTime,
+		DestinationTimestamp:   &destinationBlockTime,
 	}
 
 	initialAttestation := base.DBAttestationToAttestation(initialDBAttestation)

@@ -13,19 +13,20 @@ func _() {
 	_ = x[OriginHarnessType-2]
 	_ = x[StateHarnessType-3]
 	_ = x[SnapshotHarnessType-4]
-	_ = x[TipsHarnessType-5]
-	_ = x[HeaderHarnessType-6]
-	_ = x[DestinationHarnessType-7]
-	_ = x[SummitType-8]
-	_ = x[DestinationType-9]
-	_ = x[AgentsTestContractType-10]
-	_ = x[TestClientType-11]
-	_ = x[PingPongClientType-12]
+	_ = x[AttestationHarnessType-5]
+	_ = x[TipsHarnessType-6]
+	_ = x[HeaderHarnessType-7]
+	_ = x[DestinationHarnessType-8]
+	_ = x[SummitType-9]
+	_ = x[DestinationType-10]
+	_ = x[AgentsTestContractType-11]
+	_ = x[TestClientType-12]
+	_ = x[PingPongClientType-13]
 }
 
-const _contractTypeImpl_name = "OriginMessageHarnessOriginHarnessStateHarnessTypeSnapshotHarnessTypeTipsHarnessTypeHeaderHarnessTypeDestinationHarnessSummitDestinationAgentsTestContractTestClientPingPongClient"
+const _contractTypeImpl_name = "OriginMessageHarnessOriginHarnessStateHarnessTypeSnapshotHarnessTypeAttestationHarnessTypeTipsHarnessTypeHeaderHarnessTypeDestinationHarnessSummitDestinationAgentsTestContractTestClientPingPongClient"
 
-var _contractTypeImpl_index = [...]uint8{0, 6, 20, 33, 49, 68, 83, 100, 118, 124, 135, 153, 163, 177}
+var _contractTypeImpl_index = [...]uint8{0, 6, 20, 33, 49, 68, 90, 105, 122, 140, 146, 157, 175, 185, 199}
 
 func (i contractTypeImpl) String() string {
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {
