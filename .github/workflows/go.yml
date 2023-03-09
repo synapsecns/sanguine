@@ -231,6 +231,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Configure private token
+        env:
+          GH_ACCESS_TOKEN: ${{ secrets.secrets.WORKFLOW_PAT }}
+        run: |
+          git config --global url."https://${GH_ACCESS_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+
       # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
       - name: Setup cache key
         run: cp ${{matrix.package}}/go.mod go.mod -v
