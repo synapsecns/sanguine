@@ -6,6 +6,7 @@ import { IStateHub } from "../../contracts/interfaces/IStateHub.sol";
 import { EMPTY_ROOT, SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
 import { SnapshotLib } from "../../contracts/libs/Snapshot.sol";
 import { OriginState, State, StateLib, SummitState } from "../../contracts/libs/State.sol";
+import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { TipsLib } from "../../contracts/libs/Tips.sol";
 
 import { InterfaceOrigin } from "../../contracts/Origin.sol";
@@ -133,6 +134,23 @@ contract OriginTest is SynapseTest, SynapseProofs {
             state.formatOriginState(DOMAIN_LOCAL, MESSAGES),
             "!suggestLatestState"
         );
+    }
+
+    function test_slashAgent() public {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        vm.expectEmit(true, true, true, true);
+        emit AgentRemoved(DOMAIN_REMOTE, notary);
+        vm.expectEmit(true, true, true, true);
+        emit AgentSlashed(DOMAIN_REMOTE, notary);
+        vm.recordLogs();
+        vm.prank(address(systemRouter));
+        ISystemContract(origin).slashAgent({
+            _rootSubmittedAt: block.timestamp,
+            _callOrigin: DOMAIN_LOCAL,
+            _caller: SystemEntity.BondingManager,
+            _info: AgentInfo(DOMAIN_REMOTE, notary, false)
+        });
+        assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");
     }
 
     function test_verifySnapshot_existingNonce(
