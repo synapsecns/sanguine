@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import "../libs/Attestation.sol";
-import "../libs/MerkleList.sol";
-import "../libs/Snapshot.sol";
-import "../libs/State.sol";
-import "../libs/TypedMemView.sol";
+import { Attestation, AttestationLib, SummitAttestation } from "../libs/Attestation.sol";
+import { MerkleList } from "../libs/MerkleList.sol";
+import { Snapshot, SnapshotLib, SummitSnapshot } from "../libs/Snapshot.sol";
+import { State, StateLib, SummitState } from "../libs/State.sol";
+import { TypedMemView } from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { SnapshotHubEvents } from "../events/SnapshotHubEvents.sol";
 import { ISnapshotHub } from "../interfaces/ISnapshotHub.sol";

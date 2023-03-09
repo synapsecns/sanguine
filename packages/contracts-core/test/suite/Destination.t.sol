@@ -1,14 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../contracts/libs/Snapshot.sol";
+import { AttestationLib, SummitAttestation } from "../../contracts/libs/Attestation.sol";
+import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
+import { Snapshot, SnapshotLib } from "../../contracts/libs/Snapshot.sol";
+import { State, SummitState } from "../../contracts/libs/State.sol";
+import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 
-import "../mocks/client/MessageRecipientMock.t.sol";
+import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "../../contracts/Destination.sol";
 
-import "../utils/libs/FakeIt.t.sol";
-import "../utils/libs/SynapseStructs.t.sol";
-import "../utils/SynapseProofs.t.sol";
-import "../utils/SynapseTest.t.sol";
+import { MessageRecipientMock } from "../mocks/client/MessageRecipientMock.t.sol";
+
+import { fakeStates } from "../utils/libs/FakeIt.t.sol";
+import { RawHeader, RawMessage, RawTips } from "../utils/libs/SynapseStructs.t.sol";
+import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
+import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
+import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks

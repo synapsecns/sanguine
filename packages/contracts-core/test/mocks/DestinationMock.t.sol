@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../contracts/interfaces/InterfaceDestination.sol";
-import "./hubs/AttestationHubMock.t.sol";
-import "./system/AgentRegistryMock.t.sol";
-import "./system/SystemContractMock.t.sol";
+import {
+    InterfaceDestination,
+    ORIGIN_TREE_DEPTH
+} from "../../contracts/interfaces/InterfaceDestination.sol";
+import { AttestationHubMock } from "./hubs/AttestationHubMock.t.sol";
+import { AgentRegistryMock } from "./system/AgentRegistryMock.t.sol";
+import { SystemContractMock } from "./system/SystemContractMock.t.sol";
 
 // solhint-disable no-empty-blocks
 contract DestinationMock is

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/Tips.sol";
+import { TipsLib } from "../../../contracts/libs/Tips.sol";
 
 abstract contract TipsTools {
     // Mock values

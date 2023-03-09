@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/interfaces/IAgentRegistry.sol";
-import "../ExcludeCoverage.sol";
+import { IAgentRegistry } from "../../../contracts/interfaces/IAgentRegistry.sol";
+import { ExcludeCoverage } from "../ExcludeCoverage.sol";
 
 // solhint-disable no-empty-blocks
 abstract contract AgentRegistryMock is ExcludeCoverage, IAgentRegistry {

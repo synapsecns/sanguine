@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/Merkle.sol";
+import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
 
-import "../../utils/SynapseLibraryTest.t.sol";
-import "../../harnesses/libs/MerkleListHarness.t.sol";
+import { SynapseLibraryTest } from "../../utils/SynapseLibraryTest.t.sol";
+import { MerkleListHarness } from "../../harnesses/libs/MerkleListHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract MerkleListLibraryTest is SynapseLibraryTest {

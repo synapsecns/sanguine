@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import "../../../contracts/libs/MerkleList.sol";
+import { MerkleList } from "../../../contracts/libs/MerkleList.sol";
 
 contract MerkleListHarness {
     function calculateRoot(bytes32[] memory hashes) public pure returns (bytes32) {

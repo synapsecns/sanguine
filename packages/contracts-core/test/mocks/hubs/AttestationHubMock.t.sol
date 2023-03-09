@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/interfaces/IAttestationHub.sol";
-import "../ExcludeCoverage.sol";
+import {
+    DestinationAttestation,
+    IAttestationHub
+} from "../../../contracts/interfaces/IAttestationHub.sol";
+import { ExcludeCoverage } from "../ExcludeCoverage.sol";
 
 // solhint-disable no-empty-blocks
 contract AttestationHubMock is ExcludeCoverage, IAttestationHub {

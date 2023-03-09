@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import "../libs/Constants.sol";
-import "../libs/Snapshot.sol";
-import "../libs/State.sol";
+import { EMPTY_ROOT } from "../libs/Constants.sol";
+import { OriginState, State, StateLib } from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "../context/DomainContext.sol";
 import { StateHubEvents } from "../events/StateHubEvents.sol";

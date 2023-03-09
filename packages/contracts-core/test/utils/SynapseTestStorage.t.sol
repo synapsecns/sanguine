@@ -2,12 +2,12 @@
 pragma solidity 0.8.17;
 
 // ============ Harnesses ============
-import "../harnesses/client/AppHarness.t.sol";
-import "../harnesses/system/SystemRouterHarness.t.sol";
+import { AppHarness } from "../harnesses/client/AppHarness.t.sol";
+import { SystemRouterHarness } from "../harnesses/system/SystemRouterHarness.t.sol";
 // ============ Utils ============
-import "./SynapseConstants.t.sol";
-import "./SynapseEvents.t.sol";
-import "./proof/HistoricalProofGenerator.t.sol";
+import { SynapseConstants } from "./SynapseConstants.t.sol";
+import { SynapseEvents } from "./SynapseEvents.t.sol";
+import { HistoricalProofGenerator } from "./proof/HistoricalProofGenerator.t.sol";
 
 contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     struct TestDeployments {

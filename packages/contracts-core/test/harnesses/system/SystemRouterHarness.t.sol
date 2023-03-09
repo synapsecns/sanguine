@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import "../../../contracts/system/SystemRouter.sol";
+import { ByteString, SystemEntity, SystemRouter } from "../../../contracts/system/SystemRouter.sol";
 
 // solhint-disable no-empty-blocks
 contract SystemRouterHarness is SystemRouter {
