@@ -38,14 +38,10 @@ type DomainClient interface {
 type OriginContract interface {
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
 	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
-	// ProduceAttestation suggests an update from the origin contract
-	// TODO (joe): this will be changed to "ProduceAttestations" and return an attestation per destination
-	ProduceAttestation(ctx context.Context) (types.Attestation, error)
-	// GetHistoricalAttestation gets the root corresponding to destination and nonce,
-	// as well as the block number the message was dispatched and the current block number
-	GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, error)
-	// SuggestAttestation gets the latest attestation on the origin for the given destination
-	SuggestAttestation(ctx context.Context, destinationID uint32) (types.Attestation, error)
+	// SuggestLatestState gets the latest state on the origin
+	SuggestLatestState(ctx context.Context) (types.State, error)
+	// SuggestState gets the state on the origin with the given nonce if it exists
+	SuggestState(ctx context.Context, nonce uint32) (types.State, error)
 }
 
 // SummitContract contains the interface for the summit.
@@ -53,13 +49,11 @@ type SummitContract interface {
 	// AddAgent adds an agent (guard or notary) to the summit
 	AddAgent(transactOpts *bind.TransactOpts, domain uint32, signer signer.Signer) error
 	// SubmitSnapshot submits a snapshot to the summit.
-	SubmitSnapshot(ctx context.Context, signer signer.Signer, snapshot types.Snapshot) error
+	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
 	// GetLatestState gets the latest state signed by any guard for the given origin
 	GetLatestState(ctx context.Context, origin uint32) (types.State, error)
 	// GetLatestAgentState gets the latest state signed by the bonded signer for the given origin
 	GetLatestAgentState(ctx context.Context, origin uint32, bondedAgentSigner signer.Signer) (types.State, error)
-	// PrimeNonce primes the nonce for the signer
-	PrimeNonce(ctx context.Context, signer signer.Signer) error
 }
 
 // DestinationContract contains the interface for the destination.
@@ -70,8 +64,6 @@ type DestinationContract interface {
 	Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error
 	// SubmittedAt retrieves the time a given Merkle root from the given origin was submitted on the destination.
 	SubmittedAt(ctx context.Context, origin uint32, root [32]byte) (*time.Time, error)
-	// PrimeNonce primes the nonce for the signer
-	PrimeNonce(ctx context.Context, signer signer.Signer) error
 }
 
 // TestClientContract contains the interface for the test client.

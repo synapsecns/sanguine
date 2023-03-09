@@ -59,7 +59,7 @@ var GuardRunCommand = &cli.Command{
 	Description: "runs the guard service",
 	Flags:       []cli.Flag{configFlag, metricsPortFlag, ignoreInitErrorsFlag},
 	Action: func(c *cli.Context) error {
-		guardConfig, err := config.DecodeGuardConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		guardConfig, err := config.DecodeAgentConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("failed to decode config: %w", err)
 		}

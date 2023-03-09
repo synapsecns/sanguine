@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -43,8 +44,8 @@ type originContract struct {
 	nonceManager nonce.Manager
 }
 
-func (h originContract) FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error) {
-	rangeFilter := NewRangeFilter(h.contract.Address(), h.client, big.NewInt(int64(from)), big.NewInt(int64(to)), 100, false)
+func (o originContract) FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error) {
+	rangeFilter := NewRangeFilter(o.contract.Address(), o.client, big.NewInt(int64(from)), big.NewInt(int64(to)), 100, false)
 
 	// blocks until done `
 	err = rangeFilter.Start(ctx)
@@ -58,13 +59,13 @@ func (h originContract) FetchSortedMessages(ctx context.Context, from uint32, to
 	}
 
 	for _, log := range filteredLogs {
-		logType, ok := h.contract.Parser().EventType(log)
+		logType, ok := o.contract.Parser().EventType(log)
 		if !ok {
 			continue
 		}
 
 		if logType == origin.DispatchEvent {
-			dispatchEvents, ok := h.contract.Parser().ParseDispatch(log)
+			dispatchEvents, ok := o.contract.Parser().ParseDispatch(log)
 			// TODO: this should never happen. Maybe we should return an error here?
 			if !ok {
 				continue
@@ -77,77 +78,42 @@ func (h originContract) FetchSortedMessages(ctx context.Context, from uint32, to
 	return messages, nil
 }
 
-func (h originContract) ProduceAttestation(ctx context.Context) (types.Attestation, error) {
-	// TODO: After origin.go inherits GlobalNotaryRegistry, we can implement suggestAttestations
-	// and change this to ProduceAttestations returning a slice []types.Attestation
-	return nil, domains.ErrNoUpdate
-	/*suggestedUpdate, err := h.contract.SuggestAttestation(&bind.CallOpts{Context: ctx}, 0)
+func (o originContract) SuggestLatestState(ctx context.Context) (types.State, error) {
+	suggestedStateRaw, err := o.contract.SuggestLatestState(&bind.CallOpts{Context: ctx})
 	if err != nil {
-		return nil, fmt.Errorf("could not suggest update: %w", err)
+		return nil, fmt.Errorf("could not get suggested latest state: %w", err)
 	}
 
-	if suggestedUpdate.LatestRoot == [32]byte{} {
-		return nil, domains.ErrNoUpdate
+	if len(suggestedStateRaw) == 0 {
+		//nolint:nilnil
+		return nil, nil
 	}
 
-	// TODO (joe), this can be cached
-	localDomain, err := h.contract.LocalDomain(&bind.CallOpts{Context: ctx})
+	suggestedState, err := types.DecodeState(suggestedStateRaw)
 	if err != nil {
-		return nil, fmt.Errorf("could not get local domain: %w", err)
+		return nil, fmt.Errorf("could not decode suggested state: %w", err)
 	}
 
-	update := types.NewAttestation(localDomain, suggestedUpdate.LatestNonce, suggestedUpdate.LatestRoot)
-
-	return update, nil*/
+	return suggestedState, nil
 }
 
-func (h originContract) GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, error) {
-	// TODO (joeallen): FIX ME
-	/*historicalRoot, dispatchBlockNumber, err := h.contract.GetHistoricalRoot(&bind.CallOpts{Context: ctx}, destinationID, nonce)
+func (o originContract) SuggestState(ctx context.Context, nonce uint32) (types.State, error) {
+	suggestedStateRaw, err := o.contract.SuggestState(&bind.CallOpts{Context: ctx}, nonce)
 	if err != nil {
-		if err.Error() == "execution reverted: !nonce: existing destination" || err.Error() == "execution reverted: !nonce: unknown destination" {
-			return nil, 0, domains.ErrNoUpdate
-		}
-
-		return nil, 0, fmt.Errorf("could not get historical root: %w", err)
+		return nil, fmt.Errorf("could not get suggested state: %w", err)
 	}
 
-	if historicalRoot == [32]byte{} {
-		return nil, 0, domains.ErrNoUpdate
+	if len(suggestedStateRaw) == 0 {
+		//nolint:nilnil
+		return nil, nil
 	}
 
-	// TODO (joe), this can be cached
-	localDomain, err := h.contract.LocalDomain(&bind.CallOpts{Context: ctx})
+	suggestedState, err := types.DecodeState(suggestedStateRaw)
 	if err != nil {
-		return nil, 0, fmt.Errorf("could not get local domain: %w", err)
+		return nil, fmt.Errorf("could not decode suggested state: %w", err)
 	}
 
-	attestationKey := types.AttestationKey{
-		Origin:      localDomain,
-		Destination: destinationID,
-		Nonce:       nonce,
-	}
-
-	historicalAttestation := types.NewAttestation(attestationKey.GetRawKey(), historicalRoot)
-
-	return historicalAttestation, dispatchBlockNumber.Uint64(), nil*/
-	return nil, uint64(0), nil
-}
-
-func (h originContract) SuggestAttestation(ctx context.Context, destinationID uint32) (types.Attestation, error) {
-	// TODO (joeallen): FIX ME
-	/*suggestedAttestationRaw, err := h.contract.SuggestAttestation(&bind.CallOpts{Context: ctx}, destinationID)
-	if err != nil {
-		return nil, fmt.Errorf("could not get suggested attestation: %w", err)
-	}
-
-	suggestedAttestation, err := types.DecodeAttestation(suggestedAttestationRaw)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode suggested attestation: %w", err)
-	}
-
-	return suggestedAttestation, nil*/
-	return nil, nil
+	return suggestedState, nil
 }
 
 var _ domains.OriginContract = &originContract{}
