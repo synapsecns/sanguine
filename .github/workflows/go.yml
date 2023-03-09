@@ -131,6 +131,7 @@ jobs:
           done
 
       - name: Use go workspace
+        working-directory: ${{ github.workspace }}
         run: go work use ${{matrix.package}}
 
       - name: Test
