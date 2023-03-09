@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./ByteString.sol";
+import { ByteString } from "./ByteString.sol";
+import { TypedMemView } from "./TypedMemView.sol";
 
 /// @dev Tips is a memory over over a formatted message tips payload.
 type Tips is bytes29;
