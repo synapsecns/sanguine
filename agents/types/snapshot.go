@@ -1,9 +1,14 @@
 package types
 
 import (
+	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/merkle"
 	"math"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/merkle"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 // Snapshot is the snapshot interface.
@@ -15,6 +20,8 @@ type Snapshot interface {
 	SnapshotRootAndProofs() ([32]byte, [][][]byte, error)
 	// TreeHeight returns the height of the merkle tree given `len(states)` leafs.
 	TreeHeight() uint32
+	// SignSnapshot returns the signature of the snapshot payload signed by the signer
+	SignSnapshot(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error)
 }
 
 type snapshot struct {
@@ -66,6 +73,23 @@ func (s snapshot) SnapshotRootAndProofs() ([32]byte, [][][]byte, error) {
 // TreeHeight returns the height of the merkle tree given `len(states)` leafs.
 func (s snapshot) TreeHeight() uint32 {
 	return uint32(math.Log2(float64(len(s.states))))
+}
+
+func (s snapshot) SignSnapshot(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error) {
+	encodedSnapshot, err := EncodeSnapshot(s)
+	if err != nil {
+		return nil, nil, common.Hash{}, fmt.Errorf("could not encode snapshot: %w", err)
+	}
+
+	hashedSnapshot, err := HashRawBytes(encodedSnapshot)
+	if err != nil {
+		return nil, nil, common.Hash{}, fmt.Errorf("could not hash snapshot: %w", err)
+	}
+	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedSnapshot), false)
+	if err != nil {
+		return nil, nil, common.Hash{}, fmt.Errorf("could not sign snapshot: %w", err)
+	}
+	return signature, encodedSnapshot, hashedSnapshot, nil
 }
 
 var _ Snapshot = &snapshot{}
