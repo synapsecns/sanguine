@@ -852,36 +852,6 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 					return fmt.Errorf("could not set minimum time: %w", err)
 				}
 			}
-
-			//page = 1
-			//minNonce := unsetMessages[0].Nonce()
-			//attestationMask := execTypes.DBAttestation{
-			//	ChainID:     &chainID,
-			//	Destination: &destinationDomain,
-			//}
-			//
-			//var attestations []execTypes.DBAttestation
-			//
-			//// Get all attestations for the unset messages.
-			//for {
-			//	atts, err := e.executorDB.GetAttestationsAboveOrEqualNonce(ctx, attestationMask, minNonce, page)
-			//	if err != nil {
-			//		return fmt.Errorf("could not get attestations: %w", err)
-			//	}
-			//
-			//	if len(atts) == 0 {
-			//		break
-			//	}
-			//
-			//	attestations = append(attestations, atts...)
-			//
-			//	page++
-			//}
-			//
-			//err := e.setMinimumTimes(ctx, unsetMessages, attestations)
-			//if err != nil {
-			//	return fmt.Errorf("could not set minimum times: %w", err)
-			//}
 		}
 	}
 }

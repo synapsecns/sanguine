@@ -44,7 +44,7 @@ type destinationContract struct {
 	nonceManager nonce.Manager
 }
 
-//func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
+// func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error {
 //	// TODO (joeallen): FIX ME
 //	/*transactOpts, err := a.transactOptsSetup(ctx, signer)
 //	if err != nil {

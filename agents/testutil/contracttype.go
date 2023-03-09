@@ -62,7 +62,7 @@ const (
 	StateHarnessType
 	// SnapshotHarnessType is the snapshot harness type.
 	SnapshotHarnessType
-	// AttestationHarnessType
+	// AttestationHarnessType is the type of the attestation harness.
 	AttestationHarnessType
 	// TipsHarnessType is the type of the tips harness.
 	TipsHarnessType

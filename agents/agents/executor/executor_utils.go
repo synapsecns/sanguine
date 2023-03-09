@@ -59,6 +59,7 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 		eventType:    otherEvent,
 	}
 
+	//nolint:nestif
 	if eventType, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && eventType == origin.DispatchEvent {
 		contractEvent.contractType = originContract
 		contractEvent.eventType = dispatchEvent
@@ -89,6 +90,7 @@ func (e Executor) getEarliestAttestationNonceInRange(ctx context.Context, origin
 	}
 
 	if len(snapshotRoots) == 0 {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -102,6 +104,7 @@ func (e Executor) getEarliestAttestationNonceInRange(ctx context.Context, origin
 	}
 
 	if earliestSnapshotRoot == nil {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -118,6 +121,7 @@ func (e Executor) getEarliestAttestationNonceInRange(ctx context.Context, origin
 	}
 
 	if stateWithEarliestAttestation == nil {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -129,7 +133,7 @@ func (e Executor) getEarliestAttestationNonceInRange(ctx context.Context, origin
 //// setMinimumTimes goes through a list of messages and sets the minimum time for each message
 //// that has an associated attestation.
 //// The messages need to be sorted by nonce, and the attestations by their destination submission time (which can be via block number or block time).
-//func (e Executor) setMinimumTimes(ctx context.Context, messages []types.Message, attestations []execTypes.DBAttestation) error {
+// func (e Executor) setMinimumTimes(ctx context.Context, messages []types.Message, attestations []execTypes.DBAttestation) error {
 //	messageIndex := 0
 //	attestationIndex := 0
 //	for messageIndex < len(messages) && attestationIndex < len(attestations) {
