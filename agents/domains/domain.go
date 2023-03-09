@@ -64,8 +64,8 @@ type SummitContract interface {
 
 // DestinationContract contains the interface for the destination.
 type DestinationContract interface {
-	// SubmitAttestation submits an attestation to the destination.
-	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
+	//// SubmitAttestation submits an attestation to the destination.
+	// SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// Execute executes a message on the destination.
 	Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error
 	// SubmittedAt retrieves the time a given Merkle root from the given origin was submitted on the destination.

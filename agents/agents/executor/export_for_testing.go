@@ -3,8 +3,6 @@ package executor
 import (
 	"context"
 	"fmt"
-	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
-
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/agents/executor/config"
@@ -121,11 +119,11 @@ func NewTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 
 // -------- [ EXECUTOR ] -------- \\
 
-// SetMinimumTimes goes through a list of messages and sets the minimum time for each message
-// that has an associated attestation.
-func (e Executor) SetMinimumTimes(ctx context.Context, messages []types.Message, attestations []execTypes.DBAttestation) error {
-	return e.setMinimumTimes(ctx, messages, attestations)
-}
+//// SetMinimumTimes goes through a list of messages and sets the minimum time for each message
+//// that has an associated attestation.
+// func (e Executor) SetMinimumTimes(ctx context.Context, messages []types.Message, attestations []execTypes.DBAttestation) error {
+//	return e.setMinimumTimes(ctx, messages, attestations)
+//}
 
 // GetLogChan gets a log channel.
 func (e Executor) GetLogChan(chainID uint32) chan *ethTypes.Log {
@@ -212,15 +210,9 @@ func (e Executor) SetMinimumTime(ctx context.Context) error {
 	for _, chain := range e.config.Chains {
 		chain := chain
 
-		for _, destinationChain := range e.config.Chains {
-			destinationChain := destinationChain
-			if destinationChain.ChainID == chain.ChainID {
-				continue
-			}
-			g.Go(func() error {
-				return e.setMinimumTime(ctx, chain.ChainID, destinationChain.ChainID)
-			})
-		}
+		g.Go(func() error {
+			return e.setMinimumTime(ctx, chain.ChainID)
+		})
 	}
 
 	if err := g.Wait(); err != nil {

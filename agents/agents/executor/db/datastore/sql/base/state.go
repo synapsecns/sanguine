@@ -118,6 +118,53 @@ func (s Store) GetStateMetadata(ctx context.Context, stateMask types.DBState) (s
 	return
 }
 
+// GetPotentialSnapshotRoots gets all snapshot roots that are greater than or equal to a specified nonce and matches
+// a specified chain ID.
+func (s Store) GetPotentialSnapshotRoots(ctx context.Context, chainID uint32, nonce uint32) ([][32]byte, error) {
+	var states []State
+
+	dbTx := s.DB().WithContext(ctx).
+		Model(&states).
+		Where(fmt.Sprintf("%s = ? AND %s >= ?", ChainIDFieldName, NonceFieldName), chainID, nonce).
+		Scan(&states)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get potential snapshot roots: %w", dbTx.Error)
+	}
+
+	var snapshotRoots [][32]byte
+	for _, state := range states {
+		var snapshotRootB32 [32]byte
+		copy(snapshotRootB32[:], common.HexToHash(state.SnapshotRoot).Bytes())
+
+		snapshotRoots = append(snapshotRoots, snapshotRootB32)
+	}
+
+	return snapshotRoots, nil
+}
+
+// GetSnapshotRootsInNonceRange gets all snapshot roots for all states in a specified nonce range.
+func (s Store) GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32, startNonce uint32, endNonce uint32) ([][32]byte, error) {
+	var states []State
+
+	dbTx := s.DB().WithContext(ctx).
+		Model(&states).
+		Where(fmt.Sprintf("%s = ? AND %s >= ? AND %s < ?", ChainIDFieldName, NonceFieldName, NonceFieldName), chainID, startNonce, endNonce).
+		Scan(&states)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get snapshot roots in nonce range: %w", dbTx.Error)
+	}
+
+	var snapshotRoots [][32]byte
+	for _, state := range states {
+		var snapshotRootB32 [32]byte
+		copy(snapshotRootB32[:], common.HexToHash(state.SnapshotRoot).Bytes())
+
+		snapshotRoots = append(snapshotRoots, snapshotRootB32)
+	}
+
+	return snapshotRoots, nil
+}
+
 // DBStateToState converts a DBState to a State.
 func DBStateToState(dbState types.DBState) State {
 	var state State

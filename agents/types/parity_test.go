@@ -180,6 +180,42 @@ func TestEncodeSnapshotParity(t *testing.T) {
 	Equal(t, stateB.Timestamp(), snapshotFromBytes.States()[1].Timestamp())
 }
 
+func TestEncodeAttestationParity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
+
+	_, attestationContract := deployManager.GetAttestationHarness(ctx, testBackend)
+
+	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
+
+	var rootB32 [32]byte
+	copy(rootB32[:], root[:])
+
+	height := gofakeit.Uint8()
+	nonce := gofakeit.Uint32()
+	blockNumber := randomUint40BigInt(t)
+	timestamp := randomUint40BigInt(t)
+
+	contractData, err := attestationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, rootB32, height, nonce, blockNumber, timestamp)
+	Nil(t, err)
+
+	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(rootB32, height, nonce, blockNumber, timestamp))
+	Nil(t, err)
+
+	Equal(t, contractData, goFormattedData)
+
+	attestationFromBytes, err := types.DecodeAttestation(goFormattedData)
+	Nil(t, err)
+	Equal(t, rootB32, attestationFromBytes.SnapshotRoot())
+	Equal(t, height, attestationFromBytes.Height())
+	Equal(t, nonce, attestationFromBytes.Nonce())
+	Equal(t, blockNumber, attestationFromBytes.BlockNumber())
+	Equal(t, timestamp, attestationFromBytes.Timestamp())
+}
+
 func TestMessageEncodeParity(t *testing.T) {
 	// TODO (joeallen): FIX ME
 	t.Skip()
@@ -261,46 +297,4 @@ func TestHeaderEncodeParity(t *testing.T) {
 	Nil(t, err)
 
 	Equal(t, headerVersion, types.HeaderVersion)
-}
-
-func TestAttestationKey(t *testing.T) {
-	origin := uint32(1)
-	destination := uint32(2)
-	nonce := uint32(3)
-	attestKey := types.AttestationKey{
-		Origin:      origin,
-		Destination: destination,
-		Nonce:       nonce,
-	}
-	rawKey := attestKey.GetRawKey()
-	attestKeyFromRaw := types.NewAttestationKey(rawKey)
-	Equal(t, attestKey.Origin, attestKeyFromRaw.Origin)
-	Equal(t, attestKey.Destination, attestKeyFromRaw.Destination)
-	Equal(t, attestKey.Nonce, attestKeyFromRaw.Nonce)
-}
-
-func TestAttestedDomains(t *testing.T) {
-	origin := uint32(1)
-	destination := uint32(2)
-	attestDomains := types.AttestedDomains{
-		Origin:      origin,
-		Destination: destination,
-	}
-	rawDomains := attestDomains.GetRawDomains()
-	attestDomainsFromRaw := types.NewAttestedDomains(rawDomains)
-	Equal(t, attestDomains.Origin, attestDomainsFromRaw.Origin)
-	Equal(t, attestDomains.Destination, attestDomainsFromRaw.Destination)
-}
-
-func TestAttestedAgentCounts(t *testing.T) {
-	guardCount := uint32(1)
-	notaryCount := uint32(2)
-	attestationAgentCounts := types.AttestationAgentCounts{
-		GuardCount:  guardCount,
-		NotaryCount: notaryCount,
-	}
-	rawDomains := attestationAgentCounts.GetRawAgentCounts()
-	attestationAgentCountsFromRaw := types.NewAttestationAgentCounts(rawDomains)
-	Equal(t, attestationAgentCounts.GuardCount, attestationAgentCountsFromRaw.GuardCount)
-	Equal(t, attestationAgentCounts.NotaryCount, attestationAgentCountsFromRaw.NotaryCount)
 }
