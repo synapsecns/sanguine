@@ -89,7 +89,7 @@ func (g Guard) loadOriginLatestStates(ctx context.Context) {
 	}
 }
 
-func (g Guard) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint32]types.State) {
+func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 	statesToSubmit := make(map[uint32]types.State, len(g.domains))
 	for _, domain := range g.domains {
 		originID := domain.Config().DomainID
@@ -119,7 +119,7 @@ func (g Guard) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint3
 }
 
 func (g Guard) submitLatestSnapshot(ctx context.Context) {
-	snapshot, statesToSubmit := g.getLatestSnapshot(ctx)
+	snapshot, statesToSubmit := g.getLatestSnapshot()
 	if snapshot == nil {
 		return
 	}
