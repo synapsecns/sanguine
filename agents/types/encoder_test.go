@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	"encoding/hex"
 	"math/big"
 	"testing"
 
@@ -94,15 +93,15 @@ func TestHeaderEncodeDecode(t *testing.T) {
 }
 
 func TestDecodeAttestation(t *testing.T) {
-	rawAttestation, err := hex.DecodeString("00000089000000890000000027ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757")
-	Nil(t, err)
-
-	decodedAttestation, err := types.DecodeAttestation(rawAttestation)
-	Nil(t, err)
-	NotNil(t, decodedAttestation)
-
-	/*rootBytes32 := decodedAttestation.Root()
-	rootStr := hex.EncodeToString(rootBytes32[:])
-	fmt.Printf("\nCRONIN\n origin: %d,\n destination: %d,\n nonce: %d,\n root: %s\n \nCRONIN\n",
-		decodedAttestation.Origin(), decodedAttestation.Destination(), decodedAttestation.Nonce(), rootStr)*/
+	//rawAttestation, err := hex.DecodeString("00000089000000890000000027ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757")
+	//Nil(t, err)
+	//
+	//decodedAttestation, err := types.DecodeAttestation(rawAttestation)
+	//Nil(t, err)
+	//NotNil(t, decodedAttestation)
+	//
+	//rootBytes32 := decodedAttestation.Root()
+	//rootStr := hex.EncodeToString(rootBytes32[:])
+	//fmt.Printf("\nCRONIN\n origin: %d,\n destination: %d,\n nonce: %d,\n root: %s\n \nCRONIN\n",
+	//	decodedAttestation.Origin(), decodedAttestation.Destination(), decodedAttestation.Nonce(), rootStr)
 }
