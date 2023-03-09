@@ -130,6 +130,9 @@ jobs:
           sleep 1
           done
 
+      - name: Use go workspace
+        run: go work use ${{matrix.package}}
+
       - name: Test
         uses: nick-fields/retry@v2
         with:
@@ -230,6 +233,9 @@ jobs:
       # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
       - name: Setup cache key
         run: cp ${{matrix.package}}/go.mod go.mod -v
+
+      - name: Use go workspace
+        run: go work use ${{matrix.package}}
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
