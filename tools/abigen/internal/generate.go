@@ -144,8 +144,15 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 	tmpPath := fmt.Sprintf("%s/%s", wd, path.Base(filePath))
 
 	var solFile *os.File
+
+	// whether the original file is at the temporary path already
+	originalAtTmpPath, err := filePathsAreEqual(tmpPath, filePath)
+	if err != nil {
+		return nil, fmt.Errorf("could not compare file paths: %w", err)
+	}
+
 	// we don't need to create a temporary file if it's already in our path!
-	if filepath.Base(tmpPath) != path.Base(filePath) {
+	if !originalAtTmpPath {
 		solFile, err = os.Create(tmpPath)
 		if err != nil {
 			return nil, fmt.Errorf("could not create temporary sol file: %w", err)
@@ -236,3 +243,18 @@ func init() {
 	}
 }
 `))
+
+func filePathsAreEqual(file1 string, file2 string) (equal bool, err error) {
+	// get the absolute path of the files
+	file1, err = filepath.Abs(file1)
+	if err != nil {
+		return false, fmt.Errorf("could not get absolute path of %s: %w", file1, err)
+	}
+	file2, err = filepath.Abs(file2)
+	if err != nil {
+		return false, fmt.Errorf("could not get absolute path of %s: %w", file2, err)
+	}
+
+	// check if the files are the same
+	return file1 == file2, nil
+}
