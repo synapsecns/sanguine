@@ -25,7 +25,7 @@ contract AttestationProofGenerator {
         // Copy leafs
         for (uint256 i = 0; i < snapshotStates.length; ++i) {
             states.push(snapshotStates[i]);
-            nodes[h][i] = snapshotStates[i].castToState().hash();
+            nodes[h][i] = snapshotStates[i].castToState().leaf();
         }
         // Remaining leafs are ZERO
         for (uint256 i = snapshotStates.length; i < amount; ++i) {

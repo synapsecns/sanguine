@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import { ByteString } from "./ByteString.sol";
-import { ATTESTATION_LENGTH } from "./Constants.sol";
+import { ATTESTATION_LENGTH, ATTESTATION_SALT } from "./Constants.sol";
 import { TypedMemView } from "./TypedMemView.sol";
 
 /// @dev Attestation is a memory view over a formatted attestation payload.
@@ -208,8 +208,8 @@ library AttestationLib {
     function hash(Attestation _att) internal pure returns (bytes32) {
         // Get the underlying memory view
         bytes29 _view = _att.unwrap();
-        // TODO: include Attestation-unique salt in the hash
-        return _view.keccak();
+        // The final hash to sign is keccak(attestationSalt, keccak(attestation))
+        return keccak256(bytes.concat(ATTESTATION_SALT, _view.keccak()));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

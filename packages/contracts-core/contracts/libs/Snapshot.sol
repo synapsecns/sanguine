@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { SummitAttestation } from "./Attestation.sol";
 import { ByteString } from "./ByteString.sol";
-import { SNAPSHOT_MAX_STATES, STATE_LENGTH } from "./Constants.sol";
+import { SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, STATE_LENGTH } from "./Constants.sol";
 import { MerkleList } from "./MerkleList.sol";
 import { State, StateLib } from "./State.sol";
 import { TypedMemView } from "./TypedMemView.sol";
@@ -150,8 +150,8 @@ library SnapshotLib {
     function hash(Snapshot _snapshot) internal pure returns (bytes32 hashedSnapshot) {
         // Get the underlying memory view
         bytes29 _view = _snapshot.unwrap();
-        // TODO: include Snapshot-unique salt in the hash
-        return _view.keccak();
+        // The final hash to sign is keccak(attestationSalt, keccak(attestation))
+        return keccak256(bytes.concat(SNAPSHOT_SALT, _view.keccak()));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -196,7 +196,7 @@ library SnapshotLib {
         bytes32[] memory hashes = new bytes32[](_statesAmount);
         for (uint256 i = 0; i < _statesAmount; ++i) {
             // Each State has two sub-leafs, their hash is used as "leaf" in "Snapshot Merkle Tree"
-            hashes[i] = _snapshot.state(i).hash();
+            hashes[i] = _snapshot.state(i).leaf();
         }
         MerkleList.calculateRoot(hashes);
         // hashes[0] now stores the value for the Merkle Root of the list

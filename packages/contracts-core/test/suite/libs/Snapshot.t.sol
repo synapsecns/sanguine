@@ -38,7 +38,8 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
             // For Snapshot Merkle Tree we use the hash of two sub-leafs as "leaf"
             stateHashes[i] = keccak256(bytes.concat(leftLeaf, rightLeaf));
         }
-        bytes32 hashedSnapshot = keccak256(payload);
+        bytes32 snapshotSalt = keccak256("SNAPSHOT_SALT");
+        bytes32 hashedSnapshot = keccak256(abi.encodePacked(snapshotSalt, keccak256(payload)));
         // Test formatting of snapshot
         assertEq(libHarness.formatSnapshot(statePayloads), payload, "!formatSnapshot");
         checkCastToSnapshot({ payload: payload, isSnapshot: true });
