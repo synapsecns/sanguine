@@ -61,7 +61,7 @@ contract DeployMessaging002Script is DeployerUtils {
         startBroadcast(_isBroadcasted);
         string memory config = loadGlobalDeployConfig(MESSAGING_002);
         // Deploy System Contracts
-        if (config.readUint("chainidSummit") == block.chainid) {
+        if (config.readUint(".chainidSummit") == block.chainid) {
             address deployed = deployContract(SUMMIT_NAME, _deploySummit);
             summit = Summit(deployed);
             // Summit is also Bonding Primary Manager
@@ -82,7 +82,7 @@ contract DeployMessaging002Script is DeployerUtils {
         // Add preset agents from the config
         _addAgents(config);
         // Transfer ownership
-        owner = config.readAddress("owner");
+        owner = config.readAddress(".owner");
         _transferOwnership(bondingManager);
         _transferOwnership(destination);
         _transferOwnership(origin);
@@ -155,12 +155,12 @@ contract DeployMessaging002Script is DeployerUtils {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function _addAgents(string memory config) internal {
-        uint256[] memory domains = config.readUintArray("domains");
+        uint256[] memory domains = config.readUintArray(".domains");
         for (uint256 i = 0; i < domains.length; ++i) {
             uint256 domain = domains[i];
-            // Key is "agents.0: for Guards, "agents.10" for Optimism Notaries, etc
+            // Key is ".agents.0: for Guards, ".agents.10" for Optimism Notaries, etc
             address[] memory agents = config.readAddressArray(
-                string.concat("agents.", domain.toString())
+                string.concat(".agents.", domain.toString())
             );
             for (uint256 j = 0; j < agents.length; ++j) {
                 bondingManager.addAgent(uint32(domain), agents[j]);
@@ -194,14 +194,14 @@ contract DeployMessaging002Script is DeployerUtils {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function _checkAgents(string memory config) internal {
-        uint256[] memory domains = config.readUintArray("domains");
+        uint256[] memory domains = config.readUintArray(".domains");
         for (uint256 i = 0; i < domains.length; ++i) {
             uint256 domain = domains[i];
             bool isGuard = domain == 0;
             bool isLocalNotary = domain == block.chainid;
-            // Key is "agents.0: for Guards, "agents.10" for Optimism Notaries, etc
+            // Key is ".agents.0: for Guards, ".agents.10" for Optimism Notaries, etc
             address[] memory agents = config.readAddressArray(
-                string.concat("agents.", domain.toString())
+                string.concat(".agents.", domain.toString())
             );
             for (uint256 j = 0; j < agents.length; ++j) {
                 address agent = agents[j];
