@@ -51,9 +51,9 @@ type ExecutorDBReader interface {
 	// GetAttestationTimestamp gets the timestamp of an attestation.
 	GetAttestationTimestamp(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 	// GetAttestationMinimumTimestamp takes a list of snapshot roots and returns the timestamp of the attestation with the lowest block number.
-	GetAttestationMinimumTimestamp(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots [][32]byte) (*uint64, error)
+	GetAttestationMinimumTimestamp(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*uint64, error)
 	// GetEarliestSnapshotFromAttestation takes a list of snapshot roots, checks which one has the lowest block number, and returns that snapshot root back.
-	GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots [][32]byte) (*[32]byte, error)
+	GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*[32]byte, error)
 
 	// GetState gets a state from the database.
 	GetState(ctx context.Context, stateMask types.DBState) (*agentsTypes.State, error)
@@ -61,9 +61,9 @@ type ExecutorDBReader interface {
 	GetStateMetadata(ctx context.Context, stateMask types.DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, treeHeight *uint32, err error)
 	// GetPotentialSnapshotRoots gets all snapshot roots that are greater than or equal to a specified nonce and matches
 	// a specified chain ID.
-	GetPotentialSnapshotRoots(ctx context.Context, chainID uint32, nonce uint32) ([][32]byte, error)
+	GetPotentialSnapshotRoots(ctx context.Context, chainID uint32, nonce uint32) ([]string, error)
 	// GetSnapshotRootsInNonceRange gets all snapshot roots for all states in a specified nonce range.
-	GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32, startNonce uint32, endNonce uint32) ([][32]byte, error)
+	GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32, startNonce uint32, endNonce uint32) ([]string, error)
 }
 
 // ExecutorDB is the interface for the executor database.

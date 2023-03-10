@@ -17,7 +17,7 @@ func (s Store) StoreAttestation(ctx context.Context, attestation agentsTypes.Att
 	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: SnapshotRootFieldName}, {Name: AttestationNonceFieldName},
+				{Name: DestinationFieldName}, {Name: SnapshotRootFieldName}, {Name: AttestationNonceFieldName},
 			},
 			DoNothing: true,
 		}).
@@ -99,7 +99,7 @@ func (s Store) GetAttestationTimestamp(ctx context.Context, attestationMask type
 }
 
 // GetAttestationMinimumTimestamp takes a list of snapshot roots and returns the timestamp of the attestation with the lowest block number.
-func (s Store) GetAttestationMinimumTimestamp(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots [][32]byte) (*uint64, error) {
+func (s Store) GetAttestationMinimumTimestamp(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*uint64, error) {
 	var attestation Attestation
 
 	dbAttestationMask := DBAttestationToAttestation(attestationMask)
@@ -122,7 +122,7 @@ func (s Store) GetAttestationMinimumTimestamp(ctx context.Context, attestationMa
 }
 
 // GetEarliestSnapshotFromAttestation takes a list of snapshot roots, checks which one has the lowest block number, and returns that snapshot root back.
-func (s Store) GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots [][32]byte) (*[32]byte, error) {
+func (s Store) GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*[32]byte, error) {
 	var attestation Attestation
 
 	dbAttestationMask := DBAttestationToAttestation(attestationMask)

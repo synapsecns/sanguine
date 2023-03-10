@@ -10,6 +10,7 @@ import (
 	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
@@ -55,6 +56,11 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 
 	if config.SetMinimumTimeInterval == 0 {
 		config.SetMinimumTimeInterval = 2
+	}
+
+	summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
+	if err != nil {
+		return nil, fmt.Errorf("could not create summit parser: %w", err)
 	}
 
 	for _, chain := range config.Chains {
@@ -108,6 +114,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 		grpcConn:       conn,
 		grpcClient:     grpcClient,
 		signer:         executorSigner,
+		summitParser:   summitParser,
 		chainExecutors: chainExecutors,
 	}, nil
 }
@@ -153,35 +160,6 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 // OverrideMerkleTree overrides the merkle tree for the chainID and domain.
 func (e Executor) OverrideMerkleTree(chainID uint32, tree *merkle.HistoricalTree) {
 	e.chainExecutors[chainID].merkleTree = tree
-}
-
-// Start runs the executor.
-func (e Executor) Start(ctx context.Context) error {
-	g, _ := errgroup.WithContext(ctx)
-
-	for _, chain := range e.config.Chains {
-		chain := chain
-
-		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
-				contractType: originContract,
-				eventType:    otherEvent,
-			})
-		})
-
-		g.Go(func() error {
-			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain, nil, contractEventType{
-				contractType: destinationContract,
-				eventType:    attestationAcceptedEvent,
-			})
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("error when streaming logs: %w", err)
-	}
-
-	return nil
 }
 
 // Listen scans for emitted logs from the various chains.
