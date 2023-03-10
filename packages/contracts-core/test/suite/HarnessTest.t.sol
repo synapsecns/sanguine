@@ -13,7 +13,11 @@ interface Initializable {
 
 // disable-solhint func-name-mixedcase
 contract HarnessTest is Test {
-    function test_destinationHarness(uint32 domain, address notary, address guard) public {
+    function test_destinationHarness(
+        uint32 domain,
+        address notary,
+        address guard
+    ) public {
         vm.assume(notary != guard);
         domain = uint32(bound(domain, 1, type(uint32).max));
         DestinationHarness destination = new DestinationHarness(domain);
@@ -30,7 +34,11 @@ contract HarnessTest is Test {
         assertFalse(destination.isActiveAgent(0, guard));
     }
 
-    function test_originHarness(uint32 domain, address notary, address guard) public {
+    function test_originHarness(
+        uint32 domain,
+        address notary,
+        address guard
+    ) public {
         vm.assume(notary != guard);
         domain = uint32(bound(domain, 1, type(uint32).max));
         OriginHarness origin = new OriginHarness(1);
@@ -47,7 +55,11 @@ contract HarnessTest is Test {
         assertFalse(origin.isActiveAgent(0, guard));
     }
 
-    function test_summitHarness(uint32 domain, address notary, address guard) public {
+    function test_summitHarness(
+        uint32 domain,
+        address notary,
+        address guard
+    ) public {
         vm.assume(notary != guard);
         domain = uint32(bound(domain, 1, type(uint32).max));
         SummitHarness summit = new SummitHarness();
