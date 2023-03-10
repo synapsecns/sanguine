@@ -2,7 +2,9 @@ package testutil
 
 import (
 	"context"
+
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
 
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
@@ -107,6 +109,17 @@ func (d *DeployManager) GetDestinationHarness(ctx context.Context, backend backe
 	assert.True(d.T(), ok)
 
 	return destinationHarnessContract, destinationHarness
+}
+
+// GetSummitHarness gets the summit harness.
+func (d *DeployManager) GetSummitHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *summitharness.SummitHarnessRef) {
+	d.T().Helper()
+
+	summitHarnessContract := d.GetContractRegistry(backend).Get(ctx, SummitHarnessType)
+	summitHarness, ok := summitHarnessContract.ContractHandle().(*summitharness.SummitHarnessRef)
+	assert.True(d.T(), ok)
+
+	return summitHarnessContract, summitHarness
 }
 
 // GetSummit gets the summit contract.
