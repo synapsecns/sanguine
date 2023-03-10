@@ -141,22 +141,33 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 	}
 
 	// create a temporary sol file in the current dir so it can be referenced by docker
-	solFile, err := os.Create(fmt.Sprintf("%s/tmp%s", wd, path.Base(filePath)))
-	if err != nil {
-		return nil, fmt.Errorf("could not create temporary sol file: %w", err)
-	}
-	_, err = solFile.Write(solContents)
-	if err != nil {
-		return nil, fmt.Errorf("could not write to sol tmp file at %s: %w", solFile.Name(), err)
-	}
+	tmpPath := fmt.Sprintf("%s/%s", wd, path.Base(filePath))
 
-	defer func() {
-		if err == nil {
-			err = os.Remove(solFile.Name())
-		} else {
-			_ = os.Remove(solFile.Name())
+	var solFile *os.File
+	// we don't need to create a temporary file if it's already in our path!
+	if filepath.Base(tmpPath) != path.Base(filePath) {
+		solFile, err = os.Create(tmpPath)
+		if err != nil {
+			return nil, fmt.Errorf("could not create temporary sol file: %w", err)
 		}
-	}()
+		_, err = solFile.Write(solContents)
+		if err != nil {
+			return nil, fmt.Errorf("could not write to sol tmp file at %s: %w", solFile.Name(), err)
+		}
+
+		defer func() {
+			if err == nil {
+				err = os.Remove(solFile.Name())
+			} else {
+				_ = os.Remove(solFile.Name())
+			}
+		}()
+	} else {
+		solFile, err = os.Open(filePath)
+		if err != nil {
+			return nil, fmt.Errorf("could not read to sol file at %s: %w", solFile.Name(), err)
+		}
+	}
 
 	// compile the solidity
 	var stderr, stdout bytes.Buffer
