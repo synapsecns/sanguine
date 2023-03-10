@@ -84,6 +84,10 @@ func EncodeSnapshot(snapshot Snapshot) ([]byte, error) {
 func DecodeSnapshot(toDecode []byte) (Snapshot, error) {
 	var states []State
 
+	if len(toDecode)%stateSize != 0 {
+		return nil, fmt.Errorf("invalid snapshot length, expected multiple of %d, got %d", stateSize, len(toDecode))
+	}
+
 	for i := 0; i < len(toDecode); i += stateSize {
 		state, err := DecodeState(toDecode[i : i+stateSize])
 		if err != nil {
