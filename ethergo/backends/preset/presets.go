@@ -79,3 +79,31 @@ func GetMaticMumbaiFakeSynDomain() Backend {
 		privateKey: os.Getenv("EXPORT_KEY"),
 	}
 }
+
+// GetRinkebyFakeSynDomain gets the rinkeby preset backend.
+func GetRinkebyFakeSynDomain() Backend {
+	chainConfig := *params.AllCliqueProtocolChanges
+	chainConfig.ChainID = big.NewInt(int64(10))
+
+	return Backend{
+		config:     &chainConfig,
+		rpcURL:     core.GetEnv("RINEKBY_RPC_URL", "ws://0.0.0.0:8045"),
+		name:       "Rinkeby",
+		privateKey: os.Getenv("EXPORT_KEY"),
+	}
+}
+
+// GetBSCTestnetFakeSynDomain gets the bsc backend.
+func GetBSCTestnetFakeSynDomain() Backend {
+	chainConfig := *params.AllCliqueProtocolChanges
+	chainConfig.ChainID = big.NewInt(int64(10))
+	// london is not activated on bsc
+	chainConfig.LondonBlock = nil
+
+	return Backend{
+		config:     &chainConfig,
+		rpcURL:     core.GetEnv("BSC_TESTNET_RPC_URL", "ws://0.0.0.0:8046"),
+		name:       "BSC Testnet",
+		privateKey: os.Getenv("EXPORT_KEY"),
+	}
+}

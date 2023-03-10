@@ -68,7 +68,7 @@ func (g Guard) loadSummitLatestStates(ctx context.Context) {
 			latestState = nil
 			logger.Errorf("Failed calling GetLatestAgentState for originID %d on the Summit contract: err = %v", originID, err)
 		}
-		if latestState != nil {
+		if latestState != nil && latestState.Nonce() > uint32(0) {
 			g.summitLatestStates[originID] = latestState
 		}
 	}
@@ -82,7 +82,7 @@ func (g Guard) loadOriginLatestStates(ctx context.Context) {
 		if err != nil {
 			latestState = nil
 			logger.Errorf("Failed calling SuggestLatestState for originID %d on the Origin contract: %v", originID, err)
-		} else if latestState == nil {
+		} else if latestState == nil || latestState.Nonce() == uint32(0) {
 			logger.Errorf("No latest state found for origin id %d", originID)
 		}
 		if latestState != nil {
@@ -97,11 +97,11 @@ func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 	for _, domain := range g.domains {
 		originID := domain.Config().DomainID
 		summitLatest, ok := g.summitLatestStates[originID]
-		if !ok {
+		if !ok || summitLatest == nil || summitLatest.Nonce() == 0 {
 			summitLatest = nil
 		}
 		originLatest, ok := g.originLatestStates[originID]
-		if !ok || originLatest == nil {
+		if !ok || originLatest == nil || originLatest.Nonce() == 0 {
 			continue
 		}
 		if summitLatest != nil && summitLatest.Nonce() >= originLatest.Nonce() {
@@ -112,6 +112,9 @@ func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 	}
 	snapshotStates := make([]types.State, 0, len(statesToSubmit))
 	for _, state := range statesToSubmit {
+		if state.Nonce() == 0 {
+			continue
+		}
 		snapshotStates = append(snapshotStates, state)
 	}
 	if len(snapshotStates) > 0 {
