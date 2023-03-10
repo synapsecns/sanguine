@@ -278,13 +278,3 @@ func (t *DBSuite) TestGetSnapshotRootsInNonceRange() {
 		True(t.T(), snapshotRootB.String() == potentialSnapshotRoots[0] || snapshotRootB.String() == potentialSnapshotRoots[1])
 	})
 }
-
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-
-	return false
-}
