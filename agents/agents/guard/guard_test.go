@@ -9,6 +9,7 @@ import (
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/config"
@@ -64,56 +65,26 @@ func (u GuardSuite) TestGuardE2E() {
 	guard, err := guard.NewGuard(u.GetTestContext(), testConfig)
 	Nil(u.T(), err)
 
-	originAuth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
+	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
 
-	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
-	Nil(u.T(), err)
+	optimisticSeconds := uint32(10)
 
-	tx, err := u.OriginContract.Dispatch(
-		originAuth.TransactOpts,
-		u.DestinationDomainClient.Config().DomainID,
-		[32]byte{},
-		gofakeit.Uint32(),
-		encodedTips,
-		[]byte(gofakeit.Paragraph(3, 2, 1, " ")))
-	Nil(u.T(), err)
-	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
+	body := []byte{byte(gofakeit.Uint32())}
 
-	// TODO (joeallen): FIX ME
-	// nonce := uint32(1)
-	// historicalRoot, dispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, u.DestinationDomainClient.Config().DomainID, nonce)
-	// Nil(u.T(), err)
+	txContextOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.OriginContractMetadata.OwnerPtr())
+	txContextOrigin.Value = types.TotalTips(tips)
 
-	// Greater(u.T(), dispatchBlockNumber.Uint64(), uint64(0))
+	txContextTestClientOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.TestClientMetadataOnOrigin.OwnerPtr())
 
-	// NotEqual(u.T(), historicalRoot, [32]byte{})
+	testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(
+		txContextTestClientOrigin.TransactOpts,
+		uint32(u.TestBackendDestination.GetChainID()),
+		u.TestClientMetadataOnDestination.Address(),
+		optimisticSeconds,
+		body)
 
-	// attestationKey := types.AttestationKey{
-	//	Origin:      u.OriginDomainClient.Config().DomainID,
-	//	Destination: u.DestinationDomainClient.Config().DomainID,
-	//	Nonce:       nonce,
-	//}
-
-	// unsignedAttestation := types.NewAttestation(attestationKey.GetRawKey(), historicalRoot)
-	// hashedAttestation, err := types.Hash(unsignedAttestation)
-	// Nil(u.T(), err)
-
-	// notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
-	// Nil(u.T(), err)
-
-	// signedAttestation := types.NewSignedAttestation(
-	//	unsignedAttestation,
-	//	[]types.Signature{},
-	//	[]types.Signature{notarySignature})
-
-	// encodedSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
-	// Nil(u.T(), err)
-
-	// txContextAttestationCollector := u.TestBackendAttestation.GetTxContext(u.GetTestContext(), u.AttestationContractMetadata.OwnerPtr())
-	// Submit the attestation to get an AttestationSubmitted event.
-	// txSubmitAttestation, err := u.AttestationContract.SubmitAttestation(txContextAttestationCollector.TransactOpts, encodedSignedAttestation)
-	// Nil(u.T(), err)
-	// u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), txSubmitAttestation)
+	u.Nil(err)
+	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
@@ -123,6 +94,15 @@ func (u GuardSuite) TestGuardE2E() {
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
-		return true
+		rawState, err := u.SummitContract.GetLatestAgentState(&bind.CallOpts{Context: u.GetTestContext()}, u.OriginDomainClient.Config().DomainID, u.NotaryBondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(1)
 	})
 }
