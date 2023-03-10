@@ -122,6 +122,7 @@ func BuildTemplates(version, file, pkg, filename string, optimizerRuns int) erro
 }
 
 // compileSolidity uses docker to compile solidity.
+// nolint: cyclop
 func compileSolidity(version string, filePath string, optimizeRuns int) (map[string]*compiler.Contract, error) {
 	runFile, err := createRunFile(version)
 	if err != nil {
@@ -152,7 +153,9 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 	}
 
 	// we don't need to create a temporary file if it's already in our path!
+	//nolint: nestif
 	if !originalAtTmpPath {
+		//nolint: gosec
 		solFile, err = os.Create(tmpPath)
 		if err != nil {
 			return nil, fmt.Errorf("could not create temporary sol file: %w", err)
@@ -170,6 +173,7 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 			}
 		}()
 	} else {
+		// nolint: gosec
 		solFile, err = os.Open(filePath)
 		if err != nil {
 			return nil, fmt.Errorf("could not read to sol file at %s: %w", solFile.Name(), err)
