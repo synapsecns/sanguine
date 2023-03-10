@@ -82,8 +82,8 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 	return contractEvent
 }
 
-// getEarliestAttestationsNonceInRange returns the earliest nonce of an attestation within a nonce range.
-func (e Executor) getEarliestAttestationNonceInRange(ctx context.Context, origin, destination uint32, startNonce, endNonce uint32) (*uint32, error) {
+// getEarliestStateInRange returns the earliest state with the same snapshot root as an attestation within a nonce range.
+func (e Executor) getEarliestStateInRange(ctx context.Context, origin, destination uint32, startNonce, endNonce uint32) (*types.State, error) {
 	snapshotRoots, err := e.executorDB.GetSnapshotRootsInNonceRange(ctx, origin, startNonce, endNonce)
 	if err != nil {
 		return nil, fmt.Errorf("could not get snapshot roots: %w", err)
@@ -120,14 +120,7 @@ func (e Executor) getEarliestAttestationNonceInRange(ctx context.Context, origin
 		return nil, fmt.Errorf("could not get state with earliest attestation: %w", err)
 	}
 
-	if stateWithEarliestAttestation == nil {
-		//nolint:nilnil
-		return nil, nil
-	}
-
-	nonce := (*stateWithEarliestAttestation).Nonce()
-
-	return &nonce, nil
+	return stateWithEarliestAttestation, nil
 }
 
 //// setMinimumTimes goes through a list of messages and sets the minimum time for each message
