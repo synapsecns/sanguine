@@ -10,10 +10,12 @@ import (
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
 
 func RemoveGuardTempFile(t *testing.T, fileName string) {
@@ -107,4 +109,35 @@ func (u GuardSuite) TestGuardE2E() {
 		Nil(u.T(), err)
 		return state.Nonce() >= uint32(1)
 	})
+}
+
+func (u GuardSuite) TestDeployedAgents() {
+	testWallet, err := wallet.FromRandom()
+	Nil(u.T(), err)
+
+	messageToSign := []byte{0x1}
+	basicHashToSign, err := types.HashRawBytes(messageToSign)
+	Nil(u.T(), err)
+	firstSignature, err := crypto.Sign(basicHashToSign[:], testWallet.PrivateKey())
+	Nil(u.T(), err)
+	encPubKey := crypto.FromECDSAPub(testWallet.PublicKey())
+
+	True(u.T(), crypto.VerifySignature(encPubKey, basicHashToSign[:], firstSignature[:crypto.RecoveryIDOffset]))
+
+	allOriginGuards, err := u.OriginContract.AllAgents(&bind.CallOpts{Context: u.GetTestContext()}, uint32(0))
+	Nil(u.T(), err)
+	Equal(u.T(), 1, len(allOriginGuards))
+
+	allDestGuards, err := u.DestinationContract.AllAgents(&bind.CallOpts{Context: u.GetTestContext()}, uint32(0))
+	Nil(u.T(), err)
+	Equal(u.T(), 1, len(allDestGuards))
+
+	Equal(u.T(), allOriginGuards[0], allDestGuards[0])
+
+	allSummitGuards, err := u.SummitContract.AllAgents(&bind.CallOpts{Context: u.GetTestContext()}, uint32(0))
+	Nil(u.T(), err)
+
+	Equal(u.T(), 1, len(allSummitGuards))
+
+	Equal(u.T(), allSummitGuards[0], allDestGuards[0])
 }
