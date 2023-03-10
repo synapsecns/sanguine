@@ -32,15 +32,9 @@ func GenerateABIFromEtherscan(ctx context.Context, chainID uint32, url string, c
 		return fmt.Errorf("could not get contract source for address %s: %w", contractAddress, err)
 	}
 
-	wd, err := os.Getwd()
+	solFile, err := os.CreateTemp("", fmt.Sprintf("%s.sol", path.Base(fileName)))
 	if err != nil {
 		return fmt.Errorf("could not determine wd: %w", err)
-	}
-
-	// create a temporary sol file in the current dir so it can be referenced by docker
-	solFile, err := os.Create(fmt.Sprintf("%s/%s.sol", wd, path.Base(fileName)))
-	if err != nil {
-		return fmt.Errorf("could not create temporary sol file: %w", err)
 	}
 
 	defer func() {
@@ -128,6 +122,7 @@ func BuildTemplates(version, file, pkg, filename string, optimizerRuns int) erro
 }
 
 // compileSolidity uses docker to compile solidity.
+// nolint: cyclop
 func compileSolidity(version string, filePath string, optimizeRuns int) (map[string]*compiler.Contract, error) {
 	runFile, err := createRunFile(version)
 	if err != nil {
@@ -147,22 +142,43 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 	}
 
 	// create a temporary sol file in the current dir so it can be referenced by docker
-	solFile, err := os.Create(fmt.Sprintf("%s/%s", wd, path.Base(filePath)))
+	tmpPath := fmt.Sprintf("%s/%s", wd, path.Base(filePath))
+
+	var solFile *os.File
+
+	// whether the original file is at the temporary path already
+	originalAtTmpPath, err := filePathsAreEqual(tmpPath, filePath)
 	if err != nil {
-		return nil, fmt.Errorf("could not create temporary sol file: %w", err)
-	}
-	_, err = solFile.Write(solContents)
-	if err != nil {
-		return nil, fmt.Errorf("could not write to sol tmp file at %s: %w", solFile.Name(), err)
+		return nil, fmt.Errorf("could not compare file paths: %w", err)
 	}
 
-	defer func() {
-		if err == nil {
-			err = os.Remove(solFile.Name())
-		} else {
-			_ = os.Remove(solFile.Name())
+	// we don't need to create a temporary file if it's already in our path!
+	//nolint: nestif
+	if !originalAtTmpPath {
+		//nolint: gosec
+		solFile, err = os.Create(tmpPath)
+		if err != nil {
+			return nil, fmt.Errorf("could not create temporary sol file: %w", err)
 		}
-	}()
+		_, err = solFile.Write(solContents)
+		if err != nil {
+			return nil, fmt.Errorf("could not write to sol tmp file at %s: %w", solFile.Name(), err)
+		}
+
+		defer func() {
+			if err == nil {
+				err = os.Remove(solFile.Name())
+			} else {
+				_ = os.Remove(solFile.Name())
+			}
+		}()
+	} else {
+		// nolint: gosec
+		solFile, err = os.Open(filePath)
+		if err != nil {
+			return nil, fmt.Errorf("could not read to sol file at %s: %w", solFile.Name(), err)
+		}
+	}
 
 	// compile the solidity
 	var stderr, stdout bytes.Buffer
@@ -231,3 +247,18 @@ func init() {
 	}
 }
 `))
+
+func filePathsAreEqual(file1 string, file2 string) (equal bool, err error) {
+	// get the absolute path of the files
+	file1, err = filepath.Abs(file1)
+	if err != nil {
+		return false, fmt.Errorf("could not get absolute path of %s: %w", file1, err)
+	}
+	file2, err = filepath.Abs(file2)
+	if err != nil {
+		return false, fmt.Errorf("could not get absolute path of %s: %w", file2, err)
+	}
+
+	// check if the files are the same
+	return file1 == file2, nil
+}

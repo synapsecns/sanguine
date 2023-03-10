@@ -265,13 +265,13 @@ func (_m *Chain) ClientID() string {
 	return r0
 }
 
-// CodeAt provides a mock function with given fields: ctx, account, blockNumber
-func (_m *Chain) CodeAt(ctx context.Context, account common.Address, blockNumber *big.Int) ([]byte, error) {
-	ret := _m.Called(ctx, account, blockNumber)
+// CodeAt provides a mock function with given fields: ctx, contract, blockNumber
+func (_m *Chain) CodeAt(ctx context.Context, contract common.Address, blockNumber *big.Int) ([]byte, error) {
+	ret := _m.Called(ctx, contract, blockNumber)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func(context.Context, common.Address, *big.Int) []byte); ok {
-		r0 = rf(ctx, account, blockNumber)
+		r0 = rf(ctx, contract, blockNumber)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -280,7 +280,7 @@ func (_m *Chain) CodeAt(ctx context.Context, account common.Address, blockNumber
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, common.Address, *big.Int) error); ok {
-		r1 = rf(ctx, account, blockNumber)
+		r1 = rf(ctx, contract, blockNumber)
 	} else {
 		r1 = ret.Error(1)
 	}
