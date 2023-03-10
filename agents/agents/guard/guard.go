@@ -59,6 +59,7 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig) (_ Guard, err error) 
 	return guard, nil
 }
 
+//nolint:cyclop
 func (g Guard) loadSummitLatestStates(ctx context.Context) {
 	for _, domain := range g.domains {
 		originID := domain.Config().DomainID
@@ -73,6 +74,7 @@ func (g Guard) loadSummitLatestStates(ctx context.Context) {
 	}
 }
 
+//nolint:cyclop
 func (g Guard) loadOriginLatestStates(ctx context.Context) {
 	for _, domain := range g.domains {
 		originID := domain.Config().DomainID
@@ -89,6 +91,7 @@ func (g Guard) loadOriginLatestStates(ctx context.Context) {
 	}
 }
 
+//nolint:cyclop
 func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 	statesToSubmit := make(map[uint32]types.State, len(g.domains))
 	for _, domain := range g.domains {
@@ -118,6 +121,7 @@ func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 	return nil, nil
 }
 
+//nolint:cyclop
 func (g Guard) submitLatestSnapshot(ctx context.Context) {
 	snapshot, statesToSubmit := g.getLatestSnapshot()
 	if snapshot == nil {

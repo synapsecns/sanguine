@@ -64,6 +64,7 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error
 	return notary, nil
 }
 
+//nolint:cyclop
 func (n Notary) loadSummitMyLatestStates(ctx context.Context) {
 	for _, domain := range n.domains {
 		originID := domain.Config().DomainID
@@ -78,6 +79,7 @@ func (n Notary) loadSummitMyLatestStates(ctx context.Context) {
 	}
 }
 
+//nolint:cyclop
 func (n Notary) loadSummitGuardLatestStates(ctx context.Context) {
 	for _, domain := range n.domains {
 		originID := domain.Config().DomainID
@@ -93,6 +95,7 @@ func (n Notary) loadSummitGuardLatestStates(ctx context.Context) {
 	}
 }
 
+//nolint:cyclop
 func (n Notary) isValidOnOrigin(ctx context.Context, state types.State, domain domains.DomainClient) bool {
 	stateOnOrigin, err := domain.Origin().SuggestState(ctx, state.Nonce())
 	if err != nil {
@@ -151,6 +154,7 @@ func (n Notary) isValidOnOrigin(ctx context.Context, state types.State, domain d
 	return true
 }
 
+//nolint:cyclop
 func (n Notary) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint32]types.State) {
 	statesToSubmit := make(map[uint32]types.State, len(n.domains))
 	for _, domain := range n.domains {
@@ -187,6 +191,7 @@ func (n Notary) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint
 	return nil, nil
 }
 
+//nolint:cyclop
 func (n Notary) submitLatestSnapshot(ctx context.Context) {
 	snapshot, statesToSubmit := n.getLatestSnapshot(ctx)
 	if snapshot == nil {
@@ -209,6 +214,8 @@ func (n Notary) submitLatestSnapshot(ctx context.Context) {
 }
 
 // Start starts the notary.
+//
+//nolint:cyclop
 func (n Notary) Start(ctx context.Context) error {
 	// First initialize a map to track what was the last state signed by this notary
 	n.loadSummitMyLatestStates(ctx)
