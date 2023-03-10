@@ -32,15 +32,9 @@ func GenerateABIFromEtherscan(ctx context.Context, chainID uint32, url string, c
 		return fmt.Errorf("could not get contract source for address %s: %w", contractAddress, err)
 	}
 
-	wd, err := os.Getwd()
+	solFile, err := os.CreateTemp("", fmt.Sprintf("%s.sol", path.Base(fileName)))
 	if err != nil {
 		return fmt.Errorf("could not determine wd: %w", err)
-	}
-
-	// create a temporary sol file in the current dir so it can be referenced by docker
-	solFile, err := os.Create(fmt.Sprintf("%s/%s.sol", wd, path.Base(fileName)))
-	if err != nil {
-		return fmt.Errorf("could not create temporary sol file: %w", err)
 	}
 
 	defer func() {
@@ -147,7 +141,7 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 	}
 
 	// create a temporary sol file in the current dir so it can be referenced by docker
-	solFile, err := os.Create(fmt.Sprintf("%s/%s", wd, path.Base(filePath)))
+	solFile, err := os.Create(fmt.Sprintf("%s/tmp%s", wd, path.Base(filePath)))
 	if err != nil {
 		return nil, fmt.Errorf("could not create temporary sol file: %w", err)
 	}

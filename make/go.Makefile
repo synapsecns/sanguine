@@ -27,4 +27,4 @@ lint: ## Run golangci-lint and go fmt ./...
 	cd $(GIT_ROOT)
 	go work sync
 	cd $(CURRENT_PATH)
-	docker run -t --rm -v ~/.cache/golangci-lint/:/root/.cache -v "$(GIT_ROOT)":/app -w "/app/$(RELPATH)" golangci/golangci-lint:v1.48.0 golangci-lint run -v --fix
+	docker run -t --rm -v $(go env GOCACHE):/cache/go -e GOCACHE=/cache/go -v ~/.cache/golangci-lint/:/root/.cache -v "$(GIT_ROOT)":/app -w "/app/$(RELPATH)" golangci/golangci-lint:v1.48.0 golangci-lint run -v --fix
