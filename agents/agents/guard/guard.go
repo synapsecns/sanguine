@@ -59,13 +59,14 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig) (_ Guard, err error) 
 	return guard, nil
 }
 
+//nolint:cyclop
 func (g Guard) loadSummitLatestStates(ctx context.Context) {
 	for _, domain := range g.domains {
 		originID := domain.Config().DomainID
 		latestState, err := domain.Summit().GetLatestAgentState(ctx, originID, g.bondedSigner)
 		if err != nil {
 			latestState = nil
-			logger.Errorf("Failed calling GetLatestAgentState for originID on the Summit contract: %d, err = %v", originID, err)
+			logger.Errorf("Failed calling GetLatestAgentState for originID %d on the Summit contract: err = %v", originID, err)
 		}
 		if latestState != nil {
 			g.summitLatestStates[originID] = latestState
@@ -73,13 +74,14 @@ func (g Guard) loadSummitLatestStates(ctx context.Context) {
 	}
 }
 
+//nolint:cyclop
 func (g Guard) loadOriginLatestStates(ctx context.Context) {
 	for _, domain := range g.domains {
 		originID := domain.Config().DomainID
 		latestState, err := domain.Origin().SuggestLatestState(ctx)
 		if err != nil {
 			latestState = nil
-			logger.Errorf("Failed calling SuggestLatestState for originID: %d on the Origin contract: %v", originID, err)
+			logger.Errorf("Failed calling SuggestLatestState for originID %d on the Origin contract: %v", originID, err)
 		} else if latestState == nil {
 			logger.Errorf("No latest state found for origin id %d", originID)
 		}
@@ -89,6 +91,7 @@ func (g Guard) loadOriginLatestStates(ctx context.Context) {
 	}
 }
 
+//nolint:cyclop
 func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 	statesToSubmit := make(map[uint32]types.State, len(g.domains))
 	for _, domain := range g.domains {
@@ -118,6 +121,7 @@ func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 	return nil, nil
 }
 
+//nolint:cyclop
 func (g Guard) submitLatestSnapshot(ctx context.Context) {
 	snapshot, statesToSubmit := g.getLatestSnapshot()
 	if snapshot == nil {
@@ -150,6 +154,7 @@ func (g Guard) Start(ctx context.Context) error {
 		select {
 		// parent loop terminated
 		case <-ctx.Done():
+			logger.Info("Guard exiting without error")
 			return nil
 		case <-time.After(g.refreshInterval):
 			g.loadOriginLatestStates(ctx)
