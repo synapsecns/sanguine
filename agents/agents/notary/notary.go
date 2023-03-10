@@ -164,7 +164,7 @@ func (n Notary) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint
 			summitMyLatest = nil
 		}
 		summitGuardLatest, ok := n.summitGuardLatestStates[originID]
-		if !ok {
+		if !ok || summitGuardLatest == nil {
 			continue
 		}
 

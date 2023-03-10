@@ -23,8 +23,6 @@ func RemoveGuardTempFile(t *testing.T, fileName string) {
 }
 
 func (u GuardSuite) TestGuardE2E() {
-	// TODO (joeallen): FIX ME
-	u.T().Skip()
 	testConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      u.OriginDomainClient.Config(),
@@ -35,11 +33,11 @@ func (u GuardSuite) TestGuardE2E() {
 		SummitDomainID: u.SummitDomainClient.Config().DomainID,
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
 		},
 		UnbondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
-			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
+			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
 	}
@@ -94,7 +92,11 @@ func (u GuardSuite) TestGuardE2E() {
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
-		rawState, err := u.SummitContract.GetLatestAgentState(&bind.CallOpts{Context: u.GetTestContext()}, u.OriginDomainClient.Config().DomainID, u.NotaryBondedSigner.Address())
+		rawState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.GuardBondedSigner.Address())
+
 		Nil(u.T(), err)
 
 		if len(rawState) == 0 {

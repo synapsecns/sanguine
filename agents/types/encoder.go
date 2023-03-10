@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"math/big"
+	"github.com/ethereum/go-ethereum/crypto/secp256k1"
+	"github.com/libs4go/crypto/ecdsa"
 
 	"github.com/ethereum/go-ethereum/common/math"
 )
@@ -137,6 +140,21 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 		blockNumber:  blockNumber,
 		timestamp:    timestamp,
 	}, nil
+}
+
+// EncodeSignature encodes a signature.
+func EncodeSignature(sig Signature) ([]byte, error) {
+	return ecdsa.Sig2Bytes(secp256k1.S256(), sig.R(), sig.S(), sig.V()), nil
+}
+
+// DecodeSignature decodes a signature.
+func DecodeSignature(toDecode []byte) (sig Signature, err error) {
+	r, s, v, err := ecdsa.Bytes2Sig(secp256k1.S256(), toDecode)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode signature: %w", err)
+	}
+
+	return NewSignature(v, r, s), nil
 }
 
 // HashRawBytes takes the raw bytes and produces a hash.

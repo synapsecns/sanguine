@@ -101,10 +101,10 @@ func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 			summitLatest = nil
 		}
 		originLatest, ok := g.originLatestStates[originID]
-		if !ok {
+		if !ok || originLatest == nil {
 			continue
 		}
-		if summitLatest.Nonce() >= originLatest.Nonce() {
+		if summitLatest != nil && summitLatest.Nonce() >= originLatest.Nonce() {
 			// Here this guard already submitted this state
 			continue
 		}

@@ -164,6 +164,8 @@ require (
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/kyokomi/emoji/v2 v2.2.8 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/libs4go/crypto v0.0.1 // indirect
+	github.com/libs4go/errors v0.0.3 // indirect
 	github.com/lmittmann/w3 v0.10.0 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/lucasb-eyer/go-colorful v1.0.3 // indirect
