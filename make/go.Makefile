@@ -29,3 +29,11 @@ lint: ## Run golangci-lint and go fmt ./...
 	cd $(CURRENT_PATH)
 	## Note: when we upgrade, we can use either the brew version (needs to stay at latest). If we decide to stay with docker, we can use gomemlimit instead of a constant heap size
 	docker run -t --rm -v $(go env GOCACHE):/cache/go -v ${GOPATH}/pkg:/go/pkg -e GOGC=2000  -e GOCACHE=/cache/go -v ~/.cache/golangci-lint/:/root/.cache -v "$(GIT_ROOT)":/app -w "/app/$(RELPATH)" golangci/golangci-lint:v1.48.0 golangci-lint run -v --fix
+
+lint-legacy:
+	go mod tidy
+	go fmt ./...
+	cd $(GIT_ROOT)
+	go work sync
+	cd $(CURRENT_PATH)
+	@golangci-lint run --fix --config=$(GIT_ROOT)/.golangci.yml
