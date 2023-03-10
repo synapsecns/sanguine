@@ -31,13 +31,20 @@ type RPCProxy struct {
 	client omniHTTP.Client
 }
 
+// defaultInterval is the default refresh interval.
+const defaultInterval = 30
+
 // NewProxy creates a new rpc proxy.
-func NewProxy(config config.Config, clientType omniHTTP.ClientType) *RPCProxy {
+func NewProxy(config config.Config) *RPCProxy {
+	if config.RefreshInterval == 0 {
+		logger.Warn("no refresh interval set (or interval is 0), using default of %d seconds", defaultInterval)
+	}
+
 	return &RPCProxy{
 		chainManager:    chainmanager.NewChainManagerFromConfig(config),
 		refreshInterval: time.Second * time.Duration(config.RefreshInterval),
 		port:            config.Port,
-		client:          omniHTTP.NewClient(clientType),
+		client:          omniHTTP.NewClient(omniHTTP.ClientTypeFromString(config.ClientType)),
 	}
 }
 
