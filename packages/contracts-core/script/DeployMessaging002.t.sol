@@ -90,6 +90,7 @@ contract DeployMessaging002Script is DeployerUtils {
         _transferOwnership(origin);
         // Stop broadcasting before testing the deployed contracts
         stopBroadcast();
+        _checkAgents(config);
     }
 
     function _deployBondingSecondary() internal returns (address) {
