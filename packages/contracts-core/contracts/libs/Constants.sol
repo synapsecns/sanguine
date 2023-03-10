@@ -10,6 +10,10 @@ uint256 constant ATTESTATION_LENGTH = 47;
 uint256 constant STATE_LENGTH = 50;
 /// @dev Maximum amount of states in a single snapshot
 uint256 constant SNAPSHOT_MAX_STATES = 32;
+// ══════════════════════════════ STATEMENT SALTS ══════════════════════════════
+/// @dev Salts for signing various statements
+bytes32 constant ATTESTATION_SALT = keccak256("ATTESTATION_SALT");
+bytes32 constant SNAPSHOT_SALT = keccak256("SNAPSHOT_SALT");
 // ══════════════════════════════════ ORIGIN ═══════════════════════════════════
 /// @dev Root for an empty Origin Merkle Tree.
 bytes32 constant EMPTY_ROOT = hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757";

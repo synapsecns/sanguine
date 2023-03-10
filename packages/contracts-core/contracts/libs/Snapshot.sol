@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { SummitAttestation } from "./Attestation.sol";
 import { ByteString } from "./ByteString.sol";
-import { SNAPSHOT_MAX_STATES, STATE_LENGTH } from "./Constants.sol";
+import { SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, STATE_LENGTH } from "./Constants.sol";
 import { MerkleList } from "./MerkleList.sol";
 import { State, StateLib } from "./State.sol";
 import { TypedMemView } from "./TypedMemView.sol";
@@ -150,8 +150,8 @@ library SnapshotLib {
     function hash(Snapshot _snapshot) internal pure returns (bytes32 hashedSnapshot) {
         // Get the underlying memory view
         bytes29 _view = _snapshot.unwrap();
-        // TODO: include Snapshot-unique salt in the hash
-        return _view.keccak();
+        // The final hash to sign is keccak(attestationSalt, keccak(attestation))
+        return keccak256(bytes.concat(SNAPSHOT_SALT, _view.keccak()));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

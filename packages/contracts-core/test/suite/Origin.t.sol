@@ -246,7 +246,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
         sa.blockNumber = random.nextUint40();
         sa.timestamp = random.nextUint40();
         bytes memory attestation = sa.formatSummitAttestation(random.nextUint32());
-        bytes memory signature = signMessage(notary, keccak256(attestation));
+        bytes memory signature = signAttestation(notary, attestation);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
@@ -279,7 +279,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
         (, State[] memory states) = fakeStates(state, statesAmount, stateIndex);
         address notary = domains[DOMAIN_REMOTE].agent;
         bytes memory snapshot = SnapshotLib.formatSnapshot(states);
-        bytes memory signature = signMessage(notary, keccak256(snapshot));
+        bytes memory signature = signSnapshot(notary, snapshot);
         vm.recordLogs();
         if (!isValid) {
             // Expect Events to be emitted
