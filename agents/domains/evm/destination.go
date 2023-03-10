@@ -118,3 +118,22 @@ func (a destinationContract) SubmittedAt(ctx context.Context, originID uint32, r
 	//nolint:nilnil
 	return nil, nil
 }
+
+func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error {
+	transactOpts, err := a.transactOptsSetup(ctx, signer)
+	if err != nil {
+		return fmt.Errorf("could not setup transact opts: %w", err)
+	}
+
+	rawSig, err := types.EncodeSignature(signature)
+	if err != nil {
+		return fmt.Errorf("could not encode signature: %w", err)
+	}
+
+	_, err = a.contract.SubmitAttestation(transactOpts, attPayload, rawSig)
+	if err != nil {
+		return fmt.Errorf("could not submit attestation: %w", err)
+	}
+
+	return nil
+}

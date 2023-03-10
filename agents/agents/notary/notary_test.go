@@ -24,8 +24,6 @@ func RemoveNotaryTempFile(t *testing.T, fileName string) {
 }
 
 func (u *NotarySuite) TestNotaryE2E() {
-	// TODO (joeallen): FIX ME
-	u.T().Skip()
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      u.OriginDomainClient.Config(),

@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -54,6 +55,8 @@ type SummitContract interface {
 	GetLatestState(ctx context.Context, origin uint32) (types.State, error)
 	// GetLatestAgentState gets the latest state signed by the bonded signer for the given origin
 	GetLatestAgentState(ctx context.Context, origin uint32, bondedAgentSigner signer.Signer) (types.State, error)
+	// WatchAttestationSaved looks for attesation saved events
+	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
 }
 
 // DestinationContract contains the interface for the destination.
@@ -64,6 +67,8 @@ type DestinationContract interface {
 	Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error
 	// SubmittedAt retrieves the time a given Merkle root from the given origin was submitted on the destination.
 	SubmittedAt(ctx context.Context, origin uint32, root [32]byte) (*time.Time, error)
+	// SubmitAttestation submits an attestation to the destination
+	SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error
 }
 
 // TestClientContract contains the interface for the test client.

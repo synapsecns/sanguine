@@ -6,10 +6,13 @@ import (
 	"time"
 
 	"github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"golang.org/x/sync/errgroup"
 )
 
 // Notary checks the Summit for that latest states signed by guards, validates those states on origin,
@@ -216,22 +219,79 @@ func (n Notary) submitLatestSnapshot(ctx context.Context) {
 	}
 }
 
+//nolint:cyclop
+func (n Notary) submitAttestation(ctx context.Context, attBytes []byte) {
+	hashedBytes, err := types.HashRawBytes(attBytes)
+	if err != nil {
+		logger.Errorf("could not hash attBytes: %w", err)
+		return
+	}
+	signature, err := n.bondedSigner.SignMessage(ctx, core.BytesToSlice(hashedBytes), false)
+	if err != nil {
+		logger.Errorf("could not sign snapshot: %w", err)
+		return
+	}
+
+	err = n.destinationDomain.Destination().SubmitAttestation(ctx, n.unbondedSigner, attBytes, signature)
+	if err != nil {
+		logger.Errorf("Failed to submit snapshot to summit: %v", err)
+	}
+}
+
 // Start starts the notary.
 //
 //nolint:cyclop
 func (n Notary) Start(ctx context.Context) error {
-	// First initialize a map to track what was the last state signed by this notary
-	n.loadSummitMyLatestStates(ctx)
+	g, ctx := errgroup.WithContext(ctx)
 
-	for {
-		select {
-		// parent loop terminated
-		case <-ctx.Done():
-			logger.Info("Notary exiting without error")
-			return nil
-		case <-time.After(n.refreshInterval):
-			n.loadSummitGuardLatestStates(ctx)
-			n.submitLatestSnapshot(ctx)
+	g.Go(func() error {
+		attestationSavedSink := make(chan *summit.SummitAttestationSaved)
+		savedAttestation, err := n.summitDomain.Summit().WatchAttestationSaved(ctx, attestationSavedSink)
+		if err != nil {
+			return fmt.Errorf("Error setting up watcher for saved attestations: %w", err)
 		}
+
+		watchCtx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
+		select {
+		// check for errors and fail
+		case <-watchCtx.Done():
+			logger.Info("Notary Attestation Saved Watcher exiting without error")
+			return nil
+		case <-savedAttestation.Err():
+			logger.Info("Notary Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
+		// get message sent event
+		case receivedAttestationSaved := <-attestationSavedSink:
+			attToSubmit := receivedAttestationSaved.Attestation
+			n.submitAttestation(ctx, attToSubmit)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		// First initialize a map to track what was the last state signed by this notary
+		n.loadSummitMyLatestStates(ctx)
+
+		for {
+			select {
+			// parent loop terminated
+			case <-ctx.Done():
+				logger.Info("Notary exiting without error")
+				return nil
+			case <-time.After(n.refreshInterval):
+				n.loadSummitGuardLatestStates(ctx)
+				n.submitLatestSnapshot(ctx)
+			}
+		}
+	})
+
+	err := g.Wait()
+	if err != nil {
+		logger.Errorf("Notary exiting with error: %v", err)
+		return fmt.Errorf("could not start the notary: %w", err)
 	}
+
+	logger.Info("Notary exiting without error")
+	return nil
 }
