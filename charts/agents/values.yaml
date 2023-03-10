@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "a19078992afa78092c48bbd9daa54f82210ea26e"
+  tag: "98b62bc3168e60673e48fcb9b021f8ef446b8181"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -499,6 +499,8 @@ executor_remote_existing_files:
   executor_config.yaml: |-
     base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
     execute_interval: 10
+    summit_chain_id: 10
+    summit_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
     chains:
       - chain_id: 137
         origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
@@ -519,6 +521,8 @@ executor_remote_fresh_files:
   executor_config.yaml: |-
     base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
     execute_interval: 10
+    summit_chain_id: 10
+    summit_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
     chains:
       - chain_id: 137
         origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
@@ -576,6 +580,8 @@ executor_embedded_files:
   executor_config.yaml: |-
     base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
     execute_interval: 10
+    summit_chain_id: 10
+    summit_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
     chains:
       - chain_id: 137
         origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
