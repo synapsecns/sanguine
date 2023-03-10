@@ -10,7 +10,7 @@ import { TipsLib } from "../libs/Tips.sol";
 import { BasicClient } from "../client/BasicClient.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
-import { Version0_0_2 } from "../Version.sol";
+import { Versioned } from "../Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
@@ -59,7 +59,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
  * a "message to System Router". By enforcing a minimum optimistic latency for the recipient this
  * attack can be mitigated, assuming there is at least one honest Guard willing to report the fraud.
  */
-contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Version0_0_2 {
+contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Versioned {
     using Address for address;
     using ByteString for bytes;
     using SystemMessageLib for bytes;
@@ -99,13 +99,12 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // solhint-disable no-empty-blocks
     constructor(
         uint32 _domain,
         address _origin,
         address _destination,
         address _bondingManager
-    ) BasicClient(_origin, _destination) DomainContext(_domain) {
+    ) BasicClient(_origin, _destination) DomainContext(_domain) Versioned("0.0.3") {
         bondingManager = _bondingManager;
     }
 
