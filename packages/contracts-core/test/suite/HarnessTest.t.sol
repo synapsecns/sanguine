@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import { DestinationHarness } from "../harnesses/DestinationHarness.t.sol";
-import { OriginHarness } from "../harnesses/OriginHarness.t.sol";
+import { SystemRouterMock, OriginHarness } from "../harnesses/OriginHarness.t.sol";
 import { SummitHarness } from "../harnesses/SummitHarness.t.sol";
 
 import { Test } from "forge-std/Test.sol";
@@ -64,6 +64,8 @@ contract HarnessTest is Test {
         domain = uint32(bound(domain, 1, type(uint32).max));
         SummitHarness summit = new SummitHarness();
         Initializable(address(summit)).initialize();
+        SystemRouterMock routerMock = new SystemRouterMock();
+        summit.setSystemRouter(routerMock);
         // Any Notary
         summit.addAgent(domain, notary);
         assertTrue(summit.isActiveAgent(domain, notary));
