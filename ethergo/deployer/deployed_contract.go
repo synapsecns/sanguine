@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"math/big"
 	"testing"
@@ -69,7 +70,7 @@ func (d DeployedContract) DeployTx() *types.Transaction {
 
 // ChainID is the chain id of the deployed contract.
 func (d DeployedContract) ChainID() *big.Int {
-	return d.chainID
+	return core.CopyBigInt(d.chainID)
 }
 
 var _ contracts.DeployedContract = DeployedContract{}
