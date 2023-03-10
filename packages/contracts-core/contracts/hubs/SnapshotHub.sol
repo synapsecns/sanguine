@@ -121,7 +121,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             assert(statePtr != 0);
             SummitState memory guardState = guardStates[statePtr - 1];
             State state = guardState.formatSummitState().castToState();
-            hashes[i] = state.hash();
+            hashes[i] = state.leaf();
             if (i == _stateIndex) {
                 // First element of the proof is "right sub-leaf"
                 (, snapProof[0]) = state.subLeafs();
@@ -202,7 +202,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         uint32 origin = _state.origin();
         // Check that Guard hasn't submitted a fresher State before
         require(_state.nonce() > _latestState(origin, _guard).nonce, "Outdated nonce");
-        bytes32 stateHash = _state.hash();
+        bytes32 stateHash = _state.leaf();
         statePtr = leafPtr[origin][stateHash];
         // Save state only if it wasn't previously submitted
         if (statePtr == 0) {
@@ -254,7 +254,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Returns the pointer for a matching Guard State, if it exists.
     function _statePtr(State _state) internal view returns (uint256) {
-        return leafPtr[_state.origin()][_state.hash()];
+        return leafPtr[_state.origin()][_state.leaf()];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

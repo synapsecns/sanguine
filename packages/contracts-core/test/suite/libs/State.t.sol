@@ -64,9 +64,9 @@ contract StateLibraryTest is SynapseLibraryTest {
         );
         assertEq(rightLeaf, rightChild, "!subLeafs: right");
         assertEq(
-            libHarness.hash(payload),
+            libHarness.leaf(payload),
             keccak256(abi.encodePacked(leftChild, rightChild)),
-            "!hash"
+            "!leaf"
         );
     }
 

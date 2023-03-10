@@ -196,7 +196,7 @@ library SnapshotLib {
         bytes32[] memory hashes = new bytes32[](_statesAmount);
         for (uint256 i = 0; i < _statesAmount; ++i) {
             // Each State has two sub-leafs, their hash is used as "leaf" in "Snapshot Merkle Tree"
-            hashes[i] = _snapshot.state(i).hash();
+            hashes[i] = _snapshot.state(i).leaf();
         }
         MerkleList.calculateRoot(hashes);
         // hashes[0] now stores the value for the Merkle Root of the list

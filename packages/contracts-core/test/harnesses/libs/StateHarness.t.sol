@@ -30,8 +30,8 @@ contract StateHarness {
         return _state.unwrap().clone();
     }
 
-    function hash(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToState().hash();
+    function leaf(bytes memory _payload) public pure returns (bytes32) {
+        return _payload.castToState().leaf();
     }
 
     function subLeafs(bytes memory _payload) public pure returns (bytes32, bytes32) {
