@@ -64,6 +64,7 @@ contract DeployerUtils is Script {
             // Derive deployer address
             broadcasterAddress = vm.addr(broadcasterPK);
             console.log("Deployer address: %s", broadcasterAddress);
+            console.log("Deployer balance: %s", _fromWei(broadcasterAddress.balance));
         }
     }
 
@@ -276,5 +277,19 @@ contract DeployerUtils is Script {
         inputs[3] = path;
         bytes memory sorted = vm.ffi(inputs);
         string(sorted).write(path);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           INTERNAL HELPERS                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function _fromWei(uint256 amount) internal pure returns (string memory s) {
+        string memory a = Strings.toString(amount / 10**18);
+        string memory b = Strings.toString(amount % 10**18);
+        // Add leading zeroes to the decimal part
+        while (bytes(b).length < 18) {
+            b = string.concat("0", b);
+        }
+        return string.concat(a, ".", b);
     }
 }
