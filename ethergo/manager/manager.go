@@ -95,4 +95,21 @@ func (d *DeployerManager) Get(ctx context.Context, backend backends.SimulatedTes
 	return d.GetContractRegistry(backend).Get(ctx, contractType)
 }
 
+// GetDeployedContracts gets all deployed contracts by domain.
+func (d *DeployerManager) GetDeployedContracts() (res map[uint32][]contracts.DeployedContract) {
+	d.structMux.RLock()
+	defer d.structMux.RUnlock()
+
+	res = make(map[uint32][]contracts.DeployedContract)
+
+	for _, registry := range d.registries {
+		for _, contract := range registry.GetDeployedContracts() {
+			chainID := uint32(contract.ChainID().Uint64())
+			res[chainID] = append(res[chainID], contract)
+		}
+	}
+
+	return res
+}
+
 var _ suite.TestingSuite = &DeployerManager{}

@@ -28,6 +28,8 @@ type GetOnlyContractRegistry interface {
 	Get(ctx context.Context, contractType contracts.ContractType) contracts.DeployedContract
 	// GetRegisteredDeployer gets the deployer for a given contract, returs nil if it doesn't exist
 	GetRegisteredDeployer(contractType contracts.ContractType) ContractDeployer
+	// GetDeployedContracts gets all deployed contracts in the registry.
+	GetDeployedContracts() (res []contracts.DeployedContract)
 }
 
 // ContractRegistry handles contract deployment/storage for a specific chain.
@@ -123,6 +125,17 @@ func (c *contractRegistryImpl) Get(ctx context.Context, contractType contracts.C
 
 	// and return the new contfract
 	return deployedContract
+}
+
+func (c *contractRegistryImpl) GetDeployedContracts() (res []contracts.DeployedContract) {
+	c.structMux.RLock()
+	defer c.structMux.RUnlock()
+
+	for _, contract := range c.deployedContracts {
+		res = append(res, contract)
+	}
+
+	return res
 }
 
 // contractLock creates a contractLock from a contract type and locks the mutex.

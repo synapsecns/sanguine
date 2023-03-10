@@ -63,9 +63,13 @@ func (a summitContract) SubmitSnapshot(ctx context.Context, signer signer.Signer
 
 	transactOpts.Context = ctx
 
-	_, err = a.contract.SubmitSnapshot(transactOpts, encodedSnapshot, signature.R().Bytes())
+	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
-		return fmt.Errorf("could not submit attestation: %w", err)
+		return fmt.Errorf("could not encode signature: %w", err)
+	}
+	_, err = a.contract.SubmitSnapshot(transactOpts, encodedSnapshot, rawSig)
+	if err != nil {
+		return fmt.Errorf("could not submit sanpshot: %w", err)
 	}
 
 	return nil

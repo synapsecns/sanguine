@@ -3,7 +3,9 @@ package testutil
 import (
 	"context"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
 
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
@@ -187,6 +189,39 @@ func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.Deplo
 		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return destinationharness.NewDestinationHarnessRef(address, backend)
+	})
+}
+
+// SummitHarnessDeployer deploys the summit harness.
+type SummitHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewSummitHarnessDeployer creates a new deployer for the summit harness.
+func NewSummitHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return SummitHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, SummitHarnessType)}
+}
+
+// Deploy deploys the summit harness.
+// nolint:dupl
+func (d SummitHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		address, tx, rawHandle, err := summitharness.DeploySummitHarness(transactOps, backend)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
+		}
+		d.Backend().WaitForConfirmation(ctx, tx)
+
+		initializeOpts := d.Backend().GetTxContext(ctx, &transactOps.From)
+		initializeTx, err := rawHandle.Initialize(initializeOpts.TransactOpts)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize summit harness (%s) on %s: %w", transactOps.From, d.ContractType().ContractName(), err)
+		}
+		d.Backend().WaitForConfirmation(ctx, initializeTx)
+
+		return address, tx, rawHandle, err
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return summitharness.NewSummitHarnessRef(address, backend)
 	})
 }
 

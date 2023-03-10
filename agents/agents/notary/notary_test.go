@@ -9,7 +9,9 @@ import (
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -24,7 +26,25 @@ func RemoveNotaryTempFile(t *testing.T, fileName string) {
 func (u *NotarySuite) TestNotaryE2E() {
 	// TODO (joeallen): FIX ME
 	u.T().Skip()
-	testConfig := config.AgentConfig{
+	guardTestConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      u.OriginDomainClient.Config(),
+			"destination_client": u.DestinationDomainClient.Config(),
+			"summit_client":      u.SummitDomainClient.Config(),
+		},
+		DomainID:       uint32(0),
+		SummitDomainID: u.SummitDomainClient.Config().DomainID,
+		BondedSigner: config.SignerConfig{
+			Type: config.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
+		},
+		UnbondedSigner: config.SignerConfig{
+			Type: config.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+		RefreshIntervalSeconds: 5,
+	}
+	notaryTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      u.OriginDomainClient.Config(),
 			"destination_client": u.DestinationDomainClient.Config(),
@@ -42,36 +62,74 @@ func (u *NotarySuite) TestNotaryE2E() {
 		},
 		RefreshIntervalSeconds: 5,
 	}
-	encodedTestConfig, err := testConfig.Encode()
+	encodedNotaryTestConfig, err := notaryTestConfig.Encode()
 	Nil(u.T(), err)
 
-	tempConfigFile, err := os.CreateTemp("", "notary_temp_config.yaml")
+	notaryTempConfigFile, err := os.CreateTemp("", "notary_temp_config.yaml")
 	Nil(u.T(), err)
-	defer RemoveNotaryTempFile(u.T(), tempConfigFile.Name())
+	defer RemoveNotaryTempFile(u.T(), notaryTempConfigFile.Name())
 
-	numBytesWritten, err := tempConfigFile.Write(encodedTestConfig)
+	numBytesWritten, err := notaryTempConfigFile.Write(encodedNotaryTestConfig)
 	Nil(u.T(), err)
 	Positive(u.T(), numBytesWritten)
 
-	decodedAgentConfig, err := config.DecodeAgentConfig(tempConfigFile.Name())
+	decodedAgentConfig, err := config.DecodeAgentConfig(notaryTempConfigFile.Name())
 	Nil(u.T(), err)
 
 	decodedAgentConfigBackToEncodedBytes, err := decodedAgentConfig.Encode()
 	Nil(u.T(), err)
 
-	Equal(u.T(), encodedTestConfig, decodedAgentConfigBackToEncodedBytes)
+	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	notary, err := notary.NewNotary(u.GetTestContext(), testConfig)
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig)
 	Nil(u.T(), err)
 
-	auth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
+	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
 
-	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
-	Nil(u.T(), err)
+	optimisticSeconds := uint32(10)
 
-	tx, err := u.OriginContract.Dispatch(auth.TransactOpts, testConfig.DomainID, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
+	body := []byte{byte(gofakeit.Uint32())}
+
+	txContextOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.OriginContractMetadata.OwnerPtr())
+	txContextOrigin.Value = types.TotalTips(tips)
+
+	txContextTestClientOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.TestClientMetadataOnOrigin.OwnerPtr())
+
+	testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(
+		txContextTestClientOrigin.TransactOpts,
+		uint32(u.TestBackendDestination.GetChainID()),
+		u.TestClientMetadataOnDestination.Address(),
+		optimisticSeconds,
+		body)
+
+	u.Nil(err)
+	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
+
+	go func() {
+		// we don't check errors here since this will error on cancellation at the end of the test
+		_ = guard.Start(u.GetTestContext())
+	}()
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.GuardBondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(1)
+	})
+
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
-	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
@@ -80,6 +138,19 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		return true
+
+		rawState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.NotaryBondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(1)
 	})
 }

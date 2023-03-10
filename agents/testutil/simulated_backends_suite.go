@@ -13,10 +13,10 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
+	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
@@ -55,7 +55,7 @@ type SimulatedBackendsTestSuite struct {
 	TestClientMetadataOnDestination     contracts.DeployedContract
 	PingPongClientOnDestination         *pingpongclient.PingPongClientRef
 	PingPongClientMetadataOnDestination contracts.DeployedContract
-	SummitContract                      *summit.SummitRef
+	SummitContract                      *summitharness.SummitHarnessRef
 	SummitMetadata                      contracts.DeployedContract
 	TestBackendOrigin                   backends.SimulatedTestBackend
 	TestBackendDestination              backends.SimulatedTestBackend
@@ -214,9 +214,9 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 
 // SetupSummit sets up the backend that will have the summit contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
-	a.SummitMetadata, a.SummitContract = deployManager.GetSummit(a.GetTestContext(), a.TestBackendSummit)
+	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 
-	summitOwnerPtr, err := a.SummitContract.SummitCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
+	summitOwnerPtr, err := a.SummitContract.SummitHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
 		a.T().Fatal(err)
 	}

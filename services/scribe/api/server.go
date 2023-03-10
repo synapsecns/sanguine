@@ -114,16 +114,17 @@ func Start(ctx context.Context, cfg Config) error {
 }
 
 // InitDB initializes a database given a database type and path.
-func InitDB(ctx context.Context, database string, path string) (db.EventDB, error) {
+// TODO: use enum for database type.
+func InitDB(ctx context.Context, databaseType string, path string) (db.EventDB, error) {
 	switch {
-	case database == "sqlite":
+	case databaseType == "sqlite":
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
 		}
 
 		return sqliteStore, nil
-	case database == "mysql":
+	case databaseType == "mysql":
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
@@ -142,6 +143,6 @@ func InitDB(ctx context.Context, database string, path string) (db.EventDB, erro
 
 		return mysqlStore, nil
 	default:
-		return nil, fmt.Errorf("invalid database type: %s", database)
+		return nil, fmt.Errorf("invalid databaseType type: %s", databaseType)
 	}
 }
