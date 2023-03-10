@@ -11,7 +11,7 @@ type State is bytes29;
 using {
     StateLib.unwrap,
     StateLib.equalToOrigin,
-    StateLib.hash,
+    StateLib.leaf,
     StateLib.subLeafs,
     StateLib.toSummitState,
     StateLib.root,
@@ -211,7 +211,7 @@ library StateLib {
 
     /// @notice Returns the hash of the State.
     /// @dev We are using the Merkle Root of a tree with two leafs (see below) as state hash.
-    function hash(State _state) internal pure returns (bytes32) {
+    function leaf(State _state) internal pure returns (bytes32) {
         (bytes32 _leftLeaf, bytes32 _rightLeaf) = _state.subLeafs();
         // Final hash is the parent of these leafs
         return keccak256(bytes.concat(_leftLeaf, _rightLeaf));

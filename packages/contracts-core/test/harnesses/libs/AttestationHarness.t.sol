@@ -50,6 +50,10 @@ contract AttestationHarness {
         return _payload.castToAttestation().timestamp();
     }
 
+    function hash(bytes memory _payload) public pure returns (bytes32) {
+        return _payload.castToAttestation().hash();
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       DESTINATION ATTESTATION                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

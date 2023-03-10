@@ -114,7 +114,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
 
         // Attestation Nonce is fuzzed as well
         bytes memory attPayload = AttestationLib.formatSummitAttestation(summitAtt, attNonce);
-        bytes memory attSignature = signMessage(domains[DOMAIN_LOCAL].agent, keccak256(attPayload));
+        bytes memory attSignature = signAttestation(domains[DOMAIN_LOCAL].agent, attPayload);
 
         skip(skipTime);
         uint256 rootTimestamp = block.timestamp;

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { ATTESTATION_SALT, SNAPSHOT_SALT } from "../../contracts/libs/Constants.sol";
+
 import { BondingSecondary } from "../../contracts/bonding/BondingSecondary.sol";
 import { ISystemContract } from "../../contracts/interfaces/ISystemContract.sol";
 import { Destination } from "../../contracts/Destination.sol";
@@ -121,14 +123,33 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         signature = abi.encodePacked(r, s, v);
     }
 
+    /// @dev Private to enforce using salt-specific signing
     function signMessage(address agent, bytes32 hashedMsg)
-        public
+        private
         view
         returns (bytes memory signature)
     {
         uint256 privKey = agentPK[agent];
         require(privKey != 0, "Unknown agent");
         return signMessage(privKey, hashedMsg);
+    }
+
+    function signAttestation(address agent, bytes memory attestation)
+        public
+        view
+        returns (bytes memory signature)
+    {
+        bytes32 hashedAtt = keccak256(attestation);
+        return signMessage(agent, keccak256(bytes.concat(ATTESTATION_SALT, hashedAtt)));
+    }
+
+    function signSnapshot(address agent, bytes memory snapshot)
+        public
+        view
+        returns (bytes memory signature)
+    {
+        bytes32 hashedSnap = keccak256(snapshot);
+        return signMessage(agent, keccak256(bytes.concat(SNAPSHOT_SALT, hashedSnap)));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

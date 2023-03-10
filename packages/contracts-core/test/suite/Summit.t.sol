@@ -98,7 +98,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
         uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
         address notary = domains[domain].agents[notaryIndex];
         bytes memory attestation = sa.formatSummitAttestation(nonce);
-        bytes memory signature = signMessage(notary, keccak256(attestation));
+        bytes memory signature = signAttestation(notary, attestation);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
@@ -138,7 +138,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 states[j] = guardStates[i][j].formatSummitState().castToState();
             }
             bytes memory snapshot = SnapshotLib.formatSnapshot(states);
-            bytes memory signature = signMessage(domains[0].agents[i], keccak256(snapshot));
+            bytes memory signature = signSnapshot(domains[0].agents[i], snapshot);
             guardSnapshots[i] = SignedSnapshot(snapshot, signature);
         }
 
@@ -205,7 +205,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
 
             address notary = domains[DOMAIN_LOCAL].agents[i];
             bytes memory snapshot = SnapshotLib.formatSnapshot(states);
-            bytes memory signature = signMessage(notary, keccak256(snapshot));
+            bytes memory signature = signSnapshot(notary, snapshot);
 
             vm.expectEmit(true, true, true, true);
             emit AttestationSaved(attestation);
