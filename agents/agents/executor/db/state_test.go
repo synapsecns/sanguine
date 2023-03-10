@@ -211,8 +211,8 @@ func (t *DBSuite) TestGetPotentialSnapshotRoots() {
 
 		Equal(t.T(), 2, len(potentialSnapshotRoots))
 		NotEqual(t.T(), potentialSnapshotRoots[0], potentialSnapshotRoots[1])
-		True(t.T(), snapshotRootA.String() == potentialSnapshotRoots[0] || snapshotRootA.String() == potentialSnapshotRoots[1])
 		True(t.T(), snapshotRootB.String() == potentialSnapshotRoots[0] || snapshotRootB.String() == potentialSnapshotRoots[1])
+		True(t.T(), snapshotRootC.String() == potentialSnapshotRoots[0] || snapshotRootC.String() == potentialSnapshotRoots[1])
 	})
 }
 
@@ -274,7 +274,7 @@ func (t *DBSuite) TestGetSnapshotRootsInNonceRange() {
 
 		Equal(t.T(), 2, len(potentialSnapshotRoots))
 		NotEqual(t.T(), potentialSnapshotRoots[0], potentialSnapshotRoots[1])
-		True(t.T(), snapshotRootA.String() == potentialSnapshotRoots[0] || snapshotRootA.String() == potentialSnapshotRoots[1])
 		True(t.T(), snapshotRootB.String() == potentialSnapshotRoots[0] || snapshotRootB.String() == potentialSnapshotRoots[1])
+		True(t.T(), snapshotRootC.String() == potentialSnapshotRoots[0] || snapshotRootC.String() == potentialSnapshotRoots[1])
 	})
 }
