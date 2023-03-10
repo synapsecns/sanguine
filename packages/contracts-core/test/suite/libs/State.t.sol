@@ -6,23 +6,23 @@ import { STATE_LENGTH } from "../../../contracts/libs/Constants.sol";
 import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
 import { OriginState, StateHarness, SummitState } from "../../harnesses/libs/StateHarness.t.sol";
 
+struct RawState {
+    bytes32 root;
+    uint32 origin;
+    uint32 nonce;
+    uint40 blockNumber;
+    uint40 timestamp;
+}
+
+struct OriginStateMask {
+    bool diffRoot;
+    bool diffBlockNumber;
+    bool diffTimestamp;
+}
+
 // solhint-disable func-name-mixedcase
 contract StateLibraryTest is SynapseLibraryTest {
     using TypedMemView for bytes;
-
-    struct RawState {
-        bytes32 root;
-        uint32 origin;
-        uint32 nonce;
-        uint40 blockNumber;
-        uint40 timestamp;
-    }
-
-    struct OriginStateMask {
-        bool diffRoot;
-        bool diffBlockNumber;
-        bool diffTimestamp;
-    }
 
     StateHarness internal libHarness;
 

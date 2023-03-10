@@ -63,7 +63,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         isValid = _isValidState(snapshot.state(_stateIndex));
         if (!isValid) {
             emit InvalidAttestationState(_stateIndex, _snapPayload, _attPayload, _attSignature);
-            _slashAgent(domain, notary);
+            // Slash Notary and trigger a hook to send a slashAgent system call
+            _slashAgent(domain, notary, true);
         }
     }
 
@@ -82,7 +83,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         isValid = _isValidState(snapshot.state(_stateIndex));
         if (!isValid) {
             emit InvalidSnapshotState(_stateIndex, _snapPayload, _snapSignature);
-            _slashAgent(domain, agent);
+            // Slash Agent and trigger a hook to send a slashAgent system call
+            _slashAgent(domain, agent, true);
         }
     }
 
@@ -97,13 +99,11 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
-    )
-        external
-        payable
-        haveActiveGuard
-        haveActiveNotary(_destination)
-        returns (uint32 messageNonce, bytes32 messageHash)
-    {
+    ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
+        // Modifiers are removed because they prevent from slashing the last active Guard/Notary
+        // haveActiveGuard
+        // haveActiveNotary(_destination)
+        // TODO: figure out a way to filter out unknown domains once Agent Merkle Tree is implemented
         require(_messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
         // This will revert if payload is not a formatted tips payload
         Tips tips = _tips.castToTips();
@@ -142,10 +142,12 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _slashAgent(uint32 _domain, address _account) internal {
-        // TODO: Move to SystemRegistry?
-        // TODO: send a system call indicating agent was slashed
-        _removeAgent(_domain, _account);
+    /// @dev Hook that is called after an existing agent was slashed,
+    /// when verification of an invalid agent statement was done in this contract.
+    function _afterAgentSlashed(uint32 _domain, address _agent) internal virtual override {
+        /// @dev We send a "slashAgent" system message
+        /// after the Agent is slashed by submitting an invalid statement.
+        _callLocalBondingManager(_dataSlashAgent(_domain, _agent));
     }
 
     /**

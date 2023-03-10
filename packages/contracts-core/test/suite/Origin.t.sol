@@ -3,12 +3,18 @@ pragma solidity 0.8.17;
 
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 import { IStateHub } from "../../contracts/interfaces/IStateHub.sol";
-import { EMPTY_ROOT } from "../../contracts/libs/Constants.sol";
-import { OriginState } from "../../contracts/libs/State.sol";
+import { EMPTY_ROOT, SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
+import { SummitAttestation } from "../../contracts/libs/Attestation.sol";
+import { Snapshot, SnapshotLib } from "../../contracts/libs/Snapshot.sol";
+import { OriginState, State, StateLib, SummitState } from "../../contracts/libs/State.sol";
+import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { TipsLib } from "../../contracts/libs/Tips.sol";
 
 import { InterfaceOrigin } from "../../contracts/Origin.sol";
 
+import { RawState, OriginStateMask } from "./libs/State.t.sol";
+import { fakeStates } from "../utils/libs/FakeIt.t.sol";
+import { Random } from "../utils/libs/Random.t.sol";
 import { RawHeader, RawMessage, RawTips } from "../utils/libs/SynapseStructs.t.sol";
 import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
 import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
@@ -17,6 +23,9 @@ import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 contract OriginTest is SynapseTest, SynapseProofs {
+    using StateLib for bytes;
+    using SnapshotLib for bytes;
+
     // Deploy Production version of Origin and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_ORIGIN) {}
 
@@ -128,5 +137,163 @@ contract OriginTest is SynapseTest, SynapseProofs {
             state.formatOriginState(DOMAIN_LOCAL, MESSAGES),
             "!suggestLatestState"
         );
+    }
+
+    function test_slashAgent() public {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        vm.expectEmit(true, true, true, true);
+        emit AgentRemoved(DOMAIN_REMOTE, notary);
+        vm.expectEmit(true, true, true, true);
+        emit AgentSlashed(DOMAIN_REMOTE, notary);
+        vm.recordLogs();
+        vm.prank(address(systemRouter));
+        ISystemContract(origin).slashAgent({
+            _rootSubmittedAt: block.timestamp,
+            _callOrigin: DOMAIN_LOCAL,
+            _caller: SystemEntity.BondingManager,
+            _info: AgentInfo(DOMAIN_REMOTE, notary, false)
+        });
+        assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");
+    }
+
+    function test_verifySnapshot_existingNonce(
+        uint32 nonce,
+        OriginStateMask memory mask,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) public {
+        (bool isValid, SummitState memory fs) = _prepareExistingState(nonce, mask);
+        _verifySnapshot(fs, isValid, statesAmount, stateIndex);
+    }
+
+    function test_verifySnapshot_unknownNonce(
+        SummitState memory fs,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) public {
+        // Restrict nonce to non-existing ones
+        fs.nonce = uint32(bound(fs.nonce, MESSAGES + 1, type(uint32).max));
+        fs.origin = DOMAIN_LOCAL;
+        // Remaining fields are fuzzed
+        _verifySnapshot(fs, false, statesAmount, stateIndex);
+    }
+
+    function test_verifyAttestation_existingNonce(
+        Random memory random,
+        uint32 nonce,
+        OriginStateMask memory mask
+    ) public {
+        (bool isValid, SummitState memory fs) = _prepareExistingState(nonce, mask);
+        _verifyAttestation(random, fs, isValid);
+    }
+
+    function test_verifyAttestation_unknownNonce(Random memory random, SummitState memory fs)
+        public
+    {
+        // Restrict nonce to non-existing ones
+        fs.nonce = uint32(bound(fs.nonce, MESSAGES + 1, type(uint32).max));
+        fs.origin = DOMAIN_LOCAL;
+        // Remaining fields are fuzzed
+        _verifyAttestation(random, fs, false);
+    }
+
+    function _prepareExistingState(uint32 nonce, OriginStateMask memory mask)
+        internal
+        returns (bool isValid, SummitState memory fs)
+    {
+        uint40 initialBN = uint40(block.number - 1);
+        uint40 initialTS = uint40(block.timestamp - BLOCK_TIME);
+        test_dispatch();
+        // State is valid if and only if all three fields match
+        isValid = !(mask.diffRoot || mask.diffBlockNumber || mask.diffTimestamp);
+        // Restrict nonce to existing ones
+        nonce = uint32(bound(nonce, 0, MESSAGES));
+        fs = SummitState({
+            root: getRoot(nonce),
+            origin: DOMAIN_LOCAL,
+            nonce: nonce,
+            blockNumber: initialBN + nonce,
+            timestamp: uint40(initialTS + nonce * BLOCK_TIME)
+        });
+        if (mask.diffRoot) fs.root = fs.root ^ bytes32(uint256(1));
+        if (mask.diffBlockNumber) fs.blockNumber = fs.blockNumber ^ 1;
+        if (mask.diffTimestamp) fs.timestamp = fs.timestamp ^ 1;
+    }
+
+    function _verifyAttestation(
+        Random memory random,
+        SummitState memory state,
+        bool isValid
+    ) internal {
+        // Pick random domain expect for 0
+        uint256 domainIndex = bound(random.nextUint256(), 1, allDomains.length - 1);
+        uint32 domain = allDomains[domainIndex];
+        // Pick random Notary
+        uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
+        address notary = domains[domain].agents[notaryIndex];
+        // Fuzz the position of invalid state in the snapshot
+        uint256 statesAmount = bound(random.nextUint256(), 1, SNAPSHOT_MAX_STATES);
+        uint256 stateIndex = bound(random.nextUint256(), 0, statesAmount - 1);
+        (, State[] memory states) = fakeStates(state, statesAmount, stateIndex);
+        bytes memory snapshot = SnapshotLib.formatSnapshot(states);
+        SummitAttestation memory sa;
+        sa.root = snapshot.castToSnapshot().root();
+        // Rest could be random
+        sa.height = random.nextUint8();
+        sa.blockNumber = random.nextUint40();
+        sa.timestamp = random.nextUint40();
+        bytes memory attestation = sa.formatSummitAttestation(random.nextUint32());
+        bytes memory signature = signMessage(notary, keccak256(attestation));
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidAttestationState(stateIndex, snapshot, attestation, signature);
+            vm.expectEmit(true, true, true, true);
+            emit AgentRemoved(domain, notary);
+            vm.expectEmit(true, true, true, true);
+            emit AgentSlashed(domain, notary);
+        }
+        vm.recordLogs();
+        assertEq(
+            InterfaceOrigin(origin).verifyAttestation(snapshot, stateIndex, attestation, signature),
+            isValid,
+            "!returnValue"
+        );
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
+    }
+
+    function _verifySnapshot(
+        SummitState memory state,
+        bool isValid,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) internal {
+        // Fuzz the position of invalid state in the snapshot
+        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
+        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+        (, State[] memory states) = fakeStates(state, statesAmount, stateIndex);
+        address notary = domains[DOMAIN_REMOTE].agent;
+        bytes memory snapshot = SnapshotLib.formatSnapshot(states);
+        bytes memory signature = signMessage(notary, keccak256(snapshot));
+        vm.recordLogs();
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidSnapshotState(stateIndex, snapshot, signature);
+            vm.expectEmit(true, true, true, true);
+            emit AgentRemoved(DOMAIN_REMOTE, notary);
+            vm.expectEmit(true, true, true, true);
+            emit AgentSlashed(DOMAIN_REMOTE, notary);
+        }
+        assertEq(
+            InterfaceOrigin(origin).verifySnapshot(snapshot, stateIndex, signature),
+            isValid,
+            "!returnValue"
+        );
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
     }
 }
