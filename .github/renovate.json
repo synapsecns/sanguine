@@ -14,7 +14,7 @@
   "fetchReleaseNotes": true,
   "draftPR": true,
   "cloneSubmodules": true,
-  "includeForks": true,
+  "forkProcessing": true,
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
