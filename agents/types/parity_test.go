@@ -10,10 +10,14 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
 
 func TestEncodeTipsParity(t *testing.T) {
@@ -178,7 +182,33 @@ func TestEncodeSnapshotParity(t *testing.T) {
 	Equal(t, stateB.Nonce(), snapshotFromBytes.States()[1].Nonce())
 	Equal(t, stateB.BlockNumber(), snapshotFromBytes.States()[1].BlockNumber())
 	Equal(t, stateB.Timestamp(), snapshotFromBytes.States()[1].Timestamp())
+
+	testWallet, err := wallet.FromRandom()
+	Nil(t, err)
+	testSigner := localsigner.NewSigner(testWallet.PrivateKey())
+
+	basicHashToSign := crypto.Keccak256Hash([]byte{0x1})
+	firstSignature, err := crypto.Sign(basicHashToSign[:], testWallet.PrivateKey())
+	Nil(t, err)
+	encPubKey := crypto.FromECDSAPub(testWallet.PublicKey())
+	Equal(t, 65, len(encPubKey))
+	Equal(t, 65, len(firstSignature))
+	True(t, crypto.VerifySignature(encPubKey, basicHashToSign[:], firstSignature[:crypto.RecoveryIDOffset]))
+
+	testSignature, testSignedEncodedSnapshot, testSnapshotHash, err := snapshotFromBytes.SignSnapshot(ctx, testSigner)
+	Nil(t, err)
+	Equal(t, goFormattedData, testSignedEncodedSnapshot)
+	Greater(t, len(testSnapshotHash), 0)
+	encodedSignature, err := types.EncodeSignature(testSignature)
+	Nil(t, err)
+	True(t, crypto.VerifySignature(crypto.FromECDSAPub(testWallet.PublicKey()), core.BytesToSlice(testSnapshotHash), encodedSignature[:crypto.RecoveryIDOffset]))
 }
+
+/*
+	func VerifySignature(pubkey, digestHash, signature []byte) bool {
+		return secp256k1.VerifySignature(pubkey, digestHash, signature)
+	}
+*/
 
 func TestEncodeAttestationParity(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
