@@ -76,6 +76,7 @@ contract DeployMessaging002Script is DeployerUtils {
         origin = Origin(deployContract(ORIGIN_NAME, _deployOrigin));
         systemRouter = SystemRouter(deployContract(SYSTEM_ROUTER_NAME, _deploySystemRouter));
         // Setup System Contracts
+        console.log("Setting SystemRouter");
         _setSystemRouter(bondingManager);
         _setSystemRouter(destination);
         _setSystemRouter(origin);
@@ -83,6 +84,7 @@ contract DeployMessaging002Script is DeployerUtils {
         _addAgents(config);
         // Transfer ownership
         owner = config.readAddress(".owner");
+        console.log("Transferring ownership");
         _transferOwnership(bondingManager);
         _transferOwnership(destination);
         _transferOwnership(origin);
@@ -155,6 +157,7 @@ contract DeployMessaging002Script is DeployerUtils {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function _addAgents(string memory config) internal {
+        console.log("Adding Agents");
         uint256[] memory domains = config.readUintArray(".domains");
         for (uint256 i = 0; i < domains.length; ++i) {
             uint256 domain = domains[i];
@@ -164,7 +167,7 @@ contract DeployMessaging002Script is DeployerUtils {
             );
             for (uint256 j = 0; j < agents.length; ++j) {
                 bondingManager.addAgent(uint32(domain), agents[j]);
-                console.log("Adding Agent: %s on domain [%s]", agents[j], domain);
+                console.log("   %s on domain [%s]", agents[j], domain);
             }
         }
     }
@@ -175,8 +178,12 @@ contract DeployMessaging002Script is DeployerUtils {
             // Setup systemRouter, if needed
             if (sc.systemRouter() != systemRouter) {
                 sc.setSystemRouter(systemRouter);
-                console.log("%s: systemRouter set to %s", address(sc), address(systemRouter));
+                console.log("   %s: set to %s", address(sc), address(systemRouter));
+            } else {
+                console.log("   %s: already set", address(sc));
             }
+        } else {
+            console.log("   %s: broadcaster is not owner", address(sc));
         }
     }
 
@@ -185,7 +192,9 @@ contract DeployMessaging002Script is DeployerUtils {
         if (sc.owner() == broadcasterAddress) {
             // Transfer ownership
             sc.transferOwnership(owner);
-            console.log("%s: ownership transferred to %s", address(sc), owner);
+            console.log("   %s: new owner is %s", address(sc), owner);
+        } else {
+            console.log("   %s: broadcaster is not owner! Owner: %s", address(sc), sc.owner());
         }
     }
 
@@ -194,6 +203,7 @@ contract DeployMessaging002Script is DeployerUtils {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function _checkAgents(string memory config) internal {
+        console.log("Checking Agents");
         uint256[] memory domains = config.readUintArray(".domains");
         for (uint256 i = 0; i < domains.length; ++i) {
             uint256 domain = domains[i];
@@ -220,6 +230,7 @@ contract DeployMessaging002Script is DeployerUtils {
                     bondingManager.isActiveAgent(uint32(domain), agent),
                     string.concat("!bondingManager: ", domain.toString())
                 );
+                console.log("   %s on domain [%s]", agent, domain);
             }
         }
     }
