@@ -44,12 +44,18 @@ contract AttestationLibraryTest is SynapseLibraryTest {
             "!formatAttestation"
         );
         checkCastToAttestation({ payload: payload, isAttestation: true });
-        // Test gettera
+        // Test getters
         assertEq(libHarness.root(payload), ra.root, "!root");
         assertEq(libHarness.height(payload), ra.height, "!height");
         assertEq(libHarness.nonce(payload), ra.nonce, "!nonce");
         assertEq(libHarness.blockNumber(payload), ra.blockNumber, "!blockNumber");
         assertEq(libHarness.timestamp(payload), ra.timestamp, "!timestamp");
+        // Test hashing
+        bytes32 attestationSalt = keccak256("ATTESTATION_SALT");
+        bytes32 hashedAttestation = keccak256(
+            abi.encodePacked(attestationSalt, keccak256(payload))
+        );
+        assertEq(libHarness.hash(payload), hashedAttestation, "!hash");
     }
 
     function test_isAttestation(uint8 length) public {
