@@ -1,5 +1,5 @@
 {
-  "address": "0x2394107Be5dF41d5DD8921518D49EE907fE5d441",
+  "address": "0x16Db381F333D5E4F3104dFf56bD51dA4DB0DFfAD",
   "abi": [
     {
       "inputs": [
@@ -125,13 +125,13 @@
           "type": "uint32"
         },
         {
-          "internalType": "enum ISystemRouter.SystemEntity",
+          "internalType": "enum SystemEntity",
           "name": "_recipient",
           "type": "uint8"
         },
         {
           "internalType": "bytes",
-          "name": "_data",
+          "name": "_callData",
           "type": "bytes"
         }
       ],
@@ -153,13 +153,13 @@
           "type": "uint32"
         },
         {
-          "internalType": "enum ISystemRouter.SystemEntity[]",
+          "internalType": "enum SystemEntity[]",
           "name": "_recipients",
           "type": "uint8[]"
         },
         {
           "internalType": "bytes",
-          "name": "_data",
+          "name": "_callData",
           "type": "bytes"
         }
       ],
@@ -181,13 +181,13 @@
           "type": "uint32"
         },
         {
-          "internalType": "enum ISystemRouter.SystemEntity",
+          "internalType": "enum SystemEntity",
           "name": "_recipient",
           "type": "uint8"
         },
         {
           "internalType": "bytes[]",
-          "name": "_dataArray",
+          "name": "_callDataArray",
           "type": "bytes[]"
         }
       ],
@@ -209,13 +209,13 @@
           "type": "uint32"
         },
         {
-          "internalType": "enum ISystemRouter.SystemEntity[]",
+          "internalType": "enum SystemEntity[]",
           "name": "_recipients",
           "type": "uint8[]"
         },
         {
           "internalType": "bytes[]",
-          "name": "_dataArray",
+          "name": "_callDataArray",
           "type": "bytes[]"
         }
       ],

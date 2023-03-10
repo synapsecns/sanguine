@@ -1,6 +1,17 @@
 {
-  "address": "0xF77D000a80940700ea63aB76A249c5625bDceADC",
+  "address": "0x128fF47f1a614c61beC9935898C33B91486aA04e",
   "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "_domain",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
     {
       "anonymous": false,
       "inputs": [
@@ -43,36 +54,24 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "address[]",
-          "name": "guards",
-          "type": "address[]"
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
         },
         {
-          "indexed": false,
-          "internalType": "address[]",
-          "name": "notaries",
-          "type": "address[]"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "attestation",
-          "type": "bytes"
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
         }
       ],
-      "name": "AttestationAccepted",
+      "name": "AgentSlashed",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "attestationIndex",
-          "type": "uint256"
-        },
         {
           "indexed": false,
           "internalType": "bytes",
@@ -126,6 +125,25 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "attestation",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "attSignature",
+          "type": "bytes"
+        }
+      ],
+      "name": "InvalidAttestation",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": true,
           "internalType": "address",
           "name": "previousOwner",
@@ -140,6 +158,63 @@
       ],
       "name": "OwnershipTransferred",
       "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "snapshot",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "snapSignature",
+          "type": "bytes"
+        }
+      ],
+      "name": "SnapshotAccepted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "state",
+          "type": "bytes"
+        }
+      ],
+      "name": "StateSaved",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "SYNAPSE_DOMAIN",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [
@@ -158,40 +233,11 @@
       "outputs": [
         {
           "internalType": "bool",
-          "name": "",
+          "name": "isAdded",
           "type": "bool"
         }
       ],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "_origin",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "_destination",
-          "type": "uint32"
-        },
-        {
-          "internalType": "address",
-          "name": "_agent",
-          "type": "address"
-        }
-      ],
-      "name": "agentAttestations",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -285,69 +331,6 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "_origin",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "_destination",
-          "type": "uint32"
-        },
-        {
-          "internalType": "address",
-          "name": "_agent",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_index",
-          "type": "uint256"
-        }
-      ],
-      "name": "getAgentAttestation",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "",
-          "type": "bytes"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "_origin",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "_destination",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "_nonce",
-          "type": "uint32"
-        }
-      ],
-      "name": "getAttestation",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "",
-          "type": "bytes"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "uint256",
           "name": "_domainIndex",
           "type": "uint256"
@@ -367,26 +350,16 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "_origin",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "_destination",
-          "type": "uint32"
-        },
-        {
-          "internalType": "address",
-          "name": "_agent",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
         }
       ],
-      "name": "getLatestAttestation",
+      "name": "getGuardSnapshot",
       "outputs": [
         {
           "internalType": "bytes",
-          "name": "",
+          "name": "snapshotPayload",
           "type": "bytes"
         }
       ],
@@ -401,22 +374,17 @@
           "type": "uint32"
         },
         {
-          "internalType": "uint32",
-          "name": "_destination",
-          "type": "uint32"
-        },
-        {
           "internalType": "address",
           "name": "_agent",
           "type": "address"
         }
       ],
-      "name": "getLatestNonce",
+      "name": "getLatestAgentState",
       "outputs": [
         {
-          "internalType": "uint32",
-          "name": "",
-          "type": "uint32"
+          "internalType": "bytes",
+          "name": "stateData",
+          "type": "bytes"
         }
       ],
       "stateMutability": "view",
@@ -428,24 +396,33 @@
           "internalType": "uint32",
           "name": "_origin",
           "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "_destination",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "_nonce",
-          "type": "uint32"
         }
       ],
-      "name": "getRoot",
+      "name": "getLatestState",
       "outputs": [
         {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
+          "internalType": "bytes",
+          "name": "statePayload",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "_attPayload",
+          "type": "bytes"
+        }
+      ],
+      "name": "getNotarySnapshot",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "snapshotPayload",
+          "type": "bytes"
         }
       ],
       "stateMutability": "view",
@@ -455,16 +432,40 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_index",
+          "name": "_nonce",
           "type": "uint256"
         }
       ],
-      "name": "getSavedAttestation",
+      "name": "getNotarySnapshot",
       "outputs": [
         {
           "internalType": "bytes",
-          "name": "",
+          "name": "snapshotPayload",
           "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_nonce",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_stateIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "getSnapshotProof",
+      "outputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "snapProof",
+          "type": "bytes32[]"
         }
       ],
       "stateMutability": "view",
@@ -513,8 +514,13 @@
       "outputs": [
         {
           "internalType": "bool",
-          "name": "",
+          "name": "isActive",
           "type": "bool"
+        },
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
         }
       ],
       "stateMutability": "view",
@@ -534,6 +540,38 @@
           "internalType": "bool",
           "name": "",
           "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "_attPayload",
+          "type": "bytes"
+        }
+      ],
+      "name": "isValidAttestation",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "isValid",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "localDomain",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
         }
       ],
       "stateMutability": "view",
@@ -569,7 +607,7 @@
       "outputs": [
         {
           "internalType": "bool",
-          "name": "",
+          "name": "isRemoved",
           "type": "bool"
         }
       ],
@@ -584,35 +622,143 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "savedAttestations",
-      "outputs": [
+      "inputs": [
         {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
+          "internalType": "contract InterfaceSystemRouter",
+          "name": "_systemRouter",
+          "type": "address"
         }
       ],
-      "stateMutability": "view",
+      "name": "setSystemRouter",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_rootSubmittedAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint32",
+          "name": "_callOrigin",
+          "type": "uint32"
+        },
+        {
+          "internalType": "enum SystemEntity",
+          "name": "_caller",
+          "type": "uint8"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint32",
+              "name": "domain",
+              "type": "uint32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "bonded",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct AgentInfo",
+          "name": "_info",
+          "type": "tuple"
+        }
+      ],
+      "name": "slashAgent",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "bytes",
-          "name": "_attestation",
+          "name": "_snapPayload",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_snapSignature",
           "type": "bytes"
         }
       ],
-      "name": "submitAttestation",
+      "name": "submitSnapshot",
       "outputs": [
         {
           "internalType": "bool",
-          "name": "",
+          "name": "wasAccepted",
           "type": "bool"
         }
       ],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_rootSubmittedAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint32",
+          "name": "_callOrigin",
+          "type": "uint32"
+        },
+        {
+          "internalType": "enum SystemEntity",
+          "name": "_caller",
+          "type": "uint8"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint32",
+              "name": "domain",
+              "type": "uint32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "bonded",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct AgentInfo",
+          "name": "_info",
+          "type": "tuple"
+        }
+      ],
+      "name": "syncAgent",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "systemRouter",
+      "outputs": [
+        {
+          "internalType": "contract InterfaceSystemRouter",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -625,6 +771,30 @@
       ],
       "name": "transferOwnership",
       "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "_attPayload",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_attSignature",
+          "type": "bytes"
+        }
+      ],
+      "name": "verifyAttestation",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "isValid",
+          "type": "bool"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
