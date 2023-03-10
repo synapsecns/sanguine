@@ -22,6 +22,11 @@ contract BondingSecondaryTest is BondingManagerTest {
         new BondingSecondary(DOMAIN_SYNAPSE);
     }
 
+    function test_version() public {
+        // Check version
+        assertEq(bondingManager.version(), LATEST_VERSION, "!version");
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                TESTS: UNAUTHORIZED ACCESS (NOT OWNER)                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

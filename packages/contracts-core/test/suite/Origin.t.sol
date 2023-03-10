@@ -11,6 +11,7 @@ import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { TipsLib } from "../../contracts/libs/Tips.sol";
 
 import { InterfaceOrigin } from "../../contracts/Origin.sol";
+import { Versioned } from "../../contracts/Version.sol";
 
 import { RawState, OriginStateMask } from "./libs/State.t.sol";
 import { fakeStates } from "../utils/libs/FakeIt.t.sol";
@@ -45,6 +46,8 @@ contract OriginTest is SynapseTest, SynapseProofs {
                 assertTrue(IAgentRegistry(origin).isActiveAgent(domain, agent), "!agent");
             }
         }
+        // Check version
+        assertEq(Versioned(origin).version(), LATEST_VERSION, "!version");
     }
 
     function test_dispatch() public {
