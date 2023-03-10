@@ -10,6 +10,7 @@ import (
 	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core/merkle"
@@ -55,6 +56,11 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 
 	if config.SetMinimumTimeInterval == 0 {
 		config.SetMinimumTimeInterval = 2
+	}
+
+	summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
+	if err != nil {
+		return nil, fmt.Errorf("could not create summit parser: %w", err)
 	}
 
 	for _, chain := range config.Chains {
@@ -108,6 +114,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 		grpcConn:       conn,
 		grpcClient:     grpcClient,
 		signer:         executorSigner,
+		summitParser:   summitParser,
 		chainExecutors: chainExecutors,
 	}, nil
 }
