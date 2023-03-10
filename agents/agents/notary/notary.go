@@ -263,6 +263,7 @@ func (n Notary) Start(ctx context.Context) error {
 			logger.Info("Notary Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
 		// get message sent event
 		case receivedAttestationSaved := <-attestationSavedSink:
+			logger.Info("Notary received a saved attestation event, will sign and submit to destination")
 			attToSubmit := receivedAttestationSaved.Attestation
 			n.submitAttestation(ctx, attToSubmit)
 		}

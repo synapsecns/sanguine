@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
@@ -100,23 +99,17 @@ func (a destinationContract) transactOptsSetup(ctx context.Context, signer signe
 	return transactOpts, nil
 }
 
-func (a destinationContract) SubmittedAt(ctx context.Context, originID uint32, root [32]byte) (*time.Time, error) {
-	// TODO (joeallen): FIX ME
-	/*submittedAtBigInt, err := a.contract.SubmittedAt(&bind.CallOpts{Context: ctx}, originID, root)
+func (a destinationContract) AttestationsAmount(ctx context.Context) (uint64, error) {
+	attestationsAmountBigInt, err := a.contract.AttestationsAmount(&bind.CallOpts{Context: ctx})
 	if err != nil {
-		return nil, fmt.Errorf("could not get submitted at for origin and root: %w", err)
+		return uint64(0), fmt.Errorf("could not get submitted at for origin and root: %w", err)
 	}
 
-	if submittedAtBigInt == nil || submittedAtBigInt.Int64() == int64(0) {
-		//nolint:nilnil
-		return nil, nil
+	if attestationsAmountBigInt == nil {
+		return uint64(0), nil
 	}
 
-	submittedAtTime := time.Unix(submittedAtBigInt.Int64(), 0)
-
-	return &submittedAtTime, nil*/
-	//nolint:nilnil
-	return nil, nil
+	return attestationsAmountBigInt.Uint64(), nil
 }
 
 func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error {

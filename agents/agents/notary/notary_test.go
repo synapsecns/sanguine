@@ -137,18 +137,9 @@ func (u *NotarySuite) TestNotaryE2E() {
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
-		rawState, err := u.SummitContract.GetLatestAgentState(
-			&bind.CallOpts{Context: u.GetTestContext()},
-			u.OriginDomainClient.Config().DomainID,
-			u.NotaryBondedSigner.Address())
+		attestationsAmount, err := u.DestinationContract.AttestationsAmount(&bind.CallOpts{Context: u.GetTestContext()})
 		Nil(u.T(), err)
 
-		if len(rawState) == 0 {
-			return false
-		}
-
-		state, err := types.DecodeState(rawState)
-		Nil(u.T(), err)
-		return state.Nonce() >= uint32(1)
+		return attestationsAmount != nil && attestationsAmount.Uint64() >= uint64(1)
 	})
 }
