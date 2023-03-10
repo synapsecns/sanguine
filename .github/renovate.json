@@ -16,6 +16,7 @@
   "fetchReleaseNotes": true,
   "draftPR": true,
   "cloneSubmodules": true,
+  "forkProcessing": "enabled",
   "packageRules": [
     {
       "matchUpdateTypes": [
