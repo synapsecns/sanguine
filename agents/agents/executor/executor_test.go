@@ -28,10 +28,10 @@ func (e *ExecutorSuite) TestExecutor() {
 	destination := uint32(e.TestBackendDestination.GetChainID())
 	summit := uint32(e.TestBackendSummit.GetChainID())
 
-	testContractDest, testContractRef := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
-	testTransactOpts := e.TestBackendDestination.GetTxContext(e.GetTestContext(), nil)
+	testContractDest, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
+	// testTransactOpts := e.TestBackendDestination.GetTxContext(e.GetTestContext(), nil)
 
-	_, _, _ = testContractDest, testContractRef, testTransactOpts
+	// _, _, _ = testContractDest, testContractRef, testTransactOpts
 
 	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
 	e.Nil(err)
@@ -185,6 +185,7 @@ func (e *ExecutorSuite) TestExecutor() {
 	e.Nil(err)
 
 	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message, 1, false, 0)
+	e.Nil(err)
 
 	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), []types.State{originState, randomState}, snapshotRoot, proofs, originSnapshot.TreeHeight())
 	e.Nil(err)

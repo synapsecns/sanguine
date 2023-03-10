@@ -79,7 +79,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 
 			summitParserRef = &summitParser
 		}
-		
+
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, urls[chain.ChainID])
 		if err != nil {
 			return nil, fmt.Errorf("could not get evm: %w", err)
