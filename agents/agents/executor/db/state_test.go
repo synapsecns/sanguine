@@ -157,6 +157,7 @@ func (t *DBSuite) TestGetStateMetadata() {
 		Nil(t.T(), err)
 		var proofABytes [][]byte
 		err = json.Unmarshal(proofBytes, &proofABytes)
+		Nil(t.T(), err)
 
 		Equal(t.T(), snapshotRootA, common.BytesToHash((*snapshotRoot)[:]))
 		Equal(t.T(), proofA, proofABytes)

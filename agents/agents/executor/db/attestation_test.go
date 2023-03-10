@@ -107,6 +107,7 @@ func (t *DBSuite) TestGetAttestationMinimumTimestamp() {
 		destinationTimestampC := uint64(0)
 
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, destination, destinationBlockNumberC, destinationTimestampC)
+		Nil(t.T(), err)
 
 		mask := types.DBAttestation{
 			Destination: &destination,
