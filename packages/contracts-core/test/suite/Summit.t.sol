@@ -6,10 +6,11 @@ import { ISnapshotHub } from "../../contracts/interfaces/ISnapshotHub.sol";
 import { MerkleLib } from "../../contracts/libs/Merkle.sol";
 import { SnapshotLib, SummitAttestation } from "../../contracts/libs/Snapshot.sol";
 import { State, StateLib, SummitState } from "../../contracts/libs/State.sol";
+import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 
 import { InterfaceSummit } from "../../contracts/Summit.sol";
 
-import { SynapseTest } from "../utils/SynapseTest.t.sol";
+import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
 import { Random } from "../utils/libs/Random.t.sol";
 
@@ -23,10 +24,18 @@ contract SummitTest is SynapseTest, SynapseProofs {
         bytes signature;
     }
 
+    struct AttestationMask {
+        bool diffRoot;
+        bool diffHeight;
+        bool diffBlockNumber;
+        bool diffTimestamp;
+    }
+
     uint256 internal constant STATES = 10;
 
     mapping(uint256 => mapping(uint256 => SummitState)) internal guardStates;
     mapping(uint256 => SignedSnapshot) internal guardSnapshots;
+    mapping(uint256 => SummitAttestation) internal notaryAttestations;
 
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
@@ -40,6 +49,78 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 address agent = domains[domain].agents[i];
                 assertTrue(IAgentRegistry(summit).isActiveAgent(domain, agent), "!agent");
             }
+        }
+    }
+
+    function test_verifyAttestation_existingNonce(Random memory random, AttestationMask memory mask)
+        public
+    {
+        test_notarySnapshots(random);
+        // Restrict nonce to existing ones
+        uint32 nonce = uint32(bound(random.nextUint32(), 0, DOMAIN_AGENTS - 1));
+        // Attestation is valid if and only if all four fields match
+        bool isValid = !(mask.diffRoot ||
+            mask.diffHeight ||
+            mask.diffBlockNumber ||
+            mask.diffTimestamp);
+        SummitAttestation memory sa = notaryAttestations[nonce];
+        if (mask.diffRoot) sa.root = sa.root ^ bytes32(uint256(1));
+        if (mask.diffHeight) sa.height = sa.height ^ 1;
+        if (mask.diffBlockNumber) sa.blockNumber = sa.blockNumber ^ 1;
+        if (mask.diffTimestamp) sa.timestamp = sa.timestamp ^ 1;
+        verifyAttestation(random, nonce, sa, isValid);
+    }
+
+    function test_verifyAttestation_unknownNonce(
+        Random memory random,
+        uint32 nonce,
+        SummitAttestation memory sa
+    ) public {
+        test_notarySnapshots(random);
+        // Restrict nonce to existing ones
+        nonce = uint32(bound(nonce, DOMAIN_AGENTS, type(uint32).max));
+        verifyAttestation(random, nonce, sa, false);
+    }
+
+    function verifyAttestation(
+        Random memory random,
+        uint32 nonce,
+        SummitAttestation memory sa,
+        bool isValid
+    ) public {
+        // Pick random domain expect for 0
+        uint256 domainIndex = bound(random.nextUint256(), 1, allDomains.length - 1);
+        uint32 domain = allDomains[domainIndex];
+        // Pick random Notary
+        uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
+        address notary = domains[domain].agents[notaryIndex];
+        bytes memory attestation = sa.formatSummitAttestation(nonce);
+        bytes memory signature = signMessage(notary, keccak256(attestation));
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidAttestation(attestation, signature);
+            vm.expectEmit(true, true, true, true);
+            emit AgentRemoved(domain, notary);
+            vm.expectEmit(true, true, true, true);
+            emit AgentSlashed(domain, notary);
+            // Should slash Agents on Synapse Chain registries
+            bytes memory expectedCall = _expectedSlashCall(domain, notary);
+            vm.expectCall(originSynapse, expectedCall);
+            vm.expectCall(destinationSynapse, expectedCall);
+            // Should forward Slash system calls
+            bytes memory data = _dataSlashAgentCall(domain, notary);
+            _expectRemoteCallBondingManager(DOMAIN_LOCAL, data);
+            _expectRemoteCallBondingManager(DOMAIN_REMOTE, data);
+        }
+        vm.recordLogs();
+        assertEq(
+            InterfaceSummit(summit).verifyAttestation(attestation, signature),
+            isValid,
+            "!returnValue"
+        );
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
     }
 
@@ -116,6 +197,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
             sa.root = getSnapshotRoot();
             sa.height = getSnapshotHeight();
             // This is i-th submitted attestation so far
+            notaryAttestations[i] = sa;
             bytes memory attestation = sa.formatSummitAttestation({ _nonce: i });
 
             address notary = domains[DOMAIN_LOCAL].agents[i];
@@ -170,5 +252,48 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 "!getLatestState"
             );
         }
+    }
+
+    function _expectRemoteCallBondingManager(uint32 domain, bytes memory data) internal {
+        vm.expectCall(
+            address(systemRouterSynapse),
+            abi.encodeWithSelector(
+                systemRouterSynapse.systemCall.selector,
+                domain, // destination
+                BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
+                SystemEntity.BondingManager, //recipient
+                data
+            )
+        );
+    }
+
+    function _dataSlashAgentCall(uint32 domain, address notary)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return
+            abi.encodeWithSelector(
+                ISystemContract.slashAgent.selector,
+                0, // rootSubmittedAt
+                0, // callOrigin
+                0, // systemCaller
+                AgentInfo(domain, notary, false)
+            );
+    }
+
+    function _expectedSlashCall(uint32 domain, address notary)
+        internal
+        view
+        returns (bytes memory)
+    {
+        return
+            abi.encodeWithSelector(
+                ISystemContract.slashAgent.selector,
+                block.timestamp,
+                DOMAIN_SYNAPSE,
+                SystemEntity.BondingManager,
+                AgentInfo(domain, notary, false)
+            );
     }
 }

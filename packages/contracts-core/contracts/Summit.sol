@@ -93,7 +93,8 @@ contract Summit is StatementHub, SnapshotHub, BondingManager, SummitEvents, Inte
         isValid = _isValidAttestation(att);
         if (!isValid) {
             emit InvalidAttestation(_attPayload, _attSignature);
-            _slashAgent(domain, notary);
+            // Slash Notary and trigger a hook to send a slashAgent system call
+            _slashAgent(domain, notary, true);
         }
     }
 
@@ -122,9 +123,16 @@ contract Summit is StatementHub, SnapshotHub, BondingManager, SummitEvents, Inte
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _slashAgent(uint32 _domain, address _account) internal {
-        // TODO: Move somewhere else?
-        // TODO: send a system call indicating agent was slashed
-        _removeAgent(_domain, _account);
+    /// @dev Hook that is called after an existing agent was slashed,
+    /// when verification of an invalid agent statement was done in this contract.
+    function _afterAgentSlashed(uint32 _domain, address _agent) internal virtual override {
+        /// @dev Summit is BondingPrimary, so we need to slash Agent on local Registries,
+        /// as well as relay this information to all other chains.
+        /// There was no system call that triggered slashing, so callOrigin is set to ZERO.
+        _updateLocalRegistries({
+            _data: _dataSlashAgent(_domain, _agent),
+            _forwardUpdate: true,
+            _callOrigin: 0
+        });
     }
 }

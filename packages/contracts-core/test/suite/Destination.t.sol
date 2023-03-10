@@ -5,6 +5,7 @@ import { AttestationLib, SummitAttestation } from "../../contracts/libs/Attestat
 import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
 import { Snapshot, SnapshotLib } from "../../contracts/libs/Snapshot.sol";
 import { State, SummitState } from "../../contracts/libs/State.sol";
+import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 
 import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "../../contracts/Destination.sol";
@@ -70,6 +71,23 @@ contract DestinationTest is SynapseTest, SynapseProofs {
                 }
             }
         }
+    }
+
+    function test_slashAgent() public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        vm.expectEmit(true, true, true, true);
+        emit AgentRemoved(DOMAIN_LOCAL, notary);
+        vm.expectEmit(true, true, true, true);
+        emit AgentSlashed(DOMAIN_LOCAL, notary);
+        vm.recordLogs();
+        vm.prank(address(systemRouter));
+        ISystemContract(destination).slashAgent({
+            _rootSubmittedAt: block.timestamp,
+            _callOrigin: DOMAIN_LOCAL,
+            _caller: SystemEntity.BondingManager,
+            _info: AgentInfo(DOMAIN_LOCAL, notary, false)
+        });
+        assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");
     }
 
     function test_execute(

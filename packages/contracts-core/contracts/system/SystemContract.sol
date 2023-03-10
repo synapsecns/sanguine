@@ -167,7 +167,7 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
 
     /// @dev Perform a System Call to a local BondingManager with the given `_data`.
     function _callLocalBondingManager(bytes memory _data) internal {
-        _callBondingManager(0, 0, _data);
+        _callBondingManager(localDomain, 0, _data);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -231,6 +231,11 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      INTERNAL VIEWS: AGENT DATA                      ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Convenience shortcut for creating data for the slashAgent system call.
+    function _dataSlashAgent(uint32 _domain, address _agent) internal pure returns (bytes memory) {
+        return _dataSlashAgent(AgentInfo(_domain, _agent, false));
+    }
 
     /**
      * @notice Constructs data for the system call to slash a given agent.

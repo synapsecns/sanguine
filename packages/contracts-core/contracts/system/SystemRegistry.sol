@@ -30,9 +30,8 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
         SystemEntity _caller,
         AgentInfo memory _info
     ) external onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
-        // TODO: decide if we need to store anything, as the slashing occurred on another chain
-        _beforeAgentSlashed(_info);
-        _removeAgent(_info.domain, _info.account);
+        /// @dev Agent was slashed elsewhere. Slash Agent in this Registry, don't send a slashAgent system call
+        _slashAgent(_info.domain, _info.account, false);
     }
 
     /// @inheritdoc ISystemContract
@@ -57,10 +56,4 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
             _removeAgent(_info.domain, _info.account);
         }
     }
-
-    // solhint-disable no-empty-blocks
-    /**
-     * @notice Hook that is called before the specified agent was slashed via a system call.
-     */
-    function _beforeAgentSlashed(AgentInfo memory _info) internal virtual {}
 }

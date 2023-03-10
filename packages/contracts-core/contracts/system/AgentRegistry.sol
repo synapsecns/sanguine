@@ -191,6 +191,24 @@ abstract contract AgentRegistry is AgentRegistryEvents, IAgentRegistry {
     }
 
     /**
+     * @dev Tries to slash an agent active on the domain by removing it.
+     * If slashed, emits a corresponding event, and triggers a corresponding hook if verified locally.
+     * Hook will not be triggered, if agent was slashed elsewhere.
+     * Note: use _domain == 0 to slash a Guard, _domain > 0 to slash a Notary.
+     */
+    function _slashAgent(
+        uint32 _domain,
+        address _account,
+        bool _verified
+    ) internal returns (bool wasSlashed) {
+        wasSlashed = _removeAgent(_domain, _account);
+        if (wasSlashed) {
+            emit AgentSlashed(_domain, _account);
+            if (_verified) _afterAgentSlashed(_domain, _account);
+        }
+    }
+
+    /**
      * @dev Removes all active agents from all domains.
      * Note: iterating manually over all agents in order to delete them all is super inefficient.
      * Deleting sets (which contain mappings inside) is literally not possible.
@@ -206,15 +224,15 @@ abstract contract AgentRegistry is AgentRegistryEvents, IAgentRegistry {
 
     // solhint-disable no-empty-blocks
 
-    /**
-     * @notice Hook that is called right after a new agent was added for the domain.
-     */
+    /// @dev Hook that is always called after a new agent was added for the domain.
     function _afterAgentAdded(uint32 _domain, address _account) internal virtual {}
 
-    /**
-     * @notice Hook that is called right after an existing agent was removed from the domain.
-     */
+    /// @dev Hook that is always called after an existing agent was removed from the domain.
     function _afterAgentRemoved(uint32 _domain, address _account) internal virtual {}
+
+    /// @dev Hook that is called after an existing agent was slashed,
+    /// when verification of an invalid agent statement was done in this contract.
+    function _afterAgentSlashed(uint32 _domain, address _account) internal virtual {}
 
     // solhint-enable no-empty-blocks
 
