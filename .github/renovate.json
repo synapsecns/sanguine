@@ -6,7 +6,9 @@
   ],
   "commitBodyTable": true,
   "semanticCommits": "enabled",
-  "labels": ["dependencies"],
+  "labels": [
+    "dependencies"
+  ],
   "additionalBranchPrefix": "{{parentDir}}-",
   "assigneesFromCodeOwners": true,
   "assignees": [],
@@ -14,12 +16,18 @@
   "fetchReleaseNotes": true,
   "draftPR": true,
   "cloneSubmodules": true,
-  "includeForks": true,
   "packageRules": [
     {
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
       "excludePackagePrefixes": [],
-      "matchManagers": ["gomod"],
+      "matchManagers": [
+        "gomod"
+      ],
       "automerge": false,
       "postUpdateOptions": [
         "gomodTidy",
@@ -27,11 +35,15 @@
       ]
     },
     {
-      "matchDatasources": ["npm"],
+      "matchDatasources": [
+        "npm"
+      ],
       "stabilityDays": 3
     },
     {
-      "matchPackagePrefixes": ["@openzeppelin/"],
+      "matchPackagePrefixes": [
+        "@openzeppelin/"
+      ],
       "prPriority": 1,
       "stabilityDays": 0
     }
