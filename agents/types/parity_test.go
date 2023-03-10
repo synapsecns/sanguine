@@ -186,13 +186,22 @@ func TestEncodeSnapshotParity(t *testing.T) {
 	testWallet, err := wallet.FromRandom()
 	Nil(t, err)
 	testSigner := localsigner.NewSigner(testWallet.PrivateKey())
+
+	basicHashToSign := crypto.Keccak256Hash([]byte{0x1})
+	firstSignature, err := crypto.Sign(basicHashToSign[:], testWallet.PrivateKey())
+	Nil(t, err)
+	encPubKey := crypto.FromECDSAPub(testWallet.PublicKey())
+	Equal(t, 65, len(encPubKey))
+	Equal(t, 65, len(firstSignature))
+	True(t, crypto.VerifySignature(encPubKey, basicHashToSign[:], firstSignature[:crypto.RecoveryIDOffset]))
+
 	testSignature, testSignedEncodedSnapshot, testSnapshotHash, err := snapshotFromBytes.SignSnapshot(ctx, testSigner)
 	Nil(t, err)
 	Equal(t, goFormattedData, testSignedEncodedSnapshot)
 	Greater(t, len(testSnapshotHash), 0)
 	encodedSignature, err := types.EncodeSignature(testSignature)
 	Nil(t, err)
-	True(t, crypto.VerifySignature(testWallet.PublicKeyBytes(), core.BytesToSlice(testSnapshotHash), encodedSignature))
+	True(t, crypto.VerifySignature(crypto.FromECDSAPub(testWallet.PublicKey()), core.BytesToSlice(testSnapshotHash), encodedSignature[:crypto.RecoveryIDOffset]))
 }
 
 /*
