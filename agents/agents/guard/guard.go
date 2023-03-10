@@ -65,7 +65,7 @@ func (g Guard) loadSummitLatestStates(ctx context.Context) {
 		latestState, err := domain.Summit().GetLatestAgentState(ctx, originID, g.bondedSigner)
 		if err != nil {
 			latestState = nil
-			logger.Errorf("Failed calling GetLatestAgentState for originID on the Summit contract: %d, err = %v", originID, err)
+			logger.Errorf("Failed calling GetLatestAgentState for originID %d on the Summit contract: err = %v", originID, err)
 		}
 		if latestState != nil {
 			g.summitLatestStates[originID] = latestState
@@ -79,7 +79,7 @@ func (g Guard) loadOriginLatestStates(ctx context.Context) {
 		latestState, err := domain.Origin().SuggestLatestState(ctx)
 		if err != nil {
 			latestState = nil
-			logger.Errorf("Failed calling SuggestLatestState for originID: %d on the Origin contract: %v", originID, err)
+			logger.Errorf("Failed calling SuggestLatestState for originID %d on the Origin contract: %v", originID, err)
 		} else if latestState == nil {
 			logger.Errorf("No latest state found for origin id %d", originID)
 		}
@@ -150,6 +150,7 @@ func (g Guard) Start(ctx context.Context) error {
 		select {
 		// parent loop terminated
 		case <-ctx.Done():
+			logger.Info("Guard exiting without error")
 			return nil
 		case <-time.After(g.refreshInterval):
 			g.loadOriginLatestStates(ctx)
