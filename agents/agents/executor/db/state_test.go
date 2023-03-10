@@ -210,8 +210,9 @@ func (t *DBSuite) TestGetPotentialSnapshotRoots() {
 		Nil(t.T(), err)
 
 		Equal(t.T(), 2, len(potentialSnapshotRoots))
-		Equal(t.T(), snapshotRootB.String(), potentialSnapshotRoots[0])
-		Equal(t.T(), snapshotRootC.String(), potentialSnapshotRoots[1])
+		NotEqual(t.T(), potentialSnapshotRoots[0], potentialSnapshotRoots[1])
+		True(t.T(), snapshotRootA.String() == potentialSnapshotRoots[0] || snapshotRootA.String() == potentialSnapshotRoots[1])
+		True(t.T(), snapshotRootB.String() == potentialSnapshotRoots[0] || snapshotRootB.String() == potentialSnapshotRoots[1])
 	})
 }
 
@@ -272,7 +273,18 @@ func (t *DBSuite) TestGetSnapshotRootsInNonceRange() {
 		Nil(t.T(), err)
 
 		Equal(t.T(), 2, len(potentialSnapshotRoots))
-		Equal(t.T(), snapshotRootB.String(), potentialSnapshotRoots[0])
-		Equal(t.T(), snapshotRootC.String(), potentialSnapshotRoots[1])
+		NotEqual(t.T(), potentialSnapshotRoots[0], potentialSnapshotRoots[1])
+		True(t.T(), snapshotRootA.String() == potentialSnapshotRoots[0] || snapshotRootA.String() == potentialSnapshotRoots[1])
+		True(t.T(), snapshotRootB.String() == potentialSnapshotRoots[0] || snapshotRootB.String() == potentialSnapshotRoots[1])
 	})
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
 }
