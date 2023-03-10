@@ -73,7 +73,7 @@ func (n Notary) loadSummitMyLatestStates(ctx context.Context) {
 			myLatestState = nil
 			logger.Errorf("Failed calling GetLatestAgentState for originID on the Summit contract: %d, err = %v", originID, err)
 		}
-		if myLatestState != nil {
+		if myLatestState != nil && myLatestState.Nonce() > uint32(0) {
 			n.summitMyLatestStates[originID] = myLatestState
 		}
 	}
@@ -89,7 +89,7 @@ func (n Notary) loadSummitGuardLatestStates(ctx context.Context) {
 			guardLatestState = nil
 			logger.Errorf("Failed calling GetLatestState for originID %d on the Summit contract: err = %v", originID, err)
 		}
-		if guardLatestState != nil {
+		if guardLatestState != nil && guardLatestState.Nonce() > uint32(0) {
 			n.summitGuardLatestStates[originID] = guardLatestState
 		}
 	}
@@ -160,11 +160,11 @@ func (n Notary) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint
 	for _, domain := range n.domains {
 		originID := domain.Config().DomainID
 		summitMyLatest, ok := n.summitMyLatestStates[originID]
-		if !ok {
+		if !ok || summitMyLatest == nil || summitMyLatest.Nonce() == 0 {
 			summitMyLatest = nil
 		}
 		summitGuardLatest, ok := n.summitGuardLatestStates[originID]
-		if !ok {
+		if !ok || summitGuardLatest == nil || summitGuardLatest.Nonce() == 0 {
 			continue
 		}
 
@@ -182,6 +182,9 @@ func (n Notary) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint
 	}
 	snapshotStates := make([]types.State, 0, len(statesToSubmit))
 	for _, state := range statesToSubmit {
+		if state.Nonce() == 0 {
+			continue
+		}
 		snapshotStates = append(snapshotStates, state)
 	}
 	if len(snapshotStates) > 0 {
