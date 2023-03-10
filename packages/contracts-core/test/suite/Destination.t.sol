@@ -9,6 +9,7 @@ import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 
 import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "../../contracts/Destination.sol";
+import { Versioned } from "../../contracts/Version.sol";
 
 import { MessageRecipientMock } from "../mocks/client/MessageRecipientMock.t.sol";
 
@@ -71,6 +72,8 @@ contract DestinationTest is SynapseTest, SynapseProofs {
                 }
             }
         }
+        // Check version
+        assertEq(Versioned(destination).version(), LATEST_VERSION, "!version");
     }
 
     function test_slashAgent() public {

@@ -9,7 +9,7 @@ import { Versioned } from "../Version.sol";
 
 /// @notice BondingSecondary keeps track of all agents, used on chains other than Synapse Chain.
 contract BondingSecondary is Versioned, BondingManager {
-    constructor(uint32 _domain) DomainContext(_domain) Versioned("0.0.2") {
+    constructor(uint32 _domain) DomainContext(_domain) Versioned("0.0.3") {
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
     }
 

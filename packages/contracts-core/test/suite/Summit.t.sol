@@ -9,6 +9,7 @@ import { State, StateLib, SummitState } from "../../contracts/libs/State.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 
 import { InterfaceSummit } from "../../contracts/Summit.sol";
+import { Versioned } from "../../contracts/Version.sol";
 
 import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
@@ -50,6 +51,8 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 assertTrue(IAgentRegistry(summit).isActiveAgent(domain, agent), "!agent");
             }
         }
+        // Check version
+        assertEq(Versioned(summit).version(), LATEST_VERSION, "!version");
     }
 
     function test_verifyAttestation_existingNonce(Random memory random, AttestationMask memory mask)
