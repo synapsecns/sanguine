@@ -2,6 +2,8 @@
 pragma solidity 0.8.17;
 
 abstract contract SynapseTestConstants {
+    string constant LATEST_VERSION = "0.0.3";
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               DOMAINS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
