@@ -42,15 +42,15 @@ contract DeployMessaging002Script is DeployerUtils {
 
     /// @notice Main function with the deploy logic.
     /// @dev To deploy contracts on $chainName
-    /// Make sure "./script/configs/MessagingMVP.dc.json" exists, then call
-    /// forge script script/DeployMessagingMVP.s.sol -f chainName --ffi --broadcast --verify
+    /// Make sure "./script/configs/Messaging002.dc.json" exists, then call
+    /// forge script script/DeployMessaging002.s.sol -f chainName --ffi --broadcast --verify
     function run() external {
         _deploy(true);
     }
 
     /// @notice Function to simulate the deployment procedure.
     /// @dev To simulate deployment on $chainName
-    /// forge script script/DeployMessagingMVP.s.sol -f chainName --sig "runDry()"
+    /// forge script script/DeployMessaging002.s.sol -f chainName --sig "runDry()"
     function runDry() external {
         _deploy(false);
     }
