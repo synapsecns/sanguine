@@ -14,7 +14,7 @@ import (
 
 // logToMessage converts the log to a leaf data.
 func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message, error) {
-	committedMessage, ok := e.chainExecutors[chainID].originParser.ParseDispatch(log)
+	committedMessage, ok := e.chainExecutors[chainID].originParser.ParseDispatched(log)
 	if !ok {
 		return nil, fmt.Errorf("could not parse committed message")
 	}
@@ -61,25 +61,21 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 
 	//nolint:nestif
 	if e.chainExecutors[chainID].summitParser != nil {
-		if eventType, ok := (*e.chainExecutors[chainID].summitParser).EventType(log); ok {
+		if summitEvent, ok := (*e.chainExecutors[chainID].summitParser).EventType(log); ok && summitEvent == summit.SnapshotAcceptedEvent {
 			contractEvent.contractType = summitContract
-			if eventType == summit.SnapshotAcceptedEvent {
-				contractEvent.eventType = snapshotAcceptedEvent
-			}
+			contractEvent.eventType = snapshotAcceptedEvent
 		}
-	} else if eventType, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && eventType == origin.DispatchEvent {
+	} else if originEvent, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && originEvent == origin.DispatchedEvent {
 		contractEvent.contractType = originContract
-		contractEvent.eventType = dispatchEvent
-	} else if eventType, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok {
+		contractEvent.eventType = dispatchedEvent
+	} else if destinationEvent, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok {
 		contractEvent.contractType = destinationContract
-		if eventType == destination.AttestationAcceptedEvent {
+		if destinationEvent == destination.AttestationAcceptedEvent {
 			contractEvent.eventType = attestationAcceptedEvent
-		} else if eventType == destination.ExecutedEvent {
+		} else if destinationEvent == destination.ExecutedEvent {
 			contractEvent.eventType = executedEvent
 		}
 	}
-
-	// TODO: Add for summit.
 
 	return contractEvent
 }

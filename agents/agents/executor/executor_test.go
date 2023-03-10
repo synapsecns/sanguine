@@ -1,7 +1,6 @@
 package executor_test
 
 import (
-	"fmt"
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -46,6 +45,8 @@ func (e *ExecutorSuite) TestExecutor() {
 	}
 	originChainConfig := config.ChainConfig{
 		ChainID:               chainID,
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
 		RequiredConfirmations: 0,
 		Contracts:             []config.ContractConfig{originConfig},
 	}
@@ -55,6 +56,8 @@ func (e *ExecutorSuite) TestExecutor() {
 	}
 	destinationChainConfig := config.ChainConfig{
 		ChainID:               destination,
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
 		RequiredConfirmations: 0,
 		Contracts:             []config.ContractConfig{destinationConfig},
 	}
@@ -64,6 +67,8 @@ func (e *ExecutorSuite) TestExecutor() {
 	}
 	summitChainConfig := config.ChainConfig{
 		ChainID:               summit,
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
 		RequiredConfirmations: 0,
 		Contracts:             []config.ContractConfig{summitConfig},
 	}
@@ -170,8 +175,6 @@ func (e *ExecutorSuite) TestExecutor() {
 	root, err := tree.Root(1)
 	e.Nil(err)
 
-	exec.OverrideMerkleTree(chainID, tree)
-
 	var rootB32 [32]byte
 	copy(rootB32[:], root)
 
@@ -180,11 +183,6 @@ func (e *ExecutorSuite) TestExecutor() {
 	originSnapshot := types.NewSnapshot([]types.State{originState, randomState})
 
 	snapshotRoot, proofs, err := originSnapshot.SnapshotRootAndProofs()
-	fmt.Println("PROOF 1", proofs[0])
-	fmt.Println("PROOF 2", proofs[1])
-	e.Nil(err)
-
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message, 1, false, 0)
 	e.Nil(err)
 
 	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), []types.State{originState, randomState}, snapshotRoot, proofs, originSnapshot.TreeHeight())

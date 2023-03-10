@@ -223,7 +223,7 @@ func (e Executor) Run(ctx context.Context) error {
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, nil, contractEventType{
 				contractType: originContract,
-				eventType:    dispatchEvent,
+				eventType:    dispatchedEvent,
 			})
 		})
 
@@ -360,8 +360,8 @@ const (
 )
 
 const (
-	// Origin's Dispatch event.
-	dispatchEvent eventType = iota
+	// Origin's Dispatched event.
+	dispatchedEvent eventType = iota
 	// Destination's AttestationAccepted event.
 	attestationAcceptedEvent
 	// Destination's AttestationExecuted event.
