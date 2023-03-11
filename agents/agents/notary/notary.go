@@ -235,7 +235,7 @@ func (n Notary) submitLatestSnapshot(ctx context.Context) {
 	}
 }
 
-//nolint:cyclop
+//nolint:cyclop,unused
 func (n Notary) submitAttestation(ctx context.Context, attBytes []byte) {
 	hashedBytes, err := types.HashRawBytes(attBytes)
 	if err != nil {

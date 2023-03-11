@@ -189,7 +189,6 @@ func (u *NotarySuite) TestNotaryE2E() {
 		Nil(u.T(), savedAttestation.Err())
 		retrievedAtt = []byte{}
 		break
-		//logger.Info("Notary Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
 	// get message sent event
 	case receivedAttestationSaved := <-attestationSavedSink:
 		attToSubmit := receivedAttestationSaved.Attestation
