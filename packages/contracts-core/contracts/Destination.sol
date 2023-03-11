@@ -13,7 +13,7 @@ import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "./interfaces/InterfaceDestination.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
-import { Attestation, StatementHub } from "./hubs/StatementHub.sol";
+import { Attestation, AttestationReport, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
 contract Destination is
@@ -77,6 +77,23 @@ contract Destination is
         // This will revert if snapshot root has been previously submitted
         _acceptAttestation(att, notary);
         emit AttestationAccepted(domain, notary, _attPayload, _attSignature);
+        return true;
+    }
+
+    /// @inheritdoc InterfaceDestination
+    function submitAttestationReport(
+        bytes memory _arPayload,
+        bytes memory _arSignature,
+        bytes memory _attSignature
+    ) external returns (bool wasAccepted) {
+        // This will revert if payload is not an attestation report, or report signer is not an active Guard
+        (AttestationReport report, address guard) = _verifyAttestationReport(
+            _arPayload,
+            _arSignature
+        );
+        // This will revert if attestation signer is not an active Notary
+        (uint32 domain, address notary) = _verifyAttestation(report.attestation(), _attSignature);
+        _openDispute(guard, domain, notary);
         return true;
     }
 
