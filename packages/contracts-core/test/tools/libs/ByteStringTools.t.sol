@@ -2,6 +2,9 @@
 pragma solidity 0.8.17;
 
 abstract contract ByteStringTools {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testByteStringTools() external {}
+
     function createTestArguments(uint8 words, bytes memory seed)
         public
         pure

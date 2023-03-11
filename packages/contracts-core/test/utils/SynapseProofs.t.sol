@@ -14,6 +14,9 @@ abstract contract SynapseProofs {
         clear();
     }
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSynapseProofs() external {}
+
     /// @notice Clears proof generators
     function clear() public {
         originGen = new HistoricalProofGenerator();

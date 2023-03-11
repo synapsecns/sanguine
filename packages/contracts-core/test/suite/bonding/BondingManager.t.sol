@@ -13,6 +13,9 @@ import { ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
 abstract contract BondingManagerTest is SynapseTest {
     uint256 internal rootSubmittedAt;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testBondingManagerTest() external {}
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           INTERNAL HELPERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

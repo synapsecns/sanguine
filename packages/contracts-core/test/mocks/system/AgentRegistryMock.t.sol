@@ -2,10 +2,12 @@
 pragma solidity 0.8.17;
 
 import { IAgentRegistry } from "../../../contracts/interfaces/IAgentRegistry.sol";
-import { ExcludeCoverage } from "../ExcludeCoverage.sol";
 
 // solhint-disable no-empty-blocks
-abstract contract AgentRegistryMock is ExcludeCoverage, IAgentRegistry {
+abstract contract AgentRegistryMock is IAgentRegistry {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testAgentRegistryMock() external {}
+
     function amountAgents(uint32 _domain) external view returns (uint256) {}
 
     function amountDomains() external view returns (uint256) {}

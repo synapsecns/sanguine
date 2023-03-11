@@ -16,6 +16,9 @@ contract AppHarness is IMessageRecipient {
         optimisticSeconds = _optimisticSeconds;
     }
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testAppHarness() external {}
+
     function prepare(
         uint32 _origin,
         uint32 _nonce,

@@ -7,17 +7,9 @@ import {
     TipsLib
 } from "../../../contracts/client/PingPongClient.sol";
 
-import { Test } from "forge-std/Test.sol";
+import { OriginMock } from "../../mocks/OriginMock.t.sol";
 
-contract OriginMock {
-    function dispatch(
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _tips,
-        bytes memory _messageBody
-    ) external payable returns (uint32 messageNonce, bytes32 messageHash) {}
-}
+import { Test } from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
 contract PingPongTest is Test {

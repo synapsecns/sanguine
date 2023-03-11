@@ -8,6 +8,9 @@ import { ByteString, SystemEntity, SystemRouter } from "../../../contracts/syste
 contract SystemRouterHarness is SystemRouter {
     using ByteString for bytes;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSystemRouterHarness() external {}
+
     constructor(
         uint32 _domain,
         address _origin,

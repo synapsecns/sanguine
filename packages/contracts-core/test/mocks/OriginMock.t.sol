@@ -8,6 +8,9 @@ import { SystemContractMock } from "./system/SystemContractMock.t.sol";
 
 // solhint-disable no-empty-blocks
 contract OriginMock is StateHubMock, AgentRegistryMock, SystemContractMock, InterfaceOrigin {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testOriginMock() external {}
+
     function dispatch(
         uint32 _destination,
         bytes32 _recipient,

@@ -17,6 +17,9 @@ contract ClientHarness is ClientHarnessEvents, Client {
         optimisticPeriod = _optimisticPeriod;
     }
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testClientHarness() external {}
+
     function sendMessage(
         uint32 _destination,
         bytes memory _tips,

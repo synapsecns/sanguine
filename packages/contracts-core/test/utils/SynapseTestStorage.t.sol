@@ -62,6 +62,9 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     MessageContext internal userLocalToRemote;
     MessageContext internal userRemoteToLocal;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSynapseTestStorage() external {}
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            CONTEXT SETUP                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

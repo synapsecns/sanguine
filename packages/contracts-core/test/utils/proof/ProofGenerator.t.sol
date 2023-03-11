@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
 
+// TODO: move from test directory
 contract ProofGenerator {
     uint256 public constant TREE_DEPTH = 32;
 

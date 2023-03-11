@@ -14,6 +14,9 @@ contract AgentRegistryHarness is AgentRegistryHarnessEvents, AgentRegistryExtend
     uint32 internal ignoredDomain;
     address internal ignoredAddress;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testAgentRegistryHarness() external {}
+
     function toggleIgnoreMode(bool _newValue) external {
         ignoreMode = _newValue;
     }

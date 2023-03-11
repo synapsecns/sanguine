@@ -7,6 +7,9 @@ import { AppHarness, SynapseTestStorage } from "./SynapseTestStorage.t.sol";
 import { SynapseUtilities } from "./SynapseUtilities.t.sol";
 
 contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSynapseTestSuite() external {}
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                SETUP                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

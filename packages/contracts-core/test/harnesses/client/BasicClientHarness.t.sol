@@ -17,6 +17,9 @@ contract BasicClientHarness is BasicClientHarnessEvents, BasicClient {
         optimisticPeriod = _optimisticPeriod;
     }
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testBasicClientHarness() external {}
+
     function sendMessage(
         uint32 _destination,
         bytes memory _tips,

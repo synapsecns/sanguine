@@ -23,6 +23,9 @@ contract SystemMessageHarness {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
+    // Note: we don't add an empty test() function here, as it currently leads
+    // to zero coverage on the corresponding library.
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              FORMATTERS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

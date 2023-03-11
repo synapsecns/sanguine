@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+// TODO: move from test directory
 contract HistoricalProofGenerator {
     uint256 public constant TREE_DEPTH = 32;
 

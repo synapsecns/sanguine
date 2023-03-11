@@ -10,6 +10,22 @@ import { TipsLib } from "../../../contracts/libs/Tips.sol";
 
 // solhint-disable func-name-mixedcase
 contract MessageLibraryTest is SynapseLibraryTest {
+    struct RawHeader {
+        uint32 origin;
+        bytes32 sender;
+        uint32 nonce;
+        uint32 destination;
+        bytes32 recipient;
+        uint32 optimisticSeconds;
+    }
+
+    struct RawTips {
+        uint96 notaryTip;
+        uint96 broadcasterTip;
+        uint96 proverTip;
+        uint96 executorTip;
+    }
+
     using TypedMemView for bytes;
 
     MessageHarness internal libHarness;
@@ -26,37 +42,34 @@ contract MessageLibraryTest is SynapseLibraryTest {
     ▏*║                          TESTS: FORMATTING                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_formattedCorrectly(
-        uint96 notaryTip,
-        uint96 broadcasterTip,
-        uint96 proverTip,
-        uint96 executorTip,
-        uint32 origin,
-        bytes32 sender,
-        uint32 nonce,
-        uint32 destination,
-        bytes32 recipient,
-        uint32 optimisticSeconds
-    ) public {
+    function test_formattedCorrectly(RawHeader memory rh, RawTips memory rt) public {
         // Construct message parts: this has been tested in the dedicated unit tests
-        bytes memory tips = TipsLib.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
+        bytes memory tips = TipsLib.formatTips(
+            rt.notaryTip,
+            rt.broadcasterTip,
+            rt.proverTip,
+            rt.executorTip
+        );
         bytes memory header = HeaderLib.formatHeader(
-            origin,
-            sender,
-            nonce,
-            destination,
-            recipient,
-            optimisticSeconds
+            rh.origin,
+            rh.sender,
+            rh.nonce,
+            rh.destination,
+            rh.recipient,
+            rh.optimisticSeconds
         );
         // Prepare message
         bytes memory message = libHarness.formatMessage(
-            origin,
-            sender,
-            nonce,
-            destination,
-            recipient,
-            optimisticSeconds,
-            tips,
+            rh.origin,
+            rh.sender,
+            rh.nonce,
+            rh.destination,
+            rh.recipient,
+            rh.optimisticSeconds,
+            rt.notaryTip,
+            rt.broadcasterTip,
+            rt.proverTip,
+            rt.executorTip,
             TEST_MESSAGE_BODY
         );
         // Test formatter against manually constructed payload
@@ -71,6 +84,20 @@ contract MessageLibraryTest is SynapseLibraryTest {
             libHarness.formatMessage(header, tips, TEST_MESSAGE_BODY),
             "!formatMessage: 3 args variant"
         );
+        assertEq(
+            message,
+            libHarness.formatMessage(
+                rh.origin,
+                rh.sender,
+                rh.nonce,
+                rh.destination,
+                rh.recipient,
+                rh.optimisticSeconds,
+                tips,
+                TEST_MESSAGE_BODY
+            ),
+            "!formatMessage: unpacked header variant"
+        );
         // Test formatting checker
         checkCastToMessage({ payload: message, isMessage: true });
         // Test getters (most getters are tested in Header, Tips tests)
@@ -79,6 +106,14 @@ contract MessageLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.tips(message), tips, "!tips");
         assertEq(libHarness.body(message), TEST_MESSAGE_BODY, "!body");
         assertEq(libHarness.leaf(message), keccak256(message), "!leaf");
+    }
+
+    function test_constants() public {
+        assertEq(libHarness.messageVersion(), 1);
+        // TODO: figure out why this doesn't mark offsetVersion as covered
+        assertEq(libHarness.offsetVersion(), 0);
+        // 2 + 2 + 2
+        assertEq(libHarness.offsetHeader(), 6);
     }
 
     function test_isMessage_firstElementIncomplete(uint8 payloadLength, bytes32 data) public {
