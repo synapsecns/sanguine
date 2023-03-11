@@ -28,6 +28,8 @@ type AgentConfig struct {
 	BondedSigner SignerConfig `yaml:"bonded_signer"`
 	// RefreshIntervalSeconds is the refresh interval in seconds
 	RefreshIntervalSeconds int `yaml:"refresh_interval_seconds,omitempty"`
+	// IsTestHarness marks if this is a test harness
+	IsTestHarness bool `yaml:"is_test_harness"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

@@ -40,6 +40,7 @@ func (u GuardSuite) TestGuardE2E() {
 			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
+		IsTestHarness:          true,
 	}
 	encodedTestConfig, err := testConfig.Encode()
 	Nil(u.T(), err)
