@@ -2,6 +2,7 @@ package summit
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -20,6 +21,8 @@ type Parser interface {
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
 	// ParseSnapshotAccepted parses a SnapshotAccepted event.
 	ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, domain uint32, ok bool)
+	// ParseAttestationSaved parses a AttestationSaved event.
+	ParseAttestationSaved(log ethTypes.Log) (_ []byte, ok bool)
 }
 
 type parserImpl struct {
@@ -63,6 +66,20 @@ func (p parserImpl) ParseSnapshotAccepted(log ethTypes.Log) (_ types.Snapshot, d
 	}
 
 	return snapshot, summitSnapshot.Domain, true
+}
+
+// ParseAttesetationSaved parses a AttesationSaved event.
+func (p parserImpl) ParseAttestationSaved(log ethTypes.Log) (_ []byte, ok bool) {
+	summitAttestationSaved, err := p.filterer.ParseAttestationSaved(log)
+	if err != nil {
+		return nil, false
+	}
+
+	if err != nil {
+		return nil, false
+	}
+
+	return summitAttestationSaved.Attestation, true
 }
 
 // EventType is the type of the summit events
