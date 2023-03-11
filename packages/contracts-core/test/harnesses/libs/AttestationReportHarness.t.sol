@@ -10,7 +10,7 @@ import {
 } from "../../../contracts/libs/AttestationReport.sol";
 
 /// @notice Exposes Report methods for testing against golang.
-contract ReportHarness {
+contract AttestationReportHarness {
     using AttestationReportLib for bytes;
     using AttestationReportLib for bytes29;
     using TypedMemView for bytes;

@@ -6,16 +6,19 @@ import { ATTESTATION_LENGTH } from "../../../contracts/libs/Constants.sol";
 import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
 import { RawAttestation, RawAttestationReport } from "../../utils/libs/SynapseStructs.t.sol";
 
-import { AttestationFlag, ReportHarness } from "../../harnesses/libs/ReportHarness.t.sol";
+import {
+    AttestationFlag,
+    AttestationReportHarness
+} from "../../harnesses/libs/AttestationReportHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
-contract ReportLibraryTest is SynapseLibraryTest {
+contract AttestationReportLibraryTest is SynapseLibraryTest {
     using TypedMemView for bytes;
 
-    ReportHarness internal libHarness;
+    AttestationReportHarness internal libHarness;
 
     function setUp() public override {
-        libHarness = new ReportHarness();
+        libHarness = new AttestationReportHarness();
     }
 
     function test_formatAttestationReport(RawAttestationReport memory rra) public {
