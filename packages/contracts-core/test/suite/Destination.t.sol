@@ -12,7 +12,9 @@ import { MessageRecipientMock } from "../mocks/client/MessageRecipientMock.t.sol
 
 import { fakeSnapshot } from "../utils/libs/FakeIt.t.sol";
 import {
+    AttestationFlag,
     RawAttestation,
+    RawAttestationReport,
     RawHeader,
     RawMessage,
     RawSnapshot,
@@ -92,6 +94,29 @@ contract DestinationTest is SynapseTest, SynapseProofs {
             _info: AgentInfo(DOMAIN_LOCAL, notary, false)
         });
         assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");
+    }
+
+    function test_submitAttestationReport(RawAttestationReport memory rawAR) public {
+        address reporter = makeAddr("Reporter");
+        // Make sure Flag fits in AttestationFlag enum
+        rawAR.flag = uint8(bound(rawAR.flag, 0, uint8(type(AttestationFlag).max)));
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, ) = rawAR.attestation.castToAttestation();
+        bytes memory attSignature = signAttestation(notary, attPayload);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        (bytes memory arPayload, ) = rawAR.castToAttestationReport();
+        bytes memory arSignature = signAttestationReport(guard, arPayload);
+        // TODO: complete the test when Dispute is implemented
+        vm.expectEmit(true, true, true, true);
+        emit Dispute(guard, DOMAIN_LOCAL, notary);
+        vm.prank(reporter);
+        InterfaceDestination(destination).submitAttestationReport(
+            arPayload,
+            arSignature,
+            attSignature
+        );
     }
 
     function test_execute(
