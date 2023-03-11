@@ -66,14 +66,14 @@ contract TipsLibraryTest is SynapseLibraryTest {
         // TODO: figure out why this doesn't mark offsetVersion as covered
         assertEq(libHarness.offsetVersion(), 0);
         assertEq(libHarness.offsetNotary(), 2);
-        // 2 + 24
-        assertEq(libHarness.offsetBroadcaster(), 26);
-        // 2 + 24 + 24
-        assertEq(libHarness.offsetProver(), 50);
-        // 2 + 24 + 24 + 24
-        assertEq(libHarness.offsetExecutor(), 74);
-        // 2 + 24 + 24 + 24 + 24
-        assertEq(libHarness.tipsLength(), 98);
+        // 2 + 12
+        assertEq(libHarness.offsetBroadcaster(), 14);
+        // 2 + 12 + 12
+        assertEq(libHarness.offsetProver(), 26);
+        // 2 + 12 + 12 + 12
+        assertEq(libHarness.offsetExecutor(), 38);
+        // 2 + 12 + 12 + 12 + 12
+        assertEq(libHarness.tipsLength(), 50);
     }
 
     function test_emptyTips() public {
