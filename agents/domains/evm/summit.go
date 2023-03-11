@@ -37,7 +37,7 @@ func NewSummitContract(ctx context.Context, client chain.Chain, summitAddress co
 //
 //nolint:staticcheck
 func NewSummitHarnessContract(ctx context.Context, client chain.Chain, summitAddress common.Address) (domains.SummitContract, error) {
-	boundCountract, err := summit.NewSummitRef(summitAddress, client)
+	boundCountract, err := summitharness.NewSummitHarnessRef(summitAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", &summit.SummitRef{}, err)
 	}

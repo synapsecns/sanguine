@@ -5,10 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ethereum/go-ethereum/event"
 	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/contracts/summit"
-	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -235,6 +232,7 @@ func (n Notary) submitLatestSnapshot(ctx context.Context) {
 	if err != nil {
 		logger.Errorf("Error signing snapshot: %v", err)
 	} else {
+		logger.Infof("Notary submitting snapshot to summit")
 		err := n.summitDomain.Summit().SubmitSnapshot(ctx, n.unbondedSigner, encodedSnapshot, snapshotSignature)
 		if err != nil {
 			logger.Errorf("Failed to submit snapshot to summit: %v", err)
@@ -269,7 +267,10 @@ func (n Notary) submitAttestation(ctx context.Context, attBytes []byte) {
 //
 //nolint:cyclop
 func (n Notary) Start(ctx context.Context) error {
-	attestationSavedSink := make(chan *summit.SummitAttestationSaved)
+	g, ctx := errgroup.WithContext(ctx)
+
+	logger.Info("Starting the notary")
+	/*attestationSavedSink := make(chan *summit.SummitAttestationSaved)
 	harnessAttestationSavedSink := make(chan *summitharness.SummitHarnessAttestationSaved)
 
 	var savedAttestation event.Subscription
@@ -282,54 +283,66 @@ func (n Notary) Start(ctx context.Context) error {
 			return fmt.Errorf("error setting up watcher for saved attestations: %w", err)
 		}
 	} else {
+		logger.Info("Creating watcher for harness saved attestation on summit")
 		var err error
 		harnessSavedAttestation, err = n.summitDomain.Summit().WatchHarnessAttestationSaved(ctx, harnessAttestationSavedSink)
 		if err != nil {
+			logger.Errorf("Got an error back from WatchHarnessAttestationSaved: %v", err)
 			return fmt.Errorf("error setting up watcher for saved attestations: %w", err)
+		} else {
+			logger.Info("Not NOT got an error back from WatchHarnessAttestationSaved, so should have worked")
 		}
-	}
+	}*/
 
+	logger.Infof("Notary loadSummitMyLatestStates")
 	n.loadSummitMyLatestStates(ctx)
-
-	g, ctx := errgroup.WithContext(ctx)
 
 	// First initialize a map to track what was the last state signed by this notary
 
-	g.Go(func() error {
+	// TODO (add scribe listener for AttestationSaved events)
+	// Whenever we get an event, the Notary would want to sign and submit to destination.
+	// For MVP, its fine to just sign and submit.
+	// Later, there will be validating the actual states.
+	// On summit, the Notary will pass in the attestation payload to get the raw states associated with it.
+	// It will then double check all the states on origin.
+	// Then, it will sign and submit
+	/*g.Go(func() error {
 		watchCtx, cancel := context.WithCancel(ctx)
 		defer cancel()
 
-		if !n.isTestHarness {
-			select {
-			// check for errors and fail
-			case <-watchCtx.Done():
-				logger.Info("Notary Attestation Saved Watcher exiting without error")
-				return nil
-			case <-savedAttestation.Err():
-				logger.Info("Notary Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
-			// get message sent event
-			case receivedAttestationSaved := <-attestationSavedSink:
-				logger.Info("Notary received a saved attestation event, will sign and submit to destination")
-				attToSubmit := receivedAttestationSaved.Attestation
-				n.submitAttestation(ctx, attToSubmit)
-			}
-		} else {
-			select {
-			// check for errors and fail
-			case <-watchCtx.Done():
-				logger.Info("Notary Attestation Saved Watcher exiting without error")
-				return nil
-			case <-harnessSavedAttestation.Err():
-				logger.Info("Notary Harness Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
-			// get message sent event
-			case receivedAttestationSaved := <-harnessAttestationSavedSink:
-				logger.Info("Notary received a saved harness attestation event, will sign and submit to destination")
-				attToSubmit := receivedAttestationSaved.Attestation
-				n.submitAttestation(ctx, attToSubmit)
+		for {
+			if !n.isTestHarness {
+				select {
+				// check for errors and fail
+				case <-watchCtx.Done():
+					logger.Info("Notary Attestation Saved Watcher exiting without error")
+					return nil
+				case <-savedAttestation.Err():
+					logger.Info("Notary Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
+				// get message sent event
+				case receivedAttestationSaved := <-attestationSavedSink:
+					logger.Info("Notary received a saved attestation event, will sign and submit to destination")
+					attToSubmit := receivedAttestationSaved.Attestation
+					n.submitAttestation(ctx, attToSubmit)
+				}
+			} else {
+				logger.Infof("Notary listening for attestation saved events on summit harness")
+				select {
+				// check for errors and fail
+				case <-watchCtx.Done():
+					logger.Info("Notary Attestation Saved Watcher exiting without error")
+					return nil
+				case <-harnessSavedAttestation.Err():
+					logger.Info("Notary Harness Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
+				// get message sent event
+				case receivedAttestationSaved := <-harnessAttestationSavedSink:
+					logger.Info("Notary received a saved harness attestation event, will sign and submit to destination")
+					attToSubmit := receivedAttestationSaved.Attestation
+					n.submitAttestation(ctx, attToSubmit)
+				}
 			}
 		}
-		return nil
-	})
+	})*/
 
 	g.Go(func() error {
 		for {

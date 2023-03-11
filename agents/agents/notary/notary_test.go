@@ -113,7 +113,8 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
-		_ = guard.Start(u.GetTestContext())
+		err = guard.Start(u.GetTestContext())
+		u.Nil(err)
 	}()
 
 	u.Eventually(func() bool {
@@ -185,14 +186,17 @@ func (u *NotarySuite) TestNotaryE2E() {
 	// check for errors and fail
 	case <-watchCtx.Done():
 		retrievedAtt = []byte{}
+		break
 	case <-savedAttestation.Err():
 		Nil(u.T(), savedAttestation.Err())
 		retrievedAtt = []byte{}
+		break
 		//logger.Info("Notary Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
 	// get message sent event
 	case receivedAttestationSaved := <-attestationSavedSink:
 		attToSubmit := receivedAttestationSaved.Attestation
 		retrievedAtt = attToSubmit
+		break
 	}
 
 	Greater(u.T(), len(retrievedAtt), 0)
