@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 import { ISnapshotHub } from "../../contracts/interfaces/ISnapshotHub.sol";
 import { MerkleLib } from "../../contracts/libs/Merkle.sol";
-import { SnapshotLib, SummitAttestation } from "../../contracts/libs/Snapshot.sol";
+import { SnapshotLib } from "../../contracts/libs/Snapshot.sol";
 import { State, StateLib, SummitState } from "../../contracts/libs/State.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 
@@ -13,6 +13,7 @@ import { Versioned } from "../../contracts/Version.sol";
 
 import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
+import { RawAttestation } from "../utils/libs/SynapseStructs.t.sol";
 import { Random } from "../utils/libs/Random.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -36,7 +37,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
 
     mapping(uint256 => mapping(uint256 => SummitState)) internal guardStates;
     mapping(uint256 => SignedSnapshot) internal guardSnapshots;
-    mapping(uint256 => SummitAttestation) internal notaryAttestations;
+    mapping(uint256 => RawAttestation) internal notaryAttestations;
 
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
@@ -66,29 +67,26 @@ contract SummitTest is SynapseTest, SynapseProofs {
             mask.diffHeight ||
             mask.diffBlockNumber ||
             mask.diffTimestamp);
-        SummitAttestation memory sa = notaryAttestations[nonce];
-        if (mask.diffRoot) sa.root = sa.root ^ bytes32(uint256(1));
-        if (mask.diffHeight) sa.height = sa.height ^ 1;
-        if (mask.diffBlockNumber) sa.blockNumber = sa.blockNumber ^ 1;
-        if (mask.diffTimestamp) sa.timestamp = sa.timestamp ^ 1;
-        verifyAttestation(random, nonce, sa, isValid);
+        RawAttestation memory ra = notaryAttestations[nonce];
+        if (mask.diffRoot) ra.root = ra.root ^ bytes32(uint256(1));
+        if (mask.diffHeight) ra.height = ra.height ^ 1;
+        if (mask.diffBlockNumber) ra.blockNumber = ra.blockNumber ^ 1;
+        if (mask.diffTimestamp) ra.timestamp = ra.timestamp ^ 1;
+        verifyAttestation(random, ra, isValid);
     }
 
-    function test_verifyAttestation_unknownNonce(
-        Random memory random,
-        uint32 nonce,
-        SummitAttestation memory sa
-    ) public {
+    function test_verifyAttestation_unknownNonce(Random memory random, RawAttestation memory ra)
+        public
+    {
         test_notarySnapshots(random);
         // Restrict nonce to existing ones
-        nonce = uint32(bound(nonce, DOMAIN_AGENTS, type(uint32).max));
-        verifyAttestation(random, nonce, sa, false);
+        ra.nonce = uint32(bound(ra.nonce, DOMAIN_AGENTS, type(uint32).max));
+        verifyAttestation(random, ra, false);
     }
 
     function verifyAttestation(
         Random memory random,
-        uint32 nonce,
-        SummitAttestation memory sa,
+        RawAttestation memory ra,
         bool isValid
     ) public {
         // Pick random domain expect for 0
@@ -97,7 +95,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
         // Pick random Notary
         uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
         address notary = domains[domain].agents[notaryIndex];
-        bytes memory attestation = sa.formatSummitAttestation(nonce);
+        (bytes memory attestation, ) = ra.castToAttestation();
         bytes memory signature = signAttestation(notary, attestation);
         if (!isValid) {
             // Expect Events to be emitted
@@ -180,11 +178,11 @@ contract SummitTest is SynapseTest, SynapseProofs {
         // Every Notary submits a snapshot with a random Guard state for all domains
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
             // Set random timestamp and block height
-            SummitAttestation memory sa;
-            sa.blockNumber = random.nextUint40();
-            sa.timestamp = random.nextUint40();
-            vm.roll(sa.blockNumber);
-            vm.warp(sa.timestamp);
+            RawAttestation memory ra;
+            ra.blockNumber = random.nextUint40();
+            ra.timestamp = random.nextUint40();
+            vm.roll(ra.blockNumber);
+            vm.warp(ra.timestamp);
 
             bytes[] memory rawStates = new bytes[](STATES);
             State[] memory states = new State[](STATES);
@@ -197,11 +195,12 @@ contract SummitTest is SynapseTest, SynapseProofs {
 
             // Calculate root and height using AttestationProofGenerator
             acceptSnapshot(rawStates);
-            sa.root = getSnapshotRoot();
-            sa.height = getSnapshotHeight();
+            ra.root = getSnapshotRoot();
+            ra.height = getSnapshotHeight();
             // This is i-th submitted attestation so far
-            notaryAttestations[i] = sa;
-            bytes memory attestation = sa.formatSummitAttestation({ _nonce: i });
+            ra.nonce = i;
+            notaryAttestations[i] = ra;
+            (bytes memory attestation, ) = ra.castToAttestation();
 
             address notary = domains[DOMAIN_LOCAL].agents[i];
             bytes memory snapshot = SnapshotLib.formatSnapshot(states);
@@ -221,7 +220,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 // Item index is twice the state index (since it's a left child)
                 assertEq(
                     MerkleLib.branchRoot(item, snapProof, 2 * j),
-                    sa.root,
+                    ra.root,
                     "!getSnapshotProof"
                 );
             }
