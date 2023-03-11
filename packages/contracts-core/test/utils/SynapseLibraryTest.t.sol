@@ -8,6 +8,9 @@ abstract contract SynapseLibraryTest is SynapseTestSuite {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSynapseLibraryTest() external {}
+
     function createShortPayload(
         uint8 payloadLength,
         uint8 firstElementLength,

@@ -16,6 +16,9 @@ contract DestinationMock is
     SystemContractMock,
     InterfaceDestination
 {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testDestinationMock() external {}
+
     function execute(
         bytes memory _message,
         bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,

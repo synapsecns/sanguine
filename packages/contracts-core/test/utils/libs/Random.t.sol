@@ -20,6 +20,9 @@ using {
 } for Random global;
 
 library RandomLib {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testRandomLib() external {}
+
     // @notice Returns next "random" bytes32 value and updates the Random's seed.
     function next(Random memory r) internal pure returns (bytes32 value) {
         value = r.seed;

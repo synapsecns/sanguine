@@ -70,6 +70,25 @@ contract HeaderLibraryTest is SynapseLibraryTest {
         );
     }
 
+    function test_constants() public {
+        assertEq(libHarness.headerVersion(), 1);
+        // TODO: figure out why this doesn't mark offsetVersion as covered
+        assertEq(libHarness.offsetVersion(), 0);
+        assertEq(libHarness.offsetOrigin(), 2);
+        // 2 + 4
+        assertEq(libHarness.offsetSender(), 6);
+        // 2 + 4 + 32
+        assertEq(libHarness.offsetNonce(), 38);
+        // 2 + 4 + 32 + 4
+        assertEq(libHarness.offsetDestination(), 42);
+        // 2 + 4 + 32 + 4 + 4
+        assertEq(libHarness.offsetRecipient(), 46);
+        // 2 + 4 + 32 + 4 + 4 + 32
+        assertEq(libHarness.offsetOptimisticSeconds(), 78);
+        // 2 + 4 + 32 + 4 + 4 + 32 + 4
+        assertEq(libHarness.headerLength(), 82);
+    }
+
     function test_isHeader_firstElementIncomplete(uint8 payloadLength, bytes32 data) public {
         // Payload having less bytes than Header's first element (uint16 version)
         // should be correctly treated as unformatted (i.e. with no reverts)

@@ -5,10 +5,12 @@ import {
     DestinationAttestation,
     IAttestationHub
 } from "../../../contracts/interfaces/IAttestationHub.sol";
-import { ExcludeCoverage } from "../ExcludeCoverage.sol";
 
 // solhint-disable no-empty-blocks
-contract AttestationHubMock is ExcludeCoverage, IAttestationHub {
+contract AttestationHubMock is IAttestationHub {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testAttestationHubMock() external {}
+
     function attestationsAmount() external view returns (uint256) {}
 
     function getAttestation(uint256 _index)

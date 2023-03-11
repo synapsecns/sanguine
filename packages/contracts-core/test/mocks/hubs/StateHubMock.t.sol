@@ -2,10 +2,12 @@
 pragma solidity 0.8.17;
 
 import { IStateHub } from "../../../contracts/interfaces/IStateHub.sol";
-import { ExcludeCoverage } from "../ExcludeCoverage.sol";
 
 // solhint-disable no-empty-blocks
-contract StateHubMock is ExcludeCoverage, IStateHub {
+contract StateHubMock is IStateHub {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testStateHubMock() external {}
+
     function isValidState(bytes memory _statePayload) external view returns (bool isValid) {}
 
     function statesAmount() external view returns (uint256) {}

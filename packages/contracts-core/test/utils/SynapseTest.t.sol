@@ -52,6 +52,9 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
         deployMask = _deployMask;
     }
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSynapseTest() external {}
+
     function setUp() public virtual {
         // Setup domains and create agents for them
         setupDomain(0, "Guards");

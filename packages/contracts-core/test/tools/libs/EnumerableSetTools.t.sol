@@ -6,6 +6,9 @@ abstract contract EnumerableSetTools {
     uint256[ELEMENTS] internal removalOrder = [2, 0, 1, 3];
     uint256[][] internal expectedStates;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testEnumerableSetTools() external {}
+
     function createExpectedStates() public {
         // Test example for checking the removal function
         // On every step element removalOrder[i] is removed

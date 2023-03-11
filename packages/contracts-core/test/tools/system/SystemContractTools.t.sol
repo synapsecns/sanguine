@@ -6,6 +6,9 @@ import { AgentInfo, SystemContract } from "../../../contracts/system/SystemContr
 abstract contract SystemContractTools {
     SystemContract internal systemContract;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSystemContractTools() external {}
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           CREATE TEST DATA                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

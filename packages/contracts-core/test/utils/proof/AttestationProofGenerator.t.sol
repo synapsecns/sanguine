@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import { StateLib } from "../../../contracts/libs/State.sol";
 
+// TODO: move from test directory
 contract AttestationProofGenerator {
     using StateLib for bytes;
 

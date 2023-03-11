@@ -20,6 +20,9 @@ contract SystemContractMock is ExcludeCoverage, Ownable, ISystemContract {
         _;
     }
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSystemContractMock() external {}
+
     function setSystemRouter(InterfaceSystemRouter _systemRouter) external {
         systemRouter = _systemRouter;
     }

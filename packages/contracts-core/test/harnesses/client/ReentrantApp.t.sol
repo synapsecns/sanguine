@@ -14,6 +14,9 @@ contract ReentrantApp is IMessageRecipient {
     bytes32[] internal snapProof;
     uint256 internal stateIndex;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testReentrantApp() external {}
+
     function prepare(
         bytes memory _message,
         bytes32[ORIGIN_TREE_DEPTH] memory _originProof,
