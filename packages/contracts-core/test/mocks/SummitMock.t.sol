@@ -7,6 +7,9 @@ import { SystemContractMock } from "./system/SystemContractMock.t.sol";
 
 // solhint-disable no-empty-blocks
 contract SummitMock is SnapshotHubMock, SystemContractMock, InterfaceSummit {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSummitMock() external {}
+
     function submitSnapshot(bytes memory _snapPayload, bytes memory _snapSignature)
         external
         returns (bool wasAccepted)

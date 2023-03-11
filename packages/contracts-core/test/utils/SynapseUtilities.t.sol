@@ -15,6 +15,9 @@ contract SynapseUtilities is Test {
 
     uint256 internal constant BLOCK_TIME = 12;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSynapseUtilities() external {}
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                UTILS                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

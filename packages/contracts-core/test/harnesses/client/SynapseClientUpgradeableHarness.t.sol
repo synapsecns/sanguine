@@ -16,6 +16,9 @@ contract SynapseClientUpgradeableHarness is ClientHarnessEvents, SynapseClientUp
         optimisticPeriod = _optimisticPeriod;
     }
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSynapseClientUpgradeableHarness() external {}
+
     function initialize() external initializer {
         __SynapseClient_init();
     }

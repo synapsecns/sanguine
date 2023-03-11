@@ -2,10 +2,12 @@
 pragma solidity 0.8.17;
 
 import { ISnapshotHub } from "../../../contracts/interfaces/ISnapshotHub.sol";
-import { ExcludeCoverage } from "../ExcludeCoverage.sol";
 
 // solhint-disable no-empty-blocks
-contract SnapshotHubMock is ExcludeCoverage, ISnapshotHub {
+contract SnapshotHubMock is ISnapshotHub {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSnapshotHubMock() external {}
+
     function isValidAttestation(bytes memory _attPayload) external view returns (bool isValid) {}
 
     function getLatestAgentState(uint32 _origin, address _agent)

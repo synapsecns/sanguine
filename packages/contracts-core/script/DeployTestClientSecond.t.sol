@@ -19,6 +19,9 @@ contract DeployMessagingMVPScript is DeployerUtils {
         nonce = vm.envUint("TARGET_NONCE");
     }
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testDeployMessagingMVPScript() external {}
+
     /// @notice Main function with the deploy logic.
     function run() external {
         _deploy(true);

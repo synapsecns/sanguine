@@ -19,6 +19,9 @@ contract DeployPingPongScript is DeployerUtils {
         nonce = vm.envUint("PING_PONG_NONCE");
     }
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testDeployPingPongScript() external {}
+
     /// @notice Main function with the deploy logic.
     function run() external {
         _deploy(true);

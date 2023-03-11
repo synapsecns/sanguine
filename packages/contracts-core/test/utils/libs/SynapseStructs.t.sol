@@ -42,6 +42,9 @@ library CastLib {
     using TipsLib for bytes;
     using TypedMemView for bytes29;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testCastLib() external {}
+
     function castToMessage(RawMessage memory rm)
         internal
         pure

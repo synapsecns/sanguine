@@ -35,6 +35,9 @@ contract DeployerUtils is Script {
     uint256 internal broadcasterPK;
     address internal broadcasterAddress;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testDeployerUtils() external {}
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                SETUP                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

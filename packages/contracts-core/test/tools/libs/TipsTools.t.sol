@@ -18,6 +18,9 @@ abstract contract TipsTools {
     bytes internal tipsRaw;
     uint256 internal tipsTotal;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testTipsTools() external {}
+
     // Create the tip payload and calculates the total tip using the saved data
     function createTips() public {
         tipsRaw = TipsLib.formatTips(tipNotary, tipBroadcaster, tipProver, tipExecutor);

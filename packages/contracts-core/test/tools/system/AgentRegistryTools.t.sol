@@ -6,6 +6,9 @@ import { SynapseTestSuite } from "../../utils/SynapseTestSuite.t.sol";
 import { AgentRegistryHarness } from "../../harnesses/system/AgentRegistryHarness.t.sol";
 
 abstract contract AgentRegistryTools is SynapseTestSuite {
+    /// @notice Prevents this contract from being included in the coverage report
+    function testAgentRegistryTools() external {}
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            EXPECT EVENTS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

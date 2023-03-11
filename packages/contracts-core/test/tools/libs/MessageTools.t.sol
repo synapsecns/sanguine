@@ -30,6 +30,9 @@ abstract contract MessageTools is SynapseUtilities, TipsTools {
     // Full message payload (all above, formatted)
     bytes internal messageRaw;
 
+    /// @notice Prevents this contract from being included in the coverage report
+    function testMessageTools() external {}
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           CREATE TEST DATA                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
