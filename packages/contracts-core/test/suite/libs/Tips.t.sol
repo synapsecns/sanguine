@@ -61,6 +61,21 @@ contract TipsLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.totalTips(payload), totalTips, "!totalTips");
     }
 
+    function test_constants() public {
+        assertEq(libHarness.tipsVersion(), 1);
+        // TODO: figure out why this doesn't mark offsetVersion as covered
+        assertEq(libHarness.offsetVersion(), 0);
+        assertEq(libHarness.offsetNotary(), 2);
+        // 2 + 24
+        assertEq(libHarness.offsetBroadcaster(), 26);
+        // 2 + 24 + 24
+        assertEq(libHarness.offsetProver(), 50);
+        // 2 + 24 + 24 + 24
+        assertEq(libHarness.offsetExecutor(), 74);
+        // 2 + 24 + 24 + 24 + 24
+        assertEq(libHarness.tipsLength(), 98);
+    }
+
     function test_emptyTips() public {
         bytes memory payload = libHarness.emptyTips();
         assertEq(payload, createTestPayload(), "!formatTips");
