@@ -4,6 +4,14 @@ pragma solidity ^0.8.0;
 import { console, Script, stdJson } from "forge-std/Script.sol";
 
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+import { Address } from "@openzeppelin/contracts/utils/Address.sol";
+
+interface ICreate3Factory {
+    function deploy(bytes32 salt, bytes memory creationCode)
+        external
+        payable
+        returns (address deployed);
+}
 
 // solhint-disable ordering
 contract DeployerUtils is Script {
@@ -13,6 +21,10 @@ contract DeployerUtils is Script {
     string private constant ARTIFACTS = "artifacts/";
     string private constant DEPLOYMENTS = "deployments/";
     string private constant DEPLOY_CONFIGS = "script/configs/";
+
+    // TODO: this is only deployed on 7 chains, deploy our own factory for prod deployments
+    ICreate3Factory internal constant FACTORY =
+        ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
 
     /// @dev Whether the script will be broadcasted or not
     bool internal isBroadcasted = false;
@@ -52,6 +64,7 @@ contract DeployerUtils is Script {
             // Derive deployer address
             broadcasterAddress = vm.addr(broadcasterPK);
             console.log("Deployer address: %s", broadcasterAddress);
+            console.log("Deployer balance: %s", _fromWei(broadcasterAddress.balance));
         }
     }
 
@@ -63,6 +76,20 @@ contract DeployerUtils is Script {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             DEPLOYMENTS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Deploys the contract using Create3Factory. Does not save anything.
+    function factoryDeploy(
+        string memory contractName,
+        bytes memory creationCode,
+        bytes memory constructorArgs
+    ) internal returns (address deployment) {
+        require(Address.isContract(address(FACTORY)), "Factory not deployed");
+        deployment = FACTORY.deploy(
+            keccak256(bytes(contractName)), // salt
+            abi.encodePacked(creationCode, constructorArgs) // creation code with appended constructor args
+        );
+        require(deployment != address(0), "Factory deployment failed");
+    }
 
     /// @notice Deploys the contract and saves the deployment artifact
     /// @dev Will reuse existing deployment, if it exists
@@ -250,5 +277,19 @@ contract DeployerUtils is Script {
         inputs[3] = path;
         bytes memory sorted = vm.ffi(inputs);
         string(sorted).write(path);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           INTERNAL HELPERS                           ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function _fromWei(uint256 amount) internal pure returns (string memory s) {
+        string memory a = Strings.toString(amount / 10**18);
+        string memory b = Strings.toString(amount % 10**18);
+        // Add leading zeroes to the decimal part
+        while (bytes(b).length < 18) {
+            b = string.concat("0", b);
+        }
+        return string.concat(a, ".", b);
     }
 }

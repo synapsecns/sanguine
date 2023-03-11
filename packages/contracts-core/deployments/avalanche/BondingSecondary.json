@@ -1,5 +1,5 @@
 {
-  "address": "0x7D5352B5d0C1d2Df42FF7462233252608A9174db",
+  "address": "0x0f51FC38d51bDe39E3fF06FF567Dbf7D9596183B",
   "abi": [
     {
       "inputs": [
@@ -11,6 +11,89 @@
       ],
       "stateMutability": "nonpayable",
       "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "AgentAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "AgentRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "AgentSlashed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        }
+      ],
+      "name": "DomainActivated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        }
+      ],
+      "name": "DomainDeactivated",
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -76,8 +159,83 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "_domain",
+          "type": "uint32"
+        }
+      ],
+      "name": "allAgents",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
-      "name": "attestationCollector",
+      "name": "allDomains",
+      "outputs": [
+        {
+          "internalType": "uint32[]",
+          "name": "domains_",
+          "type": "uint32[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "_domain",
+          "type": "uint32"
+        }
+      ],
+      "name": "amountAgents",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "amountDomains",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "_domain",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_agentIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "getAgent",
       "outputs": [
         {
           "internalType": "address",
@@ -89,10 +247,96 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_domainIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "getDomain",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "initialize",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "_domain",
+          "type": "uint32"
+        },
+        {
+          "internalType": "address",
+          "name": "_account",
+          "type": "address"
+        }
+      ],
+      "name": "isActiveAgent",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_account",
+          "type": "address"
+        }
+      ],
+      "name": "isActiveAgent",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "isActive",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint32",
+          "name": "domain",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "_domain",
+          "type": "uint32"
+        }
+      ],
+      "name": "isActiveDomain",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -149,20 +393,7 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_attestationCollector",
-          "type": "address"
-        }
-      ],
-      "name": "setAttestationCollector",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract ISystemRouter",
+          "internalType": "contract InterfaceSystemRouter",
           "name": "_systemRouter",
           "type": "address"
         }
@@ -185,7 +416,7 @@
           "type": "uint32"
         },
         {
-          "internalType": "enum ISystemRouter.SystemEntity",
+          "internalType": "enum SystemEntity",
           "name": "_caller",
           "type": "uint8"
         },
@@ -207,7 +438,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct SystemContract.AgentInfo",
+          "internalType": "struct AgentInfo",
           "name": "_info",
           "type": "tuple"
         }
@@ -221,28 +452,18 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "_rootSubmittedAt",
           "type": "uint256"
         },
         {
           "internalType": "uint32",
-          "name": "",
+          "name": "_callOrigin",
           "type": "uint32"
         },
         {
-          "internalType": "enum ISystemRouter.SystemEntity",
-          "name": "",
+          "internalType": "enum SystemEntity",
+          "name": "_caller",
           "type": "uint8"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
         },
         {
           "components": [
@@ -262,14 +483,14 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct SystemContract.AgentInfo[]",
-          "name": "",
-          "type": "tuple[]"
+          "internalType": "struct AgentInfo",
+          "name": "_info",
+          "type": "tuple"
         }
       ],
-      "name": "syncAgents",
+      "name": "syncAgent",
       "outputs": [],
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -277,7 +498,7 @@
       "name": "systemRouter",
       "outputs": [
         {
-          "internalType": "contract ISystemRouter",
+          "internalType": "contract InterfaceSystemRouter",
           "name": "",
           "type": "address"
         }
