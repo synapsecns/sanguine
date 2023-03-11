@@ -71,8 +71,26 @@ abstract contract StatementHub is AgentRegistry, Versioned {
     {
         // This will revert if payload is not a formatted attestation
         attestation = _attPayload.castToAttestation();
+        // This will revert if signer is not an active Notary
+        (domain, notary) = _verifyAttestation(attestation, _attSignature);
+    }
+
+    /**
+     * @dev Internal function to verify the signed attestation payload.
+     * Reverts if either of this is true:
+     *  - Attestation signer is not an active Notary.
+     * @param _att              Typed memory view over attestation payload
+     * @param _attSignature     Notary signature for the attestation
+     * @return domain           Domain where the signed Notary is active
+     * @return notary           Notary that signed the snapshot
+     */
+    function _verifyAttestation(Attestation _att, bytes memory _attSignature)
+        internal
+        view
+        returns (uint32 domain, address notary)
+    {
         // This will revert if signer is not an active agent
-        (domain, notary) = _recoverAgent(attestation.hash(), _attSignature);
+        (domain, notary) = _recoverAgent(_att.hash(), _attSignature);
         // Attestation signer needs to be a Notary, not a Guard
         require(domain != 0, "Signer is not a Notary");
     }
@@ -124,7 +142,25 @@ abstract contract StatementHub is AgentRegistry, Versioned {
         // This will revert if payload is not a formatted snapshot
         snapshot = _snapPayload.castToSnapshot();
         // This will revert if signer is not an active agent
-        (domain, agent) = _recoverAgent(snapshot.hash(), _snapSignature);
+        (domain, agent) = _verifySnapshot(snapshot, _snapSignature);
+    }
+
+    /**
+     * @dev Internal function to verify the signed snapshot payload.
+     * Reverts if either of this is true:
+     *  - Snapshot signer is not an active Agent.
+     * @param _snapshot         Typed memory view over snapshot payload
+     * @param _snapSignature    Agent signature for the snapshot
+     * @return domain           Domain where the signed Agent is active
+     * @return agent            Agent that signed the snapshot
+     */
+    function _verifySnapshot(Snapshot _snapshot, bytes memory _snapSignature)
+        internal
+        view
+        returns (uint32 domain, address agent)
+    {
+        // This will revert if signer is not an active agent
+        (domain, agent) = _recoverAgent(_snapshot.hash(), _snapSignature);
         // Guards and Notaries for all domains could sign Snapshots, no further checks are needed.
     }
 
