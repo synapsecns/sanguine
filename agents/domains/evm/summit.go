@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/event"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -101,4 +102,13 @@ func (a summitContract) GetLatestAgentState(ctx context.Context, origin uint32, 
 	}
 
 	return state, nil
+}
+
+func (a summitContract) WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error) {
+	sub, err := a.contract.WatchAttestationSaved(&bind.WatchOpts{Context: ctx}, sink)
+	if err != nil {
+		return nil, fmt.Errorf("could set up channel to watch attestation saved: %w", err)
+	}
+
+	return sub, nil
 }
