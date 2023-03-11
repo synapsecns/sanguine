@@ -23,19 +23,19 @@ contract AttestationReportHarness {
     function castToAttestationReport(bytes memory _payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        AttestationReport _attestation = AttestationReportLib.castToAttestationReport(_payload);
-        return _attestation.unwrap().clone();
+        AttestationReport _attReport = AttestationReportLib.castToAttestationReport(_payload);
+        return _attReport.unwrap().clone();
     }
 
-    function arHash(bytes memory _payload) public pure returns (bytes32) {
+    function hash(bytes memory _payload) public pure returns (bytes32) {
         return _payload.castToAttestationReport().hash();
     }
 
-    function arFlag(bytes memory _payload) public pure returns (AttestationFlag) {
+    function flag(bytes memory _payload) public pure returns (AttestationFlag) {
         return _payload.castToAttestationReport().flag();
     }
 
-    function arAttestation(bytes memory _payload) public view returns (bytes memory) {
+    function attestation(bytes memory _payload) public view returns (bytes memory) {
         return _payload.castToAttestationReport().attestation().unwrap().clone();
     }
 
