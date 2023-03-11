@@ -51,7 +51,7 @@ abstract contract StatementHub is AgentRegistry, Versioned {
 
     /**
      * @dev Internal function to verify the signed attestation payload.
-     * Reverts if either of this is true:
+     * Reverts if any of these is true:
      *  - Attestation payload is not properly formatted.
      *  - Attestation signer is not an active Notary.
      * @param _attPayload       Raw payload with attestation data
@@ -77,7 +77,7 @@ abstract contract StatementHub is AgentRegistry, Versioned {
 
     /**
      * @dev Internal function to verify the signed attestation payload.
-     * Reverts if either of this is true:
+     * Reverts if any of these is true:
      *  - Attestation signer is not an active Notary.
      * @param _att              Typed memory view over attestation payload
      * @param _attSignature     Notary signature for the attestation
@@ -97,7 +97,7 @@ abstract contract StatementHub is AgentRegistry, Versioned {
 
     /**
      * @dev Internal function to verify the signed attestation report payload.
-     * Reverts if either of this is true:
+     * Reverts if any of these is true:
      *  - Report payload is not properly formatted AttestationReport.
      *  - Report signer is not an active Guard.
      * @param _arPayload        Raw payload with report data
@@ -121,7 +121,7 @@ abstract contract StatementHub is AgentRegistry, Versioned {
 
     /**
      * @dev Internal function to verify the signed snapshot payload.
-     * Reverts if either of this is true:
+     * Reverts if any of these is true:
      *  - Snapshot payload is not properly formatted.
      *  - Snapshot signer is not an active Agent.
      * @param _snapPayload      Raw payload with snapshot data
@@ -147,7 +147,7 @@ abstract contract StatementHub is AgentRegistry, Versioned {
 
     /**
      * @dev Internal function to verify the signed snapshot payload.
-     * Reverts if either of this is true:
+     * Reverts if any of these is true:
      *  - Snapshot signer is not an active Agent.
      * @param _snapshot         Typed memory view over snapshot payload
      * @param _snapSignature    Agent signature for the snapshot
@@ -166,7 +166,7 @@ abstract contract StatementHub is AgentRegistry, Versioned {
 
     /**
      * @dev Internal function to verify that snapshot root matches the root from Attestation.
-     * Reverts if either of this is true:
+     * Reverts if any of these is true:
      *  - Snapshot payload is not properly formatted.
      *  - Attestation root is not equal to root derived from the snapshot.
      * @param _att          Typed memory view over Attestation
