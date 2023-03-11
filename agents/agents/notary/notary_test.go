@@ -2,6 +2,10 @@ package notary_test
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/client"
+	scribeConfig2 "github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/node"
 	"math/big"
 	"os"
 	"testing"
@@ -26,6 +30,77 @@ func RemoveNotaryTempFile(t *testing.T, fileName string) {
 }
 
 func (u *NotarySuite) TestNotaryE2E() {
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+
+	originClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress())
+	u.Nil(err)
+	destinationClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress())
+	u.Nil(err)
+	summitClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress())
+	u.Nil(err)
+
+	originConfig := scribeConfig2.ContractConfig{
+		Address:    u.OriginContract.Address().String(),
+		StartBlock: 0,
+	}
+	originChainConfig := scribeConfig2.ChainConfig{
+		ChainID:               uint32(u.TestBackendOrigin.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig2.ContractConfig{originConfig},
+	}
+	destinationConfig := scribeConfig2.ContractConfig{
+		Address:    u.DestinationContract.Address().String(),
+		StartBlock: 0,
+	}
+	destinationChainConfig := scribeConfig2.ChainConfig{
+		ChainID:               uint32(u.TestBackendDestination.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig2.ContractConfig{destinationConfig},
+	}
+	summitConfig := scribeConfig2.ContractConfig{
+		Address:    u.SummitContract.Address().String(),
+		StartBlock: 0,
+	}
+	summitChainConfig := scribeConfig2.ChainConfig{
+		ChainID:               uint32(u.TestBackendSummit.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig2.ContractConfig{summitConfig},
+	}
+	scribeConfig := scribeConfig2.Config{
+		Chains: []scribeConfig2.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
+	}
+	clients := map[uint32][]backfill.ScribeBackend{
+		uint32(u.TestBackendOrigin.GetChainID()):      {originClient, originClient},
+		uint32(u.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
+		uint32(u.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
+	}
+
+	scribe, err := node.NewScribe(u.ScribeTestDB, clients, scribeConfig)
+	u.Nil(err)
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath)
+	go func() {
+		scribeErr := scribeClient.Start(u.GetTestContext())
+		u.Nil(scribeErr)
+	}()
+
+	// Start the Scribe.
+	go func() {
+		scribeError := scribe.Start(u.GetTestContext())
+		if !testDone {
+			u.Nil(scribeError)
+		}
+	}()
+
 	attestationSavedSink := make(chan *summitharness.SummitHarnessAttestationSaved)
 	savedAttestation, err := u.SummitContract.WatchAttestationSaved(&bind.WatchOpts{Context: u.GetTestContext()}, attestationSavedSink)
 	Nil(u.T(), err)
@@ -150,7 +225,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, scribeClient.ScribeClient)
 	Nil(u.T(), err)
 
 	go func() {
