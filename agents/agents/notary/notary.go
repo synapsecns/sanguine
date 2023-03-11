@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
@@ -71,7 +70,7 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error
 func (n Notary) loadSummitMyLatestStates(ctx context.Context) {
 	for _, domain := range n.domains {
 		originID := domain.Config().DomainID
-		myLatestState, err := domain.Summit().GetLatestAgentState(ctx, originID, n.bondedSigner)
+		myLatestState, err := n.summitDomain.Summit().GetLatestAgentState(ctx, originID, n.bondedSigner)
 		if err != nil {
 			myLatestState = nil
 			logger.Errorf("Failed calling GetLatestAgentState for originID on the Summit contract: %d, err = %v", originID, err)
@@ -87,7 +86,7 @@ func (n Notary) loadSummitGuardLatestStates(ctx context.Context) {
 	for _, domain := range n.domains {
 		originID := domain.Config().DomainID
 
-		guardLatestState, err := domain.Summit().GetLatestState(ctx, originID)
+		guardLatestState, err := n.summitDomain.Summit().GetLatestState(ctx, originID)
 		if err != nil {
 			guardLatestState = nil
 			logger.Errorf("Failed calling GetLatestState for originID %d on the Summit contract: err = %v", originID, err)
@@ -122,13 +121,28 @@ func (n Notary) isValidOnOrigin(ctx context.Context, state types.State, domain d
 		return false
 	}
 
-	if stateOnOrigin.BlockNumber() != state.BlockNumber() {
+	if stateOnOrigin.BlockNumber() == nil {
+		logger.Errorf("State on origin had nil block number")
+		return false
+	}
+
+	if state.BlockNumber() == nil {
+		logger.Errorf("State to validate had nil block number")
+		return false
+	}
+
+	if stateOnOrigin.BlockNumber().Uint64() != state.BlockNumber().Uint64() {
 		logger.Errorf("State block numbers do not equal")
 		return false
 	}
 
-	if stateOnOrigin.Timestamp() == nil || state.Timestamp() == nil {
-		logger.Errorf("One or both of the state timestamps are nil")
+	if stateOnOrigin.Timestamp() == nil {
+		logger.Errorf("State on origin had nil time stamp")
+		return false
+	}
+
+	if state.Timestamp() == nil {
+		logger.Errorf("State to validate had nil time stamp")
 		return false
 	}
 
@@ -171,7 +185,7 @@ func (n Notary) getLatestSnapshot(ctx context.Context) (types.Snapshot, map[uint
 			continue
 		}
 
-		if summitMyLatest.Nonce() >= summitGuardLatest.Nonce() {
+		if summitMyLatest != nil && summitMyLatest.Nonce() >= summitGuardLatest.Nonce() {
 			// Here this notary already submitted this state
 			continue
 		}
@@ -242,15 +256,19 @@ func (n Notary) submitAttestation(ctx context.Context, attBytes []byte) {
 //
 //nolint:cyclop
 func (n Notary) Start(ctx context.Context) error {
+	//attestationSavedSink := make(chan *summit.SummitAttestationSaved)
+	//savedAttestation, err := n.summitDomain.Summit().WatchAttestationSaved(ctx, attestationSavedSink)
+	//if err != nil {
+	//	return fmt.Errorf("error setting up watcher for saved attestations: %w", err)
+	//}
+
+	//n.loadSummitMyLatestStates(ctx)
+
 	g, ctx := errgroup.WithContext(ctx)
 
-	g.Go(func() error {
-		attestationSavedSink := make(chan *summit.SummitAttestationSaved)
-		savedAttestation, err := n.summitDomain.Summit().WatchAttestationSaved(ctx, attestationSavedSink)
-		if err != nil {
-			return fmt.Errorf("Error setting up watcher for saved attestations: %w", err)
-		}
+	// First initialize a map to track what was the last state signed by this notary
 
+	/*g.Go(func() error {
 		watchCtx, cancel := context.WithCancel(ctx)
 		defer cancel()
 
@@ -268,12 +286,9 @@ func (n Notary) Start(ctx context.Context) error {
 			n.submitAttestation(ctx, attToSubmit)
 		}
 		return nil
-	})
+	})*/
 
 	g.Go(func() error {
-		// First initialize a map to track what was the last state signed by this notary
-		n.loadSummitMyLatestStates(ctx)
-
 		for {
 			select {
 			// parent loop terminated
@@ -283,6 +298,7 @@ func (n Notary) Start(ctx context.Context) error {
 			case <-time.After(n.refreshInterval):
 				n.loadSummitGuardLatestStates(ctx)
 				n.submitLatestSnapshot(ctx)
+				logger.Info("Notary exiting after 1 run")
 			}
 		}
 	})

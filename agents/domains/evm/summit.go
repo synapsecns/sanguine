@@ -82,6 +82,11 @@ func (a summitContract) GetLatestState(ctx context.Context, origin uint32) (type
 		return nil, fmt.Errorf("could not retrieve latest state: %w", err)
 	}
 
+	if len(rawState) == 0 {
+		//nolint:nilnil
+		return nil, nil
+
+	}
 	state, err := types.DecodeState(rawState)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode state: %w", err)

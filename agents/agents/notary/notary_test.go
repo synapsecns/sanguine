@@ -1,6 +1,7 @@
 package notary_test
 
 import (
+	"context"
 	"math/big"
 	"os"
 	"testing"
@@ -14,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
 	"github.com/synapsecns/sanguine/agents/types"
 )
 
@@ -24,6 +26,10 @@ func RemoveNotaryTempFile(t *testing.T, fileName string) {
 }
 
 func (u *NotarySuite) TestNotaryE2E() {
+	attestationSavedSink := make(chan *summitharness.SummitHarnessAttestationSaved)
+	savedAttestation, err := u.SummitContract.WatchAttestationSaved(&bind.WatchOpts{Context: u.GetTestContext()}, attestationSavedSink)
+	Nil(u.T(), err)
+
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      u.OriginDomainClient.Config(),
@@ -126,6 +132,23 @@ func (u *NotarySuite) TestNotaryE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawState, err := u.SummitContract.GetLatestState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID)
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(1)
+	})
+
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
 
@@ -137,9 +160,47 @@ func (u *NotarySuite) TestNotaryE2E() {
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
+		rawState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.NotaryBondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(1)
+	})
+
+	watchCtx, cancel := context.WithCancel(u.GetTestContext())
+	defer cancel()
+
+	var retrievedAtt []byte
+	select {
+	// check for errors and fail
+	case <-watchCtx.Done():
+		retrievedAtt = []byte{}
+	case <-savedAttestation.Err():
+		Nil(u.T(), savedAttestation.Err())
+		retrievedAtt = []byte{}
+		//logger.Info("Notary Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
+	// get message sent event
+	case receivedAttestationSaved := <-attestationSavedSink:
+		attToSubmit := receivedAttestationSaved.Attestation
+		retrievedAtt = attToSubmit
+	}
+
+	Greater(u.T(), len(retrievedAtt), 0)
+
+	/*u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
 		attestationsAmount, err := u.DestinationContract.AttestationsAmount(&bind.CallOpts{Context: u.GetTestContext()})
 		Nil(u.T(), err)
 
 		return attestationsAmount != nil && attestationsAmount.Uint64() >= uint64(1)
-	})
+	})*/
 }

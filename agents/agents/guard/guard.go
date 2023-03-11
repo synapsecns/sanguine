@@ -63,7 +63,7 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig) (_ Guard, err error) 
 func (g Guard) loadSummitLatestStates(ctx context.Context) {
 	for _, domain := range g.domains {
 		originID := domain.Config().DomainID
-		latestState, err := domain.Summit().GetLatestAgentState(ctx, originID, g.bondedSigner)
+		latestState, err := g.summitDomain.Summit().GetLatestAgentState(ctx, originID, g.bondedSigner)
 		if err != nil {
 			latestState = nil
 			logger.Errorf("Failed calling GetLatestAgentState for originID %d on the Summit contract: err = %v", originID, err)
