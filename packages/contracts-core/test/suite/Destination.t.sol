@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AttestationLib, SummitAttestation } from "../../contracts/libs/Attestation.sol";
-import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
-import { Snapshot, SnapshotLib } from "../../contracts/libs/Snapshot.sol";
-import { State, SummitState } from "../../contracts/libs/State.sol";
+import { SNAPSHOT_MAX_STATES, State } from "../../contracts/libs/Snapshot.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 
@@ -13,8 +10,15 @@ import { Versioned } from "../../contracts/Version.sol";
 
 import { MessageRecipientMock } from "../mocks/client/MessageRecipientMock.t.sol";
 
-import { fakeStates } from "../utils/libs/FakeIt.t.sol";
-import { RawHeader, RawMessage, RawTips } from "../utils/libs/SynapseStructs.t.sol";
+import { fakeSnapshot } from "../utils/libs/FakeIt.t.sol";
+import {
+    RawAttestation,
+    RawHeader,
+    RawMessage,
+    RawSnapshot,
+    RawState,
+    RawTips
+} from "../utils/libs/SynapseStructs.t.sol";
 import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
 import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
 import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
@@ -22,14 +26,11 @@ import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 contract DestinationTest is SynapseTest, SynapseProofs {
-    using SnapshotLib for bytes;
-
     uint32 internal constant PERIOD = 1 minutes;
     bytes internal constant BODY = "Test Body";
 
     RawMessage[] internal rawMessages;
     bytes[] internal messages;
-    SummitAttestation internal summitAtt;
 
     address internal sender;
     address internal recipient;
@@ -94,11 +95,11 @@ contract DestinationTest is SynapseTest, SynapseProofs {
     }
 
     function test_execute(
-        SummitState memory state,
+        RawState memory rs,
+        RawAttestation memory ra,
         uint256 statesAmount,
         uint256 stateIndex,
-        uint32 attNonce,
-        uint16 skipTime
+        uint32 rootTimestamp
     ) public {
         address executor = makeAddr("Executor");
 
@@ -106,18 +107,17 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         stateIndex = bound(stateIndex, 0, statesAmount - 1);
 
         createMessages();
-        state.root = getRoot(MESSAGES);
-        state.origin = DOMAIN_REMOTE;
+        rs.root = getRoot(MESSAGES);
+        rs.origin = DOMAIN_REMOTE;
         // Remainder of State struct is fuzzed
-        createAttestation(state, statesAmount, stateIndex);
+        ra = createAttestation(rs, ra, statesAmount, stateIndex);
         bytes32[] memory snapProof = genSnapshotProof(stateIndex);
 
         // Attestation Nonce is fuzzed as well
-        bytes memory attPayload = AttestationLib.formatSummitAttestation(summitAtt, attNonce);
+        (bytes memory attPayload, ) = ra.castToAttestation();
         bytes memory attSignature = signAttestation(domains[DOMAIN_LOCAL].agent, attPayload);
 
-        skip(skipTime);
-        uint256 rootTimestamp = block.timestamp;
+        vm.warp(rootTimestamp);
         // Should emit event when attestation is accepted
         vm.expectEmit(true, true, true, true);
         emit AttestationAccepted(
@@ -156,14 +156,16 @@ contract DestinationTest is SynapseTest, SynapseProofs {
     }
 
     function createAttestation(
-        SummitState memory state,
+        RawState memory rawState,
+        RawAttestation memory ra,
         uint256 statesAmount,
         uint256 stateIndex
-    ) public {
-        (bytes[] memory states, State[] memory ptrs) = fakeStates(state, statesAmount, stateIndex);
-        Snapshot snapshot = SnapshotLib.formatSnapshot(ptrs).castToSnapshot();
+    ) public returns (RawAttestation memory) {
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
+        bytes[] memory states = rawSnap.castToStateList();
         acceptSnapshot(states);
-        summitAtt = snapshot.toSummitAttestation();
+        // Reuse existing metadata in RawAttestation
+        return rawSnap.castToRawAttestation(ra.nonce, ra.blockNumber, ra.timestamp);
     }
 
     function createMessages() public {
