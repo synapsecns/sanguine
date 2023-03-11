@@ -14,16 +14,16 @@ enum AttestationFlag {
     Invalid
 }
 /// @dev Attach library functions to AttestationFlag
-using { ReportLib.formatAttestationReport } for AttestationFlag global;
+using { AttestationReportLib.formatAttestationReport } for AttestationFlag global;
 /// @dev Attach library functions to AttestationReport
 using {
-    ReportLib.hash,
-    ReportLib.unwrap,
-    ReportLib.flag,
-    ReportLib.attestation
+    AttestationReportLib.hash,
+    AttestationReportLib.unwrap,
+    AttestationReportLib.flag,
+    AttestationReportLib.attestation
 } for AttestationReport global;
 
-library ReportLib {
+library AttestationReportLib {
     using AttestationLib for bytes29;
     using ByteString for bytes;
     using TypedMemView for bytes29;
@@ -43,8 +43,8 @@ library ReportLib {
      * The variables below are not supposed to be used outside of the library directly.
      */
 
-    uint256 private constant OFFSET_AR_FLAG = 0;
-    uint256 private constant OFFSET_AR_ATTESTATION = 1;
+    uint256 private constant OFFSET_FLAG = 0;
+    uint256 private constant OFFSET_ATTESTATION = 1;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          ATTESTATION REPORT                          ║*▕
@@ -82,7 +82,7 @@ library ReportLib {
     /// @notice Checks that a payload is a formatted AttestationReport.
     function isAttestationReport(bytes29 _view) internal pure returns (bool) {
         // Flag needs to exist
-        if (_view.len() < OFFSET_AR_ATTESTATION) return false;
+        if (_view.len() < OFFSET_ATTESTATION) return false;
         // Flag should fit into AttestationFlag enum
         if (_arFlag(_view) > uint8(type(AttestationFlag).max)) return false;
         // Attestation should be properly formatted
@@ -123,12 +123,12 @@ library ReportLib {
 
     /// @dev Returns AttestationReport without checking that it fits into AttestationFlag enum.
     function _arFlag(bytes29 _view) internal pure returns (uint8) {
-        return uint8(_view.indexUint({ _index: OFFSET_AR_FLAG, _bytes: 1 }));
+        return uint8(_view.indexUint({ _index: OFFSET_FLAG, _bytes: 1 }));
     }
 
     /// @dev Returns an untyped memory view over Report's attestation
     /// without checking if it is properly formatted.
     function _arAttestation(bytes29 _view) internal pure returns (bytes29) {
-        return _view.sliceFrom({ _index: OFFSET_AR_ATTESTATION, newType: 0 });
+        return _view.sliceFrom({ _index: OFFSET_ATTESTATION, newType: 0 });
     }
 }

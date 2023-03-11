@@ -5,14 +5,14 @@ pragma solidity 0.8.17;
 import {
     AttestationFlag,
     AttestationReport,
-    ReportLib,
+    AttestationReportLib,
     TypedMemView
-} from "../../../contracts/libs/Report.sol";
+} from "../../../contracts/libs/AttestationReport.sol";
 
 /// @notice Exposes Report methods for testing against golang.
 contract ReportHarness {
-    using ReportLib for bytes;
-    using ReportLib for bytes29;
+    using AttestationReportLib for bytes;
+    using AttestationReportLib for bytes29;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
@@ -23,7 +23,7 @@ contract ReportHarness {
     function castToAttestationReport(bytes memory _payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        AttestationReport _attestation = ReportLib.castToAttestationReport(_payload);
+        AttestationReport _attestation = AttestationReportLib.castToAttestationReport(_payload);
         return _attestation.unwrap().clone();
     }
 
@@ -48,7 +48,7 @@ contract ReportHarness {
         pure
         returns (bytes memory)
     {
-        return ReportLib.formatAttestationReport(_flag, _attPayload);
+        return AttestationReportLib.formatAttestationReport(_flag, _attPayload);
     }
 
     function isAttestationReport(bytes memory _payload) public pure returns (bool) {

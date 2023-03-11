@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { Attestation, AttestationLib } from "../libs/Attestation.sol";
 import { Snapshot, SnapshotLib } from "../libs/Snapshot.sol";
-import { AttestationReport, ReportLib } from "../libs/Report.sol";
+import { AttestationReport, AttestationReportLib } from "../libs/AttestationReport.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "../system/AgentRegistry.sol";
 import { Versioned } from "../Version.sol";
@@ -24,7 +24,7 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 abstract contract StatementHub is AgentRegistry, Versioned {
     using AttestationLib for bytes;
     using SnapshotLib for bytes;
-    using ReportLib for bytes;
+    using AttestationReportLib for bytes;
 
     // solhint-disable-next-line no-empty-blocks
     constructor() Versioned("0.0.3") {}

@@ -15,7 +15,11 @@ import { Snapshot, SnapshotLib, State, StateLib } from "../../../contracts/libs/
 
 import { Attestation, AttestationLib } from "../../../contracts/libs/Attestation.sol";
 
-import { AttestationFlag, AttestationReport, ReportLib } from "../../../contracts/libs/Report.sol";
+import {
+    AttestationFlag,
+    AttestationReport,
+    AttestationReportLib
+} from "../../../contracts/libs/AttestationReport.sol";
 
 struct RawHeader {
     uint32 origin;
@@ -79,7 +83,7 @@ library CastLib {
     using AttestationLib for bytes;
     using HeaderLib for bytes;
     using MessageLib for bytes;
-    using ReportLib for bytes;
+    using AttestationReportLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
     using TipsLib for bytes;
