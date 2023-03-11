@@ -36,6 +36,7 @@ type Notary struct {
 	summitMyLatestStates    map[uint32]types.State
 	summitGuardLatestStates map[uint32]types.State
 	summitParser            summit.Parser
+	lastBlock               uint64
 }
 
 // NewNotary creates a new notary.
@@ -102,7 +103,7 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, scribeClient client.
 
 func (n Notary) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient) error {
 	// TODO: How to set your `fromBlock` without a database?
-	fromBlock := strconv.FormatUint(0, 10)
+	fromBlock := strconv.FormatUint(n.lastBlock, 10)
 
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
@@ -142,6 +143,8 @@ func (n Notary) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServic
 			if attestation == nil {
 				return fmt.Errorf("could not convert to attestation")
 			}
+
+			n.lastBlock = log.BlockNumber
 
 			// Do your stuff with the attestation here!
 
