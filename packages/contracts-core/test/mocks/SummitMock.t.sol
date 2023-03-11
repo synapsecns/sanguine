@@ -20,6 +20,11 @@ contract SummitMock is SnapshotHubMock, SystemContractMock, InterfaceSummit {
         returns (bool isValid)
     {}
 
+    function verifyAttestationReport(bytes memory _arPayload, bytes memory _arSignature)
+        external
+        returns (bool isValid)
+    {}
+
     function addAgent(uint32 _domain, address _account) external returns (bool) {}
 
     function removeAgent(uint32 _domain, address _account) external returns (bool) {}

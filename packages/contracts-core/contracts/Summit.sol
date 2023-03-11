@@ -9,7 +9,7 @@ import { DomainContext } from "./context/DomainContext.sol";
 import { SummitEvents } from "./events/SummitEvents.sol";
 import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
 import { SnapshotHub } from "./hubs/SnapshotHub.sol";
-import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
+import { Attestation, AttestationReport, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 
 /**
  * @notice Accepts snapshots signed by Guards and Notaries. Verifies Notaries attestations.
@@ -95,6 +95,25 @@ contract Summit is StatementHub, SnapshotHub, BondingManager, SummitEvents, Inte
             emit InvalidAttestation(_attPayload, _attSignature);
             // Slash Notary and trigger a hook to send a slashAgent system call
             _slashAgent(domain, notary, true);
+        }
+    }
+
+    /// @inheritdoc InterfaceSummit
+    function verifyAttestationReport(bytes memory _arPayload, bytes memory _arSignature)
+        external
+        returns (bool isValid)
+    {
+        // This will revert if payload is not an attestation report, or signer is not an active Guard
+        (AttestationReport report, address guard) = _verifyAttestationReport(
+            _arPayload,
+            _arSignature
+        );
+        // Report is valid, if the reported attestation is invalid
+        isValid = !_isValidAttestation(report.attestation());
+        if (!isValid) {
+            emit InvalidAttestationReport(_arPayload, _arSignature);
+            // Slash Guard (domain == 0) and trigger a hook to send a slashAgent system call
+            _slashAgent(0, guard, true);
         }
     }
 

@@ -11,6 +11,13 @@ abstract contract SummitEvents {
     event InvalidAttestation(bytes attestation, bytes attSignature);
 
     /**
+     * @notice Emitted when a proof of invalid attestation is submitted.
+     * @param arPayload     Raw payload with report data
+     * @param arSignature   Guard signature for the report
+     */
+    event InvalidAttestationReport(bytes arPayload, bytes arSignature);
+
+    /**
      * @notice Emitted when a snapshot is accepted by the Summit contract.
      * @param domain        Domain where the signed Agent is active (ZERO for Guards)
      * @param agent         Agent who signed the snapshot

@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { Attestation, AttestationLib } from "../libs/Attestation.sol";
 import { Snapshot, SnapshotLib } from "../libs/Snapshot.sol";
+import { AttestationReport, ReportLib } from "../libs/Report.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "../system/AgentRegistry.sol";
 import { Versioned } from "../Version.sol";
@@ -23,6 +24,7 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 abstract contract StatementHub is AgentRegistry, Versioned {
     using AttestationLib for bytes;
     using SnapshotLib for bytes;
+    using ReportLib for bytes;
 
     // solhint-disable-next-line no-empty-blocks
     constructor() Versioned("0.0.3") {}
@@ -73,6 +75,30 @@ abstract contract StatementHub is AgentRegistry, Versioned {
         (domain, notary) = _recoverAgent(attestation.hash(), _attSignature);
         // Attestation signer needs to be a Notary, not a Guard
         require(domain != 0, "Signer is not a Notary");
+    }
+
+    /**
+     * @dev Internal function to verify the signed attestation report payload.
+     * Reverts if either of this is true:
+     *  - Report payload is not properly formatted AttestationReport.
+     *  - Report signer is not an active Guard.
+     * @param _arPayload        Raw payload with report data
+     * @param _arSignature      Guard signature for the report
+     * @return report           Typed memory view over report payload
+     * @return guard            Guard that signed the report
+     */
+    function _verifyAttestationReport(bytes memory _arPayload, bytes memory _arSignature)
+        internal
+        view
+        returns (AttestationReport report, address guard)
+    {
+        // This will revert if payload is not a formatted attestation report
+        report = _arPayload.castToAttestationReport();
+        // This will revert if signer is not an active agent
+        uint32 domain;
+        (domain, guard) = _recoverAgent(report.hash(), _arSignature);
+        // Report signer needs to be a Guard, not a Notary
+        require(domain == 0, "Signer is not a Guard");
     }
 
     /**
