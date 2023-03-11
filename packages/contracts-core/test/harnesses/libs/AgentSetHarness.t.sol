@@ -9,6 +9,9 @@ contract AgentSetHarness {
 
     AgentSet.DomainAddressSet internal set;
 
+    // Note: we don't add an empty test() function here, as it currently leads
+    // to zero coverage on the corresponding library.
+
     function add(uint32 domain, address account) external returns (bool) {
         bool value = AgentSet.add(set, domain, account);
         return value;

@@ -11,6 +11,9 @@ import { ByteString } from "../../../contracts/libs/ByteString.sol";
 contract AuthHarness {
     using ByteString for bytes;
 
+    // Note: we don't add an empty test() function here, as it currently leads
+    // to zero coverage on the corresponding library.
+
     function toEthSignedMessageHash(bytes memory _data) external pure returns (bytes32) {
         return Auth.toEthSignedMessageHash(_data.castToRawBytes());
     }
