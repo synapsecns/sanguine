@@ -25,7 +25,6 @@ type Notary struct {
 	refreshInterval         time.Duration
 	summitMyLatestStates    map[uint32]types.State
 	summitGuardLatestStates map[uint32]types.State
-	isTestHarness           bool
 }
 
 // NewNotary creates a new notary.
@@ -34,7 +33,6 @@ type Notary struct {
 func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error) {
 	notary := Notary{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
-		isTestHarness:   cfg.IsTestHarness,
 	}
 	notary.domains = []domains.DomainClient{}
 
@@ -50,16 +48,9 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error
 
 	for domainName, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
-		if !cfg.IsTestHarness {
-			domainClient, err = evm.NewEVM(ctx, domainName, domain)
-			if err != nil {
-				return Notary{}, fmt.Errorf("failing to create evm for domain, could not create notary for: %w", err)
-			}
-		} else {
-			domainClient, err = evm.NewHarnessEVM(ctx, domainName, domain)
-			if err != nil {
-				return Notary{}, fmt.Errorf("failing to create harness evm for domain, could not create notary for: %w", err)
-			}
+		domainClient, err = evm.NewEVM(ctx, domainName, domain)
+		if err != nil {
+			return Notary{}, fmt.Errorf("failing to create evm for domain, could not create notary for: %w", err)
 		}
 		notary.domains = append(notary.domains, domainClient)
 		if domain.DomainID == cfg.SummitDomainID {
@@ -270,28 +261,14 @@ func (n Notary) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	logger.Info("Starting the notary")
+
 	/*attestationSavedSink := make(chan *summit.SummitAttestationSaved)
-	harnessAttestationSavedSink := make(chan *summitharness.SummitHarnessAttestationSaved)
-
 	var savedAttestation event.Subscription
-	var harnessSavedAttestation event.Subscription
 
-	if !n.isTestHarness {
-		var err error
-		savedAttestation, err = n.summitDomain.Summit().WatchAttestationSaved(ctx, attestationSavedSink)
-		if err != nil {
-			return fmt.Errorf("error setting up watcher for saved attestations: %w", err)
-		}
-	} else {
-		logger.Info("Creating watcher for harness saved attestation on summit")
-		var err error
-		harnessSavedAttestation, err = n.summitDomain.Summit().WatchHarnessAttestationSaved(ctx, harnessAttestationSavedSink)
-		if err != nil {
-			logger.Errorf("Got an error back from WatchHarnessAttestationSaved: %v", err)
-			return fmt.Errorf("error setting up watcher for saved attestations: %w", err)
-		} else {
-			logger.Info("Not NOT got an error back from WatchHarnessAttestationSaved, so should have worked")
-		}
+	var err error
+	savedAttestation, err = n.summitDomain.Summit().WatchAttestationSaved(ctx, attestationSavedSink)
+	if err != nil {
+		return fmt.Errorf("error setting up watcher for saved attestations: %w", err)
 	}*/
 
 	logger.Infof("Notary loadSummitMyLatestStates")
@@ -311,35 +288,18 @@ func (n Notary) Start(ctx context.Context) error {
 		defer cancel()
 
 		for {
-			if !n.isTestHarness {
-				select {
-				// check for errors and fail
-				case <-watchCtx.Done():
-					logger.Info("Notary Attestation Saved Watcher exiting without error")
-					return nil
-				case <-savedAttestation.Err():
-					logger.Info("Notary Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
-				// get message sent event
-				case receivedAttestationSaved := <-attestationSavedSink:
-					logger.Info("Notary received a saved attestation event, will sign and submit to destination")
-					attToSubmit := receivedAttestationSaved.Attestation
-					n.submitAttestation(ctx, attToSubmit)
-				}
-			} else {
-				logger.Infof("Notary listening for attestation saved events on summit harness")
-				select {
-				// check for errors and fail
-				case <-watchCtx.Done():
-					logger.Info("Notary Attestation Saved Watcher exiting without error")
-					return nil
-				case <-harnessSavedAttestation.Err():
-					logger.Info("Notary Harness Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
-				// get message sent event
-				case receivedAttestationSaved := <-harnessAttestationSavedSink:
-					logger.Info("Notary received a saved harness attestation event, will sign and submit to destination")
-					attToSubmit := receivedAttestationSaved.Attestation
-					n.submitAttestation(ctx, attToSubmit)
-				}
+			select {
+			// check for errors and fail
+			case <-watchCtx.Done():
+				logger.Info("Notary Attestation Saved Watcher exiting without error")
+				return nil
+			case <-savedAttestation.Err():
+				logger.Info("Notary Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
+			// get message sent event
+			case receivedAttestationSaved := <-attestationSavedSink:
+				logger.Info("Notary received a saved attestation event, will sign and submit to destination")
+				attToSubmit := receivedAttestationSaved.Attestation
+				n.submitAttestation(ctx, attToSubmit)
 			}
 		}
 	})*/

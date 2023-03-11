@@ -11,7 +11,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
-	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
@@ -57,8 +56,6 @@ type SummitContract interface {
 	GetLatestAgentState(ctx context.Context, origin uint32, bondedAgentSigner signer.Signer) (types.State, error)
 	// WatchAttestationSaved looks for attesation saved events
 	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
-	// WatchHarnessAttestationSaved looks for attesation saved events if its a test harness
-	WatchHarnessAttestationSaved(ctx context.Context, sink chan<- *summitharness.SummitHarnessAttestationSaved) (event.Subscription, error)
 }
 
 // DestinationContract contains the interface for the destination.

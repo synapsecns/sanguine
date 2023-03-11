@@ -47,7 +47,6 @@ func (u *NotarySuite) TestNotaryE2E() {
 			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
-		IsTestHarness:          true,
 	}
 	notaryTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -66,7 +65,6 @@ func (u *NotarySuite) TestNotaryE2E() {
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
-		IsTestHarness:          true,
 	}
 	encodedNotaryTestConfig, err := notaryTestConfig.Encode()
 	Nil(u.T(), err)

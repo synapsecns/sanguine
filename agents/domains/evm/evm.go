@@ -61,38 +61,6 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 	}, nil
 }
 
-// NewHarnessEVM creates a new evm client.
-func NewHarnessEVM(ctx context.Context, name string, domain config.DomainConfig) (domains.DomainClient, error) {
-	underlyingClient, err := chain.NewFromURL(ctx, domain.RPCUrl)
-	if err != nil {
-		return nil, fmt.Errorf("could not get evm: %w", err)
-	}
-
-	boundOrigin, err := NewOriginContract(ctx, underlyingClient, common.HexToAddress(domain.OriginAddress))
-	if err != nil {
-		return nil, fmt.Errorf("could not bind origin contract: %w", err)
-	}
-
-	boundSummit, err := NewSummitHarnessContract(ctx, underlyingClient, common.HexToAddress(domain.SummitAddress))
-	if err != nil {
-		return nil, fmt.Errorf("could not bind attestation contract: %w", err)
-	}
-
-	boundDestination, err := NewDestinationContract(ctx, underlyingClient, common.HexToAddress(domain.DestinationAddress))
-	if err != nil {
-		return nil, fmt.Errorf("could not bind destination contract: %w", err)
-	}
-
-	return evmClient{
-		name:        name,
-		config:      domain,
-		client:      underlyingClient,
-		summit:      boundSummit,
-		origin:      boundOrigin,
-		destination: boundDestination,
-	}, nil
-}
-
 // Name gets the name of the evm client.
 func (e evmClient) Name() string {
 	return e.name

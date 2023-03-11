@@ -238,7 +238,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	}
 	a.TestBackendSummit.WaitForConfirmation(a.GetTestContext(), txAddGuard)
 
-	a.SummitDomainClient, err = evm.NewHarnessEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
+	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
 		DomainID:      uint32(a.TestBackendSummit.GetBigChainID().Uint64()),
 		Type:          types.EVM.String(),
 		SummitAddress: a.SummitContract.Address().String(),

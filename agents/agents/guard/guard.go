@@ -21,7 +21,6 @@ type Guard struct {
 	refreshInterval    time.Duration
 	summitLatestStates map[uint32]types.State
 	originLatestStates map[uint32]types.State
-	isTestHarness      bool
 }
 
 // NewGuard creates a new guard.
@@ -30,7 +29,6 @@ type Guard struct {
 func NewGuard(ctx context.Context, cfg config.AgentConfig) (_ Guard, err error) {
 	guard := Guard{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
-		isTestHarness:   cfg.IsTestHarness,
 	}
 	guard.domains = []domains.DomainClient{}
 
@@ -46,16 +44,9 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig) (_ Guard, err error) 
 
 	for domainName, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
-		if !cfg.IsTestHarness {
-			domainClient, err = evm.NewEVM(ctx, domainName, domain)
-			if err != nil {
-				return Guard{}, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)
-			}
-		} else {
-			domainClient, err = evm.NewHarnessEVM(ctx, domainName, domain)
-			if err != nil {
-				return Guard{}, fmt.Errorf("failing to create harness evm for domain, could not create guard for: %w", err)
-			}
+		domainClient, err = evm.NewEVM(ctx, domainName, domain)
+		if err != nil {
+			return Guard{}, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)
 		}
 		guard.domains = append(guard.domains, domainClient)
 		if domain.DomainID == cfg.SummitDomainID {
