@@ -13,7 +13,11 @@ import { Versioned } from "../../contracts/Version.sol";
 
 import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
-import { RawAttestation } from "../utils/libs/SynapseStructs.t.sol";
+import {
+    AttestationFlag,
+    RawAttestation,
+    RawAttestationReport
+} from "../utils/libs/SynapseStructs.t.sol";
 import { Random } from "../utils/libs/Random.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -101,18 +105,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestation(attestation, signature);
-            vm.expectEmit(true, true, true, true);
-            emit AgentRemoved(domain, notary);
-            vm.expectEmit(true, true, true, true);
-            emit AgentSlashed(domain, notary);
-            // Should slash Agents on Synapse Chain registries
-            bytes memory expectedCall = _expectedSlashCall(domain, notary);
-            vm.expectCall(originSynapse, expectedCall);
-            vm.expectCall(destinationSynapse, expectedCall);
-            // Should forward Slash system calls
-            bytes memory data = _dataSlashAgentCall(domain, notary);
-            _expectRemoteCallBondingManager(DOMAIN_LOCAL, data);
-            _expectRemoteCallBondingManager(DOMAIN_REMOTE, data);
+            expectAgentSlashed(domain, notary);
         }
         vm.recordLogs();
         assertEq(
@@ -123,6 +116,56 @@ contract SummitTest is SynapseTest, SynapseProofs {
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
+        // Verify report on constructed attestation
+        verifyAttestationReport(random, ra, isValid);
+    }
+
+    function verifyAttestationReport(
+        Random memory random,
+        RawAttestation memory ra,
+        bool isAttestationValid
+    ) public {
+        // Report is considered invalid, if reported attestation is valid
+        bool isValid = !isAttestationValid;
+        // Pick random Guard
+        uint256 guardIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
+        address guard = domains[0].agents[guardIndex];
+        RawAttestationReport memory rawAR = RawAttestationReport(
+            uint8(AttestationFlag.Invalid),
+            ra
+        );
+        (bytes memory arPayload, ) = rawAR.castToAttestationReport();
+        bytes memory signature = signAttestationReport(guard, arPayload);
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidAttestationReport(arPayload, signature);
+            expectAgentSlashed(0, guard);
+        }
+        vm.recordLogs();
+        assertEq(
+            InterfaceSummit(summit).verifyAttestationReport(arPayload, signature),
+            isValid,
+            "!returnValue"
+        );
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
+    }
+
+    function expectAgentSlashed(uint32 domain, address agent) public {
+        vm.expectEmit(true, true, true, true);
+        emit AgentRemoved(domain, agent);
+        vm.expectEmit(true, true, true, true);
+        emit AgentSlashed(domain, agent);
+        // Should slash Agents on Synapse Chain registries
+        bytes memory expectedCall = _expectedSlashCall(domain, agent);
+        vm.expectCall(originSynapse, expectedCall);
+        vm.expectCall(destinationSynapse, expectedCall);
+        // Should forward Slash system calls
+        bytes memory data = _dataSlashAgentCall(domain, agent);
+        _expectRemoteCallBondingManager(DOMAIN_LOCAL, data);
+        _expectRemoteCallBondingManager(DOMAIN_REMOTE, data);
     }
 
     function test_guardSnapshots(Random memory random) public {
