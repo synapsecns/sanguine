@@ -37,14 +37,14 @@ type Notary struct {
 	summitMyLatestStates    map[uint32]types.State
 	summitGuardLatestStates map[uint32]types.State
 	summitParser            summit.Parser
-	//nolint:unused
-	lastBlock uint64
+	scribeGrpcClient        pbscribe.ScribeServiceClient
+	lastSummitBlock         uint64
 }
 
 // NewNotary creates a new notary.
 //
 //nolint:cyclop
-func NewNotary(ctx context.Context, cfg config.AgentConfig, scribeClient client.ScribeClient) (_ Notary, err error) {
+func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error) {
 	notary := Notary{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
@@ -83,37 +83,33 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, scribeClient client.
 		return Notary{}, fmt.Errorf("could not create summit parser: %w", err)
 	}
 
+	scribeClient := client.ScribeClient{
+		Port: uint16(cfg.ScribePort),
+		URL:  cfg.ScribeURL,
+	}
+
 	// Scribe gRPC setup.
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return Notary{}, fmt.Errorf("could not dial grpc: %w", err)
 	}
 
-	grpcClient := pbscribe.NewScribeServiceClient(conn)
-
-	// Ensure that gRPC is up and running.
-	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
-	if err != nil {
-		return Notary{}, fmt.Errorf("could not check: %w", err)
-	}
-	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
-		return Notary{}, fmt.Errorf("not serving: %s", healthCheck.Status)
-	}
+	notary.scribeGrpcClient = pbscribe.NewScribeServiceClient(conn)
 
 	return notary, nil
 }
 
-//nolint:unused
-func (n Notary) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient) error {
-	// TODO: How to set your `fromBlock` without a database?
-	fromBlock := strconv.FormatUint(n.lastBlock, 10)
-
-	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
+//nolint:cyclop
+func (n Notary) streamLogs(ctx context.Context) error {
+	fromBlockStr := strconv.FormatUint(n.lastSummitBlock, 16)
+	// fromBlockStr := "0"
+	logger.Infof("Notary streaming Summit logs starting from block: %d", n.lastSummitBlock)
+	stream, err := n.scribeGrpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: n.summitDomain.Config().SummitAddress}},
 			ChainId:         n.summitDomain.Config().DomainID,
 		},
-		FromBlock: fromBlock,
+		FromBlock: fromBlockStr,
 		ToBlock:   "latest",
 	})
 	if err != nil {
@@ -123,37 +119,57 @@ func (n Notary) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServic
 	for {
 		select {
 		case <-ctx.Done():
+			logger.Info("Notary stream logs returning after cancel")
 			return nil
 		default:
+			logger.Info("Notary stream logs default case hit")
 			response, err := stream.Recv()
+			logger.Info("Notary back from stream.Recv")
 			if errors.Is(err, io.EOF) {
+				logger.Info("Notary stream logs returning after EOF")
 				return nil
 			}
 			if err != nil {
+				logger.Errorf("Notary stream logs got an error %v", err)
 				return fmt.Errorf("could not receive: %w", err)
 			}
 
+			logger.Info("Notary stream logs got a response")
 			log := response.Log.ToLog()
 			if log == nil {
+				logger.Error("Notary stream logs could not convert to log")
 				return fmt.Errorf("could not convert to log")
 			}
 
 			attestation, err := n.logToAttestation(*log)
 			if err != nil {
-				return fmt.Errorf("could not convert to attestation: %w", err)
+				logger.Errorf("Notary stream logs could not convert to attestation due to err: %v", err)
+				// return fmt.Errorf("could not convert to attestation: %w", err)
+				continue
 			}
 			if attestation == nil {
+				logger.Error("Notary stream logs could not convert to attestation")
 				return fmt.Errorf("could not convert to attestation")
 			}
 
-			n.lastBlock = log.BlockNumber
+			// TODO: figure out if this is this notary's attestation
+
+			logger.Infof("Notary got an attestation event from Summit at block number %d", log.BlockNumber)
+			n.lastSummitBlock = log.BlockNumber
 
 			// Do your stuff with the attestation here!
+			attToSubmit, err := types.EncodeAttestation(*attestation)
+			if err != nil {
+				logger.Error("Notary stream logs could not encode attestation: %v", err)
+				return fmt.Errorf("could not encode attestation: %w", err)
+			}
+
+			logger.Info("Notary received a saved attestation event, will sign and submit to destination")
+			n.submitAttestation(ctx, attToSubmit)
 		}
 	}
 }
 
-//nolint:unused
 func (n Notary) logToAttestation(log ethTypes.Log) (*types.Attestation, error) {
 	attestationEvent, ok := n.summitParser.ParseAttestationSaved(log)
 	if !ok {
@@ -363,14 +379,22 @@ func (n Notary) Start(ctx context.Context) error {
 
 	logger.Info("Starting the notary")
 
-	/*attestationSavedSink := make(chan *summit.SummitAttestationSaved)
-	var savedAttestation event.Subscription
-
-	var err error
-	savedAttestation, err = n.summitDomain.Summit().WatchAttestationSaved(ctx, attestationSavedSink)
+	// Setting latestBlock on summit chain
+	latestBlockNUmber, err := n.summitDomain.BlockNumber(ctx)
 	if err != nil {
-		return fmt.Errorf("error setting up watcher for saved attestations: %w", err)
-	}*/
+		return fmt.Errorf("could not get latest block number from Summit: %w", err)
+	}
+	n.lastSummitBlock = uint64(latestBlockNUmber)
+
+	// Ensure that gRPC is up and running.
+	logger.Info("Notary: ensure that gRPC is up and running.")
+	healthCheck, err := n.scribeGrpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
+	if err != nil {
+		return fmt.Errorf("could not check: %w", err)
+	}
+	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
+		return fmt.Errorf("not serving: %s", healthCheck.Status)
+	}
 
 	logger.Infof("Notary loadSummitMyLatestStates")
 	n.loadSummitMyLatestStates(ctx)
@@ -384,26 +408,9 @@ func (n Notary) Start(ctx context.Context) error {
 	// On summit, the Notary will pass in the attestation payload to get the raw states associated with it.
 	// It will then double check all the states on origin.
 	// Then, it will sign and submit
-	/*g.Go(func() error {
-		watchCtx, cancel := context.WithCancel(ctx)
-		defer cancel()
-
-		for {
-			select {
-			// check for errors and fail
-			case <-watchCtx.Done():
-				logger.Info("Notary Attestation Saved Watcher exiting without error")
-				return nil
-			case <-savedAttestation.Err():
-				logger.Info("Notary Attestation Saved Watcher got an unexpected error: %v", savedAttestation.Err())
-			// get message sent event
-			case receivedAttestationSaved := <-attestationSavedSink:
-				logger.Info("Notary received a saved attestation event, will sign and submit to destination")
-				attToSubmit := receivedAttestationSaved.Attestation
-				n.submitAttestation(ctx, attToSubmit)
-			}
-		}
-	})*/
+	g.Go(func() error {
+		return n.streamLogs(ctx)
+	})
 
 	g.Go(func() error {
 		for {
@@ -415,12 +422,11 @@ func (n Notary) Start(ctx context.Context) error {
 			case <-time.After(n.refreshInterval):
 				n.loadSummitGuardLatestStates(ctx)
 				n.submitLatestSnapshot(ctx)
-				logger.Info("Notary exiting after 1 run")
 			}
 		}
 	})
 
-	err := g.Wait()
+	err = g.Wait()
 	if err != nil {
 		logger.Errorf("Notary exiting with error: %v", err)
 		return fmt.Errorf("could not start the notary: %w", err)
