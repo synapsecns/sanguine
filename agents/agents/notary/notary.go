@@ -38,8 +38,7 @@ type Notary struct {
 	summitGuardLatestStates map[uint32]types.State
 	summitParser            summit.Parser
 	scribeGrpcClient        pbscribe.ScribeServiceClient
-	//nolint:unused
-	lastBlock uint64
+	lastSummitBlock         uint64
 }
 
 // NewNotary creates a new notary.
@@ -100,9 +99,8 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error
 	return notary, nil
 }
 
-//nolint:unused
-func (n Notary) streamLogs(ctx context.Context, fromBlock uint32) error {
-	fromBlockStr := strconv.FormatUint(n.lastBlock, 10)
+func (n Notary) streamLogs(ctx context.Context) error {
+	fromBlockStr := strconv.FormatUint(n.lastSummitBlock, 10)
 
 	stream, err := n.scribeGrpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
@@ -142,7 +140,9 @@ func (n Notary) streamLogs(ctx context.Context, fromBlock uint32) error {
 				return fmt.Errorf("could not convert to attestation")
 			}
 
-			n.lastBlock = log.BlockNumber
+			// TODO: figure out if this is this notary's attestation
+
+			n.lastSummitBlock = log.BlockNumber
 
 			// Do your stuff with the attestation here!
 			attToSubmit, err := types.EncodeAttestation(*attestation)
@@ -156,7 +156,6 @@ func (n Notary) streamLogs(ctx context.Context, fromBlock uint32) error {
 	}
 }
 
-//nolint:unused
 func (n Notary) logToAttestation(log ethTypes.Log) (*types.Attestation, error) {
 	attestationEvent, ok := n.summitParser.ParseAttestationSaved(log)
 	if !ok {
@@ -366,6 +365,13 @@ func (n Notary) Start(ctx context.Context) error {
 
 	logger.Info("Starting the notary")
 
+	// Setting latestBlock on summit chain
+	latestBlockNUmber, err := n.summitDomain.BlockNumber(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get latest block number from Summit: %w", err)
+	}
+	n.lastSummitBlock = uint64(latestBlockNUmber)
+
 	// Ensure that gRPC is up and running.
 	logger.Info("Notary: ensure that gRPC is up and running.")
 	healthCheck, err := n.scribeGrpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
@@ -389,11 +395,7 @@ func (n Notary) Start(ctx context.Context) error {
 	// It will then double check all the states on origin.
 	// Then, it will sign and submit
 	g.Go(func() error {
-		latestBlockNUmber, err := n.summitDomain.BlockNumber(ctx)
-		if err != nil {
-			return fmt.Errorf("could not get latest block number from Summit: %w", err)
-		}
-		return n.streamLogs(ctx, latestBlockNUmber)
+		return n.streamLogs(ctx)
 	})
 
 	g.Go(func() error {
