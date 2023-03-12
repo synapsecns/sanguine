@@ -40,6 +40,22 @@ interface InterfaceSummit {
         returns (bool isValid);
 
     /**
+     * @notice Verifies an attestation report signed by a Guard.
+     *  - Does nothing, if the report is valid (if the reported attestation is invalid).
+     *  - Slashes the Guard otherwise (meaning the reported attestation is valid, making the report invalid).
+     * @dev Will revert if any of these is true:
+     *  - Report payload is not properly formatted.
+     *  - Report signer is not an active Guard.
+     * @param _arPayload        Raw payload with AttestationReport data
+     * @param _arSignature      Guard signature for the report
+     * @return isValid          Whether the provided report is valid.
+     *                          Guard is slashed, if return value is FALSE.
+     */
+    function verifyAttestationReport(bytes memory _arPayload, bytes memory _arSignature)
+        external
+        returns (bool isValid);
+
+    /**
      * @notice Returns the state with the highest known nonce
      * submitted by any of the currently active Guards.
      * @param _origin       Domain of origin chain

@@ -3,6 +3,8 @@ pragma solidity 0.8.17;
 
 import { SummitState } from "../../../contracts/libs/State.sol";
 
+import { RawAttestation, RawSnapshot } from "./SynapseStructs.t.sol";
+
 struct Random {
     bytes32 seed;
 }
@@ -16,7 +18,8 @@ using {
     RandomLib.nextUint32,
     RandomLib.nextUint8,
     RandomLib.nextAddress,
-    RandomLib.nextState
+    RandomLib.nextState,
+    RandomLib.nextAttestation
 } for Random global;
 
 library RandomLib {
@@ -89,5 +92,13 @@ library RandomLib {
         state.nonce = nonce;
         state.blockNumber = r.nextUint40();
         state.timestamp = r.nextUint40();
+    }
+
+    function nextAttestation(
+        Random memory r,
+        RawSnapshot memory rawSnap,
+        uint32 nonce
+    ) internal view returns (RawAttestation memory ra) {
+        return rawSnap.castToRawAttestation(nonce, r.nextUint40(), r.nextUint40());
     }
 }
