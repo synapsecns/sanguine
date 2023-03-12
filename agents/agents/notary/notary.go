@@ -100,8 +100,9 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error
 }
 
 func (n Notary) streamLogs(ctx context.Context) error {
-	fromBlockStr := strconv.FormatUint(n.lastSummitBlock, 10)
-
+	fromBlockStr := strconv.FormatUint(n.lastSummitBlock, 16)
+	//fromBlockStr := "0"
+	logger.Infof("Notary streaming Summit logs starting from block: %d", n.lastSummitBlock)
 	stream, err := n.scribeGrpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
 			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: n.summitDomain.Config().SummitAddress}},
@@ -117,36 +118,48 @@ func (n Notary) streamLogs(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
+			logger.Info("Notary stream logs returning after cancel")
 			return nil
 		default:
+			logger.Info("Notary stream logs default case hit")
 			response, err := stream.Recv()
+			logger.Info("Notary back from stream.Recv")
 			if errors.Is(err, io.EOF) {
+				logger.Info("Notary stream logs returning after EOF")
 				return nil
 			}
 			if err != nil {
+				logger.Errorf("Notary stream logs got an error %v", err)
 				return fmt.Errorf("could not receive: %w", err)
 			}
 
+			logger.Info("Notary stream logs got a response")
 			log := response.Log.ToLog()
 			if log == nil {
+				logger.Error("Notary stream logs could not convert to log")
 				return fmt.Errorf("could not convert to log")
 			}
 
 			attestation, err := n.logToAttestation(*log)
 			if err != nil {
-				return fmt.Errorf("could not convert to attestation: %w", err)
+				logger.Errorf("Notary stream logs could not convert to attestation due to err: %v", err)
+				//return fmt.Errorf("could not convert to attestation: %w", err)
+				continue
 			}
 			if attestation == nil {
+				logger.Error("Notary stream logs could not convert to attestation")
 				return fmt.Errorf("could not convert to attestation")
 			}
 
 			// TODO: figure out if this is this notary's attestation
 
+			logger.Infof("Notary got an attestation event from Summit at block number %d", log.BlockNumber)
 			n.lastSummitBlock = log.BlockNumber
 
 			// Do your stuff with the attestation here!
 			attToSubmit, err := types.EncodeAttestation(*attestation)
 			if err != nil {
+				logger.Error("Notary stream logs could not encode attestation: %v", err)
 				return fmt.Errorf("could not encode attestation: %w", err)
 			}
 
@@ -408,7 +421,6 @@ func (n Notary) Start(ctx context.Context) error {
 			case <-time.After(n.refreshInterval):
 				n.loadSummitGuardLatestStates(ctx)
 				n.submitLatestSnapshot(ctx)
-				logger.Info("Notary exiting after 1 run")
 			}
 		}
 	})
