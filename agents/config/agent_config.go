@@ -27,7 +27,11 @@ type AgentConfig struct {
 	// BondedSigner contains the bonded signer config for agents
 	BondedSigner SignerConfig `yaml:"bonded_signer"`
 	// RefreshIntervalSeconds is the refresh interval in seconds
-	RefreshIntervalSeconds int `yaml:"refresh_interval_seconds,omitempty"`
+	RefreshIntervalSeconds uint32 `yaml:"refresh_interval_seconds,omitempty"`
+	// ScribePort is the scribe port
+	ScribePort uint32 `yaml:"scribe_port,omitempty"`
+	// ScribePUrl is the scribe port
+	ScribeUrl string `yaml:"scribe_url,omitempty"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
