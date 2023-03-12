@@ -30,4 +30,10 @@ contract DestinationMock is
         external
         returns (bool wasAccepted)
     {}
+
+    function submitAttestationReport(
+        bytes memory _arPayload,
+        bytes memory _arSignature,
+        bytes memory _attSignature
+    ) external returns (bool wasAccepted) {}
 }

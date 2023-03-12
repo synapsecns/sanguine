@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ATTESTATION_SALT, SNAPSHOT_SALT } from "../../contracts/libs/Constants.sol";
+import {
+    ATTESTATION_SALT,
+    ATTESTATION_REPORT_SALT,
+    SNAPSHOT_SALT
+} from "../../contracts/libs/Constants.sol";
 
 import { BondingSecondary } from "../../contracts/bonding/BondingSecondary.sol";
 import { ISystemContract } from "../../contracts/interfaces/ISystemContract.sol";
@@ -144,6 +148,15 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
     {
         bytes32 hashedAtt = keccak256(attestation);
         return signMessage(agent, keccak256(bytes.concat(ATTESTATION_SALT, hashedAtt)));
+    }
+
+    function signAttestationReport(address agent, bytes memory arPayload)
+        public
+        view
+        returns (bytes memory signature)
+    {
+        bytes32 hashedAR = keccak256(arPayload);
+        return signMessage(agent, keccak256(bytes.concat(ATTESTATION_REPORT_SALT, hashedAR)));
     }
 
     function signSnapshot(address agent, bytes memory snapshot)

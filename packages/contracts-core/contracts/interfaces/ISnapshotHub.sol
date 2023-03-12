@@ -41,7 +41,7 @@ interface ISnapshotHub {
 
     /**
      * @notice Returns Notary snapshot that was used for creating a given attestation.
-     * @dev Reverts if either of this is true:
+     * @dev Reverts if any of these is true:
      *  - Attestation payload is not properly formatted.
      *  - Attestation is invalid (doesn't have a matching Notary snapshot).
      * @param _attPayload       Raw payload with attestation data
@@ -55,7 +55,7 @@ interface ISnapshotHub {
     /**
      * @notice Returns proof of inclusion of (root, origin) fields of a given snapshot's state
      * into the Snapshot Merkle Tree for a given attestation.
-     * @dev Reverts if either of this is true:
+     * @dev Reverts if any of these is true:
      *  - Attestation with given nonce hasn't been created yet.
      *  - State index is out of range of snapshot list.
      * @param _nonce        Nonce for the attestation

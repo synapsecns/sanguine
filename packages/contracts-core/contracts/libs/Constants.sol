@@ -13,6 +13,7 @@ uint256 constant SNAPSHOT_MAX_STATES = 32;
 // ══════════════════════════════ STATEMENT SALTS ══════════════════════════════
 /// @dev Salts for signing various statements
 bytes32 constant ATTESTATION_SALT = keccak256("ATTESTATION_SALT");
+bytes32 constant ATTESTATION_REPORT_SALT = keccak256("ATTESTATION_REPORT_SALT");
 bytes32 constant SNAPSHOT_SALT = keccak256("SNAPSHOT_SALT");
 // ══════════════════════════════════ ORIGIN ═══════════════════════════════════
 /// @dev Root for an empty Origin Merkle Tree.
