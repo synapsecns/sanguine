@@ -125,7 +125,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		},
 		RefreshIntervalSeconds: 5,
 		ScribePort:             uint32(scribeClient.ScribeClient.Port),
-		ScribeUrl:              scribeClient.ScribeClient.URL,
+		ScribeURL:              scribeClient.ScribeClient.URL,
 	}
 	notaryTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -145,7 +145,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		},
 		RefreshIntervalSeconds: 5,
 		ScribePort:             uint32(scribeClient.ScribeClient.Port),
-		ScribeUrl:              scribeClient.ScribeClient.URL,
+		ScribeURL:              scribeClient.ScribeClient.URL,
 	}
 	encodedNotaryTestConfig, err := notaryTestConfig.Encode()
 	Nil(u.T(), err)

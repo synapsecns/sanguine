@@ -85,7 +85,7 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error
 
 	scribeClient := client.ScribeClient{
 		Port: uint16(cfg.ScribePort),
-		URL:  cfg.ScribeUrl,
+		URL:  cfg.ScribeURL,
 	}
 
 	// Scribe gRPC setup.
@@ -99,9 +99,10 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error
 	return notary, nil
 }
 
+//nolint:cyclop
 func (n Notary) streamLogs(ctx context.Context) error {
 	fromBlockStr := strconv.FormatUint(n.lastSummitBlock, 16)
-	//fromBlockStr := "0"
+	// fromBlockStr := "0"
 	logger.Infof("Notary streaming Summit logs starting from block: %d", n.lastSummitBlock)
 	stream, err := n.scribeGrpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
@@ -143,7 +144,7 @@ func (n Notary) streamLogs(ctx context.Context) error {
 			attestation, err := n.logToAttestation(*log)
 			if err != nil {
 				logger.Errorf("Notary stream logs could not convert to attestation due to err: %v", err)
-				//return fmt.Errorf("could not convert to attestation: %w", err)
+				// return fmt.Errorf("could not convert to attestation: %w", err)
 				continue
 			}
 			if attestation == nil {

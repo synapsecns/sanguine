@@ -31,7 +31,7 @@ type AgentConfig struct {
 	// ScribePort is the scribe port
 	ScribePort uint32 `yaml:"scribe_port,omitempty"`
 	// ScribePUrl is the scribe port
-	ScribeUrl string `yaml:"scribe_url,omitempty"`
+	ScribeURL string `yaml:"scribe_url,omitempty"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
