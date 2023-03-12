@@ -2,8 +2,19 @@ package notary
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
+	"strconv"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
+	"github.com/synapsecns/sanguine/services/scribe/client"
+	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -25,12 +36,15 @@ type Notary struct {
 	refreshInterval         time.Duration
 	summitMyLatestStates    map[uint32]types.State
 	summitGuardLatestStates map[uint32]types.State
+	summitParser            summit.Parser
+	//nolint:unused
+	lastBlock uint64
 }
 
 // NewNotary creates a new notary.
 //
 //nolint:cyclop
-func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error) {
+func NewNotary(ctx context.Context, cfg config.AgentConfig, scribeClient client.ScribeClient) (_ Notary, err error) {
 	notary := Notary{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
@@ -64,7 +78,94 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error
 	notary.summitMyLatestStates = make(map[uint32]types.State, len(notary.domains))
 	notary.summitGuardLatestStates = make(map[uint32]types.State, len(notary.domains))
 
+	notary.summitParser, err = summit.NewParser(common.HexToAddress(notary.summitDomain.Config().SummitAddress))
+	if err != nil {
+		return Notary{}, fmt.Errorf("could not create summit parser: %w", err)
+	}
+
+	// Scribe gRPC setup.
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return Notary{}, fmt.Errorf("could not dial grpc: %w", err)
+	}
+
+	grpcClient := pbscribe.NewScribeServiceClient(conn)
+
+	// Ensure that gRPC is up and running.
+	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
+	if err != nil {
+		return Notary{}, fmt.Errorf("could not check: %w", err)
+	}
+	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
+		return Notary{}, fmt.Errorf("not serving: %s", healthCheck.Status)
+	}
+
 	return notary, nil
+}
+
+//nolint:unused
+func (n Notary) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient) error {
+	// TODO: How to set your `fromBlock` without a database?
+	fromBlock := strconv.FormatUint(n.lastBlock, 10)
+
+	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
+		Filter: &pbscribe.LogFilter{
+			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: n.summitDomain.Config().SummitAddress}},
+			ChainId:         n.summitDomain.Config().DomainID,
+		},
+		FromBlock: fromBlock,
+		ToBlock:   "latest",
+	})
+	if err != nil {
+		return fmt.Errorf("could not stream logs: %w", err)
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			response, err := stream.Recv()
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
+			if err != nil {
+				return fmt.Errorf("could not receive: %w", err)
+			}
+
+			log := response.Log.ToLog()
+			if log == nil {
+				return fmt.Errorf("could not convert to log")
+			}
+
+			attestation, err := n.logToAttestation(*log)
+			if err != nil {
+				return fmt.Errorf("could not convert to attestation: %w", err)
+			}
+			if attestation == nil {
+				return fmt.Errorf("could not convert to attestation")
+			}
+
+			n.lastBlock = log.BlockNumber
+
+			// Do your stuff with the attestation here!
+		}
+	}
+}
+
+//nolint:unused
+func (n Notary) logToAttestation(log ethTypes.Log) (*types.Attestation, error) {
+	attestationEvent, ok := n.summitParser.ParseAttestationSaved(log)
+	if !ok {
+		return nil, fmt.Errorf("could not parse attestation")
+	}
+
+	attestation, err := types.DecodeAttestation(attestationEvent)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode attestation: %w", err)
+	}
+
+	return &attestation, nil
 }
 
 //nolint:cyclop
