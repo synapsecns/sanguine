@@ -160,6 +160,16 @@ contract OriginTest is SynapseTest, SynapseProofs {
         assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");
     }
 
+    function test_verifySnapshot_valid(
+        uint32 nonce,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) public {
+        // Use empty mutation mask
+        OriginStateMask memory mask;
+        test_verifySnapshot_existingNonce(nonce, mask, statesAmount, stateIndex);
+    }
+
     function test_verifySnapshot_existingNonce(
         uint32 nonce,
         OriginStateMask memory mask,
@@ -180,6 +190,12 @@ contract OriginTest is SynapseTest, SynapseProofs {
         rs.origin = DOMAIN_LOCAL;
         // Remaining fields are fuzzed
         _verifySnapshot(rs, false, statesAmount, stateIndex);
+    }
+
+    function test_verifyAttestation_valid(Random memory random, uint32 nonce) public {
+        // Use empty mutation mask
+        OriginStateMask memory mask;
+        test_verifyAttestation_existingNonce(random, nonce, mask);
     }
 
     function test_verifyAttestation_existingNonce(
