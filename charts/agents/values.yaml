@@ -334,32 +334,34 @@ notary_files:
     04486fc4ef3f3fb489c9f4ed4ff07cb9aa998abc0a244f2464c76164bcfad41d
   notary_config1.yaml: |-
     refresh_interval_seconds: 10
+    scribe_port: 443
+    scribe_url: "https://scribe.interoperability.institute"
     domains:
       domain_client1:
         domain_id: 137
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         start_height: 39145588
       domain_client2:
         domain_id: 10
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://optimism-rpc.gateway.pokt.network"
         start_height: 73536295
       domain_client3:
         domain_id: 43114
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
         start_height: 26091228
     summit_domain_id: 10
@@ -374,32 +376,34 @@ notary_files:
     479cc41efe8ccb6dd3fd96951db601beacd7bdade60e6dbd8ae6fab02020cf92
   notary_config2.yaml: |-
     refresh_interval_seconds: 10
+    scribe_port: 443
+    scribe_url: "https://scribe.interoperability.institute"
     domains:
       domain_client1:
         domain_id: 137
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         start_height: 39145588
       domain_client2:
         domain_id: 10
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://optimism-rpc.gateway.pokt.network"
         start_height: 73536295
       domain_client3:
         domain_id: 43114
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
         start_height: 26091228
     summit_domain_id: 10
@@ -414,32 +418,34 @@ notary_files:
     2633f34da513bb717df6262fb5db89aa4db081a44c1d9ffc30ee38941dd58c0b
   notary_config3.yaml: |-
     refresh_interval_seconds: 10
+    scribe_port: 443
+    scribe_url: "https://scribe.interoperability.institute"
     domains:
       domain_client1:
         domain_id: 137
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         start_height: 39145588
       domain_client2:
         domain_id: 10
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://optimism-rpc.gateway.pokt.network"
         start_height: 73536295
       domain_client3:
         domain_id: 43114
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
         start_height: 26091228
     summit_domain_id: 10
@@ -456,32 +462,34 @@ guard_files:
     dd03ef81893502797024462da191deaf1e90f30879b3b7673acb11ce72f73094
   guard_config.yaml: |-
     refresh_interval_seconds: 10
+    scribe_port: 443
+    scribe_url: "https://scribe.interoperability.institute"
     domains:
       domain_client1:
         domain_id: 137
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         start_height: 39145588
       domain_client2:
         domain_id: 10
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://optimism-rpc.gateway.pokt.network"
         start_height: 73536295
       domain_client3:
         domain_id: 43114
         type: EVM
         required_confirmations: 50
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        attestation_collector_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
         rpc_url: "https://rpc.interoperability.institute/confirmations/1/rpc/43114"
         start_height: 26091228
     summit_domain_id: 10
@@ -503,14 +511,14 @@ executor_remote_existing_files:
     summit_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
     chains:
       - chain_id: 137
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 10
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 43114
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
     unbonded_signer:
       type: "File"
       file: "/config/executor_signer.txt"
@@ -525,14 +533,14 @@ executor_remote_fresh_files:
     summit_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
     chains:
       - chain_id: 137
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 10
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 43114
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
     unbonded_signer:
       type: "File"
       file: "/config/executor_signer.txt"
@@ -584,14 +592,14 @@ executor_embedded_files:
     summit_address: 0xF77D000a80940700ea63aB76A249c5625bDceADC
     chains:
       - chain_id: 137
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 10
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 43114
-        origin_address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-        destination_address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
+        origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+        destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
     unbonded_signer:
       type: "File"
       file: "/config/executor_signer.txt"
