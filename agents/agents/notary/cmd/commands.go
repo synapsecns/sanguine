@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/synapsecns/sanguine/services/scribe/client"
 	"sync/atomic"
 	"time"
 
@@ -71,13 +70,9 @@ var NotaryRunCommand = &cli.Command{
 		for shouldRetryAtomic.Load() {
 			shouldRetryAtomic.Store(false)
 
-			var scribeClient client.ScribeClient
-
 			g, _ := errgroup.WithContext(c.Context)
 
-			// TODO: Set up scribe client.
-
-			notary, err := notary.NewNotary(c.Context, notaryConfig, scribeClient)
+			notary, err := notary.NewNotary(c.Context, notaryConfig)
 			if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
 				return fmt.Errorf("failed to create notary: %w", err)
 			}

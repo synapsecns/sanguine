@@ -124,6 +124,8 @@ func (u *NotarySuite) TestNotaryE2E() {
 			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
+		ScribePort:             uint32(scribeClient.ScribeClient.Port),
+		ScribeURL:              scribeClient.ScribeClient.URL,
 	}
 	notaryTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
@@ -142,6 +144,8 @@ func (u *NotarySuite) TestNotaryE2E() {
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
 		RefreshIntervalSeconds: 5,
+		ScribePort:             uint32(scribeClient.ScribeClient.Port),
+		ScribeURL:              scribeClient.ScribeClient.URL,
 	}
 	encodedNotaryTestConfig, err := notaryTestConfig.Encode()
 	Nil(u.T(), err)
@@ -227,7 +231,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, scribeClient.ScribeClient)
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
 
 	go func() {
@@ -275,12 +279,12 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 	Greater(u.T(), len(retrievedAtt), 0)
 
-	/*u.Eventually(func() bool {
+	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
 		attestationsAmount, err := u.DestinationContract.AttestationsAmount(&bind.CallOpts{Context: u.GetTestContext()})
 		Nil(u.T(), err)
 
 		return attestationsAmount != nil && attestationsAmount.Uint64() >= uint64(1)
-	})*/
+	})
 }
