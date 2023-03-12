@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"strconv"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
@@ -11,9 +15,6 @@ import (
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"io"
-	"strconv"
-	"time"
 
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains"
@@ -36,7 +37,8 @@ type Notary struct {
 	summitMyLatestStates    map[uint32]types.State
 	summitGuardLatestStates map[uint32]types.State
 	summitParser            summit.Parser
-	lastBlock               uint64
+	//nolint:unused
+	lastBlock uint64
 }
 
 // NewNotary creates a new notary.
@@ -101,6 +103,7 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, scribeClient client.
 	return notary, nil
 }
 
+//nolint:unused
 func (n Notary) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient) error {
 	// TODO: How to set your `fromBlock` without a database?
 	fromBlock := strconv.FormatUint(n.lastBlock, 10)
@@ -138,7 +141,6 @@ func (n Notary) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServic
 			attestation, err := n.logToAttestation(*log)
 			if err != nil {
 				return fmt.Errorf("could not convert to attestation: %w", err)
-
 			}
 			if attestation == nil {
 				return fmt.Errorf("could not convert to attestation")
@@ -147,11 +149,11 @@ func (n Notary) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServic
 			n.lastBlock = log.BlockNumber
 
 			// Do your stuff with the attestation here!
-
 		}
 	}
 }
 
+//nolint:unused
 func (n Notary) logToAttestation(log ethTypes.Log) (*types.Attestation, error) {
 	attestationEvent, ok := n.summitParser.ParseAttestationSaved(log)
 	if !ok {

@@ -2,14 +2,15 @@ package notary_test
 
 import (
 	"context"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
-	"github.com/synapsecns/sanguine/services/scribe/client"
-	scribeConfig2 "github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/sanguine/services/scribe/node"
 	"math/big"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/client"
+	scribeConfig2 "github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/node"
 
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
@@ -29,6 +30,7 @@ func RemoveNotaryTempFile(t *testing.T, fileName string) {
 	Nil(t, err)
 }
 
+//nolint:maintidx
 func (u *NotarySuite) TestNotaryE2E() {
 	testDone := false
 	defer func() {
