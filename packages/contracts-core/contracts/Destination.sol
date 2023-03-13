@@ -67,11 +67,10 @@ contract Destination is
         external
         returns (bool wasAccepted)
     {
-        // This will revert if payload is not an attestation, or signer is not an active Notary
-        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
-            _attPayload,
-            _attSignature
-        );
+        // This will revert if payload is not an attestation
+        Attestation att = _wrapAttestation(_attPayload);
+        // This will revert if signer is not an active Notary
+        (uint32 domain, address notary) = _verifyAttestation(att, _attSignature);
         // Check that Notary is active on local domain
         require(domain == localDomain, "Wrong Notary domain");
         // This will revert if snapshot root has been previously submitted
@@ -86,11 +85,10 @@ contract Destination is
         bytes memory _arSignature,
         bytes memory _attSignature
     ) external returns (bool wasAccepted) {
-        // This will revert if payload is not an attestation report, or report signer is not an active Guard
-        (AttestationReport report, address guard) = _verifyAttestationReport(
-            _arPayload,
-            _arSignature
-        );
+        // This will revert if payload is not an attestation report
+        AttestationReport report = _wrapAttestationReport(_arPayload);
+        // This will revert if the report signer is not an active Guard
+        address guard = _verifyAttestationReport(report, _arSignature);
         // This will revert if attestation signer is not an active Notary
         (uint32 domain, address notary) = _verifyAttestation(report.attestation(), _attSignature);
         _openDispute(guard, domain, notary);
@@ -170,13 +168,9 @@ contract Destination is
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
         bytes32 originRoot = MerkleLib.branchRoot(_msgLeaf, _originProof, _header.nonce() - 1);
-        // Reconstruct left sub-leaf of the Origin State: (merkleRoot, originDomain)
-        bytes32 leftLeaf = StateLib.leftLeaf(originRoot, _header.origin());
         // Reconstruct Snapshot Merkle Root using the snapshot proof
-        // Index of "leftLeaf" is twice the state position in the snapshot
-        /// @dev We ask to provide state index instead of "leftLeaf" index to enforce
-        /// choice of State's left leaf for root reconstruction
-        bytes32 snapshotRoot = MerkleLib.branchRoot(leftLeaf, _snapProof, _stateIndex << 1);
+        // This will revert if state index is out of range
+        bytes32 snapshotRoot = _snapshotRoot(originRoot, _header.origin(), _snapProof, _stateIndex);
         // Fetch the attestation data for the snapshot root
         destAtt = _rootAttestation(snapshotRoot);
         // Check if snapshot root has been submitted
