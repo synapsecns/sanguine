@@ -60,7 +60,7 @@ func (s snapshot) SnapshotRootAndProofs() ([32]byte, [][][]byte, error) {
 	var snapshotRootB32 [32]byte
 	copy(snapshotRootB32[:], snapshotRoot)
 
-	proofs := make([][][]byte, len(s.states))
+	proofs := make([][][]byte, len(s.states)*2)
 	for i := 0; i < len(s.states)*2; i += 2 {
 		proofs[i], err = tree.MerkleProof(uint32(i), uint32(len(s.states)*2))
 		if err != nil {

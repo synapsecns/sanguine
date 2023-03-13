@@ -14,7 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/node"
 	"math/big"
-	"time"
 )
 
 func (e *ExecutorSuite) TestExecutor() {
@@ -193,5 +192,6 @@ func (e *ExecutorSuite) TestExecutor() {
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), destinationAttestation, destination, 1, 1)
 	e.Nil(err)
 
-	time.Sleep(60 * time.Second)
+	// time.Sleep(60 * time.Second)
+	// TODO: Make real.
 }
