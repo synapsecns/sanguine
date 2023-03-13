@@ -59,8 +59,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         (uint32 domain, address notary) = _verifyAttestation(att, _attSignature);
         // This will revert if payload is not a snapshot
         Snapshot snapshot = _wrapSnapshot(_snapPayload);
-        // This will revert if snapshot/attestation roots don't match
-        _verifySnapshotRoot(att, snapshot);
+        // This will revert if snapshot/attestation Merkle data doesn't match
+        _verifySnapshotMerkle(att, snapshot);
         // This will revert if state index is out of range
         State state = snapshot.state(_stateIndex);
         // This will revert if  state refers to another domain

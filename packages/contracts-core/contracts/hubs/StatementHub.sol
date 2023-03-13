@@ -111,14 +111,16 @@ abstract contract StatementHub is AgentRegistry, Versioned {
     }
 
     /**
-     * @dev Internal function to verify that snapshot root matches the root from Attestation.
+     * @dev Internal function to verify that snapshot and attestation has the same Merkle Data.
      * Reverts if any of these is true:
      *  - Attestation root is not equal to root derived from the snapshot.
+     *  - Attestation height is not equal to snapshot's height.
      * @param _att          Typed memory view over Attestation
      * @param _snapshot     Typed memory view over snapshot payload
      */
-    function _verifySnapshotRoot(Attestation _att, Snapshot _snapshot) internal pure {
+    function _verifySnapshotMerkle(Attestation _att, Snapshot _snapshot) internal pure {
         require(_att.root() == _snapshot.root(), "Incorrect snapshot root");
+        require(_att.height() == _snapshot.height(), "Incorrect snapshot height");
     }
 
     /**
