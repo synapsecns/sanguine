@@ -311,11 +311,41 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	index := big.NewInt(int64(*nonce - 1))
+	root := (*state).Root()
+	stateRootString := common.BytesToHash(root[:]).String()
+	origin := (*state).Origin()
+	stateNonce := (*state).Nonce()
+	stateMask := execTypes.DBState{
+		Root:    &stateRootString,
+		ChainID: &origin,
+		Nonce:   &stateNonce,
+	}
 
-	var proofB32 [32][32]byte
+	_, snapshotProof, _, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
+	if err != nil {
+		return false, fmt.Errorf("could not get state index: %w", err)
+	}
+
+	if snapshotProof == nil || stateIndex == nil {
+		return false, nil
+	}
+
+	var originProof [32][32]byte
 	for i, p := range proof {
-		copy(proofB32[i][:], p)
+		copy(originProof[i][:], p)
+	}
+
+	var snapshotProofBytes [][]byte
+	err = json.Unmarshal(*snapshotProof, &snapshotProofBytes)
+	if err != nil {
+		return false, fmt.Errorf("could not unmarshal proof: %w", err)
+	}
+
+	var snapshotProofB32 [][32]byte
+	for _, p := range snapshotProofBytes {
+		var p32 [32]byte
+		copy(p32[:], p)
+		snapshotProofB32 = append(snapshotProofB32, p32)
 	}
 
 	b := &backoff.Backoff{
@@ -336,7 +366,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 				return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
 			}
 
-			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, proofB32, index)
+			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)))
 			if err != nil {
 				timeout = b.Duration()
 				logger.Errorf("got error %v when trying to execute the message on chain %d. trying again in %f seconds", err, message.DestinationDomain(), timeout.Seconds())
@@ -411,7 +441,7 @@ func (e Executor) verifyStateMerkleProof(ctx context.Context, state types.State)
 		ChainID: &chainID,
 	}
 
-	snapshotRoot, proof, treeHeight, err := e.executorDB.GetStateMetadata(ctx, stateMask)
+	snapshotRoot, proof, treeHeight, _, err := e.executorDB.GetStateMetadata(ctx, stateMask)
 	if err != nil {
 		return false, fmt.Errorf("could not get snapshot root: %w", err)
 	}
@@ -420,7 +450,7 @@ func (e Executor) verifyStateMerkleProof(ctx context.Context, state types.State)
 		return false, nil
 	}
 
-	leaf, err := state.Hash()
+	leaf, _, err := state.SubLeaves()
 	if err != nil {
 		return false, fmt.Errorf("could not hash state: %w", err)
 	}
@@ -431,7 +461,7 @@ func (e Executor) verifyStateMerkleProof(ctx context.Context, state types.State)
 		return false, fmt.Errorf("could not unmarshal proof: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], state.Nonce()-1, proofBytes, *treeHeight)
+	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], (state.Nonce()-1)*2, proofBytes, (*treeHeight)+1)
 
 	return inTree, nil
 }
