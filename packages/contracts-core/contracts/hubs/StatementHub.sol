@@ -4,7 +4,8 @@ pragma solidity 0.8.17;
 import { Attestation, AttestationLib } from "../libs/Attestation.sol";
 import { Snapshot, SnapshotLib } from "../libs/Snapshot.sol";
 import { AttestationReport, AttestationReportLib } from "../libs/AttestationReport.sol";
-import { StateReport, StateReportLib } from "../libs/StateReport.sol";
+import { MerkleLib } from "../libs/Merkle.sol";
+import { StateLib, StateReport, StateReportLib } from "../libs/StateReport.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "../system/AgentRegistry.sol";
 import { Versioned } from "../Version.sol";
@@ -207,5 +208,31 @@ abstract contract StatementHub is AgentRegistry, Versioned {
         // This will revert if payload is not a formatted snapshot
         snapshot = _snapPayload.castToSnapshot();
         require(_att.root() == snapshot.root(), "Incorrect snapshot root");
+    }
+
+    /**
+     * @dev Reconstructs Snapshot merkle Root from State Merkle Data (root + origin domain)
+     * and proof of inclusion of State Merkle Data (aka State "left sub-leaf") in Snapshot Merkle Tree.
+     * Reverts if any of these is true:
+     *  - State index is out of range.
+     * @param _originRoot   Root of Origin Merkle Tree
+     * @param _origin       Domain of Origin chain
+     * @param _snapProof    Proof of inclusion of State Merkle Data into Snapshot Merkle Tree
+     * @param _stateIndex   Index of Origin State in the Snapshot
+     */
+    function _snapshotRoot(
+        bytes32 _originRoot,
+        uint32 _origin,
+        bytes32[] memory _snapProof,
+        uint256 _stateIndex
+    ) internal pure returns (bytes32 snapshotRoot) {
+        // Index of "leftLeaf" is twice the state position in the snapshot
+        uint256 _leftLeafIndex = _stateIndex << 1;
+        // Check that "leftLeaf" index fits into Merkle Tree with specified height
+        require(_leftLeafIndex < (1 << _snapProof.length), "State index out of range");
+        // Reconstruct left sub-leaf of the Origin State: (originRoot, originDomain)
+        bytes32 leftLeaf = StateLib.leftLeaf(_originRoot, _origin);
+        // Reconstruct snapshot root using proof of inclusion
+        return MerkleLib.branchRoot(leftLeaf, _snapProof, _stateIndex << 1);
     }
 }

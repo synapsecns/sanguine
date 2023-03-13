@@ -170,13 +170,9 @@ contract Destination is
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
         bytes32 originRoot = MerkleLib.branchRoot(_msgLeaf, _originProof, _header.nonce() - 1);
-        // Reconstruct left sub-leaf of the Origin State: (merkleRoot, originDomain)
-        bytes32 leftLeaf = StateLib.leftLeaf(originRoot, _header.origin());
         // Reconstruct Snapshot Merkle Root using the snapshot proof
-        // Index of "leftLeaf" is twice the state position in the snapshot
-        /// @dev We ask to provide state index instead of "leftLeaf" index to enforce
-        /// choice of State's left leaf for root reconstruction
-        bytes32 snapshotRoot = MerkleLib.branchRoot(leftLeaf, _snapProof, _stateIndex << 1);
+        // This will revert if state index is out of range
+        bytes32 snapshotRoot = _snapshotRoot(originRoot, _header.origin(), _snapProof, _stateIndex);
         // Fetch the attestation data for the snapshot root
         destAtt = _rootAttestation(snapshotRoot);
         // Check if snapshot root has been submitted
