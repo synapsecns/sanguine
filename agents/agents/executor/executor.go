@@ -335,13 +335,6 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		copy(originProof[i][:], p)
 	}
 
-	//var snapshotProofStrings []string
-	//
-	//err = json.Unmarshal(*snapshotProof, &snapshotProofStrings)
-	//if err != nil {
-	//	return false, fmt.Errorf("could not unmarshal snapshot proof: %w", err)
-	//}
-
 	var snapshotProofBytes [][]byte
 	err = json.Unmarshal(*snapshotProof, &snapshotProofBytes)
 	if err != nil {

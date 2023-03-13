@@ -33,6 +33,7 @@ func RemoveAgentsTempFile(t *testing.T, fileName string) {
 	Nil(t, err)
 }
 
+//nolint:cyclop
 func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	testDone := false
 	defer func() {
@@ -375,5 +376,4 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		u.Greater(countAfterIncrement.Uint64(), countBeforeIncrement.Uint64())
 		return false
 	})
-	//time.Sleep(60 * time.Second)
 }
