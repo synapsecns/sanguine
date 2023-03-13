@@ -254,6 +254,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
         uint256 stateIndex = bound(random.nextUint256(), 0, statesAmount - 1);
         RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
         (bytes memory snapshot, ) = rawSnap.castToSnapshot();
+        (bytes memory state, ) = rawState.castToState();
         // Use random metadata
         RawAttestation memory ra = random.nextAttestation(rawSnap, random.nextUint32());
         (bytes memory attestation, ) = ra.castToAttestation();
@@ -261,7 +262,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(stateIndex, snapshot, attestation, signature);
+            emit InvalidAttestationState(stateIndex, state, attestation, signature);
             _expectAgentSlashed(domain, notary);
         }
         vm.recordLogs();
