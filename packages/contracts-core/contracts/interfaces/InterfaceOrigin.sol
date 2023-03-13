@@ -65,4 +65,20 @@ interface InterfaceOrigin {
         bytes memory _snapPayload,
         bytes memory _snapSignature
     ) external returns (bool isValid);
+
+    /**
+     * @notice Verifies a snapshot report signed by a Guard.
+     *  - Does nothing, if the report is valid (if the reported snapshot is invalid).
+     *  - Slashes the Guard otherwise (meaning the reported snapshot is valid, making the report invalid).
+     * @dev Will revert if any of these is true:
+     *  - Report payload is not properly formatted.
+     *  - Report signer is not an active Guard.
+     * @param _srPayload        Raw payload with StateReport data
+     * @param _srSignature      Guard signature for the report
+     * @return isValid          Whether the provided report is valid.
+     *                          Guard is slashed, if return value is FALSE.
+     */
+    function verifyStateReport(bytes memory _srPayload, bytes memory _srSignature)
+        external
+        returns (bool isValid);
 }

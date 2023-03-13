@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { MAX_MESSAGE_BODY_BYTES, SYSTEM_ROUTER } from "./libs/Constants.sol";
 import { HeaderLib, MessageLib } from "./libs/Message.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
-import { Snapshot } from "./libs/Snapshot.sol";
+import { StateReport } from "./libs/StateReport.sol";
 import { StateLib } from "./libs/State.sol";
 import { Tips, TipsLib } from "./libs/Tips.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
@@ -85,6 +85,22 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
             emit InvalidSnapshotState(_stateIndex, _snapPayload, _snapSignature);
             // Slash Agent and trigger a hook to send a slashAgent system call
             _slashAgent(domain, agent, true);
+        }
+    }
+
+    /// @inheritdoc InterfaceOrigin
+    function verifyStateReport(bytes memory _srPayload, bytes memory _srSignature)
+        external
+        returns (bool isValid)
+    {
+        // This will revert if payload is not a snapshot report, or signer is not an active Guard
+        (StateReport report, address guard) = _verifyStateReport(_srPayload, _srSignature);
+        // Report is valid, if the reported state is invalid
+        isValid = !_isValidState(report.state());
+        if (!isValid) {
+            emit InvalidStateReport(_srPayload, _srSignature);
+            // Slash Agent and trigger a hook to send a slashAgent system call
+            _slashAgent(0, guard, true);
         }
     }
 

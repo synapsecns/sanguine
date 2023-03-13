@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import { Attestation, AttestationLib } from "../libs/Attestation.sol";
 import { Snapshot, SnapshotLib } from "../libs/Snapshot.sol";
 import { AttestationReport, AttestationReportLib } from "../libs/AttestationReport.sol";
+import { StateReport, StateReportLib } from "../libs/StateReport.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "../system/AgentRegistry.sol";
 import { Versioned } from "../Version.sol";
@@ -23,8 +24,9 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
  */
 abstract contract StatementHub is AgentRegistry, Versioned {
     using AttestationLib for bytes;
-    using SnapshotLib for bytes;
     using AttestationReportLib for bytes;
+    using SnapshotLib for bytes;
+    using StateReportLib for bytes;
 
     // solhint-disable-next-line no-empty-blocks
     constructor() Versioned("0.0.3") {}
@@ -162,6 +164,30 @@ abstract contract StatementHub is AgentRegistry, Versioned {
         // This will revert if signer is not an active agent
         (domain, agent) = _recoverAgent(_snapshot.hash(), _snapSignature);
         // Guards and Notaries for all domains could sign Snapshots, no further checks are needed.
+    }
+
+    /**
+     * @dev Internal function to verify the signed snapshot report payload.
+     * Reverts if any of these is true:
+     *  - Report payload is not properly formatted StateReport.
+     *  - Report signer is not an active Guard.
+     * @param _srPayload        Raw payload with report data
+     * @param _srSignature      Guard signature for the report
+     * @return report           Typed memory view over report payload
+     * @return guard            Guard that signed the report
+     */
+    function _verifyStateReport(bytes memory _srPayload, bytes memory _srSignature)
+        internal
+        view
+        returns (StateReport report, address guard)
+    {
+        // This will revert if payload is not a formatted snapshot report
+        report = _srPayload.castToStateReport();
+        // This will revert if signer is not an active agent
+        uint32 domain;
+        (domain, guard) = _recoverAgent(report.hash(), _srSignature);
+        // Report signer needs to be a Guard, not a Notary
+        require(domain == 0, "Signer is not a Guard");
     }
 
     /**
