@@ -13,12 +13,14 @@ import { MessageRecipientMock } from "../mocks/client/MessageRecipientMock.t.sol
 import { fakeSnapshot } from "../utils/libs/FakeIt.t.sol";
 import {
     AttestationFlag,
+    StateFlag,
     RawAttestation,
     RawAttestationReport,
     RawHeader,
     RawMessage,
     RawSnapshot,
     RawState,
+    RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
@@ -115,6 +117,76 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         InterfaceDestination(destination).submitAttestationReport(
             arPayload,
             arSignature,
+            attSignature
+        );
+    }
+
+    function test_submitStateReport(
+        RawState memory rs,
+        RawAttestation memory ra,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) public {
+        address reporter = makeAddr("Reporter");
+        // Make sure statesAmount, stateIndex are valid entires
+        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
+        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+        ra = createAttestation(rs, ra, statesAmount, stateIndex);
+        // Create Notary signature for the snapshot
+        address notary = domains[DOMAIN_LOCAL].agent;
+        // fakeSnapshot is deterministic, so this will be the same snapshot
+        (bytes memory snapshot, ) = fakeSnapshot(rs, statesAmount, stateIndex).castToSnapshot();
+        bytes memory snapSignature = signSnapshot(notary, snapshot);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rs);
+        (bytes memory srPayload, ) = rawSR.castToStateReport();
+        bytes memory srSignature = signStateReport(guard, srPayload);
+        // TODO: complete the test when Dispute is implemented
+        vm.expectEmit(true, true, true, true);
+        emit Dispute(guard, DOMAIN_LOCAL, notary);
+        vm.prank(reporter);
+        InterfaceDestination(destination).submitStateReport(
+            stateIndex,
+            srPayload,
+            srSignature,
+            snapshot,
+            snapSignature
+        );
+    }
+
+    function test_submitStateReportWithProof(
+        RawState memory rs,
+        RawAttestation memory ra,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) public {
+        address reporter = makeAddr("Reporter");
+        // Make sure statesAmount, stateIndex are valid entires
+        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
+        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+        ra = createAttestation(rs, ra, statesAmount, stateIndex);
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, ) = ra.castToAttestation();
+        bytes memory attSignature = signAttestation(notary, attPayload);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rs);
+        (bytes memory srPayload, ) = rawSR.castToStateReport();
+        bytes memory srSignature = signStateReport(guard, srPayload);
+        // Generate Snapshot Proof
+        bytes32[] memory snapProof = genSnapshotProof(stateIndex);
+        // TODO: complete the test when Dispute is implemented
+        vm.expectEmit(true, true, true, true);
+        emit Dispute(guard, DOMAIN_LOCAL, notary);
+        vm.prank(reporter);
+        InterfaceDestination(destination).submitStateReportWithProof(
+            stateIndex,
+            srPayload,
+            srSignature,
+            snapProof,
+            attPayload,
             attSignature
         );
     }
