@@ -44,4 +44,13 @@ contract DestinationMock is
         bytes memory _snapPayload,
         bytes memory _snapSignature
     ) external returns (bool wasAccepted) {}
+
+    function submitStateReportWithProof(
+        uint256 _stateIndex,
+        bytes memory _srPayload,
+        bytes memory _srSignature,
+        bytes32[] memory _snapProof,
+        bytes memory _attPayload,
+        bytes memory _attSignature
+    ) external returns (bool wasAccepted) {}
 }
