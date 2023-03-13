@@ -47,8 +47,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
 
     /// @inheritdoc InterfaceOrigin
     function verifyAttestation(
-        bytes memory _snapPayload,
         uint256 _stateIndex,
+        bytes memory _snapPayload,
         bytes memory _attPayload,
         bytes memory _attSignature
     ) external returns (bool isValid) {
@@ -70,8 +70,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
 
     /// @inheritdoc InterfaceOrigin
     function verifySnapshot(
-        bytes memory _snapPayload,
         uint256 _stateIndex,
+        bytes memory _snapPayload,
         bytes memory _snapSignature
     ) external returns (bool isValid) {
         // This will revert if payload is not a snapshot, or signer is not an active Agent

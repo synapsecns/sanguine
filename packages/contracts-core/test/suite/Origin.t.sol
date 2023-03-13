@@ -269,7 +269,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyAttestation(snapshot, stateIndex, attestation, signature),
+            InterfaceOrigin(origin).verifyAttestation(stateIndex, snapshot, attestation, signature),
             isValid,
             "!returnValue"
         );
@@ -302,7 +302,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
             emit AgentSlashed(DOMAIN_REMOTE, notary);
         }
         assertEq(
-            InterfaceOrigin(origin).verifySnapshot(snapshot, stateIndex, signature),
+            InterfaceOrigin(origin).verifySnapshot(stateIndex, snapshot, signature),
             isValid,
             "!returnValue"
         );
