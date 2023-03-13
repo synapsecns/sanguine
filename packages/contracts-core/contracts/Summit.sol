@@ -58,11 +58,10 @@ contract Summit is StatementHub, SnapshotHub, BondingManager, SummitEvents, Inte
         external
         returns (bool wasAccepted)
     {
-        // This will revert if payload is not a snapshot, or signer is not an active Agent
-        (Snapshot snapshot, uint32 domain, address agent) = _verifySnapshot(
-            _snapPayload,
-            _snapSignature
-        );
+        // This will revert if payload is not a snapshot
+        Snapshot snapshot = _wrapSnapshot(_snapPayload);
+        // This will revert if the signer is not an active Agent
+        (uint32 domain, address agent) = _verifySnapshot(snapshot, _snapSignature);
         if (domain == 0) {
             // This will revert if Guard has previously submitted
             // a fresher state than one in the snapshot.
@@ -85,11 +84,10 @@ contract Summit is StatementHub, SnapshotHub, BondingManager, SummitEvents, Inte
         external
         returns (bool isValid)
     {
-        // This will revert if payload is not an attestation, or signer is not an active Notary
-        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
-            _attPayload,
-            _attSignature
-        );
+        // This will revert if payload is not an attestation
+        Attestation att = _wrapAttestation(_attPayload);
+        // This will revert if the attestation signer is not an active Notary
+        (uint32 domain, address notary) = _verifyAttestation(att, _attSignature);
         isValid = _isValidAttestation(att);
         if (!isValid) {
             emit InvalidAttestation(_attPayload, _attSignature);
@@ -103,11 +101,10 @@ contract Summit is StatementHub, SnapshotHub, BondingManager, SummitEvents, Inte
         external
         returns (bool isValid)
     {
-        // This will revert if payload is not an attestation report, or signer is not an active Guard
-        (AttestationReport report, address guard) = _verifyAttestationReport(
-            _arPayload,
-            _arSignature
-        );
+        // This will revert if payload is not an attestation report
+        AttestationReport report = _wrapAttestationReport(_arPayload);
+        // This will revert if the report signer is not an active Guard
+        address guard = _verifyAttestationReport(report, _arSignature);
         // Report is valid, if the reported attestation is invalid
         isValid = !_isValidAttestation(report.attestation());
         if (!isValid) {

@@ -138,7 +138,7 @@ library SnapshotLib {
         pure
         returns (uint256)
     {
-        require(_index < getStatesAmount(_snapshot), "Out of range");
+        require(_index < getStatesAmount(_snapshot), "State index out of range");
         return _snapshot.statePtrs[_index];
     }
 
@@ -162,7 +162,7 @@ library SnapshotLib {
     function state(Snapshot _snapshot, uint256 _stateIndex) internal pure returns (State) {
         bytes29 _view = _snapshot.unwrap();
         uint256 indexFrom = _stateIndex * STATE_LENGTH;
-        require(indexFrom < _view.len(), "Out of range");
+        require(indexFrom < _view.len(), "State index out of range");
         return _view.slice({ _index: indexFrom, _len: STATE_LENGTH, newType: 0 }).castToState();
     }
 
