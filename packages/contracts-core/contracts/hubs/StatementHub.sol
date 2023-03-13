@@ -5,7 +5,7 @@ import { Attestation, AttestationLib } from "../libs/Attestation.sol";
 import { Snapshot, SnapshotLib } from "../libs/Snapshot.sol";
 import { AttestationReport, AttestationReportLib } from "../libs/AttestationReport.sol";
 import { MerkleLib } from "../libs/Merkle.sol";
-import { StateLib, StateReport, StateReportLib } from "../libs/StateReport.sol";
+import { State, StateLib, StateReport, StateReportLib } from "../libs/StateReport.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "../system/AgentRegistry.sol";
 import { Versioned } from "../Version.sol";
@@ -27,6 +27,7 @@ abstract contract StatementHub is AgentRegistry, Versioned {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
     using SnapshotLib for bytes;
+    using StateLib for bytes;
     using StateReportLib for bytes;
 
     // solhint-disable-next-line no-empty-blocks
@@ -208,6 +209,43 @@ abstract contract StatementHub is AgentRegistry, Versioned {
         // This will revert if payload is not a formatted snapshot
         snapshot = _snapPayload.castToSnapshot();
         require(_att.root() == snapshot.root(), "Incorrect snapshot root");
+    }
+
+    /**
+     * @dev Internal function to verify that snapshot roots match.
+     * Reverts if any of these is true:
+     *  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
+     *  - Snapshot Proof has length different to Attestation height.
+     *  - Snapshot Proof's first element does not match the State metadata.
+     *  - State payload is not properly formatted.
+     *  - State index is out of range.
+     * @param _att              Typed memory view over Attestation
+     * @param _stateIndex       Index of state in the snapshot
+     * @param _statePayload     State to check
+     * @param _snapProof        Raw payload with snapshot data
+     * @return state            Typed memory view over the provided state payload
+     */
+    function _verifySnapshotRoot(
+        Attestation _att,
+        uint256 _stateIndex,
+        bytes memory _statePayload,
+        bytes32[] memory _snapProof
+    ) internal pure returns (State state) {
+        // This will revert if payload is not a state payload
+        state = _statePayload.castToState();
+        // Snapshot proof length should match attestation height (and should be non-zero)
+        require(
+            _snapProof.length == _att.height() && _snapProof.length != 0,
+            "Incorrect proof length"
+        );
+        // Snapshot proof first element should match State metadata (aka "right sub-leaf")
+        (, bytes32 rightSubLeaf) = state.subLeafs();
+        require(_snapProof[0] == rightSubLeaf, "Incorrect proof[0]");
+        // Reconstruct Snapshot Merkle Root using the snapshot proof
+        // This will revert if state index is out of range
+        bytes32 snapshotRoot = _snapshotRoot(state.root(), state.origin(), _snapProof, _stateIndex);
+        // Snapshot root should match the attestation root
+        require(_att.root() == snapshotRoot, "Incorrect snapshot root");
     }
 
     /**

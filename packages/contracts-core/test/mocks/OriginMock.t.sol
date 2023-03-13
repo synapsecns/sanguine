@@ -26,6 +26,14 @@ contract OriginMock is StateHubMock, AgentRegistryMock, SystemContractMock, Inte
         bytes memory _attSignature
     ) external returns (bool isValid) {}
 
+    function verifyAttestationWithProof(
+        uint256 _stateIndex,
+        bytes memory _statePayload,
+        bytes32[] memory _snapProof,
+        bytes memory _attPayload,
+        bytes memory _attSignature
+    ) external returns (bool isValid) {}
+
     function verifySnapshot(
         uint256 _stateIndex,
         bytes memory _snapPayload,

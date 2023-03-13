@@ -46,6 +46,35 @@ interface InterfaceOrigin {
     ) external returns (bool isValid);
 
     /**
+     * @notice Verifies a state from the snapshot, that was used for the Notary-signed attestation.
+     * Does nothing, if the state is valid (matches the historical state of this contract).
+     * Slashes the attestation signer, if the state is invalid.
+     * @dev Will revert if any of these is true:
+     *  - Attestation payload is not properly formatted.
+     *  - Attestation signer is not an active Notary.
+     *  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
+     *  - Snapshot Proof has length different to Attestation height.
+     *  - Snapshot Proof's first element does not match the State metadata.
+     *  - State payload is not properly formatted.
+     *  - State index is out of range.
+     *  - State does not refer to this chain.
+     * @param _stateIndex       Index of state in the snapshot
+     * @param _statePayload     State to check
+     * @param _snapProof        Raw payload with snapshot data
+     * @param _attPayload       Raw payload with Attestation data
+     * @param _attSignature     Notary signature for the attestation
+     * @return isValid          Whether the requested state is valid.
+     *                          Notary is slashed, if return value is FALSE.
+     */
+    function verifyAttestationWithProof(
+        uint256 _stateIndex,
+        bytes memory _statePayload,
+        bytes32[] memory _snapProof,
+        bytes memory _attPayload,
+        bytes memory _attSignature
+    ) external returns (bool isValid);
+
+    /**
      * @notice Verifies a state from the snapshot (a list of states) signed by a Guard or a Notary.
      * Does nothing, if the state is valid (matches the historical state of this contract).
      * Slashes the snapshot signer, if the state is invalid.

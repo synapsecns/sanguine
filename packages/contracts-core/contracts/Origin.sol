@@ -77,6 +77,40 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
     }
 
     /// @inheritdoc InterfaceOrigin
+    function verifyAttestationWithProof(
+        uint256 _stateIndex,
+        bytes memory _statePayload,
+        bytes32[] memory _snapProof,
+        bytes memory _attPayload,
+        bytes memory _attSignature
+    ) external returns (bool isValid) {
+        // This will revert if payload is not an attestation, or signer is not an active Notary
+        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
+            _attPayload,
+            _attSignature
+        );
+        // This will revert if any of these is true:
+        //  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
+        //  - Snapshot Proof has length different to Attestation height.
+        //  - Snapshot Proof's first element does not match the State metadata.
+        //  - State payload is not properly formatted.
+        //  - State index is out of range.
+        State state = _verifySnapshotRoot(att, _stateIndex, _statePayload, _snapProof);
+        // This will revert, if state refers to another domain
+        isValid = _isValidState(state);
+        if (!isValid) {
+            emit InvalidAttestationState(
+                _stateIndex,
+                state.unwrap().clone(),
+                _attPayload,
+                _attSignature
+            );
+            // Slash Notary and trigger a hook to send a slashAgent system call
+            _slashAgent(domain, notary, true);
+        }
+    }
+
+    /// @inheritdoc InterfaceOrigin
     function verifySnapshot(
         uint256 _stateIndex,
         bytes memory _snapPayload,
