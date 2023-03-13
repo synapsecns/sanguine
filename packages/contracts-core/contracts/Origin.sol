@@ -60,7 +60,7 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         // This will revert if payload is not a snapshot
         Snapshot snapshot = _wrapSnapshot(_snapPayload);
         // This will revert if snapshot/attestation roots don't match
-        _verifySnapshotRoot(att, snapshot);
+        _verifySnapshotMerkle(att, snapshot);
         // This will revert if state index is out of range
         State state = snapshot.state(_stateIndex);
         // This will revert if  state refers to another domain
@@ -96,7 +96,7 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         //  - Snapshot Proof has length different to Attestation height.
         //  - Snapshot Proof's first element does not match the State metadata.
         //  - State index is out of range.
-        _verifySnapshotRoot(att, _stateIndex, state, _snapProof);
+        _verifySnapshotMerkle(att, _stateIndex, state, _snapProof);
         // This will revert, if state refers to another domain
         isValid = _isValidState(state);
         if (!isValid) {
