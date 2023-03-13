@@ -240,25 +240,45 @@ contract OriginTest is SynapseTest, SynapseProofs {
         if (mask.diffTimestamp) rs.timestamp = rs.timestamp ^ 1;
     }
 
+    function _prepareAttestation(Random memory random, RawState memory rawState)
+        internal
+        view
+        returns (
+            uint32 domain,
+            address notary,
+            uint256 stateIndex,
+            bytes memory snapshot,
+            RawAttestation memory ra
+        )
+    {
+        // Pick random domain expect for 0
+        uint256 domainIndex = bound(random.nextUint256(), 1, allDomains.length - 1);
+        domain = allDomains[domainIndex];
+        // Pick random Notary
+        uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
+        notary = domains[domain].agents[notaryIndex];
+        // Fuzz the position of invalid state in the snapshot
+        uint256 statesAmount = bound(random.nextUint256(), 1, SNAPSHOT_MAX_STATES);
+        stateIndex = bound(random.nextUint256(), 0, statesAmount - 1);
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
+        (snapshot, ) = rawSnap.castToSnapshot();
+        // Use random metadata
+        ra = random.nextAttestation(rawSnap, random.nextUint32());
+    }
+
     function _verifyAttestation(
         Random memory random,
         RawState memory rawState,
         bool isValid
     ) internal {
-        // Pick random domain expect for 0
-        uint256 domainIndex = bound(random.nextUint256(), 1, allDomains.length - 1);
-        uint32 domain = allDomains[domainIndex];
-        // Pick random Notary
-        uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
-        address notary = domains[domain].agents[notaryIndex];
-        // Fuzz the position of invalid state in the snapshot
-        uint256 statesAmount = bound(random.nextUint256(), 1, SNAPSHOT_MAX_STATES);
-        uint256 stateIndex = bound(random.nextUint256(), 0, statesAmount - 1);
-        RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
-        (bytes memory snapshot, ) = rawSnap.castToSnapshot();
+        (
+            uint32 domain,
+            address notary,
+            uint256 stateIndex,
+            bytes memory snapshot,
+            RawAttestation memory ra
+        ) = _prepareAttestation(random, rawState);
         (bytes memory state, ) = rawState.castToState();
-        // Use random metadata
-        RawAttestation memory ra = random.nextAttestation(rawSnap, random.nextUint32());
         (bytes memory attestation, ) = ra.castToAttestation();
         bytes memory signature = signAttestation(notary, attestation);
         if (!isValid) {
