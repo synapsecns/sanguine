@@ -36,4 +36,12 @@ contract DestinationMock is
         bytes memory _arSignature,
         bytes memory _attSignature
     ) external returns (bool wasAccepted) {}
+
+    function submitStateReport(
+        uint256 _stateIndex,
+        bytes memory _srPayload,
+        bytes memory _srSignature,
+        bytes memory _snapPayload,
+        bytes memory _snapSignature
+    ) external returns (bool wasAccepted) {}
 }

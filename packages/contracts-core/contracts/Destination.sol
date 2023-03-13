@@ -13,7 +13,13 @@ import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "./interfaces/InterfaceDestination.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
-import { Attestation, AttestationReport, StatementHub } from "./hubs/StatementHub.sol";
+import {
+    Attestation,
+    AttestationReport,
+    Snapshot,
+    StatementHub,
+    StateReport
+} from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
 contract Destination is
@@ -94,6 +100,31 @@ contract Destination is
         // This will revert if attestation signer is not an active Notary
         (uint32 domain, address notary) = _verifyAttestation(report.attestation(), _attSignature);
         // Guard submitted Report for an Attestation that a Notary signed => open dispute
+        _openDispute(guard, domain, notary);
+        return true;
+    }
+
+    /// @inheritdoc InterfaceDestination
+    function submitStateReport(
+        uint256 _stateIndex,
+        bytes memory _srPayload,
+        bytes memory _srSignature,
+        bytes memory _snapPayload,
+        bytes memory _snapSignature
+    ) external returns (bool wasAccepted) {
+        // This will revert if payload is not an attestation report, or report signer is not an active Guard
+        (StateReport report, address guard) = _verifyStateReport(_srPayload, _srSignature);
+        // This will revert if payload is not a snapshot, or signer is not an active Agent
+        (Snapshot snapshot, uint32 domain, address notary) = _verifySnapshot(
+            _snapPayload,
+            _snapSignature
+        );
+        // Snapshot signer needs to be a Notary, not a Guard
+        require(domain != 0, "Snapshot signer is not a Notary");
+        // Snapshot state and reported state need to be the same
+        // This will revert if state index is out of range
+        require(snapshot.state(_stateIndex).equals(report.state()), "States don't match");
+        // Guard submitted Report for a State that a Notary used in their signed snapshot => open dispute
         _openDispute(guard, domain, notary);
         return true;
     }
