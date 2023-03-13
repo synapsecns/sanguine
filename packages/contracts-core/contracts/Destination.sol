@@ -73,11 +73,10 @@ contract Destination is
         external
         returns (bool wasAccepted)
     {
-        // This will revert if payload is not an attestation, or signer is not an active Notary
-        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
-            _attPayload,
-            _attSignature
-        );
+        // This will revert if payload is not an attestation
+        Attestation att = _wrapAttestation(_attPayload);
+        // This will revert if signer is not an active Notary
+        (uint32 domain, address notary) = _verifyAttestation(att, _attSignature);
         // Check that Notary is active on local domain
         require(domain == localDomain, "Wrong Notary domain");
         // This will revert if snapshot root has been previously submitted
@@ -92,11 +91,10 @@ contract Destination is
         bytes memory _arSignature,
         bytes memory _attSignature
     ) external returns (bool wasAccepted) {
-        // This will revert if payload is not an attestation report, or report signer is not an active Guard
-        (AttestationReport report, address guard) = _verifyAttestationReport(
-            _arPayload,
-            _arSignature
-        );
+        // This will revert if payload is not an attestation report
+        AttestationReport report = _wrapAttestationReport(_arPayload);
+        // This will revert if the report signer is not an active Guard
+        address guard = _verifyAttestationReport(report, _arSignature);
         // This will revert if attestation signer is not an active Notary
         (uint32 domain, address notary) = _verifyAttestation(report.attestation(), _attSignature);
         // Guard submitted Report for an Attestation that a Notary signed => open dispute
@@ -112,13 +110,14 @@ contract Destination is
         bytes memory _snapPayload,
         bytes memory _snapSignature
     ) external returns (bool wasAccepted) {
-        // This will revert if payload is not an attestation report, or report signer is not an active Guard
-        (StateReport report, address guard) = _verifyStateReport(_srPayload, _srSignature);
-        // This will revert if payload is not a snapshot, or signer is not an active Agent
-        (Snapshot snapshot, uint32 domain, address notary) = _verifySnapshot(
-            _snapPayload,
-            _snapSignature
-        );
+        // This will revert if payload is not a state report
+        StateReport report = _wrapStateReport(_srPayload);
+        // This will revert if the report signer is not an active Guard
+        address guard = _verifyStateReport(report, _srSignature);
+        // This will revert if payload is not a snapshot
+        Snapshot snapshot = _wrapSnapshot(_snapPayload);
+        // This will revert if the snapshot signer is not an active Agent
+        (uint32 domain, address notary) = _verifySnapshot(snapshot, _snapSignature);
         // Snapshot signer needs to be a Notary, not a Guard
         require(domain != 0, "Snapshot signer is not a Notary");
         // Snapshot state and reported state need to be the same

@@ -53,13 +53,14 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         bytes memory _attPayload,
         bytes memory _attSignature
     ) external returns (bool isValid) {
-        // This will revert if payload is not an attestation, or signer is not an active Notary
-        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
-            _attPayload,
-            _attSignature
-        );
-        // This will revert if payload is not a snapshot, or snapshot/attestation roots don't match
-        Snapshot snapshot = _verifySnapshotRoot(att, _snapPayload);
+        // This will revert if payload is not an attestation
+        Attestation att = _wrapAttestation(_attPayload);
+        // This will revert if the attestation signer is not an active Notary
+        (uint32 domain, address notary) = _verifyAttestation(att, _attSignature);
+        // This will revert if payload is not a snapshot
+        Snapshot snapshot = _wrapSnapshot(_snapPayload);
+        // This will revert if snapshot/attestation roots don't match
+        _verifySnapshotRoot(att, snapshot);
         // This will revert if state index is out of range
         State state = snapshot.state(_stateIndex);
         // This will revert if  state refers to another domain
@@ -84,18 +85,18 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         bytes memory _attPayload,
         bytes memory _attSignature
     ) external returns (bool isValid) {
-        // This will revert if payload is not an attestation, or signer is not an active Notary
-        (Attestation att, uint32 domain, address notary) = _verifyAttestation(
-            _attPayload,
-            _attSignature
-        );
+        // This will revert if payload is not an attestation
+        Attestation att = _wrapAttestation(_attPayload);
+        // This will revert if the attestation signer is not an active Notary
+        (uint32 domain, address notary) = _verifyAttestation(att, _attSignature);
+        // This will revert if payload is not a state
+        State state = _wrapState(_statePayload);
         // This will revert if any of these is true:
         //  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
         //  - Snapshot Proof has length different to Attestation height.
         //  - Snapshot Proof's first element does not match the State metadata.
-        //  - State payload is not properly formatted.
         //  - State index is out of range.
-        State state = _verifySnapshotRoot(att, _stateIndex, _statePayload, _snapProof);
+        _verifySnapshotRoot(att, _stateIndex, state, _snapProof);
         // This will revert, if state refers to another domain
         isValid = _isValidState(state);
         if (!isValid) {
@@ -116,11 +117,10 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         bytes memory _snapPayload,
         bytes memory _snapSignature
     ) external returns (bool isValid) {
-        // This will revert if payload is not a snapshot, or signer is not an active Agent
-        (Snapshot snapshot, uint32 domain, address agent) = _verifySnapshot(
-            _snapPayload,
-            _snapSignature
-        );
+        // This will revert if payload is not a snapshot
+        Snapshot snapshot = _wrapSnapshot(_snapPayload);
+        // This will revert if the snapshot signer is not an active Agent
+        (uint32 domain, address agent) = _verifySnapshot(snapshot, _snapSignature);
         // This will revert, if state index is out of range, or state refers to another domain
         isValid = _isValidState(snapshot.state(_stateIndex));
         if (!isValid) {
@@ -135,8 +135,10 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         external
         returns (bool isValid)
     {
-        // This will revert if payload is not a snapshot report, or signer is not an active Guard
-        (StateReport report, address guard) = _verifyStateReport(_srPayload, _srSignature);
+        // This will revert if payload is not a state report
+        StateReport report = _wrapStateReport(_srPayload);
+        // This will revert if the report signer is not an active Guard
+        address guard = _verifyStateReport(report, _srSignature);
         // Report is valid, if the reported state is invalid
         isValid = !_isValidState(report.state());
         if (!isValid) {
