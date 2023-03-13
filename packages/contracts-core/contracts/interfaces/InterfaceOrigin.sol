@@ -59,8 +59,8 @@ interface InterfaceOrigin {
      *  - State index is out of range.
      *  - State does not refer to this chain.
      * @param _stateIndex       Index of state in the snapshot
-     * @param _statePayload     State to check
-     * @param _snapProof        Raw payload with snapshot data
+     * @param _statePayload     Raw payload with State data to check
+     * @param _snapProof        Proof of inclusion of provided State's Left Leaf into Snapshot Merkle Tree
      * @param _attPayload       Raw payload with Attestation data
      * @param _attSignature     Notary signature for the attestation
      * @return isValid          Whether the requested state is valid.
