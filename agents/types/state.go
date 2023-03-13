@@ -29,6 +29,8 @@ type State interface {
 
 	// Hash returns the hash of the state.
 	Hash() ([32]byte, error)
+	// SubLeaves returns the left and right sub-leaves of the state.
+	SubLeaves() (leftLeaf, rightLeaf [32]byte, err error)
 }
 
 type state struct {
@@ -71,7 +73,7 @@ func (s state) Timestamp() *big.Int {
 }
 
 func (s state) Hash() ([32]byte, error) {
-	leftLeaf, rightLeaf, err := s.subLeafs()
+	leftLeaf, rightLeaf, err := s.SubLeaves()
 	if err != nil {
 		return [32]byte{}, err
 	}
@@ -81,7 +83,7 @@ func (s state) Hash() ([32]byte, error) {
 	return crypto.Keccak256Hash(concatLeafs), nil
 }
 
-func (s state) subLeafs() (leftLeaf, rightLeaf [32]byte, err error) {
+func (s state) SubLeaves() (leftLeaf, rightLeaf [32]byte, err error) {
 	encodedState, err := EncodeState(s)
 	if err != nil {
 		return
