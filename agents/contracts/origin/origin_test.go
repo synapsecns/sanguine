@@ -51,7 +51,7 @@ func (h OriginSuite) TestDispatchTopic() {
 
 		eventType, ok := parser.EventType(item.Raw)
 		True(h.T(), ok)
-		Equal(h.T(), eventType, origin.DispatchEvent)
+		Equal(h.T(), eventType, origin.DispatchedEvent)
 
 		break
 	}
