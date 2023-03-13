@@ -40,18 +40,19 @@ func (s snapshot) States() []State {
 }
 
 func (s snapshot) SnapshotRootAndProofs() ([32]byte, [][][]byte, error) {
-	tree := merkle.NewTree(s.TreeHeight())
+	tree := merkle.NewTree(s.TreeHeight() + 1)
 
 	for _, state := range s.states {
-		hash, err := state.Hash()
+		leftLeaf, rightLeaf, err := state.SubLeaves()
 		if err != nil {
 			return [32]byte{}, nil, fmt.Errorf("failed to hash state: %w", err)
 		}
 
-		tree.Insert(hash[:])
+		tree.Insert(leftLeaf[:])
+		tree.Insert(rightLeaf[:])
 	}
 
-	snapshotRoot, err := tree.Root(uint32(len(s.states)))
+	snapshotRoot, err := tree.Root(uint32(len(s.states) * 2))
 	if err != nil {
 		return [32]byte{}, nil, fmt.Errorf("failed to get snapshot root: %w", err)
 	}
@@ -59,9 +60,9 @@ func (s snapshot) SnapshotRootAndProofs() ([32]byte, [][][]byte, error) {
 	var snapshotRootB32 [32]byte
 	copy(snapshotRootB32[:], snapshotRoot)
 
-	proofs := make([][][]byte, len(s.states))
-	for i := 0; i < len(s.states); i++ {
-		proofs[i], err = tree.MerkleProof(uint32(i), uint32(len(s.states)))
+	proofs := make([][][]byte, len(s.states)*2)
+	for i := 0; i < len(s.states)*2; i += 2 {
+		proofs[i], err = tree.MerkleProof(uint32(i), uint32(len(s.states)*2))
 		if err != nil {
 			return [32]byte{}, nil, fmt.Errorf("failed to get merkle proof: %w", err)
 		}

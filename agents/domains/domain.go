@@ -63,7 +63,7 @@ type DestinationContract interface {
 	//// SubmitAttestation submits an attestation to the destination.
 	// SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// Execute executes a message on the destination.
-	Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error
+	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int) error
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.
 	AttestationsAmount(ctx context.Context) (uint64, error)
 	// SubmitAttestation submits an attestation to the destination

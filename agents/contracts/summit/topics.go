@@ -18,6 +18,10 @@ func init() {
 	}
 
 	SnapshotAcceptedTopic = parsedSummit.Events["SnapshotAccepted"].ID
+
+	if SnapshotAcceptedTopic == (common.Hash{}) {
+		panic("SnapshotAcceptedTopic is nil")
+	}
 }
 
 // SnapshotAcceptedTopic is the topic that gets emitted

@@ -24,7 +24,7 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		proofA := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 		treeHeightA := gofakeit.Uint32()
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, treeHeightA)
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, treeHeightA, 1)
 		Nil(t.T(), err)
 
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
@@ -38,7 +38,7 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		proofB := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 		treeHeightB := gofakeit.Uint32()
 
-		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, treeHeightB)
+		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, treeHeightB, 2)
 		Nil(t.T(), err)
 
 		snapshotRootAString := snapshotRootA.String()
@@ -142,15 +142,16 @@ func (t *DBSuite) TestGetStateMetadata() {
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofA := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 		treeHeightA := gofakeit.Uint32()
+		indexA := gofakeit.Uint32()
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, treeHeightA)
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, treeHeightA, indexA)
 		Nil(t.T(), err)
 
 		stateMask := types.DBState{
 			ChainID: &originA,
 		}
 
-		snapshotRoot, proof, treeHeight, err := testDB.GetStateMetadata(t.GetTestContext(), stateMask)
+		snapshotRoot, proof, treeHeight, stateIndex, err := testDB.GetStateMetadata(t.GetTestContext(), stateMask)
 		Nil(t.T(), err)
 
 		proofBytes, err := json.Marshal(proof)
@@ -162,6 +163,7 @@ func (t *DBSuite) TestGetStateMetadata() {
 		Equal(t.T(), snapshotRootA, common.BytesToHash((*snapshotRoot)[:]))
 		Equal(t.T(), proofA, proofABytes)
 		Equal(t.T(), treeHeightA, *treeHeight)
+		Equal(t.T(), indexA, *stateIndex)
 	})
 }
 
@@ -199,11 +201,11 @@ func (t *DBSuite) TestGetPotentialSnapshotRoots() {
 		proofC := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 		treeHeightC := gofakeit.Uint32()
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, treeHeightA)
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, treeHeightA, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, treeHeightB)
+		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, treeHeightB, 2)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, treeHeightC)
+		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, treeHeightC, 3)
 		Nil(t.T(), err)
 
 		potentialSnapshotRoots, err := testDB.GetPotentialSnapshotRoots(t.GetTestContext(), origin, 6)
@@ -260,13 +262,13 @@ func (t *DBSuite) TestGetSnapshotRootsInNonceRange() {
 		proofD := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 		treeHeightD := gofakeit.Uint32()
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, treeHeightA)
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, treeHeightA, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, treeHeightB)
+		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, treeHeightB, 2)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, treeHeightC)
+		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, treeHeightC, 3)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateD, snapshotRootD, proofD, treeHeightD)
+		err = testDB.StoreState(t.GetTestContext(), stateD, snapshotRootD, proofD, treeHeightD, 4)
 		Nil(t.T(), err)
 
 		potentialSnapshotRoots, err := testDB.GetSnapshotRootsInNonceRange(t.GetTestContext(), origin, 6, 15)
