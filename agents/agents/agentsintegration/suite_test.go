@@ -31,7 +31,5 @@ func (u *AgentsIntegrationSuite) SetupTest() {
 }
 
 func TestAgentsIntegrationSuite(t *testing.T) {
-	// TODO (joeallen): FIX ME
-	t.Skip()
 	suite.Run(t, NewAgentsIntegrationSuite(t))
 }

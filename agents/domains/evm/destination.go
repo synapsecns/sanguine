@@ -64,7 +64,7 @@ type destinationContract struct {
 //	return nil
 //}
 
-func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error {
+func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
 	if err != nil {
 		return fmt.Errorf("could not setup transact opts: %w", err)
@@ -75,8 +75,7 @@ func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, 
 		return fmt.Errorf("could not encode message: %w", err)
 	}
 
-	// TODO (joeallen): FIX ME
-	_, err = a.contract.Execute(transactOpts, encodedMessage, proof, [][32]byte{}, index)
+	_, err = a.contract.Execute(transactOpts, encodedMessage, originProof, snapshotProof, index)
 	if err != nil {
 		return fmt.Errorf("could not execute message: %w", err)
 	}
