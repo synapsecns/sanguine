@@ -30,3 +30,9 @@ function fakeSnapshot(
         rawSnap.states[i] = i == stateIndex ? state : fakeState(i + 1);
     }
 }
+
+/// @notice Returns RawSnapshot struct with fake states.
+function fakeSnapshot(uint256 statesAmount) pure returns (RawSnapshot memory rawSnap) {
+    RawState memory state;
+    return fakeSnapshot(state, statesAmount, statesAmount);
+}
