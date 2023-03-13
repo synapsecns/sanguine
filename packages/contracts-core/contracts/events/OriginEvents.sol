@@ -30,13 +30,13 @@ abstract contract OriginEvents {
     /**
      * @notice Emitted when a proof of invalid state in the signed attestation is submitted.
      * @param stateIndex    Index of invalid state in the snapshot
-     * @param snapshot      Raw payload with snapshot data
+     * @param state         Raw payload with state data
      * @param attestation   Raw payload with Attestation data for snapshot
      * @param attSignature  Notary signature for the attestation
      */
     event InvalidAttestationState(
         uint256 stateIndex,
-        bytes snapshot,
+        bytes state,
         bytes attestation,
         bytes attSignature
     );
