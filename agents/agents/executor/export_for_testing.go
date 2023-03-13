@@ -58,11 +58,6 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 		config.SetMinimumTimeInterval = 2
 	}
 
-	summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
-	if err != nil {
-		return nil, fmt.Errorf("could not create summit parser: %w", err)
-	}
-
 	for _, chain := range config.Chains {
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
@@ -72,6 +67,17 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 		destinationParser, err := destination.NewParser(common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
+		}
+
+		var summitParserRef *summit.Parser
+
+		if config.SummitChainID == chain.ChainID {
+			summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not create summit parser: %w", err)
+			}
+
+			summitParserRef = &summitParser
 		}
 
 		underlyingClient, err := ethergoChain.NewFromURL(ctx, urls[chain.ChainID])
@@ -99,6 +105,7 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			stopListenChan:    make(chan bool, 1),
 			originParser:      originParser,
 			destinationParser: destinationParser,
+			summitParser:      summitParserRef,
 			logChan:           make(chan *ethTypes.Log, logChanSize),
 			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
@@ -114,7 +121,6 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 		grpcConn:       conn,
 		grpcClient:     grpcClient,
 		signer:         executorSigner,
-		summitParser:   summitParser,
 		chainExecutors: chainExecutors,
 	}, nil
 }
@@ -160,25 +166,6 @@ func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message typ
 // OverrideMerkleTree overrides the merkle tree for the chainID and domain.
 func (e Executor) OverrideMerkleTree(chainID uint32, tree *merkle.HistoricalTree) {
 	e.chainExecutors[chainID].merkleTree = tree
-}
-
-// Listen scans for emitted logs from the various chains.
-func (e Executor) Listen(ctx context.Context) error {
-	g, _ := errgroup.WithContext(ctx)
-
-	for _, chain := range e.config.Chains {
-		chain := chain
-
-		g.Go(func() error {
-			return e.receiveLogs(ctx, chain.ChainID)
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("error when receiving logs: %w", err)
-	}
-
-	return nil
 }
 
 // SetMinimumTime sets the minimum times.

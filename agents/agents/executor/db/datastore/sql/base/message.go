@@ -27,7 +27,6 @@ func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, bl
 	if dbTx.Error != nil {
 		return fmt.Errorf("failed to store message: %w", dbTx.Error)
 	}
-
 	return nil
 }
 

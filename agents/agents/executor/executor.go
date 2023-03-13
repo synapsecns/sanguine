@@ -48,6 +48,8 @@ type chainExecutor struct {
 	originParser origin.Parser
 	// destinationParser is the destination parser.
 	destinationParser destination.Parser
+	// summitParser is the summit parser.
+	summitParser *summit.Parser
 	// logChan is the log channel.
 	logChan chan *ethTypes.Log
 	// merkleTree is a merkle tree for a specific origin chain.
@@ -74,8 +76,6 @@ type Executor struct {
 	grpcConn *grpc.ClientConn
 	// signer is the signer.
 	signer signer.Signer
-	// summitParser is the summit parser.
-	summitParser summit.Parser
 	// chainExecutors is a map from chain ID -> chain executor.
 	chainExecutors map[uint32]*chainExecutor
 }
@@ -122,11 +122,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		config.SetMinimumTimeInterval = 2
 	}
 
-	summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
-	if err != nil {
-		return nil, fmt.Errorf("could not create summit parser: %w", err)
-	}
-
 	for _, chain := range config.Chains {
 		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
 		if err != nil {
@@ -136,6 +131,17 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		destinationParser, err := destination.NewParser(common.HexToAddress(chain.DestinationAddress))
 		if err != nil {
 			return nil, fmt.Errorf("could not create destination parser: %w", err)
+		}
+
+		var summitParserRef *summit.Parser
+
+		if config.SummitChainID == chain.ChainID {
+			summitParser, err := summit.NewParser(common.HexToAddress(config.SummitAddress))
+			if err != nil {
+				return nil, fmt.Errorf("could not create summit parser: %w", err)
+			}
+
+			summitParserRef = &summitParser
 		}
 
 		chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
@@ -165,6 +171,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			stopListenChan:    make(chan bool, 1),
 			originParser:      originParser,
 			destinationParser: destinationParser,
+			summitParser:      summitParserRef,
 			logChan:           make(chan *ethTypes.Log, logChanSize),
 			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
@@ -180,7 +187,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		grpcConn:       conn,
 		grpcClient:     grpcClient,
 		signer:         executorSigner,
-		summitParser:   summitParser,
 		chainExecutors: chainExecutors,
 	}, nil
 }
@@ -217,7 +223,7 @@ func (e Executor) Run(ctx context.Context) error {
 		g.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, nil, contractEventType{
 				contractType: originContract,
-				eventType:    dispatchEvent,
+				eventType:    dispatchedEvent,
 			})
 		})
 
@@ -354,8 +360,8 @@ const (
 )
 
 const (
-	// Origin's Dispatch event.
-	dispatchEvent eventType = iota
+	// Origin's Dispatched event.
+	dispatchedEvent eventType = iota
 	// Destination's AttestationAccepted event.
 	attestationAcceptedEvent
 	// Destination's AttestationExecuted event.
@@ -425,7 +431,7 @@ func (e Executor) verifyStateMerkleProof(ctx context.Context, state types.State)
 		return false, fmt.Errorf("could not unmarshal proof: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], state.Nonce(), proofBytes, *treeHeight)
+	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], state.Nonce()-1, proofBytes, *treeHeight)
 
 	return inTree, nil
 }
@@ -666,7 +672,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		//nolint:gocritic,exhaustive
 		switch contractEvent.eventType {
 		case snapshotAcceptedEvent:
-			snapshot, err := e.logToSnapshot(log)
+			snapshot, err := e.logToSnapshot(log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not convert log to snapshot: %w", err)
 			}
