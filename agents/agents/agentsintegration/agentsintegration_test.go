@@ -33,7 +33,7 @@ func RemoveAgentsTempFile(t *testing.T, fileName string) {
 	Nil(t, err)
 }
 
-//nolint:cyclop
+//nolint:cyclop,maintidx
 func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	testDone := false
 	defer func() {
