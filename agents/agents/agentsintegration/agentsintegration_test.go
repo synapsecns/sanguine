@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
+	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"math/big"
 	"os"
 	"testing"
@@ -37,6 +38,9 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 	defer func() {
 		testDone = true
 	}()
+
+	_, testContractRef := u.TestDeployManager.GetAgentsTestContract(u.GetTestContext(), u.TestBackendDestination)
+	testTransactOpts := u.TestBackendDestination.GetTxContext(u.GetTestContext(), nil)
 
 	originClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress())
 	u.Nil(err)
@@ -289,6 +293,23 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		_ = notary.Start(u.GetTestContext())
 	}()
 
+	waitChan := make(chan bool, 1)
+
+	// Make sure there is one executable message in the database.
+	u.Eventually(func() bool {
+		mask := execTypes.DBMessage{
+			ChainID:     &chainID,
+			Destination: &destination,
+		}
+		executableMessages, err := u.ExecutorTestDB.GetExecutableMessages(u.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
+		u.Nil(err)
+		if len(executableMessages) == 1 {
+			waitChan <- true
+			return true
+		}
+		return false
+	})
+
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
@@ -329,17 +350,30 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 
 	Greater(u.T(), len(retrievedAtt), 0)
 
+	<-waitChan
+
 	u.Eventually(func() bool {
-		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-
-		attestationsAmount, err := u.DestinationContract.AttestationsAmount(&bind.CallOpts{Context: u.GetTestContext()})
+		mask := execTypes.DBMessage{
+			ChainID:     &chainID,
+			Destination: &destination,
+		}
+		executedMessages, err := u.ExecutorTestDB.GetExecutableMessages(u.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
 		Nil(u.T(), err)
+		if len(executedMessages) == 0 {
+			return true
+		}
 
-		return attestationsAmount != nil && attestationsAmount.Uint64() >= uint64(1)
+		// Need to create a tx and wait for it to be confirmed to continue adding blocks, and therefore
+		// increase the `time`.
+		countBeforeIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: u.GetTestContext()})
+		u.Nil(err)
+		testTx, err := testContractRef.IncrementCounter(testTransactOpts.TransactOpts)
+		u.Nil(err)
+		u.TestBackendDestination.WaitForConfirmation(u.GetTestContext(), testTx)
+		countAfterIncrement, err := testContractRef.GetCount(&bind.CallOpts{Context: u.GetTestContext()})
+		u.Nil(err)
+		u.Greater(countAfterIncrement.Uint64(), countBeforeIncrement.Uint64())
+		return false
 	})
-
-	//u.Eventually(func() bool {
-	//	executedMessages, err := u.ExecutorTestDB.GetExecutableMessages(u.GetTestContext())
-	//})
-	time.Sleep(60 * time.Second)
+	//time.Sleep(60 * time.Second)
 }

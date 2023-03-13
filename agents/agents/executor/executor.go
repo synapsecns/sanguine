@@ -335,18 +335,24 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		copy(originProof[i][:], p)
 	}
 
-	var snapshotProofStrings []string
+	//var snapshotProofStrings []string
+	//
+	//err = json.Unmarshal(*snapshotProof, &snapshotProofStrings)
+	//if err != nil {
+	//	return false, fmt.Errorf("could not unmarshal snapshot proof: %w", err)
+	//}
 
-	err = json.Unmarshal(*snapshotProof, &snapshotProofStrings)
+	var snapshotProofBytes [][]byte
+	err = json.Unmarshal(*snapshotProof, &snapshotProofBytes)
 	if err != nil {
-		return false, fmt.Errorf("could not unmarshal snapshot proof: %w", err)
+		return false, fmt.Errorf("could not unmarshal proof: %w", err)
 	}
 
-	var snapshotProofBytes [][32]byte
-	for _, p := range snapshotProofStrings {
-		var proofBytes [32]byte
-		copy(proofBytes[:], common.HexToHash(p).Bytes())
-		snapshotProofBytes = append(snapshotProofBytes, proofBytes)
+	var snapshotProofB32 [][32]byte
+	for _, p := range snapshotProofBytes {
+		var p32 [32]byte
+		copy(p32[:], p)
+		snapshotProofB32 = append(snapshotProofB32, p32)
 	}
 
 	b := &backoff.Backoff{
@@ -367,7 +373,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 				return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
 			}
 
-			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofBytes, big.NewInt(int64(*stateIndex)))
+			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)))
 			if err != nil {
 				timeout = b.Duration()
 				logger.Errorf("got error %v when trying to execute the message on chain %d. trying again in %f seconds", err, message.DestinationDomain(), timeout.Seconds())
