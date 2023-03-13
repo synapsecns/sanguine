@@ -262,10 +262,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestationState(stateIndex, snapshot, attestation, signature);
-            vm.expectEmit(true, true, true, true);
-            emit AgentRemoved(domain, notary);
-            vm.expectEmit(true, true, true, true);
-            emit AgentSlashed(domain, notary);
+            _expectAgentSlashed(domain, notary);
         }
         vm.recordLogs();
         assertEq(
@@ -296,10 +293,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
             emit InvalidSnapshotState(stateIndex, snapshot, signature);
-            vm.expectEmit(true, true, true, true);
-            emit AgentRemoved(DOMAIN_REMOTE, notary);
-            vm.expectEmit(true, true, true, true);
-            emit AgentSlashed(DOMAIN_REMOTE, notary);
+            _expectAgentSlashed(DOMAIN_REMOTE, notary);
         }
         assertEq(
             InterfaceOrigin(origin).verifySnapshot(stateIndex, snapshot, signature),
@@ -309,5 +303,12 @@ contract OriginTest is SynapseTest, SynapseProofs {
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
+    }
+
+    function _expectAgentSlashed(uint32 domain, address agent) internal {
+        vm.expectEmit(true, true, true, true);
+        emit AgentRemoved(domain, agent);
+        vm.expectEmit(true, true, true, true);
+        emit AgentSlashed(domain, agent);
     }
 }
