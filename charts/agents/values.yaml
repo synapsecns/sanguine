@@ -307,26 +307,40 @@ scribe:
       chains:
         - chain_id: 137
           required_confirmations: 50
+          contract_sub_chunk_size: 1000
+          contract_chunk_size: 1000
+          store_concurrency: 1
+          store_concurrency_threshold: 500
           contracts:
-            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-              start_block: 39145588
-            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-              start_block: 39145588
+            - address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+              start_block: 40189736
+            - address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
+              start_block: 40189736
         - chain_id: 10
           required_confirmations: 50
+          contract_sub_chunk_size: 500
+          contract_chunk_size: 500
+          store_concurrency: 1
+          store_concurrency_threshold: 500
           contracts:
-            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-              start_block: 73536295
-            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-              start_block: 73537265
+            - address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+              start_block: 79864523
+            - address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
+              start_block: 79864305
+            - address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+              start_block: 79864192
         - chain_id: 43114
           required_confirmations: 50
+          contract_sub_chunk_size: 2000
+          contract_chunk_size: 10000
+          store_concurrency: 1
+          store_concurrency_threshold: 500
           contracts:
-            - address: 0x4dc6365031D9f57EF209cB0A9eE3a53dB43F6A4E
-              start_block: 26091228
-            - address: 0xaCe7D217dcB99b22287e29f75f7A1D6e38d7022F
-              start_block: 26091231
-      rpc_url: "http://agents-omnirpc/confirmations"
+            - address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+              start_block: 27262747
+            - address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
+              start_block: 27262744
+      rpc_url: "https://rpc.interoperability.institute/confirmations"
       refresh_rate: 0
 
 notary_files:
@@ -544,45 +558,45 @@ executor_remote_fresh_files:
     unbonded_signer:
       type: "File"
       file: "/config/executor_signer.txt"
-    embedded_scribe_config:
-      chains:
-        - chain_id: 137
-          required_confirmations: 50
-          contract_sub_chunk_size: 1000
-          contract_chunk_size: 1000
-          store_concurrency: 1
-          store_concurrency_threshold: 500
-          contracts:
-            - address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
-              start_block: 40189736
-            - address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-              start_block: 40189736
-        - chain_id: 10
-          required_confirmations: 50
-          contract_sub_chunk_size: 500
-          contract_chunk_size: 500
-          store_concurrency: 1
-          store_concurrency_threshold: 500
-          contracts:
-            - address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
-              start_block: 79864523
-            - address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-              start_block: 79864305
-            - address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
-              start_block: 79864192
-        - chain_id: 43114
-          required_confirmations: 50
-          contract_sub_chunk_size: 2000
-          contract_chunk_size: 10000
-          store_concurrency: 1
-          store_concurrency_threshold: 500
-          contracts:
-            - address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
-              start_block: 27262747
-            - address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-              start_block: 27262744
-      rpc_url: "https://rpc.interoperability.institute/confirmations"
-      refresh_rate: 0
+#    embedded_scribe_config:
+#      chains:
+#        - chain_id: 137
+#          required_confirmations: 50
+#          contract_sub_chunk_size: 1000
+#          contract_chunk_size: 1000
+#          store_concurrency: 1
+#          store_concurrency_threshold: 500
+#          contracts:
+#            - address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+#              start_block: 40189736
+#            - address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
+#              start_block: 40189736
+#        - chain_id: 10
+#          required_confirmations: 50
+#          contract_sub_chunk_size: 500
+#          contract_chunk_size: 500
+#          store_concurrency: 1
+#          store_concurrency_threshold: 500
+#          contracts:
+#            - address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+#              start_block: 79864523
+#            - address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
+#              start_block: 79864305
+#            - address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
+#              start_block: 79864192
+#        - chain_id: 43114
+#          required_confirmations: 50
+#          contract_sub_chunk_size: 2000
+#          contract_chunk_size: 10000
+#          store_concurrency: 1
+#          store_concurrency_threshold: 500
+#          contracts:
+#            - address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
+#              start_block: 27262747
+#            - address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
+#              start_block: 27262744
+#      rpc_url: "https://rpc.interoperability.institute/confirmations"
+#      refresh_rate: 0
 
 executor_embedded_files:
   executor_signer.txt: |-
