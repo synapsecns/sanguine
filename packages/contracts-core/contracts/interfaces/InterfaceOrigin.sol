@@ -31,16 +31,16 @@ interface InterfaceOrigin {
      *  - Attestation root is not equal to root derived from the snapshot.
      *  - State index is out of range.
      *  - Snapshot state does not refer to this chain.
-     * @param _snapPayload      Raw payload with snapshot data
      * @param _stateIndex       State index to check
+     * @param _snapPayload      Raw payload with snapshot data
      * @param _attPayload       Raw payload with Attestation data
      * @param _attSignature     Notary signature for the attestation
      * @return isValid          Whether the requested state is valid.
      *                          Notary is slashed, if return value is FALSE.
      */
     function verifyAttestation(
-        bytes memory _snapPayload,
         uint256 _stateIndex,
+        bytes memory _snapPayload,
         bytes memory _attPayload,
         bytes memory _attSignature
     ) external returns (bool isValid);
@@ -54,15 +54,15 @@ interface InterfaceOrigin {
      *  - Snapshot signer is not an active Agent.
      *  - State index is out of range.
      *  - Snapshot state does not refer to this chain.
-     * @param _snapPayload      Raw payload with snapshot data
      * @param _stateIndex       State index to check
+     * @param _snapPayload      Raw payload with snapshot data
      * @param _snapSignature    Agent signature for the snapshot
      * @return isValid          Whether the requested state is valid.
      *                          Agent is slashed, if return value is FALSE.
      */
     function verifySnapshot(
-        bytes memory _snapPayload,
         uint256 _stateIndex,
+        bytes memory _snapPayload,
         bytes memory _snapSignature
     ) external returns (bool isValid);
 }
