@@ -14,11 +14,13 @@ import { OriginStateMask } from "./libs/State.t.sol";
 import { fakeState, fakeSnapshot } from "../utils/libs/FakeIt.t.sol";
 import { Random } from "../utils/libs/Random.t.sol";
 import {
+    StateFlag,
     RawAttestation,
     RawHeader,
     RawMessage,
     RawSnapshot,
     RawState,
+    RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
@@ -318,6 +320,31 @@ contract OriginTest is SynapseTest, SynapseProofs {
         }
         assertEq(
             InterfaceOrigin(origin).verifySnapshot(stateIndex, snapshot, signature),
+            isValid,
+            "!returnValue"
+        );
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
+        _verifyStateReport(rawState, isValid);
+    }
+
+    function _verifyStateReport(RawState memory rawState, bool isStateValid) internal {
+        // Report is valid only if reported state is invalid
+        bool isValid = !isStateValid;
+        RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rawState);
+        address guard = domains[0].agent;
+        (bytes memory report, ) = rawSR.castToStateReport();
+        bytes memory signature = signStateReport(guard, report);
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidStateReport(report, signature);
+            _expectAgentSlashed(0, guard);
+        }
+        vm.recordLogs();
+        assertEq(
+            InterfaceOrigin(origin).verifyStateReport(report, signature),
             isValid,
             "!returnValue"
         );

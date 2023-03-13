@@ -4,7 +4,8 @@ pragma solidity 0.8.17;
 import {
     ATTESTATION_SALT,
     ATTESTATION_REPORT_SALT,
-    SNAPSHOT_SALT
+    SNAPSHOT_SALT,
+    STATE_REPORT_SALT
 } from "../../contracts/libs/Constants.sol";
 
 import { BondingSecondary } from "../../contracts/bonding/BondingSecondary.sol";
@@ -166,6 +167,15 @@ abstract contract SynapseTest is ProductionEvents, SynapseTestConstants, Test {
     {
         bytes32 hashedSnap = keccak256(snapshot);
         return signMessage(agent, keccak256(bytes.concat(SNAPSHOT_SALT, hashedSnap)));
+    }
+
+    function signStateReport(address agent, bytes memory srPayload)
+        public
+        view
+        returns (bytes memory signature)
+    {
+        bytes32 hashedAR = keccak256(srPayload);
+        return signMessage(agent, keccak256(bytes.concat(STATE_REPORT_SALT, hashedAR)));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
