@@ -21,6 +21,8 @@ import {
     AttestationReportLib
 } from "../../../contracts/libs/AttestationReport.sol";
 
+import { StateFlag, StateReport, StateReportLib } from "../../../contracts/libs/StateReport.sol";
+
 struct RawHeader {
     uint32 origin;
     bytes32 sender;
@@ -79,13 +81,20 @@ struct RawAttestationReport {
 }
 using { CastLib.castToAttestationReport } for RawAttestationReport global;
 
+struct RawStateReport {
+    uint8 flag;
+    RawState state;
+}
+using { CastLib.castToStateReport } for RawStateReport global;
+
 library CastLib {
     using AttestationLib for bytes;
+    using AttestationReportLib for bytes;
     using HeaderLib for bytes;
     using MessageLib for bytes;
-    using AttestationReportLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
+    using StateReportLib for bytes;
     using TipsLib for bytes;
     using TypedMemView for bytes29;
 
@@ -146,6 +155,18 @@ library CastLib {
             _timestamp: rs.timestamp
         });
         ptr = state.castToState();
+    }
+
+    function castToStateReport(RawStateReport memory rawSR)
+        internal
+        pure
+        returns (bytes memory stateReport, StateReport ptr)
+    {
+        // Explicit revert when flag out of range
+        require(rawSR.flag <= uint8(type(StateFlag).max), "Flag out of range");
+        (bytes memory state, ) = rawSR.state.castToState();
+        stateReport = StateFlag(rawSR.flag).formatStateReport(state);
+        ptr = stateReport.castToStateReport();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
