@@ -33,6 +33,10 @@ contract StateHarness {
         return _state.unwrap().clone();
     }
 
+    function equals(bytes memory _a, bytes memory _b) public pure returns (bool) {
+        return _a.castToState().equals(_b.castToState());
+    }
+
     function leaf(bytes memory _payload) public pure returns (bytes32) {
         return _payload.castToState().leaf();
     }
