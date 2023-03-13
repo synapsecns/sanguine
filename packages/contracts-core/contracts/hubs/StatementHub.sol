@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { Attestation, AttestationLib } from "../libs/Attestation.sol";
-import { Snapshot, SnapshotLib, StateLib } from "../libs/Snapshot.sol";
+import { Snapshot, SnapshotLib, State, StateLib } from "../libs/Snapshot.sol";
 import { AttestationReport, AttestationReportLib } from "../libs/AttestationReport.sol";
 import { MerkleLib } from "../libs/Merkle.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -24,8 +24,9 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
  */
 abstract contract StatementHub is AgentRegistry, Versioned {
     using AttestationLib for bytes;
-    using SnapshotLib for bytes;
     using AttestationReportLib for bytes;
+    using SnapshotLib for bytes;
+    using StateLib for bytes;
 
     // solhint-disable-next-line no-empty-blocks
     constructor() Versioned("0.0.3") {}
@@ -208,5 +209,35 @@ abstract contract StatementHub is AgentRegistry, Versioned {
         bytes32 leftLeaf = StateLib.leftLeaf(_originRoot, _origin);
         // Reconstruct snapshot root using proof of inclusion
         return MerkleLib.branchRoot(leftLeaf, _snapProof, _stateIndex << 1);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          STATEMENT WRAPPERS                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // These functions are implemented to reduce the amount of imports in the child contracts.
+
+    /// @dev Wraps Attestation payload into a typed memory view. Reverts if not properly formatted.
+    function _wrapAttestation(bytes memory _attPayload) internal pure returns (Attestation) {
+        return _attPayload.castToAttestation();
+    }
+
+    /// @dev Wraps AttestationReport payload into a typed memory view. Reverts if not properly formatted.
+    function _wrapAttestationReport(bytes memory _arPayload)
+        internal
+        pure
+        returns (AttestationReport)
+    {
+        return _arPayload.castToAttestationReport();
+    }
+
+    /// @dev Wraps Snapshot payload into a typed memory view. Reverts if not properly formatted.
+    function _wrapSnapshot(bytes memory _snapPayload) internal pure returns (Snapshot) {
+        return _snapPayload.castToSnapshot();
+    }
+
+    /// @dev Wraps State payload into a typed memory view. Reverts if not properly formatted.
+    function _wrapState(bytes memory _statePayload) internal pure returns (State) {
+        return _statePayload.castToState();
     }
 }
