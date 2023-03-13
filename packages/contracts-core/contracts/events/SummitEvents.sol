@@ -11,7 +11,7 @@ abstract contract SummitEvents {
     event InvalidAttestation(bytes attestation, bytes attSignature);
 
     /**
-     * @notice Emitted when a proof of invalid attestation is submitted.
+     * @notice Emitted when a proof of invalid attestation report is submitted.
      * @param arPayload     Raw payload with report data
      * @param arSignature   Guard signature for the report
      */

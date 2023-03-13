@@ -20,15 +20,15 @@ contract OriginMock is StateHubMock, AgentRegistryMock, SystemContractMock, Inte
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {}
 
     function verifyAttestation(
-        bytes memory _snapPayload,
         uint256 _stateIndex,
+        bytes memory _snapPayload,
         bytes memory _attPayload,
         bytes memory _attSignature
     ) external returns (bool isValid) {}
 
     function verifySnapshot(
-        bytes memory _snapPayload,
         uint256 _stateIndex,
+        bytes memory _snapPayload,
         bytes memory _snapSignature
     ) external returns (bool isValid) {}
 }

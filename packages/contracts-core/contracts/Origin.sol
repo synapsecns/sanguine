@@ -5,7 +5,7 @@ import { MAX_MESSAGE_BODY_BYTES, SYSTEM_ROUTER } from "./libs/Constants.sol";
 import { HeaderLib, MessageLib } from "./libs/Message.sol";
 import { MerkleLib } from "./libs/Merkle.sol";
 import { Snapshot } from "./libs/Snapshot.sol";
-import { StateLib } from "./libs/State.sol";
+import { State, StateLib, TypedMemView } from "./libs/State.sol";
 import { Tips, TipsLib } from "./libs/Tips.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -18,6 +18,7 @@ import { SystemRegistry } from "./system/SystemRegistry.sol";
 contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, InterfaceOrigin {
     using MerkleLib for MerkleLib.Tree;
     using TipsLib for bytes;
+    using TypedMemView for bytes29;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
@@ -47,8 +48,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
 
     /// @inheritdoc InterfaceOrigin
     function verifyAttestation(
-        bytes memory _snapPayload,
         uint256 _stateIndex,
+        bytes memory _snapPayload,
         bytes memory _attPayload,
         bytes memory _attSignature
     ) external returns (bool isValid) {
@@ -59,10 +60,17 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         );
         // This will revert if payload is not a snapshot, or snapshot/attestation roots don't match
         Snapshot snapshot = _verifySnapshotRoot(att, _snapPayload);
-        // This will revert, if state index is out of range, or state refers to another domain
-        isValid = _isValidState(snapshot.state(_stateIndex));
+        // This will revert if state index is out of range
+        State state = snapshot.state(_stateIndex);
+        // This will revert if  state refers to another domain
+        isValid = _isValidState(state);
         if (!isValid) {
-            emit InvalidAttestationState(_stateIndex, _snapPayload, _attPayload, _attSignature);
+            emit InvalidAttestationState(
+                _stateIndex,
+                state.unwrap().clone(),
+                _attPayload,
+                _attSignature
+            );
             // Slash Notary and trigger a hook to send a slashAgent system call
             _slashAgent(domain, notary, true);
         }
@@ -70,8 +78,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
 
     /// @inheritdoc InterfaceOrigin
     function verifySnapshot(
-        bytes memory _snapPayload,
         uint256 _stateIndex,
+        bytes memory _snapPayload,
         bytes memory _snapSignature
     ) external returns (bool isValid) {
         // This will revert if payload is not a snapshot, or signer is not an active Agent
