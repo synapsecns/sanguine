@@ -54,32 +54,6 @@ abstract contract StatementHub is AgentRegistry, Versioned {
     /**
      * @dev Internal function to verify the signed attestation payload.
      * Reverts if any of these is true:
-     *  - Attestation payload is not properly formatted.
-     *  - Attestation signer is not an active Notary.
-     * @param _attPayload       Raw payload with attestation data
-     * @param _attSignature     Notary signature for the attestation
-     * @return attestation      Typed memory view over attestation payload
-     * @return domain           Domain where the signed Notary is active
-     * @return notary           Notary that signed the snapshot
-     */
-    function _verifyAttestation(bytes memory _attPayload, bytes memory _attSignature)
-        internal
-        view
-        returns (
-            Attestation attestation,
-            uint32 domain,
-            address notary
-        )
-    {
-        // This will revert if payload is not a formatted attestation
-        attestation = _attPayload.castToAttestation();
-        // This will revert if signer is not an active Notary
-        (domain, notary) = _verifyAttestation(attestation, _attSignature);
-    }
-
-    /**
-     * @dev Internal function to verify the signed attestation payload.
-     * Reverts if any of these is true:
      *  - Attestation signer is not an active Notary.
      * @param _att              Typed memory view over attestation payload
      * @param _attSignature     Notary signature for the attestation
@@ -100,51 +74,21 @@ abstract contract StatementHub is AgentRegistry, Versioned {
     /**
      * @dev Internal function to verify the signed attestation report payload.
      * Reverts if any of these is true:
-     *  - Report payload is not properly formatted AttestationReport.
      *  - Report signer is not an active Guard.
-     * @param _arPayload        Raw payload with report data
+     * @param _report           Typed memory view over report payload
      * @param _arSignature      Guard signature for the report
-     * @return report           Typed memory view over report payload
      * @return guard            Guard that signed the report
      */
-    function _verifyAttestationReport(bytes memory _arPayload, bytes memory _arSignature)
+    function _verifyAttestationReport(AttestationReport _report, bytes memory _arSignature)
         internal
         view
-        returns (AttestationReport report, address guard)
+        returns (address guard)
     {
-        // This will revert if payload is not a formatted attestation report
-        report = _arPayload.castToAttestationReport();
         // This will revert if signer is not an active agent
         uint32 domain;
-        (domain, guard) = _recoverAgent(report.hash(), _arSignature);
+        (domain, guard) = _recoverAgent(_report.hash(), _arSignature);
         // Report signer needs to be a Guard, not a Notary
         require(domain == 0, "Signer is not a Guard");
-    }
-
-    /**
-     * @dev Internal function to verify the signed snapshot payload.
-     * Reverts if any of these is true:
-     *  - Snapshot payload is not properly formatted.
-     *  - Snapshot signer is not an active Agent.
-     * @param _snapPayload      Raw payload with snapshot data
-     * @param _snapSignature    Agent signature for the snapshot
-     * @return snapshot         Typed memory view over snapshot payload
-     * @return domain           Domain where the signed Agent is active
-     * @return agent            Agent that signed the snapshot
-     */
-    function _verifySnapshot(bytes memory _snapPayload, bytes memory _snapSignature)
-        internal
-        view
-        returns (
-            Snapshot snapshot,
-            uint32 domain,
-            address agent
-        )
-    {
-        // This will revert if payload is not a formatted snapshot
-        snapshot = _snapPayload.castToSnapshot();
-        // This will revert if signer is not an active agent
-        (domain, agent) = _verifySnapshot(snapshot, _snapSignature);
     }
 
     /**
@@ -169,20 +113,50 @@ abstract contract StatementHub is AgentRegistry, Versioned {
     /**
      * @dev Internal function to verify that snapshot root matches the root from Attestation.
      * Reverts if any of these is true:
-     *  - Snapshot payload is not properly formatted.
      *  - Attestation root is not equal to root derived from the snapshot.
      * @param _att          Typed memory view over Attestation
-     * @param _snapPayload  Raw payload with snapshot data
-     * @return snapshot     Typed memory view over snapshot payload
+     * @param _snapshot     Typed memory view over snapshot payload
      */
-    function _verifySnapshotRoot(Attestation _att, bytes memory _snapPayload)
-        internal
-        pure
-        returns (Snapshot snapshot)
-    {
-        // This will revert if payload is not a formatted snapshot
-        snapshot = _snapPayload.castToSnapshot();
-        require(_att.root() == snapshot.root(), "Incorrect snapshot root");
+    function _verifySnapshotRoot(Attestation _att, Snapshot _snapshot) internal pure {
+        require(_att.root() == _snapshot.root(), "Incorrect snapshot root");
+    }
+
+    /**
+     * @dev Internal function to verify that snapshot roots match.
+     * Reverts if any of these is true:
+     *  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
+     *  - Snapshot Proof has length different to Attestation height.
+     *  - Snapshot Proof's first element does not match the State metadata.
+     *  - State index is out of range.
+     * @param _att              Typed memory view over Attestation
+     * @param _stateIndex       Index of state in the snapshot
+     * @param _state            Typed memory view over the provided state payload
+     * @param _snapProof        Raw payload with snapshot data
+     */
+    function _verifySnapshotRoot(
+        Attestation _att,
+        uint256 _stateIndex,
+        State _state,
+        bytes32[] memory _snapProof
+    ) internal pure {
+        // Snapshot proof length should match attestation height (and should be non-zero)
+        require(
+            _snapProof.length == _att.height() && _snapProof.length != 0,
+            "Incorrect proof length"
+        );
+        // Snapshot proof first element should match State metadata (aka "right sub-leaf")
+        (, bytes32 rightSubLeaf) = _state.subLeafs();
+        require(_snapProof[0] == rightSubLeaf, "Incorrect proof[0]");
+        // Reconstruct Snapshot Merkle Root using the snapshot proof
+        // This will revert if state index is out of range
+        bytes32 snapshotRoot = _snapshotRoot(
+            _state.root(),
+            _state.origin(),
+            _snapProof,
+            _stateIndex
+        );
+        // Snapshot root should match the attestation root
+        require(_att.root() == snapshotRoot, "Incorrect snapshot root");
     }
 
     /**
