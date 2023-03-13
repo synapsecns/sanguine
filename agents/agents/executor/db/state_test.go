@@ -142,15 +142,16 @@ func (t *DBSuite) TestGetStateMetadata() {
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofA := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 		treeHeightA := gofakeit.Uint32()
+		indexA := gofakeit.Uint32()
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, treeHeightA, 1)
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, treeHeightA, indexA)
 		Nil(t.T(), err)
 
 		stateMask := types.DBState{
 			ChainID: &originA,
 		}
 
-		snapshotRoot, proof, treeHeight, err := testDB.GetStateMetadata(t.GetTestContext(), stateMask)
+		snapshotRoot, proof, treeHeight, stateIndex, err := testDB.GetStateMetadata(t.GetTestContext(), stateMask)
 		Nil(t.T(), err)
 
 		proofBytes, err := json.Marshal(proof)
@@ -162,6 +163,7 @@ func (t *DBSuite) TestGetStateMetadata() {
 		Equal(t.T(), snapshotRootA, common.BytesToHash((*snapshotRoot)[:]))
 		Equal(t.T(), proofA, proofABytes)
 		Equal(t.T(), treeHeightA, *treeHeight)
+		Equal(t.T(), indexA, *stateIndex)
 	})
 }
 
