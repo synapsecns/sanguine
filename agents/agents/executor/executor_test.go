@@ -638,6 +638,14 @@ func (e *ExecutorSuite) TestExecutor() {
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), destinationAttestation, destination, 1, 1)
 	e.Nil(err)
 
+	mask := execTypes.DBMessage{
+		ChainID:     &chainID,
+		Destination: &destination,
+	}
+	executableMessages, err := e.ExecutorTestDB.GetExecutableMessages(e.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
+	e.Nil(err)
+	e.Len(executableMessages, 0)
+
 	// Make sure there is one executable message in the database.
 	e.Eventually(func() bool {
 		mask := execTypes.DBMessage{
@@ -646,9 +654,6 @@ func (e *ExecutorSuite) TestExecutor() {
 		}
 		executableMessages, err := e.ExecutorTestDB.GetExecutableMessages(e.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
 		e.Nil(err)
-		if len(executableMessages) == 1 {
-			return true
-		}
-		return false
+		return len(executableMessages) == 1
 	})
 }
