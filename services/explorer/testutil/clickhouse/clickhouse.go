@@ -27,8 +27,8 @@ func NewClickhouseStore(src string) (func(), *int, error) {
 		return nil, nil, fmt.Errorf("port %d is already in use: %w", port, err)
 	}
 	fmt.Println("Starting clickhouse docker pool on port: ", portStr)
-	pool, err := dockertest.NewPool("")
 
+	pool, err := dockertest.NewPool("")
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not create docker pool: %w", err)
 	}
