@@ -86,18 +86,19 @@ var NotaryRunCommand = &cli.Command{
 
 			scribeClients := make(map[uint32][]backfill.ScribeBackend)
 
-			for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
+			for _, domain := range notaryConfig.Domains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID))
+					chainID := domain.DomainID
+					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", "https://rpc.interoperability.institute/confirmations", confNum, chainID))
 					if err != nil {
-						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.BaseOmnirpcURL, client.ChainID))
+						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", "https://rpc.interoperability.institute/confirmations", chainID))
 					}
 
-					scribeClients[client.ChainID] = append(scribeClients[client.ChainID], backendClient)
+					scribeClients[chainID] = append(scribeClients[chainID], backendClient)
 				}
 			}
 
-			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.EmbeddedScribeConfig)
+			scribe, err := node.NewScribe(eventDB, scribeClients, notaryConfig.EmbeddedScribeConfig)
 			if err != nil {
 				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}
@@ -124,6 +125,8 @@ var NotaryRunCommand = &cli.Command{
 
 			scribeClient = embedded.ScribeClient
 
+			notaryConfig.ScribeURL = scribeClient.URL
+			notaryConfig.ScribePort = uint32(scribeClient.Port)
 			notary, err := notary.NewNotary(c.Context, notaryConfig)
 			if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
 				return fmt.Errorf("failed to create notary: %w", err)
