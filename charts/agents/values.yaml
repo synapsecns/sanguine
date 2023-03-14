@@ -96,7 +96,7 @@ notary:
       command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;' ]
       env:
         - name: POD_NAME
-          value: notary-mysql
+          value: agents-mysql
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -104,10 +104,10 @@ notary:
     - name: create-database-scribe
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: [ 'bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do 'echo waiting for db'; sleep 10; done" ]
+      command: [ 'bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS notaryscribe\"; do 'echo waiting for db'; sleep 10; done" ]
       env:
         - name: POD_NAME
-          value: notary-mysql
+          value: agents-mysql
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
