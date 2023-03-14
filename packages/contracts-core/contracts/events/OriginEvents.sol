@@ -48,4 +48,11 @@ abstract contract OriginEvents {
      * @param snapSignature Agent signature for the snapshot
      */
     event InvalidSnapshotState(uint256 stateIndex, bytes snapshot, bytes snapSignature);
+
+    /**
+     * @notice Emitted when a proof of invalid state report is submitted.
+     * @param srPayload     Raw payload with report data
+     * @param srSignature   Guard signature for the report
+     */
+    event InvalidStateReport(bytes srPayload, bytes srSignature);
 }
