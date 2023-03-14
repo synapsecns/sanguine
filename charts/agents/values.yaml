@@ -541,18 +541,20 @@ executor_remote_fresh_files:
   executor_signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   executor_config.yaml: |-
-    base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
     execute_interval: 5
     summit_chain_id: 10
     summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
     chains:
       - chain_id: 137
+        temp_rpc: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 10
+        temp_rpc: "https://optimism-rpc.gateway.pokt.network"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 43114
+        temp_rpc: "https://rpc.ankr.com/avalanche"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
     unbonded_signer:

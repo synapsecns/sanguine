@@ -108,8 +108,17 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 	}
 
 	clients = make(map[uint32]executor.Backend)
-	for _, execClient := range executorConfig.Chains {
+	/* for _, execClient := range executorConfig.Chains {
 		rpcDial, err := rpc.DialContext(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, execClient.ChainID))
+		if err != nil {
+			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
+		}
+
+		ethClient := ethclient.NewClient(rpcDial)
+		clients[execClient.ChainID] = ethClient
+	} */
+	for _, execClient := range executorConfig.Chains {
+		rpcDial, err := rpc.DialContext(c.Context, execClient.TempRPC)
 		if err != nil {
 			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
 		}
