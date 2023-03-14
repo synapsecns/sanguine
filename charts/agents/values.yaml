@@ -93,7 +93,7 @@ notary:
     - name: wait-for-mysql
       image: busybox:latest
       imagePullPolicy: IfNotPresent
-      command: ['sh','-c','until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
+      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;']
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -104,7 +104,7 @@ notary:
     - name: create-database-scribe
       image: mysql/mysql-server:latest
       imagePullPolicy: IfNotPresent
-      command: ['bash','-c',"until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS notaryscribe\"; do 'echo waiting for db'; sleep 10; done"]
+      command: ['bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS notaryscribe\"; do 'echo waiting for db'; sleep 10; done"]
       env:
         - name: POD_NAME
           value: agents-mysql
@@ -790,7 +790,7 @@ executor_remote_fresh_files:
 
 executor_embedded_files:
   executor_signer.txt: |-
-    b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
+    04486fc4ef3f3fb489c9f4ed4ff07cb9aa998abc0a244f2464c76164bcfad41d
   executor_config.yaml: |-
     base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
     execute_interval: 5
