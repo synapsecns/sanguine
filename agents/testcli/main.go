@@ -15,7 +15,7 @@ import (
 
 //nolint:gosec
 func main() {
-	fmt.Println("Enter Sending Chain URL: ")
+	fmt.Println("Enter Sending Chain URL (eg https://polygon-rpc.com, https://api.avax.network/ext/bc/C/rpc, https://optimism-mainnet.public.blastapi.io): ")
 	var sendingChainURL string
 	fmt.Scanln(&sendingChainURL)
 
@@ -26,7 +26,7 @@ func main() {
 		return
 	}
 
-	fmt.Println("Enter Sending Test Client Contract Address: ")
+	fmt.Println("Enter Sending Test Client Contract Address (eg 0x07303feddAd86BF1ac260F1d9886E420D9c7144C): ")
 	var sendingTestClientContract string
 	fmt.Scanln(&sendingTestClientContract)
 
@@ -47,13 +47,13 @@ func main() {
 	}
 	localSigner := localsigner.NewSigner(localWallet.PrivateKey())
 
-	fmt.Println("Enter Receiving Test Client Contract Address: ")
+	fmt.Println("Enter Receiving Test Client Contract Address (eg 0x07303feddAd86BF1ac260F1d9886E420D9c7144C): ")
 	var receivingTestClientAddress string
 	fmt.Scanln(&receivingTestClientAddress)
 
 	recipient := common.HexToAddress(receivingTestClientAddress)
 
-	fmt.Println("Enter Destination Domain ID: ")
+	fmt.Println("Enter Destination Domain ID (eg. polygon: 137, avalanche 43114, optimism: 10): ")
 	var domainIDStr string
 	fmt.Scanln(&domainIDStr)
 

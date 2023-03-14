@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/jpillora/backoff"
-	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"io"
 	"math/big"
 	"strconv"
 	"time"
+
+	"github.com/jpillora/backoff"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 
 	agentsConfig "github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
@@ -144,9 +145,9 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			summitParserRef = &summitParser
 		}
 
-		chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
-
-		underlyingClient, err := ethergoChain.NewFromURL(ctx, chainRPCURL)
+		// chainRPCURL := fmt.Sprintf("%s/1/rpc/%d", config.BaseOmnirpcURL, chain.ChainID)
+		//
+		underlyingClient, err := ethergoChain.NewFromURL(ctx, chain.TempRPC)
 		if err != nil {
 			return nil, fmt.Errorf("could not get evm: %w", err)
 		}
