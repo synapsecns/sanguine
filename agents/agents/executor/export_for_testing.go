@@ -180,6 +180,11 @@ func (e Executor) VerifyMessageMerkleProof(message types.Message) (bool, error) 
 	return e.verifyMessageMerkleProof(message)
 }
 
+// VerifyStateMerkleProof verifies state merkle proof.
+func (e Executor) VerifyStateMerkleProof(ctx context.Context, state types.State) (bool, error) {
+	return e.verifyStateMerkleProof(ctx, state)
+}
+
 // VerifyMessageOptimisticPeriod verifies message optimistic period.
 func (e Executor) VerifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
 	return e.verifyMessageOptimisticPeriod(ctx, message)
