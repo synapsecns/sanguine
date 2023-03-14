@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "7e78ca6507894722a06a32a8ccb24fd754b4842f"
+  tag: "146ad9487531f56804a2f91c8517b49fd68c71e9"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -376,7 +376,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://rpc.ankr.com/avalanche"
+        rpc_url: "https://1rpc.io/avax/c"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 43114
@@ -418,7 +418,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://rpc.ankr.com/avalanche"
+        rpc_url: "https://1rpc.io/avax/c"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 137
@@ -460,7 +460,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://rpc.ankr.com/avalanche"
+        rpc_url: "https://1rpc.io/avax/c"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 10
@@ -504,7 +504,7 @@ guard_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://rpc.ankr.com/avalanche"
+        rpc_url: "https://1rpc.io/avax/c"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 0
@@ -554,7 +554,7 @@ executor_remote_fresh_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 43114
-        temp_rpc: "https://rpc.ankr.com/avalanche"
+        temp_rpc: "https://1rpc.io/avax/c"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
     unbonded_signer:
@@ -610,12 +610,15 @@ executor_embedded_files:
     summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
     chains:
       - chain_id: 137
+        temp_rpc: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 10
+        temp_rpc: "https://optimism-rpc.gateway.pokt.network"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 43114
+        temp_rpc: "https://1rpc.io/avax/c"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
     unbonded_signer:
