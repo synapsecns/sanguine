@@ -8,6 +8,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
+	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"gopkg.in/yaml.v2"
 )
 
@@ -32,6 +33,10 @@ type AgentConfig struct {
 	ScribePort uint32 `yaml:"scribe_port,omitempty"`
 	// ScribePUrl is the scribe port
 	ScribeURL string `yaml:"scribe_url,omitempty"`
+	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be
+	// included if an embedded Scribe is being used. If a remote Scribe is being used,
+	// this can be left empty.
+	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

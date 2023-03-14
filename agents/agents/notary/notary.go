@@ -390,9 +390,11 @@ func (n Notary) Start(ctx context.Context) error {
 	logger.Info("Notary: ensure that gRPC is up and running.")
 	healthCheck, err := n.scribeGrpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
 	if err != nil {
+		logger.Errorf("Notary grpc scribe check go error %v", err)
 		return fmt.Errorf("could not check: %w", err)
 	}
 	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
+		logger.Errorf("Notary grpc returned health check status that was not healthy %s", healthCheck.Status)
 		return fmt.Errorf("not serving: %s", healthCheck.Status)
 	}
 
