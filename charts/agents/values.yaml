@@ -75,6 +75,8 @@ notary:
   env:
     - name: GOLOG_LOG_FMT
       value: "json"
+    - name: GOLOG_LOG_LEVEL
+      value: "info"
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -99,6 +101,8 @@ guard:
   env:
     - name: GOLOG_LOG_FMT
       value: "json"
+    - name: GOLOG_LOG_LEVEL
+      value: "info"
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -126,6 +130,8 @@ executor_remote_existing:
   env:
     - name: GOLOG_LOG_FMT
       value: "json"
+    - name: GOLOG_LOG_LEVEL
+      value: "info"
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -162,6 +168,8 @@ executor_remote_fresh:
   env:
     - name: GOLOG_LOG_FMT
       value: "json"
+    - name: GOLOG_LOG_LEVEL
+      value: "info"
     - name: POD_NAMESPACE
       valueFrom:
         fieldRef:
@@ -224,6 +232,8 @@ executor_embedded:
   env:
     - name: GOLOG_LOG_FMT
       value: "json"
+    - name: GOLOG_LOG_LEVEL
+      value: "info"
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -376,7 +386,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://rpc.ankr.com/avalanche"
+        rpc_url: "https://api.avax.network/ext/bc/C/rpc"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 43114
@@ -418,7 +428,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://rpc.ankr.com/avalanche"
+        rpc_url: "https://api.avax.network/ext/bc/C/rpc"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 137
@@ -460,7 +470,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://rpc.ankr.com/avalanche"
+        rpc_url: "https://api.avax.network/ext/bc/C/rpc"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 10
@@ -504,7 +514,7 @@ guard_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://rpc.ankr.com/avalanche"
+        rpc_url: "https://api.avax.network/ext/bc/C/rpc"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 0
