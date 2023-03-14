@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "7e78ca6507894722a06a32a8ccb24fd754b4842f"
+  tag: "47ec26166c9a5ea7e3abbe1a3b2dd8306f169481"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -86,6 +86,28 @@ notary:
       env:
         - name: POD_NAME
           value: agents-omnirpc
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    - name: wait-for-mysql
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      command: [ 'sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 3306; do echo "Waiting for mysql..."; sleep 1; done;' ]
+      env:
+        - name: POD_NAME
+          value: notary-mysql
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+    - name: create-database-scribe
+      image: mysql/mysql-server:latest
+      imagePullPolicy: IfNotPresent
+      command: [ 'bash', '-c', "until mysql -h${POD_NAME}.${POD_NAMESPACE} -uroot -pMysqlPassword --execute=\"CREATE DATABASE IF NOT EXISTS scribe\"; do 'echo waiting for db'; sleep 10; done" ]
+      env:
+        - name: POD_NAME
+          value: notary-mysql
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -386,7 +408,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://api.avax.network/ext/bc/C/rpc"
+        rpc_url: "https://1rpc.io/avax/c"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 43114
@@ -428,7 +450,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://api.avax.network/ext/bc/C/rpc"
+        rpc_url: "https://1rpc.io/avax/c"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 137
@@ -470,7 +492,7 @@ notary_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://api.avax.network/ext/bc/C/rpc"
+        rpc_url: "https://1rpc.io/avax/c"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 10
@@ -514,7 +536,7 @@ guard_files:
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
-        rpc_url: "https://api.avax.network/ext/bc/C/rpc"
+        rpc_url: "https://1rpc.io/avax/c"
         start_height: 26091228
     summit_domain_id: 10
     domain_id: 0
@@ -551,18 +573,20 @@ executor_remote_fresh_files:
   executor_signer.txt: |-
     b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
   executor_config.yaml: |-
-    base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
     execute_interval: 5
     summit_chain_id: 10
     summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
     chains:
       - chain_id: 137
+        temp_rpc: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 10
+        temp_rpc: "https://optimism-rpc.gateway.pokt.network"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 43114
+        temp_rpc: "https://1rpc.io/avax/c"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
     unbonded_signer:
@@ -618,12 +642,15 @@ executor_embedded_files:
     summit_address: 0x128fF47f1a614c61beC9935898C33B91486aA04e
     chains:
       - chain_id: 137
+        temp_rpc: "https://rpc.interoperability.institute/confirmations/1/rpc/137"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 10
+        temp_rpc: "https://optimism-rpc.gateway.pokt.network"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
       - chain_id: 43114
+        temp_rpc: "https://1rpc.io/avax/c"
         origin_address: 0xF3773BE7cb59235Ced272cF324aaeb0A4115280f
         destination_address: 0xde5BB62aBCF588EC200674757EDB2f6889aCd065
     unbonded_signer:
