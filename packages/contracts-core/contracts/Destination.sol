@@ -92,6 +92,7 @@ contract Destination is
         address guard = _verifyAttestationReport(report, _arSignature);
         // This will revert if attestation signer is not an active Notary
         (uint32 domain, address notary) = _verifyAttestation(report.attestation(), _attSignature);
+        // Reported Attestation was signed by the Notary => open dispute
         _openDispute(guard, domain, notary);
         return true;
     }
