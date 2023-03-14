@@ -10,6 +10,7 @@ type State is bytes29;
 /// @dev Attach library functions to State
 using {
     StateLib.unwrap,
+    StateLib.equals,
     StateLib.equalToOrigin,
     StateLib.leaf,
     StateLib.subLeafs,
@@ -124,6 +125,12 @@ library StateLib {
     /// @notice Convenience shortcut for unwrapping a view.
     function unwrap(State _state) internal pure returns (bytes29) {
         return State.unwrap(_state);
+    }
+
+    /// @notice Compares two State structures.
+    function equals(State _a, State _b) internal pure returns (bool) {
+        // Length of a State payload is fixed, so we just need to compare the hashes
+        return _a.unwrap().keccak() == _b.unwrap().keccak();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
