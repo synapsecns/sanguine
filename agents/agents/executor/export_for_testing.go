@@ -143,6 +143,28 @@ func (e Executor) GetLogChan(chainID uint32) chan *ethTypes.Log {
 	return e.chainExecutors[chainID].logChan
 }
 
+// StartAndListenOrigin starts and listens to a chain.
+func (e Executor) StartAndListenOrigin(ctx context.Context, chainID uint32, address string) error {
+	g, _ := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chainID, address, nil, contractEventType{
+			contractType: originContract,
+			eventType:    dispatchedEvent,
+		})
+	})
+
+	g.Go(func() error {
+		return e.receiveLogs(ctx, chainID)
+	})
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("error in executor agent: %w", err)
+	}
+
+	return nil
+}
+
 // GetMerkleTree gets a merkle tree.
 func (e Executor) GetMerkleTree(chainID uint32) *merkle.HistoricalTree {
 	return e.chainExecutors[chainID].merkleTree
