@@ -14,11 +14,13 @@ import { OriginStateMask } from "./libs/State.t.sol";
 import { fakeState, fakeSnapshot } from "../utils/libs/FakeIt.t.sol";
 import { Random } from "../utils/libs/Random.t.sol";
 import {
+    StateFlag,
     RawAttestation,
     RawHeader,
     RawMessage,
     RawSnapshot,
     RawState,
+    RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
@@ -215,6 +217,31 @@ contract OriginTest is SynapseTest, SynapseProofs {
         _verifyAttestation(random, rs, false);
     }
 
+    function test_verifyAttestationWithProof_valid(Random memory random, uint32 nonce) public {
+        // Use empty mutation mask
+        OriginStateMask memory mask;
+        test_verifyAttestationWithProof_existingNonce(random, nonce, mask);
+    }
+
+    function test_verifyAttestationWithProof_existingNonce(
+        Random memory random,
+        uint32 nonce,
+        OriginStateMask memory mask
+    ) public {
+        (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
+        _verifyAttestationWithProof(random, rs, isValid);
+    }
+
+    function test_verifyAttestationWithProof_unknownNonce(Random memory random, RawState memory rs)
+        public
+    {
+        // Restrict nonce to non-existing ones
+        rs.nonce = uint32(bound(rs.nonce, MESSAGES + 1, type(uint32).max));
+        rs.origin = DOMAIN_LOCAL;
+        // Remaining fields are fuzzed
+        _verifyAttestationWithProof(random, rs, false);
+    }
+
     function _prepareExistingState(uint32 nonce, OriginStateMask memory mask)
         internal
         returns (bool isValid, RawState memory rs)
@@ -240,7 +267,6 @@ contract OriginTest is SynapseTest, SynapseProofs {
 
     function _prepareAttestation(Random memory random, RawState memory rawState)
         internal
-        view
         returns (
             uint32 domain,
             address notary,
@@ -262,6 +288,8 @@ contract OriginTest is SynapseTest, SynapseProofs {
         (snapshot, ) = rawSnap.castToSnapshot();
         // Use random metadata
         ra = random.nextAttestation(rawSnap, random.nextUint32());
+        // Save snapshot for Snapshot Proof generation
+        acceptSnapshot(rawSnap.castToStateList());
     }
 
     function _verifyAttestation(
@@ -296,6 +324,45 @@ contract OriginTest is SynapseTest, SynapseProofs {
         }
     }
 
+    function _verifyAttestationWithProof(
+        Random memory random,
+        RawState memory rawState,
+        bool isValid
+    ) internal {
+        (
+            uint32 domain,
+            address notary,
+            uint256 stateIndex,
+            ,
+            RawAttestation memory ra
+        ) = _prepareAttestation(random, rawState);
+        bytes32[] memory snapProof = genSnapshotProof(stateIndex);
+        (bytes memory state, ) = rawState.castToState();
+        (bytes memory attestation, ) = ra.castToAttestation();
+        bytes memory signature = signAttestation(notary, attestation);
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidAttestationState(stateIndex, state, attestation, signature);
+            _expectAgentSlashed(domain, notary);
+        }
+        vm.recordLogs();
+        assertEq(
+            InterfaceOrigin(origin).verifyAttestationWithProof(
+                stateIndex,
+                state,
+                snapProof,
+                attestation,
+                signature
+            ),
+            isValid,
+            "!returnValue"
+        );
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
+    }
+
     function _verifySnapshot(
         RawState memory rawState,
         bool isValid,
@@ -318,6 +385,31 @@ contract OriginTest is SynapseTest, SynapseProofs {
         }
         assertEq(
             InterfaceOrigin(origin).verifySnapshot(stateIndex, snapshot, signature),
+            isValid,
+            "!returnValue"
+        );
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
+        _verifyStateReport(rawState, isValid);
+    }
+
+    function _verifyStateReport(RawState memory rawState, bool isStateValid) internal {
+        // Report is valid only if reported state is invalid
+        bool isValid = !isStateValid;
+        RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rawState);
+        address guard = domains[0].agent;
+        (bytes memory report, ) = rawSR.castToStateReport();
+        bytes memory signature = signStateReport(guard, report);
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidStateReport(report, signature);
+            _expectAgentSlashed(0, guard);
+        }
+        vm.recordLogs();
+        assertEq(
+            InterfaceOrigin(origin).verifyStateReport(report, signature),
             isValid,
             "!returnValue"
         );

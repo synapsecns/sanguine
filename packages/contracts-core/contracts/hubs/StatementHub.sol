@@ -5,6 +5,7 @@ import { Attestation, AttestationLib } from "../libs/Attestation.sol";
 import { Snapshot, SnapshotLib, State, StateLib } from "../libs/Snapshot.sol";
 import { AttestationReport, AttestationReportLib } from "../libs/AttestationReport.sol";
 import { MerkleLib } from "../libs/Merkle.sol";
+import { StateReport, StateReportLib } from "../libs/StateReport.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentRegistry } from "../system/AgentRegistry.sol";
 import { Versioned } from "../Version.sol";
@@ -27,6 +28,7 @@ abstract contract StatementHub is AgentRegistry, Versioned {
     using AttestationReportLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
+    using StateReportLib for bytes;
 
     // solhint-disable-next-line no-empty-blocks
     constructor() Versioned("0.0.3") {}
@@ -87,6 +89,26 @@ abstract contract StatementHub is AgentRegistry, Versioned {
         // This will revert if signer is not an active agent
         uint32 domain;
         (domain, guard) = _recoverAgent(_report.hash(), _arSignature);
+        // Report signer needs to be a Guard, not a Notary
+        require(domain == 0, "Signer is not a Guard");
+    }
+
+    /**
+     * @dev Internal function to verify the signed snapshot report payload.
+     * Reverts if any of these is true:
+     *  - Report signer is not an active Guard.
+     * @param _report           Typed memory view over report payload
+     * @param _srSignature      Guard signature for the report
+     * @return guard            Guard that signed the report
+     */
+    function _verifyStateReport(StateReport _report, bytes memory _srSignature)
+        internal
+        view
+        returns (address guard)
+    {
+        // This will revert if signer is not an active agent
+        uint32 domain;
+        (domain, guard) = _recoverAgent(_report.hash(), _srSignature);
         // Report signer needs to be a Guard, not a Notary
         require(domain == 0, "Signer is not a Guard");
     }
@@ -215,5 +237,10 @@ abstract contract StatementHub is AgentRegistry, Versioned {
     /// @dev Wraps State payload into a typed memory view. Reverts if not properly formatted.
     function _wrapState(bytes memory _statePayload) internal pure returns (State) {
         return _statePayload.castToState();
+    }
+
+    /// @dev Wraps StateReport payload into a typed memory view. Reverts if not properly formatted.
+    function _wrapStateReport(bytes memory _srPayload) internal pure returns (StateReport) {
+        return _srPayload.castToStateReport();
     }
 }
