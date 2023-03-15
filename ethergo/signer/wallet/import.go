@@ -76,6 +76,8 @@ func FromSeedPhrase(seedPhrase string, derivationPath accounts.DerivationPath) (
 		return nil, fmt.Errorf("could not derive account: %w", err)
 	}
 
+	fmt.Println(wallet.Accounts())
+
 	privKey, err := wallet.PrivateKey(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get private key: %w", err)

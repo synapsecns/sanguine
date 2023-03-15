@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ImVexed/fasturl"
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/exp/slices"
 	"reflect"
 	"runtime"
@@ -16,6 +17,8 @@ func _() {
 	// make sure we don't panic
 	NewAnvilOptionBuilder()
 }
+
+const defaultMnemonic = "sound practice disease erupt basket pumpkin truck file gorilla behave find exchange napkin boy congress address city net prosper crop chair marine chase seven"
 
 // NewAnvilOptionBuilder creates a new option builder.
 func NewAnvilOptionBuilder() *OptionBuilder {
@@ -38,6 +41,11 @@ func NewAnvilOptionBuilder() *OptionBuilder {
 	optionsBuilder.SetTimestamp(0)
 	optionsBuilder.SetAllowOrigin("*")
 	optionsBuilder.SetHost("0.0.0.0")
+	err = optionsBuilder.SetMnemonic(defaultMnemonic)
+	if err != nil {
+		panic(err)
+	}
+
 	return optionsBuilder
 }
 
@@ -65,6 +73,7 @@ type generalOptions struct {
 	StepsTracing   bool                    `anvil:"steps-tracing"`
 	Silent         bool                    `anvil:"silent"`
 	Timestamp      uint64                  `anvil:"timestamp"`
+	Mnemonic       string                  `anvil:"mnemonic"`
 }
 
 type executorOptions struct {
@@ -115,6 +124,11 @@ func (o *OptionBuilder) SetDerivationPath(derivationPath accounts.DerivationPath
 	o.DerivationPath = derivationPath
 }
 
+// GetDerivationPath returns the derivation path to use for the Accounts.
+func (o *OptionBuilder) GetDerivationPath() accounts.DerivationPath {
+	return o.DerivationPath
+}
+
 // SetHardfork sets the Hardfork to use for the chain.
 func (o *OptionBuilder) SetHardfork(hardfork Hardfork) error {
 	if !slices.Contains(allHardforks, hardfork) {
@@ -124,10 +138,29 @@ func (o *OptionBuilder) SetHardfork(hardfork Hardfork) error {
 	return nil
 }
 
+// GetHardfork returns the Hardfork to use for the chain.
+func (o *OptionBuilder) GetHardfork() Hardfork {
+	return o.Hardfork
+}
+
+func (o *OptionBuilder) GetMnemonic() string {
+	return o.Mnemonic
+}
+
 // SetInit sets the genesis file to use for the chain.
 // Warning: this option is not currently supported.
 func (o *OptionBuilder) SetInit(_ string) error {
 	return fmt.Errorf("unsupported option (not yet implemented): %s", getFunctionName(o.SetInit))
+}
+
+// SetMnemonic sets the mnemonic to use for the chain.
+func (o *OptionBuilder) SetMnemonic(mnemonic string) error {
+	o.Mnemonic = mnemonic
+	if !bip39.IsMnemonicValid(mnemonic) {
+		return fmt.Errorf("invalid mnemonic: %s", mnemonic)
+	}
+
+	return nil
 }
 
 // SetOrder sets the transaction Order to use for the chain.
@@ -257,6 +290,7 @@ func (o *OptionBuilder) SetPruneHistory(pruneHistory bool) {
 	o.PruneHistory = pruneHistory
 }
 
+// SetHost sets the host to listen on.
 func (o *OptionBuilder) SetHost(host string) {
 	o.Host = host
 }

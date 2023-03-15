@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// TODO: make tests more comprehesnive here
+// TODO: make tests more comprehesnive here.
 func TestOptionsBuilder(t *testing.T) {
 	optionBuilder := anvil.NewAnvilOptionBuilder()
 	_, err := optionBuilder.Build()

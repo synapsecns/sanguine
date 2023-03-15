@@ -16,3 +16,8 @@ func ValueToString(v reflect.Value) (string, error) {
 func FieldIsEmpty(v reflect.Value) bool {
 	return fieldIsEmpty(v)
 }
+
+// AllHardforks exports allHardforks for testing.
+func AllHardforks() []Hardfork {
+	return allHardforks
+}

@@ -21,11 +21,11 @@ func _() {
 	_ = x[Berlin-11]
 	_ = x[London-12]
 	_ = x[ArrowGlacier-13]
-	_ = x[GlayGlacier-14]
+	_ = x[GrayGlacier-14]
 	_ = x[Latest-15]
 }
 
-const _Hardfork_name = "frontierhomesteaddaotangerinespuriousdragonbyzantiumconstantinoplepetersburgistanbulmuirglacierberlinlondonarrowglacierglayglacierlatest"
+const _Hardfork_name = "frontierhomesteaddaotangerinespuriousdragonbyzantiumconstantinoplepetersburgistanbulmuirglacierberlinlondonarrowglaciergrayglacierlatest"
 
 var _Hardfork_index = [...]uint8{0, 8, 17, 20, 29, 43, 52, 66, 76, 84, 95, 101, 107, 119, 130, 136}
 
