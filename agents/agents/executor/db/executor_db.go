@@ -10,11 +10,11 @@ import (
 // ExecutorDBWriter is the interface for writing to the executor database.
 type ExecutorDBWriter interface {
 	// StoreMessage stores a message in the database.
-	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error
+	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, attestationNonce uint32, minimumTime uint64) error
 	// ExecuteMessage marks a message as executed in the database.
 	ExecuteMessage(ctx context.Context, messageMask types.DBMessage) error
 	// SetMinimumTime sets the minimum time of a message.
-	SetMinimumTime(ctx context.Context, messageMask types.DBMessage, minimumTime uint64) error
+	SetMinimumTime(ctx context.Context, messageMask types.DBMessage, attestationNonce uint32, minimumTime uint64) error
 
 	// StoreAttestation stores an attestation.
 	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, destination uint32, destinationBlockNumber, destinationTimestamp uint64) error
@@ -50,8 +50,8 @@ type ExecutorDBReader interface {
 	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 	// GetAttestationTimestamp gets the timestamp of an attestation.
 	GetAttestationTimestamp(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
-	// GetAttestationMinimumTimestamp takes a list of snapshot roots and returns the timestamp of the attestation with the lowest block number.
-	GetAttestationMinimumTimestamp(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*uint64, error)
+	// GetAttestationMinimumTimestampAndNonce takes a list of snapshot roots and returns the timestamp and nonce of the attestation with the lowest block number.
+	GetAttestationMinimumTimestampAndNonce(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*uint64, *uint32, error)
 	// GetEarliestSnapshotFromAttestation takes a list of snapshot roots, checks which one has the lowest block number, and returns that snapshot root back.
 	GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*[32]byte, error)
 

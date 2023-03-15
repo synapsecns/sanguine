@@ -661,7 +661,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 
 		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
 
-		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, false, 0)
+		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, 0, 0)
 		if err != nil {
 			return fmt.Errorf("could not store message: %w", err)
 		}
@@ -845,7 +845,7 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 				if len(messages) == 0 {
 					break
 				}
-
+				fmt.Println("GOT AN UNSET MESSAGE")
 				unsetMessages = append(unsetMessages, messages...)
 
 				page++
@@ -867,18 +867,20 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 					continue
 				}
 
+				fmt.Println("GOT POTENTIAL SNAPSHOT ROOTS")
+
 				destinationDomain := message.DestinationDomain()
 
 				attestationMask := execTypes.DBAttestation{
 					Destination: &destinationDomain,
 				}
 
-				minimumTimestamp, err := e.executorDB.GetAttestationMinimumTimestamp(ctx, attestationMask, potentialSnapshotRoots)
+				minimumTimestamp, attestationNonce, err := e.executorDB.GetAttestationMinimumTimestampAndNonce(ctx, attestationMask, potentialSnapshotRoots)
 				if err != nil {
 					return fmt.Errorf("could not get attestation minimum timestamp: %w", err)
 				}
 
-				if minimumTimestamp == nil {
+				if minimumTimestamp == nil || attestationNonce == nil {
 					continue
 				}
 
@@ -888,7 +890,8 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 					Nonce:       &nonce,
 				}
 
-				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, *minimumTimestamp)
+				fmt.Println("%%%%%%%%%%% attestationNonce", *attestationNonce)
+				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, *attestationNonce, *minimumTimestamp)
 				if err != nil {
 					return fmt.Errorf("could not set minimum time: %w", err)
 				}

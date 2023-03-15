@@ -98,8 +98,8 @@ func (s Store) GetAttestationTimestamp(ctx context.Context, attestationMask type
 	return &attestation.DestinationTimestamp, nil
 }
 
-// GetAttestationMinimumTimestamp takes a list of snapshot roots and returns the timestamp of the attestation with the lowest block number.
-func (s Store) GetAttestationMinimumTimestamp(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*uint64, error) {
+// GetAttestationMinimumTimestampAndNonce takes a list of snapshot roots and returns the timestamp and nonce of the attestation with the lowest block number.
+func (s Store) GetAttestationMinimumTimestampAndNonce(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*uint64, *uint32, error) {
 	var attestation Attestation
 
 	dbAttestationMask := DBAttestationToAttestation(attestationMask)
@@ -111,14 +111,14 @@ func (s Store) GetAttestationMinimumTimestamp(ctx context.Context, attestationMa
 		Limit(1).
 		Scan(&attestation)
 	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to get attestation minimum timestamp: %w", dbTx.Error)
+		return nil, nil, fmt.Errorf("failed to get attestation minimum timestamp: %w", dbTx.Error)
 	}
 	if dbTx.RowsAffected == 0 {
 		//nolint:nilnil
-		return nil, nil
+		return nil, nil, nil
 	}
 
-	return &attestation.DestinationTimestamp, nil
+	return &attestation.DestinationTimestamp, &attestation.AttestationNonce, nil
 }
 
 // GetEarliestSnapshotFromAttestation takes a list of snapshot roots, checks which one has the lowest block number, and returns that snapshot root back.

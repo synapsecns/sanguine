@@ -17,7 +17,6 @@ func init() {
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	DestinationBlockNumberFieldName = namer.GetConsistentName("DestinationBlockNumber")
 	ExecutedFieldName = namer.GetConsistentName("Executed")
-	MinimumTimeSetFieldName = namer.GetConsistentName("MinimumTimeSet")
 	MinimumTimeFieldName = namer.GetConsistentName("MinimumTime")
 	SnapshotRootFieldName = namer.GetConsistentName("SnapshotRoot")
 	AttestationNonceFieldName = namer.GetConsistentName("AttestationNonce")
@@ -40,8 +39,6 @@ var (
 	DestinationBlockNumberFieldName string
 	// ExecutedFieldName is the executed field name.
 	ExecutedFieldName string
-	// MinimumTimeSetFieldName is the minimum time set field name.
-	MinimumTimeSetFieldName string
 	// MinimumTimeFieldName is the minimum time field name.
 	MinimumTimeFieldName string
 	// SnapshotRootFieldName is the snapshot root field name.
@@ -65,8 +62,9 @@ type Message struct {
 	BlockNumber uint64 `gorm:"column:block_number"`
 	// Executed is if the message has been executed.
 	Executed bool `gorm:"column:executed"`
-	// MinimumTimeSet is if the MinimumTime field has been set from an Attestation.
-	MinimumTimeSet bool `gorm:"column:minimum_time_set"`
+	// AttestationNonce is the nonce of the attestation that was used to set the minimum time.
+	// If this is 0, then the minimum time was not set by an attestation.
+	AttestationNonce uint32 `gorm:"column:attestation_nonce"`
 	// MinimumTime is the minimum time that the message can be executed.
 	MinimumTime uint64 `gorm:"column:minimum_time"`
 }

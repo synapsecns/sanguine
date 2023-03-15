@@ -115,10 +115,11 @@ func (t *DBSuite) TestGetAttestationMinimumTimestamp() {
 
 		roots := []string{snapshotRootA.String(), snapshotRootB.String()}
 
-		minimumTimestamp, err := testDB.GetAttestationMinimumTimestamp(t.GetTestContext(), mask, roots)
+		minimumTimestamp, attestationNonce, err := testDB.GetAttestationMinimumTimestampAndNonce(t.GetTestContext(), mask, roots)
 		Nil(t.T(), err)
 
 		Equal(t.T(), destinationTimestampA, *minimumTimestamp)
+		Equal(t.T(), nonceA, *attestationNonce)
 	})
 }
 

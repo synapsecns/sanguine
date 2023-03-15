@@ -14,8 +14,9 @@ type DBMessage struct {
 	BlockNumber *uint64
 	// Executed is if the message has been executed.
 	Executed *bool
-	// MinimumTimeSet is if the MinimumTime field has been set from an Attestation.
-	MinimumTimeSet *bool
+	// AttestationNonce is the nonce of the attestation that was used to set the minimum time.
+	// If this is 0, then the minimum time was not set by an attestation.
+	AttestationNonce *uint32
 	// MinimumTime is the minimum time that the message can be executed.
 	MinimumTime *uint64
 }
