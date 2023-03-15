@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethCore "github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/eth/gasprice"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/google/uuid"
@@ -16,6 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
+	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
@@ -37,6 +39,13 @@ type Backend struct {
 	store *base.InMemoryKeyStore
 	// chainConfig is the chain config
 	chainConfig *params.ChainConfig
+}
+
+const backendName = "anvil"
+
+// BackendName returns the name of the backend.
+func (f *Backend) BackendName() string {
+	return backendName
 }
 
 const gasLimit = 10000000
@@ -75,7 +84,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	// Docker will hard kill the container in 4000 seconds (this is a test env).
 	// containers should be removed on their own, but this is a safety net.
 	// to prevent old containers from piling up, we set a timeout to remove the container.
-	const resourceLifetime = uint(4000)
+	const resourceLifetime = uint(600)
 
 	assert.Nil(t, resource.Expire(resourceLifetime))
 
@@ -202,5 +211,45 @@ func (f *Backend) GetFundedAccount(ctx context.Context, requestBalance *big.Int)
 
 	f.store.Store(key)
 
-	panic("implement me")
+	f.FundAccount(ctx, key.Address, *requestBalance)
+
+	return key
 }
+
+// GetTxContext gets the tx context for the given address.
+// TODO: dedupe w/ geth.
+func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (res backends.AuthType) {
+	ctx, cancel := onecontext.Merge(ctx, f.Context())
+	defer cancel()
+
+	var acct *keystore.Key
+	// TODO handle storing accounts to conform to get tx context
+	if address != nil {
+		acct = f.store.GetAccount(*address)
+		if acct == nil {
+			f.T().Errorf("could not get account %s", address.String())
+			return res
+		}
+	} else {
+		acct = f.GetFundedAccount(ctx, big.NewInt(0).Mul(big.NewInt(params.Ether), big.NewInt(10)))
+		f.store.Store(acct)
+	}
+
+	auth, err := f.NewKeyedTransactorFromKey(acct.PrivateKey)
+	assert.Nil(f.T(), err)
+
+	latestBlock, err := f.BlockByNumber(ctx, nil)
+	assert.Nil(f.T(), err)
+
+	err = f.Chain.GasSetter().SetGasFee(ctx, auth, latestBlock.NumberU64(), core.CopyBigInt(gasprice.DefaultMaxPrice))
+	assert.Nil(f.T(), err)
+
+	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, gasLimit, acct.Address).GasLimit / 2
+
+	return backends.AuthType{
+		TransactOpts: auth,
+		PrivateKey:   acct.PrivateKey,
+	}
+}
+
+var _ backends.SimulatedTestBackend = &Backend{}

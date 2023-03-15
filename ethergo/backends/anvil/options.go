@@ -35,10 +35,12 @@ func NewAnvilOptionBuilder() *OptionBuilder {
 	if err != nil {
 		panic(err)
 	}
-	err = optionsBuilder.SetOrder(Fees)
+	err = optionsBuilder.SetOrder(Fifo)
 	if err != nil {
 		panic(err)
 	}
+
+	optionsBuilder.SetBaseFee(1)
 	optionsBuilder.SetStepsTracing(true)
 	optionsBuilder.SetTimestamp(0)
 	optionsBuilder.SetAllowOrigin("*")
@@ -76,6 +78,7 @@ type generalOptions struct {
 	Silent         bool                    `anvil:"silent"`
 	Timestamp      uint64                  `anvil:"timestamp"`
 	Mnemonic       string                  `anvil:"mnemonic"`
+	NoMining       bool                    `anvil:"no-mining"`
 }
 
 type executorOptions struct {
@@ -123,6 +126,13 @@ func (o *OptionBuilder) SetBlockTime(blockTime time.Duration) {
 // SetBalance sets the Balance of each account in ether (defaults to 1000 ether).
 func (o *OptionBuilder) SetBalance(balance uint64) {
 	o.Balance = balance
+}
+
+// SetNoMining sets whether or not to mine blocks.
+// this is automatically set and must be disabled for other options to be sent.
+// if disabled, this can cause concurrency issues since only one account can be impersonated at a time.
+func (o *OptionBuilder) SetNoMining(noMining bool) {
+	o.NoMining = noMining
 }
 
 // SetDerivationPath sets the derivation path to use for the Accounts.
