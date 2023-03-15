@@ -183,14 +183,12 @@ func tailLogs(ctx context.Context, resource *dockertest.Resource, pool *dockerte
 		OutputStream: outStream,
 	}
 
-	containerLogs, err := processlog.StartLogs(processlog.WithStdOut(outStream), processlog.WithStdErr(errStream), processlog.WithCtx(ctx))
+	_, err := processlog.StartLogs(processlog.WithStdOut(outStream), processlog.WithStdErr(errStream), processlog.WithCtx(ctx))
 	if err != nil {
 		return fmt.Errorf("failed to get container logs: %w", err)
 	}
 
-	logger.Warnf("writing container logs to folder: %s", containerLogs.LogDir())
-
-	//nolint: errwrap
+	//nolint: wrapcheck
 	return pool.Client.Logs(opts)
 }
 
@@ -312,14 +310,35 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 // ImpersonateAccount impersonates an account.
 //
 // Note *any* other call made to the backend will impersonate while this is being called
-// in a future version, we'll wrap something like omnirpc to prevent other transaciton submission calls from taking place
+// in a future version, we'll wrap something like omnirpc to prevent other transactions submission calls from taking place
 // in the meantime, this may cause race conditions.
 //
 // We also print a warning message to the console as an added precaution.
-func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address, TODO func()) {
+func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address, transact func(auth backends.AuthType)) {
 	f.impersonationMux.Lock()
 	defer f.impersonationMux.Unlock()
 
+	f.warnImpersonation()
+
+	// capture context before we start impersonating
+	// this will be a random context, so it doesn't really matter what the address is
+	txContext := f.GetTxContext(ctx, nil)
+
+	anvilClient, err := Dial(ctx, f.RPCAddress())
+	assert.Nil(f.T(), err)
+
+	err = anvilClient.ImpersonateAccount(ctx, address)
+	assert.Nil(f.T(), err)
+
+	transact(txContext)
+
+	defer func() {
+		err = anvilClient.StopImpersonatingAccount(ctx, address)
+		assert.Nil(f.T(), err)
+	}()
+}
+
+func (f *Backend) warnImpersonation() {
 	logOnce.Do(func() {
 		f.T().Logf(`
 				Using Account Impersonation.
@@ -328,13 +347,12 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 				This will be fiexed in a futrue version.
 				`)
 	})
-
 }
 
 // logOnce is used to log the impersonation warning message once.
 // this is a global variable to prevent the message from being logged multiple times.
 // normally, global variables are strongly discouraged, but we make an exception here
-// considering how unexpected behavior can be if impersonate account is not used correctly
+// considering how unexpected behavior can be if impersonate account is not used correctly.
 var logOnce sync.Once
 
 var _ backends.SimulatedTestBackend = &Backend{}

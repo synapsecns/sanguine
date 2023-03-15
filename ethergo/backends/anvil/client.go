@@ -1,4 +1,3 @@
-// nolint: wrapcheck
 package anvil
 
 import (
@@ -22,10 +21,12 @@ type Client struct {
 	*rpc.Client
 }
 
+// nolint: wrapcheck
 func (c *Client) callAnvilContext(ctx context.Context, result interface{}, method string, args ...interface{}) error {
 	return c.CallContext(ctx, result, fmt.Sprintf("%s_%s", anvilNamespace, method), args...)
 }
 
+// nolint: wrapcheck
 func (c *Client) callEvmContext(ctx context.Context, result interface{}, method string, args ...interface{}) error {
 	return c.CallContext(ctx, result, fmt.Sprintf("%s_%s", evmNamespace, method), args...)
 }
@@ -34,7 +35,7 @@ func (c *Client) callEvmContext(ctx context.Context, result interface{}, method 
 func Dial(ctx context.Context, rpcURL string) (*Client, error) {
 	c, err := rpc.DialContext(ctx, rpcURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not create client: %w", err)
 	}
 	return &Client{c}, nil
 }

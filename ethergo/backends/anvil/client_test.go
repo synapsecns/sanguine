@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func (a *AnvilSuite) TestImpersonateAccount() {
+func (a *AnvilSuite) TestClientImpersonateAccount() {
 	a.T().Skip("this and stop impersonation are explicitly skipped because they can not be easily torn down")
 }
 
