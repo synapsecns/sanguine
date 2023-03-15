@@ -352,7 +352,7 @@ func (f *Backend) warnImpersonation() {
 	})
 }
 
-// ImpersonatedSigner is a signer that does nothing for use in account impersonation w/ contracts
+// ImpersonatedSigner is a signer that does nothing for use in account impersonation w/ contracts.
 func ImpersonatedSigner(address common.Address, transaction *types.Transaction) (*types.Transaction, error) {
 	return transaction, nil
 }

@@ -198,7 +198,7 @@ func (c *Client) EnableTraces(ctx context.Context) error {
 	return c.callAnvilContext(ctx, nil, "enableTraces")
 }
 
-// anvilTransaction represents a transaction that will serialize to the correct JSON
+// anvilTransaction represents a transaction that will serialize to the correct JSON.
 type anvilTransaction struct {
 	From            string `json:"from"`
 	To              string `json:"to"`
@@ -223,6 +223,7 @@ func (c *Client) SendUnsignedTransaction(ctx context.Context, from common.Addres
 		Value:           fmt.Sprintf("%x", tx.Value()),
 		TransactionType: bigIntToString(int64(tx.Type())),
 	}
+	// nolint: wrapcheck
 	return c.CallContext(ctx, nil, "eth_sendTransaction", anTx)
 }
 

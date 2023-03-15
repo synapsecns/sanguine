@@ -48,7 +48,9 @@ func (a *AnvilSuite) SetupSuite() {
 	deployer := manager.NewDeployerManager(a.T(), example.NewCounterDeployer)
 	deployedContract := deployer.Get(a.GetSuiteContext(), a.backend, example.CounterType)
 
-	a.counter = deployedContract.ContractHandle().(*counter.Counter)
+	var ok bool
+	a.counter, ok = deployedContract.ContractHandle().(*counter.Counter)
+	True(a.T(), ok)
 }
 
 func TestTestUtilSuite(t *testing.T) {
