@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	ethCore "github.com/ethereum/go-ethereum/core"
@@ -314,15 +315,11 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 // in the meantime, this may cause race conditions.
 //
 // We also print a warning message to the console as an added precaution.
-func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address, transact func(auth backends.AuthType)) {
+func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address, transact func(opts *bind.TransactOpts) *types.Transaction) {
 	f.impersonationMux.Lock()
 	defer f.impersonationMux.Unlock()
 
 	f.warnImpersonation()
-
-	// capture context before we start impersonating
-	// this will be a random context, so it doesn't really matter what the address is
-	txContext := f.GetTxContext(ctx, nil)
 
 	anvilClient, err := Dial(ctx, f.RPCAddress())
 	assert.Nil(f.T(), err)
@@ -330,7 +327,14 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 	err = anvilClient.ImpersonateAccount(ctx, address)
 	assert.Nil(f.T(), err)
 
-	transact(txContext)
+	tx := transact(&bind.TransactOpts{
+		Context: ctx,
+		From:    address,
+		Signer:  ImpersonatedSigner,
+		NoSend:  true,
+	})
+
+	err = anvilClient.SendUnsignedTransaction(ctx, address, tx)
 
 	defer func() {
 		err = anvilClient.StopImpersonatingAccount(ctx, address)
@@ -342,11 +346,15 @@ func (f *Backend) warnImpersonation() {
 	logOnce.Do(func() {
 		f.T().Logf(`
 				Using Account Impersonation.
-				WARNING: This cannot be called concurrently with any other tx submission calls.
+				WARNING: This cannot be called concurrently with other impersonation calls.
 				Please make sure your callers are concurrency safe against account impersonation.
-				This will be fiexed in a futrue version.
 				`)
 	})
+}
+
+// ImpersonatedSigner is a signer that does nothing for use in account impersonation w/ contracts
+func ImpersonatedSigner(address common.Address, transaction *types.Transaction) (*types.Transaction, error) {
+	return transaction, nil
 }
 
 // logOnce is used to log the impersonation warning message once.

@@ -2,15 +2,42 @@ package anvil_test
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"math/big"
 	"time"
 )
 
 func (a *AnvilSuite) TestClientImpersonateAccount() {
-	a.T().Skip("this and stop impersonation are explicitly skipped because they can not be easily torn down")
+	ogCount, err := a.counter.GetVitalikCount(&bind.CallOpts{Context: a.GetTestContext()})
+	Nil(a.T(), err)
+
+	err = a.client.ImpersonateAccount(a.GetTestContext(), vitalik)
+	Nil(a.T(), err)
+
+	increment, err := a.counter.VitalikIncrement(&bind.TransactOpts{
+		From:   vitalik,
+		Value:  big.NewInt(0),
+		NoSend: true,
+		Signer: anvil.ImpersonatedSigner,
+	})
+	Nil(a.T(), err)
+
+	err = a.client.SendUnsignedTransaction(a.GetTestContext(), vitalik, increment)
+	Nil(a.T(), err)
+
+	vitalikCount, err := a.counter.GetVitalikCount(&bind.CallOpts{Context: a.GetTestContext()})
+	Nil(a.T(), err)
+
+	Equal(a.T(), ogCount.Uint64()+10, vitalikCount.Uint64())
+
+	defer func() {
+		err = a.client.StopImpersonatingAccount(a.GetTestContext(), vitalik)
+		Nil(a.T(), err)
+	}()
 }
 
 func (a *AnvilSuite) TestGetAutomine() {

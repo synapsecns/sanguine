@@ -1,13 +1,19 @@
 package anvil_test
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
+	"github.com/synapsecns/sanguine/ethergo/example"
+	"github.com/synapsecns/sanguine/ethergo/example/counter"
+	"github.com/synapsecns/sanguine/ethergo/manager"
 	"testing"
 )
+
+var vitalik = common.HexToAddress("0xd8da6bf26964af9d7eed9e03e53415d37aa96045")
 
 type AnvilSuite struct {
 	*testsuite.TestSuite
@@ -15,6 +21,7 @@ type AnvilSuite struct {
 	options     *anvil.OptionBuilder
 	client      *anvil.Client
 	forkAddress string
+	counter     *counter.Counter
 }
 
 // NewAnvilSuite creates a end-to-end test suite.
@@ -37,6 +44,11 @@ func (a *AnvilSuite) SetupSuite() {
 	a.options = options
 	a.client, err = anvil.Dial(a.GetSuiteContext(), a.backend.RPCAddress())
 	Nil(a.T(), err)
+
+	deployer := manager.NewDeployerManager(a.T(), example.NewCounterDeployer)
+	deployedContract := deployer.Get(a.GetSuiteContext(), a.backend, example.CounterType)
+
+	a.counter = deployedContract.ContractHandle().(*counter.Counter)
 }
 
 func TestTestUtilSuite(t *testing.T) {
