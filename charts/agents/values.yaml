@@ -727,7 +727,7 @@ executor_remote_existing_files:
 
 executor_remote_fresh_files:
   executor_signer.txt: |-
-    b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
+    16c909570a212af6a328a1cf594a20d7cf6edf56fafa0b50967f2039b1f68445
   executor_config.yaml: |-
     execute_interval: 5
     summit_chain_id: 10
@@ -790,7 +790,7 @@ executor_remote_fresh_files:
 
 executor_embedded_files:
   executor_signer.txt: |-
-    b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
+    16c909570a212af6a328a1cf594a20d7cf6edf56fafa0b50967f2039b1f68445
   executor_config.yaml: |-
     base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
     execute_interval: 5

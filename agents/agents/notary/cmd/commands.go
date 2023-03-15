@@ -79,7 +79,7 @@ var NotaryRunCommand = &cli.Command{
 
 			g, _ := errgroup.WithContext(c.Context)
 
-			eventDB, err := scribeAPI.InitDB(c.Context, "mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true")
+			eventDB, err := scribeAPI.InitDB(c.Context, "mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/scribe?parseTime=true")
 			if err != nil {
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
@@ -112,7 +112,7 @@ var NotaryRunCommand = &cli.Command{
 				return nil
 			})
 
-			embedded := client.NewEmbeddedScribe("mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true")
+			embedded := client.NewEmbeddedScribe("mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/scribe?parseTime=true")
 
 			g.Go(func() error {
 				err := embedded.Start(c.Context)
