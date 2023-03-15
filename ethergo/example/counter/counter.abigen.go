@@ -30,13 +30,15 @@ var (
 
 // CounterMetaData contains all meta data concerning the Counter contract.
 var CounterMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"decrementCounter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCount\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"incrementCounter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"decrementCounter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCount\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVitalikCount\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"incrementCounter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"vitalikIncrement\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"f5c5ad83": "decrementCounter()",
 		"a87d942c": "getCount()",
+		"9f6f1ec1": "getVitalikCount()",
 		"5b34b966": "incrementCounter()",
+		"6c573535": "vitalikIncrement()",
 	},
-	Bin: "0x60806040526000805534801561001457600080fd5b506101e5806100246000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80635b34b96614610046578063a87d942c14610050578063f5c5ad8314610065575b600080fd5b61004e61006d565b005b60005460405190815260200160405180910390f35b61004e610086565b600160008082825461007f9190610098565b9091555050565b600160008082825461007f919061010c565b6000808212827f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff038413811516156100d2576100d2610180565b827f800000000000000000000000000000000000000000000000000000000000000003841281161561010657610106610180565b50500190565b6000808312837f80000000000000000000000000000000000000000000000000000000000000000183128115161561014657610146610180565b837f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01831381161561017a5761017a610180565b50500390565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fdfea26469706673582212208e6f95b29b6fd0d6e6de152a6d4668686bb1c2027b45a91e7253a56909edb05364736f6c63430008040033",
+	Bin: "0x608060405260008055600060015534801561001957600080fd5b506102b0806100296000396000f3fe608060405234801561001057600080fd5b50600436106100675760003560e01c80639f6f1ec1116100505780639f6f1ec11461007e578063a87d942c14610094578063f5c5ad831461009c57600080fd5b80635b34b9661461006c5780636c57353514610076575b600080fd5b6100746100a4565b005b6100746100bd565b6001545b60405190815260200160405180910390f35b600054610082565b610074610151565b60016000808282546100b69190610163565b9091555050565b3373d8da6bf26964af9d7eed9e03e53415d37aa960451461013e576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601c60248201527f4f6e6c7920566974616c696b2063616e20636f756e7420627920313000000000604482015260640160405180910390fd5b600a600160008282546100b69190610163565b60016000808282546100b691906101d7565b6000808212827f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0384138115161561019d5761019d61024b565b827f80000000000000000000000000000000000000000000000000000000000000000384128116156101d1576101d161024b565b50500190565b6000808312837f8000000000000000000000000000000000000000000000000000000000000000018312811516156102115761021161024b565b837f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0183138116156102455761024561024b565b50500390565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fdfea26469706673582212201e03c8b68dcbcef6344fae810afa5d485b33bc238c0e8cb1508114b9c0ca702964736f6c63430008040033",
 }
 
 // CounterABI is the input ABI used to generate the binding from.
@@ -241,6 +243,37 @@ func (_Counter *CounterCallerSession) GetCount() (*big.Int, error) {
 	return _Counter.Contract.GetCount(&_Counter.CallOpts)
 }
 
+// GetVitalikCount is a free data retrieval call binding the contract method 0x9f6f1ec1.
+//
+// Solidity: function getVitalikCount() view returns(int256)
+func (_Counter *CounterCaller) GetVitalikCount(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Counter.contract.Call(opts, &out, "getVitalikCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetVitalikCount is a free data retrieval call binding the contract method 0x9f6f1ec1.
+//
+// Solidity: function getVitalikCount() view returns(int256)
+func (_Counter *CounterSession) GetVitalikCount() (*big.Int, error) {
+	return _Counter.Contract.GetVitalikCount(&_Counter.CallOpts)
+}
+
+// GetVitalikCount is a free data retrieval call binding the contract method 0x9f6f1ec1.
+//
+// Solidity: function getVitalikCount() view returns(int256)
+func (_Counter *CounterCallerSession) GetVitalikCount() (*big.Int, error) {
+	return _Counter.Contract.GetVitalikCount(&_Counter.CallOpts)
+}
+
 // DecrementCounter is a paid mutator transaction binding the contract method 0xf5c5ad83.
 //
 // Solidity: function decrementCounter() returns()
@@ -281,4 +314,25 @@ func (_Counter *CounterSession) IncrementCounter() (*types.Transaction, error) {
 // Solidity: function incrementCounter() returns()
 func (_Counter *CounterTransactorSession) IncrementCounter() (*types.Transaction, error) {
 	return _Counter.Contract.IncrementCounter(&_Counter.TransactOpts)
+}
+
+// VitalikIncrement is a paid mutator transaction binding the contract method 0x6c573535.
+//
+// Solidity: function vitalikIncrement() returns()
+func (_Counter *CounterTransactor) VitalikIncrement(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Counter.contract.Transact(opts, "vitalikIncrement")
+}
+
+// VitalikIncrement is a paid mutator transaction binding the contract method 0x6c573535.
+//
+// Solidity: function vitalikIncrement() returns()
+func (_Counter *CounterSession) VitalikIncrement() (*types.Transaction, error) {
+	return _Counter.Contract.VitalikIncrement(&_Counter.TransactOpts)
+}
+
+// VitalikIncrement is a paid mutator transaction binding the contract method 0x6c573535.
+//
+// Solidity: function vitalikIncrement() returns()
+func (_Counter *CounterTransactorSession) VitalikIncrement() (*types.Transaction, error) {
+	return _Counter.Contract.VitalikIncrement(&_Counter.TransactOpts)
 }
