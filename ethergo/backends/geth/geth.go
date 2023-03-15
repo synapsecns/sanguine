@@ -285,12 +285,10 @@ func (f *Backend) getFaucetTxContext(ctx context.Context) *bind.TransactOpts {
 	auth, err := f.NewKeyedTransactorFromKey(f.faucetAddr.PrivateKey)
 	assert.Nil(f.T(), err)
 
-	//nolint: ineffassign
-	gasPrice, err := f.Client().SuggestGasPrice(ctx)
+	auth.GasPrice, err = f.Client().SuggestGasPrice(ctx)
 	assert.Nil(f.T(), err)
 
 	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, gasLimit, f.faucetAddr.Address).GasLimit / 2
-	auth.GasPrice = gasPrice
 
 	return auth
 }

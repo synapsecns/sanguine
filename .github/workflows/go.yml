@@ -238,8 +238,6 @@ jobs:
           working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.48.0
-          # Path to your GolangCI-Lint config within the repo (optional)
-          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
           # see: https://github.com/golangci/golangci-lint/issues/2654
           args: --timeout=60m
         env:
@@ -261,8 +259,6 @@ jobs:
           working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.48.0
-          # Path to your GolangCI-Lint config within the repo (optional)
-          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
           # see: https://github.com/golangci/golangci-lint/issues/2654
           args: --timeout=60m --build-tags=codeanalysis
         env:
@@ -375,7 +371,7 @@ jobs:
           GOGC: 2000
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v10.1
+        uses: tj-actions/verify-changed-files@v11.1
         id: verify-changed-files
         with:
           files: |
@@ -524,7 +520,7 @@ jobs:
           GOGC: 2000
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v10.1
+        uses: tj-actions/verify-changed-files@v11
         id: verify-changed-files
         with:
           files: |
