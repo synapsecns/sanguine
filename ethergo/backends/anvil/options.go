@@ -1,6 +1,7 @@
 package anvil
 
 import (
+	"errors"
 	"fmt"
 	"github.com/ImVexed/fasturl"
 	"github.com/ethereum/go-ethereum/accounts"
@@ -18,7 +19,7 @@ func _() {
 	NewAnvilOptionBuilder()
 }
 
-const defaultMnemonic = "sound practice disease erupt basket pumpkin truck file gorilla behave find exchange napkin boy congress address city net prosper crop chair marine chase seven"
+const defaultMnemonic = "tag volcano eight thank tide danger coast health above argue embrace heavy"
 
 // NewAnvilOptionBuilder creates a new option builder.
 func NewAnvilOptionBuilder() *OptionBuilder {
@@ -26,7 +27,8 @@ func NewAnvilOptionBuilder() *OptionBuilder {
 	optionsBuilder.SetAccounts(10)
 	optionsBuilder.SetBlockTime(0)
 	optionsBuilder.SetBalance(10000)
-	optionsBuilder.SetDerivationPath(accounts.DefaultRootDerivationPath)
+
+	optionsBuilder.SetDerivationPath(accounts.DefaultBaseDerivationPath)
 	// note: ordinarily we strongly discourage using panics, but the setup should be deterministic.
 	// to prevent unintended behavior, we have a boot time static assertion check above to make sure this will not panic
 	err := optionsBuilder.SetHardfork(Latest)
@@ -107,6 +109,11 @@ func (o *OptionBuilder) SetAccounts(accountCount uint8) {
 	o.Accounts = accountCount
 }
 
+// GetAccounts gets the number of accounts to use.
+func (o *OptionBuilder) GetAccounts() uint8 {
+	return o.Accounts
+}
+
 // SetBlockTime sets the block time (defaults to 1 second).
 // if block time is 0 or less than a second, no mining is used.
 func (o *OptionBuilder) SetBlockTime(blockTime time.Duration) {
@@ -143,6 +150,7 @@ func (o *OptionBuilder) GetHardfork() Hardfork {
 	return o.Hardfork
 }
 
+// GetMnemonic returns the mnemonic to use for the chain.
 func (o *OptionBuilder) GetMnemonic() string {
 	return o.Mnemonic
 }
@@ -385,6 +393,7 @@ func fieldIsEmpty(v reflect.Value) bool {
 
 // valueToString converts a reflect.Value to a string.
 // bools are cast to empty.
+// nolint: cyclop
 func valueToString(v reflect.Value) (string, error) {
 	switch v.Type().Name() {
 	case reflect.TypeOf(Frontier).Name():
@@ -400,7 +409,15 @@ func valueToString(v reflect.Value) (string, error) {
 	// custom types first
 	case reflect.TypeOf(accounts.DerivationPath{}).Kind():
 		//nolint: forcetypeassert
-		return fmt.Sprintf("\"%s\"", v.Interface().(accounts.DerivationPath).String()), nil
+		derivationPath := v.Interface().(accounts.DerivationPath)
+		if len(derivationPath) == 0 {
+			return "", errors.New("derivation path is empty")
+		}
+
+		// Remove the last item from the slice (since this is used as a base derivation path rather than a fully qualified account name)
+		derivationPath = derivationPath[:len(derivationPath)-1]
+
+		return fmt.Sprintf("\"%s\"", derivationPath.String()), nil
 	case reflect.Bool:
 		return "", nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:

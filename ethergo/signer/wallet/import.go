@@ -65,18 +65,19 @@ func FromHex(privateKey string) (Wallet, error) {
 }
 
 // FromSeedPhrase gets the seed phrase for the wallet.
+// Note: there seems to be some issue here w/ longer seed phraeses should investigate.
 func FromSeedPhrase(seedPhrase string, derivationPath accounts.DerivationPath) (Wallet, error) {
 	wallet, err := hdwallet.NewFromMnemonic(seedPhrase)
 	if err != nil {
 		return nil, fmt.Errorf("could not get parse phrase: %w", err)
 	}
 
+	wallet.SetFixIssue172(true)
+
 	account, err := wallet.Derive(derivationPath, true)
 	if err != nil {
 		return nil, fmt.Errorf("could not derive account: %w", err)
 	}
-
-	fmt.Println(wallet.Accounts())
 
 	privKey, err := wallet.PrivateKey(account)
 	if err != nil {

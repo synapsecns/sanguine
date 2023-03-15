@@ -32,7 +32,7 @@ func TestValueToString(t *testing.T) {
 		{"hello", "\"hello\"", false},
 		{anvil.Latest, anvil.Latest.String(), false},
 		{anvil.Fees, anvil.Fees.String(), false},
-		{accounts.DefaultRootDerivationPath, "\"m/44'/60'/0'/0\"", false},
+		{accounts.DefaultRootDerivationPath, "\"m/44'/60'/0'\"", false},
 		{struct{ a int }{a: 42}, "", true},
 	}
 
