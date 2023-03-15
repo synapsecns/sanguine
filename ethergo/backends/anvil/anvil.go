@@ -1,6 +1,7 @@
 package anvil
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts"
@@ -12,11 +13,13 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/google/uuid"
+	"github.com/ipfs/go-log"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
+	"github.com/synapsecns/sanguine/core/processlog"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/chain"
@@ -25,6 +28,7 @@ import (
 	"github.com/teivah/onecontext"
 	"math/big"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -39,6 +43,8 @@ type Backend struct {
 	store *base.InMemoryKeyStore
 	// chainConfig is the chain config
 	chainConfig *params.ChainConfig
+	// impersonationMux is used to lock the impersonation
+	impersonationMux sync.Mutex
 }
 
 const backendName = "anvil"
@@ -80,6 +86,11 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
 	assert.Nil(t, err)
+
+	go func() {
+		err = tailLogs(ctx, resource, pool, true)
+		logger.Warn(err)
+	}()
 
 	// Docker will hard kill the container in 4000 seconds (this is a test env).
 	// containers should be removed on their own, but this is a safety net.
@@ -134,7 +145,53 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		<-ctx.Done()
 		_ = pool.Purge(resource)
 	}()
+
+	go func() {
+
+	}()
 	return &backend
+}
+
+type bufCloser struct {
+	*bytes.Buffer
+}
+
+// Close implements io.Closer.
+func (b bufCloser) Close() error {
+	return nil
+}
+
+var logger = log.Logger("anvil-docker")
+
+// tailLogs tails the logs of a docker container.
+func tailLogs(ctx context.Context, resource *dockertest.Resource, pool *dockertest.Pool, follow bool) error {
+	outStream := bufCloser{bytes.NewBuffer(nil)}
+	errStream := bufCloser{bytes.NewBuffer(nil)}
+
+	opts := docker.LogsOptions{
+		Context: ctx,
+
+		Stderr:      true,
+		Stdout:      true,
+		Follow:      follow,
+		Timestamps:  true,
+		RawTerminal: true,
+
+		Container: resource.Container.ID,
+
+		ErrorStream:  errStream,
+		OutputStream: outStream,
+	}
+
+	containerLogs, err := processlog.StartLogs(processlog.WithStdOut(outStream), processlog.WithStdErr(errStream), processlog.WithCtx(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to get container logs: %w", err)
+	}
+
+	logger.Warnf("writing container logs to folder: %s", containerLogs.LogDir())
+
+	//nolint: errwrap
+	return pool.Client.Logs(opts)
 }
 
 // makeWallets creates a list of preseeded wallets w/ balances.
@@ -251,5 +308,33 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 		PrivateKey:   acct.PrivateKey,
 	}
 }
+
+// ImpersonateAccount impersonates an account.
+//
+// Note *any* other call made to the backend will impersonate while this is being called
+// in a future version, we'll wrap something like omnirpc to prevent other transaciton submission calls from taking place
+// in the meantime, this may cause race conditions.
+//
+// We also print a warning message to the console as an added precaution.
+func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address, TODO func()) {
+	f.impersonationMux.Lock()
+	defer f.impersonationMux.Unlock()
+
+	logOnce.Do(func() {
+		f.T().Logf(`
+				Using Account Impersonation.
+				WARNING: This cannot be called concurrently with any other tx submission calls.
+				Please make sure your callers are concurrency safe against account impersonation.
+				This will be fiexed in a futrue version.
+				`)
+	})
+
+}
+
+// logOnce is used to log the impersonation warning message once.
+// this is a global variable to prevent the message from being logged multiple times.
+// normally, global variables are strongly discouraged, but we make an exception here
+// considering how unexpected behavior can be if impersonate account is not used correctly
+var logOnce sync.Once
 
 var _ backends.SimulatedTestBackend = &Backend{}

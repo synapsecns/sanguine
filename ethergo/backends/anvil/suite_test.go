@@ -11,8 +11,10 @@ import (
 
 type AnvilSuite struct {
 	*testsuite.TestSuite
-	backend *anvil.Backend
-	options *anvil.OptionBuilder
+	backend     *anvil.Backend
+	options     *anvil.OptionBuilder
+	client      *anvil.Client
+	forkAddress string
 }
 
 // NewAnvilSuite creates a end-to-end test suite.
@@ -26,13 +28,15 @@ func NewAnvilSuite(tb testing.TB) *AnvilSuite {
 func (a *AnvilSuite) SetupSuite() {
 	a.TestSuite.SetupSuite()
 
-	backendRPCAddress := core.GetEnv("ETH_URL", "https://rpc.ankr.com/eth")
+	a.forkAddress = core.GetEnv("ETH_URL", "https://rpc.ankr.com/eth")
 	options := anvil.NewAnvilOptionBuilder()
-	err := options.SetForkURL(backendRPCAddress)
+	err := options.SetForkURL(a.forkAddress)
 	Nil(a.T(), err)
 
 	a.backend = anvil.NewAnvilBackend(a.GetSuiteContext(), a.T(), options)
 	a.options = options
+	a.client, err = anvil.Dial(a.GetSuiteContext(), a.backend.RPCAddress())
+	Nil(a.T(), err)
 }
 
 func TestTestUtilSuite(t *testing.T) {
