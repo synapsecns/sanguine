@@ -371,7 +371,7 @@ jobs:
           GOGC: 2000
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v11.1
         id: verify-changed-files
         with:
           files: |
@@ -520,7 +520,7 @@ jobs:
           GOGC: 2000
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v11
         id: verify-changed-files
         with:
           files: |
