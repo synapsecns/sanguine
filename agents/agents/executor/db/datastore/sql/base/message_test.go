@@ -17,17 +17,17 @@ func TestMessageDBMessageParity(t *testing.T) {
 	message := common.BigToHash(big.NewInt(gofakeit.Int64())).Bytes()
 	blockNumber := gofakeit.Uint64()
 	executed := gofakeit.Bool()
-	minimumTimeSet := gofakeit.Bool()
+	attestationNonce := gofakeit.Uint32()
 	minimumTime := gofakeit.Uint64()
 	initialDBMessage := types.DBMessage{
-		ChainID:        &chainID,
-		Destination:    &destination,
-		Nonce:          &nonce,
-		Message:        &message,
-		BlockNumber:    &blockNumber,
-		Executed:       &executed,
-		MinimumTimeSet: &minimumTimeSet,
-		MinimumTime:    &minimumTime,
+		ChainID:          &chainID,
+		Destination:      &destination,
+		Nonce:            &nonce,
+		Message:          &message,
+		BlockNumber:      &blockNumber,
+		Executed:         &executed,
+		AttestationNonce: &attestationNonce,
+		MinimumTime:      &minimumTime,
 	}
 
 	initialMessage := base.DBMessageToMessage(initialDBMessage)

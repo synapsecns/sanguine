@@ -845,7 +845,6 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 				if len(messages) == 0 {
 					break
 				}
-				fmt.Println("GOT AN UNSET MESSAGE")
 				unsetMessages = append(unsetMessages, messages...)
 
 				page++
@@ -866,8 +865,6 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 				if len(potentialSnapshotRoots) == 0 {
 					continue
 				}
-
-				fmt.Println("GOT POTENTIAL SNAPSHOT ROOTS")
 
 				destinationDomain := message.DestinationDomain()
 
@@ -890,7 +887,6 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 					Nonce:       &nonce,
 				}
 
-				fmt.Println("%%%%%%%%%%% attestationNonce", *attestationNonce)
 				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, *attestationNonce, *minimumTimestamp)
 				if err != nil {
 					return fmt.Errorf("could not set minimum time: %w", err)
