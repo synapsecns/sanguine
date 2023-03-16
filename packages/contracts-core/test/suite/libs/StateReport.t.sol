@@ -22,7 +22,7 @@ contract StateReportLibraryTest is SynapseLibraryTest {
         // Make sure flag fits into enum
         rawSR.flag = uint8(bound(rawSR.flag, 0, uint8(type(StateFlag).max)));
         // This is tested in StateLibraryTest, we assume it's working here
-        (bytes memory state, ) = rawSR.state.castToState();
+        bytes memory state = rawSR.state.formatState();
         bytes memory payload = libHarness.formatStateReport(StateFlag(rawSR.flag), state);
         assertEq(payload, abi.encodePacked(rawSR.flag, state), "!formatStateReport");
         checkCastToStateReport({ payload: payload, isStateReport: true });

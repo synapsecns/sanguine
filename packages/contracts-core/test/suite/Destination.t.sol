@@ -102,11 +102,11 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         rawAR.flag = uint8(bound(rawAR.flag, 0, uint8(type(AttestationFlag).max)));
         // Create Notary signature for the attestation
         address notary = domains[DOMAIN_LOCAL].agent;
-        (bytes memory attPayload, ) = rawAR.attestation.castToAttestation();
+        bytes memory attPayload = rawAR.attestation.formatAttestation();
         bytes memory attSignature = signAttestation(notary, attPayload);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory arPayload, ) = rawAR.castToAttestationReport();
+        bytes memory arPayload = rawAR.formatAttestationReport();
         bytes memory arSignature = signAttestationReport(guard, arPayload);
         // TODO: complete the test when Dispute is implemented
         vm.expectEmit(true, true, true, true);
@@ -139,7 +139,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         bytes32[] memory snapProof = genSnapshotProof(stateIndex);
 
         // Attestation Nonce is fuzzed as well
-        (bytes memory attPayload, ) = ra.castToAttestation();
+        bytes memory attPayload = ra.formatAttestation();
         bytes memory attSignature = signAttestation(domains[DOMAIN_LOCAL].agent, attPayload);
 
         vm.warp(rootTimestamp);
@@ -169,6 +169,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
             );
             // Should emit event when message is executed
             vm.expectEmit(true, true, true, true);
+
             emit Executed(DOMAIN_REMOTE, keccak256(messages[i]));
             vm.prank(executor);
             InterfaceDestination(destination).execute(
@@ -187,7 +188,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         uint256 stateIndex
     ) public returns (RawAttestation memory) {
         RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
-        bytes[] memory states = rawSnap.castToStateList();
+        bytes[] memory states = rawSnap.formatStates();
         acceptSnapshot(states);
         // Reuse existing metadata in RawAttestation
         return rawSnap.castToRawAttestation(ra.nonce, ra.blockNumber, ra.timestamp);
@@ -207,7 +208,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
                 RawTips(0, 0, 0, 0),
                 BODY
             );
-            (bytes memory message, ) = rm.castToMessage();
+            bytes memory message = rm.formatMessage();
             rawMessages.push(rm);
             messages.push(message);
             insertMessage(message);

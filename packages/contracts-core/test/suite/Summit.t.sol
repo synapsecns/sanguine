@@ -99,7 +99,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
         // Pick random Notary
         uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
         address notary = domains[domain].agents[notaryIndex];
-        (bytes memory attestation, ) = ra.castToAttestation();
+        bytes memory attestation = ra.formatAttestation();
         bytes memory signature = signAttestation(notary, attestation);
         if (!isValid) {
             // Expect Events to be emitted
@@ -134,7 +134,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
             uint8(AttestationFlag.Invalid),
             ra
         );
-        (bytes memory arPayload, ) = rawAR.castToAttestationReport();
+        bytes memory arPayload = rawAR.formatAttestationReport();
         bytes memory signature = signAttestationReport(guard, arPayload);
         if (!isValid) {
             // Expect Events to be emitted
@@ -243,7 +243,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
             // This is i-th submitted attestation so far
             ra.nonce = i;
             notaryAttestations[i] = ra;
-            (bytes memory attestation, ) = ra.castToAttestation();
+            bytes memory attestation = ra.formatAttestation();
 
             address notary = domains[DOMAIN_LOCAL].agents[i];
             bytes memory snapshot = SnapshotLib.formatSnapshot(states);
