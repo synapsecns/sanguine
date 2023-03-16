@@ -34,3 +34,11 @@ lint: ## Run golangci-lint and go fmt ./...
 docker-clean: ## stops and removes all containers at once
 	docker ps -aq | xargs docker stop | xargs docker rm
 
+
+lint-legacy:
+	go mod tidy
+	go fmt ./...
+	cd $(GIT_ROOT)
+	go work sync
+	cd $(CURRENT_PATH)
+	@golangci-lint run --fix --config=$(GIT_ROOT)/.golangci.yml
