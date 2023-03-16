@@ -190,7 +190,7 @@ jobs:
 
 
       - name: Run GoReleaser (Snapshot)
-        if: steps.branch-name.outputs.is_default != 'true' && steps.docker_image.outputs.docker_image != "0"
+        if: steps.branch-name.outputs.is_default != 'true' && steps.docker_image.outputs.docker_image != '0'
         run: goreleaser --timeout 900m --snapshot --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -201,7 +201,7 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
       - name: Push Docker Images (Snapshot)
-        if: steps.branch-name.outputs.is_default != 'true' && steps.docker_image.outputs.docker_image != "0"
+        if: steps.branch-name.outputs.is_default != 'true' && steps.docker_image.outputs.docker_image != '0'
         run: |
           docker tag ghcr.io/synapsecns/sanguine/$image_name:latest ghcr.io/synapsecns/$image_name:${GITHUB_SHA}
           docker push ghcr.io/synapsecns/sanguine/$image_name:${GITHUB_SHA}
