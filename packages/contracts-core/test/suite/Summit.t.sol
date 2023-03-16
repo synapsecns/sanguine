@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 import { ISnapshotHub } from "../../contracts/interfaces/ISnapshotHub.sol";
 import { MerkleLib } from "../../contracts/libs/Merkle.sol";
-import { SnapshotLib } from "../../contracts/libs/Snapshot.sol";
 import { State, StateLib, SummitState } from "../../contracts/libs/State.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 
@@ -99,17 +98,16 @@ contract SummitTest is SynapseTest, SynapseProofs {
         // Pick random Notary
         uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
         address notary = domains[domain].agents[notaryIndex];
-        bytes memory attestation = ra.formatAttestation();
-        bytes memory signature = signAttestation(notary, attestation);
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestation(attestation, signature);
+            emit InvalidAttestation(attPayload, attSig);
             expectAgentSlashed(domain, notary);
         }
         vm.recordLogs();
         assertEq(
-            InterfaceSummit(summit).verifyAttestation(attestation, signature),
+            InterfaceSummit(summit).verifyAttestation(attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -134,17 +132,16 @@ contract SummitTest is SynapseTest, SynapseProofs {
             uint8(AttestationFlag.Invalid),
             ra
         );
-        bytes memory arPayload = rawAR.formatAttestationReport();
-        bytes memory signature = signAttestationReport(guard, arPayload);
+        (bytes memory arPayload, bytes memory arSig) = signAttestationReport(guard, rawAR);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationReport(arPayload, signature);
+            emit InvalidAttestationReport(arPayload, arSig);
             expectAgentSlashed(0, guard);
         }
         vm.recordLogs();
         assertEq(
-            InterfaceSummit(summit).verifyAttestationReport(arPayload, signature),
+            InterfaceSummit(summit).verifyAttestationReport(arPayload, arSig),
             isValid,
             "!returnValue"
         );
@@ -178,9 +175,9 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 guardStates[i][j] = random.nextState({ origin: j + 1, nonce: nonce });
                 states[j] = guardStates[i][j].formatSummitState().castToState();
             }
-            bytes memory snapshot = SnapshotLib.formatSnapshot(states);
-            bytes memory signature = signSnapshot(domains[0].agents[i], snapshot);
-            guardSnapshots[i] = SignedSnapshot(snapshot, signature);
+            address guard = domains[0].agents[i];
+            (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(guard, states);
+            guardSnapshots[i] = SignedSnapshot(snapPayload, snapSig);
         }
 
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
@@ -246,14 +243,13 @@ contract SummitTest is SynapseTest, SynapseProofs {
             bytes memory attestation = ra.formatAttestation();
 
             address notary = domains[DOMAIN_LOCAL].agents[i];
-            bytes memory snapshot = SnapshotLib.formatSnapshot(states);
-            bytes memory signature = signSnapshot(notary, snapshot);
+            (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(notary, states);
 
             vm.expectEmit(true, true, true, true);
             emit AttestationSaved(attestation);
             vm.expectEmit(true, true, true, true);
-            emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapshot, signature);
-            InterfaceSummit(summit).submitSnapshot(snapshot, signature);
+            emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayload, snapSig);
+            InterfaceSummit(summit).submitSnapshot(snapPayload, snapSig);
 
             // Check proofs for every State in the Notary snapshot
             for (uint256 j = 0; j < STATES; ++j) {

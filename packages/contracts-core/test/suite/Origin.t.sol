@@ -305,17 +305,16 @@ contract OriginTest is SynapseTest, SynapseProofs {
             RawAttestation memory ra
         ) = _prepareAttestation(random, rawState);
         bytes memory state = rawState.formatState();
-        bytes memory attestation = ra.formatAttestation();
-        bytes memory signature = signAttestation(notary, attestation);
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(stateIndex, state, attestation, signature);
+            emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
             _expectAgentSlashed(domain, notary);
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyAttestation(stateIndex, snapshot, attestation, signature),
+            InterfaceOrigin(origin).verifyAttestation(stateIndex, snapshot, attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -338,12 +337,11 @@ contract OriginTest is SynapseTest, SynapseProofs {
         ) = _prepareAttestation(random, rawState);
         bytes32[] memory snapProof = genSnapshotProof(stateIndex);
         bytes memory state = rawState.formatState();
-        bytes memory attestation = ra.formatAttestation();
-        bytes memory signature = signAttestation(notary, attestation);
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(stateIndex, state, attestation, signature);
+            emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
             _expectAgentSlashed(domain, notary);
         }
         vm.recordLogs();
@@ -352,8 +350,8 @@ contract OriginTest is SynapseTest, SynapseProofs {
                 stateIndex,
                 state,
                 snapProof,
-                attestation,
-                signature
+                attPayload,
+                attSig
             ),
             isValid,
             "!returnValue"
@@ -374,17 +372,16 @@ contract OriginTest is SynapseTest, SynapseProofs {
         stateIndex = bound(stateIndex, 0, statesAmount - 1);
         address notary = domains[DOMAIN_REMOTE].agent;
         RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
-        bytes memory snapshot = rawSnap.formatSnapshot();
-        bytes memory signature = signSnapshot(notary, snapshot);
+        (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(notary, rawSnap);
         vm.recordLogs();
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidSnapshotState(stateIndex, snapshot, signature);
+            emit InvalidSnapshotState(stateIndex, snapPayload, snapSig);
             _expectAgentSlashed(DOMAIN_REMOTE, notary);
         }
         assertEq(
-            InterfaceOrigin(origin).verifySnapshot(stateIndex, snapshot, signature),
+            InterfaceOrigin(origin).verifySnapshot(stateIndex, snapPayload, snapSig),
             isValid,
             "!returnValue"
         );
@@ -399,17 +396,16 @@ contract OriginTest is SynapseTest, SynapseProofs {
         bool isValid = !isStateValid;
         RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rawState);
         address guard = domains[0].agent;
-        bytes memory report = rawSR.formatStateReport();
-        bytes memory signature = signStateReport(guard, report);
+        (bytes memory srPayload, bytes memory srSig) = signStateReport(guard, rawSR);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidStateReport(report, signature);
+            emit InvalidStateReport(srPayload, srSig);
             _expectAgentSlashed(0, guard);
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyStateReport(report, signature),
+            InterfaceOrigin(origin).verifyStateReport(srPayload, srSig),
             isValid,
             "!returnValue"
         );
