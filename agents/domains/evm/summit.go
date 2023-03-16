@@ -3,6 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -70,6 +71,9 @@ func (a summitContract) SubmitSnapshot(ctx context.Context, signer signer.Signer
 	}
 	_, err = a.contract.SubmitSnapshot(transactOpts, encodedSnapshot, rawSig)
 	if err != nil {
+		if strings.Contains(err.Error(), "nonce too low") {
+			a.nonceManager.ClearNonce(signer.Address())
+		}
 		return fmt.Errorf("could not submit sanpshot: %w", err)
 	}
 
