@@ -10,7 +10,7 @@ import (
 // ExecutorDBWriter is the interface for writing to the executor database.
 type ExecutorDBWriter interface {
 	// StoreMessage stores a message in the database.
-	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error
+	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, executed, minimumTimeSet bool, minimumTime uint64) error
 	// ExecuteMessage marks a message as executed in the database.
 	ExecuteMessage(ctx context.Context, messageMask types.DBMessage) error
 	// SetMinimumTime sets the minimum time of a message.

@@ -420,11 +420,11 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	failMessage := types.NewMessage(header1, tips[3], messageBytes[3])
 
 	// Insert messages into the database.
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0], false, 0)
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0], false, false, 0)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message1, blockNumbers[1], false, 0)
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message1, blockNumbers[1], false, false, 0)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2], false, 0)
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2], false, false, 0)
 	e.Nil(err)
 
 	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, e.ExecutorTestDB)
@@ -448,7 +448,7 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	e.Nil(err)
 	e.False(inTreeFail)
 
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3], false, 0)
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3], false, false, 0)
 	e.Nil(err)
 
 	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), chainID, e.ExecutorTestDB)

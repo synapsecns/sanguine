@@ -661,7 +661,14 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 
 		e.chainExecutors[chainID].merkleTree.Insert(leaf[:])
 
-		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, false, 0)
+		executed := false
+
+		if e.chainExecutors[chainID].executed[leaf] {
+			executed = true
+			e.chainExecutors[chainID].executed[leaf] = false
+		}
+
+		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, executed, false, 0)
 		if err != nil {
 			return fmt.Errorf("could not store message: %w", err)
 		}
@@ -781,23 +788,16 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 				}
 
 				for _, message := range messages {
-					leaf, err := message.ToLeaf()
-					if err != nil {
-						return fmt.Errorf("could not convert message to leaf: %w", err)
-					}
-
 					destinationDomain := message.DestinationDomain()
 
-					if !e.chainExecutors[destinationDomain].executed[leaf] {
-						executed, err := e.Execute(ctx, message)
-						if err != nil {
-							logger.Errorf("could not execute message, retrying: %s", err)
-							continue
-						}
+					executed, err := e.Execute(ctx, message)
+					if err != nil {
+						logger.Errorf("could not execute message, retrying: %s", err)
+						continue
+					}
 
-						if !executed {
-							continue
-						}
+					if !executed {
+						continue
 					}
 
 					nonce := message.Nonce()
