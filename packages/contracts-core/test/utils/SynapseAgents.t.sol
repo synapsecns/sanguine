@@ -130,7 +130,7 @@ abstract contract SynapseAgents is SynapseTestConstants, Test {
         returns (bytes memory attestationReport, bytes memory signature)
     {
         attestationReport = rawAR.formatAttestationReport();
-        signature = signAttestation(agent, attestationReport);
+        signature = signAttestationReport(agent, attestationReport);
     }
 
     function signSnapshot(address agent, bytes memory snapshot)
