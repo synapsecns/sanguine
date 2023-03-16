@@ -100,7 +100,7 @@ func (n *nonceManagerImp) GetNextNonce(address common.Address) (*big.Int, error)
 
 // ClearNonce clears the nonce for the account.
 func (n *nonceManagerImp) ClearNonce(address common.Address) {
-	// get the next nonce for the account
+	// clear the nonce for the account
 	n.nonceMapLock.Lock()
 	n.nonceMap[address] = nil
 	defer n.nonceMapLock.Unlock()
