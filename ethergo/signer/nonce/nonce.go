@@ -76,7 +76,7 @@ func NewNonceManager(ctx context.Context, chain ChainQuery, chainID *big.Int) Ma
 
 // GetNextNonce gets the next nonce for the account.
 func (n *nonceManagerImp) GetNextNonce(address common.Address) (*big.Int, error) {
-	// get the next nonce for the account
+	// get the next nonce for the account.
 	n.nonceMapLock.Lock()
 	currentNonce := n.nonceMap[address]
 	defer n.nonceMapLock.Unlock()
