@@ -13,11 +13,12 @@ import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "./interfaces/InterfaceDestination.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
+import { DisputeHub } from "./hubs/DisputeHub.sol";
 import { Attestation, AttestationReport, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
 contract Destination is
-    StatementHub,
+    DisputeHub,
     AttestationHub,
     SystemRegistry,
     DestinationEvents,
