@@ -31,6 +31,8 @@ type Manager interface {
 	NewKeyedTransactorFromKey(key *ecdsa.PrivateKey) (*bind.TransactOpts, error)
 	// GetNextNonce gets the next nonce for the address.
 	GetNextNonce(address common.Address) (*big.Int, error)
+	// ClearNonce clears the nonce for the address.
+	ClearNonce(address common.Address)
 }
 
 // ChainQuery is a chain used to generate a nonce.
@@ -94,6 +96,14 @@ func (n *nonceManagerImp) GetNextNonce(address common.Address) (*big.Int, error)
 	}
 
 	return currentNonce, nil
+}
+
+// ClearNonce clears the nonce for the account.
+func (n *nonceManagerImp) ClearNonce(address common.Address) {
+	// get the next nonce for the account
+	n.nonceMapLock.Lock()
+	n.nonceMap[address] = nil
+	defer n.nonceMapLock.Unlock()
 }
 
 // incrementNonce increments the nonce for an account. This should be called from within a accountMutex.
