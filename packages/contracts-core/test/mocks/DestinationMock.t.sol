@@ -6,12 +6,14 @@ import {
     ORIGIN_TREE_DEPTH
 } from "../../contracts/interfaces/InterfaceDestination.sol";
 import { AttestationHubMock } from "./hubs/AttestationHubMock.t.sol";
+import { DisputeHubMock } from "./hubs/DisputeHubMock.t.sol";
 import { AgentRegistryMock } from "./system/AgentRegistryMock.t.sol";
 import { SystemContractMock } from "./system/SystemContractMock.t.sol";
 
 // solhint-disable no-empty-blocks
 contract DestinationMock is
     AttestationHubMock,
+    DisputeHubMock,
     AgentRegistryMock,
     SystemContractMock,
     InterfaceDestination

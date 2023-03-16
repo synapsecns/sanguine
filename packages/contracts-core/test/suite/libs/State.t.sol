@@ -70,6 +70,18 @@ contract StateLibraryTest is SynapseLibraryTest {
         );
     }
 
+    function test_equals(RawState memory a, uint256 mask) public {
+        RawState memory b;
+        b.root = a.root ^ bytes32(mask & 1);
+        b.origin = a.origin ^ uint32(mask & 2);
+        b.nonce = a.nonce ^ uint32(mask & 4);
+        b.blockNumber = a.blockNumber ^ uint40(mask & 8);
+        b.timestamp = a.timestamp ^ uint40(mask & 16);
+        bytes memory aa = abi.encodePacked(a.root, a.origin, a.nonce, a.blockNumber, a.timestamp);
+        bytes memory bb = abi.encodePacked(b.root, b.origin, b.nonce, b.blockNumber, b.timestamp);
+        assertEq(libHarness.equals(aa, bb), keccak256(aa) == keccak256(bb));
+    }
+
     function test_originState_parity(RawState memory rs) public {
         vm.roll(rs.blockNumber);
         vm.warp(rs.timestamp);

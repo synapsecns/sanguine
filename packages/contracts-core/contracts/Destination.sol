@@ -13,11 +13,12 @@ import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "./interfaces/InterfaceDestination.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
+import { DisputeHub } from "./hubs/DisputeHub.sol";
 import { Attestation, AttestationReport, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
 contract Destination is
-    StatementHub,
+    DisputeHub,
     AttestationHub,
     SystemRegistry,
     DestinationEvents,
@@ -91,6 +92,7 @@ contract Destination is
         address guard = _verifyAttestationReport(report, _arSignature);
         // This will revert if attestation signer is not an active Notary
         (uint32 domain, address notary) = _verifyAttestation(report.attestation(), _attSignature);
+        // Reported Attestation was signed by the Notary => open dispute
         _openDispute(guard, domain, notary);
         return true;
     }

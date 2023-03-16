@@ -208,17 +208,6 @@ abstract contract AgentRegistry is AgentRegistryEvents, IAgentRegistry {
         }
     }
 
-    /// @dev Opens a Dispute between a Guard and a Notary.
-    /// This should be called, when the Guard submits a Report on a statement signed by the Notary.
-    function _openDispute(
-        address _guard,
-        uint32 _domain,
-        address _notary
-    ) internal {
-        // TODO: implement this
-        emit Dispute(_guard, _domain, _notary);
-    }
-
     /**
      * @dev Removes all active agents from all domains.
      * Note: iterating manually over all agents in order to delete them all is super inefficient.
