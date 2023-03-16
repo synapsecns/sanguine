@@ -787,12 +787,6 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 					}
 
 					destinationDomain := message.DestinationDomain()
-					nonce := message.Nonce()
-					executedMessageMask := execTypes.DBMessage{
-						ChainID:     &chainID,
-						Destination: &destinationDomain,
-						Nonce:       &nonce,
-					}
 
 					if !e.chainExecutors[destinationDomain].executed[leaf] {
 						executed, err := e.Execute(ctx, message)
@@ -804,15 +798,14 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 						if !executed {
 							continue
 						}
-					} else {
-						err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
-						if err != nil {
-							logger.Errorf("could not mark previously executed message as executed")
-						}
-
-						e.chainExecutors[destinationDomain].executed[leaf] = false
 					}
 
+					nonce := message.Nonce()
+					executedMessageMask := execTypes.DBMessage{
+						ChainID:     &chainID,
+						Destination: &destinationDomain,
+						Nonce:       &nonce,
+					}
 					err = e.executorDB.ExecuteMessage(ctx, executedMessageMask)
 					if err != nil {
 						return fmt.Errorf("could not execute message: %w", err)
