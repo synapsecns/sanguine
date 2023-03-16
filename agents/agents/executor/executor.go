@@ -614,7 +614,10 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			// If we are filtering for `executed` events, we do not need to `verifyAfter`
 			// since we are backfilling.
 			if contractEvent.eventType == executedEvent {
-				e.chainExecutors[chainID].logChan <- log
+				err = e.processLog(ctx, *log, chainID)
+				if err != nil {
+					return fmt.Errorf("could not process executed log: %w", err)
+				}
 
 				continue
 			}
