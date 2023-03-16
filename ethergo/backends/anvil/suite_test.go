@@ -21,7 +21,7 @@ type AnvilSuite struct {
 	options     *anvil.OptionBuilder
 	client      *anvil.Client
 	forkAddress string
-	counter     *counter.Counter
+	counter     *counter.CounterRef
 }
 
 // NewAnvilSuite creates a end-to-end test suite.
@@ -49,7 +49,7 @@ func (a *AnvilSuite) SetupSuite() {
 	deployedContract := deployer.Get(a.GetSuiteContext(), a.backend, example.CounterType)
 
 	var ok bool
-	a.counter, ok = deployedContract.ContractHandle().(*counter.Counter)
+	a.counter, ok = deployedContract.ContractHandle().(*counter.CounterRef)
 	True(a.T(), ok)
 }
 
