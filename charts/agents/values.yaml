@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "c05a766c7b75bf1b8f9f12b585991f1737c0943e"
+  tag: "2668228630bad0cf4f5b03d29d5bba9e77e5bd31"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -418,7 +418,7 @@ notary_files:
     bonded_signer:
       type: "File"
       file: "/config/notary_signer1.txt"
-      embedded_scribe_config:
+    embedded_scribe_config:
       chains:
         - chain_id: 137
           required_confirmations: 50
@@ -499,7 +499,7 @@ notary_files:
     bonded_signer:
       type: "File"
       file: "/config/notary_signer2.txt"
-      embedded_scribe_config:
+    embedded_scribe_config:
       chains:
         - chain_id: 137
           required_confirmations: 50
@@ -727,7 +727,7 @@ executor_remote_existing_files:
 
 executor_remote_fresh_files:
   executor_signer.txt: |-
-    b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
+    16c909570a212af6a328a1cf594a20d7cf6edf56fafa0b50967f2039b1f68445
   executor_config.yaml: |-
     execute_interval: 5
     summit_chain_id: 10
@@ -790,7 +790,7 @@ executor_remote_fresh_files:
 
 executor_embedded_files:
   executor_signer.txt: |-
-    b19463909d18a5dea8d6883708f4532bee7a4743be48cef79acdebc82cd81b8d
+    16c909570a212af6a328a1cf594a20d7cf6edf56fafa0b50967f2039b1f68445
   executor_config.yaml: |-
     base_omnirpc_url: "https://rpc.interoperability.institute/confirmations"
     execute_interval: 5
