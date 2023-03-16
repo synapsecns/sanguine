@@ -442,12 +442,12 @@ func (e Executor) verifyStateMerkleProof(ctx context.Context, state types.State)
 		ChainID: &chainID,
 	}
 
-	snapshotRoot, proof, treeHeight, _, err := e.executorDB.GetStateMetadata(ctx, stateMask)
+	snapshotRoot, proof, treeHeight, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
 	if err != nil {
 		return false, fmt.Errorf("could not get snapshot root: %w", err)
 	}
 
-	if snapshotRoot == nil || proof == nil || treeHeight == nil {
+	if snapshotRoot == nil || proof == nil || treeHeight == nil || stateIndex == nil {
 		return false, nil
 	}
 
@@ -462,7 +462,7 @@ func (e Executor) verifyStateMerkleProof(ctx context.Context, state types.State)
 		return false, fmt.Errorf("could not unmarshal proof: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], (state.Nonce()-1)*2, proofBytes, (*treeHeight)+1)
+	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], (*stateIndex)*2, proofBytes, *treeHeight)
 
 	return inTree, nil
 }
@@ -822,7 +822,6 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 //
 //nolint:gocognit,cyclop
 func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
-	// TODO: Make for origin-dest, not just origin
 	for {
 		select {
 		case <-ctx.Done():
