@@ -16,6 +16,12 @@ jobs:
           fetch-depth: 0 # needed if using new-from-rev (see: https://golangci-lint.run/usage/configuration/#issues-configuration)
           submodules: true
 
+
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.2.6
+        with:
+          key: docker-release-${{ runner.os }}-${{ matrix.package }}
+
       - uses: dorny/paths-filter@v2
         name: check if any changes warrant a new build of goreleaser-cgo-cross-compiler
         id: changes
@@ -120,11 +126,6 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-
-      - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.2.6
-        with:
-          key: docker-release-${{ runner.os }}-${{ matrix.package }}
 
       - name: Get branch name
         id: branch-name
