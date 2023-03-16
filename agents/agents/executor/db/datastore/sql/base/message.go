@@ -217,6 +217,7 @@ func (s Store) GetUnsetMinimumTimeMessages(ctx context.Context, messageMask type
 		Model(&messages).
 		Where(&dbMessageMask).
 		Where(fmt.Sprintf("%s = ?", MinimumTimeSetFieldName), false).
+		Where(fmt.Sprintf("%s = ?", ExecutedFieldName), false).
 		Order(fmt.Sprintf("%s ASC", NonceFieldName)).
 		Offset((page - 1) * PageSize).
 		Limit(PageSize).
