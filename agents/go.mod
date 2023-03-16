@@ -3,7 +3,6 @@ module github.com/synapsecns/sanguine/agents
 go 1.19
 
 require (
-	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a
 	cloud.google.com/go/kms v1.6.0
 	github.com/BurntSushi/toml v1.2.0
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
@@ -43,6 +42,7 @@ require (
 )
 
 require (
+	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a // indirect
 	cloud.google.com/go/compute v1.14.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v0.8.0 // indirect

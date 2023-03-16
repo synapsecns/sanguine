@@ -48,11 +48,12 @@ type Backend struct {
 	impersonationMux sync.Mutex
 }
 
-const backendName = "anvil"
+// BackendName is the name of the anvil backend.
+const BackendName = "anvil"
 
 // BackendName returns the name of the backend.
 func (f *Backend) BackendName() string {
-	return backendName
+	return BackendName
 }
 
 const gasLimit = 10000000
@@ -315,7 +316,7 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 // in the meantime, this may cause race conditions.
 //
 // We also print a warning message to the console as an added precaution.
-func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address, transact func(opts *bind.TransactOpts) *types.Transaction) {
+func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address, transact func(opts *bind.TransactOpts) *types.Transaction) error {
 	f.impersonationMux.Lock()
 	defer f.impersonationMux.Unlock()
 
@@ -340,6 +341,7 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 		err = anvilClient.StopImpersonatingAccount(ctx, address)
 		assert.Nil(f.T(), err)
 	}()
+	return nil
 }
 
 func (f *Backend) warnImpersonation() {
