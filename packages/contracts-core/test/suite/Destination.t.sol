@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Snapshot.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
+import { IDisputeHub } from "../../contracts/interfaces/IDisputeHub.sol";
 
 import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "../../contracts/Destination.sol";
 import { Versioned } from "../../contracts/Version.sol";
@@ -13,12 +14,14 @@ import { MessageRecipientMock } from "../mocks/client/MessageRecipientMock.t.sol
 import { fakeSnapshot } from "../utils/libs/FakeIt.t.sol";
 import {
     AttestationFlag,
+    StateFlag,
     RawAttestation,
     RawAttestationReport,
     RawHeader,
     RawMessage,
     RawSnapshot,
     RawState,
+    RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
@@ -111,6 +114,73 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         emit Dispute(guard, DOMAIN_LOCAL, notary);
         vm.prank(reporter);
         InterfaceDestination(destination).submitAttestationReport(arPayload, arSig, attSig);
+    }
+
+    function test_submitStateReport(
+        RawState memory rs,
+        RawAttestation memory ra,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) public {
+        address reporter = makeAddr("Reporter");
+        // Make sure statesAmount, stateIndex are valid entires
+        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
+        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+        ra = createAttestation(rs, ra, statesAmount, stateIndex);
+        // Create Notary signature for the snapshot
+        address notary = domains[DOMAIN_LOCAL].agent;
+        // fakeSnapshot is deterministic, so this will be the same snapshot
+        RawSnapshot memory rawSnap = fakeSnapshot(rs, statesAmount, stateIndex);
+        (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(notary, rawSnap);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rs);
+        (bytes memory srPayload, bytes memory srSig) = signStateReport(guard, rawSR);
+        // TODO: complete the test when Dispute is implemented
+        vm.expectEmit(true, true, true, true);
+        emit Dispute(guard, DOMAIN_LOCAL, notary);
+        vm.prank(reporter);
+        IDisputeHub(destination).submitStateReport(
+            stateIndex,
+            srPayload,
+            srSig,
+            snapPayload,
+            snapSig
+        );
+    }
+
+    function test_submitStateReportWithProof(
+        RawState memory rs,
+        RawAttestation memory ra,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) public {
+        address reporter = makeAddr("Reporter");
+        // Make sure statesAmount, stateIndex are valid entires
+        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
+        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+        ra = createAttestation(rs, ra, statesAmount, stateIndex);
+        // Create Notary signature for the attestation
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Create Guard signature for the report
+        address guard = domains[0].agent;
+        RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rs);
+        (bytes memory srPayload, bytes memory srSig) = signStateReport(guard, rawSR);
+        // Generate Snapshot Proof
+        bytes32[] memory snapProof = genSnapshotProof(stateIndex);
+        // TODO: complete the test when Dispute is implemented
+        vm.expectEmit(true, true, true, true);
+        emit Dispute(guard, DOMAIN_LOCAL, notary);
+        vm.prank(reporter);
+        IDisputeHub(destination).submitStateReportWithProof(
+            stateIndex,
+            srPayload,
+            srSig,
+            snapProof,
+            attPayload,
+            attSig
+        );
     }
 
     function test_execute(

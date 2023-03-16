@@ -157,7 +157,7 @@ abstract contract StatementHub is AgentRegistry, Versioned {
      * @param _state            Typed memory view over the provided state payload
      * @param _snapProof        Raw payload with snapshot data
      */
-    function _verifySnapshotRoot(
+    function _verifySnapshotMerkle(
         Attestation _att,
         uint256 _stateIndex,
         State _state,

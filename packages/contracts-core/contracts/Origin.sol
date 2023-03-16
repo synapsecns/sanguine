@@ -96,7 +96,7 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         //  - Snapshot Proof has length different to Attestation height.
         //  - Snapshot Proof's first element does not match the State metadata.
         //  - State index is out of range.
-        _verifySnapshotRoot(att, _stateIndex, state, _snapProof);
+        _verifySnapshotMerkle(att, _stateIndex, state, _snapProof);
         // This will revert, if state refers to another domain
         isValid = _isValidState(state);
         if (!isValid) {
