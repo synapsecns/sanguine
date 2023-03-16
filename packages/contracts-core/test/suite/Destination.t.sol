@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SNAPSHOT_MAX_STATES, State } from "../../contracts/libs/Snapshot.sol";
+import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Snapshot.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 
@@ -102,21 +102,15 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         rawAR.flag = uint8(bound(rawAR.flag, 0, uint8(type(AttestationFlag).max)));
         // Create Notary signature for the attestation
         address notary = domains[DOMAIN_LOCAL].agent;
-        (bytes memory attPayload, ) = rawAR.attestation.castToAttestation();
-        bytes memory attSignature = signAttestation(notary, attPayload);
+        (, bytes memory attSig) = signAttestation(notary, rawAR.attestation);
         // Create Guard signature for the report
         address guard = domains[0].agent;
-        (bytes memory arPayload, ) = rawAR.castToAttestationReport();
-        bytes memory arSignature = signAttestationReport(guard, arPayload);
+        (bytes memory arPayload, bytes memory arSig) = signAttestationReport(guard, rawAR);
         // TODO: complete the test when Dispute is implemented
         vm.expectEmit(true, true, true, true);
         emit Dispute(guard, DOMAIN_LOCAL, notary);
         vm.prank(reporter);
-        InterfaceDestination(destination).submitAttestationReport(
-            arPayload,
-            arSignature,
-            attSignature
-        );
+        InterfaceDestination(destination).submitAttestationReport(arPayload, arSig, attSig);
     }
 
     function test_execute(
@@ -139,19 +133,14 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         bytes32[] memory snapProof = genSnapshotProof(stateIndex);
 
         // Attestation Nonce is fuzzed as well
-        (bytes memory attPayload, ) = ra.castToAttestation();
-        bytes memory attSignature = signAttestation(domains[DOMAIN_LOCAL].agent, attPayload);
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
 
         vm.warp(rootTimestamp);
         // Should emit event when attestation is accepted
         vm.expectEmit(true, true, true, true);
-        emit AttestationAccepted(
-            DOMAIN_LOCAL,
-            domains[DOMAIN_LOCAL].agent,
-            attPayload,
-            attSignature
-        );
-        InterfaceDestination(destination).submitAttestation(attPayload, attSignature);
+        emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
+        InterfaceDestination(destination).submitAttestation(attPayload, attSig);
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
             bytes32[ORIGIN_TREE_DEPTH] memory originProof = getLatestProof(i);
@@ -169,6 +158,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
             );
             // Should emit event when message is executed
             vm.expectEmit(true, true, true, true);
+
             emit Executed(DOMAIN_REMOTE, keccak256(messages[i]));
             vm.prank(executor);
             InterfaceDestination(destination).execute(
@@ -187,7 +177,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         uint256 stateIndex
     ) public returns (RawAttestation memory) {
         RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
-        bytes[] memory states = rawSnap.castToStateList();
+        bytes[] memory states = rawSnap.formatStates();
         acceptSnapshot(states);
         // Reuse existing metadata in RawAttestation
         return rawSnap.castToRawAttestation(ra.nonce, ra.blockNumber, ra.timestamp);
@@ -207,7 +197,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
                 RawTips(0, 0, 0, 0),
                 BODY
             );
-            (bytes memory message, ) = rm.castToMessage();
+            bytes memory message = rm.formatMessage();
             rawMessages.push(rm);
             messages.push(message);
             insertMessage(message);

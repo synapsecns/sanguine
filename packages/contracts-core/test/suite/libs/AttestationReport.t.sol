@@ -25,7 +25,7 @@ contract AttestationReportLibraryTest is SynapseLibraryTest {
         // Make sure flag fits into enum
         rra.flag = uint8(bound(rra.flag, 0, uint8(type(AttestationFlag).max)));
         // This is tested in AttestationLibraryTest, we assume it's working here
-        (bytes memory attestation, ) = rra.attestation.castToAttestation();
+        bytes memory attestation = rra.attestation.formatAttestation();
         bytes memory payload = libHarness.formatAttestationReport(
             AttestationFlag(rra.flag),
             attestation

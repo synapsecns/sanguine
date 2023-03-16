@@ -4,8 +4,6 @@ pragma solidity 0.8.17;
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 import { ISnapshotHub } from "../../contracts/interfaces/ISnapshotHub.sol";
 import { MerkleLib } from "../../contracts/libs/Merkle.sol";
-import { SnapshotLib } from "../../contracts/libs/Snapshot.sol";
-import { State, StateLib, SummitState } from "../../contracts/libs/State.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 
 import { InterfaceSummit } from "../../contracts/Summit.sol";
@@ -15,16 +13,16 @@ import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
 import {
     AttestationFlag,
+    State,
     RawAttestation,
-    RawAttestationReport
+    RawAttestationReport,
+    RawState
 } from "../utils/libs/SynapseStructs.t.sol";
 import { Random } from "../utils/libs/Random.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 contract SummitTest is SynapseTest, SynapseProofs {
-    using StateLib for bytes;
-
     struct SignedSnapshot {
         bytes snapshot;
         bytes signature;
@@ -39,7 +37,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
 
     uint256 internal constant STATES = 10;
 
-    mapping(uint256 => mapping(uint256 => SummitState)) internal guardStates;
+    mapping(uint256 => mapping(uint256 => RawState)) internal guardStates;
     mapping(uint256 => SignedSnapshot) internal guardSnapshots;
     mapping(uint256 => RawAttestation) internal notaryAttestations;
 
@@ -99,17 +97,16 @@ contract SummitTest is SynapseTest, SynapseProofs {
         // Pick random Notary
         uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
         address notary = domains[domain].agents[notaryIndex];
-        (bytes memory attestation, ) = ra.castToAttestation();
-        bytes memory signature = signAttestation(notary, attestation);
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestation(attestation, signature);
+            emit InvalidAttestation(attPayload, attSig);
             expectAgentSlashed(domain, notary);
         }
         vm.recordLogs();
         assertEq(
-            InterfaceSummit(summit).verifyAttestation(attestation, signature),
+            InterfaceSummit(summit).verifyAttestation(attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -134,17 +131,16 @@ contract SummitTest is SynapseTest, SynapseProofs {
             uint8(AttestationFlag.Invalid),
             ra
         );
-        (bytes memory arPayload, ) = rawAR.castToAttestationReport();
-        bytes memory signature = signAttestationReport(guard, arPayload);
+        (bytes memory arPayload, bytes memory arSig) = signAttestationReport(guard, rawAR);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationReport(arPayload, signature);
+            emit InvalidAttestationReport(arPayload, arSig);
             expectAgentSlashed(0, guard);
         }
         vm.recordLogs();
         assertEq(
-            InterfaceSummit(summit).verifyAttestationReport(arPayload, signature),
+            InterfaceSummit(summit).verifyAttestationReport(arPayload, arSig),
             isValid,
             "!returnValue"
         );
@@ -176,18 +172,18 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 // Use random non-zero nonce for every state
                 uint32 nonce = uint32(bound(random.nextUint32(), 1, type(uint32).max));
                 guardStates[i][j] = random.nextState({ origin: j + 1, nonce: nonce });
-                states[j] = guardStates[i][j].formatSummitState().castToState();
+                states[j] = guardStates[i][j].castToState();
             }
-            bytes memory snapshot = SnapshotLib.formatSnapshot(states);
-            bytes memory signature = signSnapshot(domains[0].agents[i], snapshot);
-            guardSnapshots[i] = SignedSnapshot(snapshot, signature);
+            address guard = domains[0].agents[i];
+            (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(guard, states);
+            guardSnapshots[i] = SignedSnapshot(snapPayload, snapSig);
         }
 
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
             // Check that every State is saved
             for (uint256 j = 0; j < STATES; ++j) {
                 vm.expectEmit(true, true, true, true);
-                emit StateSaved(guardStates[i][j].formatSummitState());
+                emit StateSaved(guardStates[i][j].formatState());
             }
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(
@@ -204,7 +200,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
             for (uint32 j = 0; j < STATES; ++j) {
                 assertEq(
                     ISnapshotHub(summit).getLatestAgentState(j + 1, domains[0].agents[i]),
-                    guardStates[i][j].formatSummitState(),
+                    guardStates[i][j].formatState(),
                     "!latestState: guard"
                 );
             }
@@ -232,8 +228,8 @@ contract SummitTest is SynapseTest, SynapseProofs {
             for (uint256 j = 0; j < STATES; ++j) {
                 // Pick a random Guard to choose their state for domain (J+1)
                 uint256 guardIndex = random.nextUint256() % DOMAIN_AGENTS;
-                rawStates[j] = guardStates[guardIndex][j].formatSummitState();
-                states[j] = rawStates[j].castToState();
+                rawStates[j] = guardStates[guardIndex][j].formatState();
+                states[j] = guardStates[guardIndex][j].castToState();
             }
 
             // Calculate root and height using AttestationProofGenerator
@@ -243,17 +239,16 @@ contract SummitTest is SynapseTest, SynapseProofs {
             // This is i-th submitted attestation so far
             ra.nonce = i;
             notaryAttestations[i] = ra;
-            (bytes memory attestation, ) = ra.castToAttestation();
+            bytes memory attestation = ra.formatAttestation();
 
             address notary = domains[DOMAIN_LOCAL].agents[i];
-            bytes memory snapshot = SnapshotLib.formatSnapshot(states);
-            bytes memory signature = signSnapshot(notary, snapshot);
+            (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(notary, states);
 
             vm.expectEmit(true, true, true, true);
             emit AttestationSaved(attestation);
             vm.expectEmit(true, true, true, true);
-            emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapshot, signature);
-            InterfaceSummit(summit).submitSnapshot(snapshot, signature);
+            emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayload, snapSig);
+            InterfaceSummit(summit).submitSnapshot(snapPayload, snapSig);
 
             // Check proofs for every State in the Notary snapshot
             for (uint256 j = 0; j < STATES; ++j) {
@@ -285,7 +280,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
     function checkLatestState() public {
         // Check global latest state
         for (uint32 j = 0; j < STATES; ++j) {
-            SummitState memory latestState;
+            RawState memory latestState;
             for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
                 if (guardStates[i][j].nonce > latestState.nonce) {
                     latestState = guardStates[i][j];
@@ -293,7 +288,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
             }
             assertEq(
                 InterfaceSummit(summit).getLatestState(j + 1),
-                latestState.formatSummitState(),
+                latestState.formatState(),
                 "!getLatestState"
             );
         }

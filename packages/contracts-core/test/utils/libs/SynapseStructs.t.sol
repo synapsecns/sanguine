@@ -31,7 +31,7 @@ struct RawHeader {
     bytes32 recipient;
     uint32 optimisticSeconds;
 }
-using { CastLib.castToHeader } for RawHeader global;
+using { CastLib.castToHeader, CastLib.formatHeader } for RawHeader global;
 
 struct RawTips {
     uint96 notaryTip;
@@ -39,14 +39,14 @@ struct RawTips {
     uint96 proverTip;
     uint96 executorTip;
 }
-using { CastLib.castToTips } for RawTips global;
+using { CastLib.castToTips, CastLib.formatTips } for RawTips global;
 
 struct RawMessage {
     RawHeader header;
     RawTips tips;
     bytes body;
 }
-using { CastLib.castToMessage } for RawMessage global;
+using { CastLib.castToMessage, CastLib.formatMessage } for RawMessage global;
 
 struct RawState {
     bytes32 root;
@@ -55,15 +55,16 @@ struct RawState {
     uint40 blockNumber;
     uint40 timestamp;
 }
-using { CastLib.castToState } for RawState global;
+using { CastLib.castToState, CastLib.formatState } for RawState global;
 
 struct RawSnapshot {
     RawState[] states;
 }
 using {
-    CastLib.castToStateList,
+    CastLib.formatStates,
     CastLib.castToRawAttestation,
-    CastLib.castToSnapshot
+    CastLib.castToSnapshot,
+    CastLib.formatSnapshot
 } for RawSnapshot global;
 
 struct RawAttestation {
@@ -73,19 +74,22 @@ struct RawAttestation {
     uint40 blockNumber;
     uint40 timestamp;
 }
-using { CastLib.castToAttestation } for RawAttestation global;
+using { CastLib.castToAttestation, CastLib.formatAttestation } for RawAttestation global;
 
 struct RawAttestationReport {
     uint8 flag;
     RawAttestation attestation;
 }
-using { CastLib.castToAttestationReport } for RawAttestationReport global;
+using {
+    CastLib.castToAttestationReport,
+    CastLib.formatAttestationReport
+} for RawAttestationReport global;
 
 struct RawStateReport {
     uint8 flag;
     RawState state;
 }
-using { CastLib.castToStateReport } for RawStateReport global;
+using { CastLib.castToStateReport, CastLib.formatStateReport } for RawStateReport global;
 
 library CastLib {
     using AttestationLib for bytes;
@@ -105,22 +109,17 @@ library CastLib {
     ▏*║                               MESSAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToMessage(RawMessage memory rm)
-        internal
-        pure
-        returns (bytes memory message, Message ptr)
-    {
-        (bytes memory header, ) = rm.header.castToHeader();
-        (bytes memory tips, ) = rm.tips.castToTips();
+    function formatMessage(RawMessage memory rm) internal pure returns (bytes memory message) {
+        bytes memory header = rm.header.formatHeader();
+        bytes memory tips = rm.tips.formatTips();
         message = MessageLib.formatMessage(header, tips, rm.body);
-        ptr = message.castToMessage();
     }
 
-    function castToHeader(RawHeader memory rh)
-        internal
-        pure
-        returns (bytes memory header, Header ptr)
-    {
+    function castToMessage(RawMessage memory rm) internal pure returns (Message ptr) {
+        ptr = rm.formatMessage().castToMessage();
+    }
+
+    function formatHeader(RawHeader memory rh) internal pure returns (bytes memory header) {
         header = HeaderLib.formatHeader({
             _origin: rh.origin,
             _sender: rh.sender,
@@ -129,24 +128,30 @@ library CastLib {
             _recipient: rh.recipient,
             _optimisticSeconds: rh.optimisticSeconds
         });
-        ptr = header.castToHeader();
     }
 
-    function castToTips(RawTips memory rt) internal pure returns (bytes memory tips, Tips ptr) {
+    function castToHeader(RawHeader memory rh) internal pure returns (Header ptr) {
+        ptr = rh.formatHeader().castToHeader();
+    }
+
+    function formatTips(RawTips memory rt) internal pure returns (bytes memory tips) {
         tips = TipsLib.formatTips({
             _notaryTip: rt.notaryTip,
             _broadcasterTip: rt.broadcasterTip,
             _proverTip: rt.proverTip,
             _executorTip: rt.executorTip
         });
-        ptr = tips.castToTips();
+    }
+
+    function castToTips(RawTips memory rt) internal pure returns (Tips ptr) {
+        ptr = rt.formatTips().castToTips();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                STATE                                 ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToState(RawState memory rs) internal pure returns (bytes memory state, State ptr) {
+    function formatState(RawState memory rs) internal pure returns (bytes memory state) {
         state = StateLib.formatState({
             _root: rs.root,
             _origin: rs.origin,
@@ -154,33 +159,43 @@ library CastLib {
             _blockNumber: rs.blockNumber,
             _timestamp: rs.timestamp
         });
-        ptr = state.castToState();
+    }
+
+    function castToState(RawState memory rs) internal pure returns (State ptr) {
+        ptr = rs.formatState().castToState();
+    }
+
+    function formatStateReport(RawStateReport memory rawSR)
+        internal
+        pure
+        returns (bytes memory stateReport)
+    {
+        // Explicit revert when flag out of range
+        require(rawSR.flag <= uint8(type(StateFlag).max), "Flag out of range");
+        bytes memory state = rawSR.state.formatState();
+        stateReport = StateFlag(rawSR.flag).formatStateReport(state);
     }
 
     function castToStateReport(RawStateReport memory rawSR)
         internal
         pure
-        returns (bytes memory stateReport, StateReport ptr)
+        returns (StateReport ptr)
     {
-        // Explicit revert when flag out of range
-        require(rawSR.flag <= uint8(type(StateFlag).max), "Flag out of range");
-        (bytes memory state, ) = rawSR.state.castToState();
-        stateReport = StateFlag(rawSR.flag).formatStateReport(state);
-        ptr = stateReport.castToStateReport();
+        ptr = rawSR.formatStateReport().castToStateReport();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               SNAPSHOT                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToStateList(RawSnapshot memory rawSnap)
+    function formatStates(RawSnapshot memory rawSnap)
         internal
         pure
         returns (bytes[] memory states)
     {
         states = new bytes[](rawSnap.states.length);
         for (uint256 i = 0; i < rawSnap.states.length; ++i) {
-            (states[i], ) = rawSnap.states[i].castToState();
+            states[i] = rawSnap.states[i].formatState();
         }
     }
 
@@ -190,7 +205,7 @@ library CastLib {
         uint40 blockNumber,
         uint40 timestamp
     ) internal view returns (RawAttestation memory ra) {
-        (, Snapshot snapshot) = rawSnap.castToSnapshot();
+        Snapshot snapshot = rawSnap.castToSnapshot();
         ra.root = snapshot.root();
         ra.height = snapshot.height();
         ra.nonce = nonce;
@@ -198,27 +213,30 @@ library CastLib {
         ra.timestamp = timestamp;
     }
 
-    function castToSnapshot(RawSnapshot memory rawSnap)
+    function formatSnapshot(RawSnapshot memory rawSnap)
         internal
         view
-        returns (bytes memory snapshot, Snapshot ptr)
+        returns (bytes memory snapshot)
     {
         State[] memory states = new State[](rawSnap.states.length);
         for (uint256 i = 0; i < rawSnap.states.length; ++i) {
-            (, states[i]) = rawSnap.states[i].castToState();
+            states[i] = rawSnap.states[i].castToState();
         }
         snapshot = SnapshotLib.formatSnapshot(states);
-        ptr = snapshot.castToSnapshot();
+    }
+
+    function castToSnapshot(RawSnapshot memory rawSnap) internal view returns (Snapshot ptr) {
+        ptr = rawSnap.formatSnapshot().castToSnapshot();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             ATTESTATION                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToAttestation(RawAttestation memory ra)
+    function formatAttestation(RawAttestation memory ra)
         internal
         pure
-        returns (bytes memory attestation, Attestation ptr)
+        returns (bytes memory attestation)
     {
         attestation = AttestationLib.formatAttestation({
             _root: ra.root,
@@ -227,18 +245,28 @@ library CastLib {
             _blockNumber: ra.blockNumber,
             _timestamp: ra.timestamp
         });
-        ptr = attestation.castToAttestation();
+    }
+
+    function castToAttestation(RawAttestation memory ra) internal pure returns (Attestation ptr) {
+        ptr = ra.formatAttestation().castToAttestation();
+    }
+
+    function formatAttestationReport(RawAttestationReport memory rawAR)
+        internal
+        pure
+        returns (bytes memory attestationReport)
+    {
+        // Explicit revert when out of range
+        require(rawAR.flag <= uint8(type(AttestationFlag).max), "Flag out of range");
+        bytes memory attestation = rawAR.attestation.formatAttestation();
+        attestationReport = AttestationFlag(rawAR.flag).formatAttestationReport(attestation);
     }
 
     function castToAttestationReport(RawAttestationReport memory rawAR)
         internal
         pure
-        returns (bytes memory attestationReport, AttestationReport ptr)
+        returns (AttestationReport ptr)
     {
-        // Explicit revert when out of range
-        require(rawAR.flag <= uint8(type(AttestationFlag).max), "Flag out of range");
-        (bytes memory attestation, ) = rawAR.attestation.castToAttestation();
-        attestationReport = AttestationFlag(rawAR.flag).formatAttestationReport(attestation);
-        ptr = attestationReport.castToAttestationReport();
+        ptr = rawAR.formatAttestationReport().castToAttestationReport();
     }
 }

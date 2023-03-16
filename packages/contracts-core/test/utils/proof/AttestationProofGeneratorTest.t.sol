@@ -24,9 +24,9 @@ contract AttestationProofGeneratorTest is Test {
         statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
         stateIndex = bound(stateIndex, 0, statesAmount - 1);
         RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
-        (, Snapshot snapshot) = rawSnap.castToSnapshot();
-        (, State state) = rawState.castToState();
-        bytes[] memory states = rawSnap.castToStateList();
+        Snapshot snapshot = rawSnap.castToSnapshot();
+        State state = rawState.castToState();
+        bytes[] memory states = rawSnap.formatStates();
         proofGen.acceptSnapshot(states);
         bytes32 snapshotRoot = proofGen.root();
         assertEq(snapshotRoot, snapshot.root(), "!snapshotRoot");

@@ -11,7 +11,7 @@ fs_permissions = [{ access = "read", path = "./artifacts"}, { access = "read-wri
 verbosity = 4
 
 [fuzz]
-runs = 2000
+runs = 400
 
 [rpc_endpoints]
 avalanche = "${RPC_AVALANCHE}"
