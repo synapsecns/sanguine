@@ -120,6 +120,12 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.2.6
+        with:
+          key: docker-release-${{ runner.os }}-${{ matrix.package }}
+
       - name: Get branch name
         id: branch-name
         uses: tj-actions/branch-names@v6
@@ -177,6 +183,7 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
       # use this to determine if we need goreleaser for a workflow
+      # TODO: it might be worth considering moving this into a seperate workflow so we can avoid doing a full clone + pulling the image when we don't need anything
       - name: Check For Docker Images
         if: steps.branch-name.outputs.is_default != 'true'
         id: image_check
