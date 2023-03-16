@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"os"
 	"sync"
@@ -249,6 +251,11 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 // Context gets the context from the backend.
 func (b *Backend) Context() context.Context {
 	return b.ctx
+}
+
+// ImpersonateAccount impersonates an account.
+func (b *Backend) ImpersonateAccount(_ context.Context, _ common.Address, _ func(opts *bind.TransactOpts) *types.Transaction) error {
+	return errors.New("account impersonation is not implemented on this backend")
 }
 
 // ConfirmationClient waits for confirmation.

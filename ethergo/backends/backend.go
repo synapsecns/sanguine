@@ -47,11 +47,6 @@ type SimulatedTestBackend interface {
 	chain.Chain
 	// Signer is the signer for the chain
 	Signer() types.Signer
-}
-
-// TestBackend provides a backend for testing.
-// Deprecated: use simulated test backend.
-type TestBackend interface {
-	// SimulatedTestBackend is the base of a test backend
-	SimulatedTestBackend
+	// ImpersonateAccount impersonates an account. This is only supported on the anvil backend backends.
+	ImpersonateAccount(ctx context.Context, address common.Address, transact func(opts *bind.TransactOpts) *types.Transaction) error
 }
