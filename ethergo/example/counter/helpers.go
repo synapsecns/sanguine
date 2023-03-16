@@ -8,30 +8,30 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-// CounterClientRef is a bound counter.
+// CounterRef is a bound counter.
 //
 //nolint:golint
-type CounterClientRef struct {
+type CounterRef struct {
 	*Counter
 	address common.Address
 }
 
 // Address gets the address of the contract.
-func (a CounterClientRef) Address() common.Address {
+func (a CounterRef) Address() common.Address {
 	return a.address
 }
 
 // NewCounterRef creates a new test client.
-func NewCounterRef(address common.Address, backend bind.ContractBackend) (*CounterClientRef, error) {
+func NewCounterRef(address common.Address, backend bind.ContractBackend) (*CounterRef, error) {
 	contract, err := NewCounter(address, backend)
 	if err != nil {
 		return nil, fmt.Errorf("could not create ping pong test client: %w", err)
 	}
 
-	return &CounterClientRef{
+	return &CounterRef{
 		Counter: contract,
 		address: address,
 	}, nil
 }
 
-var _ vm.ContractRef = &CounterClientRef{}
+var _ vm.ContractRef = &CounterRef{}
