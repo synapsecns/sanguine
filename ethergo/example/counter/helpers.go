@@ -10,7 +10,7 @@ import (
 
 // CounterRef is a bound counter.
 //
-//nolint:golint
+//nolint:golint, revive
 type CounterRef struct {
 	*Counter
 	address common.Address
