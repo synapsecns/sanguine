@@ -76,7 +76,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
                 RawTips(0, 0, 0, 0),
                 body
             );
-            (messages[i], ) = rawMessages[i].castToMessage();
+            messages[i] = rawMessages[i].formatMessage();
             insertMessage(messages[i]);
             roots[i] = getRoot(i + 1);
         }
@@ -91,7 +91,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
                 blockNumber: uint40(block.number + i),
                 timestamp: uint40(block.timestamp + i * BLOCK_TIME)
             });
-            (bytes memory state, ) = rs.castToState();
+            bytes memory state = rs.formatState();
             vm.expectEmit(true, true, true, true);
             emit StateSaved(state);
             vm.expectEmit(true, true, true, true);
@@ -126,7 +126,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
             blockNumber: uint40(block.number - 1),
             timestamp: uint40(block.timestamp - BLOCK_TIME)
         });
-        (bytes memory state, ) = rs.castToState();
+        bytes memory state = rs.formatState();
         assertEq(hub.suggestState(0), state, "!state: 0");
         assertEq(hub.suggestState(0), hub.suggestLatestState(), "!latest state: 0");
         // Dispatch some messages
@@ -139,7 +139,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
             rs.root = getRoot(rs.nonce);
             rs.blockNumber += 1;
             rs.timestamp += uint40(BLOCK_TIME);
-            (state, ) = rs.castToState();
+            state = rs.formatState();
             assertEq(hub.suggestState(i + 1), state, "!suggestState");
         }
         assertEq(hub.suggestLatestState(), state, "!suggestLatestState");
@@ -285,11 +285,11 @@ contract OriginTest is SynapseTest, SynapseProofs {
         uint256 statesAmount = bound(random.nextUint256(), 1, SNAPSHOT_MAX_STATES);
         stateIndex = bound(random.nextUint256(), 0, statesAmount - 1);
         RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
-        (snapshot, ) = rawSnap.castToSnapshot();
+        snapshot = rawSnap.formatSnapshot();
         // Use random metadata
         ra = random.nextAttestation(rawSnap, random.nextUint32());
         // Save snapshot for Snapshot Proof generation
-        acceptSnapshot(rawSnap.castToStateList());
+        acceptSnapshot(rawSnap.formatStates());
     }
 
     function _verifyAttestation(
@@ -304,18 +304,17 @@ contract OriginTest is SynapseTest, SynapseProofs {
             bytes memory snapshot,
             RawAttestation memory ra
         ) = _prepareAttestation(random, rawState);
-        (bytes memory state, ) = rawState.castToState();
-        (bytes memory attestation, ) = ra.castToAttestation();
-        bytes memory signature = signAttestation(notary, attestation);
+        bytes memory state = rawState.formatState();
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(stateIndex, state, attestation, signature);
+            emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
             _expectAgentSlashed(domain, notary);
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyAttestation(stateIndex, snapshot, attestation, signature),
+            InterfaceOrigin(origin).verifyAttestation(stateIndex, snapshot, attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -337,13 +336,12 @@ contract OriginTest is SynapseTest, SynapseProofs {
             RawAttestation memory ra
         ) = _prepareAttestation(random, rawState);
         bytes32[] memory snapProof = genSnapshotProof(stateIndex);
-        (bytes memory state, ) = rawState.castToState();
-        (bytes memory attestation, ) = ra.castToAttestation();
-        bytes memory signature = signAttestation(notary, attestation);
+        bytes memory state = rawState.formatState();
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(stateIndex, state, attestation, signature);
+            emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
             _expectAgentSlashed(domain, notary);
         }
         vm.recordLogs();
@@ -352,8 +350,8 @@ contract OriginTest is SynapseTest, SynapseProofs {
                 stateIndex,
                 state,
                 snapProof,
-                attestation,
-                signature
+                attPayload,
+                attSig
             ),
             isValid,
             "!returnValue"
@@ -374,17 +372,16 @@ contract OriginTest is SynapseTest, SynapseProofs {
         stateIndex = bound(stateIndex, 0, statesAmount - 1);
         address notary = domains[DOMAIN_REMOTE].agent;
         RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
-        (bytes memory snapshot, ) = rawSnap.castToSnapshot();
-        bytes memory signature = signSnapshot(notary, snapshot);
+        (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(notary, rawSnap);
         vm.recordLogs();
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidSnapshotState(stateIndex, snapshot, signature);
+            emit InvalidSnapshotState(stateIndex, snapPayload, snapSig);
             _expectAgentSlashed(DOMAIN_REMOTE, notary);
         }
         assertEq(
-            InterfaceOrigin(origin).verifySnapshot(stateIndex, snapshot, signature),
+            InterfaceOrigin(origin).verifySnapshot(stateIndex, snapPayload, snapSig),
             isValid,
             "!returnValue"
         );
@@ -399,17 +396,16 @@ contract OriginTest is SynapseTest, SynapseProofs {
         bool isValid = !isStateValid;
         RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rawState);
         address guard = domains[0].agent;
-        (bytes memory report, ) = rawSR.castToStateReport();
-        bytes memory signature = signStateReport(guard, report);
+        (bytes memory srPayload, bytes memory srSig) = signStateReport(guard, rawSR);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidStateReport(report, signature);
+            emit InvalidStateReport(srPayload, srSig);
             _expectAgentSlashed(0, guard);
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyStateReport(report, signature),
+            InterfaceOrigin(origin).verifyStateReport(srPayload, srSig),
             isValid,
             "!returnValue"
         );

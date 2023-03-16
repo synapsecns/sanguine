@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SummitState } from "../../../contracts/libs/State.sol";
-
-import { RawAttestation, RawSnapshot } from "./SynapseStructs.t.sol";
+import { RawAttestation, RawState, RawSnapshot } from "./SynapseStructs.t.sol";
 
 struct Random {
     bytes32 seed;
@@ -86,7 +84,7 @@ library RandomLib {
         Random memory r,
         uint32 origin,
         uint32 nonce
-    ) internal pure returns (SummitState memory state) {
+    ) internal pure returns (RawState memory state) {
         state.root = r.next();
         state.origin = origin;
         state.nonce = nonce;
