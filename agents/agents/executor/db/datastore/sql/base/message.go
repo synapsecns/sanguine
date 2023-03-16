@@ -41,9 +41,6 @@ func (s Store) ExecuteMessage(ctx context.Context, messageMask types.DBMessage) 
 	if dbTx.Error != nil {
 		return fmt.Errorf("failed to execute message: %w", dbTx.Error)
 	}
-	if dbTx.RowsAffected == 0 {
-		return fmt.Errorf("failed to execute message: no rows affected")
-	}
 
 	return nil
 }
