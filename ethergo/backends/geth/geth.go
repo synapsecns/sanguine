@@ -356,4 +356,4 @@ func toPublic(apis []rpc.API) (publicApis []rpc.API) {
 	return publicApis
 }
 
-var _ backends.TestBackend = &Backend{}
+var _ backends.SimulatedTestBackend = &Backend{}

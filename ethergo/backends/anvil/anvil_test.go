@@ -44,12 +44,14 @@ func (a *AnvilSuite) TestImpersonateAccount() {
 	Nil(a.T(), err)
 
 	// impersonate vitalik, and send the fren some eth
-	a.backend.ImpersonateAccount(a.GetTestContext(), vitalik, func(transactOpts *bind.TransactOpts) *types.Transaction {
+	err = a.backend.ImpersonateAccount(a.GetTestContext(), vitalik, func(transactOpts *bind.TransactOpts) *types.Transaction {
 		tx, err := a.counter.VitalikIncrement(transactOpts)
 		Nil(a.T(), err)
 
 		return tx
 	})
+	Nil(a.T(), err)
+
 	vitalikCount, err := a.counter.GetVitalikCount(&bind.CallOpts{Context: a.GetTestContext()})
 	Nil(a.T(), err)
 
