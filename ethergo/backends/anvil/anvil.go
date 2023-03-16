@@ -48,11 +48,12 @@ type Backend struct {
 	impersonationMux sync.Mutex
 }
 
-const backendName = "anvil"
+// BackendName is the name of the anvil backend.
+const BackendName = "anvil"
 
 // BackendName returns the name of the backend.
 func (f *Backend) BackendName() string {
-	return backendName
+	return BackendName
 }
 
 const gasLimit = 10000000
