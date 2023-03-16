@@ -8,6 +8,15 @@ import {
     STATE_REPORT_SALT
 } from "../../contracts/libs/Constants.sol";
 
+import {
+    SnapshotLib,
+    State,
+    RawAttestation,
+    RawAttestationReport,
+    RawSnapshot,
+    RawStateReport
+} from "./libs/SynapseStructs.t.sol";
+
 import { SynapseTestConstants } from "./SynapseTestConstants.t.sol";
 
 import { Test } from "forge-std/Test.sol";
@@ -97,6 +106,15 @@ abstract contract SynapseAgents is SynapseTestConstants, Test {
         return signMessage(agent, keccak256(bytes.concat(ATTESTATION_SALT, hashedAtt)));
     }
 
+    function signAttestation(address agent, RawAttestation memory ra)
+        public
+        view
+        returns (bytes memory attestation, bytes memory signature)
+    {
+        attestation = ra.formatAttestation();
+        signature = signAttestation(agent, attestation);
+    }
+
     function signAttestationReport(address agent, bytes memory arPayload)
         public
         view
@@ -104,6 +122,15 @@ abstract contract SynapseAgents is SynapseTestConstants, Test {
     {
         bytes32 hashedAR = keccak256(arPayload);
         return signMessage(agent, keccak256(bytes.concat(ATTESTATION_REPORT_SALT, hashedAR)));
+    }
+
+    function signAttestationReport(address agent, RawAttestationReport memory rawAR)
+        public
+        view
+        returns (bytes memory attestationReport, bytes memory signature)
+    {
+        attestationReport = rawAR.formatAttestationReport();
+        signature = signAttestation(agent, attestationReport);
     }
 
     function signSnapshot(address agent, bytes memory snapshot)
@@ -115,6 +142,24 @@ abstract contract SynapseAgents is SynapseTestConstants, Test {
         return signMessage(agent, keccak256(bytes.concat(SNAPSHOT_SALT, hashedSnap)));
     }
 
+    function signSnapshot(address agent, RawSnapshot memory rawSnap)
+        public
+        view
+        returns (bytes memory snapshot, bytes memory signature)
+    {
+        snapshot = rawSnap.formatSnapshot();
+        signature = signSnapshot(agent, snapshot);
+    }
+
+    function signSnapshot(address agent, State[] memory states)
+        public
+        view
+        returns (bytes memory snapshot, bytes memory signature)
+    {
+        snapshot = SnapshotLib.formatSnapshot(states);
+        signature = signSnapshot(agent, snapshot);
+    }
+
     function signStateReport(address agent, bytes memory srPayload)
         public
         view
@@ -122,5 +167,14 @@ abstract contract SynapseAgents is SynapseTestConstants, Test {
     {
         bytes32 hashedAR = keccak256(srPayload);
         return signMessage(agent, keccak256(bytes.concat(STATE_REPORT_SALT, hashedAR)));
+    }
+
+    function signStateReport(address agent, RawStateReport memory rawSR)
+        public
+        view
+        returns (bytes memory stateReport, bytes memory signature)
+    {
+        stateReport = rawSR.formatStateReport();
+        signature = signStateReport(agent, stateReport);
     }
 }
