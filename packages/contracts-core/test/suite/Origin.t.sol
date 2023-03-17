@@ -10,7 +10,6 @@ import { TipsLib } from "../../contracts/libs/Tips.sol";
 import { InterfaceOrigin } from "../../contracts/Origin.sol";
 import { Versioned } from "../../contracts/Version.sol";
 
-import { OriginStateMask } from "./libs/State.t.sol";
 import { fakeState, fakeSnapshot } from "../utils/libs/FakeIt.t.sol";
 import { Random } from "../utils/libs/Random.t.sol";
 import {
@@ -168,13 +167,12 @@ contract OriginTest is SynapseTest, SynapseProofs {
         uint256 stateIndex
     ) public {
         // Use empty mutation mask
-        OriginStateMask memory mask;
-        test_verifySnapshot_existingNonce(nonce, mask, statesAmount, stateIndex);
+        test_verifySnapshot_existingNonce(nonce, 0, statesAmount, stateIndex);
     }
 
     function test_verifySnapshot_existingNonce(
         uint32 nonce,
-        OriginStateMask memory mask,
+        uint256 mask,
         uint256 statesAmount,
         uint256 stateIndex
     ) public {
@@ -195,15 +193,13 @@ contract OriginTest is SynapseTest, SynapseProofs {
     }
 
     function test_verifyAttestation_valid(Random memory random, uint32 nonce) public {
-        // Use empty mutation mask
-        OriginStateMask memory mask;
-        test_verifyAttestation_existingNonce(random, nonce, mask);
+        test_verifyAttestation_existingNonce(random, nonce, 0);
     }
 
     function test_verifyAttestation_existingNonce(
         Random memory random,
         uint32 nonce,
-        OriginStateMask memory mask
+        uint256 mask
     ) public {
         (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
         _verifyAttestation(random, rs, isValid);
@@ -219,14 +215,13 @@ contract OriginTest is SynapseTest, SynapseProofs {
 
     function test_verifyAttestationWithProof_valid(Random memory random, uint32 nonce) public {
         // Use empty mutation mask
-        OriginStateMask memory mask;
-        test_verifyAttestationWithProof_existingNonce(random, nonce, mask);
+        test_verifyAttestationWithProof_existingNonce(random, nonce, 0);
     }
 
     function test_verifyAttestationWithProof_existingNonce(
         Random memory random,
         uint32 nonce,
-        OriginStateMask memory mask
+        uint256 mask
     ) public {
         (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
         _verifyAttestationWithProof(random, rs, isValid);
@@ -242,7 +237,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
         _verifyAttestationWithProof(random, rs, false);
     }
 
-    function _prepareExistingState(uint32 nonce, OriginStateMask memory mask)
+    function _prepareExistingState(uint32 nonce, uint256 mask)
         internal
         returns (bool isValid, RawState memory rs)
     {
@@ -250,7 +245,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
         uint40 initialTS = uint40(block.timestamp - BLOCK_TIME);
         test_dispatch();
         // State is valid if and only if all three fields match
-        isValid = !(mask.diffRoot || mask.diffBlockNumber || mask.diffTimestamp);
+        isValid = mask & 7 == 0;
         // Restrict nonce to existing ones
         nonce = uint32(bound(nonce, 0, MESSAGES));
         rs = RawState({
@@ -260,9 +255,9 @@ contract OriginTest is SynapseTest, SynapseProofs {
             blockNumber: initialBN + nonce,
             timestamp: uint40(initialTS + nonce * BLOCK_TIME)
         });
-        if (mask.diffRoot) rs.root = rs.root ^ bytes32(uint256(1));
-        if (mask.diffBlockNumber) rs.blockNumber = rs.blockNumber ^ 1;
-        if (mask.diffTimestamp) rs.timestamp = rs.timestamp ^ 1;
+        rs.root = rs.root ^ bytes32(mask & 1);
+        rs.blockNumber = rs.blockNumber ^ uint40(mask & 2);
+        rs.timestamp = rs.timestamp ^ uint40(mask & 4);
     }
 
     function _prepareAttestation(Random memory random, RawState memory rawState)

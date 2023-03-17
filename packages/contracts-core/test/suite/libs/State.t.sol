@@ -14,11 +14,6 @@ struct RawState {
     uint40 timestamp;
 }
 
-struct OriginStateMask {
-    bool diffBlockNumber;
-    bool diffTimestamp;
-}
-
 // solhint-disable func-name-mixedcase
 contract StateLibraryTest is SynapseLibraryTest {
     using TypedMemView for bytes;
