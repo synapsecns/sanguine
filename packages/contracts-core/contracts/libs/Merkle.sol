@@ -117,9 +117,8 @@ library MerkleLib {
     {
         // To calculate the root we follow the branch of first ZERO leaf (index == count)
         for (uint256 i = 0; i < TREE_DEPTH; ) {
-            // i-th bit tells if we are the right of the left child on i-th level
-            uint256 _ithBit = (_count >> i) & 0x01;
-            if (_ithBit == 1) {
+            // Check if we are the left or the right child on the current level
+            if ((_count & 1) == 1) {
                 // We are the right child. Our sibling is the "rightmost" "left-child" node
                 // that has two non-zero children => sibling is tree.branch[i]
                 _current = getParent(_tree.branch[i], _current);
@@ -127,6 +126,8 @@ library MerkleLib {
                 // We are the left child. Our sibling does not exist yet => sibling is ZERO
                 _current = getParent(_current, bytes32(0));
             }
+            // Get the parent index, and go to the next tree level
+            _count >>= 1;
             unchecked {
                 ++i;
             }
