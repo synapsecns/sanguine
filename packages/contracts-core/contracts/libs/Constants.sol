@@ -20,7 +20,7 @@ bytes32 constant STATE_REPORT_SALT = keccak256("STATE_REPORT_SALT");
 /// @dev Root for an empty Origin Merkle Tree.
 bytes32 constant EMPTY_ROOT = hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757";
 /// @dev Depth of the Origin Merkle Tree
-uint256 constant ORIGIN_TREE_DEPTH = 32;
+uint256 constant TREE_DEPTH = 32;
 /// @dev Maximum bytes per message = 2 KiB (somewhat arbitrarily set to begin)
 uint256 constant MAX_MESSAGE_BODY_BYTES = 2 * 2**10;
 // ═══════════════════════════════ SYSTEM ROUTER ═══════════════════════════════

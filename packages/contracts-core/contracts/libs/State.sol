@@ -24,7 +24,6 @@ using {
 
 /// @dev Struct representing State, as it is stored in the Origin contract.
 struct OriginState {
-    bytes32 root;
     uint40 blockNumber;
     uint40 timestamp;
     // 176 bits left for tight packing
@@ -146,12 +145,13 @@ library StateLib {
      */
     function formatOriginState(
         OriginState memory _originState,
+        bytes32 _root,
         uint32 _origin,
         uint32 _nonce
     ) internal pure returns (bytes memory) {
         return
             formatState({
-                _root: _originState.root,
+                _root: _root,
                 _origin: _origin,
                 _nonce: _nonce,
                 _blockNumber: _originState.blockNumber,
@@ -161,8 +161,7 @@ library StateLib {
 
     /// @notice Returns a struct to save in the Origin contract.
     /// Current block number and timestamp are used.
-    function originState(bytes32 currentRoot) internal view returns (OriginState memory state) {
-        state.root = currentRoot;
+    function originState() internal view returns (OriginState memory state) {
         state.blockNumber = uint40(block.number);
         state.timestamp = uint40(block.timestamp);
     }
@@ -174,7 +173,6 @@ library StateLib {
         returns (bool)
     {
         return
-            _state.root() == _originState.root &&
             _state.blockNumber() == _originState.blockNumber &&
             _state.timestamp() == _originState.timestamp;
     }

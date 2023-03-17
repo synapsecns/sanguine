@@ -10,7 +10,7 @@ import { TypedMemView } from "./libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "./context/DomainContext.sol";
 import { DestinationEvents } from "./events/DestinationEvents.sol";
-import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "./interfaces/InterfaceDestination.sol";
+import { InterfaceDestination, TREE_DEPTH } from "./interfaces/InterfaceDestination.sol";
 import { IMessageRecipient } from "./interfaces/IMessageRecipient.sol";
 import { DestinationAttestation, AttestationHub } from "./hubs/AttestationHub.sol";
 import { DisputeHub } from "./hubs/DisputeHub.sol";
@@ -104,7 +104,7 @@ contract Destination is
     /// @inheritdoc InterfaceDestination
     function execute(
         bytes memory _message,
-        bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
+        bytes32[TREE_DEPTH] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
     ) external {
@@ -158,7 +158,7 @@ contract Destination is
     function _prove(
         Header _header,
         bytes32 _msgLeaf,
-        bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
+        bytes32[TREE_DEPTH] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
     ) internal returns (DestinationAttestation memory destAtt) {

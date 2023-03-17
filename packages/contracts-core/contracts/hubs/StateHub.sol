@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { EMPTY_ROOT } from "../libs/Constants.sol";
+import { HistoricalTree } from "../libs/Merkle.sol";
 import { OriginState, State, StateLib } from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "../context/DomainContext.sol";
@@ -22,11 +23,15 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @dev Historical Merkle Tree
+    /// Note: Takes two storage slots
+    HistoricalTree private tree;
+
     /// @dev All historical contract States
     OriginState[] private originStates;
 
     /// @dev gap for upgrade safety
-    uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
@@ -52,9 +57,10 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
 
     /// @inheritdoc IStateHub
     function suggestState(uint32 _nonce) public view returns (bytes memory stateData) {
-        require(_nonce < _nextNonce(), "Nonce out of range");
+        // This will revert if nonce is out of range
+        bytes32 root = tree.root(_nonce);
         OriginState memory state = originStates[_nonce];
-        return state.formatOriginState({ _origin: localDomain, _nonce: _nonce });
+        return state.formatOriginState({ _root: root, _origin: localDomain, _nonce: _nonce });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -64,18 +70,27 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     /// @dev Initializes the saved states list by inserting a state for an empty Merkle Tree.
     function _initializeStates() internal {
         // This should only be called once, when the contract is initialized
-        assert(originStates.length == 0);
+        // This will revert if tree.roots is non-empty
+        bytes32 savedRoot = tree.initializeRoots();
         // Save root for empty merkle tree with block number and timestamp of initialization
-        _saveState(StateLib.originState(EMPTY_ROOT));
+        _saveState(savedRoot, StateLib.originState());
+    }
+
+    /// @dev Inserts leaf into the Merkle Tree and saves the updated origin State.
+    function _insertAndSave(bytes32 _leaf) internal {
+        bytes32 newRoot = tree.insert(_leaf);
+        _saveState(newRoot, StateLib.originState());
     }
 
     /// @dev Saves an updated state of the Origin contract
-    function _saveState(OriginState memory _state) internal {
+    function _saveState(bytes32 _root, OriginState memory _state) internal {
         // State nonce is its index in `originStates` array
         uint32 stateNonce = uint32(originStates.length);
         originStates.push(_state);
         // Emit event with raw state data
-        emit StateSaved(_state.formatOriginState({ _origin: localDomain, _nonce: stateNonce }));
+        emit StateSaved(
+            _state.formatOriginState({ _root: _root, _origin: localDomain, _nonce: stateNonce })
+        );
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -96,7 +111,9 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         // Check if nonce exists
         uint32 nonce = _state.nonce();
         if (nonce >= originStates.length) return false;
-        // Check if state matches the historical one
+        // Check if state root matches the historical one
+        if (_state.root() != tree.root(nonce)) return false;
+        // Check if state metadata matches the historical one
         return _state.equalToOrigin(originStates[nonce]);
     }
 }
