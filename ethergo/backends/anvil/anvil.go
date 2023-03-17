@@ -222,10 +222,10 @@ func (f *Backend) ChainConfig() *params.ChainConfig {
 
 // Signer gets the signer for the chain.
 func (f *Backend) Signer() types.Signer {
-	latestBlock, err := f.BlockByNumber(f.Context(), nil)
+	latestBlock, err := f.BlockNumber(f.Context())
 	assert.Nil(f.T(), err)
 
-	return types.MakeSigner(f.ChainConfig(), latestBlock.Number())
+	return types.MakeSigner(f.ChainConfig(), new(big.Int).SetUint64(latestBlock))
 }
 
 // FundAccount funds an account with the given amount.
@@ -295,10 +295,10 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	auth, err := f.NewKeyedTransactorFromKey(acct.PrivateKey)
 	assert.Nil(f.T(), err)
 
-	latestBlock, err := f.BlockByNumber(ctx, nil)
+	blockNumber, err := f.BlockNumber(ctx)
 	assert.Nil(f.T(), err)
 
-	err = f.Chain.GasSetter().SetGasFee(ctx, auth, latestBlock.NumberU64(), core.CopyBigInt(gasprice.DefaultMaxPrice))
+	err = f.Chain.GasSetter().SetGasFee(ctx, auth, blockNumber, core.CopyBigInt(gasprice.DefaultMaxPrice))
 	assert.Nil(f.T(), err)
 
 	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, gasLimit, acct.Address).GasLimit / 2
