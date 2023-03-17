@@ -14,12 +14,6 @@ struct RawState {
     uint40 timestamp;
 }
 
-struct OriginStateMask {
-    bool diffRoot;
-    bool diffBlockNumber;
-    bool diffTimestamp;
-}
-
 // solhint-disable func-name-mixedcase
 contract StateLibraryTest is SynapseLibraryTest {
     using TypedMemView for bytes;
@@ -85,11 +79,15 @@ contract StateLibraryTest is SynapseLibraryTest {
     function test_originState_parity(RawState memory rs) public {
         vm.roll(rs.blockNumber);
         vm.warp(rs.timestamp);
-        OriginState memory originState = libHarness.originState(rs.root);
-        assertEq(originState.root, rs.root, "!root");
+        OriginState memory originState = libHarness.originState();
         assertEq(originState.blockNumber, rs.blockNumber, "!blockNumber");
         assertEq(originState.timestamp, rs.timestamp, "!timestamp");
-        bytes memory payload = libHarness.formatOriginState(originState, rs.origin, rs.nonce);
+        bytes memory payload = libHarness.formatOriginState(
+            originState,
+            rs.root,
+            rs.origin,
+            rs.nonce
+        );
         assertEq(
             payload,
             libHarness.formatState(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp),
@@ -98,18 +96,17 @@ contract StateLibraryTest is SynapseLibraryTest {
         assertTrue(libHarness.equalToOrigin(payload, originState), "!equalToOrigin");
     }
 
-    function test_equalToOrigin(RawState memory a, OriginStateMask memory mask) public {
-        // OriginState is equal if and only if all three fields match
-        bool isEqual = !(mask.diffRoot || mask.diffBlockNumber || mask.diffTimestamp);
+    function test_equalToOrigin(RawState memory a, uint256 mask) public {
+        // OriginState is equal if and only if both fields are unchanged
+        bool isEqual = mask & 3 == 0;
         RawState memory b;
         // Set some of the OriginState fields to different values depending on the mask
-        b.root = bytes32(uint256(a.root) ^ (mask.diffRoot ? 1 : 0));
-        b.blockNumber = a.blockNumber ^ (mask.diffBlockNumber ? 1 : 0);
-        b.timestamp = a.timestamp ^ (mask.diffTimestamp ? 1 : 0);
+        b.blockNumber = a.blockNumber ^ uint40(mask & 1);
+        b.timestamp = a.timestamp ^ uint40(mask & 2);
         assertEq(
             libHarness.equalToOrigin(
                 libHarness.formatState(a.root, a.origin, a.nonce, a.blockNumber, a.timestamp),
-                OriginState(b.root, b.blockNumber, b.timestamp)
+                OriginState(b.blockNumber, b.timestamp)
             ),
             isEqual
         );

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ORIGIN_TREE_DEPTH } from "../libs/Constants.sol";
+import { TREE_DEPTH } from "../libs/Constants.sol";
 
 interface InterfaceDestination {
     /**
@@ -23,7 +23,7 @@ interface InterfaceDestination {
      */
     function execute(
         bytes memory _message,
-        bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
+        bytes32[TREE_DEPTH] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
     ) external;

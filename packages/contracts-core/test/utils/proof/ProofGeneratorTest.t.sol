@@ -3,16 +3,14 @@ pragma solidity 0.8.17;
 
 import { Test } from "forge-std/Test.sol";
 
-import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
+import { BaseTree, MerkleLib } from "../../../contracts/libs/Merkle.sol";
 import { ProofGenerator } from "./ProofGenerator.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract ProofGeneratorTest is Test {
-    using MerkleLib for MerkleLib.Tree;
-
     uint256 internal constant MAX_COUNT = 10;
 
-    MerkleLib.Tree internal tree;
+    BaseTree internal tree;
     ProofGenerator internal gen;
     uint256 internal length;
     bytes32[] internal leafs;
@@ -51,7 +49,7 @@ contract ProofGeneratorTest is Test {
         for (uint256 i = 0; i < length; ++i) {
             bytes32 node = keccak256(abi.encode(length, i));
             leafs[i] = node;
-            tree.insert(i + 1, node);
+            tree.insertBase(i + 1, node);
         }
     }
 
@@ -65,11 +63,11 @@ contract ProofGeneratorTest is Test {
         // Non-existing leaf should be zero
         assertEq(gen.getNode(0, length), bytes32(0), "!zero");
         // Merkle root should match
-        assertEq(gen.getRoot(), tree.root(length), "!root");
+        assertEq(gen.getRoot(), tree.rootBase(length), "!root");
     }
 
     function _checkGenerateProofs() internal {
-        bytes32 root = tree.root(length);
+        bytes32 root = tree.rootBase(length);
         // Should be able to generate a valid proof for any existing leafs
         for (uint256 i = 0; i < length; ++i) {
             bytes32[32] memory proof = gen.getProof(i);

@@ -5,12 +5,12 @@ pragma solidity 0.8.17;
 import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
 import {
     InterfaceDestination,
-    ORIGIN_TREE_DEPTH
+    TREE_DEPTH
 } from "../../../contracts/interfaces/InterfaceDestination.sol";
 
 contract ReentrantApp is IMessageRecipient {
     bytes internal message;
-    bytes32[ORIGIN_TREE_DEPTH] internal originProof;
+    bytes32[TREE_DEPTH] internal originProof;
     bytes32[] internal snapProof;
     uint256 internal stateIndex;
 
@@ -19,7 +19,7 @@ contract ReentrantApp is IMessageRecipient {
 
     function prepare(
         bytes memory _message,
-        bytes32[ORIGIN_TREE_DEPTH] memory _originProof,
+        bytes32[TREE_DEPTH] memory _originProof,
         bytes32[] memory _snapProof,
         uint256 _stateIndex
     ) external {

@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { MAX_MESSAGE_BODY_BYTES, SYSTEM_ROUTER } from "./libs/Constants.sol";
 import { HeaderLib, MessageLib } from "./libs/Message.sol";
-import { MerkleLib } from "./libs/Merkle.sol";
 import { StateReport } from "./libs/StateReport.sol";
 import { State, StateLib, TypedMemView } from "./libs/State.sol";
 import { Tips, TipsLib } from "./libs/Tips.sol";
@@ -16,15 +15,8 @@ import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
 contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, InterfaceOrigin {
-    using MerkleLib for MerkleLib.Tree;
     using TipsLib for bytes;
     using TypedMemView for bytes29;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    MerkleLib.Tree private tree;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
@@ -177,17 +169,9 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         // Format the full message payload
         bytes memory message = MessageLib.formatMessage(header, _tips, _messageBody);
 
-        // Insert new leaf into the Origin Merkle Tree
+        // Insert new leaf into the Origin Merkle Tree and save the updated state
         messageHash = keccak256(message);
-        /// @dev Before insertion: messageNonce == tree.count() - 1
-        /// tree.insert() requires amount of leaves AFTER the leaf insertion
-        tree.insert(messageNonce, messageHash);
-
-        // Save new State of Origin contract
-        /// @dev After insertion: messageNonce == tree.count()
-        /// tree.root() requires current amount of leaves
-        bytes32 newRoot = tree.root(messageNonce);
-        _saveState(StateLib.originState(newRoot));
+        _insertAndSave(messageHash);
 
         // Emit Dispatched event with message information
         emit Dispatched(messageHash, messageNonce, _destination, message);

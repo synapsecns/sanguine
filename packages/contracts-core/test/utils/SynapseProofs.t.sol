@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ORIGIN_TREE_DEPTH } from "../../contracts/libs/Constants.sol";
+import { TREE_DEPTH } from "../../contracts/libs/Constants.sol";
 
 import { AttestationProofGenerator } from "./proof/AttestationProofGenerator.t.sol";
 import { HistoricalProofGenerator } from "./proof/HistoricalProofGenerator.t.sol";
@@ -27,18 +27,14 @@ abstract contract SynapseProofs {
         originGen.insert(keccak256(message));
     }
 
-    function getLatestProof(uint256 index)
-        public
-        view
-        returns (bytes32[ORIGIN_TREE_DEPTH] memory proof)
-    {
+    function getLatestProof(uint256 index) public view returns (bytes32[TREE_DEPTH] memory proof) {
         return originGen.getLatestProof(index);
     }
 
     function getProof(uint256 index, uint256 count)
         public
         view
-        returns (bytes32[ORIGIN_TREE_DEPTH] memory)
+        returns (bytes32[TREE_DEPTH] memory)
     {
         return originGen.getProof(index, count);
     }

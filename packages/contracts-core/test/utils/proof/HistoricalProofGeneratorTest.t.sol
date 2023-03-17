@@ -3,14 +3,12 @@ pragma solidity 0.8.17;
 
 import { Test } from "forge-std/Test.sol";
 
-import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
+import { BaseTree, MerkleLib } from "../../../contracts/libs/Merkle.sol";
 import { HistoricalProofGenerator } from "./HistoricalProofGenerator.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract HistoricalProofGeneratorTest is Test {
-    using MerkleLib for MerkleLib.Tree;
-
-    MerkleLib.Tree internal tree;
+    BaseTree internal tree;
     HistoricalProofGenerator internal proofGen;
 
     uint256 internal constant TREE_DEPTH = 32;
@@ -34,7 +32,7 @@ contract HistoricalProofGeneratorTest is Test {
 
     function test_getRoot() public {
         bytes32[] memory roots = new bytes32[](AMOUNT + 1);
-        roots[0] = tree.root(0);
+        roots[0] = tree.rootBase(0);
         // Sanity check against precomputed root for an empty Merkle tree
         assertEq(
             roots[0],
@@ -43,9 +41,9 @@ contract HistoricalProofGeneratorTest is Test {
         );
         for (uint256 count = 1; count <= AMOUNT; ++count) {
             proofGen.insert(leafs[count - 1]);
-            tree.insert(count, leafs[count - 1]);
+            tree.insertBase(count, leafs[count - 1]);
             // Save merkle root after inserting `count` leafs
-            roots[count] = tree.root(count);
+            roots[count] = tree.rootBase(count);
         }
         for (uint256 count = 0; count <= AMOUNT; ++count) {
             assertEq(proofGen.getRoot(count), roots[count]);
