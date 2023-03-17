@@ -222,18 +222,20 @@ func (f *Backend) storeWallets(args *OptionBuilder) error {
 }
 
 // TODO(trajan0x): add a test for this.
-func walletToKey(t testing.TB, wall wallet.Wallet) *keystore.Key {
-	kstr := keystore.NewKeyStore(filet.TmpDir(t, ""), base.VeryLightScryptN, base.VeryLightScryptP)
+func walletToKey(tb testing.TB, wall wallet.Wallet) *keystore.Key {
+	tb.Helper()
+
+	kstr := keystore.NewKeyStore(filet.TmpDir(tb, ""), base.VeryLightScryptN, base.VeryLightScryptP)
 	password := gofakeit.Password(true, true, true, false, false, 10)
 
 	acct, err := kstr.ImportECDSA(wall.PrivateKey(), password)
-	assert.Nil(t, err)
+	assert.Nil(tb, err)
 
 	data, err := os.ReadFile(acct.URL.Path)
-	assert.Nil(t, err)
+	assert.Nil(tb, err)
 
 	key, err := keystore.DecryptKey(data, password)
-	assert.Nil(t, err)
+	assert.Nil(tb, err)
 	return key
 }
 
