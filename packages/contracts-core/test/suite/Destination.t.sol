@@ -6,7 +6,7 @@ import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 import { IDisputeHub } from "../../contracts/interfaces/IDisputeHub.sol";
 
-import { InterfaceDestination, ORIGIN_TREE_DEPTH } from "../../contracts/Destination.sol";
+import { InterfaceDestination, TREE_DEPTH } from "../../contracts/Destination.sol";
 import { Versioned } from "../../contracts/Version.sol";
 
 import { MessageRecipientMock } from "../mocks/client/MessageRecipientMock.t.sol";
@@ -213,7 +213,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         InterfaceDestination(destination).submitAttestation(attPayload, attSig);
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
-            bytes32[ORIGIN_TREE_DEPTH] memory originProof = getLatestProof(i);
+            bytes32[TREE_DEPTH] memory originProof = getLatestProof(i);
             // (_origin, _nonce, _sender, _rootTimestamp, _message)
             vm.expectCall(
                 recipient,

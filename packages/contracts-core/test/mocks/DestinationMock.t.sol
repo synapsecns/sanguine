@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {
     InterfaceDestination,
-    ORIGIN_TREE_DEPTH
+    TREE_DEPTH
 } from "../../contracts/interfaces/InterfaceDestination.sol";
 import { AttestationHubMock } from "./hubs/AttestationHubMock.t.sol";
 import { DisputeHubMock } from "./hubs/DisputeHubMock.t.sol";
@@ -23,7 +23,7 @@ contract DestinationMock is
 
     function execute(
         bytes memory _message,
-        bytes32[ORIGIN_TREE_DEPTH] calldata _originProof,
+        bytes32[TREE_DEPTH] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
     ) external {}
