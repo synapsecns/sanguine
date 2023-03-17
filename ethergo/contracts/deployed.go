@@ -7,6 +7,8 @@ import (
 )
 
 // DeployedContract is the contract interface.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name DeployedContract --output ./mocks --case=underscore
 type DeployedContract interface {
 	// Address is the address where the contract has been deployed
 	Address() common.Address
