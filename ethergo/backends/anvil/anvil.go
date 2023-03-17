@@ -266,6 +266,8 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 
 	newBal := new(big.Int).Add(prevBalance, &amount)
 
+	// TODO(trajan0x): this can be fixed by looping through new accounts and sending eth when over the limit
+	// probably not worth it yet.
 	if !newBal.IsUint64() {
 		warnUint64Once.Do(func() {
 			logger.Warn("new balance overflows uint64, which is not allowed by the rpc api, using max_uint64 instead. Future warnings will be suppressed.")
