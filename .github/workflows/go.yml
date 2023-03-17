@@ -21,7 +21,7 @@ jobs:
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
     steps:
       - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
@@ -96,7 +96,7 @@ jobs:
         working-directory: ${{ matrix.package }}
     steps:
       - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
@@ -192,7 +192,7 @@ jobs:
           - ubuntu-latest
     steps:
       - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
@@ -238,7 +238,7 @@ jobs:
         package: ${{ fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
       - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
@@ -304,7 +304,7 @@ jobs:
       issue_number: ${{ steps.find_pr.outputs.pr }}
     steps:
       - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
@@ -326,7 +326,7 @@ jobs:
         package: ['agents']
     steps:
       - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
@@ -442,7 +442,7 @@ jobs:
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     steps:
       - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
