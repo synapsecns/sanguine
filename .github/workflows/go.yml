@@ -8,6 +8,16 @@ on:
       - 'gh-pages'
 
 jobs:
+  cancel-outdated:
+    name: Cancel Outdated Jobs
+    runs-on: ubuntu-latest
+    steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
   # changes allows us to only run a job on changed packages
   changes:
     name: Change Detection
@@ -20,12 +30,6 @@ jobs:
       package_count_nodeps: ${{ steps.length.outputs.FILTER_LENGTH_NODEPS }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
     steps:
-      - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          cancel_others: 'true'
-
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -95,12 +99,6 @@ jobs:
       run:
         working-directory: ${{ matrix.package }}
     steps:
-      - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          cancel_others: 'true'
-
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
@@ -191,12 +189,6 @@ jobs:
         platform:
           - ubuntu-latest
     steps:
-      - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          cancel_others: 'true'
-
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
@@ -237,12 +229,6 @@ jobs:
         # e.g. ['package1', 'package2'] if both package folders contains changes
         package: ${{ fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
-      - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          cancel_others: 'true'
-
       - uses: actions/setup-go@v3
         with:
           # see: https://github.com/golangci/golangci-lint/issues/3420, moving to go 1.20 requires a new golangci-lint version
@@ -303,12 +289,6 @@ jobs:
     outputs:
       issue_number: ${{ steps.find_pr.outputs.pr }}
     steps:
-      - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          cancel_others: 'true'
-
       - uses: jwalton/gh-find-current-pr@v1
         id: find_pr
 
@@ -325,12 +305,6 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ['agents']
     steps:
-      - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          cancel_others: 'true'
-
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
@@ -441,12 +415,6 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     steps:
-      - id: skip_check
-        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          cancel_others: 'true'
-
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
