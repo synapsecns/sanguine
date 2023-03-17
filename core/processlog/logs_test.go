@@ -3,6 +3,7 @@ package processlog_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/processlog"
@@ -49,12 +50,12 @@ func TestWritePrintFunc(t *testing.T) {
 	defer cancel()
 
 	// Call the writePrintFunc function.
-	processlog.WritePrintFunc(ctx, func(s string) {
-		buf.WriteString(s)
+	processlog.WritePrintFunc(ctx, func(s []byte) {
+		buf.WriteString(fmt.Sprintf("%s ", s))
 	}, time.Second, stdOutR, stdErrR)
 
 	// Check that the buffer contains the expected data.
-	actual := strings.Split(buf.String(), " ")
+	actual := strings.Split(strings.TrimSuffix(buf.String(), " "), " ")
 	expected := strings.Split("stderr datastdout data", " ")
 
 	if len(actual) != len(expected) {

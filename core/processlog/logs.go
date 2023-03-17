@@ -143,7 +143,7 @@ type fileHandles struct {
 // writePrintFunc writes the stdout and stderr streams to the combined log file and stdout.
 func writePrintFunc(ctx context.Context, printFunc PrintFunc, logFrequency time.Duration, stdOut, stdErr io.ReadCloser) {
 	combined, errChan := CombineStreams(ctx, stdOut, stdErr)
-	text := ""
+	var text []byte
 	lastOut := time.Now()
 
 	for {
@@ -164,10 +164,10 @@ func writePrintFunc(ctx context.Context, printFunc PrintFunc, logFrequency time.
 			}
 
 			//nolint: gosimple
-			text += fmt.Sprintf("%s", output)
+			text = append(text, output...)
 			if len(text) > 0 && time.Since(lastOut) > logFrequency {
 				printFunc(text)
-				text = ""
+				text = []byte(nil)
 			}
 		}
 	}

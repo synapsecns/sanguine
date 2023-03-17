@@ -85,7 +85,7 @@ func SplitStreams(input io.Reader, splitCount int) (outputReaders []io.ReadClose
 // from an input buffered reader.
 // An error is returned if there is an error with the
 // buffered reader.
-func readLine(r *bufio.Reader) (string, error) {
+func readLine(r *bufio.Reader) ([]byte, error) {
 	var (
 		isPrefix = true
 		err      error
@@ -95,7 +95,7 @@ func readLine(r *bufio.Reader) (string, error) {
 		line, isPrefix, err = r.ReadLine()
 		ln = append(ln, line...)
 	}
-	return string(ln), errors.Wrap(err, "could not read line")
+	return ln, errors.Wrap(err, "could not read line")
 }
 
 // CombineStreams creates a combined stream of two io.readClosers
