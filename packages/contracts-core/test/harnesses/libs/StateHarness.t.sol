@@ -83,14 +83,15 @@ contract StateHarness {
 
     function formatOriginState(
         OriginState memory _originState,
+        bytes32 _root,
         uint32 _origin,
         uint32 _nonce
     ) public pure returns (bytes memory) {
-        return _originState.formatOriginState(_origin, _nonce);
+        return _originState.formatOriginState(_root, _origin, _nonce);
     }
 
-    function originState(bytes32 _root) public view returns (OriginState memory state) {
-        return StateLib.originState(_root);
+    function originState() public view returns (OriginState memory state) {
+        return StateLib.originState();
     }
 
     function equalToOrigin(bytes memory _payload, OriginState memory _originState)
