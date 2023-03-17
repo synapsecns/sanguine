@@ -41,14 +41,16 @@ type gasSetterImpl struct {
 	ctx            context.Context
 	oracleBackend  backend.OracleBackendChain
 	priceEstimator PriceEstimator
+	deterministic  bool
 }
 
 // NewGasSetter creates a new gas setter for v0 & v2 transactions depending on the chain settings.
-func NewGasSetter(ctx context.Context, oracle backend.OracleBackendChain) Setter {
+func NewGasSetter(ctx context.Context, oracle backend.OracleBackendChain, deterministic bool) Setter {
 	return &gasSetterImpl{
 		ctx:            ctx,
 		oracleBackend:  oracle,
 		priceEstimator: NewGasPriceEstimator(ctx, oracle),
+		deterministic:  deterministic,
 	}
 }
 
@@ -59,14 +61,19 @@ func (g gasSetterImpl) SetGasFeeByBlock(ctx context.Context, transactor *bind.Tr
 	// if london is activated, we only care about the max tip cap. Max fee remains the same for every tx
 	//nolint: nestif
 	if client.UsesLondon(g.oracleBackend.ChainConfig(), gasBlock) {
+		var oracle london.LondonOracle
 		gasHeader, err := g.oracleBackend.HeaderByNumber(ctx, new(big.Int).SetUint64(gasBlock))
 		if err != nil {
 			return fmt.Errorf("could not get gas block %d on chain %d: %w", gasBlock, g.oracleBackend.ChainConfig().ChainID, err)
 		}
 
-		oracle := london.NewFeeOracle(g.oracleBackend, gasBlock, oracleConfig)
+		if g.deterministic {
+			oracle = london.NewFeeOracle(g.oracleBackend, gasBlock, oracleConfig)
+		} else {
+			oracle = g.oracleBackend
+		}
 
-		tipCap, err := oracle.SuggestTipCap(ctx)
+		tipCap, err := oracle.SuggestGasTipCap(ctx)
 		if err != nil {
 			return fmt.Errorf("could not get tip cap: %w", err)
 		}

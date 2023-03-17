@@ -127,7 +127,7 @@ func NewFromMeteredClient(ctx context.Context, config *client.Config, meteredCli
 	b.heightWatcher = watcher.NewBlockHeightWatcher(ctx, uint64(b.chainID), b.MeteredEVMClient)
 	b.contractWatcher = watcher.NewContractWatcher(ctx, &b, b.heightWatcher, b.cfg.RequiredConfirmations)
 	b.estimator = gas.NewGasPriceEstimator(ctx, &b)
-	b.setter = gas.NewGasSetter(ctx, &b)
+	b.setter = gas.NewGasSetter(ctx, &b, false)
 
 	return &b, nil
 }

@@ -18,7 +18,7 @@ func (s GasSuite) TestGasPriceSetterFrom0London() {
 	testChain := simulated.NewSimulatedBackend(s.GetTestContext(), s.T())
 	NotNil(s.T(), testChain.ChainConfig().LondonBlock)
 
-	gasSetter := gas.NewGasSetter(s.GetTestContext(), testChain)
+	gasSetter := gas.NewGasSetter(s.GetTestContext(), testChain, true)
 	txContent := testChain.GetTxContext(s.GetTestContext(), nil)
 
 	// txOpts content may auto set these, we don't want these to give false negatives on failing tests
@@ -48,7 +48,7 @@ func (s GasSuite) TestGasPriceSetterFrom0PreLondon() {
 	testChain := simulated.NewSimulatedBackendWithConfig(s.GetTestContext(), s.T(), config)
 	Nil(s.T(), testChain.ChainConfig().LondonBlock)
 
-	gasSetter := gas.NewGasSetter(s.GetTestContext(), testChain)
+	gasSetter := gas.NewGasSetter(s.GetTestContext(), testChain, true)
 	txContent := testChain.GetTxContext(s.GetTestContext(), nil)
 
 	// txOpts content may auto set these, we don't want these to give false negatives on failing tests
@@ -70,7 +70,7 @@ func (s GasSuite) TestGasPriceSetterFrom0PreLondon() {
 // TestSetGasFeeMaxPrice makes sure set gas fee respects the max price.
 func (s GasSuite) TestSetGasFeeMaxPriceLondon() {
 	mockOracle := new(mocks.OracleBackendChain)
-	gasSetter := gas.NewGasSetter(s.GetTestContext(), mockOracle)
+	gasSetter := gas.NewGasSetter(s.GetTestContext(), mockOracle, true)
 
 	// enable london
 	mockOracle.On("ChainConfig", mock.Anything).Return(&params.ChainConfig{
@@ -101,7 +101,7 @@ func (s GasSuite) TestSetGasFeeMaxPriceLondon() {
 // TestSetGasFeeMaxPrice makes sure set gas fee respects the max price.
 func (s GasSuite) TestSetGasFeeMaxPricePreLondon() {
 	mockOracle := new(mocks.OracleBackendChain)
-	gasSetter := gas.NewGasSetter(s.GetTestContext(), mockOracle)
+	gasSetter := gas.NewGasSetter(s.GetTestContext(), mockOracle, true)
 
 	// enable london
 	mockOracle.On("ChainConfig", mock.Anything).Return(&params.ChainConfig{
