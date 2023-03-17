@@ -179,6 +179,15 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     ▏*║                         SAVE STATEMENT DATA                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @dev Initializes the saved attestations list by inserting empty values.
+    function _initializeAttestations() internal {
+        // This should only be called once, when the contract is initialized
+        assert(attestations.length == 0);
+        // Insert empty non-meaningful values, that can't be used to prove anything
+        attestations.push(AttestationLib.emptySummitAttestation());
+        notarySnapshots.push(SnapshotLib.emptySummitSnapshot());
+    }
+
     /// @dev Saves the Guard snapshot.
     function _saveGuardSnapshot(uint256[] memory statePtrs) internal {
         guardSnapshots.push(statePtrs.toSummitSnapshot());

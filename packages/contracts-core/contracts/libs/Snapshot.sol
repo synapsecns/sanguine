@@ -129,6 +129,10 @@ library SnapshotLib {
         snapshot.statePtrs = _statePtrs;
     }
 
+    function emptySummitSnapshot() internal pure returns (SummitSnapshot memory snapshot) {
+        snapshot.statePtrs = new uint256[](0);
+    }
+
     function getStatesAmount(SummitSnapshot memory _snapshot) internal pure returns (uint256) {
         return _snapshot.statePtrs.length;
     }

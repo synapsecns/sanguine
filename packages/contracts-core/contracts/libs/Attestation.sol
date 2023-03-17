@@ -167,6 +167,11 @@ library AttestationLib {
             });
     }
 
+    /// @notice Returns an empty struct to save in Summit contract upon initialization.
+    function emptySummitAttestation() internal view returns (SummitAttestation memory) {
+        return summitAttestation(bytes32(0), 1);
+    }
+
     /// @notice Returns a struct to save in the Summit contract for the given root and height.
     function summitAttestation(bytes32 _root, uint8 _height)
         internal
