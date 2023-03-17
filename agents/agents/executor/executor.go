@@ -542,6 +542,7 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 
 // markAsExecuted marks a message as executed via the `executed` mapping.
 func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) error {
+	// Get the latest block number.
 	latestHeader, err := e.chainExecutors[chain.ChainID].rpcClient.HeaderByNumber(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("could not get latest header: %w", err)
@@ -671,6 +672,8 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			e.chainExecutors[chainID].executed[leaf] = false
 		}
 
+		logger.Errorf("Storing message with nonce %d! It has an executed value of %t", (*message).Nonce(), executed)
+		logger.Errorf("also, message with nonce %d has a leaf of %s", (*message).Nonce(), leaf)
 		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, executed, false, 0)
 		if err != nil {
 			return fmt.Errorf("could not store message: %w", err)
@@ -703,6 +706,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 				return fmt.Errorf("could not parse executed event")
 			}
 
+			logger.Errorf("executed event with leaf %s", *messageLeaf)
 			e.chainExecutors[chainID].executed[*messageLeaf] = true
 		case otherEvent:
 			logger.Warnf("the log's event type is not supported")
