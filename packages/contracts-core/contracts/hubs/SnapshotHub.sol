@@ -61,6 +61,12 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
+    function getAttestation(uint32 _nonce) external view returns (bytes memory attPayload) {
+        require(_nonce < attestations.length, "Nonce out of range");
+        return attestations[_nonce].formatSummitAttestation(_nonce);
+    }
+
+    /// @inheritdoc ISnapshotHub
     function getLatestAgentState(uint32 _origin, address _agent)
         external
         view
