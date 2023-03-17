@@ -27,17 +27,10 @@ type FeeOracle struct {
 	feeCap *big.Int
 }
 
-// LondonOracle is an interface for the london fee oracle.
-type LondonOracle interface {
-	SuggestGasTipCap(ctx context.Context) (*big.Int, error)
-}
-
-var _ LondonOracle = &FeeOracle{}
-
 // NewFeeOracle creates a new fee oracle.
-func NewFeeOracle(chain backend.OracleBackendChain, height uint64, config gasprice.Config) *FeeOracle {
+func NewFeeOracle(chain backend.OracleBackendChain, height uint64, config gasprice.Config) FeeOracle {
 	oracleBackend := NewOracleBackendFromHeight(chain, height)
-	return &FeeOracle{
+	return FeeOracle{
 		height:        int(height),
 		oracleBackend: oracleBackend,
 		oracle:        gasprice.NewOracle(NewOracleBackendFromHeight(chain, height), config),
@@ -65,7 +58,7 @@ func (f *FeeOracle) calculate(ctx context.Context) (err error) {
 }
 
 // SuggestTipCap gets the suggested tip cap in a deterministic manner.
-func (f *FeeOracle) SuggestGasTipCap(ctx context.Context) (*big.Int, error) {
+func (f *FeeOracle) SuggestTipCap(ctx context.Context) (*big.Int, error) {
 	err := f.calculate(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get tip cap: %w", err)
