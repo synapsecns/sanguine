@@ -194,23 +194,25 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 
 // Run starts the executor agent. It calls `Start` and `Listen`.
 func (e Executor) Run(ctx context.Context) error {
-	g, _ := errgroup.WithContext(ctx)
+	gMarkAsExecuted, _ := errgroup.WithContext(ctx)
 
 	// Backfill executed messages.
 	for _, chain := range e.config.Chains {
 		chain := chain
 
-		g.Go(func() error {
+		gMarkAsExecuted.Go(func() error {
 			return e.markAsExecuted(ctx, chain)
 		})
 	}
 
-	if err := g.Wait(); err != nil {
+	if err := gMarkAsExecuted.Wait(); err != nil {
 		return fmt.Errorf("could not backfill executed messages: %w", err)
 	}
 
+	gRun, _ := errgroup.WithContext(ctx)
+
 	// Listen for snapshotAcceptedEvents on summit.
-	g.Go(func() error {
+	gRun.Go(func() error {
 		return e.streamLogs(ctx, e.grpcClient, e.grpcConn, e.config.SummitChainID, e.config.SummitAddress, nil, contractEventType{
 			contractType: summitContract,
 			eventType:    snapshotAcceptedEvent,
@@ -221,7 +223,7 @@ func (e Executor) Run(ctx context.Context) error {
 		chain := chain
 
 		// Listen for dispatchEvents on origin.
-		g.Go(func() error {
+		gRun.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.OriginAddress, nil, contractEventType{
 				contractType: originContract,
 				eventType:    dispatchedEvent,
@@ -229,27 +231,27 @@ func (e Executor) Run(ctx context.Context) error {
 		})
 
 		// Listen for attestationAcceptedEvents on destination.
-		g.Go(func() error {
+		gRun.Go(func() error {
 			return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, nil, contractEventType{
 				contractType: destinationContract,
 				eventType:    attestationAcceptedEvent,
 			})
 		})
 
-		g.Go(func() error {
+		gRun.Go(func() error {
 			return e.receiveLogs(ctx, chain.ChainID)
 		})
 
-		g.Go(func() error {
+		gRun.Go(func() error {
 			return e.setMinimumTime(ctx, chain.ChainID)
 		})
 
-		g.Go(func() error {
+		gRun.Go(func() error {
 			return e.executeExecutable(ctx, chain.ChainID)
 		})
 	}
 
-	if err := g.Wait(); err != nil {
+	if err := gRun.Wait(); err != nil {
 		return fmt.Errorf("error in executor agent: %w", err)
 	}
 
