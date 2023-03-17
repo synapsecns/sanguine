@@ -305,6 +305,11 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ['agents']
     steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
