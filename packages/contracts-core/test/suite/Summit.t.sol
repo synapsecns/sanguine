@@ -67,6 +67,12 @@ contract SummitTest is SynapseTest, SynapseProofs {
         }
         // Check version
         assertEq(Versioned(summit).version(), LATEST_VERSION, "!version");
+        // Check attestation getter for zero nonce
+        assertEq(
+            ISnapshotHub(summit).getAttestation(0),
+            notaryAttestations[0].formatAttestation(),
+            "!getAttestation"
+        );
     }
 
     function test_verifyAttestation_existingNonce(Random memory random, AttestationMask memory mask)
@@ -260,6 +266,9 @@ contract SummitTest is SynapseTest, SynapseProofs {
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayload, snapSig);
             InterfaceSummit(summit).submitSnapshot(snapPayload, snapSig);
+
+            // Check attestation getter
+            assertEq(ISnapshotHub(summit).getAttestation(ra.nonce), attestation, "!getAttestation");
 
             // Check proofs for every State in the Notary snapshot
             for (uint256 j = 0; j < STATES; ++j) {
