@@ -45,3 +45,9 @@ func TestCounter(t *testing.T) {
 	Nil(t, err)
 	True(t, count.Int64() == 1)
 }
+
+func TestDependenciesCorrect(t *testing.T) {
+	manager.AssertDependenciesCorrect(context.Background(), t, func() manager.IDeployManager {
+		return manager.NewDeployerManager(t, example.NewCounterDeployer)
+	})
+}

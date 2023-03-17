@@ -23,6 +23,8 @@ type AuthType struct {
 
 // SimulatedTestBackend is a strict subset of TestBackend that all backends must comply with.
 // TODO: we need one of these for testnets so we can run e2e tests. This should source addresses from a single address.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name SimulatedTestBackend --output ./mocks --case=underscore
 type SimulatedTestBackend interface {
 	// EnableTenderly attempts to enable tenderly for the TestBackend. Returns false if it cannot be done
 	EnableTenderly() (enabled bool)
