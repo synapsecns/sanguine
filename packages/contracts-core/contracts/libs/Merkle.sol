@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { TREE_DEPTH } from "./Constants.sol";
+import { EMPTY_ROOT, TREE_DEPTH } from "./Constants.sol";
 
 // work based on Merkle.sol, which is used under MIT OR Apache-2.0
 // Changes:
@@ -37,10 +37,24 @@ import { TREE_DEPTH } from "./Constants.sol";
 struct BaseTree {
     bytes32[TREE_DEPTH] branch;
 }
-using { MerkleLib.insert, MerkleLib.root } for BaseTree global;
+using { MerkleLib.insertBase, MerkleLib.rootBase } for BaseTree global;
+
+/// @notice Incremental merkle tree keeping track of its historical merkle roots.
+/// @dev roots[N] is the root of the tree after N leafs were inserted
+/// @param tree     Incremental merkle tree
+/// @param roots    Historical merkle roots of the tree
+struct HistoricalTree {
+    BaseTree tree;
+    bytes32[] roots;
+}
+using { MerkleLib.initializeRoots, MerkleLib.insert, MerkleLib.root } for HistoricalTree global;
 
 library MerkleLib {
     uint256 internal constant MAX_LEAVES = 2**TREE_DEPTH - 1;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                              BASE TREE                               ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Inserts `_node` into merkle tree
@@ -48,7 +62,7 @@ library MerkleLib {
      * @param _newCount Amount of inserted leaves in the tree after the insertion (i.e. current + 1)
      * @param _node     Element to insert into tree
      **/
-    function insert(
+    function insertBase(
         BaseTree storage _tree,
         uint256 _newCount,
         bytes32 _node
@@ -121,9 +135,56 @@ library MerkleLib {
      * @param _count    Current amount of inserted leaves in the tree
      * @return Calculated root of `_tree`
      **/
-    function root(BaseTree storage _tree, uint256 _count) internal view returns (bytes32) {
+    function rootBase(BaseTree storage _tree, uint256 _count) internal view returns (bytes32) {
         return rootWithCtx(_tree, _count, zeroHashes());
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           HISTORICAL TREE                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Initializes the historical roots for the tree by inserting
+    /// a precomputed root of an empty Merkle Tree.
+    function initializeRoots(HistoricalTree storage _tree) internal returns (bytes32 savedRoot) {
+        // This should only be called once, when the contract is initialized
+        assert(_tree.roots.length == 0);
+        // Save root for empty merkle tree
+        savedRoot = EMPTY_ROOT;
+        _tree.roots.push(savedRoot);
+    }
+
+    /// @notice Inserts a new leaf into the merkle tree.
+    /// @dev Reverts if tree is full.
+    /// @param _node        Element to insert into tree
+    /// @return newRoot     Merkle root after the leaf was inserted
+    function insert(HistoricalTree storage _tree, bytes32 _node)
+        internal
+        returns (bytes32 newRoot)
+    {
+        // Tree count after the new leaf will be inserted (we store roots[0] as root of empty tree)
+        uint256 newCount = _tree.roots.length;
+        _tree.tree.insertBase(newCount, _node);
+        // Save the new root
+        newRoot = _tree.tree.rootBase(newCount);
+        _tree.roots.push(newRoot);
+    }
+
+    /// @notice Returns the historical root of the merkle tree.
+    /// @dev Reverts if not enough leafs have been inserted.
+    /// @param _count           Amount of leafs in the tree at some point of time
+    /// @return historicalRoot  Merkle root after `_count` leafs were inserted
+    function root(HistoricalTree storage _tree, uint256 _count)
+        internal
+        view
+        returns (bytes32 historicalRoot)
+    {
+        require(_count < _tree.roots.length, "Not enough leafs inserted");
+        return _tree.roots[_count];
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               HELPERS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns array of TREE_DEPTH zero hashes
     /// @return _zeroes Array of TREE_DEPTH zero hashes
