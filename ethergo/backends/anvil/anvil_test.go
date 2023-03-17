@@ -1,7 +1,6 @@
 package anvil_test
 
 import (
-	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
@@ -37,7 +36,6 @@ func (a *AnvilSuite) TestGetTxContext() {
 	Nil(a.T(), err)
 
 	Equal(a.T(), res.TransactOpts.From, sender.From)
-	fmt.Println(sender.From)
 
 	a.backend.WaitForConfirmation(a.GetTestContext(), tx)
 

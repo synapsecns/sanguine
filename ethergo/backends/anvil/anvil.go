@@ -3,6 +3,8 @@ package anvil
 import (
 	"context"
 	"fmt"
+	"github.com/Flaque/filet"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
@@ -26,19 +28,23 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/teivah/onecontext"
 	"io"
+	"math"
 	"math/big"
+	"os"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 )
 
+const gasLimit = 5000000
+
 // Backend contains the anvil test backend.
 type Backend struct {
 	*base.Backend
-	wallets []wallet.Wallet
-	// walletMux is used to lock the wallets
-	walletMux mapmutex.StringerMapMutex
+	// fundingMux is used to lock the wallets while funding
+	// since FundAccount is expected to add to existing balance
+	fundingMux mapmutex.StringerMapMutex
 	// store stores the accounts
 	store *base.InMemoryKeyStore
 	// chainConfig is the chain config
@@ -136,18 +142,15 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	baseBackend, err := base.NewBaseBackend(ctx, t, chn)
 	assert.Nil(t, err)
 
-	wallets, err := makeWallets(args)
-	if err != nil {
-		assert.Nil(t, err)
-	}
-
 	backend := Backend{
 		Backend:     baseBackend,
-		wallets:     wallets,
-		walletMux:   mapmutex.NewStringerMapMutex(),
+		fundingMux:  mapmutex.NewStringerMapMutex(),
 		store:       base.NewInMemoryKeyStore(),
 		chainConfig: chainConfig,
 	}
+
+	err = backend.storeWallets(args)
+	assert.Nilf(t, err, "failed to store wallets on chain id %s: %v", chainID, err)
 
 	go func() {
 		<-ctx.Done()
@@ -200,11 +203,8 @@ func tailLogs(ctx context.Context, resource *dockertest.Resource, pool *dockerte
 	return pool.Client.Logs(opts)
 }
 
-// makeWallets creates a list of preseeded wallets w/ balances.
-// these are used for funding accounts.
-//
-// this may break in certain cases where we've ran out of funds.
-func makeWallets(args *OptionBuilder) (wallets []wallet.Wallet, _ error) {
+// storeWallets stores preseeded wallets w/ balances.
+func (f *Backend) storeWallets(args *OptionBuilder) error {
 	derivationPath := args.GetDerivationPath()
 	derivIter := accounts.DefaultIterator(derivationPath)
 	maxAccounts := args.GetAccounts()
@@ -213,12 +213,28 @@ func makeWallets(args *OptionBuilder) (wallets []wallet.Wallet, _ error) {
 
 		wall, err := wallet.FromSeedPhrase(args.GetMnemonic(), account)
 		if err != nil {
-			return []wallet.Wallet{}, fmt.Errorf("could not get seed phrase: %w", err)
+			return fmt.Errorf("could not get seed phrase: %w", err)
 		}
 
-		wallets = append(wallets, wall)
+		f.store.Store(walletToKey(f.Backend.T(), wall))
 	}
-	return
+	return nil
+}
+
+// TODO(trajan0x): add a test for this.
+func walletToKey(t testing.TB, wall wallet.Wallet) *keystore.Key {
+	kstr := keystore.NewKeyStore(filet.TmpDir(t, ""), base.VeryLightScryptN, base.VeryLightScryptP)
+	password := gofakeit.Password(true, true, true, false, false, 10)
+
+	acct, err := kstr.ImportECDSA(wall.PrivateKey(), password)
+	assert.Nil(t, err)
+
+	data, err := os.ReadFile(acct.URL.Path)
+	assert.Nil(t, err)
+
+	key, err := keystore.DecryptKey(data, password)
+	assert.Nil(t, err)
+	return key
 }
 
 // ChainConfig gets the chain config.
@@ -239,47 +255,32 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 	ctx, cancel := onecontext.Merge(ctx, f.Context())
 	defer cancel()
 
-	// get a funding wallet
-	fundingWallet, err := core.RandomItem(f.wallets)
-	assert.Nilf(f.T(), err, "could not get random wallet for chain %d: %v", f.GetChainID(), err)
+	anvilClient, err := Dial(ctx, f.RPCAddress())
+	assert.Nilf(f.T(), err, "failed to dial anvil client on chain %d: %v", f.GetChainID(), err)
 
-	// lock this wallet to avoid nonce issues (just in case, should be handled by nonce locker)
-	locker := f.walletMux.Lock(fundingWallet)
-	defer locker.Unlock()
+	unlocker := f.fundingMux.Lock(address)
+	defer unlocker.Unlock()
 
-	auth, err := f.NewKeyedTransactorFromKey(fundingWallet.PrivateKey())
-	assert.Nilf(f.T(), err, "could not get transactor for chain %d: %v", f.GetChainID(), err)
+	prevBalance, err := f.Backend.BalanceAt(ctx, address, nil)
+	assert.Nil(f.T(), err)
 
-	auth.GasPrice, err = f.Client().SuggestGasPrice(ctx)
-	assert.Nilf(f.T(), err, "could not get gas price for chain %d: %v", f.GetChainID(), err)
+	newBal := new(big.Int).Add(prevBalance, &amount)
 
-	lastBlock, err := f.Client().HeaderByNumber(ctx, nil)
-	assert.Nilf(f.T(), err, "could not get last block for chain %d: %v", f.GetChainID(), err)
-
-	auth.GasLimit = lastBlock.GasLimit
-
-	tx, err := f.Backend.SignTx(types.NewTx(&types.LegacyTx{
-		To:       &address,
-		Value:    &amount,
-		Gas:      auth.GasLimit,
-		GasPrice: auth.GasPrice,
-	}), f.Signer(), fundingWallet.PrivateKey())
-	assert.Nilf(f.T(), err, "could not sign tx for chain %d: %v", f.GetChainID(), err)
-
-	err = f.Client().SendTransaction(f.Context(), tx)
-	if err != nil {
-		bal, _ := f.Client().BalanceAt(ctx, address, nil)
-		fmt.Println("arb bal")
-		fmt.Println(bal)
-		fmt.Println(fundingWallet.Address())
+	if !newBal.IsUint64() {
+		warnUint64Once.Do(func() {
+			logger.Warn("new balance overflows uint64, which is not allowed by the rpc api, using max_uint64 instead. Future warnings will be suppressed.")
+		})
+		newBal = new(big.Int).SetUint64(math.MaxUint64)
 	}
-	assert.Nilf(f.T(), err, "could not send tx for chain %d: %v", f.GetChainID(), err)
 
-	f.WaitForConfirmation(ctx, tx)
+	// TODO: this may cause issues when newBal overflows uint64
+	err = anvilClient.SetBalance(ctx, address, newBal.Uint64())
+	assert.Nil(f.T(), err)
 }
 
-// WaitForConfirmation checks confirmation if the transaction is signed
+// WaitForConfirmation checks confirmation if the transaction is signed.
 func (f *Backend) WaitForConfirmation(ctx context.Context, tx *types.Transaction) {
+	assert.NotNil(f.T(), tx, "tx is nil")
 	v, r, s := tx.RawSignatureValues()
 	isUnsigned := isZero(v) && isZero(r) && isZero(s)
 	if isUnsigned {
@@ -322,11 +323,9 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 			return res
 		}
 	} else {
-		acct = f.GetFundedAccount(ctx, big.NewInt(0).Mul(big.NewInt(params.Ether), big.NewInt(10)))
+		acct = f.GetFundedAccount(ctx, new(big.Int).SetUint64(math.MaxUint64))
 		f.store.Store(acct)
 	}
-
-	fmt.Println(f.Backend.BalanceAt(context.Background(), acct.Address, nil))
 
 	auth, err := f.NewKeyedTransactorFromKey(acct.PrivateKey)
 	assert.Nilf(f.T(), err, "could not get transactor for chain %d: %v", f.GetChainID(), err)
@@ -337,10 +336,7 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	err = f.Chain.GasSetter().SetGasFee(ctx, auth, blockNumber, core.CopyBigInt(gasprice.DefaultMaxPrice))
 	assert.Nilf(f.T(), err, "could not set gas fee for chain %d: %v", f.GetChainID(), err)
 
-	lastBlock, err := f.Client().HeaderByNumber(ctx, nil)
-	assert.Nilf(f.T(), err, "could not get last block for chain %d: %v", f.GetChainID(), err)
-
-	auth.GasLimit = lastBlock.GasLimit
+	auth.GasLimit = gasLimit
 
 	return backends.AuthType{
 		TransactOpts: auth,
@@ -406,7 +402,8 @@ func ImpersonatedSigner(address common.Address, transaction *types.Transaction) 
 // considering how unexpected behavior can be if impersonate account is not used correctly.
 var warnImpersonationOnce sync.Once
 
-// warnUnsignedOnce warns if a tx is unsigned and thus not confirmable
+// warnUnsignedOnce warns if a tx is unsigned and thus not confirmable.
 var warnUnsignedOnce sync.Once
 
+var warnUint64Once sync.Once
 var _ backends.SimulatedTestBackend = &Backend{}
