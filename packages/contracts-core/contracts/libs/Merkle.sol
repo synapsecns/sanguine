@@ -1,29 +1,46 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { TREE_DEPTH } from "./Constants.sol";
+
 // work based on Merkle.sol, which is used under MIT OR Apache-2.0
 // Changes:
 //  - Adapted for Solidity 0.8.x
 //  - Amount of tree leaves stored externally
+//  - Added thorough documentation
 // https://github.com/nomad-xyz/monorepo/blob/main/packages/contracts-core/contracts/libs/Merkle.sol
 
 // work based on eth2 deposit contract, which is used under CC0-1.0
 // Changes:
 //  - Implemented in Solidity 0.7.6 (eth2 impl is Vyper)
-//  - keccak256() is used as the hashing function instead of sha256()
+//  - H() = keccak256() is used as the hashing function instead of sha256()
+
+/// @notice Struct representing incremental merkle tree. Contains the current branch, while
+/// the number of inserted leaves are stored externally, and is later supplied for tree operation.
+/// @dev Following invariant is enforced:
+/// - First empty leaf has index `count`, where `count` is the amount of the inserted leafs so far
+/// - Value for the empty leaf is zeroes[0] = bytes32(0)
+/// - Value for node having empty children zeroes[i] = H(zeroes[i-1], zeroes[i-1])
+/// - branch[i] is the value of a node on the i-th level:
+///     - Levels are numbered from 0 (leafs) to TREE_DEPTH (root)
+///     - branch[i] stores the value for the node, that is a "left child"
+///     - The stored node must have non-zero values for both their children
+///     - Out of all level's "left child" nodes with "non-zero children",
+///       the one with the biggest index (the rightmost one) is stored.
+/// - Therefore, proof of inclusion for the first ZERO leaf (`index == count`) is:
+///     - i-th bit in `count` is 0 => we are the left child on this level => sibling is the right child
+///       sibling does not exist yet
+///         - Therefore proof[i] = zeroes[i]
+///     - i-th bit in `count` is 1 => we are the right child on this level => sibling is the left child
+///       sibling is the rightmost "left child" node on the level
+///         - Therefore proof[i] = branch[i]
+struct BaseTree {
+    bytes32[TREE_DEPTH] branch;
+}
+using { MerkleLib.insert, MerkleLib.root } for BaseTree global;
 
 library MerkleLib {
-    uint256 internal constant TREE_DEPTH = 32;
     uint256 internal constant MAX_LEAVES = 2**TREE_DEPTH - 1;
-
-    /**
-     * @notice Struct representing incremental merkle tree. Contains the current branch,
-     * while the number of inserted leaves are stored externally.
-     **/
-    // solhint-disable-next-line ordering
-    struct Tree {
-        bytes32[TREE_DEPTH] branch;
-    }
 
     /**
      * @notice Inserts `_node` into merkle tree
@@ -32,19 +49,33 @@ library MerkleLib {
      * @param _node     Element to insert into tree
      **/
     function insert(
-        Tree storage _tree,
+        BaseTree storage _tree,
         uint256 _newCount,
         bytes32 _node
     ) internal {
         require(_newCount <= MAX_LEAVES, "merkle tree full");
-        // No need to increase _newCount here,
-        // as it is already the amount of leaves after the insertion.
+        // We go up the tree following the branch from the zero leaf AFTER the just inserted one.
+        // We stop when we find the first "right child" node.
+        // Its sibling is now the rightmost "left child" node that has both children as non-zero.
+        // Therefore we need to update `tree.branch` value on this level.
+        // One could see that `tree.branch` value on lower and higher levels remain unchanged.
+
+        // Loop invariant: `node` is the current level's value for the branch from JUST INSERTED leaf
         for (uint256 i = 0; i < TREE_DEPTH; ) {
             if ((_newCount & 1) == 1) {
+                // Found the first "right child" node on the branch from ZERO leaf
+                // `node` is the value for node on branch from JUST INSERTED leaf
+                // Which in this case is the "left child".
+                // We update tree.branch and exit
                 _tree.branch[i] = _node;
                 return;
             }
+            // On the branch from ZERO leaf this is still "left child".
+            // Meaning on branch from JUST INSERTED leaf, `node` is right child
+            // We compute value for `node` parent using `tree.branch` invariant:
+            // This is the rightmost "left child" node, which would be sibling of `node`
             _node = keccak256(abi.encodePacked(_tree.branch[i], _node));
+            // Get the parent index, and go to the next tree level
             _newCount >>= 1;
             unchecked {
                 ++i;
@@ -63,15 +94,20 @@ library MerkleLib {
      * @return _current Calculated root of `_tree`
      **/
     function rootWithCtx(
-        Tree storage _tree,
+        BaseTree storage _tree,
         uint256 _count,
         bytes32[TREE_DEPTH] memory _zeroes
-    ) internal view returns (bytes32 _current) {
+    ) private view returns (bytes32 _current) {
+        // To calculate the root we follow the branch of first ZERO leaf (index == count)
         for (uint256 i = 0; i < TREE_DEPTH; ) {
+            // i-th bit tells if we are the right of the left child on i-th level
             uint256 _ithBit = (_count >> i) & 0x01;
             if (_ithBit == 1) {
+                // We are the right child. Our sibling is the "rightmost" "left-child" node
+                // that has two non-zero children: tree.branch[i]
                 _current = keccak256(abi.encodePacked(_tree.branch[i], _current));
             } else {
+                // We are the left child. Our sibling does not exist yet: zeroes[i]
                 _current = keccak256(abi.encodePacked(_current, _zeroes[i]));
             }
             unchecked {
@@ -85,7 +121,7 @@ library MerkleLib {
      * @param _count    Current amount of inserted leaves in the tree
      * @return Calculated root of `_tree`
      **/
-    function root(Tree storage _tree, uint256 _count) internal view returns (bytes32) {
+    function root(BaseTree storage _tree, uint256 _count) internal view returns (bytes32) {
         return rootWithCtx(_tree, _count, zeroHashes());
     }
 
