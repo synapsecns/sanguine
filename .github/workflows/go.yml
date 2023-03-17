@@ -179,6 +179,11 @@ jobs:
         platform:
           - ubuntu-latest
     steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
@@ -219,6 +224,11 @@ jobs:
         # e.g. ['package1', 'package2'] if both package folders contains changes
         package: ${{ fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
       - uses: actions/setup-go@v3
         with:
           # see: https://github.com/golangci/golangci-lint/issues/3420, moving to go 1.20 requires a new golangci-lint version
@@ -405,11 +415,15 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
           submodules: 'recursive'
-
 
       - name: Cache Docker images.
         uses: ScribeMD/docker-cache@0.2.6
