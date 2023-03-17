@@ -27,6 +27,8 @@ type Wallet interface {
 	PublicKeyBytes() []byte
 	// PrivateKeyBytes is a helper function that returns the private key as a byte slice
 	PrivateKeyBytes() []byte
+	// String is an alias for Address().
+	String() string
 }
 
 // walletImpl is an implementation of ethereum wallet.
@@ -71,4 +73,8 @@ func (w walletImpl) PublicKeyBytes() []byte {
 
 func (w walletImpl) PrivateKeyBytes() []byte {
 	return crypto.FromECDSA(w.privateKey)
+}
+
+func (w walletImpl) String() string {
+	return w.Address().String()
 }

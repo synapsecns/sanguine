@@ -1,4 +1,4 @@
-package core
+package dbcommon
 
 import (
 	"database/sql"
@@ -29,11 +29,12 @@ const EnumDataType = "integer"
 // EnumValue converts the enum to a value.
 func EnumValue(enum EnumInter) (driver.Value, error) {
 	converter := driver.NotNull{Converter: driver.DefaultParameterConverter}
-	drive, err := converter.ConvertValue(enum.Int())
+	rawValue := enum.Int()
+	val, err := converter.ConvertValue(rawValue)
 	if err != nil {
-		return nil, fmt.Errorf("could not convert enum value: %w", err)
+		return nil, fmt.Errorf("could not convert rawValue %d of type %T: %w", rawValue, rawValue, err)
 	}
-	return drive, nil
+	return val, nil
 }
 
 // EnumScan converts the enum to a value.
