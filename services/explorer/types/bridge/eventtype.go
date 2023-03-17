@@ -3,7 +3,7 @@ package bridge
 import (
 	"database/sql/driver"
 	"fmt"
-	synapseCommon "github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
 // EventType is the type of the bridge event.
@@ -60,12 +60,12 @@ func (i EventType) BridgeInitiated() bool {
 
 // GormDataType gets the data type to use for gorm.
 func (i EventType) GormDataType() string {
-	return synapseCommon.EnumDataType
+	return dbcommon.EnumDataType
 }
 
 // Scan gets the type to insert into the db.
 func (i *EventType) Scan(src interface{}) error {
-	res, err := synapseCommon.EnumScan(src)
+	res, err := dbcommon.EnumScan(src)
 	if err != nil {
 		return fmt.Errorf("could not scan value: %w", err)
 	}
@@ -76,9 +76,9 @@ func (i *EventType) Scan(src interface{}) error {
 
 // Value gets the value to use for the db.
 func (i EventType) Value() (driver.Value, error) {
-	driver, err := synapseCommon.EnumValue(i)
+	drvr, err := dbcommon.EnumValue(i)
 	if err != nil {
 		return nil, fmt.Errorf("could not get value: %w", err)
 	}
-	return driver, nil
+	return drvr, nil
 }
