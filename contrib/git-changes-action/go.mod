@@ -56,7 +56,6 @@ require (
 	github.com/pjbgf/sha1cd v0.2.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
-	github.com/rung/go-safecast v1.0.1 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/sethvargo/go-envconfig v0.8.0 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect

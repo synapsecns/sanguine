@@ -1,12 +1,13 @@
 package anvil_test
 
 import (
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 )
 
@@ -25,18 +26,25 @@ func (a *AnvilSuite) TestFundAccount() {
 func (a *AnvilSuite) TestGetTxContext() {
 	res := a.backend.GetTxContext(a.GetTestContext(), nil)
 
-	tx, err := a.backend.SignTx(types.NewTx(&types.LegacyTx{
-		To:       &common.Address{},
-		Value:    big.NewInt(0),
-		Gas:      res.GasLimit,
-		GasPrice: res.GasPrice,
-	}), a.backend.Signer(), res.PrivateKey)
+	prevCount, err := a.counter.GetCount(&bind.CallOpts{Context: a.GetTestContext()})
 	Nil(a.T(), err)
 
-	err = a.backend.SendTransaction(a.GetTestContext(), tx)
+	res.TransactOpts.NoSend = true
+	tx, err := a.counter.IncrementCounter(res.TransactOpts)
 	Nil(a.T(), err)
+
+	sender, err := util.TxToCall(tx)
+	Nil(a.T(), err)
+
+	Equal(a.T(), res.TransactOpts.From, sender.From)
+	fmt.Println(sender.From)
 
 	a.backend.WaitForConfirmation(a.GetTestContext(), tx)
+
+	newCount, err := a.counter.GetCount(&bind.CallOpts{Context: a.GetTestContext()})
+	Nil(a.T(), err)
+
+	Equal(a.T(), prevCount.Uint64()+1, newCount.Uint64())
 }
 
 func (a *AnvilSuite) TestImpersonateAccount() {

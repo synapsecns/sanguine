@@ -1,14 +1,12 @@
 package anvil
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
-	ethCore "github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/eth/gasprice"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -27,6 +25,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/teivah/onecontext"
+	"io"
 	"math/big"
 	"strings"
 	"sync"
@@ -55,8 +54,6 @@ const BackendName = "anvil"
 func (f *Backend) BackendName() string {
 	return BackendName
 }
-
-const gasLimit = 10000000
 
 // NewAnvilBackend creates a test anvil backend.
 func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Backend {
@@ -89,8 +86,9 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	})
 	assert.Nil(t, err)
 
+	logInfoChan := make(chan processlog.LogMetadata)
 	go func() {
-		err = tailLogs(ctx, resource, pool, true)
+		err = tailLogs(ctx, resource, pool, true, logInfoChan)
 		logger.Warn(err)
 	}()
 
@@ -124,8 +122,16 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		RPCUrl:  []string{address},
 		ChainID: int(chainConfig.ChainID.Int64()),
 	})
+	assert.Nilf(t, err, "failed to create chain for chain id %s: %v", chainID, err)
+
 	chn.SetChainConfig(chainConfig)
-	assert.Nil(t, err)
+
+	select {
+	case <-ctx.Done():
+		t.Errorf("context canceled before anvil node started")
+	case logInfo := <-logInfoChan:
+		logger.Warnf("started anvil node for chain %s as container %s. Logs will be stored at %s", chainID, strings.TrimPrefix(resource.Container.Name, "/"), logInfo.LogDir())
+	}
 
 	baseBackend, err := base.NewBaseBackend(ctx, t, chn)
 	assert.Nil(t, err)
@@ -154,21 +160,12 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	return &backend
 }
 
-type bufCloser struct {
-	*bytes.Buffer
-}
-
-// Close implements io.Closer.
-func (b bufCloser) Close() error {
-	return nil
-}
-
 var logger = log.Logger("anvil-docker")
 
 // tailLogs tails the logs of a docker container.
-func tailLogs(ctx context.Context, resource *dockertest.Resource, pool *dockertest.Pool, follow bool) error {
-	outStream := bufCloser{bytes.NewBuffer(nil)}
-	errStream := bufCloser{bytes.NewBuffer(nil)}
+func tailLogs(ctx context.Context, resource *dockertest.Resource, pool *dockertest.Pool, follow bool, logInfoChan chan<- processlog.LogMetadata) error {
+	stdoutReader, stdoutWriter := io.Pipe()
+	stderrReader, stderrWriter := io.Pipe()
 
 	opts := docker.LogsOptions{
 		Context: ctx,
@@ -176,19 +173,28 @@ func tailLogs(ctx context.Context, resource *dockertest.Resource, pool *dockerte
 		Stderr:      true,
 		Stdout:      true,
 		Follow:      follow,
-		Timestamps:  true,
+		Timestamps:  false,
 		RawTerminal: true,
 
 		Container: resource.Container.ID,
 
-		ErrorStream:  errStream,
-		OutputStream: outStream,
+		ErrorStream:  stderrWriter,
+		OutputStream: stdoutWriter,
 	}
 
-	_, err := processlog.StartLogs(processlog.WithStdOut(outStream), processlog.WithStdErr(errStream), processlog.WithCtx(ctx))
+	logInfo, err := processlog.StartLogs(processlog.WithStdOut(stdoutReader), processlog.WithStdErr(stderrReader), processlog.WithCtx(ctx))
 	if err != nil {
 		return fmt.Errorf("failed to get container logs: %w", err)
 	}
+
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("context canceled: %w", ctx.Err())
+	case logInfoChan <- logInfo:
+		break
+	}
+
+	close(logInfoChan)
 
 	//nolint: wrapcheck
 	return pool.Client.Logs(opts)
@@ -235,19 +241,22 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 
 	// get a funding wallet
 	fundingWallet, err := core.RandomItem(f.wallets)
-	assert.Nil(f.T(), err)
+	assert.Nilf(f.T(), err, "could not get random wallet for chain %d: %v", f.GetChainID(), err)
 
 	// lock this wallet to avoid nonce issues (just in case, should be handled by nonce locker)
 	locker := f.walletMux.Lock(fundingWallet)
 	defer locker.Unlock()
 
 	auth, err := f.NewKeyedTransactorFromKey(fundingWallet.PrivateKey())
-	assert.Nil(f.T(), err)
+	assert.Nilf(f.T(), err, "could not get transactor for chain %d: %v", f.GetChainID(), err)
 
 	auth.GasPrice, err = f.Client().SuggestGasPrice(ctx)
-	assert.Nil(f.T(), err)
+	assert.Nilf(f.T(), err, "could not get gas price for chain %d: %v", f.GetChainID(), err)
 
-	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, gasLimit, auth.From).GasLimit
+	lastBlock, err := f.Client().HeaderByNumber(ctx, nil)
+	assert.Nilf(f.T(), err, "could not get last block for chain %d: %v", f.GetChainID(), err)
+
+	auth.GasLimit = lastBlock.GasLimit
 
 	tx, err := f.Backend.SignTx(types.NewTx(&types.LegacyTx{
 		To:       &address,
@@ -255,11 +264,36 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 		Gas:      auth.GasLimit,
 		GasPrice: auth.GasPrice,
 	}), f.Signer(), fundingWallet.PrivateKey())
-	assert.Nil(f.T(), err)
+	assert.Nilf(f.T(), err, "could not sign tx for chain %d: %v", f.GetChainID(), err)
 
-	assert.Nil(f.T(), f.Client().SendTransaction(f.Context(), tx))
+	err = f.Client().SendTransaction(f.Context(), tx)
+	if err != nil {
+		bal, _ := f.Client().BalanceAt(ctx, address, nil)
+		fmt.Println("arb bal")
+		fmt.Println(bal)
+		fmt.Println(fundingWallet.Address())
+	}
+	assert.Nilf(f.T(), err, "could not send tx for chain %d: %v", f.GetChainID(), err)
 
 	f.WaitForConfirmation(ctx, tx)
+}
+
+// WaitForConfirmation checks confirmation if the transaction is signed
+func (f *Backend) WaitForConfirmation(ctx context.Context, tx *types.Transaction) {
+	v, r, s := tx.RawSignatureValues()
+	isUnsigned := isZero(v) && isZero(r) && isZero(s)
+	if isUnsigned {
+		warnUnsignedOnce.Do(func() {
+			logger.Warn("WaitForConfirmation called on unsigned (liekly impersonated) transaction, this does nothing")
+		})
+		return
+	}
+
+	f.Backend.WaitForConfirmation(ctx, tx)
+}
+
+func isZero(val *big.Int) bool {
+	return val.Cmp(big.NewInt(0)) == 0
 }
 
 // GetFundedAccount gets a funded account.
@@ -292,16 +326,21 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 		f.store.Store(acct)
 	}
 
+	fmt.Println(f.Backend.BalanceAt(context.Background(), acct.Address, nil))
+
 	auth, err := f.NewKeyedTransactorFromKey(acct.PrivateKey)
-	assert.Nil(f.T(), err)
+	assert.Nilf(f.T(), err, "could not get transactor for chain %d: %v", f.GetChainID(), err)
 
 	blockNumber, err := f.BlockNumber(ctx)
-	assert.Nil(f.T(), err)
+	assert.Nilf(f.T(), err, "could not get block number for chain %d: %v", f.GetChainID(), err)
 
 	err = f.Chain.GasSetter().SetGasFee(ctx, auth, blockNumber, core.CopyBigInt(gasprice.DefaultMaxPrice))
-	assert.Nil(f.T(), err)
+	assert.Nilf(f.T(), err, "could not set gas fee for chain %d: %v", f.GetChainID(), err)
 
-	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, gasLimit, acct.Address).GasLimit / 2
+	lastBlock, err := f.Client().HeaderByNumber(ctx, nil)
+	assert.Nilf(f.T(), err, "could not get last block for chain %d: %v", f.GetChainID(), err)
+
+	auth.GasLimit = lastBlock.GasLimit
 
 	return backends.AuthType{
 		TransactOpts: auth,
@@ -323,10 +362,15 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 	f.warnImpersonation()
 
 	anvilClient, err := Dial(ctx, f.RPCAddress())
-	assert.Nil(f.T(), err)
+	assert.Nilf(f.T(), err, "could not dial anvil client rpc at %s for chain %d: %v", f.RPCAddress(), f.GetChainID(), err)
 
 	err = anvilClient.ImpersonateAccount(ctx, address)
-	assert.Nil(f.T(), err)
+	assert.Nilf(f.T(), err, "could not impersonate account %s for chain %d: %v", address.String(), f.GetChainID(), err)
+
+	defer func() {
+		err = anvilClient.StopImpersonatingAccount(ctx, address)
+		assert.Nilf(f.T(), err, "could not stop impersonating account %s for chain %d: %v", address.String(), f.GetChainID(), err)
+	}()
 
 	tx := transact(&bind.TransactOpts{
 		Context: ctx,
@@ -336,16 +380,13 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 	})
 
 	err = anvilClient.SendUnsignedTransaction(ctx, address, tx)
+	assert.Nil(f.T(), err, "could not send unsigned transaction for chain %d: %v", f.GetChainID(), err)
 
-	defer func() {
-		err = anvilClient.StopImpersonatingAccount(ctx, address)
-		assert.Nil(f.T(), err)
-	}()
 	return nil
 }
 
 func (f *Backend) warnImpersonation() {
-	logOnce.Do(func() {
+	warnImpersonationOnce.Do(func() {
 		f.T().Logf(`
 				Using Account Impersonation.
 				WARNING: This cannot be called concurrently with other impersonation calls.
@@ -359,10 +400,13 @@ func ImpersonatedSigner(address common.Address, transaction *types.Transaction) 
 	return transaction, nil
 }
 
-// logOnce is used to log the impersonation warning message once.
+// warnImpersonationOnce is used to log the impersonation warning message once.
 // this is a global variable to prevent the message from being logged multiple times.
 // normally, global variables are strongly discouraged, but we make an exception here
 // considering how unexpected behavior can be if impersonate account is not used correctly.
-var logOnce sync.Once
+var warnImpersonationOnce sync.Once
+
+// warnUnsignedOnce warns if a tx is unsigned and thus not confirmable
+var warnUnsignedOnce sync.Once
 
 var _ backends.SimulatedTestBackend = &Backend{}

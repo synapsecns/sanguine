@@ -61,7 +61,7 @@ func TestReadln(t *testing.T) {
 				}
 			}
 
-			if line != tt.expected {
+			if string(line) != tt.expected {
 				t.Fatalf("expected line %q, but got %q", tt.expected, line)
 			}
 		})

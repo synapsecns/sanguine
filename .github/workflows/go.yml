@@ -149,6 +149,7 @@ jobs:
           GANACHE_RPC_URL: http://0.0.0.0:8045
           GOMEMLIMIT: 6GiB
           GOGC: 2000
+          ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
 
       - name: Get Coverage name
         id: coverage

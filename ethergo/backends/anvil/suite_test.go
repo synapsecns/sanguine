@@ -35,7 +35,7 @@ func NewAnvilSuite(tb testing.TB) *AnvilSuite {
 func (a *AnvilSuite) SetupSuite() {
 	a.TestSuite.SetupSuite()
 
-	a.forkAddress = core.GetEnv("ETH_URL", "https://rpc.ankr.com/eth")
+	a.forkAddress = core.GetEnv("ETHEREUM_RPC_URI", "https://rpc.ankr.com/eth")
 	options := anvil.NewAnvilOptionBuilder()
 	err := options.SetForkURL(a.forkAddress)
 	Nil(a.T(), err)
