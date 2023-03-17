@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-// work based on eth2 deposit contract, which is used under CC0-1.0
+// work based on Merkle.sol, which is used under MIT OR Apache-2.0
+// Changes:
+//  - Adapted for Solidity 0.8.x
+//  - Amount of tree leaves stored externally
+// https://github.com/nomad-xyz/monorepo/blob/main/packages/contracts-core/contracts/libs/Merkle.sol
 
-/**
- * @title MerkleLib
- * @author Illusory Systems Inc.
- * @notice An incremental merkle tree modeled on the eth2 deposit contract.
- **/
+// work based on eth2 deposit contract, which is used under CC0-1.0
+// Changes:
+//  - Implemented in Solidity 0.7.6 (eth2 impl is Vyper)
+//  - keccak256() is used as the hashing function instead of sha256()
+
 library MerkleLib {
     uint256 internal constant TREE_DEPTH = 32;
     uint256 internal constant MAX_LEAVES = 2**TREE_DEPTH - 1;
