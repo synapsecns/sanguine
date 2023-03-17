@@ -3,15 +3,16 @@ pragma solidity 0.8.17;
 
 import { TREE_DEPTH } from "./Constants.sol";
 
-// work based on Merkle.sol, which is used under MIT OR Apache-2.0
+// work based on Merkle.sol, which is used under MIT OR Apache-2.0:
+// https://github.com/nomad-xyz/monorepo/blob/main/packages/contracts-core/contracts/libs/Merkle.sol
 // Changes:
 //  - Adapted for Solidity 0.8.x
 //  - Amount of tree leaves stored externally
 //  - Added thorough documentation
 //  - H(0,0) = 0 optimization is implemented (https://ethresear.ch/t/optimizing-sparse-merkle-trees/3751/6)
-// https://github.com/nomad-xyz/monorepo/blob/main/packages/contracts-core/contracts/libs/Merkle.sol
 
-// work based on eth2 deposit contract, which is used under CC0-1.0
+// Nomad's Merkle.sol is work based on eth2 deposit contract, which is used under CC0-1.0:
+// https://github.com/ethereum/deposit_contract/blob/dev/deposit_contract/contracts/validator_registration.v.py
 // Changes:
 //  - Implemented in Solidity 0.7.6 (eth2 impl is Vyper)
 //  - H() = keccak256() is used as the hashing function instead of sha256()
