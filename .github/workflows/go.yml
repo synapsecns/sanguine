@@ -20,6 +20,12 @@ jobs:
       package_count_nodeps: ${{ steps.length.outputs.FILTER_LENGTH_NODEPS }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
     steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -89,6 +95,12 @@ jobs:
       run:
         working-directory: ${{ matrix.package }}
     steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
@@ -180,6 +192,7 @@ jobs:
           - ubuntu-latest
     steps:
       - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
@@ -225,6 +238,7 @@ jobs:
         package: ${{ fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
       - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
@@ -289,6 +303,12 @@ jobs:
     outputs:
       issue_number: ${{ steps.find_pr.outputs.pr }}
     steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
       - uses: jwalton/gh-find-current-pr@v1
         id: find_pr
 
@@ -306,6 +326,7 @@ jobs:
         package: ['agents']
     steps:
       - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
@@ -421,6 +442,7 @@ jobs:
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     steps:
       - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
