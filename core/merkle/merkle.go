@@ -242,6 +242,7 @@ func fetchTreeElementState(m *HistoricalTree, h uint32, x uint32, count uint32) 
 
 // getParent calculates a parent node in the merkle tree given its children.
 func getParent(leftChild []byte, rightChild []byte) []byte {
+	// TODO (Chi): Adapt this for H(0,0) = 0 optimization
 	return crypto.Keccak256(append(leftChild, rightChild...))
 }
 
