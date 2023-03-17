@@ -77,7 +77,7 @@ linters:
     - gomnd
     # allow println
     - forbidigo
-    # disabled
+    # disabled (todo: enable)
     - interfacer
     # Allow nolint
     - nolintlint
