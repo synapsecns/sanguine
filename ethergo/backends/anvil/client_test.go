@@ -88,7 +88,7 @@ func (a *AnvilSuite) TestSetRPCURL() {
 
 func (a *AnvilSuite) TestSetBalance() {
 	address := mocks.MockAddress()
-	balance := uint64(gofakeit.Number(1000, 10000))
+	balance := gofakeit.Uint64()
 	err := a.client.SetBalance(a.GetTestContext(), address, balance)
 	Nil(a.T(), err)
 

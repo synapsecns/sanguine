@@ -10,7 +10,7 @@ import (
 )
 
 // PrintFunc is the function used to print data to the desired logger.
-type PrintFunc func(string)
+type PrintFunc func([]byte)
 
 // stdStreamLogArgs define log inputs.
 type stdStreamLogArgs struct {
@@ -132,7 +132,7 @@ func makeArgs(opts []StdStreamLogArgsOption) (_ *stdStreamLogArgs, err error) {
 	args.LogDir, _ = os.MkdirTemp("", "")
 
 	args.LogFileName = "log"
-	args.PrintFunc = func(s string) {
+	args.PrintFunc = func(s []byte) {
 		// do nothing
 	}
 

@@ -27,6 +27,7 @@ func NewAnvilOptionBuilder() *OptionBuilder {
 	optionsBuilder.SetAccounts(10)
 	optionsBuilder.SetBlockTime(0)
 	optionsBuilder.SetBalance(10000)
+	optionsBuilder.SetGasLimit(gasLimit * 5)
 
 	optionsBuilder.SetDerivationPath(accounts.DefaultBaseDerivationPath)
 	// note: ordinarily we strongly discourage using panics, but the setup should be deterministic.
