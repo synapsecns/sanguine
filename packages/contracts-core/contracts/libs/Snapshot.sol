@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SummitAttestation } from "./Attestation.sol";
+import { AttestationLib, SummitAttestation } from "./Attestation.sol";
 import { ByteString } from "./ByteString.sol";
 import { SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, STATE_LENGTH } from "./Constants.sol";
 import { MerkleList } from "./MerkleList.sol";
@@ -129,6 +129,10 @@ library SnapshotLib {
         snapshot.statePtrs = _statePtrs;
     }
 
+    function emptySummitSnapshot() internal pure returns (SummitSnapshot memory snapshot) {
+        snapshot.statePtrs = new uint256[](0);
+    }
+
     function getStatesAmount(SummitSnapshot memory _snapshot) internal pure returns (uint256) {
         return _snapshot.statePtrs.length;
     }
@@ -214,10 +218,7 @@ library SnapshotLib {
         view
         returns (SummitAttestation memory attestation)
     {
-        attestation.root = _snapshot.root();
-        attestation.height = _snapshot.height();
-        attestation.blockNumber = uint40(block.number);
-        attestation.timestamp = uint40(block.timestamp);
+        return AttestationLib.summitAttestation(_snapshot.root(), _snapshot.height());
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

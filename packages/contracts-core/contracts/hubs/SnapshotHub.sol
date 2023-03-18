@@ -61,6 +61,12 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
+    function getAttestation(uint32 _nonce) external view returns (bytes memory attPayload) {
+        require(_nonce < attestations.length, "Nonce out of range");
+        return attestations[_nonce].formatSummitAttestation(_nonce);
+    }
+
+    /// @inheritdoc ISnapshotHub
     function getLatestAgentState(uint32 _origin, address _agent)
         external
         view
@@ -178,6 +184,15 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         SAVE STATEMENT DATA                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Initializes the saved attestations list by inserting empty values.
+    function _initializeAttestations() internal {
+        // This should only be called once, when the contract is initialized
+        assert(attestations.length == 0);
+        // Insert empty non-meaningful values, that can't be used to prove anything
+        attestations.push(AttestationLib.emptySummitAttestation());
+        notarySnapshots.push(SnapshotLib.emptySummitSnapshot());
+    }
 
     /// @dev Saves the Guard snapshot.
     function _saveGuardSnapshot(uint256[] memory statePtrs) internal {

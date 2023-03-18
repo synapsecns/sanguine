@@ -13,6 +13,14 @@ interface ISnapshotHub {
     function isValidAttestation(bytes memory _attPayload) external view returns (bool isValid);
 
     /**
+     * @notice Returns saved attestation with the given nonce.
+     * @dev Reverts if attestation with given nonce hasn't been created yet.
+     * @param _nonce        Nonce for the attestation
+     * @return attPayload   Raw payload with formatted Attestation data
+     */
+    function getAttestation(uint32 _nonce) external view returns (bytes memory attPayload);
+
+    /**
      * @notice Returns the state with the highest known nonce submitted by a given Agent.
      * @param _origin       Domain of origin chain
      * @param _agent        Agent address

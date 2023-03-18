@@ -44,6 +44,17 @@ contract SummitTest is SynapseTest, SynapseProofs {
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
 
+    function setUp() public virtual override {
+        notaryAttestations[0] = RawAttestation({
+            root: bytes32(0),
+            height: 1,
+            nonce: 0,
+            blockNumber: uint40(block.number),
+            timestamp: uint40(block.timestamp)
+        });
+        super.setUp();
+    }
+
     function test_setupCorrectly() public {
         // Check Agents
         // Summit should know about agents from all domains, including Guards
@@ -56,6 +67,12 @@ contract SummitTest is SynapseTest, SynapseProofs {
         }
         // Check version
         assertEq(Versioned(summit).version(), LATEST_VERSION, "!version");
+        // Check attestation getter for zero nonce
+        assertEq(
+            ISnapshotHub(summit).getAttestation(0),
+            notaryAttestations[0].formatAttestation(),
+            "!getAttestation"
+        );
     }
 
     function test_verifyAttestation_existingNonce(Random memory random, AttestationMask memory mask)
@@ -63,7 +80,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
     {
         test_notarySnapshots(random);
         // Restrict nonce to existing ones
-        uint32 nonce = uint32(bound(random.nextUint32(), 0, DOMAIN_AGENTS - 1));
+        uint32 nonce = uint32(bound(random.nextUint32(), 0, DOMAIN_AGENTS));
         // Attestation is valid if and only if all four fields match
         bool isValid = !(mask.diffRoot ||
             mask.diffHeight ||
@@ -81,8 +98,8 @@ contract SummitTest is SynapseTest, SynapseProofs {
         public
     {
         test_notarySnapshots(random);
-        // Restrict nonce to existing ones
-        ra.nonce = uint32(bound(ra.nonce, DOMAIN_AGENTS, type(uint32).max));
+        // Restrict nonce to non-existing ones
+        ra.nonce = uint32(bound(ra.nonce, DOMAIN_AGENTS + 1, type(uint32).max));
         verifyAttestation(random, ra, false);
     }
 
@@ -236,9 +253,9 @@ contract SummitTest is SynapseTest, SynapseProofs {
             acceptSnapshot(rawStates);
             ra.root = getSnapshotRoot();
             ra.height = getSnapshotHeight();
-            // This is i-th submitted attestation so far
-            ra.nonce = i;
-            notaryAttestations[i] = ra;
+            // This is i-th submitted attestation so far, but attestation nonce starts from 1
+            ra.nonce = i + 1;
+            notaryAttestations[ra.nonce] = ra;
             bytes memory attestation = ra.formatAttestation();
 
             address notary = domains[DOMAIN_LOCAL].agents[i];
@@ -250,9 +267,12 @@ contract SummitTest is SynapseTest, SynapseProofs {
             emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayload, snapSig);
             InterfaceSummit(summit).submitSnapshot(snapPayload, snapSig);
 
+            // Check attestation getter
+            assertEq(ISnapshotHub(summit).getAttestation(ra.nonce), attestation, "!getAttestation");
+
             // Check proofs for every State in the Notary snapshot
             for (uint256 j = 0; j < STATES; ++j) {
-                bytes32[] memory snapProof = ISnapshotHub(summit).getSnapshotProof(i, j);
+                bytes32[] memory snapProof = ISnapshotHub(summit).getSnapshotProof(ra.nonce, j);
                 // Item to prove is State's "left sub-leaf"
                 (bytes32 item, ) = states[j].subLeafs();
                 // Item index is twice the state index (since it's a left child)

@@ -10,6 +10,8 @@ contract SnapshotHubMock is ISnapshotHub {
 
     function isValidAttestation(bytes memory _attPayload) external view returns (bool isValid) {}
 
+    function getAttestation(uint32 _nonce) external view returns (bytes memory attPayload) {}
+
     function getLatestAgentState(uint32 _origin, address _agent)
         external
         view
