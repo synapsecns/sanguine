@@ -93,7 +93,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         ISystemContract(destination).slashAgent({
             _rootSubmittedAt: block.timestamp,
             _callOrigin: DOMAIN_LOCAL,
-            _caller: SystemEntity.BondingManager,
+            _caller: SystemEntity.AgentManager,
             _info: AgentInfo(DOMAIN_LOCAL, notary, false)
         });
         assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");

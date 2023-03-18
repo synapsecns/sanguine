@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { BondingSecondary } from "../../contracts/bonding/BondingSecondary.sol";
+import { LightManager } from "../../contracts/manager/LightManager.sol";
 import { SystemMessage } from "../../contracts/libs/SystemMessage.sol";
 import { AppHarness, SynapseTestStorage } from "./SynapseTestStorage.t.sol";
 import { SynapseUtilities } from "./SynapseUtilities.t.sol";
@@ -71,39 +71,39 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     // solhint-disable-next-line code-complexity
     function setupChain(uint32 domain, string memory chainName) public {
         // Deploy messaging contracts
-        // BondingSecondary bondingManager = new BondingSecondary(domain);
+        // LightManager agentManager = new LightManager(domain);
         // TODO: Setup destination
         // TODO: Setup origin
-        // Setup BondingManager
-        // bondingManager.initialize();
-        // bondingManager.setSystemRouter(systemRouter);
-        // Add global notaries via BondingManager
+        // Setup AgentManager
+        // agentManager.initialize();
+        // agentManager.setSystemRouter(systemRouter);
+        // Add global notaries via AgentManager
         for (uint256 i = 0; i < DOMAINS; ++i) {
             uint32 domainToAdd = domains[i];
             // Origin and Destination will filter our agents themselves
             for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
                 address notary = suiteNotary(domainToAdd, j);
-                // bondingManager.addAgent(domainToAdd, notary);
+                // agentManager.addAgent(domainToAdd, notary);
             }
         }
-        // Add guards  via BondingManager
+        // Add guards  via AgentManager
         for (uint256 i = 0; i < GUARDS; ++i) {
-            // bondingManager.addAgent({ _domain: 0, _account: guards[i] });
+            // agentManager.addAgent({ _domain: 0, _account: guards[i] });
         }
         // Deploy app
         AppHarness app = new AppHarness(APP_OPTIMISTIC_SECONDS);
         // Transfer ownership everywhere
-        // bondingManager.transferOwnership(owner);
+        // agentManager.transferOwnership(owner);
         // Label deployments
         // vm.label(address(destination), string.concat("Destination ", chainName));
         // vm.label(address(origin), string.concat("Origin ", chainName));
-        // vm.label(address(bondingManager), string.concat("BondingManager ", chainName));
+        // vm.label(address(agentManager), string.concat("AgentManager ", chainName));
         // vm.label(address(systemRouter), string.concat("SystemRouter ", chainName));
         vm.label(address(app), string.concat("App ", chainName));
         // Save deployments
         // chains[domain].destination = destination;
         // chains[domain].origin = origin;
-        // chains[domain].bondingManager = bondingManager;
+        // chains[domain].agentManager = agentManager;
         // chains[domain].systemRouter = systemRouter;
         chains[domain].app = app;
     }

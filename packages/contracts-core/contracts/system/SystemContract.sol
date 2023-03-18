@@ -26,7 +26,7 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
 
     uint256 internal constant ORIGIN = 1 << uint8(SystemEntity.Origin);
     uint256 internal constant DESTINATION = 1 << uint8(SystemEntity.Destination);
-    uint256 internal constant BONDING_MANAGER = 1 << uint8(SystemEntity.BondingManager);
+    uint256 internal constant AGENT_MANAGER = 1 << uint8(SystemEntity.AgentManager);
 
     // TODO: reevaluate optimistic period for staking/unstaking bonds
     uint32 internal constant BONDING_OPTIMISTIC_PERIOD = 1 days;
@@ -85,25 +85,25 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
 
     /**
      * @dev Modifier for functions that are supposed to be called only from
-     * BondingManager on their local chain.
+     * AgentManager on their local chain.
      * Note: has to be used alongside with `onlySystemRouter`
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
      */
-    modifier onlyLocalBondingManager(uint32 _callOrigin, SystemEntity _caller) {
+    modifier onlyLocalAgentManager(uint32 _callOrigin, SystemEntity _caller) {
         _assertLocalDomain(_callOrigin);
-        _assertEntityAllowed(BONDING_MANAGER, _caller);
+        _assertEntityAllowed(AGENT_MANAGER, _caller);
         _;
     }
 
     /**
      * @dev Modifier for functions that are supposed to be called only from
-     * BondingManager on Synapse Chain.
+     * AgentManager on Synapse Chain.
      * Note: has to be used alongside with `onlySystemRouter`
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
      */
-    modifier onlySynapseChainBondingManager(uint32 _callOrigin, SystemEntity _systemCaller) {
+    modifier onlySynapseChainAgentManager(uint32 _callOrigin, SystemEntity _systemCaller) {
         _assertSynapseChain(_callOrigin);
-        _assertEntityAllowed(BONDING_MANAGER, _systemCaller);
+        _assertEntityAllowed(AGENT_MANAGER, _systemCaller);
         _;
     }
 
@@ -150,9 +150,9 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
     ▏*║                        SYSTEM CALL SHORTCUTS                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Perform a System Call to a BondingManager on a given domain
+    /// @dev Perform a System Call to a AgentManager on a given domain
     /// with the given optimistic period and data.
-    function _callBondingManager(
+    function _callAgentManager(
         uint32 _domain,
         uint32 _optimisticSeconds,
         bytes memory _data
@@ -160,14 +160,14 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
         systemRouter.systemCall({
             _destination: _domain,
             _optimisticSeconds: _optimisticSeconds,
-            _recipient: SystemEntity.BondingManager,
+            _recipient: SystemEntity.AgentManager,
             _data: _data
         });
     }
 
-    /// @dev Perform a System Call to a local BondingManager with the given `_data`.
-    function _callLocalBondingManager(bytes memory _data) internal {
-        _callBondingManager(localDomain, 0, _data);
+    /// @dev Perform a System Call to a local AgentManager with the given `_data`.
+    function _callLocalAgentManager(bytes memory _data) internal {
+        _callAgentManager(localDomain, 0, _data);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
