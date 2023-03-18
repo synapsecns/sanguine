@@ -31,21 +31,21 @@ type IOriginTransactor interface {
 	// SlashAgent is a paid mutator transaction binding the contract method 0x31f36451.
 	//
 	// Solidity: function slashAgent(uint256 , uint32 _callOrigin, uint8 _caller, (uint32,address,bool) _info) returns()
-	SlashAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _info SystemContractAgentInfo) (*types.Transaction, error)
-	// SubmitAttestation is a paid mutator transaction binding the contract method 0xf646a512.
+	SlashAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _info AgentInfo) (*types.Transaction, error)
+	// SyncAgent is a paid mutator transaction binding the contract method 0x81cfb5f1.
 	//
-	// Solidity: function submitAttestation(bytes _attestation) returns(bool)
-	SubmitAttestation(opts *bind.TransactOpts, _attestation []byte) (*types.Transaction, error)
-	// SubmitReport is a paid mutator transaction binding the contract method 0x5815869d.
-	//
-	// Solidity: function submitReport(bytes _report) returns(bool)
-	SubmitReport(opts *bind.TransactOpts, _report []byte) (*types.Transaction, error)
-	// SyncAgents is a paid mutator transaction binding the contract method 0xcc118b4d.
-	//
-	// Solidity: function syncAgents(uint256 , uint32 _callOrigin, uint8 _caller, uint256 _requestID, bool _removeExisting, (uint32,address,bool)[] _infos) returns()
-	SyncAgents(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _requestID *big.Int, _removeExisting bool, _infos []SystemContractAgentInfo) (*types.Transaction, error)
+	// Solidity: function syncAgent(uint256 , uint32 _callOrigin, uint8 _caller, (uint32,address,bool) _info) returns()
+	SyncAgent(opts *bind.TransactOpts, arg0 *big.Int, _callOrigin uint32, _caller uint8, _info AgentInfo) (*types.Transaction, error)
 	// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()
 	TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error)
+	// VerifyAttestation is a paid mutator transaction binding the contract method 0x663a711b.
+	//
+	// Solidity: function verifyAttestation(bytes _snapPayload, uint256 _stateIndex, bytes _attPayload, bytes _attSignature) returns(bool isValid)
+	VerifyAttestation(opts *bind.TransactOpts, _snapPayload []byte, _stateIndex *big.Int, _attPayload []byte, _attSignature []byte) (*types.Transaction, error)
+	// VerifySnapshot is a paid mutator transaction binding the contract method 0x538f5b98.
+	//
+	// Solidity: function verifySnapshot(bytes _snapPayload, uint256 _stateIndex, bytes _snapSignature) returns(bool isValid)
+	VerifySnapshot(opts *bind.TransactOpts, _snapPayload []byte, _stateIndex *big.Int, _snapSignature []byte) (*types.Transaction, error)
 }

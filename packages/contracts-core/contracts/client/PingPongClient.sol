@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-
-import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
-import { IOrigin } from "../interfaces/IOrigin.sol";
-import { Tips } from "../libs/Tips.sol";
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import { TipsLib } from "../libs/Tips.sol";
 import { TypeCasts } from "../libs/TypeCasts.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
+import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
+import { InterfaceOrigin } from "../interfaces/InterfaceOrigin.sol";
 
 contract PingPongClient is IMessageRecipient {
     using TypeCasts for address;
@@ -161,9 +162,15 @@ contract PingPongClient is IMessageRecipient {
         bytes32 _recipient,
         PingPongMessage memory _msg
     ) internal {
-        bytes memory tips = Tips.emptyTips();
+        bytes memory tips = TipsLib.emptyTips();
         bytes memory message = abi.encode(_msg);
-        IOrigin(origin).dispatch(_destination, _recipient, _optimisticPeriod(), tips, message);
+        InterfaceOrigin(origin).dispatch(
+            _destination,
+            _recipient,
+            _optimisticPeriod(),
+            tips,
+            message
+        );
     }
 
     /// @dev Initiate a new Ping-Pong round.

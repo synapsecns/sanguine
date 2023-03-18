@@ -13,10 +13,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/db/datastore/sql"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
 func RemoveGuardTempFile(t *testing.T, fileName string) {
@@ -26,14 +23,14 @@ func RemoveGuardTempFile(t *testing.T, fileName string) {
 }
 
 func (u GuardSuite) TestGuardE2E() {
-	testConfig := config.GuardConfig{
-		AttestationDomain: u.AttestationDomainClient.Config(),
-		OriginDomains: map[string]config.DomainConfig{
-			"origin_client": u.OriginDomainClient.Config(),
-		},
-		DestinationDomains: map[string]config.DomainConfig{
+	testConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      u.OriginDomainClient.Config(),
 			"destination_client": u.DestinationDomainClient.Config(),
+			"summit_client":      u.SummitDomainClient.Config(),
 		},
+		DomainID:       uint32(0),
+		SummitDomainID: u.SummitDomainClient.Config().DomainID,
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
@@ -42,12 +39,7 @@ func (u GuardSuite) TestGuardE2E() {
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
 		},
-		Database: config.DBConfig{
-			Type:       dbcommon.Sqlite.String(),
-			DBPath:     filet.TmpDir(u.T(), ""),
-			ConnString: filet.TmpDir(u.T(), ""),
-		},
-		RefreshIntervalInSeconds: 10,
+		RefreshIntervalSeconds: 5,
 	}
 	encodedTestConfig, err := testConfig.Encode()
 	Nil(u.T(), err)
@@ -60,73 +52,37 @@ func (u GuardSuite) TestGuardE2E() {
 	Nil(u.T(), err)
 	Positive(u.T(), numBytesWritten)
 
-	decodedGuardConfig, err := config.DecodeGuardConfig(tempConfigFile.Name())
+	decodedAgentConfig, err := config.DecodeAgentConfig(tempConfigFile.Name())
 	Nil(u.T(), err)
 
-	decodedGuardConfigBackToEncodedBytes, err := decodedGuardConfig.Encode()
+	decodedAgentConfigBackToEncodedBytes, err := decodedAgentConfig.Encode()
 	Nil(u.T(), err)
 
-	Equal(u.T(), encodedTestConfig, decodedGuardConfigBackToEncodedBytes)
+	Equal(u.T(), encodedTestConfig, decodedAgentConfigBackToEncodedBytes)
 
 	guard, err := guard.NewGuard(u.GetTestContext(), testConfig)
 	Nil(u.T(), err)
 
-	dbType, err := dbcommon.DBTypeFromString(testConfig.Database.Type)
-	Nil(u.T(), err)
+	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
 
-	dbHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), dbType, testConfig.Database.ConnString, "guard")
-	Nil(u.T(), err)
+	optimisticSeconds := uint32(10)
 
-	originAuth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
+	body := []byte{byte(gofakeit.Uint32())}
 
-	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
-	Nil(u.T(), err)
+	txContextOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.OriginContractMetadata.OwnerPtr())
+	txContextOrigin.Value = types.TotalTips(tips)
 
-	tx, err := u.OriginContract.Dispatch(
-		originAuth.TransactOpts,
-		u.DestinationDomainClient.Config().DomainID,
-		[32]byte{},
-		gofakeit.Uint32(),
-		encodedTips,
-		[]byte(gofakeit.Paragraph(3, 2, 1, " ")))
-	Nil(u.T(), err)
-	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
+	txContextTestClientOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.TestClientMetadataOnOrigin.OwnerPtr())
 
-	nonce := uint32(1)
+	testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(
+		txContextTestClientOrigin.TransactOpts,
+		uint32(u.TestBackendDestination.GetChainID()),
+		u.TestClientMetadataOnDestination.Address(),
+		optimisticSeconds,
+		body)
 
-	historicalRoot, dispatchBlockNumber, err := u.OriginContract.GetHistoricalRoot(&bind.CallOpts{Context: u.GetTestContext()}, u.DestinationDomainClient.Config().DomainID, nonce)
-	Nil(u.T(), err)
-
-	Greater(u.T(), dispatchBlockNumber.Uint64(), uint64(0))
-
-	NotEqual(u.T(), historicalRoot, [32]byte{})
-
-	attestationKey := types.AttestationKey{
-		Origin:      u.OriginDomainClient.Config().DomainID,
-		Destination: u.DestinationDomainClient.Config().DomainID,
-		Nonce:       nonce,
-	}
-
-	unsignedAttestation := types.NewAttestation(attestationKey.GetRawKey(), historicalRoot)
-	hashedAttestation, err := types.Hash(unsignedAttestation)
-	Nil(u.T(), err)
-
-	notarySignature, err := u.NotaryBondedSigner.SignMessage(u.GetTestContext(), core.BytesToSlice(hashedAttestation), false)
-	Nil(u.T(), err)
-
-	signedAttestation := types.NewSignedAttestation(
-		unsignedAttestation,
-		[]types.Signature{},
-		[]types.Signature{notarySignature})
-
-	encodedSignedAttestation, err := types.EncodeSignedAttestation(signedAttestation)
-	Nil(u.T(), err)
-
-	txContextAttestationCollector := u.TestBackendAttestation.GetTxContext(u.GetTestContext(), u.AttestationContractMetadata.OwnerPtr())
-	// Submit the attestation to get an AttestationSubmitted event.
-	txSubmitAttestation, err := u.AttestationContract.SubmitAttestation(txContextAttestationCollector.TransactOpts, encodedSignedAttestation)
-	Nil(u.T(), err)
-	u.TestBackendAttestation.WaitForConfirmation(u.GetTestContext(), txSubmitAttestation)
+	u.Nil(err)
+	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
@@ -135,22 +91,57 @@ func (u GuardSuite) TestGuardE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedInProgressAttestation, err := dbHandle.RetrieveNewestInProgressAttestationIfInState(
-			u.GetTestContext(),
+
+		rawState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
 			u.OriginDomainClient.Config().DomainID,
-			u.DestinationDomainClient.Config().DomainID,
-			types.AttestationStateConfirmedOnDestination)
+			u.GuardBondedSigner.Address())
 
-		isTrue := err == nil &&
-			retrievedInProgressAttestation != nil &&
-			retrievedInProgressAttestation.SignedAttestation().Attestation().Nonce() == nonce &&
-			u.OriginDomainClient.Config().DomainID == retrievedInProgressAttestation.SignedAttestation().Attestation().Origin() &&
-			u.DestinationDomainClient.Config().DomainID == retrievedInProgressAttestation.SignedAttestation().Attestation().Destination() &&
-			historicalRoot == retrievedInProgressAttestation.SignedAttestation().Attestation().Root() &&
-			len(retrievedInProgressAttestation.SignedAttestation().NotarySignatures()) == 1 &&
-			len(retrievedInProgressAttestation.SignedAttestation().GuardSignatures()) == 1 &&
-			retrievedInProgressAttestation.AttestationState() == types.AttestationStateConfirmedOnDestination
+		Nil(u.T(), err)
 
-		return isTrue
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(1)
 	})
+
+	// Now make sure GetLatestState works as well
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawState, err := u.SummitContract.GetLatestState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID)
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(1)
+	})
+}
+
+func (u GuardSuite) TestDeployedGuards() {
+	allOriginGuards, err := u.OriginContract.AllAgents(&bind.CallOpts{Context: u.GetTestContext()}, uint32(0))
+	Nil(u.T(), err)
+	Equal(u.T(), 1, len(allOriginGuards))
+
+	allDestGuards, err := u.DestinationContract.AllAgents(&bind.CallOpts{Context: u.GetTestContext()}, uint32(0))
+	Nil(u.T(), err)
+	Equal(u.T(), 1, len(allDestGuards))
+
+	Equal(u.T(), allOriginGuards[0], allDestGuards[0])
+
+	allSummitGuards, err := u.SummitContract.AllAgents(&bind.CallOpts{Context: u.GetTestContext()}, uint32(0))
+	Nil(u.T(), err)
+
+	Equal(u.T(), 1, len(allSummitGuards))
+
+	Equal(u.T(), allSummitGuards[0], allDestGuards[0])
 }

@@ -9,9 +9,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 )
@@ -55,34 +55,36 @@ func (d OriginDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{}
 }
 
-// AttestationCollectorDeployer deploys the attestation collector.
-type AttestationCollectorDeployer struct {
+// SummitDeployer deploys the summit.
+type SummitDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// NewAttestationCollectorDeployer creates the deployer for  the attestation collecotr.
-func NewAttestationCollectorDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return AttestationCollectorDeployer{deployer.NewSimpleDeployer(registry, backend, AttestationCollectorType)}
+// NewSummitDeployer creates the deployer for  the summit.
+func NewSummitDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return SummitDeployer{deployer.NewSimpleDeployer(registry, backend, SummitType)}
 }
 
-// Deploy deploys the attestation collector.
-func (a AttestationCollectorDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+// Deploy deploys the summit.
+//
+//nolint:dupword,dupl
+func (a SummitDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		attestationAddress, attestationTx, collector, err := attestationcollector.DeployAttestationCollector(transactOps, backend)
+		summitAddress, summitTx, summit, err := summit.DeploySummit(transactOps, backend, uint32(a.Backend().GetChainID()))
 		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not deploy attestation collector: %w", err)
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy summit: %w", err)
 		}
 
 		auth := a.Backend().GetTxContext(ctx, &transactOps.From)
-		initTx, err := collector.Initialize(auth.TransactOpts)
+		initTx, err := summit.Initialize(auth.TransactOpts)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not initialize attestation collector: %w", err)
 		}
 		a.Backend().WaitForConfirmation(ctx, initTx)
 
-		return attestationAddress, attestationTx, collector, nil
+		return summitAddress, summitTx, summit, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return attestationcollector.NewAttestationCollectorRef(address, backend)
+		return summit.NewSummitRef(address, backend)
 	})
 }
 
@@ -97,6 +99,8 @@ func NewDestinationDeployer(registry deployer.GetOnlyContractRegistry, backend b
 }
 
 // Deploy deploys the destination.
+//
+//nolint:dupl
 func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		destinationAddress, destinationTx, destination, err := destination.DeployDestination(transactOps, backend, uint32(d.Backend().GetChainID()))

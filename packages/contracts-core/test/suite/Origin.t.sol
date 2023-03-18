@@ -1,497 +1,299 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../tools/OriginTools.t.sol";
+import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
+import { IStateHub } from "../../contracts/interfaces/IStateHub.sol";
+import { EMPTY_ROOT, SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
+import { SummitAttestation } from "../../contracts/libs/Attestation.sol";
+import { Snapshot, SnapshotLib } from "../../contracts/libs/Snapshot.sol";
+import { OriginState, State, StateLib, SummitState } from "../../contracts/libs/State.sol";
+import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
+import { TipsLib } from "../../contracts/libs/Tips.sol";
+
+import { InterfaceOrigin } from "../../contracts/Origin.sol";
+
+import { RawState, OriginStateMask } from "./libs/State.t.sol";
+import { fakeStates } from "../utils/libs/FakeIt.t.sol";
+import { Random } from "../utils/libs/Random.t.sol";
+import { RawHeader, RawMessage, RawTips } from "../utils/libs/SynapseStructs.t.sol";
+import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
+import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
+import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
-contract OriginTest is OriginTools {
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+// solhint-disable no-empty-blocks
+contract OriginTest is SynapseTest, SynapseProofs {
+    using StateLib for bytes;
+    using SnapshotLib for bytes;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                   TESTS: CONSTRUCTOR & INITIALIZER                   ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // Deploy Production version of Origin and mocks for everything else
+    constructor() SynapseTest(DEPLOY_PROD_ORIGIN) {}
 
-    function test_initialize() public {
-        OriginHarness origin = new OriginHarness(DOMAIN_LOCAL);
-        vm.prank(owner);
-        origin.initialize();
-        assertEq(origin.owner(), owner, "!owner");
-        uint256 dispatchBlockNumber;
-        bytes32 histRoot;
-        (histRoot, dispatchBlockNumber) = origin.getHistoricalRoot(0, 0);
-        assertEq(histRoot, origin.root(0), "!historicalRoots(0)");
-    }
-
-    // solhint-disable-next-line code-complexity
-    function test_initializedCorrectly() public {
-        for (uint256 d = 0; d < DOMAINS; ++d) {
-            uint32 localDomain = domains[d];
-            OriginHarness origin = suiteOrigin(localDomain);
-            // Check local domain
-            assertEq(origin.localDomain(), localDomain, "!localDomain");
-            // Check owner
-            assertEq(origin.owner(), owner, "!owner");
-            // Check contract addresses
-            assertEq(
-                address(origin.systemRouter()),
-                address(suiteSystemRouter(localDomain)),
-                "!systemRouter"
-            );
-            // Check all notaries
-            for (uint256 dest = 0; dest < DOMAINS; ++dest) {
-                uint32 domain = domains[dest];
-                if (domain == localDomain) {
-                    // Origin should not keep track of local Notaries
-                    assertEq(origin.amountAgents(domain), 0, "!notariesAmount: local domain");
-                    for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
-                        assertFalse(
-                            origin.isActiveAgent(domain, suiteNotary(domain, i)),
-                            string.concat("!notary", getActorSuffix(i), ": local domain")
-                        );
-                    }
-                } else {
-                    // Origin should keep track of all remote notaries
-                    assertEq(
-                        origin.amountAgents(domain),
-                        NOTARIES_PER_CHAIN,
-                        "!notariesAmount: remote domain"
-                    );
-                    for (uint256 i = 0; i < NOTARIES_PER_CHAIN; ++i) {
-                        assertTrue(
-                            origin.isActiveAgent(domain, suiteNotary(domain, i)),
-                            string.concat("!notary", getActorSuffix(i), ": remote domain")
-                        );
-                    }
-                }
+    function test_setupCorrectly() public {
+        // Check Messaging addresses
+        assertEq(
+            address(ISystemContract(origin).systemRouter()),
+            address(systemRouter),
+            "!systemRouter"
+        );
+        // Check Agents
+        // Origin should know about agents from all domains, including Guards
+        for (uint256 d = 0; d < allDomains.length; ++d) {
+            uint32 domain = allDomains[d];
+            for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
+                address agent = domains[domain].agents[i];
+                assertTrue(IAgentRegistry(origin).isActiveAgent(domain, agent), "!agent");
             }
-            // Check global guards
-            assertEq(origin.amountAgents({ _domain: 0 }), GUARDS, "!guardsAmount");
-            for (uint256 i = 0; i < GUARDS; ++i) {
-                assertTrue(
-                    origin.isActiveAgent({ _domain: 0, _account: suiteGuard(i) }),
-                    string.concat("!guard", getActorSuffix(i))
-                );
-            }
-            // Root of an empty sparse Merkle tree should be stored with nonce=0
-            uint256 dispatchBlockNumber;
-            bytes32 histRoot;
-            (histRoot, dispatchBlockNumber) = origin.getHistoricalRoot(0, 0);
-            assertEq(histRoot, origin.root(0), "!historicalRoots(0)");
         }
     }
-
-    function test_initialize_revert_onlyOnce() public {
-        expectRevertAlreadyInitialized();
-        suiteOrigin(DOMAIN_LOCAL).initialize();
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                     TESTS: DISPATCHING MESSAGES                      ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_dispatch() public {
-        createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
-        expectDispatch();
-        originDispatch();
-    }
+        address sender = makeAddr("Sender");
+        address recipient = makeAddr("Recipient");
+        uint32 period = 1 minutes;
+        bytes memory tips = TipsLib.emptyTips();
+        bytes memory body = "test body";
 
-    function test_dispatch_noTips() public {
-        // User should be able to send a message w/o any tips
-        createEmptyTips();
-        createDispatchedMessage({ context: userLocalToRemote, mockTips: false });
-        expectDispatch();
-        originDispatch();
-    }
-
-    function test_dispatch_revert_tipsTooSmall() public {
-        createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
-        --tipsTotal; // force user to specify msg.value 1 wei less than needed
-        originDispatch({ revertMessage: "!tips: totalTips" });
-    }
-
-    function test_dispatch_revert_tipsTooBig() public {
-        createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
-        ++tipsTotal; // force user to specify msg.value 1 wei more than needed
-        originDispatch({ revertMessage: "!tips: totalTips" });
-    }
-
-    function test_dispatch_revert_tipsVersionIncorrect() public {
-        createEmptyTips();
-        uint256 length = tipsRaw.length;
-        // COnstruct tips payload, but use incorrect tips version
-        tipsRaw = abi.encodePacked(
-            Tips.TIPS_VERSION + 1,
-            tipNotary,
-            tipBroadcaster,
-            tipProver,
-            tipExecutor
-        );
-        // Length should stay the same
-        require(tipsRaw.length == length, "Failed to construct tips payload");
-        createDispatchedMessage({ context: userLocalToRemote, mockTips: false });
-        originDispatch({ revertMessage: "!tips: formatting" });
-    }
-
-    function test_dispatch_revert_tipsPayloadTooSmall() public {
-        createEmptyTips();
-        // Cut the last byte from tips payload, making it improperly formatted
-        tipsRaw = tipsRaw.ref(0).slice({ _index: 0, _len: tipsRaw.length - 1, newType: 0 }).clone();
-        createDispatchedMessage({ context: userLocalToRemote, mockTips: false });
-        originDispatch({ revertMessage: "!tips: formatting" });
-    }
-
-    function test_dispatch_revert_tipsPayloadTooBig() public {
-        createEmptyTips();
-        // Add extra byte to tips payload, making it improperly formatted
-        tipsRaw = bytes.concat(tipsRaw, bytes1(0));
-        createDispatchedMessage({ context: userLocalToRemote, mockTips: false });
-        originDispatch({ revertMessage: "!tips: formatting" });
-    }
-
-    function test_dispatch_revert_messageTooBig() public {
-        // Messages over 2 KiB are rejected
-        createDispatchedMessage({
-            context: userLocalToRemote,
-            mockTips: true,
-            body: new bytes(2 * 2**10 + 1),
-            recipient: MOCK_RECIPIENT,
-            optimisticSeconds: MOCK_OPTIMISTIC_SECONDS
-        });
-        originDispatch({ revertMessage: "msg too long" });
-    }
-
-    function test_suggestAttestation() public {
-        OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        uint256 amount = 5;
-        // Send a few messages
-        for (uint256 i = 0; i < amount; ++i) {
-            test_dispatch();
+        RawMessage[] memory rawMessages = new RawMessage[](MESSAGES);
+        bytes[] memory messages = new bytes[](MESSAGES);
+        bytes32[] memory roots = new bytes32[](MESSAGES);
+        for (uint32 i = 0; i < MESSAGES; ++i) {
+            rawMessages[i] = RawMessage(
+                RawHeader({
+                    origin: DOMAIN_LOCAL,
+                    sender: addressToBytes32(sender),
+                    nonce: i + 1,
+                    destination: DOMAIN_REMOTE,
+                    recipient: addressToBytes32(recipient),
+                    optimisticSeconds: period
+                }),
+                RawTips(0, 0, 0, 0),
+                body
+            );
+            (messages[i], ) = rawMessages[i].castToMessage();
+            insertMessage(messages[i]);
+            roots[i] = getRoot(i + 1);
         }
-        bytes memory data = origin.suggestAttestation(DOMAIN_REMOTE);
-        // Should match latest values
+
+        // Expect Origin Events
+        for (uint32 i = 0; i < MESSAGES; ++i) {
+            // 1 block is skipped after each dispatched message
+            OriginState memory state = OriginState(
+                roots[i],
+                uint40(block.number + i),
+                uint40(block.timestamp + i * BLOCK_TIME)
+            );
+            vm.expectEmit(true, true, true, true);
+            emit StateSaved(state.formatOriginState(DOMAIN_LOCAL, i + 1));
+            vm.expectEmit(true, true, true, true);
+            emit Dispatched(keccak256(messages[i]), i + 1, DOMAIN_REMOTE, messages[i]);
+        }
+
+        for (uint32 i = 0; i < MESSAGES; ++i) {
+            vm.prank(sender);
+            (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).dispatch(
+                DOMAIN_REMOTE,
+                addressToBytes32(recipient),
+                period,
+                tips,
+                body
+            );
+            // Check return values
+            assertEq(messageNonce, i + 1, "!messageNonce");
+            assertEq(messageHash, keccak256(messages[i]), "!messageHash");
+            skipBlock();
+        }
+    }
+
+    function test_states() public {
+        IStateHub hub = IStateHub(origin);
+        // Check initial States
+        assertEq(hub.statesAmount(), 1, "!initial statesAmount");
+        // Initial state was saved "1 block ago"
+        OriginState memory state = OriginState(
+            EMPTY_ROOT,
+            uint40(block.number - 1),
+            uint40(block.timestamp - BLOCK_TIME)
+        );
+        assertEq(hub.suggestState(0), state.formatOriginState(DOMAIN_LOCAL, 0), "!state: 0");
+        assertEq(hub.suggestState(0), hub.suggestLatestState(), "!latest state: 0");
+        uint40 initialBN = uint40(block.number);
+        uint40 initialTS = uint40(block.timestamp);
+        // Dispatch some messages
+        test_dispatch();
+        // Check saved States
+        assertEq(hub.statesAmount(), MESSAGES + 1, "!statesAmount");
+        assertEq(hub.suggestState(0), state.formatOriginState(DOMAIN_LOCAL, 0), "!suggestState: 0");
+        for (uint32 i = 0; i < MESSAGES; ++i) {
+            state = OriginState(getRoot(i + 1), initialBN + i, uint40(initialTS + i * BLOCK_TIME));
+            assertEq(
+                hub.suggestState(i + 1),
+                state.formatOriginState(DOMAIN_LOCAL, i + 1),
+                "!suggestState"
+            );
+        }
         assertEq(
-            data,
-            Attestation.formatAttestationData({
-                _origin: DOMAIN_LOCAL,
-                _destination: DOMAIN_REMOTE,
-                _nonce: uint32(amount),
-                _root: origin.root(DOMAIN_REMOTE)
-            })
+            hub.suggestLatestState(),
+            state.formatOriginState(DOMAIN_LOCAL, MESSAGES),
+            "!suggestLatestState"
         );
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                 TESTS: SUBMIT ATTESTATION (REVERTS)                  ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_submitAttestation_revert_wrongDomain() public {
-        // Add local Notary: Origin is not supposed to track them
-        suiteOrigin(DOMAIN_LOCAL).addLocalNotary(suiteNotary(DOMAIN_LOCAL));
-        _createAttestation_revert_wrongDomain();
-        originSubmitAttestation({
-            domain: DOMAIN_LOCAL,
-            revertMessage: "!attestationOrigin: !local"
+    function test_slashAgent() public {
+        address notary = domains[DOMAIN_REMOTE].agent;
+        vm.expectEmit(true, true, true, true);
+        emit AgentRemoved(DOMAIN_REMOTE, notary);
+        vm.expectEmit(true, true, true, true);
+        emit AgentSlashed(DOMAIN_REMOTE, notary);
+        vm.recordLogs();
+        vm.prank(address(systemRouter));
+        ISystemContract(origin).slashAgent({
+            _rootSubmittedAt: block.timestamp,
+            _callOrigin: DOMAIN_LOCAL,
+            _caller: SystemEntity.BondingManager,
+            _info: AgentInfo(DOMAIN_REMOTE, notary, false)
         });
+        assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");
     }
 
-    function test_submitAttestation_revert_notNotary() public {
-        _createAttestation_revert_notNotary();
-        originSubmitAttestation({
-            domain: DOMAIN_LOCAL,
-            revertMessage: "Signer is not authorized"
-        });
+    function test_verifySnapshot_existingNonce(
+        uint32 nonce,
+        OriginStateMask memory mask,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) public {
+        (bool isValid, SummitState memory fs) = _prepareExistingState(nonce, mask);
+        _verifySnapshot(fs, isValid, statesAmount, stateIndex);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                  TESTS: SUBMIT ATTESTATION (VALID)                   ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_submitAttestation_valid_suggested() public {
-        _createAttestation_valid_suggested();
-        _testSubmitAttestation({ domain: DOMAIN_LOCAL, isValidAttestation: true });
+    function test_verifySnapshot_unknownNonce(
+        SummitState memory fs,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) public {
+        // Restrict nonce to non-existing ones
+        fs.nonce = uint32(bound(fs.nonce, MESSAGES + 1, type(uint32).max));
+        fs.origin = DOMAIN_LOCAL;
+        // Remaining fields are fuzzed
+        _verifySnapshot(fs, false, statesAmount, stateIndex);
     }
 
-    function test_submitAttestation_valid_outdated() public {
-        _createAttestation_valid_outdated();
-        _testSubmitAttestation({ domain: DOMAIN_LOCAL, isValidAttestation: true });
+    function test_verifyAttestation_existingNonce(
+        Random memory random,
+        uint32 nonce,
+        OriginStateMask memory mask
+    ) public {
+        (bool isValid, SummitState memory fs) = _prepareExistingState(nonce, mask);
+        _verifyAttestation(random, fs, isValid);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                  TESTS: SUBMIT ATTESTATION (FRAUD)                   ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_submitAttestation_fraud_nonExistingNonce() public {
-        _createAttestation_fraud_nonExistingNonce();
-        _testSubmitAttestation({ domain: DOMAIN_LOCAL, isValidAttestation: false });
+    function test_verifyAttestation_unknownNonce(Random memory random, SummitState memory fs)
+        public
+    {
+        // Restrict nonce to non-existing ones
+        fs.nonce = uint32(bound(fs.nonce, MESSAGES + 1, type(uint32).max));
+        fs.origin = DOMAIN_LOCAL;
+        // Remaining fields are fuzzed
+        _verifyAttestation(random, fs, false);
     }
 
-    function test_submitAttestation_fraud_fakeNonce() public {
-        _createAttestation_fraud_fakeNonce();
-        _testSubmitAttestation({ domain: DOMAIN_LOCAL, isValidAttestation: false });
-    }
-
-    function test_submitAttestation_fraud_fakeRoot() public {
-        _createAttestation_fraud_fakeRoot();
-        _testSubmitAttestation({ domain: DOMAIN_LOCAL, isValidAttestation: false });
-    }
-
-    // TODO(Chi): enable Reports tests once reimplemented
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                    TESTS: SUBMIT REPORT (REVERTS)                    ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // function test_submitReport_revert_wrongDomain() public {
-    //     // Add local Notary: Origin is not supposed to track them
-    //     suiteOrigin(DOMAIN_LOCAL).addLocalNotary(suiteNotary(DOMAIN_LOCAL));
-    //     _createAttestation_revert_wrongDomain();
-    //     createReport(Report.Flag.Fraud);
-    //     originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "!attestationOrigin: !local" });
-    // }
-
-    // function test_submitReport_revert_notNotary() public {
-    //     _createAttestation_revert_notNotary();
-    //     createReport(Report.Flag.Fraud);
-    //     originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "Signer is not authorized" });
-    // }
-
-    // function test_submitReport_revert_notGuard() public {
-    //     _createAttestation_valid_suggested();
-    //     createReport({ flag: Report.Flag.Fraud, signer: attacker });
-    //     originSubmitReport({ domain: DOMAIN_LOCAL, revertMessage: "Signer is not authorized" });
-    // }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                TESTS: SUBMIT REPORT (VALID, CORRECT)                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-    // In these tests Guard signs a Flag.Valid Report on a Valid attestation
-    // No one is getting slashed
-
-    // function test_submitReport_valid_correct_suggested() public {
-    //     _createAttestation_valid_suggested();
-    //     createReport(Report.Flag.Valid); // Correct report
-    //     _testSubmitReport({
-    //         domain: DOMAIN_LOCAL,
-    //         isValidAttestation: true,
-    //         isCorrectReport: true
-    //     });
-    // }
-
-    // function test_submitReport_valid_correct_outdated() public {
-    //     _createAttestation_valid_outdated();
-    //     createReport(Report.Flag.Valid); // Correct report
-    //     _testSubmitReport({
-    //         domain: DOMAIN_LOCAL,
-    //         isValidAttestation: true,
-    //         isCorrectReport: true
-    //     });
-    // }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║               TESTS: SUBMIT REPORT (FRAUD, INCORRECT)                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-    // In these tests Guard signs a Flag.Fraud Report on a Valid attestation
-    // Guard is slashed as a result
-
-    // function test_submitReport_fraud_incorrect_suggested() public {
-    //     _createAttestation_valid_suggested();
-    //     createReport(Report.Flag.Fraud); // Incorrect report
-    //     _testSubmitReport({
-    //         domain: DOMAIN_LOCAL,
-    //         isValidAttestation: true,
-    //         isCorrectReport: false
-    //     });
-    // }
-
-    // function test_submitReport_fraud_incorrect_outdated() public {
-    //     _createAttestation_valid_outdated();
-    //     createReport(Report.Flag.Fraud); // Incorrect report
-    //     _testSubmitReport({
-    //         domain: DOMAIN_LOCAL,
-    //         isValidAttestation: true,
-    //         isCorrectReport: false
-    //     });
-    // }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                TESTS: SUBMIT REPORT (FRAUD, CORRECT)                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-    // In these tests Guard signs a Flag.Fraud Report on a Fraud attestation
-    // Notary is slashed as a result, Guard gets a reward
-
-    // function submitReport_fraud_correct_nonExistingNonce() public {
-    //     _createAttestation_fraud_nonExistingNonce();
-    //     createReport(Report.Flag.Fraud); // Correct report
-    //     _testSubmitReport({
-    //         domain: DOMAIN_LOCAL,
-    //         isValidAttestation: false,
-    //         isCorrectReport: true
-    //     });
-    // }
-
-    // function submitReport_fraud_correct_fakeNonce() public {
-    //     _createAttestation_fraud_fakeNonce();
-    //     createReport(Report.Flag.Fraud); // Correct report
-    //     _testSubmitReport({
-    //         domain: DOMAIN_LOCAL,
-    //         isValidAttestation: false,
-    //         isCorrectReport: true
-    //     });
-    // }
-
-    // function test_submitReport_fraud_correct_fakeRoot() public {
-    //     _createAttestation_fraud_fakeRoot();
-    //     createReport(Report.Flag.Fraud); // Correct report
-    //     _testSubmitReport({
-    //         domain: DOMAIN_LOCAL,
-    //         isValidAttestation: false,
-    //         isCorrectReport: true
-    //     });
-    // }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║               TESTS: SUBMIT REPORT (VALID, INCORRECT)                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-    // In these tests Guard signs a Flag.Valid Report on a Fraud attestation
-    // Notary is slashed as a result, Guard does NOT get a reward
-    // Guard is slashed as a result
-
-    // function test_submitReport_fraud_incorrect_nonExistingNonce() public {
-    //     _createAttestation_fraud_nonExistingNonce();
-    //     createReport(Report.Flag.Valid); // Incorrect report
-    //     _testSubmitReport({
-    //         domain: DOMAIN_LOCAL,
-    //         isValidAttestation: false,
-    //         isCorrectReport: false
-    //     });
-    // }
-
-    // function test_submitReport_fraud_incorrect_fakeNonce() public {
-    //     _createAttestation_fraud_fakeNonce();
-    //     createReport(Report.Flag.Valid); // Incorrect report
-    //     _testSubmitReport({
-    //         domain: DOMAIN_LOCAL,
-    //         isValidAttestation: false,
-    //         isCorrectReport: false
-    //     });
-    // }
-
-    // function test_submitReport_fraud_incorrect_fakeRoot() public {
-    //     _createAttestation_fraud_fakeRoot();
-    //     createReport(Report.Flag.Valid); // Incorrect report
-    //     _testSubmitReport({
-    //         domain: DOMAIN_LOCAL,
-    //         isValidAttestation: false,
-    //         isCorrectReport: false
-    //     });
-    // }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            TESTS: HALTING                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // TODO: enable Guards check once Go tests are updated
-    // function test_halts_noGuards() public {
-    //     createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
-    //     OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-    //     origin.removeAllAgents(0);
-    //     originDispatch({ revertMessage: "No active guards" });
-    // }
-
-    function test_halts_noNotaries() public {
-        createDispatchedMessage({ context: userLocalToRemote, mockTips: true });
-        OriginHarness origin = suiteOrigin(DOMAIN_LOCAL);
-        origin.removeAllAgents(DOMAIN_REMOTE);
-        originDispatch({ revertMessage: "No active notaries" });
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           CREATE TEST DATA                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // Create an attestation referring to another domain
-    function _createAttestation_revert_wrongDomain() internal {
+    function _prepareExistingState(uint32 nonce, OriginStateMask memory mask)
+        internal
+        returns (bool isValid, SummitState memory fs)
+    {
+        uint40 initialBN = uint40(block.number - 1);
+        uint40 initialTS = uint40(block.timestamp - BLOCK_TIME);
         test_dispatch();
-        // DOMAIN_LOCAL is used for Origin testing
-        createAttestationMock({ origin: DOMAIN_REMOTE, destination: DOMAIN_LOCAL });
-    }
-
-    // Create an attestation signed by not a Guard
-    function _createAttestation_revert_notGuard() internal {
-        test_dispatch();
-        // index 0 refers to first Guard
-        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
-            destination: DOMAIN_REMOTE,
-            guardSigs: 1,
-            notarySigs: 1,
-            attackerIndex: 0
-        });
-        createAttestationMock({
+        // State is valid if and only if all three fields match
+        isValid = !(mask.diffRoot || mask.diffBlockNumber || mask.diffTimestamp);
+        // Restrict nonce to existing ones
+        nonce = uint32(bound(nonce, 0, MESSAGES));
+        fs = SummitState({
+            root: getRoot(nonce),
             origin: DOMAIN_LOCAL,
-            destination: DOMAIN_REMOTE,
-            guardSigners: guardSigners,
-            notarySigners: notarySigners
+            nonce: nonce,
+            blockNumber: initialBN + nonce,
+            timestamp: uint40(initialTS + nonce * BLOCK_TIME)
         });
+        if (mask.diffRoot) fs.root = fs.root ^ bytes32(uint256(1));
+        if (mask.diffBlockNumber) fs.blockNumber = fs.blockNumber ^ 1;
+        if (mask.diffTimestamp) fs.timestamp = fs.timestamp ^ 1;
     }
 
-    // Create an attestation signed by not a Notary
-    function _createAttestation_revert_notNotary() internal {
-        test_dispatch();
-        // index 1 refers to first Guard
-        (address[] memory guardSigners, address[] memory notarySigners) = _createSigners({
-            destination: DOMAIN_REMOTE,
-            guardSigs: 1,
-            notarySigs: 1,
-            attackerIndex: 1
-        });
-        createAttestationMock({
-            origin: DOMAIN_LOCAL,
-            destination: DOMAIN_REMOTE,
-            guardSigners: guardSigners,
-            notarySigners: notarySigners
-        });
+    function _verifyAttestation(
+        Random memory random,
+        SummitState memory state,
+        bool isValid
+    ) internal {
+        // Pick random domain expect for 0
+        uint256 domainIndex = bound(random.nextUint256(), 1, allDomains.length - 1);
+        uint32 domain = allDomains[domainIndex];
+        // Pick random Notary
+        uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
+        address notary = domains[domain].agents[notaryIndex];
+        // Fuzz the position of invalid state in the snapshot
+        uint256 statesAmount = bound(random.nextUint256(), 1, SNAPSHOT_MAX_STATES);
+        uint256 stateIndex = bound(random.nextUint256(), 0, statesAmount - 1);
+        (, State[] memory states) = fakeStates(state, statesAmount, stateIndex);
+        bytes memory snapshot = SnapshotLib.formatSnapshot(states);
+        SummitAttestation memory sa;
+        sa.root = snapshot.castToSnapshot().root();
+        // Rest could be random
+        sa.height = random.nextUint8();
+        sa.blockNumber = random.nextUint40();
+        sa.timestamp = random.nextUint40();
+        bytes memory attestation = sa.formatSummitAttestation(random.nextUint32());
+        bytes memory signature = signMessage(notary, keccak256(attestation));
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidAttestationState(stateIndex, snapshot, attestation, signature);
+            vm.expectEmit(true, true, true, true);
+            emit AgentRemoved(domain, notary);
+            vm.expectEmit(true, true, true, true);
+            emit AgentSlashed(domain, notary);
+        }
+        vm.recordLogs();
+        assertEq(
+            InterfaceOrigin(origin).verifyAttestation(snapshot, stateIndex, attestation, signature),
+            isValid,
+            "!returnValue"
+        );
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
     }
 
-    // Create a valid attestation referring to the current Origin state
-    function _createAttestation_valid_suggested() internal {
-        test_dispatch();
-        createSuggestedAttestation({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
-        // Suggested attestation is valid
-    }
-
-    // Create a valid attestation referring to the past Origin state
-    function _createAttestation_valid_outdated() internal {
-        test_dispatch();
-        createSuggestedAttestation({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE });
-        // Dispatch a message to make the attestation older than new suggested one
-        test_dispatch();
-        // Outdated attestation is valid
-    }
-
-    // Create a fraud attestation: attested nonce does not exist yet
-    function _createAttestation_fraud_nonExistingNonce() internal {
-        test_dispatch();
-        createFraudAttestation({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE, fakeNonce: 2 });
-        // nonce = 2 doesn't exist yet => fraud
-    }
-
-    // Create a fraud attestation: attested root exists, but with a different nonce
-    function _createAttestation_fraud_fakeNonce() internal {
-        test_dispatch();
-        test_dispatch();
-        createFraudAttestation({ origin: DOMAIN_LOCAL, destination: DOMAIN_REMOTE, fakeNonce: 1 });
-        // correct nonce for current root would be 2 => fraud
-    }
-
-    // Create a fraud attestation: attested root does not exist
-    function _createAttestation_fraud_fakeRoot() internal {
-        test_dispatch();
-        createFraudAttestation({
-            origin: DOMAIN_LOCAL,
-            destination: DOMAIN_REMOTE,
-            fakeRoot: "fake root"
-        });
-        // this is obv incorrect root for current nonce => fraud
+    function _verifySnapshot(
+        SummitState memory state,
+        bool isValid,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) internal {
+        // Fuzz the position of invalid state in the snapshot
+        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
+        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+        (, State[] memory states) = fakeStates(state, statesAmount, stateIndex);
+        address notary = domains[DOMAIN_REMOTE].agent;
+        bytes memory snapshot = SnapshotLib.formatSnapshot(states);
+        bytes memory signature = signMessage(notary, keccak256(snapshot));
+        vm.recordLogs();
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidSnapshotState(stateIndex, snapshot, signature);
+            vm.expectEmit(true, true, true, true);
+            emit AgentRemoved(DOMAIN_REMOTE, notary);
+            vm.expectEmit(true, true, true, true);
+            emit AgentSlashed(DOMAIN_REMOTE, notary);
+        }
+        assertEq(
+            InterfaceOrigin(origin).verifySnapshot(snapshot, stateIndex, signature),
+            isValid,
+            "!returnValue"
+        );
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
     }
 }

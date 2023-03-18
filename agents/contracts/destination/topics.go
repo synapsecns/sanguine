@@ -19,6 +19,14 @@ func init() {
 
 	AttestationAcceptedTopic = parsedDestination.Events["AttestationAccepted"].ID
 	ExecutedTopic = parsedDestination.Events["Executed"].ID
+
+	if AttestationAcceptedTopic == (common.Hash{}) {
+		panic("AttestationAcceptedTopic is nil")
+	}
+
+	if ExecutedTopic == (common.Hash{}) {
+		panic("ExecutedTopic is nil")
+	}
 }
 
 // AttestationAcceptedTopic is the topic that gets emitted when the AttestationAccepted event is called.

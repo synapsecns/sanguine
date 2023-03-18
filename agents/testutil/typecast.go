@@ -3,16 +3,21 @@ package testutil
 import (
 	"context"
 
+	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
+
+	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
+
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
-	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
@@ -59,6 +64,30 @@ func (d *DeployManager) GetOriginHarness(ctx context.Context, backend backends.S
 	return originHarnessContract, originHarness
 }
 
+// GetStateHarness gets the state harness.
+func (d *DeployManager) GetStateHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *stateharness.StateHarnessRef) {
+	d.T().Helper()
+
+	stateHarnessContract := d.GetContractRegistry(backend).Get(ctx, StateHarnessType)
+
+	stateHarness, ok := stateHarnessContract.ContractHandle().(*stateharness.StateHarnessRef)
+	assert.True(d.T(), ok)
+
+	return stateHarnessContract, stateHarness
+}
+
+// GetSnapshotHarness gets the snapshot harness.
+func (d *DeployManager) GetSnapshotHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *snapshotharness.SnapshotHarnessRef) {
+	d.T().Helper()
+
+	snapshotHarnessContract := d.GetContractRegistry(backend).Get(ctx, SnapshotHarnessType)
+
+	snapshotHarness, ok := snapshotHarnessContract.ContractHandle().(*snapshotharness.SnapshotHarnessRef)
+	assert.True(d.T(), ok)
+
+	return snapshotHarnessContract, snapshotHarness
+}
+
 // GetAttestationHarness gets the attestation harness.
 func (d *DeployManager) GetAttestationHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *attestationharness.AttestationHarnessRef) {
 	d.T().Helper()
@@ -82,15 +111,26 @@ func (d *DeployManager) GetDestinationHarness(ctx context.Context, backend backe
 	return destinationHarnessContract, destinationHarness
 }
 
-// GetAttestationCollector gets the attestation collector contract.
-func (d *DeployManager) GetAttestationCollector(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *attestationcollector.AttestationCollectorRef) {
+// GetSummitHarness gets the summit harness.
+func (d *DeployManager) GetSummitHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *summitharness.SummitHarnessRef) {
 	d.T().Helper()
 
-	attestationContract := d.GetContractRegistry(backend).Get(ctx, AttestationCollectorType)
-	attestationCollector, ok := attestationContract.ContractHandle().(*attestationcollector.AttestationCollectorRef)
+	summitHarnessContract := d.GetContractRegistry(backend).Get(ctx, SummitHarnessType)
+	summitHarness, ok := summitHarnessContract.ContractHandle().(*summitharness.SummitHarnessRef)
 	assert.True(d.T(), ok)
 
-	return attestationContract, attestationCollector
+	return summitHarnessContract, summitHarness
+}
+
+// GetSummit gets the summit contract.
+func (d *DeployManager) GetSummit(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *summit.SummitRef) {
+	d.T().Helper()
+
+	summitContract := d.GetContractRegistry(backend).Get(ctx, SummitType)
+	summitRef, ok := summitContract.ContractHandle().(*summit.SummitRef)
+	assert.True(d.T(), ok)
+
+	return summitContract, summitRef
 }
 
 // GetDestination gets the destination contract.

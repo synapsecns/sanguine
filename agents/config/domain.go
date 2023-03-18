@@ -42,8 +42,8 @@ type DomainConfig struct {
 	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// OriginAddress gets origin contract address
 	OriginAddress string `yaml:"origin_address"`
-	// AttestationCollectorAddress contains the attestation collector address (if present)
-	AttestationCollectorAddress string `yaml:"attestation_collector_address"`
+	// SummitAddress contains the summit address (if present)
+	SummitAddress string `yaml:"summit_address"`
 	// DestinationAddress gets destination contract address
 	DestinationAddress string `yaml:"destination_address"`
 	// RPCUrl to use for the chain
@@ -66,6 +66,10 @@ func (d DomainConfig) IsValid(_ context.Context) (ok bool, err error) {
 	// TODO: we should defer to chain-specific config here for verification
 	if d.OriginAddress == "" {
 		return false, fmt.Errorf("field OriginAddress: %w", ErrRequiredField)
+	}
+
+	if d.DestinationAddress == "" {
+		return false, fmt.Errorf("field DestinationAddress: %w", ErrRequiredField)
 	}
 
 	if d.RPCUrl == "" {

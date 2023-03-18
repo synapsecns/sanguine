@@ -1,20 +1,27 @@
 package notary_test
 
 import (
+	"context"
 	"math/big"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/client"
+	scribeConfig2 "github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/node"
+
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/agents/agents/guard"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/db/datastore/sql"
+	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
 func RemoveNotaryTempFile(t *testing.T, fileName string) {
@@ -23,13 +30,111 @@ func RemoveNotaryTempFile(t *testing.T, fileName string) {
 	Nil(t, err)
 }
 
+//nolint:maintidx
 func (u *NotarySuite) TestNotaryE2E() {
-	testConfig := config.NotaryConfig{
-		DestinationDomain: u.DestinationDomainClient.Config(),
-		AttestationDomain: u.AttestationDomainClient.Config(),
-		OriginDomains: map[string]config.DomainConfig{
-			"origin_client": u.OriginDomainClient.Config(),
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+
+	originClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendOrigin.RPCAddress())
+	u.Nil(err)
+	destinationClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendDestination.RPCAddress())
+	u.Nil(err)
+	summitClient, err := backfill.DialBackend(u.GetTestContext(), u.TestBackendSummit.RPCAddress())
+	u.Nil(err)
+
+	originConfig := scribeConfig2.ContractConfig{
+		Address:    u.OriginContract.Address().String(),
+		StartBlock: 0,
+	}
+	originChainConfig := scribeConfig2.ChainConfig{
+		ChainID:               uint32(u.TestBackendOrigin.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig2.ContractConfig{originConfig},
+	}
+	destinationConfig := scribeConfig2.ContractConfig{
+		Address:    u.DestinationContract.Address().String(),
+		StartBlock: 0,
+	}
+	destinationChainConfig := scribeConfig2.ChainConfig{
+		ChainID:               uint32(u.TestBackendDestination.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig2.ContractConfig{destinationConfig},
+	}
+	summitConfig := scribeConfig2.ContractConfig{
+		Address:    u.SummitContract.Address().String(),
+		StartBlock: 0,
+	}
+	summitChainConfig := scribeConfig2.ChainConfig{
+		ChainID:               uint32(u.TestBackendSummit.GetChainID()),
+		BlockTimeChunkSize:    1,
+		ContractSubChunkSize:  1,
+		RequiredConfirmations: 0,
+		Contracts:             []scribeConfig2.ContractConfig{summitConfig},
+	}
+	scribeConfig := scribeConfig2.Config{
+		Chains: []scribeConfig2.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
+	}
+	clients := map[uint32][]backfill.ScribeBackend{
+		uint32(u.TestBackendOrigin.GetChainID()):      {originClient, originClient},
+		uint32(u.TestBackendDestination.GetChainID()): {destinationClient, destinationClient},
+		uint32(u.TestBackendSummit.GetChainID()):      {summitClient, summitClient},
+	}
+
+	scribe, err := node.NewScribe(u.ScribeTestDB, clients, scribeConfig)
+	u.Nil(err)
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath)
+	go func() {
+		scribeErr := scribeClient.Start(u.GetTestContext())
+		u.Nil(scribeErr)
+	}()
+
+	// Start the Scribe.
+	go func() {
+		scribeError := scribe.Start(u.GetTestContext())
+		if !testDone {
+			u.Nil(scribeError)
+		}
+	}()
+
+	attestationSavedSink := make(chan *summitharness.SummitHarnessAttestationSaved)
+	savedAttestation, err := u.SummitContract.WatchAttestationSaved(&bind.WatchOpts{Context: u.GetTestContext()}, attestationSavedSink)
+	Nil(u.T(), err)
+
+	guardTestConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      u.OriginDomainClient.Config(),
+			"destination_client": u.DestinationDomainClient.Config(),
+			"summit_client":      u.SummitDomainClient.Config(),
 		},
+		DomainID:       uint32(0),
+		SummitDomainID: u.SummitDomainClient.Config().DomainID,
+		BondedSigner: config.SignerConfig{
+			Type: config.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.GuardBondedWallet.PrivateKeyHex()).Name(),
+		},
+		UnbondedSigner: config.SignerConfig{
+			Type: config.FileType.String(),
+			File: filet.TmpFile(u.T(), "", u.GuardUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+		RefreshIntervalSeconds: 5,
+		ScribePort:             uint32(scribeClient.ScribeClient.Port),
+		ScribeURL:              scribeClient.ScribeClient.URL,
+	}
+	notaryTestConfig := config.AgentConfig{
+		Domains: map[string]config.DomainConfig{
+			"origin_client":      u.OriginDomainClient.Config(),
+			"destination_client": u.DestinationDomainClient.Config(),
+			"summit_client":      u.SummitDomainClient.Config(),
+		},
+		DomainID:       u.DestinationDomainClient.Config().DomainID,
+		SummitDomainID: u.SummitDomainClient.Config().DomainID,
 		BondedSigner: config.SignerConfig{
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryBondedWallet.PrivateKeyHex()).Name(),
@@ -38,49 +143,96 @@ func (u *NotarySuite) TestNotaryE2E() {
 			Type: config.FileType.String(),
 			File: filet.TmpFile(u.T(), "", u.NotaryUnbondedWallet.PrivateKeyHex()).Name(),
 		},
-		Database: config.DBConfig{
-			Type:       dbcommon.Sqlite.String(),
-			DBPath:     filet.TmpDir(u.T(), ""),
-			ConnString: filet.TmpDir(u.T(), ""),
-		},
-		RefreshIntervalInSeconds: 10,
+		RefreshIntervalSeconds: 5,
+		ScribePort:             uint32(scribeClient.ScribeClient.Port),
+		ScribeURL:              scribeClient.ScribeClient.URL,
 	}
-	encodedTestConfig, err := testConfig.Encode()
+	encodedNotaryTestConfig, err := notaryTestConfig.Encode()
 	Nil(u.T(), err)
 
-	tempConfigFile, err := os.CreateTemp("", "notary_temp_config.yaml")
+	notaryTempConfigFile, err := os.CreateTemp("", "notary_temp_config.yaml")
 	Nil(u.T(), err)
-	defer RemoveNotaryTempFile(u.T(), tempConfigFile.Name())
+	defer RemoveNotaryTempFile(u.T(), notaryTempConfigFile.Name())
 
-	numBytesWritten, err := tempConfigFile.Write(encodedTestConfig)
+	numBytesWritten, err := notaryTempConfigFile.Write(encodedNotaryTestConfig)
 	Nil(u.T(), err)
 	Positive(u.T(), numBytesWritten)
 
-	decodedNotaryConfig, err := config.DecodeNotaryConfig(tempConfigFile.Name())
+	decodedAgentConfig, err := config.DecodeAgentConfig(notaryTempConfigFile.Name())
 	Nil(u.T(), err)
 
-	decodedNotaryConfigBackToEncodedBytes, err := decodedNotaryConfig.Encode()
+	decodedAgentConfigBackToEncodedBytes, err := decodedAgentConfig.Encode()
 	Nil(u.T(), err)
 
-	Equal(u.T(), encodedTestConfig, decodedNotaryConfigBackToEncodedBytes)
+	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	notary, err := notary.NewNotary(u.GetTestContext(), testConfig)
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig)
 	Nil(u.T(), err)
 
-	dbType, err := dbcommon.DBTypeFromString(testConfig.Database.Type)
-	Nil(u.T(), err)
+	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
 
-	dbHandle, err := sql.NewStoreFromConfig(u.GetTestContext(), dbType, testConfig.Database.ConnString, "notary")
-	Nil(u.T(), err)
+	optimisticSeconds := uint32(10)
 
-	auth := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), nil)
+	body := []byte{byte(gofakeit.Uint32())}
 
-	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
-	Nil(u.T(), err)
+	txContextOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.OriginContractMetadata.OwnerPtr())
+	txContextOrigin.Value = types.TotalTips(tips)
 
-	tx, err := u.OriginContract.Dispatch(auth.TransactOpts, testConfig.DestinationDomain.DomainID, [32]byte{}, gofakeit.Uint32(), encodedTips, []byte(gofakeit.Paragraph(3, 2, 1, " ")))
+	txContextTestClientOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.TestClientMetadataOnOrigin.OwnerPtr())
+
+	testClientOnOriginTx, err := u.TestClientOnOrigin.SendMessage(
+		txContextTestClientOrigin.TransactOpts,
+		uint32(u.TestBackendDestination.GetChainID()),
+		u.TestClientMetadataOnDestination.Address(),
+		optimisticSeconds,
+		body)
+
+	u.Nil(err)
+	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), testClientOnOriginTx)
+
+	go func() {
+		// we don't check errors here since this will error on cancellation at the end of the test
+		err = guard.Start(u.GetTestContext())
+		u.Nil(err)
+	}()
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.GuardBondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(1)
+	})
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		rawState, err := u.SummitContract.GetLatestState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID)
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(1)
+	})
+
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig)
 	Nil(u.T(), err)
-	u.TestBackendOrigin.WaitForConfirmation(u.GetTestContext(), tx)
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
@@ -89,17 +241,58 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
-		retrievedConfirmedInProgressAttestation, err := dbHandle.RetrieveNewestInProgressAttestationIfInState(
-			u.GetTestContext(),
-			u.OriginDomainClient.Config().DomainID,
-			testConfig.DestinationDomain.DomainID,
-			types.AttestationStateNotaryConfirmed)
 
-		return err == nil &&
-			retrievedConfirmedInProgressAttestation != nil &&
-			u.OriginDomainClient.Config().DomainID == retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Origin() &&
-			testConfig.DestinationDomain.DomainID == retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Destination() &&
-			types.AttestationStateNotaryConfirmed == retrievedConfirmedInProgressAttestation.AttestationState() &&
-			retrievedConfirmedInProgressAttestation.SignedAttestation().Attestation().Nonce() != 0
+		rawState, err := u.SummitContract.GetLatestAgentState(
+			&bind.CallOpts{Context: u.GetTestContext()},
+			u.OriginDomainClient.Config().DomainID,
+			u.NotaryBondedSigner.Address())
+		Nil(u.T(), err)
+
+		if len(rawState) == 0 {
+			return false
+		}
+
+		state, err := types.DecodeState(rawState)
+		Nil(u.T(), err)
+		return state.Nonce() >= uint32(1)
 	})
+
+	watchCtx, cancel := context.WithCancel(u.GetTestContext())
+	defer cancel()
+
+	var retrievedAtt []byte
+	select {
+	// check for errors and fail
+	case <-watchCtx.Done():
+		retrievedAtt = []byte{}
+		break
+	case <-savedAttestation.Err():
+		Nil(u.T(), savedAttestation.Err())
+		retrievedAtt = []byte{}
+		break
+	// get message sent event
+	case receivedAttestationSaved := <-attestationSavedSink:
+		attToSubmit := receivedAttestationSaved.Attestation
+		summitAttestation, err := types.DecodeAttestation(attToSubmit)
+		Nil(u.T(), err)
+		Equal(u.T(), summitAttestation.Nonce(), uint32(0))
+		retrievedAtt = attToSubmit
+		break
+	}
+
+	Greater(u.T(), len(retrievedAtt), 0)
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		attestationsAmount, err := u.DestinationContract.AttestationsAmount(&bind.CallOpts{Context: u.GetTestContext()})
+		Nil(u.T(), err)
+
+		return attestationsAmount != nil && attestationsAmount.Uint64() >= uint64(1)
+	})
+
+	destAtt, err := u.DestinationContract.GetAttestation(&bind.CallOpts{Context: u.GetTestContext()}, big.NewInt(0))
+	Nil(u.T(), err)
+	Greater(u.T(), len(destAtt.Root), 0)
+	Equal(u.T(), destAtt.DestAtt.Nonce, uint32(0))
 }
