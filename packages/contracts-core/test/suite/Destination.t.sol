@@ -188,7 +188,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         RawAttestation memory ra,
         uint256 statesAmount,
         uint256 stateIndex,
-        uint32 rootTimestamp
+        uint32 rootSubmittedAt
     ) public {
         address executor = makeAddr("Executor");
 
@@ -206,7 +206,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         address notary = domains[DOMAIN_LOCAL].agent;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
 
-        vm.warp(rootTimestamp);
+        vm.warp(rootSubmittedAt);
         // Should emit event when attestation is accepted
         vm.expectEmit(true, true, true, true);
         emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
@@ -214,7 +214,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
             bytes32[TREE_DEPTH] memory originProof = getLatestProof(i);
-            // (_origin, _nonce, _sender, _rootTimestamp, _message)
+            // (_origin, _nonce, _sender, _rootSubmittedAt, _message)
             vm.expectCall(
                 recipient,
                 abi.encodeWithSelector(
@@ -222,7 +222,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
                     DOMAIN_REMOTE,
                     i + 1,
                     sender,
-                    rootTimestamp,
+                    rootSubmittedAt,
                     BODY
                 )
             );

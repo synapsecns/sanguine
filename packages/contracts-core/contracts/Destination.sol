@@ -131,7 +131,7 @@ contract Destination is
             origin,
             header.nonce(),
             header.sender(),
-            destAtt.destTimestamp,
+            destAtt.submittedAt,
             message.body().clone()
         );
         emit Executed(origin, msgLeaf);
@@ -183,7 +183,7 @@ contract Destination is
         require(_isActiveAgent(localDomain, destAtt.notary), "Inactive notary");
         // Check if optimistic period has passed
         require(
-            block.timestamp >= _header.optimisticSeconds() + destAtt.destTimestamp,
+            block.timestamp >= _header.optimisticSeconds() + destAtt.submittedAt,
             "!optimisticSeconds"
         );
         // Mark message as executed against the snapshot root

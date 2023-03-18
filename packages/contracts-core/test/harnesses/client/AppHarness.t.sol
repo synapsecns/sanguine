@@ -35,10 +35,10 @@ contract AppHarness is IMessageRecipient {
         uint32 _origin,
         uint32 _nonce,
         bytes32 _sender,
-        uint256 _rootTimestamp,
+        uint256 _rootSubmittedAt,
         bytes memory _message
     ) external view {
-        require(block.timestamp >= _rootTimestamp + optimisticSeconds, "app: !optimisticSeconds");
+        require(block.timestamp >= _rootSubmittedAt + optimisticSeconds, "app: !optimisticSeconds");
         require(_origin == expectedOrigin, "app: !origin");
         require(_nonce == expectedNonce, "app: !nonce");
         require(_sender == expectedSender, "app: !sender");
