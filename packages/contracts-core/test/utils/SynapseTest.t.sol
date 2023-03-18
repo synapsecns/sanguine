@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { LightManager } from "../../contracts/bonding/LightManager.sol";
+import { LightManager } from "../../contracts/manager/LightManager.sol";
 import { ISystemContract } from "../../contracts/interfaces/ISystemContract.sol";
 import { Destination } from "../../contracts/Destination.sol";
 import { Origin } from "../../contracts/Origin.sol";

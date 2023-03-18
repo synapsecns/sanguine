@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { LightManager } from "../../contracts/bonding/LightManager.sol";
+import { LightManager } from "../../contracts/manager/LightManager.sol";
 import { SystemMessage } from "../../contracts/libs/SystemMessage.sol";
 import { AppHarness, SynapseTestStorage } from "./SynapseTestStorage.t.sol";
 import { SynapseUtilities } from "./SynapseUtilities.t.sol";

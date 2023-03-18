@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { SummitState } from "./libs/State.sol";
 import { AgentInfo } from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { AgentManager } from "./bonding/AgentManager.sol";
+import { AgentManager } from "./manager/AgentManager.sol";
 import { DomainContext } from "./context/DomainContext.sol";
 import { SummitEvents } from "./events/SummitEvents.sol";
 import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
