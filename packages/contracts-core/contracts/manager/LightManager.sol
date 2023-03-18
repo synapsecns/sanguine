@@ -3,12 +3,13 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { AgentInfo } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { BondingManager } from "./BondingManager.sol";
+import { AgentManager } from "./AgentManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { Versioned } from "../Version.sol";
 
-/// @notice BondingSecondary keeps track of all agents, used on chains other than Synapse Chain.
-contract BondingSecondary is Versioned, BondingManager {
+/// @notice LightManager keeps track of all agents, staying in sync with the BondingManager.
+/// Used on chains other than Synapse Chain, serves as "light client" for BondingManager.
+contract LightManager is Versioned, AgentManager {
     constructor(uint32 _domain) DomainContext(_domain) Versioned("0.0.3") {
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
     }

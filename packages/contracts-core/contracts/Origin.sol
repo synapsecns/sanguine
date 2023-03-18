@@ -186,7 +186,7 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
     function _afterAgentSlashed(uint32 _domain, address _agent) internal virtual override {
         /// @dev We send a "slashAgent" system message
         /// after the Agent is slashed by submitting an invalid statement.
-        _callLocalBondingManager(_dataSlashAgent(_domain, _agent));
+        _callLocalAgentManager(_dataSlashAgent(_domain, _agent));
     }
 
     /**

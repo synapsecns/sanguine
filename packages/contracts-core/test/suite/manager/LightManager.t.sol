@@ -2,20 +2,29 @@
 pragma solidity 0.8.17;
 
 import { AgentInfo, SystemEntity } from "../../../contracts/libs/Structures.sol";
-import { BondingManagerTest } from "./BondingManager.t.sol";
 
-import { ISystemContract, Summit, SynapseTest } from "../../utils/SynapseTest.t.sol";
+import { AgentManagerTest } from "./AgentManager.t.sol";
+
+import { LightManager, ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
-contract BondingPrimaryTest is BondingManagerTest {
-    Summit internal bondingPrimary;
+contract LightManagerTest is AgentManagerTest {
+    // Deploy mocks for every messaging contract
+    constructor() SynapseTest(0) {}
 
-    // Deploy Production version of Summit and mocks for everything else
-    constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             TESTS: SETUP                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function setUp() public virtual override {
-        super.setUp();
-        bondingPrimary = Summit(summit);
+    function test_constructor_revert_onSynapseChain() public {
+        // Should not be able to deploy on Synapse Chain
+        vm.expectRevert("Can't be deployed on SynChain");
+        new LightManager(DOMAIN_SYNAPSE);
+    }
+
+    function test_version() public {
+        // Check version
+        assertEq(agentManager.version(), LATEST_VERSION, "!version");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -26,14 +35,14 @@ contract BondingPrimaryTest is BondingManagerTest {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
         vm.prank(caller);
-        bondingPrimary.addAgent(1, address(1));
+        agentManager.addAgent(1, address(1));
     }
 
     function test_removeAgent_revert_notOwner(address caller) public {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
         vm.prank(caller);
-        bondingPrimary.removeAgent(1, address(1));
+        agentManager.removeAgent(1, address(1));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -45,13 +54,13 @@ contract BondingPrimaryTest is BondingManagerTest {
         uint256 submittedAt,
         uint32 callOrigin
     ) public {
-        vm.assume(caller != address(systemRouterSynapse));
+        vm.assume(caller != address(systemRouter));
         AgentInfo memory info;
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             SystemEntity systemCaller = SystemEntity(c);
             vm.expectRevert("!systemRouter");
             vm.prank(caller);
-            bondingPrimary.slashAgent(submittedAt, callOrigin, systemCaller, info);
+            agentManager.slashAgent(submittedAt, callOrigin, systemCaller, info);
         }
     }
 
@@ -60,13 +69,13 @@ contract BondingPrimaryTest is BondingManagerTest {
         uint256 submittedAt,
         uint32 callOrigin
     ) public {
-        vm.assume(caller != address(systemRouterSynapse));
+        vm.assume(caller != address(systemRouter));
         AgentInfo memory info;
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             SystemEntity systemCaller = SystemEntity(c);
             vm.expectRevert("!systemRouter");
             vm.prank(caller);
-            bondingPrimary.syncAgent(submittedAt, callOrigin, systemCaller, info);
+            agentManager.syncAgent(submittedAt, callOrigin, systemCaller, info);
         }
     }
 
@@ -75,16 +84,16 @@ contract BondingPrimaryTest is BondingManagerTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_addAgent(uint32 domain, address agent) public {
-        (bool isActive, ) = bondingPrimary.isActiveAgent(agent);
+        (bool isActive, ) = agentManager.isActiveAgent(agent);
         // Should not be an already added agent
         vm.assume(!isActive);
         AgentInfo memory info = AgentInfo({ domain: domain, account: agent, bonded: true });
         bytes memory data = _dataSyncAgentCall(info);
         bytes memory expectedCall = _expectedCall(ISystemContract.syncAgent.selector, info);
         // All system registries should be system called
-        vm.expectCall(originSynapse, expectedCall);
-        vm.expectCall(destinationSynapse, expectedCall);
-        bondingPrimary.addAgent(domain, agent);
+        vm.expectCall(origin, expectedCall);
+        vm.expectCall(destination, expectedCall);
+        agentManager.addAgent(domain, agent);
     }
 
     function test_removeAgent(uint32 domain, address agent) public {
@@ -93,9 +102,9 @@ contract BondingPrimaryTest is BondingManagerTest {
         bytes memory data = _dataSyncAgentCall(info);
         bytes memory expectedCall = _expectedCall(ISystemContract.syncAgent.selector, info);
         // All system registries should be system called
-        vm.expectCall(originSynapse, expectedCall);
-        vm.expectCall(destinationSynapse, expectedCall);
-        bondingPrimary.removeAgent(domain, agent);
+        vm.expectCall(origin, expectedCall);
+        vm.expectCall(destination, expectedCall);
+        agentManager.removeAgent(domain, agent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -111,21 +120,35 @@ contract BondingPrimaryTest is BondingManagerTest {
             // Should reject system calls from local domain, if caller is not Origin
             if (caller == SystemEntity.Origin) continue;
             vm.expectRevert("!allowedCaller");
-            _systemPrank(systemRouterSynapse, _localDomain(), caller, data);
+            _systemPrank(systemRouter, _localDomain(), caller, data);
         }
     }
 
-    function test_slashAgent_revert_remoteDomain_notBondingManager(uint32 callOrigin) public {
+    function test_slashAgent_revert_synapseDomain_notAgentManager() public {
         AgentInfo memory info;
         bytes memory data = _dataSlashAgentCall(info);
-        vm.assume(callOrigin != DOMAIN_SYNAPSE);
         _skipBondingOptimisticPeriod();
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            // Should reject system calls from a remote domain, if caller is not BondingManager
+            // Should reject system calls from Synapse domain, if caller is not AgentManager
             SystemEntity caller = SystemEntity(c);
-            if (caller == SystemEntity.BondingManager) continue;
+            if (caller == SystemEntity.AgentManager) continue;
             vm.expectRevert("!allowedCaller");
-            _systemPrank(systemRouterSynapse, callOrigin, caller, data);
+            _systemPrank(systemRouter, DOMAIN_SYNAPSE, caller, data);
+        }
+    }
+
+    function test_slashAgent_revert_remoteNotSynapseDomain(uint32 callOrigin) public {
+        // Exclude local calls and calls from Synapse Chain
+        vm.assume(callOrigin != _localDomain() && callOrigin != DOMAIN_SYNAPSE);
+        AgentInfo memory info;
+        bytes memory data = _dataSlashAgentCall(info);
+        _skipBondingOptimisticPeriod();
+        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
+            // Should reject cross-chain system calls from domains other than Synapse domain
+            SystemEntity caller = SystemEntity(c);
+            vm.expectRevert("!synapseDomain");
+            // Use mocked agent info
+            _systemPrank(systemRouter, callOrigin, caller, data);
         }
     }
 
@@ -133,14 +156,42 @@ contract BondingPrimaryTest is BondingManagerTest {
     ▏*║                      TESTS: SYNC AGENTS REVERTS                      ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_syncAgent_revert(uint32 callOrigin) public {
+    function test_syncAgent_revert_localDomain() public {
         AgentInfo memory info;
         bytes memory data = _dataSyncAgentCall(info);
-        // Should reject all syncAgent calls
+        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
+            // Should reject all system calls from local domain
+            SystemEntity caller = SystemEntity(c);
+            // Calls from local domain never pass the optimistic period check
+            vm.expectRevert("!optimisticPeriod");
+            _systemPrank(systemRouter, _localDomain(), caller, data);
+        }
+    }
+
+    function test_syncAgent_revert_remoteNotSynapseDomain(uint32 callOrigin) public {
+        AgentInfo memory info;
+        bytes memory data = _dataSyncAgentCall(info);
+        // Exclude local calls and calls from Synapse Chain
+        vm.assume(callOrigin != _localDomain() && callOrigin != DOMAIN_SYNAPSE);
+        _skipBondingOptimisticPeriod();
+        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
+            // Should reject all system calls from remote domains other than Synapse domain
+            SystemEntity caller = SystemEntity(c);
+            vm.expectRevert("!synapseDomain");
+            _systemPrank(systemRouter, callOrigin, caller, data);
+        }
+    }
+
+    function test_syncAgent_revert_synapseDomain_notAgentManager() public {
+        AgentInfo memory info;
+        bytes memory data = _dataSyncAgentCall(info);
+        _skipBondingOptimisticPeriod();
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             SystemEntity caller = SystemEntity(c);
-            vm.expectRevert("Disabled for BondingPrimary");
-            _systemPrank(systemRouterSynapse, callOrigin, caller, data);
+            // Should reject system calls from Synapse domain, if caller is not AgentManager
+            if (caller == SystemEntity.AgentManager) continue;
+            vm.expectRevert("!allowedCaller");
+            _systemPrank(systemRouter, DOMAIN_SYNAPSE, caller, data);
         }
     }
 
@@ -153,66 +204,24 @@ contract BondingPrimaryTest is BondingManagerTest {
         bytes memory data = _dataSlashAgentCall(info);
         bytes memory expectedCall = _expectedCall(ISystemContract.slashAgent.selector, info);
         // All system registries should be system called
-        vm.expectCall(originSynapse, expectedCall);
-        vm.expectCall(destinationSynapse, expectedCall);
-        // callOrigin is Synapse Chain
-        _expectForwardCalls(DOMAIN_SYNAPSE, data);
-        // Prank a local system call: [Local Origin] -> [Local BondingManager].slashAgent
-        _systemPrank(systemRouterSynapse, _localDomain(), SystemEntity.Origin, data);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║             TESTS: RECEIVE SYSTEM CALLS (REMOTE DOMAIN)              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_slashAgent_remoteDomain_bondingManager(
-        uint32 callOrigin,
-        uint32 domain,
-        address account
-    ) public {
-        // TODO: restrict callOrigin to existing domains
-        vm.assume(callOrigin != 0 && callOrigin != DOMAIN_SYNAPSE);
-        _skipBondingOptimisticPeriod();
-        AgentInfo memory info = AgentInfo({ domain: domain, account: account, bonded: false });
-        bytes memory data = _dataSlashAgentCall(info);
-        bytes memory expectedCall = _expectedCall(ISystemContract.slashAgent.selector, info);
-        // All system registries should be system called
-        vm.expectCall(originSynapse, expectedCall);
-        vm.expectCall(destinationSynapse, expectedCall);
-        // data should be forwarded to remote chains
-        _expectForwardCalls(callOrigin, _dataSlashAgentCall(info));
-        // Prank a local system call: [Remote BondingManager] -> [Local BondingManager].slashAgent
-        _systemPrank(systemRouterSynapse, callOrigin, SystemEntity.BondingManager, data);
-    }
-
-    function _expectForwardCalls(uint32 callOrigin, bytes memory data) internal {
-        if (callOrigin != DOMAIN_LOCAL) {
-            vm.expectCall(
-                address(systemRouterSynapse),
-                abi.encodeWithSelector(
-                    systemRouterSynapse.systemCall.selector,
-                    DOMAIN_LOCAL, // destination
-                    BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                    SystemEntity.BondingManager, //recipient
-                    data
-                )
-            );
-        }
-        if (callOrigin != DOMAIN_REMOTE) {
-            vm.expectCall(
-                address(systemRouterSynapse),
-                abi.encodeWithSelector(
-                    systemRouterSynapse.systemCall.selector,
-                    DOMAIN_REMOTE, // destination
-                    BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                    SystemEntity.BondingManager, //recipient
-                    data
-                )
-            );
-        }
+        vm.expectCall(origin, expectedCall);
+        vm.expectCall(destination, expectedCall);
+        // data should be forwarded to Synapse Chain
+        vm.expectCall(
+            address(systemRouter),
+            abi.encodeWithSelector(
+                systemRouter.systemCall.selector,
+                DOMAIN_SYNAPSE, // destination
+                BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
+                SystemEntity.AgentManager, //recipient
+                data
+            )
+        );
+        // Prank a local system call: [Local Origin] -> [Local AgentManager].slashAgent
+        _systemPrank(systemRouter, _localDomain(), SystemEntity.Origin, data);
     }
 
     function _localDomain() internal pure override returns (uint32) {
-        return DOMAIN_SYNAPSE;
+        return DOMAIN_LOCAL;
     }
 }

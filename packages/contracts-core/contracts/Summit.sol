@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { SummitState } from "./libs/State.sol";
 import { AgentInfo } from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { BondingManager } from "./bonding/BondingManager.sol";
+import { AgentManager } from "./manager/AgentManager.sol";
 import { DomainContext } from "./context/DomainContext.sol";
 import { SummitEvents } from "./events/SummitEvents.sol";
 import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
@@ -14,7 +14,7 @@ import { Attestation, AttestationReport, Snapshot, StatementHub } from "./hubs/S
 /**
  * @notice Accepts snapshots signed by Guards and Notaries. Verifies Notaries attestations.
  */
-contract Summit is StatementHub, SnapshotHub, BondingManager, SummitEvents, InterfaceSummit {
+contract Summit is StatementHub, SnapshotHub, AgentManager, SummitEvents, InterfaceSummit {
     constructor(uint32 _domain) DomainContext(_domain) {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }
@@ -143,7 +143,7 @@ contract Summit is StatementHub, SnapshotHub, BondingManager, SummitEvents, Inte
     /// @dev Hook that is called after an existing agent was slashed,
     /// when verification of an invalid agent statement was done in this contract.
     function _afterAgentSlashed(uint32 _domain, address _agent) internal virtual override {
-        /// @dev Summit is BondingPrimary, so we need to slash Agent on local Registries,
+        /// @dev Summit is BondingManager, so we need to slash Agent on local Registries,
         /// as well as relay this information to all other chains.
         /// There was no system call that triggered slashing, so callOrigin is set to ZERO.
         _updateLocalRegistries({

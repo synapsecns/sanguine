@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { BondingSecondary } from "../../contracts/bonding/BondingSecondary.sol";
+import { LightManager } from "../../contracts/manager/LightManager.sol";
 import { ISystemContract } from "../../contracts/interfaces/ISystemContract.sol";
 import { Destination } from "../../contracts/Destination.sol";
 import { Origin } from "../../contracts/Origin.sol";
@@ -27,7 +27,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
 
     address internal destination;
     address internal origin;
-    BondingSecondary internal bondingManager;
+    LightManager internal agentManager;
 
     SystemRouterHarness internal systemRouter;
 
@@ -62,7 +62,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
                 address agent = domains[domain].agents[i];
-                bondingManager.addAgent(domain, agent);
+                agentManager.addAgent(domain, agent);
                 Summit(summit).addAgent(domain, agent);
             }
         }
@@ -73,9 +73,9 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function deployBondingS() public virtual {
-        bondingManager = new BondingSecondary(DOMAIN_LOCAL);
-        bondingManager.initialize();
-        vm.label(address(bondingManager), "BondingSecondary");
+        agentManager = new LightManager(DOMAIN_LOCAL);
+        agentManager.initialize();
+        vm.label(address(agentManager), "LightManager");
     }
 
     function deployDestination() public virtual {
@@ -148,11 +148,11 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
             DOMAIN_LOCAL,
             address(origin),
             address(destination),
-            address(bondingManager)
+            address(agentManager)
         );
         ISystemContract(origin).setSystemRouter(systemRouter);
         ISystemContract(destination).setSystemRouter(systemRouter);
-        bondingManager.setSystemRouter(systemRouter);
+        agentManager.setSystemRouter(systemRouter);
         vm.label(address(systemRouter), "SystemRouter Local");
     }
 

@@ -10,11 +10,11 @@ import {
 
 import { ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
 
-abstract contract BondingManagerTest is SynapseTest {
+abstract contract AgentManagerTest is SynapseTest {
     uint256 internal rootSubmittedAt;
 
     /// @notice Prevents this contract from being included in the coverage report
-    function testBondingManagerTest() external {}
+    function testAgentManagerTest() external {}
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           INTERNAL HELPERS                           ║*▕
@@ -37,8 +37,8 @@ abstract contract BondingManagerTest is SynapseTest {
         SystemEntity systemCaller,
         bytes memory data
     ) internal {
-        router.mockSystemCall({
-            _recipient: SystemEntity.BondingManager,
+        router.systemPrank({
+            _recipient: SystemEntity.AgentManager,
             _rootSubmittedAt: callOrigin == _localDomain() ? block.timestamp : rootSubmittedAt,
             _callOrigin: callOrigin,
             _systemCaller: systemCaller,
@@ -56,7 +56,7 @@ abstract contract BondingManagerTest is SynapseTest {
                 selector,
                 block.timestamp,
                 _localDomain(),
-                SystemEntity.BondingManager,
+                SystemEntity.AgentManager,
                 info
             );
     }

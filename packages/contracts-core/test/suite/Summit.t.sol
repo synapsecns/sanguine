@@ -177,8 +177,8 @@ contract SummitTest is SynapseTest, SynapseProofs {
         vm.expectCall(destinationSynapse, expectedCall);
         // Should forward Slash system calls
         bytes memory data = _dataSlashAgentCall(domain, agent);
-        _expectRemoteCallBondingManager(DOMAIN_LOCAL, data);
-        _expectRemoteCallBondingManager(DOMAIN_REMOTE, data);
+        _expectRemoteCallAgentManager(DOMAIN_LOCAL, data);
+        _expectRemoteCallAgentManager(DOMAIN_REMOTE, data);
     }
 
     function test_guardSnapshots(Random memory random) public {
@@ -314,14 +314,14 @@ contract SummitTest is SynapseTest, SynapseProofs {
         }
     }
 
-    function _expectRemoteCallBondingManager(uint32 domain, bytes memory data) internal {
+    function _expectRemoteCallAgentManager(uint32 domain, bytes memory data) internal {
         vm.expectCall(
             address(systemRouterSynapse),
             abi.encodeWithSelector(
                 systemRouterSynapse.systemCall.selector,
                 domain, // destination
                 BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                SystemEntity.BondingManager, //recipient
+                SystemEntity.AgentManager, //recipient
                 data
             )
         );
@@ -352,7 +352,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 ISystemContract.slashAgent.selector,
                 block.timestamp,
                 DOMAIN_SYNAPSE,
-                SystemEntity.BondingManager,
+                SystemEntity.AgentManager,
                 AgentInfo(domain, notary, false)
             );
     }

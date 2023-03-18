@@ -93,7 +93,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     ▏*║                              IMMUTABLES                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    address public immutable bondingManager;
+    address public immutable agentManager;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
@@ -103,9 +103,9 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         uint32 _domain,
         address _origin,
         address _destination,
-        address _bondingManager
+        address _agentManager
     ) BasicClient(_origin, _destination) DomainContext(_domain) Versioned("0.0.3") {
-        bondingManager = _bondingManager;
+        agentManager = _agentManager;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -371,7 +371,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     function _getSystemEntity(address _caller) internal view returns (SystemEntity) {
         if (_caller == origin) return SystemEntity.Origin;
         if (_caller == destination) return SystemEntity.Destination;
-        if (_caller == bondingManager) return SystemEntity.BondingManager;
+        if (_caller == agentManager) return SystemEntity.AgentManager;
         revert("Unauthorized caller");
     }
 
@@ -379,7 +379,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     function _getSystemAddress(uint8 _recipient) internal view returns (address) {
         if (_recipient == uint8(SystemEntity.Origin)) return origin;
         if (_recipient == uint8(SystemEntity.Destination)) return destination;
-        if (_recipient == uint8(SystemEntity.BondingManager)) return bondingManager;
+        if (_recipient == uint8(SystemEntity.AgentManager)) return agentManager;
         revert("Unknown recipient");
     }
 

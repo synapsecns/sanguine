@@ -6,8 +6,8 @@ import { AgentInfo, SystemEntity } from "../libs/Structures.sol";
 import { AgentRegistry } from "../system/AgentRegistry.sol";
 import { ISystemContract, SystemContract } from "../system/SystemContract.sol";
 
-/// @notice BondingManager keeps track of all agents.
-abstract contract BondingManager is AgentRegistry, SystemContract {
+/// @notice AgentManager keeps track of all agents.
+abstract contract AgentManager is AgentRegistry, SystemContract {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -24,12 +24,12 @@ abstract contract BondingManager is AgentRegistry, SystemContract {
             // Forward information about slashed agent to remote chains
             forwardUpdate = true;
             // Only Origin can slash agents on local domain.
-            // Summit is BondingManager on SynChain, so
+            // Summit is AgentManager on SynChain, so
             // Summit Notary slashing will not require a local slashAgent call.
             _assertEntityAllowed(ORIGIN, _caller);
         } else {
             // Forward information about slashed agent to remote chains
-            // only if BondingManager is deployed on Synapse Chain
+            // only if AgentManager is deployed on Synapse Chain
             forwardUpdate = _onSynapseChain();
             // Validate security params for cross-chain slashing
             _assertCrossChainSlashing(_rootSubmittedAt, _callOrigin, _caller);
@@ -46,8 +46,8 @@ abstract contract BondingManager is AgentRegistry, SystemContract {
         SystemEntity _caller,
         AgentInfo memory _info
     ) external onlySystemRouter {
-        // BondingPrimary doesn't receive any valid syncAgent calls
-        if (_onSynapseChain()) revert("Disabled for BondingPrimary");
+        // BondingManager doesn't receive any valid syncAgent calls
+        if (_onSynapseChain()) revert("Disabled for BondingManager");
         // Validate security params for cross-chain synching
         _assertCrossChainSynching(_rootSubmittedAt, _callOrigin, _caller);
         // Forward information about the synced agent to local Registries
@@ -66,7 +66,7 @@ abstract contract BondingManager is AgentRegistry, SystemContract {
     function _syncAgentLocalRegistries(AgentInfo memory _info) internal {
         // TODO: rework once Agent Merkle Tree is implemented
         // In the MVP version we don't do any forwarding for agents added/removed
-        // Instead, BondingSecondary exposes owner-only addAgent() and removeAgent()
+        // Instead, LightManager exposes owner-only addAgent() and removeAgent()
         _updateLocalRegistries(_dataSyncAgent(_info), false, 0);
     }
 
@@ -79,7 +79,7 @@ abstract contract BondingManager is AgentRegistry, SystemContract {
     ) internal {
         // Pass data to all System Registries. This could lead to duplicated data, meaning that
         // every Registry is responsible for ignoring the data it already has. This makes Registries
-        // a bit more complex, but greatly reduces the complexity of BondingManager.
+        // a bit more complex, but greatly reduces the complexity of AgentManager.
         systemRouter.systemMultiCall({
             _destination: localDomain,
             _optimisticSeconds: 0,
@@ -94,9 +94,9 @@ abstract contract BondingManager is AgentRegistry, SystemContract {
 
     /**
      * @notice Forward data with an agent status update (due to a system call from `_callOrigin`).
-     * @dev If BondingManager is deployed on Synapse Chain, all chains should be notified,
+     * @dev If AgentManager is deployed on Synapse Chain, all chains should be notified,
      * excluding `_callOrigin` and Synapse Chain.
-     * If BondingManager is not deployed on Synapse CHain, only Synapse Chain should be notified.
+     * If AgentManager is not deployed on Synapse CHain, only Synapse Chain should be notified.
      */
     function _forwardUpdateData(bytes memory _data, uint32 _callOrigin) internal {
         if (_onSynapseChain()) {
@@ -105,12 +105,12 @@ abstract contract BondingManager is AgentRegistry, SystemContract {
             for (uint256 i = 0; i < amount; ++i) {
                 uint32 domain = getDomain(i);
                 if (domain != _callOrigin && domain != SYNAPSE_DOMAIN) {
-                    _callBondingManager(domain, BONDING_OPTIMISTIC_PERIOD, _data);
+                    _callAgentManager(domain, BONDING_OPTIMISTIC_PERIOD, _data);
                 }
             }
         } else {
             // Not Synapse Chain: forward data to Synapse Chain
-            _callBondingManager(SYNAPSE_DOMAIN, BONDING_OPTIMISTIC_PERIOD, _data);
+            _callAgentManager(SYNAPSE_DOMAIN, BONDING_OPTIMISTIC_PERIOD, _data);
         }
     }
 
@@ -129,13 +129,13 @@ abstract contract BondingManager is AgentRegistry, SystemContract {
     ) internal view {
         // Optimistic period should be over
         _assertOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD);
-        // Either BondingManager is deployed on Synapse Chain, or
+        // Either AgentManager is deployed on Synapse Chain, or
         // slashing system call has to originate on Synapse Chain
         if (!_onSynapseChain()) {
             _assertSynapseChain(_callOrigin);
         }
         // Slashing system call has to be done by Bonding Manager
-        _assertEntityAllowed(BONDING_MANAGER, _caller);
+        _assertEntityAllowed(AGENT_MANAGER, _caller);
     }
 
     /**
@@ -152,7 +152,7 @@ abstract contract BondingManager is AgentRegistry, SystemContract {
         // Synching system call has to originate on Synapse Chain
         _assertSynapseChain(_callOrigin);
         // Synching system call has to be done by Bonding Manager
-        _assertEntityAllowed(BONDING_MANAGER, _caller);
+        _assertEntityAllowed(AGENT_MANAGER, _caller);
     }
 
     /**
