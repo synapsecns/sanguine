@@ -19,9 +19,10 @@ contract SystemRouterHarness is SystemRouter {
     ) SystemRouter(_domain, _origin, _destination, _agentManager) {}
 
     /**
-     * @notice Mocks a system call from the given caller on the given origin chain.
+     * @notice Pranks a system call: calls a local system recipient, as if the system call
+     * was initiated by the given caller on the given origin chain.
      */
-    function mockSystemCall(
+    function systemPrank(
         SystemEntity _recipient,
         uint256 _rootSubmittedAt,
         uint32 _callOrigin,

@@ -37,7 +37,7 @@ abstract contract AgentManagerTest is SynapseTest {
         SystemEntity systemCaller,
         bytes memory data
     ) internal {
-        router.mockSystemCall({
+        router.systemPrank({
             _recipient: SystemEntity.AgentManager,
             _rootSubmittedAt: callOrigin == _localDomain() ? block.timestamp : rootSubmittedAt,
             _callOrigin: callOrigin,
