@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { SummitState } from "./libs/State.sol";
 import { AgentInfo } from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { BondingManager } from "./bonding/BondingManager.sol";
+import { AgentManager } from "./bonding/AgentManager.sol";
 import { DomainContext } from "./context/DomainContext.sol";
 import { SummitEvents } from "./events/SummitEvents.sol";
 import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
@@ -14,7 +14,7 @@ import { Attestation, AttestationReport, Snapshot, StatementHub } from "./hubs/S
 /**
  * @notice Accepts snapshots signed by Guards and Notaries. Verifies Notaries attestations.
  */
-contract Summit is StatementHub, SnapshotHub, BondingManager, SummitEvents, InterfaceSummit {
+contract Summit is StatementHub, SnapshotHub, AgentManager, SummitEvents, InterfaceSummit {
     constructor(uint32 _domain) DomainContext(_domain) {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }

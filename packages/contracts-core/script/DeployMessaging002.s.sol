@@ -17,7 +17,7 @@ contract DeployMessaging002Script is DeployerUtils {
     using stdJson for string;
     using Strings for uint256;
 
-    string public constant BONDING_MANAGER_NAME = "BondingSecondary";
+    string public constant AGENT_MANAGER_NAME = "BondingSecondary";
     string public constant DESTINATION_NAME = "Destination";
     string public constant ORIGIN_NAME = "Origin";
     string public constant SYSTEM_ROUTER_NAME = "SystemRouter";
@@ -25,7 +25,7 @@ contract DeployMessaging002Script is DeployerUtils {
 
     string public constant MESSAGING_002 = "Messaging002";
 
-    BondingSecondary public bondingManager;
+    BondingSecondary public agentManager;
     Destination public destination;
     Origin public origin;
     Summit public summit;
@@ -65,19 +65,19 @@ contract DeployMessaging002Script is DeployerUtils {
             address deployed = deployContract(SUMMIT_NAME, _deploySummit);
             summit = Summit(deployed);
             // Summit is also Bonding Primary Manager
-            bondingManager = BondingSecondary(deployed);
+            agentManager = BondingSecondary(deployed);
         } else {
-            bondingManager = BondingSecondary(
-                deployContract(BONDING_MANAGER_NAME, _deployBondingSecondary)
+            agentManager = BondingSecondary(
+                deployContract(AGENT_MANAGER_NAME, _deployBondingSecondary)
             );
         }
-        // Now `bondingManager` points to local BondingManager, whether it is Summit or not
+        // Now `agentManager` points to local AgentManager, whether it is Summit or not
         destination = Destination(deployContract(DESTINATION_NAME, _deployDestination));
         origin = Origin(deployContract(ORIGIN_NAME, _deployOrigin));
         systemRouter = SystemRouter(deployContract(SYSTEM_ROUTER_NAME, _deploySystemRouter));
         // Setup System Contracts
         console.log("Setting SystemRouter");
-        _setSystemRouter(bondingManager);
+        _setSystemRouter(agentManager);
         _setSystemRouter(destination);
         _setSystemRouter(origin);
         // Add preset agents from the config
@@ -85,7 +85,7 @@ contract DeployMessaging002Script is DeployerUtils {
         // Transfer ownership
         owner = config.readAddress(".owner");
         console.log("Transferring ownership");
-        _transferOwnership(bondingManager);
+        _transferOwnership(agentManager);
         _transferOwnership(destination);
         _transferOwnership(origin);
         // Stop broadcasting before testing the deployed contracts
@@ -97,11 +97,7 @@ contract DeployMessaging002Script is DeployerUtils {
         // (domain)
         bytes memory constructorArgs = abi.encode(block.chainid);
         BondingSecondary deployed = BondingSecondary(
-            factoryDeploy(
-                BONDING_MANAGER_NAME,
-                type(BondingSecondary).creationCode,
-                constructorArgs
-            )
+            factoryDeploy(AGENT_MANAGER_NAME, type(BondingSecondary).creationCode, constructorArgs)
         );
         // Initialize to take ownership
         deployed.initialize();
@@ -142,13 +138,8 @@ contract DeployMessaging002Script is DeployerUtils {
     }
 
     function _deploySystemRouter() internal returns (address) {
-        // (domain, origin, destination, bondingManager)
-        bytes memory constructorArgs = abi.encode(
-            block.chainid,
-            origin,
-            destination,
-            bondingManager
-        );
+        // (domain, origin, destination, agentManager)
+        bytes memory constructorArgs = abi.encode(block.chainid, origin, destination, agentManager);
         // SystemRouter is unowned
         return factoryDeploy(SYSTEM_ROUTER_NAME, type(SystemRouter).creationCode, constructorArgs);
     }
@@ -167,7 +158,7 @@ contract DeployMessaging002Script is DeployerUtils {
                 string.concat(".agents.", domain.toString())
             );
             for (uint256 j = 0; j < agents.length; ++j) {
-                bondingManager.addAgent(uint32(domain), agents[j]);
+                agentManager.addAgent(uint32(domain), agents[j]);
                 console.log("   %s on domain [%s]", agents[j], domain);
             }
         }
@@ -226,10 +217,10 @@ contract DeployMessaging002Script is DeployerUtils {
                     origin.isActiveAgent(uint32(domain), agent),
                     string.concat("!origin: ", domain.toString())
                 );
-                // BondingManager/Summit needs to know about every Agent
+                // AgentManager/Summit needs to know about every Agent
                 require(
-                    bondingManager.isActiveAgent(uint32(domain), agent),
-                    string.concat("!bondingManager: ", domain.toString())
+                    agentManager.isActiveAgent(uint32(domain), agent),
+                    string.concat("!agentManager: ", domain.toString())
                 );
                 console.log("   %s on domain [%s]", agent, domain);
             }

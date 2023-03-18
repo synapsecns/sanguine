@@ -155,7 +155,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
         ISystemContract(origin).slashAgent({
             _rootSubmittedAt: block.timestamp,
             _callOrigin: DOMAIN_LOCAL,
-            _caller: SystemEntity.BondingManager,
+            _caller: SystemEntity.AgentManager,
             _info: AgentInfo(DOMAIN_REMOTE, notary, false)
         });
         assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");

@@ -30,7 +30,7 @@ abstract contract AgentRegistry is AgentRegistryEvents, IAgentRegistry {
 
     /**
      * @notice Refers to the current epoch. Whenever a full agent reset is required
-     * by BondingManager, a new epoch starts. This saves us from iterating over all
+     * by AgentManager, a new epoch starts. This saves us from iterating over all
      * agents and deleting them, which could be gas consuming.
      * @dev Variable is private as the child contracts are not supposed to modify it.
      * Use _currentEpoch() getter if needed.

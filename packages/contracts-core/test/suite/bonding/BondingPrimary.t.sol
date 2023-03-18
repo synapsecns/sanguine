@@ -2,12 +2,12 @@
 pragma solidity 0.8.17;
 
 import { AgentInfo, SystemEntity } from "../../../contracts/libs/Structures.sol";
-import { BondingManagerTest } from "./BondingManager.t.sol";
+import { AgentManagerTest } from "./AgentManager.t.sol";
 
 import { ISystemContract, Summit, SynapseTest } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
-contract BondingPrimaryTest is BondingManagerTest {
+contract BondingPrimaryTest is AgentManagerTest {
     Summit internal bondingPrimary;
 
     // Deploy Production version of Summit and mocks for everything else
@@ -115,15 +115,15 @@ contract BondingPrimaryTest is BondingManagerTest {
         }
     }
 
-    function test_slashAgent_revert_remoteDomain_notBondingManager(uint32 callOrigin) public {
+    function test_slashAgent_revert_remoteDomain_notAgentManager(uint32 callOrigin) public {
         AgentInfo memory info;
         bytes memory data = _dataSlashAgentCall(info);
         vm.assume(callOrigin != DOMAIN_SYNAPSE);
         _skipBondingOptimisticPeriod();
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            // Should reject system calls from a remote domain, if caller is not BondingManager
+            // Should reject system calls from a remote domain, if caller is not AgentManager
             SystemEntity caller = SystemEntity(c);
-            if (caller == SystemEntity.BondingManager) continue;
+            if (caller == SystemEntity.AgentManager) continue;
             vm.expectRevert("!allowedCaller");
             _systemPrank(systemRouterSynapse, callOrigin, caller, data);
         }
@@ -157,7 +157,7 @@ contract BondingPrimaryTest is BondingManagerTest {
         vm.expectCall(destinationSynapse, expectedCall);
         // callOrigin is Synapse Chain
         _expectForwardCalls(DOMAIN_SYNAPSE, data);
-        // Prank a local system call: [Local Origin] -> [Local BondingManager].slashAgent
+        // Prank a local system call: [Local Origin] -> [Local AgentManager].slashAgent
         _systemPrank(systemRouterSynapse, _localDomain(), SystemEntity.Origin, data);
     }
 
@@ -165,7 +165,7 @@ contract BondingPrimaryTest is BondingManagerTest {
     ▏*║             TESTS: RECEIVE SYSTEM CALLS (REMOTE DOMAIN)              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_slashAgent_remoteDomain_bondingManager(
+    function test_slashAgent_remoteDomain_agentManager(
         uint32 callOrigin,
         uint32 domain,
         address account
@@ -181,8 +181,8 @@ contract BondingPrimaryTest is BondingManagerTest {
         vm.expectCall(destinationSynapse, expectedCall);
         // data should be forwarded to remote chains
         _expectForwardCalls(callOrigin, _dataSlashAgentCall(info));
-        // Prank a local system call: [Remote BondingManager] -> [Local BondingManager].slashAgent
-        _systemPrank(systemRouterSynapse, callOrigin, SystemEntity.BondingManager, data);
+        // Prank a local system call: [Remote AgentManager] -> [Local AgentManager].slashAgent
+        _systemPrank(systemRouterSynapse, callOrigin, SystemEntity.AgentManager, data);
     }
 
     function _expectForwardCalls(uint32 callOrigin, bytes memory data) internal {
@@ -193,7 +193,7 @@ contract BondingPrimaryTest is BondingManagerTest {
                     systemRouterSynapse.systemCall.selector,
                     DOMAIN_LOCAL, // destination
                     BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                    SystemEntity.BondingManager, //recipient
+                    SystemEntity.AgentManager, //recipient
                     data
                 )
             );
@@ -205,7 +205,7 @@ contract BondingPrimaryTest is BondingManagerTest {
                     systemRouterSynapse.systemCall.selector,
                     DOMAIN_REMOTE, // destination
                     BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                    SystemEntity.BondingManager, //recipient
+                    SystemEntity.AgentManager, //recipient
                     data
                 )
             );

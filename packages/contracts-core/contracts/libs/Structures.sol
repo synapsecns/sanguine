@@ -7,7 +7,7 @@ pragma solidity 0.8.17;
 enum SystemEntity {
     Origin,
     Destination,
-    BondingManager
+    AgentManager
 }
 
 /**

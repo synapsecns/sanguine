@@ -15,8 +15,8 @@ contract SystemRouterHarness is SystemRouter {
         uint32 _domain,
         address _origin,
         address _destination,
-        address _bondingManager
-    ) SystemRouter(_domain, _origin, _destination, _bondingManager) {}
+        address _agentManager
+    ) SystemRouter(_domain, _origin, _destination, _agentManager) {}
 
     /**
      * @notice Mocks a system call from the given caller on the given origin chain.

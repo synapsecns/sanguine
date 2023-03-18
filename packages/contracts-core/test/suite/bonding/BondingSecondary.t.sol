@@ -3,12 +3,12 @@ pragma solidity 0.8.17;
 
 import { AgentInfo, SystemEntity } from "../../../contracts/libs/Structures.sol";
 
-import { BondingManagerTest } from "./BondingManager.t.sol";
+import { AgentManagerTest } from "./AgentManager.t.sol";
 
 import { BondingSecondary, ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
-contract BondingSecondaryTest is BondingManagerTest {
+contract BondingSecondaryTest is AgentManagerTest {
     // Deploy mocks for every messaging contract
     constructor() SynapseTest(0) {}
 
@@ -24,7 +24,7 @@ contract BondingSecondaryTest is BondingManagerTest {
 
     function test_version() public {
         // Check version
-        assertEq(bondingManager.version(), LATEST_VERSION, "!version");
+        assertEq(agentManager.version(), LATEST_VERSION, "!version");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -35,14 +35,14 @@ contract BondingSecondaryTest is BondingManagerTest {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
         vm.prank(caller);
-        bondingManager.addAgent(1, address(1));
+        agentManager.addAgent(1, address(1));
     }
 
     function test_removeAgent_revert_notOwner(address caller) public {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
         vm.prank(caller);
-        bondingManager.removeAgent(1, address(1));
+        agentManager.removeAgent(1, address(1));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -60,7 +60,7 @@ contract BondingSecondaryTest is BondingManagerTest {
             SystemEntity systemCaller = SystemEntity(c);
             vm.expectRevert("!systemRouter");
             vm.prank(caller);
-            bondingManager.slashAgent(submittedAt, callOrigin, systemCaller, info);
+            agentManager.slashAgent(submittedAt, callOrigin, systemCaller, info);
         }
     }
 
@@ -75,7 +75,7 @@ contract BondingSecondaryTest is BondingManagerTest {
             SystemEntity systemCaller = SystemEntity(c);
             vm.expectRevert("!systemRouter");
             vm.prank(caller);
-            bondingManager.syncAgent(submittedAt, callOrigin, systemCaller, info);
+            agentManager.syncAgent(submittedAt, callOrigin, systemCaller, info);
         }
     }
 
@@ -84,7 +84,7 @@ contract BondingSecondaryTest is BondingManagerTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_addAgent(uint32 domain, address agent) public {
-        (bool isActive, ) = bondingManager.isActiveAgent(agent);
+        (bool isActive, ) = agentManager.isActiveAgent(agent);
         // Should not be an already added agent
         vm.assume(!isActive);
         AgentInfo memory info = AgentInfo({ domain: domain, account: agent, bonded: true });
@@ -93,7 +93,7 @@ contract BondingSecondaryTest is BondingManagerTest {
         // All system registries should be system called
         vm.expectCall(origin, expectedCall);
         vm.expectCall(destination, expectedCall);
-        bondingManager.addAgent(domain, agent);
+        agentManager.addAgent(domain, agent);
     }
 
     function test_removeAgent(uint32 domain, address agent) public {
@@ -104,7 +104,7 @@ contract BondingSecondaryTest is BondingManagerTest {
         // All system registries should be system called
         vm.expectCall(origin, expectedCall);
         vm.expectCall(destination, expectedCall);
-        bondingManager.removeAgent(domain, agent);
+        agentManager.removeAgent(domain, agent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -124,14 +124,14 @@ contract BondingSecondaryTest is BondingManagerTest {
         }
     }
 
-    function test_slashAgent_revert_synapseDomain_notBondingManager() public {
+    function test_slashAgent_revert_synapseDomain_notAgentManager() public {
         AgentInfo memory info;
         bytes memory data = _dataSlashAgentCall(info);
         _skipBondingOptimisticPeriod();
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            // Should reject system calls from Synapse domain, if caller is not BondingManager
+            // Should reject system calls from Synapse domain, if caller is not AgentManager
             SystemEntity caller = SystemEntity(c);
-            if (caller == SystemEntity.BondingManager) continue;
+            if (caller == SystemEntity.AgentManager) continue;
             vm.expectRevert("!allowedCaller");
             _systemPrank(systemRouter, DOMAIN_SYNAPSE, caller, data);
         }
@@ -182,14 +182,14 @@ contract BondingSecondaryTest is BondingManagerTest {
         }
     }
 
-    function test_syncAgent_revert_synapseDomain_notBondingManager() public {
+    function test_syncAgent_revert_synapseDomain_notAgentManager() public {
         AgentInfo memory info;
         bytes memory data = _dataSyncAgentCall(info);
         _skipBondingOptimisticPeriod();
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             SystemEntity caller = SystemEntity(c);
-            // Should reject system calls from Synapse domain, if caller is not BondingManager
-            if (caller == SystemEntity.BondingManager) continue;
+            // Should reject system calls from Synapse domain, if caller is not AgentManager
+            if (caller == SystemEntity.AgentManager) continue;
             vm.expectRevert("!allowedCaller");
             _systemPrank(systemRouter, DOMAIN_SYNAPSE, caller, data);
         }
@@ -213,11 +213,11 @@ contract BondingSecondaryTest is BondingManagerTest {
                 systemRouter.systemCall.selector,
                 DOMAIN_SYNAPSE, // destination
                 BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                SystemEntity.BondingManager, //recipient
+                SystemEntity.AgentManager, //recipient
                 data
             )
         );
-        // Prank a local system call: [Local Origin] -> [Local BondingManager].slashAgent
+        // Prank a local system call: [Local Origin] -> [Local AgentManager].slashAgent
         _systemPrank(systemRouter, _localDomain(), SystemEntity.Origin, data);
     }
 

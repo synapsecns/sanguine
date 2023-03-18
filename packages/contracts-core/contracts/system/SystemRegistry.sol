@@ -9,7 +9,7 @@ import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
 
 /**
  * @notice Shared agents registry utilities for Origin, Destination.
- * Agents are added/removed via a system call from a local BondingManager.
+ * Agents are added/removed via a system call from a local AgentManager.
  */
 abstract contract SystemRegistry is AgentRegistry, SystemContract {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -18,7 +18,7 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
 
     /**
      * @notice Receive a system call indicating the off-chain agent needs to be slashed.
-     * @dev Must be called from a local BondingManager. Therefore
+     * @dev Must be called from a local AgentManager. Therefore
      * `uint256 _rootSubmittedAt` is ignored.
      * @param _callOrigin       Domain where the system call originated
      * @param _caller           Entity which performed the system call
@@ -29,7 +29,7 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
         uint32 _callOrigin,
         SystemEntity _caller,
         AgentInfo memory _info
-    ) external onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
+    ) external onlySystemRouter onlyLocalAgentManager(_callOrigin, _caller) {
         /// @dev Agent was slashed elsewhere. Slash Agent in this Registry, don't send a slashAgent system call
         _slashAgent(_info.domain, _info.account, false);
     }
@@ -40,8 +40,8 @@ abstract contract SystemRegistry is AgentRegistry, SystemContract {
         uint32 _callOrigin,
         SystemEntity _caller,
         AgentInfo memory _info
-    ) external onlySystemRouter onlyLocalBondingManager(_callOrigin, _caller) {
-        /// @dev Must be called from a local BondingManager. Hence `_rootSubmittedAt` is ignored.
+    ) external onlySystemRouter onlyLocalAgentManager(_callOrigin, _caller) {
+        /// @dev Must be called from a local AgentManager. Hence `_rootSubmittedAt` is ignored.
         _updateAgentStatus(_info);
     }
 
