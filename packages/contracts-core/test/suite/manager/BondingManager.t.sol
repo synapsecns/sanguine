@@ -7,15 +7,15 @@ import { AgentManagerTest } from "./AgentManager.t.sol";
 import { ISystemContract, Summit, SynapseTest } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
-contract BondingPrimaryTest is AgentManagerTest {
-    Summit internal bondingPrimary;
+contract BondingManagerTest is AgentManagerTest {
+    Summit internal bondingManager;
 
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
 
     function setUp() public virtual override {
         super.setUp();
-        bondingPrimary = Summit(summit);
+        bondingManager = Summit(summit);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -26,14 +26,14 @@ contract BondingPrimaryTest is AgentManagerTest {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
         vm.prank(caller);
-        bondingPrimary.addAgent(1, address(1));
+        bondingManager.addAgent(1, address(1));
     }
 
     function test_removeAgent_revert_notOwner(address caller) public {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
         vm.prank(caller);
-        bondingPrimary.removeAgent(1, address(1));
+        bondingManager.removeAgent(1, address(1));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -51,7 +51,7 @@ contract BondingPrimaryTest is AgentManagerTest {
             SystemEntity systemCaller = SystemEntity(c);
             vm.expectRevert("!systemRouter");
             vm.prank(caller);
-            bondingPrimary.slashAgent(submittedAt, callOrigin, systemCaller, info);
+            bondingManager.slashAgent(submittedAt, callOrigin, systemCaller, info);
         }
     }
 
@@ -66,7 +66,7 @@ contract BondingPrimaryTest is AgentManagerTest {
             SystemEntity systemCaller = SystemEntity(c);
             vm.expectRevert("!systemRouter");
             vm.prank(caller);
-            bondingPrimary.syncAgent(submittedAt, callOrigin, systemCaller, info);
+            bondingManager.syncAgent(submittedAt, callOrigin, systemCaller, info);
         }
     }
 
@@ -75,7 +75,7 @@ contract BondingPrimaryTest is AgentManagerTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_addAgent(uint32 domain, address agent) public {
-        (bool isActive, ) = bondingPrimary.isActiveAgent(agent);
+        (bool isActive, ) = bondingManager.isActiveAgent(agent);
         // Should not be an already added agent
         vm.assume(!isActive);
         AgentInfo memory info = AgentInfo({ domain: domain, account: agent, bonded: true });
@@ -84,7 +84,7 @@ contract BondingPrimaryTest is AgentManagerTest {
         // All system registries should be system called
         vm.expectCall(originSynapse, expectedCall);
         vm.expectCall(destinationSynapse, expectedCall);
-        bondingPrimary.addAgent(domain, agent);
+        bondingManager.addAgent(domain, agent);
     }
 
     function test_removeAgent(uint32 domain, address agent) public {
@@ -95,7 +95,7 @@ contract BondingPrimaryTest is AgentManagerTest {
         // All system registries should be system called
         vm.expectCall(originSynapse, expectedCall);
         vm.expectCall(destinationSynapse, expectedCall);
-        bondingPrimary.removeAgent(domain, agent);
+        bondingManager.removeAgent(domain, agent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -139,7 +139,7 @@ contract BondingPrimaryTest is AgentManagerTest {
         // Should reject all syncAgent calls
         for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
             SystemEntity caller = SystemEntity(c);
-            vm.expectRevert("Disabled for BondingPrimary");
+            vm.expectRevert("Disabled for BondingManager");
             _systemPrank(systemRouterSynapse, callOrigin, caller, data);
         }
     }

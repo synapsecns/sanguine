@@ -46,8 +46,8 @@ abstract contract AgentManager is AgentRegistry, SystemContract {
         SystemEntity _caller,
         AgentInfo memory _info
     ) external onlySystemRouter {
-        // BondingPrimary doesn't receive any valid syncAgent calls
-        if (_onSynapseChain()) revert("Disabled for BondingPrimary");
+        // BondingManager doesn't receive any valid syncAgent calls
+        if (_onSynapseChain()) revert("Disabled for BondingManager");
         // Validate security params for cross-chain synching
         _assertCrossChainSynching(_rootSubmittedAt, _callOrigin, _caller);
         // Forward information about the synced agent to local Registries

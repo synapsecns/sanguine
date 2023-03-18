@@ -143,7 +143,7 @@ contract Summit is StatementHub, SnapshotHub, AgentManager, SummitEvents, Interf
     /// @dev Hook that is called after an existing agent was slashed,
     /// when verification of an invalid agent statement was done in this contract.
     function _afterAgentSlashed(uint32 _domain, address _agent) internal virtual override {
-        /// @dev Summit is BondingPrimary, so we need to slash Agent on local Registries,
+        /// @dev Summit is BondingManager, so we need to slash Agent on local Registries,
         /// as well as relay this information to all other chains.
         /// There was no system call that triggered slashing, so callOrigin is set to ZERO.
         _updateLocalRegistries({
