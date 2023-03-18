@@ -25,6 +25,7 @@ contract Summit is StatementHub, SnapshotHub, BondingManager, SummitEvents, Inte
 
     function initialize() external initializer {
         __SystemContract_initialize();
+        _initializeAttestations();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

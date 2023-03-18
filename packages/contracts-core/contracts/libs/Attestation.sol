@@ -167,6 +167,23 @@ library AttestationLib {
             });
     }
 
+    /// @notice Returns an empty struct to save in Summit contract upon initialization.
+    function emptySummitAttestation() internal view returns (SummitAttestation memory) {
+        return summitAttestation(bytes32(0), 1);
+    }
+
+    /// @notice Returns a struct to save in the Summit contract for the given root and height.
+    function summitAttestation(bytes32 _root, uint8 _height)
+        internal
+        view
+        returns (SummitAttestation memory summitAtt)
+    {
+        summitAtt.root = _root;
+        summitAtt.height = _height;
+        summitAtt.blockNumber = uint40(block.number);
+        summitAtt.timestamp = uint40(block.timestamp);
+    }
+
     /// @notice Checks that an Attestation and its Summit representation are equal.
     function equalToSummit(Attestation _att, SummitAttestation memory _summitAtt)
         internal
