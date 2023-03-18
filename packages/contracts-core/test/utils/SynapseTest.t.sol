@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { BondingSecondary } from "../../contracts/bonding/BondingSecondary.sol";
+import { LightManager } from "../../contracts/bonding/LightManager.sol";
 import { ISystemContract } from "../../contracts/interfaces/ISystemContract.sol";
 import { Destination } from "../../contracts/Destination.sol";
 import { Origin } from "../../contracts/Origin.sol";
@@ -27,7 +27,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
 
     address internal destination;
     address internal origin;
-    BondingSecondary internal agentManager;
+    LightManager internal agentManager;
 
     SystemRouterHarness internal systemRouter;
 
@@ -73,9 +73,9 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function deployBondingS() public virtual {
-        agentManager = new BondingSecondary(DOMAIN_LOCAL);
+        agentManager = new LightManager(DOMAIN_LOCAL);
         agentManager.initialize();
-        vm.label(address(agentManager), "BondingSecondary");
+        vm.label(address(agentManager), "LightManager");
     }
 
     function deployDestination() public virtual {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ═════════════════════════════ CONTRACT IMPORTS ══════════════════════════════
-import { BondingSecondary } from "../contracts/bonding/BondingSecondary.sol";
+import { LightManager } from "../contracts/bonding/LightManager.sol";
 import { Destination } from "../contracts/Destination.sol";
 import { Origin } from "../contracts/Origin.sol";
 import { Summit } from "../contracts/Summit.sol";
@@ -17,7 +17,7 @@ contract DeployMessaging002Script is DeployerUtils {
     using stdJson for string;
     using Strings for uint256;
 
-    string public constant AGENT_MANAGER_NAME = "BondingSecondary";
+    string public constant AGENT_MANAGER_NAME = "LightManager";
     string public constant DESTINATION_NAME = "Destination";
     string public constant ORIGIN_NAME = "Origin";
     string public constant SYSTEM_ROUTER_NAME = "SystemRouter";
@@ -25,7 +25,7 @@ contract DeployMessaging002Script is DeployerUtils {
 
     string public constant MESSAGING_002 = "Messaging002";
 
-    BondingSecondary public agentManager;
+    LightManager public agentManager;
     Destination public destination;
     Origin public origin;
     Summit public summit;
@@ -65,11 +65,9 @@ contract DeployMessaging002Script is DeployerUtils {
             address deployed = deployContract(SUMMIT_NAME, _deploySummit);
             summit = Summit(deployed);
             // Summit is also Bonding Primary Manager
-            agentManager = BondingSecondary(deployed);
+            agentManager = LightManager(deployed);
         } else {
-            agentManager = BondingSecondary(
-                deployContract(AGENT_MANAGER_NAME, _deployBondingSecondary)
-            );
+            agentManager = LightManager(deployContract(AGENT_MANAGER_NAME, _deployLightManager));
         }
         // Now `agentManager` points to local AgentManager, whether it is Summit or not
         destination = Destination(deployContract(DESTINATION_NAME, _deployDestination));
@@ -93,11 +91,11 @@ contract DeployMessaging002Script is DeployerUtils {
         _checkAgents(config);
     }
 
-    function _deployBondingSecondary() internal returns (address) {
+    function _deployLightManager() internal returns (address) {
         // (domain)
         bytes memory constructorArgs = abi.encode(block.chainid);
-        BondingSecondary deployed = BondingSecondary(
-            factoryDeploy(AGENT_MANAGER_NAME, type(BondingSecondary).creationCode, constructorArgs)
+        LightManager deployed = LightManager(
+            factoryDeploy(AGENT_MANAGER_NAME, type(LightManager).creationCode, constructorArgs)
         );
         // Initialize to take ownership
         deployed.initialize();

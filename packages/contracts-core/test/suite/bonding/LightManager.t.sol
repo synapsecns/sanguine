@@ -5,10 +5,10 @@ import { AgentInfo, SystemEntity } from "../../../contracts/libs/Structures.sol"
 
 import { AgentManagerTest } from "./AgentManager.t.sol";
 
-import { BondingSecondary, ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
+import { LightManager, ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
-contract BondingSecondaryTest is AgentManagerTest {
+contract LightManagerTest is AgentManagerTest {
     // Deploy mocks for every messaging contract
     constructor() SynapseTest(0) {}
 
@@ -19,7 +19,7 @@ contract BondingSecondaryTest is AgentManagerTest {
     function test_constructor_revert_onSynapseChain() public {
         // Should not be able to deploy on Synapse Chain
         vm.expectRevert("Can't be deployed on SynChain");
-        new BondingSecondary(DOMAIN_SYNAPSE);
+        new LightManager(DOMAIN_SYNAPSE);
     }
 
     function test_version() public {

@@ -66,7 +66,7 @@ abstract contract AgentManager is AgentRegistry, SystemContract {
     function _syncAgentLocalRegistries(AgentInfo memory _info) internal {
         // TODO: rework once Agent Merkle Tree is implemented
         // In the MVP version we don't do any forwarding for agents added/removed
-        // Instead, BondingSecondary exposes owner-only addAgent() and removeAgent()
+        // Instead, LightManager exposes owner-only addAgent() and removeAgent()
         _updateLocalRegistries(_dataSyncAgent(_info), false, 0);
     }
 

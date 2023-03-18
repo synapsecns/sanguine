@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { BondingSecondary } from "../../contracts/bonding/BondingSecondary.sol";
+import { LightManager } from "../../contracts/bonding/LightManager.sol";
 import { SystemMessage } from "../../contracts/libs/SystemMessage.sol";
 import { AppHarness, SynapseTestStorage } from "./SynapseTestStorage.t.sol";
 import { SynapseUtilities } from "./SynapseUtilities.t.sol";
@@ -71,7 +71,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     // solhint-disable-next-line code-complexity
     function setupChain(uint32 domain, string memory chainName) public {
         // Deploy messaging contracts
-        // BondingSecondary agentManager = new BondingSecondary(domain);
+        // LightManager agentManager = new LightManager(domain);
         // TODO: Setup destination
         // TODO: Setup origin
         // Setup AgentManager
