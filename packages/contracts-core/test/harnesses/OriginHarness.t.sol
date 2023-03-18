@@ -1,68 +1,25 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity 0.8.17;
 
-import { OriginHub } from "../../contracts/hubs/OriginHub.sol";
-import { AgentSet } from "../../contracts/libs/AgentSet.sol";
-import { Message } from "../../contracts/libs/Message.sol";
 import { Origin } from "../../contracts/Origin.sol";
 
-import { AgentRegistryExtended } from "./system/AgentRegistryExtended.t.sol";
-import { SystemContractHarness } from "./system/SystemContractHarness.t.sol";
+import { SystemRouterMock } from "../mocks/system/SystemRouterMock.t.sol";
 
-contract OriginHarness is Origin, AgentRegistryExtended, SystemContractHarness {
-    using AgentSet for AgentSet.DomainAddressSet;
-
-    //solhint-disable-next-line no-empty-blocks
-    constructor(uint32 _domain) Origin(_domain) {}
-
-    function addLocalNotary(address _notary) external {
-        agents[_currentEpoch()].add(_localDomain(), _notary);
+/// @notice Harness for standalone Go tests.
+/// Do not use for tests requiring interactions between messaging contracts.
+contract OriginHarness is Origin {
+    constructor(uint32 _domain) Origin(_domain) {
+        // Add Mock for SystemRouter for standalone tests
+        systemRouter = new SystemRouterMock();
     }
 
-    function removeAllAgents(uint32 _domain) public {
-        uint256 amount = amountAgents(_domain);
-        // Remove every Agent to halt the contract
-        for (uint256 i = 0; i < amount; ++i) {
-            _removeAgent(_domain, getAgent({ _domain: _domain, _agentIndex: 0 }));
-        }
+    /// @notice Adding agents in Go tests
+    function addAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
+        return _addAgent(_domain, _account);
     }
 
-    function getNextMessage(
-        uint32 _destination,
-        bytes32 _recipientAddress,
-        uint32 _optimisticSeconds,
-        bytes memory _tips,
-        bytes memory _messageBody
-    ) public view returns (bytes memory message) {
-        message = Message.formatMessage(
-            _localDomain(),
-            _checkForSystemRouter(_recipientAddress),
-            nonce(_destination) + 1,
-            _destination,
-            _recipientAddress,
-            _optimisticSeconds,
-            _tips,
-            _messageBody
-        );
-    }
-
-    function suggestNonceRoot(uint32 _destination)
-        public
-        view
-        returns (uint32 latestNonce, bytes32 latestRoot)
-    {
-        latestNonce = nonce(_destination);
-        uint256 rootDispatchBlockNumber;
-        (latestRoot, rootDispatchBlockNumber) = getHistoricalRoot(_destination, latestNonce);
-    }
-
-    function _isIgnoredAgent(uint32 _domain, address _account)
-        internal
-        view
-        override(AgentRegistryExtended, OriginHub)
-        returns (bool)
-    {
-        return OriginHub._isIgnoredAgent(_domain, _account);
+    /// @notice Removing agents in Go tests
+    function removeAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
+        return _removeAgent(_domain, _account);
     }
 }

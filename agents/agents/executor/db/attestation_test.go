@@ -12,202 +12,168 @@ import (
 
 func (t *DBSuite) TestStoreRetrieveAttestation() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
-		chainIDA := gofakeit.Uint32()
-		destinationA := gofakeit.Uint32()
+		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		heightA := gofakeit.Uint8()
 		nonceA := gofakeit.Uint32()
-		blockNumberA := gofakeit.Uint64()
-		blockTimeA := gofakeit.Uint64()
-		attestKeyA := agentsTypes.AttestationKey{
-			Origin:      chainIDA,
-			Destination: destinationA,
-			Nonce:       nonceA,
-		}
-		rootA := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-		attestationA := agentsTypes.NewAttestation(attestKeyA.GetRawKey(), rootA)
+		blockNumberA := big.NewInt(int64(gofakeit.Uint32()))
+		timestampA := big.NewInt(int64(gofakeit.Uint32()))
+		attestationA := agentsTypes.NewAttestation(snapshotRootA, heightA, nonceA, blockNumberA, timestampA)
+		destinationA := gofakeit.Uint32()
+		destinationBlockNumberA := gofakeit.Uint64()
+		destinationTimestampA := gofakeit.Uint64()
 
-		err := testDB.StoreAttestation(t.GetTestContext(), attestationA, blockNumberA, blockTimeA)
+		err := testDB.StoreAttestation(t.GetTestContext(), attestationA, destinationA, destinationBlockNumberA, destinationTimestampA)
 		Nil(t.T(), err)
 
-		chainIDB := gofakeit.Uint32()
-		destinationB := gofakeit.Uint32()
+		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		heightB := gofakeit.Uint8()
 		nonceB := gofakeit.Uint32()
-		blockNumberB := gofakeit.Uint64()
-		blockTimeB := gofakeit.Uint64()
-		attestKeyB := agentsTypes.AttestationKey{
-			Origin:      chainIDB,
-			Destination: destinationB,
-			Nonce:       nonceB,
-		}
-		rootB := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-		attestationB := agentsTypes.NewAttestation(attestKeyB.GetRawKey(), rootB)
+		blockNumberB := big.NewInt(int64(gofakeit.Uint32()))
+		timestampB := big.NewInt(int64(gofakeit.Uint32()))
+		attestationB := agentsTypes.NewAttestation(snapshotRootB, heightB, nonceB, blockNumberB, timestampB)
+		destinationB := gofakeit.Uint32()
+		destinationBlockNumberB := gofakeit.Uint64()
+		destinationTimestampB := gofakeit.Uint64()
 
-		err = testDB.StoreAttestation(t.GetTestContext(), attestationB, blockNumberB, blockTimeB)
+		err = testDB.StoreAttestation(t.GetTestContext(), attestationB, destinationB, destinationBlockNumberB, destinationTimestampB)
 		Nil(t.T(), err)
 
+		snapshotRootAString := snapshotRootA.String()
 		attestationMaskA := types.DBAttestation{
-			ChainID:     &chainIDA,
-			Destination: &destinationA,
+			Destination:      &destinationA,
+			SnapshotRoot:     &snapshotRootAString,
+			Height:           &heightA,
+			AttestationNonce: &nonceA,
 		}
 
 		retrievedAttestationA, err := testDB.GetAttestation(t.GetTestContext(), attestationMaskA)
 		Nil(t.T(), err)
+		Equal(t.T(), attestationA, *retrievedAttestationA)
 
-		encodeAttestationA, err := agentsTypes.EncodeAttestation(attestationA)
-		Nil(t.T(), err)
-		encodeRetrievedAttestationA, err := agentsTypes.EncodeAttestation(*retrievedAttestationA)
-		Nil(t.T(), err)
-
-		Equal(t.T(), encodeAttestationA, encodeRetrievedAttestationA)
-
+		blockNumberBUint64 := blockNumberB.Uint64()
+		timestampBUint64 := timestampB.Uint64()
 		attestationMaskB := types.DBAttestation{
-			DestinationBlockNumber: &blockNumberB,
-			DestinationBlockTime:   &blockTimeB,
+			SummitBlockNumber:      &blockNumberBUint64,
+			SummitTimestamp:        &timestampBUint64,
+			DestinationBlockNumber: &destinationBlockNumberB,
+			DestinationTimestamp:   &destinationTimestampB,
 		}
 
 		retrievedAttestationB, err := testDB.GetAttestation(t.GetTestContext(), attestationMaskB)
 		Nil(t.T(), err)
 
-		encodeAttestationB, err := agentsTypes.EncodeAttestation(attestationB)
-		Nil(t.T(), err)
-		encodeRetrievedAttestationB, err := agentsTypes.EncodeAttestation(*retrievedAttestationB)
-		Nil(t.T(), err)
-
-		Equal(t.T(), encodeAttestationB, encodeRetrievedAttestationB)
+		Equal(t.T(), attestationB, *retrievedAttestationB)
 	})
 }
 
-func (t *DBSuite) TestAttestationBlockNumberBlockTime() {
+func (t *DBSuite) TestGetAttestationMinimumTimestamp() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
-		chainID := gofakeit.Uint32()
 		destination := gofakeit.Uint32()
-		nonce := gofakeit.Uint32()
-		number := gofakeit.Uint64()
-		time := gofakeit.Uint64()
-		attestKey := agentsTypes.AttestationKey{
-			Origin:      chainID,
-			Destination: destination,
-			Nonce:       nonce,
-		}
-		root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-		attestation := agentsTypes.NewAttestation(attestKey.GetRawKey(), root)
 
-		err := testDB.StoreAttestation(t.GetTestContext(), attestation, number, time)
+		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		heightA := gofakeit.Uint8()
+		nonceA := gofakeit.Uint32()
+		blockNumberA := big.NewInt(int64(gofakeit.Uint32()))
+		timestampA := big.NewInt(int64(gofakeit.Uint32()))
+		attestationA := agentsTypes.NewAttestation(snapshotRootA, heightA, nonceA, blockNumberA, timestampA)
+
+		destinationBlockNumberA := gofakeit.Uint64()
+		destinationTimestampA := gofakeit.Uint64()
+
+		err := testDB.StoreAttestation(t.GetTestContext(), attestationA, destination, destinationBlockNumberA, destinationTimestampA)
 		Nil(t.T(), err)
 
-		wrongMask := types.DBAttestation{
-			ChainID:     &destination,
-			Destination: &chainID,
-		}
+		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		heightB := gofakeit.Uint8()
+		nonceB := gofakeit.Uint32()
+		blockNumberB := big.NewInt(int64(gofakeit.Uint32()))
+		timestampB := big.NewInt(int64(gofakeit.Uint32()))
+		attestationB := agentsTypes.NewAttestation(snapshotRootB, heightB, nonceB, blockNumberB, timestampB)
 
-		blockNumber, err := testDB.GetAttestationBlockNumber(t.GetTestContext(), wrongMask)
-		Nil(t.T(), err)
-		Nil(t.T(), blockNumber)
+		destinationBlockNumberB := destinationBlockNumberA + 1
+		destinationTimestampB := destinationTimestampA + 1
 
-		blockTime, err := testDB.GetAttestationBlockTime(t.GetTestContext(), wrongMask)
+		err = testDB.StoreAttestation(t.GetTestContext(), attestationB, destination, destinationBlockNumberB, destinationTimestampB)
 		Nil(t.T(), err)
-		Nil(t.T(), blockTime)
+
+		snapshotRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		heightC := gofakeit.Uint8()
+		nonceC := gofakeit.Uint32()
+		blockNumberC := big.NewInt(int64(gofakeit.Uint32()))
+		timestampC := big.NewInt(int64(gofakeit.Uint32()))
+		attestationC := agentsTypes.NewAttestation(snapshotRootC, heightC, nonceC, blockNumberC, timestampC)
+
+		destinationBlockNumberC := uint64(0)
+		destinationTimestampC := uint64(0)
+
+		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, destination, destinationBlockNumberC, destinationTimestampC)
+		Nil(t.T(), err)
 
 		mask := types.DBAttestation{
-			ChainID:     &chainID,
 			Destination: &destination,
-			Nonce:       &nonce,
 		}
 
-		blockNumber, err = testDB.GetAttestationBlockNumber(t.GetTestContext(), mask)
-		Nil(t.T(), err)
-		Equal(t.T(), number, *blockNumber)
+		roots := []string{snapshotRootA.String(), snapshotRootB.String()}
 
-		blockTime, err = testDB.GetAttestationBlockTime(t.GetTestContext(), mask)
+		minimumTimestamp, err := testDB.GetAttestationMinimumTimestamp(t.GetTestContext(), mask, roots)
 		Nil(t.T(), err)
-		Equal(t.T(), time, *blockTime)
+
+		Equal(t.T(), destinationTimestampA, *minimumTimestamp)
 	})
 }
 
-func (t *DBSuite) TestGetAttestationsInNonceRange() {
+func (t *DBSuite) TestGetEarliestSnapshotFromAttestation() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
-		chainID := gofakeit.Uint32()
-		for i := uint32(5); i <= 50; i += 5 {
-			destination := gofakeit.Uint32()
-			nonce := i
-			number := gofakeit.Uint64()
-			time := gofakeit.Uint64()
-			attestKey := agentsTypes.AttestationKey{
-				Origin:      chainID,
-				Destination: destination,
-				Nonce:       nonce,
-			}
-			root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-			attestation := agentsTypes.NewAttestation(attestKey.GetRawKey(), root)
-
-			err := testDB.StoreAttestation(t.GetTestContext(), attestation, number, time)
-			Nil(t.T(), err)
-		}
-
-		// Get attestations in nonce range
-		mask := types.DBAttestation{
-			ChainID: &chainID,
-		}
-		attestations, err := testDB.GetAttestationsAboveOrEqualNonce(t.GetTestContext(), mask, 6, 1)
-		Nil(t.T(), err)
-		Equal(t.T(), 9, len(attestations))
-
-		attestations, err = testDB.GetAttestationsAboveOrEqualNonce(t.GetTestContext(), mask, 5, 1)
-		Nil(t.T(), err)
-		Equal(t.T(), 10, len(attestations))
-
-		attestations, err = testDB.GetAttestationsAboveOrEqualNonce(t.GetTestContext(), mask, 100, 1)
-		Nil(t.T(), err)
-		Equal(t.T(), 0, len(attestations))
-	})
-}
-
-func (t *DBSuite) TestGetEarliestAttestationsNonceInNonceRange() {
-	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
-		chainID := gofakeit.Uint32()
 		destination := gofakeit.Uint32()
-		nonce := uint32(1)
-		attestKey := agentsTypes.AttestationKey{
-			Origin:      chainID,
-			Destination: destination,
-			Nonce:       nonce,
-		}
-		root := common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-		attestation := agentsTypes.NewAttestation(attestKey.GetRawKey(), root)
 
-		err := testDB.StoreAttestation(t.GetTestContext(), attestation, 2, 2)
+		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		heightA := gofakeit.Uint8()
+		nonceA := gofakeit.Uint32()
+		blockNumberA := big.NewInt(int64(gofakeit.Uint32()))
+		timestampA := big.NewInt(int64(gofakeit.Uint32()))
+		attestationA := agentsTypes.NewAttestation(snapshotRootA, heightA, nonceA, blockNumberA, timestampA)
+
+		destinationBlockNumberA := gofakeit.Uint64()
+		destinationTimestampA := gofakeit.Uint64()
+
+		err := testDB.StoreAttestation(t.GetTestContext(), attestationA, destination, destinationBlockNumberA, destinationTimestampA)
 		Nil(t.T(), err)
 
-		nonce = uint32(5)
-		attestKey = agentsTypes.AttestationKey{
-			Origin:      chainID,
-			Destination: destination,
-			Nonce:       nonce,
-		}
-		root = common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-		attestation = agentsTypes.NewAttestation(attestKey.GetRawKey(), root)
+		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		heightB := gofakeit.Uint8()
+		nonceB := gofakeit.Uint32()
+		blockNumberB := big.NewInt(int64(gofakeit.Uint32()))
+		timestampB := big.NewInt(int64(gofakeit.Uint32()))
+		attestationB := agentsTypes.NewAttestation(snapshotRootB, heightB, nonceB, blockNumberB, timestampB)
 
-		err = testDB.StoreAttestation(t.GetTestContext(), attestation, 1, 1)
+		destinationBlockNumberB := destinationBlockNumberA + 1
+		destinationTimestampB := destinationTimestampA + 1
+
+		err = testDB.StoreAttestation(t.GetTestContext(), attestationB, destination, destinationBlockNumberB, destinationTimestampB)
 		Nil(t.T(), err)
 
-		nonce = uint32(10)
-		attestKey = agentsTypes.AttestationKey{
-			Origin:      chainID,
-			Destination: destination,
-			Nonce:       nonce,
-		}
-		root = common.BigToHash(new(big.Int).SetUint64(gofakeit.Uint64()))
-		attestation = agentsTypes.NewAttestation(attestKey.GetRawKey(), root)
+		snapshotRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		heightC := gofakeit.Uint8()
+		nonceC := gofakeit.Uint32()
+		blockNumberC := big.NewInt(int64(gofakeit.Uint32()))
+		timestampC := big.NewInt(int64(gofakeit.Uint32()))
+		attestationC := agentsTypes.NewAttestation(snapshotRootC, heightC, nonceC, blockNumberC, timestampC)
 
-		err = testDB.StoreAttestation(t.GetTestContext(), attestation, 3, 3)
+		destinationBlockNumberC := uint64(0)
+		destinationTimestampC := uint64(0)
+
+		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, destination, destinationBlockNumberC, destinationTimestampC)
 		Nil(t.T(), err)
-		// Get attestations in nonce range
+
 		mask := types.DBAttestation{
-			ChainID: &chainID,
+			Destination: &destination,
 		}
 
-		nonceNum, err := testDB.GetEarliestAttestationsNonceInNonceRange(t.GetTestContext(), mask, 1, 10)
+		roots := []string{snapshotRootA.String(), snapshotRootB.String()}
+
+		earliestSnapshot, err := testDB.GetEarliestSnapshotFromAttestation(t.GetTestContext(), mask, roots)
 		Nil(t.T(), err)
 
-		Equal(t.T(), uint32(5), *nonceNum)
+		Equal(t.T(), snapshotRootA, common.BytesToHash((*earliestSnapshot)[:]))
 	})
 }

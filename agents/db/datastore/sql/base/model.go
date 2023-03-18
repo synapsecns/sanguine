@@ -1,7 +1,6 @@
 package base
 
 import (
-	"database/sql"
 	"math/big"
 	"time"
 
@@ -20,9 +19,6 @@ func init() {
 	NonceFieldName = namer.GetConsistentName("Nonce")
 	DomainIDFieldName = namer.GetConsistentName("DomainID")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
-	OriginFieldName = namer.GetConsistentName("IPOrigin")
-	DestinationFieldName = namer.GetConsistentName("IPDestination")
-	AttestationStateFieldName = namer.GetConsistentName("IPAttestationState")
 }
 
 var (
@@ -34,12 +30,6 @@ var (
 	BlockNumberFieldName string
 	// LeafIndexFieldName is the field name of the leaf index.
 	LeafIndexFieldName string
-	// OriginFieldName is the name of the origin field.
-	OriginFieldName string
-	// DestinationFieldName is the name of the destination field.
-	DestinationFieldName string
-	// AttestationStateFieldName is the name of the attestation state field.
-	AttestationStateFieldName string
 )
 
 // RawEthTX contains a raw evm transaction that is unsigned
@@ -241,185 +231,3 @@ func (c CommittedMessage) Encode() ([]byte, error) {
 var _ types.CommittedMessage = CommittedMessage{}
 
 var _ types.Message = CommittedMessage{}
-
-// SignedAttestation stores attestations.
-// TODO (joe): This needs to be updated for the multiple signatures model. Fix coming soon.
-type SignedAttestation struct {
-	gorm.Model
-	// SAOrigin is the origin of the attestation
-	SAOrigin uint32 `gorm:"column:origin_id;uniqueIndex:sa_idx_id"`
-	// SADestination is the destination of the attestation
-	SADestination uint32 `gorm:"column:destination_id;uniqueIndex:sa_idx_id"`
-	// SANonce is the nonce of the attestation
-	SANonce uint32 `gorm:"column:nonce;uniqueIndex:sa_idx_id"`
-	// SARoot is the root of the signed attestation
-	SARoot []byte `gorm:"column:root"`
-	// SANotarySignature stores the raw notary signature
-	SANotarySignature []byte `gorm:"column:notary_signature"`
-	// SAGuardSignature stores the raw guard signature
-	SAGuardSignature []byte `gorm:"column:guard_signature"`
-}
-
-// Attestation gets the attestation.
-func (s SignedAttestation) Attestation() types.Attestation {
-	return s
-}
-
-// GuardSignatures gets the guard signatures of the signed attestation
-// note: this can fail on decoding
-// TODO (joe): Fix this. Right now, just returning the single guard signature.
-func (s SignedAttestation) GuardSignatures() []types.Signature {
-	res, err := types.DecodeSignature(s.SAGuardSignature)
-	if err != nil {
-		return nil
-	}
-
-	return []types.Signature{res}
-}
-
-// NotarySignatures gets the notary signatures of the signed attestation
-// note: this can fail on decoding
-// TODO (joe): Fix this. Right now, just returning the single guard signature.
-func (s SignedAttestation) NotarySignatures() []types.Signature {
-	res, err := types.DecodeSignature(s.SANotarySignature)
-	if err != nil {
-		return nil
-	}
-
-	return []types.Signature{res}
-}
-
-// Origin gets the origin of the signed attestation.
-func (s SignedAttestation) Origin() uint32 {
-	return s.SAOrigin
-}
-
-// Destination gets the destination of the signed attestation.
-func (s SignedAttestation) Destination() uint32 {
-	return s.SADestination
-}
-
-// Nonce gets the nonce of the signed attestation.
-func (s SignedAttestation) Nonce() uint32 {
-	return s.SANonce
-}
-
-// Root gets the root of the signed attestation.
-func (s SignedAttestation) Root() [32]byte {
-	return common.BytesToHash(s.SARoot)
-}
-
-// InProgressAttestation stores attestations to be processed.
-type InProgressAttestation struct {
-	// IPOrigin is the origin of the attestation
-	IPOrigin uint32 `gorm:"column:origin;primaryKey;index:idx_origin_destination_state;autoIncrement:false;->;<-:create"`
-	// IPDestination is the destination of the attestation
-	IPDestination uint32 `gorm:"column:destination;primaryKey;index:idx_origin_destination_state;autoIncrement:false;->;<-:create"`
-	// IPNonce is the nonce of the attestation
-	IPNonce uint32 `gorm:"column:nonce;primaryKey;autoIncrement:false;->;<-:create"`
-	// IPRoot is the root of the signed attestation
-	IPRoot []byte `gorm:"column:root;not null;->;<-:create"`
-	// IPNotarySignature stores the raw notary signature
-	IPNotarySignature []byte `gorm:"column:notary_signature;default:NULL"`
-	// IPGuardSignature stores the raw guard signature
-	IPGuardSignature []byte `gorm:"column:guard_signature;default:NULL"`
-	// IPSubmittedToAttestationCollectorTime is time when signed attestation was submitted to AttestationCollector
-	IPSubmittedToAttestationCollectorTime sql.NullTime `gorm:"column:submitted_to_attestation_collector_time;type:TIMESTAMP NULL"`
-	// IPSubmittedToDestinationTime is time when signed attestation was submitted to Destination
-	IPSubmittedToDestinationTime sql.NullTime `gorm:"column:submitted_to_destination_time;type:TIMESTAMP NULL"`
-	// IPAttestationState is the current state of the attestation
-	IPAttestationState uint32 `gorm:"column:attestation_state;index:idx_origin_destination_state;autoIncrement:false"`
-}
-
-// Attestation gets the attestation.
-func (t InProgressAttestation) Attestation() types.Attestation {
-	return t
-}
-
-// SignedAttestation gets the signed attestation.
-func (t InProgressAttestation) SignedAttestation() types.SignedAttestation {
-	return t
-}
-
-// NotarySignatures currently just returns the lone notary signature.
-// TODO (joe): fix this to return all notary signatures.
-func (t InProgressAttestation) NotarySignatures() []types.Signature {
-	if len(t.IPNotarySignature) == 0 {
-		return nil
-	}
-
-	res, err := types.DecodeSignature(t.IPNotarySignature)
-	if err != nil {
-		return []types.Signature{types.NewSignature(big.NewInt(0), big.NewInt(0), big.NewInt(0))}
-	}
-
-	return []types.Signature{res}
-}
-
-// GuardSignatures currently just returns the lone guard signature.
-// TODO (joe): fix this to return all guard signatures.
-func (t InProgressAttestation) GuardSignatures() []types.Signature {
-	if len(t.IPGuardSignature) == 0 {
-		return nil
-	}
-
-	res, err := types.DecodeSignature(t.IPGuardSignature)
-	if err != nil {
-		return []types.Signature{types.NewSignature(big.NewInt(0), big.NewInt(0), big.NewInt(0))}
-	}
-
-	return []types.Signature{res}
-}
-
-// Origin gets the origin of the in-progress attestation.
-func (t InProgressAttestation) Origin() uint32 {
-	return t.IPOrigin
-}
-
-// Destination gets the destination of the in-progress attestation.
-func (t InProgressAttestation) Destination() uint32 {
-	return t.IPDestination
-}
-
-// Nonce gets the nonce of the in-progress attestation.
-func (t InProgressAttestation) Nonce() uint32 {
-	return t.IPNonce
-}
-
-// Root gets the root of the in-progress attestation.
-func (t InProgressAttestation) Root() [32]byte {
-	return common.BytesToHash(t.IPRoot)
-}
-
-// SubmittedToAttestationCollectorTime gets the time when attestation was sent to AttestationCollector.
-func (t InProgressAttestation) SubmittedToAttestationCollectorTime() *time.Time {
-	if !t.IPSubmittedToAttestationCollectorTime.Valid {
-		return nil
-	}
-
-	return &t.IPSubmittedToAttestationCollectorTime.Time
-}
-
-// SubmittedToDestinationTime gets the time when attestation was sent to the Destination.
-func (t InProgressAttestation) SubmittedToDestinationTime() *time.Time {
-	if !t.IPSubmittedToDestinationTime.Valid {
-		return nil
-	}
-
-	return &t.IPSubmittedToAttestationCollectorTime.Time
-}
-
-// AttestationState gets the state of the attestation.
-func (t InProgressAttestation) AttestationState() types.AttestationState {
-	return types.AttestationState(t.IPAttestationState)
-}
-
-var _ types.Attestation = SignedAttestation{}
-
-var _ types.SignedAttestation = SignedAttestation{}
-
-var _ types.Attestation = InProgressAttestation{}
-
-var _ types.SignedAttestation = InProgressAttestation{}
-
-var _ types.InProgressAttestation = InProgressAttestation{}

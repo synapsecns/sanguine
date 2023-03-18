@@ -11,10 +11,6 @@ import (
 
 // IOriginCaller ...
 type IOriginCaller interface {
-	// MAXMESSAGEBODYBYTES is a free data retrieval call binding the contract method 0x522ae002.
-	//
-	// Solidity: function MAX_MESSAGE_BODY_BYTES() view returns(uint256)
-	MAXMESSAGEBODYBYTES(opts *bind.CallOpts) (*big.Int, error)
 	// SYNAPSEDOMAIN is a free data retrieval call binding the contract method 0xbf61e67e.
 	//
 	// Solidity: function SYNAPSE_DOMAIN() view returns(uint32)
@@ -43,46 +39,45 @@ type IOriginCaller interface {
 	//
 	// Solidity: function getDomain(uint256 _domainIndex) view returns(uint32)
 	GetDomain(opts *bind.CallOpts, _domainIndex *big.Int) (uint32, error)
-	// GetHistoricalRoot is a free data retrieval call binding the contract method 0xf94adcb4.
-	//
-	// Solidity: function getHistoricalRoot(uint32 _destination, uint32 _nonce) view returns(bytes32, uint256)
-	GetHistoricalRoot(opts *bind.CallOpts, _destination uint32, _nonce uint32) ([32]byte, *big.Int, error)
 	// IsActiveAgent is a free data retrieval call binding the contract method 0x0958117d.
 	//
 	// Solidity: function isActiveAgent(uint32 _domain, address _account) view returns(bool)
 	IsActiveAgent(opts *bind.CallOpts, _domain uint32, _account common.Address) (bool, error)
 	// IsActiveAgent0 is a free data retrieval call binding the contract method 0x65e1e466.
 	//
-	// Solidity: function isActiveAgent(address _account) view returns(bool)
-	IsActiveAgent0(opts *bind.CallOpts, _account common.Address) (bool, error)
+	// Solidity: function isActiveAgent(address _account) view returns(bool isActive, uint32 domain)
+	IsActiveAgent0(opts *bind.CallOpts, _account common.Address) (struct {
+		IsActive bool
+		Domain   uint32
+	}, error)
 	// IsActiveDomain is a free data retrieval call binding the contract method 0x4f5dbc0d.
 	//
 	// Solidity: function isActiveDomain(uint32 _domain) view returns(bool)
 	IsActiveDomain(opts *bind.CallOpts, _domain uint32) (bool, error)
+	// IsValidState is a free data retrieval call binding the contract method 0xa9dcf22d.
+	//
+	// Solidity: function isValidState(bytes _statePayload) view returns(bool isValid)
+	IsValidState(opts *bind.CallOpts, _statePayload []byte) (bool, error)
 	// LocalDomain is a free data retrieval call binding the contract method 0x8d3638f4.
 	//
 	// Solidity: function localDomain() view returns(uint32)
 	LocalDomain(opts *bind.CallOpts) (uint32, error)
-	// Nonce is a free data retrieval call binding the contract method 0x141c4985.
-	//
-	// Solidity: function nonce(uint32 _destination) view returns(uint32 latestNonce)
-	Nonce(opts *bind.CallOpts, _destination uint32) (uint32, error)
 	// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 	//
 	// Solidity: function owner() view returns(address)
 	Owner(opts *bind.CallOpts) (common.Address, error)
-	// Root is a free data retrieval call binding the contract method 0xe65b6bd4.
+	// StatesAmount is a free data retrieval call binding the contract method 0xf2437942.
 	//
-	// Solidity: function root(uint32 _destination) view returns(bytes32)
-	Root(opts *bind.CallOpts, _destination uint32) ([32]byte, error)
-	// SuggestAttestation is a free data retrieval call binding the contract method 0xdd0f1f74.
+	// Solidity: function statesAmount() view returns(uint256)
+	StatesAmount(opts *bind.CallOpts) (*big.Int, error)
+	// SuggestLatestState is a free data retrieval call binding the contract method 0xc0b56f7c.
 	//
-	// Solidity: function suggestAttestation(uint32 _destination) view returns(bytes attestationData)
-	SuggestAttestation(opts *bind.CallOpts, _destination uint32) ([]byte, error)
-	// SuggestAttestations is a free data retrieval call binding the contract method 0x2d55b866.
+	// Solidity: function suggestLatestState() view returns(bytes stateData)
+	SuggestLatestState(opts *bind.CallOpts) ([]byte, error)
+	// SuggestState is a free data retrieval call binding the contract method 0xb4596b4b.
 	//
-	// Solidity: function suggestAttestations() view returns(bytes[] attestationDataArray)
-	SuggestAttestations(opts *bind.CallOpts) ([][]byte, error)
+	// Solidity: function suggestState(uint32 _nonce) view returns(bytes stateData)
+	SuggestState(opts *bind.CallOpts, _nonce uint32) ([]byte, error)
 	// SystemRouter is a free data retrieval call binding the contract method 0x529d1549.
 	//
 	// Solidity: function systemRouter() view returns(address)

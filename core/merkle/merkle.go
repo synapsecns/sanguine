@@ -3,7 +3,6 @@ package merkle
 import (
 	"bytes"
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -28,6 +27,8 @@ type HistoricalTree struct {
 	zeroHashes [][]byte
 	// treeCount is the total amount of inserted leafs
 	treeCount uint32
+	// treeHeight is the height of the merkle tree
+	treeHeight uint32
 }
 
 /**
@@ -77,21 +78,22 @@ type HistoricalTree struct {
  * We're using a map to avoid dealing with dynamic arrays.
  */
 
-// TreeDepth is a depth of the merkle tree that is used in the messaging contracts.
-const TreeDepth uint32 = 32
+// MessageTreeDepth is a depth of the merkle tree that is used in the messaging contracts.
+const MessageTreeDepth uint32 = 32
 
 // NewTree returns an empty Merkle Tree.
-func NewTree() *HistoricalTree {
+func NewTree(treeHeight uint32) *HistoricalTree {
 	return &HistoricalTree{
 		state:      make(map[StateKey][]byte),
-		zeroHashes: generateZeroHashes(),
+		zeroHashes: generateZeroHashes(treeHeight),
 		treeCount:  0,
+		treeHeight: treeHeight,
 	}
 }
 
 // NewTreeFromItems returns a new Merkle Tree from a slice of byte slices.
-func NewTreeFromItems(items [][]byte) *HistoricalTree {
-	tree := NewTree()
+func NewTreeFromItems(items [][]byte, treeHeight uint32) *HistoricalTree {
+	tree := NewTree(treeHeight)
 	for _, item := range items {
 		tree.Insert(item)
 	}
@@ -99,12 +101,12 @@ func NewTreeFromItems(items [][]byte) *HistoricalTree {
 }
 
 // BranchRoot calculates the merkle root given the item and the proof.
-func BranchRoot(item []byte, index uint32, proof [][]byte) ([]byte, error) {
-	if len(proof) != int(TreeDepth) {
-		return nil, fmt.Errorf("incorrect proof length: %d; should be: %d", len(proof), TreeDepth)
+func BranchRoot(item []byte, index uint32, proof [][]byte, treeHeight uint32) ([]byte, error) {
+	if len(proof) != int(treeHeight) {
+		return nil, fmt.Errorf("incorrect proof length: %d; should be: %d", len(proof), treeHeight)
 	}
 	node := item
-	for h := uint32(0); h < TreeDepth; h++ {
+	for h := uint32(0); h < treeHeight; h++ {
 		if (index>>h)&1 == 0 {
 			// We were the left child
 			node = getParent(node, proof[h])
@@ -117,8 +119,8 @@ func BranchRoot(item []byte, index uint32, proof [][]byte) ([]byte, error) {
 }
 
 // VerifyMerkleProof verifies a Merkle branch against a root of a tree.
-func VerifyMerkleProof(root, item []byte, index uint32, proof [][]byte) bool {
-	branchRoot, err := BranchRoot(item, index, proof)
+func VerifyMerkleProof(root, item []byte, index uint32, proof [][]byte, treeHeight uint32) bool {
+	branchRoot, err := BranchRoot(item, index, proof, treeHeight)
 	if err != nil {
 		return false
 	}
@@ -130,7 +132,7 @@ func (m *HistoricalTree) Insert(item []byte) {
 	x := m.treeCount
 	newCount := x + 1
 	saveElementState(m, 0, x, newCount, item)
-	for h := uint32(1); h <= TreeDepth; h++ {
+	for h := uint32(1); h <= m.treeHeight; h++ {
 		// Traverse to parent
 		x >>= 1
 		// Children have [height = h - 1]
@@ -173,8 +175,8 @@ func (m *HistoricalTree) Root(count uint32) ([]byte, error) {
 	if count > m.treeCount {
 		return nil, fmt.Errorf("not enough leafs; inserted: %d, requested root for count: %d", m.treeCount, count)
 	}
-	// H=32 is the root level.
-	return fetchTreeElementState(m, TreeDepth, 0, count), nil
+	// H=m.treeHeight is the root level.
+	return fetchTreeElementState(m, m.treeHeight, 0, count), nil
 }
 
 // MerkleProof returns the proof of inclusion:
@@ -189,8 +191,8 @@ func (m *HistoricalTree) MerkleProof(index uint32, count uint32) ([][]byte, erro
 	if index >= count {
 		return nil, fmt.Errorf("merkle index out of range; count: %d, requested proof for index: %d", count, index)
 	}
-	proof := make([][]byte, TreeDepth)
-	for h := uint32(0); h < TreeDepth; h++ {
+	proof := make([][]byte, m.treeHeight)
+	for h := uint32(0); h < m.treeHeight; h++ {
 		// First, determine X-axis of the element's sibling
 		siblingX := index ^ 1
 		// Get sibling state at the time when `count` leafs were added
@@ -202,13 +204,13 @@ func (m *HistoricalTree) MerkleProof(index uint32, count uint32) ([][]byte, erro
 }
 
 // generateZeroHashes returns the default "zero" values for elements from bottom to top (leaf to root).
-func generateZeroHashes() [][]byte {
-	zeroHashes := make([][]byte, TreeDepth+1)
+func generateZeroHashes(treeHeight uint32) [][]byte {
+	zeroHashes := make([][]byte, treeHeight+1)
 	// zeroHashes[0] is bytes32(0).
 	zeroHashes[0] = make([]byte, 32)
 	// Calculate "zero" element value for other heights.
 	// That is the value for an element in the merkle tree, when all their children are "zero".
-	for h := uint32(0); h < TreeDepth; h++ {
+	for h := uint32(0); h < treeHeight; h++ {
 		zeroHashes[h+1] = getParent(zeroHashes[h], zeroHashes[h])
 	}
 	return zeroHashes

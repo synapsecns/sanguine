@@ -1,39 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+/// @notice A collection of events emitted by the Destination contract
 abstract contract DestinationEvents {
     /**
-     * @notice Emitted when message is executed
+     * @notice Emitted when a snapshot is accepted by the Destination contract.
+     * @param domain        Domain where the signed Notary is active
+     * @param notary        Notary who signed the attestation
+     * @param attestation   Raw payload with attestation data
+     * @param attSignature  Notary signature for the attestation
+     */
+    event AttestationAccepted(uint32 domain, address notary, bytes attestation, bytes attSignature);
+
+    /**
+     * @notice Emitted when message is executed.
      * @param remoteDomain  Remote domain where message originated
      * @param messageHash   The keccak256 hash of the message that was executed
      */
     event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash);
 
     /**
-     * @notice Emitted when a root's confirmation is modified by governance
-     * @param remoteDomain      The domain for which root's confirmAt has been set
-     * @param root              The root for which confirmAt has been set
-     * @param previousConfirmAt The previous value of confirmAt
-     * @param newConfirmAt      The new value of confirmAt
+     * @notice Emitted when tips are stored.
+     * @param notary        Notary who signed the Snapshot Root used for proving the message
+     * @param tips          Raw payload with tips paid for the off-chain agents
      */
-    event SetConfirmation(
-        uint32 indexed remoteDomain,
-        bytes32 indexed root,
-        uint256 previousConfirmAt,
-        uint256 newConfirmAt
-    );
-
-    /**
-     * @notice Emitted when a Notary is blacklisted due to a submitted Guard's fraud Report
-     * @param notary    The notary that was blacklisted
-     * @param guard     The guard that signed the fraud report
-     * @param reporter  The actor who submitted signed fraud report
-     * @param report    Raw bytes of fraud report
-     */
-    event NotaryBlacklisted(
-        address indexed notary,
-        address indexed guard,
-        address indexed reporter,
-        bytes report
-    );
+    event TipsStored(address indexed notary, bytes tips);
 }

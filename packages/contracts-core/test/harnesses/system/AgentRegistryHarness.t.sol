@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import "../events/AgentRegistryHarnessEvents.sol";
+import { AgentRegistryHarnessEvents } from "../events/AgentRegistryHarnessEvents.sol";
 import { AgentRegistryExtended } from "./AgentRegistryExtended.t.sol";
 import { ByteString } from "../../../contracts/libs/ByteString.sol";
 

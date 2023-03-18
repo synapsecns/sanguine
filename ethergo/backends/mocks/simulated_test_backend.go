@@ -277,6 +277,11 @@ func (_m *SimulatedTestBackend) ChainName() string {
 	return r0
 }
 
+// ClearNonce provides a mock function with given fields: address
+func (_m *SimulatedTestBackend) ClearNonce(address common.Address) {
+	_m.Called(address)
+}
+
 // ClientID provides a mock function with given fields:
 func (_m *SimulatedTestBackend) ClientID() string {
 	ret := _m.Called()

@@ -1,19 +1,21 @@
 package types
 
-import "github.com/ethereum/go-ethereum/common"
-
 // DBAttestation is the executor type for interacting with the database representation of an attestation.
 type DBAttestation struct {
-	// ChainID is the chain ID of the chain that the attestation is for.
-	ChainID *uint32
-	// Destination is the destination chain id of the attestation.
+	// Destination is the destination of the attestation.
 	Destination *uint32
-	// Nonce is the nonce of the attestation.
-	Nonce *uint32
-	// Root is the root of the attestation.
-	Root *common.Hash
-	// DestinationBlockNumber is the block number of the attestation as it was submitted on the destination.
+	// SnapshotRoot is the snapshot root.
+	SnapshotRoot *string
+	// Height is the height of the snapshot Merkle tree.
+	Height *uint8
+	// AttestationNonce is the nonce of the attestation.
+	AttestationNonce *uint32
+	// SummitBlockNumber is the block number when the attestation was created in Summit.
+	SummitBlockNumber *uint64
+	// SummitTimestamp is the timestamp of the block when the attestation was created in Summit.
+	SummitTimestamp *uint64
+	// DestinationBlockNumber is the block number that the attestation was submitted on the destination.
 	DestinationBlockNumber *uint64
-	// DestinationBlockTime is the block time of the attestation as it was submitted on the destination.
-	DestinationBlockTime *uint64
+	// DestinationTimestamp is the timestamp of the block that the attestation was submitted on the destination.
+	DestinationTimestamp *uint64
 }
