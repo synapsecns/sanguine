@@ -2,11 +2,10 @@ package testutil
 
 import (
 	"context"
-
 	"github.com/synapsecns/sanguine/ethergo/contracts"
+	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/services/scribe/testutil/testcontract"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 )
 
@@ -14,9 +13,5 @@ import (
 func (d *DeployManager) GetTestContract(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testcontract.TestContractRef) {
 	d.T().Helper()
 
-	testContract := d.GetContractRegistry(backend).Get(ctx, TestContractType)
-	testContractHandle, ok := testContract.ContractHandle().(*testcontract.TestContractRef)
-	assert.True(d.T(), ok)
-
-	return testContract, testContractHandle
+	return manager.GetContract[*testcontract.TestContractRef](ctx, d.T(), d, backend, TestContractType)
 }
