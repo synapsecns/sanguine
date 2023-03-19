@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 )
@@ -41,8 +42,8 @@ func (d *DeployManager) GetTestSynapseBridgeV1(ctx context.Context, backend back
 }
 
 // GetTestMessageBusUpgradeable gets a typecast test swap contract.
-func (d *DeployManager) GetTestMessageBusUpgradeable(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testbridgev1.TestBridgeV1Ref) {
+func (d *DeployManager) GetTestMessageBusUpgradeable(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testmessagebus.TestMessageBusRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*testbridgev1.TestBridgeV1Ref](ctx, d.T(), d, backend, TestMessageBusType)
+	return manager.GetContract[*testmessagebus.TestMessageBusRef](ctx, d.T(), d, backend, TestMessageBusType)
 }
