@@ -5,8 +5,9 @@ import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Snapshot.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 import { IDisputeHub } from "../../contracts/interfaces/IDisputeHub.sol";
+import { IExecutionHub, TREE_DEPTH } from "../../contracts/interfaces/IExecutionHub.sol";
 
-import { InterfaceDestination, TREE_DEPTH } from "../../contracts/Destination.sol";
+import { InterfaceDestination } from "../../contracts/Destination.sol";
 import { Versioned } from "../../contracts/Version.sol";
 
 import { MessageRecipientMock } from "../mocks/client/MessageRecipientMock.t.sol";
@@ -231,12 +232,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
 
             emit Executed(DOMAIN_REMOTE, keccak256(messages[i]));
             vm.prank(executor);
-            InterfaceDestination(destination).execute(
-                messages[i],
-                originProof,
-                snapProof,
-                stateIndex
-            );
+            IExecutionHub(destination).execute(messages[i], originProof, snapProof, stateIndex);
         }
     }
 

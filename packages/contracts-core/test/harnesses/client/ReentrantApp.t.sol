@@ -2,11 +2,9 @@
 
 pragma solidity 0.8.17;
 
+import { TREE_DEPTH } from "../../../contracts/libs/Constants.sol";
 import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
-import {
-    InterfaceDestination,
-    TREE_DEPTH
-} from "../../../contracts/interfaces/InterfaceDestination.sol";
+import { IExecutionHub } from "../../../contracts/interfaces/IExecutionHub.sol";
 
 contract ReentrantApp is IMessageRecipient {
     bytes internal message;
@@ -36,6 +34,6 @@ contract ReentrantApp is IMessageRecipient {
         uint256,
         bytes memory
     ) external {
-        InterfaceDestination(msg.sender).execute(message, originProof, snapProof, stateIndex);
+        IExecutionHub(msg.sender).execute(message, originProof, snapProof, stateIndex);
     }
 }
