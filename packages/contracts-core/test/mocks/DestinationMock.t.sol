@@ -2,17 +2,17 @@
 pragma solidity 0.8.17;
 
 import {
-    InterfaceDestination,
-    TREE_DEPTH
+    DestinationAttestation,
+    InterfaceDestination
 } from "../../contracts/interfaces/InterfaceDestination.sol";
-import { AttestationHubMock } from "./hubs/AttestationHubMock.t.sol";
+import { ExecutionHubMock } from "./hubs/ExecutionHubMock.t.sol";
 import { DisputeHubMock } from "./hubs/DisputeHubMock.t.sol";
 import { AgentRegistryMock } from "./system/AgentRegistryMock.t.sol";
 import { SystemContractMock } from "./system/SystemContractMock.t.sol";
 
 // solhint-disable no-empty-blocks
 contract DestinationMock is
-    AttestationHubMock,
+    ExecutionHubMock,
     DisputeHubMock,
     AgentRegistryMock,
     SystemContractMock,
@@ -20,13 +20,6 @@ contract DestinationMock is
 {
     /// @notice Prevents this contract from being included in the coverage report
     function testDestinationMock() external {}
-
-    function execute(
-        bytes memory _message,
-        bytes32[TREE_DEPTH] calldata _originProof,
-        bytes32[] calldata _snapProof,
-        uint256 _stateIndex
-    ) external {}
 
     function submitAttestation(bytes memory _attPayload, bytes memory _attSignature)
         external
@@ -38,4 +31,22 @@ contract DestinationMock is
         bytes memory _arSignature,
         bytes memory _attSignature
     ) external returns (bool wasAccepted) {}
+
+    /**
+     * @notice Returns the total amount of Notaries attestations that have been accepted.
+     */
+    function attestationsAmount() external view returns (uint256) {}
+
+    /**
+     * @notice Returns an attestation from the list of all accepted Notary attestations.
+     * @dev Index refers to attestation's snapshot root position in `roots` array.
+     * @param _index   Attestation index
+     * @return root    Snapshot root for the attestation
+     * @return destAtt Rest of attestation data that Destination keeps track of
+     */
+    function getAttestation(uint256 _index)
+        external
+        view
+        returns (bytes32 root, DestinationAttestation memory destAtt)
+    {}
 }

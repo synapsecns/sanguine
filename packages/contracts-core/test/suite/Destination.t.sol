@@ -5,8 +5,9 @@ import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Snapshot.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 import { IDisputeHub } from "../../contracts/interfaces/IDisputeHub.sol";
+import { IExecutionHub, TREE_DEPTH } from "../../contracts/interfaces/IExecutionHub.sol";
 
-import { InterfaceDestination, TREE_DEPTH } from "../../contracts/Destination.sol";
+import { InterfaceDestination } from "../../contracts/Destination.sol";
 import { Versioned } from "../../contracts/Version.sol";
 
 import { MessageRecipientMock } from "../mocks/client/MessageRecipientMock.t.sol";
@@ -188,7 +189,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         RawAttestation memory ra,
         uint256 statesAmount,
         uint256 stateIndex,
-        uint32 rootTimestamp
+        uint32 rootSubmittedAt
     ) public {
         address executor = makeAddr("Executor");
 
@@ -206,7 +207,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         address notary = domains[DOMAIN_LOCAL].agent;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
 
-        vm.warp(rootTimestamp);
+        vm.warp(rootSubmittedAt);
         // Should emit event when attestation is accepted
         vm.expectEmit(true, true, true, true);
         emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
@@ -214,7 +215,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
             bytes32[TREE_DEPTH] memory originProof = getLatestProof(i);
-            // (_origin, _nonce, _sender, _rootTimestamp, _message)
+            // (_origin, _nonce, _sender, _rootSubmittedAt, _message)
             vm.expectCall(
                 recipient,
                 abi.encodeWithSelector(
@@ -222,7 +223,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
                     DOMAIN_REMOTE,
                     i + 1,
                     sender,
-                    rootTimestamp,
+                    rootSubmittedAt,
                     BODY
                 )
             );
@@ -231,12 +232,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
 
             emit Executed(DOMAIN_REMOTE, keccak256(messages[i]));
             vm.prank(executor);
-            InterfaceDestination(destination).execute(
-                messages[i],
-                originProof,
-                snapProof,
-                stateIndex
-            );
+            IExecutionHub(destination).execute(messages[i], originProof, snapProof, stateIndex);
         }
     }
 

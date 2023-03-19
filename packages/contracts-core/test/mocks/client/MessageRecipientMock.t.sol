@@ -12,7 +12,7 @@ contract MessageRecipientMock is IMessageRecipient {
         uint32 _origin,
         uint32 _nonce,
         bytes32 _sender,
-        uint256 _rootTimestamp,
+        uint256 _rootSubmittedAt,
         bytes memory _message
     ) external {}
 }
