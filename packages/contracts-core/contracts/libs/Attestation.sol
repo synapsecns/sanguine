@@ -36,7 +36,7 @@ struct DestinationAttestation {
     address notary;
     uint8 height;
     uint32 nonce;
-    uint40 destTimestamp;
+    uint40 submittedAt;
     // 16 bits left for tight packing
 }
 /// @dev Attach library functions to DestinationAttestation
@@ -210,7 +210,7 @@ library AttestationLib {
         attestation.height = _att.height();
         attestation.nonce = _att.nonce();
         // We need to store the timestamp when attestation was submitted to Destination
-        attestation.destTimestamp = uint40(block.timestamp);
+        attestation.submittedAt = uint40(block.timestamp);
     }
 
     function isEmpty(DestinationAttestation memory _destAtt) internal pure returns (bool) {

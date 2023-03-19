@@ -70,9 +70,9 @@ contract AttestationLibraryTest is SynapseLibraryTest {
     function test_toDestinationAttestation(
         RawAttestation memory ra,
         address notary,
-        uint40 destTimestamp
+        uint40 submittedAt
     ) public {
-        vm.warp(destTimestamp);
+        vm.warp(submittedAt);
         bytes memory payload = libHarness.formatAttestation(
             ra.root,
             ra.height,
@@ -87,7 +87,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         assertEq(destAtt.notary, notary, "!notary");
         assertEq(destAtt.height, ra.height, "!height");
         assertEq(destAtt.nonce, ra.nonce, "!nonce");
-        assertEq(destAtt.destTimestamp, destTimestamp, "!destTimestamp");
+        assertEq(destAtt.submittedAt, submittedAt, "!submittedAt");
     }
 
     function test_isEmpty(DestinationAttestation memory destAtt) public {
