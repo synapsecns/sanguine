@@ -171,14 +171,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
         emit AgentRemoved(domain, agent);
         vm.expectEmit(true, true, true, true);
         emit AgentSlashed(domain, agent);
-        // Should slash Agents on Synapse Chain registries
-        bytes memory expectedCall = _expectedSlashCall(domain, agent);
-        vm.expectCall(originSynapse, expectedCall);
-        vm.expectCall(destinationSynapse, expectedCall);
-        // Should forward Slash system calls
-        bytes memory data = _dataSlashAgentCall(domain, agent);
-        _expectRemoteCallAgentManager(DOMAIN_LOCAL, data);
-        _expectRemoteCallAgentManager(DOMAIN_REMOTE, data);
+        // TODO: check that BondingManager is called
     }
 
     function test_guardSnapshots(Random memory random) public {
@@ -209,10 +202,11 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 guardSnapshots[i].snapshot,
                 guardSnapshots[i].signature
             );
-            InterfaceSummit(summit).submitSnapshot(
+            bytes memory attPayload = InterfaceSummit(summit).submitSnapshot(
                 guardSnapshots[i].snapshot,
                 guardSnapshots[i].signature
             );
+            assertEq(attPayload, "", "Guard: non-empty attestation");
             // Check latest Guard States
             for (uint32 j = 0; j < STATES; ++j) {
                 assertEq(
@@ -265,8 +259,9 @@ contract SummitTest is SynapseTest, SynapseProofs {
             emit AttestationSaved(attestation);
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayload, snapSig);
-            InterfaceSummit(summit).submitSnapshot(snapPayload, snapSig);
 
+            bytes memory attPayload = InterfaceSummit(summit).submitSnapshot(snapPayload, snapSig);
+            assertEq(attPayload, attestation, "Notary: incorrect attestation");
             // Check attestation getter
             assertEq(ISnapshotHub(summit).getAttestation(ra.nonce), attestation, "!getAttestation");
 

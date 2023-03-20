@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { BondingManager } from "../../contracts/manager/BondingManager.sol";
 import { LightManager } from "../../contracts/manager/LightManager.sol";
 import { ISystemContract } from "../../contracts/interfaces/ISystemContract.sol";
 import { Destination } from "../../contracts/Destination.sol";
@@ -20,9 +21,9 @@ import { SynapseAgents } from "./SynapseAgents.t.sol";
 abstract contract SynapseTest is ProductionEvents, SynapseAgents {
     uint256 private immutable deployMask;
 
-    address internal destinationSynapse;
     address internal originSynapse;
-    address internal summit;
+    address internal summit; // Summit is Synapse Chain's Destination
+    BondingManager internal bondingManager;
     SystemRouterHarness internal systemRouterSynapse;
 
     address internal destination;
@@ -42,13 +43,13 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
         // Setup domains and create agents for them
         super.setUp();
         // Deploy a single set of messaging contracts for local chain
-        deployBondingS();
+        deployLightManager();
         deployDestination();
         deployOrigin();
         deploySystemRouter();
         // Deploy a single set of messaging contracts for synapse chain
+        deployBondingManager();
         deploySummit();
-        deployDestinationSynapse();
         deployOriginSynapse();
         deploySystemRouterSynapse();
         // Setup agents on created contracts
@@ -63,7 +64,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
             for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
                 address agent = domains[domain].agents[i];
                 agentManager.addAgent(domain, agent);
-                Summit(summit).addAgent(domain, agent);
+                bondingManager.addAgent(domain, agent);
             }
         }
     }
@@ -72,10 +73,16 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
     ▏*║                           DEPLOY CONTRACTS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function deployBondingS() public virtual {
+    function deployLightManager() public virtual {
         agentManager = new LightManager(DOMAIN_LOCAL);
         agentManager.initialize();
         vm.label(address(agentManager), "LightManager");
+    }
+
+    function deployBondingManager() public virtual {
+        bondingManager = new BondingManager(DOMAIN_SYNAPSE);
+        bondingManager.initialize();
+        vm.label(address(bondingManager), "BondingManager");
     }
 
     function deployDestination() public virtual {
@@ -89,19 +96,6 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
             revert("Unknown option: Destination");
         }
         vm.label(destination, "Destination Local");
-    }
-
-    function deployDestinationSynapse() public virtual {
-        uint256 option = deployMask & DEPLOY_MASK_DESTINATION_SYNAPSE;
-        if (option == DEPLOY_MOCK_DESTINATION_SYNAPSE) {
-            destinationSynapse = address(new DestinationMock());
-        } else if (option == DEPLOY_PROD_DESTINATION_SYNAPSE) {
-            destinationSynapse = address(new Destination(DOMAIN_LOCAL));
-            Destination(destinationSynapse).initialize();
-        } else {
-            revert("Unknown option: Destination");
-        }
-        vm.label(destinationSynapse, "Destination Synapse");
     }
 
     function deployOrigin() public virtual {
@@ -160,12 +154,12 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
         systemRouterSynapse = new SystemRouterHarness(
             DOMAIN_SYNAPSE,
             address(originSynapse),
-            address(destinationSynapse),
-            address(summit)
+            address(summit), // Summit is Synapse Chain's Destination
+            address(bondingManager)
         );
         ISystemContract(originSynapse).setSystemRouter(systemRouterSynapse);
-        ISystemContract(destinationSynapse).setSystemRouter(systemRouterSynapse);
         ISystemContract(summit).setSystemRouter(systemRouterSynapse);
+        ISystemContract(bondingManager).setSystemRouter(systemRouterSynapse);
         vm.label(address(systemRouterSynapse), "SystemRouter Synapse");
     }
 

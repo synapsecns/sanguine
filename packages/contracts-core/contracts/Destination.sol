@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { Attestation, DestinationAttestation } from "./libs/Attestation.sol";
+import { Attestation } from "./libs/Attestation.sol";
 import { AttestationReport } from "./libs/AttestationReport.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "./context/DomainContext.sol";
-import { InterfaceDestination } from "./interfaces/InterfaceDestination.sol";
+import { ExecutionAttestation, InterfaceDestination } from "./interfaces/InterfaceDestination.sol";
 import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { ExecutionHub } from "./hubs/ExecutionHub.sol";
 
@@ -14,11 +14,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Tracks all accepted Notary attestations
-    // (root => attestation)
-    mapping(bytes32 => DestinationAttestation) private rootAttestations;
-
-    /// @dev All snapshot roots from the accepted Notary attestations
+    /// @dev All snapshot roots from the saved attestations
     bytes32[] private roots;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -50,7 +46,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // Check that Notary is active on local domain
         require(domain == localDomain, "Wrong Notary domain");
         // This will revert if snapshot root has been previously submitted
-        _acceptAttestation(att, notary);
+        _saveAttestation(att, notary);
         emit AttestationAccepted(domain, notary, _attPayload, _attSignature);
         return true;
     }
@@ -85,35 +81,16 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     function getAttestation(uint256 _index)
         external
         view
-        returns (bytes32 root, DestinationAttestation memory destAtt)
+        returns (bytes32 root, ExecutionAttestation memory execAtt)
     {
         require(_index < roots.length, "Index out of range");
         root = roots[_index];
-        destAtt = rootAttestations[root];
+        execAtt = _getRootAttestation(root);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                     INTERNAL LOGIC: ATTESTATION                      ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @dev Accepts an Attestation signed by a Notary.
-    function _acceptAttestation(Attestation _att, address _notary) internal {
-        bytes32 root = _att.root();
-        require(_rootAttestation(root).isEmpty(), "Root already exists");
-        rootAttestations[root] = _att.toDestinationAttestation(_notary);
-        roots.push(root);
-    }
-
-    /// @dev Returns the saved attestation for the "Snapshot Merkle Root".
-    /// Will return an empty struct, if the root hasn't been submitted in a Notary attestation yet.
-    function _rootAttestation(bytes32 _root)
-        internal
-        view
-        override
-        returns (DestinationAttestation memory)
-    {
-        return rootAttestations[_root];
-    }
 
     function _isIgnoredAgent(uint32 _domain, address)
         internal

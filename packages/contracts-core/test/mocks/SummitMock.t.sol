@@ -12,7 +12,7 @@ contract SummitMock is SnapshotHubMock, SystemContractMock, InterfaceSummit {
 
     function submitSnapshot(bytes memory _snapPayload, bytes memory _snapSignature)
         external
-        returns (bool wasAccepted)
+        returns (bytes memory attPayload)
     {}
 
     function verifyAttestation(bytes memory _attPayload, bytes memory _attSignature)

@@ -8,15 +8,8 @@ import { ISystemContract, Summit, SynapseTest } from "../../utils/SynapseTest.t.
 
 // solhint-disable func-name-mixedcase
 contract BondingManagerTest is AgentManagerTest {
-    Summit internal bondingManager;
-
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
-
-    function setUp() public virtual override {
-        super.setUp();
-        bondingManager = Summit(summit);
-    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                TESTS: UNAUTHORIZED ACCESS (NOT OWNER)                ║*▕
@@ -79,22 +72,20 @@ contract BondingManagerTest is AgentManagerTest {
         // Should not be an already added agent
         vm.assume(!isActive);
         AgentInfo memory info = AgentInfo({ domain: domain, account: agent, bonded: true });
-        bytes memory data = _dataSyncAgentCall(info);
         bytes memory expectedCall = _expectedCall(ISystemContract.syncAgent.selector, info);
         // All system registries should be system called
         vm.expectCall(originSynapse, expectedCall);
-        vm.expectCall(destinationSynapse, expectedCall);
+        vm.expectCall(summit, expectedCall);
         bondingManager.addAgent(domain, agent);
     }
 
     function test_removeAgent(uint32 domain, address agent) public {
         test_addAgent(domain, agent);
         AgentInfo memory info = AgentInfo({ domain: domain, account: agent, bonded: false });
-        bytes memory data = _dataSyncAgentCall(info);
         bytes memory expectedCall = _expectedCall(ISystemContract.syncAgent.selector, info);
         // All system registries should be system called
         vm.expectCall(originSynapse, expectedCall);
-        vm.expectCall(destinationSynapse, expectedCall);
+        vm.expectCall(summit, expectedCall);
         bondingManager.removeAgent(domain, agent);
     }
 
@@ -154,7 +145,7 @@ contract BondingManagerTest is AgentManagerTest {
         bytes memory expectedCall = _expectedCall(ISystemContract.slashAgent.selector, info);
         // All system registries should be system called
         vm.expectCall(originSynapse, expectedCall);
-        vm.expectCall(destinationSynapse, expectedCall);
+        vm.expectCall(summit, expectedCall);
         // callOrigin is Synapse Chain
         _expectForwardCalls(DOMAIN_SYNAPSE, data);
         // Prank a local system call: [Local Origin] -> [Local AgentManager].slashAgent
@@ -178,7 +169,7 @@ contract BondingManagerTest is AgentManagerTest {
         bytes memory expectedCall = _expectedCall(ISystemContract.slashAgent.selector, info);
         // All system registries should be system called
         vm.expectCall(originSynapse, expectedCall);
-        vm.expectCall(destinationSynapse, expectedCall);
+        vm.expectCall(summit, expectedCall);
         // data should be forwarded to remote chains
         _expectForwardCalls(callOrigin, _dataSlashAgentCall(info));
         // Prank a local system call: [Remote AgentManager] -> [Local AgentManager].slashAgent

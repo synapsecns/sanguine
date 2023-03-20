@@ -6,7 +6,7 @@ import { ATTESTATION_LENGTH } from "../../../contracts/libs/Constants.sol";
 import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
 import {
     AttestationHarness,
-    DestinationAttestation,
+    ExecutionAttestation,
     SummitAttestation,
     TypedMemView
 } from "../../harnesses/libs/AttestationHarness.t.sol";
@@ -67,7 +67,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
     ▏*║                       DESTINATION ATTESTATION                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_toDestinationAttestation(
+    function test_toExecutionAttestation(
         RawAttestation memory ra,
         address notary,
         uint40 submittedAt
@@ -80,21 +80,18 @@ contract AttestationLibraryTest is SynapseLibraryTest {
             ra.blockNumber,
             ra.timestamp
         );
-        DestinationAttestation memory destAtt = libHarness.toDestinationAttestation(
-            payload,
-            notary
-        );
-        assertEq(destAtt.notary, notary, "!notary");
-        assertEq(destAtt.height, ra.height, "!height");
-        assertEq(destAtt.nonce, ra.nonce, "!nonce");
-        assertEq(destAtt.submittedAt, submittedAt, "!submittedAt");
+        ExecutionAttestation memory execAtt = libHarness.toExecutionAttestation(payload, notary);
+        assertEq(execAtt.notary, notary, "!notary");
+        assertEq(execAtt.height, ra.height, "!height");
+        assertEq(execAtt.nonce, ra.nonce, "!nonce");
+        assertEq(execAtt.submittedAt, submittedAt, "!submittedAt");
     }
 
-    function test_isEmpty(DestinationAttestation memory destAtt) public {
-        if (destAtt.notary == address(0)) {
-            assertTrue(libHarness.isEmpty(destAtt), "!isEmpty: when Empty");
+    function test_isEmpty(ExecutionAttestation memory execAtt) public {
+        if (execAtt.notary == address(0)) {
+            assertTrue(libHarness.isEmpty(execAtt), "!isEmpty: when Empty");
         } else {
-            assertFalse(libHarness.isEmpty(destAtt), "!isEmpty: when non-Empty");
+            assertFalse(libHarness.isEmpty(execAtt), "!isEmpty: when non-Empty");
         }
     }
 
