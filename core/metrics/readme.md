@@ -10,3 +10,7 @@ by passing in a comma seperated `DD_PROFILES` using the names [here](https://git
 ## New Relic
 
 Pass in the `NEW_RELIC_LICENSE_KEY` enviornment variable
+
+## Jaegar
+
+Pass in the `JAEGAR_ENDPOINT` enviornment variable

@@ -21,10 +21,6 @@ type datadogHandler struct {
 	buildInfo       config.BuildInfo
 }
 
-func (d *datadogHandler) AddGormCallbacks(db *gorm.DB) {
-	// TODO: implement, see:  https://github.com/DataDog/dd-trace-go/blob/main/contrib/jinzhu/gorm/example_test.go
-}
-
 // NewDatadogMetricsHandler creates a new datadog metrics handler.
 func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 	handler := datadogHandler{
@@ -43,6 +39,10 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 	}
 
 	return &handler
+}
+
+func (d *datadogHandler) AddGormCallbacks(db *gorm.DB) {
+	// TODO: implement, see:  https://github.com/DataDog/dd-trace-go/blob/main/contrib/jinzhu/gorm/example_test.go
 }
 
 // Gin gets a gin middleware for datadog tracing.
@@ -70,8 +70,8 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 
 // ConfigureHTTPClient wraps the Transport of an http.Client with a datadog tracer.
 func (d *datadogHandler) ConfigureHTTPClient(client *http.Client) {
-	wrappedTrnasport := ddhttp.WrapClient(client).Transport
-	client.Transport = wrappedTrnasport
+	wrappedTransport := ddhttp.WrapClient(client).Transport
+	client.Transport = wrappedTransport
 }
 
 // DDProfileEnv is the data daog profile neviornment variable.

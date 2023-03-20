@@ -22,7 +22,6 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -297,4 +296,3 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 
 //nolint:staticcheck
 var _ chain.Chain = &Backend{}
-var _ suite.TestingSuite = &Backend{}

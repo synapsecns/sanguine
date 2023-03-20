@@ -11,6 +11,8 @@ import (
 )
 
 func TestSetupFromEnv(t *testing.T) {
+	metrics.SetupTestJaeger(t)
+
 	for _, handler := range metrics.AllHandlerTypes {
 		handler := handler // capture func literal
 		assert.NotPanics(t, func() {

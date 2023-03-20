@@ -1,0 +1,73 @@
+package metrics
+
+import (
+	"context"
+	"github.com/gin-gonic/gin"
+	"github.com/synapsecns/sanguine/core/config"
+	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	"go.opentelemetry.io/otel/trace"
+	"gorm.io/gorm"
+	"net/http"
+)
+
+// baseHandler is a base metrics handler that implements the Handler interface.
+// this is used to reduce the amount of boilerplate code needed to implement opentracing methods.
+type baseHandler struct {
+	exporter tracesdk.SpanExporter
+	tp       *tracesdk.TracerProvider
+	tracer   trace.Tracer
+	name     string
+}
+
+func (b baseHandler) Start(ctx context.Context) error {
+	// no need to start this
+	return nil
+}
+
+func (b baseHandler) Gin() gin.HandlerFunc {
+	return otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp))
+}
+
+func (b baseHandler) ConfigureHTTPClient(client *http.Client) {
+	client.Transport = otelhttp.NewTransport(client.Transport, otelhttp.WithTracerProvider(b.tp))
+}
+
+func (b baseHandler) AddGormCallbacks(db *gorm.DB) {
+	err := db.Use(otelgorm.NewPlugin(otelgorm.WithTracerProvider(b.tp)))
+	logger.Warn("could not add gorm callbacks", "error", err)
+}
+
+// newBaseHandler creates a new baseHandler for otel.
+func newBaseHandler(exporter tracesdk.SpanExporter, buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProviderOption) *baseHandler {
+	opts := append([]tracesdk.TracerProviderOption{
+		tracesdk.WithBatcher(exporter),
+		tracesdk.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceName(buildInfo.Name()),
+			attribute.String("ENVIRONMENT", "default"),
+			semconv.ServiceVersion(buildInfo.Version()),
+			attribute.String("commit", buildInfo.Commit()),
+		)),
+	}, extraOpts...)
+
+	tp := tracesdk.NewTracerProvider(opts...)
+	otel.SetTracerProvider(tp)
+	// default tracer for server
+	tracer := tp.Tracer(buildInfo.Name())
+
+	return &baseHandler{
+		exporter: exporter,
+		tp:       tp,
+		tracer:   tracer,
+		name:     buildInfo.Name(),
+	}
+}
+
+var _ Handler = &baseHandler{}

@@ -41,11 +41,13 @@ func init() {
 
 const (
 	// DataDog is the datadog driver.
-	DataDog HandlerType = 0 // Datadog
+	DataDog HandlerType = iota + 1 // Datadog
 	// NewRelic is the new relic driver.
-	NewRelic HandlerType = iota // NewRelic
+	NewRelic // NewRelic
+	// Jaeger is the jaeger driver.
+	Jaeger // Jaeger
 	// Null is a null data type handler.
-	Null HandlerType = iota // Null
+	Null // Null
 )
 
 // Lower gets the lowercase version of the handler type. Useful for comparison
@@ -67,6 +69,8 @@ func NewFromEnv(ctx context.Context, buildInfo config.BuildInfo) (handler Handle
 		handler = NewDatadogMetricsHandler(buildInfo)
 	case NewRelic.Lower():
 		handler = NewRelicMetricsHandler(buildInfo)
+	case Jaeger.Lower():
+		handler = NewJaegerHandler(buildInfo)
 	case Null.Lower():
 		handler = NewNullHandler()
 	default:
