@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { EMPTY_ROOT } from "../libs/Constants.sol";
 import { HistoricalTree } from "../libs/Merkle.sol";
 import { OriginState, State, StateLib } from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════

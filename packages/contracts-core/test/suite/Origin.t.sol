@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
 import { IStateHub } from "../../contracts/interfaces/IStateHub.sol";
-import { EMPTY_ROOT, SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
+import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { TipsLib } from "../../contracts/libs/Tips.sol";
 
@@ -119,7 +119,7 @@ contract OriginTest is SynapseTest, SynapseProofs {
         assertEq(hub.statesAmount(), 1, "!initial statesAmount");
         // Initial state was saved "1 block ago"
         RawState memory rs = RawState({
-            root: EMPTY_ROOT,
+            root: bytes32(0),
             origin: DOMAIN_LOCAL,
             nonce: 0,
             blockNumber: uint40(block.number - 1),

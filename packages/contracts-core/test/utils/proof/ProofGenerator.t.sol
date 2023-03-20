@@ -16,10 +16,7 @@ contract ProofGenerator {
      */
     bytes32[][] internal merkleTree;
 
-    bytes32[] internal zeroHashes;
-
     constructor() {
-        zeroHashes = MerkleLib.zeroHashes();
         merkleTree = new bytes32[][](TREE_DEPTH + 1);
     }
 
@@ -68,7 +65,7 @@ contract ProofGenerator {
         if (_index < merkleTree[_depth].length) {
             node = merkleTree[_depth][_index];
         } else {
-            node = zeroHashes[_depth];
+            node = bytes32(0);
         }
     }
 
@@ -100,9 +97,18 @@ contract ProofGenerator {
     function _createLayer(uint256 _depth, uint256 _size) internal {
         merkleTree[_depth] = new bytes32[](_size);
         for (uint256 i = 0; i < _size; ++i) {
-            merkleTree[_depth][i] = keccak256(
-                abi.encodePacked(getNode(_depth - 1, 2 * i), getNode(_depth - 1, 2 * i + 1))
+            merkleTree[_depth][i] = _hash(
+                getNode(_depth - 1, 2 * i),
+                getNode(_depth - 1, 2 * i + 1)
             );
+        }
+    }
+
+    function _hash(bytes32 _left, bytes32 _right) internal pure returns (bytes32) {
+        if (_left != 0 || _right != 0) {
+            return keccak256(abi.encodePacked(_left, _right));
+        } else {
+            return 0;
         }
     }
 }
