@@ -32,7 +32,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     /// @inheritdoc InterfaceSummit
     function submitSnapshot(bytes memory _snapPayload, bytes memory _snapSignature)
         external
-        returns (bool wasAccepted)
+        returns (bytes memory attPayload)
     {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = _wrapSnapshot(_snapPayload);
@@ -45,12 +45,11 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         } else {
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
-            bytes memory attPayload = _acceptNotarySnapshot(snapshot, agent);
+            attPayload = _acceptNotarySnapshot(snapshot, agent);
             // Save attestation derived from Notary snapshot
             _saveAttestation(attPayload.castToAttestation(), agent);
         }
         emit SnapshotAccepted(domain, agent, _snapPayload, _snapSignature);
-        return true;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

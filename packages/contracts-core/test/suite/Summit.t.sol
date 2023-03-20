@@ -202,10 +202,11 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 guardSnapshots[i].snapshot,
                 guardSnapshots[i].signature
             );
-            InterfaceSummit(summit).submitSnapshot(
+            bytes memory attPayload = InterfaceSummit(summit).submitSnapshot(
                 guardSnapshots[i].snapshot,
                 guardSnapshots[i].signature
             );
+            assertEq(attPayload, "", "Guard: non-empty attestation");
             // Check latest Guard States
             for (uint32 j = 0; j < STATES; ++j) {
                 assertEq(
@@ -258,8 +259,9 @@ contract SummitTest is SynapseTest, SynapseProofs {
             emit AttestationSaved(attestation);
             vm.expectEmit(true, true, true, true);
             emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayload, snapSig);
-            InterfaceSummit(summit).submitSnapshot(snapPayload, snapSig);
 
+            bytes memory attPayload = InterfaceSummit(summit).submitSnapshot(snapPayload, snapSig);
+            assertEq(attPayload, attestation, "Notary: incorrect attestation");
             // Check attestation getter
             assertEq(ISnapshotHub(summit).getAttestation(ra.nonce), attestation, "!getAttestation");
 
