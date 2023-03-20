@@ -129,5 +129,5 @@ func (d *DeployManager) GetTestClient(ctx context.Context, backend backends.Simu
 func (d *DeployManager) GetPingPongClient(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *pingpongclient.PingPongClientRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*pingpongclient.PingPongClientRef](ctx, d.T(), d, backend, TestClientType)
+	return manager.GetContract[*pingpongclient.PingPongClientRef](ctx, d.T(), d, backend, PingPongClientType)
 }
