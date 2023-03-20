@@ -44,6 +44,13 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
     /// Thus we can use hash as a key instead of an (origin, hash) tuple.
     mapping(bytes32 => bytes32) public messageStatus;
 
+    /// @dev Tracks all saved attestations
+    // (root => attestation)
+    mapping(bytes32 => DestinationAttestation) private rootAttestations;
+
+    /// @dev gap for upgrade safety
+    uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           EXECUTE MESSAGES                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -142,7 +149,7 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
         // This will revert if state index is out of range
         bytes32 snapshotRoot = _snapshotRoot(originRoot, _header.origin(), _snapProof, _stateIndex);
         // Fetch the attestation data for the snapshot root
-        destAtt = _rootAttestation(snapshotRoot);
+        destAtt = rootAttestations[snapshotRoot];
         // Check if snapshot root has been submitted
         require(!destAtt.isEmpty(), "Invalid snapshot root");
         // Check that snapshot proof length matches the height of Snapshot Merkle Tree
@@ -159,12 +166,22 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
         messageStatus[_msgLeaf] = snapshotRoot;
     }
 
-    /// @dev Returns saved attestation data for the snapshot root.
-    /// Note: this should return an empty struct if there is no attestation data saved for the given root.
-    function _rootAttestation(bytes32 _snapshotRoot)
+    /// @dev Saves a snapshot root with the attestation data provided by a Notary.
+    /// It is assumed that the Notary signature has been checked outside of this contract.
+    function _saveAttestation(bytes32 _root, DestinationAttestation memory _destAtt) internal {
+        require(rootAttestations[_root].isEmpty(), "Root already exists");
+        rootAttestations[_root] = _destAtt;
+    }
+
+    /// @dev Gets a saved attestation for the given snapshot root.
+    /// Will return an empty struct, if the snapshot root hasn't been previously saved.
+    function _getRootAttestation(bytes32 _root)
         internal
-        virtual
-        returns (DestinationAttestation memory);
+        view
+        returns (DestinationAttestation memory)
+    {
+        return rootAttestations[_root];
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         INTERNAL LOGIC: TIPS                         ║*▕
