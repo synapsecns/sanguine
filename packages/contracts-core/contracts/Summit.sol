@@ -1,20 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { SummitState } from "./libs/State.sol";
-import { AgentInfo } from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentManager } from "./manager/AgentManager.sol";
 import { DomainContext } from "./context/DomainContext.sol";
 import { SummitEvents } from "./events/SummitEvents.sol";
 import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
-import { SnapshotHub } from "./hubs/SnapshotHub.sol";
-import { Attestation, AttestationReport, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
+import { ExecutionAttestation, ExecutionHub } from "./hubs/ExecutionHub.sol";
+import { SnapshotHub, SummitAttestation, SummitState } from "./hubs/SnapshotHub.sol";
+import { Attestation, AttestationReport, Snapshot } from "./hubs/StatementHub.sol";
 
-/**
- * @notice Accepts snapshots signed by Guards and Notaries. Verifies Notaries attestations.
- */
-contract Summit is StatementHub, SnapshotHub, AgentManager, SummitEvents, InterfaceSummit {
+contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     constructor(uint32 _domain) DomainContext(_domain) {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }
@@ -26,28 +21,6 @@ contract Summit is StatementHub, SnapshotHub, AgentManager, SummitEvents, Interf
     function initialize() external initializer {
         __SystemContract_initialize();
         _initializeAttestations();
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            ADDING AGENTS                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function addAgent(uint32 _domain, address _account) external onlyOwner returns (bool isAdded) {
-        isAdded = _addAgent(_domain, _account);
-        if (isAdded) {
-            _syncAgentLocalRegistries(AgentInfo(_domain, _account, true));
-        }
-    }
-
-    function removeAgent(uint32 _domain, address _account)
-        external
-        onlyOwner
-        returns (bool isRemoved)
-    {
-        isRemoved = _removeAgent(_domain, _account);
-        if (isRemoved) {
-            _syncAgentLocalRegistries(AgentInfo(_domain, _account, false));
-        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -68,9 +41,14 @@ contract Summit is StatementHub, SnapshotHub, AgentManager, SummitEvents, Interf
             // a fresher state than one in the snapshot.
             _acceptGuardSnapshot(snapshot, agent);
         } else {
+            // Attestation nonce is its index in `attestations` array. It has not been saved yet.
+            uint32 nonce = uint32(_attestationsAmount());
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
-            _acceptNotarySnapshot(snapshot, agent);
+            SummitAttestation memory summitAtt = _acceptNotarySnapshot(snapshot, agent);
+            // Save attestation derived from Notary snapshot
+            // TODO: this is currently doing snapshot.root() calculation twice, needs a rewrite
+            _saveNotaryAttestation(nonce, summitAtt, agent);
         }
         emit SnapshotAccepted(domain, agent, _snapPayload, _snapSignature);
         return true;
@@ -143,13 +121,29 @@ contract Summit is StatementHub, SnapshotHub, AgentManager, SummitEvents, Interf
     /// @dev Hook that is called after an existing agent was slashed,
     /// when verification of an invalid agent statement was done in this contract.
     function _afterAgentSlashed(uint32 _domain, address _agent) internal virtual override {
-        /// @dev Summit is BondingManager, so we need to slash Agent on local Registries,
-        /// as well as relay this information to all other chains.
-        /// There was no system call that triggered slashing, so callOrigin is set to ZERO.
-        _updateLocalRegistries({
-            _data: _dataSlashAgent(_domain, _agent),
-            _forwardUpdate: true,
-            _callOrigin: 0
+        // TODO: implement
+    }
+
+    /// @dev Saves Attestation created from the Notary snapshot to be used for proving
+    /// the executed messages later.
+    function _saveNotaryAttestation(
+        uint32 _nonce,
+        SummitAttestation memory _summitAtt,
+        address _notary
+    ) internal {
+        bytes32 root = _summitAtt.root;
+        ExecutionAttestation memory execAtt = ExecutionAttestation({
+            notary: _notary,
+            height: _summitAtt.height,
+            nonce: _nonce,
+            submittedAt: _summitAtt.timestamp
         });
+        // This will revert if attestation for `root` has been previously submitted
+        _saveAttestation(root, execAtt);
+    }
+
+    function _isIgnoredAgent(uint32, address) internal pure override returns (bool) {
+        // Summit keeps track of every agent
+        return false;
     }
 }
