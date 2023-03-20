@@ -55,6 +55,7 @@ const SECTION_TRANSITION_PROPS = {
 }
 
 export default function BridgeCard({
+  address,
   fromChainId,
   toChainId,
   fromCoin,
@@ -77,6 +78,7 @@ export default function BridgeCard({
   destinationAddress,
   setDestinationAddress,
 }: {
+  address: `0x${string}` | undefined
   fromChainId: number
   toChainId: number
   fromCoin: Token
@@ -153,10 +155,21 @@ export default function BridgeCard({
   //   fromAmount
   // )
   const tokenAddr = fromCoin.addresses[fromChainId as keyof Token['addresses']]
-  const { data: rawTokenBalance } = useBalance({
-    address: `0x${tokenAddr.slice(2)}`,
-  })
-  let fromTokenBalance: BigNumber = rawTokenBalance?.value ?? Zero
+  let fromTokenBalance: BigNumber
+  if (!tokenAddr) {
+    const { data: rawTokenBalance } = useBalance({
+      chainId: fromChainId,
+      address: address,
+    })
+    fromTokenBalance = rawTokenBalance?.value ?? Zero
+  } else {
+    const { data: rawTokenBalance } = useBalance({
+      chainId: fromChainId,
+      address: address,
+      token: `0x${tokenAddr.slice(2)}`,
+    })
+    fromTokenBalance = rawTokenBalance?.value ?? Zero
+  }
 
   // useEffect(() => {
   //   if (!settings.expertMode) {

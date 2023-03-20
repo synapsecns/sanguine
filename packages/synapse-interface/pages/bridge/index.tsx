@@ -44,7 +44,7 @@ export default function BridgePage() {
   const { switchNetwork } = useSwitchNetwork()
 
   // Init ChainIds
-  const fromChainId = Number(fromChainIdRaw?.id)
+  const [fromChainId, setFromChainId] = useState(0)
   const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
 
   // Init token
@@ -66,6 +66,11 @@ export default function BridgePage() {
   const [destinationAddress, setDestinationAddress] = useState('')
   const fromRef = useRef(null)
   const toRef = useRef(null)
+
+  // Handle wagmi changes
+  useEffect(() => {
+    setFromChainId(Number(fromChainIdRaw?.id))
+  }, [fromChainIdRaw])
 
   // Handle url changes
   useEffect(() => {
@@ -207,6 +212,7 @@ export default function BridgePage() {
                 <div className="pb-3 place-self-center">
                   {fromToken && fromChainId ? (
                     <BridgeCard
+                      address={address}
                       fromChainId={fromChainId}
                       toChainId={toChainId}
                       onSelectFromChain={handleFromChainChange}

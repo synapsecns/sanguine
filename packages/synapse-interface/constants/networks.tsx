@@ -203,7 +203,7 @@ export const CHAIN_INFO_MAP: ChainInfoMap = {
     chainId: ChainId.KLAYTN,
     chainSymbol: 'KLAYTN',
     chainName: 'Klaytn',
-    chainLogo: harmonyLogo,
+    chainLogo: harmonyLogo, // wtf, change
     chainImg: klaytnImg,
     layer: 1,
   },

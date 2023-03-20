@@ -41,18 +41,24 @@ export default function BridgeInputContainer({
   onChangeChain: (v: number) => void
 }) {
   const { address } = useAccount()
-  const { chain } = useNetwork()
-  const tokenAddr = selected.addresses[chain?.id as keyof Token['addresses']]
+  const tokenAddr = selected.addresses[chainId as keyof Token['addresses']]
 
-  const {
-    data: evmFromTokenBalance,
-    isError: balanceError,
-    isLoading: balanceLoading,
-  } = useBalance({
-    address: `0x${tokenAddr.slice(2)}`,
-  })
+  let tokenBalance: BigNumber
+  if (!tokenAddr) {
+    const { data: rawTokenBalance } = useBalance({
+      chainId: chainId,
+      address: address,
+    })
+    tokenBalance = rawTokenBalance?.value ?? Zero
+  } else {
+    const { data: rawTokenBalance } = useBalance({
+      chainId: chainId,
+      address: address,
+      token: `0x${tokenAddr.slice(2)}`,
+    })
+    tokenBalance = rawTokenBalance?.value ?? Zero
+  }
 
-  let tokenBalance: BigNumber = evmFromTokenBalance?.value ?? Zero
   const formattedBalance = formatBNToString(
     tokenBalance,
     selected.decimals[chainId as keyof Token['decimals']],
@@ -73,8 +79,8 @@ export default function BridgeInputContainer({
     onChangeAmount(
       formatBNToString(
         tokenBalance,
-        4,
-        selected.decimals[chainId as keyof Token['decimals']]
+        selected.decimals[chainId as keyof Token['decimals']],
+        4
       )
     )
   }
