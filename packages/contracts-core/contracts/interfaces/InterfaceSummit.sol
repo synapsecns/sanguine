@@ -17,11 +17,12 @@ interface InterfaceSummit {
      * Note that Notary will NOT be slashed for submitting such a snapshot.
      * @param _snapPayload      Raw payload with snapshot data
      * @param _snapSignature    Agent signature for the snapshot
-     * @return wasAccepted      Whether the snapshot was accepted by the Summit contract
+     * @return attPayload       Raw payload with data for attestation derived from Notary snapshot.
+     *                          Empty payload, if a Guard snapshot was submitted.
      */
     function submitSnapshot(bytes memory _snapPayload, bytes memory _snapSignature)
         external
-        returns (bool wasAccepted);
+        returns (bytes memory attPayload);
 
     /**
      * @notice Verifies an attestation signed by a Notary.

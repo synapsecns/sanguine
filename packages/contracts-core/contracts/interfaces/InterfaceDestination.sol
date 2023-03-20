@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { DestinationAttestation } from "../libs/Attestation.sol";
+import { ExecutionAttestation } from "../libs/Attestation.sol";
 
 interface InterfaceDestination {
     /**
@@ -46,10 +46,10 @@ interface InterfaceDestination {
      * @dev Index refers to attestation's snapshot root position in `roots` array.
      * @param _index   Attestation index
      * @return root    Snapshot root for the attestation
-     * @return destAtt Rest of attestation data that Destination keeps track of
+     * @return execAtt Rest of attestation data that Destination keeps track of
      */
     function getAttestation(uint256 _index)
         external
         view
-        returns (bytes32 root, DestinationAttestation memory destAtt);
+        returns (bytes32 root, ExecutionAttestation memory execAtt);
 }

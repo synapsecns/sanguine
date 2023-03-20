@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {
     Attestation,
     AttestationLib,
-    DestinationAttestation,
+    ExecutionAttestation,
     SummitAttestation,
     TypedMemView
 } from "../../../contracts/libs/Attestation.sol";
@@ -61,16 +61,16 @@ contract AttestationHarness {
     ▏*║                       DESTINATION ATTESTATION                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function toDestinationAttestation(bytes memory _payload, address _notary)
+    function toExecutionAttestation(bytes memory _payload, address _notary)
         public
         view
-        returns (DestinationAttestation memory)
+        returns (ExecutionAttestation memory)
     {
-        return _payload.castToAttestation().toDestinationAttestation(_notary);
+        return _payload.castToAttestation().toExecutionAttestation(_notary);
     }
 
-    function isEmpty(DestinationAttestation memory _destAtt) public pure returns (bool) {
-        return _destAtt.isEmpty();
+    function isEmpty(ExecutionAttestation memory _execAtt) public pure returns (bool) {
+        return _execAtt.isEmpty();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
