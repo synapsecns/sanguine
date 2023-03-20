@@ -3,7 +3,6 @@ module github.com/synapsecns/sanguine/agents
 go 1.19
 
 require (
-	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a
 	cloud.google.com/go/kms v1.6.0
 	github.com/BurntSushi/toml v1.2.0
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
@@ -14,6 +13,7 @@ require (
 	github.com/coinbase/rosetta-sdk-go v0.8.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/ethereum/go-ethereum v1.10.26
+	github.com/hedzr/log v1.6.3
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/jftuga/termsize v1.0.2
@@ -42,6 +42,7 @@ require (
 )
 
 require (
+	bitbucket.org/tentontrain/math v0.0.0-20220519191623-a4e86beba92a // indirect
 	cloud.google.com/go/compute v1.14.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v0.8.0 // indirect
@@ -217,7 +218,7 @@ require (
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
-	github.com/spf13/afero v1.9.3 // indirect
+	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/cobra v1.6.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

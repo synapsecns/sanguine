@@ -1,13 +1,13 @@
 package deployer
 
 import (
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"math/big"
-	"testing"
 )
 
 // DeployedContract represents a deployed contract. It is returned by a deployer after a successful deployment.
@@ -27,11 +27,12 @@ type DeployedContract struct {
 
 // NewDeployedContract creates a new deployed contract. We take some shortcuts by making some assumptions:
 // namely, that tx sender is owner.
-func NewDeployedContract(tb testing.TB, handle vm.ContractRef, deployTx *types.Transaction) DeployedContract {
-	tb.Helper()
+func NewDeployedContract(handle vm.ContractRef, deployTx *types.Transaction) (DeployedContract, error) {
 	// TODO: eip-2930 signer?
 	msg, err := deployTx.AsMessage(types.LatestSignerForChainID(deployTx.ChainId()), nil)
-	assert.Nil(tb, err)
+	if err != nil {
+		return DeployedContract{}, fmt.Errorf("failed to get message from deployTx: %w", err)
+	}
 
 	return DeployedContract{
 		address:        handle.Address(),
@@ -39,7 +40,7 @@ func NewDeployedContract(tb testing.TB, handle vm.ContractRef, deployTx *types.T
 		owner:          msg.From(),
 		deployTx:       deployTx,
 		chainID:        deployTx.ChainId(),
-	}
+	}, nil
 }
 
 // Address gets the address of the deployed contract.
@@ -69,7 +70,7 @@ func (d DeployedContract) DeployTx() *types.Transaction {
 
 // ChainID is the chain id of the deployed contract.
 func (d DeployedContract) ChainID() *big.Int {
-	return d.chainID
+	return core.CopyBigInt(d.chainID)
 }
 
 var _ contracts.DeployedContract = DeployedContract{}

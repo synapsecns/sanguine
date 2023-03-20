@@ -10,11 +10,18 @@ abstract contract AgentRegistryEvents {
     event AgentAdded(uint32 indexed domain, address indexed account);
 
     /**
-     * @notice Emitted when a new Agent is removed.
-     * @param domain    Domain where a Agent was removed
+     * @notice Emitted when an Agent is removed.
+     * @param domain    Domain where a removed Agent was active
      * @param account   Address of the removed agent
      */
     event AgentRemoved(uint32 indexed domain, address indexed account);
+
+    /**
+     * @notice Emitted when an Agent is slashed.
+     * @param domain    Domain where a slashed Agent was active
+     * @param account   Address of the slashed agent
+     */
+    event AgentSlashed(uint32 indexed domain, address indexed account);
 
     /**
      * @notice Emitted when the first agent is added for the domain

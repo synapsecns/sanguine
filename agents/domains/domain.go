@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/event"
 	"github.com/synapsecns/sanguine/agents/config"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
+	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
@@ -26,8 +28,8 @@ type DomainClient interface {
 	BlockNumber(ctx context.Context) (uint32, error)
 	// Origin retrieves a handle for the origin contract
 	Origin() OriginContract
-	// AttestationCollector is the attestation collector
-	AttestationCollector() AttestationCollectorContract
+	// Summit is the summit
+	Summit() SummitContract
 	// Destination retrieves a handle for the destination contract
 	Destination() DestinationContract
 }
@@ -36,48 +38,50 @@ type DomainClient interface {
 type OriginContract interface {
 	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
 	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
-	// ProduceAttestation suggests an update from the origin contract
-	// TODO (joe): this will be changed to "ProduceAttestations" and return an attestation per destination
-	ProduceAttestation(ctx context.Context) (types.Attestation, error)
-	// GetHistoricalAttestation gets the root corresponding to destination and nonce,
-	// as well as the block number the message was dispatched and the current block number
-	GetHistoricalAttestation(ctx context.Context, destinationID, nonce uint32) (types.Attestation, uint64, error)
-	// SuggestAttestation gets the latest attestation on the origin for the given destination
-	SuggestAttestation(ctx context.Context, destinationID uint32) (types.Attestation, error)
+	// SuggestLatestState gets the latest state on the origin
+	SuggestLatestState(ctx context.Context) (types.State, error)
+	// SuggestState gets the state on the origin with the given nonce if it exists
+	SuggestState(ctx context.Context, nonce uint32) (types.State, error)
 }
 
-// AttestationCollectorContract contains the interface for the attestation collector.
-type AttestationCollectorContract interface {
-	// AddAgent adds an agent (guard or notary) to the attesation collector
+// SummitContract contains the interface for the summit.
+type SummitContract interface {
+	// AddAgent adds an agent (guard or notary) to the summit
 	AddAgent(transactOpts *bind.TransactOpts, domain uint32, signer signer.Signer) error
-	// SubmitAttestation submits an attestation to the attestation collector.
-	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
-	// GetLatestNonce gets the latest nonce signed by the bondedAgentSigner for the domain on the attestation collector
-	GetLatestNonce(ctx context.Context, origin uint32, destination uint32, bondedAgentSigner signer.Signer) (nonce uint32, err error)
-	// GetAttestation gets the attestation if any for the given origin, destination and nonce
-	GetAttestation(ctx context.Context, origin, destination, nonce uint32) (types.SignedAttestation, error)
-	// GetRoot gets the root if any for the given origin, destination and nonce
-	GetRoot(ctx context.Context, origin, destination, nonce uint32) ([32]byte, error)
-	// PrimeNonce primes the nonce for the signer
-	PrimeNonce(ctx context.Context, signer signer.Signer) error
+	// SubmitSnapshot submits a snapshot to the summit.
+	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
+	// GetLatestState gets the latest state signed by any guard for the given origin
+	GetLatestState(ctx context.Context, origin uint32) (types.State, error)
+	// GetLatestAgentState gets the latest state signed by the bonded signer for the given origin
+	GetLatestAgentState(ctx context.Context, origin uint32, bondedAgentSigner signer.Signer) (types.State, error)
+	// WatchAttestationSaved looks for attesation saved events
+	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
 }
 
 // DestinationContract contains the interface for the destination.
 type DestinationContract interface {
-	// SubmitAttestation submits an attestation to the destination.
-	SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
+	//// SubmitAttestation submits an attestation to the destination.
+	// SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// Execute executes a message on the destination.
-	Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error
-	// SubmittedAt retrieves the time a given Merkle root from the given origin was submitted on the destination.
-	SubmittedAt(ctx context.Context, origin uint32, root [32]byte) (*time.Time, error)
-	// PrimeNonce primes the nonce for the signer
-	PrimeNonce(ctx context.Context, signer signer.Signer) error
+	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int) error
+	// AttestationsAmount retrieves the number of attestations submitted to the destination.
+	AttestationsAmount(ctx context.Context) (uint64, error)
+	// SubmitAttestation submits an attestation to the destination
+	SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error
 }
 
 // TestClientContract contains the interface for the test client.
 type TestClientContract interface {
 	// SendMessage sends a message through the TestClient.
 	SendMessage(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, optimisticSeconds uint32, message []byte) error
+}
+
+// PingPongClientContract contains the interface for the ping pong test client.
+type PingPongClientContract interface {
+	// DoPing sends a ping message through the PingPongClient.
+	DoPing(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, pings uint16) error
+	WatchPingSent(ctx context.Context, sink chan<- *pingpongclient.PingPongClientPingSent) (event.Subscription, error)
+	WatchPongReceived(ctx context.Context, sink chan<- *pingpongclient.PingPongClientPongReceived) (event.Subscription, error)
 }
 
 // ErrNoUpdate indicates no update has been produced.

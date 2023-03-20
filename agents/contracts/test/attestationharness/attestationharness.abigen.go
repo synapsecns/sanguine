@@ -28,214 +28,39 @@ var (
 	_ = event.NewSubscription
 )
 
-// AttestationMetaData contains all meta data concerning the Attestation contract.
-var AttestationMetaData = &bind.MetaData{
-	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212201ab18a9211de863de487a0bc693629adc84216776cf2e2726dfb3b10b775d0cc64736f6c63430008110033",
+// DestinationAttestation is an auto generated low-level Go binding around an user-defined struct.
+type DestinationAttestation struct {
+	Notary        common.Address
+	Height        uint8
+	Nonce         uint32
+	DestTimestamp *big.Int
 }
 
-// AttestationABI is the input ABI used to generate the binding from.
-// Deprecated: Use AttestationMetaData.ABI instead.
-var AttestationABI = AttestationMetaData.ABI
-
-// AttestationBin is the compiled bytecode used for deploying new contracts.
-// Deprecated: Use AttestationMetaData.Bin instead.
-var AttestationBin = AttestationMetaData.Bin
-
-// DeployAttestation deploys a new Ethereum contract, binding an instance of Attestation to it.
-func DeployAttestation(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *Attestation, error) {
-	parsed, err := AttestationMetaData.GetAbi()
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	if parsed == nil {
-		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
-	}
-
-	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(AttestationBin), backend)
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	return address, tx, &Attestation{AttestationCaller: AttestationCaller{contract: contract}, AttestationTransactor: AttestationTransactor{contract: contract}, AttestationFilterer: AttestationFilterer{contract: contract}}, nil
-}
-
-// Attestation is an auto generated Go binding around an Ethereum contract.
-type Attestation struct {
-	AttestationCaller     // Read-only binding to the contract
-	AttestationTransactor // Write-only binding to the contract
-	AttestationFilterer   // Log filterer for contract events
-}
-
-// AttestationCaller is an auto generated read-only Go binding around an Ethereum contract.
-type AttestationCaller struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// AttestationTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type AttestationTransactor struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// AttestationFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type AttestationFilterer struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// AttestationSession is an auto generated Go binding around an Ethereum contract,
-// with pre-set call and transact options.
-type AttestationSession struct {
-	Contract     *Attestation      // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts     // Call options to use throughout this session
-	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
-}
-
-// AttestationCallerSession is an auto generated read-only Go binding around an Ethereum contract,
-// with pre-set call options.
-type AttestationCallerSession struct {
-	Contract *AttestationCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts      // Call options to use throughout this session
-}
-
-// AttestationTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
-// with pre-set transact options.
-type AttestationTransactorSession struct {
-	Contract     *AttestationTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts      // Transaction auth options to use throughout this session
-}
-
-// AttestationRaw is an auto generated low-level Go binding around an Ethereum contract.
-type AttestationRaw struct {
-	Contract *Attestation // Generic contract binding to access the raw methods on
-}
-
-// AttestationCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type AttestationCallerRaw struct {
-	Contract *AttestationCaller // Generic read-only contract binding to access the raw methods on
-}
-
-// AttestationTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type AttestationTransactorRaw struct {
-	Contract *AttestationTransactor // Generic write-only contract binding to access the raw methods on
-}
-
-// NewAttestation creates a new instance of Attestation, bound to a specific deployed contract.
-func NewAttestation(address common.Address, backend bind.ContractBackend) (*Attestation, error) {
-	contract, err := bindAttestation(address, backend, backend, backend)
-	if err != nil {
-		return nil, err
-	}
-	return &Attestation{AttestationCaller: AttestationCaller{contract: contract}, AttestationTransactor: AttestationTransactor{contract: contract}, AttestationFilterer: AttestationFilterer{contract: contract}}, nil
-}
-
-// NewAttestationCaller creates a new read-only instance of Attestation, bound to a specific deployed contract.
-func NewAttestationCaller(address common.Address, caller bind.ContractCaller) (*AttestationCaller, error) {
-	contract, err := bindAttestation(address, caller, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &AttestationCaller{contract: contract}, nil
-}
-
-// NewAttestationTransactor creates a new write-only instance of Attestation, bound to a specific deployed contract.
-func NewAttestationTransactor(address common.Address, transactor bind.ContractTransactor) (*AttestationTransactor, error) {
-	contract, err := bindAttestation(address, nil, transactor, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &AttestationTransactor{contract: contract}, nil
-}
-
-// NewAttestationFilterer creates a new log filterer instance of Attestation, bound to a specific deployed contract.
-func NewAttestationFilterer(address common.Address, filterer bind.ContractFilterer) (*AttestationFilterer, error) {
-	contract, err := bindAttestation(address, nil, nil, filterer)
-	if err != nil {
-		return nil, err
-	}
-	return &AttestationFilterer{contract: contract}, nil
-}
-
-// bindAttestation binds a generic wrapper to an already deployed contract.
-func bindAttestation(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(AttestationABI))
-	if err != nil {
-		return nil, err
-	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_Attestation *AttestationRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Attestation.Contract.AttestationCaller.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_Attestation *AttestationRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Attestation.Contract.AttestationTransactor.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_Attestation *AttestationRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Attestation.Contract.AttestationTransactor.contract.Transact(opts, method, params...)
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_Attestation *AttestationCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Attestation.Contract.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_Attestation *AttestationTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Attestation.Contract.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_Attestation *AttestationTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Attestation.Contract.contract.Transact(opts, method, params...)
+// SummitAttestation is an auto generated low-level Go binding around an user-defined struct.
+type SummitAttestation struct {
+	Root        [32]byte
+	Height      uint8
+	BlockNumber *big.Int
+	Timestamp   *big.Int
 }
 
 // AttestationHarnessMetaData contains all meta data concerning the AttestationHarness contract.
 var AttestationHarnessMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"agentSignatures\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"attestationData\",\"outputs\":[{\"internalType\":\"uint40\",\"name\":\"\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"attestationDataLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_destination\",\"type\":\"uint32\"}],\"name\":\"attestationDomains\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_destination\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"}],\"name\":\"attestationKey\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"attestedDestination\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"attestedDomains\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"attestedKey\",\"outputs\":[{\"internalType\":\"uint96\",\"name\":\"\",\"type\":\"uint96\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"attestedNonce\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"attestedOrigin\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"attestedRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"castToAttestation\",\"outputs\":[{\"internalType\":\"uint40\",\"name\":\"\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_guardSignatures\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_notarySignatures\",\"type\":\"bytes\"}],\"name\":\"formatAttestation\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_origin\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_destination\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"internalType\":\"bytes32\",\"name\":\"_root\",\"type\":\"bytes32\"}],\"name\":\"formatAttestationData\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_guardSignatures\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_notarySignatures\",\"type\":\"bytes\"}],\"name\":\"formatAttestationFromViews\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"guardSignature\",\"outputs\":[{\"internalType\":\"uint40\",\"name\":\"\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"guardSignatures\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"isAttestation\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"notarySignature\",\"outputs\":[{\"internalType\":\"uint40\",\"name\":\"\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"_type\",\"type\":\"uint40\"},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"notarySignatures\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetAgentSignatures\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetDestination\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetFirstSignature\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetOrigin\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"offsetRoot\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"setIndex\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_attestationDomains\",\"type\":\"uint64\"}],\"name\":\"unpackDomains\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint96\",\"name\":\"_attestationKey\",\"type\":\"uint96\"}],\"name\":\"unpackKey\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"domains\",\"type\":\"uint64\"},{\"internalType\":\"uint32\",\"name\":\"nonce\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"blockNumber\",\"outputs\":[{\"internalType\":\"uint40\",\"name\":\"\",\"type\":\"uint40\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"castToAttestation\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"_depth\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"},{\"internalType\":\"uint40\",\"name\":\"_blockNumber\",\"type\":\"uint40\"},{\"internalType\":\"uint40\",\"name\":\"_timestamp\",\"type\":\"uint40\"}],\"name\":\"formatAttestation\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"root\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint40\",\"name\":\"blockNumber\",\"type\":\"uint40\"},{\"internalType\":\"uint40\",\"name\":\"timestamp\",\"type\":\"uint40\"}],\"internalType\":\"structSummitAttestation\",\"name\":\"_summitAtt\",\"type\":\"tuple\"},{\"internalType\":\"uint32\",\"name\":\"_nonce\",\"type\":\"uint32\"}],\"name\":\"formatSummitAttestation\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"height\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"isAttestation\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"notary\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"nonce\",\"type\":\"uint32\"},{\"internalType\":\"uint40\",\"name\":\"destTimestamp\",\"type\":\"uint40\"}],\"internalType\":\"structDestinationAttestation\",\"name\":\"_destAtt\",\"type\":\"tuple\"}],\"name\":\"isEmpty\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"root\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"}],\"name\":\"timestamp\",\"outputs\":[{\"internalType\":\"uint40\",\"name\":\"\",\"type\":\"uint40\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"_notary\",\"type\":\"address\"}],\"name\":\"toDestinationAttestation\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"notary\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"height\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"nonce\",\"type\":\"uint32\"},{\"internalType\":\"uint40\",\"name\":\"destTimestamp\",\"type\":\"uint40\"}],\"internalType\":\"structDestinationAttestation\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"f24caf61": "agentSignatures(uint40,bytes)",
-		"9ffb971e": "attestationData(uint40,bytes)",
-		"a104a5e5": "attestationDataLength()",
-		"65dfb428": "attestationDomains(uint32,uint32)",
-		"9f668e20": "attestationKey(uint32,uint32,uint32)",
-		"3b830f3b": "attestedDestination(uint40,bytes)",
-		"c231bd8f": "attestedDomains(uint40,bytes)",
-		"79ce92a9": "attestedKey(uint40,bytes)",
-		"8b445f51": "attestedNonce(uint40,bytes)",
-		"badad7db": "attestedOrigin(uint40,bytes)",
-		"91eedc1d": "attestedRoot(uint40,bytes)",
-		"c2e19ed2": "castToAttestation(uint40,bytes)",
-		"036227a2": "formatAttestation(bytes,bytes,bytes)",
-		"2951eae3": "formatAttestationData(uint32,uint32,uint32,bytes32)",
-		"794dd214": "formatAttestationFromViews(bytes,bytes,bytes)",
-		"4a0cfe0e": "guardSignature(uint40,bytes)",
-		"dc1e976d": "guardSignatures(uint40,bytes)",
+		"e948e600": "blockNumber(bytes)",
+		"11f6389c": "castToAttestation(bytes)",
+		"ca22c3bb": "formatAttestation(bytes32,uint8,uint32,uint40,uint40)",
+		"902d43cf": "formatSummitAttestation((bytes32,uint8,uint40,uint40),uint32)",
+		"6d409201": "height(bytes)",
 		"3ae7034d": "isAttestation(bytes)",
-		"a43aa286": "notarySignature(uint40,bytes)",
-		"cbe9d784": "notarySignatures(uint40,bytes)",
-		"ce533592": "offsetAgentSignatures()",
-		"d2c4428a": "offsetDestination()",
-		"97d91f1a": "offsetFirstSignature()",
-		"569e1eaf": "offsetNonce()",
-		"320bfc44": "offsetOrigin()",
-		"5b42242d": "offsetRoot()",
-		"40a5737f": "setIndex(uint256)",
-		"7214101b": "unpackDomains(uint64)",
-		"308514be": "unpackKey(uint96)",
+		"4bfacbbd": "isEmpty((address,uint8,uint32,uint40))",
+		"4e765004": "nonce(bytes)",
+		"c2e9e208": "root(bytes)",
+		"1c9aa222": "timestamp(bytes)",
+		"e41e69ea": "toDestinationAttestation(bytes,address)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b50611eeb806100206000396000f3fe608060405234801561001057600080fd5b50600436106101cf5760003560e01c80638b445f5111610104578063badad7db116100a2578063ce53359211610071578063ce533592146103db578063d2c4428a14610453578063dc1e976d1461045a578063f24caf611461046d57600080fd5b8063badad7db146103f5578063c231bd8f14610408578063c2e19ed21461041b578063cbe9d7841461042e57600080fd5b80639f668e20116100de5780639f668e20146103b55780639ffb971e146103c8578063a104a5e5146103db578063a43aa286146103e257600080fd5b80638b445f511461038757806391eedc1d1461039a57806397d91f1a146103ad57600080fd5b80634a0cfe0e1161017157806365dfb4281161014b57806365dfb428146102e85780637214101b14610314578063794dd2141461034457806379ce92a91461035757600080fd5b80634a0cfe0e146102b9578063569e1eaf146102da5780635b42242d146102e157600080fd5b8063320bfc44116101ad578063320bfc44146102485780633ae7034d146102595780633b830f3b1461027c57806340a5737f146102a457600080fd5b8063036227a2146101d45780632951eae3146101fd578063308514be14610210575b600080fd5b6101e76101e2366004611a8c565b61049a565b6040516101f49190611b78565b60405180910390f35b6101e761020b366004611ba4565b6104b1565b61022361021e366004611bef565b610518565b6040805167ffffffffffffffff909316835263ffffffff9091166020830152016101f4565b60005b6040519081526020016101f4565b61026c610267366004611c1d565b61053b565b60405190151581526020016101f4565b61028f61028a366004611c52565b61055a565b60405163ffffffff90911681526020016101f4565b6102b76102b2366004611cac565b600055565b005b6102cc6102c7366004611c52565b610574565b6040516101f4929190611cc5565b600861024b565b600c61024b565b6102fb6102f6366004611ce5565b6105cb565b60405167ffffffffffffffff90911681526020016101f4565b610327610322366004611d18565b6105e9565b6040805163ffffffff9384168152929091166020830152016101f4565b6101e7610352366004611a8c565b610600565b61036a610365366004611c52565b61062b565b6040516bffffffffffffffffffffffff90911681526020016101f4565b61028f610395366004611c52565b610645565b61024b6103a8366004611c52565b61065f565b61024b610679565b61036a6103c3366004611d42565b61068c565b6102cc6103d6366004611c52565b6106be565b602c61024b565b6102cc6103f0366004611c52565b6106db565b61028f610403366004611c52565b610706565b6102fb610416366004611c52565b610720565b6102cc610429366004611c52565b61073a565b61044161043c366004611c52565b610749565b60405160ff90911681526020016101f4565b600461024b565b610441610468366004611c52565b610763565b61048061047b366004611c52565b61077d565b6040805160ff9384168152929091166020830152016101f4565b60606104a78484846107a3565b90505b9392505050565b604080517fffffffff0000000000000000000000000000000000000000000000000000000060e087811b8216602084015286811b8216602484015285901b166028820152602c80820184905282518083039091018152604c9091019091525b949350505050565b600080602083901c67ffffffffffffffff1663ffffffff84165b91509150915091565b6000610554610549836107c3565b62ffffff19166107d4565b92915050565b60006104aa610569838561086a565b62ffffff191661088e565b60006060600061059f600054610593878761086a90919063ffffffff16565b62ffffff1916906108b9565b90506105b062ffffff198216610990565b6105bf62ffffff1983166109b4565b92509250509250929050565b600067ffffffff00000000602084901b1663ffffffff8316176104aa565b60008063ffffffff602084901c8116908416610532565b60606104a761061085600061086a565b61061b85600061086a565b61062685600061086a565b610a07565b60006104aa61063a838561086a565b62ffffff1916610b69565b60006104aa610654838561086a565b62ffffff1916610b95565b60006104aa61066e838561086a565b62ffffff1916610bc1565b6000610687602c6002611db4565b905090565b600063ffffffff8216602084901b67ffffffff0000000016604086901b6bffffffff00000000000000001617176104a7565b600060608161059f6106d0858761086a565b62ffffff1916610bed565b60006060600061059f6000546106fa878761086a90919063ffffffff16565b62ffffff191690610c1f565b60006104aa610715838561086a565b62ffffff1916610d04565b60006104aa61072f838561086a565b62ffffff1916610d30565b60006060600061059f846107c3565b60006104aa610758838561086a565b62ffffff1916610d5c565b60006104aa610772838561086a565b62ffffff1916610d7e565b60008061079861078d848661086a565b62ffffff1916610da8565b915091509250929050565b60606104a76107b185610dd6565b6107ba85610dd6565b61062685610dd6565b60006105548264010100000061086a565b6000601882901c6bffffffffffffffffffffffff166107f5602c6002611db4565b8110156108055750600092915050565b60008061081185610de2565b60ff918216935016905060006108278284611db4565b90508060000361083d5750600095945050505050565b610848604182611dc7565b610854602c6002611db4565b61085e9190611db4565b90931495945050505050565b81516000906020840161088564ffffffffff85168284610e0d565b95945050505050565b6000816108a662ffffff198216640101000000610e54565b506104aa62ffffff198416600480610f6e565b6000826108d162ffffff198216640101000000610e54565b5060006108dd85610de2565b5090508060ff168410610951576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600c60248201527f4f7574206f662072616e6765000000000000000000000000000000000000000060448201526064015b60405180910390fd5b61088561095f604186611dc7565b61096b602c6002611db4565b6109759190611db4565b62ffffff1987169060416301000000610f9e565b5092915050565b60008060606109a0816018611db4565b6109aa9190611db4565b9290921c92915050565b60606000806109d18460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16905060405191508192506109f68483602001611009565b508181016020016040529052919050565b60606000610a14846111f0565b90506000610a21846111f0565b60408051600480825260a0820190925291925061ff00600885901b1660ff84161791600091602082016080803683370190505090508781600081518110610a6a57610a6a611dde565b62ffffff19909216602092830291909101820152604051610ad091610abc9185910160f09190911b7fffff00000000000000000000000000000000000000000000000000000000000016815260020190565b604051602081830303815290604052610dd6565b81600181518110610ae357610ae3611dde565b602002602001019062ffffff1916908162ffffff1916815250508681600281518110610b1157610b11611dde565b602002602001019062ffffff1916908162ffffff1916815250508581600381518110610b3f57610b3f611dde565b62ffffff1990921660209283029190910190910152610b5d816112f0565b98975050505050505050565b600081610b8162ffffff198216640101000000610e54565b506104aa62ffffff1984166000600c610f6e565b600081610bad62ffffff198216640101000000610e54565b506104aa62ffffff19841660086004610f6e565b600081610bd962ffffff198216640101000000610e54565b506104aa62ffffff198416600c602061134f565b600081610c0562ffffff198216640101000000610e54565b506104aa62ffffff1984166000602c640101010000610f9e565b600082610c3762ffffff198216640101000000610e54565b50600080610c4486610de2565b915091508060ff168510610cb4576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600c60248201527f4f7574206f662072616e676500000000000000000000000000000000000000006044820152606401610948565b610cfa6041610cc660ff851688611db4565b610cd09190611dc7565b610cdc602c6002611db4565b610ce69190611db4565b62ffffff1988169060416301000000610f9e565b9695505050505050565b600081610d1c62ffffff198216640101000000610e54565b506104aa62ffffff19841660006004610f6e565b600081610d4862ffffff198216640101000000610e54565b506104aa62ffffff19841660006008610f6e565b600081610d7462ffffff198216640101000000610e54565b5061051083610de2565b600081610d9662ffffff198216640101000000610e54565b50610da083610de2565b509392505050565b60008082610dc162ffffff198216640101000000610e54565b50610dcb84610de2565b909590945092505050565b6000610554828261086a565b60008080610df962ffffff198516602c6002610f6e565b60ff600882901c8116969116945092505050565b600080610e1a8385611db4565b9050604051811115610e2a575060005b80600003610e3f5762ffffff199150506104aa565b5050606092831b9190911790911b1760181b90565b6000610e6083836114fd565b610f67576000610e7e610e7285610990565b64ffffffffff1661151f565b9150506000610e938464ffffffffff1661151f565b6040517f5479706520617373657274696f6e206661696c65642e20476f7420307800000060208201527fffffffffffffffffffff0000000000000000000000000000000000000000000060b086811b8216603d8401527f2e20457870656374656420307800000000000000000000000000000000000000604784015283901b16605482015290925060009150605e016040516020818303038152906040529050806040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016109489190611b78565b5090919050565b6000610f7b826020611e0d565b610f86906008611e26565b60ff16610f9485858561134f565b901c949350505050565b600080610faa86611609565b6bffffffffffffffffffffffff169050610fc386611630565b84610fce8784611db4565b610fd89190611db4565b1115610feb5762ffffff19915050610510565b610ff58582611db4565b9050610cfa8364ffffffffff168286610e0d565b600062ffffff198084160361107a576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601a60248201527f636f7079546f3a204e756c6c20706f696e7465722064657265660000000000006044820152606401610948565b61108383611669565b6110e9576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601d60248201527f636f7079546f3a20496e76616c696420706f696e7465722064657265660000006044820152606401610948565b60006111038460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff169050600061111e85611609565b6bffffffffffffffffffffffff1690506000806040519150858211156111445760206060fd5b8386858560045afa9050806111b5576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601460248201527f6964656e746974793a206f7574206f66206761730000000000000000000000006044820152606401610948565b6111e56111c188610990565b70ffffffffff000000000000000000000000606091821b168817901b851760181b90565b979650505050505050565b6000601882901c6bffffffffffffffffffffffff1681611211604183611e42565b90508161121f604183611dc7565b14611286576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601160248201527f217369676e6174757265734c656e6774680000000000000000000000000000006044820152606401610948565b60ff81106104aa576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601360248201527f546f6f206d616e79207369676e617475726573000000000000000000000000006044820152606401610948565b604051606090600061130584602084016116a5565b905060006113218260181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff169050600061133c8361173f565b9184525082016020016040525092915050565b60008160ff16600003611364575060006104aa565b61137c8460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff1661139760ff841685611db4565b111561141a576113e76113a985611609565b6bffffffffffffffffffffffff166113cf8660181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16858560ff16611755565b6040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016109489190611b78565b60208260ff161115611488576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601960248201527f496e6465783a206d6f7265207468616e203332206279746573000000000000006044820152606401610948565b60088202600061149786611609565b6bffffffffffffffffffffffff16905060007f80000000000000000000000000000000000000000000000000000000000000007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff84011d91909501511695945050505050565b60008164ffffffffff1661151084610990565b64ffffffffff16149392505050565b600080601f5b600f8160ff16111561159257600061153e826008611e26565b60ff1685901c905061154f816118e5565b61ffff16841793508160ff1660101461156a57601084901b93505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01611525565b50600f5b60ff8160ff1610156116035760006115af826008611e26565b60ff1685901c90506115c0816118e5565b61ffff16831792508160ff166000146115db57601083901b92505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01611596565b50915091565b60008061161860606018611db4565b9290921c6bffffffffffffffffffffffff1692915050565b600061164a8260181c6bffffffffffffffffffffffff1690565b61165383611609565b016bffffffffffffffffffffffff169050919050565b600061167482610990565b64ffffffffff1664ffffffffff0361168e57506000919050565b600061169983611630565b60405110199392505050565b6000604051828111156116b85760206060fd5b506000805b845181101561172f5760008582815181106116da576116da611dde565b602002602001015190506116f081848701611009565b506117098160181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff168301925050808061172790611e7d565b9150506116bd565b50606083901b811760181b610510565b600061174a82611917565b610554906020611dc7565b606060006117628661151f565b91505060006117708661151f565b915050600061177e8661151f565b915050600061178c8661151f565b604080517f54797065644d656d566965772f696e646578202d204f76657272616e2074686560208201527f20766965772e20536c6963652069732061742030780000000000000000000000818301527fffffffffffff000000000000000000000000000000000000000000000000000060d098891b811660558301527f2077697468206c656e6774682030780000000000000000000000000000000000605b830181905297891b8116606a8301527f2e20417474656d7074656420746f20696e646578206174206f6666736574203060708301527f7800000000000000000000000000000000000000000000000000000000000000609083015295881b861660918201526097810196909652951b90921660a684015250507f2e0000000000000000000000000000000000000000000000000000000000000060ac8201528151808203608d01815260ad90910190915295945050505050565b60006118f760048360ff16901c611956565b60ff1661ffff919091161760081b61190e82611956565b60ff1617919050565b600060206119338360181c6bffffffffffffffffffffffff1690565b61194c906bffffffffffffffffffffffff16601f611db4565b6105549190611e42565b6040805180820190915260108082527f30313233343536373839616263646566000000000000000000000000000000006020830152600091600f841691829081106119a3576119a3611dde565b016020015160f81c9392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f8301126119f257600080fd5b813567ffffffffffffffff80821115611a0d57611a0d6119b2565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f01168101908282118183101715611a5357611a536119b2565b81604052838152866020858801011115611a6c57600080fd5b836020870160208301376000602085830101528094505050505092915050565b600080600060608486031215611aa157600080fd5b833567ffffffffffffffff80821115611ab957600080fd5b611ac5878388016119e1565b94506020860135915080821115611adb57600080fd5b611ae7878388016119e1565b93506040860135915080821115611afd57600080fd5b50611b0a868287016119e1565b9150509250925092565b6000815180845260005b81811015611b3a57602081850181015186830182015201611b1e565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b6020815260006104aa6020830184611b14565b803563ffffffff81168114611b9f57600080fd5b919050565b60008060008060808587031215611bba57600080fd5b611bc385611b8b565b9350611bd160208601611b8b565b9250611bdf60408601611b8b565b9396929550929360600135925050565b600060208284031215611c0157600080fd5b81356bffffffffffffffffffffffff811681146104aa57600080fd5b600060208284031215611c2f57600080fd5b813567ffffffffffffffff811115611c4657600080fd5b610510848285016119e1565b60008060408385031215611c6557600080fd5b823564ffffffffff81168114611c7a57600080fd5b9150602083013567ffffffffffffffff811115611c9657600080fd5b611ca2858286016119e1565b9150509250929050565b600060208284031215611cbe57600080fd5b5035919050565b64ffffffffff831681526040602082015260006104a76040830184611b14565b60008060408385031215611cf857600080fd5b611d0183611b8b565b9150611d0f60208401611b8b565b90509250929050565b600060208284031215611d2a57600080fd5b813567ffffffffffffffff811681146104aa57600080fd5b600080600060608486031215611d5757600080fd5b611d6084611b8b565b9250611d6e60208501611b8b565b9150611d7c60408501611b8b565b90509250925092565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b8082018082111561055457610554611d85565b808202811582820484141761055457610554611d85565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60ff828116828216039081111561055457610554611d85565b60ff818116838216029081169081811461098957610989611d85565b600082611e78577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8203611eae57611eae611d85565b506001019056fea2646970667358221220c8c27f01d97061e9864cbedbda1622c98cf066af66805692b6a81e196c547bf564736f6c63430008110033",
+	Bin: "0x608060405234801561001057600080fd5b506113b0806100206000396000f3fe608060405234801561001057600080fd5b50600436106100c95760003560e01c80636d40920111610081578063ca22c3bb1161005b578063ca22c3bb146101d7578063e41e69ea146101ea578063e948e6001461025657600080fd5b80636d4092011461017e578063902d43cf146101a3578063c2e9e208146101b657600080fd5b80633ae7034d116100b25780633ae7034d146101205780634bfacbbd146101435780634e7650041461015657600080fd5b806311f6389c146100ce5780631c9aa222146100f7575b600080fd5b6100e16100dc366004610ec2565b610269565b6040516100ee9190610f63565b60405180910390f35b61010a610105366004610ec2565b61028e565b60405164ffffffffff90911681526020016100ee565b61013361012e366004610ec2565b6102ad565b60405190151581526020016100ee565b610133610151366004610fd9565b6102d9565b610169610164366004610ec2565b6102fa565b60405163ffffffff90911681526020016100ee565b61019161018c366004610ec2565b610313565b60405160ff90911681526020016100ee565b6100e16101b1366004611056565b61032c565b6101c96101c4366004610ec2565b610338565b6040519081526020016100ee565b6100e16101e53660046110ed565b610351565b6101fd6101f836600461114b565b610409565b6040516100ee9190815173ffffffffffffffffffffffffffffffffffffffff16815260208083015160ff169082015260408083015163ffffffff169082015260609182015164ffffffffff169181019190915260800190565b61010a610264366004610ec2565b610446565b606060006102768361045f565b905061028762ffffff198216610472565b9392505050565b60006102a761029c8361045f565b62ffffff19166104c5565b92915050565b60006102a76102bc83836104db565b62ffffff191660181c6bffffffffffffffffffffffff16602f1490565b60006102a7825173ffffffffffffffffffffffffffffffffffffffff161590565b60006102a76103088361045f565b62ffffff19166104ff565b60006102a76103218361045f565b62ffffff1916610515565b6060610287838361052b565b60006102a76103468361045f565b62ffffff19166105f5565b60408051602081018790527fff0000000000000000000000000000000000000000000000000000000000000060f887901b16818301527fffffffff0000000000000000000000000000000000000000000000000000000060e086901b1660418201527fffffffffff00000000000000000000000000000000000000000000000000000060d885811b8216604584015284901b16604a8201528151808203602f018152604f9091019091526060905b9695505050505050565b6040805160808101825260008082526020820181905291810182905260608101919091526102878261043a8561045f565b62ffffff19169061060a565b60006102a76104548361045f565b62ffffff1916610688565b60006102a761046d8361069e565b6106aa565b606060008061048f8460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16905060405191508192506104b48483602001610736565b508181016020016040529052919050565b600062ffffff19821661028781602a600561091d565b8151600090602084016104f664ffffffffff8516828461094d565b95945050505050565b600062ffffff198216610287816021600461091d565b600062ffffff198216610287816020600161091d565b606061028783600001518460200151848660400151876060015160408051602081019690965260f89490941b7fff00000000000000000000000000000000000000000000000000000000000000168585015260e09290921b7fffffffff0000000000000000000000000000000000000000000000000000000016604185015260d890811b7fffffffffff000000000000000000000000000000000000000000000000000000908116604586015291901b16604a8301528051602f818403018152604f909201905290565b600062ffffff19821661028781836020610994565b60408051608081018252600060208201819052918101829052606081019190915273ffffffffffffffffffffffffffffffffffffffff8216815261065362ffffff198416610515565b60ff16602082015261066a62ffffff1984166104ff565b63ffffffff16604082015264ffffffffff4216606082015292915050565b600062ffffff198216610287816025600561091d565b60006102a782826104db565b60006106c78260181c6bffffffffffffffffffffffff16602f1490565b610732576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601260248201527f4e6f7420616e206174746573746174696f6e000000000000000000000000000060448201526064015b60405180910390fd5b5090565b600062ffffff19808416036107a7576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601a60248201527f636f7079546f3a204e756c6c20706f696e7465722064657265660000000000006044820152606401610729565b6107b083610b42565b610816576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601d60248201527f636f7079546f3a20496e76616c696420706f696e7465722064657265660000006044820152606401610729565b60006108308460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff169050600061084b85610b7e565b6bffffffffffffffffffffffff1690506000806040519150858211156108715760206060fd5b8386858560045afa9050806108e2576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601460248201527f6964656e746974793a206f7574206f66206761730000000000000000000000006044820152606401610729565b6109126108ee88610ba5565b70ffffffffff000000000000000000000000606091821b168817901b851760181b90565b979650505050505050565b600061092a8260206111bf565b6109359060086111d8565b60ff16610943858585610994565b901c949350505050565b60008061095a83856111fb565b905060405181111561096a575060005b8060000361097f5762ffffff19915050610287565b5050606092831b9190911790911b1760181b90565b60008160ff166000036109a957506000610287565b6109c18460181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff166109dc60ff8416856111fb565b1115610a5f57610a2c6109ee85610b7e565b6bffffffffffffffffffffffff16610a148660181c6bffffffffffffffffffffffff1690565b6bffffffffffffffffffffffff16858560ff16610bc9565b6040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016107299190610f63565b60208260ff161115610acd576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601960248201527f496e6465783a206d6f7265207468616e203332206279746573000000000000006044820152606401610729565b600882026000610adc86610b7e565b6bffffffffffffffffffffffff16905060007f80000000000000000000000000000000000000000000000000000000000000007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff84011d91909501511695945050505050565b6000610b4d82610ba5565b64ffffffffff1664ffffffffff03610b6757506000919050565b6000610b7283610c37565b60405110199392505050565b600080610b8d606060186111fb565b9290921c6bffffffffffffffffffffffff1692915050565b6000806060610bb58160186111fb565b610bbf91906111fb565b9290921c92915050565b60606000610bd686610c70565b9150506000610be486610c70565b9150506000610bf286610c70565b9150506000610c0086610c70565b91505083838383604051602001610c1a949392919061120e565b604051602081830303815290604052945050505050949350505050565b6000610c518260181c6bffffffffffffffffffffffff1690565b610c5a83610b7e565b016bffffffffffffffffffffffff169050919050565b600080601f5b600f8160ff161115610ce3576000610c8f8260086111d8565b60ff1685901c9050610ca081610d5a565b61ffff16841793508160ff16601014610cbb57601084901b93505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01610c76565b50600f5b60ff8160ff161015610d54576000610d008260086111d8565b60ff1685901c9050610d1181610d5a565b61ffff16831792508160ff16600014610d2c57601083901b92505b507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01610ce7565b50915091565b6000610d6c60048360ff16901c610d8c565b60ff1661ffff919091161760081b610d8382610d8c565b60ff1617919050565b6040805180820190915260108082527f30313233343536373839616263646566000000000000000000000000000000006020830152600091600f84169182908110610dd957610dd961134b565b016020015160f81c9392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f830112610e2857600080fd5b813567ffffffffffffffff80821115610e4357610e43610de8565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f01168101908282118183101715610e8957610e89610de8565b81604052838152866020858801011115610ea257600080fd5b836020870160208301376000602085830101528094505050505092915050565b600060208284031215610ed457600080fd5b813567ffffffffffffffff811115610eeb57600080fd5b610ef784828501610e17565b949350505050565b6000815180845260005b81811015610f2557602081850181015186830182015201610f09565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b6020815260006102876020830184610eff565b803573ffffffffffffffffffffffffffffffffffffffff81168114610f9a57600080fd5b919050565b803560ff81168114610f9a57600080fd5b803563ffffffff81168114610f9a57600080fd5b803564ffffffffff81168114610f9a57600080fd5b600060808284031215610feb57600080fd5b6040516080810181811067ffffffffffffffff8211171561100e5761100e610de8565b60405261101a83610f76565b815261102860208401610f9f565b602082015261103960408401610fb0565b604082015261104a60608401610fc4565b60608201529392505050565b60008082840360a081121561106a57600080fd5b608081121561107857600080fd5b506040516080810181811067ffffffffffffffff8211171561109c5761109c610de8565b604052833581526110af60208501610f9f565b60208201526110c060408501610fc4565b60408201526110d160608501610fc4565b606082015291506110e460808401610fb0565b90509250929050565b600080600080600060a0868803121561110557600080fd5b8535945061111560208701610f9f565b935061112360408701610fb0565b925061113160608701610fc4565b915061113f60808701610fc4565b90509295509295909350565b6000806040838503121561115e57600080fd5b823567ffffffffffffffff81111561117557600080fd5b61118185828601610e17565b9250506110e460208401610f76565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60ff82811682821603908111156102a7576102a7611190565b60ff81811683821602908116908181146111f4576111f4611190565b5092915050565b808201808211156102a7576102a7611190565b7f54797065644d656d566965772f696e646578202d204f76657272616e2074686581527f20766965772e20536c696365206973206174203078000000000000000000000060208201527fffffffffffff000000000000000000000000000000000000000000000000000060d086811b821660358401527f2077697468206c656e6774682030780000000000000000000000000000000000603b840181905286821b8316604a8501527f2e20417474656d7074656420746f20696e646578206174206f6666736574203060508501527f7800000000000000000000000000000000000000000000000000000000000000607085015285821b83166071850152607784015283901b1660868201527f2e00000000000000000000000000000000000000000000000000000000000000608c8201526000608d82016103ff565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fdfea264697066735822122010e1a04bb7713d168ab091ddc69331855a0a37862b9fc6ba576ed2d7768b25b364736f6c63430008110033",
 }
 
 // AttestationHarnessABI is the input ABI used to generate the binding from.
@@ -409,76 +234,12 @@ func (_AttestationHarness *AttestationHarnessTransactorRaw) Transact(opts *bind.
 	return _AttestationHarness.Contract.contract.Transact(opts, method, params...)
 }
 
-// AgentSignatures is a free data retrieval call binding the contract method 0xf24caf61.
+// BlockNumber is a free data retrieval call binding the contract method 0xe948e600.
 //
-// Solidity: function agentSignatures(uint40 _type, bytes _payload) pure returns(uint8, uint8)
-func (_AttestationHarness *AttestationHarnessCaller) AgentSignatures(opts *bind.CallOpts, _type *big.Int, _payload []byte) (uint8, uint8, error) {
+// Solidity: function blockNumber(bytes _payload) pure returns(uint40)
+func (_AttestationHarness *AttestationHarnessCaller) BlockNumber(opts *bind.CallOpts, _payload []byte) (*big.Int, error) {
 	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "agentSignatures", _type, _payload)
-
-	if err != nil {
-		return *new(uint8), *new(uint8), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
-	out1 := *abi.ConvertType(out[1], new(uint8)).(*uint8)
-
-	return out0, out1, err
-
-}
-
-// AgentSignatures is a free data retrieval call binding the contract method 0xf24caf61.
-//
-// Solidity: function agentSignatures(uint40 _type, bytes _payload) pure returns(uint8, uint8)
-func (_AttestationHarness *AttestationHarnessSession) AgentSignatures(_type *big.Int, _payload []byte) (uint8, uint8, error) {
-	return _AttestationHarness.Contract.AgentSignatures(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AgentSignatures is a free data retrieval call binding the contract method 0xf24caf61.
-//
-// Solidity: function agentSignatures(uint40 _type, bytes _payload) pure returns(uint8, uint8)
-func (_AttestationHarness *AttestationHarnessCallerSession) AgentSignatures(_type *big.Int, _payload []byte) (uint8, uint8, error) {
-	return _AttestationHarness.Contract.AgentSignatures(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestationData is a free data retrieval call binding the contract method 0x9ffb971e.
-//
-// Solidity: function attestationData(uint40 _type, bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessCaller) AttestationData(opts *bind.CallOpts, _type *big.Int, _payload []byte) (*big.Int, []byte, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "attestationData", _type, _payload)
-
-	if err != nil {
-		return *new(*big.Int), *new([]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-	out1 := *abi.ConvertType(out[1], new([]byte)).(*[]byte)
-
-	return out0, out1, err
-
-}
-
-// AttestationData is a free data retrieval call binding the contract method 0x9ffb971e.
-//
-// Solidity: function attestationData(uint40 _type, bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessSession) AttestationData(_type *big.Int, _payload []byte) (*big.Int, []byte, error) {
-	return _AttestationHarness.Contract.AttestationData(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestationData is a free data retrieval call binding the contract method 0x9ffb971e.
-//
-// Solidity: function attestationData(uint40 _type, bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessCallerSession) AttestationData(_type *big.Int, _payload []byte) (*big.Int, []byte, error) {
-	return _AttestationHarness.Contract.AttestationData(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestationDataLength is a free data retrieval call binding the contract method 0xa104a5e5.
-//
-// Solidity: function attestationDataLength() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCaller) AttestationDataLength(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "attestationDataLength")
+	err := _AttestationHarness.contract.Call(opts, &out, "blockNumber", _payload)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -490,306 +251,26 @@ func (_AttestationHarness *AttestationHarnessCaller) AttestationDataLength(opts 
 
 }
 
-// AttestationDataLength is a free data retrieval call binding the contract method 0xa104a5e5.
+// BlockNumber is a free data retrieval call binding the contract method 0xe948e600.
 //
-// Solidity: function attestationDataLength() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessSession) AttestationDataLength() (*big.Int, error) {
-	return _AttestationHarness.Contract.AttestationDataLength(&_AttestationHarness.CallOpts)
+// Solidity: function blockNumber(bytes _payload) pure returns(uint40)
+func (_AttestationHarness *AttestationHarnessSession) BlockNumber(_payload []byte) (*big.Int, error) {
+	return _AttestationHarness.Contract.BlockNumber(&_AttestationHarness.CallOpts, _payload)
 }
 
-// AttestationDataLength is a free data retrieval call binding the contract method 0xa104a5e5.
+// BlockNumber is a free data retrieval call binding the contract method 0xe948e600.
 //
-// Solidity: function attestationDataLength() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCallerSession) AttestationDataLength() (*big.Int, error) {
-	return _AttestationHarness.Contract.AttestationDataLength(&_AttestationHarness.CallOpts)
+// Solidity: function blockNumber(bytes _payload) pure returns(uint40)
+func (_AttestationHarness *AttestationHarnessCallerSession) BlockNumber(_payload []byte) (*big.Int, error) {
+	return _AttestationHarness.Contract.BlockNumber(&_AttestationHarness.CallOpts, _payload)
 }
 
-// AttestationDomains is a free data retrieval call binding the contract method 0x65dfb428.
+// CastToAttestation is a free data retrieval call binding the contract method 0x11f6389c.
 //
-// Solidity: function attestationDomains(uint32 _origin, uint32 _destination) pure returns(uint64)
-func (_AttestationHarness *AttestationHarnessCaller) AttestationDomains(opts *bind.CallOpts, _origin uint32, _destination uint32) (uint64, error) {
+// Solidity: function castToAttestation(bytes _payload) view returns(bytes)
+func (_AttestationHarness *AttestationHarnessCaller) CastToAttestation(opts *bind.CallOpts, _payload []byte) ([]byte, error) {
 	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "attestationDomains", _origin, _destination)
-
-	if err != nil {
-		return *new(uint64), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint64)).(*uint64)
-
-	return out0, err
-
-}
-
-// AttestationDomains is a free data retrieval call binding the contract method 0x65dfb428.
-//
-// Solidity: function attestationDomains(uint32 _origin, uint32 _destination) pure returns(uint64)
-func (_AttestationHarness *AttestationHarnessSession) AttestationDomains(_origin uint32, _destination uint32) (uint64, error) {
-	return _AttestationHarness.Contract.AttestationDomains(&_AttestationHarness.CallOpts, _origin, _destination)
-}
-
-// AttestationDomains is a free data retrieval call binding the contract method 0x65dfb428.
-//
-// Solidity: function attestationDomains(uint32 _origin, uint32 _destination) pure returns(uint64)
-func (_AttestationHarness *AttestationHarnessCallerSession) AttestationDomains(_origin uint32, _destination uint32) (uint64, error) {
-	return _AttestationHarness.Contract.AttestationDomains(&_AttestationHarness.CallOpts, _origin, _destination)
-}
-
-// AttestationKey is a free data retrieval call binding the contract method 0x9f668e20.
-//
-// Solidity: function attestationKey(uint32 _origin, uint32 _destination, uint32 _nonce) pure returns(uint96)
-func (_AttestationHarness *AttestationHarnessCaller) AttestationKey(opts *bind.CallOpts, _origin uint32, _destination uint32, _nonce uint32) (*big.Int, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "attestationKey", _origin, _destination, _nonce)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// AttestationKey is a free data retrieval call binding the contract method 0x9f668e20.
-//
-// Solidity: function attestationKey(uint32 _origin, uint32 _destination, uint32 _nonce) pure returns(uint96)
-func (_AttestationHarness *AttestationHarnessSession) AttestationKey(_origin uint32, _destination uint32, _nonce uint32) (*big.Int, error) {
-	return _AttestationHarness.Contract.AttestationKey(&_AttestationHarness.CallOpts, _origin, _destination, _nonce)
-}
-
-// AttestationKey is a free data retrieval call binding the contract method 0x9f668e20.
-//
-// Solidity: function attestationKey(uint32 _origin, uint32 _destination, uint32 _nonce) pure returns(uint96)
-func (_AttestationHarness *AttestationHarnessCallerSession) AttestationKey(_origin uint32, _destination uint32, _nonce uint32) (*big.Int, error) {
-	return _AttestationHarness.Contract.AttestationKey(&_AttestationHarness.CallOpts, _origin, _destination, _nonce)
-}
-
-// AttestedDestination is a free data retrieval call binding the contract method 0x3b830f3b.
-//
-// Solidity: function attestedDestination(uint40 _type, bytes _payload) pure returns(uint32)
-func (_AttestationHarness *AttestationHarnessCaller) AttestedDestination(opts *bind.CallOpts, _type *big.Int, _payload []byte) (uint32, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "attestedDestination", _type, _payload)
-
-	if err != nil {
-		return *new(uint32), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint32)).(*uint32)
-
-	return out0, err
-
-}
-
-// AttestedDestination is a free data retrieval call binding the contract method 0x3b830f3b.
-//
-// Solidity: function attestedDestination(uint40 _type, bytes _payload) pure returns(uint32)
-func (_AttestationHarness *AttestationHarnessSession) AttestedDestination(_type *big.Int, _payload []byte) (uint32, error) {
-	return _AttestationHarness.Contract.AttestedDestination(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestedDestination is a free data retrieval call binding the contract method 0x3b830f3b.
-//
-// Solidity: function attestedDestination(uint40 _type, bytes _payload) pure returns(uint32)
-func (_AttestationHarness *AttestationHarnessCallerSession) AttestedDestination(_type *big.Int, _payload []byte) (uint32, error) {
-	return _AttestationHarness.Contract.AttestedDestination(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestedDomains is a free data retrieval call binding the contract method 0xc231bd8f.
-//
-// Solidity: function attestedDomains(uint40 _type, bytes _payload) pure returns(uint64)
-func (_AttestationHarness *AttestationHarnessCaller) AttestedDomains(opts *bind.CallOpts, _type *big.Int, _payload []byte) (uint64, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "attestedDomains", _type, _payload)
-
-	if err != nil {
-		return *new(uint64), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint64)).(*uint64)
-
-	return out0, err
-
-}
-
-// AttestedDomains is a free data retrieval call binding the contract method 0xc231bd8f.
-//
-// Solidity: function attestedDomains(uint40 _type, bytes _payload) pure returns(uint64)
-func (_AttestationHarness *AttestationHarnessSession) AttestedDomains(_type *big.Int, _payload []byte) (uint64, error) {
-	return _AttestationHarness.Contract.AttestedDomains(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestedDomains is a free data retrieval call binding the contract method 0xc231bd8f.
-//
-// Solidity: function attestedDomains(uint40 _type, bytes _payload) pure returns(uint64)
-func (_AttestationHarness *AttestationHarnessCallerSession) AttestedDomains(_type *big.Int, _payload []byte) (uint64, error) {
-	return _AttestationHarness.Contract.AttestedDomains(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestedKey is a free data retrieval call binding the contract method 0x79ce92a9.
-//
-// Solidity: function attestedKey(uint40 _type, bytes _payload) pure returns(uint96)
-func (_AttestationHarness *AttestationHarnessCaller) AttestedKey(opts *bind.CallOpts, _type *big.Int, _payload []byte) (*big.Int, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "attestedKey", _type, _payload)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// AttestedKey is a free data retrieval call binding the contract method 0x79ce92a9.
-//
-// Solidity: function attestedKey(uint40 _type, bytes _payload) pure returns(uint96)
-func (_AttestationHarness *AttestationHarnessSession) AttestedKey(_type *big.Int, _payload []byte) (*big.Int, error) {
-	return _AttestationHarness.Contract.AttestedKey(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestedKey is a free data retrieval call binding the contract method 0x79ce92a9.
-//
-// Solidity: function attestedKey(uint40 _type, bytes _payload) pure returns(uint96)
-func (_AttestationHarness *AttestationHarnessCallerSession) AttestedKey(_type *big.Int, _payload []byte) (*big.Int, error) {
-	return _AttestationHarness.Contract.AttestedKey(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestedNonce is a free data retrieval call binding the contract method 0x8b445f51.
-//
-// Solidity: function attestedNonce(uint40 _type, bytes _payload) pure returns(uint32)
-func (_AttestationHarness *AttestationHarnessCaller) AttestedNonce(opts *bind.CallOpts, _type *big.Int, _payload []byte) (uint32, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "attestedNonce", _type, _payload)
-
-	if err != nil {
-		return *new(uint32), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint32)).(*uint32)
-
-	return out0, err
-
-}
-
-// AttestedNonce is a free data retrieval call binding the contract method 0x8b445f51.
-//
-// Solidity: function attestedNonce(uint40 _type, bytes _payload) pure returns(uint32)
-func (_AttestationHarness *AttestationHarnessSession) AttestedNonce(_type *big.Int, _payload []byte) (uint32, error) {
-	return _AttestationHarness.Contract.AttestedNonce(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestedNonce is a free data retrieval call binding the contract method 0x8b445f51.
-//
-// Solidity: function attestedNonce(uint40 _type, bytes _payload) pure returns(uint32)
-func (_AttestationHarness *AttestationHarnessCallerSession) AttestedNonce(_type *big.Int, _payload []byte) (uint32, error) {
-	return _AttestationHarness.Contract.AttestedNonce(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestedOrigin is a free data retrieval call binding the contract method 0xbadad7db.
-//
-// Solidity: function attestedOrigin(uint40 _type, bytes _payload) pure returns(uint32)
-func (_AttestationHarness *AttestationHarnessCaller) AttestedOrigin(opts *bind.CallOpts, _type *big.Int, _payload []byte) (uint32, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "attestedOrigin", _type, _payload)
-
-	if err != nil {
-		return *new(uint32), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint32)).(*uint32)
-
-	return out0, err
-
-}
-
-// AttestedOrigin is a free data retrieval call binding the contract method 0xbadad7db.
-//
-// Solidity: function attestedOrigin(uint40 _type, bytes _payload) pure returns(uint32)
-func (_AttestationHarness *AttestationHarnessSession) AttestedOrigin(_type *big.Int, _payload []byte) (uint32, error) {
-	return _AttestationHarness.Contract.AttestedOrigin(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestedOrigin is a free data retrieval call binding the contract method 0xbadad7db.
-//
-// Solidity: function attestedOrigin(uint40 _type, bytes _payload) pure returns(uint32)
-func (_AttestationHarness *AttestationHarnessCallerSession) AttestedOrigin(_type *big.Int, _payload []byte) (uint32, error) {
-	return _AttestationHarness.Contract.AttestedOrigin(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestedRoot is a free data retrieval call binding the contract method 0x91eedc1d.
-//
-// Solidity: function attestedRoot(uint40 _type, bytes _payload) pure returns(bytes32)
-func (_AttestationHarness *AttestationHarnessCaller) AttestedRoot(opts *bind.CallOpts, _type *big.Int, _payload []byte) ([32]byte, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "attestedRoot", _type, _payload)
-
-	if err != nil {
-		return *new([32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
-
-	return out0, err
-
-}
-
-// AttestedRoot is a free data retrieval call binding the contract method 0x91eedc1d.
-//
-// Solidity: function attestedRoot(uint40 _type, bytes _payload) pure returns(bytes32)
-func (_AttestationHarness *AttestationHarnessSession) AttestedRoot(_type *big.Int, _payload []byte) ([32]byte, error) {
-	return _AttestationHarness.Contract.AttestedRoot(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// AttestedRoot is a free data retrieval call binding the contract method 0x91eedc1d.
-//
-// Solidity: function attestedRoot(uint40 _type, bytes _payload) pure returns(bytes32)
-func (_AttestationHarness *AttestationHarnessCallerSession) AttestedRoot(_type *big.Int, _payload []byte) ([32]byte, error) {
-	return _AttestationHarness.Contract.AttestedRoot(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// CastToAttestation is a free data retrieval call binding the contract method 0xc2e19ed2.
-//
-// Solidity: function castToAttestation(uint40 , bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessCaller) CastToAttestation(opts *bind.CallOpts, arg0 *big.Int, _payload []byte) (*big.Int, []byte, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "castToAttestation", arg0, _payload)
-
-	if err != nil {
-		return *new(*big.Int), *new([]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-	out1 := *abi.ConvertType(out[1], new([]byte)).(*[]byte)
-
-	return out0, out1, err
-
-}
-
-// CastToAttestation is a free data retrieval call binding the contract method 0xc2e19ed2.
-//
-// Solidity: function castToAttestation(uint40 , bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessSession) CastToAttestation(arg0 *big.Int, _payload []byte) (*big.Int, []byte, error) {
-	return _AttestationHarness.Contract.CastToAttestation(&_AttestationHarness.CallOpts, arg0, _payload)
-}
-
-// CastToAttestation is a free data retrieval call binding the contract method 0xc2e19ed2.
-//
-// Solidity: function castToAttestation(uint40 , bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessCallerSession) CastToAttestation(arg0 *big.Int, _payload []byte) (*big.Int, []byte, error) {
-	return _AttestationHarness.Contract.CastToAttestation(&_AttestationHarness.CallOpts, arg0, _payload)
-}
-
-// FormatAttestation is a free data retrieval call binding the contract method 0x036227a2.
-//
-// Solidity: function formatAttestation(bytes _data, bytes _guardSignatures, bytes _notarySignatures) view returns(bytes)
-func (_AttestationHarness *AttestationHarnessCaller) FormatAttestation(opts *bind.CallOpts, _data []byte, _guardSignatures []byte, _notarySignatures []byte) ([]byte, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "formatAttestation", _data, _guardSignatures, _notarySignatures)
+	err := _AttestationHarness.contract.Call(opts, &out, "castToAttestation", _payload)
 
 	if err != nil {
 		return *new([]byte), err
@@ -801,26 +282,26 @@ func (_AttestationHarness *AttestationHarnessCaller) FormatAttestation(opts *bin
 
 }
 
-// FormatAttestation is a free data retrieval call binding the contract method 0x036227a2.
+// CastToAttestation is a free data retrieval call binding the contract method 0x11f6389c.
 //
-// Solidity: function formatAttestation(bytes _data, bytes _guardSignatures, bytes _notarySignatures) view returns(bytes)
-func (_AttestationHarness *AttestationHarnessSession) FormatAttestation(_data []byte, _guardSignatures []byte, _notarySignatures []byte) ([]byte, error) {
-	return _AttestationHarness.Contract.FormatAttestation(&_AttestationHarness.CallOpts, _data, _guardSignatures, _notarySignatures)
+// Solidity: function castToAttestation(bytes _payload) view returns(bytes)
+func (_AttestationHarness *AttestationHarnessSession) CastToAttestation(_payload []byte) ([]byte, error) {
+	return _AttestationHarness.Contract.CastToAttestation(&_AttestationHarness.CallOpts, _payload)
 }
 
-// FormatAttestation is a free data retrieval call binding the contract method 0x036227a2.
+// CastToAttestation is a free data retrieval call binding the contract method 0x11f6389c.
 //
-// Solidity: function formatAttestation(bytes _data, bytes _guardSignatures, bytes _notarySignatures) view returns(bytes)
-func (_AttestationHarness *AttestationHarnessCallerSession) FormatAttestation(_data []byte, _guardSignatures []byte, _notarySignatures []byte) ([]byte, error) {
-	return _AttestationHarness.Contract.FormatAttestation(&_AttestationHarness.CallOpts, _data, _guardSignatures, _notarySignatures)
+// Solidity: function castToAttestation(bytes _payload) view returns(bytes)
+func (_AttestationHarness *AttestationHarnessCallerSession) CastToAttestation(_payload []byte) ([]byte, error) {
+	return _AttestationHarness.Contract.CastToAttestation(&_AttestationHarness.CallOpts, _payload)
 }
 
-// FormatAttestationData is a free data retrieval call binding the contract method 0x2951eae3.
+// FormatAttestation is a free data retrieval call binding the contract method 0xca22c3bb.
 //
-// Solidity: function formatAttestationData(uint32 _origin, uint32 _destination, uint32 _nonce, bytes32 _root) pure returns(bytes)
-func (_AttestationHarness *AttestationHarnessCaller) FormatAttestationData(opts *bind.CallOpts, _origin uint32, _destination uint32, _nonce uint32, _root [32]byte) ([]byte, error) {
+// Solidity: function formatAttestation(bytes32 _root, uint8 _depth, uint32 _nonce, uint40 _blockNumber, uint40 _timestamp) pure returns(bytes)
+func (_AttestationHarness *AttestationHarnessCaller) FormatAttestation(opts *bind.CallOpts, _root [32]byte, _depth uint8, _nonce uint32, _blockNumber *big.Int, _timestamp *big.Int) ([]byte, error) {
 	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "formatAttestationData", _origin, _destination, _nonce, _root)
+	err := _AttestationHarness.contract.Call(opts, &out, "formatAttestation", _root, _depth, _nonce, _blockNumber, _timestamp)
 
 	if err != nil {
 		return *new([]byte), err
@@ -832,26 +313,26 @@ func (_AttestationHarness *AttestationHarnessCaller) FormatAttestationData(opts 
 
 }
 
-// FormatAttestationData is a free data retrieval call binding the contract method 0x2951eae3.
+// FormatAttestation is a free data retrieval call binding the contract method 0xca22c3bb.
 //
-// Solidity: function formatAttestationData(uint32 _origin, uint32 _destination, uint32 _nonce, bytes32 _root) pure returns(bytes)
-func (_AttestationHarness *AttestationHarnessSession) FormatAttestationData(_origin uint32, _destination uint32, _nonce uint32, _root [32]byte) ([]byte, error) {
-	return _AttestationHarness.Contract.FormatAttestationData(&_AttestationHarness.CallOpts, _origin, _destination, _nonce, _root)
+// Solidity: function formatAttestation(bytes32 _root, uint8 _depth, uint32 _nonce, uint40 _blockNumber, uint40 _timestamp) pure returns(bytes)
+func (_AttestationHarness *AttestationHarnessSession) FormatAttestation(_root [32]byte, _depth uint8, _nonce uint32, _blockNumber *big.Int, _timestamp *big.Int) ([]byte, error) {
+	return _AttestationHarness.Contract.FormatAttestation(&_AttestationHarness.CallOpts, _root, _depth, _nonce, _blockNumber, _timestamp)
 }
 
-// FormatAttestationData is a free data retrieval call binding the contract method 0x2951eae3.
+// FormatAttestation is a free data retrieval call binding the contract method 0xca22c3bb.
 //
-// Solidity: function formatAttestationData(uint32 _origin, uint32 _destination, uint32 _nonce, bytes32 _root) pure returns(bytes)
-func (_AttestationHarness *AttestationHarnessCallerSession) FormatAttestationData(_origin uint32, _destination uint32, _nonce uint32, _root [32]byte) ([]byte, error) {
-	return _AttestationHarness.Contract.FormatAttestationData(&_AttestationHarness.CallOpts, _origin, _destination, _nonce, _root)
+// Solidity: function formatAttestation(bytes32 _root, uint8 _depth, uint32 _nonce, uint40 _blockNumber, uint40 _timestamp) pure returns(bytes)
+func (_AttestationHarness *AttestationHarnessCallerSession) FormatAttestation(_root [32]byte, _depth uint8, _nonce uint32, _blockNumber *big.Int, _timestamp *big.Int) ([]byte, error) {
+	return _AttestationHarness.Contract.FormatAttestation(&_AttestationHarness.CallOpts, _root, _depth, _nonce, _blockNumber, _timestamp)
 }
 
-// FormatAttestationFromViews is a free data retrieval call binding the contract method 0x794dd214.
+// FormatSummitAttestation is a free data retrieval call binding the contract method 0x902d43cf.
 //
-// Solidity: function formatAttestationFromViews(bytes _data, bytes _guardSignatures, bytes _notarySignatures) view returns(bytes)
-func (_AttestationHarness *AttestationHarnessCaller) FormatAttestationFromViews(opts *bind.CallOpts, _data []byte, _guardSignatures []byte, _notarySignatures []byte) ([]byte, error) {
+// Solidity: function formatSummitAttestation((bytes32,uint8,uint40,uint40) _summitAtt, uint32 _nonce) pure returns(bytes)
+func (_AttestationHarness *AttestationHarnessCaller) FormatSummitAttestation(opts *bind.CallOpts, _summitAtt SummitAttestation, _nonce uint32) ([]byte, error) {
 	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "formatAttestationFromViews", _data, _guardSignatures, _notarySignatures)
+	err := _AttestationHarness.contract.Call(opts, &out, "formatSummitAttestation", _summitAtt, _nonce)
 
 	if err != nil {
 		return *new([]byte), err
@@ -863,58 +344,26 @@ func (_AttestationHarness *AttestationHarnessCaller) FormatAttestationFromViews(
 
 }
 
-// FormatAttestationFromViews is a free data retrieval call binding the contract method 0x794dd214.
+// FormatSummitAttestation is a free data retrieval call binding the contract method 0x902d43cf.
 //
-// Solidity: function formatAttestationFromViews(bytes _data, bytes _guardSignatures, bytes _notarySignatures) view returns(bytes)
-func (_AttestationHarness *AttestationHarnessSession) FormatAttestationFromViews(_data []byte, _guardSignatures []byte, _notarySignatures []byte) ([]byte, error) {
-	return _AttestationHarness.Contract.FormatAttestationFromViews(&_AttestationHarness.CallOpts, _data, _guardSignatures, _notarySignatures)
+// Solidity: function formatSummitAttestation((bytes32,uint8,uint40,uint40) _summitAtt, uint32 _nonce) pure returns(bytes)
+func (_AttestationHarness *AttestationHarnessSession) FormatSummitAttestation(_summitAtt SummitAttestation, _nonce uint32) ([]byte, error) {
+	return _AttestationHarness.Contract.FormatSummitAttestation(&_AttestationHarness.CallOpts, _summitAtt, _nonce)
 }
 
-// FormatAttestationFromViews is a free data retrieval call binding the contract method 0x794dd214.
+// FormatSummitAttestation is a free data retrieval call binding the contract method 0x902d43cf.
 //
-// Solidity: function formatAttestationFromViews(bytes _data, bytes _guardSignatures, bytes _notarySignatures) view returns(bytes)
-func (_AttestationHarness *AttestationHarnessCallerSession) FormatAttestationFromViews(_data []byte, _guardSignatures []byte, _notarySignatures []byte) ([]byte, error) {
-	return _AttestationHarness.Contract.FormatAttestationFromViews(&_AttestationHarness.CallOpts, _data, _guardSignatures, _notarySignatures)
+// Solidity: function formatSummitAttestation((bytes32,uint8,uint40,uint40) _summitAtt, uint32 _nonce) pure returns(bytes)
+func (_AttestationHarness *AttestationHarnessCallerSession) FormatSummitAttestation(_summitAtt SummitAttestation, _nonce uint32) ([]byte, error) {
+	return _AttestationHarness.Contract.FormatSummitAttestation(&_AttestationHarness.CallOpts, _summitAtt, _nonce)
 }
 
-// GuardSignature is a free data retrieval call binding the contract method 0x4a0cfe0e.
+// Height is a free data retrieval call binding the contract method 0x6d409201.
 //
-// Solidity: function guardSignature(uint40 _type, bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessCaller) GuardSignature(opts *bind.CallOpts, _type *big.Int, _payload []byte) (*big.Int, []byte, error) {
+// Solidity: function height(bytes _payload) pure returns(uint8)
+func (_AttestationHarness *AttestationHarnessCaller) Height(opts *bind.CallOpts, _payload []byte) (uint8, error) {
 	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "guardSignature", _type, _payload)
-
-	if err != nil {
-		return *new(*big.Int), *new([]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-	out1 := *abi.ConvertType(out[1], new([]byte)).(*[]byte)
-
-	return out0, out1, err
-
-}
-
-// GuardSignature is a free data retrieval call binding the contract method 0x4a0cfe0e.
-//
-// Solidity: function guardSignature(uint40 _type, bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessSession) GuardSignature(_type *big.Int, _payload []byte) (*big.Int, []byte, error) {
-	return _AttestationHarness.Contract.GuardSignature(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// GuardSignature is a free data retrieval call binding the contract method 0x4a0cfe0e.
-//
-// Solidity: function guardSignature(uint40 _type, bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessCallerSession) GuardSignature(_type *big.Int, _payload []byte) (*big.Int, []byte, error) {
-	return _AttestationHarness.Contract.GuardSignature(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// GuardSignatures is a free data retrieval call binding the contract method 0xdc1e976d.
-//
-// Solidity: function guardSignatures(uint40 _type, bytes _payload) pure returns(uint8)
-func (_AttestationHarness *AttestationHarnessCaller) GuardSignatures(opts *bind.CallOpts, _type *big.Int, _payload []byte) (uint8, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "guardSignatures", _type, _payload)
+	err := _AttestationHarness.contract.Call(opts, &out, "height", _payload)
 
 	if err != nil {
 		return *new(uint8), err
@@ -926,18 +375,18 @@ func (_AttestationHarness *AttestationHarnessCaller) GuardSignatures(opts *bind.
 
 }
 
-// GuardSignatures is a free data retrieval call binding the contract method 0xdc1e976d.
+// Height is a free data retrieval call binding the contract method 0x6d409201.
 //
-// Solidity: function guardSignatures(uint40 _type, bytes _payload) pure returns(uint8)
-func (_AttestationHarness *AttestationHarnessSession) GuardSignatures(_type *big.Int, _payload []byte) (uint8, error) {
-	return _AttestationHarness.Contract.GuardSignatures(&_AttestationHarness.CallOpts, _type, _payload)
+// Solidity: function height(bytes _payload) pure returns(uint8)
+func (_AttestationHarness *AttestationHarnessSession) Height(_payload []byte) (uint8, error) {
+	return _AttestationHarness.Contract.Height(&_AttestationHarness.CallOpts, _payload)
 }
 
-// GuardSignatures is a free data retrieval call binding the contract method 0xdc1e976d.
+// Height is a free data retrieval call binding the contract method 0x6d409201.
 //
-// Solidity: function guardSignatures(uint40 _type, bytes _payload) pure returns(uint8)
-func (_AttestationHarness *AttestationHarnessCallerSession) GuardSignatures(_type *big.Int, _payload []byte) (uint8, error) {
-	return _AttestationHarness.Contract.GuardSignatures(&_AttestationHarness.CallOpts, _type, _payload)
+// Solidity: function height(bytes _payload) pure returns(uint8)
+func (_AttestationHarness *AttestationHarnessCallerSession) Height(_payload []byte) (uint8, error) {
+	return _AttestationHarness.Contract.Height(&_AttestationHarness.CallOpts, _payload)
 }
 
 // IsAttestation is a free data retrieval call binding the contract method 0x3ae7034d.
@@ -971,357 +420,338 @@ func (_AttestationHarness *AttestationHarnessCallerSession) IsAttestation(_paylo
 	return _AttestationHarness.Contract.IsAttestation(&_AttestationHarness.CallOpts, _payload)
 }
 
-// NotarySignature is a free data retrieval call binding the contract method 0xa43aa286.
+// IsEmpty is a free data retrieval call binding the contract method 0x4bfacbbd.
 //
-// Solidity: function notarySignature(uint40 _type, bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessCaller) NotarySignature(opts *bind.CallOpts, _type *big.Int, _payload []byte) (*big.Int, []byte, error) {
+// Solidity: function isEmpty((address,uint8,uint32,uint40) _destAtt) pure returns(bool)
+func (_AttestationHarness *AttestationHarnessCaller) IsEmpty(opts *bind.CallOpts, _destAtt DestinationAttestation) (bool, error) {
 	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "notarySignature", _type, _payload)
+	err := _AttestationHarness.contract.Call(opts, &out, "isEmpty", _destAtt)
 
 	if err != nil {
-		return *new(*big.Int), *new([]byte), err
+		return *new(bool), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-	out1 := *abi.ConvertType(out[1], new([]byte)).(*[]byte)
-
-	return out0, out1, err
-
-}
-
-// NotarySignature is a free data retrieval call binding the contract method 0xa43aa286.
-//
-// Solidity: function notarySignature(uint40 _type, bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessSession) NotarySignature(_type *big.Int, _payload []byte) (*big.Int, []byte, error) {
-	return _AttestationHarness.Contract.NotarySignature(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// NotarySignature is a free data retrieval call binding the contract method 0xa43aa286.
-//
-// Solidity: function notarySignature(uint40 _type, bytes _payload) view returns(uint40, bytes)
-func (_AttestationHarness *AttestationHarnessCallerSession) NotarySignature(_type *big.Int, _payload []byte) (*big.Int, []byte, error) {
-	return _AttestationHarness.Contract.NotarySignature(&_AttestationHarness.CallOpts, _type, _payload)
-}
-
-// NotarySignatures is a free data retrieval call binding the contract method 0xcbe9d784.
-//
-// Solidity: function notarySignatures(uint40 _type, bytes _payload) pure returns(uint8)
-func (_AttestationHarness *AttestationHarnessCaller) NotarySignatures(opts *bind.CallOpts, _type *big.Int, _payload []byte) (uint8, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "notarySignatures", _type, _payload)
-
-	if err != nil {
-		return *new(uint8), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
 
 }
 
-// NotarySignatures is a free data retrieval call binding the contract method 0xcbe9d784.
+// IsEmpty is a free data retrieval call binding the contract method 0x4bfacbbd.
 //
-// Solidity: function notarySignatures(uint40 _type, bytes _payload) pure returns(uint8)
-func (_AttestationHarness *AttestationHarnessSession) NotarySignatures(_type *big.Int, _payload []byte) (uint8, error) {
-	return _AttestationHarness.Contract.NotarySignatures(&_AttestationHarness.CallOpts, _type, _payload)
+// Solidity: function isEmpty((address,uint8,uint32,uint40) _destAtt) pure returns(bool)
+func (_AttestationHarness *AttestationHarnessSession) IsEmpty(_destAtt DestinationAttestation) (bool, error) {
+	return _AttestationHarness.Contract.IsEmpty(&_AttestationHarness.CallOpts, _destAtt)
 }
 
-// NotarySignatures is a free data retrieval call binding the contract method 0xcbe9d784.
+// IsEmpty is a free data retrieval call binding the contract method 0x4bfacbbd.
 //
-// Solidity: function notarySignatures(uint40 _type, bytes _payload) pure returns(uint8)
-func (_AttestationHarness *AttestationHarnessCallerSession) NotarySignatures(_type *big.Int, _payload []byte) (uint8, error) {
-	return _AttestationHarness.Contract.NotarySignatures(&_AttestationHarness.CallOpts, _type, _payload)
+// Solidity: function isEmpty((address,uint8,uint32,uint40) _destAtt) pure returns(bool)
+func (_AttestationHarness *AttestationHarnessCallerSession) IsEmpty(_destAtt DestinationAttestation) (bool, error) {
+	return _AttestationHarness.Contract.IsEmpty(&_AttestationHarness.CallOpts, _destAtt)
 }
 
-// OffsetAgentSignatures is a free data retrieval call binding the contract method 0xce533592.
+// Nonce is a free data retrieval call binding the contract method 0x4e765004.
 //
-// Solidity: function offsetAgentSignatures() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCaller) OffsetAgentSignatures(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function nonce(bytes _payload) pure returns(uint32)
+func (_AttestationHarness *AttestationHarnessCaller) Nonce(opts *bind.CallOpts, _payload []byte) (uint32, error) {
 	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "offsetAgentSignatures")
+	err := _AttestationHarness.contract.Call(opts, &out, "nonce", _payload)
 
 	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// OffsetAgentSignatures is a free data retrieval call binding the contract method 0xce533592.
-//
-// Solidity: function offsetAgentSignatures() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessSession) OffsetAgentSignatures() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetAgentSignatures(&_AttestationHarness.CallOpts)
-}
-
-// OffsetAgentSignatures is a free data retrieval call binding the contract method 0xce533592.
-//
-// Solidity: function offsetAgentSignatures() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCallerSession) OffsetAgentSignatures() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetAgentSignatures(&_AttestationHarness.CallOpts)
-}
-
-// OffsetDestination is a free data retrieval call binding the contract method 0xd2c4428a.
-//
-// Solidity: function offsetDestination() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCaller) OffsetDestination(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "offsetDestination")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// OffsetDestination is a free data retrieval call binding the contract method 0xd2c4428a.
-//
-// Solidity: function offsetDestination() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessSession) OffsetDestination() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetDestination(&_AttestationHarness.CallOpts)
-}
-
-// OffsetDestination is a free data retrieval call binding the contract method 0xd2c4428a.
-//
-// Solidity: function offsetDestination() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCallerSession) OffsetDestination() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetDestination(&_AttestationHarness.CallOpts)
-}
-
-// OffsetFirstSignature is a free data retrieval call binding the contract method 0x97d91f1a.
-//
-// Solidity: function offsetFirstSignature() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCaller) OffsetFirstSignature(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "offsetFirstSignature")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// OffsetFirstSignature is a free data retrieval call binding the contract method 0x97d91f1a.
-//
-// Solidity: function offsetFirstSignature() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessSession) OffsetFirstSignature() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetFirstSignature(&_AttestationHarness.CallOpts)
-}
-
-// OffsetFirstSignature is a free data retrieval call binding the contract method 0x97d91f1a.
-//
-// Solidity: function offsetFirstSignature() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCallerSession) OffsetFirstSignature() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetFirstSignature(&_AttestationHarness.CallOpts)
-}
-
-// OffsetNonce is a free data retrieval call binding the contract method 0x569e1eaf.
-//
-// Solidity: function offsetNonce() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCaller) OffsetNonce(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "offsetNonce")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// OffsetNonce is a free data retrieval call binding the contract method 0x569e1eaf.
-//
-// Solidity: function offsetNonce() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessSession) OffsetNonce() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetNonce(&_AttestationHarness.CallOpts)
-}
-
-// OffsetNonce is a free data retrieval call binding the contract method 0x569e1eaf.
-//
-// Solidity: function offsetNonce() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCallerSession) OffsetNonce() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetNonce(&_AttestationHarness.CallOpts)
-}
-
-// OffsetOrigin is a free data retrieval call binding the contract method 0x320bfc44.
-//
-// Solidity: function offsetOrigin() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCaller) OffsetOrigin(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "offsetOrigin")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// OffsetOrigin is a free data retrieval call binding the contract method 0x320bfc44.
-//
-// Solidity: function offsetOrigin() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessSession) OffsetOrigin() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetOrigin(&_AttestationHarness.CallOpts)
-}
-
-// OffsetOrigin is a free data retrieval call binding the contract method 0x320bfc44.
-//
-// Solidity: function offsetOrigin() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCallerSession) OffsetOrigin() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetOrigin(&_AttestationHarness.CallOpts)
-}
-
-// OffsetRoot is a free data retrieval call binding the contract method 0x5b42242d.
-//
-// Solidity: function offsetRoot() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCaller) OffsetRoot(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "offsetRoot")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// OffsetRoot is a free data retrieval call binding the contract method 0x5b42242d.
-//
-// Solidity: function offsetRoot() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessSession) OffsetRoot() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetRoot(&_AttestationHarness.CallOpts)
-}
-
-// OffsetRoot is a free data retrieval call binding the contract method 0x5b42242d.
-//
-// Solidity: function offsetRoot() pure returns(uint256)
-func (_AttestationHarness *AttestationHarnessCallerSession) OffsetRoot() (*big.Int, error) {
-	return _AttestationHarness.Contract.OffsetRoot(&_AttestationHarness.CallOpts)
-}
-
-// UnpackDomains is a free data retrieval call binding the contract method 0x7214101b.
-//
-// Solidity: function unpackDomains(uint64 _attestationDomains) pure returns(uint32, uint32)
-func (_AttestationHarness *AttestationHarnessCaller) UnpackDomains(opts *bind.CallOpts, _attestationDomains uint64) (uint32, uint32, error) {
-	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "unpackDomains", _attestationDomains)
-
-	if err != nil {
-		return *new(uint32), *new(uint32), err
+		return *new(uint32), err
 	}
 
 	out0 := *abi.ConvertType(out[0], new(uint32)).(*uint32)
-	out1 := *abi.ConvertType(out[1], new(uint32)).(*uint32)
 
-	return out0, out1, err
+	return out0, err
 
 }
 
-// UnpackDomains is a free data retrieval call binding the contract method 0x7214101b.
+// Nonce is a free data retrieval call binding the contract method 0x4e765004.
 //
-// Solidity: function unpackDomains(uint64 _attestationDomains) pure returns(uint32, uint32)
-func (_AttestationHarness *AttestationHarnessSession) UnpackDomains(_attestationDomains uint64) (uint32, uint32, error) {
-	return _AttestationHarness.Contract.UnpackDomains(&_AttestationHarness.CallOpts, _attestationDomains)
+// Solidity: function nonce(bytes _payload) pure returns(uint32)
+func (_AttestationHarness *AttestationHarnessSession) Nonce(_payload []byte) (uint32, error) {
+	return _AttestationHarness.Contract.Nonce(&_AttestationHarness.CallOpts, _payload)
 }
 
-// UnpackDomains is a free data retrieval call binding the contract method 0x7214101b.
+// Nonce is a free data retrieval call binding the contract method 0x4e765004.
 //
-// Solidity: function unpackDomains(uint64 _attestationDomains) pure returns(uint32, uint32)
-func (_AttestationHarness *AttestationHarnessCallerSession) UnpackDomains(_attestationDomains uint64) (uint32, uint32, error) {
-	return _AttestationHarness.Contract.UnpackDomains(&_AttestationHarness.CallOpts, _attestationDomains)
+// Solidity: function nonce(bytes _payload) pure returns(uint32)
+func (_AttestationHarness *AttestationHarnessCallerSession) Nonce(_payload []byte) (uint32, error) {
+	return _AttestationHarness.Contract.Nonce(&_AttestationHarness.CallOpts, _payload)
 }
 
-// UnpackKey is a free data retrieval call binding the contract method 0x308514be.
+// Root is a free data retrieval call binding the contract method 0xc2e9e208.
 //
-// Solidity: function unpackKey(uint96 _attestationKey) pure returns(uint64 domains, uint32 nonce)
-func (_AttestationHarness *AttestationHarnessCaller) UnpackKey(opts *bind.CallOpts, _attestationKey *big.Int) (struct {
-	Domains uint64
-	Nonce   uint32
-}, error) {
+// Solidity: function root(bytes _payload) pure returns(bytes32)
+func (_AttestationHarness *AttestationHarnessCaller) Root(opts *bind.CallOpts, _payload []byte) ([32]byte, error) {
 	var out []interface{}
-	err := _AttestationHarness.contract.Call(opts, &out, "unpackKey", _attestationKey)
+	err := _AttestationHarness.contract.Call(opts, &out, "root", _payload)
 
-	outstruct := new(struct {
-		Domains uint64
-		Nonce   uint32
-	})
 	if err != nil {
-		return *outstruct, err
+		return *new([32]byte), err
 	}
 
-	outstruct.Domains = *abi.ConvertType(out[0], new(uint64)).(*uint64)
-	outstruct.Nonce = *abi.ConvertType(out[1], new(uint32)).(*uint32)
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
-	return *outstruct, err
+	return out0, err
 
 }
 
-// UnpackKey is a free data retrieval call binding the contract method 0x308514be.
+// Root is a free data retrieval call binding the contract method 0xc2e9e208.
 //
-// Solidity: function unpackKey(uint96 _attestationKey) pure returns(uint64 domains, uint32 nonce)
-func (_AttestationHarness *AttestationHarnessSession) UnpackKey(_attestationKey *big.Int) (struct {
-	Domains uint64
-	Nonce   uint32
-}, error) {
-	return _AttestationHarness.Contract.UnpackKey(&_AttestationHarness.CallOpts, _attestationKey)
+// Solidity: function root(bytes _payload) pure returns(bytes32)
+func (_AttestationHarness *AttestationHarnessSession) Root(_payload []byte) ([32]byte, error) {
+	return _AttestationHarness.Contract.Root(&_AttestationHarness.CallOpts, _payload)
 }
 
-// UnpackKey is a free data retrieval call binding the contract method 0x308514be.
+// Root is a free data retrieval call binding the contract method 0xc2e9e208.
 //
-// Solidity: function unpackKey(uint96 _attestationKey) pure returns(uint64 domains, uint32 nonce)
-func (_AttestationHarness *AttestationHarnessCallerSession) UnpackKey(_attestationKey *big.Int) (struct {
-	Domains uint64
-	Nonce   uint32
-}, error) {
-	return _AttestationHarness.Contract.UnpackKey(&_AttestationHarness.CallOpts, _attestationKey)
+// Solidity: function root(bytes _payload) pure returns(bytes32)
+func (_AttestationHarness *AttestationHarnessCallerSession) Root(_payload []byte) ([32]byte, error) {
+	return _AttestationHarness.Contract.Root(&_AttestationHarness.CallOpts, _payload)
 }
 
-// SetIndex is a paid mutator transaction binding the contract method 0x40a5737f.
+// Timestamp is a free data retrieval call binding the contract method 0x1c9aa222.
 //
-// Solidity: function setIndex(uint256 index) returns()
-func (_AttestationHarness *AttestationHarnessTransactor) SetIndex(opts *bind.TransactOpts, index *big.Int) (*types.Transaction, error) {
-	return _AttestationHarness.contract.Transact(opts, "setIndex", index)
+// Solidity: function timestamp(bytes _payload) pure returns(uint40)
+func (_AttestationHarness *AttestationHarnessCaller) Timestamp(opts *bind.CallOpts, _payload []byte) (*big.Int, error) {
+	var out []interface{}
+	err := _AttestationHarness.contract.Call(opts, &out, "timestamp", _payload)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
-// SetIndex is a paid mutator transaction binding the contract method 0x40a5737f.
+// Timestamp is a free data retrieval call binding the contract method 0x1c9aa222.
 //
-// Solidity: function setIndex(uint256 index) returns()
-func (_AttestationHarness *AttestationHarnessSession) SetIndex(index *big.Int) (*types.Transaction, error) {
-	return _AttestationHarness.Contract.SetIndex(&_AttestationHarness.TransactOpts, index)
+// Solidity: function timestamp(bytes _payload) pure returns(uint40)
+func (_AttestationHarness *AttestationHarnessSession) Timestamp(_payload []byte) (*big.Int, error) {
+	return _AttestationHarness.Contract.Timestamp(&_AttestationHarness.CallOpts, _payload)
 }
 
-// SetIndex is a paid mutator transaction binding the contract method 0x40a5737f.
+// Timestamp is a free data retrieval call binding the contract method 0x1c9aa222.
 //
-// Solidity: function setIndex(uint256 index) returns()
-func (_AttestationHarness *AttestationHarnessTransactorSession) SetIndex(index *big.Int) (*types.Transaction, error) {
-	return _AttestationHarness.Contract.SetIndex(&_AttestationHarness.TransactOpts, index)
+// Solidity: function timestamp(bytes _payload) pure returns(uint40)
+func (_AttestationHarness *AttestationHarnessCallerSession) Timestamp(_payload []byte) (*big.Int, error) {
+	return _AttestationHarness.Contract.Timestamp(&_AttestationHarness.CallOpts, _payload)
+}
+
+// ToDestinationAttestation is a free data retrieval call binding the contract method 0xe41e69ea.
+//
+// Solidity: function toDestinationAttestation(bytes _payload, address _notary) view returns((address,uint8,uint32,uint40))
+func (_AttestationHarness *AttestationHarnessCaller) ToDestinationAttestation(opts *bind.CallOpts, _payload []byte, _notary common.Address) (DestinationAttestation, error) {
+	var out []interface{}
+	err := _AttestationHarness.contract.Call(opts, &out, "toDestinationAttestation", _payload, _notary)
+
+	if err != nil {
+		return *new(DestinationAttestation), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(DestinationAttestation)).(*DestinationAttestation)
+
+	return out0, err
+
+}
+
+// ToDestinationAttestation is a free data retrieval call binding the contract method 0xe41e69ea.
+//
+// Solidity: function toDestinationAttestation(bytes _payload, address _notary) view returns((address,uint8,uint32,uint40))
+func (_AttestationHarness *AttestationHarnessSession) ToDestinationAttestation(_payload []byte, _notary common.Address) (DestinationAttestation, error) {
+	return _AttestationHarness.Contract.ToDestinationAttestation(&_AttestationHarness.CallOpts, _payload, _notary)
+}
+
+// ToDestinationAttestation is a free data retrieval call binding the contract method 0xe41e69ea.
+//
+// Solidity: function toDestinationAttestation(bytes _payload, address _notary) view returns((address,uint8,uint32,uint40))
+func (_AttestationHarness *AttestationHarnessCallerSession) ToDestinationAttestation(_payload []byte, _notary common.Address) (DestinationAttestation, error) {
+	return _AttestationHarness.Contract.ToDestinationAttestation(&_AttestationHarness.CallOpts, _payload, _notary)
+}
+
+// AttestationLibMetaData contains all meta data concerning the AttestationLib contract.
+var AttestationLibMetaData = &bind.MetaData{
+	ABI: "[]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220fede4163eeaae6cd889bf4f25ca18f7be022c1eba91462a5dd1cd8cef8c6390264736f6c63430008110033",
+}
+
+// AttestationLibABI is the input ABI used to generate the binding from.
+// Deprecated: Use AttestationLibMetaData.ABI instead.
+var AttestationLibABI = AttestationLibMetaData.ABI
+
+// AttestationLibBin is the compiled bytecode used for deploying new contracts.
+// Deprecated: Use AttestationLibMetaData.Bin instead.
+var AttestationLibBin = AttestationLibMetaData.Bin
+
+// DeployAttestationLib deploys a new Ethereum contract, binding an instance of AttestationLib to it.
+func DeployAttestationLib(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *AttestationLib, error) {
+	parsed, err := AttestationLibMetaData.GetAbi()
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	if parsed == nil {
+		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
+	}
+
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(AttestationLibBin), backend)
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	return address, tx, &AttestationLib{AttestationLibCaller: AttestationLibCaller{contract: contract}, AttestationLibTransactor: AttestationLibTransactor{contract: contract}, AttestationLibFilterer: AttestationLibFilterer{contract: contract}}, nil
+}
+
+// AttestationLib is an auto generated Go binding around an Ethereum contract.
+type AttestationLib struct {
+	AttestationLibCaller     // Read-only binding to the contract
+	AttestationLibTransactor // Write-only binding to the contract
+	AttestationLibFilterer   // Log filterer for contract events
+}
+
+// AttestationLibCaller is an auto generated read-only Go binding around an Ethereum contract.
+type AttestationLibCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// AttestationLibTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type AttestationLibTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// AttestationLibFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type AttestationLibFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// AttestationLibSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type AttestationLibSession struct {
+	Contract     *AttestationLib   // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// AttestationLibCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type AttestationLibCallerSession struct {
+	Contract *AttestationLibCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts         // Call options to use throughout this session
+}
+
+// AttestationLibTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type AttestationLibTransactorSession struct {
+	Contract     *AttestationLibTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts         // Transaction auth options to use throughout this session
+}
+
+// AttestationLibRaw is an auto generated low-level Go binding around an Ethereum contract.
+type AttestationLibRaw struct {
+	Contract *AttestationLib // Generic contract binding to access the raw methods on
+}
+
+// AttestationLibCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type AttestationLibCallerRaw struct {
+	Contract *AttestationLibCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// AttestationLibTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type AttestationLibTransactorRaw struct {
+	Contract *AttestationLibTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewAttestationLib creates a new instance of AttestationLib, bound to a specific deployed contract.
+func NewAttestationLib(address common.Address, backend bind.ContractBackend) (*AttestationLib, error) {
+	contract, err := bindAttestationLib(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &AttestationLib{AttestationLibCaller: AttestationLibCaller{contract: contract}, AttestationLibTransactor: AttestationLibTransactor{contract: contract}, AttestationLibFilterer: AttestationLibFilterer{contract: contract}}, nil
+}
+
+// NewAttestationLibCaller creates a new read-only instance of AttestationLib, bound to a specific deployed contract.
+func NewAttestationLibCaller(address common.Address, caller bind.ContractCaller) (*AttestationLibCaller, error) {
+	contract, err := bindAttestationLib(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &AttestationLibCaller{contract: contract}, nil
+}
+
+// NewAttestationLibTransactor creates a new write-only instance of AttestationLib, bound to a specific deployed contract.
+func NewAttestationLibTransactor(address common.Address, transactor bind.ContractTransactor) (*AttestationLibTransactor, error) {
+	contract, err := bindAttestationLib(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &AttestationLibTransactor{contract: contract}, nil
+}
+
+// NewAttestationLibFilterer creates a new log filterer instance of AttestationLib, bound to a specific deployed contract.
+func NewAttestationLibFilterer(address common.Address, filterer bind.ContractFilterer) (*AttestationLibFilterer, error) {
+	contract, err := bindAttestationLib(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &AttestationLibFilterer{contract: contract}, nil
+}
+
+// bindAttestationLib binds a generic wrapper to an already deployed contract.
+func bindAttestationLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(AttestationLibABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_AttestationLib *AttestationLibRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _AttestationLib.Contract.AttestationLibCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_AttestationLib *AttestationLibRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _AttestationLib.Contract.AttestationLibTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_AttestationLib *AttestationLibRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _AttestationLib.Contract.AttestationLibTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_AttestationLib *AttestationLibCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _AttestationLib.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_AttestationLib *AttestationLibTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _AttestationLib.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_AttestationLib *AttestationLibTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _AttestationLib.Contract.contract.Transact(opts, method, params...)
 }
 
 // ByteStringMetaData contains all meta data concerning the ByteString contract.
 var ByteStringMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220a5f364d63f7a1761f63092e4ca8e3a7670e5eafadc955b0dda13d1c02c8ff89864736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212207b8fcd39ecc1aa19310599b4be3361063142eba0aca2c6460d935a52e49b440764736f6c63430008110033",
 }
 
 // ByteStringABI is the input ABI used to generate the binding from.
@@ -1491,179 +921,6 @@ func (_ByteString *ByteStringTransactorRaw) Transact(opts *bind.TransactOpts, me
 	return _ByteString.Contract.contract.Transact(opts, method, params...)
 }
 
-// SynapseTypesMetaData contains all meta data concerning the SynapseTypes contract.
-var SynapseTypesMetaData = &bind.MetaData{
-	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220dc017f6281bd284a75fcf83606176abbb50f2a61d1fd22a8026c953510a0fa5a64736f6c63430008110033",
-}
-
-// SynapseTypesABI is the input ABI used to generate the binding from.
-// Deprecated: Use SynapseTypesMetaData.ABI instead.
-var SynapseTypesABI = SynapseTypesMetaData.ABI
-
-// SynapseTypesBin is the compiled bytecode used for deploying new contracts.
-// Deprecated: Use SynapseTypesMetaData.Bin instead.
-var SynapseTypesBin = SynapseTypesMetaData.Bin
-
-// DeploySynapseTypes deploys a new Ethereum contract, binding an instance of SynapseTypes to it.
-func DeploySynapseTypes(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *SynapseTypes, error) {
-	parsed, err := SynapseTypesMetaData.GetAbi()
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	if parsed == nil {
-		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
-	}
-
-	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(SynapseTypesBin), backend)
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	return address, tx, &SynapseTypes{SynapseTypesCaller: SynapseTypesCaller{contract: contract}, SynapseTypesTransactor: SynapseTypesTransactor{contract: contract}, SynapseTypesFilterer: SynapseTypesFilterer{contract: contract}}, nil
-}
-
-// SynapseTypes is an auto generated Go binding around an Ethereum contract.
-type SynapseTypes struct {
-	SynapseTypesCaller     // Read-only binding to the contract
-	SynapseTypesTransactor // Write-only binding to the contract
-	SynapseTypesFilterer   // Log filterer for contract events
-}
-
-// SynapseTypesCaller is an auto generated read-only Go binding around an Ethereum contract.
-type SynapseTypesCaller struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// SynapseTypesTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type SynapseTypesTransactor struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// SynapseTypesFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type SynapseTypesFilterer struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// SynapseTypesSession is an auto generated Go binding around an Ethereum contract,
-// with pre-set call and transact options.
-type SynapseTypesSession struct {
-	Contract     *SynapseTypes     // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts     // Call options to use throughout this session
-	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
-}
-
-// SynapseTypesCallerSession is an auto generated read-only Go binding around an Ethereum contract,
-// with pre-set call options.
-type SynapseTypesCallerSession struct {
-	Contract *SynapseTypesCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts       // Call options to use throughout this session
-}
-
-// SynapseTypesTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
-// with pre-set transact options.
-type SynapseTypesTransactorSession struct {
-	Contract     *SynapseTypesTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts       // Transaction auth options to use throughout this session
-}
-
-// SynapseTypesRaw is an auto generated low-level Go binding around an Ethereum contract.
-type SynapseTypesRaw struct {
-	Contract *SynapseTypes // Generic contract binding to access the raw methods on
-}
-
-// SynapseTypesCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type SynapseTypesCallerRaw struct {
-	Contract *SynapseTypesCaller // Generic read-only contract binding to access the raw methods on
-}
-
-// SynapseTypesTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type SynapseTypesTransactorRaw struct {
-	Contract *SynapseTypesTransactor // Generic write-only contract binding to access the raw methods on
-}
-
-// NewSynapseTypes creates a new instance of SynapseTypes, bound to a specific deployed contract.
-func NewSynapseTypes(address common.Address, backend bind.ContractBackend) (*SynapseTypes, error) {
-	contract, err := bindSynapseTypes(address, backend, backend, backend)
-	if err != nil {
-		return nil, err
-	}
-	return &SynapseTypes{SynapseTypesCaller: SynapseTypesCaller{contract: contract}, SynapseTypesTransactor: SynapseTypesTransactor{contract: contract}, SynapseTypesFilterer: SynapseTypesFilterer{contract: contract}}, nil
-}
-
-// NewSynapseTypesCaller creates a new read-only instance of SynapseTypes, bound to a specific deployed contract.
-func NewSynapseTypesCaller(address common.Address, caller bind.ContractCaller) (*SynapseTypesCaller, error) {
-	contract, err := bindSynapseTypes(address, caller, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &SynapseTypesCaller{contract: contract}, nil
-}
-
-// NewSynapseTypesTransactor creates a new write-only instance of SynapseTypes, bound to a specific deployed contract.
-func NewSynapseTypesTransactor(address common.Address, transactor bind.ContractTransactor) (*SynapseTypesTransactor, error) {
-	contract, err := bindSynapseTypes(address, nil, transactor, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &SynapseTypesTransactor{contract: contract}, nil
-}
-
-// NewSynapseTypesFilterer creates a new log filterer instance of SynapseTypes, bound to a specific deployed contract.
-func NewSynapseTypesFilterer(address common.Address, filterer bind.ContractFilterer) (*SynapseTypesFilterer, error) {
-	contract, err := bindSynapseTypes(address, nil, nil, filterer)
-	if err != nil {
-		return nil, err
-	}
-	return &SynapseTypesFilterer{contract: contract}, nil
-}
-
-// bindSynapseTypes binds a generic wrapper to an already deployed contract.
-func bindSynapseTypes(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(SynapseTypesABI))
-	if err != nil {
-		return nil, err
-	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_SynapseTypes *SynapseTypesRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _SynapseTypes.Contract.SynapseTypesCaller.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_SynapseTypes *SynapseTypesRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _SynapseTypes.Contract.SynapseTypesTransactor.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_SynapseTypes *SynapseTypesRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _SynapseTypes.Contract.SynapseTypesTransactor.contract.Transact(opts, method, params...)
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_SynapseTypes *SynapseTypesCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _SynapseTypes.Contract.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_SynapseTypes *SynapseTypesTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _SynapseTypes.Contract.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_SynapseTypes *SynapseTypesTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _SynapseTypes.Contract.contract.Transact(opts, method, params...)
-}
-
 // TypedMemViewMetaData contains all meta data concerning the TypedMemView contract.
 var TypedMemViewMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"BITS_EMPTY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"BITS_LEN\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"BITS_LOC\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"BITS_TYPE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"LOW_96_BITS_MASK\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"NULL\",\"outputs\":[{\"internalType\":\"bytes29\",\"name\":\"\",\"type\":\"bytes29\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SHIFT_LEN\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SHIFT_LOC\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SHIFT_TYPE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
@@ -1678,7 +935,7 @@ var TypedMemViewMetaData = &bind.MetaData{
 		"1bfe17ce": "SHIFT_LOC()",
 		"13090c5a": "SHIFT_TYPE()",
 	},
-	Bin: "0x6101f061003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600436106100ad5760003560e01c806397b8ad4a11610080578063eb74062811610065578063eb740628146100f8578063f26be3fc14610100578063fb734584146100f857600080fd5b806397b8ad4a146100cd578063b602d173146100e557600080fd5b806310153fce146100b25780631136e7ea146100cd57806313090c5a146100d55780631bfe17ce146100dd575b600080fd5b6100ba602881565b6040519081526020015b60405180910390f35b6100ba601881565b6100ba610158565b6100ba610172565b6100ba6bffffffffffffffffffffffff81565b6100ba606081565b6101277fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000090911681526020016100c4565b606061016581601861017a565b61016f919061017a565b81565b61016f606060185b808201808211156101b4577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b9291505056fea2646970667358221220110df5fb752464bda323895a4570e59dca1c48d110847776887e6db6d73f9c7b64736f6c63430008110033",
+	Bin: "0x6101f061003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600436106100ad5760003560e01c806397b8ad4a11610080578063eb74062811610065578063eb740628146100f8578063f26be3fc14610100578063fb734584146100f857600080fd5b806397b8ad4a146100cd578063b602d173146100e557600080fd5b806310153fce146100b25780631136e7ea146100cd57806313090c5a146100d55780631bfe17ce146100dd575b600080fd5b6100ba602881565b6040519081526020015b60405180910390f35b6100ba601881565b6100ba610158565b6100ba610172565b6100ba6bffffffffffffffffffffffff81565b6100ba606081565b6101277fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000081565b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000090911681526020016100c4565b606061016581601861017a565b61016f919061017a565b81565b61016f606060185b808201808211156101b4577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b9291505056fea2646970667358221220f1ca2ad6ac30a971565ccc4c2a2345a989e6784bb688a6a8e220474609c66fde64736f6c63430008110033",
 }
 
 // TypedMemViewABI is the input ABI used to generate the binding from.

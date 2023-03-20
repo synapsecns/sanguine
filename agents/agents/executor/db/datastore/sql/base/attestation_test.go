@@ -11,20 +11,24 @@ import (
 )
 
 func TestAttestationDBAttestationParity(t *testing.T) {
-	chainID := gofakeit.Uint32()
 	destination := gofakeit.Uint32()
-	nonce := gofakeit.Uint32()
-	root := common.BigToHash(big.NewInt(gofakeit.Int64()))
-	blockNumberDestination := gofakeit.Uint64()
-	destinationBlockTime := gofakeit.Uint64()
+	snapshotRoot := common.BigToHash(big.NewInt(gofakeit.Int64())).String()
+	height := gofakeit.Uint8()
+	attestationNonce := gofakeit.Uint32()
+	summitBlockNumber := gofakeit.Uint64()
+	summitTimestamp := gofakeit.Uint64()
+	destinationBlockNumber := gofakeit.Uint64()
+	destinationTimestamp := gofakeit.Uint64()
 
 	initialDBAttestation := types.DBAttestation{
-		ChainID:                &chainID,
 		Destination:            &destination,
-		Nonce:                  &nonce,
-		Root:                   &root,
-		DestinationBlockNumber: &blockNumberDestination,
-		DestinationBlockTime:   &destinationBlockTime,
+		SnapshotRoot:           &snapshotRoot,
+		Height:                 &height,
+		AttestationNonce:       &attestationNonce,
+		SummitBlockNumber:      &summitBlockNumber,
+		SummitTimestamp:        &summitTimestamp,
+		DestinationBlockNumber: &destinationBlockNumber,
+		DestinationTimestamp:   &destinationTimestamp,
 	}
 
 	initialAttestation := base.DBAttestationToAttestation(initialDBAttestation)

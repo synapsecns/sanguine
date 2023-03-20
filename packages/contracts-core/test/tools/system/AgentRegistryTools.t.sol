@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../utils/SynapseTestSuite.t.sol";
+import { SynapseTestSuite } from "../../utils/SynapseTestSuite.t.sol";
 
 import { AgentRegistryHarness } from "../../harnesses/system/AgentRegistryHarness.t.sol";
 

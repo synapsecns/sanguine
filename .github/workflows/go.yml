@@ -8,6 +8,17 @@ on:
       - 'gh-pages'
 
 jobs:
+  cancel-outdated:
+    name: Cancel Outdated Jobs
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
   # changes allows us to only run a job on changed packages
   changes:
     name: Change Detection
@@ -30,12 +41,14 @@ jobs:
         with:
           include_deps: true
           github_token: ${{ secrets.WORKFLOW_PAT }}
+          timeout: '10m'
 
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go_nodeps
         with:
           include_deps: false
           github_token: ${{ secrets.WORKFLOW_PAT }}
+          timeout: '10m'
 
       - name: Check For Solidity Changes
         id: filter_solidity
@@ -103,7 +116,7 @@ jobs:
         run: docker run -p 8045:8545 -d -v /tmp/keys/:/tmp/keys/  --name rinkeby --restart always trufflesuite/ganache-cli ganache-cli --accounts 10 --account_keys_path /tmp/keys/rinkeby --chainId 4 # --fork https://rinkeby-light.eth.linkpool.io (no need to actually fork)
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -147,6 +160,7 @@ jobs:
           GANACHE_RPC_URL: http://0.0.0.0:8045
           GOMEMLIMIT: 6GiB
           GOGC: 2000
+          ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
 
       - name: Get Coverage name
         id: coverage
@@ -185,7 +199,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -202,6 +216,7 @@ jobs:
         # see: https://www.reddit.com/r/golang/comments/476pae/how_to_speed_up_go_compiler_and_many_other_go/
         env:
           GOGC: 2000
+          GOMEMLIMIT: 6GiB
 
   #note: right now this is not run against all work dirs
   lint:
@@ -229,14 +244,12 @@ jobs:
         run: cp ${{matrix.package}}/go.mod go.mod -v
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         if: ${{ !contains(matrix.package, 'tfcore') }}
         with:
           working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.48.0
-          # Path to your GolangCI-Lint config within the repo (optional)
-          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
           # see: https://github.com/golangci/golangci-lint/issues/2654
           args: --timeout=60m
         env:
@@ -253,13 +266,11 @@ jobs:
       # TODO: at some point it might make sense to put the common deps in a common lib
       - name: golangci-lint (tfcore)
         if: ${{ contains(matrix.package, 'tfcore') }}
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
           working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.48.0
-          # Path to your GolangCI-Lint config within the repo (optional)
-          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
           # see: https://github.com/golangci/golangci-lint/issues/2654
           args: --timeout=60m --build-tags=codeanalysis
         env:
@@ -310,34 +321,29 @@ jobs:
         run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
         id: nvmrc
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
       - name: 'Use NodeJS by nvmrc'
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+          cache: 'yarn'
 
-      - name: Initialize Yarn cache
-        uses: actions/cache@v2
-        id: yarn-cache
+      - uses: actions/cache@v3
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install Node Dependencies
-        run: yarn install --frozen-lockfile --check-files
+        run: yarn install --immutable
 
-      - name: Install dependencies
-        run: |
-          npx lerna bootstrap
+      # Foundry is required for flattening
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
 
       # Generate flattened files
       - name: Run flattener
-        run: npx lerna exec npm run build:go
+        run: npx lerna exec npm run build:go --parallel
 
       # Setup Go
       - uses: actions/setup-go@v3
@@ -345,7 +351,7 @@ jobs:
           go-version: 1.20.x
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -367,7 +373,7 @@ jobs:
           credentials: https://trajan0x:${{secrets.GIT_TOKEN }}@github.com/
 
       # See if we need to rerun go generate
-      # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
+      # TODO: consider implementing https://github.com/golang/go/issues/20520 to speed up process if possible
       - name: Try Go Generate
         working-directory: ${{matrix.package}}/
         run: |
@@ -377,7 +383,7 @@ jobs:
           GOGC: 2000
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v10.1
+        uses: tj-actions/verify-changed-files@v11.1
         id: verify-changed-files
         with:
           files: |
@@ -415,7 +421,6 @@ jobs:
           fetch-depth: 1
           submodules: 'recursive'
 
-
       - name: Cache Docker images.
         uses: ScribeMD/docker-cache@0.2.6
         with:
@@ -427,35 +432,29 @@ jobs:
         id: nvmrc
         if: ${{ contains(matrix.package, 'agents') }}
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-        if: ${{ contains(matrix.package, 'agents') }}
 
       - name: 'Use NodeJS by nvmrc'
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
+        if: ${{ contains(matrix.package, 'agents') }}
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-        if: ${{ contains(matrix.package, 'agents') }}
+          cache: 'yarn'
 
-      - name: Initialize Yarn cache
-        uses: actions/cache@v2
-        id: yarn-cache
-        if: ${{ contains(matrix.package, 'agents') }}
+      - uses: actions/cache@v3
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install Node Dependencies
-        run: yarn install --frozen-lockfile --check-files
+        run: yarn install --immutable
         if: ${{ contains(matrix.package, 'agents') }}
 
-      - name: Install dependencies
+      # Foundry is required for flattening
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
         if: ${{ contains(matrix.package, 'agents') }}
-        run: |
-          npx lerna bootstrap
+        with:
+          version: nightly
 
       # Generate flattened files
       - name: Run flattener
@@ -468,7 +467,7 @@ jobs:
           go-version: 1.20.x
 
       - name: Go modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |
@@ -522,16 +521,17 @@ jobs:
 
 
       # See if we need to rerun go generate
-      # TODO: consider implementing https://github.com/golang/go/issues/20520 to sped up process if possible
-      # ethergo generation is currently non-deterministic. TODO FIX"
+      # TODO: consider implementing https://github.com/golang/go/issues/20520 to speed up process if possible
       - name: Try Go Generate
         working-directory: ${{matrix.package}}/
-        if:  ${{ !contains('ethergo', matrix.package) }}
         run: |
           go generate ./...
+        env:
+          GOMEMLIMIT: 6GiB
+          GOGC: 2000
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v10.1
+        uses: tj-actions/verify-changed-files@v11
         id: verify-changed-files
         with:
           files: |

@@ -26,7 +26,7 @@ func TestCounter(t *testing.T) {
 	deployedContract := deployer.Get(testContext, newTestBackend, example.CounterType)
 	// if you're using these often, it's recommended you extend manager and add type casted getters here, along with the global registry
 	//nolint: forcetypeassert
-	counterHandle := deployedContract.ContractHandle().(*counter.Counter)
+	counterHandle := deployedContract.ContractHandle().(*counter.CounterRef)
 
 	// first up, let's make sure we're at 0
 	count, err := counterHandle.GetCount(&bind.CallOpts{Context: testContext})
@@ -44,4 +44,10 @@ func TestCounter(t *testing.T) {
 	count, err = counterHandle.GetCount(&bind.CallOpts{Context: testContext})
 	Nil(t, err)
 	True(t, count.Int64() == 1)
+}
+
+func TestDependenciesCorrect(t *testing.T) {
+	manager.AssertDependenciesCorrect(context.Background(), t, func() manager.IDeployManager {
+		return manager.NewDeployerManager(t, example.NewCounterDeployer)
+	})
 }

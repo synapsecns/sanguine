@@ -53,11 +53,12 @@ func (p parserImpl) ParseAttestationAccepted(log ethTypes.Log) (_ types.Attestat
 		return nil, false
 	}
 
-	attestation, err := types.DecodeSignedAttestation(destinationAttestationAccepted.Attestation)
+	attestation, err := types.DecodeAttestation(destinationAttestationAccepted.Attestation)
 	if err != nil {
 		return nil, false
 	}
-	return attestation.Attestation(), true
+
+	return attestation, true
 }
 
 // ParseExecuted parses an Executed event.

@@ -136,18 +136,60 @@ library MerkleLib {
         uint256 _index
     ) internal pure returns (bytes32 _current) {
         _current = _item;
-
+        // Go up the tree levels from leaf to root
         for (uint256 i = 0; i < TREE_DEPTH; ) {
-            uint256 _ithBit = (_index >> i) & 0x01;
-            bytes32 _next = _branch[i];
-            if (_ithBit == 1) {
-                _current = keccak256(abi.encodePacked(_next, _current));
-            } else {
-                _current = keccak256(abi.encodePacked(_current, _next));
-            }
+            _current = getParent(_current, _branch[i], _index, i);
             unchecked {
                 ++i;
             }
+        }
+    }
+
+    /**
+     * @notice Calculates and returns the merkle root for the given leaf
+     * `_item`, a merkle branch, and the index of `_item` in the tree.
+     * @dev This extra function is required for Merkle Trees with flexible height.
+     * @param _item Merkle leaf
+     * @param _branch Merkle proof
+     * @param _index Index of `_item` in tree
+     * @return _current Calculated merkle root
+     **/
+    function branchRoot(
+        bytes32 _item,
+        bytes32[] memory _branch,
+        uint256 _index
+    ) internal pure returns (bytes32 _current) {
+        _current = _item;
+        // Go up the tree levels from leaf to root
+        for (uint256 i = 0; i < _branch.length; ) {
+            _current = getParent(_current, _branch[i], _index, i);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    /**
+     * @notice Calculates the parent of a node on the path from one of the leafs to root.
+     * @param _node         Node on a path from tree leaf to root
+     * @param _sibling      Sibling for a given node
+     * @param _leafIndex    Index of the tree leaf
+     * @param _nodeHeight   "Level height" for `_node` (ZERO for leafs, TREE_DEPTH for root)
+     */
+    function getParent(
+        bytes32 _node,
+        bytes32 _sibling,
+        uint256 _leafIndex,
+        uint256 _nodeHeight
+    ) internal pure returns (bytes32 parent) {
+        // Index for `node` on its "tree level" is (leafIndex / 2**height)
+        // "Left child" has even index, "right child" has odd index
+        if ((_leafIndex >> _nodeHeight) & 1 == 0) {
+            // Left child
+            return keccak256(bytes.concat(_node, _sibling));
+        } else {
+            // Right child
+            return keccak256(bytes.concat(_sibling, _node));
         }
     }
 
