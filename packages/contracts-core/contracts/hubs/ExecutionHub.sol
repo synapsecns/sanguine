@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { ExecutionAttestation } from "../libs/Attestation.sol";
+import { Attestation, ExecutionAttestation } from "../libs/Attestation.sol";
 import { SYSTEM_ROUTER, TREE_DEPTH } from "../libs/Constants.sol";
 import { MerkleLib } from "../libs/Merkle.sol";
 import { Header, Message, MessageLib, Tips } from "../libs/Message.sol";
@@ -168,9 +168,10 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
 
     /// @dev Saves a snapshot root with the attestation data provided by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
-    function _saveAttestation(bytes32 _root, ExecutionAttestation memory _execAtt) internal {
-        require(rootAttestations[_root].isEmpty(), "Root already exists");
-        rootAttestations[_root] = _execAtt;
+    function _saveAttestation(Attestation _att, address _notary) internal {
+        bytes32 root = _att.root();
+        require(rootAttestations[root].isEmpty(), "Root already exists");
+        rootAttestations[root] = _att.toExecutionAttestation(_notary);
     }
 
     /// @dev Gets a saved attestation for the given snapshot root.

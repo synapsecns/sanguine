@@ -46,7 +46,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // Check that Notary is active on local domain
         require(domain == localDomain, "Wrong Notary domain");
         // This will revert if snapshot root has been previously submitted
-        _acceptAttestation(att, notary);
+        _saveAttestation(att, notary);
         emit AttestationAccepted(domain, notary, _attPayload, _attSignature);
         return true;
     }
@@ -91,14 +91,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                     INTERNAL LOGIC: ATTESTATION                      ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @dev Accepts an Attestation signed by a Notary.
-    /// Will revert if the snapshot root has been previously submitted.
-    function _acceptAttestation(Attestation _att, address _notary) internal {
-        bytes32 root = _att.root();
-        // This will revert if attestation for `root` has been previously submitted
-        _saveAttestation(root, _att.toExecutionAttestation(_notary));
-    }
 
     function _isIgnoredAgent(uint32 _domain, address)
         internal

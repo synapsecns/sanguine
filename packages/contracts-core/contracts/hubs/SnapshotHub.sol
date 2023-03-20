@@ -162,7 +162,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// Returns the attestation created from the Notary snapshot.
     function _acceptNotarySnapshot(Snapshot _snapshot, address _notary)
         internal
-        returns (SummitAttestation memory)
+        returns (bytes memory attPayload)
     {
         // Snapshot Signer is a Notary: construct an Attestation Merkle Tree,
         // while checking that the states were previously saved.
@@ -207,17 +207,18 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// Returns the created attestation.
     function _saveNotarySnapshot(Snapshot _snapshot, uint256[] memory statePtrs)
         internal
-        returns (SummitAttestation memory summitAtt)
+        returns (bytes memory attPayload)
     {
         // Attestation nonce is its index in `attestations` array
         uint32 attNonce = uint32(attestations.length);
-        summitAtt = _snapshot.toSummitAttestation();
+        SummitAttestation memory summitAtt = _snapshot.toSummitAttestation();
+        attPayload = summitAtt.formatSummitAttestation(attNonce);
         /// @dev Add a single element to both `attestations` and `notarySnapshots`,
         /// enforcing the (attestations.length == notarySnapshots.length) invariant.
         attestations.push(summitAtt);
         notarySnapshots.push(statePtrs.toSummitSnapshot());
         // Emit event with raw attestation data
-        emit AttestationSaved(summitAtt.formatSummitAttestation(attNonce));
+        emit AttestationSaved(attPayload);
     }
 
     /// @dev Saves the state signed by a Guard.

@@ -5,11 +5,13 @@ import { AgentManager } from "./manager/AgentManager.sol";
 import { DomainContext } from "./context/DomainContext.sol";
 import { SummitEvents } from "./events/SummitEvents.sol";
 import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
-import { ExecutionAttestation, ExecutionHub } from "./hubs/ExecutionHub.sol";
+import { ExecutionHub } from "./hubs/ExecutionHub.sol";
 import { SnapshotHub, SummitAttestation, SummitState } from "./hubs/SnapshotHub.sol";
-import { Attestation, AttestationReport, Snapshot } from "./hubs/StatementHub.sol";
+import { Attestation, AttestationLib, AttestationReport, Snapshot } from "./hubs/StatementHub.sol";
 
 contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
+    using AttestationLib for bytes;
+
     constructor(uint32 _domain) DomainContext(_domain) {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }
@@ -41,14 +43,11 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             // a fresher state than one in the snapshot.
             _acceptGuardSnapshot(snapshot, agent);
         } else {
-            // Attestation nonce is its index in `attestations` array. It has not been saved yet.
-            uint32 nonce = uint32(_attestationsAmount());
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
-            SummitAttestation memory summitAtt = _acceptNotarySnapshot(snapshot, agent);
+            bytes memory attPayload = _acceptNotarySnapshot(snapshot, agent);
             // Save attestation derived from Notary snapshot
-            // TODO: this is currently doing snapshot.root() calculation twice, needs a rewrite
-            _saveNotaryAttestation(nonce, summitAtt, agent);
+            _saveAttestation(attPayload.castToAttestation(), agent);
         }
         emit SnapshotAccepted(domain, agent, _snapPayload, _snapSignature);
         return true;
@@ -122,24 +121,6 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     /// when verification of an invalid agent statement was done in this contract.
     function _afterAgentSlashed(uint32 _domain, address _agent) internal virtual override {
         // TODO: implement
-    }
-
-    /// @dev Saves Attestation created from the Notary snapshot to be used for proving
-    /// the executed messages later.
-    function _saveNotaryAttestation(
-        uint32 _nonce,
-        SummitAttestation memory _summitAtt,
-        address _notary
-    ) internal {
-        bytes32 root = _summitAtt.root;
-        ExecutionAttestation memory execAtt = ExecutionAttestation({
-            notary: _notary,
-            height: _summitAtt.height,
-            nonce: _nonce,
-            submittedAt: _summitAtt.timestamp
-        });
-        // This will revert if attestation for `root` has been previously submitted
-        _saveAttestation(root, execAtt);
     }
 
     function _isIgnoredAgent(uint32, address) internal pure override returns (bool) {
