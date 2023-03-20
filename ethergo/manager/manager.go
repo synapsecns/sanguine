@@ -130,6 +130,16 @@ func (d *DeployerManager) GetDeployedContracts() (res map[uint32][]contracts.Dep
 	return res
 }
 
+// GetContract gets a contract from the registry and casts it to the correct type.
+func GetContract[T any](ctx context.Context, tb testing.TB, deployManager IDeployManager, backend backends.SimulatedTestBackend, contractType contracts.ContractType) (contracts.DeployedContract, T) {
+	tb.Helper()
+	deployedContract := deployManager.Get(ctx, backend, contractType)
+	contractHandle, ok := deployedContract.ContractHandle().(T)
+	assert.True(tb, ok)
+
+	return deployedContract, contractHandle
+}
+
 var _ suite.TestingSuite = &DeployerManager{}
 
 // DeployManagerFactory is a factory for a deploy manager.
