@@ -11,7 +11,7 @@ type Attestation is bytes29;
 using {
     AttestationLib.unwrap,
     AttestationLib.equalToSummit,
-    AttestationLib.toDestinationAttestation,
+    AttestationLib.toExecutionAttestation,
     AttestationLib.hash,
     AttestationLib.root,
     AttestationLib.height,
@@ -30,17 +30,17 @@ struct SummitAttestation {
 /// @dev Attach library functions to SummitAttestation
 using { AttestationLib.formatSummitAttestation } for SummitAttestation global;
 
-/// @dev Struct representing Attestation, as it is stored in the Destination contract.
-/// mapping (bytes32 root => DestinationAttestation) is supposed to be used
-struct DestinationAttestation {
+/// @dev Struct representing Attestation, as it is stored in the ExecutionHub contract.
+/// mapping (bytes32 root => ExecutionAttestation) is supposed to be used
+struct ExecutionAttestation {
     address notary;
     uint8 height;
     uint32 nonce;
     uint40 submittedAt;
     // 16 bits left for tight packing
 }
-/// @dev Attach library functions to DestinationAttestation
-using { AttestationLib.isEmpty } for DestinationAttestation global;
+/// @dev Attach library functions to ExecutionAttestation
+using { AttestationLib.isEmpty } for ExecutionAttestation global;
 
 library AttestationLib {
     using ByteString for bytes;
@@ -201,10 +201,10 @@ library AttestationLib {
     ▏*║                       DESTINATION ATTESTATION                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function toDestinationAttestation(Attestation _att, address _notary)
+    function toExecutionAttestation(Attestation _att, address _notary)
         internal
         view
-        returns (DestinationAttestation memory attestation)
+        returns (ExecutionAttestation memory attestation)
     {
         attestation.notary = _notary;
         attestation.height = _att.height();
@@ -213,8 +213,8 @@ library AttestationLib {
         attestation.submittedAt = uint40(block.timestamp);
     }
 
-    function isEmpty(DestinationAttestation memory _destAtt) internal pure returns (bool) {
-        return _destAtt.notary == address(0);
+    function isEmpty(ExecutionAttestation memory _execAtt) internal pure returns (bool) {
+        return _execAtt.notary == address(0);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

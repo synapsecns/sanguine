@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { DestinationAttestation } from "../libs/Attestation.sol";
+import { ExecutionAttestation } from "../libs/Attestation.sol";
 import { SYSTEM_ROUTER, TREE_DEPTH } from "../libs/Constants.sol";
 import { MerkleLib } from "../libs/Merkle.sol";
 import { Header, Message, MessageLib, Tips } from "../libs/Message.sol";
@@ -46,7 +46,7 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
 
     /// @dev Tracks all saved attestations
     // (root => attestation)
-    mapping(bytes32 => DestinationAttestation) private rootAttestations;
+    mapping(bytes32 => ExecutionAttestation) private rootAttestations;
 
     /// @dev gap for upgrade safety
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -67,7 +67,7 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
         Header header = message.header();
         bytes32 msgLeaf = message.leaf();
         // Check proofs validity and mark message as executed
-        DestinationAttestation memory destAtt = _prove(
+        ExecutionAttestation memory execAtt = _prove(
             header,
             msgLeaf,
             _originProof,
@@ -76,7 +76,7 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
         );
         // Store message tips
         Tips tips = message.tips();
-        _storeTips(destAtt.notary, tips);
+        _storeTips(execAtt.notary, tips);
         // Get the specified recipient address
         uint32 origin = header.origin();
         address recipient = _checkForSystemRouter(header.recipient());
@@ -85,7 +85,7 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
             origin,
             header.nonce(),
             header.sender(),
-            destAtt.submittedAt,
+            execAtt.submittedAt,
             message.body().clone()
         );
         emit Executed(origin, msgLeaf);
@@ -128,7 +128,7 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
      * @param _originProof  Proof of inclusion of Message Leaf in the Origin Merkle Tree
      * @param _snapProof    Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
      * @param _stateIndex   Index of Origin State in the Snapshot
-     * @return destAtt      Attestation data for derived snapshot root
+     * @return execAtt      Attestation data for derived snapshot root
      */
     function _prove(
         Header _header,
@@ -136,7 +136,7 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
         bytes32[TREE_DEPTH] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
-    ) internal returns (DestinationAttestation memory destAtt) {
+    ) internal returns (ExecutionAttestation memory execAtt) {
         // TODO: split into a few smaller functions?
         // Check that message has not been executed before
         require(messageStatus[_msgLeaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
@@ -149,17 +149,17 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
         // This will revert if state index is out of range
         bytes32 snapshotRoot = _snapshotRoot(originRoot, _header.origin(), _snapProof, _stateIndex);
         // Fetch the attestation data for the snapshot root
-        destAtt = rootAttestations[snapshotRoot];
+        execAtt = rootAttestations[snapshotRoot];
         // Check if snapshot root has been submitted
-        require(!destAtt.isEmpty(), "Invalid snapshot root");
+        require(!execAtt.isEmpty(), "Invalid snapshot root");
         // Check that snapshot proof length matches the height of Snapshot Merkle Tree
-        require(_snapProof.length == destAtt.height, "Invalid proof length");
+        require(_snapProof.length == execAtt.height, "Invalid proof length");
         // Check if Notary who submitted the attestation is still active
         // TODO: check for dispute status instead
-        require(_isActiveAgent(localDomain, destAtt.notary), "Inactive notary");
+        require(_isActiveAgent(localDomain, execAtt.notary), "Inactive notary");
         // Check if optimistic period has passed
         require(
-            block.timestamp >= _header.optimisticSeconds() + destAtt.submittedAt,
+            block.timestamp >= _header.optimisticSeconds() + execAtt.submittedAt,
             "!optimisticSeconds"
         );
         // Mark message as executed against the snapshot root
@@ -168,9 +168,9 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
 
     /// @dev Saves a snapshot root with the attestation data provided by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
-    function _saveAttestation(bytes32 _root, DestinationAttestation memory _destAtt) internal {
+    function _saveAttestation(bytes32 _root, ExecutionAttestation memory _execAtt) internal {
         require(rootAttestations[_root].isEmpty(), "Root already exists");
-        rootAttestations[_root] = _destAtt;
+        rootAttestations[_root] = _execAtt;
     }
 
     /// @dev Gets a saved attestation for the given snapshot root.
@@ -178,7 +178,7 @@ abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents
     function _getRootAttestation(bytes32 _root)
         internal
         view
-        returns (DestinationAttestation memory)
+        returns (ExecutionAttestation memory)
     {
         return rootAttestations[_root];
     }

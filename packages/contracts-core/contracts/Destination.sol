@@ -5,10 +5,7 @@ import { Attestation } from "./libs/Attestation.sol";
 import { AttestationReport } from "./libs/AttestationReport.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DomainContext } from "./context/DomainContext.sol";
-import {
-    DestinationAttestation,
-    InterfaceDestination
-} from "./interfaces/InterfaceDestination.sol";
+import { ExecutionAttestation, InterfaceDestination } from "./interfaces/InterfaceDestination.sol";
 import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { ExecutionHub } from "./hubs/ExecutionHub.sol";
 
@@ -84,11 +81,11 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     function getAttestation(uint256 _index)
         external
         view
-        returns (bytes32 root, DestinationAttestation memory destAtt)
+        returns (bytes32 root, ExecutionAttestation memory execAtt)
     {
         require(_index < roots.length, "Index out of range");
         root = roots[_index];
-        destAtt = _getRootAttestation(root);
+        execAtt = _getRootAttestation(root);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -100,7 +97,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     function _acceptAttestation(Attestation _att, address _notary) internal {
         bytes32 root = _att.root();
         // This will revert if attestation for `root` has been previously submitted
-        _saveAttestation(root, _att.toDestinationAttestation(_notary));
+        _saveAttestation(root, _att.toExecutionAttestation(_notary));
     }
 
     function _isIgnoredAgent(uint32 _domain, address)
