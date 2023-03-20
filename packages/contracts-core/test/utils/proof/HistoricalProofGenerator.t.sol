@@ -52,20 +52,8 @@ contract HistoricalProofGenerator {
      * We're using mapping to avoid dealing with dynamic arrays in Solidity.
      */
     mapping(uint256 => mapping(uint256 => mapping(uint256 => bytes32))) internal merkleTree;
-    // Default ("zero") element values for given height
-    bytes32[] internal zeroHashes;
     // Amount of inserted leaves in the tree
     uint256 internal treeCount;
-
-    constructor() {
-        zeroHashes = new bytes32[](TREE_DEPTH + 1);
-        // zeroHashes[0] is bytes32(0)
-        // Calculate "zero" element values for other heights. These are the
-        // value for an element in the merkle tree, when all their children are "zero".
-        for (uint256 h = 0; h < TREE_DEPTH; ++h) {
-            zeroHashes[h + 1] = keccak256(abi.encodePacked(zeroHashes[h], zeroHashes[h]));
-        }
-    }
 
     /**
      * @notice Insert a new leaf into the tree and update the historical
@@ -80,11 +68,9 @@ contract HistoricalProofGenerator {
             x = x >> 1;
             // Children have [height = h - 1]
             // And X-coordinates [2 * x] and [2 * x + 1]
-            merkleTree[h][x][newCount] = keccak256(
-                abi.encodePacked(
-                    _fetchSavedTreeElement(h - 1, (x << 1), newCount),
-                    _fetchSavedTreeElement(h - 1, (x << 1) + 1, newCount)
-                )
+            merkleTree[h][x][newCount] = _hash(
+                _fetchSavedTreeElement(h - 1, (x << 1), newCount),
+                _fetchSavedTreeElement(h - 1, (x << 1) + 1, newCount)
             );
         }
         ++treeCount;
@@ -147,7 +133,7 @@ contract HistoricalProofGenerator {
         uint256 childLeafsAmount = 1 << h; // 2**H
         if (count <= firstChildLeafIndex) {
             // Stage A: not enough leafs were inserted, element is still zero
-            savedValue = zeroHashes[h];
+            savedValue = bytes32(0);
         } else if (count <= firstChildLeafIndex + childLeafsAmount) {
             // Stage B: tree element was updated after last leaf insertion
             savedValue = merkleTree[h][x][count];
@@ -159,6 +145,14 @@ contract HistoricalProofGenerator {
             savedValue = merkleTree[h][x][firstChildLeafIndex + childLeafsAmount];
             // Sanity check, can't be zero at this point
             require(savedValue != bytes32(0), "Stage C");
+        }
+    }
+
+    function _hash(bytes32 _left, bytes32 _right) internal pure returns (bytes32) {
+        if (_left != 0 || _right != 0) {
+            return keccak256(abi.encodePacked(_left, _right));
+        } else {
+            return 0;
         }
     }
 }

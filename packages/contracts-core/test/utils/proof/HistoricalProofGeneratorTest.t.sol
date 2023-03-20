@@ -34,11 +34,7 @@ contract HistoricalProofGeneratorTest is Test {
         bytes32[] memory roots = new bytes32[](AMOUNT + 1);
         roots[0] = tree.rootBase(0);
         // Sanity check against precomputed root for an empty Merkle tree
-        assertEq(
-            roots[0],
-            hex"27ae5ba08d7291c96c8cbddcc148bf48a6d68c7974b94356f53754ef6171d757",
-            "!root(empty tree)"
-        );
+        assertEq(roots[0], bytes32(0), "!root(empty tree)");
         for (uint256 count = 1; count <= AMOUNT; ++count) {
             proofGen.insert(leafs[count - 1]);
             tree.insertBase(count, leafs[count - 1]);
