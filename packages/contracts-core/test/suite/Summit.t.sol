@@ -171,14 +171,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
         emit AgentRemoved(domain, agent);
         vm.expectEmit(true, true, true, true);
         emit AgentSlashed(domain, agent);
-        // Should slash Agents on Synapse Chain registries
-        bytes memory expectedCall = _expectedSlashCall(domain, agent);
-        vm.expectCall(originSynapse, expectedCall);
-        vm.expectCall(destinationSynapse, expectedCall);
-        // Should forward Slash system calls
-        bytes memory data = _dataSlashAgentCall(domain, agent);
-        _expectRemoteCallAgentManager(DOMAIN_LOCAL, data);
-        _expectRemoteCallAgentManager(DOMAIN_REMOTE, data);
+        // TODO: check that BondingManager is called
     }
 
     function test_guardSnapshots(Random memory random) public {

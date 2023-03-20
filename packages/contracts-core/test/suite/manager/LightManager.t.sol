@@ -88,7 +88,6 @@ contract LightManagerTest is AgentManagerTest {
         // Should not be an already added agent
         vm.assume(!isActive);
         AgentInfo memory info = AgentInfo({ domain: domain, account: agent, bonded: true });
-        bytes memory data = _dataSyncAgentCall(info);
         bytes memory expectedCall = _expectedCall(ISystemContract.syncAgent.selector, info);
         // All system registries should be system called
         vm.expectCall(origin, expectedCall);
@@ -99,7 +98,6 @@ contract LightManagerTest is AgentManagerTest {
     function test_removeAgent(uint32 domain, address agent) public {
         test_addAgent(domain, agent);
         AgentInfo memory info = AgentInfo({ domain: domain, account: agent, bonded: false });
-        bytes memory data = _dataSyncAgentCall(info);
         bytes memory expectedCall = _expectedCall(ISystemContract.syncAgent.selector, info);
         // All system registries should be system called
         vm.expectCall(origin, expectedCall);

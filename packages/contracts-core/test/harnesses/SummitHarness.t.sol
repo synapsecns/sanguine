@@ -13,4 +13,14 @@ contract SummitHarness is Summit {
         // Add Mock for SystemRouter for standalone tests
         systemRouter = new SystemRouterMock();
     }
+
+    /// @notice Adding agents in Go tests
+    function addAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
+        return _addAgent(_domain, _account);
+    }
+
+    /// @notice Removing agents in Go tests
+    function removeAgent(uint32 _domain, address _account) external onlyOwner returns (bool) {
+        return _removeAgent(_domain, _account);
+    }
 }
