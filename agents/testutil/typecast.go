@@ -38,7 +38,7 @@ func (d *DeployManager) GetOrigin(ctx context.Context, backend backends.Simulate
 func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *messageharness.MessageHarnessRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*messageharness.MessageHarnessRef](ctx, d.T(), d, backend, OriginType)
+	return manager.GetContract[*messageharness.MessageHarnessRef](ctx, d.T(), d, backend, MessageHarnessType)
 }
 
 // GetOriginHarness gets the origin harness.
