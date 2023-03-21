@@ -196,6 +196,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 func (e Executor) Run(ctx context.Context) error {
 	gMarkAsExecuted, _ := errgroup.WithContext(ctx)
 
+	logger.Errorf("Start marking messages as executed")
 	// Backfill executed messages.
 	for _, chain := range e.config.Chains {
 		chain := chain
@@ -208,6 +209,7 @@ func (e Executor) Run(ctx context.Context) error {
 	if err := gMarkAsExecuted.Wait(); err != nil {
 		return fmt.Errorf("could not backfill executed messages: %w", err)
 	}
+	logger.Errorf("Done marking messages as executed")
 
 	gRun, _ := errgroup.WithContext(ctx)
 
@@ -551,6 +553,7 @@ func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) 
 	}
 
 	blockNumber := latestHeader.Number.Uint64()
+	logger.Errorf("block number for mark as executed: %d", blockNumber)
 
 	return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, &blockNumber, contractEventType{
 		contractType: destinationContract,
