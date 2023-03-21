@@ -672,13 +672,13 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 
 		executed := false
 
-		if e.chainExecutors[(*message).DestinationDomain()].executed[leaf] {
+		if e.chainExecutors[(*message).DestinationDomain()] != nil && e.chainExecutors[(*message).DestinationDomain()].executed[leaf] {
 			executed = true
 			e.chainExecutors[(*message).DestinationDomain()].executed[leaf] = false
 		}
 
 		logger.Errorf("Storing message with nonce %d! It has an executed value of %t", (*message).Nonce(), executed)
-		logger.Errorf("also, message with nonce %d has a leaf of %s", (*message).Nonce(), leaf)
+		logger.Errorf("also, message with nonce %d, chain id %d, has a leaf of %s", (*message).Nonce(), chainID, leaf)
 		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, executed, false, 0)
 		if err != nil {
 			return fmt.Errorf("could not store message: %w", err)
@@ -711,7 +711,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 				return fmt.Errorf("could not parse executed event")
 			}
 
-			logger.Errorf("executed event with leaf %s", *messageLeaf)
+			logger.Errorf("executed event on chain id %d with leaf %s", chainID, *messageLeaf)
 			e.chainExecutors[chainID].executed[*messageLeaf] = true
 		case otherEvent:
 			logger.Warnf("the log's event type is not supported")
