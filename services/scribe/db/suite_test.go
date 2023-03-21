@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"os"
 	"sync"
 	"sync/atomic"
@@ -22,8 +24,9 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs      []db.EventDB
-	logIndex atomic.Int64
+	dbs           []db.EventDB
+	logIndex      atomic.Int64
+	scribeMetrics metrics.Handler
 }
 
 // NewEventDBSuite creates a new EventDBSuite.
@@ -45,6 +48,14 @@ func (t *DBSuite) SetupTest() {
 
 	t.dbs = []db.EventDB{sqliteStore}
 	t.setupMysqlDB()
+}
+
+func (t *DBSuite) SetupSuite() {
+	t.TestSuite.SetupSuite()
+
+	var err error
+	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	t.Require().Nil(err)
 }
 
 // connString gets the connection string.
