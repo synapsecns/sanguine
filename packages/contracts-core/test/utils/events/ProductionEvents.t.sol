@@ -7,6 +7,7 @@ import { ExecutionHubEvents } from "../../../contracts/events/ExecutionHubEvents
 import { OriginEvents } from "../../../contracts/events/OriginEvents.sol";
 import { SnapshotHubEvents } from "../../../contracts/events/SnapshotHubEvents.sol";
 import { SummitEvents } from "../../../contracts/events/SummitEvents.sol";
+import { SystemRegistryEvents } from "../../../contracts/events/SystemRegistryEvents.sol";
 
 // solhint-disable no-empty-blocks
 abstract contract ProductionEvents is
@@ -15,7 +16,8 @@ abstract contract ProductionEvents is
     ExecutionHubEvents,
     OriginEvents,
     SnapshotHubEvents,
-    SummitEvents
+    SummitEvents,
+    SystemRegistryEvents
 {
 
 }

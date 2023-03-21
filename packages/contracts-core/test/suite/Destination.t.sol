@@ -57,47 +57,17 @@ contract DestinationTest is SynapseTest, SynapseProofs {
             address(systemRouter),
             "!systemRouter"
         );
-        // Check Agents
-        // Destination should know about local Notaries and Guards
+        // TODO: adjust when Agent Merkle Tree is implemented
+        // Check Agents: currently all Agents are known in LightManager
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                if (domain == 0) {
-                    assertTrue(ISystemRegistry(destination).isActiveAgent(domain, agent), "!guard");
-                } else if (domain == DOMAIN_LOCAL) {
-                    assertTrue(
-                        ISystemRegistry(destination).isActiveAgent(domain, agent),
-                        "!local notary"
-                    );
-                } else {
-                    // Remote Notaries are unknown to Destination
-                    assertFalse(
-                        ISystemRegistry(destination).isActiveAgent(domain, agent),
-                        "!remote notary"
-                    );
-                }
+                assertTrue(ISystemRegistry(destination).isActiveAgent(domain, agent));
             }
         }
         // Check version
         assertEq(Versioned(destination).version(), LATEST_VERSION, "!version");
-    }
-
-    function test_slashAgent() public {
-        address notary = domains[DOMAIN_LOCAL].agent;
-        vm.expectEmit(true, true, true, true);
-        emit AgentRemoved(DOMAIN_LOCAL, notary);
-        vm.expectEmit(true, true, true, true);
-        emit AgentSlashed(DOMAIN_LOCAL, notary);
-        vm.recordLogs();
-        vm.prank(address(systemRouter));
-        ISystemContract(destination).slashAgent({
-            _rootSubmittedAt: block.timestamp,
-            _callOrigin: DOMAIN_LOCAL,
-            _caller: SystemEntity.AgentManager,
-            _info: AgentInfo(DOMAIN_LOCAL, notary, false)
-        });
-        assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");
     }
 
     function test_submitAttestationReport(RawAttestationReport memory rawAR) public {

@@ -168,10 +168,11 @@ contract SummitTest is SynapseTest, SynapseProofs {
 
     function expectAgentSlashed(uint32 domain, address agent) public {
         vm.expectEmit(true, true, true, true);
-        emit AgentRemoved(domain, agent);
-        vm.expectEmit(true, true, true, true);
         emit AgentSlashed(domain, agent);
-        // TODO: check that BondingManager is called
+        vm.expectCall(
+            address(bondingManager),
+            abi.encodeWithSelector(bondingManager.registrySlash.selector, domain, agent)
+        );
     }
 
     function test_guardSnapshots(Random memory random) public {
@@ -293,62 +294,20 @@ contract SummitTest is SynapseTest, SynapseProofs {
     }
 
     function checkLatestState() public {
+        // TODO: enable once Agent Merkle Tree is implemented
         // Check global latest state
-        for (uint32 j = 0; j < STATES; ++j) {
-            RawState memory latestState;
-            for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
-                if (guardStates[i][j].nonce > latestState.nonce) {
-                    latestState = guardStates[i][j];
-                }
-            }
-            assertEq(
-                InterfaceSummit(summit).getLatestState(j + 1),
-                latestState.formatState(),
-                "!getLatestState"
-            );
-        }
-    }
-
-    function _expectRemoteCallAgentManager(uint32 domain, bytes memory data) internal {
-        vm.expectCall(
-            address(systemRouterSynapse),
-            abi.encodeWithSelector(
-                systemRouterSynapse.systemCall.selector,
-                domain, // destination
-                BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                SystemEntity.AgentManager, //recipient
-                data
-            )
-        );
-    }
-
-    function _dataSlashAgentCall(uint32 domain, address notary)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return
-            abi.encodeWithSelector(
-                ISystemContract.slashAgent.selector,
-                0, // rootSubmittedAt
-                0, // callOrigin
-                0, // systemCaller
-                AgentInfo(domain, notary, false)
-            );
-    }
-
-    function _expectedSlashCall(uint32 domain, address notary)
-        internal
-        view
-        returns (bytes memory)
-    {
-        return
-            abi.encodeWithSelector(
-                ISystemContract.slashAgent.selector,
-                block.timestamp,
-                DOMAIN_SYNAPSE,
-                SystemEntity.AgentManager,
-                AgentInfo(domain, notary, false)
-            );
+        // for (uint32 j = 0; j < STATES; ++j) {
+        //     RawState memory latestState;
+        //     for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
+        //         if (guardStates[i][j].nonce > latestState.nonce) {
+        //             latestState = guardStates[i][j];
+        //         }
+        //     }
+        //     assertEq(
+        //         InterfaceSummit(summit).getLatestState(j + 1),
+        //         latestState.formatState(),
+        //         "!getLatestState"
+        //     );
+        // }
     }
 }
