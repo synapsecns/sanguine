@@ -6,6 +6,7 @@ import { AgentInfo, SystemEntity } from "../libs/Structures.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { ISystemContract } from "../interfaces/ISystemContract.sol";
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
+import { Versioned } from "../Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {
     OwnableUpgradeable
@@ -14,7 +15,7 @@ import {
 /**
  * @notice Shared utilities between Synapse System Contracts: Origin, Destination, etc.
  */
-abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemContract {
+abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable, ISystemContract {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -110,15 +111,6 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
     modifier onlyOptimisticPeriodOver(uint256 _rootSubmittedAt, uint256 _optimisticSeconds) {
         _assertOptimisticPeriodOver(_rootSubmittedAt, _optimisticSeconds);
         _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             INITIALIZER                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // solhint-disable-next-line func-name-mixedcase
-    function __SystemContract_initialize() internal onlyInitializing {
-        __Ownable_init_unchained();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -4,15 +4,22 @@ pragma solidity 0.8.17;
 import { AgentManager } from "./manager/AgentManager.sol";
 import { DomainContext } from "./context/DomainContext.sol";
 import { SummitEvents } from "./events/SummitEvents.sol";
+import { IAgentManager } from "./interfaces/IAgentManager.sol";
 import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
 import { ExecutionHub } from "./hubs/ExecutionHub.sol";
 import { SnapshotHub, SummitAttestation, SummitState } from "./hubs/SnapshotHub.sol";
 import { Attestation, AttestationLib, AttestationReport, Snapshot } from "./hubs/StatementHub.sol";
+import { DomainContext, Versioned } from "./system/SystemContract.sol";
+import { SystemRegistry } from "./system/SystemRegistry.sol";
 
 contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
 
-    constructor(uint32 _domain) DomainContext(_domain) {
+    constructor(uint32 _domain, IAgentManager _agentManager)
+        DomainContext(_domain)
+        SystemRegistry(_agentManager)
+        Versioned("0.0.3")
+    {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }
 
@@ -21,7 +28,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function initialize() external initializer {
-        __SystemContract_initialize();
+        // Initialize Ownable: msg.sender is set as "owner"
+        __Ownable_init();
         _initializeAttestations();
     }
 
@@ -68,8 +76,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         isValid = _isValidAttestation(att);
         if (!isValid) {
             emit InvalidAttestation(_attPayload, _attSignature);
-            // Slash Notary and trigger a hook to send a slashAgent system call
-            _slashAgent(domain, notary, true);
+            // Slash Notary and notify local AgentManager
+            _slashAgent(domain, notary);
         }
     }
 
@@ -86,8 +94,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         isValid = !_isValidAttestation(report.attestation());
         if (!isValid) {
             emit InvalidAttestationReport(_arPayload, _arSignature);
-            // Slash Guard (domain == 0) and trigger a hook to send a slashAgent system call
-            _slashAgent(0, guard, true);
+            // Slash Guard and notify local AgentManager
+            _slashAgent(0, guard);
         }
     }
 
@@ -97,33 +105,6 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @inheritdoc InterfaceSummit
     function getLatestState(uint32 _origin) external view returns (bytes memory statePayload) {
-        uint256 guardsAmount = amountAgents(0);
-        SummitState memory latestState;
-        for (uint256 i = 0; i < guardsAmount; ++i) {
-            address guard = getAgent(0, i);
-            SummitState memory state = _latestState(_origin, guard);
-            if (state.nonce > latestState.nonce) {
-                latestState = state;
-            }
-        }
-        // Check if we found anything
-        if (latestState.nonce != 0) {
-            statePayload = latestState.formatSummitState();
-        }
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @dev Hook that is called after an existing agent was slashed,
-    /// when verification of an invalid agent statement was done in this contract.
-    function _afterAgentSlashed(uint32 _domain, address _agent) internal virtual override {
-        // TODO: implement
-    }
-
-    function _isIgnoredAgent(uint32, address) internal pure override returns (bool) {
-        // Summit keeps track of every agent
-        return false;
+        // TODO: implement once Agent Merkle Tree is done
     }
 }

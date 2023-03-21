@@ -9,12 +9,14 @@ import { Tips, TipsLib } from "./libs/Tips.sol";
 import { TypeCasts } from "./libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { OriginEvents } from "./events/OriginEvents.sol";
+import { IAgentManager } from "./interfaces/IAgentManager.sol";
 import { InterfaceOrigin } from "./interfaces/InterfaceOrigin.sol";
-import { DomainContext, StateHub } from "./hubs/StateHub.sol";
+import { StateHub } from "./hubs/StateHub.sol";
 import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
+import { DomainContext, Versioned } from "./system/SystemContract.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
-contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, InterfaceOrigin {
+contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     using TipsLib for bytes;
     using TypedMemView for bytes29;
 
@@ -22,14 +24,18 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(uint32 _domain) DomainContext(_domain) {}
+    constructor(uint32 _domain, IAgentManager _agentManager)
+        DomainContext(_domain)
+        SystemRegistry(_agentManager)
+        Versioned("0.0.3")
+    {}
 
     /// @notice Initializes Origin contract:
     /// - msg.sender is set as contract owner
     /// - State of "empty merkle tree" is saved
     function initialize() external initializer {
-        // Initialize SystemContract: msg.sender is set as "owner"
-        __SystemContract_initialize();
+        // Initialize Ownable: msg.sender is set as "owner"
+        __Ownable_init();
         // Initialize "states": state of an "empty merkle tree" is saved
         _initializeStates();
     }
@@ -64,8 +70,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
                 _attPayload,
                 _attSignature
             );
-            // Slash Notary and trigger a hook to send a slashAgent system call
-            _slashAgent(domain, notary, true);
+            // Slash Notary and notify local AgentManager
+            _slashAgent(domain, notary);
         }
     }
 
@@ -93,8 +99,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         isValid = _isValidState(state);
         if (!isValid) {
             emit InvalidAttestationState(_stateIndex, _statePayload, _attPayload, _attSignature);
-            // Slash Notary and trigger a hook to send a slashAgent system call
-            _slashAgent(domain, notary, true);
+            // Slash Notary and notify local AgentManager
+            _slashAgent(domain, notary);
         }
     }
 
@@ -112,8 +118,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         isValid = _isValidState(snapshot.state(_stateIndex));
         if (!isValid) {
             emit InvalidSnapshotState(_stateIndex, _snapPayload, _snapSignature);
-            // Slash Agent and trigger a hook to send a slashAgent system call
-            _slashAgent(domain, agent, true);
+            // Slash Agent and notify local AgentManager
+            _slashAgent(domain, agent);
         }
     }
 
@@ -130,8 +136,8 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
         isValid = !_isValidState(report.state());
         if (!isValid) {
             emit InvalidStateReport(_srPayload, _srSignature);
-            // Slash Agent and trigger a hook to send a slashAgent system call
-            _slashAgent(0, guard, true);
+            // Slash Guard and notify local AgentManager
+            _slashAgent(0, guard);
         }
     }
 
@@ -181,14 +187,6 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Hook that is called after an existing agent was slashed,
-    /// when verification of an invalid agent statement was done in this contract.
-    function _afterAgentSlashed(uint32 _domain, address _agent) internal virtual override {
-        /// @dev We send a "slashAgent" system message
-        /// after the Agent is slashed by submitting an invalid statement.
-        _callLocalAgentManager(_dataSlashAgent(_domain, _agent));
-    }
-
     /**
      * @notice Returns adjusted "sender" field.
      * @dev By default, "sender" field is msg.sender address casted to bytes32.
@@ -210,10 +208,5 @@ contract Origin is StatementHub, StateHub, SystemRegistry, OriginEvents, Interfa
             // Adjust "sender" field for correct processing on remote chain.
             sender = SYSTEM_ROUTER;
         }
-    }
-
-    function _isIgnoredAgent(uint32, address) internal view virtual override returns (bool) {
-        // Origin keeps track of every agent
-        return false;
     }
 }

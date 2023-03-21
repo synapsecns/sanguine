@@ -7,8 +7,7 @@ import { AttestationReport, AttestationReportLib } from "../libs/AttestationRepo
 import { MerkleLib } from "../libs/Merkle.sol";
 import { StateReport, StateReportLib } from "../libs/StateReport.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { AgentRegistry } from "../system/AgentRegistry.sol";
-import { Versioned } from "../Version.sol";
+import { SystemRegistry } from "../system/SystemRegistry.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
@@ -23,15 +22,12 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
  * - Signer being an active agent
  * - Signer being allowed to sign the particular type of statement
  */
-abstract contract StatementHub is AgentRegistry, Versioned {
+abstract contract StatementHub is SystemRegistry {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
     using StateReportLib for bytes;
-
-    // solhint-disable-next-line no-empty-blocks
-    constructor() Versioned("0.0.3") {}
 
     /**
      * @dev Recovers a signer from a hashed message, and a EIP-191 signature for it.
