@@ -206,8 +206,11 @@ library MerkleLib {
         bytes32[TREE_DEPTH] memory _branch,
         bytes32 _newValue
     ) internal returns (bytes32 newRoot) {
+        // Check that the old value + proof result in a correct root
         require(branchRoot(_oldValue, _branch, _index) == _tree.root, "Incorrect proof");
+        // New root is new value + the same proof (values for sibling nodes are not updated)
         newRoot = branchRoot(_newValue, _branch, _index);
+        // Write the new root
         _tree.root = newRoot;
     }
 
