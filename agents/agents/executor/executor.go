@@ -887,7 +887,7 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 					Nonce:       &nonce,
 				}
 
-				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, *minimumTimestamp)
+				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, *minimumTimestamp+uint64(message.OptimisticSeconds()))
 				if err != nil {
 					return fmt.Errorf("could not set minimum time: %w", err)
 				}
