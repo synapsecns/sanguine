@@ -672,9 +672,9 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 
 		executed := false
 
-		if e.chainExecutors[chainID].executed[leaf] {
+		if e.chainExecutors[(*message).DestinationDomain()].executed[leaf] {
 			executed = true
-			e.chainExecutors[chainID].executed[leaf] = false
+			e.chainExecutors[(*message).DestinationDomain()].executed[leaf] = false
 		}
 
 		logger.Errorf("Storing message with nonce %d! It has an executed value of %t", (*message).Nonce(), executed)
