@@ -2,13 +2,14 @@
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { SystemContract } from "./SystemContract.sol";
+import { SystemRegistryEvents } from "../events/SystemRegistryEvents.sol";
 import { IAgentManager } from "../interfaces/IAgentManager.sol";
 import { ISystemRegistry } from "../interfaces/ISystemRegistry.sol";
 
 /// @notice Shared utilities for Origin, Destination/Summit contracts.
 /// This abstract contract is responsible for all interactions with the local AgentManager,
 /// where all agent are being tracked.
-abstract contract SystemRegistry is SystemContract, ISystemRegistry {
+abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISystemRegistry {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              IMMUTABLES                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -70,6 +71,7 @@ abstract contract SystemRegistry is SystemContract, ISystemRegistry {
     function _slashAgent(uint32 _domain, address _agent) internal {
         _processSlashed(_domain, _agent);
         agentManager.registrySlash(_domain, _agent);
+        emit AgentSlashed(_domain, _agent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
