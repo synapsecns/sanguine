@@ -3,11 +3,11 @@ pragma solidity 0.8.17;
 
 import { InterfaceOrigin } from "../../contracts/interfaces/InterfaceOrigin.sol";
 import { StateHubMock } from "./hubs/StateHubMock.t.sol";
-import { AgentRegistryMock } from "./system/AgentRegistryMock.t.sol";
 import { SystemContractMock } from "./system/SystemContractMock.t.sol";
+import { SystemRegistryMock } from "./system/SystemRegistryMock.t.sol";
 
 // solhint-disable no-empty-blocks
-contract OriginMock is StateHubMock, AgentRegistryMock, SystemContractMock, InterfaceOrigin {
+contract OriginMock is StateHubMock, SystemRegistryMock, SystemContractMock, InterfaceOrigin {
     /// @notice Prevents this contract from being included in the coverage report
     function testOriginMock() external {}
 

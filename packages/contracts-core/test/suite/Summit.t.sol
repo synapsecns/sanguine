@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
+import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { ISnapshotHub } from "../../contracts/interfaces/ISnapshotHub.sol";
 import { MerkleLib } from "../../contracts/libs/Merkle.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
@@ -62,7 +62,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                assertTrue(IAgentRegistry(summit).isActiveAgent(domain, agent), "!agent");
+                assertTrue(ISystemRegistry(summit).isActiveAgent(domain, agent), "!agent");
             }
         }
         // Check version

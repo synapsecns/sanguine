@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Snapshot.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
-import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
+import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { IDisputeHub } from "../../contracts/interfaces/IDisputeHub.sol";
 import { IExecutionHub, TREE_DEPTH } from "../../contracts/interfaces/IExecutionHub.sol";
 
@@ -64,16 +64,16 @@ contract DestinationTest is SynapseTest, SynapseProofs {
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
                 if (domain == 0) {
-                    assertTrue(IAgentRegistry(destination).isActiveAgent(domain, agent), "!guard");
+                    assertTrue(ISystemRegistry(destination).isActiveAgent(domain, agent), "!guard");
                 } else if (domain == DOMAIN_LOCAL) {
                     assertTrue(
-                        IAgentRegistry(destination).isActiveAgent(domain, agent),
+                        ISystemRegistry(destination).isActiveAgent(domain, agent),
                         "!local notary"
                     );
                 } else {
                     // Remote Notaries are unknown to Destination
                     assertFalse(
-                        IAgentRegistry(destination).isActiveAgent(domain, agent),
+                        ISystemRegistry(destination).isActiveAgent(domain, agent),
                         "!remote notary"
                     );
                 }
