@@ -20,6 +20,9 @@ contract BondingManager is Versioned, AgentManager {
         __Ownable_init();
     }
 
+    // TODO: move addAgent into BondingManager and introduce Events,
+    // when Agent Merkle Tree is implemented.
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            SLASHING LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
