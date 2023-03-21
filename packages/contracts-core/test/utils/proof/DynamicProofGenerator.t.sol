@@ -27,6 +27,11 @@ contract DynamicProofGenerator {
         }
     }
 
+    /// @notice Returns current value for the leaf.
+    function getLeaf(uint256 _index) external view returns (bytes32) {
+        return merkleTree[0][_index];
+    }
+
     /// @notice Returns merkle root of the tree.
     function getRoot() external view returns (bytes32) {
         return merkleTree[TREE_DEPTH][0];
