@@ -726,6 +726,7 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation0, destination, 10, 10)
 	e.Nil(err)
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation2, destination, 20, 20)
+	e.Nil(err)
 
 	excCfg := executorCfg.Config{
 		Chains: []executorCfg.ChainConfig{
@@ -777,10 +778,11 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 
 	// Ensure that the correct attestation was used for the messages.
 	for i := uint32(1); i <= 5; i++ {
+		nonce := i
 		messageMask := execTypes.DBMessage{
 			ChainID:     &chainID,
 			Destination: &destination,
-			Nonce:       &i,
+			Nonce:       &nonce,
 		}
 		minTime, err := e.ExecutorTestDB.GetMessageMinimumTime(e.GetTestContext(), messageMask)
 		e.Nil(err)
