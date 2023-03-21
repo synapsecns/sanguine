@@ -17,7 +17,7 @@ require (
 	github.com/mitchellh/go-testing-interface v1.14.1
 	github.com/synapsecns/sanguine/contrib/tfcore v0.0.0-00010101000000-000000000000
 	github.com/zclconf/go-cty v1.12.1
-	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
+	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
 	golang.org/x/mod v0.7.0
 	golang.org/x/tools v0.5.0
 	google.golang.org/grpc v1.51.0
