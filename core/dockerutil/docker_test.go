@@ -1,7 +1,6 @@
 package dockerutil_test
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -11,7 +10,6 @@ import (
 	"github.com/synapsecns/sanguine/core/dockerutil"
 	"github.com/synapsecns/sanguine/core/mocktesting"
 	"github.com/synapsecns/sanguine/core/processlog"
-	"io"
 	"os"
 	"testing"
 )
@@ -23,7 +21,6 @@ func (c *DockerSuite) TestTailContainerLogs() {
 	assert.FileExists(c.T(), out.CombinedFile())
 	assert.FileExists(c.T(), out.StdOutFile())
 	assert.FileExists(c.T(), out.StdErrFile())
-
 }
 
 func ExampleTailContainerLogs() {
@@ -45,8 +42,10 @@ func ExampleTailContainerLogs() {
 }
 
 // testContainer creates a test alpine container that prints hello world.
-// the return will be empty if this fails
+// the return will be empty if this fails.
 func testContainer(ctx context.Context, tb testing.TB) processlog.LogMetadata {
+	tb.Helper()
+
 	pool, err := dockertest.NewPool("")
 	assert.Nil(tb, err)
 
@@ -71,7 +70,6 @@ func testContainer(ctx context.Context, tb testing.TB) processlog.LogMetadata {
 			case <-ctx.Done():
 				return
 			case logInfoChan <- metadata:
-
 			}
 		}))
 	}()
@@ -104,11 +102,14 @@ func testContainer(ctx context.Context, tb testing.TB) processlog.LogMetadata {
 }
 
 func waitForFileContents(ctx context.Context, tb testing.TB, file string) []byte {
+	tb.Helper()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		default:
+			//nolint: gosec
 			fileContents, err := os.ReadFile(file)
 			assert.Nil(tb, err)
 
@@ -119,17 +120,4 @@ func waitForFileContents(ctx context.Context, tb testing.TB, file string) []byte
 			return fileContents
 		}
 	}
-}
-
-type bufCloser struct {
-	*bytes.Buffer
-}
-
-// Mock.
-func (b bufCloser) Close() error {
-	return nil
-}
-
-func newBufCloser(res string) io.ReadCloser {
-	return bufCloser{bytes.NewBufferString(res)}
 }

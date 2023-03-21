@@ -11,6 +11,7 @@ import (
 
 var logger = log.Logger("dockertest")
 
+// TailContainerLogs tails the logs of a container and outputs them to a processlog file.
 func TailContainerLogs(opts ...Option) error {
 	stdoutReader, stdoutWriter := io.Pipe()
 	stderrReader, stderrWriter := io.Pipe()
@@ -48,10 +49,8 @@ func TailContainerLogs(opts ...Option) error {
 
 	closeChan := make(chan struct{})
 	go func() {
-		select {
-		case <-logOpts.ctx.Done():
-			close(closeChan)
-		}
+		<-logOpts.ctx.Done()
+		close(closeChan)
 	}()
 
 	errChan := make(chan error, 1)

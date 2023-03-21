@@ -45,7 +45,7 @@ func init() {
 const (
 	// DataDog is the datadog driver.
 	DataDog HandlerType = iota + 1 // Datadog
-	// NewRelic is the new relic driver.t
+	// NewRelic is the new relic driver.t.
 	NewRelic // NewRelic
 	// Jaeger is the jaeger driver.
 	Jaeger // Jaeger

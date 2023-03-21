@@ -7,20 +7,22 @@ import (
 	"github.com/synapsecns/sanguine/core/processlog"
 )
 
-// Callback is a callback function that is called when a container log process is started
+// Callback is a callback function that is called when a container log process is started.
 type Callback func(ctx context.Context, metadata processlog.LogMetadata)
 
 type logOptions struct {
-	logOptions     docker.LogsOptions
+	logOptions docker.LogsOptions
+	//nolint: containedctx
 	ctx            context.Context
 	pool           *dockertest.Pool
 	callback       Callback
 	processOptions []processlog.StdStreamLogArgsOption
 }
 
+// Option is a function that configures a logOptions struct.
 type Option func(*logOptions) error
 
-// WithContext sets the context for the TailContainerLogs function
+// WithContext sets the context for the TailContainerLogs function.
 func WithContext(ctx context.Context) Option {
 	return func(opts *logOptions) error {
 		if ctx == nil {
@@ -31,7 +33,7 @@ func WithContext(ctx context.Context) Option {
 	}
 }
 
-// WithResource sets the resource for the TailContainerLogs function
+// WithResource sets the resource for the TailContainerLogs function.
 func WithResource(resource *dockertest.Resource) Option {
 	return func(opts *logOptions) error {
 		if resource == nil {
@@ -42,7 +44,7 @@ func WithResource(resource *dockertest.Resource) Option {
 	}
 }
 
-// WithPool sets the pool for the TailContainerLogs function
+// WithPool sets the pool for the TailContainerLogs function.
 func WithPool(pool *dockertest.Pool) Option {
 	return func(opts *logOptions) error {
 		if pool == nil {
@@ -53,7 +55,7 @@ func WithPool(pool *dockertest.Pool) Option {
 	}
 }
 
-// WithStderr sets the Stderr option for the TailContainerLogs function
+// WithStderr sets the Stderr option for the TailContainerLogs function.
 func WithStderr(stderr bool) Option {
 	return func(opts *logOptions) error {
 		opts.logOptions.Stderr = stderr
@@ -61,7 +63,7 @@ func WithStderr(stderr bool) Option {
 	}
 }
 
-// WithStdout sets the Stdout option for the TailContainerLogs function
+// WithStdout sets the Stdout option for the TailContainerLogs function.
 func WithStdout(stdout bool) Option {
 	return func(opts *logOptions) error {
 		opts.logOptions.Stdout = stdout
@@ -69,7 +71,7 @@ func WithStdout(stdout bool) Option {
 	}
 }
 
-// WithFollow sets the Follow option for the TailContainerLogs function
+// WithFollow sets the Follow option for the TailContainerLogs function.
 func WithFollow(follow bool) Option {
 	return func(opts *logOptions) error {
 		opts.logOptions.Follow = follow
@@ -77,7 +79,7 @@ func WithFollow(follow bool) Option {
 	}
 }
 
-// WithTimestamps sets the Timestamps option for the TailContainerLogs function
+// WithTimestamps sets the Timestamps option for the TailContainerLogs function.
 func WithTimestamps(timestamps bool) Option {
 	return func(opts *logOptions) error {
 		opts.logOptions.Timestamps = timestamps
@@ -85,7 +87,7 @@ func WithTimestamps(timestamps bool) Option {
 	}
 }
 
-// WithRawTerminal sets the RawTerminal option for the TailContainerLogs function
+// WithRawTerminal sets the RawTerminal option for the TailContainerLogs function.
 func WithRawTerminal(rawTerminal bool) Option {
 	return func(opts *logOptions) error {
 		opts.logOptions.RawTerminal = rawTerminal
@@ -93,7 +95,7 @@ func WithRawTerminal(rawTerminal bool) Option {
 	}
 }
 
-// WithSince sets the Since option for the TailContainerLogs function
+// WithSince sets the Since option for the TailContainerLogs function.
 func WithSince(since int64) Option {
 	return func(opts *logOptions) error {
 		opts.logOptions.Since = since
@@ -101,7 +103,7 @@ func WithSince(since int64) Option {
 	}
 }
 
-// WithProcessLogOptions sets the process log options for the TailContainerLogs function
+// WithProcessLogOptions sets the process log options for the TailContainerLogs function.
 func WithProcessLogOptions(customOpts ...processlog.StdStreamLogArgsOption) Option {
 	return func(opts *logOptions) error {
 		opts.processOptions = customOpts
@@ -109,7 +111,7 @@ func WithProcessLogOptions(customOpts ...processlog.StdStreamLogArgsOption) Opti
 	}
 }
 
-// WithCallback sets the callback function for the TailContainerLogs function
+// WithCallback sets the callback function for the TailContainerLogs function.
 func WithCallback(callback Callback) Option {
 	return func(opts *logOptions) error {
 		if callback == nil {
@@ -120,7 +122,7 @@ func WithCallback(callback Callback) Option {
 	}
 }
 
-// ValidateOptions validates the options for the TailContainerLogs function
+// ValidateOptions validates the options for the TailContainerLogs function.
 func ValidateOptions(opts ...Option) error {
 	logOpts := &logOptions{}
 

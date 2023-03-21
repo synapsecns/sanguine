@@ -38,7 +38,12 @@ func (j *jaegerHandler) Shutdown(ctx context.Context) error {
 	if err != nil {
 		logger.Warn("could not add gorm callbacks", "error", err)
 	}
-	return j.exporter.Shutdown(ctx)
+
+	err = j.exporter.Shutdown(ctx)
+	if err != nil {
+		return fmt.Errorf("could not shutdown exporter: %w", err)
+	}
+	return nil
 }
 
 func (j *jaegerHandler) Start(ctx context.Context) (err error) {
@@ -60,14 +65,12 @@ func (j *jaegerHandler) Start(ctx context.Context) (err error) {
 	}
 
 	go func() {
-		select {
-		case <-ctx.Done():
-			shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-			err := j.exporter.Shutdown(shutdownCtx)
-			if err != nil {
-				logger.Warn("could not shutdown exporter", "error", err)
-			}
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		err := j.exporter.Shutdown(shutdownCtx)
+		if err != nil {
+			logger.Warn("could not shutdown exporter", "error", err)
 		}
 	}()
 	return nil
@@ -123,8 +126,7 @@ func SetupTestJaeger(tb testing.TB) {
 		if tb.Failed() {
 			logger.Warnf("Test failed, will temporarily continue serving jaegar instance on http://localhost:%s", resource.GetPort("16686/tcp"))
 		} else {
-			// TODO: re-add me
-			//_ = pool.Purge(resource)
+			_ = pool.Purge(resource)
 		}
 	})
 }

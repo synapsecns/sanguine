@@ -133,6 +133,8 @@ func WithCtx(ctx context.Context) StdStreamLogArgsOption {
 	}
 }
 
+// ReaderType is the type of reader (stdout or stderr).
+//
 //go:generate go run golang.org/x/tools/cmd/stringer -type=ReaderType -linecomment
 type ReaderType uint8
 
