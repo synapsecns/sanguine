@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.sol";
 import { AgentInfo, SystemEntity } from "../../../contracts/libs/Structures.sol";
 
 import { AgentManagerTest } from "./AgentManager.t.sol";
@@ -24,7 +25,7 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_version() public {
         // Check version
-        assertEq(agentManager.version(), LATEST_VERSION, "!version");
+        assertEq(lightManager.version(), LATEST_VERSION, "!version");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -35,48 +36,14 @@ contract LightManagerTest is AgentManagerTest {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
         vm.prank(caller);
-        agentManager.addAgent(1, address(1));
+        lightManager.addAgent(1, address(1));
     }
 
     function test_removeAgent_revert_notOwner(address caller) public {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
         vm.prank(caller);
-        agentManager.removeAgent(1, address(1));
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║            TESTS: UNAUTHORIZED ACCESS (NOT SYSTEM ROUTER)            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_slashAgent_revert_notSystemRouter(
-        address caller,
-        uint256 submittedAt,
-        uint32 callOrigin
-    ) public {
-        vm.assume(caller != address(systemRouter));
-        AgentInfo memory info;
-        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            SystemEntity systemCaller = SystemEntity(c);
-            vm.expectRevert("!systemRouter");
-            vm.prank(caller);
-            agentManager.slashAgent(submittedAt, callOrigin, systemCaller, info);
-        }
-    }
-
-    function test_syncAgent_revert_notSystemRouter(
-        address caller,
-        uint256 submittedAt,
-        uint32 callOrigin
-    ) public {
-        vm.assume(caller != address(systemRouter));
-        AgentInfo memory info;
-        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            SystemEntity systemCaller = SystemEntity(c);
-            vm.expectRevert("!systemRouter");
-            vm.prank(caller);
-            agentManager.syncAgent(submittedAt, callOrigin, systemCaller, info);
-        }
+        lightManager.removeAgent(1, address(1));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -84,139 +51,39 @@ contract LightManagerTest is AgentManagerTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_addAgent(uint32 domain, address agent) public {
-        (bool isActive, ) = agentManager.isActiveAgent(agent);
+        (bool isActive, ) = lightManager.isActiveAgent(agent);
         // Should not be an already added agent
         vm.assume(!isActive);
-        AgentInfo memory info = AgentInfo({ domain: domain, account: agent, bonded: true });
-        bytes memory expectedCall = _expectedCall(ISystemContract.syncAgent.selector, info);
-        // All system registries should be system called
-        vm.expectCall(origin, expectedCall);
-        vm.expectCall(destination, expectedCall);
-        agentManager.addAgent(domain, agent);
+        lightManager.addAgent(domain, agent);
+        assertTrue(lightManager.isActiveAgent(domain, agent));
     }
 
     function test_removeAgent(uint32 domain, address agent) public {
         test_addAgent(domain, agent);
-        AgentInfo memory info = AgentInfo({ domain: domain, account: agent, bonded: false });
-        bytes memory expectedCall = _expectedCall(ISystemContract.syncAgent.selector, info);
-        // All system registries should be system called
-        vm.expectCall(origin, expectedCall);
-        vm.expectCall(destination, expectedCall);
-        agentManager.removeAgent(domain, agent);
+        lightManager.removeAgent(domain, agent);
+        assertFalse(lightManager.isActiveAgent(domain, agent));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      TESTS: SLASH AGENT REVERTS                      ║*▕
+    ▏*║                         TEST: REGISTRY SLASH                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_slashAgent_revert_localDomain_notOrigin() public {
-        AgentInfo memory info;
-        bytes memory data = _dataSlashAgentCall(info);
-        // Only Origin on local domain is allowed to call slashAgent()
-        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            SystemEntity caller = SystemEntity(c);
-            // Should reject system calls from local domain, if caller is not Origin
-            if (caller == SystemEntity.Origin) continue;
-            vm.expectRevert("!allowedCaller");
-            _systemPrank(systemRouter, _localDomain(), caller, data);
-        }
-    }
-
-    function test_slashAgent_revert_synapseDomain_notAgentManager() public {
-        AgentInfo memory info;
-        bytes memory data = _dataSlashAgentCall(info);
-        _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            // Should reject system calls from Synapse domain, if caller is not AgentManager
-            SystemEntity caller = SystemEntity(c);
-            if (caller == SystemEntity.AgentManager) continue;
-            vm.expectRevert("!allowedCaller");
-            _systemPrank(systemRouter, DOMAIN_SYNAPSE, caller, data);
-        }
-    }
-
-    function test_slashAgent_revert_remoteNotSynapseDomain(uint32 callOrigin) public {
-        // Exclude local calls and calls from Synapse Chain
-        vm.assume(callOrigin != _localDomain() && callOrigin != DOMAIN_SYNAPSE);
-        AgentInfo memory info;
-        bytes memory data = _dataSlashAgentCall(info);
-        _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            // Should reject cross-chain system calls from domains other than Synapse domain
-            SystemEntity caller = SystemEntity(c);
-            vm.expectRevert("!synapseDomain");
-            // Use mocked agent info
-            _systemPrank(systemRouter, callOrigin, caller, data);
-        }
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      TESTS: SYNC AGENTS REVERTS                      ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_syncAgent_revert_localDomain() public {
-        AgentInfo memory info;
-        bytes memory data = _dataSyncAgentCall(info);
-        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            // Should reject all system calls from local domain
-            SystemEntity caller = SystemEntity(c);
-            // Calls from local domain never pass the optimistic period check
-            vm.expectRevert("!optimisticPeriod");
-            _systemPrank(systemRouter, _localDomain(), caller, data);
-        }
-    }
-
-    function test_syncAgent_revert_remoteNotSynapseDomain(uint32 callOrigin) public {
-        AgentInfo memory info;
-        bytes memory data = _dataSyncAgentCall(info);
-        // Exclude local calls and calls from Synapse Chain
-        vm.assume(callOrigin != _localDomain() && callOrigin != DOMAIN_SYNAPSE);
-        _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            // Should reject all system calls from remote domains other than Synapse domain
-            SystemEntity caller = SystemEntity(c);
-            vm.expectRevert("!synapseDomain");
-            _systemPrank(systemRouter, callOrigin, caller, data);
-        }
-    }
-
-    function test_syncAgent_revert_synapseDomain_notAgentManager() public {
-        AgentInfo memory info;
-        bytes memory data = _dataSyncAgentCall(info);
-        _skipBondingOptimisticPeriod();
-        for (uint256 c = 0; c < uint8(type(SystemEntity).max); ++c) {
-            SystemEntity caller = SystemEntity(c);
-            // Should reject system calls from Synapse domain, if caller is not AgentManager
-            if (caller == SystemEntity.AgentManager) continue;
-            vm.expectRevert("!allowedCaller");
-            _systemPrank(systemRouter, DOMAIN_SYNAPSE, caller, data);
-        }
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║              TESTS: RECEIVE SYSTEM CALLS (LOCAL DOMAIN)              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_slashAgent_localDomain_origin(uint32 domain, address account) public {
-        AgentInfo memory info = AgentInfo({ domain: domain, account: account, bonded: false });
-        bytes memory data = _dataSlashAgentCall(info);
-        bytes memory expectedCall = _expectedCall(ISystemContract.slashAgent.selector, info);
-        // All system registries should be system called
-        vm.expectCall(origin, expectedCall);
-        vm.expectCall(destination, expectedCall);
-        // data should be forwarded to Synapse Chain
+    function test_registrySlash_origin(uint32 domain, address agent) public {
+        test_addAgent(domain, agent);
         vm.expectCall(
-            address(systemRouter),
-            abi.encodeWithSelector(
-                systemRouter.systemCall.selector,
-                DOMAIN_SYNAPSE, // destination
-                BONDING_OPTIMISTIC_PERIOD, // optimisticSeconds
-                SystemEntity.AgentManager, //recipient
-                data
-            )
+            destination,
+            abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
-        // Prank a local system call: [Local Origin] -> [Local AgentManager].slashAgent
-        _systemPrank(systemRouter, _localDomain(), SystemEntity.Origin, data);
+        vm.prank(origin);
+        lightManager.registrySlash(domain, agent);
+        assertFalse(lightManager.isActiveAgent(domain, agent));
+    }
+
+    function test_registrySlash_revertUnauthorized(address caller) public {
+        vm.assume(caller != origin);
+        vm.expectRevert("Unauthorized caller");
+        vm.prank(caller);
+        lightManager.registrySlash(0, address(0));
     }
 
     function _localDomain() internal pure override returns (uint32) {

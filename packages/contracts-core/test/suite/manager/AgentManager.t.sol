@@ -45,41 +45,4 @@ abstract contract AgentManagerTest is SynapseTest {
             _data: data
         });
     }
-
-    function _expectedCall(bytes4 selector, AgentInfo memory info)
-        internal
-        view
-        returns (bytes memory)
-    {
-        return
-            abi.encodeWithSelector(
-                selector,
-                block.timestamp,
-                _localDomain(),
-                SystemEntity.AgentManager,
-                info
-            );
-    }
-
-    function _dataSyncAgentCall(AgentInfo memory info) internal pure returns (bytes memory) {
-        return
-            abi.encodeWithSelector(
-                ISystemContract.syncAgent.selector,
-                0, // rootSubmittedAt
-                0, // callOrigin
-                0, // systemCaller
-                info
-            );
-    }
-
-    function _dataSlashAgentCall(AgentInfo memory info) internal pure returns (bytes memory) {
-        return
-            abi.encodeWithSelector(
-                ISystemContract.slashAgent.selector,
-                0, // rootSubmittedAt
-                0, // callOrigin
-                0, // systemCaller
-                info
-            );
-    }
 }
