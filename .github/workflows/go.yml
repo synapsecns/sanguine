@@ -8,6 +8,17 @@ on:
       - 'gh-pages'
 
 jobs:
+  cancel-outdated:
+    name: Cancel Outdated Jobs
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
   # changes allows us to only run a job on changed packages
   changes:
     name: Change Detection
@@ -149,6 +160,7 @@ jobs:
           GANACHE_RPC_URL: http://0.0.0.0:8045
           GOMEMLIMIT: 6GiB
           GOGC: 2000
+          ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
 
       - name: Get Coverage name
         id: coverage
@@ -238,8 +250,6 @@ jobs:
           working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.48.0
-          # Path to your GolangCI-Lint config within the repo (optional)
-          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
           # see: https://github.com/golangci/golangci-lint/issues/2654
           args: --timeout=60m
         env:
@@ -261,8 +271,6 @@ jobs:
           working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.48.0
-          # Path to your GolangCI-Lint config within the repo (optional)
-          config: ${{ env.GITHUB_WORKSPACE }}/.golangci.yaml
           # see: https://github.com/golangci/golangci-lint/issues/2654
           args: --timeout=60m --build-tags=codeanalysis
         env:
@@ -375,7 +383,7 @@ jobs:
           GOGC: 2000
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v10.1
+        uses: tj-actions/verify-changed-files@v11.1
         id: verify-changed-files
         with:
           files: |
@@ -412,7 +420,6 @@ jobs:
         with:
           fetch-depth: 1
           submodules: 'recursive'
-
 
       - name: Cache Docker images.
         uses: ScribeMD/docker-cache@0.2.6
@@ -524,7 +531,7 @@ jobs:
           GOGC: 2000
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v10.1
+        uses: tj-actions/verify-changed-files@v11
         id: verify-changed-files
         with:
           files: |
