@@ -28,3 +28,9 @@ func Start(args []string, buildInfo config.BuildInfo) {
 		panic(err)
 	}
 }
+
+var (
+	version = config.DefaultVersion
+	commit  = config.DefaultCommit
+	date    = config.DefaultDate
+)

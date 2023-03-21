@@ -63,15 +63,35 @@ const HandlerEnv = "METRICS_HANDLER"
 // this will not set the global and generally, SetupFromEnv should be used instead.
 func NewFromEnv(ctx context.Context, buildInfo config.BuildInfo) (handler Handler, err error) {
 	metricsHandler := strings.ToLower(os.Getenv(HandlerEnv))
+	var ht HandlerType
 	//nolint: gocritic
 	switch metricsHandler {
 	case DataDog.Lower():
-		handler = NewDatadogMetricsHandler(buildInfo)
+		ht = DataDog
 	case NewRelic.Lower():
-		handler = NewRelicMetricsHandler(buildInfo)
+		ht = NewRelic
 	case Jaeger.Lower():
-		handler = NewJaegerHandler(buildInfo)
+		ht = Jaeger
 	case Null.Lower():
+		ht = Null
+	default:
+		ht = Null
+	}
+
+	return NewByType(ctx, buildInfo, ht)
+}
+
+// NewByType sets up a metrics handler by type.
+func NewByType(ctx context.Context, buildInfo config.BuildInfo, ht HandlerType) (handler Handler, err error) {
+	//nolint: gocritic
+	switch ht {
+	case DataDog:
+		handler = NewDatadogMetricsHandler(buildInfo)
+	case NewRelic:
+		handler = NewRelicMetricsHandler(buildInfo)
+	case Jaeger:
+		handler = NewJaegerHandler(buildInfo)
+	case Null:
 		handler = NewNullHandler()
 	default:
 		handler = NewNullHandler()

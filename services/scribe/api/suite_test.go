@@ -2,8 +2,10 @@ package api_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/api"
 	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"net/http"
 	"testing"
 
@@ -27,6 +29,7 @@ type APISuite struct {
 	gqlClient  *client.Client
 	grpcClient *rest.APIClient
 	logIndex   atomic.Int64
+	metrics    metrics.Handler
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -37,6 +40,16 @@ func NewTestSuite(tb testing.TB) *APISuite {
 		TestSuite: testsuite.NewTestSuite(tb),
 		logIndex:  atomic.Int64{},
 	}
+}
+
+func (g *APISuite) SetupSuite() {
+	g.TestSuite.SetupSuite()
+
+	metrics.SetupTestJaeger(g.T())
+
+	var err error
+	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	g.Require().Nil(err)
 }
 
 func (g *APISuite) SetupTest() {
@@ -58,7 +71,7 @@ func (g *APISuite) SetupTest() {
 			Database:   "sqlite",
 			Path:       g.dbPath,
 			OmniRPCURL: "https://rpc.interoperability.institute/confirmations/1/rpc",
-		}))
+		}, g.metrics))
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", port)

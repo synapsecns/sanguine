@@ -41,7 +41,7 @@ func (b BackfillSuite) TestScribeBackfill() {
 		go func() {
 			defer wg.Done()
 			simulatedBackend := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chain)))
-			simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedBackend.RPCAddress())
+			simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedBackend.RPCAddress(), b.metrics)
 			Nil(b.T(), err)
 
 			mux.Lock()

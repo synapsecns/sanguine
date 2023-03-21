@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/phayes/freeport"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/services/explorer/api"
 	explorerclient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
@@ -12,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/testutil/clickhouse"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	gqlServer "github.com/synapsecns/sanguine/services/scribe/graphql/server"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"net/http"
 	"testing"
 
@@ -37,6 +39,7 @@ type APISuite struct {
 	testBackend   backends.SimulatedTestBackend
 	deployManager *testutil.DeployManager
 	chainIDs      []uint32
+	scribeMetrics metrics.Handler
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -49,10 +52,19 @@ func NewTestSuite(tb testing.TB) *APISuite {
 	}
 }
 
+func (g *APISuite) SetupSuite() {
+	g.TestSuite.SetupSuite()
+	metrics.SetupTestJaeger(g.T())
+
+	var err error
+	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	g.Require().Nil(err)
+}
+
 func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 
-	g.db, g.eventDB, g.gqlClient, g.logIndex, g.cleanup, g.testBackend, g.deployManager = testutil.NewTestEnvDB(g.GetTestContext(), g.T())
+	g.db, g.eventDB, g.gqlClient, g.logIndex, g.cleanup, g.testBackend, g.deployManager = testutil.NewTestEnvDB(g.GetTestContext(), g.T(), g.scribeMetrics)
 
 	httpport := freeport.GetPort()
 	cleanup, port, err := clickhouse.NewClickhouseStore("explorer")

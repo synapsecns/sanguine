@@ -6,6 +6,7 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
@@ -13,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"github.com/synapsecns/sanguine/services/scribe/node"
 	"testing"
 )
@@ -29,7 +31,11 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 
 	omnirpcURL := testhelper.NewOmnirpcServer(ctx, tb, backends...)
 
-	eventDB, err := scribeAPI.InitDB(ctx, "sqlite", dbPath)
+	metrics.SetupTestJaeger(tb)
+	metricsProvider, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Jaeger)
+	assert.Nil(tb, err)
+
+	eventDB, err := scribeAPI.InitDB(ctx, "sqlite", dbPath, metricsProvider)
 	assert.Nil(tb, err)
 
 	scribeClients := make(map[uint32][]backfill.ScribeBackend)
@@ -41,7 +47,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 		chainID := uint32(backend.GetChainID())
 
 		// create the scribe backend client
-		backendClient, err := backfill.DialBackend(ctx, testhelper.GetURL(omnirpcURL, backend))
+		backendClient, err := backfill.DialBackend(ctx, testhelper.GetURL(omnirpcURL, backend), metricsProvider)
 		assert.Nil(tb, err)
 
 		// creat ethe scribe client for this chain
@@ -63,7 +69,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 		RPCURL: omnirpcURL,
 	}
 
-	scribe, err := node.NewScribe(eventDB, scribeClients, scribeConfig)
+	scribe, err := node.NewScribe(eventDB, scribeClients, scribeConfig, metricsProvider)
 	assert.Nil(tb, err)
 
 	go func() {
@@ -73,7 +79,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 		}
 	}()
 
-	embedded := client.NewEmbeddedScribe(db, dbPath)
+	embedded := client.NewEmbeddedScribe(db, dbPath, metricsProvider)
 	go func() {
 		err = embedded.Start(ctx)
 		if err != nil {

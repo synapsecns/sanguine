@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/synapsecns/sanguine/core/metrics"
 	"sync/atomic"
 	"time"
 
@@ -64,6 +65,8 @@ var NotaryRunCommand = &cli.Command{
 	Description: "runs the notary service",
 	Flags:       []cli.Flag{configFlag, metricsPortFlag, ignoreInitErrorsFlag},
 	Action: func(c *cli.Context) error {
+		metricsProvider := metrics.Get()
+
 		notaryConfig, err := config.DecodeAgentConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("failed to decode config: %w", err)
@@ -79,7 +82,7 @@ var NotaryRunCommand = &cli.Command{
 
 			g, _ := errgroup.WithContext(c.Context)
 
-			eventDB, err := scribeAPI.InitDB(c.Context, "mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true")
+			eventDB, err := scribeAPI.InitDB(c.Context, "mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true", metrics.Get())
 			if err != nil {
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
@@ -89,7 +92,7 @@ var NotaryRunCommand = &cli.Command{
 			for _, domain := range notaryConfig.Domains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
 					chainID := domain.DomainID
-					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", "https://rpc.interoperability.institute/confirmations", confNum, chainID))
+					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", "https://rpc.interoperability.institute/confirmations", confNum, chainID), metricsProvider)
 					if err != nil {
 						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", "https://rpc.interoperability.institute/confirmations", chainID))
 					}
@@ -98,7 +101,7 @@ var NotaryRunCommand = &cli.Command{
 				}
 			}
 
-			scribe, err := node.NewScribe(eventDB, scribeClients, notaryConfig.EmbeddedScribeConfig)
+			scribe, err := node.NewScribe(eventDB, scribeClients, notaryConfig.EmbeddedScribeConfig, metricsProvider)
 			if err != nil {
 				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}
@@ -112,7 +115,7 @@ var NotaryRunCommand = &cli.Command{
 				return nil
 			})
 
-			embedded := client.NewEmbeddedScribe("mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true")
+			embedded := client.NewEmbeddedScribe("mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true", metricsProvider)
 
 			g.Go(func() error {
 				err := embedded.Start(c.Context)

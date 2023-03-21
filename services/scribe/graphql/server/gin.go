@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/gin-gonic/gin"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph"
 	resolvers "github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/resolver"
@@ -16,12 +17,13 @@ const (
 )
 
 // EnableGraphql enables the scribe graphql service.
-func EnableGraphql(engine *gin.Engine, eventDB db.EventDB, omniRPCURL string) {
+func EnableGraphql(engine *gin.Engine, eventDB db.EventDB, omniRPCURL string, metrics metrics.Handler) {
 	server := handler.NewDefaultServer(
 		resolvers.NewExecutableSchema(
 			resolvers.Config{Resolvers: &graph.Resolver{
 				DB:         eventDB,
 				OmniRPCURL: omniRPCURL,
+				Metrics:    metrics,
 			}},
 		),
 	)

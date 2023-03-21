@@ -27,7 +27,7 @@ func (b BackfillSuite) TestChainBackfill() {
 	chainID := gofakeit.Uint32()
 
 	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
-	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress())
+	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress(), b.metrics)
 	Nil(b.T(), err)
 
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))

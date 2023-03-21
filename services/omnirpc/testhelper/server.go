@@ -6,8 +6,10 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/ginhelper"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/services/omnirpc/cmd"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
@@ -41,7 +43,12 @@ func makeConfig(backends []backends.SimulatedTestBackend, clientType omniHTTP.Cl
 func NewOmnirpcServer(ctx context.Context, tb testing.TB, backends ...backends.SimulatedTestBackend) string {
 	tb.Helper()
 
-	server := proxy.NewProxy(makeConfig(backends, omniHTTP.FastHTTP))
+	metrics.SetupTestJaeger(tb)
+
+	handler, err := metrics.NewByType(ctx, cmd.BuildInfo(), metrics.Jaeger)
+	assert.Nil(tb, err)
+
+	server := proxy.NewProxy(makeConfig(backends, omniHTTP.FastHTTP), handler)
 
 	go func() {
 		server.Run(ctx)

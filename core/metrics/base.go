@@ -20,34 +20,34 @@ import (
 // baseHandler is a base metrics handler that implements the Handler interface.
 // this is used to reduce the amount of boilerplate code needed to implement opentracing methods.
 type baseHandler struct {
-	exporter tracesdk.SpanExporter
-	tp       *tracesdk.TracerProvider
-	tracer   trace.Tracer
-	name     string
+	tp     *tracesdk.TracerProvider
+	tracer trace.Tracer
+	name   string
 }
 
-func (b baseHandler) Start(ctx context.Context) error {
-	// no need to start this
+func (b *baseHandler) Start(ctx context.Context) error {
+	// do nothing
 	return nil
 }
 
-func (b baseHandler) Gin() gin.HandlerFunc {
+func (b *baseHandler) Gin() gin.HandlerFunc {
 	return otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp))
 }
 
-func (b baseHandler) ConfigureHTTPClient(client *http.Client) {
+func (b *baseHandler) ConfigureHTTPClient(client *http.Client) {
 	client.Transport = otelhttp.NewTransport(client.Transport, otelhttp.WithTracerProvider(b.tp))
 }
 
-func (b baseHandler) AddGormCallbacks(db *gorm.DB) {
+func (b *baseHandler) AddGormCallbacks(db *gorm.DB) {
 	err := db.Use(otelgorm.NewPlugin(otelgorm.WithTracerProvider(b.tp)))
-	logger.Warn("could not add gorm callbacks", "error", err)
+	if err != nil {
+		logger.Warn("could not add gorm callbacks", "error", err)
+	}
 }
 
 // newBaseHandler creates a new baseHandler for otel.
-func newBaseHandler(exporter tracesdk.SpanExporter, buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProviderOption) *baseHandler {
+func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProviderOption) *baseHandler {
 	opts := append([]tracesdk.TracerProviderOption{
-		tracesdk.WithBatcher(exporter),
 		tracesdk.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
 			semconv.ServiceName(buildInfo.Name()),
@@ -63,10 +63,9 @@ func newBaseHandler(exporter tracesdk.SpanExporter, buildInfo config.BuildInfo, 
 	tracer := tp.Tracer(buildInfo.Name())
 
 	return &baseHandler{
-		exporter: exporter,
-		tp:       tp,
-		tracer:   tracer,
-		name:     buildInfo.Name(),
+		tp:     tp,
+		tracer: tracer,
+		name:   buildInfo.Name(),
 	}
 }
 

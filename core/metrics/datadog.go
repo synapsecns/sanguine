@@ -17,6 +17,7 @@ import (
 )
 
 type datadogHandler struct {
+	*baseHandler
 	profilerOptions []profiler.Option
 	buildInfo       config.BuildInfo
 }
@@ -26,6 +27,10 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 	handler := datadogHandler{
 		buildInfo: buildInfo,
 	}
+
+	// TODO: these need to be bridged
+	handler.baseHandler = newBaseHandler(buildInfo)
+	logger.Warn("datadog metrics handler is not fully implemented, please see: https://docs.datadoghq.com/tracing/trace_collection/open_standards/go/")
 
 	handler.profilerOptions = []profiler.Option{
 		profiler.WithService(buildInfo.Name()),

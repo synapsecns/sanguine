@@ -30,7 +30,7 @@ func (l LiveSuite) TestLive() {
 	managerC := testutil.NewDeployManager(l.T())
 	// Get simulated blockchain, deploy three test contracts, and set up test variables.
 	simulatedChain := geth.NewEmbeddedBackendForChainID(l.GetTestContext(), l.T(), big.NewInt(int64(chainID)))
-	simulatedClient, err := backfill.DialBackend(l.GetTestContext(), simulatedChain.RPCAddress())
+	simulatedClient, err := backfill.DialBackend(l.GetTestContext(), simulatedChain.RPCAddress(), l.metrics)
 	Nil(l.T(), err)
 
 	simulatedChain.FundAccount(l.GetTestContext(), l.wallet.Address(), *big.NewInt(params.Ether))
@@ -64,7 +64,7 @@ func (l LiveSuite) TestLive() {
 	clients[chainID] = append(clients[chainID], simulatedClient)
 
 	// Set up the scribe.
-	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig, l.metrics)
 	Nil(l.T(), err)
 
 	for _, testRef := range testRefs {
@@ -116,7 +116,7 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 
 	// Emit some events on the simulated blockchain.
 	simulatedChain := geth.NewEmbeddedBackendForChainID(l.GetTestContext(), l.T(), big.NewInt(int64(chainID)))
-	simulatedClient, err := backfill.DialBackend(l.GetTestContext(), simulatedChain.RPCAddress())
+	simulatedClient, err := backfill.DialBackend(l.GetTestContext(), simulatedChain.RPCAddress(), l.metrics)
 	Nil(l.T(), err)
 
 	simulatedChain.FundAccount(l.GetTestContext(), l.wallet.Address(), *big.NewInt(params.Ether))
@@ -143,7 +143,7 @@ func (l LiveSuite) TestRequiredConfirmationSetting() {
 	clients[chainID] = append(clients[chainID], simulatedClient)
 
 	// Set up the scribe.
-	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(l.testDB, clients, scribeConfig, l.metrics)
 	Nil(l.T(), err)
 
 	// Emit 5 events.

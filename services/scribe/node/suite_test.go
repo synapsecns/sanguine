@@ -1,6 +1,8 @@
 package node_test
 
 import (
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"testing"
 
 	"github.com/Flaque/filet"
@@ -20,6 +22,7 @@ type LiveSuite struct {
 	manager *testutil.DeployManager
 	wallet  wallet.Wallet
 	signer  *localsigner.Signer
+	metrics metrics.Handler
 }
 
 // NewLiveSuite creates a new live test suite.
@@ -30,13 +33,21 @@ func NewLiveSuite(tb testing.TB) *LiveSuite {
 	}
 }
 
+func (l *LiveSuite) SetupSuite() {
+	l.TestSuite.SetupSuite()
+	metrics.SetupTestJaeger(l.T())
+	var err error
+
+	l.metrics, err = metrics.NewByType(l.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	l.Require().Nil(err)
+}
+
 func (l *LiveSuite) SetupTest() {
 	l.TestSuite.SetupTest()
 
-	sqliteStore, err := sqlite.NewSqliteStore(l.GetTestContext(), filet.TmpDir(l.T(), ""))
+	var err error
+	l.testDB, err = sqlite.NewSqliteStore(l.GetTestContext(), filet.TmpDir(l.T(), ""))
 	Nil(l.T(), err)
-
-	l.testDB = sqliteStore
 
 	l.manager = testutil.NewDeployManager(l.T())
 

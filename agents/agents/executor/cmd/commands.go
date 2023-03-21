@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/api"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/core/metrics"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/client"
@@ -140,6 +141,8 @@ var ExecutorRunCommand = &cli.Command{
 		// The flags below are used when `scribeTypeFlag` is set to "remote".
 		scribePortFlag, scribeURL},
 	Action: func(c *cli.Context) error {
+		metricsProvider := metrics.Get()
+
 		executorConfig, executorDB, clients, err := createExecutorParameters(c)
 		if err != nil {
 			return err
@@ -151,7 +154,7 @@ var ExecutorRunCommand = &cli.Command{
 
 		switch c.String(scribeTypeFlag.Name) {
 		case "embedded":
-			eventDB, err := scribeAPI.InitDB(c.Context, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name))
+			eventDB, err := scribeAPI.InitDB(c.Context, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), metricsProvider)
 			if err != nil {
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
@@ -160,7 +163,7 @@ var ExecutorRunCommand = &cli.Command{
 
 			for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID))
+					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), metricsProvider)
 					if err != nil {
 						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.BaseOmnirpcURL, client.ChainID))
 					}
@@ -169,7 +172,7 @@ var ExecutorRunCommand = &cli.Command{
 				}
 			}
 
-			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.EmbeddedScribeConfig)
+			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.EmbeddedScribeConfig, metricsProvider)
 			if err != nil {
 				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}
@@ -183,7 +186,7 @@ var ExecutorRunCommand = &cli.Command{
 				return nil
 			})
 
-			embedded := client.NewEmbeddedScribe(c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name))
+			embedded := client.NewEmbeddedScribe(c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), metricsProvider)
 
 			g.Go(func() error {
 				err := embedded.Start(c.Context)
@@ -196,7 +199,7 @@ var ExecutorRunCommand = &cli.Command{
 
 			scribeClient = embedded.ScribeClient
 		case "remote":
-			scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name)).ScribeClient
+			scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), metricsProvider).ScribeClient
 		default:
 			return fmt.Errorf("invalid scribe type")
 		}

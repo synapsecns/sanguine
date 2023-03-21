@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"math/big"
 	"time"
 
@@ -26,7 +27,7 @@ type Scribe struct {
 }
 
 // NewScribe creates a new scribe.
-func NewScribe(eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, config config.Config) (*Scribe, error) {
+func NewScribe(eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, config config.Config, handler metrics.Handler) (*Scribe, error) {
 	scribeBackfiller, err := backfill.NewScribeBackfiller(eventDB, clients, config)
 	if err != nil {
 		return nil, fmt.Errorf("could not create scribe backfiller: %w", err)

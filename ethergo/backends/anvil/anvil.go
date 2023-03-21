@@ -19,6 +19,7 @@ import (
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/dockerutil"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/processlog"
 	"github.com/synapsecns/sanguine/ethergo/backends"
@@ -27,7 +28,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/teivah/onecontext"
-	"io"
 	"math"
 	"math/big"
 	"os"
@@ -94,8 +94,18 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 
 	logInfoChan := make(chan processlog.LogMetadata)
 	go func() {
-		err = tailLogs(ctx, resource, pool, true, logInfoChan)
-		logger.Warn(err)
+		defer close(logInfoChan)
+		err = dockerutil.TailContainerLogs(dockerutil.WithContext(ctx), dockerutil.WithResource(resource), dockerutil.WithPool(pool), dockerutil.WithFollow(true), dockerutil.WithCallback(func(ctx context.Context, metadata processlog.LogMetadata) {
+			select {
+			case <-ctx.Done():
+				return
+			case logInfoChan <- metadata:
+			}
+		}))
+
+		if ctx.Err() != nil {
+			logger.Warn(err)
+		}
 	}()
 
 	// Docker will hard kill the container in 4000 seconds (this is a test env).
@@ -164,44 +174,6 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 }
 
 var logger = log.Logger("anvil-docker")
-
-// tailLogs tails the logs of a docker container.
-func tailLogs(ctx context.Context, resource *dockertest.Resource, pool *dockertest.Pool, follow bool, logInfoChan chan<- processlog.LogMetadata) error {
-	stdoutReader, stdoutWriter := io.Pipe()
-	stderrReader, stderrWriter := io.Pipe()
-
-	opts := docker.LogsOptions{
-		Context: ctx,
-
-		Stderr:      true,
-		Stdout:      true,
-		Follow:      follow,
-		Timestamps:  false,
-		RawTerminal: true,
-
-		Container: resource.Container.ID,
-
-		ErrorStream:  stderrWriter,
-		OutputStream: stdoutWriter,
-	}
-
-	logInfo, err := processlog.StartLogs(processlog.WithStdOut(stdoutReader), processlog.WithStdErr(stderrReader), processlog.WithCtx(ctx))
-	if err != nil {
-		return fmt.Errorf("failed to get container logs: %w", err)
-	}
-
-	select {
-	case <-ctx.Done():
-		return fmt.Errorf("context canceled: %w", ctx.Err())
-	case logInfoChan <- logInfo:
-		break
-	}
-
-	close(logInfoChan)
-
-	//nolint: wrapcheck
-	return pool.Client.Logs(opts)
-}
 
 // storeWallets stores preseeded wallets w/ balances.
 func (f *Backend) storeWallets(args *OptionBuilder) error {

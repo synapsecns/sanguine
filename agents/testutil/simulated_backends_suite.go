@@ -1,6 +1,8 @@
 package testutil
 
 import (
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"math/big"
 	"testing"
 
@@ -81,6 +83,7 @@ type SimulatedBackendsTestSuite struct {
 	ScribeTestDB                        scribedb.EventDB
 	DBPath                              string
 	ExecutorTestDB                      db.ExecutorDB
+	ScribeMetrics                       metrics.Handler
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -90,6 +93,16 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 	return &SimulatedBackendsTestSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 	}
+}
+
+// SetupSuite sets up the test suite.
+func (a *SimulatedBackendsTestSuite) SetupSuite() {
+	a.TestSuite.SetupSuite()
+	metrics.SetupTestJaeger(a.T())
+
+	var err error
+	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	a.Require().Nil(err)
 }
 
 // SetupOrigin sets up the backend that will have the origin contract deployed on it.

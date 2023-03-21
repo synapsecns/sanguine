@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -16,6 +17,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 
 	"go.uber.org/atomic"
 	"math/big"
@@ -34,6 +36,7 @@ type BackfillSuite struct {
 	testDeployManager    *testcontracts.DeployManager
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
 	consumerFetcher      *fetcher.ScribeFetcher
+	metrics              metrics.Handler
 }
 
 // NewBackfillSuite creates a new backfill test suite.
@@ -43,6 +46,15 @@ func NewBackfillSuite(tb testing.TB) *BackfillSuite {
 		TestSuite: testsuite.NewTestSuite(tb),
 		logIndex:  atomic.Int64{},
 	}
+}
+
+func (b *BackfillSuite) SetupSuite() {
+	b.TestSuite.SetupSuite()
+	metrics.SetupTestJaeger(b.T())
+
+	var err error
+	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	b.Require().Nil(err)
 }
 
 type TestToken struct {
@@ -80,7 +92,7 @@ var testTokens = []TestToken{{
 func (b *BackfillSuite) SetupTest() {
 	b.TestSuite.SetupTest()
 
-	b.db, b.eventDB, b.gqlClient, b.logIndex, b.cleanup, b.testBackend, b.deployManager = testutil.NewTestEnvDB(b.GetTestContext(), b.T())
+	b.db, b.eventDB, b.gqlClient, b.logIndex, b.cleanup, b.testBackend, b.deployManager = testutil.NewTestEnvDB(b.GetTestContext(), b.T(), b.metrics)
 
 	b.testDeployManager = testcontracts.NewDeployManager(b.T())
 	b.consumerFetcher = fetcher.NewFetcher(b.gqlClient)

@@ -29,13 +29,15 @@ type RPCProxy struct {
 	forwarderPool sync.Pool
 	// client contains the http client
 	client omniHTTP.Client
+	// handler is the metrics handler
+	handler metrics.Handler
 }
 
 // defaultInterval is the default refresh interval.
 const defaultInterval = 30
 
 // NewProxy creates a new rpc proxy.
-func NewProxy(config config.Config) *RPCProxy {
+func NewProxy(config config.Config, handler metrics.Handler) *RPCProxy {
 	if config.RefreshInterval == 0 {
 		logger.Warn("no refresh interval set (or interval is 0), using default of %d seconds", defaultInterval)
 	}
@@ -45,6 +47,7 @@ func NewProxy(config config.Config) *RPCProxy {
 		refreshInterval: time.Second * time.Duration(config.RefreshInterval),
 		port:            config.Port,
 		client:          omniHTTP.NewClient(omniHTTP.ClientTypeFromString(config.ClientType)),
+		handler:         handler,
 	}
 }
 
@@ -53,7 +56,7 @@ func (r *RPCProxy) Run(ctx context.Context) {
 	go r.startProxyLoop(ctx)
 
 	router := ginhelper.New(logger)
-	router.Use(metrics.Get().Gin())
+	router.Use(r.handler.Gin())
 	log.SetAllLoggers(log.LevelDebug)
 
 	router.POST("/rpc/:id", func(c *gin.Context) {

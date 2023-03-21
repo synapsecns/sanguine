@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-const pipeBufferSize = 64
+const pipeBufferSize = 10
 
 type bufferedPipe struct {
 	io.ReadCloser

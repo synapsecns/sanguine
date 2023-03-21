@@ -5,9 +5,11 @@ import (
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"testing"
@@ -16,8 +18,9 @@ import (
 // ClientSuite defines the basic test suite.
 type ClientSuite struct {
 	*testsuite.TestSuite
-	db     string
-	dbPath string
+	db      string
+	dbPath  string
+	metrics metrics.Handler
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -35,8 +38,17 @@ func (g *ClientSuite) SetupTest() {
 	g.db = "sqlite"
 }
 
+func (g *ClientSuite) SetupSuite() {
+	g.TestSuite.SetupSuite()
+	metrics.SetupTestJaeger(g.T())
+
+	var err error
+	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	g.Require().Nil(err)
+}
+
 func (g *ClientSuite) TestEmbeddedScribe() {
-	embeddedClient := client.NewEmbeddedScribe(g.db, g.dbPath)
+	embeddedClient := client.NewEmbeddedScribe(g.db, g.dbPath, g.metrics)
 
 	go func() {
 		Nil(g.T(), embeddedClient.Start(g.GetSuiteContext()))

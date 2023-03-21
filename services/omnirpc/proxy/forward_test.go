@@ -22,7 +22,7 @@ import (
 )
 
 func (p *ProxySuite) TestServeRequestNoChain() {
-	prxy := proxy.NewProxy(config.Config{})
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -32,7 +32,7 @@ func (p *ProxySuite) TestServeRequestNoChain() {
 }
 
 func (p *ProxySuite) TestCannotReadBody() {
-	prxy := proxy.NewProxy(config.Config{})
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -63,7 +63,7 @@ func (p *ProxySuite) generateFakeJSON() []byte {
 }
 
 func (p *ProxySuite) TestMalformedRequestBody() {
-	prxy := proxy.NewProxy(config.Config{})
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -76,7 +76,7 @@ func (p *ProxySuite) TestMalformedRequestBody() {
 
 // TestAcquireReleaseForwarder makes sure the forwarder is cleared afte r being released.
 func (p *ProxySuite) TestAcquireReleaseForwarder() {
-	prxy := proxy.NewProxy(config.Config{})
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	forwarder := prxy.AcquireForwarder()
 	forwarder.SetChain(new(chainManagerMocks.Chain))
@@ -107,7 +107,7 @@ func (p *ProxySuite) TestAcquireReleaseForwarder() {
 }
 
 func (p *ProxySuite) TestForwardRequestDisallowWS() {
-	prxy := proxy.NewProxy(config.Config{})
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	invalidSchemes := []string{"wss", "ws"}
 	for _, scheme := range invalidSchemes {
@@ -130,7 +130,7 @@ func (p *ProxySuite) TestForwardRequestDisallowWS() {
 }
 
 func (p *ProxySuite) TestForwardRequest() {
-	prxy := proxy.NewProxy(config.Config{})
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	methodName := "test"
 	testRes := p.MustMarshall(proxy.JSONRPCMessage{
@@ -174,7 +174,7 @@ func (p *ProxySuite) TestForwardRequest() {
 }
 
 func (p *ProxySuite) TestOverrideConfirmability() {
-	prxy := proxy.NewProxy(config.Config{})
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 	forwarder := prxy.AcquireForwarder()
 
 	const chainConfirmations = uint16(10)

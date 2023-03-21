@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"time"
 
 	// used to embed markdown.
@@ -68,7 +69,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 		return nil, nil, scribeConfig, fmt.Errorf("could not decode config: %w", err)
 	}
 
-	eventDB, err = api.InitDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name))
+	eventDB, err = api.InitDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), metrics.Get())
 	if err != nil {
 		return nil, nil, scribeConfig, fmt.Errorf("could not initialize database: %w", err)
 	}
@@ -76,7 +77,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 	clients = make(map[uint32][]backfill.ScribeBackend)
 	for _, client := range scribeConfig.Chains {
 		for confNum := 1; confNum <= MaxConfirmations; confNum++ {
-			backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID))
+			backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", scribeConfig.RPCURL, confNum, client.ChainID), metrics.Get())
 			if err != nil {
 				return nil, nil, scribeConfig, fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", scribeConfig.RPCURL, client.ChainID))
 			}
@@ -125,7 +126,7 @@ var scribeCommand = &cli.Command{
 		if err != nil {
 			return err
 		}
-		scribe, err := node.NewScribe(db, clients, decodeConfig)
+		scribe, err := node.NewScribe(db, clients, decodeConfig, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not create scribe: %w", err)
 		}
@@ -147,7 +148,7 @@ var serverCommand = &cli.Command{
 			Database:   c.String(dbFlag.Name),
 			Path:       c.String(pathFlag.Name),
 			OmniRPCURL: c.String(omniRPCFlag.Name),
-		})
+		}, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)
 		}

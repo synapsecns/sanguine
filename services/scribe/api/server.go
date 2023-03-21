@@ -9,6 +9,7 @@ import (
 	"github.com/soheilhy/cmux"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/ginhelper"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
@@ -40,15 +41,15 @@ type Config struct {
 var logger = log.Logger("scribe-api")
 
 // Start starts the api server.
-func Start(ctx context.Context, cfg Config) error {
+func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 	router := ginhelper.New(logger)
 
-	eventDB, err := InitDB(ctx, cfg.Database, cfg.Path)
+	eventDB, err := InitDB(ctx, cfg.Database, cfg.Path, handler)
 	if err != nil {
 		return fmt.Errorf("could not initialize database: %w", err)
 	}
 
-	gqlServer.EnableGraphql(router, eventDB, cfg.OmniRPCURL)
+	gqlServer.EnableGraphql(router, eventDB, cfg.OmniRPCURL, handler)
 	grpcServer, err := server.SetupGRPCServer(ctx, router, eventDB)
 	if err != nil {
 		return fmt.Errorf("could not create grpc server: %w", err)
@@ -115,13 +116,15 @@ func Start(ctx context.Context, cfg Config) error {
 
 // InitDB initializes a database given a database type and path.
 // TODO: use enum for database type.
-func InitDB(ctx context.Context, databaseType string, path string) (db.EventDB, error) {
+func InitDB(ctx context.Context, databaseType string, path string, metrics metrics.Handler) (db.EventDB, error) {
 	switch {
 	case databaseType == "sqlite":
 		sqliteStore, err := sqlite.NewSqliteStore(ctx, path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
 		}
+
+		metrics.AddGormCallbacks(sqliteStore.DB())
 
 		return sqliteStore, nil
 	case databaseType == "mysql":
@@ -133,6 +136,8 @@ func InitDB(ctx context.Context, databaseType string, path string) (db.EventDB, 
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
 			}
 
+			metrics.AddGormCallbacks(mysqlStore.DB())
+
 			return mysqlStore, nil
 		}
 
@@ -140,6 +145,8 @@ func InitDB(ctx context.Context, databaseType string, path string) (db.EventDB, 
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}
+
+		metrics.AddGormCallbacks(mysqlStore.DB())
 
 		return mysqlStore, nil
 	default:

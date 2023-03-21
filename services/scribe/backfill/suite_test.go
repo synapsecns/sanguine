@@ -1,6 +1,8 @@
 package backfill_test
 
 import (
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"testing"
 	"time"
 
@@ -21,6 +23,7 @@ type BackfillSuite struct {
 	manager *testutil.DeployManager
 	wallet  wallet.Wallet
 	signer  *localsigner.Signer
+	metrics metrics.Handler
 }
 
 // NewBackfillSuite creates a new backfill test suite.
@@ -42,6 +45,15 @@ func (b *BackfillSuite) SetupTest() {
 	b.wallet, err = wallet.FromRandom()
 	Nil(b.T(), err)
 	b.signer = localsigner.NewSigner(b.wallet.PrivateKey())
+}
+
+func (b *BackfillSuite) SetupSuite() {
+	b.TestSuite.SetupSuite()
+	metrics.SetupTestJaeger(b.T())
+
+	var err error
+	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	Nil(b.T(), err)
 }
 
 // TestBackfillSuite tests the backfill suite.
