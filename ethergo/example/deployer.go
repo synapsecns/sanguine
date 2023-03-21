@@ -32,7 +32,7 @@ func (n *CounterDeployer) Deploy(ctx context.Context) (contracts.DeployedContrac
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		// this is kept separate because we often want to add an address handle to this so it's compatible with vm.ContractRef
 		//nolint: wrapcheck
-		return counter.NewCounter(address, backend)
+		return counter.NewCounterRef(address, backend)
 	})
 }
 

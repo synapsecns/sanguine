@@ -74,7 +74,7 @@ func GetMaticMumbaiFakeSynDomain() Backend {
 
 	return Backend{
 		config:     &chainConfig,
-		rpcURL:     core.GetEnv("MATIC_RPC_URL", "ws://0.0.0.0:8047"),
+		rpcURL:     core.GetEnv("MATIC_RPC_URL", "ws://0.0.0.0:8049"),
 		name:       "Matic",
 		privateKey: os.Getenv("EXPORT_KEY"),
 	}
@@ -87,7 +87,7 @@ func GetRinkebyFakeSynDomain() Backend {
 
 	return Backend{
 		config:     &chainConfig,
-		rpcURL:     core.GetEnv("RINEKBY_RPC_URL", "ws://0.0.0.0:8045"),
+		rpcURL:     core.GetEnv("RINEKBY_RPC_URL", "ws://0.0.0.0:8050"),
 		name:       "Rinkeby",
 		privateKey: os.Getenv("EXPORT_KEY"),
 	}
@@ -102,7 +102,7 @@ func GetBSCTestnetFakeSynDomain() Backend {
 
 	return Backend{
 		config:     &chainConfig,
-		rpcURL:     core.GetEnv("BSC_TESTNET_RPC_URL", "ws://0.0.0.0:8046"),
+		rpcURL:     core.GetEnv("BSC_TESTNET_RPC_URL", "ws://0.0.0.0:8051"),
 		name:       "BSC Testnet",
 		privateKey: os.Getenv("EXPORT_KEY"),
 	}

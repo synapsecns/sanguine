@@ -20,6 +20,7 @@ func TestDBStateToState(t *testing.T) {
 	originTimestamp := gofakeit.Uint64()
 	proof := []string{common.BigToHash(big.NewInt(gofakeit.Int64())).String(), common.BigToHash(big.NewInt(gofakeit.Int64())).String()}
 	treeHeight := gofakeit.Uint32()
+	stateIndex := gofakeit.Uint32()
 
 	proofJSON, err := json.Marshal(proof)
 	if err != nil {
@@ -35,6 +36,7 @@ func TestDBStateToState(t *testing.T) {
 		OriginTimestamp:   &originTimestamp,
 		Proof:             (*json.RawMessage)(&proofJSON),
 		TreeHeight:        &treeHeight,
+		StateIndex:        &stateIndex,
 	}
 
 	initialState := base.DBStateToState(initialDBState)

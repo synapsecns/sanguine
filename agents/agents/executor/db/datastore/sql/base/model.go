@@ -109,4 +109,6 @@ type State struct {
 	Proof json.RawMessage `gorm:"column:proof"`
 	// TreeHeight is the height of the Snapshot Merkle Tree that the state belongs to.
 	TreeHeight uint32 `gorm:"column:tree_height"`
+	// StateIndex is the index of the state in the Snapshot.
+	StateIndex uint32 `gorm:"column:state_index"`
 }

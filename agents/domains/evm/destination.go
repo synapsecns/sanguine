@@ -64,7 +64,7 @@ type destinationContract struct {
 //	return nil
 //}
 
-func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, proof [32][32]byte, index *big.Int) error {
+func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
 	if err != nil {
 		return fmt.Errorf("could not setup transact opts: %w", err)
@@ -75,8 +75,7 @@ func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, 
 		return fmt.Errorf("could not encode message: %w", err)
 	}
 
-	// TODO (joeallen): FIX ME
-	_, err = a.contract.Execute(transactOpts, encodedMessage, proof, [][32]byte{}, index)
+	_, err = a.contract.Execute(transactOpts, encodedMessage, originProof, snapshotProof, index)
 	if err != nil {
 		return fmt.Errorf("could not execute message: %w", err)
 	}
@@ -117,4 +116,36 @@ func (a destinationContract) SubmittedAt(ctx context.Context, originID uint32, r
 	return &submittedAtTime, nil*/
 	//nolint:nilnil
 	return nil, nil
+}
+
+func (a destinationContract) AttestationsAmount(ctx context.Context) (uint64, error) {
+	attestationsAmountBigInt, err := a.contract.AttestationsAmount(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return uint64(0), fmt.Errorf("could not get submitted at for origin and root: %w", err)
+	}
+
+	if attestationsAmountBigInt == nil {
+		return uint64(0), nil
+	}
+
+	return attestationsAmountBigInt.Uint64(), nil
+}
+
+func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error {
+	transactOpts, err := a.transactOptsSetup(ctx, signer)
+	if err != nil {
+		return fmt.Errorf("could not setup transact opts: %w", err)
+	}
+
+	rawSig, err := types.EncodeSignature(signature)
+	if err != nil {
+		return fmt.Errorf("could not encode signature: %w", err)
+	}
+
+	_, err = a.contract.SubmitAttestation(transactOpts, attPayload, rawSig)
+	if err != nil {
+		return fmt.Errorf("could not submit attestation: %w", err)
+	}
+
+	return nil
 }
