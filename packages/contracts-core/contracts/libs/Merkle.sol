@@ -58,6 +58,7 @@ using { MerkleLib.initializeRoots, MerkleLib.insert, MerkleLib.root } for Histor
 /// A single operation is available: update value for existing leaf (which might be ZERO).
 /// This is done by requesting the proof of inclusion for the old value, which is used to
 /// verify the old value, and calculate the new root.
+/// Based on Original idea from https://ethresear.ch/t/efficient-on-chain-dynamic-merkle-tree/11054
 struct DynamicTree {
     bytes32 root;
 }
