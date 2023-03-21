@@ -9,6 +9,8 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slices"
 	goHTTP "net/http"
 	"strings"
@@ -124,7 +126,17 @@ const (
 	httpsSchema = "https"
 )
 
-func (f *Forwarder) forwardRequest(ctx context.Context, endpoint string) (*rawResponse, error) {
+func (f *Forwarder) forwardRequest(parentCtx context.Context, endpoint string) (_ *rawResponse, err error) {
+	ctx, span := f.tracer.Start(parentCtx, "forwardRequest",
+		trace.WithAttributes(attribute.String("endpoint", endpoint)),
+	)
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+
 	endpointURL, err := fasturl.ParseURL(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse endpoint (%s): %w", endpointURL, err)

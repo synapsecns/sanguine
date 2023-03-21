@@ -12,6 +12,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"os"
+	"sync"
 	"testing"
 	"time"
 )
@@ -74,10 +75,15 @@ func (j *jaegerHandler) Start(ctx context.Context) (err error) {
 
 var keepAliveOnFailure = time.Minute * 10
 
+var testMux sync.Mutex
+
 // SetupTestJaeger creates a new test jaegar instance. If the test fails, the instance is kept alive for 5 minutes.
 // we also allow a GLOBAL_JAEGAR env var to be set to a jaegar url to send all traces to in order to avoid having to boot for long running tests.
 func SetupTestJaeger(tb testing.TB) {
 	tb.Helper()
+	// make sure we don't setup two
+	testMux.Lock()
+	defer testMux.Unlock()
 
 	ctx, cancel := context.WithCancel(context.Background())
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 	"net/http"
 	"os"
@@ -20,6 +21,8 @@ type Handler interface {
 	ConfigureHTTPClient(client *http.Client)
 	// AddGormCallbacks adds gorm callbacks for tracing.
 	AddGormCallbacks(db *gorm.DB)
+	// Tracer returns the tracer provider.
+	Tracer() trace.Tracer
 }
 
 // HandlerType is the handler type to use
@@ -42,7 +45,7 @@ func init() {
 const (
 	// DataDog is the datadog driver.
 	DataDog HandlerType = iota + 1 // Datadog
-	// NewRelic is the new relic driver.
+	// NewRelic is the new relic driver.t
 	NewRelic // NewRelic
 	// Jaeger is the jaeger driver.
 	Jaeger // Jaeger

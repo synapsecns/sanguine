@@ -44,6 +44,20 @@ func (r RPCRequests) isConfirmable() (_ bool, errs error) {
 	return !unconfirmable, nil
 }
 
+// Method returns the method of the rpc request.
+func (r RPCRequests) Method() string {
+	reqLength := len(r)
+	if reqLength == 0 {
+		return "none"
+	}
+
+	if reqLength > 1 {
+		return "batch"
+	}
+
+	return r[0].Method
+}
+
 // ByID will get an rpc requet by the id.
 func (r RPCRequests) ByID(id int) *RPCRequest {
 	for _, req := range r {

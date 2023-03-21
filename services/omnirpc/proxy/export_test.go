@@ -8,6 +8,7 @@ import (
 	"github.com/puzpuzpuz/xsync"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // IsConfirmable exports isConfirmable for testing.
@@ -83,6 +84,10 @@ func (f *Forwarder) Body() []byte {
 
 func (f *Forwarder) SetBody(body []byte) {
 	f.body = body
+}
+
+func (f *Forwarder) SetSpan(span trace.Span) {
+	f.span = span
 }
 
 func (f *Forwarder) RequiredConfirmations() uint16 {

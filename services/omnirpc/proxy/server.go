@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"go.opentelemetry.io/otel/trace"
 	"net/http"
 	"strconv"
 	"sync"
@@ -19,6 +20,8 @@ import (
 
 // RPCProxy proxies rpc request to the fastest endpoint. Requests fallback in cases where data is not available.
 type RPCProxy struct {
+	// tracer is the tracer for the proxy
+	tracer trace.Tracer
 	// chainManager contains a list of chains and latency ordered rpcs
 	chainManager chainmanager.ChainManager
 	// config contains the config for each chain
@@ -48,6 +51,7 @@ func NewProxy(config config.Config, handler metrics.Handler) *RPCProxy {
 		port:            config.Port,
 		client:          omniHTTP.NewClient(omniHTTP.ClientTypeFromString(config.ClientType)),
 		handler:         handler,
+		tracer:          handler.Tracer(),
 	}
 }
 
@@ -95,7 +99,6 @@ func (r *RPCProxy) Run(ctx context.Context) {
 				"error": fmt.Sprintf("could not parse collection: %v", err),
 			})
 		}
-
 		c.Data(http.StatusOK, gin.MIMEJSON, res)
 	})
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/urfave/cli/v2"
 )
 
@@ -16,6 +17,12 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	app.Description = buildInfo.VersionString() + "scribe is used to run a generic event indexer"
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
+
+	// TODO: should we really halt boot on because of metrics?
+	app.Before = func(c *cli.Context) error {
+		// nolint:wrapcheck
+		return metrics.Setup(c.Context, buildInfo)
+	}
 
 	// commands
 	app.Commands = cli.Commands{infoCommand, scribeCommand, backfillCommand, serverCommand, generateCommand}
@@ -28,9 +35,3 @@ func Start(args []string, buildInfo config.BuildInfo) {
 		panic(err)
 	}
 }
-
-var (
-	version = config.DefaultVersion
-	commit  = config.DefaultCommit
-	date    = config.DefaultDate
-)

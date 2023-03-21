@@ -45,6 +45,11 @@ func (b *baseHandler) AddGormCallbacks(db *gorm.DB) {
 	}
 }
 
+// Tracer returns the tracer provider.
+func (b *baseHandler) Tracer() trace.Tracer {
+	return b.tracer
+}
+
 // newBaseHandler creates a new baseHandler for otel.
 func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProviderOption) *baseHandler {
 	opts := append([]tracesdk.TracerProviderOption{

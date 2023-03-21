@@ -167,9 +167,6 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		_ = pool.Purge(resource)
 	}()
 
-	go func() {
-
-	}()
 	return &backend
 }
 

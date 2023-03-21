@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -176,6 +177,8 @@ func (p *ProxySuite) TestForwardRequest() {
 func (p *ProxySuite) TestOverrideConfirmability() {
 	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 	forwarder := prxy.AcquireForwarder()
+	_, span := p.metrics.Tracer().Start(p.GetTestContext(), fmt.Sprintf("test-%d", p.GetTestID()))
+	forwarder.SetSpan(span)
 
 	const chainConfirmations = uint16(10)
 	const overridedConfirmations = uint16(2)
