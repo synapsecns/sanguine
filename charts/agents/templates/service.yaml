@@ -4,6 +4,8 @@ metadata:
   name: {{ include "agents.fullname" . }}
   labels:
     {{- include "agents.labels" . | nindent 4 }}
+config:
+  log.level: info
 spec:
   type: {{ .Values.service.type }}
   ports:

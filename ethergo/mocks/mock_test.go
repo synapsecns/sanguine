@@ -16,7 +16,7 @@ func TestMockAccount(t *testing.T) {
 	Equal(t, address, account.Address)
 }
 
-func TestNewMockAddress(t *testing.T) {
+func TestMockAddress(t *testing.T) {
 	// make sure addresses are unique
 	stringSet := collection.Set[string]{}
 

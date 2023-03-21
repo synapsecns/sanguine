@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"os"
 	"sync"
@@ -108,8 +110,8 @@ func (b *Backend) Client() client.EVMClient {
 // see: https://git.io/JGsC1
 // taken from geth, used to speed up tests.
 const (
-	veryLightScryptN = 2
-	veryLightScryptP = 1
+	VeryLightScryptN = 2
+	VeryLightScryptP = 1
 )
 
 // MockAccount creates a new mock account.
@@ -117,7 +119,7 @@ const (
 func MockAccount(t *testing.T) *keystore.Key {
 	t.Helper()
 
-	kstr := keystore.NewKeyStore(filet.TmpDir(t, ""), veryLightScryptN, veryLightScryptP)
+	kstr := keystore.NewKeyStore(filet.TmpDir(t, ""), VeryLightScryptN, VeryLightScryptP)
 	password := gofakeit.Password(true, true, true, false, false, 10)
 	acct, err := kstr.NewAccount(password)
 	assert.Nil(t, err)
@@ -249,6 +251,11 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 // Context gets the context from the backend.
 func (b *Backend) Context() context.Context {
 	return b.ctx
+}
+
+// ImpersonateAccount impersonates an account.
+func (b *Backend) ImpersonateAccount(_ context.Context, _ common.Address, _ func(opts *bind.TransactOpts) *types.Transaction) error {
+	return errors.New("account impersonation is not implemented on this backend")
 }
 
 // ConfirmationClient waits for confirmation.
