@@ -22,26 +22,33 @@ func newBufferedPipe() *bufferedPipe {
 
 	rb := bufio.NewReaderSize(r, pipeBufferSize)
 	wb := &bufferedWriteCloser{
-		Writer: bufio.NewWriterSize(w, pipeBufferSize),
-		closer: w,
+		Writer:    bufio.NewWriterSize(w, pipeBufferSize),
+		closer:    w,
+		closeChan: make(chan bool),
 	}
 
-	// use a timer to prevent deadlocks
-	timer := time.NewTimer(1 * time.Second)
-
-	go func() {
-		select {
-		case <-wb.closeChan:
-			return
-		case <-timer.C:
-			_ = wb.Flush()
-		}
-	}()
-
-	return &bufferedPipe{
+	bp := &bufferedPipe{
 		ReadCloser:  io.NopCloser(rb),
 		WriteCloser: wb,
 	}
+
+	go func() {
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				err := wb.Flush()
+				if err != nil {
+					fmt.Printf("error flushing buffer: %v\n", err)
+				}
+			case <-wb.closeChan:
+				return
+			}
+		}
+	}()
+	return bp
 }
 
 type bufferedWriteCloser struct {
