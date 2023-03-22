@@ -53,6 +53,7 @@ func (t *DBSuite) SetupTest() {
 func (t *DBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
 
+	metrics.SetupTestJaeger(t.T())
 	var err error
 	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	t.Require().Nil(err)
