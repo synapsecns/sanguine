@@ -79,19 +79,30 @@ func SplitStreams(input io.Reader, splitCount int) (outputReaders []io.ReadClose
 		outputWriters = append(outputWriters, pipe.WriteCloser)
 	}
 
+	// Start the goroutine that writes data into the pipes
 	go func() {
-		// close all writers when the process ends
 		defer func() {
 			for _, writer := range outputWriteClosers {
 				_ = writer.Close()
 			}
 		}()
 
-		// for us to transpose these arguments, they need to be cast correctly in a loop
-		mw := io.MultiWriter(outputWriters...)
-		// copy the data into the multiwriter
-		_, _ = io.Copy(mw, input)
+		// Copy the input into the output writers
+		_, _ = io.Copy(io.MultiWriter(outputWriters...), input)
 	}()
+
+	// Start the goroutines that read from the pipes
+	for _, reader := range outputReaders {
+		r := bufio.NewReader(reader)
+		go func() {
+			defer func() {
+				_ = reader.Close()
+			}()
+
+			// Read all the data from the reader and discard it
+			_, _ = io.Copy(io.Discard, r)
+		}()
+	}
 
 	return outputReaders
 }
