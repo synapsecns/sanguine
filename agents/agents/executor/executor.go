@@ -858,7 +858,7 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 				nonce := message.Nonce()
 				destinationDomain := message.DestinationDomain()
 
-				minimumTimestamp, err := e.executorDB.GetTimestampForMessage(ctx, chainID, nonce, e.config.DBPrefix)
+				minimumTimestamp, err := e.executorDB.GetTimestampForMessage(ctx, chainID, destinationDomain, nonce, e.config.DBPrefix)
 				if err != nil {
 					return fmt.Errorf("could not get timestamp for message: %w", err)
 				}

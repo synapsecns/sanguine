@@ -61,15 +61,15 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, origin+1, 3, 1)
 		Nil(t.T(), err)
 
-		timestamp, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, nonceA, "")
+		timestamp, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, "")
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(3), *timestamp)
 
-		timestamp, err = testDB.GetTimestampForMessage(t.GetTestContext(), origin, nonceB, "")
+		timestamp, err = testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB, "")
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(3), *timestamp)
 
-		timestamp, err = testDB.GetTimestampForMessage(t.GetTestContext(), origin, nonceC, "")
+		timestamp, err = testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceC, "")
 		Nil(t.T(), err)
 		Equal(t.T(), uint64(1), *timestamp)
 	})
