@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-const pipeBufferSize = 10
+const pipeBufferSize = 1
 
 type bufferedPipe struct {
 	io.ReadCloser
@@ -85,7 +85,7 @@ func SplitStreams(input io.Reader, splitCount int) (outputReaders []io.ReadClose
 // from an input buffered reader.
 // An error is returned if there is an error with the
 // buffered reader.
-func readLine(r *bufio.Reader) ([]byte, error) {
+func readLine(r *bufio.Reader) ([]byte, bool, error) {
 	var (
 		isPrefix = true
 		err      error
@@ -95,7 +95,12 @@ func readLine(r *bufio.Reader) ([]byte, error) {
 		line, isPrefix, err = r.ReadLine()
 		ln = append(ln, line...)
 	}
-	return ln, errors.Wrap(err, "could not read line")
+
+	if err != nil && err != io.EOF {
+		return nil, false, errors.Wrap(err, "could not read line")
+	}
+
+	return ln, err == nil, nil
 }
 
 // CombineStreams creates a combined stream of two io.readClosers
@@ -115,8 +120,8 @@ func CombineStreams(ctx context.Context, inputs ...io.ReadCloser) (output chan [
 			}()
 
 			r := bufio.NewReader(in)
-			ln, err := readLine(r)
-			for err == nil {
+			ln, read, err := readLine(r)
+			for read {
 				select {
 				case <-ctx.Done():
 					errChan <- ctx.Err()
@@ -125,11 +130,13 @@ func CombineStreams(ctx context.Context, inputs ...io.ReadCloser) (output chan [
 					buffer := make([]byte, len(ln))
 					copy(buffer, ln)
 					output <- buffer
-					ln, err = readLine(r)
+					ln, read, err = readLine(r)
 				}
 			}
 
-			errChan <- err
+			if err != nil {
+				errChan <- err
+			}
 		}(in)
 	}
 

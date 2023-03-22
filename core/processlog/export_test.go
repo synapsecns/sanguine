@@ -11,7 +11,7 @@ import (
 )
 
 // ReadLine exports the readLine function for testing.
-func ReadLine(r *bufio.Reader) ([]byte, error) {
+func ReadLine(r *bufio.Reader) ([]byte, bool, error) {
 	return readLine(r)
 }
 

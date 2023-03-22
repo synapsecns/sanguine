@@ -49,7 +49,8 @@ func TestReadln(t *testing.T) {
 		tt := tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			r := bufio.NewReader(strings.NewReader(tt.input))
-			line, err := processlog.ReadLine(r)
+			// TODO: test err
+			line, _, err := processlog.ReadLine(r)
 
 			if tt.expectError {
 				if err == nil {
