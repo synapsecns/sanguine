@@ -20,7 +20,7 @@ type bufferedPipe struct {
 func newBufferedPipe() *bufferedPipe {
 	r, w := io.Pipe()
 
-	rb := newIntervalFlushReader(r)
+	rb := bufio.NewReaderSize(r, pipeBufferSize)
 	wb := &bufferedWriteCloser{
 		Writer: bufio.NewWriterSize(w, pipeBufferSize),
 		closer: w,

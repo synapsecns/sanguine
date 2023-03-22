@@ -165,11 +165,11 @@ func TestSplitStreams(t *testing.T) {
 		input      string
 		splitCount int
 	}{
-		//{
-		//	name:       "Split input into two streams",
-		//	input:      "Hello, World!",
-		//	splitCount: 2,
-		//},
+		{
+			name:       "Split input into two streams",
+			input:      "Hello, World!",
+			splitCount: 2,
+		},
 		{
 			name:       "Split empty input",
 			input:      "",
