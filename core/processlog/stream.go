@@ -3,65 +3,10 @@ package processlog
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"github.com/pkg/errors"
 	"io"
 	"sync"
-	"time"
 )
-
-const pipeBufferSize = 10
-
-type bufferedPipe struct {
-	io.ReadCloser
-	io.WriteCloser
-}
-
-func newBufferedPipe() *bufferedPipe {
-	r, w := io.Pipe()
-
-	rb := bufio.NewReaderSize(r, pipeBufferSize)
-	wb := &bufferedWriteCloser{
-		Writer: bufio.NewWriterSize(w, pipeBufferSize),
-		closer: w,
-	}
-
-	// use a timer to prevent deadlocks
-	timer := time.NewTimer(1 * time.Second)
-
-	go func() {
-		select {
-		case <-wb.closeChan:
-			return
-		case <-timer.C:
-			_ = wb.Flush()
-		}
-	}()
-
-	return &bufferedPipe{
-		ReadCloser:  io.NopCloser(rb),
-		WriteCloser: wb,
-	}
-}
-
-type bufferedWriteCloser struct {
-	*bufio.Writer
-	closer    io.Closer
-	closeChan chan bool
-}
-
-func (bwc *bufferedWriteCloser) Close() error {
-	err := bwc.Writer.Flush()
-	if err != nil {
-		return fmt.Errorf("could not flush buffered writer: %w", err)
-	}
-	err = bwc.closer.Close()
-	if err != nil {
-		return fmt.Errorf("could not close pipe: %w", err)
-	}
-	bwc.closeChan <- true
-	return nil
-}
 
 // SplitStreams splits an input into multiple io.readers
 // TODO this should return an object with an iterator to prevent reuse.
@@ -71,12 +16,12 @@ func SplitStreams(input io.Reader, splitCount int) (outputReaders []io.ReadClose
 	for i := 0; i < splitCount; i++ {
 		pipe := newBufferedPipe()
 		// add the reader to the output
-		outputReaders = append(outputReaders, pipe.ReadCloser)
+		outputReaders = append(outputReaders, pipe.readCloser)
 		// add writer to closer object so they can be closed
-		outputWriteClosers = append(outputWriteClosers, pipe.WriteCloser)
+		outputWriteClosers = append(outputWriteClosers, pipe.writeCloser)
 		// add outputs to writers so they can be passed into io.multiwriter
 		// io.writecloser can not be used for variadic passes
-		outputWriters = append(outputWriters, pipe.WriteCloser)
+		outputWriters = append(outputWriters, pipe.writeCloser)
 	}
 
 	go func() {
