@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"io"
 	"sync"
-	"time"
 )
 
 const pipeBufferSize = 10
@@ -26,18 +25,6 @@ func newBufferedPipe() *bufferedPipe {
 		closer: w,
 	}
 
-	// use a timer to prevent deadlocks
-	timer := time.NewTimer(1 * time.Second)
-
-	go func() {
-		select {
-		case <-wb.closeChan:
-			return
-		case <-timer.C:
-			_ = wb.Flush()
-		}
-	}()
-
 	return &bufferedPipe{
 		ReadCloser:  io.NopCloser(rb),
 		WriteCloser: wb,
@@ -46,8 +33,7 @@ func newBufferedPipe() *bufferedPipe {
 
 type bufferedWriteCloser struct {
 	*bufio.Writer
-	closer    io.Closer
-	closeChan chan bool
+	closer io.Closer
 }
 
 func (bwc *bufferedWriteCloser) Close() error {
@@ -59,41 +45,112 @@ func (bwc *bufferedWriteCloser) Close() error {
 	if err != nil {
 		return fmt.Errorf("could not close pipe: %w", err)
 	}
-	bwc.closeChan <- true
 	return nil
 }
 
 // SplitStreams splits an input into multiple io.readers
 // TODO this should return an object with an iterator to prevent reuse.
 func SplitStreams(input io.Reader, splitCount int) (outputReaders []io.ReadCloser) {
-	var outputWriteClosers []io.WriteCloser
-	var outputWriters []io.Writer
+	// Create a channel to send data from the input reader to the output writers
+	dataChan := make(chan []byte, splitCount)
+
+	// Create the output writers
+	outputWriters := make([]io.WriteCloser, splitCount)
+	outputPipes := make([]*bufferedPipe, splitCount)
 	for i := 0; i < splitCount; i++ {
 		pipe := newBufferedPipe()
-		// add the reader to the output
+		// Add the reader to the output
 		outputReaders = append(outputReaders, pipe.ReadCloser)
-		// add writer to closer object so they can be closed
-		outputWriteClosers = append(outputWriteClosers, pipe.WriteCloser)
-		// add outputs to writers so they can be passed into io.multiwriter
-		// io.writecloser can not be used for variadic passes
-		outputWriters = append(outputWriters, pipe.WriteCloser)
+		// Add the writer to the output writers
+		outputWriters[i] = pipe.WriteCloser
+		outputPipes[i] = pipe
 	}
 
+	// Start a goroutine to read from the input reader and send data to the output writers
 	go func() {
-		// close all writers when the process ends
-		defer func() {
-			for _, writer := range outputWriteClosers {
-				_ = writer.Close()
-			}
-		}()
+		// Create a buffer to hold data read from the input reader
+		buf := make([]byte, pipeBufferSize)
 
-		// for us to transpose these arguments, they need to be cast correctly in a loop
-		mw := io.MultiWriter(outputWriters...)
-		// copy the data into the multiwriter
-		_, _ = io.Copy(mw, input)
+		// Loop until we reach the end of the input reader or an error occurs
+		for {
+			n, err := input.Read(buf)
+			if n > 0 {
+				// Copy the data to each output writer
+				data := make([]byte, n)
+				copy(data, buf[:n])
+				for _, writer := range outputWriters {
+					_, err := writer.Write(data)
+					if err != nil {
+						fmt.Printf("error writing data to output writer: %v\n", err)
+						return
+					}
+				}
+			}
+			if err != nil {
+				if err != io.EOF {
+					fmt.Printf("error reading data from input reader: %v\n", err)
+				}
+				// Close the data channel when we're done sending data
+				return
+			}
+		}
 	}()
 
+	// Start a goroutine for each output writer to read from its corresponding output reader
+	var wg sync.WaitGroup
+	for _, pipe := range outputPipes {
+		wg.Add(1)
+		go func(pipe *bufferedPipe) {
+			// Create a buffer to hold data read from the output reader
+			buf := make([]byte, pipeBufferSize)
+			for {
+				// Read data from the output reader
+				n, err := pipe.ReadCloser.Read(buf)
+				if n > 0 {
+					// Send the data to the data channel
+					data := make([]byte, n)
+					copy(data, buf[:n])
+					dataChan <- data
+				}
+				if err != nil {
+					if err != io.EOF {
+						fmt.Printf("error reading data from output reader: %v\n", err)
+					}
+					wg.Done()
+					return
+				}
+			}
+		}(pipe)
+	}
+
+	// Wait for all the output writers to finish writing before closing the data channel
+	go func() {
+		wg.Wait()
+		close(dataChan)
+	}()
+
+	// Return a slice of ReadClosers that read from the data channel
+	for i := 0; i < splitCount; i++ {
+		outputReaders[i] = newSliceReader(dataChan)
+	}
+
 	return outputReaders
+}
+
+// newSliceReader returns a ReadCloser that reads data from a channel of byte slices
+func newSliceReader(dataChan <-chan []byte) io.ReadCloser {
+	pr, pw := io.Pipe()
+	go func() {
+		defer pw.Close()
+		for data := range dataChan {
+			_, err := pw.Write(data)
+			if err != nil {
+				fmt.Printf("error writing data to pipe: %v\n", err)
+				return
+			}
+		}
+	}()
+	return pr
 }
 
 // readLine returns a single line (without the ending \n)
