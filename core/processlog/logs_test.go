@@ -14,6 +14,13 @@ import (
 	"time"
 )
 
+func TestFlushRead(t *testing.T) {
+	rd := processlog.NewFlushReadCloser(bytes.NewBufferString("Split empty input"), time.Second, 10)
+	yo, err := io.ReadAll(rd)
+	_ = err
+	fmt.Println(string(yo))
+}
+
 // TestWritePrintFunc tests the writePrintFunc function.
 func TestWritePrintFunc(t *testing.T) {
 	// Create a new pipe for stdout and write some data to it.
