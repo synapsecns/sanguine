@@ -3,7 +3,9 @@ package base
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
+	"math/big"
 )
 
 // GetTimestampForMessage gets the timestamp for a message. This is done in multiple logical steps:
@@ -44,6 +46,7 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 	}
 
 	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -51,15 +54,10 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 }
 
 // GetEarliestStateInRange gets the earliest state with the same snapshot root as an attestation within a nonce range.
-// This is done in multiple logical steps:
-// 1. Get all snapshot roots that are within a nonce range.
-// 2. Get the earliest snapshot root from the list of snapshot roots.
-// 3. Get the state with the earliest snapshot root.
-// ----
 // 1. Get all states that are within a nonce range.
 // 2. Get the state with the earliest attestation associated to it.
 func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32, tablePrefix string) (*agentsTypes.State, error) {
-	var state agentsTypes.State
+	var state State
 
 	statesTableName := "states"
 	attestationsTableName := "attestations"
@@ -68,25 +66,6 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 		statesTableName = fmt.Sprintf("%s_%s", tablePrefix, statesTableName)
 		attestationsTableName = fmt.Sprintf("%s_%s", tablePrefix, attestationsTableName)
 	}
-
-	fmt.Println(fmt.Sprintf(
-		`SELECT * FROM %s WHERE %s = ? AND %s = (
-                     SELECT %s FROM %s WHERE %s = ? AND %s = (
-						SELECT MIN(%s) FROM (
-							(SELECT %s FROM %s WHERE %s >= ? AND %s <= ?) AS stateTable
-							INNER JOIN
-							(SELECT %s, %s FROM %s) as attestationTable
-							ON stateTable.%s = attestationTable.%s
-						)
-					)
-				)`,
-		statesTableName, ChainIDFieldName, SnapshotRootFieldName,
-		SnapshotRootFieldName, attestationsTableName, DestinationFieldName, DestinationBlockNumberFieldName,
-		DestinationBlockNumberFieldName,
-		SnapshotRootFieldName, statesTableName, NonceFieldName, NonceFieldName,
-		SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName,
-		SnapshotRootFieldName, SnapshotRootFieldName,
-	))
 
 	dbTx := s.DB().WithContext(ctx).
 		Raw(fmt.Sprintf(
@@ -111,11 +90,19 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 	if dbTx.Error != nil {
 		return nil, fmt.Errorf("failed to get earliest state in range: %w", dbTx.Error)
 	}
-	fmt.Printf("state: %+v\n", state)
 
 	if dbTx.RowsAffected == 0 {
+		//nolint:nilnil
 		return nil, nil
 	}
 
-	return &state, nil
+	receivedState := agentsTypes.NewState(
+		common.HexToHash(state.Root),
+		state.ChainID,
+		state.Nonce,
+		big.NewInt(int64(state.OriginBlockNumber)),
+		big.NewInt(int64(state.OriginTimestamp)),
+	)
+
+	return &receivedState, nil
 }

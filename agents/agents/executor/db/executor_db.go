@@ -72,10 +72,8 @@ type ExecutorDBReader interface {
 	// 3. Return the timestamp of the attestation with the minimum destination block number.
 	GetTimestampForMessage(ctx context.Context, chainID, destination, nonce uint32, tablePrefix string) (*uint64, error)
 	// GetEarliestStateInRange gets the earliest state with the same snapshot root as an attestation within a nonce range.
-	// This is done in multiple logical steps:
-	// 1. Get all snapshot roots that are within a nonce range.
-	// 2. Get the earliest snapshot root from the list of snapshot roots.
-	// 3. Get the earliest state with the earliest snapshot root.
+	// 1. Get all states that are within a nonce range.
+	// 2. Get the state with the earliest attestation associated to it.
 	GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32, tablePrefix string) (*agentsTypes.State, error)
 }
 

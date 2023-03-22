@@ -74,3 +74,59 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		Equal(t.T(), uint64(1), *timestamp)
 	})
 }
+
+func (t *DBSuite) TestGetEarliestStateInRange() {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
+		origin := gofakeit.Uint32()
+		var snapshotRoots []common.Hash
+		for i := uint32(1); i <= 6; i++ {
+			root := common.BigToHash(big.NewInt(gofakeit.Int64()))
+			blockNumber := big.NewInt(int64(gofakeit.Uint32()))
+			timestamp := big.NewInt(int64(gofakeit.Uint32()))
+			state := agentstypes.NewState(root, origin, i, blockNumber, timestamp)
+
+			snapshotRoots = append(snapshotRoots, common.BigToHash(big.NewInt(gofakeit.Int64())))
+			proof := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
+			treeHeight := gofakeit.Uint32()
+
+			err := testDB.StoreState(t.GetTestContext(), state, snapshotRoots[i-1], proof, treeHeight, 1)
+			Nil(t.T(), err)
+		}
+
+		// Attestation for state 2.
+		attestation0 := agentstypes.NewAttestation(snapshotRoots[1], 1, 1, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+
+		// Attestation for state 4.
+		attestation1 := agentstypes.NewAttestation(snapshotRoots[3], 1, 2, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+
+		// Attestation for state 5.
+		attestation2 := agentstypes.NewAttestation(snapshotRoots[4], 1, 3, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
+
+		err := testDB.StoreAttestation(t.GetTestContext(), attestation0, origin+1, 1, 1)
+		Nil(t.T(), err)
+		err = testDB.StoreAttestation(t.GetTestContext(), attestation1, origin+1, 2, 2)
+		Nil(t.T(), err)
+		err = testDB.StoreAttestation(t.GetTestContext(), attestation2, origin+1, 3, 3)
+		Nil(t.T(), err)
+
+		earliestState, err := testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 5, "")
+		Nil(t.T(), err)
+		Equal(t.T(), uint32(2), (*earliestState).Nonce())
+
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 1, "")
+		Nil(t.T(), err)
+		Nil(t.T(), earliestState)
+
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 3, 5, "")
+		Nil(t.T(), err)
+		Equal(t.T(), uint32(4), (*earliestState).Nonce())
+
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 6, 6, "")
+		Nil(t.T(), err)
+		Nil(t.T(), earliestState)
+
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 5, 5, "")
+		Nil(t.T(), err)
+		Equal(t.T(), uint32(5), (*earliestState).Nonce())
+	})
+}
