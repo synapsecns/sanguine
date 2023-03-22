@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const pipeBufferSize = 10
+const pipeBufferSize = 64
 
 type bufferedPipe struct {
 	io.ReadCloser
@@ -22,19 +22,22 @@ func newBufferedPipe() *bufferedPipe {
 
 	rb := bufio.NewReaderSize(r, pipeBufferSize)
 	wb := &bufferedWriteCloser{
-		Writer: bufio.NewWriterSize(w, pipeBufferSize),
-		closer: w,
+		Writer:    bufio.NewWriterSize(w, pipeBufferSize),
+		closer:    w,
+		closeChan: make(chan bool),
 	}
 
 	// use a timer to prevent deadlocks
 	timer := time.NewTimer(1 * time.Second)
 
 	go func() {
-		select {
-		case <-wb.closeChan:
-			return
-		case <-timer.C:
-			_ = wb.Flush()
+		for {
+			select {
+			case <-wb.closeChan:
+				return
+			case <-timer.C:
+				_ = wb.Flush()
+			}
 		}
 	}()
 
