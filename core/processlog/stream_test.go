@@ -165,11 +165,11 @@ func TestSplitStreams(t *testing.T) {
 		input      string
 		splitCount int
 	}{
-		//{
-		//	name:       "Split input into two streams",
-		//	input:      "Hello, World!",
-		//	splitCount: 2,
-		//},
+		{
+			name:       "Split input into two streams",
+			input:      "Hello, World!",
+			splitCount: 2,
+		},
 		{
 			name:       "Split empty input",
 			input:      "",
@@ -189,9 +189,6 @@ func TestSplitStreams(t *testing.T) {
 			}
 
 			for it, r := range outputReaders {
-				if it == 0 {
-					continue
-				}
 				data, err := io.ReadAll(r)
 				if err != nil {
 					t.Errorf("error reading from output reader %d: %v", it, err)
