@@ -867,29 +867,6 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 					continue
 				}
 
-				//potentialSnapshotRoots, err := e.executorDB.GetPotentialSnapshotRoots(ctx, chainID, nonce)
-				//if err != nil {
-				//	return fmt.Errorf("could not get potential snapshot roots: %w", err)
-				//}
-				//
-				//if len(potentialSnapshotRoots) == 0 {
-				//	continue
-				//}
-				//
-				//
-				//attestationMask := execTypes.DBAttestation{
-				//	Destination: &destinationDomain,
-				//}
-				//
-				//minimumTimestamp, err := e.executorDB.GetAttestationMinimumTimestamp(ctx, attestationMask, potentialSnapshotRoots)
-				//if err != nil {
-				//	return fmt.Errorf("could not get attestation minimum timestamp: %w", err)
-				//}
-				//
-				//if minimumTimestamp == nil {
-				//	continue
-				//}
-
 				setMessageMask := execTypes.DBMessage{
 					ChainID:     &chainID,
 					Destination: &destinationDomain,
