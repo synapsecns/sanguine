@@ -50,8 +50,6 @@ type ExecutorDBReader interface {
 	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 	// GetAttestationTimestamp gets the timestamp of an attestation.
 	GetAttestationTimestamp(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
-	// GetAttestationMinimumTimestamp takes a list of snapshot roots and returns the timestamp of the attestation with the lowest block number.
-	GetAttestationMinimumTimestamp(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*uint64, error)
 	// GetEarliestSnapshotFromAttestation takes a list of snapshot roots, checks which one has the lowest block number, and returns that snapshot root back.
 	GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*[32]byte, error)
 
