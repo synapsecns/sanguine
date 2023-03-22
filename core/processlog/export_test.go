@@ -31,21 +31,12 @@ func NewBufferedPipe() CombinedPipe {
 	return newBufferedPipe()
 }
 
-func (bp *bufferedPipe) Read(p []byte) (int, error) {
-	return bp.readCloser.Read(p)
-}
-
-func (bp *bufferedPipe) Write(p []byte) (int, error) {
-	return bp.writeCloser.Write(p)
-
-}
-
 func (bp *bufferedPipe) CloseReader() error {
-	return bp.readCloser.Close()
+	return bp.ReadCloser.Close()
 }
 
 func (bp *bufferedPipe) CloseWriter() error {
-	return bp.writeCloser.Close()
+	return bp.WriteCloser.Close()
 }
 
 // MakeArgs exports the makeArgs function for testing.
