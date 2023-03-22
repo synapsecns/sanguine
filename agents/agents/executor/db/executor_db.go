@@ -64,6 +64,13 @@ type ExecutorDBReader interface {
 	GetPotentialSnapshotRoots(ctx context.Context, chainID uint32, nonce uint32) ([]string, error)
 	// GetSnapshotRootsInNonceRange gets all snapshot roots for all states in a specified nonce range.
 	GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32, startNonce uint32, endNonce uint32) ([]string, error)
+
+	// GetTimestampForMessage gets the timestamp for a message. This is done in multiple logical steps:
+	// 1. Get all potential snapshot roots for the message (all snapshot roots that are associated to states with
+	// the same chain ID and a nonce greater than or equal to the message nonce).
+	// 2. Get the minimum destination block number for all attestations that are associated to the potential snapshot roots.
+	// 3. Return the timestamp of the attestation with the minimum destination block number.
+	GetTimestampForMessage(ctx context.Context, chainID, nonce uint32, tablePrefix string) (*uint64, error)
 }
 
 // ExecutorDB is the interface for the executor database.
