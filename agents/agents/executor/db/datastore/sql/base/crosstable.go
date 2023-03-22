@@ -43,6 +43,10 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 		return nil, fmt.Errorf("failed to get timestamp for message: %w", dbTx.Error)
 	}
 
+	if dbTx.RowsAffected == 0 {
+		return nil, nil
+	}
+
 	return &timestamp, nil
 }
 
@@ -51,11 +55,67 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 // 1. Get all snapshot roots that are within a nonce range.
 // 2. Get the earliest snapshot root from the list of snapshot roots.
 // 3. Get the state with the earliest snapshot root.
-
+// ----
 // 1. Get all states that are within a nonce range.
 // 2. Get the state with the earliest attestation associated to it.
-func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32) (*agentsTypes.State, error) {
-	// var state agentsTypes.State
+func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32, tablePrefix string) (*agentsTypes.State, error) {
+	var state agentsTypes.State
 
-	return nil, nil
+	statesTableName := "states"
+	attestationsTableName := "attestations"
+
+	if tablePrefix != "" {
+		statesTableName = fmt.Sprintf("%s_%s", tablePrefix, statesTableName)
+		attestationsTableName = fmt.Sprintf("%s_%s", tablePrefix, attestationsTableName)
+	}
+
+	fmt.Println(fmt.Sprintf(
+		`SELECT * FROM %s WHERE %s = ? AND %s = (
+                     SELECT %s FROM %s WHERE %s = ? AND %s = (
+						SELECT MIN(%s) FROM (
+							(SELECT %s FROM %s WHERE %s >= ? AND %s <= ?) AS stateTable
+							INNER JOIN
+							(SELECT %s, %s FROM %s) as attestationTable
+							ON stateTable.%s = attestationTable.%s
+						)
+					)
+				)`,
+		statesTableName, ChainIDFieldName, SnapshotRootFieldName,
+		SnapshotRootFieldName, attestationsTableName, DestinationFieldName, DestinationBlockNumberFieldName,
+		DestinationBlockNumberFieldName,
+		SnapshotRootFieldName, statesTableName, NonceFieldName, NonceFieldName,
+		SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName,
+		SnapshotRootFieldName, SnapshotRootFieldName,
+	))
+
+	dbTx := s.DB().WithContext(ctx).
+		Raw(fmt.Sprintf(
+			`SELECT * FROM %s WHERE %s = ? AND %s = (
+                     SELECT %s FROM %s WHERE %s = ? AND %s = (
+						SELECT MIN(%s) FROM (
+							(SELECT %s FROM %s WHERE %s >= ? AND %s <= ? AND %s = ?) AS stateTable
+							INNER JOIN
+							(SELECT %s, %s FROM %s) as attestationTable
+							ON stateTable.%s = attestationTable.%s
+						)
+					)
+				)`,
+			statesTableName, ChainIDFieldName, SnapshotRootFieldName,
+			SnapshotRootFieldName, attestationsTableName, DestinationFieldName, DestinationBlockNumberFieldName,
+			DestinationBlockNumberFieldName,
+			SnapshotRootFieldName, statesTableName, NonceFieldName, NonceFieldName, ChainIDFieldName,
+			SnapshotRootFieldName, DestinationBlockNumberFieldName, attestationsTableName,
+			SnapshotRootFieldName, SnapshotRootFieldName,
+		), chainID, destination, startNonce, endNonce, chainID).
+		Scan(&state)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get earliest state in range: %w", dbTx.Error)
+	}
+	fmt.Printf("state: %+v\n", state)
+
+	if dbTx.RowsAffected == 0 {
+		return nil, nil
+	}
+
+	return &state, nil
 }

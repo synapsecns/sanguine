@@ -76,7 +76,7 @@ type ExecutorDBReader interface {
 	// 1. Get all snapshot roots that are within a nonce range.
 	// 2. Get the earliest snapshot root from the list of snapshot roots.
 	// 3. Get the earliest state with the earliest snapshot root.
-	GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32) (*agentsTypes.State, error)
+	GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32, tablePrefix string) (*agentsTypes.State, error)
 }
 
 // ExecutorDB is the interface for the executor database.

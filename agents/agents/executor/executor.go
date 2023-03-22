@@ -279,7 +279,11 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
-	state, err := e.getEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce)
+	// state, err := e.getEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce)
+	// if err != nil {
+	// 	return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
+	// }
+	state, err := e.executorDB.GetEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce, e.config.DBPrefix)
 	if err != nil {
 		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
 	}
