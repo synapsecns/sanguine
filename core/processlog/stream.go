@@ -19,14 +19,10 @@ type bufferedPipe struct {
 func newBufferedPipe() *bufferedPipe {
 	r, w := io.Pipe()
 
-	mutex := &sync.Mutex{}
-	cond := sync.NewCond(mutex)
 	rb := bufio.NewReaderSize(r, pipeBufferSize)
 	wb := &bufferedWriteCloser{
 		Writer: bufio.NewWriterSize(w, pipeBufferSize),
 		closer: w,
-		cond:   cond,
-		count:  0,
 	}
 
 	return &bufferedPipe{
@@ -38,48 +34,6 @@ func newBufferedPipe() *bufferedPipe {
 type bufferedWriteCloser struct {
 	*bufio.Writer
 	closer io.Closer
-
-	cond  *sync.Cond
-	count int
-}
-
-func (bwc *bufferedWriteCloser) Write(p []byte) (n int, err error) {
-	bwc.cond.L.Lock()
-	n, err = bwc.Writer.Write(p)
-	bwc.count += n
-	bwc.cond.Signal()
-	bwc.cond.L.Unlock()
-	return n, err
-}
-
-func (bwc *bufferedWriteCloser) readLine(r *bufio.Reader) ([]byte, bool, error) {
-	var (
-		isPrefix = true
-		err      error
-		line, ln []byte
-	)
-
-	bwc.cond.L.Lock()
-	for bwc.count == 0 && err == nil {
-		bwc.cond.Wait()
-	}
-	bwc.cond.L.Unlock()
-
-	for isPrefix && err == nil {
-		line, isPrefix, err = r.ReadLine()
-		ln = append(ln, line...)
-	}
-
-	if err != nil && err != io.EOF {
-		return nil, false, errors.Wrap(err, "could not read line")
-	}
-
-	bwc.cond.L.Lock()
-	bwc.count -= len(ln)
-	bwc.cond.Signal()
-	bwc.cond.L.Unlock()
-
-	return ln, err == nil, nil
 }
 
 func (bwc *bufferedWriteCloser) Close() error {
