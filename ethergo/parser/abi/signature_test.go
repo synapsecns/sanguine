@@ -19,7 +19,7 @@ func (a *AbiSuite) TestGetSelectorNoExist() {
 }
 
 // getSigsFromParity is a helper function to get the signatures
-// it makes sure MustGetSelectorByName matches get selector by name
+// it makes sure MustGetSelectorByName matches get selector by name.
 func (a *AbiSuite) getSelectorSuccesful(name string, metadata *bind.MetaData) [4]byte {
 	selector, err := abi.GetSelectorByName(name, metadata)
 	a.Require().NoError(err)
