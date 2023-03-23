@@ -54,6 +54,16 @@ struct HistoricalTree {
 }
 using { MerkleLib.initializeRoots, MerkleLib.insert, MerkleLib.root } for HistoricalTree global;
 
+/// @notice Struct representing a Dynamic Merkle Tree with 2**TREE_DEPTH leaves
+/// A single operation is available: update value for existing leaf (which might be ZERO).
+/// This is done by requesting the proof of inclusion for the old value, which is used to
+/// verify the old value, and calculate the new root.
+/// Based on Original idea from https://ethresear.ch/t/efficient-on-chain-dynamic-merkle-tree/11054
+struct DynamicTree {
+    bytes32 root;
+}
+using { MerkleLib.update } for DynamicTree global;
+
 library MerkleLib {
     uint256 internal constant MAX_LEAVES = 2**TREE_DEPTH - 1;
 
@@ -174,6 +184,35 @@ library MerkleLib {
     {
         require(_count < _tree.roots.length, "Not enough leafs inserted");
         return _tree.roots[_count];
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             DYNAMIC TREE                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Updates the value for the leaf with the given index in the Dynamic Merkle Tree.
+     * @dev Will revert if incorrect proof of inclusion for old value is supplied.
+     * @param _tree         Dynamic merkle tree
+     * @param _index        Index of the leaf to update
+     * @param _oldValue     Previous value of the leaf
+     * @param _branch       Proof of inclusion of previous value into the tree
+     * @param _newValue     New leaf value to assign
+     * @return newRoot      New value for the Merkle Root after the leaf is updated
+     */
+    function update(
+        DynamicTree storage _tree,
+        uint256 _index,
+        bytes32 _oldValue,
+        bytes32[TREE_DEPTH] memory _branch,
+        bytes32 _newValue
+    ) internal returns (bytes32 newRoot) {
+        // Check that the old value + proof result in a correct root
+        require(branchRoot(_oldValue, _branch, _index) == _tree.root, "Incorrect proof");
+        // New root is new value + the same proof (values for sibling nodes are not updated)
+        newRoot = branchRoot(_newValue, _branch, _index);
+        // Write the new root
+        _tree.root = newRoot;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
