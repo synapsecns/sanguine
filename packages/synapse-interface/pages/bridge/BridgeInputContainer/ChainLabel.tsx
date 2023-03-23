@@ -4,6 +4,8 @@ import { getNetworkButtonBorder } from '@styles/networks'
 import { getOrderedChains } from '@utils/getOrderedChains'
 import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
+import { useNetwork } from 'wagmi'
+import { use, useEffect, useState } from 'react'
 
 export function ChainLabel({
   isSwapFrom,
@@ -12,6 +14,7 @@ export function ChainLabel({
   labelClassNameOverride,
   titleText,
   onChangeChain,
+  possibleChains,
 }: {
   isSwapFrom: boolean
   chainId: number
@@ -19,11 +22,24 @@ export function ChainLabel({
   labelClassNameOverride?: string
   titleText?: string
   onChangeChain: (v: number) => void
+  possibleChains: string[] | undefined
 }) {
+  const { chain } = useNetwork()
+  const [orderedChains, setOrderedChains] = useState<number[]>([])
+  useEffect(() => {
+    setOrderedChains(
+      chainOrderBySwapSide(
+        Number(chain?.id),
+        isSwapFrom,
+        chainId,
+        possibleChains
+      )
+    )
+  }, [chainId, chain])
+
   let displayType: string
   let title: string
   let labelClassName
-  let orderedChains = chainOrderBySwapSide(isSwapFrom, chainId)
 
   if (isSwapFrom) {
     title = titleText ?? 'Origin'
@@ -128,15 +144,24 @@ function SelectedChain({ chainId }: { chainId: number }) {
   )
 }
 
-function chainOrderBySwapSide(isSwapFrom: boolean, chainId: number) {
+function chainOrderBySwapSide(
+  connectedChain: number,
+  isSwapFrom: boolean,
+  chainId: number,
+  possibleChains: string[] | undefined
+) {
   let orderedChains
   if (isSwapFrom) {
     orderedChains = CHAIN_ID_DISPLAY_ORDER.filter((e) => e !== chainId)
     orderedChains = orderedChains.slice(0, 5)
     orderedChains.unshift(chainId)
+    console.log('YOUOO', chainId, orderedChains)
 
     return orderedChains
   } else {
-    return getOrderedChains(chainId)
+    let h = getOrderedChains(connectedChain, chainId, possibleChains)
+    console.log('YwwOUOO', chainId, possibleChains, h)
+
+    return h
   }
 }

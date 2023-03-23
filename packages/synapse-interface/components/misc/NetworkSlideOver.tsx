@@ -15,25 +15,26 @@ import {
 import { SelectSpecificNetworkButton } from '@components/buttons/SelectSpecificNetworkButton'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
+import { useNetwork } from 'wagmi'
 
 export function NetworkSlideOver({
   selectedChainId,
+  isSwapFrom,
   onChangeChain,
   setDisplayType,
+  possibleChains,
 }: {
   selectedChainId: number
+  isSwapFrom: boolean
   onChangeChain: (v: number) => void
   setDisplayType: (v: string) => void
+  possibleChains: string[] | undefined
 }) {
+  const { chain } = useNetwork()
   const [currentIdx, setCurrentIdx] = useState(-1)
 
   const [searchStr, setSearchStr] = useState('')
-
-  let networks: ChainInfo[] = []
-  CHAIN_ID_DISPLAY_ORDER.map((cid) => {
-    networks.push(CHAIN_INFO_MAP[cid])
-  })
-
+  const [networks, setNetworks] = useState<ChainInfo[]>([])
   const fuse = new Fuse(networks, {
     includeScore: true,
     threshold: 0.0,
@@ -47,13 +48,27 @@ export function NetworkSlideOver({
       'nativeCurrency',
     ],
   })
+  // let networks: ChainInfo[] = []
 
-  let resultNetworks
-  if (searchStr?.length > 0) {
-    resultNetworks = fuse.search(searchStr).map((i) => i.item)
-  } else {
-    resultNetworks = networks
-  }
+  useEffect(() => {
+    let tempNetworks: ChainInfo[] = []
+    CHAIN_ID_DISPLAY_ORDER.map((cid) => {
+      console.log('CIIIID', possibleChains, cid)
+      if (
+        isSwapFrom ||
+        (!isSwapFrom &&
+          possibleChains?.includes(String(cid)) &&
+          cid !== Number(chain?.id))
+      ) {
+        tempNetworks.push(CHAIN_INFO_MAP[cid])
+      }
+    })
+    console.log('tempNetworks', tempNetworks, isSwapFrom, Number(chain?.id))
+    if (searchStr?.length > 0) {
+      tempNetworks = fuse.search(searchStr).map((i) => i.item)
+    }
+    setNetworks(tempNetworks)
+  }, [chain, searchStr])
 
   const ref = useRef(null)
 
@@ -127,7 +142,7 @@ export function NetworkSlideOver({
         ref={ref}
         className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6 rounded-xl"
       >
-        {resultNetworks.map((chainData, idx) => {
+        {networks.map((chainData, idx) => {
           const itemChainId = chainData.chainId
           let chaindata = itemChainId
           const isCurrentChain = selectedChainId === itemChainId
@@ -143,6 +158,7 @@ export function NetworkSlideOver({
           }
           return (
             <SelectSpecificNetworkButton
+              key={idx}
               itemChainId={itemChainId}
               isCurrentChain={isCurrentChain}
               active={idx === currentIdx}

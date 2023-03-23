@@ -30,7 +30,7 @@ export default function TokenMenuItem({
   active: boolean
   coin: any
   selected: any
-  tokenBalance: BigNumber
+  tokenBalance: BigNumber | undefined
   onClick: () => void
 }) {
   const ref = useRef<any>(null)
@@ -70,7 +70,7 @@ export default function TokenMenuItem({
       <ButtonContent
         token={coin}
         chainId={chainId}
-        tokenBalance={tokenBalance}
+        tokenBalance={tokenBalance ? tokenBalance : Zero}
       />
     </div>
   )

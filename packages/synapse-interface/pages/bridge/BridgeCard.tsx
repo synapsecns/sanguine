@@ -62,11 +62,12 @@ export default function BridgeCard({
   fromValue,
   toCoin,
   toValue,
+  possibleChains,
   onSelectFromChain,
   onSelectToChain,
   swapFromToChains,
-  onSelectFromCoin,
-  onSelectToCoin,
+  // onSelectFromCoin,
+  // onSelectToCoin,
   onChangeFromAmount,
   onChangeToAmount,
   error,
@@ -77,6 +78,8 @@ export default function BridgeCard({
   toRef,
   destinationAddress,
   setDestinationAddress,
+  handleTokenChange,
+  toBridgeableTokens,
 }: {
   address: `0x${string}` | undefined
   fromChainId: number
@@ -85,11 +88,12 @@ export default function BridgeCard({
   fromValue: string
   toCoin: Token
   toValue: string
+  possibleChains: string[]
   onSelectFromChain: (v: number) => void
   onSelectToChain: (v: number) => void
   swapFromToChains: () => void
-  onSelectFromCoin: (v: Token) => void
-  onSelectToCoin: (v: Token) => void
+  // onSelectFromCoin: (v: Token) => void
+  // onSelectToCoin: (v: Token) => void
 
   onChangeFromAmount: (v: string) => void
   onChangeToAmount: (v: string) => void
@@ -103,11 +107,13 @@ export default function BridgeCard({
   toRef: any
 
   destinationAddress: string
-  setDestinationAddress: (value: string) => void
+  setDestinationAddress: (v: string) => void
+  handleTokenChange: (token: Token, type: 'from' | 'to') => void
+  toBridgeableTokens: Token[]
 }) {
   // populates the selectable tokens using the from and to chain ids
   const fromChainTokens = BRIDGABLE_TOKENS[Number(fromChainId)]
-  const toChainTokens = BRIDGABLE_TOKENS[Number(toChainId)]
+  const toChainTokens = toBridgeableTokens
 
   // can be replaced by get bridge quote
   // const gasDropAmount = useGasDropAmount(toChainId)
@@ -181,7 +187,9 @@ export default function BridgeCard({
   const fromArgs = {
     isSwapFrom: true,
     selected: fromCoin,
-    onChangeSelected: onSelectFromCoin,
+    address: address,
+    // onChangeSelected: onSelectFromCoin,
+    handleTokenChange: handleTokenChange,
     onChangeAmount: onChangeFromAmount,
     inputValue: fromValue,
     inputRef: fromRef,
@@ -194,7 +202,9 @@ export default function BridgeCard({
   const toArgs = {
     isSwapFrom: false,
     selected: toCoin,
-    onChangeSelected: onSelectToCoin,
+    address: address,
+    // onChangeSelected: onSelectToCoin,
+    handleTokenChange: handleTokenChange,
     onChangeAmount: onChangeToAmount,
     inputValue: toValue,
     inputRef: toRef,
@@ -334,9 +344,9 @@ export default function BridgeCard({
     <>
       <Grid cols={{ xs: 1 }} gap={10} className="py-1 place-content-center">
         <div className="mt-2">
-          <BridgeInputContainer {...fromArgs} />
+          <BridgeInputContainer possibleChains={possibleChains} {...fromArgs} />
         </div>
-        <BridgeInputContainer {...toArgs} />
+        <BridgeInputContainer possibleChains={possibleChains} {...toArgs} />
       </Grid>
       {/* <Transition
         appear={true}
@@ -344,7 +354,7 @@ export default function BridgeCard({
         show={!fromAmount.eq(0)}
         {...SECTION_TRANSITION_PROPS}
       > */}
-      <ExchangeRateInfo
+      {/* <ExchangeRateInfo
         fromAmount={fromAmount}
         fromCoin={fromCoin}
         toCoin={toCoin}
@@ -352,7 +362,7 @@ export default function BridgeCard({
         gasDropAmount={One}
         fromChainId={fromChainId}
         toChainId={toChainId}
-      />
+      /> */}
       {/* </Transition> */}
       <Transition
         appear={false}
@@ -374,10 +384,18 @@ export default function BridgeCard({
   const toCardContent = <CoinSlideOver key="toBlock" {...toArgs} />
 
   const fromChainCardContent = (
-    <NetworkSlideOver key="fromChainBlock" {...fromChainArgs} />
+    <NetworkSlideOver
+      key="fromChainBlock"
+      possibleChains={possibleChains}
+      {...fromChainArgs}
+    />
   )
   const toChainCardContent = (
-    <NetworkSlideOver key="toChainBlock" {...toChainArgs} />
+    <NetworkSlideOver
+      key="toChainBlock"
+      possibleChains={possibleChains}
+      {...toChainArgs}
+    />
   )
 
   const settingsCardContent = (
