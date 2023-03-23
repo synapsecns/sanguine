@@ -12,6 +12,7 @@ import (
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"io"
 	"net/http"
+	"strconv"
 	"sync"
 )
 
@@ -48,8 +49,15 @@ func (s *SubmitProxy) Run(ctx context.Context) {
 		s.processQueue(ctx)
 	}()
 
-	router.POST("", func(c *gin.Context) {
-		err := s.Forward(c)
+	router.POST("/confirmations/:confirmations/rpc/:id", func(c *gin.Context) {
+		chainID, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Sprintf("chainid must be a number: %d", chainID),
+			})
+		}
+
+		err = s.Forward(c, uint32(chainID))
 		if err != nil {
 			c.JSON(http.StatusBadGateway, gin.H{
 				"error": err.Error(),
@@ -66,7 +74,7 @@ func (s *SubmitProxy) Run(ctx context.Context) {
 }
 
 type SubmitForwarder struct {
-	// proxy is the proxy that submits txes
+	// proxy is the proxy that submits txs
 	proxy *SubmitProxy
 	// c is the gin context for the request
 	c *gin.Context
@@ -79,15 +87,16 @@ type SubmitForwarder struct {
 }
 
 // Forward forwards the request to the read node.
-func (s *SubmitProxy) Forward(c *gin.Context) (err error) {
+func (s *SubmitProxy) Forward(c *gin.Context, chainId uint32) (err error) {
 	forwarder := SubmitForwarder{
 		c:         c,
 		proxy:     s,
 		requestID: []byte(c.GetHeader(omniHTTP.XRequestIDString)),
 	}
+	chainConfig := s.config.Chains[chainId]
 	// handle if no read url is set
-	if s.config.ReadURL == "" {
-		s.config.ReadURL = s.config.WriteURLS[0]
+	if chainConfig.ReadURL == "" {
+		chainConfig.ReadURL = chainConfig.WriteURLS[0]
 	}
 
 	forwarder.body, err = io.ReadAll(c.Request.Body)
@@ -102,6 +111,7 @@ func (s *SubmitProxy) Forward(c *gin.Context) (err error) {
 
 	for _, request := range forwarder.rpcRequest {
 		if RPCMethod(request.Method) == SendRawTransactionMethod {
+			request.ChainID = chainId
 			go func() {
 				s.submitChan <- request
 			}()
@@ -111,7 +121,7 @@ func (s *SubmitProxy) Forward(c *gin.Context) (err error) {
 	req := s.client.NewRequest()
 	resp, err := req.
 		SetContext(c).
-		SetRequestURI(s.config.ReadURL).
+		SetRequestURI(chainConfig.ReadURL).
 		SetBody(forwarder.body).
 		SetHeaderBytes(omniHTTP.XRequestID, forwarder.requestID).
 		SetHeaderBytes(omniHTTP.XForwardedFor, omniHTTP.OmniRPCValue).
@@ -143,12 +153,11 @@ func (s *SubmitProxy) processQueue(ctx context.Context) {
 
 func (s *SubmitProxy) submitTx(ctx context.Context, request RPCRequest) error {
 	var wg sync.WaitGroup
-
 	marshalledReq, err := json.Marshal(request)
 	if err != nil {
 		return fmt.Errorf("could not marshal request: %w", err)
 	}
-	for _, rpcURL := range s.config.WriteURLS {
+	for _, rpcURL := range s.config.Chains[request.ChainID].WriteURLS {
 		rpcURL := rpcURL // capture func literal
 		wg.Add(1)
 		go func() {

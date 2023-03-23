@@ -7,14 +7,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Config holds the config for the chain.
+// Config holds the config for all chains.
 type Config struct {
 	// chainID -> chainConfig
 	Chains map[uint32]ChainConfig `yaml:"chains"`
 	// Port is the port
 	Port uint16 `yaml:"port,omitempty"`
-	// RefreshInterval is the refresh interval of rpc latency
-	// expressed in seconds
+	// RefreshInterval is the refresh interval of rpc latency expressed in seconds
 	RefreshInterval int `yaml:"refresh_interval,omitempty"`
 	// ClientType is the client type to use
 	ClientType string `yaml:"client_type,omitempty"`
@@ -46,8 +45,20 @@ func (c Config) Marshall() ([]byte, error) {
 	return output, nil
 }
 
-// SubmitOnlyConfig is the config for a single chain.
+// SubmitOnlyConfig holds the config for all chains.
 type SubmitOnlyConfig struct {
+	// chainID -> chainConfig
+	Chains map[uint32]SubmitOnlyChainConfig `yaml:"chains"`
+	// Port is the port
+	Port uint16 `yaml:"port,omitempty"`
+	// RefreshInterval is the refresh interval of rpc latency expressed in seconds
+	RefreshInterval int `yaml:"refresh_interval,omitempty"`
+	// ClientType is the client type to use
+	ClientType string `yaml:"client_type,omitempty"`
+}
+
+// SubmitOnlyChainConfig is the config for a single chain.
+type SubmitOnlyChainConfig struct {
 	ChainID   uint32   `yaml:"chain_id"`
 	ReadURL   string   `yaml:"read_url"`
 	WriteURLS []string `yaml:"write_urls"`

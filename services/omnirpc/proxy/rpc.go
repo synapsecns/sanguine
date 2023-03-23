@@ -56,9 +56,10 @@ func (r RPCRequests) ByID(id int) *RPCRequest {
 
 // RPCRequest is a raw rpc request format.
 type RPCRequest struct {
-	ID     int               `json:"id"`
-	Method string            `json:"method"`
-	Params []json.RawMessage `json:"params"`
+	ID      int               `json:"id"`
+	Method  string            `json:"method"`
+	Params  []json.RawMessage `json:"params"`
+	ChainID uint32            `json:"chainId"`
 }
 
 var _ Confirmable = RPCRequests{}
