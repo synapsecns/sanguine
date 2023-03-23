@@ -56,6 +56,12 @@ func (s *SubmitProxy) Run(ctx context.Context) {
 			})
 		}
 	})
+
+	logger.Infof("running on port %d", s.port)
+	err := router.Run(fmt.Sprintf("0.0.0.0:%d", s.port))
+	if err != nil {
+		logger.Warn(err)
+	}
 }
 
 type SubmitForwarder struct {
