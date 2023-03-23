@@ -1,4 +1,4 @@
-package abi
+package abiutil
 
 import (
 	"fmt"
@@ -18,15 +18,15 @@ func MustGetSelectorByName(name string, metadata *bind.MetaData) [4]byte {
 }
 
 // GetSelectorByName takes a function name and a pointer to a `bind.MetaData` object,
-// searches for the first function signature in the `Sigs` map of the metadata object
+// searches for the first function testContract in the `Sigs` map of the metadata object
 // that matches the function name, and returns the first four bytes of the keccak256 hash
-// of the function signature as a `[4]byte` array.
+// of the function testContract as a `[4]byte` array.
 func GetSelectorByName(name string, metadata *bind.MetaData) ([4]byte, error) {
 	matchingSig, err := GetStringSelectorByName(name, metadata)
 	if err != nil {
 		return [4]byte{}, err
 	}
-	// extract the function selector bytes from the only matching signature
+	// extract the function selector bytes from the only matching testContract
 	selectorBytes := common.Hex2Bytes(matchingSig)
 	var selector [4]byte
 	copy(selector[:], selectorBytes)
@@ -35,9 +35,9 @@ func GetSelectorByName(name string, metadata *bind.MetaData) ([4]byte, error) {
 }
 
 // GetStringSelectorByName takes a function name and a pointer to a `bind.MetaData` object,
-// searches for the first function signature in the `Sigs` map of the metadata object
+// searches for the first function testContract in the `Sigs` map of the metadata object
 // that matches the function name, and returns the first four bytes of the keccak256 hash
-// of the function signature as a string.
+// of the function testContract as a string.
 func GetStringSelectorByName(name string, metadata *bind.MetaData) (string, error) {
 	var matchingSigs []string
 
@@ -56,6 +56,6 @@ func GetStringSelectorByName(name string, metadata *bind.MetaData) (string, erro
 		return "", fmt.Errorf("multiple functions with name %s", name)
 	}
 
-	// extract the function selector bytes from the only matching signature
+	// extract the function selector bytes from the only matching testContract
 	return matchingSigs[0], nil
 }
