@@ -48,7 +48,6 @@ func (c Config) Marshall() ([]byte, error) {
 
 // SubmitOnlyConfig is the config for a single chain.
 type SubmitOnlyConfig struct {
-	ChainID   uint32   `yaml:"chain_id"`
 	ReadURL   string   `yaml:"read_url"`
 	WriteURLS []string `yaml:"write_urls"`
 }
