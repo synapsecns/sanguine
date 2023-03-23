@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/db/datastore/sql/base"
-	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/core"
 )
 
@@ -49,28 +48,4 @@ func TestCommittedMessageAccessors(t *testing.T) {
 	Equal(t, cm.CMExecutorTip, cm.Tips().ExecutorTip().Bytes())
 	Equal(t, cm.CMBroadcasterTip, cm.Tips().BroadcasterTip().Bytes())
 	Equal(t, cm.CMNotaryTip, cm.Tips().NotaryTip().Bytes())
-}
-
-func TestSignedAttestation(t *testing.T) {
-	sig := types.NewSignature(new(big.Int).SetUint64(uint64(gofakeit.Uint8())), new(big.Int).SetUint64(gofakeit.Uint64()), new(big.Int).SetUint64(gofakeit.Uint64()))
-
-	rawSig, err := types.EncodeSignature(sig)
-	Nil(t, err)
-
-	sa := base.SignedAttestation{
-		SAOrigin:         gofakeit.Uint32(),
-		SADestination:    gofakeit.Uint32(),
-		SANonce:          gofakeit.Uint32(),
-		SARoot:           common.BytesToHash([]byte(gofakeit.Paragraph(4, 1, 4, " "))).Bytes(),
-		SAGuardSignature: rawSig,
-	}
-
-	Equal(t, core.BytesToSlice(sa.Attestation().Root()), sa.SARoot)
-	Equal(t, sa.Attestation().Origin(), sa.SAOrigin)
-	Equal(t, sa.Attestation().Destination(), sa.SADestination)
-	Equal(t, sa.Attestation().Nonce(), sa.SANonce)
-	// TODO (joe): For now, just grabbing the guard signature at index 0 until this is fixed.
-	Equal(t, sa.GuardSignatures()[0].V(), sig.V())
-	Equal(t, sa.GuardSignatures()[0].R(), sig.R())
-	Equal(t, sa.GuardSignatures()[0].S(), sig.S())
 }

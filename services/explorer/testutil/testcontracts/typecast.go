@@ -2,9 +2,9 @@ package testcontracts
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
+	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
@@ -17,51 +17,36 @@ import (
 // GetBridgeConfigV3 gets a typecast bridgeconfig contract.
 func (d *DeployManager) GetBridgeConfigV3(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *bridgeconfig.BridgeConfigRef) {
 	d.T().Helper()
-	bridgeConfigContract := d.GetContractRegistry(backend).Get(ctx, testutil.BridgeConfigTypeV3)
-	bridgeConfigHandle, ok := bridgeConfigContract.ContractHandle().(*bridgeconfig.BridgeConfigRef)
-	assert.True(d.T(), ok)
 
-	return bridgeConfigContract, bridgeConfigHandle
+	return manager.GetContract[*bridgeconfig.BridgeConfigRef](ctx, d.T(), d, backend, testutil.BridgeConfigTypeV3)
 }
 
 // GetTestSynapseBridge gets a typecast test bridge contract.
 func (d *DeployManager) GetTestSynapseBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testbridge.TestBridgeRef) {
 	d.T().Helper()
-	bridgeContract := d.GetContractRegistry(backend).Get(ctx, TestSynapseBridgeType)
-	bridgeHandle, ok := bridgeContract.ContractHandle().(*testbridge.TestBridgeRef)
-	assert.True(d.T(), ok)
 
-	return bridgeContract, bridgeHandle
+	return manager.GetContract[*testbridge.TestBridgeRef](ctx, d.T(), d, backend, TestSynapseBridgeType)
 }
 
 // GetTestSwapFlashLoan gets a typecast test swap contract.
 func (d *DeployManager) GetTestSwapFlashLoan(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testswap.TestSwapRef) {
 	d.T().Helper()
-	swapContract := d.GetContractRegistry(backend).Get(ctx, TestSwapFlashLoanType)
-	swapHandle, ok := swapContract.ContractHandle().(*testswap.TestSwapRef)
-	assert.True(d.T(), ok)
 
-	return swapContract, swapHandle
+	return manager.GetContract[*testswap.TestSwapRef](ctx, d.T(), d, backend, TestSwapFlashLoanType)
 }
 
 // GetTestSynapseBridgeV1 gets a typecast test bridge contract v1.
 func (d *DeployManager) GetTestSynapseBridgeV1(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testbridgev1.TestBridgeV1Ref) {
 	d.T().Helper()
-	bridgeContract := d.GetContractRegistry(backend).Get(ctx, TestSynapseBridgeV1Type)
-	bridgeHandle, ok := bridgeContract.ContractHandle().(*testbridgev1.TestBridgeV1Ref)
-	assert.True(d.T(), ok)
 
-	return bridgeContract, bridgeHandle
+	return manager.GetContract[*testbridgev1.TestBridgeV1Ref](ctx, d.T(), d, backend, TestSynapseBridgeV1Type)
 }
 
 // GetTestMessageBusUpgradeable gets a typecast test message bus contract.
 func (d *DeployManager) GetTestMessageBusUpgradeable(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testmessagebus.TestMessageBusRef) {
 	d.T().Helper()
-	messageContract := d.GetContractRegistry(backend).Get(ctx, TestMessageBusType)
-	messageHandle, ok := messageContract.ContractHandle().(*testmessagebus.TestMessageBusRef)
-	assert.True(d.T(), ok)
 
-	return messageContract, messageHandle
+	return manager.GetContract[*testmessagebus.TestMessageBusRef](ctx, d.T(), d, backend, TestMessageBusType)
 }
 
 // GetTestMetaSwap gets a typecast test meta swap contract.

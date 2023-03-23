@@ -5,12 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/sethvargo/go-githubactions"
-	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 	"os"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/sethvargo/go-githubactions"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 )
 
 const defaultTimeout = "1m"

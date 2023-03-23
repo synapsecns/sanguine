@@ -34,6 +34,7 @@ func (b *Backend) Signer() types.Signer {
 }
 
 // NewGanacheBackend creates a new ganache backend.
+// Deprecated: this will be removed in a future version in favor of anvil.
 func NewGanacheBackend(ctx context.Context, t *testing.T, chainConfig *params.ChainConfig, rpcURL, chainName, keyPath string) *Backend {
 	t.Helper()
 
@@ -132,4 +133,4 @@ func (b *Backend) GetTxContext(ctx context.Context, address *common.Address) (au
 	return auth
 }
 
-var _ backends.TestBackend = &Backend{}
+var _ backends.SimulatedTestBackend = &Backend{}

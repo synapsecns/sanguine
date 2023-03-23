@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import "../../../contracts/system/SystemRouter.sol";
+import { ByteString, SystemEntity, SystemRouter } from "../../../contracts/system/SystemRouter.sol";
 
 // solhint-disable no-empty-blocks
 contract SystemRouterHarness is SystemRouter {
@@ -28,7 +28,7 @@ contract SystemRouterHarness is SystemRouter {
         bytes memory prefix = abi.encode(_rootSubmittedAt, _callOrigin, _systemCaller);
         _localSystemCall({
             _recipient: uint8(_recipient),
-            _callPayload: _data.castToCallPayload(),
+            _callData: _data.castToCallData(),
             _prefix: prefix.castToRawBytes()
         });
     }

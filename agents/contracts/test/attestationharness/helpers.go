@@ -1,14 +1,12 @@
 package attestationharness
 
 import (
-	"fmt"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-// AttestationHarnessRef is an attestation harness reference
+// AttestationHarnessRef is a attestation harness reference.
 //
 //nolint:golint
 type AttestationHarnessRef struct {
@@ -17,15 +15,15 @@ type AttestationHarnessRef struct {
 }
 
 // Address gets the address of the contract.
-func (a AttestationHarnessRef) Address() common.Address {
-	return a.address
+func (s AttestationHarnessRef) Address() common.Address {
+	return s.address
 }
 
 // NewAttestationHarnessRef creates a new attestation harness.
 func NewAttestationHarnessRef(address common.Address, backend bind.ContractBackend) (*AttestationHarnessRef, error) {
 	contract, err := NewAttestationHarness(address, backend)
 	if err != nil {
-		return nil, fmt.Errorf("could not create attestation harness: %w", err)
+		return nil, err
 	}
 
 	return &AttestationHarnessRef{

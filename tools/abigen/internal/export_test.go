@@ -14,3 +14,8 @@ func CreateRunFile(version string) (runFile *os.File, err error) {
 func CompileSolidity(version string, filePath string, optimizeRuns int) (map[string]*compiler.Contract, error) {
 	return compileSolidity(version, filePath, optimizeRuns)
 }
+
+// FilePathsAreEqual exports filePathsAreEqual for testing.
+func FilePathsAreEqual(file1 string, file2 string) (equal bool, err error) {
+	return filePathsAreEqual(file1, file2)
+}

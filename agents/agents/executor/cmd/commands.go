@@ -102,14 +102,31 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 		return executorConfig, nil, nil, fmt.Errorf("failed to decode config: %w", err)
 	}
 
+	if executorConfig.DBPrefix == "" && c.String(dbFlag.Name) == "mysql" {
+		executorConfig.DBPrefix = "executor"
+	}
+
+	if executorConfig.DBPrefix != "" && c.String(dbFlag.Name) == "sqlite" {
+		executorConfig.DBPrefix = ""
+	}
+
 	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix)
 	if err != nil {
 		return executorConfig, nil, nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
 
 	clients = make(map[uint32]executor.Backend)
-	for _, execClient := range executorConfig.Chains {
+	/* for _, execClient := range executorConfig.Chains {
 		rpcDial, err := rpc.DialContext(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, execClient.ChainID))
+		if err != nil {
+			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
+		}
+
+		ethClient := ethclient.NewClient(rpcDial)
+		clients[execClient.ChainID] = ethClient
+	} */
+	for _, execClient := range executorConfig.Chains {
+		rpcDial, err := rpc.DialContext(c.Context, execClient.TempRPC)
 		if err != nil {
 			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
 		}
@@ -249,16 +266,8 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 			return mysqlStore, nil
 		}
 
-		var namingStrategy schema.NamingStrategy
-
-		if tablePrefix != "" {
-			namingStrategy = schema.NamingStrategy{
-				TablePrefix: fmt.Sprintf("%s_", tablePrefix),
-			}
-		} else {
-			namingStrategy = schema.NamingStrategy{
-				TablePrefix: "executor_",
-			}
+		namingStrategy := schema.NamingStrategy{
+			TablePrefix: fmt.Sprintf("%s_", tablePrefix),
 		}
 
 		mysql.NamingStrategy = namingStrategy

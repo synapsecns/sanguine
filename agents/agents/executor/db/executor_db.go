@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 )
@@ -16,7 +17,12 @@ type ExecutorDBWriter interface {
 	SetMinimumTime(ctx context.Context, messageMask types.DBMessage, minimumTime uint64) error
 
 	// StoreAttestation stores an attestation.
-	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, blockNumber uint64, blockTime uint64) error
+	StoreAttestation(ctx context.Context, attestation agentsTypes.Attestation, destination uint32, destinationBlockNumber, destinationTimestamp uint64) error
+
+	// StoreState stores a state.
+	StoreState(ctx context.Context, state agentsTypes.State, snapshotRoot [32]byte, proof [][]byte, treeHeight, stateIndex uint32) error
+	// StoreStates stores multiple states with the same snapshot root.
+	StoreStates(ctx context.Context, states []agentsTypes.State, snapshotRoot [32]byte, proofs [][][]byte, treeHeight uint32) error
 }
 
 // ExecutorDBReader is the interface for reading from the executor database.
@@ -38,18 +44,35 @@ type ExecutorDBReader interface {
 	// GetMessageMinimumTime gets the minimum time for a message to be executed.
 	GetMessageMinimumTime(ctx context.Context, messageMask types.DBMessage) (*uint64, error)
 
-	// GetAttestation gets an attestation from the database.
+	// GetAttestation gets an attestation that has fields matching the attestation mask.
 	GetAttestation(ctx context.Context, attestationMask types.DBAttestation) (*agentsTypes.Attestation, error)
 	// GetAttestationBlockNumber gets the block number of an attestation.
 	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
-	// GetAttestationBlockTime gets the block time of an attestation.
-	GetAttestationBlockTime(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
-	// GetAttestationForNonceOrGreater gets the lowest nonce attestation that is greater than or equal to the given nonce.
-	GetAttestationForNonceOrGreater(ctx context.Context, attestationMask types.DBAttestation) (nonce *uint32, blockTime *uint64, err error)
-	// GetAttestationsAboveOrEqualNonce gets attestations in a nonce range.
-	GetAttestationsAboveOrEqualNonce(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, page int) ([]types.DBAttestation, error)
-	// GetEarliestAttestationsNonceInNonceRange gets the earliest attestation (by block number) in a nonce range.
-	GetEarliestAttestationsNonceInNonceRange(ctx context.Context, attestationMask types.DBAttestation, minNonce uint32, maxNonce uint32) (*uint32, error)
+	// GetAttestationTimestamp gets the timestamp of an attestation.
+	GetAttestationTimestamp(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
+	// GetEarliestSnapshotFromAttestation takes a list of snapshot roots, checks which one has the lowest block number, and returns that snapshot root back.
+	GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*[32]byte, error)
+
+	// GetState gets a state from the database.
+	GetState(ctx context.Context, stateMask types.DBState) (*agentsTypes.State, error)
+	// GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
+	GetStateMetadata(ctx context.Context, stateMask types.DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, treeHeight *uint32, stateIndex *uint32, err error)
+	// GetPotentialSnapshotRoots gets all snapshot roots that are greater than or equal to a specified nonce and matches
+	// a specified chain ID.
+	GetPotentialSnapshotRoots(ctx context.Context, chainID uint32, nonce uint32) ([]string, error)
+	// GetSnapshotRootsInNonceRange gets all snapshot roots for all states in a specified nonce range.
+	GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32, startNonce uint32, endNonce uint32) ([]string, error)
+
+	// GetTimestampForMessage gets the timestamp for a message. This is done in multiple logical steps:
+	// 1. Get all potential snapshot roots for the message (all snapshot roots that are associated to states with
+	// the same chain ID and a nonce greater than or equal to the message nonce).
+	// 2. Get the minimum destination block number for all attestations that are associated to the potential snapshot roots.
+	// 3. Return the timestamp of the attestation with the minimum destination block number.
+	GetTimestampForMessage(ctx context.Context, chainID, destination, nonce uint32, tablePrefix string) (*uint64, error)
+	// GetEarliestStateInRange gets the earliest state with the same snapshot root as an attestation within a nonce range.
+	// 1. Get all states that are within a nonce range.
+	// 2. Get the state with the earliest attestation associated to it.
+	GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32, tablePrefix string) (*agentsTypes.State, error)
 }
 
 // ExecutorDB is the interface for the executor database.

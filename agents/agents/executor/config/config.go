@@ -16,6 +16,10 @@ import (
 type Config struct {
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
+	// SummitChainID is the chain ID of the chain that the summit contract is deployed on.
+	SummitChainID uint32 `yaml:"summit_chain_id"`
+	// SummitAddress is the address of the summit contract.
+	SummitAddress string `yaml:"summit_address"`
 	// BaseOmnirpcURL is the base url for omnirpc.
 	// The format is "https://omnirpc.url/". Notice the lack of "confirmations" on the URL
 	// in comparison to what `Scribe` uses.
@@ -33,7 +37,7 @@ type Config struct {
 	// included if an embedded Scribe is being used. If a remote Scribe is being used,
 	// this can be left empty.
 	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
-	// DBPrefix is the prefix for the tables in the database.
+	// DBPrefix is the prefix for the tables in the database. This is only to be used with mysql.
 	DBPrefix string `yaml:"db_prefix"`
 }
 

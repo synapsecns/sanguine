@@ -4,10 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
+
+	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
@@ -78,7 +83,45 @@ func (o OriginHarnessDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{}
 }
 
-// AttestationHarnessDeployer deploys the attestation harness.
+// StateHarnessDeployer deploys the state harness.
+type StateHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewStateHarnessDeployer creates a new deployer for the state harness.
+func NewStateHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return StateHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, StateHarnessType)}
+}
+
+// Deploy deploys the state harness.
+func (a StateHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return stateharness.DeployStateHarness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return stateharness.NewStateHarnessRef(address, backend)
+	})
+}
+
+// SnapshotHarnessDeployer deploys the snapshot harness.
+type SnapshotHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewSnapshotHarnessDeployer creates a new deployer for the snapshot harness.
+func NewSnapshotHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return SnapshotHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, SnapshotHarnessType)}
+}
+
+// Deploy deploys the snapshot harness.
+func (a SnapshotHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return snapshotharness.DeploySnapshotHarness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return snapshotharness.NewSnapshotHarnessRef(address, backend)
+	})
+}
+
+// AttestationHarnessDeployer deploys the attestation harness for testing.
 type AttestationHarnessDeployer struct {
 	*deployer.BaseDeployer
 }
@@ -146,6 +189,39 @@ func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.Deplo
 		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return destinationharness.NewDestinationHarnessRef(address, backend)
+	})
+}
+
+// SummitHarnessDeployer deploys the summit harness.
+type SummitHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewSummitHarnessDeployer creates a new deployer for the summit harness.
+func NewSummitHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return SummitHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, SummitHarnessType)}
+}
+
+// Deploy deploys the summit harness.
+// nolint:dupl
+func (d SummitHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		address, tx, rawHandle, err := summitharness.DeploySummitHarness(transactOps, backend)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
+		}
+		d.Backend().WaitForConfirmation(ctx, tx)
+
+		initializeOpts := d.Backend().GetTxContext(ctx, &transactOps.From)
+		initializeTx, err := rawHandle.Initialize(initializeOpts.TransactOpts)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize summit harness (%s) on %s: %w", transactOps.From, d.ContractType().ContractName(), err)
+		}
+		d.Backend().WaitForConfirmation(ctx, initializeTx)
+
+		return address, tx, rawHandle, err
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return summitharness.NewSummitHarnessRef(address, backend)
 	})
 }
 

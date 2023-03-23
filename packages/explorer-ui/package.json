@@ -1,6 +1,6 @@
 {
-  "name": "explorer-ui",
-  "version": "0.1.0",
+  "name": "@synapsecns/explorer-ui",
+  "version": "0.1.4",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -39,9 +39,11 @@
     "dev": "next dev",
     "start": "next start",
     "build": "next build",
+    "test:coverage": "echo 'No tests defined.'",
     "lint": "next lint",
     "ci:lint": " ",
     "build:go": " ",
+    "build:slither": " ",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },

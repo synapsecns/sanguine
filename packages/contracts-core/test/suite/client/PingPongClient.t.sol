@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../../contracts/client/PingPongClient.sol";
+import {
+    InterfaceOrigin,
+    PingPongClient,
+    TipsLib
+} from "../../../contracts/client/PingPongClient.sol";
 
 import { Test } from "forge-std/Test.sol";
 
-contract OriginMock is IOrigin {
+contract OriginMock {
     function dispatch(
         uint32 _destination,
         bytes32 _recipient,
         uint32 _optimisticSeconds,
         bytes memory _tips,
         bytes memory _messageBody
-    ) external returns (uint32 messageNonce, bytes32 messageHash) {}
+    ) external payable returns (uint32 messageNonce, bytes32 messageHash) {}
 }
 
 // solhint-disable func-name-mixedcase
@@ -152,12 +156,12 @@ contract PingPongTest is Test {
         bool isPing,
         uint16 counter
     ) internal {
-        bytes memory tips = Tips.emptyTips();
+        bytes memory tips = TipsLib.emptyTips();
         bytes memory body = _messageBody(pingId, isPing, counter);
         vm.expectCall(
             originMock,
             abi.encodeWithSelector(
-                IOrigin.dispatch.selector,
+                InterfaceOrigin.dispatch.selector,
                 destination,
                 recipient,
                 optimisticPeriod,

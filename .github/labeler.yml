@@ -5,7 +5,7 @@ M-ci:
   - any: ['\.github/**/*']
 
 M-make:
-  - any: ['make/**/*', '**/Makefile']
+  - any: ['make/**/*', '**/Makefile', '**/*.Makefile']
 
 M-docker:
   - any: ['docker/**/*']

@@ -1,22 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../../contracts/bonding/BondingManager.sol";
 // ============ Harnesses ============
-import "../harnesses/client/AppHarness.t.sol";
-import "../harnesses/DestinationHarness.t.sol";
-import "../harnesses/OriginHarness.t.sol";
-import "../harnesses/system/SystemRouterHarness.t.sol";
+import { AppHarness } from "../harnesses/client/AppHarness.t.sol";
+import { SystemRouterHarness } from "../harnesses/system/SystemRouterHarness.t.sol";
 // ============ Utils ============
-import "./SynapseConstants.t.sol";
-import "./SynapseEvents.t.sol";
-import "./proof/ProofGenerator.t.sol";
+import { SynapseConstants } from "./SynapseConstants.t.sol";
+import { SynapseEvents } from "./SynapseEvents.t.sol";
+import { HistoricalProofGenerator } from "./proof/HistoricalProofGenerator.t.sol";
 
 contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     struct TestDeployments {
-        DestinationHarness destination;
-        OriginHarness origin;
-        BondingManager bondingManager;
         SystemRouterHarness systemRouter;
         AppHarness app;
         address[] notaries;
@@ -63,7 +57,7 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // Merkle proof generator
-    ProofGenerator internal proofGen;
+    HistoricalProofGenerator internal proofGen;
     // Context for tests
     MessageContext internal userLocalToRemote;
     MessageContext internal userRemoteToLocal;
@@ -87,20 +81,16 @@ contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       GETTERS: CHAIN CONTRACTS                       ║*▕
+    ▏*║                            MERKLE PROOFS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function suiteDestination(uint32 domain) public view returns (DestinationHarness) {
-        return chains[domain].destination;
+    function clearMerkleTree() public {
+        proofGen = new HistoricalProofGenerator();
     }
 
-    function suiteOrigin(uint32 domain) public view returns (OriginHarness) {
-        return chains[domain].origin;
-    }
-
-    function suiteBondingManager(uint32 domain) public view returns (BondingManager) {
-        return chains[domain].bondingManager;
-    }
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                       GETTERS: CHAIN CONTRACTS                       ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function suiteSystemRouter(uint32 domain) public view returns (SystemRouterHarness) {
         return chains[domain].systemRouter;

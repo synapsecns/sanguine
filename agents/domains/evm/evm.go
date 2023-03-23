@@ -21,8 +21,8 @@ type evmClient struct {
 	client chain.Chain
 	// origin contains the origin contract
 	origin domains.OriginContract
-	// attestationCollector contains the attestation collector contract
-	attestationCollector domains.AttestationCollectorContract
+	// summit contains the summit contract
+	summit domains.SummitContract
 	// destination contains the destination contract
 	destination domains.DestinationContract
 }
@@ -41,7 +41,7 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 		return nil, fmt.Errorf("could not bind origin contract: %w", err)
 	}
 
-	boundCollector, err := NewAttestationCollectorContract(ctx, underlyingClient, common.HexToAddress(domain.AttestationCollectorAddress))
+	boundSummit, err := NewSummitContract(ctx, underlyingClient, common.HexToAddress(domain.SummitAddress))
 	if err != nil {
 		return nil, fmt.Errorf("could not bind attestation contract: %w", err)
 	}
@@ -52,12 +52,12 @@ func NewEVM(ctx context.Context, name string, domain config.DomainConfig) (domai
 	}
 
 	return evmClient{
-		name:                 name,
-		config:               domain,
-		client:               underlyingClient,
-		attestationCollector: boundCollector,
-		origin:               boundOrigin,
-		destination:          boundDestination,
+		name:        name,
+		config:      domain,
+		client:      underlyingClient,
+		summit:      boundSummit,
+		origin:      boundOrigin,
+		destination: boundDestination,
 	}, nil
 }
 
@@ -86,9 +86,9 @@ func (e evmClient) Origin() domains.OriginContract {
 	return e.origin
 }
 
-// AttestationCollector gets the attestation collector.
-func (e evmClient) AttestationCollector() domains.AttestationCollectorContract {
-	return e.attestationCollector
+// Summit gets the summit.
+func (e evmClient) Summit() domains.SummitContract {
+	return e.summit
 }
 
 // Destination gets the destination.

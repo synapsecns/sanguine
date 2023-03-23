@@ -3,6 +3,8 @@ package contracts
 import "github.com/ethereum/go-ethereum/common/compiler"
 
 // ContractType is a contract type interface that contracts need to comply with.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name ContractType --output ./mocks --case=underscore
 type ContractType interface {
 	// ID gets the unique identifier for the contracts
 	ID() int

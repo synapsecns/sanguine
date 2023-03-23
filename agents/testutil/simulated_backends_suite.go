@@ -13,11 +13,10 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
-	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
+	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
@@ -56,12 +55,11 @@ type SimulatedBackendsTestSuite struct {
 	TestClientMetadataOnDestination     contracts.DeployedContract
 	PingPongClientOnDestination         *pingpongclient.PingPongClientRef
 	PingPongClientMetadataOnDestination contracts.DeployedContract
-	AttestationHarness                  *attestationharness.AttestationHarnessRef
-	AttestationContract                 *attestationcollector.AttestationCollectorRef
-	AttestationContractMetadata         contracts.DeployedContract
+	SummitContract                      *summitharness.SummitHarnessRef
+	SummitMetadata                      contracts.DeployedContract
 	TestBackendOrigin                   backends.SimulatedTestBackend
 	TestBackendDestination              backends.SimulatedTestBackend
-	TestBackendAttestation              backends.SimulatedTestBackend
+	TestBackendSummit                   backends.SimulatedTestBackend
 	NotaryBondedWallet                  wallet.Wallet
 	NotaryOnOriginBondedWallet          wallet.Wallet
 	GuardBondedWallet                   wallet.Wallet
@@ -77,7 +75,7 @@ type SimulatedBackendsTestSuite struct {
 	ExecutorUnbondedWallet              wallet.Wallet
 	ExecutorUnbondedSigner              signer.Signer
 	OriginDomainClient                  domains.DomainClient
-	AttestationDomainClient             domains.DomainClient
+	SummitDomainClient                  domains.DomainClient
 	DestinationDomainClient             domains.DomainClient
 	TestDeployManager                   *DeployManager
 	ScribeTestDB                        scribedb.EventDB
@@ -214,47 +212,46 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
 
-// SetupAttestation sets up the backend that will have the attestation collector contract deployed on it.
-func (a *SimulatedBackendsTestSuite) SetupAttestation(deployManager *DeployManager) {
-	_, a.AttestationHarness = deployManager.GetAttestationHarness(a.GetTestContext(), a.TestBackendAttestation)
-	a.AttestationContractMetadata, a.AttestationContract = deployManager.GetAttestationCollector(a.GetTestContext(), a.TestBackendAttestation)
+// SetupSummit sets up the backend that will have the summit contract deployed on it.
+func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
+	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 
-	attestOwnerPtr, err := a.AttestationContract.AttestationCollectorCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
+	summitOwnerPtr, err := a.SummitContract.SummitHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
 	if err != nil {
 		a.T().Fatal(err)
 	}
-	attestOwnerAuth := a.TestBackendAttestation.GetTxContext(a.GetTestContext(), &attestOwnerPtr)
+	summitOwnerAuth := a.TestBackendSummit.GetTxContext(a.GetTestContext(), &summitOwnerPtr)
 
-	txAddNotary, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotaryBondedSigner.Address())
+	txAddNotary, err := a.SummitContract.AddAgent(summitOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotaryBondedSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
-	a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddNotary)
-	txAddNotaryOnOrigin, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(a.TestBackendOrigin.GetChainID()), a.NotaryOnOriginBondedSigner.Address())
+	a.TestBackendSummit.WaitForConfirmation(a.GetTestContext(), txAddNotary)
+	txAddNotaryOnOrigin, err := a.SummitContract.AddAgent(summitOwnerAuth.TransactOpts, uint32(a.TestBackendOrigin.GetChainID()), a.NotaryOnOriginBondedSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
-	a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddNotaryOnOrigin)
-	txAddGuard, err := a.AttestationContract.AddAgent(attestOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
+	a.TestBackendSummit.WaitForConfirmation(a.GetTestContext(), txAddNotaryOnOrigin)
+	txAddGuard, err := a.SummitContract.AddAgent(summitOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address())
 	if err != nil {
 		a.T().Fatal(err)
 	}
-	a.TestBackendAttestation.WaitForConfirmation(a.GetTestContext(), txAddGuard)
+	a.TestBackendSummit.WaitForConfirmation(a.GetTestContext(), txAddGuard)
 
-	a.AttestationDomainClient, err = evm.NewEVM(a.GetTestContext(), "attestation_client", config.DomainConfig{
-		DomainID:                    uint32(a.TestBackendAttestation.GetBigChainID().Uint64()),
-		Type:                        types.EVM.String(),
-		AttestationCollectorAddress: a.AttestationContract.Address().String(),
-		RPCUrl:                      a.TestBackendAttestation.RPCAddress(),
+	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
+		DomainID:      uint32(a.TestBackendSummit.GetBigChainID().Uint64()),
+		Type:          types.EVM.String(),
+		SummitAddress: a.SummitContract.Address().String(),
+		RPCUrl:        a.TestBackendSummit.RPCAddress(),
 	})
 	if err != nil {
 		a.T().Fatal(err)
 	}
 
-	a.TestBackendAttestation.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
-	a.TestBackendAttestation.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
-	a.TestBackendAttestation.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
-	a.TestBackendAttestation.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
 
 // SetupGuard sets up the Guard agent.
@@ -329,11 +326,11 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 
 	a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
 	a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
-	a.TestBackendAttestation = preset.GetMaticMumbai().Geth(a.GetTestContext(), a.T())
+	a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
 
 	a.SetupDestination(a.TestDeployManager)
 	a.SetupOrigin(a.TestDeployManager)
-	a.SetupAttestation(a.TestDeployManager)
+	a.SetupSummit(a.TestDeployManager)
 
 	a.DBPath = filet.TmpDir(a.T(), "")
 	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath)

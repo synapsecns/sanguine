@@ -41,7 +41,7 @@ import (
 
 func TestSimulatedBackend(t *testing.T) {
 	var gasLimit uint64 = 8000029
-	key, _ := crypto.GenerateKey() //nolint:gosec
+	key, _ := crypto.GenerateKey() // nolint: gosec
 	auth, _ := bind.NewKeyedTransactorWithChainID(key, big.NewInt(1337))
 	genAlloc := make(core.GenesisAlloc)
 	genAlloc[auth.From] = core.GenesisAccount{Balance: big.NewInt(9223372036854775807)}
