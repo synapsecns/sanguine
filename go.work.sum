@@ -463,6 +463,7 @@ github.com/creack/pty v1.1.18/go.mod h1:MOBLtS5ELjhRRrroQr9kyvTxUAFNvYEK993ew/Vr
 github.com/cyberdelia/templates v0.0.0-20141128023046-ca7fffd4298c h1:/ovYnF02fwL0kvspmy9AuyKg1JhdTRUgPw4nUxd9oZM=
 github.com/daixiang0/gci v0.2.8 h1:1mrIGMBQsBu0P7j7m1M8Lb+ZeZxsZL+jyGX4YoMJJpg=
 github.com/danieljoos/wincred v1.1.0 h1:3RNcEpBg4IhIChZdFRSdlQt1QjCp1sMAPIrOnm7Yf8g=
+github.com/danieljoos/wincred v1.1.2 h1:QLdCxFs1/Yl4zduvBdcHB8goaYk9RARS2SgLLRuAyr0=
 github.com/danieljoos/wincred v1.1.2/go.mod h1:GijpziifJoIBfYh+S7BbkdUTU4LfM+QnGqR5Vl2tAx0=
 github.com/dave/jennifer v1.2.0 h1:S15ZkFMRoJ36mGAQgWL1tnr0NQJh9rZ8qatseX/VbBc=
 github.com/daviddengcn/go-colortext v0.0.0-20160507010035-511bcaf42ccd h1:uVsMphB1eRx7xB1njzL3fuMdWRN8HtVzoUOItHMwv5c=
@@ -1203,7 +1204,6 @@ gopkg.in/src-d/go-log.v1 v1.0.1 h1:heWvX7J6qbGWbeFS/aRmiy1eYaT+QMV6wNvHDyMjQV4=
 gopkg.in/urfave/cli.v1 v1.20.0 h1:NdAVW6RYxDif9DhDHaAortIu956m2c0v+09AZBPTbE0=
 gorm.io/driver/sqlserver v1.0.5 h1:n5knSvyaEwufxl0aROEW90pn+aLoV9h+vahYJk1x5l4=
 gotest.tools/v3 v3.3.0/go.mod h1:Mcr9QNxkg0uMvy/YElmo4SpXgJKWgQvYrT7Kw5RzJ1A=
-gotest.tools/v3 v3.4.0/go.mod h1:CtbdzLSsqVhDgMtKsx03ird5YTGB3ar27v0u/yKBW5g=
 honnef.co/go/tools v0.2.2 h1:MNh1AVMyVX23VUHE2O27jm6lNj3vjO5DexS4A1xvnzk=
 k8s.io/api v0.17.0 h1:H9d/lw+VkZKEVIUc8F3wgiQ+FUXTTr21M87jXLU7yqM=
 k8s.io/api v0.18.3 h1:2AJaUQdgUZLoDZHrun21PW2Nx9+ll6cUzvn3IKhSIn0=
@@ -1219,6 +1219,7 @@ k8s.io/component-base v0.22.5/go.mod h1:VK3I+TjuF9eaa+Ln67dKxhGar5ynVbwnGrUiNF4M
 k8s.io/component-helpers v0.24.2 h1:gtXmI/TjVINtkAdZn7m5p8+Vd0Mk4d1q8kwJMMLBdwY=
 k8s.io/cri-api v0.23.1 h1:0DHL/hpTf4Fp+QkUXFefWcp1fhjXr9OlNdY9X99c+O8=
 k8s.io/cri-api v0.23.1/go.mod h1:REJE3PSU0h/LOV1APBrupxrEJqnoxZC8KWzkBUHwrK4=
+k8s.io/cri-api v0.25.0 h1:INwdXsCDSA/0hGNdPxdE2dQD6ft/5K1EaKXZixvSQxg=
 k8s.io/cri-api v0.25.0/go.mod h1:J1rAyQkSJ2Q6I+aBMOVgg2/cbbebso6FNa0UagiR0kc=
 k8s.io/gengo v0.0.0-20190128074634-0689ccc1d7d6 h1:4s3/R4+OYYYUKptXPhZKjQ04WJ6EhQQVFdjOFvCazDk=
 k8s.io/gengo v0.0.0-20211129171323-c02415ce4185 h1:TT1WdmqqXareKxZ/oNXEUSwKlLiHzPMyB0t8BaFeBYI=
