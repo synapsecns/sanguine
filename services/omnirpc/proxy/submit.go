@@ -62,6 +62,7 @@ func (s *SubmitProxy) Run(ctx context.Context) {
 	if err != nil {
 		logger.Warn(err)
 	}
+
 }
 
 type SubmitForwarder struct {
