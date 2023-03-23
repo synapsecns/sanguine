@@ -85,6 +85,10 @@ func (s *SubmitProxy) Forward(c *gin.Context) (err error) {
 		proxy:     s,
 		requestID: []byte(c.GetHeader(omniHTTP.XRequestIDString)),
 	}
+	// handle if no read url is set
+	if s.config.ReadURL == "" {
+		s.config.ReadURL = s.config.WriteURLS[0]
+	}
 
 	forwarder.body, err = io.ReadAll(c.Request.Body)
 	if err != nil {
