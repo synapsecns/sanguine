@@ -1,37 +1,37 @@
-package abi_test
+package abiutil_test
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/synapsecns/sanguine/ethergo/parser/abi"
-	"github.com/synapsecns/sanguine/ethergo/parser/abi/internal"
+	"github.com/synapsecns/sanguine/ethergo/parser/abiutil"
+	"github.com/synapsecns/sanguine/ethergo/parser/abiutil/internal"
 	"math/big"
 )
 
 func (a *AbiSuite) TestGetSelectorNoExist() {
-	selector, err := abi.GetSelectorByName("test", internal.TestSignatureMetaData)
+	selector, err := abiutil.GetSelectorByName("test", internal.TestSignatureMetaData)
 	a.Require().Error(err)
 	a.Require().Empty(selector)
 
 	a.Panics(func() {
-		_, err = abi.GetSelectorByName("test", nil)
+		_, err = abiutil.GetSelectorByName("test", nil)
 	})
 }
 
 // getSigsFromParity is a helper function to get the signatures
 // it makes sure MustGetSelectorByName matches get selector by name.
 func (a *AbiSuite) getSelectorSuccesful(name string, metadata *bind.MetaData) [4]byte {
-	selector, err := abi.GetSelectorByName(name, metadata)
+	selector, err := abiutil.GetSelectorByName(name, metadata)
 	a.Require().NoError(err)
 
-	selector2 := abi.MustGetSelectorByName(name, metadata)
+	selector2 := abiutil.MustGetSelectorByName(name, metadata)
 	a.Require().Equal(selector, selector2)
 
 	return selector
 }
 
 func (a *AbiSuite) TestGetSelectorSuccess() {
-	expectedSelector, err := a.signature.TestSignature(&bind.CallOpts{Context: a.GetTestContext()})
+	expectedSelector, err := a.testContract.TestSignature(&bind.CallOpts{Context: a.GetTestContext()})
 	a.Require().NoError(err)
 
 	realSelector := a.getSelectorSuccesful("testSignature", internal.TestSignatureMetaData)
@@ -39,7 +39,7 @@ func (a *AbiSuite) TestGetSelectorSuccess() {
 }
 
 func (a *AbiSuite) TestGetSelectorArgs() {
-	expectedSelector, err := a.signature.TestSignatureArgs(&bind.CallOpts{Context: a.GetTestContext()}, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	expectedSelector, err := a.testContract.TestSignatureArgs(&bind.CallOpts{Context: a.GetTestContext()}, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	a.Require().NoError(err)
 
 	realSelector := a.getSelectorSuccesful("testSignatureArgs", internal.TestSignatureMetaData)
@@ -48,22 +48,22 @@ func (a *AbiSuite) TestGetSelectorArgs() {
 	a.Require().Equal(expectedSelector, realSelector)
 }
 
-func (a *AbiSuite) TestSignatureOverload() {
-	expectedSelector, err := a.signature.TestSignatureOverload0(&bind.CallOpts{Context: a.GetTestContext()}, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+func (a *AbiSuite) TestSignatureOverloadSelector() {
+	expectedSelector, err := a.testContract.TestSignatureOverload0(&bind.CallOpts{Context: a.GetTestContext()}, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	a.Require().NoError(err)
 
-	otherExpectedSelector, err := a.signature.TestSignatureOverload(&bind.CallOpts{Context: a.GetTestContext()}, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	otherExpectedSelector, err := a.testContract.TestSignatureOverload(&bind.CallOpts{Context: a.GetTestContext()}, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 	a.Require().NoError(err)
 
 	// sanity check
 	a.Require().NotEqual(expectedSelector, otherExpectedSelector)
 
-	realSelector, err := abi.GetSelectorByName("testSignatureOverload", internal.TestSignatureMetaData)
+	realSelector, err := abiutil.GetSelectorByName("testSignatureOverload", internal.TestSignatureMetaData)
 	a.Require().Error(err)
 	a.Require().NotEqual(realSelector, expectedSelector)
 	a.Require().Empty(realSelector)
 
 	a.Panics(func() {
-		_ = abi.MustGetSelectorByName("testSignatureOverload", internal.TestSignatureMetaData)
+		_ = abiutil.MustGetSelectorByName("testSignatureOverload", internal.TestSignatureMetaData)
 	})
 }

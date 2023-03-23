@@ -9,7 +9,7 @@ import (
 
 // rawContracts are the json we use to dervive the processed contracts
 //
-//go:embed signature.contractinfo.json
+//go:embed testsignature.contractinfo.json
 var rawContracts []byte
 
 // Contracts are unmarshalled on start
