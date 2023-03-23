@@ -7,6 +7,16 @@ import (
 	"strings"
 )
 
+// MustGetSelectorByName is a wrapper around `GetSelectorByName` that panics if an error is returned.
+func MustGetSelectorByName(name string, metadata *bind.MetaData) [4]byte {
+	selector, err := GetSelectorByName(name, metadata)
+	if err != nil {
+		panic(err)
+	}
+
+	return selector
+}
+
 // GetSelectorByName takes a function name and a pointer to a `bind.MetaData` object,
 // searches for the first function signature in the `Sigs` map of the metadata object
 // that matches the function name, and returns the first four bytes of the keccak256 hash
