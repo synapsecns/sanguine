@@ -39,6 +39,7 @@ func NewSubmitProxy(cfg config.SubmitOnlyConfig, port uint16, client omniHTTP.Cl
 	}
 }
 
+// Run runs the proxy.
 func (s *SubmitProxy) Run(ctx context.Context) {
 	router := ginhelper.New(logger)
 	log.SetAllLoggers(log.LevelDebug)
