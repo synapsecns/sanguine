@@ -58,6 +58,7 @@ contract DeployMessaging002Script is DeployerUtils {
     /// @dev Deploys Messaging contracts, transfer ownership and sanity check the new deployments.
     /// Will save the deployments, if script is being broadcasted.
     function _deploy(bool _isBroadcasted) internal {
+        // TODO: Adjust for Messaging003 deployments
         startBroadcast(_isBroadcasted);
         string memory config = loadGlobalDeployConfig(MESSAGING_002);
         // Deploy System Contracts
@@ -97,8 +98,6 @@ contract DeployMessaging002Script is DeployerUtils {
         LightManager deployed = LightManager(
             factoryDeploy(AGENT_MANAGER_NAME, type(LightManager).creationCode, constructorArgs)
         );
-        // Initialize to take ownership
-        deployed.initialize();
         return address(deployed);
     }
 

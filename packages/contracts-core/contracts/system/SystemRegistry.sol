@@ -1,59 +1,90 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { AgentInfo, SystemEntity } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { AgentRegistry } from "./AgentRegistry.sol";
-import { ISystemContract, SystemContract } from "./SystemContract.sol";
-import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
+import { SystemContract } from "./SystemContract.sol";
+import { SystemRegistryEvents } from "../events/SystemRegistryEvents.sol";
+import { IAgentManager } from "../interfaces/IAgentManager.sol";
+import { ISystemRegistry } from "../interfaces/ISystemRegistry.sol";
 
-/**
- * @notice Shared agents registry utilities for Origin, Destination.
- * Agents are added/removed via a system call from a local AgentManager.
- */
-abstract contract SystemRegistry is AgentRegistry, SystemContract {
+/// @notice Shared utilities for Origin, Destination/Summit contracts.
+/// This abstract contract is responsible for all interactions with the local AgentManager,
+/// where all agent are being tracked.
+abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISystemRegistry {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SYSTEM ROUTER ONLY                          ║*▕
+    ▏*║                              IMMUTABLES                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Receive a system call indicating the off-chain agent needs to be slashed.
-     * @dev Must be called from a local AgentManager. Therefore
-     * `uint256 _rootSubmittedAt` is ignored.
-     * @param _callOrigin       Domain where the system call originated
-     * @param _caller           Entity which performed the system call
-     * @param _info             Information about agent to slash
-     */
-    function slashAgent(
-        uint256,
-        uint32 _callOrigin,
-        SystemEntity _caller,
-        AgentInfo memory _info
-    ) external onlySystemRouter onlyLocalAgentManager(_callOrigin, _caller) {
-        /// @dev Agent was slashed elsewhere. Slash Agent in this Registry, don't send a slashAgent system call
-        _slashAgent(_info.domain, _info.account, false);
+    IAgentManager public immutable agentManager;
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               STORAGE                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev gap for upgrade safety
+    uint256[50] private __GAP; // solhint-disable-line var-name-mixedcase
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             CONSTRUCTOR                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    constructor(IAgentManager _agentManager) {
+        agentManager = _agentManager;
     }
 
-    /// @inheritdoc ISystemContract
-    function syncAgent(
-        uint256,
-        uint32 _callOrigin,
-        SystemEntity _caller,
-        AgentInfo memory _info
-    ) external onlySystemRouter onlyLocalAgentManager(_callOrigin, _caller) {
-        /// @dev Must be called from a local AgentManager. Hence `_rootSubmittedAt` is ignored.
-        _updateAgentStatus(_info);
+    modifier onlyAgentManager() {
+        require(msg.sender == address(agentManager), "!agentManager");
+        _;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           INTERNAL HELPERS                           ║*▕
+    ▏*║                          ONLY AGENT MANAGER                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _updateAgentStatus(AgentInfo memory _info) internal {
-        if (_info.bonded) {
-            _addAgent(_info.domain, _info.account);
-        } else {
-            _removeAgent(_info.domain, _info.account);
-        }
+    /// @inheritdoc ISystemRegistry
+    function managerSlash(uint32 _domain, address _agent) external onlyAgentManager {
+        _processSlashed(_domain, _agent);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            EXTERNAL VIEWS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc ISystemRegistry
+    function isActiveAgent(address _account) external view returns (bool isActive, uint32 domain) {
+        return _isActiveAgent(_account);
+    }
+
+    /// @inheritdoc ISystemRegistry
+    function isActiveAgent(uint32 _domain, address _account) external view returns (bool) {
+        return _isActiveAgent(_domain, _account);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL LOGIC                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Child contract could define custom logic for processing the slashed Agent.
+    /// This will be called when the slashing was initiated in this contract or elsewhere.
+    function _processSlashed(uint32 _domain, address _agent) internal virtual {}
+
+    /// @dev This function should be called when the agent is proven to commit fraud in this contract.
+    function _slashAgent(uint32 _domain, address _agent) internal {
+        _processSlashed(_domain, _agent);
+        agentManager.registrySlash(_domain, _agent);
+        emit AgentSlashed(_domain, _agent);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL VIEWS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Checks if the account is an active Agent on any of the domains.
+    function _isActiveAgent(address _account) internal view returns (bool isActive, uint32 domain) {
+        return agentManager.isActiveAgent(_account);
+    }
+
+    /// @dev Checks if the account is an active Agent on the given domain.
+    function _isActiveAgent(uint32 _domain, address _account) internal view returns (bool) {
+        return agentManager.isActiveAgent(_domain, _account);
     }
 }

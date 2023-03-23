@@ -12,7 +12,6 @@ import { DisputeHub } from "./DisputeHub.sol";
 import { ExecutionHubEvents } from "../events/ExecutionHubEvents.sol";
 import { IExecutionHub } from "../interfaces/IExecutionHub.sol";
 import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
-import { SystemRegistry } from "../system/SystemRegistry.sol";
 
 /**
  * @notice ExecutionHub is responsible for executing the messages that are
@@ -21,7 +20,7 @@ import { SystemRegistry } from "../system/SystemRegistry.sol";
  * On the Synapse Chain Notaries are submitting the snapshots that are later used for proving.
  * On the other chains Notaries are submitting the attestations that are later used for proving.
  */
-abstract contract ExecutionHub is DisputeHub, SystemRegistry, ExecutionHubEvents, IExecutionHub {
+abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub {
     using MessageLib for bytes;
     using TypedMemView for bytes29;
 

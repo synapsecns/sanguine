@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { AgentInfo } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { AgentManager } from "./AgentManager.sol";
+import { AgentManager, IAgentManager, ISystemRegistry } from "./AgentManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { Versioned } from "../Version.sol";
 
@@ -14,27 +12,28 @@ contract LightManager is Versioned, AgentManager {
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
     }
 
-    function initialize() external initializer {
-        __SystemContract_initialize();
+    function initialize(ISystemRegistry _origin, ISystemRegistry _destination)
+        external
+        initializer
+    {
+        __AgentManager_init(_origin, _destination);
+        __Ownable_init();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           OWNER ONLY (MVP)                           ║*▕
+    ▏*║                            SLASHING LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // TODO: remove these MVP functions once Agent Merkle Tree is implemented
-
-    function addAgent(uint32 _domain, address _account) external onlyOwner {
-        // Add an Agent, break execution if they are already active
-        if (!_addAgent(_domain, _account)) return;
-        // bonded = true
-        _syncAgentLocalRegistries(AgentInfo(_domain, _account, true));
-    }
-
-    function removeAgent(uint32 _domain, address _account) external onlyOwner {
-        // Remove an Agent, break execution if they are not currently active
-        if (!_removeAgent(_domain, _account)) return;
-        // bonded = false
-        _syncAgentLocalRegistries(AgentInfo(_domain, _account, false));
+    /// @inheritdoc IAgentManager
+    function registrySlash(uint32 _domain, address _agent) external {
+        // On chains other than Synapse Chain only Origin could slash Agents
+        // TODO: add slashing logic
+        if (msg.sender == address(origin)) {
+            _removeAgent(_domain, _agent);
+            destination.managerSlash(_domain, _agent);
+            // TODO: issue a system call to BondingManager on SynChain
+        } else {
+            revert("Unauthorized caller");
+        }
     }
 }
