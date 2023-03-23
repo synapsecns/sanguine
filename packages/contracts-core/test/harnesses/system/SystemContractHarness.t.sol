@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.17;
 
-import { SystemContract } from "../../../contracts/system/SystemContract.sol";
-import { ISystemRouter } from "../../../contracts/interfaces/ISystemRouter.sol";
-import { LocalDomainContext } from "../../../contracts/context/LocalDomainContext.sol";
+import { SystemEntity, SystemContract } from "../../../contracts/system/SystemContract.sol";
+import { InterfaceSystemRouter } from "../../../contracts/interfaces/InterfaceSystemRouter.sol";
+import { DomainContext } from "../../../contracts/context/DomainContext.sol";
 import { SystemContractHarnessEvents } from "../events/SystemContractHarnessEvents.sol";
 
 abstract contract SystemContractHarness is SystemContractHarnessEvents, SystemContract {
@@ -35,7 +35,7 @@ abstract contract SystemContractHarness is SystemContractHarnessEvents, SystemCo
         uint32 _callOrigin,
         uint8 _systemCaller,
         uint256 _newValue
-    ) external onlySystemRouter onlyCallers(ORIGIN, ISystemRouter.SystemEntity(_systemCaller)) {
+    ) external onlySystemRouter onlyCallers(ORIGIN, SystemEntity(_systemCaller)) {
         _setSensitiveValue(_rootSubmittedAt, _callOrigin, _systemCaller, _newValue);
         emit OnlyOriginCall(address(this), _newValue);
     }
@@ -45,11 +45,7 @@ abstract contract SystemContractHarness is SystemContractHarnessEvents, SystemCo
         uint32 _callOrigin,
         uint8 _systemCaller,
         uint256 _newValue
-    )
-        external
-        onlySystemRouter
-        onlyCallers(DESTINATION, ISystemRouter.SystemEntity(_systemCaller))
-    {
+    ) external onlySystemRouter onlyCallers(DESTINATION, SystemEntity(_systemCaller)) {
         _setSensitiveValue(_rootSubmittedAt, _callOrigin, _systemCaller, _newValue);
         emit OnlyDestinationCall(address(this), _newValue);
     }
@@ -59,11 +55,7 @@ abstract contract SystemContractHarness is SystemContractHarnessEvents, SystemCo
         uint32 _callOrigin,
         uint8 _systemCaller,
         uint256 _newValue
-    )
-        external
-        onlySystemRouter
-        onlyCallers(ORIGIN | DESTINATION, ISystemRouter.SystemEntity(_systemCaller))
-    {
+    ) external onlySystemRouter onlyCallers(ORIGIN | DESTINATION, SystemEntity(_systemCaller)) {
         _setSensitiveValue(_rootSubmittedAt, _callOrigin, _systemCaller, _newValue);
         emit OnlyOriginDestinationCall(address(this), _newValue);
     }

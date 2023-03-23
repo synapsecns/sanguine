@@ -1,6 +1,6 @@
 {
-  "name": "explorer-ui",
-  "version": "0.1.0",
+  "name": "@synapsecns/explorer-ui",
+  "version": "0.1.4",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -30,6 +30,7 @@
     "react-chartjs-2": "^4.1.0",
     "react-dom": "^18.2.0",
     "recharts": "^2.3.2",
+    "sharp": "^0.31.3",
     "swr": "^1.3.0",
     "tailwind-merge": "^1.3.0",
     "tiny-warning": "^1.0.3",
@@ -39,9 +40,11 @@
     "dev": "next dev",
     "start": "next start",
     "build": "next build",
+    "test:coverage": "echo 'No tests defined.'",
     "lint": "next lint",
     "ci:lint": " ",
     "build:go": " ",
+    "build:slither": " ",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },

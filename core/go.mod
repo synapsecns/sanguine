@@ -6,6 +6,7 @@ replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alp
 
 require (
 	github.com/BurntSushi/toml v1.2.0
+	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54
 	github.com/Soft/iter v0.1.0
@@ -39,6 +40,7 @@ require (
 	github.com/prometheus/common v0.37.0
 	github.com/prometheus/exporter-toolkit v0.7.1
 	github.com/prometheus/pushgateway v1.4.3
+	github.com/pyroscope-io/client v0.7.0
 	github.com/rung/go-safecast v1.0.1
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
 	github.com/stretchr/testify v1.8.1
@@ -130,6 +132,7 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/prometheus/tsdb v0.10.0 // indirect
+	github.com/pyroscope-io/godeltaprof v0.1.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/richardartoul/molecule v1.0.1-0.20221107223329-32cfee06a052 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
@@ -143,6 +146,7 @@ require (
 	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
+	github.com/spf13/afero v1.9.5 // indirect
 	github.com/status-im/keycard-go v0.0.0-20200402102358-957c09536969 // indirect
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/tklauser/go-sysconf v0.3.10 // indirect

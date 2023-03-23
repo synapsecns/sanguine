@@ -1,356 +1,249 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SynapseTypes } from "./SynapseTypes.sol";
-import { TypedMemView } from "./TypedMemView.sol";
 import { ByteString } from "./ByteString.sol";
+import { ATTESTATION_LENGTH } from "./Constants.sol";
+import { TypedMemView } from "./TypedMemView.sol";
 
-library Attestation {
+/// @dev Attestation is a memory view over a formatted attestation payload.
+type Attestation is bytes29;
+/// @dev Attach library functions to Attestation
+using {
+    AttestationLib.unwrap,
+    AttestationLib.equalToSummit,
+    AttestationLib.toDestinationAttestation,
+    AttestationLib.hash,
+    AttestationLib.root,
+    AttestationLib.height,
+    AttestationLib.nonce,
+    AttestationLib.blockNumber,
+    AttestationLib.timestamp
+} for Attestation global;
+
+/// @dev Struct representing Attestation, as it is stored in the Summit contract.
+struct SummitAttestation {
+    bytes32 root;
+    uint8 height;
+    uint40 blockNumber;
+    uint40 timestamp;
+}
+/// @dev Attach library functions to SummitAttestation
+using { AttestationLib.formatSummitAttestation } for SummitAttestation global;
+
+/// @dev Struct representing Attestation, as it is stored in the Destination contract.
+/// mapping (bytes32 root => DestinationAttestation) is supposed to be used
+struct DestinationAttestation {
+    address notary;
+    uint8 height;
+    uint32 nonce;
+    uint40 destTimestamp;
+    // 16 bits left for tight packing
+}
+/// @dev Attach library functions to DestinationAttestation
+using { AttestationLib.isEmpty } for DestinationAttestation global;
+
+library AttestationLib {
     using ByteString for bytes;
-
-    using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
     /**
-     * @dev AttestationData memory layout
-     * [000 .. 004): origin         uint32   4 bytes
-     * [004 .. 008): destination    uint32   4 bytes
-     * [008 .. 012): nonce          uint32   4 bytes
-     * [012 .. 044): root           bytes32 32 bytes
+     * @dev Attestation structure represents the "Snapshot Merkle Tree" created from
+     * every Notary snapshot accepted by the Summit contract. Attestation includes
+     * the root and height of "Snapshot Merkle Tree", as well as additional metadata.
      *
-     *      Attestation memory layout
-     * [000 .. 044): attData        bytes   44 bytes (see above)
-     * [044 .. 045): G = guardSigs  uint8    1 byte
-     * [045 .. 046): N = notarySigs uint8    1 byte
-     * [046 .. 111): guardSig[0]    bytes   65 bytes
-     *      ..
-     * [AAA .. BBB): guardSig[G-1]  bytes   65 bytes
-     * [BBB .. CCC): notarySig[0]   bytes   65 bytes
-     *      ..
-     * [DDD .. END): notarySig[N-1] bytes   65 bytes
+     * Steps for creation of "Snapshot Merkle Tree":
+     * 1. The list of hashes is composed for states in the Notary snapshot.
+     * 2. The list is padded with zero values until its length is a power of two.
+     * 3. Values from the lists are used as leafs and the merkle tree is constructed.
+     *
+     * Similar to Origin, every derived Notary's "Snapshot Merkle Root" is saved in Summit contract.
+     * The main difference is that Origin contract itself is keeping track of an incremental merkle tree,
+     * by inserting the hash of the dispatched message and calculating the new "Origin Merkle Root".
+     * While Summit relies on Guards and Notaries to provide snapshot data, which is used to calculate the
+     * "Snapshot Merkle Root".
+     *
+     * Origin's State is "state of Origin Merkle Tree after N-th message was dispatched".
+     * Summit's Attestation is "data for the N-th accepted Notary Snapshot".
+     *
+     * Attestation is considered "valid" in Summit contract, if it matches the N-th (nonce)
+     * snapshot submitted by Notaries.
+     * Attestation is considered "valid" in Origin contract, if its underlying Snapshot is "valid".
+     *
+     * This means that a snapshot could be "valid" in Summit contract and "invalid" in Origin, if the underlying
+     * snapshot is invalid (i.e. one of the states in the list is invalid).
+     * The opposite could also be true. If a perfectly valid snapshot was never submitted to Summit, its attestation
+     * would be valid in Origin, but invalid in Summit (it was never accepted, so the metadata would be incorrect).
+     *
+     * Attestation is considered "globally valid", if it is valid in the Summit and all the Origin contracts.
+     *
+     * @dev Memory layout of Attestation fields
+     * [000 .. 032): root           bytes32 32 bytes    Root for "Snapshot Merkle Tree" created from a Notary snapshot
+     * [032 .. 033): height         uint8    1 byte     Height of "Snapshot Merkle Tree" created from a Notary snapshot
+     * [033 .. 037): nonce          uint32   4 bytes    Total amount of all accepted Notary snapshots
+     * [037 .. 042): blockNumber    uint40   5 bytes    Block when this Notary snapshot was accepted in Summit
+     * [042 .. 047): timestamp      uint40   5 bytes    Time when this Notary snapshot was accepted in Summit
+     *
+     * The variables below are not supposed to be used outside of the library directly.
      */
 
-    uint256 internal constant OFFSET_ORIGIN = 0;
-    uint256 internal constant OFFSET_DESTINATION = 4;
-    uint256 internal constant OFFSET_NONCE = 8;
-    uint256 internal constant OFFSET_ROOT = 12;
-    uint256 internal constant ATTESTATION_DATA_LENGTH = 44;
-
-    uint256 internal constant OFFSET_AGENT_SIGS = ATTESTATION_DATA_LENGTH;
-    uint256 internal constant OFFSET_FIRST_SIGNATURE = OFFSET_AGENT_SIGS + 2;
+    uint256 private constant OFFSET_ROOT = 0;
+    uint256 private constant OFFSET_DEPTH = 32;
+    uint256 private constant OFFSET_NONCE = 33;
+    uint256 private constant OFFSET_BLOCK_NUMBER = 37;
+    uint256 private constant OFFSET_TIMESTAMP = 42;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    modifier onlyAttestation(bytes29 _view) {
-        _view.assertType(SynapseTypes.ATTESTATION);
-        _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              FORMATTERS                              ║*▕
+    ▏*║                             ATTESTATION                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Returns a formatted Attestation payload with provided fields
-     * @dev `_guardSignatures` and `_notarySignatures` payloads could be empty.
-     * They have to contain exactly 65 * N bytes, otherwise the execution will be reverted.
-     * @param _data                 Attestation Data (see above)
-     * @param _guardSignatures      Payload with all Guard signatures on `_data`
-     * @param _notarySignatures     Payload with all Notary signatures on `_data`
+     * @notice Returns a formatted Attestation payload with provided fields.
+     * @param _root         Snapshot merkle tree's root
+     * @param _height       Snapshot merkle tree's height
+     * @param _nonce        Attestation Nonce
+     * @param _blockNumber  Block number when attestation was created in Summit
+     * @param _timestamp    Block timestamp when attestation was created in Summit
      * @return Formatted attestation
      **/
     function formatAttestation(
-        bytes memory _data,
-        bytes memory _guardSignatures,
-        bytes memory _notarySignatures
-    ) internal view returns (bytes memory) {
+        bytes32 _root,
+        uint8 _height,
+        uint32 _nonce,
+        uint40 _blockNumber,
+        uint40 _timestamp
+    ) internal pure returns (bytes memory) {
+        return abi.encodePacked(_root, _height, _nonce, _blockNumber, _timestamp);
+    }
+
+    /**
+     * @notice Returns an Attestation view over the given payload.
+     * @dev Will revert if the payload is not an attestation.
+     */
+    function castToAttestation(bytes memory _payload) internal pure returns (Attestation) {
+        return castToAttestation(_payload.castToRawBytes());
+    }
+
+    /**
+     * @notice Casts a memory view to an Attestation view.
+     * @dev Will revert if the memory view is not over an attestation.
+     */
+    function castToAttestation(bytes29 _view) internal pure returns (Attestation) {
+        require(isAttestation(_view), "Not an attestation");
+        return Attestation.wrap(_view);
+    }
+
+    /// @notice Checks that a payload is a formatted Attestation.
+    function isAttestation(bytes29 _view) internal pure returns (bool) {
+        return _view.len() == ATTESTATION_LENGTH;
+    }
+
+    /// @notice Convenience shortcut for unwrapping a view.
+    function unwrap(Attestation _att) internal pure returns (bytes29) {
+        return Attestation.unwrap(_att);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          SUMMIT ATTESTATION                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /**
+     * @notice Returns a formatted Attestation payload with provided fields.
+     * @param _summitAtt    Attestation struct as it stored in Summit contract
+     * @param _nonce        Attestation nonce
+     * @return Formatted attestation
+     */
+    function formatSummitAttestation(SummitAttestation memory _summitAtt, uint32 _nonce)
+        internal
+        pure
+        returns (bytes memory)
+    {
         return
             formatAttestation({
-                _dataView: _data.castToRawBytes(),
-                _guardSigsView: _guardSignatures.castToRawBytes(),
-                _notarySigsView: _notarySignatures.castToRawBytes()
+                _root: _summitAtt.root,
+                _height: _summitAtt.height,
+                _nonce: _nonce,
+                _blockNumber: _summitAtt.blockNumber,
+                _timestamp: _summitAtt.timestamp
             });
     }
 
-    function formatAttestation(
-        bytes29 _dataView,
-        bytes29 _guardSigsView,
-        bytes29 _notarySigsView
-    ) internal view returns (bytes memory) {
-        uint8 guardSigs = _amountSignatures(_guardSigsView);
-        uint8 notarySigs = _amountSignatures(_notarySigsView);
-        // Pack (guardSigs, notarySigs) into a single 16-byte value
-        uint16 agentSigs = (uint16(guardSigs) << 8) | notarySigs;
-        // We need to join: `_data`, `agentSigs`, `_guardSignatures`, `_notarySignatures`
-        bytes29[] memory allViews = new bytes29[](4);
-        allViews[0] = _dataView;
-        allViews[1] = abi.encodePacked(agentSigs).castToRawBytes();
-        allViews[2] = _guardSigsView;
-        allViews[3] = _notarySigsView;
-        return TypedMemView.join(allViews);
-    }
-
-    /**
-     * @notice Returns a formatted AttestationData payload with provided fields
-     * @param _origin       Domain of Origin's chain
-     * @param _destination  Domain of Destination's chain
-     * @param _root         New merkle root
-     * @param _nonce        Nonce of the merkle root
-     * @return Formatted attestation data
-     **/
-    function formatAttestationData(
-        uint32 _origin,
-        uint32 _destination,
-        uint32 _nonce,
-        bytes32 _root
-    ) internal pure returns (bytes memory) {
-        return abi.encodePacked(_origin, _destination, _nonce, _root);
-    }
-
-    /**
-     * @notice Returns a properly typed bytes29 pointer for an attestation payload.
-     */
-    function castToAttestation(bytes memory _payload) internal pure returns (bytes29) {
-        return _payload.ref(SynapseTypes.ATTESTATION);
-    }
-
-    /**
-     * @notice Checks that a payload is a formatted Attestation payload.
-     */
-    function isAttestation(bytes29 _view) internal pure returns (bool) {
-        uint256 length = _view.len();
-        // (attData, guardSigs, notarySigs) need to exist
-        if (length < OFFSET_FIRST_SIGNATURE) return false;
-        (uint256 guardSigs, uint256 notarySigs) = _agentSignatures(_view);
-        uint256 totalSigs = guardSigs + notarySigs;
-        // There should be at least one signature
-        if (totalSigs == 0) return false;
-        // Every signature has length of exactly `ByteString.SIGNATURE_LENGTH`
-        return length == OFFSET_FIRST_SIGNATURE + totalSigs * ByteString.SIGNATURE_LENGTH;
-    }
-
-    /**
-     * @notice Combines origin and destination domains into `attestationDomains`,
-     * a unique ID for every (origin, destination) pair. Could be used to identify
-     * Merkle trees on Origin, or Mirrors on Destination.
-     */
-    function attestationDomains(uint32 _origin, uint32 _destination)
+    /// @notice Checks that an Attestation and its Summit representation are equal.
+    function equalToSummit(Attestation _att, SummitAttestation memory _summitAtt)
         internal
         pure
-        returns (uint64)
+        returns (bool)
     {
-        return (uint64(_origin) << 32) | _destination;
+        return
+            _att.root() == _summitAtt.root &&
+            _att.height() == _summitAtt.height &&
+            _att.blockNumber() == _summitAtt.blockNumber &&
+            _att.timestamp() == _summitAtt.timestamp;
     }
 
-    /**
-     * @notice Combines origin, destination domains and message nonce into `attestationKey`,
-     * a unique key for every (origin, destination, nonce) tuple. Could be used to identify
-     * any dispatched message.
-     */
-    function attestationKey(
-        uint32 _origin,
-        uint32 _destination,
-        uint32 _nonce
-    ) internal pure returns (uint96) {
-        return (uint96(_origin) << 64) | (uint96(_destination) << 32) | _nonce;
-    }
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                       DESTINATION ATTESTATION                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function unpackDomains(uint64 _attestationDomains)
+    function toDestinationAttestation(Attestation _att, address _notary)
         internal
-        pure
-        returns (uint32 origin, uint32 destination)
+        view
+        returns (DestinationAttestation memory attestation)
     {
-        // Shift out lower 32 bytes
-        origin = uint32(_attestationDomains >> 32);
-        // Use lower 32 bytes
-        destination = uint32(_attestationDomains & type(uint32).max);
+        attestation.notary = _notary;
+        attestation.height = _att.height();
+        attestation.nonce = _att.nonce();
+        // We need to store the timestamp when attestation was submitted to Destination
+        attestation.destTimestamp = uint40(block.timestamp);
     }
 
-    function unpackKey(uint96 _attestationKey)
-        internal
-        pure
-        returns (uint64 domains, uint32 nonce)
-    {
-        // Shift out lower 32 bytes
-        domains = uint64(_attestationKey >> 32);
-        // Use lower 32 bytes
-        nonce = uint32(_attestationKey & type(uint32).max);
+    function isEmpty(DestinationAttestation memory _destAtt) internal pure returns (bool) {
+        return _destAtt.notary == address(0);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                         ATTESTATION HASHING                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Returns the hash of an Attestation, that could be later signed by a Notary.
+    function hash(Attestation _att) internal pure returns (bytes32) {
+        // Get the underlying memory view
+        bytes29 _view = _att.unwrap();
+        // TODO: include Attestation-unique salt in the hash
+        return _view.keccak();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         ATTESTATION SLICING                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Returns domain of chain where the Origin contract is deployed
-     */
-    function attestedOrigin(bytes29 _view) internal pure onlyAttestation(_view) returns (uint32) {
-        return uint32(_view.indexUint({ _index: OFFSET_ORIGIN, _bytes: 4 }));
-    }
-
-    /**
-     * @notice Returns domain of chain where the Destination contract is deployed
-     */
-    function attestedDestination(bytes29 _view)
-        internal
-        pure
-        onlyAttestation(_view)
-        returns (uint32)
-    {
-        return uint32(_view.indexUint({ _index: OFFSET_DESTINATION, _bytes: 4 }));
-    }
-
-    /**
-     * @notice Returns nonce of Origin contract at the time, when `root` was the Merkle root.
-     */
-    function attestedNonce(bytes29 _view) internal pure onlyAttestation(_view) returns (uint32) {
-        return uint32(_view.indexUint({ _index: OFFSET_NONCE, _bytes: 4 }));
-    }
-
-    /**
-     * @notice Returns a combined field for (origin, destination). See `attestationDomains()`.
-     */
-    function attestedDomains(bytes29 _view) internal pure onlyAttestation(_view) returns (uint64) {
-        return uint64(_view.indexUint({ _index: OFFSET_ORIGIN, _bytes: 8 }));
-    }
-
-    /**
-     * @notice Returns a combined field for (origin, destination, nonce). See `attestationKey()`.
-     */
-    function attestedKey(bytes29 _view) internal pure onlyAttestation(_view) returns (uint96) {
-        return uint96(_view.indexUint({ _index: OFFSET_ORIGIN, _bytes: 12 }));
-    }
-
-    /**
-     * @notice Returns a historical Merkle root from the Origin contract
-     */
-    function attestedRoot(bytes29 _view) internal pure onlyAttestation(_view) returns (bytes32) {
+    /// @notice Returns root of the Snapshot merkle tree created in the Summit contract.
+    function root(Attestation _att) internal pure returns (bytes32) {
+        bytes29 _view = _att.unwrap();
         return _view.index({ _index: OFFSET_ROOT, _bytes: 32 });
     }
 
-    /**
-     * @notice Returns Attestation's Data, that is going to be signed by the Notary
-     */
-    function attestationData(bytes29 _view) internal pure onlyAttestation(_view) returns (bytes29) {
-        return
-            _view.slice({
-                _index: OFFSET_ORIGIN,
-                _len: ATTESTATION_DATA_LENGTH,
-                newType: SynapseTypes.ATTESTATION_DATA
-            });
+    /// @notice Returns height of the Snapshot merkle tree created in the Summit contract.
+    function height(Attestation _att) internal pure returns (uint8) {
+        bytes29 _view = _att.unwrap();
+        return uint8(_view.indexUint({ _index: OFFSET_DEPTH, _bytes: 1 }));
     }
 
-    /**
-     * @notice Returns the amount of guard and notary signatures present in the Attestation.
-     */
-    function agentSignatures(bytes29 _view)
-        internal
-        pure
-        onlyAttestation(_view)
-        returns (uint8 guardSigs, uint8 notarySigs)
-    {
-        (guardSigs, notarySigs) = _agentSignatures(_view);
+    /// @notice Returns nonce of Summit contract at the time, when attestation was created.
+    function nonce(Attestation _att) internal pure returns (uint32) {
+        bytes29 _view = _att.unwrap();
+        return uint32(_view.indexUint({ _index: OFFSET_NONCE, _bytes: 4 }));
     }
 
-    /**
-     * @notice Returns the amount of guard signatures present in the Attestation.
-     */
-    function guardSignatures(bytes29 _view)
-        internal
-        pure
-        onlyAttestation(_view)
-        returns (uint8 guardSigs)
-    {
-        (guardSigs, ) = _agentSignatures(_view);
+    /// @notice Returns a block number when attestation was created in Summit.
+    function blockNumber(Attestation _att) internal pure returns (uint40) {
+        bytes29 _view = _att.unwrap();
+        return uint40(_view.indexUint({ _index: OFFSET_BLOCK_NUMBER, _bytes: 5 }));
     }
 
-    /**
-     * @notice Returns the amount of notary signatures present in the Attestation.
-     */
-    function notarySignatures(bytes29 _view)
-        internal
-        pure
-        onlyAttestation(_view)
-        returns (uint8 notarySigs)
-    {
-        (, notarySigs) = _agentSignatures(_view);
-    }
-
-    /**
-     * @notice Returns signature of the i-th Guard on AttestationData,
-     * @dev Will revert if index is out of range.
-     */
-    function guardSignature(bytes29 _view, uint256 _guardIndex)
-        internal
-        pure
-        onlyAttestation(_view)
-        returns (bytes29)
-    {
-        (uint8 guardSigs, ) = _agentSignatures(_view);
-        require(_guardIndex < guardSigs, "Out of range");
-        return
-            _view.slice({
-                _index: OFFSET_FIRST_SIGNATURE + _guardIndex * ByteString.SIGNATURE_LENGTH,
-                _len: ByteString.SIGNATURE_LENGTH,
-                newType: SynapseTypes.SIGNATURE
-            });
-    }
-
-    /**
-     * @notice Returns signature of the i-th Notary on AttestationData,
-     * @dev Will revert if index is out of range.
-     */
-    function notarySignature(bytes29 _view, uint256 _notaryIndex)
-        internal
-        pure
-        onlyAttestation(_view)
-        returns (bytes29)
-    {
-        (uint8 guardSigs, uint8 notarySigs) = _agentSignatures(_view);
-        require(_notaryIndex < notarySigs, "Out of range");
-        return
-            _view.slice({
-                _index: OFFSET_FIRST_SIGNATURE +
-                    (_notaryIndex + guardSigs) *
-                    ByteString.SIGNATURE_LENGTH,
-                _len: ByteString.SIGNATURE_LENGTH,
-                newType: SynapseTypes.SIGNATURE
-            });
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           PRIVATE HELPERS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /**
-     * @dev Returns the amount of guard and notary signatures present in the Attestation.
-     * Doesn't check the pointer type - to be used in functions that perform the typecheck.
-     */
-    function _agentSignatures(bytes29 _view)
-        private
-        pure
-        returns (uint8 guardSigs, uint8 notarySigs)
-    {
-        // Read both amounts at once
-        uint16 combinedAmounts = uint16(_view.indexUint({ _index: OFFSET_AGENT_SIGS, _bytes: 2 }));
-        // First 8 bits is the amount of guard signatures
-        guardSigs = uint8(combinedAmounts >> 8);
-        // Last 8 bits is the amount of notary signatures
-        notarySigs = uint8(combinedAmounts & 0xFF);
-    }
-
-    /**
-     * @dev Returns the amount of signatures in the "signatures" payload.
-     * Reverts, if payload length is not exactly 65 * N bytes.
-     * Reverts, if amount of signatures does not fit in `uint8`.
-     */
-    function _amountSignatures(bytes29 _sigsView) private pure returns (uint8 amount) {
-        uint256 length = _sigsView.len();
-        uint256 _amount = length / ByteString.SIGNATURE_LENGTH;
-        require(_amount * ByteString.SIGNATURE_LENGTH == length, "!signaturesLength");
-        require(_amount < type(uint8).max, "Too many signatures");
-        amount = uint8(_amount);
+    /// @notice Returns a block timestamp when attestation was created in Summit.
+    /// @dev This is the timestamp according to the Synapse Chain.
+    function timestamp(Attestation _att) internal pure returns (uint40) {
+        bytes29 _view = _att.unwrap();
+        return uint40(_view.indexUint({ _index: OFFSET_TIMESTAMP, _bytes: 5 }));
     }
 }

@@ -1,0 +1,11 @@
+{
+  "agents": {
+    "0": ["0xf1f4Ab8deD4cC4bFCF5116d0949c1837163747ED"],
+    "10": ["0x87297d4Ea0A62f4EaAd19Eeb215a793761F71c1B"],
+    "137": ["0xDE90BFcbb0a041C5Aa7a9762a2E7B6087253129D"],
+    "43114": ["0xd1F2288fBd0D7cA1d1727B7576a2a3702DDA7424"]
+  },
+  "chainidSummit": 10,
+  "domains": [0, 10, 137, 43114],
+  "owner": "0x8588e842b7f5D82B7aa47Eb456D7cf70bdC11701"
+}

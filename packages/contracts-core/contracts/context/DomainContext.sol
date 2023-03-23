@@ -2,6 +2,9 @@
 pragma solidity 0.8.17;
 
 abstract contract DomainContext {
+    /// @notice Domain of the local chain, set once upon contract creation
+    uint32 public immutable localDomain;
+
     /**
      * @notice Ensures that a domain matches the local domain.
      */
@@ -10,13 +13,11 @@ abstract contract DomainContext {
         _;
     }
 
-    function localDomain() external view returns (uint32) {
-        return _localDomain();
+    constructor(uint32 _domain) {
+        localDomain = _domain;
     }
 
     function _assertLocalDomain(uint32 _domain) internal view {
-        require(_domain == _localDomain(), "!localDomain");
+        require(_domain == localDomain, "!localDomain");
     }
-
-    function _localDomain() internal view virtual returns (uint32);
 }

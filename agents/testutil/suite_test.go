@@ -1,12 +1,14 @@
 package testutil_test
 
 import (
+	"math/big"
+	"testing"
+
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"testing"
 )
 
 // SimulatedSuite is used to test individual contract deployments to make sure other tests don't break.
@@ -22,7 +24,7 @@ type SimulatedSuite struct {
 func (s *SimulatedSuite) SetupTest() {
 	s.TestSuite.SetupTest()
 
-	s.testBackend = simulated.NewSimulatedBackend(s.GetTestContext(), s.T())
+	s.testBackend = simulated.NewSimulatedBackendWithChainID(s.GetTestContext(), s.T(), big.NewInt(int64(10)))
 	s.deployManager = testutil.NewDeployManager(s.T())
 	s.deployManager.GetContractRegistry(s.testBackend)
 }

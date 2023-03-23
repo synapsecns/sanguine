@@ -1,2 +1,2 @@
-// Package attestationharness implements the AttestationHarness contract.
+// Package attestationharness provides a test harness for the attestation contract.
 package attestationharness
