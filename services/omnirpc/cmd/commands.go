@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"os"
 	"time"
 
@@ -150,5 +152,33 @@ var debugResponse = &cli.Command{
 		}
 		//nolint:wrapcheck
 		return debug.HashDiff(diffFile)
+	},
+}
+
+var submitOnly = &cli.Command{
+	Name:  "submit-only",
+	Usage: "Proxy all read requests to a single rpc, proxy all write requests to all rpcs",
+	Flags: []cli.Flag{
+		configFlag,
+		portFlag,
+	},
+	Action: func(c *cli.Context) error {
+		port := uint16(c.Int(portFlag.Name))
+		if port == 0 {
+			return errors.New("port must be set")
+		}
+
+		rawCfg, err := os.ReadFile(c.String(configFlag.Name))
+		if err != nil {
+			return fmt.Errorf("could not read config file: %w", err)
+		}
+
+		cfg, err := rpcConfig.UnmarshallSubmitOnlyConfig(rawCfg)
+		if err != nil {
+			return fmt.Errorf("could not unmarshall config file: %w", err)
+		}
+
+		proxy.NewSubmitProxy(cfg, port, omniHTTP.FastHTTP).Run(c.Context)
+		return nil
 	},
 }

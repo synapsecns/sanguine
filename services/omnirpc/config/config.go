@@ -45,3 +45,19 @@ func (c Config) Marshall() ([]byte, error) {
 	}
 	return output, nil
 }
+
+// SubmitOnlyConfig is the config for a single chain.
+type SubmitOnlyConfig struct {
+	ChainID   uint32   `yaml:"chain_id"`
+	ReadURL   string   `yaml:"read_url"`
+	WriteURLS []string `yaml:"write_urls"`
+}
+
+// UnmarshallSubmitOnlyConfig unmarshalls a config.
+func UnmarshallSubmitOnlyConfig(input []byte) (cfg SubmitOnlyConfig, err error) {
+	err = yaml.Unmarshal(input, &cfg)
+	if err != nil {
+		return SubmitOnlyConfig{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
+	}
+	return cfg, nil
+}
