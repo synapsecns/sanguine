@@ -1,4 +1,4 @@
-package parser
+package hardhat
 
 import "github.com/ipfs/go-log"
 
