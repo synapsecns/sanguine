@@ -279,7 +279,7 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
-	state, err := e.getEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce)
+	state, err := e.executorDB.GetEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce, e.config.DBPrefix)
 	if err != nil {
 		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
 	}
@@ -856,25 +856,11 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 
 			for _, message := range unsetMessages {
 				nonce := message.Nonce()
-
-				potentialSnapshotRoots, err := e.executorDB.GetPotentialSnapshotRoots(ctx, chainID, nonce)
-				if err != nil {
-					return fmt.Errorf("could not get potential snapshot roots: %w", err)
-				}
-
-				if len(potentialSnapshotRoots) == 0 {
-					continue
-				}
-
 				destinationDomain := message.DestinationDomain()
 
-				attestationMask := execTypes.DBAttestation{
-					Destination: &destinationDomain,
-				}
-
-				minimumTimestamp, err := e.executorDB.GetAttestationMinimumTimestamp(ctx, attestationMask, potentialSnapshotRoots)
+				minimumTimestamp, err := e.executorDB.GetTimestampForMessage(ctx, chainID, destinationDomain, nonce, e.config.DBPrefix)
 				if err != nil {
-					return fmt.Errorf("could not get attestation minimum timestamp: %w", err)
+					return fmt.Errorf("could not get timestamp for message: %w", err)
 				}
 
 				if minimumTimestamp == nil {
@@ -887,7 +873,7 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 					Nonce:       &nonce,
 				}
 
-				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, *minimumTimestamp)
+				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, *minimumTimestamp+uint64(message.OptimisticSeconds()))
 				if err != nil {
 					return fmt.Errorf("could not set minimum time: %w", err)
 				}
