@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { IAgentRegistry } from "../../contracts/interfaces/IAgentRegistry.sol";
+import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { IStateHub } from "../../contracts/interfaces/IStateHub.sol";
 import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
@@ -39,13 +39,13 @@ contract OriginTest is SynapseTest, SynapseProofs {
             address(systemRouter),
             "!systemRouter"
         );
-        // Check Agents
-        // Origin should know about agents from all domains, including Guards
+        // TODO: adjust when Agent Merkle Tree is implemented
+        // Check Agents: currently all Agents are known in LightManager
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                assertTrue(IAgentRegistry(origin).isActiveAgent(domain, agent), "!agent");
+                assertTrue(ISystemRegistry(origin).isActiveAgent(domain, agent));
             }
         }
         // Check version
@@ -142,23 +142,6 @@ contract OriginTest is SynapseTest, SynapseProofs {
             assertEq(hub.suggestState(i + 1), state, "!suggestState");
         }
         assertEq(hub.suggestLatestState(), state, "!suggestLatestState");
-    }
-
-    function test_slashAgent() public {
-        address notary = domains[DOMAIN_REMOTE].agent;
-        vm.expectEmit(true, true, true, true);
-        emit AgentRemoved(DOMAIN_REMOTE, notary);
-        vm.expectEmit(true, true, true, true);
-        emit AgentSlashed(DOMAIN_REMOTE, notary);
-        vm.recordLogs();
-        vm.prank(address(systemRouter));
-        ISystemContract(origin).slashAgent({
-            _rootSubmittedAt: block.timestamp,
-            _callOrigin: DOMAIN_LOCAL,
-            _caller: SystemEntity.AgentManager,
-            _info: AgentInfo(DOMAIN_REMOTE, notary, false)
-        });
-        assertEq(vm.getRecordedLogs().length, 2, "Emitted extra logs");
     }
 
     function test_verifySnapshot_valid(
@@ -411,8 +394,10 @@ contract OriginTest is SynapseTest, SynapseProofs {
 
     function _expectAgentSlashed(uint32 domain, address agent) internal {
         vm.expectEmit(true, true, true, true);
-        emit AgentRemoved(domain, agent);
-        vm.expectEmit(true, true, true, true);
         emit AgentSlashed(domain, agent);
+        vm.expectCall(
+            address(lightManager),
+            abi.encodeWithSelector(lightManager.registrySlash.selector, domain, agent)
+        );
     }
 }

@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import { BondingManager } from "../../contracts/manager/BondingManager.sol";
 import { LightManager } from "../../contracts/manager/LightManager.sol";
 import { ISystemContract } from "../../contracts/interfaces/ISystemContract.sol";
+import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { Destination } from "../../contracts/Destination.sol";
 import { Origin } from "../../contracts/Origin.sol";
 import { Summit } from "../../contracts/Summit.sol";
@@ -28,7 +29,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
 
     address internal destination;
     address internal origin;
-    LightManager internal agentManager;
+    LightManager internal lightManager;
 
     SystemRouterHarness internal systemRouter;
 
@@ -46,11 +47,13 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
         deployLightManager();
         deployDestination();
         deployOrigin();
+        initLightManager();
         deploySystemRouter();
         // Deploy a single set of messaging contracts for synapse chain
         deployBondingManager();
         deploySummit();
         deployOriginSynapse();
+        initBondingManager();
         deploySystemRouterSynapse();
         // Setup agents on created contracts
         setupAgents();
@@ -63,7 +66,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
                 address agent = domains[domain].agents[i];
-                agentManager.addAgent(domain, agent);
+                lightManager.addAgent(domain, agent);
                 bondingManager.addAgent(domain, agent);
             }
         }
@@ -74,15 +77,21 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function deployLightManager() public virtual {
-        agentManager = new LightManager(DOMAIN_LOCAL);
-        agentManager.initialize();
-        vm.label(address(agentManager), "LightManager");
+        lightManager = new LightManager(DOMAIN_LOCAL);
+        vm.label(address(lightManager), "LightManager");
+    }
+
+    function initLightManager() public virtual {
+        lightManager.initialize(ISystemRegistry(origin), ISystemRegistry(destination));
     }
 
     function deployBondingManager() public virtual {
         bondingManager = new BondingManager(DOMAIN_SYNAPSE);
-        bondingManager.initialize();
         vm.label(address(bondingManager), "BondingManager");
+    }
+
+    function initBondingManager() public virtual {
+        bondingManager.initialize(ISystemRegistry(originSynapse), ISystemRegistry(summit));
     }
 
     function deployDestination() public virtual {
@@ -90,7 +99,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
         if (option == DEPLOY_MOCK_DESTINATION) {
             destination = address(new DestinationMock());
         } else if (option == DEPLOY_PROD_DESTINATION) {
-            destination = address(new Destination(DOMAIN_LOCAL));
+            destination = address(new Destination(DOMAIN_LOCAL, lightManager));
             Destination(destination).initialize();
         } else {
             revert("Unknown option: Destination");
@@ -103,7 +112,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
         if (option == DEPLOY_MOCK_ORIGIN) {
             origin = address(new OriginMock());
         } else if (option == DEPLOY_PROD_ORIGIN) {
-            origin = address(new Origin(DOMAIN_LOCAL));
+            origin = address(new Origin(DOMAIN_LOCAL, lightManager));
             Origin(origin).initialize();
         } else {
             revert("Unknown option: Origin");
@@ -116,7 +125,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
         if (option == DEPLOY_MOCK_ORIGIN_SYNAPSE) {
             originSynapse = address(new OriginMock());
         } else if (option == DEPLOY_PROD_ORIGIN_SYNAPSE) {
-            originSynapse = address(new Origin(DOMAIN_LOCAL));
+            originSynapse = address(new Origin(DOMAIN_LOCAL, bondingManager));
             Origin(originSynapse).initialize();
         } else {
             revert("Unknown option: Origin");
@@ -129,7 +138,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
         if (option == DEPLOY_MOCK_SUMMIT) {
             summit = address(new SummitMock());
         } else if (option == DEPLOY_PROD_SUMMIT) {
-            summit = address(new Summit(DOMAIN_SYNAPSE));
+            summit = address(new Summit(DOMAIN_SYNAPSE, bondingManager));
             Summit(summit).initialize();
         } else {
             revert("Unknown option: Summit");
@@ -142,11 +151,11 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
             DOMAIN_LOCAL,
             address(origin),
             address(destination),
-            address(agentManager)
+            address(lightManager)
         );
         ISystemContract(origin).setSystemRouter(systemRouter);
         ISystemContract(destination).setSystemRouter(systemRouter);
-        agentManager.setSystemRouter(systemRouter);
+        lightManager.setSystemRouter(systemRouter);
         vm.label(address(systemRouter), "SystemRouter Local");
     }
 

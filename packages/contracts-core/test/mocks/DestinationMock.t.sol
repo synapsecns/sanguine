@@ -7,14 +7,14 @@ import {
 } from "../../contracts/interfaces/InterfaceDestination.sol";
 import { ExecutionHubMock } from "./hubs/ExecutionHubMock.t.sol";
 import { DisputeHubMock } from "./hubs/DisputeHubMock.t.sol";
-import { AgentRegistryMock } from "./system/AgentRegistryMock.t.sol";
 import { SystemContractMock } from "./system/SystemContractMock.t.sol";
+import { SystemRegistryMock } from "./system/SystemRegistryMock.t.sol";
 
 // solhint-disable no-empty-blocks
 contract DestinationMock is
     ExecutionHubMock,
     DisputeHubMock,
-    AgentRegistryMock,
+    SystemRegistryMock,
     SystemContractMock,
     InterfaceDestination
 {

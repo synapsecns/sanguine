@@ -4,10 +4,12 @@ pragma solidity 0.8.17;
 import { Attestation } from "./libs/Attestation.sol";
 import { AttestationReport } from "./libs/AttestationReport.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { DomainContext } from "./context/DomainContext.sol";
-import { ExecutionAttestation, InterfaceDestination } from "./interfaces/InterfaceDestination.sol";
 import { DestinationEvents } from "./events/DestinationEvents.sol";
+import { IAgentManager } from "./interfaces/IAgentManager.sol";
+import { ExecutionAttestation, InterfaceDestination } from "./interfaces/InterfaceDestination.sol";
 import { ExecutionHub } from "./hubs/ExecutionHub.sol";
+import { DomainContext, Versioned } from "./system/SystemContract.sol";
+import { SystemRegistry } from "./system/SystemRegistry.sol";
 
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -21,13 +23,17 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(uint32 _domain) DomainContext(_domain) {}
+    constructor(uint32 _domain, IAgentManager _agentManager)
+        DomainContext(_domain)
+        SystemRegistry(_agentManager)
+        Versioned("0.0.3")
+    {}
 
-    /// @notice Initializes Origin contract:
+    /// @notice Initializes Destination contract:
     /// - msg.sender is set as contract owner
     function initialize() external initializer {
-        // Initialize SystemContract: msg.sender is set as "owner"
-        __SystemContract_initialize();
+        // Initialize Ownable: msg.sender is set as "owner"
+        __Ownable_init();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -86,20 +92,5 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         require(_index < roots.length, "Index out of range");
         root = roots[_index];
         execAtt = _getRootAttestation(root);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                     INTERNAL LOGIC: ATTESTATION                      ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function _isIgnoredAgent(uint32 _domain, address)
-        internal
-        view
-        virtual
-        override
-        returns (bool)
-    {
-        // Destination only keeps track of local Notaries and Guards
-        return _domain != localDomain && _domain != 0;
     }
 }

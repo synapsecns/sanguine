@@ -6,6 +6,7 @@ import { AgentInfo, SystemEntity } from "../libs/Structures.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { ISystemContract } from "../interfaces/ISystemContract.sol";
 import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
+import { Versioned } from "../Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {
     OwnableUpgradeable
@@ -14,7 +15,7 @@ import {
 /**
  * @notice Shared utilities between Synapse System Contracts: Origin, Destination, etc.
  */
-abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemContract {
+abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable, ISystemContract {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -36,6 +37,9 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     InterfaceSystemRouter public systemRouter;
+
+    /// @dev gap for upgrade safety
+    uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              MODIFIERS                               ║*▕
@@ -85,18 +89,6 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
 
     /**
      * @dev Modifier for functions that are supposed to be called only from
-     * AgentManager on their local chain.
-     * Note: has to be used alongside with `onlySystemRouter`
-     * See `onlySystemRouter` for details about the functions protected by such modifiers.
-     */
-    modifier onlyLocalAgentManager(uint32 _callOrigin, SystemEntity _caller) {
-        _assertLocalDomain(_callOrigin);
-        _assertEntityAllowed(AGENT_MANAGER, _caller);
-        _;
-    }
-
-    /**
-     * @dev Modifier for functions that are supposed to be called only from
      * AgentManager on Synapse Chain.
      * Note: has to be used alongside with `onlySystemRouter`
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
@@ -119,15 +111,6 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
     modifier onlyOptimisticPeriodOver(uint256 _rootSubmittedAt, uint256 _optimisticSeconds) {
         _assertOptimisticPeriodOver(_rootSubmittedAt, _optimisticSeconds);
         _;
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             INITIALIZER                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // solhint-disable-next-line func-name-mixedcase
-    function __SystemContract_initialize() internal onlyInitializing {
-        __Ownable_init_unchained();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -163,11 +146,6 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
             _recipient: SystemEntity.AgentManager,
             _data: _data
         });
-    }
-
-    /// @dev Perform a System Call to a local AgentManager with the given `_data`.
-    function _callLocalAgentManager(bytes memory _data) internal {
-        _callAgentManager(localDomain, 0, _data);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -226,40 +204,5 @@ abstract contract SystemContract is DomainContext, OwnableUpgradeable, ISystemCo
      */
     function _getSystemMask(SystemEntity _entity) internal pure returns (uint256) {
         return 1 << uint8(_entity);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      INTERNAL VIEWS: AGENT DATA                      ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @dev Convenience shortcut for creating data for the slashAgent system call.
-    function _dataSlashAgent(uint32 _domain, address _agent) internal pure returns (bytes memory) {
-        return _dataSlashAgent(AgentInfo(_domain, _agent, false));
-    }
-
-    /**
-     * @notice Constructs data for the system call to slash a given agent.
-     */
-    function _dataSlashAgent(AgentInfo memory _info) internal pure returns (bytes memory) {
-        return
-            abi.encodeWithSelector(
-                ISystemContract.slashAgent.selector,
-                0, // rootSubmittedAt
-                0, // callOrigin
-                0, // systemCaller
-                _info
-            );
-    }
-
-    /// @dev Constructs data for the system call to sync the given agent.
-    function _dataSyncAgent(AgentInfo memory _info) internal pure returns (bytes memory) {
-        return
-            abi.encodeWithSelector(
-                ISystemContract.syncAgent.selector,
-                0, // rootSubmittedAt
-                0, // callOrigin
-                0, // systemCaller
-                _info
-            );
     }
 }

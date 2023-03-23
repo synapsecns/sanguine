@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { AgentInfo } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { AgentManager } from "./AgentManager.sol";
+import { AgentManager, IAgentManager, ISystemRegistry } from "./AgentManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
 import { Versioned } from "../Version.sol";
 
@@ -14,31 +12,33 @@ contract BondingManager is Versioned, AgentManager {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }
 
-    function initialize() external initializer {
-        __SystemContract_initialize();
+    function initialize(ISystemRegistry _origin, ISystemRegistry _destination)
+        external
+        initializer
+    {
+        __AgentManager_init(_origin, _destination);
+        __Ownable_init();
     }
+
+    // TODO: move addAgent into BondingManager and introduce Events,
+    // when Agent Merkle Tree is implemented.
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            ADDING AGENTS                             ║*▕
+    ▏*║                            SLASHING LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // TODO: replace with actual token staking/unstaking
-
-    function addAgent(uint32 _domain, address _account) external onlyOwner returns (bool isAdded) {
-        isAdded = _addAgent(_domain, _account);
-        if (isAdded) {
-            _syncAgentLocalRegistries(AgentInfo(_domain, _account, true));
-        }
-    }
-
-    function removeAgent(uint32 _domain, address _account)
-        external
-        onlyOwner
-        returns (bool isRemoved)
-    {
-        isRemoved = _removeAgent(_domain, _account);
-        if (isRemoved) {
-            _syncAgentLocalRegistries(AgentInfo(_domain, _account, false));
+    /// @inheritdoc IAgentManager
+    function registrySlash(uint32 _domain, address _agent) external {
+        // On SynChain both Origin and Destination (Summit) could slash agents
+        // TODO: add slashing logic
+        if (msg.sender == address(origin)) {
+            _removeAgent(_domain, _agent);
+            destination.managerSlash(_domain, _agent);
+        } else if (msg.sender == address(destination)) {
+            _removeAgent(_domain, _agent);
+            origin.managerSlash(_domain, _agent);
+        } else {
+            revert("Unauthorized caller");
         }
     }
 }
