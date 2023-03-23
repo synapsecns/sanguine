@@ -52,9 +52,6 @@ func (d *DeployManager) GetTestMessageBusUpgradeable(ctx context.Context, backen
 // GetTestMetaSwap gets a typecast test meta swap contract.
 func (d *DeployManager) GetTestMetaSwap(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testmetaswap.TestMetaSwapRef) {
 	d.T().Helper()
-	metaSwapContract := d.GetContractRegistry(backend).Get(ctx, TestMetaSwapType)
-	metaSwapHandle, ok := metaSwapContract.ContractHandle().(*testmetaswap.TestMetaSwapRef)
-	assert.True(d.T(), ok)
 
-	return metaSwapContract, metaSwapHandle
+	return manager.GetContract[*testmetaswap.TestMetaSwapRef](ctx, d.T(), d, backend, TestMetaSwapType)
 }

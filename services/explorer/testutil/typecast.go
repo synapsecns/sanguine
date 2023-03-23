@@ -51,9 +51,6 @@ func (d *DeployManager) GetMessageBus(ctx context.Context, backend backends.Simu
 // GetMetaSwap gets a typecast meta swap.
 func (d *DeployManager) GetMetaSwap(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *metaswap.MetaSwapRef) {
 	d.T().Helper()
-	metaSwapContract := d.GetContractRegistry(backend).Get(ctx, MetaSwapType)
-	metaSwapHandle, ok := metaSwapContract.ContractHandle().(*metaswap.MetaSwapRef)
-	assert.True(d.T(), ok)
 
-	return metaSwapContract, metaSwapHandle
+	return manager.GetContract[*metaswap.MetaSwapRef](ctx, d.T(), d, backend, MetaSwapType)
 }
