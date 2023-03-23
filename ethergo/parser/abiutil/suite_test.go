@@ -1,4 +1,4 @@
-package abi_test
+package abiutil_test
 
 import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -6,16 +6,16 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"github.com/synapsecns/sanguine/ethergo/parser/abi/internal"
+	"github.com/synapsecns/sanguine/ethergo/parser/abiutil/internal"
 	"testing"
 )
 
 // AbiSuite defines the basic test suite.
 type AbiSuite struct {
 	*testsuite.TestSuite
-	backend   backends.SimulatedTestBackend
-	signature *internal.TestSignature
-	metadata  *bind.MetaData
+	backend      backends.SimulatedTestBackend
+	testContract *internal.TestSignature
+	metadata     *bind.MetaData
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -35,7 +35,7 @@ func (a *AbiSuite) SetupSuite() {
 	auth := a.backend.GetTxContext(a.GetSuiteContext(), nil)
 
 	var err error
-	_, _, a.signature, err = internal.DeployTestSignature(auth.TransactOpts, a.backend)
+	_, _, a.testContract, err = internal.DeployTestSignature(auth.TransactOpts, a.backend)
 	a.Require().NoError(err)
 }
 
