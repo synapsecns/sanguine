@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { SNAPSHOT_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
 import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
 import { StateLib } from "../../../contracts/libs/State.sol";
 
@@ -8,17 +9,13 @@ import { StateLib } from "../../../contracts/libs/State.sol";
 contract AttestationProofGenerator {
     using StateLib for bytes;
 
-    uint256 public height;
     bytes32 public root;
 
     // (height => (index => node))
     mapping(uint256 => mapping(uint256 => bytes32)) internal nodes;
 
     function acceptSnapshot(bytes[] memory snapshotStates) external {
-        uint256 amount = 1;
-        while (amount < 2 * snapshotStates.length) {
-            amount <<= 1;
-        }
+        uint256 amount = 1 << SNAPSHOT_TREE_HEIGHT;
         uint256 h = 0;
         // Copy leafs
         for (uint256 i = 0; i < snapshotStates.length; ++i) {
@@ -37,15 +34,14 @@ contract AttestationProofGenerator {
             }
         }
         root = nodes[h][0];
-        height = h;
     }
 
     function generateProof(uint256 stateIndex) external view returns (bytes32[] memory proof) {
         // Index of State's left leaf
         uint256 index = stateIndex * 2;
-        require(index < (1 << height), "Out of range");
-        proof = new bytes32[](height);
-        for (uint256 h = 0; h < height; ++h) {
+        require(index < (1 << SNAPSHOT_TREE_HEIGHT), "Out of range");
+        proof = new bytes32[](SNAPSHOT_TREE_HEIGHT);
+        for (uint256 h = 0; h < SNAPSHOT_TREE_HEIGHT; ++h) {
             // Get sibling on the current level
             proof[h] = nodes[h][index ^ 1];
             // Traverse to parent

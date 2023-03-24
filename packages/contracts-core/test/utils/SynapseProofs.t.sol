@@ -58,8 +58,4 @@ abstract contract SynapseProofs {
     function getSnapshotRoot() public view returns (bytes32) {
         return summitGen.root();
     }
-
-    function getSnapshotHeight() public view returns (uint8) {
-        return uint8(summitGen.height());
-    }
 }
