@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { Test } from "forge-std/Test.sol";
 
 import { BaseTree, MerkleLib } from "../../../contracts/libs/Merkle.sol";
-import { ProofGenerator } from "./ProofGenerator.t.sol";
+import { ORIGIN_TREE_HEIGHT, ProofGenerator } from "./ProofGenerator.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract ProofGeneratorTest is Test {
@@ -70,22 +70,30 @@ contract ProofGeneratorTest is Test {
         bytes32 root = tree.rootBase(length);
         // Should be able to generate a valid proof for any existing leafs
         for (uint256 i = 0; i < length; ++i) {
-            bytes32[32] memory proof = gen.getProof(i);
-            assertEq(MerkleLib.branchRoot(leafs[i], proof, i), root, "!proof");
+            bytes32[] memory proof = gen.getProof(i);
+            assertEq(MerkleLib.proofRoot(i, leafs[i], proof, ORIGIN_TREE_HEIGHT), root, "!proof");
         }
         // Cool side effect: could prove message non-inclusion at next index
         {
             uint256 index = length;
             // Should be able to generate a valid proof for a null leaf
-            bytes32[32] memory proof = gen.getProof(index);
-            assertEq(MerkleLib.branchRoot(bytes32(0), proof, index), root, "!proof");
+            bytes32[] memory proof = gen.getProof(index);
+            assertEq(
+                MerkleLib.proofRoot(index, bytes32(0), proof, ORIGIN_TREE_HEIGHT),
+                root,
+                "!proof"
+            );
         }
         // Cool side effect: could prove message non-inclusion at index from a distant future
         {
             uint256 index = length + 42069;
             // Should be able to generate a valid proof for a null leaf
-            bytes32[32] memory proof = gen.getProof(index);
-            assertEq(MerkleLib.branchRoot(bytes32(0), proof, index), root, "!proof");
+            bytes32[] memory proof = gen.getProof(index);
+            assertEq(
+                MerkleLib.proofRoot(index, bytes32(0), proof, ORIGIN_TREE_HEIGHT),
+                root,
+                "!proof"
+            );
         }
     }
 }

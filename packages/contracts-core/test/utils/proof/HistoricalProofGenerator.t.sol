@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { ProofCutter } from "./ProofCutter.t.sol";
+
 // TODO: move from test directory
-contract HistoricalProofGenerator {
+contract HistoricalProofGenerator is ProofCutter {
     uint256 public constant ORIGIN_TREE_HEIGHT = 32;
 
     /**
@@ -89,11 +91,7 @@ contract HistoricalProofGenerator {
      * @notice Generate proof of inclusion for leaf with given `index`,
      * for the current merkle tree. O(1)
      */
-    function getLatestProof(uint256 index)
-        external
-        view
-        returns (bytes32[ORIGIN_TREE_HEIGHT] memory proof)
-    {
+    function getLatestProof(uint256 index) external view returns (bytes32[] memory proof) {
         return this.getProof(index, treeCount);
     }
 
@@ -101,13 +99,10 @@ contract HistoricalProofGenerator {
      * @notice Generate proof of inclusion for leaf with given `index`,
      * at the time when `count` leafs have been inserted. O(1)
      */
-    function getProof(uint256 index, uint256 count)
-        external
-        view
-        returns (bytes32[ORIGIN_TREE_HEIGHT] memory proof)
-    {
+    function getProof(uint256 index, uint256 count) external view returns (bytes32[] memory) {
         require(index < count, "Out of range");
         require(count <= treeCount, "Not enough leafs inserted");
+        bytes32[] memory proof = new bytes32[](ORIGIN_TREE_HEIGHT);
         for (uint256 h = 0; h < ORIGIN_TREE_HEIGHT; ++h) {
             // First, determine X-axis of the element's sibling
             uint256 siblingX = (index & 1 == 0) ? index + 1 : index - 1;
@@ -116,6 +111,7 @@ contract HistoricalProofGenerator {
             // Traverse to parent
             index = index >> 1;
         }
+        return cutProof(proof);
     }
 
     /**

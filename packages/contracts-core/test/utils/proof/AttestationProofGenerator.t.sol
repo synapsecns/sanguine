@@ -5,8 +5,10 @@ import { SNAPSHOT_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
 import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
 import { StateLib } from "../../../contracts/libs/State.sol";
 
+import { ProofCutter } from "./ProofCutter.t.sol";
+
 // TODO: move from test directory
-contract AttestationProofGenerator {
+contract AttestationProofGenerator is ProofCutter {
     using StateLib for bytes;
 
     bytes32 public root;
@@ -36,16 +38,17 @@ contract AttestationProofGenerator {
         root = nodes[h][0];
     }
 
-    function generateProof(uint256 stateIndex) external view returns (bytes32[] memory proof) {
+    function generateProof(uint256 stateIndex) external view returns (bytes32[] memory) {
         // Index of State's left leaf
         uint256 index = stateIndex * 2;
         require(index < (1 << SNAPSHOT_TREE_HEIGHT), "Out of range");
-        proof = new bytes32[](SNAPSHOT_TREE_HEIGHT);
+        bytes32[] memory proof = new bytes32[](SNAPSHOT_TREE_HEIGHT);
         for (uint256 h = 0; h < SNAPSHOT_TREE_HEIGHT; ++h) {
             // Get sibling on the current level
             proof[h] = nodes[h][index ^ 1];
             // Traverse to parent
             index >>= 1;
         }
+        return cutProof(proof);
     }
 }

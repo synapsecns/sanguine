@@ -38,8 +38,8 @@ contract DynamicProofGeneratorTest is Test {
         bytes32 root = proofGen.getRoot();
         // Check the produced proofs for the latest values
         for (uint256 i = 0; i < amount; ++i) {
-            bytes32[AGENT_TREE_HEIGHT] memory proof = proofGen.getProof(i);
-            assertEq(MerkleLib.branchRoot(leafs[i], proof, i), root);
+            bytes32[] memory proof = proofGen.getProof(i);
+            assertEq(MerkleLib.proofRoot(i, leafs[i], proof, AGENT_TREE_HEIGHT), root);
         }
     }
 

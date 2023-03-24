@@ -53,8 +53,8 @@ interface InterfaceOrigin {
      *  - Attestation payload is not properly formatted.
      *  - Attestation signer is not an active Notary.
      *  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
-     *  - Snapshot Proof has length different to Attestation height.
      *  - Snapshot Proof's first element does not match the State metadata.
+     *  - Snapshot Proof length exceeds Snapshot tree Height.
      *  - State payload is not properly formatted.
      *  - State index is out of range.
      *  - State does not refer to this chain.

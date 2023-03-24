@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { ISnapshotHub } from "../../contracts/interfaces/ISnapshotHub.sol";
+import { SNAPSHOT_TREE_HEIGHT } from "../../contracts/libs/Constants.sol";
 import { MerkleLib } from "../../contracts/libs/Merkle.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 
@@ -258,7 +259,7 @@ contract SummitTest is SynapseTest, SynapseProofs {
                 (bytes32 item, ) = states[j].subLeafs();
                 // Item index is twice the state index (since it's a left child)
                 assertEq(
-                    MerkleLib.branchRoot(item, snapProof, 2 * j),
+                    MerkleLib.proofRoot(2 * j, item, snapProof, SNAPSHOT_TREE_HEIGHT),
                     ra.root,
                     "!getSnapshotProof"
                 );

@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { Attestation, AttestationLib, SummitAttestation } from "../libs/Attestation.sol";
 import { MerkleList } from "../libs/MerkleList.sol";
-import { Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT, SummitSnapshot } from "../libs/Snapshot.sol";
+import { Snapshot, SnapshotLib, SummitSnapshot } from "../libs/Snapshot.sol";
 import { State, StateLib, SummitState } from "../libs/State.sol";
 import { TypedMemView } from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -129,7 +129,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             (hashes[2 * i], hashes[2 * i + 1]) = state.subLeafs();
         }
         // Index of State's left leaf is twice the state index
-        return MerkleList.calculateProof(hashes, 2 * _stateIndex, SNAPSHOT_TREE_HEIGHT);
+        return MerkleList.calculateProof(hashes, 2 * _stateIndex);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

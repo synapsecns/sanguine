@@ -5,7 +5,7 @@ import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Snapshot.sol";
 import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { IDisputeHub } from "../../contracts/interfaces/IDisputeHub.sol";
-import { IExecutionHub, ORIGIN_TREE_HEIGHT } from "../../contracts/interfaces/IExecutionHub.sol";
+import { IExecutionHub } from "../../contracts/interfaces/IExecutionHub.sol";
 
 import { InterfaceDestination } from "../../contracts/Destination.sol";
 import { Versioned } from "../../contracts/Version.sol";
@@ -184,7 +184,7 @@ contract DestinationTest is SynapseTest, SynapseProofs {
         InterfaceDestination(destination).submitAttestation(attPayload, attSig);
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
-            bytes32[ORIGIN_TREE_HEIGHT] memory originProof = getLatestProof(i);
+            bytes32[] memory originProof = getLatestProof(i);
             // (_origin, _nonce, _sender, _rootSubmittedAt, _message)
             vm.expectCall(
                 recipient,

@@ -49,14 +49,15 @@ library MerkleList {
      * Caller is expected not to reuse `hashes` list after the call.
      * @param hashes    List of leafs for the merkle tree (to be overwritten)
      * @param index     Leaf index to generate the proof for
-     * @param height    Proof length
      * @return proof    Generated merkle proof
      */
-    function calculateProof(
-        bytes32[] memory hashes,
-        uint256 index,
-        uint256 height
-    ) internal pure returns (bytes32[] memory proof) {
+    function calculateProof(bytes32[] memory hashes, uint256 index)
+        internal
+        pure
+        returns (bytes32[] memory proof)
+    {
+        // Use only meaningful values for the shortened proof
+        uint256 height = getHeight(hashes.length);
         proof = new bytes32[](height);
         uint256 levelLength = hashes.length;
         // Iterate `height` levels up from the leaf level
@@ -83,6 +84,15 @@ library MerkleList {
             levelLength = (levelLength + 1) >> 1;
             // Traverse to parent node
             index >>= 1;
+        }
+    }
+
+    /// @notice Returns the height of the tree having given amount of leafs.
+    function getHeight(uint256 leafs) internal pure returns (uint256 height) {
+        uint256 amount = 1;
+        while (amount < leafs) {
+            ++height;
+            amount <<= 1;
         }
     }
 }
