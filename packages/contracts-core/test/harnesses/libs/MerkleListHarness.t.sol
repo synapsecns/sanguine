@@ -18,13 +18,12 @@ contract MerkleListHarness {
         pure
         returns (bytes32[] memory proof)
     {
-        uint256 height = 1;
+        uint256 height = 0;
         uint256 amount = 1;
         while (amount < hashes.length) {
             amount *= 2;
             ++height;
         }
-        proof = new bytes32[](height);
-        MerkleList.calculateProof(hashes, index, proof);
+        return MerkleList.calculateProof(hashes, index, height);
     }
 }

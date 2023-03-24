@@ -10,7 +10,7 @@ library MerkleList {
      * until list length is a power of two.
      * Merkle Root is calculated for the constructed tree, and recorded in leafs[0].
      * Note: `leafs` values are overwritten in the process to avoid excessive memory allocations.
-     * Caller is expected not to allocate memory for the leafs list, and only use leafs[0] value,
+     * Caller is expected not to reuse `hashes` list after the call, and only use leafs[0] value,
      * which is guaranteed to contain the calculated merkle root.
      * @param hashes    List of leafs for the merkle tree (to be overwritten)
      */
@@ -39,22 +39,29 @@ library MerkleList {
         }
     }
 
+    /**
+     * @notice Generates a proof of inclusion of a leaf in the list.
+     * Merkle Tree is constructed by padding the list with ZERO values for leafs
+     * until list length is a power of two.
+     * Note: `leafs` values are overwritten in the process to avoid excessive memory allocations.
+     * Caller is expected not to reuse `hashes` list after the call.
+     * @param hashes    List of leafs for the merkle tree (to be overwritten)
+     * @param index     Leaf index to generate the proof for
+     * @param height    Proof length
+     * @return proof    Generated merkle proof
+     */
     function calculateProof(
         bytes32[] memory hashes,
         uint256 index,
-        bytes32[] memory proof
-    ) internal pure {
-        // proof[0] is already set up
-        uint256 height = 0;
-
+        uint256 height
+    ) internal pure returns (bytes32[] memory proof) {
+        proof = new bytes32[](height);
         uint256 levelLength = hashes.length;
-
-        // We will be iterating from the "leafs level" up to the "root level" of the Merkle Tree.
+        // Iterate `height` levels up from the leaf level
         // For every level we will only record "significant values", i.e. not equal to ZERO
-        // Repeat until we only have a single hash: this would be the root of the tree
-        while (levelLength > 1) {
+        for (uint256 h = 0; h < height; ++h) {
             // Use sibling for the merkle proof
-            proof[++height] = (index ^ 1 < levelLength) ? hashes[index ^ 1] : bytes32(0);
+            proof[h] = (index ^ 1 < levelLength) ? hashes[index ^ 1] : bytes32(0);
 
             // Let H be the height of the "current level". H = 0 for the "root level".
             // Invariant: hashes[0 .. length) are "current level" tree nodes
