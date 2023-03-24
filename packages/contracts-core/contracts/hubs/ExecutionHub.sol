@@ -156,8 +156,6 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         execAtt = rootAttestations[snapshotRoot];
         // Check if snapshot root has been submitted
         require(!execAtt.isEmpty(), "Invalid snapshot root");
-        // Check that snapshot proof length matches the height of Snapshot Merkle Tree
-        require(_snapProof.length == SNAPSHOT_TREE_HEIGHT, "Invalid proof length");
         // Check if Notary who submitted the attestation is still active
         // TODO: check for dispute status instead
         require(_isActiveAgent(localDomain, execAtt.notary), "Inactive notary");

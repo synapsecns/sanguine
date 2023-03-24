@@ -51,7 +51,6 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         (uint32 domain, address notary) = _verifyAttestation(att, _attSignature);
         // This will revert if any of these is true:
         //  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
-        //  - Snapshot Proof has length different to Attestation height.
         //  - Snapshot Proof's first element does not match the State metadata.
         //  - State index is out of range.
         _verifySnapshotMerkle(att, _stateIndex, report.state(), _snapProof);

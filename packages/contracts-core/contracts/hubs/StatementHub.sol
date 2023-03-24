@@ -143,7 +143,6 @@ abstract contract StatementHub is SystemRegistry {
      * @dev Internal function to verify that snapshot roots match.
      * Reverts if any of these is true:
      *  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
-     *  - Snapshot Proof has length different to Snapshot Tree Height.
      *  - Snapshot Proof's first element does not match the State metadata.
      *  - State index is out of range.
      * @param _att              Typed memory view over Attestation
@@ -157,8 +156,6 @@ abstract contract StatementHub is SystemRegistry {
         State _state,
         bytes32[] memory _snapProof
     ) internal pure {
-        // Snapshot proof length should match attestation tree height
-        require(_snapProof.length == SNAPSHOT_TREE_HEIGHT, "Incorrect proof length");
         // Snapshot proof first element should match State metadata (aka "right sub-leaf")
         (, bytes32 rightSubLeaf) = _state.subLeafs();
         require(_snapProof[0] == rightSubLeaf, "Incorrect proof[0]");
