@@ -113,8 +113,7 @@ export default function BridgeCard({
 }) {
   // populates the selectable tokens using the from and to chain ids
   const fromChainTokens = BRIDGABLE_TOKENS[Number(fromChainId)]
-  const toChainTokens = toBridgeableTokens
-
+  console.log('toBridgeableTokenszz', fromChainTokens)
   // can be replaced by get bridge quote
   // const gasDropAmount = useGasDropAmount(toChainId)
 
@@ -177,17 +176,12 @@ export default function BridgeCard({
     fromTokenBalance = rawTokenBalance?.value ?? Zero
   }
 
-  // useEffect(() => {
-  //   if (!settings.expertMode) {
-  //     setDeadlineMinutes(undefined)
-  //   }
-  // }, [settings.expertMode])
-
   // end nonevm dest
   const fromArgs = {
     isSwapFrom: true,
     selected: fromCoin,
     address: address,
+    connectedChainId: fromChainId,
     // onChangeSelected: onSelectFromCoin,
     handleTokenChange: handleTokenChange,
     onChangeAmount: onChangeFromAmount,
@@ -203,12 +197,13 @@ export default function BridgeCard({
     isSwapFrom: false,
     selected: toCoin,
     address: address,
+    connectedChainId: fromChainId,
     // onChangeSelected: onSelectToCoin,
     handleTokenChange: handleTokenChange,
     onChangeAmount: onChangeToAmount,
     inputValue: toValue,
     inputRef: toRef,
-    tokens: toChainTokens,
+    tokens: toBridgeableTokens,
     chainId: toChainId,
     swapFromToChains,
     setDisplayType,

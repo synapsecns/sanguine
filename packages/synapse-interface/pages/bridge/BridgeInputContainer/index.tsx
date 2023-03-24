@@ -28,6 +28,7 @@ export default function BridgeInputContainer({
   chainId,
   onChangeChain,
   possibleChains,
+  connectedChainId,
 }: {
   isSwapFrom: boolean
   selected: Token
@@ -40,6 +41,7 @@ export default function BridgeInputContainer({
   setDisplayType: (v: string) => void
   onChangeChain: (v: number) => void
   possibleChains: string[]
+  connectedChainId: number
 }) {
   const { address } = useAccount()
   const tokenAddr = selected.addresses[chainId as keyof Token['addresses']]
@@ -120,6 +122,7 @@ export default function BridgeInputContainer({
             setDisplayType={setDisplayType}
             onChangeChain={onChangeChain}
             possibleChains={possibleChains}
+            connectedChainId={connectedChainId}
           />
         </div>
       </div>

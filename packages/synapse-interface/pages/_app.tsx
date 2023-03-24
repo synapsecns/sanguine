@@ -13,6 +13,7 @@ import { Header } from '../components/layouts/Header'
 import { Footer } from '../components/layouts/Footer'
 
 import { configureChains, createClient, WagmiConfig } from 'wagmi'
+import { Chain } from 'wagmi/chains'
 import {
   mainnet,
   arbitrum,
@@ -35,47 +36,43 @@ import {
   RainbowKitProvider,
   darkTheme,
 } from '@rainbow-me/rainbowkit'
-//import { Provider } from 'react-redux'
-
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
+import { CHAIN_INFO_MAP } from '@constants/networks'
 export default function App({ Component, pageProps }: AppProps) {
-  // wagmi is missing
-  // - klaytn
-  // - boba
-  // - cronos
-  // - dfk
-  // - moonbeam
-  // - moonriver
-  // - dogechain
+  let rawChains = [
+    mainnet,
+    arbitrum,
+    aurora,
+    avalanche,
+    bsc,
+    canto,
+    fantom,
+    harmonyOne,
+    metis,
+    moonbeam,
+    moonriver,
+    optimism,
+    polygon,
+    klaytn,
+    cronos,
+    dfk,
+    dogechain,
+    boba,
+  ]
 
-  const { chains, provider } = configureChains(
-    [
-      mainnet,
-      arbitrum,
-      aurora,
-      avalanche,
-      bsc,
-      canto,
-      celo,
-      fantom,
-      harmonyOne,
-      metis,
-      moonbeam,
-      moonriver,
-      optimism,
-      polygon,
-      klaytn,
-      cronos,
-      dfk,
-      dogechain,
-      boba,
-    ],
-    [
-      alchemyProvider({ apiKey: '_UFN4P3jhI9zYma6APzoKX5aqKKadp2V' }),
-      publicProvider(),
-    ]
-  )
+  // Add custom icons
+  let chainsWithIcons: any[] = []
+  for (let chain of rawChains) {
+    chainsWithIcons.push({
+      ...chain,
+      iconUrl: CHAIN_INFO_MAP[chain.id].chainImg.src,
+    })
+  }
+  const { chains, provider } = configureChains(chainsWithIcons, [
+    alchemyProvider({ apiKey: '_UFN4P3jhI9zYma6APzoKX5aqKKadp2V' }),
+    publicProvider(),
+  ])
 
   const { connectors } = getDefaultWallets({
     appName: 'Synapse',

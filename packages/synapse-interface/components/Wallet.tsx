@@ -69,10 +69,9 @@ export const Wallet = () => {
                   <button
                     onClick={openConnectModal}
                     type="button"
-                    className="flex items-center text-md hover:cursor-pointer header-button"
+                    className="text-sm flex items-center group cursor-pointer text-white outline-none active:outline-none ring-none transition-all duration-100 transform-gpu w-full rounded-lg py-2 pl-2.5 pr-2.5 group focus:outline-none focus:ring-0 hover:bg-opacity-70 bg-bgLight hover:bg-bgLightest focus:bg-bgLightest active:bg-bgLightest border-transparent hover:!border-blue-500 flex-shrink border border-none"
                   >
-                    <span className="mr-1 disconnected">● </span>
-                    Disconnected
+                    Connect Wallet
                   </button>
                 )
               }
@@ -87,45 +86,40 @@ export const Wallet = () => {
                 <div style={{ display: 'flex', gap: 12 }}>
                   <button
                     onClick={openChainModal}
-                    style={{ display: 'flex', alignItems: 'center' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 7 }}
                     type="button"
+                    className="text-white transition-all duration-100th w-fit cursor-pointer rounded-lg py-2 pl-2.5 pr-2.5 border border-bgLight active:bg-bgLightest/10 hover:bg-bgLightest/10"
                   >
+                    {account.displayBalance ? account.displayBalance : 0}
                     {chain.hasIcon && (
                       <div
                         style={{
                           background: chain.iconBackground,
-                          width: 12,
-                          height: 12,
+                          width: 20,
+                          height: 20,
                           borderRadius: 999,
                           overflow: 'hidden',
-                          marginRight: 4,
+                          backgroundPosition: 'center',
+                          color: '#ffffff',
                         }}
                       >
                         {chain.iconUrl && (
                           <img
                             alt={chain.name ?? 'Chain icon'}
                             src={chain.iconUrl}
-                            style={{ width: 12, height: 12 }}
+                            style={{ width: 20, height: 20 }}
                           />
                         )}
                       </div>
                     )}
-                    {chain.name}
                   </button>
 
                   <button
                     onClick={openAccountModal}
                     type="button"
-                    style={{
-                      backgroundColor: 'gray',
-                      border: '1px black solid',
-                      borderRadius: '5px',
-                    }}
+                    className="flex items-center cursor-pointer text-white transition-all duration-100 w-fit rounded-lg py-2 pl-2.5 pr-2.5  bg-bgLight hover:bg-opacity-70 hover:bg-bgLightest active:bg-bgLightest text-sm"
                   >
                     {account.displayName}
-                    {account.displayBalance
-                      ? ` (${account.displayBalance})`
-                      : ''}
                   </button>
                 </div>
               )

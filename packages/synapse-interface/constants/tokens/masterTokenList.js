@@ -365,7 +365,7 @@ export const BUSD = new Token({
     BUSD is a stablecoin that is pegged to the US dollar and
     backed/issued by Binance
   `,
-  swapableType: 'USD',
+  swapableType: 'BUSD',
 })
 
 export const USDC = new Token({
@@ -382,8 +382,10 @@ export const USDC = new Token({
     [ChainId.BOBA]: '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc',
     [ChainId.AURORA]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
     [ChainId.METIS]: '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21',
-    // [ChainId.KLAYTN]: '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C',
     [ChainId.CANTO]: '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd',
+    [ChainId.KLAYTN]: '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C',
+    [ChainId.DOGECHAIN]: '0x85C2D3bEBffD83025910985389aB8aD655aBC946',
+
   },
   decimals: {
     [ChainId.BSC]: 18,
@@ -401,6 +403,10 @@ export const USDC = new Token({
     [ChainId.KLAYTN]: 6,
     [ChainId.CANTO]: 6,
   },
+  swapExceptions: {
+    [ChainId.KLAYTN]: [ChainId.ETH, ChainId.DOGECHAIN],
+    [ChainId.DOGECHAIN]: [ChainId.ETH, ChainId.DOGECHAIN]
+  },
   symbol: 'USDC',
   name: 'USD Circle',
   logo: usdcLogo,
@@ -412,44 +418,44 @@ export const USDC = new Token({
   swapableType: 'USD',
 })
 
-export const KLAYTN_USDC = new Token({
-  addresses: {
-    [ChainId.ETH]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-    [ChainId.KLAYTN]: '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C',
-    [ChainId.DOGECHAIN]: '0x85C2D3bEBffD83025910985389aB8aD655aBC946',
-  },
-  decimals: {
-    [ChainId.ETH]: 6,
-    [ChainId.KLAYTN]: 6,
-    [ChainId.DOGECHAIN]: 6,
-  },
-  symbol: 'USDC  ', // TWO SPACES IS EXTREMELY IMPORTANT
-  name: 'USD Circle',
-  logo: usdcLogo,
-  description: `
-    USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
-    U.S. dollar on a 1:1 basis. Every unit of this cryptocurrency in circulation
-    is backed up by $1 that is held in reserve
-    `,
-  swapableType: 'KLAYTN_USDC',
-})
+// export const KLAYTN_USDC = new Token({
+//   addresses: {
+//     [ChainId.ETH]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+//     [ChainId.KLAYTN]: '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C',
+//     [ChainId.DOGECHAIN]: '0x85C2D3bEBffD83025910985389aB8aD655aBC946',
+//   },
+//   decimals: {
+//     [ChainId.ETH]: 6,
+//     [ChainId.KLAYTN]: 6,
+//     [ChainId.DOGECHAIN]: 6,
+//   },
+//   symbol: 'USDC  ', // TWO SPACES IS EXTREMELY IMPORTANT
+//   name: 'USD Circle',
+//   logo: usdcLogo,
+//   description: `
+//     USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
+//     U.S. dollar on a 1:1 basis. Every unit of this cryptocurrency in circulation
+//     is backed up by $1 that is held in reserve
+//     `,
+//   swapableType: 'KLAYTN_USDC',
+// })
 
-export const KLAYTN_USDT = new Token({
-  addresses: {
-    [ChainId.ETH]: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-    [ChainId.KLAYTN]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
-    [ChainId.DOGECHAIN]: '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A',
-  },
-  decimals: {
-    [ChainId.ETH]: 6,
-    [ChainId.KLAYTN]: 6,
-    [ChainId.DOGECHAIN]: 6,
-  },
-  symbol: 'USDT  ', // TWO SPACES IS EXTREMELY IMPORTANT
-  name: 'Synapse Tether USDT',
-  logo: usdtLogo,
-  swapableType: 'KLAYTN_USDT',
-})
+// export const KLAYTN_USDT = new Token({
+//   addresses: {
+//     [ChainId.ETH]: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+//     [ChainId.KLAYTN]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
+//     [ChainId.DOGECHAIN]: '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A',
+//   },
+//   decimals: {
+//     [ChainId.ETH]: 6,
+//     [ChainId.KLAYTN]: 6,
+//     [ChainId.DOGECHAIN]: 6,
+//   },
+//   symbol: 'USDT  ', // TWO SPACES IS EXTREMELY IMPORTANT
+//   name: 'Synapse Tether USDT',
+//   logo: usdtLogo,
+//   swapableType: 'KLAYTN_USDT',
+// })
 
 export const KLAYTN_oUSDT = new Token({
   addresses: {
@@ -464,39 +470,39 @@ export const KLAYTN_oUSDT = new Token({
   swapableType: 'KLAYTN_USDT',
 })
 
-export const KLAYTN_DAI = new Token({
-  addresses: {
-    [ChainId.ETH]: '0x6b175474e89094c44da98b954eedeac495271d0f',
-    [ChainId.KLAYTN]: '0x078dB7827a5531359f6CB63f62CFA20183c4F10c',
-    [ChainId.DOGECHAIN]: '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC',
-  },
-  decimals: {
-    [ChainId.ETH]: 18,
-    [ChainId.KLAYTN]: 18,
-    [ChainId.DOGECHAIN]: 18,
-  },
-  symbol: 'DAI  ', // TWO SPACES IS EXTREMELY IMPORTANT
-  name: 'DAI',
-  logo: daiLogo,
-  swapableType: 'KLAYTN_DAI',
-})
+// export const KLAYTN_DAI = new Token({
+//   addresses: {
+//     [ChainId.ETH]: '0x6b175474e89094c44da98b954eedeac495271d0f',
+//     [ChainId.KLAYTN]: '0x078dB7827a5531359f6CB63f62CFA20183c4F10c',
+//     [ChainId.DOGECHAIN]: '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC',
+//   },
+//   decimals: {
+//     [ChainId.ETH]: 18,
+//     [ChainId.KLAYTN]: 18,
+//     [ChainId.DOGECHAIN]: 18,
+//   },
+//   symbol: 'DAI  ', // TWO SPACES IS EXTREMELY IMPORTANT
+//   name: 'DAI',
+//   logo: daiLogo,
+//   swapableType: 'KLAYTN_DAI',
+// })
 
 
 
-export const DOGECHAIN_BUSD = new Token({
-  addresses: {
-    [ChainId.BSC]: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
-    [ChainId.DOGECHAIN]: '0x1555C68Be3b22cdcCa934Ae88Cb929Db40aB311d',
-  },
-  decimals: {
-    [ChainId.BSC]: 18,
-    [ChainId.DOGECHAIN]: 18,
-  },
-  symbol: 'BUSD ', // ONE SPACE IS EXTREMELY IMPORTANT
-  name: 'Binance USD',
-  logo: busdLogo,
-  swapableType: 'DOGECHAIN_BUSD',
-})
+// export const DOGECHAIN_BUSD = new Token({
+//   addresses: {
+//     [ChainId.BSC]: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
+//     [ChainId.DOGECHAIN]: '0x1555C68Be3b22cdcCa934Ae88Cb929Db40aB311d',
+//   },
+//   decimals: {
+//     [ChainId.BSC]: 18,
+//     [ChainId.DOGECHAIN]: 18,
+//   },
+//   symbol: 'BUSD ', // ONE SPACE IS EXTREMELY IMPORTANT
+//   name: 'Binance USD',
+//   logo: busdLogo,
+//   swapableType: 'DOGECHAIN_BUSD',
+// })
 
 export const USDT = new Token({
   addresses: {
@@ -511,8 +517,14 @@ export const USDT = new Token({
     [ChainId.HARMONY]: '0x3c2b8be99c50593081eaa2a724f0b8285f5aba8f',
     [ChainId.BOBA]: '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d',
     [ChainId.AURORA]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
+    [ChainId.CANTO]: '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75',
     [ChainId.KLAYTN]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
-    [ChainId.CANTO]: '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75'
+    [ChainId.DOGECHAIN]: '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A',
+
+  },
+  swapExceptions: {
+    [ChainId.KLAYTN]: [ChainId.ETH, ChainId.DOGECHAIN],
+    [ChainId.DOGECHAIN]: [ChainId.ETH, ChainId.DOGECHAIN]
   },
   decimals: {
     [ChainId.BSC]: 18,
@@ -549,6 +561,11 @@ export const DAI = new Token({
     [ChainId.HARMONY]: '0xef977d2f931c1978db5f6747666fa1eacb0d0339',
     [ChainId.BOBA]: '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35',
     [ChainId.KLAYTN]: '0x078dB7827a5531359f6CB63f62CFA20183c4F10c',
+    [ChainId.DOGECHAIN]: '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC',
+  },
+  swapExceptions: {
+    [ChainId.KLAYTN]: [ChainId.ETH, ChainId.DOGECHAIN],
+    [ChainId.DOGECHAIN]: [ChainId.ETH, ChainId.DOGECHAIN]
   },
   decimals: 18,
   symbol: 'DAI',

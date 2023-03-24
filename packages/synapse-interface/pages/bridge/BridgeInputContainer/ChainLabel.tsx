@@ -15,6 +15,7 @@ export function ChainLabel({
   titleText,
   onChangeChain,
   possibleChains,
+  connectedChainId,
 }: {
   isSwapFrom: boolean
   chainId: number
@@ -23,19 +24,19 @@ export function ChainLabel({
   titleText?: string
   onChangeChain: (v: number) => void
   possibleChains: string[] | undefined
+  connectedChainId: number
 }) {
-  const { chain } = useNetwork()
   const [orderedChains, setOrderedChains] = useState<number[]>([])
   useEffect(() => {
     setOrderedChains(
       chainOrderBySwapSide(
-        Number(chain?.id),
+        connectedChainId,
         isSwapFrom,
         chainId,
         possibleChains
       )
     )
-  }, [chainId, chain])
+  }, [chainId, connectedChainId, possibleChains])
 
   let displayType: string
   let title: string

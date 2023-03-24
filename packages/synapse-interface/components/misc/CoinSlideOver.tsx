@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import Fuse from 'fuse.js'
 import Zero from '@ethersproject/constants'
@@ -22,6 +22,7 @@ export const CoinSlideOver = ({
   setDisplayType,
   handleTokenChange,
   address,
+  isSwapFrom,
 }: {
   address: `0x${string}` | undefined
   chainId: number
@@ -29,6 +30,7 @@ export const CoinSlideOver = ({
   selected: any
   setDisplayType: (v: string) => void
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
+  isSwapFrom: boolean
 }) => {
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -70,8 +72,6 @@ export const CoinSlideOver = ({
   //   setTokenList(tempTokenList)
   // }, [rawTokenList, rawTokenBalances])
 
-  const ref = useRef(null)
-
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
   const arrowDown = useKeyPress('ArrowDown')
@@ -83,7 +83,7 @@ export const CoinSlideOver = ({
   }
 
   function onMenuItemClick(coin: any) {
-    handleTokenChange(coin, 'from')
+    handleTokenChange(coin, isSwapFrom ? 'from' : 'to')
     onClose()
   }
 
@@ -142,7 +142,6 @@ export const CoinSlideOver = ({
         </div>
       </div>
       <div
-        ref={ref}
         className={`
           bg-bgLighter
           space-y-4
@@ -222,6 +221,6 @@ const sortByTokenBalance = (
     i++
   }
   let tokenList = zeroTokens.concat(nonZeroTokens)
-  console.log('tokenBalances', tokenBalances)
+  // console.log('tokenBalances', tokenBalances)
   return { tokenList, tokenBalances }
 }

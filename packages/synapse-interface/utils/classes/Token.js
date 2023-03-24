@@ -30,6 +30,7 @@ export class Token {
    * @param {boolean} [obj.forceMeta] - force the token to be treated as a
    * @param {string} [obj.swapableType] - the type of swap a la `SYN`, `ETH`, etc
    * @param {boolean} [obj.isNative] - is the token native to the chain
+   * @param {(number|Object.<number,Array.<number>>)} obj.swapExceptions - for specifying chains where limited exit chains are available.
    *  metaswap even if swapDepositAddresses isnt present
    */
   constructor({
@@ -54,7 +55,8 @@ export class Token {
     docUrl,
     forceMeta,
     isNative,
-    swapableType
+    swapableType,
+    swapExceptions
   }) {
 
     let isMeta
@@ -90,6 +92,7 @@ export class Token {
     this.isEthSwap = swapEthAddresses ? true : false
     this.isNative = isNative ?? false
     this.swapableType = swapableType
+    this.swapExceptions = swapExceptions ?? []
   }
   /**
    * Returns true if the two tokens are equivalent, i.e. have the same chainId and address.
