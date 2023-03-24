@@ -59,7 +59,7 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         assertTrue((amount >> 1) >= statesAmount && (amount >> 2) < statesAmount, "!height");
         // Test root
         // MerkleList library is covered in a separate uint test, we assume it is working fine
-        MerkleList.calculateRoot(stateHashes);
+        MerkleList.calculateRoot(stateHashes, height - 1);
         // Expected merkle root value is stateHashes[0]
         assertEq(libHarness.root(payload), stateHashes[0], "!root");
     }

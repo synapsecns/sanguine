@@ -202,7 +202,7 @@ library SnapshotLib {
             // Each State has two sub-leafs, their hash is used as "leaf" in "Snapshot Merkle Tree"
             hashes[i] = _snapshot.state(i).leaf();
         }
-        MerkleList.calculateRoot(hashes);
+        MerkleList.calculateRoot(hashes, _snapshot.height() - 1);
         // hashes[0] now stores the value for the Merkle Root of the list
         return hashes[0];
     }

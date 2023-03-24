@@ -12,14 +12,16 @@ library MerkleList {
      * Note: `leafs` values are overwritten in the process to avoid excessive memory allocations.
      * Caller is expected not to reuse `hashes` list after the call, and only use leafs[0] value,
      * which is guaranteed to contain the calculated merkle root.
+     * @dev Amount of leaves should be at most 2**height
      * @param hashes    List of leafs for the merkle tree (to be overwritten)
+     * @param height    Height of the Merkle Tree to construct
      */
-    function calculateRoot(bytes32[] memory hashes) internal pure {
+    function calculateRoot(bytes32[] memory hashes, uint256 height) internal pure {
         uint256 levelLength = hashes.length;
-        // We will be iterating from the "leafs level" up to the "root level" of the Merkle Tree.
+        require(levelLength <= (1 << height), "Height too low");
+        // Iterate `height` levels up from the leaf level
         // For every level we will only record "significant values", i.e. not equal to ZERO
-        // Repeat until we only have a single hash: this would be the root of the tree
-        while (levelLength > 1) {
+        for (uint256 h = 0; h < height; ++h) {
             // Let H be the height of the "current level". H = 0 for the "root level".
             // Invariant: hashes[0 .. length) are "current level" tree nodes
             // Invariant: bytes32(0) is the value for nodes with indexes [length .. 2**H)
