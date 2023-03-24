@@ -47,7 +47,6 @@ contract SummitTest is SynapseTest, SynapseProofs {
     function setUp() public virtual override {
         notaryAttestations[0] = RawAttestation({
             root: bytes32(0),
-            height: 1,
             nonce: 0,
             blockNumber: uint40(block.number),
             timestamp: uint40(block.timestamp)
@@ -88,7 +87,6 @@ contract SummitTest is SynapseTest, SynapseProofs {
             mask.diffTimestamp);
         RawAttestation memory ra = notaryAttestations[nonce];
         if (mask.diffRoot) ra.root = ra.root ^ bytes32(uint256(1));
-        if (mask.diffHeight) ra.height = ra.height ^ 1;
         if (mask.diffBlockNumber) ra.blockNumber = ra.blockNumber ^ 1;
         if (mask.diffTimestamp) ra.timestamp = ra.timestamp ^ 1;
         verifyAttestation(random, ra, isValid);
@@ -247,7 +245,6 @@ contract SummitTest is SynapseTest, SynapseProofs {
             // Calculate root and height using AttestationProofGenerator
             acceptSnapshot(rawStates);
             ra.root = getSnapshotRoot();
-            ra.height = getSnapshotHeight();
             // This is i-th submitted attestation so far, but attestation nonce starts from 1
             ra.nonce = i + 1;
             notaryAttestations[ra.nonce] = ra;

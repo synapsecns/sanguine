@@ -14,7 +14,6 @@ using {
     AttestationLib.toExecutionAttestation,
     AttestationLib.hash,
     AttestationLib.root,
-    AttestationLib.height,
     AttestationLib.nonce,
     AttestationLib.blockNumber,
     AttestationLib.timestamp
@@ -23,7 +22,6 @@ using {
 /// @dev Struct representing Attestation, as it is stored in the Summit contract.
 struct SummitAttestation {
     bytes32 root;
-    uint8 height;
     uint40 blockNumber;
     uint40 timestamp;
 }
@@ -34,10 +32,9 @@ using { AttestationLib.formatSummitAttestation } for SummitAttestation global;
 /// mapping (bytes32 root => ExecutionAttestation) is supposed to be used
 struct ExecutionAttestation {
     address notary;
-    uint8 height;
     uint32 nonce;
     uint40 submittedAt;
-    // 16 bits left for tight packing
+    // 24 bits left for tight packing
 }
 /// @dev Attach library functions to ExecutionAttestation
 using { AttestationLib.isEmpty } for ExecutionAttestation global;
@@ -49,12 +46,12 @@ library AttestationLib {
     /**
      * @dev Attestation structure represents the "Snapshot Merkle Tree" created from
      * every Notary snapshot accepted by the Summit contract. Attestation includes
-     * the root and height of "Snapshot Merkle Tree", as well as additional metadata.
+     * the root of the "Snapshot Merkle Tree", as well as additional metadata.
      *
      * Steps for creation of "Snapshot Merkle Tree":
      * 1. The list of hashes is composed for states in the Notary snapshot.
-     * 2. The list is padded with zero values until its length is a power of two.
-     * 3. Values from the lists are used as leafs and the merkle tree is constructed.
+     * 2. The list is padded with zero values until its length is 2**SNAPSHOT_TREE_HEIGHT.
+     * 3. Values from the list are used as leafs and the merkle tree is constructed.
      *
      * Similar to Origin, every derived Notary's "Snapshot Merkle Root" is saved in Summit contract.
      * The main difference is that Origin contract itself is keeping track of an incremental merkle tree,
@@ -78,19 +75,17 @@ library AttestationLib {
      *
      * @dev Memory layout of Attestation fields
      * [000 .. 032): root           bytes32 32 bytes    Root for "Snapshot Merkle Tree" created from a Notary snapshot
-     * [032 .. 033): height         uint8    1 byte     Height of "Snapshot Merkle Tree" created from a Notary snapshot
-     * [033 .. 037): nonce          uint32   4 bytes    Total amount of all accepted Notary snapshots
-     * [037 .. 042): blockNumber    uint40   5 bytes    Block when this Notary snapshot was accepted in Summit
-     * [042 .. 047): timestamp      uint40   5 bytes    Time when this Notary snapshot was accepted in Summit
+     * [032 .. 036): nonce          uint32   4 bytes    Total amount of all accepted Notary snapshots
+     * [036 .. 041): blockNumber    uint40   5 bytes    Block when this Notary snapshot was accepted in Summit
+     * [041 .. 046): timestamp      uint40   5 bytes    Time when this Notary snapshot was accepted in Summit
      *
      * The variables below are not supposed to be used outside of the library directly.
      */
 
     uint256 private constant OFFSET_ROOT = 0;
-    uint256 private constant OFFSET_DEPTH = 32;
-    uint256 private constant OFFSET_NONCE = 33;
-    uint256 private constant OFFSET_BLOCK_NUMBER = 37;
-    uint256 private constant OFFSET_TIMESTAMP = 42;
+    uint256 private constant OFFSET_NONCE = 32;
+    uint256 private constant OFFSET_BLOCK_NUMBER = 36;
+    uint256 private constant OFFSET_TIMESTAMP = 41;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             ATTESTATION                              ║*▕
@@ -99,7 +94,6 @@ library AttestationLib {
     /**
      * @notice Returns a formatted Attestation payload with provided fields.
      * @param _root         Snapshot merkle tree's root
-     * @param _height       Snapshot merkle tree's height
      * @param _nonce        Attestation Nonce
      * @param _blockNumber  Block number when attestation was created in Summit
      * @param _timestamp    Block timestamp when attestation was created in Summit
@@ -107,12 +101,11 @@ library AttestationLib {
      **/
     function formatAttestation(
         bytes32 _root,
-        uint8 _height,
         uint32 _nonce,
         uint40 _blockNumber,
         uint40 _timestamp
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(_root, _height, _nonce, _blockNumber, _timestamp);
+        return abi.encodePacked(_root, _nonce, _blockNumber, _timestamp);
     }
 
     /**
@@ -160,7 +153,6 @@ library AttestationLib {
         return
             formatAttestation({
                 _root: _summitAtt.root,
-                _height: _summitAtt.height,
                 _nonce: _nonce,
                 _blockNumber: _summitAtt.blockNumber,
                 _timestamp: _summitAtt.timestamp
@@ -169,17 +161,16 @@ library AttestationLib {
 
     /// @notice Returns an empty struct to save in Summit contract upon initialization.
     function emptySummitAttestation() internal view returns (SummitAttestation memory) {
-        return summitAttestation(bytes32(0), 1);
+        return summitAttestation(bytes32(0));
     }
 
     /// @notice Returns a struct to save in the Summit contract for the given root and height.
-    function summitAttestation(bytes32 _root, uint8 _height)
+    function summitAttestation(bytes32 _root)
         internal
         view
         returns (SummitAttestation memory summitAtt)
     {
         summitAtt.root = _root;
-        summitAtt.height = _height;
         summitAtt.blockNumber = uint40(block.number);
         summitAtt.timestamp = uint40(block.timestamp);
     }
@@ -192,7 +183,6 @@ library AttestationLib {
     {
         return
             _att.root() == _summitAtt.root &&
-            _att.height() == _summitAtt.height &&
             _att.blockNumber() == _summitAtt.blockNumber &&
             _att.timestamp() == _summitAtt.timestamp;
     }
@@ -207,7 +197,6 @@ library AttestationLib {
         returns (ExecutionAttestation memory attestation)
     {
         attestation.notary = _notary;
-        attestation.height = _att.height();
         attestation.nonce = _att.nonce();
         // We need to store the timestamp when attestation was submitted to Destination
         attestation.submittedAt = uint40(block.timestamp);
@@ -237,12 +226,6 @@ library AttestationLib {
     function root(Attestation _att) internal pure returns (bytes32) {
         bytes29 _view = _att.unwrap();
         return _view.index({ _index: OFFSET_ROOT, _bytes: 32 });
-    }
-
-    /// @notice Returns height of the Snapshot merkle tree created in the Summit contract.
-    function height(Attestation _att) internal pure returns (uint8) {
-        bytes29 _view = _att.unwrap();
-        return uint8(_view.indexUint({ _index: OFFSET_DEPTH, _bytes: 1 }));
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.
