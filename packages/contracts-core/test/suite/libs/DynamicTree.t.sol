@@ -5,7 +5,7 @@ import { Test } from "forge-std/Test.sol";
 
 import {
     DynamicTreeHarness,
-    ORIGIN_TREE_HEIGHT
+    AGENT_TREE_HEIGHT
 } from "../../harnesses/libs/DynamicTreeHarness.t.sol";
 import { DynamicProofGenerator } from "../../utils/proof/DynamicProofGenerator.t.sol";
 
@@ -43,7 +43,7 @@ contract DynamicTreeTest is Test {
     function _testUpdateValue(Random memory random, uint256 maxIndex) internal {
         uint256 index = random.nextUint32() % maxIndex;
         bytes32 oldValue = proofGen.getLeaf(index);
-        bytes32[ORIGIN_TREE_HEIGHT] memory proof = proofGen.getProof(index);
+        bytes32[AGENT_TREE_HEIGHT] memory proof = proofGen.getProof(index);
         bytes32 newValue = random.next();
         tree.update(index, oldValue, proof, newValue);
         proofGen.update(index, newValue);

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ORIGIN_TREE_HEIGHT } from "./Constants.sol";
+import { AGENT_TREE_HEIGHT, ORIGIN_TREE_HEIGHT } from "./Constants.sol";
 
 // work based on Merkle.sol, which is used under MIT OR Apache-2.0:
 // https://github.com/nomad-xyz/monorepo/blob/main/packages/contracts-core/contracts/libs/Merkle.sol
@@ -54,7 +54,7 @@ struct HistoricalTree {
 }
 using { MerkleLib.initializeRoots, MerkleLib.insert, MerkleLib.root } for HistoricalTree global;
 
-/// @notice Struct representing a Dynamic Merkle Tree with 2**ORIGIN_TREE_HEIGHT leaves
+/// @notice Struct representing a Dynamic Merkle Tree with 2**AGENT_TREE_HEIGHT leaves
 /// A single operation is available: update value for existing leaf (which might be ZERO).
 /// This is done by requesting the proof of inclusion for the old value, which is used to
 /// verify the old value, and calculate the new root.
@@ -204,7 +204,7 @@ library MerkleLib {
         DynamicTree storage _tree,
         uint256 _index,
         bytes32 _oldValue,
-        bytes32[ORIGIN_TREE_HEIGHT] memory _branch,
+        bytes32[AGENT_TREE_HEIGHT] memory _branch,
         bytes32 _newValue
     ) internal returns (bytes32 newRoot) {
         // Check that the old value + proof result in a correct root

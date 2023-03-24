@@ -4,6 +4,8 @@ pragma solidity 0.8.17;
 // Here we define common constants to enable their easier reusing later.
 
 // ══════════════════════════════════ MERKLE ═══════════════════════════════════
+/// @dev Height of the Agent Merkle Tree
+uint256 constant AGENT_TREE_HEIGHT = 32;
 /// @dev Height of the Origin Merkle Tree
 uint256 constant ORIGIN_TREE_HEIGHT = 32;
 /// @dev Height of the Snapshot Merkle Tree. Allows up to 64 leafs, e.g. up to 32 states
