@@ -192,12 +192,12 @@ abstract contract StatementHub is SystemRegistry {
     ) internal pure returns (bytes32 snapshotRoot) {
         // Index of "leftLeaf" is twice the state position in the snapshot
         uint256 _leftLeafIndex = _stateIndex << 1;
-        // Check that "leftLeaf" index fits into Merkle Tree with specified height
-        require(_leftLeafIndex < (1 << _snapProof.length), "State index out of range");
+        // Check that "leftLeaf" index fits into Snapshot Merkle Tree
+        require(_leftLeafIndex < (1 << SNAPSHOT_TREE_HEIGHT), "State index out of range");
         // Reconstruct left sub-leaf of the Origin State: (originRoot, originDomain)
         bytes32 leftLeaf = StateLib.leftLeaf(_originRoot, _origin);
         // Reconstruct snapshot root using proof of inclusion
-        return MerkleLib.branchRoot(leftLeaf, _snapProof, _stateIndex << 1);
+        return MerkleLib.proofRoot(_leftLeafIndex, leftLeaf, _snapProof, SNAPSHOT_TREE_HEIGHT);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
