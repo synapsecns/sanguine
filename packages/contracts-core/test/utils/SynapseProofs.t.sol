@@ -56,7 +56,6 @@ abstract contract SynapseProofs {
     }
 
     function getSnapshotHeight() public view returns (uint8) {
-        // Extra element in the proof list is "right sub-leaf of Origin State"
-        return uint8(summitGen.height() + 1);
+        return uint8(summitGen.height());
     }
 }
