@@ -9,7 +9,7 @@ contract MerkleListHarness {
     // to zero coverage on the corresponding library.
 
     function calculateRoot(bytes32[] memory hashes) public pure returns (bytes32) {
-        MerkleList.calculateRoot(hashes, getHeight(hashes.length));
+        MerkleList.calculateRoot(hashes, MerkleList.getHeight(hashes.length));
         return hashes[0];
     }
 
@@ -18,14 +18,6 @@ contract MerkleListHarness {
         pure
         returns (bytes32[] memory proof)
     {
-        return MerkleList.calculateProof(hashes, index, getHeight(hashes.length));
-    }
-
-    function getHeight(uint256 leaves) public pure returns (uint256 height) {
-        uint256 amount = 1;
-        while (amount < leaves) {
-            amount *= 2;
-            ++height;
-        }
+        return MerkleList.calculateProof(hashes, index);
     }
 }
