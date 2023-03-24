@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { MerkleLib } from "./Merkle.sol";
+
 library MerkleList {
     /**
      * @notice Calculates merkle root for a list of given leafs.
@@ -13,30 +15,25 @@ library MerkleList {
      * @param hashes    List of leafs for the merkle tree (to be overwritten)
      */
     function calculateRoot(bytes32[] memory hashes) internal pure {
-        // Use ZERO as value for "extra leafs".
-        // Later this will be tracking the value of a "zero node" on the current tree level.
-        bytes32 zeroHash = bytes32(0);
         uint256 levelLength = hashes.length;
         // We will be iterating from the "leafs level" up to the "root level" of the Merkle Tree.
-        // For every level we will only record "significant values", i.e. not equal to `zeroHash`
+        // For every level we will only record "significant values", i.e. not equal to ZERO
         // Repeat until we only have a single hash: this would be the root of the tree
         while (levelLength > 1) {
             // Let H be the height of the "current level". H = 0 for the "root level".
             // Invariant: hashes[0 .. length) are "current level" tree nodes
-            // Invariant: zeroHash is the value for nodes with indexes [length .. 2**H)
+            // Invariant: bytes32(0) is the value for nodes with indexes [length .. 2**H)
 
             // Iterate over every pair of (leftChild, rightChild) on the current level
             for (uint256 leftIndex = 0; leftIndex < levelLength; leftIndex += 2) {
                 uint256 rightIndex = leftIndex + 1;
                 bytes32 leftChild = hashes[leftIndex];
-                // Note: rightChild might be zeroHash
-                bytes32 rightChild = rightIndex < levelLength ? hashes[rightIndex] : zeroHash;
+                // Note: rightChild might be ZERO
+                bytes32 rightChild = rightIndex < levelLength ? hashes[rightIndex] : bytes32(0);
                 // Record the parent hash in the same array. This will not affect
                 // further calculations for the same level: (leftIndex >> 1) <= leftIndex.
-                hashes[leftIndex >> 1] = keccak256(bytes.concat(leftChild, rightChild));
+                hashes[leftIndex >> 1] = MerkleLib.getParent(leftChild, rightChild);
             }
-            // Update value for the "zero hash"
-            zeroHash = keccak256(bytes.concat(zeroHash, zeroHash));
             // Set length for the "parent level"
             levelLength = (levelLength + 1) >> 1;
         }
@@ -50,34 +47,29 @@ library MerkleList {
         // proof[0] is already set up
         uint256 height = 0;
 
-        // Use ZERO as value for "extra leafs".
-        // Later this will be tracking the value of a "zero node" on the current tree level.
-        bytes32 zeroHash = bytes32(0);
         uint256 levelLength = hashes.length;
 
         // We will be iterating from the "leafs level" up to the "root level" of the Merkle Tree.
-        // For every level we will only record "significant values", i.e. not equal to `zeroHash`
+        // For every level we will only record "significant values", i.e. not equal to ZERO
         // Repeat until we only have a single hash: this would be the root of the tree
         while (levelLength > 1) {
             // Use sibling for the merkle proof
-            proof[++height] = (index ^ 1 < levelLength) ? hashes[index ^ 1] : zeroHash;
+            proof[++height] = (index ^ 1 < levelLength) ? hashes[index ^ 1] : bytes32(0);
 
             // Let H be the height of the "current level". H = 0 for the "root level".
             // Invariant: hashes[0 .. length) are "current level" tree nodes
-            // Invariant: zeroHash is the value for nodes with indexes [length .. 2**H)
+            // Invariant: bytes32(0) is the value for nodes with indexes [length .. 2**H)
 
             // Iterate over every pair of (leftChild, rightChild) on the current level
             for (uint256 leftIndex = 0; leftIndex < levelLength; leftIndex += 2) {
                 uint256 rightIndex = leftIndex + 1;
                 bytes32 leftChild = hashes[leftIndex];
-                // Note: rightChild might be zeroHash
-                bytes32 rightChild = rightIndex < levelLength ? hashes[rightIndex] : zeroHash;
+                // Note: rightChild might be ZERO
+                bytes32 rightChild = rightIndex < levelLength ? hashes[rightIndex] : bytes32(0);
                 // Record the parent hash in the same array. This will not affect
                 // further calculations for the same level: (leftIndex >> 1) <= leftIndex.
-                hashes[leftIndex >> 1] = keccak256(bytes.concat(leftChild, rightChild));
+                hashes[leftIndex >> 1] = MerkleLib.getParent(leftChild, rightChild);
             }
-            // Update value for the "zero hash"
-            zeroHash = keccak256(bytes.concat(zeroHash, zeroHash));
             // Set length for the "parent level"
             levelLength = (levelLength + 1) >> 1;
             // Traverse to parent node

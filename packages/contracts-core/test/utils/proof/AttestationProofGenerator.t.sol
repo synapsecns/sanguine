@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
 import { StateLib } from "../../../contracts/libs/State.sol";
 
 // TODO: move from test directory
@@ -38,7 +39,7 @@ contract AttestationProofGenerator {
             ++h;
             amount >>= 1;
             for (uint256 i = 0; i < amount; ++i) {
-                nodes[h][i] = keccak256(bytes.concat(nodes[h - 1][2 * i], nodes[h - 1][2 * i + 1]));
+                nodes[h][i] = MerkleLib.getParent(nodes[h - 1][2 * i], nodes[h - 1][2 * i + 1]);
             }
         }
         root = nodes[h][0];

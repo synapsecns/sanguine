@@ -49,7 +49,7 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
         uint256 length = hashes.length / 2;
         bytes32[] memory parents = new bytes32[](length);
         for (uint256 i = 0; i < length; ++i) {
-            parents[i] = keccak256(bytes.concat(hashes[2 * i], hashes[2 * i + 1]));
+            parents[i] = _getParent(hashes[2 * i], hashes[2 * i + 1]);
         }
         return _calculateRoot(parents);
     }
@@ -58,7 +58,7 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
     function _generateHashes(uint256 length) internal pure returns (bytes32[] memory hashes) {
         hashes = new bytes32[](length);
         for (uint256 i = 0; i < length; ++i) {
-            hashes[i] = keccak256(bytes.concat(_leftLeaf(i), _rightLeaf(i)));
+            hashes[i] = _getParent(_leftLeaf(i), _rightLeaf(i));
         }
     }
 
@@ -68,6 +68,11 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
 
     function _rightLeaf(uint256 index) internal pure returns (bytes32) {
         return keccak256(abi.encode("Right", index));
+    }
+
+    function _getParent(bytes32 leftLeaf, bytes32 rightLeaf) internal pure returns (bytes32) {
+        if (leftLeaf == bytes32(0) && rightLeaf == bytes32(0)) return bytes32(0);
+        return keccak256(bytes.concat(leftLeaf, rightLeaf));
     }
 
     /// @dev Extend `hashes` with `zeroHash` values until list length is a power of two.
