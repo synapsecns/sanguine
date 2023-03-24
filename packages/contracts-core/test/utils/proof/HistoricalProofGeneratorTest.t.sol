@@ -11,7 +11,7 @@ contract HistoricalProofGeneratorTest is Test {
     BaseTree internal tree;
     HistoricalProofGenerator internal proofGen;
 
-    uint256 internal constant TREE_DEPTH = 32;
+    uint256 internal constant ORIGIN_TREE_HEIGHT = 32;
     uint256 internal constant AMOUNT = 10;
     bytes32[] internal leafs;
 
@@ -54,7 +54,7 @@ contract HistoricalProofGeneratorTest is Test {
             bytes32 root = proofGen.getRoot(count);
             // Check generated proofs for every leaf that precedes the "historical root"
             for (uint256 index = 0; index < count; ++index) {
-                bytes32[TREE_DEPTH] memory proof = proofGen.getProof(index, count);
+                bytes32[ORIGIN_TREE_HEIGHT] memory proof = proofGen.getProof(index, count);
                 assertEq(MerkleLib.branchRoot(leafs[index], proof, index), root, "Invalid proof");
             }
         }

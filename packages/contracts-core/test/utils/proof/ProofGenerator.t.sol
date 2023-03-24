@@ -5,19 +5,19 @@ import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
 
 // TODO: move from test directory
 contract ProofGenerator {
-    uint256 public constant TREE_DEPTH = 32;
+    uint256 public constant ORIGIN_TREE_HEIGHT = 32;
 
     /**
      * @notice Store only non-"zero" values of the merkle tree
      * merkleTree[0] are the leafs
      * merkleTree[1] are keccak256(A, B) where A and B are leafs
      * ...
-     * merkleTree[TREE_DEPTH][0] is the merkle root
+     * merkleTree[ORIGIN_TREE_HEIGHT][0] is the merkle root
      */
     bytes32[][] internal merkleTree;
 
     constructor() {
-        merkleTree = new bytes32[][](TREE_DEPTH + 1);
+        merkleTree = new bytes32[][](ORIGIN_TREE_HEIGHT + 1);
     }
 
     /**
@@ -28,7 +28,7 @@ contract ProofGenerator {
         // Copy the leafs into the tree
         uint256 size = _copyLeafs(_leafs);
         // Go upwards the tree and construct parent layers one by one
-        for (uint256 d = 1; d <= TREE_DEPTH; ++d) {
+        for (uint256 d = 1; d <= ORIGIN_TREE_HEIGHT; ++d) {
             size = (size + 1) / 2;
             _createLayer(d, size);
         }
@@ -37,8 +37,12 @@ contract ProofGenerator {
     /**
      * @notice Returns a merkle proof for leaf with a given index.
      */
-    function getProof(uint256 _index) external view returns (bytes32[TREE_DEPTH] memory proof) {
-        for (uint256 d = 0; d < TREE_DEPTH; ++d) {
+    function getProof(uint256 _index)
+        external
+        view
+        returns (bytes32[ORIGIN_TREE_HEIGHT] memory proof)
+    {
+        for (uint256 d = 0; d < ORIGIN_TREE_HEIGHT; ++d) {
             // Get node's neighbor
             if (_index % 2 == 0) {
                 ++_index;
@@ -55,7 +59,7 @@ contract ProofGenerator {
      * @notice Returns merkle root of the tree.
      */
     function getRoot() external view returns (bytes32) {
-        return merkleTree[TREE_DEPTH][0];
+        return merkleTree[ORIGIN_TREE_HEIGHT][0];
     }
 
     /**
@@ -74,7 +78,7 @@ contract ProofGenerator {
      */
     function _clearTree() internal {
         if (merkleTree[0].length != 0) {
-            for (uint256 d = 0; d <= TREE_DEPTH; ++d) {
+            for (uint256 d = 0; d <= ORIGIN_TREE_HEIGHT; ++d) {
                 delete merkleTree[d];
             }
         }
