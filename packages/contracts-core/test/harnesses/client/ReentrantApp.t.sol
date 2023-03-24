@@ -2,13 +2,13 @@
 
 pragma solidity 0.8.17;
 
-import { TREE_DEPTH } from "../../../contracts/libs/Constants.sol";
+import { ORIGIN_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
 import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
 import { IExecutionHub } from "../../../contracts/interfaces/IExecutionHub.sol";
 
 contract ReentrantApp is IMessageRecipient {
     bytes internal message;
-    bytes32[TREE_DEPTH] internal originProof;
+    bytes32[ORIGIN_TREE_HEIGHT] internal originProof;
     bytes32[] internal snapProof;
     uint256 internal stateIndex;
 
@@ -17,7 +17,7 @@ contract ReentrantApp is IMessageRecipient {
 
     function prepare(
         bytes memory _message,
-        bytes32[TREE_DEPTH] memory _originProof,
+        bytes32[ORIGIN_TREE_HEIGHT] memory _originProof,
         bytes32[] memory _snapProof,
         uint256 _stateIndex
     ) external {

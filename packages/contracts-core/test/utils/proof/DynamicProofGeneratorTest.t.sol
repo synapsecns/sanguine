@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { Test } from "forge-std/Test.sol";
 
-import { BaseTree, MerkleLib, TREE_DEPTH } from "../../../contracts/libs/Merkle.sol";
+import { BaseTree, MerkleLib, AGENT_TREE_HEIGHT } from "../../../contracts/libs/Merkle.sol";
 import { DynamicProofGenerator } from "./DynamicProofGenerator.t.sol";
 
 import { Random } from "../libs/Random.t.sol";
@@ -38,7 +38,7 @@ contract DynamicProofGeneratorTest is Test {
         bytes32 root = proofGen.getRoot();
         // Check the produced proofs for the latest values
         for (uint256 i = 0; i < amount; ++i) {
-            bytes32[TREE_DEPTH] memory proof = proofGen.getProof(i);
+            bytes32[AGENT_TREE_HEIGHT] memory proof = proofGen.getProof(i);
             assertEq(MerkleLib.branchRoot(leafs[i], proof, i), root);
         }
     }

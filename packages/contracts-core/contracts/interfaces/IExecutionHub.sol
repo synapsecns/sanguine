@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { TREE_DEPTH } from "../libs/Constants.sol";
+import { ORIGIN_TREE_HEIGHT } from "../libs/Constants.sol";
 
 interface IExecutionHub {
     /**
@@ -23,7 +23,7 @@ interface IExecutionHub {
      */
     function execute(
         bytes memory _message,
-        bytes32[TREE_DEPTH] calldata _originProof,
+        bytes32[ORIGIN_TREE_HEIGHT] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
     ) external;

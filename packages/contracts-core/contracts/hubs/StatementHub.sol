@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { Attestation, AttestationLib } from "../libs/Attestation.sol";
-import { Snapshot, SnapshotLib, State, StateLib } from "../libs/Snapshot.sol";
+import { Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT, State, StateLib } from "../libs/Snapshot.sol";
 import { AttestationReport, AttestationReportLib } from "../libs/AttestationReport.sol";
 import { MerkleLib } from "../libs/Merkle.sol";
 import { StateReport, StateReportLib } from "../libs/StateReport.sol";
@@ -132,20 +132,18 @@ abstract contract StatementHub is SystemRegistry {
      * @dev Internal function to verify that snapshot and attestation has the same Merkle Data.
      * Reverts if any of these is true:
      *  - Attestation root is not equal to root derived from the snapshot.
-     *  - Attestation height is not equal to snapshot's height.
      * @param _att          Typed memory view over Attestation
      * @param _snapshot     Typed memory view over snapshot payload
      */
     function _verifySnapshotMerkle(Attestation _att, Snapshot _snapshot) internal pure {
         require(_att.root() == _snapshot.root(), "Incorrect snapshot root");
-        require(_att.height() == _snapshot.height(), "Incorrect snapshot height");
     }
 
     /**
      * @dev Internal function to verify that snapshot roots match.
      * Reverts if any of these is true:
      *  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
-     *  - Snapshot Proof has length different to Attestation height.
+     *  - Snapshot Proof has length different to Snapshot Tree Height.
      *  - Snapshot Proof's first element does not match the State metadata.
      *  - State index is out of range.
      * @param _att              Typed memory view over Attestation
@@ -159,11 +157,8 @@ abstract contract StatementHub is SystemRegistry {
         State _state,
         bytes32[] memory _snapProof
     ) internal pure {
-        // Snapshot proof length should match attestation height (and should be non-zero)
-        require(
-            _snapProof.length == _att.height() && _snapProof.length != 0,
-            "Incorrect proof length"
-        );
+        // Snapshot proof length should match attestation tree height
+        require(_snapProof.length == SNAPSHOT_TREE_HEIGHT, "Incorrect proof length");
         // Snapshot proof first element should match State metadata (aka "right sub-leaf")
         (, bytes32 rightSubLeaf) = _state.subLeafs();
         require(_snapProof[0] == rightSubLeaf, "Incorrect proof[0]");

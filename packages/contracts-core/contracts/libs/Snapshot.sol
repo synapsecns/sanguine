@@ -3,7 +3,12 @@ pragma solidity 0.8.17;
 
 import { AttestationLib, SummitAttestation } from "./Attestation.sol";
 import { ByteString } from "./ByteString.sol";
-import { SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, STATE_LENGTH } from "./Constants.sol";
+import {
+    SNAPSHOT_MAX_STATES,
+    SNAPSHOT_SALT,
+    SNAPSHOT_TREE_HEIGHT,
+    STATE_LENGTH
+} from "./Constants.sol";
 import { MerkleList } from "./MerkleList.sol";
 import { State, StateLib } from "./State.sol";
 import { TypedMemView } from "./TypedMemView.sol";
@@ -16,7 +21,6 @@ using {
     SnapshotLib.hash,
     SnapshotLib.state,
     SnapshotLib.statesAmount,
-    SnapshotLib.height,
     SnapshotLib.root,
     SnapshotLib.toSummitAttestation
 } for Snapshot global;
@@ -180,29 +184,18 @@ library SnapshotLib {
     ▏*║                            SNAPSHOT ROOT                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @notice Returns the height of the extended "Snapshot Merkle Tree":
-    /// every "state leaf" is in fact a node with two sub-leafs.
-    /// @dev snapshot.height() is the length of the "extended merkle proof" for (root, origin) leaf:
-    /// keccak256(metadata) is the first item in the "extended proof" list,
-    /// followed by the remainder of the "merkle proof" from the "Snapshot Merkle Tree"
-    function height(Snapshot _snapshot) internal pure returns (uint8 treeHeight) {
-        // Account for the fact that every "state leaf" is a node with two sub-leafs
-        treeHeight = 1;
-        uint256 _statesAmount = _snapshot.statesAmount();
-        for (uint256 amount = 1; amount < _statesAmount; amount <<= 1) {
-            ++treeHeight;
-        }
-    }
-
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
     function root(Snapshot _snapshot) internal pure returns (bytes32) {
         uint256 _statesAmount = _snapshot.statesAmount();
         bytes32[] memory hashes = new bytes32[](_statesAmount);
         for (uint256 i = 0; i < _statesAmount; ++i) {
-            // Each State has two sub-leafs, their hash is used as "leaf" in "Snapshot Merkle Tree"
+            // Each State has two sub-leafs, which are used as the "leafs" in "Snapshot Merkle Tree"
+            // We save their parent in order to calculate the root for the whole tree later
             hashes[i] = _snapshot.state(i).leaf();
         }
-        MerkleList.calculateRoot(hashes);
+        // We are subtracting one here, as we already calculated the hashes
+        // for the tree level above the "leaf level".
+        MerkleList.calculateRoot(hashes, SNAPSHOT_TREE_HEIGHT - 1);
         // hashes[0] now stores the value for the Merkle Root of the list
         return hashes[0];
     }
@@ -218,7 +211,7 @@ library SnapshotLib {
         view
         returns (SummitAttestation memory attestation)
     {
-        return AttestationLib.summitAttestation(_snapshot.root(), _snapshot.height());
+        return AttestationLib.summitAttestation(_snapshot.root());
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

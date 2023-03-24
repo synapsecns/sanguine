@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import { State, StateLib, STATE_LENGTH } from "../../../contracts/libs/State.sol";
+import { SNAPSHOT_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
 import { MerkleList } from "../../../contracts/libs/MerkleList.sol";
 import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
 import { SnapshotHarness } from "../../harnesses/libs/SnapshotHarness.t.sol";
@@ -50,16 +51,9 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         }
         // Test hashing
         assertEq(libHarness.hash(payload), hashedSnapshot, "!hash");
-        // Test height
-        uint256 height = libHarness.height(payload);
-        // This is the amount of leafs in the "extended" "Snapshot Merkle Tree",
-        // where we state sub-leafs as leafs.
-        uint256 amount = (1 << height);
-        // Amount / 2 should the minimum power of two that is: >= statesAmount
-        assertTrue((amount >> 1) >= statesAmount && (amount >> 2) < statesAmount, "!height");
         // Test root
         // MerkleList library is covered in a separate uint test, we assume it is working fine
-        MerkleList.calculateRoot(stateHashes);
+        MerkleList.calculateRoot(stateHashes, SNAPSHOT_TREE_HEIGHT - 1);
         // Expected merkle root value is stateHashes[0]
         assertEq(libHarness.root(payload), stateHashes[0], "!root");
     }

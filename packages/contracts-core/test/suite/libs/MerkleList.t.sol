@@ -34,12 +34,8 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
         bytes32[] memory hashes = _generateHashes(length);
         bytes32[] memory extended = _extendHashes(hashes);
         bytes32 expectedRoot = _calculateRoot(extended);
-
         bytes32[] memory proof = libHarness.calculateProof(hashes, index);
-        // First element is "right sub-leaf"
-        proof[0] = _rightLeaf(index);
-        // Index of "left sub-leaf" is twice the index of state
-        bytes32 root = MerkleLib.branchRoot(_leftLeaf(index), proof, 2 * index);
+        bytes32 root = MerkleLib.branchRoot(_leaf(index), proof, index);
         assertEq(root, expectedRoot, "!calculateProof");
     }
 
@@ -49,7 +45,7 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
         uint256 length = hashes.length / 2;
         bytes32[] memory parents = new bytes32[](length);
         for (uint256 i = 0; i < length; ++i) {
-            parents[i] = keccak256(bytes.concat(hashes[2 * i], hashes[2 * i + 1]));
+            parents[i] = _getParent(hashes[2 * i], hashes[2 * i + 1]);
         }
         return _calculateRoot(parents);
     }
@@ -58,16 +54,17 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
     function _generateHashes(uint256 length) internal pure returns (bytes32[] memory hashes) {
         hashes = new bytes32[](length);
         for (uint256 i = 0; i < length; ++i) {
-            hashes[i] = keccak256(bytes.concat(_leftLeaf(i), _rightLeaf(i)));
+            hashes[i] = _leaf(i);
         }
     }
 
-    function _leftLeaf(uint256 index) internal pure returns (bytes32) {
-        return keccak256(abi.encode("Left", index));
+    function _leaf(uint256 index) internal pure returns (bytes32) {
+        return keccak256(abi.encode("Leaf", index));
     }
 
-    function _rightLeaf(uint256 index) internal pure returns (bytes32) {
-        return keccak256(abi.encode("Right", index));
+    function _getParent(bytes32 leftLeaf, bytes32 rightLeaf) internal pure returns (bytes32) {
+        if (leftLeaf == bytes32(0) && rightLeaf == bytes32(0)) return bytes32(0);
+        return keccak256(bytes.concat(leftLeaf, rightLeaf));
     }
 
     /// @dev Extend `hashes` with `zeroHash` values until list length is a power of two.

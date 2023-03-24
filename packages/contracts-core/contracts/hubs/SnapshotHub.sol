@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { Attestation, AttestationLib, SummitAttestation } from "../libs/Attestation.sol";
 import { MerkleList } from "../libs/MerkleList.sol";
-import { Snapshot, SnapshotLib, SummitSnapshot } from "../libs/Snapshot.sol";
+import { Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT, SummitSnapshot } from "../libs/Snapshot.sol";
 import { State, StateLib, SummitState } from "../libs/State.sol";
 import { TypedMemView } from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -114,12 +114,11 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         returns (bytes32[] memory snapProof)
     {
         require(_nonce < notarySnapshots.length, "Nonce out of range");
-        snapProof = new bytes32[](attestations[_nonce].height);
         SummitSnapshot memory snap = notarySnapshots[_nonce];
         uint256 statesAmount = snap.getStatesAmount();
         require(_stateIndex < statesAmount, "Index out of range");
-        // Reconstruct the leafs of Snapshot Merkle Tree
-        bytes32[] memory hashes = new bytes32[](statesAmount);
+        // Reconstruct the leafs of Snapshot Merkle Tree: two for each state
+        bytes32[] memory hashes = new bytes32[](2 * statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
             // Get value for "index in guardStates PLUS 1"
             uint256 statePtr = snap.getStatePtr(i);
@@ -127,14 +126,10 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             assert(statePtr != 0);
             SummitState memory guardState = guardStates[statePtr - 1];
             State state = guardState.formatSummitState().castToState();
-            hashes[i] = state.leaf();
-            if (i == _stateIndex) {
-                // First element of the proof is "right sub-leaf"
-                (, snapProof[0]) = state.subLeafs();
-            }
+            (hashes[2 * i], hashes[2 * i + 1]) = state.subLeafs();
         }
-        // This will fill the remaining values in the `snapProof` array
-        MerkleList.calculateProof(hashes, _stateIndex, snapProof);
+        // Index of State's left leaf is twice the state index
+        return MerkleList.calculateProof(hashes, 2 * _stateIndex, SNAPSHOT_TREE_HEIGHT);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -164,7 +159,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         internal
         returns (bytes memory attPayload)
     {
-        // Snapshot Signer is a Notary: construct an Attestation Merkle Tree,
+        // Snapshot Signer is a Notary: construct a Snapshot Merkle Tree,
         // while checking that the states were previously saved.
         uint256 statesAmount = _snapshot.statesAmount();
         uint256[] memory statePtrs = new uint256[](statesAmount);
@@ -180,7 +175,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             // Update Notary latest state for origin
             latestStatePtr[origin][_notary] = statePtrs[i];
         }
-        // Derive attestation merkle root and save it for a Notary attestation.
+        // Derive the snapshot merkle root and save it for a Notary attestation.
         // Save Notary snapshot for later retrieval
         return _saveNotarySnapshot(_snapshot, statePtrs);
     }
