@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { IStateHub } from "../../contracts/interfaces/IStateHub.sol";
 import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
-import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
+import { SystemEntity } from "../../contracts/libs/Structures.sol";
 import { TipsLib } from "../../contracts/libs/Tips.sol";
 
 import { InterfaceOrigin } from "../../contracts/Origin.sol";

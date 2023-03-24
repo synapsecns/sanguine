@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Snapshot.sol";
-import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
+import { SystemEntity } from "../../contracts/libs/Structures.sol";
 import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { IDisputeHub } from "../../contracts/interfaces/IDisputeHub.sol";
 import { IExecutionHub } from "../../contracts/interfaces/IExecutionHub.sol";

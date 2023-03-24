@@ -2,7 +2,6 @@
 pragma solidity 0.8.17;
 
 import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.sol";
-import { AgentInfo, SystemEntity } from "../../../contracts/libs/Structures.sol";
 
 import { AgentManagerTest } from "./AgentManager.t.sol";
 

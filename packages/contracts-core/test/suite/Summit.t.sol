@@ -5,7 +5,7 @@ import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol"
 import { ISnapshotHub } from "../../contracts/interfaces/ISnapshotHub.sol";
 import { SNAPSHOT_TREE_HEIGHT } from "../../contracts/libs/Constants.sol";
 import { MerkleLib } from "../../contracts/libs/Merkle.sol";
-import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
+import { SystemEntity } from "../../contracts/libs/Structures.sol";
 
 import { InterfaceSummit } from "../../contracts/Summit.sol";
 import { Versioned } from "../../contracts/Version.sol";
