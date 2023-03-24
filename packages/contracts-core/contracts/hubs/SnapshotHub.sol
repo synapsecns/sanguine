@@ -159,7 +159,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         internal
         returns (bytes memory attPayload)
     {
-        // Snapshot Signer is a Notary: construct an Attestation Merkle Tree,
+        // Snapshot Signer is a Notary: construct a Snapshot Merkle Tree,
         // while checking that the states were previously saved.
         uint256 statesAmount = _snapshot.statesAmount();
         uint256[] memory statePtrs = new uint256[](statesAmount);
@@ -175,7 +175,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             // Update Notary latest state for origin
             latestStatePtr[origin][_notary] = statePtrs[i];
         }
-        // Derive attestation merkle root and save it for a Notary attestation.
+        // Derive the snapshot merkle root and save it for a Notary attestation.
         // Save Notary snapshot for later retrieval
         return _saveNotarySnapshot(_snapshot, statePtrs);
     }

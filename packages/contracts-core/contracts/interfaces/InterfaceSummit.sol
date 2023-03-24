@@ -5,7 +5,7 @@ interface InterfaceSummit {
     /**
      * @notice Submit a snapshot (list of states) signed by a Guard or a Notary.
      * Guard-signed snapshots: all the states in the snapshot become available for Notary signing.
-     * Notary-signed snapshots: Attestation Merkle Root is saved for valid snapshots, i.e.
+     * Notary-signed snapshots: Snapshot Merkle Root is saved for valid snapshots, i.e.
      * snapshots which are only using states previously submitted by any of the Guards.
      * Notary doesn't have to use states submitted by a single Guard in their snapshot.
      * Notary could then proceed to sign the attestation for their submitted snapshot.
