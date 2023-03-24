@@ -2,7 +2,12 @@
 pragma solidity 0.8.17;
 
 import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
-import { Snapshot, SNAPSHOT_MAX_STATES, State } from "../../../contracts/libs/Snapshot.sol";
+import {
+    Snapshot,
+    SNAPSHOT_MAX_STATES,
+    SNAPSHOT_TREE_HEIGHT,
+    State
+} from "../../../contracts/libs/Snapshot.sol";
 import { fakeSnapshot, RawState, RawSnapshot } from "../libs/FakeIt.t.sol";
 import { AttestationProofGenerator } from "./AttestationProofGenerator.t.sol";
 
@@ -34,6 +39,10 @@ contract AttestationProofGeneratorTest is Test {
         (bytes32 item, ) = state.subLeafs();
         uint256 itemIndex = stateIndex << 1;
         bytes32[] memory proof = proofGen.generateProof(stateIndex);
-        assertEq(MerkleLib.branchRoot(item, proof, itemIndex), snapshotRoot, "!proof");
+        assertEq(
+            MerkleLib.proofRoot(itemIndex, item, proof, SNAPSHOT_TREE_HEIGHT),
+            snapshotRoot,
+            "!proof"
+        );
     }
 }

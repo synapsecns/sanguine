@@ -57,7 +57,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// @inheritdoc IExecutionHub
     function execute(
         bytes memory _message,
-        bytes32[ORIGIN_TREE_HEIGHT] calldata _originProof,
+        bytes32[] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
     ) external {
@@ -132,7 +132,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     function _prove(
         Header _header,
         bytes32 _msgLeaf,
-        bytes32[ORIGIN_TREE_HEIGHT] calldata _originProof,
+        bytes32[] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
     ) internal returns (ExecutionAttestation memory execAtt) {
@@ -143,16 +143,22 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         require(_header.destination() == localDomain, "!destination");
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
-        bytes32 originRoot = MerkleLib.branchRoot(_msgLeaf, _originProof, _header.nonce() - 1);
+        // This will revert if origin proof length exceeds Origin Tree height
+        bytes32 originRoot = MerkleLib.proofRoot(
+            _header.nonce() - 1,
+            _msgLeaf,
+            _originProof,
+            ORIGIN_TREE_HEIGHT
+        );
         // Reconstruct Snapshot Merkle Root using the snapshot proof
-        // This will revert if state index is out of range
+        // This will revert if:
+        //  - State index is out of range.
+        //  - Snapshot Proof length exceeds Snapshot tree Height.
         bytes32 snapshotRoot = _snapshotRoot(originRoot, _header.origin(), _snapProof, _stateIndex);
         // Fetch the attestation data for the snapshot root
         execAtt = rootAttestations[snapshotRoot];
         // Check if snapshot root has been submitted
         require(!execAtt.isEmpty(), "Invalid snapshot root");
-        // Check that snapshot proof length matches the height of Snapshot Merkle Tree
-        require(_snapProof.length == SNAPSHOT_TREE_HEIGHT, "Invalid proof length");
         // Check if Notary who submitted the attestation is still active
         // TODO: check for dispute status instead
         require(_isActiveAgent(localDomain, execAtt.notary), "Inactive notary");

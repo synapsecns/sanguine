@@ -3,8 +3,10 @@ pragma solidity 0.8.17;
 
 import { MerkleLib, AGENT_TREE_HEIGHT } from "../../../contracts/libs/Merkle.sol";
 
+import { ProofCutter } from "./ProofCutter.t.sol";
+
 // TODO: move from test directory
-contract DynamicProofGenerator {
+contract DynamicProofGenerator is ProofCutter {
     /**
      * @notice Store only non-"zero" values of the merkle tree
      * merkleTree[0] are the leafs
@@ -38,16 +40,14 @@ contract DynamicProofGenerator {
     }
 
     /// @notice Returns a merkle proof for leaf with a given index.
-    function getProof(uint256 _index)
-        external
-        view
-        returns (bytes32[AGENT_TREE_HEIGHT] memory proof)
-    {
+    function getProof(uint256 _index) external view returns (bytes32[] memory) {
+        bytes32[] memory proof = new bytes32[](AGENT_TREE_HEIGHT);
         for (uint256 h = 0; h < AGENT_TREE_HEIGHT; ++h) {
             // Get node's sibling
             proof[h] = merkleTree[h][_index ^ 1];
             // Traverse to parent
             _index >>= 1;
         }
+        return cutProof(proof);
     }
 }

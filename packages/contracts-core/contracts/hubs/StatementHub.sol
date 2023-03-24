@@ -143,8 +143,8 @@ abstract contract StatementHub is SystemRegistry {
      * @dev Internal function to verify that snapshot roots match.
      * Reverts if any of these is true:
      *  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
-     *  - Snapshot Proof has length different to Snapshot Tree Height.
      *  - Snapshot Proof's first element does not match the State metadata.
+     *  - Snapshot Proof length exceeds Snapshot tree Height.
      *  - State index is out of range.
      * @param _att              Typed memory view over Attestation
      * @param _stateIndex       Index of state in the snapshot
@@ -157,13 +157,13 @@ abstract contract StatementHub is SystemRegistry {
         State _state,
         bytes32[] memory _snapProof
     ) internal pure {
-        // Snapshot proof length should match attestation tree height
-        require(_snapProof.length == SNAPSHOT_TREE_HEIGHT, "Incorrect proof length");
         // Snapshot proof first element should match State metadata (aka "right sub-leaf")
         (, bytes32 rightSubLeaf) = _state.subLeafs();
         require(_snapProof[0] == rightSubLeaf, "Incorrect proof[0]");
         // Reconstruct Snapshot Merkle Root using the snapshot proof
-        // This will revert if state index is out of range
+        // This will revert if:
+        //  - State index is out of range.
+        //  - Snapshot Proof length exceeds Snapshot tree Height.
         bytes32 snapshotRoot = _snapshotRoot(
             _state.root(),
             _state.origin(),
@@ -179,6 +179,7 @@ abstract contract StatementHub is SystemRegistry {
      * and proof of inclusion of State Merkle Data (aka State "left sub-leaf") in Snapshot Merkle Tree.
      * Reverts if any of these is true:
      *  - State index is out of range.
+     *  - Snapshot Proof length exceeds Snapshot tree Height.
      * @param _originRoot   Root of Origin Merkle Tree
      * @param _origin       Domain of Origin chain
      * @param _snapProof    Proof of inclusion of State Merkle Data into Snapshot Merkle Tree
@@ -192,12 +193,13 @@ abstract contract StatementHub is SystemRegistry {
     ) internal pure returns (bytes32 snapshotRoot) {
         // Index of "leftLeaf" is twice the state position in the snapshot
         uint256 _leftLeafIndex = _stateIndex << 1;
-        // Check that "leftLeaf" index fits into Merkle Tree with specified height
-        require(_leftLeafIndex < (1 << _snapProof.length), "State index out of range");
+        // Check that "leftLeaf" index fits into Snapshot Merkle Tree
+        require(_leftLeafIndex < (1 << SNAPSHOT_TREE_HEIGHT), "State index out of range");
         // Reconstruct left sub-leaf of the Origin State: (originRoot, originDomain)
         bytes32 leftLeaf = StateLib.leftLeaf(_originRoot, _origin);
         // Reconstruct snapshot root using proof of inclusion
-        return MerkleLib.branchRoot(leftLeaf, _snapProof, _stateIndex << 1);
+        // This will revert if snapshot proof length exceeds Snapshot Tree Height
+        return MerkleLib.proofRoot(_leftLeafIndex, leftLeaf, _snapProof, SNAPSHOT_TREE_HEIGHT);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -204,13 +204,16 @@ library MerkleLib {
         DynamicTree storage _tree,
         uint256 _index,
         bytes32 _oldValue,
-        bytes32[AGENT_TREE_HEIGHT] memory _branch,
+        bytes32[] memory _branch,
         bytes32 _newValue
     ) internal returns (bytes32 newRoot) {
         // Check that the old value + proof result in a correct root
-        require(branchRoot(_oldValue, _branch, _index) == _tree.root, "Incorrect proof");
+        require(
+            proofRoot(_index, _oldValue, _branch, AGENT_TREE_HEIGHT) == _tree.root,
+            "Incorrect proof"
+        );
         // New root is new value + the same proof (values for sibling nodes are not updated)
-        newRoot = branchRoot(_newValue, _branch, _index);
+        newRoot = proofRoot(_index, _newValue, _branch, AGENT_TREE_HEIGHT);
         // Write the new root
         _tree.root = newRoot;
     }
@@ -220,49 +223,32 @@ library MerkleLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
-     * @notice Calculates and returns the merkle root for the given leaf
-     * `_item`, a merkle branch, and the index of `_item` in the tree.
-     * @param _item Merkle leaf
-     * @param _branch Merkle proof
-     * @param _index Index of `_item` in tree
-     * @return _current Calculated merkle root
-     **/
-    function branchRoot(
-        bytes32 _item,
-        bytes32[ORIGIN_TREE_HEIGHT] memory _branch,
-        uint256 _index
-    ) internal pure returns (bytes32 _current) {
-        _current = _item;
-        // Go up the tree levels from leaf to root
-        for (uint256 i = 0; i < ORIGIN_TREE_HEIGHT; ) {
-            _current = getParent(_current, _branch[i], _index, i);
-            unchecked {
-                ++i;
-            }
+     * @notice Calculates the merkle root for the given leaf and merkle proof.
+     * @dev Will revert if proof length exceeds the tree height.
+     * @param _index    Index of `_leaf` in tree
+     * @param _leaf     Leaf of the merkle tree
+     * @param _proof    Proof of inclusion of `leaf` in the tree
+     * @param _height   Height of the merkle tree
+     * @return root_    Calculated Merkle Root
+     */
+    function proofRoot(
+        uint256 _index,
+        bytes32 _leaf,
+        bytes32[] memory _proof,
+        uint256 _height
+    ) internal pure returns (bytes32 root_) {
+        // Proof length could not exceed the tree height
+        uint256 proofLen = _proof.length;
+        require(proofLen <= _height, "Proof too long");
+        root_ = _leaf;
+        // Go up the tree levels from the leaf following the proof
+        for (uint256 h = 0; h < proofLen; ++h) {
+            // Get a sibling node on current level: this is proof[h]
+            root_ = getParent(root_, _proof[h], _index, h);
         }
-    }
-
-    /**
-     * @notice Calculates and returns the merkle root for the given leaf
-     * `_item`, a merkle branch, and the index of `_item` in the tree.
-     * @dev This extra function is required for Merkle Trees with flexible height.
-     * @param _item Merkle leaf
-     * @param _branch Merkle proof
-     * @param _index Index of `_item` in tree
-     * @return _current Calculated merkle root
-     **/
-    function branchRoot(
-        bytes32 _item,
-        bytes32[] memory _branch,
-        uint256 _index
-    ) internal pure returns (bytes32 _current) {
-        _current = _item;
-        // Go up the tree levels from leaf to root
-        for (uint256 i = 0; i < _branch.length; ) {
-            _current = getParent(_current, _branch[i], _index, i);
-            unchecked {
-                ++i;
-            }
+        // Go up to the root: the remaining siblings are ZERO
+        for (uint256 h = proofLen; h < _height; ++h) {
+            root_ = getParent(root_, bytes32(0), _index, h);
         }
     }
 

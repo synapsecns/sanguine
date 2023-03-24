@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ORIGIN_TREE_HEIGHT } from "../libs/Constants.sol";
-
 interface IExecutionHub {
     /**
      * @notice Attempts to prove inclusion of message into one of Snapshot Merkle Trees,
@@ -23,7 +21,7 @@ interface IExecutionHub {
      */
     function execute(
         bytes memory _message,
-        bytes32[ORIGIN_TREE_HEIGHT] calldata _originProof,
+        bytes32[] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
     ) external;

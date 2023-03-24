@@ -35,7 +35,7 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
         bytes32[] memory extended = _extendHashes(hashes);
         bytes32 expectedRoot = _calculateRoot(extended);
         bytes32[] memory proof = libHarness.calculateProof(hashes, index);
-        bytes32 root = MerkleLib.branchRoot(_leaf(index), proof, index);
+        bytes32 root = MerkleLib.proofRoot(index, _leaf(index), proof, _getHeight(length));
         assertEq(root, expectedRoot, "!calculateProof");
     }
 
@@ -65,6 +65,14 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
     function _getParent(bytes32 leftLeaf, bytes32 rightLeaf) internal pure returns (bytes32) {
         if (leftLeaf == bytes32(0) && rightLeaf == bytes32(0)) return bytes32(0);
         return keccak256(bytes.concat(leftLeaf, rightLeaf));
+    }
+
+    function _getHeight(uint256 leafs) internal pure returns (uint256 height) {
+        uint256 amount = 1;
+        while (amount < leafs) {
+            amount *= 2;
+            ++height;
+        }
     }
 
     /// @dev Extend `hashes` with `zeroHash` values until list length is a power of two.
