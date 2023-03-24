@@ -92,6 +92,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         // This will revert if any of these is true:
         //  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
         //  - Snapshot Proof's first element does not match the State metadata.
+        //  - Snapshot Proof length exceeds Snapshot tree Height.
         //  - State index is out of range.
         _verifySnapshotMerkle(att, _stateIndex, state, _snapProof);
         // This will revert, if state refers to another domain

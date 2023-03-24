@@ -144,6 +144,7 @@ abstract contract StatementHub is SystemRegistry {
      * Reverts if any of these is true:
      *  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
      *  - Snapshot Proof's first element does not match the State metadata.
+     *  - Snapshot Proof length exceeds Snapshot tree Height.
      *  - State index is out of range.
      * @param _att              Typed memory view over Attestation
      * @param _stateIndex       Index of state in the snapshot
@@ -160,7 +161,9 @@ abstract contract StatementHub is SystemRegistry {
         (, bytes32 rightSubLeaf) = _state.subLeafs();
         require(_snapProof[0] == rightSubLeaf, "Incorrect proof[0]");
         // Reconstruct Snapshot Merkle Root using the snapshot proof
-        // This will revert if state index is out of range
+        // This will revert if:
+        //  - State index is out of range.
+        //  - Snapshot Proof length exceeds Snapshot tree Height.
         bytes32 snapshotRoot = _snapshotRoot(
             _state.root(),
             _state.origin(),
@@ -176,6 +179,7 @@ abstract contract StatementHub is SystemRegistry {
      * and proof of inclusion of State Merkle Data (aka State "left sub-leaf") in Snapshot Merkle Tree.
      * Reverts if any of these is true:
      *  - State index is out of range.
+     *  - Snapshot Proof length exceeds Snapshot tree Height.
      * @param _originRoot   Root of Origin Merkle Tree
      * @param _origin       Domain of Origin chain
      * @param _snapProof    Proof of inclusion of State Merkle Data into Snapshot Merkle Tree
@@ -194,6 +198,7 @@ abstract contract StatementHub is SystemRegistry {
         // Reconstruct left sub-leaf of the Origin State: (originRoot, originDomain)
         bytes32 leftLeaf = StateLib.leftLeaf(_originRoot, _origin);
         // Reconstruct snapshot root using proof of inclusion
+        // This will revert if snapshot proof length exceeds Snapshot Tree Height
         return MerkleLib.proofRoot(_leftLeafIndex, leftLeaf, _snapProof, SNAPSHOT_TREE_HEIGHT);
     }
 

@@ -224,6 +224,7 @@ library MerkleLib {
 
     /**
      * @notice Calculates the merkle root for the given leaf and merkle proof.
+     * @dev Will revert if proof length exceeds the tree height.
      * @param _index    Index of `_leaf` in tree
      * @param _leaf     Leaf of the merkle tree
      * @param _proof    Proof of inclusion of `leaf` in the tree

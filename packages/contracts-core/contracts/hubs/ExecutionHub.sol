@@ -143,6 +143,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         require(_header.destination() == localDomain, "!destination");
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
+        // This will revert if origin proof length exceeds Origin Tree height
         bytes32 originRoot = MerkleLib.proofRoot(
             _header.nonce() - 1,
             _msgLeaf,
@@ -150,7 +151,9 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             ORIGIN_TREE_HEIGHT
         );
         // Reconstruct Snapshot Merkle Root using the snapshot proof
-        // This will revert if state index is out of range
+        // This will revert if:
+        //  - State index is out of range.
+        //  - Snapshot Proof length exceeds Snapshot tree Height.
         bytes32 snapshotRoot = _snapshotRoot(originRoot, _header.origin(), _snapProof, _stateIndex);
         // Fetch the attestation data for the snapshot root
         execAtt = rootAttestations[snapshotRoot];

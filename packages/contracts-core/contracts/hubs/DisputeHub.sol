@@ -52,6 +52,7 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         // This will revert if any of these is true:
         //  - Attestation root is not equal to Merkle Root derived from State and Snapshot Proof.
         //  - Snapshot Proof's first element does not match the State metadata.
+        //  - Snapshot Proof length exceeds Snapshot tree Height.
         //  - State index is out of range.
         _verifySnapshotMerkle(att, _stateIndex, report.state(), _snapProof);
         // Reported State was used by the Notary for their signed attestation => open dispute
