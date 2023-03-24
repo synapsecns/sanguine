@@ -28,13 +28,6 @@ contract SummitTest is SynapseTest, SynapseProofs {
         bytes signature;
     }
 
-    struct AttestationMask {
-        bool diffRoot;
-        bool diffHeight;
-        bool diffBlockNumber;
-        bool diffTimestamp;
-    }
-
     uint256 internal constant STATES = 10;
 
     mapping(uint256 => mapping(uint256 => RawState)) internal guardStates;
@@ -74,21 +67,16 @@ contract SummitTest is SynapseTest, SynapseProofs {
         );
     }
 
-    function test_verifyAttestation_existingNonce(Random memory random, AttestationMask memory mask)
-        public
-    {
+    function test_verifyAttestation_existingNonce(Random memory random, uint256 mask) public {
         test_notarySnapshots(random);
         // Restrict nonce to existing ones
         uint32 nonce = uint32(bound(random.nextUint32(), 0, DOMAIN_AGENTS));
-        // Attestation is valid if and only if all four fields match
-        bool isValid = !(mask.diffRoot ||
-            mask.diffHeight ||
-            mask.diffBlockNumber ||
-            mask.diffTimestamp);
+        // Attestation is valid if and only if all three fields match
+        bool isValid = mask & 7 == 0;
         RawAttestation memory ra = notaryAttestations[nonce];
-        if (mask.diffRoot) ra.root = ra.root ^ bytes32(uint256(1));
-        if (mask.diffBlockNumber) ra.blockNumber = ra.blockNumber ^ 1;
-        if (mask.diffTimestamp) ra.timestamp = ra.timestamp ^ 1;
+        ra.root = ra.root ^ bytes32(mask & 1);
+        ra.blockNumber = ra.blockNumber ^ uint40(mask & 2);
+        ra.timestamp = ra.timestamp ^ uint40(mask & 4);
         verifyAttestation(random, ra, isValid);
     }
 
