@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { Attestation, ExecutionAttestation } from "../libs/Attestation.sol";
-import { SYSTEM_ROUTER, TREE_DEPTH } from "../libs/Constants.sol";
+import { SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT } from "../libs/Constants.sol";
 import { MerkleLib } from "../libs/Merkle.sol";
 import { Header, Message, MessageLib, Tips } from "../libs/Message.sol";
 import { TypeCasts } from "../libs/TypeCasts.sol";
@@ -57,7 +57,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// @inheritdoc IExecutionHub
     function execute(
         bytes memory _message,
-        bytes32[TREE_DEPTH] calldata _originProof,
+        bytes32[ORIGIN_TREE_HEIGHT] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
     ) external {
@@ -132,7 +132,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     function _prove(
         Header _header,
         bytes32 _msgLeaf,
-        bytes32[TREE_DEPTH] calldata _originProof,
+        bytes32[ORIGIN_TREE_HEIGHT] calldata _originProof,
         bytes32[] calldata _snapProof,
         uint256 _stateIndex
     ) internal returns (ExecutionAttestation memory execAtt) {
@@ -152,7 +152,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Check if snapshot root has been submitted
         require(!execAtt.isEmpty(), "Invalid snapshot root");
         // Check that snapshot proof length matches the height of Snapshot Merkle Tree
-        require(_snapProof.length == execAtt.height, "Invalid proof length");
+        require(_snapProof.length == SNAPSHOT_TREE_HEIGHT, "Invalid proof length");
         // Check if Notary who submitted the attestation is still active
         // TODO: check for dispute status instead
         require(_isActiveAgent(localDomain, execAtt.notary), "Inactive notary");

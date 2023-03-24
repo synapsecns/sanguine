@@ -37,10 +37,6 @@ contract AttestationHarness {
         return _payload.castToAttestation().root();
     }
 
-    function height(bytes memory _payload) public pure returns (uint8) {
-        return _payload.castToAttestation().height();
-    }
-
     function nonce(bytes memory _payload) public pure returns (uint32) {
         return _payload.castToAttestation().nonce();
     }
@@ -91,12 +87,11 @@ contract AttestationHarness {
 
     function formatAttestation(
         bytes32 _root,
-        uint8 _depth,
         uint32 _nonce,
         uint40 _blockNumber,
         uint40 _timestamp
     ) public pure returns (bytes memory) {
-        return AttestationLib.formatAttestation(_root, _depth, _nonce, _blockNumber, _timestamp);
+        return AttestationLib.formatAttestation(_root, _nonce, _blockNumber, _timestamp);
     }
 
     function isAttestation(bytes memory _payload) public pure returns (bool) {

@@ -3,13 +3,20 @@ pragma solidity 0.8.17;
 
 // Here we define common constants to enable their easier reusing later.
 
+// ══════════════════════════════════ MERKLE ═══════════════════════════════════
+/// @dev Height of the Agent Merkle Tree
+uint256 constant AGENT_TREE_HEIGHT = 32;
+/// @dev Height of the Origin Merkle Tree
+uint256 constant ORIGIN_TREE_HEIGHT = 32;
+/// @dev Height of the Snapshot Merkle Tree. Allows up to 64 leafs, e.g. up to 32 states
+uint256 constant SNAPSHOT_TREE_HEIGHT = 6;
 // ══════════════════════════════════ STRUCTS ══════════════════════════════════
-/// @dev See Attestation.sol: (bytes32,uint8,uint32,uint40,uint40): 32+1+4+5+5
-uint256 constant ATTESTATION_LENGTH = 47;
+/// @dev See Attestation.sol: (bytes32,uint32,uint40,uint40): 32+4+5+5
+uint256 constant ATTESTATION_LENGTH = 46;
 /// @dev See State.sol: (bytes32,uint32,uint32,uint40,uint40): 32+4+4+5+5
 uint256 constant STATE_LENGTH = 50;
-/// @dev Maximum amount of states in a single snapshot
-uint256 constant SNAPSHOT_MAX_STATES = 32;
+/// @dev Maximum amount of states in a single snapshot. Each state produces two leafs in the tree
+uint256 constant SNAPSHOT_MAX_STATES = 1 << (SNAPSHOT_TREE_HEIGHT - 1);
 // ══════════════════════════════ STATEMENT SALTS ══════════════════════════════
 /// @dev Salts for signing various statements
 bytes32 constant ATTESTATION_SALT = keccak256("ATTESTATION_SALT");
@@ -17,8 +24,6 @@ bytes32 constant ATTESTATION_REPORT_SALT = keccak256("ATTESTATION_REPORT_SALT");
 bytes32 constant SNAPSHOT_SALT = keccak256("SNAPSHOT_SALT");
 bytes32 constant STATE_REPORT_SALT = keccak256("STATE_REPORT_SALT");
 // ══════════════════════════════════ ORIGIN ═══════════════════════════════════
-/// @dev Depth of the Origin Merkle Tree
-uint256 constant TREE_DEPTH = 32;
 /// @dev Maximum bytes per message = 2 KiB (somewhat arbitrarily set to begin)
 uint256 constant MAX_MESSAGE_BODY_BYTES = 2 * 2**10;
 // ═══════════════════════════════ SYSTEM ROUTER ═══════════════════════════════

@@ -32,7 +32,8 @@ contract AttestationProofGeneratorTest is Test {
         assertEq(snapshotRoot, snapshot.root(), "!snapshotRoot");
 
         (bytes32 item, ) = state.subLeafs();
+        uint256 itemIndex = stateIndex << 1;
         bytes32[] memory proof = proofGen.generateProof(stateIndex);
-        assertEq(MerkleLib.branchRoot(item, proof, stateIndex << 1), snapshotRoot, "!proof");
+        assertEq(MerkleLib.branchRoot(item, proof, itemIndex), snapshotRoot, "!proof");
     }
 }

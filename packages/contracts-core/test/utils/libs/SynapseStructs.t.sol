@@ -69,7 +69,6 @@ using {
 
 struct RawAttestation {
     bytes32 root;
-    uint8 height;
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
@@ -207,7 +206,6 @@ library CastLib {
     ) internal view returns (RawAttestation memory ra) {
         Snapshot snapshot = rawSnap.castToSnapshot();
         ra.root = snapshot.root();
-        ra.height = snapshot.height();
         ra.nonce = nonce;
         ra.blockNumber = blockNumber;
         ra.timestamp = timestamp;
@@ -240,7 +238,6 @@ library CastLib {
     {
         attestation = AttestationLib.formatAttestation({
             _root: ra.root,
-            _height: ra.height,
             _nonce: ra.nonce,
             _blockNumber: ra.blockNumber,
             _timestamp: ra.timestamp

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { TREE_DEPTH } from "./Constants.sol";
+import { AGENT_TREE_HEIGHT, ORIGIN_TREE_HEIGHT } from "./Constants.sol";
 
 // work based on Merkle.sol, which is used under MIT OR Apache-2.0:
 // https://github.com/nomad-xyz/monorepo/blob/main/packages/contracts-core/contracts/libs/Merkle.sol
@@ -27,7 +27,7 @@ import { TREE_DEPTH } from "./Constants.sol";
 /// - Value for the empty leaf is zeroes[0] = bytes32(0)
 /// - Value for node having empty children zeroes[i] = H(zeroes[i-1], zeroes[i-1])
 /// - branch[i] is the value of a node on the i-th level:
-///     - Levels are numbered from 0 (leafs) to TREE_DEPTH (root)
+///     - Levels are numbered from 0 (leafs) to ORIGIN_TREE_HEIGHT (root)
 ///     - branch[i] stores the value for the node, that is a "left child"
 ///     - The stored node must have non-zero values for both their children
 ///     - Out of all level's "left child" nodes with "non-zero children",
@@ -40,7 +40,7 @@ import { TREE_DEPTH } from "./Constants.sol";
 ///       sibling is the rightmost "left child" node on the level
 ///         - Therefore proof[i] = branch[i]
 struct BaseTree {
-    bytes32[TREE_DEPTH] branch;
+    bytes32[ORIGIN_TREE_HEIGHT] branch;
 }
 using { MerkleLib.insertBase, MerkleLib.rootBase } for BaseTree global;
 
@@ -54,7 +54,7 @@ struct HistoricalTree {
 }
 using { MerkleLib.initializeRoots, MerkleLib.insert, MerkleLib.root } for HistoricalTree global;
 
-/// @notice Struct representing a Dynamic Merkle Tree with 2**TREE_DEPTH leaves
+/// @notice Struct representing a Dynamic Merkle Tree with 2**AGENT_TREE_HEIGHT leaves
 /// A single operation is available: update value for existing leaf (which might be ZERO).
 /// This is done by requesting the proof of inclusion for the old value, which is used to
 /// verify the old value, and calculate the new root.
@@ -65,7 +65,7 @@ struct DynamicTree {
 using { MerkleLib.update } for DynamicTree global;
 
 library MerkleLib {
-    uint256 internal constant MAX_LEAVES = 2**TREE_DEPTH - 1;
+    uint256 internal constant MAX_LEAVES = 2**ORIGIN_TREE_HEIGHT - 1;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              BASE TREE                               ║*▕
@@ -90,7 +90,7 @@ library MerkleLib {
         // One could see that `tree.branch` value on lower and higher levels remain unchanged.
 
         // Loop invariant: `node` is the current level's value for the branch from JUST INSERTED leaf
-        for (uint256 i = 0; i < TREE_DEPTH; ) {
+        for (uint256 i = 0; i < ORIGIN_TREE_HEIGHT; ) {
             if ((_newCount & 1) == 1) {
                 // Found the first "right child" node on the branch from ZERO leaf
                 // `node` is the value for node on branch from JUST INSERTED leaf
@@ -126,7 +126,7 @@ library MerkleLib {
         returns (bytes32 _current)
     {
         // To calculate the root we follow the branch of first ZERO leaf (index == count)
-        for (uint256 i = 0; i < TREE_DEPTH; ) {
+        for (uint256 i = 0; i < ORIGIN_TREE_HEIGHT; ) {
             // Check if we are the left or the right child on the current level
             if ((_count & 1) == 1) {
                 // We are the right child. Our sibling is the "rightmost" "left-child" node
@@ -204,7 +204,7 @@ library MerkleLib {
         DynamicTree storage _tree,
         uint256 _index,
         bytes32 _oldValue,
-        bytes32[TREE_DEPTH] memory _branch,
+        bytes32[AGENT_TREE_HEIGHT] memory _branch,
         bytes32 _newValue
     ) internal returns (bytes32 newRoot) {
         // Check that the old value + proof result in a correct root
@@ -229,12 +229,12 @@ library MerkleLib {
      **/
     function branchRoot(
         bytes32 _item,
-        bytes32[TREE_DEPTH] memory _branch,
+        bytes32[ORIGIN_TREE_HEIGHT] memory _branch,
         uint256 _index
     ) internal pure returns (bytes32 _current) {
         _current = _item;
         // Go up the tree levels from leaf to root
-        for (uint256 i = 0; i < TREE_DEPTH; ) {
+        for (uint256 i = 0; i < ORIGIN_TREE_HEIGHT; ) {
             _current = getParent(_current, _branch[i], _index, i);
             unchecked {
                 ++i;
@@ -271,7 +271,7 @@ library MerkleLib {
      * @param _node         Node on a path from tree leaf to root
      * @param _sibling      Sibling for a given node
      * @param _leafIndex    Index of the tree leaf
-     * @param _nodeHeight   "Level height" for `_node` (ZERO for leafs, TREE_DEPTH for root)
+     * @param _nodeHeight   "Level height" for `_node` (ZERO for leafs, ORIGIN_TREE_HEIGHT for root)
      */
     function getParent(
         bytes32 _node,

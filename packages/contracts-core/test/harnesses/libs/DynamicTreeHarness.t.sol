@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { DynamicTree, TREE_DEPTH } from "../../../contracts/libs/Merkle.sol";
+import { DynamicTree, AGENT_TREE_HEIGHT } from "../../../contracts/libs/Merkle.sol";
 
 contract DynamicTreeHarness {
     DynamicTree internal tree;
@@ -9,7 +9,7 @@ contract DynamicTreeHarness {
     function update(
         uint256 _index,
         bytes32 _oldValue,
-        bytes32[TREE_DEPTH] memory _branch,
+        bytes32[AGENT_TREE_HEIGHT] memory _branch,
         bytes32 _newValue
     ) external {
         tree.update(_index, _oldValue, _branch, _newValue);

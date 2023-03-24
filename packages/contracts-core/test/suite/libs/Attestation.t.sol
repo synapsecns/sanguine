@@ -11,17 +11,11 @@ import {
     TypedMemView
 } from "../../harnesses/libs/AttestationHarness.t.sol";
 
+import { RawAttestation } from "../../utils/libs/SynapseStructs.t.sol";
+
 // solhint-disable func-name-mixedcase
 contract AttestationLibraryTest is SynapseLibraryTest {
     using TypedMemView for bytes;
-
-    struct RawAttestation {
-        bytes32 root;
-        uint8 height;
-        uint32 nonce;
-        uint40 blockNumber;
-        uint40 timestamp;
-    }
 
     AttestationHarness internal libHarness;
 
@@ -32,7 +26,6 @@ contract AttestationLibraryTest is SynapseLibraryTest {
     function test_formatAttestation(RawAttestation memory ra) public {
         bytes memory payload = libHarness.formatAttestation(
             ra.root,
-            ra.height,
             ra.nonce,
             ra.blockNumber,
             ra.timestamp
@@ -40,13 +33,12 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         // Test formatting of state
         assertEq(
             payload,
-            abi.encodePacked(ra.root, ra.height, ra.nonce, ra.blockNumber, ra.timestamp),
+            abi.encodePacked(ra.root, ra.nonce, ra.blockNumber, ra.timestamp),
             "!formatAttestation"
         );
         checkCastToAttestation({ payload: payload, isAttestation: true });
         // Test getters
         assertEq(libHarness.root(payload), ra.root, "!root");
-        assertEq(libHarness.height(payload), ra.height, "!height");
         assertEq(libHarness.nonce(payload), ra.nonce, "!nonce");
         assertEq(libHarness.blockNumber(payload), ra.blockNumber, "!blockNumber");
         assertEq(libHarness.timestamp(payload), ra.timestamp, "!timestamp");
@@ -75,14 +67,12 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         vm.warp(submittedAt);
         bytes memory payload = libHarness.formatAttestation(
             ra.root,
-            ra.height,
             ra.nonce,
             ra.blockNumber,
             ra.timestamp
         );
         ExecutionAttestation memory execAtt = libHarness.toExecutionAttestation(payload, notary);
         assertEq(execAtt.notary, notary, "!notary");
-        assertEq(execAtt.height, ra.height, "!height");
         assertEq(execAtt.nonce, ra.nonce, "!nonce");
         assertEq(execAtt.submittedAt, submittedAt, "!submittedAt");
     }
@@ -100,22 +90,11 @@ contract AttestationLibraryTest is SynapseLibraryTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_formatSummitAttestation(RawAttestation memory ra) public {
-        SummitAttestation memory att = SummitAttestation(
-            ra.root,
-            ra.height,
-            ra.blockNumber,
-            ra.timestamp
-        );
+        SummitAttestation memory att = SummitAttestation(ra.root, ra.blockNumber, ra.timestamp);
         bytes memory payload = libHarness.formatSummitAttestation(att, ra.nonce);
         assertEq(
             payload,
-            libHarness.formatAttestation(
-                ra.root,
-                ra.height,
-                ra.nonce,
-                ra.blockNumber,
-                ra.timestamp
-            ),
+            libHarness.formatAttestation(ra.root, ra.nonce, ra.blockNumber, ra.timestamp),
             "!formatSummitAttestation"
         );
     }
