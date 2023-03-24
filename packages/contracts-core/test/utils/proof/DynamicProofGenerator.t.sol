@@ -38,11 +38,8 @@ contract DynamicProofGenerator {
     }
 
     /// @notice Returns a merkle proof for leaf with a given index.
-    function getProof(uint256 _index)
-        external
-        view
-        returns (bytes32[AGENT_TREE_HEIGHT] memory proof)
-    {
+    function getProof(uint256 _index) external view returns (bytes32[] memory proof) {
+        proof = new bytes32[](AGENT_TREE_HEIGHT);
         for (uint256 h = 0; h < AGENT_TREE_HEIGHT; ++h) {
             // Get node's sibling
             proof[h] = merkleTree[h][_index ^ 1];

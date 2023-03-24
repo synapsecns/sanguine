@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { ORIGIN_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
 import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
 
 // TODO: move from test directory
 contract ProofGenerator {
-    uint256 public constant ORIGIN_TREE_HEIGHT = 32;
-
     /**
      * @notice Store only non-"zero" values of the merkle tree
      * merkleTree[0] are the leafs
@@ -37,11 +36,8 @@ contract ProofGenerator {
     /**
      * @notice Returns a merkle proof for leaf with a given index.
      */
-    function getProof(uint256 _index)
-        external
-        view
-        returns (bytes32[ORIGIN_TREE_HEIGHT] memory proof)
-    {
+    function getProof(uint256 _index) external view returns (bytes32[] memory proof) {
+        proof = new bytes32[](ORIGIN_TREE_HEIGHT);
         for (uint256 d = 0; d < ORIGIN_TREE_HEIGHT; ++d) {
             // Get node's neighbor
             if (_index % 2 == 0) {

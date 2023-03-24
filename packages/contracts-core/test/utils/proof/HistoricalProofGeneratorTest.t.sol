@@ -54,8 +54,12 @@ contract HistoricalProofGeneratorTest is Test {
             bytes32 root = proofGen.getRoot(count);
             // Check generated proofs for every leaf that precedes the "historical root"
             for (uint256 index = 0; index < count; ++index) {
-                bytes32[ORIGIN_TREE_HEIGHT] memory proof = proofGen.getProof(index, count);
-                assertEq(MerkleLib.branchRoot(leafs[index], proof, index), root, "Invalid proof");
+                bytes32[] memory proof = proofGen.getProof(index, count);
+                assertEq(
+                    MerkleLib.proofRoot(index, leafs[index], proof, ORIGIN_TREE_HEIGHT),
+                    root,
+                    "Invalid proof"
+                );
             }
         }
     }
