@@ -8,7 +8,7 @@ import { IExecutionHub } from "../../../contracts/interfaces/IExecutionHub.sol";
 
 contract ReentrantApp is IMessageRecipient {
     bytes internal message;
-    bytes32[ORIGIN_TREE_HEIGHT] internal originProof;
+    bytes32[] internal originProof;
     bytes32[] internal snapProof;
     uint256 internal stateIndex;
 
@@ -17,7 +17,7 @@ contract ReentrantApp is IMessageRecipient {
 
     function prepare(
         bytes memory _message,
-        bytes32[ORIGIN_TREE_HEIGHT] memory _originProof,
+        bytes32[] memory _originProof,
         bytes32[] memory _snapProof,
         uint256 _stateIndex
     ) external {
