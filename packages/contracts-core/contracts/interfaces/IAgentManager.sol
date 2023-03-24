@@ -11,6 +11,11 @@ interface IAgentManager {
     function registrySlash(uint32 _domain, address _agent) external;
 
     /**
+     * @notice Returns the latest known root of the Agent Merkle Tree.
+     */
+    function agentRoot() external view returns (bytes32);
+
+    /**
      * @notice Returns true if the agent is active on any domain.
      * Note: that includes both Guards and Notaries.
      * @return isActive Whether the account is an active agent on any of the domains
