@@ -10,8 +10,8 @@ export const klaytn = {
     symbol: 'KLAY',
   },
   rpcUrls: {
-    default: { http: ['https://cypress.fautor.app/archive	'] },
-    public: { http: ['https://cypress.fautor.app/archive	'] },
+    default: { http: ['https://public-node-api.klaytnapi.com/v1/cypress'] },
+    public: { http: ['https://public-node-api.klaytnapi.com/v1/cypress'] },
   },
   blockExplorers: {
     etherscan: { name: 'KlaytnScope', url: 'https://scope.klaytn.com/' },
@@ -82,8 +82,8 @@ export const dfk = {
     symbol: 'JEWEL',
   },
   rpcUrls: {
-    default: { http: ['https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc	'] },
-    public: { http: ['https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc	'] },
+    default: { http: ['https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc'] },
+    public: { http: ['https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc'] },
   },
   blockExplorers: {
     etherscan: { name: 'DFKSubnetScan', url: 'https://subnets.avax.network/defi-kingdoms' },
@@ -151,7 +151,7 @@ export const dogechain = {
     symbol: 'DC',
   },
   rpcUrls: {
-    default: { http: ['https://rpc.dogechain.dog	'] },
+    default: { http: ['https://rpc.dogechain.dog'] },
     public: { http: ['https://rpc.dogechain.dog'] },
   },
   blockExplorers: {

@@ -90,44 +90,13 @@ export default function BridgePage() {
       inputCurrency: fromTokenSymbolUrl,
       outputCurrency: toTokenSymbolUrl,
     } = router.query
-
-    let fromChainTokensByType = Object.values(
-      BRIDGE_SWAPABLE_TOKENS_BY_TYPE[fromChainId]
-    )
-    let maxTokenLength = 0
-    let token = fromChainTokensByType[0][0]
-    fromChainTokensByType.map((tokenArr, i) => {
-      if (tokenArr.length > maxTokenLength) {
-        maxTokenLength = tokenArr.length
-        token = tokenArr[0]
-      }
-    })
-
-    let tempFromToken: Token = token
+    let tempFromToken: Token = getMostCommonSwapableType(fromChainId)
     if (fromTokenSymbolUrl) {
       let token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
       if (token) {
         tempFromToken = token
       }
     }
-    // if (tempToChainId === fromChainId) {
-    //   tempToChainId =
-    //     fromChainId === DEFAULT_FROM_CHAIN
-    //       ? DEFAULT_TO_CHAIN
-    //       : DEFAULT_FROM_CHAIN
-    // }
-    // let tempToChainId = DEFAULT_TO_CHAIN
-    // if (toChainIdUrl) {
-    //   tempToChainId = Number(toChainIdUrl)
-    // }
-
-    // let tempToToken = undefined
-    // if (toTokenSymbolUrl) {
-    //   let token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
-    //   if (token) {
-    //     tempFromToken = token
-    //   }
-    // }
     handleNewFromToken(
       tempFromToken,
       toChainIdUrl ? Number(toChainIdUrl) : undefined,
@@ -135,39 +104,22 @@ export default function BridgePage() {
       false
     )
     setFromToken(tempFromToken)
-    // console.log('fromChainTosadasdaskjdhaskkjhkens', fromChainTokensByType)
-
-    // let maxTokenLength = 0
-    // let token = fromChainTokensByType[0][0]
-    // fromChainTokensByType.map((tokenArr, i) => {
-    //   if (tokenArr.length > maxTokenLength) {
-    //     maxTokenLength = tokenArr.length
-    //     token = tokenArr[0]
-    //   }
-    // })
-
-    // let tempFromToken: Token = token
-    // if (fromTokenSymbolUrl) {
-    //   let token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
-    //   if (token) {
-    //     tempFromToken = token
-    //   }
-    // }
-    // setFromToken(tempFromToken)
-
-    //BRIDGE_SWAPABLE_TOKENS_BY_TYPE[toChainId][String(toToken.swapableType)]
-
-    // let tempToToken: Token = BRIDGE_SWAPABLE_TOKENS_BY_TYPE[toChainId][tempFromToken.swapableType][0]
-    // if (toTokenSymbolUrl) {
-    //   let token = tokenSymbolToToken(toChainId, String(toTokenSymbolUrl))
-    //   if (token) {
-    //     tempToToken = token
-    //   }
-    // }
-
-    // setToToken(tempToToken)
   }, [router.query])
 
+  const getMostCommonSwapableType = (chainId: number) => {
+    let fromChainTokensByType = Object.values(
+      BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
+    )
+    let maxTokenLength = 0
+    let token: Token = fromChainTokensByType[0][0]
+    fromChainTokensByType.map((tokenArr, i) => {
+      if (tokenArr.length > maxTokenLength) {
+        maxTokenLength = tokenArr.length
+        token = tokenArr[0]
+      }
+    })
+    return token
+  }
   // let tempToChainId = DEFAULT_TO_CHAIN
   // if (toChainIdUrl) {
   //   tempToChainId = Number(toChainIdUrl)
@@ -323,8 +275,18 @@ export default function BridgePage() {
       BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
 
     if (swapExceptionsArr?.length > 0) {
+      console.log(
+        'SDJHSODHSKDHSKJ innn hereeeeee',
+        swapExceptionsArr,
+        bridgeableTokens
+      )
       bridgeableTokens = bridgeableTokens.filter(
         (toToken) => toToken.symbol === token.symbol
+      )
+      console.log(
+        'SDJHSODHSKDHSKJ innn hereeeeee end',
+        swapExceptionsArr,
+        bridgeableTokens
       )
     }
     console.log(
@@ -335,14 +297,20 @@ export default function BridgePage() {
       positedToToken && token.swapableType === positedToToken.swapableType
     )
     let bridgeableToken: Token =
-      positedToToken && token.swapableType === positedToToken.swapableType
+      positedToToken &&
+      !(swapExceptionsArr?.length > 0) &&
+      token.swapableType === positedToToken.swapableType
         ? positedToToken
         : bridgeableTokens[0]
 
     setToToken(bridgeableToken)
     setToBridgeableTokens(bridgeableTokens)
     setToBridgeableChains(bridgeableChains)
-    if (updateUrl) {
+    if (
+      updateUrl ||
+      newToChain !== positedToChain ||
+      bridgeableToken.symbol !== positedToSymbol
+    ) {
       updateUrlParams({
         outputChain: newToChain,
         inputCurrency: token.symbol,
@@ -388,6 +356,12 @@ export default function BridgePage() {
       alert('Please connect your wallet')
     } else {
       switchNetwork?.(chainId)
+      handleNewFromToken(
+        getMostCommonSwapableType(chainId),
+        toChainId,
+        toToken.symbol,
+        true
+      )
     }
   }
 
@@ -466,35 +440,34 @@ export default function BridgePage() {
               {/* <HarmonyCheck fromChainId={fromChainId} toChainId={toChainId} /> */}
               <div className="flex justify-center">
                 <div className="pb-3 place-self-center">
-                  {fromToken && fromChainId ? (
-                    <BridgeCard
-                      address={address}
-                      fromChainId={fromChainId}
-                      toChainId={toChainId}
-                      onSelectFromChain={handleFromChainChange}
-                      onSelectToChain={handleToChainChange}
-                      swapFromToChains={handleChainFlip}
-                      onChangeFromAmount={onChangeFromAmount}
-                      onChangeToAmount={onChangeToAmount}
-                      fromCoin={fromToken}
-                      toCoin={toToken}
-                      possibleChains={toBridgeableChains}
-                      handleTokenChange={handleTokenChange}
-                      toBridgeableTokens={toBridgeableTokens}
-                      {...{
-                        fromValue,
-                        toValue,
-                        error,
-                        priceImpact,
-                        exchangeRate,
-                        feeAmount,
-                        fromRef,
-                        toRef,
-                        destinationAddress,
-                        setDestinationAddress,
-                      }}
-                    />
-                  ) : null}
+                  <BridgeCard
+                    address={address}
+                    fromChainId={fromChainId}
+                    toChainId={toChainId}
+                    onSelectFromChain={handleFromChainChange}
+                    onSelectToChain={handleToChainChange}
+                    swapFromToChains={handleChainFlip}
+                    onChangeFromAmount={onChangeFromAmount}
+                    onChangeToAmount={onChangeToAmount}
+                    fromCoin={fromToken}
+                    toCoin={toToken}
+                    possibleChains={toBridgeableChains}
+                    handleTokenChange={handleTokenChange}
+                    toBridgeableTokens={toBridgeableTokens}
+                    {...{
+                      fromValue,
+                      toValue,
+                      error,
+                      priceImpact,
+                      exchangeRate,
+                      feeAmount,
+                      fromRef,
+                      toRef,
+                      destinationAddress,
+                      setDestinationAddress,
+                    }}
+                  />
+
                   <ActionCardFooter link={HOW_TO_BRIDGE_URL} />
                 </div>
               </div>
