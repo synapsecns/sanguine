@@ -159,27 +159,29 @@ contract BondingManagerTest is AgentManagerTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         TEST: REGISTRY SLASH                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-    /*
-    function test_registrySlash_origin(uint32 domain, address agent) public {
-        test_addAgent(domain, agent);
+
+    function test_registrySlash_origin(uint256 domainId, uint256 agentId) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
         vm.expectCall(
             summit,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
         vm.prank(originSynapse);
         bondingManager.registrySlash(domain, agent);
-        assertFalse(bondingManager.isActiveAgent(domain, agent));
+        // TODO: reenable when slashing is finalized
+        // assertFalse(bondingManager.isActiveAgent(domain, agent));
     }
 
-    function test_registrySlash_summit(uint32 domain, address agent) public {
-        test_addAgent(domain, agent);
+    function test_registrySlash_summit(uint256 domainId, uint256 agentId) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
         vm.expectCall(
             originSynapse,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
         vm.prank(summit);
         bondingManager.registrySlash(domain, agent);
-        assertFalse(bondingManager.isActiveAgent(domain, agent));
+        // TODO: reenable when slashing is finalized
+        // assertFalse(bondingManager.isActiveAgent(domain, agent));
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {
@@ -188,7 +190,7 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(caller);
         bondingManager.registrySlash(0, address(0));
     }
-    */
+
     function _localDomain() internal pure override returns (uint32) {
         return DOMAIN_SYNAPSE;
     }
