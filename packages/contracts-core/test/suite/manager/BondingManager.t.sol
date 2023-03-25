@@ -56,11 +56,21 @@ contract BondingManagerTest is AgentManagerTest {
     function test_addAgent_resting(uint256 domainId, uint256 agentId) public {
         // Full lifecycle for a live agent:
         // Active -> Unstaking -> Resting -> Active
-        uint32 domain = allDomains[domainId % allDomains.length];
-        address agent = domains[domain].agents[agentId % DOMAIN_AGENTS];
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
         updateStatus(AgentFlag.Resting, domain, agent);
         updateStatus(AgentFlag.Active, domain, agent);
+    }
+
+    function test_initiateUnstaking(uint256 domainId, uint256 agentId) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        updateStatus(AgentFlag.Unstaking, domain, agent);
+    }
+
+    function test_completeUnstaking(uint256 domainId, uint256 agentId) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        updateStatus(AgentFlag.Unstaking, domain, agent);
+        updateStatus(AgentFlag.Resting, domain, agent);
     }
 
     function updateStatus(
@@ -72,6 +82,16 @@ contract BondingManagerTest is AgentManagerTest {
         bytes32 newRoot = updateAgent(flag, agent);
         vm.expectEmit(true, true, true, true);
         emit StatusUpdated(flag, domain, agent, newRoot);
+        updateStatusWithProof(flag, domain, agent, proof);
+        assertEq(bondingManager.agentRoot(), newRoot, "!agentRoot");
+    }
+
+    function updateStatusWithProof(
+        AgentFlag flag,
+        uint32 domain,
+        address agent,
+        bytes32[] memory proof
+    ) public {
         if (flag == AgentFlag.Unstaking) {
             bondingManager.initiateUnstaking(domain, agent, proof);
         } else if (flag == AgentFlag.Resting) {
@@ -79,7 +99,6 @@ contract BondingManagerTest is AgentManagerTest {
         } else if (flag == AgentFlag.Active) {
             bondingManager.addAgent(domain, agent, proof);
         }
-        assertEq(bondingManager.agentRoot(), newRoot, "!agentRoot");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
