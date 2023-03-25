@@ -42,34 +42,58 @@ contract LightManagerTest is AgentManagerTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       TESTS: ADD/REMOVE AGENTS                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-    /*
-    function test_addAgent(uint32 domain, address agent) public {
+
+    function test_addAgent_new(
+        address caller,
+        uint32 domain,
+        address agent
+    ) public {
         (bool isActive, ) = lightManager.isActiveAgent(agent);
         // Should not be an already added agent
         vm.assume(!isActive);
-        lightManager.addAgent(domain, agent);
-        assertTrue(lightManager.isActiveAgent(domain, agent));
+        bytes32 root = addNewAgent(domain, agent);
+        test_setAgentRoot(root);
+        bytes32[] memory proof = getAgentProof(agent);
+        // Anyone could add agents in Light Manager
+        vm.prank(caller);
+        lightManager.addAgent(domain, agent, proof, agentIndex[agent]);
+        checkActive(lightManager, domain, agent);
     }
 
-    function test_removeAgent(uint32 domain, address agent) public {
-        test_addAgent(domain, agent);
-        lightManager.removeAgent(domain, agent);
-        assertFalse(lightManager.isActiveAgent(domain, agent));
+    function test_setAgentRoot(bytes32 root) public {
+        lightManager.setAgentRoot(root);
+        assertEq(lightManager.agentRoot(), root, "!agentRoot");
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                    TEST: UPDATE AGENTS (REVERTS)                     ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_addAgent_revert_invalidProof(uint256 domainId, uint256 agentId) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        bytes32[] memory proof = getAgentProof(agent);
+        // This succeeds, but doesn't do anything, as agent was already added
+        lightManager.addAgent(domain, agent, proof, agentIndex[agent]);
+        // Change agent root, so old proofs are no longer valid
+        test_setAgentRoot(bytes32(0));
+        checkInactive(lightManager, domain, agent);
+        vm.expectRevert("Invalid proof");
+        lightManager.addAgent(domain, agent, proof, agentIndex[agent]);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         TEST: REGISTRY SLASH                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-    /*
+
     function test_registrySlash_origin(uint32 domain, address agent) public {
-        test_addAgent(domain, agent);
+        test_addAgent_new(address(this), domain, agent);
         vm.expectCall(
             destination,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
         vm.prank(origin);
         lightManager.registrySlash(domain, agent);
-        assertFalse(lightManager.isActiveAgent(domain, agent));
+        // assertFalse(lightManager.isActiveAgent(domain, agent));
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {
@@ -78,7 +102,7 @@ contract LightManagerTest is AgentManagerTest {
         vm.prank(caller);
         lightManager.registrySlash(0, address(0));
     }
-    */
+
     function _localDomain() internal pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }
