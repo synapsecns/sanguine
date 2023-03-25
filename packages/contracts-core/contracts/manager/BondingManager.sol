@@ -186,6 +186,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         bytes32 newValue = _agentLeaf(_newStatus.flag, _newStatus.domain, _agent);
         // This will revert if the proof for the old value is incorrect
         bytes32 newRoot = agentTree.update(_newStatus.index, _oldValue, _proof, newValue);
+        agentStatus[_agent] = _newStatus;
         emit StatusUpdated(_newStatus.flag, _newStatus.domain, _agent, newRoot);
     }
 
