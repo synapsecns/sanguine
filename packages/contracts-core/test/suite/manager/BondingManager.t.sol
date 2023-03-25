@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.sol";
+import { AgentFlag } from "../../../contracts/libs/Structures.sol";
 import { AgentManagerTest } from "./AgentManager.t.sol";
 
 import { ISystemContract, Summit, SynapseTest } from "../../utils/SynapseTest.t.sol";
@@ -39,19 +40,46 @@ contract BondingManagerTest is AgentManagerTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       TESTS: ADD/REMOVE AGENTS                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-    /*
-    function test_addAgent(uint32 domain, address agent) public {
+
+    function test_addAgent_new(uint32 domain, address agent) public {
         (bool isActive, ) = bondingManager.isActiveAgent(agent);
         // Should not be an already added agent
         vm.assume(!isActive);
-        bondingManager.addAgent(domain, agent);
-        assertTrue(bondingManager.isActiveAgent(domain, agent));
+        bytes32[] memory proof = getZeroProof();
+        bytes32 newRoot = addNewAgent(domain, agent);
+        vm.expectEmit(true, true, true, true);
+        emit StatusUpdated(AgentFlag.Active, domain, agent, newRoot);
+        bondingManager.addAgent(domain, agent, proof);
+        assertEq(bondingManager.agentRoot(), newRoot, "!agentRoot");
     }
 
-    function test_removeAgent(uint32 domain, address agent) public {
-        test_addAgent(domain, agent);
-        bondingManager.removeAgent(domain, agent);
-        assertFalse(bondingManager.isActiveAgent(domain, agent));
+    function test_addAgent_resting(uint256 domainId, uint256 agentId) public {
+        // Full lifecycle for a live agent:
+        // Active -> Unstaking -> Resting -> Active
+        uint32 domain = allDomains[domainId % allDomains.length];
+        address agent = domains[domain].agents[agentId % DOMAIN_AGENTS];
+        updateStatus(AgentFlag.Unstaking, domain, agent);
+        updateStatus(AgentFlag.Resting, domain, agent);
+        updateStatus(AgentFlag.Active, domain, agent);
+    }
+
+    function updateStatus(
+        AgentFlag flag,
+        uint32 domain,
+        address agent
+    ) public {
+        bytes32[] memory proof = getAgentProof(agent);
+        bytes32 newRoot = updateAgent(flag, agent);
+        vm.expectEmit(true, true, true, true);
+        emit StatusUpdated(flag, domain, agent, newRoot);
+        if (flag == AgentFlag.Unstaking) {
+            bondingManager.initiateUnstaking(domain, agent, proof);
+        } else if (flag == AgentFlag.Resting) {
+            bondingManager.completeUnstaking(domain, agent, proof);
+        } else if (flag == AgentFlag.Active) {
+            bondingManager.addAgent(domain, agent, proof);
+        }
+        assertEq(bondingManager.agentRoot(), newRoot, "!agentRoot");
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

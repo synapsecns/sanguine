@@ -70,18 +70,20 @@ abstract contract SynapseProofs {
     ▏*║                             AGENT PROOFS                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function addNewAgent(uint32 domain, address agent) public {
+    function addNewAgent(uint32 domain, address agent) public returns (bytes32 newRoot) {
         require(agentIndex[agent] == 0, "Already added");
         uint256 index = ++totalAgents;
         agentIndex[agent] = index;
         agentDomain[agent] = domain;
         agentGen.update(index, getAgentLeaf(AgentFlag.Active, domain, agent));
+        return agentGen.getRoot();
     }
 
-    function updateAgent(AgentFlag flag, address agent) public {
+    function updateAgent(AgentFlag flag, address agent) public returns (bytes32 newRoot) {
         uint256 index = agentIndex[agent];
         require(index != 0, "Unknown agent");
         agentGen.update(index, getAgentLeaf(flag, agentDomain[agent], agent));
+        return agentGen.getRoot();
     }
 
     function getAgentRoot() public view returns (bytes32) {
