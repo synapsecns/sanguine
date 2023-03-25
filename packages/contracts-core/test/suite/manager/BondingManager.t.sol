@@ -54,6 +54,7 @@ contract BondingManagerTest is AgentManagerTest {
         vm.expectEmit(true, true, true, true);
         emit StatusUpdated(AgentFlag.Active, domain, agent, newRoot);
         bondingManager.addAgent(domain, agent, proof);
+        checkActive(bondingManager, domain, agent);
         assertEq(bondingManager.agentRoot(), newRoot, "!agentRoot");
     }
 
@@ -64,17 +65,20 @@ contract BondingManagerTest is AgentManagerTest {
         updateStatus(AgentFlag.Unstaking, domain, agent);
         updateStatus(AgentFlag.Resting, domain, agent);
         updateStatus(AgentFlag.Active, domain, agent);
+        checkActive(bondingManager, domain, agent);
     }
 
     function test_initiateUnstaking(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
+        checkInactive(bondingManager, domain, agent);
     }
 
     function test_completeUnstaking(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
         updateStatus(AgentFlag.Resting, domain, agent);
+        checkInactive(bondingManager, domain, agent);
     }
 
     function updateStatus(
