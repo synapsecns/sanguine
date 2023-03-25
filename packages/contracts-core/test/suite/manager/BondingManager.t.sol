@@ -15,19 +15,25 @@ contract BondingManagerTest is AgentManagerTest {
     ▏*║                TESTS: UNAUTHORIZED ACCESS (NOT OWNER)                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /*
     function test_addAgent_revert_notOwner(address caller) public {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
         vm.prank(caller);
-        bondingManager.addAgent(1, address(1));
+        bondingManager.addAgent(1, address(1), new bytes32[](0));
     }
 
-    function test_removeAgent_revert_notOwner(address caller) public {
+    function test_initiateUnstaking_revert_notOwner(address caller) public {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
         vm.prank(caller);
-        bondingManager.removeAgent(1, address(1));
+        bondingManager.initiateUnstaking(1, address(1), new bytes32[](0));
+    }
+
+    function test_completeUnstaking_revert_notOwner(address caller) public {
+        vm.assume(caller != address(this));
+        expectRevertNotOwner();
+        vm.prank(caller);
+        bondingManager.completeUnstaking(1, address(1), new bytes32[](0));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -30,19 +30,13 @@ contract LightManagerTest is AgentManagerTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                TESTS: UNAUTHORIZED ACCESS (NOT OWNER)                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-    /*
-    function test_addAgent_revert_notOwner(address caller) public {
-        vm.assume(caller != address(this));
-        expectRevertNotOwner();
-        vm.prank(caller);
-        lightManager.addAgent(1, address(1));
-    }
 
-    function test_removeAgent_revert_notOwner(address caller) public {
+    // TODO: this should be only called by Destination
+    function test_setAgentRoot_revert_notOwner(address caller) public {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
         vm.prank(caller);
-        lightManager.removeAgent(1, address(1));
+        lightManager.setAgentRoot(bytes32(uint256(1)));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
