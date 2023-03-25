@@ -106,6 +106,9 @@ interface IBondingManager {
      * @notice Returns a proof of inclusion of the agent in the Agent Merkle Tree.
      * @dev Will return a proof for an empty leaf, if agent is not added to the tree yet.
      * This proof could be used by ANY next new agent that calls {addAgent}.
+     * @dev This WILL consume a lot of gas, do not use this on-chain.
+     * @dev The alternative way to create a proof is to fetch the full list of leafs using
+     * either {allLeafs} or {getLeafs}, and create a merkle proof from that.
      * @param _agent    Agent address
      * @return proof    Merkle proof for the agent
      */
