@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { AgentFlag, AgentStatus } from "../libs/Structures.sol";
 import { DynamicTree, MerkleLib } from "../libs/Merkle.sol";
+import { MerkleList } from "../libs/MerkleList.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentManager, IAgentManager, ISystemRegistry } from "./AgentManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
@@ -17,7 +18,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // (agent => agent information)
+    /// @inheritdoc IBondingManager
     mapping(address => AgentStatus) public agentStatus;
 
     // A list of all agent accounts. First entry is address(0) to make agent indexes start from 1.
@@ -170,6 +171,47 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         return agentTree.root;
     }
 
+    /// @inheritdoc IBondingManager
+    function agentLeaf(address _agent) external view returns (bytes32 leaf) {
+        return _getLeaf(_agent);
+    }
+
+    /// @inheritdoc IBondingManager
+    function leafsAmount() external view returns (uint256 amount) {
+        return agents.length;
+    }
+
+    /// @inheritdoc IBondingManager
+    function getProof(address _agent) external view returns (bytes32[] memory proof) {
+        bytes32[] memory leafs = allLeafs();
+        AgentStatus memory status = agentStatus[_agent];
+        // Use next available index for unknown agents
+        uint256 index = status.flag == AgentFlag.Unknown ? agents.length : status.index;
+        return MerkleList.calculateProof(leafs, index);
+    }
+
+    /// @inheritdoc IBondingManager
+    function allLeafs() public view returns (bytes32[] memory leafs) {
+        return getLeafs(0, agents.length);
+    }
+
+    /// @inheritdoc IBondingManager
+    function getLeafs(uint256 _indexFrom, uint256 _amount)
+        public
+        view
+        returns (bytes32[] memory leafs)
+    {
+        uint256 amountTotal = agents.length;
+        require(_indexFrom < amountTotal, "Out of range");
+        if (_indexFrom + _amount > amountTotal) {
+            _amount = amountTotal - _indexFrom;
+        }
+        leafs = new bytes32[](_amount);
+        for (uint256 i = 0; i < _amount; ++i) {
+            leafs[i] = _getLeaf(_indexFrom + i);
+        }
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -193,5 +235,22 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
     /// @dev Returns the status of the agent.
     function _agentStatus(address _agent) internal view override returns (AgentStatus memory) {
         return agentStatus[_agent];
+    }
+
+    /// @dev Returns the current leaf representing agent in the Agent Merkle Tree.
+    function _getLeaf(address _agent) internal view returns (bytes32 leaf) {
+        AgentStatus memory status = agentStatus[_agent];
+        if (status.flag != AgentFlag.Unknown) {
+            return _agentLeaf(status.flag, status.domain, _agent);
+        }
+        // Return empty leaf for unknown agents
+    }
+
+    /// @dev Returns a leaf from the Agent Merkle Tree with a given index.
+    function _getLeaf(uint256 index) internal view returns (bytes32 leaf) {
+        if (index != 0) {
+            return _getLeaf(agents[index]);
+        }
+        // Return empty leaf for a zero index
     }
 }
