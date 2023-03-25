@@ -9,6 +9,10 @@ import { ISystemContract, Summit, SynapseTest } from "../../utils/SynapseTest.t.
 
 // solhint-disable func-name-mixedcase
 contract BondingManagerTest is AgentManagerTest {
+    bytes internal constant CANT_ADD = "Agent could not be added";
+    bytes internal constant CANT_INITIATE = "Unstaking could not be initiated";
+    bytes internal constant CANT_COMPLETE = "Unstaking could not be completed";
+
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
 
@@ -99,6 +103,57 @@ contract BondingManagerTest is AgentManagerTest {
         } else if (flag == AgentFlag.Active) {
             bondingManager.addAgent(domain, agent, proof);
         }
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                    TEST: UPDATE AGENTS (REVERTS)                     ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_addAgent_revert_active(uint256 domainId, uint256 agentId) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        updateStatusWithRevert(AgentFlag.Active, domain, agent, CANT_ADD);
+    }
+
+    function test_addAgent_revert_unstaking(uint256 domainId, uint256 agentId) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        updateStatus(AgentFlag.Unstaking, domain, agent);
+        updateStatusWithRevert(AgentFlag.Active, domain, agent, CANT_ADD);
+    }
+
+    function test_initiateUnstaking_revert_unstaking(uint256 domainId, uint256 agentId) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        updateStatus(AgentFlag.Unstaking, domain, agent);
+        updateStatusWithRevert(AgentFlag.Unstaking, domain, agent, CANT_INITIATE);
+    }
+
+    function test_initiateUnstaking_revert_resting(uint256 domainId, uint256 agentId) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        updateStatus(AgentFlag.Unstaking, domain, agent);
+        updateStatus(AgentFlag.Resting, domain, agent);
+        updateStatusWithRevert(AgentFlag.Unstaking, domain, agent, CANT_INITIATE);
+    }
+
+    function test_completeUnstaking_revert_active(uint256 domainId, uint256 agentId) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        updateStatusWithRevert(AgentFlag.Resting, domain, agent, CANT_COMPLETE);
+    }
+
+    function test_completeUnstaking_revert_resting(uint256 domainId, uint256 agentId) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        updateStatus(AgentFlag.Unstaking, domain, agent);
+        updateStatus(AgentFlag.Resting, domain, agent);
+        updateStatusWithRevert(AgentFlag.Resting, domain, agent, CANT_COMPLETE);
+    }
+
+    function updateStatusWithRevert(
+        AgentFlag flag,
+        uint32 domain,
+        address agent,
+        bytes memory revertMsg
+    ) public {
+        bytes32[] memory proof = getAgentProof(agent);
+        vm.expectRevert(revertMsg);
+        updateStatusWithProof(flag, domain, agent, proof);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
