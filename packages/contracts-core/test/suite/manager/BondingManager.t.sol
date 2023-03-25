@@ -2,6 +2,8 @@
 pragma solidity 0.8.17;
 
 import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.sol";
+import { AGENT_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
+import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
 import { AgentFlag } from "../../../contracts/libs/Structures.sol";
 import { AgentManagerTest } from "./AgentManager.t.sol";
 
@@ -213,6 +215,70 @@ contract BondingManagerTest is AgentManagerTest {
         vm.expectRevert("Unauthorized caller");
         vm.prank(caller);
         bondingManager.registrySlash(0, address(0));
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             TEST: VIEWS                              ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_agentLeaf_knownAgent(uint256 domainId, uint256 agentId) public {
+        (, address agent) = getAgent(domainId, agentId);
+        assertEq(bondingManager.agentLeaf(agent), getAgentLeaf(agentIndex[agent]));
+    }
+
+    function test_agentLeaf_unknownAgent(address agent) public {
+        (bool isActive, ) = bondingManager.isActiveAgent(agent);
+        // Should not be an already added agent
+        vm.assume(!isActive);
+        assertEq(bondingManager.agentLeaf(agent), bytes32(0));
+    }
+
+    function test_getProof_knownAgent(uint256 domainId, uint256 agentId) public {
+        (, address agent) = getAgent(domainId, agentId);
+        bytes32[] memory proof = bondingManager.getProof(agent);
+        uint256 index = agentIndex[agent];
+        checkProof(index, proof);
+    }
+
+    function test_getProof_unknownAgent(address agent) public {
+        (bool isActive, ) = bondingManager.isActiveAgent(agent);
+        // Should not be an already added agent
+        vm.assume(!isActive);
+        bytes32[] memory proof = bondingManager.getProof(agent);
+        // Use the next index
+        uint256 index = totalAgents + 1;
+        checkProof(index, proof);
+    }
+
+    function checkProof(uint256 index, bytes32[] memory proof) public {
+        assertEq(
+            MerkleLib.proofRoot(index, getAgentLeaf(index), proof, AGENT_TREE_HEIGHT),
+            getAgentRoot()
+        );
+    }
+
+    function test_allLeafs() public {
+        assertEq(bondingManager.leafsAmount(), totalAgents + 1, "!leafsAmount");
+        bytes32[] memory leafs = bondingManager.allLeafs();
+        for (uint256 i = 0; i < leafs.length; ++i) {
+            assertEq(leafs[i], getAgentLeaf(i));
+        }
+    }
+
+    function test_getLeafs(uint256 indexFrom, uint256 amount) public {
+        uint256 totalLeafs = totalAgents + 1;
+        indexFrom = indexFrom % totalLeafs;
+        // Allow index overrun
+        amount = amount % (totalLeafs + 10);
+        bytes32[] memory leafs = bondingManager.getLeafs(indexFrom, amount);
+        if (indexFrom + amount <= totalLeafs) {
+            assertEq(leafs.length, amount);
+        } else {
+            assertEq(leafs.length, totalLeafs - indexFrom);
+        }
+        for (uint256 i = 0; i < leafs.length; ++i) {
+            assertEq(leafs[i], getAgentLeaf(indexFrom + i));
+        }
     }
 
     function _localDomain() internal pure override returns (uint32) {

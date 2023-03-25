@@ -101,6 +101,10 @@ abstract contract SynapseProofs {
         return agentGen.getProof(totalAgents + 1);
     }
 
+    function getAgentLeaf(uint256 index) public view returns (bytes32) {
+        return agentGen.getLeaf(index);
+    }
+
     function getAgentLeaf(
         AgentFlag _flag,
         uint32 _domain,
