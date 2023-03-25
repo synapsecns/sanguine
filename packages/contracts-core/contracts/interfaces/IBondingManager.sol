@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { AgentFlag } from "../libs/Structures.sol";
+
 interface IBondingManager {
     /**
      * @notice Adds a new agent for the domain. This is either a fresh address (Inactive),
@@ -49,4 +51,63 @@ interface IBondingManager {
         address _agent,
         bytes32[] memory _proof
     ) external;
+
+    // ═════════════════════════════════ VIEWS ═════════════════════════════════
+
+    /**
+     * @notice Returns current status for a given agent.
+     * @param _agent    Agent address
+     * @return flag     Flag signalling the agent status (see Structures.sol)
+     * @return domain   Domain where the Agent is active (0 for Guards)
+     * @return index    Index of agent in the Agent Merkle Tree
+     */
+    function agentStatus(address _agent)
+        external
+        view
+        returns (
+            AgentFlag flag,
+            uint32 domain,
+            uint32 index
+        );
+
+    /**
+     * @notice Returns a leaf representing the current status of agent in the Agent Merkle Tree.
+     * @dev Will return an empty leaf, if agent is not added to the tree yet.
+     * @param _agent    Agent address
+     * @return leaf     Agent leaf in the Agent Merkle Tree
+     */
+    function agentLeaf(address _agent) external view returns (bytes32 leaf);
+
+    /**
+     * @notice Returns a total amount of leafs representing known agents.
+     * @dev This includes active, unstaking, resting and slashed agents.
+     * This also includes an empty leaf as the very first entry.
+     */
+    function leafsAmount() external view returns (uint256 amount);
+
+    /**
+     * @notice Returns a full list of leafs from the Agent Merkle Tree.
+     * @dev This might consume a lot of gas, do not use this on-chain.
+     */
+    function allLeafs() external view returns (bytes32[] memory leafs);
+
+    /**
+     * @notice Returns a list of leafs from the Agent Merkle Tree
+     * with indexes [indexFrom .. indexFrom + amount).
+     * @dev This might consume a lot of gas, do not use this on-chain.
+     * @dev Will return less than `amount` entries, if indexFrom + amount > leafsAmount
+     */
+    function getLeafs(uint256 _indexFrom, uint256 _amount)
+        external
+        view
+        returns (bytes32[] memory leafs);
+
+    /**
+     * @notice Returns a proof of inclusion of the agent in the Agent Merkle Tree.
+     * @dev Will return a proof for an empty leaf, if agent is not added to the tree yet.
+     * This proof could be used by ANY next new agent that calls {addAgent}.
+     * @param _agent    Agent address
+     * @return proof    Merkle proof for the agent
+     */
+    function getProof(address _agent) external view returns (bytes32[] memory proof);
 }
