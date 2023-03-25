@@ -5,12 +5,30 @@ import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.s
 
 import { AgentManagerTest } from "./AgentManager.t.sol";
 
-import { LightManager, ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
+import {
+    LightManager,
+    ISystemContract,
+    ISystemRegistry,
+    SynapseTest
+} from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract LightManagerTest is AgentManagerTest {
     // Deploy mocks for every messaging contract
     constructor() SynapseTest(0) {}
+
+    function test_initializer(
+        address caller,
+        address _origin,
+        address _destination
+    ) public {
+        lightManager = new LightManager(DOMAIN_LOCAL);
+        vm.prank(caller);
+        lightManager.initialize(ISystemRegistry(_origin), ISystemRegistry(_destination));
+        assertEq(lightManager.owner(), caller);
+        assertEq(address(lightManager.origin()), _origin);
+        assertEq(address(lightManager.destination()), _destination);
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             TESTS: SETUP                             ║*▕

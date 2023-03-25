@@ -5,7 +5,13 @@ import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.s
 import { AgentFlag } from "../../../contracts/libs/Structures.sol";
 import { AgentManagerTest } from "./AgentManager.t.sol";
 
-import { ISystemContract, Summit, SynapseTest } from "../../utils/SynapseTest.t.sol";
+import {
+    BondingManager,
+    ISystemContract,
+    ISystemRegistry,
+    Summit,
+    SynapseTest
+} from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract BondingManagerTest is AgentManagerTest {
@@ -15,6 +21,20 @@ contract BondingManagerTest is AgentManagerTest {
 
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
+
+    function test_initializer(
+        address caller,
+        address _origin,
+        address _destination
+    ) public {
+        bondingManager = new BondingManager(DOMAIN_SYNAPSE);
+        vm.prank(caller);
+        bondingManager.initialize(ISystemRegistry(_origin), ISystemRegistry(_destination));
+        assertEq(bondingManager.owner(), caller);
+        assertEq(address(bondingManager.origin()), _origin);
+        assertEq(address(bondingManager.destination()), _destination);
+        assertEq(bondingManager.leafsAmount(), 1);
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                TESTS: UNAUTHORIZED ACCESS (NOT OWNER)                ║*▕
