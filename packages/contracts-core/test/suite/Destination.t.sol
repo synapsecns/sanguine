@@ -26,12 +26,11 @@ import {
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
-import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
 import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
-contract DestinationTest is SynapseTest, SynapseProofs {
+contract DestinationTest is SynapseTest {
     uint32 internal constant PERIOD = 1 minutes;
     bytes internal constant BODY = "Test Body";
 

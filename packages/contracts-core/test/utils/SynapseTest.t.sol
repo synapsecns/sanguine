@@ -17,9 +17,10 @@ import { SummitMock } from "../mocks/SummitMock.t.sol";
 
 import { ProductionEvents } from "./events/ProductionEvents.t.sol";
 import { SynapseAgents } from "./SynapseAgents.t.sol";
+import { SynapseProofs } from "./SynapseProofs.t.sol";
 
 // solhint-disable ordering
-abstract contract SynapseTest is ProductionEvents, SynapseAgents {
+abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs {
     uint256 private immutable deployMask;
 
     address internal originSynapse;

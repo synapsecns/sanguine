@@ -11,7 +11,6 @@ import { InterfaceSummit } from "../../contracts/Summit.sol";
 import { Versioned } from "../../contracts/Version.sol";
 
 import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
-import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
 import {
     AttestationFlag,
     State,
@@ -23,7 +22,7 @@ import { Random } from "../utils/libs/Random.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
-contract SummitTest is SynapseTest, SynapseProofs {
+contract SummitTest is SynapseTest {
     struct SignedSnapshot {
         bytes snapshot;
         bytes signature;
