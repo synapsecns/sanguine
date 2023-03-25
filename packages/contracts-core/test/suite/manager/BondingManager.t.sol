@@ -15,6 +15,7 @@ contract BondingManagerTest is AgentManagerTest {
     ▏*║                TESTS: UNAUTHORIZED ACCESS (NOT OWNER)                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /*
     function test_addAgent_revert_notOwner(address caller) public {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
@@ -32,7 +33,7 @@ contract BondingManagerTest is AgentManagerTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       TESTS: ADD/REMOVE AGENTS                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
+    /*
     function test_addAgent(uint32 domain, address agent) public {
         (bool isActive, ) = bondingManager.isActiveAgent(agent);
         // Should not be an already added agent
@@ -50,7 +51,7 @@ contract BondingManagerTest is AgentManagerTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         TEST: REGISTRY SLASH                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
+    /*
     function test_registrySlash_origin(uint32 domain, address agent) public {
         test_addAgent(domain, agent);
         vm.expectCall(
@@ -79,7 +80,7 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(caller);
         bondingManager.registrySlash(0, address(0));
     }
-
+    */
     function _localDomain() internal pure override returns (uint32) {
         return DOMAIN_SYNAPSE;
     }

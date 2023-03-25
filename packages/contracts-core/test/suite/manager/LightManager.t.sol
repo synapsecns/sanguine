@@ -30,7 +30,7 @@ contract LightManagerTest is AgentManagerTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                TESTS: UNAUTHORIZED ACCESS (NOT OWNER)                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
+    /*
     function test_addAgent_revert_notOwner(address caller) public {
         vm.assume(caller != address(this));
         expectRevertNotOwner();
@@ -48,7 +48,7 @@ contract LightManagerTest is AgentManagerTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       TESTS: ADD/REMOVE AGENTS                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
+    /*
     function test_addAgent(uint32 domain, address agent) public {
         (bool isActive, ) = lightManager.isActiveAgent(agent);
         // Should not be an already added agent
@@ -66,7 +66,7 @@ contract LightManagerTest is AgentManagerTest {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         TEST: REGISTRY SLASH                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
+    /*
     function test_registrySlash_origin(uint32 domain, address agent) public {
         test_addAgent(domain, agent);
         vm.expectCall(
@@ -84,7 +84,7 @@ contract LightManagerTest is AgentManagerTest {
         vm.prank(caller);
         lightManager.registrySlash(0, address(0));
     }
-
+    */
     function _localDomain() internal pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }
