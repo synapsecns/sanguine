@@ -7,6 +7,7 @@ import { AgentFlag, AgentStatus, SlashStatus } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentManager, IAgentManager, ISystemRegistry } from "./AgentManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
+import { IBondingManager } from "../interfaces/IBondingManager.sol";
 import { ILightManager } from "../interfaces/ILightManager.sol";
 import { Versioned } from "../Version.sol";
 
@@ -92,7 +93,12 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         // On chains other than Synapse Chain only Origin could slash Agents
         if (msg.sender == address(origin)) {
             destination.managerSlash(_domain, _agent);
-            // TODO: issue a system call to BondingManager on SynChain
+            // Issue a system call to BondingManager on SynChain
+            _callAgentManager({
+                _domain: SYNAPSE_DOMAIN,
+                _optimisticSeconds: BONDING_OPTIMISTIC_PERIOD,
+                _data: _remoteSlashData(_domain, _agent, _reporter)
+            });
         } else {
             revert("Unauthorized caller");
         }
@@ -115,5 +121,24 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     /// using latest Agent merkle Root.
     function _agentStatus(address _agent) internal view override returns (AgentStatus memory) {
         return agentStatus[latestAgentRoot][_agent];
+    }
+
+    /// @dev Returns data for a system call: remoteRegistrySlash()
+    function _remoteSlashData(
+        uint32 _domain,
+        address _agent,
+        address _reporter
+    ) internal pure returns (bytes memory) {
+        // (_rootSubmittedAt, _callOrigin, _systemCaller, _domain, _agent, _reporter)
+        return
+            abi.encodeWithSelector(
+                IBondingManager.remoteRegistrySlash.selector,
+                0,
+                0,
+                0,
+                _domain,
+                _agent,
+                _reporter
+            );
     }
 }
