@@ -213,7 +213,7 @@ contract BondingManagerTest is AgentManagerTest {
         );
         vm.prank(originSynapse);
         bondingManager.registrySlash(domain, agent, reporter);
-        assertFalse(bondingManager.isActiveAgent(domain, agent));
+        checkInactive(bondingManager, domain, agent);
         (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
         assertEq(slashedBy, reporter);
@@ -231,7 +231,7 @@ contract BondingManagerTest is AgentManagerTest {
         );
         vm.prank(summit);
         bondingManager.registrySlash(domain, agent, reporter);
-        assertFalse(bondingManager.isActiveAgent(domain, agent));
+        checkInactive(bondingManager, domain, agent);
         (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
         assertEq(slashedBy, reporter);
