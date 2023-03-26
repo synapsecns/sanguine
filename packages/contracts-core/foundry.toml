@@ -25,9 +25,6 @@ sepolia = "${RPC_SEPOLIA}"
 avalanche = { key = "${ETHERSCAN_AVALANCHE_KEY}" }
 optimism = { key = "${ETHERSCAN_OPTIMISM_KEY}" }
 polygon = { key = "${ETHERSCAN_POLYGON_KEY}" }
-arb_goerli = { key = "${ETHERSCAN_ARB_GOERLI_KEY}" }
-op_goerli = { key = "${ETHERSCAN_OP_GOERLI_KEY}" }
-sepolia = { key = "${ETHERSCAN_SEPOLIA_KEY}" }
 
 
 # See more config options https://github.com/gakonst/foundry/tree/master/config
