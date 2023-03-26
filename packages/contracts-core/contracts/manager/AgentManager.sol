@@ -89,6 +89,8 @@ abstract contract AgentManager is SystemContract, IAgentManager {
 
     /// @dev Checks if the Agent has been slashed.
     function _isSlashed(address _agent) internal view virtual returns (bool) {
+        // TODO: figure out if reporter address could be empty,
+        // resulting in incorrect _isSlashed() behavior.
         return slashedBy[_agent] != address(0);
     }
 }
