@@ -44,22 +44,21 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc ILightManager
-    function addAgent(
-        uint32 _domain,
+    function updateAgentStatus(
         address _agent,
-        bytes32[] memory _proof,
-        uint256 _index
+        AgentStatus memory _status,
+        bytes32[] memory _proof
     ) external {
         // Reconstruct the agent leaf: flag should be Active
-        bytes32 leaf = _agentLeaf(AgentFlag.Active, _domain, _agent);
+        bytes32 leaf = _agentLeaf(_status.flag, _status.domain, _agent);
         bytes32 root = latestAgentRoot;
         // Check that proof matches the latest merkle root
         require(
-            MerkleLib.proofRoot(_index, leaf, _proof, AGENT_TREE_HEIGHT) == root,
+            MerkleLib.proofRoot(_status.index, leaf, _proof, AGENT_TREE_HEIGHT) == root,
             "Invalid proof"
         );
-        // Mark agent as registered against this root
-        agentStatus[root][_agent] = AgentStatus(AgentFlag.Active, _domain, uint32(_index));
+        // Update the agent status against this root
+        agentStatus[root][_agent] = _status;
     }
 
     /// @inheritdoc ILightManager

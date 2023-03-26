@@ -6,6 +6,8 @@ import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.s
 import { AgentManagerTest } from "./AgentManager.t.sol";
 
 import {
+    AgentFlag,
+    AgentStatus,
     LightManager,
     ISystemContract,
     ISystemRegistry,
@@ -74,7 +76,7 @@ contract LightManagerTest is AgentManagerTest {
         bytes32[] memory proof = getAgentProof(agent);
         // Anyone could add agents in Light Manager
         vm.prank(caller);
-        lightManager.addAgent(domain, agent, proof, agentIndex[agent]);
+        lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
         checkActive(lightManager, domain, agent);
     }
 
@@ -90,13 +92,14 @@ contract LightManagerTest is AgentManagerTest {
     function test_addAgent_revert_invalidProof(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         bytes32[] memory proof = getAgentProof(agent);
+        AgentStatus memory status = getAgentStatus(agent);
         // This succeeds, but doesn't do anything, as agent was already added
-        lightManager.addAgent(domain, agent, proof, agentIndex[agent]);
+        lightManager.updateAgentStatus(agent, status, proof);
         // Change agent root, so old proofs are no longer valid
         test_setAgentRoot(bytes32(0));
         checkInactive(lightManager, domain, agent);
         vm.expectRevert("Invalid proof");
-        lightManager.addAgent(domain, agent, proof, agentIndex[agent]);
+        lightManager.updateAgentStatus(agent, status, proof);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
