@@ -125,7 +125,8 @@ contract LightManagerTest is AgentManagerTest {
         vm.assume(caller != origin);
         vm.expectRevert("Unauthorized caller");
         vm.prank(caller);
-        lightManager.registrySlash(0, address(0), address(1));
+        // Try to slash an existing agent
+        lightManager.registrySlash(0, domains[0].agent, address(0));
     }
 
     function _localDomain() internal pure override returns (uint32) {

@@ -226,7 +226,8 @@ contract BondingManagerTest is AgentManagerTest {
         vm.assume(caller != originSynapse && caller != summit);
         vm.expectRevert("Unauthorized caller");
         vm.prank(caller);
-        bondingManager.registrySlash(0, address(0), address(1));
+        // Try to slash an existing agent
+        bondingManager.registrySlash(0, domains[0].agent, address(0));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

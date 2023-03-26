@@ -157,6 +157,13 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
     ) external {
         // Check that Agent hasn't been already slashed
         require(!slashStatus[_agent].isSlashed, "Already slashed");
+        // Check that agent is Active/Unstaking and that the domains match
+        AgentStatus memory status = agentStatus[_agent];
+        require(
+            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) &&
+                status.domain == _domain,
+            "Slashing could not be initiated"
+        );
         slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _reporter });
         // On SynChain both Origin and Destination (Summit) could slash agents
         if (msg.sender == address(origin)) {
