@@ -103,22 +103,27 @@ contract LightManagerTest is AgentManagerTest {
     ▏*║                         TEST: REGISTRY SLASH                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_registrySlash_origin(uint32 domain, address agent) public {
+    function test_registrySlash_origin(
+        uint32 domain,
+        address agent,
+        address reporter
+    ) public {
         test_addAgent_new(address(this), domain, agent);
         vm.expectCall(
             destination,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
         vm.prank(origin);
-        lightManager.registrySlash(domain, agent);
-        // assertFalse(lightManager.isActiveAgent(domain, agent));
+        lightManager.registrySlash(domain, agent, reporter);
+        assertFalse(lightManager.isActiveAgent(domain, agent));
+        assertEq(lightManager.slashedBy(agent), reporter);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {
         vm.assume(caller != origin);
         vm.expectRevert("Unauthorized caller");
         vm.prank(caller);
-        lightManager.registrySlash(0, address(0));
+        lightManager.registrySlash(0, address(0), address(1));
     }
 
     function _localDomain() internal pure override returns (uint32) {

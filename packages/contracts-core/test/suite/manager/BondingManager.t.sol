@@ -186,35 +186,43 @@ contract BondingManagerTest is AgentManagerTest {
     ▏*║                         TEST: REGISTRY SLASH                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_registrySlash_origin(uint256 domainId, uint256 agentId) public {
+    function test_registrySlash_origin(
+        uint256 domainId,
+        uint256 agentId,
+        address reporter
+    ) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         vm.expectCall(
             summit,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
         vm.prank(originSynapse);
-        bondingManager.registrySlash(domain, agent);
-        // TODO: reenable when slashing is finalized
-        // assertFalse(bondingManager.isActiveAgent(domain, agent));
+        bondingManager.registrySlash(domain, agent, reporter);
+        assertFalse(bondingManager.isActiveAgent(domain, agent));
+        assertEq(bondingManager.slashedBy(agent), reporter);
     }
 
-    function test_registrySlash_summit(uint256 domainId, uint256 agentId) public {
+    function test_registrySlash_summit(
+        uint256 domainId,
+        uint256 agentId,
+        address reporter
+    ) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         vm.expectCall(
             originSynapse,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
         vm.prank(summit);
-        bondingManager.registrySlash(domain, agent);
-        // TODO: reenable when slashing is finalized
-        // assertFalse(bondingManager.isActiveAgent(domain, agent));
+        bondingManager.registrySlash(domain, agent, reporter);
+        assertFalse(bondingManager.isActiveAgent(domain, agent));
+        assertEq(bondingManager.slashedBy(agent), reporter);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {
         vm.assume(caller != originSynapse && caller != summit);
         vm.expectRevert("Unauthorized caller");
         vm.prank(caller);
-        bondingManager.registrySlash(0, address(0));
+        bondingManager.registrySlash(0, address(0), address(1));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
