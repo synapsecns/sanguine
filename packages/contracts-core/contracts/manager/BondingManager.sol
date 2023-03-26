@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { AgentFlag, AgentStatus } from "../libs/Structures.sol";
+import { AgentFlag, AgentStatus, SlashStatus } from "../libs/Structures.sol";
 import { DynamicTree, MerkleLib } from "../libs/Merkle.sol";
 import { MerkleList } from "../libs/MerkleList.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -156,8 +156,8 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         address _reporter
     ) external {
         // Check that Agent hasn't been already slashed
-        require(!_isSlashed(_agent), "Already slashed");
-        slashedBy[_agent] = _reporter;
+        require(!slashStatus[_agent].isSlashed, "Already slashed");
+        slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _reporter });
         // On SynChain both Origin and Destination (Summit) could slash agents
         if (msg.sender == address(origin)) {
             destination.managerSlash(_domain, _agent);

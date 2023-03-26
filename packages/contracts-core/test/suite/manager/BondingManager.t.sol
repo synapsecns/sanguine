@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.sol";
 import { AGENT_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
 import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
-import { AgentFlag } from "../../../contracts/libs/Structures.sol";
+import { AgentFlag, SlashStatus } from "../../../contracts/libs/Structures.sol";
 import { AgentManagerTest } from "./AgentManager.t.sol";
 
 import {
@@ -199,7 +199,9 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(originSynapse);
         bondingManager.registrySlash(domain, agent, reporter);
         assertFalse(bondingManager.isActiveAgent(domain, agent));
-        assertEq(bondingManager.slashedBy(agent), reporter);
+        (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
+        assertTrue(isSlashed);
+        assertEq(slashedBy, reporter);
     }
 
     function test_registrySlash_summit(
@@ -215,7 +217,9 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(summit);
         bondingManager.registrySlash(domain, agent, reporter);
         assertFalse(bondingManager.isActiveAgent(domain, agent));
-        assertEq(bondingManager.slashedBy(agent), reporter);
+        (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
+        assertTrue(isSlashed);
+        assertEq(slashedBy, reporter);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {

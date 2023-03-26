@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { AGENT_TREE_HEIGHT } from "../libs/Constants.sol";
 import { MerkleLib } from "../libs/Merkle.sol";
-import { AgentFlag, AgentStatus } from "../libs/Structures.sol";
+import { AgentFlag, AgentStatus, SlashStatus } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentManager, IAgentManager, ISystemRegistry } from "./AgentManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
@@ -81,8 +81,8 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         address _reporter
     ) external {
         // Check that Agent hasn't been already slashed
-        require(!_isSlashed(_agent), "Already slashed");
-        slashedBy[_agent] = _reporter;
+        require(!slashStatus[_agent].isSlashed, "Already slashed");
+        slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _reporter });
         // On chains other than Synapse Chain only Origin could slash Agents
         if (msg.sender == address(origin)) {
             destination.managerSlash(_domain, _agent);

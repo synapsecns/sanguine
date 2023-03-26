@@ -32,3 +32,10 @@ struct AgentStatus {
     uint32 index;
     // 184 bits available for tight packing
 }
+
+/// @notice Struct representing information about a slashed agent.
+struct SlashStatus {
+    bool isSlashed;
+    address slashedBy;
+    // 88 bits available for tight packing
+}
