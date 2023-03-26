@@ -7,8 +7,13 @@ interface IAgentManager {
      * is proven to commit fraud in the SystemRegistry.
      * @param _domain   Domain where the slashed agent was active
      * @param _agent    Address of the slashed Agent
+     * @param _reporter Address that initially provided fraud proof in SystemRegistry
      */
-    function registrySlash(uint32 _domain, address _agent) external;
+    function registrySlash(
+        uint32 _domain,
+        address _agent,
+        address _reporter
+    ) external;
 
     /**
      * @notice Returns the latest known root of the Agent Merkle Tree.

@@ -75,9 +75,15 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc IAgentManager
-    function registrySlash(uint32 _domain, address _agent) external {
+    function registrySlash(
+        uint32 _domain,
+        address _agent,
+        address _reporter
+    ) external {
+        // Check that Agent hasn't been already slashed
+        require(!_isSlashed(_agent), "Already slashed");
+        slashedBy[_agent] = _reporter;
         // On chains other than Synapse Chain only Origin could slash Agents
-        // TODO: add "marked for external slashing" logic
         if (msg.sender == address(origin)) {
             destination.managerSlash(_domain, _agent);
             // TODO: issue a system call to BondingManager on SynChain

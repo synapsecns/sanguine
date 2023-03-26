@@ -150,9 +150,15 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc IAgentManager
-    function registrySlash(uint32 _domain, address _agent) external {
+    function registrySlash(
+        uint32 _domain,
+        address _agent,
+        address _reporter
+    ) external {
+        // Check that Agent hasn't been already slashed
+        require(!_isSlashed(_agent), "Already slashed");
+        slashedBy[_agent] = _reporter;
         // On SynChain both Origin and Destination (Summit) could slash agents
-        // TODO: add "marked for external slashing" logic
         if (msg.sender == address(origin)) {
             destination.managerSlash(_domain, _agent);
         } else if (msg.sender == address(destination)) {
