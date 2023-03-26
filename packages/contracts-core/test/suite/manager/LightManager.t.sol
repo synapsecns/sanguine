@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { SystemEntity } from "../../../contracts/libs/Structures.sol";
 import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.sol";
 
 import { AgentManagerTest } from "./AgentManager.t.sol";
@@ -112,9 +113,21 @@ contract LightManagerTest is AgentManagerTest {
         address reporter
     ) public {
         test_addAgent_new(address(this), domain, agent);
+        bytes memory data = _remoteSlashData(domain, agent, reporter);
         vm.expectCall(
             destination,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
+        );
+        // (_destination, _optimisticSeconds, _recipient, _data)
+        vm.expectCall(
+            address(systemRouter),
+            abi.encodeWithSelector(
+                systemRouter.systemCall.selector,
+                DOMAIN_SYNAPSE,
+                BONDING_OPTIMISTIC_PERIOD,
+                SystemEntity.AgentManager,
+                data
+            )
         );
         vm.prank(origin);
         lightManager.registrySlash(domain, agent, reporter);

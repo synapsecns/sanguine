@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.sol";
 import { AGENT_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
 import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
-import { AgentFlag, SlashStatus } from "../../../contracts/libs/Structures.sol";
+import { AgentFlag, SlashStatus, SystemEntity } from "../../../contracts/libs/Structures.sol";
 import { AgentManagerTest } from "./AgentManager.t.sol";
 
 import {
@@ -243,6 +243,35 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(caller);
         // Try to slash an existing agent
         bondingManager.registrySlash(0, domains[0].agent, address(0));
+    }
+
+    function test_remoteRegistrySlash(
+        uint32 callOrigin,
+        uint256 domainId,
+        uint256 agentId,
+        address reporter
+    ) public {
+        // Needs to be a REMOTE call
+        vm.assume(callOrigin != DOMAIN_SYNAPSE);
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        bytes memory localCall = abi.encodeWithSelector(
+            ISystemRegistry.managerSlash.selector,
+            domain,
+            agent
+        );
+        _skipBondingOptimisticPeriod();
+        vm.expectCall(summit, localCall);
+        vm.expectCall(originSynapse, localCall);
+        _systemPrank(
+            systemRouterSynapse,
+            callOrigin,
+            SystemEntity.AgentManager,
+            _remoteSlashData(domain, agent, reporter)
+        );
+        checkInactive(bondingManager, domain, agent);
+        (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
+        assertTrue(isSlashed);
+        assertEq(slashedBy, reporter);
     }
 
     function test_completeSlashing_active(
