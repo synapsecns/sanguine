@@ -16,8 +16,11 @@ abstract contract AgentManager is SystemContract, IAgentManager {
 
     ISystemRegistry public destination;
 
+    // agent => fraud reporter (address(0) for agents that were not slashed)
+    mapping(address => address) public slashedBy;
+
     /// @dev gap for upgrade safety
-    uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕
@@ -72,7 +75,7 @@ abstract contract AgentManager is SystemContract, IAgentManager {
         returns (bool isActive, uint32 domain)
     {
         AgentStatus memory status = _agentStatus(_account);
-        if (status.flag == AgentFlag.Active) {
+        if (status.flag == AgentFlag.Active && !_isSlashed(_account)) {
             isActive = true;
             domain = status.domain;
         }
@@ -81,6 +84,11 @@ abstract contract AgentManager is SystemContract, IAgentManager {
     /// @dev Checks if the account is an active Agent on the given domain.
     function _isActiveAgent(uint32 _domain, address _account) internal view virtual returns (bool) {
         AgentStatus memory status = _agentStatus(_account);
-        return status.flag == AgentFlag.Active && status.domain == _domain;
+        return status.flag == AgentFlag.Active && !_isSlashed(_account) && status.domain == _domain;
+    }
+
+    /// @dev Checks if the Agent has been slashed.
+    function _isSlashed(address _agent) internal view virtual returns (bool) {
+        return slashedBy[_agent] != address(0);
     }
 }
