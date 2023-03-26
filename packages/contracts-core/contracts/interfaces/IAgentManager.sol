@@ -15,6 +15,8 @@ interface IAgentManager {
         address _reporter
     ) external;
 
+    // ═════════════════════════════════ VIEWS ═════════════════════════════════
+
     /**
      * @notice Returns the latest known root of the Agent Merkle Tree.
      */
@@ -33,4 +35,12 @@ interface IAgentManager {
      * Note: domain == 0 refers to a Guard, while _domain > 0 refers to a Notary.
      */
     function isActiveAgent(uint32 _domain, address _account) external view returns (bool);
+
+    /**
+     * @notice Returns whether the agent has been slashed.
+     * @param _agent        Agent address
+     * @return isSlashed    Whether the agent has been slashed
+     * @return slashedBy    Address that presented the proof of fraud committed by the agent
+     */
+    function slashStatus(address _agent) external view returns (bool isSlashed, address slashedBy);
 }
