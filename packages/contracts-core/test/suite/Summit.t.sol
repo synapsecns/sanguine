@@ -5,13 +5,12 @@ import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol"
 import { ISnapshotHub } from "../../contracts/interfaces/ISnapshotHub.sol";
 import { SNAPSHOT_TREE_HEIGHT } from "../../contracts/libs/Constants.sol";
 import { MerkleLib } from "../../contracts/libs/Merkle.sol";
-import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
+import { SystemEntity } from "../../contracts/libs/Structures.sol";
 
 import { InterfaceSummit } from "../../contracts/Summit.sol";
 import { Versioned } from "../../contracts/Version.sol";
 
 import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
-import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
 import {
     AttestationFlag,
     State,
@@ -23,7 +22,7 @@ import { Random } from "../utils/libs/Random.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
-contract SummitTest is SynapseTest, SynapseProofs {
+contract SummitTest is SynapseTest {
     struct SignedSnapshot {
         bytes snapshot;
         bytes signature;

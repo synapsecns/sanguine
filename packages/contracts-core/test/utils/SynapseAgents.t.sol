@@ -72,6 +72,15 @@ abstract contract SynapseAgents is SynapseTestConstants, Test {
         agentPK[agent] = privKey;
     }
 
+    function getAgent(uint256 domainId, uint256 agentId)
+        public
+        view
+        returns (uint32 domain, address agent)
+    {
+        domain = allDomains[domainId % allDomains.length];
+        agent = domains[domain].agents[agentId % DOMAIN_AGENTS];
+    }
+
     function signMessage(uint256 privKey, bytes32 hashedMsg)
         public
         pure
