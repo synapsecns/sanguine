@@ -10,18 +10,25 @@ enum SystemEntity {
     AgentManager
 }
 
-/**
- * @notice Unified struct for off-chain agent storing
- * @dev Both Guards and Notaries are stored this way.
- * `domain == 0` refers to Guards, who are active on every domain
- * `domain != 0` refers to Notaries, who are active on a single domain
- * @param bonded    Whether agent bonded or unbonded
- * @param domain    Domain, where agent is active
- * @param account   Off-chain agent address
- */
-struct AgentInfo {
-    // TODO: This won't be needed when Agents Merkle Tree is implemented
+/// @dev Potential statuses for the off-chain bonded agent:
+/// - Unknown: never provided a bond => signature not valid
+/// - Active: has a bond in BondingManager => signature valid
+/// - Unstaking: has a bond in BondingManager, initiated the unstaking => signature not valid
+/// - Resting: used to have a bond in BondingManager, successfully unstaked => signature not valid
+/// - Slashed: was proven to commit fraud => signature will never be valid
+/// Unstaked agent could later be added back to THE SAME domain by staking a bond again.
+enum AgentFlag {
+    Unknown,
+    Active,
+    Unstaking,
+    Resting,
+    Slashed
+}
+
+/// @notice Struct for storing an agent in the BondingManager contract.
+struct AgentStatus {
+    AgentFlag flag;
     uint32 domain;
-    address account;
-    bool bonded;
+    uint32 index;
+    // 184 bits available for tight packing
 }

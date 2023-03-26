@@ -17,9 +17,10 @@ import { SummitMock } from "../mocks/SummitMock.t.sol";
 
 import { ProductionEvents } from "./events/ProductionEvents.t.sol";
 import { SynapseAgents } from "./SynapseAgents.t.sol";
+import { SynapseProofs } from "./SynapseProofs.t.sol";
 
 // solhint-disable ordering
-abstract contract SynapseTest is ProductionEvents, SynapseAgents {
+abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs {
     uint256 private immutable deployMask;
 
     address internal originSynapse;
@@ -66,8 +67,16 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
                 address agent = domains[domain].agents[i];
-                lightManager.addAgent(domain, agent);
-                bondingManager.addAgent(domain, agent);
+                addAgentBM(domain, agent);
+            }
+        }
+        // TODO: Destination should call this
+        lightManager.setAgentRoot(getAgentRoot());
+        for (uint256 d = 0; d < allDomains.length; ++d) {
+            uint32 domain = allDomains[d];
+            for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
+                address agent = domains[domain].agents[i];
+                addAgentLM(domain, agent);
             }
         }
     }
@@ -170,6 +179,21 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents {
         ISystemContract(summit).setSystemRouter(systemRouterSynapse);
         ISystemContract(bondingManager).setSystemRouter(systemRouterSynapse);
         vm.label(address(systemRouterSynapse), "SystemRouter Synapse");
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            ADDING AGENTS                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function addAgentBM(uint32 domain, address agent) public {
+        bytes32[] memory proof = getZeroProof();
+        bondingManager.addAgent(domain, agent, proof);
+        addNewAgent(domain, agent);
+    }
+
+    function addAgentLM(uint32 domain, address agent) public {
+        bytes32[] memory proof = getAgentProof(agent);
+        lightManager.addAgent(domain, agent, proof, agentIndex[agent]);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

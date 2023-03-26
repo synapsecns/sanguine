@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { IStateHub } from "../../contracts/interfaces/IStateHub.sol";
 import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
-import { AgentInfo, SystemEntity } from "../../contracts/libs/Structures.sol";
+import { SystemEntity } from "../../contracts/libs/Structures.sol";
 import { TipsLib } from "../../contracts/libs/Tips.sol";
 
 import { InterfaceOrigin } from "../../contracts/Origin.sol";
@@ -23,12 +23,11 @@ import {
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
-import { SynapseProofs } from "../utils/SynapseProofs.t.sol";
 import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
-contract OriginTest is SynapseTest, SynapseProofs {
+contract OriginTest is SynapseTest {
     // Deploy Production version of Origin and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_ORIGIN) {}
 

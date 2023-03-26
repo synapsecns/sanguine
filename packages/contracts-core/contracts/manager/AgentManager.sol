@@ -3,27 +3,21 @@ pragma solidity 0.8.17;
 
 import { IAgentManager } from "../interfaces/IAgentManager.sol";
 import { ISystemRegistry } from "../interfaces/ISystemRegistry.sol";
+import { AgentFlag, AgentStatus } from "../libs/Structures.sol";
 import { SystemContract } from "../system/SystemContract.sol";
 
 // TODO: adjust when Agent Merkle Tree is implemented
 abstract contract AgentManager is SystemContract, IAgentManager {
-    struct AgentInfo {
-        bool isActive;
-        uint32 domain;
-    }
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    mapping(address => AgentInfo) private agentInfo;
 
     ISystemRegistry public origin;
 
     ISystemRegistry public destination;
 
     /// @dev gap for upgrade safety
-    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕
@@ -38,26 +32,11 @@ abstract contract AgentManager is SystemContract, IAgentManager {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          AGENTS LOGIC (MVP)                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // TODO: remove these MVP functions once Agent Merkle Tree is implemented
-
-    function addAgent(uint32 _domain, address _account) external onlyOwner returns (bool isAdded) {
-        return _addAgent(_domain, _account);
-    }
-
-    function removeAgent(uint32 _domain, address _account)
-        external
-        onlyOwner
-        returns (bool isRemoved)
-    {
-        return _removeAgent(_domain, _account);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            EXTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc IAgentManager
+    function agentRoot() external view virtual returns (bytes32);
 
     /// @inheritdoc IAgentManager
     function isActiveAgent(address _account) external view returns (bool isActive, uint32 domain) {
@@ -70,45 +49,38 @@ abstract contract AgentManager is SystemContract, IAgentManager {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @dev Adds agent to the domain, if they are not currently active on any of the domains.
-    function _addAgent(uint32 _domain, address _agent) internal returns (bool wasAdded) {
-        // Agent could only be active on one chain
-        (bool isActive, ) = _isActiveAgent(_agent);
-        if (!isActive) {
-            agentInfo[_agent] = AgentInfo(true, _domain);
-            wasAdded = true;
-        }
-    }
-
-    /// @dev Removes agent from the domain, if they are currently active on this domain.
-    function _removeAgent(uint32 _domain, address _agent) internal returns (bool wasRemoved) {
-        // Agent needs to be active on exactly this domain
-        bool isActive = _isActiveAgent(_domain, _agent);
-        if (isActive) {
-            delete agentInfo[_agent];
-            wasRemoved = true;
-        }
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @dev Generates leaf to be saved in the Agent Merkle Tree
+    function _agentLeaf(
+        AgentFlag _flag,
+        uint32 _domain,
+        address _agent
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_flag, _domain, _agent));
+    }
+
+    /// @dev Returns the last known status for the agent.
+    function _agentStatus(address _agent) internal view virtual returns (AgentStatus memory);
+
     /// @dev Checks if the account is an active Agent on any of the domains.
-    function _isActiveAgent(address _account) internal view returns (bool isActive, uint32 domain) {
-        AgentInfo memory info = agentInfo[_account];
-        if (info.isActive) {
+    function _isActiveAgent(address _account)
+        internal
+        view
+        virtual
+        returns (bool isActive, uint32 domain)
+    {
+        AgentStatus memory status = _agentStatus(_account);
+        if (status.flag == AgentFlag.Active) {
             isActive = true;
-            domain = info.domain;
+            domain = status.domain;
         }
     }
 
     /// @dev Checks if the account is an active Agent on the given domain.
-    function _isActiveAgent(uint32 _domain, address _account) internal view returns (bool) {
-        AgentInfo memory info = agentInfo[_account];
-        return info.isActive && info.domain == _domain;
+    function _isActiveAgent(uint32 _domain, address _account) internal view virtual returns (bool) {
+        AgentStatus memory status = _agentStatus(_account);
+        return status.flag == AgentFlag.Active && status.domain == _domain;
     }
 }

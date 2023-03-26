@@ -1,12 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { AgentFlag } from "../../contracts/libs/Structures.sol";
+
 import { AttestationProofGenerator } from "./proof/AttestationProofGenerator.t.sol";
+import { DynamicProofGenerator } from "./proof/DynamicProofGenerator.t.sol";
 import { HistoricalProofGenerator } from "./proof/HistoricalProofGenerator.t.sol";
 
 abstract contract SynapseProofs {
     HistoricalProofGenerator internal originGen;
     AttestationProofGenerator internal summitGen;
+    DynamicProofGenerator internal agentGen;
+
+    mapping(address => uint256) internal agentIndex;
+    mapping(address => uint32) internal agentDomain;
+    uint256 internal totalAgents;
 
     constructor() {
         clear();
@@ -19,7 +27,12 @@ abstract contract SynapseProofs {
     function clear() public {
         originGen = new HistoricalProofGenerator();
         summitGen = new AttestationProofGenerator();
+        agentGen = new DynamicProofGenerator();
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            MESSAGE PROOFS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function insertMessage(bytes memory message) public {
         originGen.insert(keccak256(message));
@@ -37,6 +50,10 @@ abstract contract SynapseProofs {
         return originGen.getRoot(count);
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           SNAPSHOT PROOFS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     function acceptSnapshot(bytes[] memory snapshotStates) public {
         summitGen.acceptSnapshot(snapshotStates);
     }
@@ -47,5 +64,52 @@ abstract contract SynapseProofs {
 
     function getSnapshotRoot() public view returns (bytes32) {
         return summitGen.root();
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                             AGENT PROOFS                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function addNewAgent(uint32 domain, address agent) public returns (bytes32 newRoot) {
+        require(agentIndex[agent] == 0, "Already added");
+        uint256 index = ++totalAgents;
+        agentIndex[agent] = index;
+        agentDomain[agent] = domain;
+        agentGen.update(index, getAgentLeaf(AgentFlag.Active, domain, agent));
+        return agentGen.getRoot();
+    }
+
+    function updateAgent(AgentFlag flag, address agent) public returns (bytes32 newRoot) {
+        uint256 index = agentIndex[agent];
+        require(index != 0, "Unknown agent");
+        agentGen.update(index, getAgentLeaf(flag, agentDomain[agent], agent));
+        return agentGen.getRoot();
+    }
+
+    function getAgentRoot() public view returns (bytes32) {
+        return agentGen.getRoot();
+    }
+
+    function getAgentProof(address agent) public view returns (bytes32[] memory) {
+        uint256 index = agentIndex[agent];
+        require(index != 0, "Unknown agent");
+        return agentGen.getProof(index);
+    }
+
+    function getZeroProof() public view returns (bytes32[] memory) {
+        // Proof for zero value after the latest added agent
+        return agentGen.getProof(totalAgents + 1);
+    }
+
+    function getAgentLeaf(uint256 index) public view returns (bytes32) {
+        return agentGen.getLeaf(index);
+    }
+
+    function getAgentLeaf(
+        AgentFlag _flag,
+        uint32 _domain,
+        address _agent
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_flag, _domain, _agent));
     }
 }

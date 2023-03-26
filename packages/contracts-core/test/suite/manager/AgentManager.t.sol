@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AgentInfo } from "../../../contracts/libs/Structures.sol";
+import { IAgentManager } from "../../../contracts/interfaces/IAgentManager.sol";
 
 import {
     SystemEntity,
@@ -15,6 +15,27 @@ abstract contract AgentManagerTest is SynapseTest {
 
     /// @notice Prevents this contract from being included in the coverage report
     function testAgentManagerTest() external {}
+
+    function checkActive(
+        IAgentManager manager,
+        uint32 domain,
+        address agent
+    ) public {
+        assertTrue(manager.isActiveAgent(domain, agent), "!isActive(domain, agent)");
+        (bool isActive, uint32 _domain) = manager.isActiveAgent(agent);
+        assertTrue(isActive, "!isActive(agent)");
+        assertEq(_domain, domain, "!isActive(agent): domain");
+    }
+
+    function checkInactive(
+        IAgentManager manager,
+        uint32 domain,
+        address agent
+    ) public {
+        assertFalse(manager.isActiveAgent(domain, agent), "!isActive(domain, agent)");
+        (bool isActive, ) = manager.isActiveAgent(agent);
+        assertFalse(isActive, "!isActive(agent)");
+    }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           INTERNAL HELPERS                           ║*▕
