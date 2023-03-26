@@ -52,6 +52,21 @@ interface IBondingManager {
         bytes32[] memory _proof
     ) external;
 
+    /**
+     * @notice Completes the slashing of the agent bond. Agent signature is no longer considered
+     * valid under the updated Agent Merkle Root.
+     * @dev `_proof` should be the proof of inclusion of the agent leaf
+     * with Active/Unstaking flag having index previously assigned to the agent.
+     * @param _domain   Domain where the Agent was active
+     * @param _agent    Address of the Agent
+     * @param _proof    Merkle proof of the active/unstaking status for the agent
+     */
+    function completeSlashing(
+        uint32 _domain,
+        address _agent,
+        bytes32[] memory _proof
+    ) external;
+
     // ═════════════════════════════════ VIEWS ═════════════════════════════════
 
     /**

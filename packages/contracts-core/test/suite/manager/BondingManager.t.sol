@@ -108,12 +108,25 @@ contract BondingManagerTest is AgentManagerTest {
         uint32 domain,
         address agent
     ) public {
+        updateStatus(address(this), flag, domain, agent);
+    }
+
+    function updateStatus(
+        address caller,
+        AgentFlag flag,
+        uint32 domain,
+        address agent
+    ) public {
         bytes32[] memory proof = getAgentProof(agent);
         bytes32 newRoot = updateAgent(flag, agent);
         vm.expectEmit(true, true, true, true);
         emit StatusUpdated(flag, domain, agent, newRoot);
+        vm.prank(caller);
         updateStatusWithProof(flag, domain, agent, proof);
         assertEq(bondingManager.agentRoot(), newRoot, "!agentRoot");
+        (AgentFlag _flag, uint32 _domain, ) = bondingManager.agentStatus(agent);
+        assertEq(uint8(_flag), uint8(flag), "!flag");
+        assertEq(_domain, domain, "!domain");
     }
 
     function updateStatusWithProof(
@@ -128,6 +141,8 @@ contract BondingManagerTest is AgentManagerTest {
             bondingManager.completeUnstaking(domain, agent, proof);
         } else if (flag == AgentFlag.Active) {
             bondingManager.addAgent(domain, agent, proof);
+        } else if (flag == AgentFlag.Slashed) {
+            bondingManager.completeSlashing(domain, agent, proof);
         }
     }
 
@@ -183,7 +198,7 @@ contract BondingManagerTest is AgentManagerTest {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         TEST: REGISTRY SLASH                         ║*▕
+    ▏*║                        TEST: SLASHING AGENTS                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_registrySlash_origin(
@@ -228,6 +243,41 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(caller);
         // Try to slash an existing agent
         bondingManager.registrySlash(0, domains[0].agent, address(0));
+    }
+
+    function test_completeSlashing_active(
+        uint256 domainId,
+        uint256 agentId,
+        address slasher,
+        bool initiatedByOrigin
+    ) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        // Initiate slashing by one of the Registries
+        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_summit)(
+            domainId,
+            agentId,
+            address(1)
+        );
+        updateStatus(slasher, AgentFlag.Slashed, domain, agent);
+        checkInactive(bondingManager, domain, agent);
+    }
+
+    function test_completeSlashing_unstaking(
+        uint256 domainId,
+        uint256 agentId,
+        address slasher,
+        bool initiatedByOrigin
+    ) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        updateStatus(AgentFlag.Unstaking, domain, agent);
+        // Initiate slashing by one of the Registries
+        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_summit)(
+            domainId,
+            agentId,
+            address(1)
+        );
+        updateStatus(slasher, AgentFlag.Slashed, domain, agent);
+        checkInactive(bondingManager, domain, agent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

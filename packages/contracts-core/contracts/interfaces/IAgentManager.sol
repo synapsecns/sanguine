@@ -5,6 +5,9 @@ interface IAgentManager {
     /**
      * @notice Local SystemRegistry should call this function to indicate that the agent
      * is proven to commit fraud in the SystemRegistry.
+     * @dev On Synapse Chain this initiates the process of agent slashing. It could be immediately
+     * completed by anyone calling completeSlashing() providing a correct merkle proof
+     * for the OLD agent status.
      * @param _domain   Domain where the slashed agent was active
      * @param _agent    Address of the slashed Agent
      * @param _reporter Address that initially provided fraud proof in SystemRegistry
