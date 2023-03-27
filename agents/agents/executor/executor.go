@@ -678,7 +678,7 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 		}
 
 		logger.Errorf("Storing message with nonce %d! It has an executed value of %t", (*message).Nonce(), executed)
-		logger.Errorf("also, message with nonce %d, chain id %d, has a leaf of %s", (*message).Nonce(), chainID, leaf)
+		logger.Errorf("also, message with nonce %d, chain id %d, has a leaf of %s", (*message).Nonce(), (*message).DestinationDomain(), leaf)
 		err = e.executorDB.StoreMessage(ctx, *message, log.BlockNumber, executed, false, 0)
 		if err != nil {
 			return fmt.Errorf("could not store message: %w", err)
