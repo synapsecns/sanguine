@@ -42,8 +42,13 @@ abstract contract AgentManager is SystemContract, IAgentManager {
     function agentRoot() external view virtual returns (bytes32);
 
     /// @inheritdoc IAgentManager
-    function agentStatus(address _agent) external view returns (AgentStatus memory) {
-        return _agentStatus(_agent);
+    function agentStatus(address _agent) external view returns (AgentStatus memory status) {
+        status = _agentStatus(_agent);
+        // If agent was proven to commit fraud, but their slashing wasn't completed,
+        // return the Fraudulent flag instead
+        if (slashStatus[_agent].isSlashed && status.flag != AgentFlag.Slashed) {
+            status.flag = AgentFlag.Fraudulent;
+        }
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -59,6 +64,6 @@ abstract contract AgentManager is SystemContract, IAgentManager {
         return keccak256(abi.encodePacked(_flag, _domain, _agent));
     }
 
-    /// @dev Returns the last known status for the agent.
+    /// @dev Returns the last known status for the agent from the Agent Merkle Tree.
     function _agentStatus(address _agent) internal view virtual returns (AgentStatus memory);
 }

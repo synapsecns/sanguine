@@ -29,6 +29,8 @@ interface IAgentManager {
 
     /**
      * @notice Returns (flag, domain, index) for a given agent. See Structures.sol for details.
+     * @dev Will return AgentFlag.Fraudulent for agents that have been proven to commit fraud,
+     * but their status is not updated to Slashed yet.
      * @param _agent    Agent address
      * @return          Status for the given agent: (flag, domain, index).
      */
