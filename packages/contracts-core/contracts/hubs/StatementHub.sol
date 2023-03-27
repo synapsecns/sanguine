@@ -212,6 +212,26 @@ abstract contract StatementHub is SystemRegistry {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            FLAG CHECKERS                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Checks that Agent is Active
+    function _verifyActive(AgentStatus memory _status) internal pure {
+        require(
+            _status.flag == AgentFlag.Active,
+            _status.domain == 0 ? "Not an active guard" : "Not an active notary"
+        );
+    }
+
+    /// @dev Checks that Agent is Active or Unstaking
+    function _verifyActiveUnstaking(AgentStatus memory _status) internal pure {
+        require(
+            (_status.flag == AgentFlag.Active || _status.flag == AgentFlag.Unstaking),
+            _status.domain == 0 ? "Not an active guard" : "Not an active notary"
+        );
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          STATEMENT WRAPPERS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
