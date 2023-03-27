@@ -158,8 +158,10 @@ func (a destinationContract) MessageStatus(ctx context.Context, messageLeaf [32]
 
 	// Check for if message's status is `MESSAGE_STATUS_NONE`.
 	if status == [32]byte{} {
+		logger.Errorf("returning true and message status is %+v", status)
 		return true, nil
 	}
 
+	logger.Errorf("returning false and message status is %+v", status)
 	return false, nil
 }
