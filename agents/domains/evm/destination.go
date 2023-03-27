@@ -157,7 +157,7 @@ func (a destinationContract) MessageStatus(ctx context.Context, messageLeaf [32]
 	}
 
 	// Check for if message's status is `MESSAGE_STATUS_NONE`.
-	if status == [32]byte{0} {
+	if status == [32]byte{} {
 		return true, nil
 	}
 
