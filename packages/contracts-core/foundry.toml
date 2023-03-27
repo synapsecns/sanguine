@@ -26,5 +26,4 @@ avalanche = { key = "${ETHERSCAN_AVALANCHE_KEY}" }
 optimism = { key = "${ETHERSCAN_OPTIMISM_KEY}" }
 polygon = { key = "${ETHERSCAN_POLYGON_KEY}" }
 
-
 # See more config options https://github.com/gakonst/foundry/tree/master/config
