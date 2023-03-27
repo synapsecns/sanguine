@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AgentFlag } from "../libs/Structures.sol";
+import { AgentFlag, SystemEntity } from "../libs/Structures.sol";
 
 interface IBondingManager {
     /**
@@ -50,6 +50,40 @@ interface IBondingManager {
         uint32 _domain,
         address _agent,
         bytes32[] memory _proof
+    ) external;
+
+    /**
+     * @notice Completes the slashing of the agent bond. Agent signature is no longer considered
+     * valid under the updated Agent Merkle Root.
+     * @dev `_proof` should be the proof of inclusion of the agent leaf
+     * with Active/Unstaking flag having index previously assigned to the agent.
+     * @param _domain   Domain where the Agent was active
+     * @param _agent    Address of the Agent
+     * @param _proof    Merkle proof of the active/unstaking status for the agent
+     */
+    function completeSlashing(
+        uint32 _domain,
+        address _agent,
+        bytes32[] memory _proof
+    ) external;
+
+    /**
+     * @notice Remote AgentManager should call this function to indicate that the agent
+     * has been proven to commit fraud in the SystemRegistry on the origin chain.
+     * @dev This initiates the process of agent slashing. It could be immediately
+     * completed by anyone calling completeSlashing() providing a correct merkle proof
+     * for the OLD agent status.
+     * @param _domain   Domain where the slashed agent was active
+     * @param _agent    Address of the slashed Agent
+     * @param _reporter Address that initially provided fraud proof in SystemRegistry
+     */
+    function remoteRegistrySlash(
+        uint256 _rootSubmittedAt,
+        uint32 _callOrigin,
+        SystemEntity _systemCaller,
+        uint32 _domain,
+        address _agent,
+        address _reporter
     ) external;
 
     // ═════════════════════════════════ VIEWS ═════════════════════════════════

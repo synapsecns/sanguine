@@ -3,10 +3,11 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { AGENT_TREE_HEIGHT } from "../libs/Constants.sol";
 import { MerkleLib } from "../libs/Merkle.sol";
-import { AgentFlag, AgentStatus } from "../libs/Structures.sol";
+import { AgentFlag, AgentStatus, SlashStatus } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentManager, IAgentManager, ISystemRegistry } from "./AgentManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
+import { IBondingManager } from "../interfaces/IBondingManager.sol";
 import { ILightManager } from "../interfaces/ILightManager.sol";
 import { Versioned } from "../Version.sol";
 
@@ -44,22 +45,21 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc ILightManager
-    function addAgent(
-        uint32 _domain,
+    function updateAgentStatus(
         address _agent,
-        bytes32[] memory _proof,
-        uint256 _index
+        AgentStatus memory _status,
+        bytes32[] memory _proof
     ) external {
         // Reconstruct the agent leaf: flag should be Active
-        bytes32 leaf = _agentLeaf(AgentFlag.Active, _domain, _agent);
+        bytes32 leaf = _agentLeaf(_status.flag, _status.domain, _agent);
         bytes32 root = latestAgentRoot;
         // Check that proof matches the latest merkle root
         require(
-            MerkleLib.proofRoot(_index, leaf, _proof, AGENT_TREE_HEIGHT) == root,
+            MerkleLib.proofRoot(_status.index, leaf, _proof, AGENT_TREE_HEIGHT) == root,
             "Invalid proof"
         );
-        // Mark agent as registered against this root
-        agentStatus[root][_agent] = AgentStatus(AgentFlag.Active, _domain, uint32(_index));
+        // Update the agent status against this root
+        agentStatus[root][_agent] = _status;
     }
 
     /// @inheritdoc ILightManager
@@ -75,12 +75,30 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc IAgentManager
-    function registrySlash(uint32 _domain, address _agent) external {
+    function registrySlash(
+        uint32 _domain,
+        address _agent,
+        address _reporter
+    ) external {
+        // Check that Agent hasn't been already slashed
+        require(!slashStatus[_agent].isSlashed, "Already slashed");
+        // Check that agent is Active/Unstaking and that the domains match
+        AgentStatus memory status = _agentStatus(_agent);
+        require(
+            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) &&
+                status.domain == _domain,
+            "Slashing could not be initiated"
+        );
+        slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _reporter });
         // On chains other than Synapse Chain only Origin could slash Agents
-        // TODO: add "marked for external slashing" logic
         if (msg.sender == address(origin)) {
             destination.managerSlash(_domain, _agent);
-            // TODO: issue a system call to BondingManager on SynChain
+            // Issue a system call to BondingManager on SynChain
+            _callAgentManager({
+                _domain: SYNAPSE_DOMAIN,
+                _optimisticSeconds: BONDING_OPTIMISTIC_PERIOD,
+                _data: _remoteSlashData(_domain, _agent, _reporter)
+            });
         } else {
             revert("Unauthorized caller");
         }
@@ -103,5 +121,24 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     /// using latest Agent merkle Root.
     function _agentStatus(address _agent) internal view override returns (AgentStatus memory) {
         return agentStatus[latestAgentRoot][_agent];
+    }
+
+    /// @dev Returns data for a system call: remoteRegistrySlash()
+    function _remoteSlashData(
+        uint32 _domain,
+        address _agent,
+        address _reporter
+    ) internal pure returns (bytes memory) {
+        // (_rootSubmittedAt, _callOrigin, _systemCaller, _domain, _agent, _reporter)
+        return
+            abi.encodeWithSelector(
+                IBondingManager.remoteRegistrySlash.selector,
+                0,
+                0,
+                0,
+                _domain,
+                _agent,
+                _reporter
+            );
     }
 }

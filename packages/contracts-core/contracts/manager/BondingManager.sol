@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { AgentFlag, AgentStatus } from "../libs/Structures.sol";
+import { AgentFlag, AgentStatus, SlashStatus, SystemEntity } from "../libs/Structures.sol";
 import { DynamicTree, MerkleLib } from "../libs/Merkle.sol";
 import { MerkleList } from "../libs/MerkleList.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -149,10 +149,44 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
     ▏*║                            SLASHING LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    /// @inheritdoc IBondingManager
+    function completeSlashing(
+        uint32 _domain,
+        address _agent,
+        bytes32[] memory _proof
+    ) external {
+        // Check that slashing was initiated by one of the System Registries
+        require(slashStatus[_agent].isSlashed, "Slashing not initiated");
+        // Check that agent is Active/Unstaking and that the domains match
+        AgentStatus memory status = agentStatus[_agent];
+        require(
+            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) &&
+                status.domain == _domain,
+            "Slashing could not be completed"
+        );
+        // Leaf representing currently saved agent information in the tree
+        // oldValue includes the domain information, so we didn't had to check it above.
+        // However, we are still doing this check to have a more appropriate revert string,
+        // if anyone is completing the slashing, but specifies incorrect domain.
+        bytes32 oldValue = _agentLeaf(status.flag, _domain, _agent);
+        // This will revert if the proof for the old value is incorrect
+        _updateLeaf(
+            oldValue,
+            _proof,
+            AgentStatus(AgentFlag.Slashed, _domain, status.index),
+            _agent
+        );
+    }
+
     /// @inheritdoc IAgentManager
-    function registrySlash(uint32 _domain, address _agent) external {
+    function registrySlash(
+        uint32 _domain,
+        address _agent,
+        address _reporter
+    ) external {
+        // Check that Agent hasn't been already slashed and initiate the slashing
+        _registrySlash(_domain, _agent, _reporter);
         // On SynChain both Origin and Destination (Summit) could slash agents
-        // TODO: add "marked for external slashing" logic
         if (msg.sender == address(origin)) {
             destination.managerSlash(_domain, _agent);
         } else if (msg.sender == address(destination)) {
@@ -160,6 +194,28 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         } else {
             revert("Unauthorized caller");
         }
+    }
+
+    function remoteRegistrySlash(
+        uint256 _rootSubmittedAt,
+        uint32 _callOrigin,
+        SystemEntity _systemCaller,
+        uint32 _domain,
+        address _agent,
+        address _reporter
+    )
+        external
+        onlySystemRouter
+        onlyCallers(AGENT_MANAGER, _systemCaller)
+        onlyOptimisticPeriodOver(_rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
+    {
+        // TODO: do we need to save this?
+        _callOrigin;
+        // Check that Agent hasn't been already slashed and initiate the slashing
+        _registrySlash(_domain, _agent, _reporter);
+        // Notify local registries about the slashing
+        destination.managerSlash(_domain, _agent);
+        origin.managerSlash(_domain, _agent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -215,6 +271,25 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Checks and initiates the slashing of an agent.
+    /// Should be called, after one of registries confirmed fraud committed by the agent.
+    function _registrySlash(
+        uint32 _domain,
+        address _agent,
+        address _reporter
+    ) internal {
+        // Check that Agent hasn't been already slashed
+        require(!slashStatus[_agent].isSlashed, "Already slashed");
+        // Check that agent is Active/Unstaking and that the domains match
+        AgentStatus memory status = agentStatus[_agent];
+        require(
+            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) &&
+                status.domain == _domain,
+            "Slashing could not be initiated"
+        );
+        slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _reporter });
+    }
 
     /// @dev Updates value in the Agent Merkle Tree to reflect the `_newStatus`.
     /// Will revert, if supplied proof for the old value is incorrect.

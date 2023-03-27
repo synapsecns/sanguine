@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { SystemEntity } from "../../../contracts/libs/Structures.sol";
 import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.sol";
 
 import { AgentManagerTest } from "./AgentManager.t.sol";
 
 import {
+    AgentFlag,
+    AgentStatus,
     LightManager,
     ISystemContract,
     ISystemRegistry,
@@ -74,7 +77,7 @@ contract LightManagerTest is AgentManagerTest {
         bytes32[] memory proof = getAgentProof(agent);
         // Anyone could add agents in Light Manager
         vm.prank(caller);
-        lightManager.addAgent(domain, agent, proof, agentIndex[agent]);
+        lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
         checkActive(lightManager, domain, agent);
     }
 
@@ -90,35 +93,56 @@ contract LightManagerTest is AgentManagerTest {
     function test_addAgent_revert_invalidProof(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         bytes32[] memory proof = getAgentProof(agent);
+        AgentStatus memory status = getAgentStatus(agent);
         // This succeeds, but doesn't do anything, as agent was already added
-        lightManager.addAgent(domain, agent, proof, agentIndex[agent]);
+        lightManager.updateAgentStatus(agent, status, proof);
         // Change agent root, so old proofs are no longer valid
         test_setAgentRoot(bytes32(0));
         checkInactive(lightManager, domain, agent);
         vm.expectRevert("Invalid proof");
-        lightManager.addAgent(domain, agent, proof, agentIndex[agent]);
+        lightManager.updateAgentStatus(agent, status, proof);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         TEST: REGISTRY SLASH                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_registrySlash_origin(uint32 domain, address agent) public {
+    function test_registrySlash_origin(
+        uint32 domain,
+        address agent,
+        address reporter
+    ) public {
         test_addAgent_new(address(this), domain, agent);
+        bytes memory data = _remoteSlashData(domain, agent, reporter);
         vm.expectCall(
             destination,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
+        // (_destination, _optimisticSeconds, _recipient, _data)
+        vm.expectCall(
+            address(systemRouter),
+            abi.encodeWithSelector(
+                systemRouter.systemCall.selector,
+                DOMAIN_SYNAPSE,
+                BONDING_OPTIMISTIC_PERIOD,
+                SystemEntity.AgentManager,
+                data
+            )
+        );
         vm.prank(origin);
-        lightManager.registrySlash(domain, agent);
-        // assertFalse(lightManager.isActiveAgent(domain, agent));
+        lightManager.registrySlash(domain, agent, reporter);
+        assertFalse(lightManager.isActiveAgent(domain, agent));
+        (bool isSlashed, address slashedBy) = lightManager.slashStatus(agent);
+        assertTrue(isSlashed);
+        assertEq(slashedBy, reporter);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {
         vm.assume(caller != origin);
         vm.expectRevert("Unauthorized caller");
         vm.prank(caller);
-        lightManager.registrySlash(0, address(0));
+        // Try to slash an existing agent
+        lightManager.registrySlash(0, domains[0].agent, address(0));
     }
 
     function _localDomain() internal pure override returns (uint32) {

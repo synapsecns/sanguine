@@ -44,6 +44,8 @@ abstract contract StatementHub is SystemRegistry {
     {
         bytes32 ethSignedMsg = ECDSA.toEthSignedMessageHash(_hashedStatement);
         agent = ECDSA.recover(ethSignedMsg, _signature);
+        // TODO: ensure that Unstaking agents could be slashed,
+        // but their signature is considered invalid for new statements
         bool isActive;
         (isActive, domain) = _isActiveAgent(agent);
         require(isActive, "Not an active agent");

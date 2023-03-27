@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { IAgentManager } from "../interfaces/IAgentManager.sol";
 import { ISystemRegistry } from "../interfaces/ISystemRegistry.sol";
-import { AgentFlag, AgentStatus } from "../libs/Structures.sol";
+import { AgentFlag, AgentStatus, SlashStatus } from "../libs/Structures.sol";
 import { SystemContract } from "../system/SystemContract.sol";
 
 // TODO: adjust when Agent Merkle Tree is implemented
@@ -16,8 +16,11 @@ abstract contract AgentManager is SystemContract, IAgentManager {
 
     ISystemRegistry public destination;
 
+    // agent => (bool isSlashed, address slashedBy)
+    mapping(address => SlashStatus) public slashStatus;
+
     /// @dev gap for upgrade safety
-    uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             INITIALIZER                              ║*▕
@@ -72,7 +75,7 @@ abstract contract AgentManager is SystemContract, IAgentManager {
         returns (bool isActive, uint32 domain)
     {
         AgentStatus memory status = _agentStatus(_account);
-        if (status.flag == AgentFlag.Active) {
+        if (status.flag == AgentFlag.Active && !slashStatus[_account].isSlashed) {
             isActive = true;
             domain = status.domain;
         }
@@ -81,6 +84,9 @@ abstract contract AgentManager is SystemContract, IAgentManager {
     /// @dev Checks if the account is an active Agent on the given domain.
     function _isActiveAgent(uint32 _domain, address _account) internal view virtual returns (bool) {
         AgentStatus memory status = _agentStatus(_account);
-        return status.flag == AgentFlag.Active && status.domain == _domain;
+        return
+            status.flag == AgentFlag.Active &&
+            !slashStatus[_account].isSlashed &&
+            status.domain == _domain;
     }
 }
