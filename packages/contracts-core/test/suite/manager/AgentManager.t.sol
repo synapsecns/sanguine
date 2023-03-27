@@ -66,4 +66,22 @@ abstract contract AgentManagerTest is SynapseTest {
             _data: data
         });
     }
+
+    function _remoteSlashData(
+        uint32 domain,
+        address agent,
+        address reporter
+    ) internal view returns (bytes memory) {
+        // (_rootSubmittedAt, _callOrigin, _systemCaller, _domain, _agent, _reporter)
+        return
+            abi.encodeWithSelector(
+                bondingManager.remoteRegistrySlash.selector,
+                0,
+                0,
+                0,
+                domain,
+                agent,
+                reporter
+            );
+    }
 }

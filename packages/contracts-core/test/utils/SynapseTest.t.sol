@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { BondingManager } from "../../contracts/manager/BondingManager.sol";
-import { LightManager } from "../../contracts/manager/LightManager.sol";
+import { AgentFlag, BondingManager } from "../../contracts/manager/BondingManager.sol";
+import { AgentStatus, LightManager } from "../../contracts/manager/LightManager.sol";
 import { ISystemContract } from "../../contracts/interfaces/ISystemContract.sol";
 import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { Destination } from "../../contracts/Destination.sol";
@@ -76,7 +76,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
                 address agent = domains[domain].agents[i];
-                addAgentLM(domain, agent);
+                updateAgentLM(agent);
             }
         }
     }
@@ -191,9 +191,9 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
         addNewAgent(domain, agent);
     }
 
-    function addAgentLM(uint32 domain, address agent) public {
+    function updateAgentLM(address agent) public {
         bytes32[] memory proof = getAgentProof(agent);
-        lightManager.addAgent(domain, agent, proof, agentIndex[agent]);
+        lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
