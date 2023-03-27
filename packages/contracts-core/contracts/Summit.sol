@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import { AgentStatus } from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentManager } from "./manager/AgentManager.sol";
 import { DomainContext } from "./context/DomainContext.sol";
@@ -44,9 +46,11 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = _wrapSnapshot(_snapPayload);
-        // This will revert if the signer is not an active Agent
-        (uint32 domain, address agent) = _verifySnapshot(snapshot, _snapSignature);
-        if (domain == 0) {
+        // This will revert if the signer is not a known Agent
+        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, _snapSignature);
+        // Check that Agent is active
+        _verifyActive(status);
+        if (status.domain == 0) {
             // This will revert if Guard has previously submitted
             // a fresher state than one in the snapshot.
             _acceptGuardSnapshot(snapshot, agent);
@@ -57,7 +61,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             // Save attestation derived from Notary snapshot
             _saveAttestation(attPayload.castToAttestation(), agent);
         }
-        emit SnapshotAccepted(domain, agent, _snapPayload, _snapSignature);
+        emit SnapshotAccepted(status.domain, agent, _snapPayload, _snapSignature);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -71,13 +75,15 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     {
         // This will revert if payload is not an attestation
         Attestation att = _wrapAttestation(_attPayload);
-        // This will revert if the attestation signer is not an active Notary
-        (uint32 domain, address notary) = _verifyAttestation(att, _attSignature);
+        // This will revert if the attestation signer is not a known Notary
+        (AgentStatus memory status, address notary) = _verifyAttestation(att, _attSignature);
+        // Notary needs to be Active/Unstaking
+        _verifyActiveUnstaking(status);
         isValid = _isValidAttestation(att);
         if (!isValid) {
             emit InvalidAttestation(_attPayload, _attSignature);
             // Slash Notary and notify local AgentManager
-            _slashAgent(domain, notary);
+            _slashAgent(status.domain, notary);
         }
     }
 
@@ -88,8 +94,10 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     {
         // This will revert if payload is not an attestation report
         AttestationReport report = _wrapAttestationReport(_arPayload);
-        // This will revert if the report signer is not an active Guard
-        address guard = _verifyAttestationReport(report, _arSignature);
+        // This will revert if the report signer is not a known Guard
+        (AgentStatus memory status, address guard) = _verifyAttestationReport(report, _arSignature);
+        // Guard needs to be Active/Unstaking
+        _verifyActiveUnstaking(status);
         // Report is valid, if the reported attestation is invalid
         isValid = !_isValidAttestation(report.attestation());
         if (!isValid) {

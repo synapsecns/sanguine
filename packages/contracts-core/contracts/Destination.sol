@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { Attestation } from "./libs/Attestation.sol";
 import { AttestationReport } from "./libs/AttestationReport.sol";
+import { AgentStatus } from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { IAgentManager } from "./interfaces/IAgentManager.sol";
@@ -47,13 +48,15 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     {
         // This will revert if payload is not an attestation
         Attestation att = _wrapAttestation(_attPayload);
-        // This will revert if signer is not an active Notary
-        (uint32 domain, address notary) = _verifyAttestation(att, _attSignature);
-        // Check that Notary is active on local domain
-        require(domain == localDomain, "Wrong Notary domain");
+        // This will revert if signer is not an known Notary
+        (AgentStatus memory status, address notary) = _verifyAttestation(att, _attSignature);
+        // Check that Notary is active
+        _verifyActive(status);
+        // Check that Notary domain is local domain
+        require(status.domain == localDomain, "Wrong Notary domain");
         // This will revert if snapshot root has been previously submitted
         _saveAttestation(att, notary);
-        emit AttestationAccepted(domain, notary, _attPayload, _attSignature);
+        emit AttestationAccepted(status.domain, notary, _attPayload, _attSignature);
         return true;
     }
 
@@ -65,12 +68,22 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     ) external returns (bool wasAccepted) {
         // This will revert if payload is not an attestation report
         AttestationReport report = _wrapAttestationReport(_arPayload);
-        // This will revert if the report signer is not an active Guard
-        address guard = _verifyAttestationReport(report, _arSignature);
-        // This will revert if attestation signer is not an active Notary
-        (uint32 domain, address notary) = _verifyAttestation(report.attestation(), _attSignature);
+        // This will revert if the report signer is not a known Guard
+        (AgentStatus memory guardStatus, address guard) = _verifyAttestationReport(
+            report,
+            _arSignature
+        );
+        // Check that Guard is active
+        _verifyActive(guardStatus);
+        // This will revert if attestation signer is not a known Notary
+        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(
+            report.attestation(),
+            _attSignature
+        );
+        // Notary needs to be Active/Unstaking
+        _verifyActiveUnstaking(notaryStatus);
         // Reported Attestation was signed by the Notary => open dispute
-        _openDispute(guard, domain, notary);
+        _openDispute(guard, notaryStatus.domain, notary);
         return true;
     }
 
