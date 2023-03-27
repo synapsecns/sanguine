@@ -130,8 +130,7 @@ contract LightManagerTest is AgentManagerTest {
         );
         vm.prank(origin);
         lightManager.registrySlash(domain, agent, reporter);
-        // TODO: fix this
-        assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Slashed));
+        assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address slashedBy) = lightManager.slashStatus(agent);
         assertTrue(isSlashed);
         assertEq(slashedBy, reporter);

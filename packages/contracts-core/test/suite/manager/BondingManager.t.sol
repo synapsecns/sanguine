@@ -207,8 +207,7 @@ contract BondingManagerTest is AgentManagerTest {
         );
         vm.prank(originSynapse);
         bondingManager.registrySlash(domain, agent, reporter);
-        // TODO: fix this
-        assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Slashed));
+        assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
         assertEq(slashedBy, reporter);
@@ -226,8 +225,7 @@ contract BondingManagerTest is AgentManagerTest {
         );
         vm.prank(summit);
         bondingManager.registrySlash(domain, agent, reporter);
-        // TODO: fix this
-        assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Slashed));
+        assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
         assertEq(slashedBy, reporter);
@@ -264,8 +262,7 @@ contract BondingManagerTest is AgentManagerTest {
             SystemEntity.AgentManager,
             _remoteSlashData(domain, agent, reporter)
         );
-        // TODO: fix this
-        assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Slashed));
+        assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
         assertEq(slashedBy, reporter);
