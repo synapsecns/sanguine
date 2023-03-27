@@ -89,22 +89,6 @@ interface IBondingManager {
     // ═════════════════════════════════ VIEWS ═════════════════════════════════
 
     /**
-     * @notice Returns current status for a given agent.
-     * @param _agent    Agent address
-     * @return flag     Flag signalling the agent status (see Structures.sol)
-     * @return domain   Domain where the Agent is active (0 for Guards)
-     * @return index    Index of agent in the Agent Merkle Tree
-     */
-    function agentStatus(address _agent)
-        external
-        view
-        returns (
-            AgentFlag flag,
-            uint32 domain,
-            uint32 index
-        );
-
-    /**
      * @notice Returns a leaf representing the current status of agent in the Agent Merkle Tree.
      * @dev Will return an empty leaf, if agent is not added to the tree yet.
      * @param _agent    Agent address

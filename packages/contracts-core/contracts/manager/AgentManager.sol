@@ -42,13 +42,8 @@ abstract contract AgentManager is SystemContract, IAgentManager {
     function agentRoot() external view virtual returns (bytes32);
 
     /// @inheritdoc IAgentManager
-    function isActiveAgent(address _account) external view returns (bool isActive, uint32 domain) {
-        return _isActiveAgent(_account);
-    }
-
-    /// @inheritdoc IAgentManager
-    function isActiveAgent(uint32 _domain, address _account) external view returns (bool) {
-        return _isActiveAgent(_domain, _account);
+    function agentStatus(address _agent) external view returns (AgentStatus memory) {
+        return _agentStatus(_agent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -66,27 +61,4 @@ abstract contract AgentManager is SystemContract, IAgentManager {
 
     /// @dev Returns the last known status for the agent.
     function _agentStatus(address _agent) internal view virtual returns (AgentStatus memory);
-
-    /// @dev Checks if the account is an active Agent on any of the domains.
-    function _isActiveAgent(address _account)
-        internal
-        view
-        virtual
-        returns (bool isActive, uint32 domain)
-    {
-        AgentStatus memory status = _agentStatus(_account);
-        if (status.flag == AgentFlag.Active && !slashStatus[_account].isSlashed) {
-            isActive = true;
-            domain = status.domain;
-        }
-    }
-
-    /// @dev Checks if the account is an active Agent on the given domain.
-    function _isActiveAgent(uint32 _domain, address _account) internal view virtual returns (bool) {
-        AgentStatus memory status = _agentStatus(_account);
-        return
-            status.flag == AgentFlag.Active &&
-            !slashStatus[_account].isSlashed &&
-            status.domain == _domain;
-    }
 }

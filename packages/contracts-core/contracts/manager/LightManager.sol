@@ -22,7 +22,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     bytes32 private latestAgentRoot;
 
     // (agentRoot => (agent => status))
-    mapping(bytes32 => mapping(address => AgentStatus)) public agentStatus;
+    mapping(bytes32 => mapping(address => AgentStatus)) private agentMap;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
@@ -59,7 +59,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
             "Invalid proof"
         );
         // Update the agent status against this root
-        agentStatus[root][_agent] = _status;
+        agentMap[root][_agent] = _status;
     }
 
     /// @inheritdoc ILightManager
@@ -120,7 +120,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     /// @dev Returns the status for the agent: whether or not they have been added
     /// using latest Agent merkle Root.
     function _agentStatus(address _agent) internal view override returns (AgentStatus memory) {
-        return agentStatus[latestAgentRoot][_agent];
+        return agentMap[latestAgentRoot][_agent];
     }
 
     /// @dev Returns data for a system call: remoteRegistrySlash()
