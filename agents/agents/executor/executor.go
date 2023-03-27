@@ -59,8 +59,6 @@ type chainExecutor struct {
 	rpcClient Backend
 	// boundDestination is a bound destination contract.
 	boundDestination domains.DestinationContract
-	// executed is a map from hash(origin chain ID, destination chain ID, nonce) -> bool.
-	executed map[[32]byte]bool
 }
 
 // Executor is the executor agent.
@@ -177,7 +175,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
-			executed:          make(map[[32]byte]bool),
 		}
 	}
 
@@ -195,19 +192,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 // Run starts the executor agent. It calls `Start` and `Listen`.
 func (e Executor) Run(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
-
-	// Backfill executed messages.
-	for _, chain := range e.config.Chains {
-		chain := chain
-
-		g.Go(func() error {
-			return e.markAsExecuted(ctx, chain)
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("could not backfill executed messages: %w", err)
-	}
 
 	// Listen for snapshotAcceptedEvents on summit.
 	g.Go(func() error {
@@ -395,8 +379,6 @@ const (
 	dispatchedEvent eventType = iota
 	// Destination's AttestationAccepted event.
 	attestationAcceptedEvent
-	// Destination's AttestationExecuted event.
-	executedEvent
 	// Summit's SnapshotAccepted event.
 	snapshotAcceptedEvent
 	otherEvent
@@ -540,21 +522,6 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 	return merkleTree, nil
 }
 
-// markAsExecuted marks a message as executed via the `executed` mapping.
-func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) error {
-	latestHeader, err := e.chainExecutors[chain.ChainID].rpcClient.HeaderByNumber(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("could not get latest header: %w", err)
-	}
-
-	blockNumber := latestHeader.Number.Uint64()
-
-	return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, &blockNumber, contractEventType{
-		contractType: destinationContract,
-		eventType:    executedEvent,
-	})
-}
-
 // streamLogs uses gRPC to stream logs into a channel.
 //
 //nolint:cyclop
@@ -611,13 +578,6 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 				return fmt.Errorf("could not convert log")
 			}
 
-			// If we are filtering for `executed` events, we do not need to `verifyAfter`
-			// since we are backfilling.
-			if contractEvent.eventType == executedEvent {
-				e.chainExecutors[chainID].logChan <- log
-
-				continue
-			}
 			if !e.chainExecutors[chainID].lastLog.verifyAfter(*log) {
 				logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chainID].lastLog.blockNumber, e.chainExecutors[chainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 
@@ -687,13 +647,6 @@ func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint
 			if err != nil {
 				return fmt.Errorf("could not store attestation: %w", err)
 			}
-		case executedEvent:
-			originDomain, messageLeaf, ok := e.chainExecutors[chainID].destinationParser.ParseExecuted(log)
-			if !ok || originDomain == nil || messageLeaf == nil {
-				return fmt.Errorf("could not parse executed event")
-			}
-
-			e.chainExecutors[chainID].executed[*messageLeaf] = true
 		case otherEvent:
 			logger.Warnf("the log's event type is not supported")
 		default:
@@ -788,7 +741,14 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 
 					destinationDomain := message.DestinationDomain()
 
-					if !e.chainExecutors[destinationDomain].executed[leaf] {
+					// Check to see if the message has been executed.
+					previouslyExecuted, err := e.chainExecutors[destinationDomain].boundDestination.MessageStatus(ctx, leaf)
+					if err != nil {
+						logger.Errorf("could not get message status, retrying: %s", err)
+						continue
+					}
+
+					if previouslyExecuted == false {
 						executed, err := e.Execute(ctx, message)
 						if err != nil {
 							logger.Errorf("could not execute message, retrying: %s", err)

@@ -110,7 +110,6 @@ func NewExecutorInjectedBackend(ctx context.Context, config config.Config, execu
 			merkleTree:        tree,
 			rpcClient:         clients[chain.ChainID],
 			boundDestination:  boundDestination,
-			executed:          make(map[[32]byte]bool),
 		}
 	}
 
@@ -168,11 +167,6 @@ func (e Executor) StartAndListenOrigin(ctx context.Context, chainID uint32, addr
 // GetMerkleTree gets a merkle tree.
 func (e Executor) GetMerkleTree(chainID uint32) *merkle.HistoricalTree {
 	return e.chainExecutors[chainID].merkleTree
-}
-
-// GetExecuted gets the executed mapping.
-func (e Executor) GetExecuted(chainID uint32) map[[32]byte]bool {
-	return e.chainExecutors[chainID].executed
 }
 
 // VerifyMessageMerkleProof verifies message merkle proof.

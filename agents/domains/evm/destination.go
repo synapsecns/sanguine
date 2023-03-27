@@ -149,3 +149,17 @@ func (a destinationContract) SubmitAttestation(ctx context.Context, signer signe
 
 	return nil
 }
+
+func (a destinationContract) MessageStatus(ctx context.Context, messageLeaf [32]byte) (bool, error) {
+	status, err := a.contract.MessageStatus(&bind.CallOpts{Context: ctx}, messageLeaf)
+	if err != nil {
+		return false, fmt.Errorf("could not get message status: %w", err)
+	}
+
+	// Check for if message's status is `MESSAGE_STATUS_NONE`.
+	if status == [32]byte{0} {
+		return true, nil
+	}
+
+	return false, nil
+}

@@ -60,14 +60,14 @@ type SummitContract interface {
 
 // DestinationContract contains the interface for the destination.
 type DestinationContract interface {
-	//// SubmitAttestation submits an attestation to the destination.
-	// SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// Execute executes a message on the destination.
 	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int) error
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.
 	AttestationsAmount(ctx context.Context) (uint64, error)
 	// SubmitAttestation submits an attestation to the destination
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error
+	// MessageStatus returns if a message has been executed.
+	MessageStatus(ctx context.Context, messageLeaf [32]byte) (bool, error)
 }
 
 // TestClientContract contains the interface for the test client.

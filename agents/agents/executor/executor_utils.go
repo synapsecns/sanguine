@@ -69,8 +69,6 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 		contractEvent.contractType = destinationContract
 		if destinationEvent == destination.AttestationAcceptedEvent {
 			contractEvent.eventType = attestationAcceptedEvent
-		} else if destinationEvent == destination.ExecutedEvent {
-			contractEvent.eventType = executedEvent
 		}
 	}
 
