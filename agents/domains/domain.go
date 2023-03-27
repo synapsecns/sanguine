@@ -3,6 +3,7 @@ package domains
 import (
 	"context"
 	"errors"
+	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -56,18 +57,22 @@ type SummitContract interface {
 	GetLatestAgentState(ctx context.Context, origin uint32, bondedAgentSigner signer.Signer) (types.State, error)
 	// WatchAttestationSaved looks for attesation saved events
 	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
+	// GetNotarySnapshot gets the snapshot for the given nonce.
+	GetNotarySnapshot(ctx context.Context, nonce *big.Int) (*types.Snapshot, error)
 }
 
 // DestinationContract contains the interface for the destination.
 type DestinationContract interface {
-	//// SubmitAttestation submits an attestation to the destination.
-	// SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// Execute executes a message on the destination.
 	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int) error
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.
 	AttestationsAmount(ctx context.Context) (uint64, error)
+	// GetAttestation retrieves an attestation from the destination.
+	GetAttestation(ctx context.Context, index uint64) ([32]byte, destination.DestinationAttestation, error)
 	// SubmitAttestation submits an attestation to the destination
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error
+	// MessageStatus returns if a message has been executed.
+	MessageStatus(ctx context.Context, messageLeaf [32]byte) (bool, error)
 }
 
 // TestClientContract contains the interface for the test client.

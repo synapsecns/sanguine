@@ -131,6 +131,15 @@ func (a destinationContract) AttestationsAmount(ctx context.Context) (uint64, er
 	return attestationsAmountBigInt.Uint64(), nil
 }
 
+func (a destinationContract) GetAttestation(ctx context.Context, index uint64) ([32]byte, destination.DestinationAttestation, error) {
+	rootAndDestAtt, err := a.contract.GetAttestation(&bind.CallOpts{Context: ctx}, big.NewInt(int64(index)))
+	if err != nil {
+		return [32]byte{}, destination.DestinationAttestation{}, fmt.Errorf("could not get attestation: %w", err)
+	}
+
+	return rootAndDestAtt.Root, rootAndDestAtt.DestAtt, nil
+}
+
 func (a destinationContract) SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error {
 	transactOpts, err := a.transactOptsSetup(ctx, signer)
 	if err != nil {
@@ -148,4 +157,18 @@ func (a destinationContract) SubmitAttestation(ctx context.Context, signer signe
 	}
 
 	return nil
+}
+
+func (a destinationContract) MessageStatus(ctx context.Context, messageLeaf [32]byte) (bool, error) {
+	status, err := a.contract.MessageStatus(&bind.CallOpts{Context: ctx}, messageLeaf)
+	if err != nil {
+		return false, fmt.Errorf("could not get message status: %w", err)
+	}
+
+	// Check for if message's status is `MESSAGE_STATUS_NONE`.
+	if status == [32]byte{} {
+		return true, nil
+	}
+
+	return false, nil
 }

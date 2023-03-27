@@ -3,6 +3,7 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -115,4 +116,23 @@ func (a summitContract) WatchAttestationSaved(ctx context.Context, sink chan<- *
 	}
 
 	return sub, nil
+}
+
+func (a summitContract) GetNotarySnapshot(ctx context.Context, nonce *big.Int) (*types.Snapshot, error) {
+	snapshotPayload, err := a.contract.GetNotarySnapshot0(&bind.CallOpts{Context: ctx}, nonce)
+	if err != nil {
+		// Check if the error is because "Nonce out of range".
+		if strings.Contains(err.Error(), "Nonce out of range") {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("could not retrieve notary snapshot: %w", err)
+	}
+
+	snapshot, err := types.DecodeSnapshot(snapshotPayload)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode snapshot: %w", err)
+	}
+
+	return &snapshot, nil
 }
