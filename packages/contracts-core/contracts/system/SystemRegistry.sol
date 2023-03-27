@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { SystemContract } from "./SystemContract.sol";
 import { SystemRegistryEvents } from "../events/SystemRegistryEvents.sol";
-import { IAgentManager } from "../interfaces/IAgentManager.sol";
+import { AgentStatus, IAgentManager } from "../interfaces/IAgentManager.sol";
 import { ISystemRegistry } from "../interfaces/ISystemRegistry.sol";
 
 /// @notice Shared utilities for Origin, Destination/Summit contracts.
@@ -50,13 +50,8 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc ISystemRegistry
-    function isActiveAgent(address _account) external view returns (bool isActive, uint32 domain) {
-        return _isActiveAgent(_account);
-    }
-
-    /// @inheritdoc ISystemRegistry
-    function isActiveAgent(uint32 _domain, address _account) external view returns (bool) {
-        return _isActiveAgent(_domain, _account);
+    function agentStatus(address _agent) external view returns (AgentStatus memory) {
+        return _agentStatus(_agent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -78,13 +73,8 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Checks if the account is an active Agent on any of the domains.
-    function _isActiveAgent(address _account) internal view returns (bool isActive, uint32 domain) {
-        return agentManager.isActiveAgent(_account);
-    }
-
-    /// @dev Checks if the account is an active Agent on the given domain.
-    function _isActiveAgent(uint32 _domain, address _account) internal view returns (bool) {
-        return agentManager.isActiveAgent(_domain, _account);
+    /// @dev Returns status of the given agent: (flag, domain, index).
+    function _agentStatus(address _agent) internal view returns (AgentStatus memory) {
+        return agentManager.agentStatus(_agent);
     }
 }
