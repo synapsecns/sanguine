@@ -10,7 +10,7 @@ import { SystemEntity } from "../../contracts/libs/Structures.sol";
 import { InterfaceSummit } from "../../contracts/Summit.sol";
 import { Versioned } from "../../contracts/Version.sol";
 
-import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
+import { AgentFlag, ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 import {
     AttestationFlag,
     State,
@@ -54,7 +54,11 @@ contract SummitTest is SynapseTest {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                assertTrue(ISystemRegistry(summit).isActiveAgent(domain, agent), "!agent");
+                checkAgentStatus(
+                    agent,
+                    ISystemRegistry(summit).agentStatus(agent),
+                    AgentFlag.Active
+                );
             }
         }
         // Check version

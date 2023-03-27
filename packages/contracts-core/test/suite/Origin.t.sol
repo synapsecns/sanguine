@@ -23,7 +23,7 @@ import {
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
-import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
+import { AgentFlag, ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -44,7 +44,11 @@ contract OriginTest is SynapseTest {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                assertTrue(ISystemRegistry(origin).isActiveAgent(domain, agent));
+                checkAgentStatus(
+                    agent,
+                    ISystemRegistry(origin).agentStatus(agent),
+                    AgentFlag.Active
+                );
             }
         }
         // Check version
