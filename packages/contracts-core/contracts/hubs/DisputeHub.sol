@@ -77,7 +77,7 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         address _guard,
         uint32 _domain,
         address _notary
-    ) internal {
+    ) internal virtual {
         // TODO: implement this
         emit Dispute(_guard, _domain, _notary);
     }

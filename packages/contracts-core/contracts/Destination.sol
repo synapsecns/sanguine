@@ -106,4 +106,20 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         root = roots[_index];
         execAtt = _getRootAttestation(root);
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            DISPUTE LOGIC                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Opens a Dispute between a Guard and a Notary.
+    /// This is overridden to allow disputes only between a Guard and a LOCAL Notary.
+    function _openDispute(
+        address _guard,
+        uint32 _domain,
+        address _notary
+    ) internal override {
+        // Only disputes for local Notaries could be initiated in Destination
+        require(_domain == localDomain, "Not a local Notary");
+        super._openDispute(_guard, _domain, _notary);
+    }
 }
