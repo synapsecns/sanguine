@@ -9,7 +9,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	lru "github.com/hashicorp/golang-lru/v2"
-	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"golang.org/x/sync/errgroup"
@@ -187,34 +186,4 @@ func (t *tokenDataServiceImpl) retrievePoolTokenData(parentCtx context.Context, 
 	}
 
 	return res, nil
-}
-
-type retryableFunc func(ctx context.Context) error
-
-// retryWithBackoff will retry to get data with a backoff.
-func (t *tokenDataServiceImpl) retryWithBackoff(ctx context.Context, doFunc retryableFunc) error {
-	b := &backoff.Backoff{
-		Factor: 2,
-		Jitter: true,
-		Min:    200 * time.Millisecond,
-		Max:    5 * time.Second,
-	}
-
-	timeout := time.Duration(0)
-	attempts := 0
-	for attempts < maxAttempt {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("%w while retrying", ctx.Err())
-		case <-time.After(timeout):
-			err := doFunc(ctx)
-			if err != nil {
-				timeout = b.Duration()
-				attempts++
-			} else {
-				return nil
-			}
-		}
-	}
-	return fmt.Errorf("max attempts reached")
 }

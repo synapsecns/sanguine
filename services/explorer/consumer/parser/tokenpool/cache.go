@@ -7,7 +7,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	lru "github.com/hashicorp/golang-lru/v2"
-	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -89,34 +88,4 @@ func (t *tokenPoolDataServiceImpl) storeTokenIndex(parentCtx context.Context, ch
 		return fmt.Errorf("could not store token index: %w", err)
 	}
 	return nil
-}
-
-type retryableFunc func(ctx context.Context) error
-
-// retryWithBackoff will retry to get data with a backoff.
-func (t *tokenPoolDataServiceImpl) retryWithBackoff(ctx context.Context, doFunc retryableFunc) error {
-	b := &backoff.Backoff{
-		Factor: 2,
-		Jitter: true,
-		Min:    1 * time.Second,
-		Max:    3 * time.Second,
-	}
-
-	timeout := time.Duration(0)
-	attempts := 0
-	for attempts < maxAttempt {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("%w while retrying", ctx.Err())
-		case <-time.After(timeout):
-			err := doFunc(ctx)
-			if err != nil {
-				timeout = b.Duration()
-				attempts++
-			} else {
-				return nil
-			}
-		}
-	}
-	return fmt.Errorf("max attempts reached while retrying swap fetcher")
 }
