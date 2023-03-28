@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 	"net/http"
@@ -25,6 +26,8 @@ type Handler interface {
 	GetTracerProvider() trace.TracerProvider
 	// Tracer returns the tracer provider.
 	Tracer() trace.Tracer
+	// Propagator returns the propagator.
+	Propagator() propagation.TextMapPropagator
 }
 
 // HandlerType is the handler type to use
