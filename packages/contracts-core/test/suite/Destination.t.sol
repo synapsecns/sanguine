@@ -210,6 +210,62 @@ contract DestinationTest is SynapseTest {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          DISPUTE RESOLUTION                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_managerSlash(
+        uint256 domainId,
+        uint256 agentId,
+        address prover
+    ) public {
+        // no counterpart in this test
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        bool isRemoteNotary = !(domain == 0 || domain == DOMAIN_LOCAL);
+        if (!isRemoteNotary) {
+            vm.expectEmit();
+            emit DisputeResolved(address(0), domain, agent);
+        }
+        vm.expectEmit();
+        emit AgentSlashed(domain, agent, prover);
+        vm.recordLogs();
+        vm.prank(address(lightManager));
+        ISystemRegistry(destination).managerSlash(domain, agent, prover);
+        if (isRemoteNotary) {
+            // Should only emit AgentSlashed for remote Notaries
+            assertEq(vm.getRecordedLogs().length, 1);
+            assertEq(
+                uint8(IDisputeHub(destination).disputeStatus(agent).flag),
+                uint8(DisputeFlag.None)
+            );
+        } else {
+            assertEq(vm.getRecordedLogs().length, 2);
+            checkDisputeResolved({ honest: address(0), slashed: agent });
+        }
+    }
+
+    function test_managerSlash_honestGuard(RawAttestationReport memory rawAR) public {
+        address guard = domains[0].agent;
+        address notary = domains[DOMAIN_LOCAL].agent;
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitAttestationReport(rawAR);
+        // Slash the Notary
+        vm.prank(address(lightManager));
+        ISystemRegistry(destination).managerSlash(DOMAIN_LOCAL, notary, address(0));
+        checkDisputeResolved({ honest: guard, slashed: notary });
+    }
+
+    function test_managerSlash_honestNotary(RawAttestationReport memory rawAR) public {
+        address guard = domains[0].agent;
+        address notary = domains[DOMAIN_LOCAL].agent;
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitAttestationReport(rawAR);
+        // Slash the Notary
+        vm.prank(address(lightManager));
+        ISystemRegistry(destination).managerSlash(0, guard, address(0));
+        checkDisputeResolved({ honest: notary, slashed: guard });
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       TESTS: WHILE IN DISPUTE                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
