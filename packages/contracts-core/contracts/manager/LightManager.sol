@@ -80,16 +80,8 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         address _agent,
         address _reporter
     ) external {
-        // Check that Agent hasn't been already slashed
-        require(!slashStatus[_agent].isSlashed, "Already slashed");
-        // Check that agent is Active/Unstaking and that the domains match
-        AgentStatus memory status = _agentStatus(_agent);
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) &&
-                status.domain == _domain,
-            "Slashing could not be initiated"
-        );
-        slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _reporter });
+        // Check that Agent hasn't been already slashed and initiate the slashing
+        _initiateSlashing(_domain, _agent, _reporter);
         // On chains other than Synapse Chain only Origin could slash Agents
         if (msg.sender == address(origin)) {
             destination.managerSlash(_domain, _agent);

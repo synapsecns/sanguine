@@ -52,6 +52,29 @@ abstract contract AgentManager is SystemContract, IAgentManager {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL LOGIC                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Checks and initiates the slashing of an agent.
+    /// Should be called, after one of registries confirmed fraud committed by the agent.
+    function _initiateSlashing(
+        uint32 _domain,
+        address _agent,
+        address _reporter
+    ) internal {
+        // Check that Agent hasn't been already slashed
+        require(!slashStatus[_agent].isSlashed, "Already slashed");
+        // Check that agent is Active/Unstaking and that the domains match
+        AgentStatus memory status = _agentStatus(_agent);
+        require(
+            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) &&
+                status.domain == _domain,
+            "Slashing could not be initiated"
+        );
+        slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _reporter });
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
