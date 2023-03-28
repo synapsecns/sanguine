@@ -7,7 +7,6 @@ import { ChevronUpIcon } from '@heroicons/react/outline'
 import { useBalance, useAccount } from 'wagmi'
 
 import { useKeyPress } from '@hooks/useKeyPress'
-// import { useGenericTokenBalance } from '@hooks/tokens/useTokenBalances'
 
 import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
@@ -35,11 +34,8 @@ export const CoinSlideOver = ({
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
 
-  // const [tokenList, setTokenList] = useState<any[]>([])
-  // const [tokenBalances, setTokenBalances] = useState<Map<string, BigNumber>>(
-  //   new Map([])
-  // )
-  let tokenBalances: Map<string, BigNumber> = new Map([])
+  // Get token balances
+
   let tokenList: any[] = []
 
   const fuse = new Fuse(tokenList, {
@@ -47,31 +43,19 @@ export const CoinSlideOver = ({
     threshold: 0.0,
     keys: [
       {
-        name: 'symbol',
+        name: 'token.symbol',
         weight: 2,
       },
-      `addresses.${chainId}`,
-      'name',
+      `token.addresses.${chainId}`,
+      'token.name',
     ],
   })
 
-  const { tokenList: rawTokenList, tokenBalances: rawTokenBalances } =
-    sortByTokenBalance(tokens, chainId, address)
-  tokenList = rawTokenList
+  tokenList = sortByTokenBalance(tokens, chainId, address)
+
   if (searchStr?.length > 0) {
     tokenList = fuse.search(searchStr).map((i) => i.item)
   }
-  // useEffect(() => {
-  //   let tempTokenList = rawTokenList
-  //   let tempTokenBalances: Map<string, BigNumber> = new Map()
-  //   console.log('searchStr', searchStr)
-  //   if (searchStr?.length > 0) {
-  //     tempTokenList = fuse.search(searchStr).map((i) => i.item)
-  //   }
-  //   setTokenBalances(rawTokenBalances)
-  //   setTokenList(tempTokenList)
-  // }, [rawTokenList, rawTokenBalances])
-
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
   const arrowDown = useKeyPress('ArrowDown')
@@ -153,12 +137,12 @@ export const CoinSlideOver = ({
           <TokenMenuItem
             key={idx}
             chainId={chainId}
-            coin={token}
+            coin={token.token}
             selected={selected}
             active={idx === currentIdx}
-            tokenBalance={tokenBalances.get(token.addresses[chainId])}
+            tokenBalance={token.balance}
             onClick={() => {
-              onMenuItemClick(token)
+              onMenuItemClick(token.token)
             }}
           />
         ))}
@@ -184,43 +168,49 @@ const sortByTokenBalance = (
   chainId: number,
   address: any
 ): any => {
-  let tokenBalances = new Map<string, BigNumber>()
-  let nonZeroTokens: Token[] = []
-  let zeroTokens: Token[] = []
   let i = 0
+  let tokensWithBalances: any[] = []
+  let zeroTokensWithBalances: any[] = []
+
   // go through all tokens and retrieve token balances
   while (i < tokens.length) {
-    const tokenAddr = tokens[i].addresses[chainId as keyof Token['addresses']]
-    if (!tokenBalances.get(tokenAddr)) {
-      let rawTokenBalance: any
-      // Check for native token
-      if (tokenAddr === '') {
-        const { data } = useBalance({
-          address: address,
-          chainId: chainId,
+    let tokenAddr = tokens[i].addresses[chainId as keyof Token['addresses']]
+
+    let rawTokenBalance: any
+
+    // Check for native token
+    if (tokenAddr === '') {
+      const { data } = useBalance({
+        address: address,
+        chainId: chainId,
+      })
+      rawTokenBalance = data
+    } else if (tokenAddr?.length > 0) {
+      const { data } = useBalance({
+        address: address,
+        token: `0x${tokenAddr.slice(2)}`,
+        chainId: chainId,
+      })
+      rawTokenBalance = data
+    }
+
+    // manages two the array of tokens with zero balances and non-zero balances
+    if (rawTokenBalance) {
+      if (rawTokenBalance?.value._hex !== '0x00') {
+        zeroTokensWithBalances.push({
+          token: tokens[i],
+          balance: rawTokenBalance.value,
         })
-        rawTokenBalance = data
-      } else if (tokenAddr?.length > 0) {
-        const { data } = useBalance({
-          address: address,
-          token: `0x${tokenAddr.slice(2)}`,
-          chainId: chainId,
+      } else {
+        tokensWithBalances.push({
+          token: tokens[i],
+          balance: rawTokenBalance.value,
         })
-        rawTokenBalance = data
-      }
-      // manages two the array of tokens with zero balances and non-zero balances
-      if (rawTokenBalance) {
-        tokenBalances.set(tokenAddr, rawTokenBalance.value)
-        if (rawTokenBalance?.value._hex !== '0x00') {
-          zeroTokens.push(tokens[i])
-        } else {
-          nonZeroTokens.push(tokens[i])
-        }
       }
     }
     i++
   }
-  let tokenList = zeroTokens.concat(nonZeroTokens)
-  // console.log('tokenBalances', tokenBalances)
-  return { tokenList, tokenBalances }
+  let tokenList = zeroTokensWithBalances.concat(tokensWithBalances)
+  console.log('tokenBalances', tokenList)
+  return tokenList
 }

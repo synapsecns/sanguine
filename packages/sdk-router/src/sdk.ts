@@ -20,7 +20,7 @@ type Query = [string, string, BigNumber, BigNumber, string] & {
   rawParams: string
 }
 
-export class SynapseSDK {
+class SynapseSDK {
   public synapseRouters: SynapseRouters
 
   constructor(chainIds: number[], providers: Provider[]) {
@@ -44,6 +44,7 @@ export class SynapseSDK {
     tokenOut: string,
     amountIn: BigintIsh
   ): Promise<{
+    maxAmountOut?: BigNumber
     originQuery?: Query
     destQuery?: Query
   }> {
@@ -109,7 +110,7 @@ export class SynapseSDK {
     // // Throw error if origin quote is zero
     // if (originQuery.minAmountOut == 0) throw Error("No path found on origin")
 
-    return { originQuery, destQuery }
+    return { maxAmountOut, originQuery, destQuery }
   }
 
   public async bridge(
@@ -146,3 +147,5 @@ export class SynapseSDK {
     )
   }
 }
+
+export { SynapseSDK, BigintIsh }

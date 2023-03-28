@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useContext, useState } from 'react'
 
 import { Zero, One } from '@ethersproject/constants'
 import { parseUnits } from '@ethersproject/units'
@@ -7,13 +7,14 @@ import { useSettings } from '@hooks/settings/useSettings'
 
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
-
 // import { useSettings } from '@hooks/settings/useSettings'
 // import { useGasDropAmount } from '@hooks/useGasDropAmount'
 // import { useBridgeSwap } from '@hooks/actions/useBridgeSwap'
-// import { useSynapseContract } from '@hooks/contracts/useSynapseContract'
+// import { useSynapseContract } fromnpm i '@hooks/contracts/useSynapseContract'
 
 // import { APPROVAL_STATE, useApproveToken } from '@hooks/actions/useApproveToken'
+import { useSynapseContext } from '@/utils/SynapseProvider'
+
 import { sanitizeValue } from '@utils/sanitizeValue'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
 
@@ -38,6 +39,10 @@ import { DestinationAddressInput } from './DestinationAddressInput'
 
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatBNToString } from '@bignumber/format'
+
+// import { getBridgeQuote } from '@hooks/synapse'
+
+//  console.log(getBridgeQuote())
 
 // const ACTION_BTN_CLASSNAME = `
 //   w-full rounded-lg my-2 px-4 py-3 tracking-wide
@@ -74,12 +79,11 @@ export default function BridgeCard({
   priceImpact,
   exchangeRate,
   feeAmount,
-  fromRef,
-  toRef,
   destinationAddress,
   setDestinationAddress,
   handleTokenChange,
   toBridgeableTokens,
+  quotes,
 }: {
   address: `0x${string}` | undefined
   fromChainId: number
@@ -102,18 +106,16 @@ export default function BridgeCard({
   priceImpact: BigNumber
   exchangeRate: BigNumber
   feeAmount: BigNumber
-
-  fromRef: any
-  toRef: any
-
   destinationAddress: string
   setDestinationAddress: (v: string) => void
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
   toBridgeableTokens: Token[]
+  quotes: any
 }) {
+  const SynapseSDK = useSynapseContext()
   // populates the selectable tokens using the from and to chain ids
   const fromChainTokens = BRIDGABLE_TOKENS[Number(fromChainId)]
-  console.log('toBridgeableTokenszz', fromChainTokens)
+
   // can be replaced by get bridge quote
   // const gasDropAmount = useGasDropAmount(toChainId)
 
@@ -186,7 +188,6 @@ export default function BridgeCard({
     handleTokenChange: handleTokenChange,
     onChangeAmount: onChangeFromAmount,
     inputValue: fromValue,
-    inputRef: fromRef,
     tokens: fromChainTokens,
     chainId: fromChainId,
     setDisplayType,
@@ -202,7 +203,6 @@ export default function BridgeCard({
     handleTokenChange: handleTokenChange,
     onChangeAmount: onChangeToAmount,
     inputValue: toValue,
-    inputRef: toRef,
     tokens: toBridgeableTokens,
     chainId: toChainId,
     swapFromToChains,
@@ -287,6 +287,17 @@ export default function BridgeCard({
   const sss = async (): Promise<any> => {
     await console.log('s')
   }
+  const executeBridge = async () => {
+    await SynapseSDK.bridge(
+      address, //To Address
+      42161,
+      43114,
+      '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8', // To token Address **
+      BigNumber.from('20000000'),
+      quotes.originQuery,
+      quotes.destQuery
+    )
+  }
   const swapBtn = (
     <TransactionButton
       className={btnClassName}
@@ -349,7 +360,7 @@ export default function BridgeCard({
         show={!fromAmount.eq(0)}
         {...SECTION_TRANSITION_PROPS}
       > */}
-      {/* <ExchangeRateInfo
+      <ExchangeRateInfo
         fromAmount={fromAmount}
         fromCoin={fromCoin}
         toCoin={toCoin}
@@ -357,7 +368,7 @@ export default function BridgeCard({
         gasDropAmount={One}
         fromChainId={fromChainId}
         toChainId={toChainId}
-      /> */}
+      />
       {/* </Transition> */}
       <Transition
         appear={false}

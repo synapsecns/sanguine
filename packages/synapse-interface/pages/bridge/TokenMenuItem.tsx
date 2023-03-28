@@ -42,7 +42,6 @@ export default function TokenMenuItem({
       ref?.current?.focus()
     }
   }, [active])
-
   let bgClassName
   if (isCurrentlySelected) {
     bgClassName = `bg-bgLight hover:bg-bgLight active:bg-bgLight`

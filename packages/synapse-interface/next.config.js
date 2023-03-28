@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
   },
 
 }
@@ -19,4 +19,3 @@ module.exports = {
   },
   ...nextConfig
 }
-

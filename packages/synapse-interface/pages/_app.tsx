@@ -1,7 +1,9 @@
 import '@styles/global.css'
 import '@rainbow-me/rainbowkit/styles.css'
-
+import { SynapseProvider } from '@/utils/SynapseProvider'
 import type { AppProps } from 'next/app'
+import { Provider as EthersProvider } from '@ethersproject/abstract-provider'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import {
   klaytn,
   boba,
@@ -9,11 +11,8 @@ import {
   dfk,
   dogechain,
 } from '@constants/extraWagmiChains'
-import { Header } from '../components/layouts/Header'
-import { Footer } from '../components/layouts/Footer'
 
 import { configureChains, createClient, WagmiConfig } from 'wagmi'
-import { Chain } from 'wagmi/chains'
 import {
   mainnet,
   arbitrum,
@@ -84,11 +83,22 @@ export default function App({ Component, pageProps }: AppProps) {
     connectors,
     provider,
   })
+
+  // Synapse client
+  let synapseProviders: EthersProvider[] = []
+  chains.map((chain) => {
+    let rpc: EthersProvider = new JsonRpcProvider(chain.rpcUrls.default.http[0])
+    synapseProviders.push(rpc)
+  })
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains} theme={darkTheme()}>
-        <Component {...pageProps} />
-        <Footer />
+        <SynapseProvider
+          chainIds={chains.map((chain) => chain.id)}
+          providers={synapseProviders}
+        >
+          <Component {...pageProps} />
+        </SynapseProvider>
       </RainbowKitProvider>
     </WagmiConfig>
   )

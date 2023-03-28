@@ -83,7 +83,7 @@ export const USDC = new Token({
     [ChainId.AURORA]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
     [ChainId.METIS]: '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21',
     [ChainId.KLAYTN]: '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C',
-    [ChainId.CANTO]:  '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd',
+    [ChainId.CANTO]: '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd',
   },
   decimals: {
     [ChainId.BSC]: 18,
@@ -99,7 +99,7 @@ export const USDC = new Token({
     [ChainId.METIS]: 6,
     [ChainId.CRONOS]: 6,
     [ChainId.KLAYTN]: 6,
-    [ChainId.CANTO]:  6,
+    [ChainId.CANTO]: 6,
   },
   symbol: 'USDC',
   name: 'USD Circle',
@@ -212,7 +212,7 @@ export const USDT = new Token({
     [ChainId.BOBA]: '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d',
     [ChainId.AURORA]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
     [ChainId.KLAYTN]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
-    [ChainId.CANTO]:  '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75'
+    [ChainId.CANTO]: '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75'
   },
   decimals: {
     [ChainId.BSC]: 18,
@@ -439,7 +439,7 @@ export const SYN = new Token({
     [ChainId.CRONOS]: '0xFD0F80899983b8D46152aa1717D76cba71a31616',
     [ChainId.AURORA]: '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445',
     [ChainId.DOGECHAIN]: '0xDfA53EeBA61D69E1D2b56b36d78449368F0265c1',
-    [ChainId.CANTO]:    '0x555982d2E211745b96736665e19D9308B615F78e'
+    [ChainId.CANTO]: '0x555982d2E211745b96736665e19D9308B615F78e'
   },
   decimals: 18,
   symbol: 'SYN',
@@ -507,7 +507,7 @@ export const NUSD = new Token({
   swapableType: 'USD',
 })
 
- export const NOTE = new Token({
+export const NOTE = new Token({
   addresses: {
     [ChainId.CANTO]: '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503'
   },
@@ -769,7 +769,7 @@ export const WBNB = new Token({
 export const DEPRECATED_WKLAY = new Token({
   addresses: {
     [ChainId.KLAYTN]: '0x5819b6af194a78511c79c85ea68d2377a7e9335f'
-  }, 
+  },
   decimals: 18,
   symbol: 'WKLAY',
   name: 'Deprecated Wrapped Klay',
@@ -1019,9 +1019,9 @@ for (const [chainId, tokensOnChain] of _.toPairs(BASIC_TOKENS_BY_CHAIN)) {
     TOKEN_HASH_MAP[chainId][_.toLower(token.addresses[chainId])] = token
   }
 }
-
-TOKEN_HASH_MAP[ChainId.AVALANCHE][
-  _.toLower(GMX.wrapperAddresses[ChainId.AVALANCHE])
-] = GMX
+console.log("TOKEN_HASH_MAP", TOKEN_HASH_MAP)
+// TOKEN_HASH_MAP[ChainId.AVALANCHE][
+//   _.toLower(GMX.wrapperAddresses[ChainId.AVALANCHE])
+// ] = GMX
 
 export { TOKEN_HASH_MAP }

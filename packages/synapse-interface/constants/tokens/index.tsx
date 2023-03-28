@@ -19,6 +19,10 @@ interface BridgeSwapableTokensByType {
   }
 }
 
+const sortedTokens = Object.values(all).sort(
+  (a, b) => b.visibilityRank - a.visibilityRank
+)
+
 const getBridgeableTokens = (): BridgeableTokens => {
   let bridgeableTokens: BridgeableTokens = {}
   Object.values(all).map((token) => {
@@ -104,6 +108,12 @@ const getBridgeSwapableTokensByType = (): BridgeSwapableTokensByType => {
   return bridgeSwapableTokensByType
 }
 
+export const TOKENS_SORTED_BY_SWAPABLETYPE = Array.from(
+  new Set(sortedTokens.map((token) => token.swapableType))
+)
+export const TOKENS_SORTED_BY_SYMBOL = Array.from(
+  new Set(sortedTokens.map((token) => token.symbol))
+)
 export const BRIDGABLE_TOKENS = getBridgeableTokens()
 export const BRIDGE_CHAINS_BY_TYPE = getBridgeChainsByType()
 export const BRIDGE_TYPES_BY_CHAIN = getBridgeTypeByChain()

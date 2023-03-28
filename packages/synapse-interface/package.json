@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^0.11.0",
-    "@synapsecns/sdk-router": "^0.1.7",
+    "@synapsecns/sdk-router": "file:../sdk-router",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/line-clamp": "^0.4.2",
@@ -20,6 +20,7 @@
     "@types/react-dom": "18.0.11",
     "bignumber": "^1.1.0",
     "fuse.js": "^6.6.2",
+    "keccak": "^3.0.3",
     "next": "13.2.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",

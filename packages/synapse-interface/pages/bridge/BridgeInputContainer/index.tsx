@@ -24,7 +24,6 @@ export default function BridgeInputContainer({
   onChangeAmount,
   swapFromToChains,
   setDisplayType,
-  inputRef,
   chainId,
   onChangeChain,
   possibleChains,
@@ -34,7 +33,6 @@ export default function BridgeInputContainer({
   selected: Token
   onChangeAmount: (v: string) => void
   inputValue: string
-  inputRef: any
   swapFromToChains?: () => void
   tokens: any[]
   chainId: number
@@ -149,7 +147,6 @@ export default function BridgeInputContainer({
           />
 
           <input
-            ref={inputRef}
             pattern="[0-9.]+"
             disabled={!isSwapFrom} // may cause issues idk goal is to prevent to result from being selectable
             className={`
