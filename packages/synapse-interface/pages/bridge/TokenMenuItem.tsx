@@ -33,15 +33,13 @@ export default function TokenMenuItem({
   tokenBalance: BigNumber | undefined
   onClick: () => void
 }) {
-  const ref = useRef<any>(null)
-
   const isCurrentlySelected = selected.symbol === coin.symbol
 
-  useEffect(() => {
-    if (active) {
-      ref?.current?.focus()
-    }
-  }, [active])
+  // useEffect(() => {
+  //   if (active) {
+  //     ref?.current?.focus()
+  //   }
+  // }, [active])
   let bgClassName
   if (isCurrentlySelected) {
     bgClassName = `bg-bgLight hover:bg-bgLight active:bg-bgLight`
@@ -51,7 +49,7 @@ export default function TokenMenuItem({
 
   return (
     <div
-      ref={ref}
+      // ref={ref}
       tabIndex={active ? 1 : 0}
       onClick={onClick}
       className={`

@@ -84,6 +84,7 @@ export default function BridgeCard({
   handleTokenChange,
   toBridgeableTokens,
   quotes,
+  fromTokens,
 }: {
   address: `0x${string}` | undefined
   fromChainId: number
@@ -111,10 +112,11 @@ export default function BridgeCard({
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
   toBridgeableTokens: Token[]
   quotes: any
+  fromTokens: any[]
 }) {
   const SynapseSDK = useSynapseContext()
   // populates the selectable tokens using the from and to chain ids
-  const fromChainTokens = BRIDGABLE_TOKENS[Number(fromChainId)]
+  // const fromChainTokens =fromChainTokens
 
   // can be replaced by get bridge quote
   // const gasDropAmount = useGasDropAmount(toChainId)
@@ -188,7 +190,7 @@ export default function BridgeCard({
     handleTokenChange: handleTokenChange,
     onChangeAmount: onChangeFromAmount,
     inputValue: fromValue,
-    tokens: fromChainTokens,
+    tokens: fromTokens,
     chainId: fromChainId,
     setDisplayType,
     onChangeChain: onSelectFromChain,

@@ -118,3 +118,9 @@ export const BRIDGABLE_TOKENS = getBridgeableTokens()
 export const BRIDGE_CHAINS_BY_TYPE = getBridgeChainsByType()
 export const BRIDGE_TYPES_BY_CHAIN = getBridgeTypeByChain()
 export const BRIDGE_SWAPABLE_TOKENS_BY_TYPE = getBridgeSwapableTokensByType()
+export const tokenSymbolToToken = (chainId: number, symbol: string) => {
+  const token = BRIDGABLE_TOKENS[chainId].find((token) => {
+    return token.symbol === symbol
+  })
+  return token
+}
