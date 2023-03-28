@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import Grid from '@tw/Grid'
+import Card from '@tw/Card'
 import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
 import { useRef, useState, useEffect, useMemo } from 'react'
@@ -10,11 +11,20 @@ import { BigintIsh } from '@synapsecns/sdk-router'
 import { useSynapseContext } from '@/utils/SynapseProvider'
 import { parseUnits, formatUnits } from '@ethersproject/units'
 import { checksumAddress } from '@utils/checksum'
+import { PageHeader } from '@components/PageHeader'
+import Image from 'next/image'
+import synLogo from '@assets/icons/synapse.svg'
+
 // import BridgeCard from './BridgeCard'
 // import BridgeWatcher from './BridgeWatcher'
 import { ActionCardFooter } from '@components/ActionCardFooter'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
-import { fetchBalance } from '@wagmi/core'
+import {
+  fetchBalance,
+  switchNetwork,
+  getNetwork,
+  getAccount,
+} from '@wagmi/core'
 
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import { ChainId } from '@constants/networks'
@@ -44,7 +54,7 @@ console.log('BRIDGE_CHAINS_BY_TYPE', BRIDGE_CHAINS_BY_TYPE)
 console.log('BRIDGABLE_TOKENS', BRIDGABLE_TOKENS)
 console.log('BRIDGE_SWAPABLE_TOKENS_BY_TYPE', BRIDGE_SWAPABLE_TOKENS_BY_TYPE)
 const bridgeFee = BigNumber.from('10000')
-export default function BridgePage() {
+export default function BridgePage({ address }: { address: `0x${string}` }) {
   // move to utils
   const sortByVisibilityRank = (tokens: Token[]) => {
     return Object.values(tokens).sort(
@@ -111,9 +121,7 @@ export default function BridgePage() {
       'tokensWithBalances',
       tokensWithBalances
     )
-    let tokenList = sortByVisibilityRank(zeroTokensWithBalances).concat(
-      sortByVisibilityRank(tokensWithBalances)
-    )
+    let tokenList = zeroTokensWithBalances.concat(tokensWithBalances)
     console.log('tokenBalances', tokenList)
     return tokenList
   }
@@ -125,25 +133,38 @@ export default function BridgePage() {
     })
     return token
   }
-  const router = useRouter()
 
-  // Get data from wagmi.
-  const { address } = useAccount()
+  const router = useRouter()
+  // if (!router.isReady) {
+  //   console.log('router.isReady', router.isReady)
+  //   return (
+  //     <LandingPageWrapper>
+  //       <main className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none">
+  //         <div className="items-center px-4 py-8 mx-auto mt-4 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
+  //           <Grid
+  //             cols={{ xs: 1 }}
+  //             gap={6}
+  //             className="justify-center px-2 py-16 sm:px-6 md:px-8"
+  //           >
+  //             <div className="flex justify-center align-center"></div>
+  //           </Grid>
+  //         </div>
+  //       </main>
+  //     </LandingPageWrapper>
+  //   )
+  // }
 
   // Get SynapseSDK
   const SynapseSDK = useSynapseContext()
 
   // Set current chain
-  const { chain: fromChainIdRaw } = useNetwork()
-  const fromChainId = fromChainIdRaw?.id
-    ? fromChainIdRaw?.id
-    : DEFAULT_FROM_CHAIN
-  console.log('CHAIN', fromChainId)
-  console.log('RELOAD')
-
-  const { error: networkSwitchError, switchNetwork } = useSwitchNetwork()
-
+  const getCurrentNetwork = () => {
+    const { chain: fromChainIdRaw } = getNetwork()
+    return fromChainIdRaw ? fromChainIdRaw?.id : DEFAULT_FROM_CHAIN
+  }
+  const [fromChainId, setFromChainId] = useState(getCurrentNetwork())
   const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
+  const chainIdsRef = useRef({ fromChainId, toChainId })
 
   // TODO need to implemement last chain id to handle case when user cancels switching the chain.
   // probably best to make tochainId a dictionary that holds the current and last chain id.
@@ -159,6 +180,7 @@ export default function BridgePage() {
   const [fromTokens, setFromTokens] = useState([])
   const [fromValue, setFromValue] = useState('')
   const [toValue, setToValue] = useState('')
+  const [init, setInit] = useState(false)
   // Auxiliary data
   const [priceImpact, setPriceImpact] = useState(Zero)
   const [exchangeRate, setExchangeRate] = useState(Zero)
@@ -183,68 +205,38 @@ export default function BridgePage() {
 
   // Upon update of connected chain or wallet address, the bridgeable tokens from the connected
   // chain are updated along with the user's wallet balance for each token.
-  useEffect(() => {
-    if (fromChainId === undefined || address === undefined) {
-      return
-    }
-    sortByTokenBalance(
-      BRIDGABLE_TOKENS[fromChainId],
-      fromChainId,
-      address
-    ).then((tokens) => {
-      setFromTokens(tokens)
-      setFromTokenIdx(0)
-    })
-  }, [fromChainId, address])
+  // useEffect(() => {
+
+  // }, [fromChainId])
 
   // Upon update from the url query, updates to according states
   // will only execute on initial load of the page
   useEffect(() => {
-    console.log('dslajldkjasal', router.isReady)
     if (!router.isReady) {
-      // if the router is not ready, exit
       return
     }
-
     const {
       outputChain: toChainIdUrl,
       inputCurrency: fromTokenSymbolUrl,
       outputCurrency: toTokenSymbolUrl,
     } = router.query
+    console.log(
+      'dslajldkjasal',
+      router.isReady,
+      toChainIdUrl,
+      fromTokenSymbolUrl,
+      toTokenSymbolUrl
+    )
 
     let tempFromToken: Token = getMostCommonSwapableType(fromChainId)
-    console.log('tempFromToken', tempFromToken)
     if (fromTokenSymbolUrl) {
       let token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
       if (token) {
         tempFromToken = token
       }
     }
-    console.log('tempFromToken', tempFromToken)
-    const { bridgeableToken, newToChain, bridgeableTokens, bridgeableChains } =
-      handleNewFromTokenNew(
-        tempFromToken,
-        toChainIdUrl ? Number(toChainIdUrl) : undefined,
-        toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined
-      )
-    setFromToken(tempFromToken)
-    setToBridgeableChains(bridgeableChains)
-    setToBridgeableTokens(bridgeableTokens)
-    setToToken(bridgeableToken)
-    setToChainId(newToChain)
 
-    // Update url params if any passed params were invalid
-    if (
-      Number(toChainIdUrl) !== newToChain ||
-      fromTokenSymbolUrl !== tempFromToken.symbol ||
-      toTokenSymbolUrl !== bridgeableToken.symbol
-    ) {
-      updateUrlParams({
-        outputChain: newToChain,
-        inputCurrency: tempFromToken.symbol,
-        outputCurrency: bridgeableToken.symbol,
-      })
-    }
+    setFromToken(tempFromToken)
   }, [router.isReady])
 
   // Listens for every time the source chan is changed and ensures
@@ -252,103 +244,40 @@ export default function BridgePage() {
 
   // check if resetting from token and such is necceary.
   useEffect(() => {
-    resetRates()
-    if (fromChainId === toChainId) {
-      setToChainId(lastToChainId)
-      updateUrlParams({
-        outputChain: lastToChainId,
-        inputCurrency: fromToken.symbol,
-        outputCurrency: toToken.symbol,
-      })
+    if (fromChainId === undefined || address === undefined) {
+      return
     }
+
+    // let tempFromToken: Token = fromToken
+    // if (
+    //   !BRIDGE_SWAPABLE_TOKENS_BY_TYPE[fromChainId][
+    //     String(fromToken.swapableType)
+    //   ].includes(fromToken)
+    // ) {
+    //   tempFromToken = getMostCommonSwapableType(fromChainId)
+    // }
+
+    // let newChainTokenList: Token[] = sortByVisibilityRank(
+    //   BRIDGE_SWAPABLE_TOKENS_BY_TYPE[fromChainId][String(fromToken.swapableType)]
+    // )
+
+    // let newToken =
+    //   newChainTokenList.length > 0
+    //     ? fromToken
+    //     : getMostCommonSwapableType(fromChainId)
+    // console.log('TRREEG', tempFromToken)
+
+    sortByTokenBalance(
+      BRIDGABLE_TOKENS[fromChainId],
+      fromChainId,
+      address
+    ).then((tokens) => {
+      setFromTokens(tokens)
+    })
+
+    // setFromToken(tempFromToken)
+    // console.log('explain youreslf, ', fromChainId, tempFromToken)
   }, [fromChainId])
-
-  // useEffect(() => {
-  //   if (fromToken === undefined) {
-  //     return BRIDGABLE_TOKENS[fromChainId]
-  //   }
-
-  //   let positedToChain = toChainId
-  //   let token = fromToken
-  //   let positedToSymbol = undefined
-  //   let newToChain = positedToChain ? Number(positedToChain) : DEFAULT_TO_CHAIN
-
-  //   let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
-  //     String(token.swapableType)
-  //   ].filter((chainId) => Number(chainId) !== fromChainId)
-  //   let swapExceptionsArr: number[] =
-  //     token?.swapExceptions?.[fromChainId as keyof Token['swapExceptions']]
-  //   if (swapExceptionsArr?.length > 0) {
-  //     bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
-  //   }
-
-  //   // TODO filter above
-  //   if (!bridgeableChains.includes(String(newToChain))) {
-  //     newToChain =
-  //       Number(bridgeableChains[0]) === fromChainId
-  //         ? Number(bridgeableChains[1])
-  //         : Number(bridgeableChains[0])
-  //   }
-  //   let positedToToken = positedToSymbol
-  //     ? tokenSymbolToToken(newToChain, positedToSymbol)
-  //     : undefined
-
-  //   let bridgeableTokens: Token[] =
-  //     BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
-
-  //   if (swapExceptionsArr?.length > 0) {
-  //     bridgeableTokens = bridgeableTokens.filter(
-  //       (toToken) => toToken.symbol === token.symbol
-  //     )
-  //   }
-
-  //   let bridgeableToken: Token =
-  //     positedToToken &&
-  //     !(swapExceptionsArr?.length > 0) &&
-  //     token.swapableType === positedToToken.swapableType
-  //       ? positedToToken
-  //       : bridgeableTokens[0]
-  //   return bridgeableTokens
-  // }, [fromTokens, fromTokenIdx, toChainId])
-  // Generates list of tokens for the current chain, while sorting them by balance.
-  // useMemo is used to prevent the function from being called on every render (no need to re-request balances if fromChainId or address hasn't changed)
-  // let fromTokens = useMemo(() => {
-  //   console.log('MEMO fromTokens')
-  //   sortByTokenBalance(
-  //     BRIDGABLE_TOKENS[fromChainId],
-  //     fromChainId,
-  //     address
-  //   ).then((tokens) => {
-  //     console.log('tokensadhasjkhdakjshskjhs', tokens)
-  //     return tokens
-  //   })
-  // }, [fromChainId, address])
-  // console.log('FROM TOKENS', fromTokens)
-
-  // let toTokens = useMemo(() => {
-  //   console.log(
-  //     'fromToken, toChainId, fromToken',
-  //     fromToken,
-  //     toChainId,
-  //     fromToken
-  //   )
-
-  // console.log('TO TOKENS', toTokens)
-  // Handle entry/amounts in the card
-
-  // const [swapableType, setSwapableType] = useState(DEFAULT_SWAPABLE_TYPE)
-
-  // Handle wagmi changes
-  // useEffect(() => {
-  //   if (address === undefined) {
-  //     setFromChainId(DEFAULT_FROM_CHAIN)
-  //   } else {
-  //     setFromChainId(Number(fromChainIdRaw?.id))
-  //   }
-  // }, [fromChainIdRaw])
-  // Get data from query url.
-
-  // Handle url changes
 
   const getMostCommonSwapableType = (chainId: number) => {
     let fromChainTokensByType = Object.values(
@@ -395,20 +324,6 @@ export default function BridgePage() {
     }
   }
 
-  // //Keeps the url in sync with the state
-  // useEffect(() => {
-  //   // console.log("SLKdhsdhashdCUMMM")
-  //   router.push({
-  //     pathname: BRIDGE_PATH,
-
-  //     query: {
-  //       outputChain: toChainId,
-  //       inputCurrency: fromToken.symbol,
-  //       outputCurrency: toToken.symbol,
-  //     },
-  //   })
-  // }, [toChainId, fromToken, toToken])
-
   const updateUrlParams = ({
     outputChain,
     inputCurrency,
@@ -418,15 +333,38 @@ export default function BridgePage() {
     inputCurrency: any
     outputCurrency: any
   }) => {
-    router.push({
-      pathname: BRIDGE_PATH,
-      query: {
-        outputChain: outputChain,
-        inputCurrency: inputCurrency,
-        outputCurrency: outputCurrency,
+    router.replace(
+      {
+        pathname: BRIDGE_PATH,
+        query: {
+          outputChain: outputChain,
+          inputCurrency: inputCurrency,
+          outputCurrency: outputCurrency,
+        },
       },
-    })
+      undefined,
+      { shallow: true }
+    )
   }
+
+  // const getNewChain = (chainId: number) => {
+  //   let newToChain = positedToChain ? Number(positedToChain) : DEFAULT_TO_CHAIN
+  //   let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
+  //     String(token.swapableType)
+  //   ].filter((chainId) => Number(chainId) !== fromChainId)
+  //   let swapExceptionsArr: number[] =
+  //     token?.swapExceptions?.[fromChainId as keyof Token['swapExceptions']]
+  //   if (swapExceptionsArr?.length > 0) {
+  //     bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
+  //   }
+
+  //   if (!bridgeableChains.includes(String(newToChain))) {
+  //     newToChain =
+  //       Number(bridgeableChains[0]) === fromChainId
+  //         ? Number(bridgeableChains[1])
+  //         : Number(bridgeableChains[0])
+  //   }
+  // }
 
   const handleNewFromTokenNew = (
     token: Token,
@@ -451,6 +389,7 @@ export default function BridgePage() {
           : Number(bridgeableChains[0])
     }
 
+    console.log('NEW TO CHAIN', newToChain)
     let positedToToken = positedToSymbol
       ? tokenSymbolToToken(newToChain, positedToSymbol)
       : tokenSymbolToToken(newToChain, token.symbol)
@@ -477,78 +416,6 @@ export default function BridgePage() {
     }
   }
 
-  const handleNewFromToken = (
-    token: Token,
-    positedToChain: number | undefined,
-    positedToSymbol: string | undefined,
-    updateUrl: boolean
-  ) => {
-    let newToChain = positedToChain ? Number(positedToChain) : DEFAULT_TO_CHAIN
-
-    console.log('NEW TO CHAIN', token)
-    let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
-      String(token.swapableType)
-    ].filter((chainId) => Number(chainId) !== fromChainId)
-    let swapExceptionsArr: number[] =
-      token?.swapExceptions?.[fromChainId as keyof Token['swapExceptions']]
-    if (swapExceptionsArr?.length > 0) {
-      bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
-    }
-
-    // TODO filter above
-    if (!bridgeableChains.includes(String(newToChain))) {
-      newToChain =
-        Number(bridgeableChains[0]) === fromChainId
-          ? Number(bridgeableChains[1])
-          : Number(bridgeableChains[0])
-    }
-    let positedToToken = positedToSymbol
-      ? tokenSymbolToToken(newToChain, positedToSymbol)
-      : tokenSymbolToToken(newToChain, token.symbol)
-
-    console.log('positedToTokenpositedToTokenpositedToToken', positedToToken)
-    let bridgeableTokens: Token[] =
-      BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
-
-    if (swapExceptionsArr?.length > 0) {
-      bridgeableTokens = bridgeableTokens.filter(
-        (toToken) => toToken.symbol === token.symbol
-      )
-    }
-    let bridgeableToken: Token = positedToToken
-    if (!bridgeableTokens.includes(positedToToken)) {
-      bridgeableToken = bridgeableTokens[0]
-    }
-
-    // let bridgeableToken: Token =
-    //   positedToToken &&
-    //   !(swapExceptionsArr?.length > 0) &&
-    //   token.swapableType === positedToToken.swapableType
-    //     ? positedToToken
-    //     : bridgeableTokens[0]
-
-    setToToken(bridgeableToken)
-    setToBridgeableTokens(bridgeableTokens)
-    setToBridgeableChains(bridgeableChains)
-    if (
-      updateUrl ||
-      newToChain !== positedToChain ||
-      bridgeableToken.symbol !== positedToSymbol
-    ) {
-      updateUrlParams({
-        outputChain: newToChain,
-        inputCurrency: token.symbol,
-        outputCurrency: bridgeableToken.symbol,
-      })
-    } else {
-      setToChainId(Number(newToChain))
-    }
-  }
-
-  // useEffect(() => {
-  //   handleNewFromToken(fromToken, toChainId, toToken, true)
-  // }, [fromToken])
-
   // Handles when chains are flipped or user creates toChainId == fromChainId condition
   const handleChainFlip = async () => {
     // let oldFromChainId = fromChainId
@@ -556,38 +423,32 @@ export default function BridgePage() {
     if (address === undefined) {
       alert('Please connect your wallet')
     } else {
-      switchNetwork?.(toChainId)
+      chainIdsRef.current = { toChainId, fromChainId }
+      let newToChain = fromChainId
+      let res = await switchNetwork({ chainId: toChainId })
+      if (res === undefined) {
+        return
+      }
+      console.log('switched our chain', fromChainId, res)
+      setFromChainId(toChainId)
+      setToChainId(newToChain)
+      chainIdsRef.current = { toChainId, fromChainId }
     }
-    resetRates()
 
-    // setToChainId(fromChainId)
+    // resetRates()
   }
 
   // Changes destination change when the user changes the toChainId
-  const handleFromChainChange = (chainId: number) => {
+  const handleFromChainChange = async (chainId: number) => {
     if (address === undefined) {
       alert('Please connect your wallet')
     } else {
-      switchNetwork?.(chainId)
-      let newChainTokenList: Token[] = sortByVisibilityRank(
-        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][String(fromToken.swapableType)]
-      )
-      let newToken =
-        newChainTokenList.length > 0
-          ? fromToken
-          : getMostCommonSwapableType(chainId)
-
-      const {
-        bridgeableToken,
-        newToChain,
-        bridgeableTokens,
-        bridgeableChains,
-      } = handleNewFromTokenNew(newToken, toChainId, toToken.symbol)
-      setFromToken(newToken)
-      setToBridgeableChains(bridgeableChains)
-      setToBridgeableTokens(bridgeableTokens)
-      setToToken(bridgeableToken)
-      setToChainId(newToChain)
+      let res = await switchNetwork({ chainId: chainId })
+      if (res === undefined) {
+        return
+      }
+      setFromChainId(chainId)
+      chainIdsRef.current = { toChainId, fromChainId }
     }
   }
 
@@ -600,41 +461,56 @@ export default function BridgePage() {
     })
   }
 
-  const handleTokenChange = (token: Token, type: 'from' | 'to') => {
-    /*
-1. set the new token
-2. if setting the origin, set the swapable types for the destination
-3. set last switch?
-4. calculate the bridge amount for destination/do a quote call to the sdk
-5. update the url
+  useEffect(() => {
+    const {
+      outputChain: toChainIdUrl,
+      inputCurrency: fromTokenSymbolUrl,
+      outputCurrency: toTokenSymbolUrl,
+    } = router.query
 
-*/
-    // console.log('start start start start start start start start start start')
-    // set the new token
+    let positedToChainID =
+      toChainIdUrl &&
+      (Number.isNaN(Number(toChainIdUrl)) ||
+        (toChainId !== Number(toChainIdUrl) &&
+          fromChainId !== Number(toChainIdUrl)))
+        ? Number(toChainIdUrl)
+        : toChainId
+
+    let positedToToken =
+      toTokenSymbolUrl &&
+      (fromToken === undefined || toTokenSymbolUrl !== fromToken.symbol)
+        ? String(toTokenSymbolUrl)
+        : toToken.symbol
+
+    console.log(
+      'positedToTokenpositedToTokenpositedToToken',
+      positedToToken,
+      positedToChainID,
+      Number(toChainIdUrl),
+      toChainIdUrl && toChainId !== Number(toChainIdUrl),
+      toChainIdUrl,
+      toChainId,
+      Number(toChainIdUrl),
+      fromChainId
+    )
+    const { bridgeableToken, newToChain, bridgeableTokens, bridgeableChains } =
+      handleNewFromTokenNew(fromToken, positedToChainID, positedToToken)
+    setToBridgeableChains(bridgeableChains)
+    setToBridgeableTokens(bridgeableTokens)
+    setToToken(bridgeableToken)
+    console.log('HERES THE NEW TO CHAIN', newToChain, fromChainId)
+    setToChainId(newToChain)
+    updateUrlParams({
+      outputChain: newToChain,
+      inputCurrency: fromToken.symbol,
+      outputCurrency: bridgeableToken.symbol,
+    })
+  }, [fromToken, fromChainId])
+
+  const handleTokenChange = (token: Token, type: 'from' | 'to') => {
     if (type == 'from') {
       console.log('from token change', token, token.swapableType, token.symbol)
-
-      const {
-        bridgeableToken,
-        newToChain,
-        bridgeableTokens,
-        bridgeableChains,
-      } = handleNewFromTokenNew(token, toChainId, token.symbol)
       setFromToken(token)
-      setToBridgeableChains(bridgeableChains)
-      setToBridgeableTokens(bridgeableTokens)
-      setToToken(bridgeableToken)
-      setToChainId(newToChain)
-
-      // Update url params if any passed params were invalid
-
-      updateUrlParams({
-        outputChain: newToChain,
-        inputCurrency: token.symbol,
-        outputCurrency: bridgeableToken.symbol,
-      })
-      // setToToken(bridgeableToken)
-      // setToChainId(newToChain)
     } else {
       console.log('to token change', token)
       setToToken(token)
@@ -692,7 +568,6 @@ export default function BridgePage() {
     }
     // return {quotes.maxAmountOut, quotes.originQuery, quotes.destQuery}
   }
-  // REDO WITH SDK
   const calculateBridgeAmount = async () => {
     let cleanedFromValue = sanitizeValue(fromValue)
     if (checkCleanedValue(cleanedFromValue)) {
@@ -737,124 +612,6 @@ export default function BridgePage() {
     }
   }, [fromToken, toToken, fromValue, fromChainId, toChainId, feeAmount])
 
-  // //kasdhkajhajkshdksajhdjksahdkjashdoasdpoasid[asd[asdpasdasjdaskndas]]
-  // const fromTokens = useMemo(() => {
-  //   console.log('address, fromChainId', address, fromChainId)
-
-  //   if (address === undefined || fromChainId === undefined) {
-  //     return BRIDGABLE_TOKENS[fromChainId]
-  //   }
-
-  //   let tokens = BRIDGABLE_TOKENS[fromChainId]
-  //   let chainId = fromChainId
-
-  //   let i = 0
-  //   let tokensWithBalances: any[] = []
-  //   let zeroTokensWithBalances: any[] = []
-  //   console.log('Sdskladalskjdklsajdlksajdskla  tok', tokens)
-  //   // go through all tokens and retrieve token balances
-  //   while (i < tokens?.length) {
-  //     let tokenAddr = tokens[i].addresses[chainId as keyof Token['addresses']]
-
-  //     let rawTokenBalance: any
-
-  //     // Check for native token
-  //     if (tokenAddr === '') {
-  //       const { data } = useBalance({
-  //         address: address,
-  //         chainId: chainId,
-  //       })
-  //       rawTokenBalance = data
-  //     } else if (tokenAddr?.length > 0) {
-  //       const { data } = useBalance({
-  //         address: address,
-  //         token: `0x${tokenAddr.slice(2)}`,
-  //         chainId: chainId,
-  //       })
-  //       rawTokenBalance = data
-  //     }
-
-  //     // manages two the array of tokens with zero balances and non-zero balances
-  //     if (rawTokenBalance) {
-  //       if (rawTokenBalance?.value._hex !== '0x00') {
-  //         zeroTokensWithBalances.push({
-  //           token: tokens[i],
-  //           balance: rawTokenBalance.value,
-  //         })
-  //       } else {
-  //         tokensWithBalances.push({
-  //           token: tokens[i],
-  //           balance: rawTokenBalance.value,
-  //         })
-  //       }
-  //     }
-  //     i++
-  //   }
-  //   let tokenList = zeroTokensWithBalances.concat(tokensWithBalances)
-  //   console.log('tokenBalances', tokenList)
-  //   return tokenList
-  //   // return sortByTokenBalance(
-  //   //   BRIDGABLE_TOKENS[fromChainId],
-  //   //   fromChainId,
-  //   //   address
-  //   // )
-  // }, [address, fromChainId])
-  // console.log('fromTokens', fromTokens)
-
-  // ///____Sd-sad-0as9d-0as9d-as0
-  // const toTokens = useMemo(() => {
-  //   console.log(
-  //     'fromToken, toChainId, fromToken',
-  //     fromToken,
-  //     toChainId,
-  //     fromToken
-  //   )
-  //   if (fromToken === undefined) {
-  //     return BRIDGABLE_TOKENS[fromChainId]
-  //   }
-  //   let positedToChain = toChainId
-  //   let token = fromToken
-  //   let positedToSymbol = undefined
-  //   let newToChain = positedToChain ? Number(positedToChain) : DEFAULT_TO_CHAIN
-
-  //   let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
-  //     String(token.swapableType)
-  //   ].filter((chainId) => Number(chainId) !== fromChainId)
-  //   let swapExceptionsArr: number[] =
-  //     token?.swapExceptions?.[fromChainId as keyof Token['swapExceptions']]
-  //   if (swapExceptionsArr?.length > 0) {
-  //     bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
-  //   }
-
-  //   // TODO filter above
-  //   if (!bridgeableChains.includes(String(newToChain))) {
-  //     newToChain =
-  //       Number(bridgeableChains[0]) === fromChainId
-  //         ? Number(bridgeableChains[1])
-  //         : Number(bridgeableChains[0])
-  //   }
-  //   let positedToToken = positedToSymbol
-  //     ? tokenSymbolToToken(newToChain, positedToSymbol)
-  //     : undefined
-
-  //   let bridgeableTokens: Token[] =
-  //     BRIDGE_SWAPABLE_TOKENS_BY_TYPE[newToChain][String(token.swapableType)]
-
-  //   if (swapExceptionsArr?.length > 0) {
-  //     bridgeableTokens = bridgeableTokens.filter(
-  //       (toToken) => toToken.symbol === token.symbol
-  //     )
-  //   }
-
-  //   let bridgeableToken: Token =
-  //     positedToToken &&
-  //     !(swapExceptionsArr?.length > 0) &&
-  //     token.swapableType === positedToToken.swapableType
-  //       ? positedToToken
-  //       : bridgeableTokens[0]
-  //   return bridgeableTokens
-  // }, [fromToken, toChainId, fromToken])
-  // console.log('to', toTokens)
   return (
     <LandingPageWrapper>
       <main className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none">
@@ -865,15 +622,6 @@ export default function BridgePage() {
               gap={6}
               className="justify-center px-2 py-16 sm:px-6 md:px-8"
             >
-              {/* <button
-                onClick={() => {
-                  console.log(BRIDGABLE_TOKENS[toChainQuery], toChainQuery)
-                  setFromCoin(BRIDGABLE_TOKENS[toChainQuery][2])
-                }}
-              >
-                asdsadsa
-              </button> */}
-              {/* <HarmonyCheck fromChainId={fromChainId} toChainId={toChainId} /> */}
               <div className="flex justify-center">
                 <div className="pb-3 place-self-center">
                   <BridgeCard
