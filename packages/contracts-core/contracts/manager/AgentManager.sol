@@ -16,7 +16,7 @@ abstract contract AgentManager is SystemContract, IAgentManager {
 
     ISystemRegistry public destination;
 
-    // agent => (bool isSlashed, address slashedBy)
+    // agent => (bool isSlashed, address prover)
     mapping(address => SlashStatus) public slashStatus;
 
     /// @dev gap for upgrade safety
@@ -42,13 +42,50 @@ abstract contract AgentManager is SystemContract, IAgentManager {
     function agentRoot() external view virtual returns (bytes32);
 
     /// @inheritdoc IAgentManager
-    function isActiveAgent(address _account) external view returns (bool isActive, uint32 domain) {
-        return _isActiveAgent(_account);
+    function agentStatus(address _agent) external view returns (AgentStatus memory status) {
+        status = _agentStatus(_agent);
+        // If agent was proven to commit fraud, but their slashing wasn't completed,
+        // return the Fraudulent flag instead
+        if (slashStatus[_agent].isSlashed && status.flag != AgentFlag.Slashed) {
+            status.flag = AgentFlag.Fraudulent;
+        }
     }
 
-    /// @inheritdoc IAgentManager
-    function isActiveAgent(uint32 _domain, address _account) external view returns (bool) {
-        return _isActiveAgent(_domain, _account);
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL LOGIC                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Checks and initiates the slashing of an agent.
+    /// Should be called, after one of registries confirmed fraud committed by the agent.
+    function _initiateSlashing(
+        uint32 _domain,
+        address _agent,
+        address _prover
+    ) internal {
+        // Check that Agent hasn't been already slashed
+        require(!slashStatus[_agent].isSlashed, "Already slashed");
+        // Check that agent is Active/Unstaking and that the domains match
+        AgentStatus memory status = _agentStatus(_agent);
+        require(
+            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) &&
+                status.domain == _domain,
+            "Slashing could not be initiated"
+        );
+        slashStatus[_agent] = SlashStatus({ isSlashed: true, prover: _prover });
+    }
+
+    /// @dev Notifies a given set of local registries about the slashed agent.
+    /// Set is defined by a bitmask, eg: DESTINATION | ORIGIN
+    function _notifySlashing(
+        uint256 _registryMask,
+        uint32 _domain,
+        address _agent,
+        address _prover
+    ) internal {
+        // Notify Destination, if requested
+        if (_registryMask & DESTINATION != 0) destination.managerSlash(_domain, _agent, _prover);
+        // Notify Origin, if requested
+        if (_registryMask & ORIGIN != 0) origin.managerSlash(_domain, _agent, _prover);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -64,29 +101,6 @@ abstract contract AgentManager is SystemContract, IAgentManager {
         return keccak256(abi.encodePacked(_flag, _domain, _agent));
     }
 
-    /// @dev Returns the last known status for the agent.
+    /// @dev Returns the last known status for the agent from the Agent Merkle Tree.
     function _agentStatus(address _agent) internal view virtual returns (AgentStatus memory);
-
-    /// @dev Checks if the account is an active Agent on any of the domains.
-    function _isActiveAgent(address _account)
-        internal
-        view
-        virtual
-        returns (bool isActive, uint32 domain)
-    {
-        AgentStatus memory status = _agentStatus(_account);
-        if (status.flag == AgentFlag.Active && !slashStatus[_account].isSlashed) {
-            isActive = true;
-            domain = status.domain;
-        }
-    }
-
-    /// @dev Checks if the account is an active Agent on the given domain.
-    function _isActiveAgent(uint32 _domain, address _account) internal view virtual returns (bool) {
-        AgentStatus memory status = _agentStatus(_account);
-        return
-            status.flag == AgentFlag.Active &&
-            !slashStatus[_account].isSlashed &&
-            status.domain == _domain;
-    }
 }

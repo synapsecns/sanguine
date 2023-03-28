@@ -69,16 +69,38 @@ contract LightManagerTest is AgentManagerTest {
         uint32 domain,
         address agent
     ) public {
-        (bool isActive, ) = lightManager.isActiveAgent(agent);
         // Should not be an already added agent
-        vm.assume(!isActive);
+        vm.assume(lightManager.agentStatus(agent).flag == AgentFlag.Unknown);
         bytes32 root = addNewAgent(domain, agent);
         test_setAgentRoot(root);
         bytes32[] memory proof = getAgentProof(agent);
         // Anyone could add agents in Light Manager
         vm.prank(caller);
         lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
-        checkActive(lightManager, domain, agent);
+        checkAgentStatus(agent, lightManager.agentStatus(agent), AgentFlag.Active);
+    }
+
+    function test_updateAgentStatus_slashed(
+        address caller,
+        uint256 domainId,
+        uint256 agentId
+    ) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        // Set flag to Slashed in the Merkle Tree
+        bytes32 root = updateAgent(AgentFlag.Slashed, agent);
+        test_setAgentRoot(root);
+        bytes32[] memory proof = getAgentProof(agent);
+        bytes memory expectedCall = abi.encodeWithSelector(
+            ISystemRegistry.managerSlash.selector,
+            domain,
+            agent
+        );
+        vm.expectCall(destination, expectedCall);
+        vm.expectCall(origin, expectedCall);
+        // Anyone could add agents in Light Manager
+        vm.prank(caller);
+        lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
+        checkAgentStatus(agent, lightManager.agentStatus(agent), AgentFlag.Slashed);
     }
 
     function test_setAgentRoot(bytes32 root) public {
@@ -91,14 +113,14 @@ contract LightManagerTest is AgentManagerTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_addAgent_revert_invalidProof(uint256 domainId, uint256 agentId) public {
-        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        (, address agent) = getAgent(domainId, agentId);
         bytes32[] memory proof = getAgentProof(agent);
         AgentStatus memory status = getAgentStatus(agent);
         // This succeeds, but doesn't do anything, as agent was already added
         lightManager.updateAgentStatus(agent, status, proof);
         // Change agent root, so old proofs are no longer valid
         test_setAgentRoot(bytes32(0));
-        checkInactive(lightManager, domain, agent);
+        assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Unknown));
         vm.expectRevert("Invalid proof");
         lightManager.updateAgentStatus(agent, status, proof);
     }
@@ -110,10 +132,10 @@ contract LightManagerTest is AgentManagerTest {
     function test_registrySlash_origin(
         uint32 domain,
         address agent,
-        address reporter
+        address prover
     ) public {
         test_addAgent_new(address(this), domain, agent);
-        bytes memory data = _remoteSlashData(domain, agent, reporter);
+        bytes memory data = _remoteSlashData(domain, agent, prover);
         vm.expectCall(
             destination,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
@@ -130,11 +152,11 @@ contract LightManagerTest is AgentManagerTest {
             )
         );
         vm.prank(origin);
-        lightManager.registrySlash(domain, agent, reporter);
-        assertFalse(lightManager.isActiveAgent(domain, agent));
-        (bool isSlashed, address slashedBy) = lightManager.slashStatus(agent);
+        lightManager.registrySlash(domain, agent, prover);
+        assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
+        (bool isSlashed, address _prover) = lightManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, reporter);
+        assertEq(_prover, prover);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {

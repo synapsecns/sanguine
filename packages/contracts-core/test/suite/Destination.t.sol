@@ -26,7 +26,7 @@ import {
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
-import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
+import { AgentFlag, ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -62,7 +62,11 @@ contract DestinationTest is SynapseTest {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                assertTrue(ISystemRegistry(destination).isActiveAgent(domain, agent));
+                checkAgentStatus(
+                    agent,
+                    ISystemRegistry(destination).agentStatus(agent),
+                    AgentFlag.Active
+                );
             }
         }
         // Check version
@@ -70,7 +74,7 @@ contract DestinationTest is SynapseTest {
     }
 
     function test_submitAttestationReport(RawAttestationReport memory rawAR) public {
-        address reporter = makeAddr("Reporter");
+        address prover = makeAddr("Prover");
         // Make sure Flag fits in AttestationFlag enum
         rawAR.flag = uint8(bound(rawAR.flag, 0, uint8(type(AttestationFlag).max)));
         // Create Notary signature for the attestation
@@ -82,7 +86,7 @@ contract DestinationTest is SynapseTest {
         // TODO: complete the test when Dispute is implemented
         vm.expectEmit(true, true, true, true);
         emit Dispute(guard, DOMAIN_LOCAL, notary);
-        vm.prank(reporter);
+        vm.prank(prover);
         InterfaceDestination(destination).submitAttestationReport(arPayload, arSig, attSig);
     }
 
@@ -92,7 +96,7 @@ contract DestinationTest is SynapseTest {
         uint256 statesAmount,
         uint256 stateIndex
     ) public {
-        address reporter = makeAddr("Reporter");
+        address prover = makeAddr("Prover");
         // Make sure statesAmount, stateIndex are valid entires
         statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
         stateIndex = bound(stateIndex, 0, statesAmount - 1);
@@ -109,7 +113,7 @@ contract DestinationTest is SynapseTest {
         // TODO: complete the test when Dispute is implemented
         vm.expectEmit(true, true, true, true);
         emit Dispute(guard, DOMAIN_LOCAL, notary);
-        vm.prank(reporter);
+        vm.prank(prover);
         IDisputeHub(destination).submitStateReport(
             stateIndex,
             srPayload,
@@ -125,7 +129,7 @@ contract DestinationTest is SynapseTest {
         uint256 statesAmount,
         uint256 stateIndex
     ) public {
-        address reporter = makeAddr("Reporter");
+        address prover = makeAddr("Prover");
         // Make sure statesAmount, stateIndex are valid entires
         statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
         stateIndex = bound(stateIndex, 0, statesAmount - 1);
@@ -142,7 +146,7 @@ contract DestinationTest is SynapseTest {
         // TODO: complete the test when Dispute is implemented
         vm.expectEmit(true, true, true, true);
         emit Dispute(guard, DOMAIN_LOCAL, notary);
-        vm.prank(reporter);
+        vm.prank(prover);
         IDisputeHub(destination).submitStateReportWithProof(
             stateIndex,
             srPayload,

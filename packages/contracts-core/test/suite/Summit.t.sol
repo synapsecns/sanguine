@@ -10,7 +10,7 @@ import { SystemEntity } from "../../contracts/libs/Structures.sol";
 import { InterfaceSummit } from "../../contracts/Summit.sol";
 import { Versioned } from "../../contracts/Version.sol";
 
-import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
+import { AgentFlag, ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 import {
     AttestationFlag,
     State,
@@ -54,7 +54,11 @@ contract SummitTest is SynapseTest {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                assertTrue(ISystemRegistry(summit).isActiveAgent(domain, agent), "!agent");
+                checkAgentStatus(
+                    agent,
+                    ISystemRegistry(summit).agentStatus(agent),
+                    AgentFlag.Active
+                );
             }
         }
         // Check version
@@ -105,7 +109,8 @@ contract SummitTest is SynapseTest {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestation(attPayload, attSig);
-            expectAgentSlashed(domain, notary);
+            // TODO: check that anyone could make the call
+            expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -139,7 +144,8 @@ contract SummitTest is SynapseTest {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestationReport(arPayload, arSig);
-            expectAgentSlashed(0, guard);
+            // TODO: check that anyone could make the call
+            expectAgentSlashed(0, guard, address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -152,9 +158,13 @@ contract SummitTest is SynapseTest {
         }
     }
 
-    function expectAgentSlashed(uint32 domain, address agent) public {
+    function expectAgentSlashed(
+        uint32 domain,
+        address agent,
+        address prover
+    ) public {
         vm.expectEmit(true, true, true, true);
-        emit AgentSlashed(domain, agent);
+        emit AgentSlashed(domain, agent, prover);
         vm.expectCall(
             address(bondingManager),
             abi.encodeWithSelector(bondingManager.registrySlash.selector, domain, agent)

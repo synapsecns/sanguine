@@ -23,7 +23,7 @@ import {
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
-import { ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
+import { AgentFlag, ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -44,7 +44,11 @@ contract OriginTest is SynapseTest {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                assertTrue(ISystemRegistry(origin).isActiveAgent(domain, agent));
+                checkAgentStatus(
+                    agent,
+                    ISystemRegistry(origin).agentStatus(agent),
+                    AgentFlag.Active
+                );
             }
         }
         // Check version
@@ -287,7 +291,8 @@ contract OriginTest is SynapseTest {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
-            _expectAgentSlashed(domain, notary);
+            // TODO: check that anyone could make the call
+            _expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -319,7 +324,8 @@ contract OriginTest is SynapseTest {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
-            _expectAgentSlashed(domain, notary);
+            // TODO: check that anyone could make the call
+            _expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -355,7 +361,8 @@ contract OriginTest is SynapseTest {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
             emit InvalidSnapshotState(stateIndex, snapPayload, snapSig);
-            _expectAgentSlashed(DOMAIN_REMOTE, notary);
+            // TODO: check that anyone could make the call
+            _expectAgentSlashed(DOMAIN_REMOTE, notary, address(this));
         }
         assertEq(
             InterfaceOrigin(origin).verifySnapshot(stateIndex, snapPayload, snapSig),
@@ -378,7 +385,8 @@ contract OriginTest is SynapseTest {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
             emit InvalidStateReport(srPayload, srSig);
-            _expectAgentSlashed(0, guard);
+            // TODO: check that anyone could make the call
+            _expectAgentSlashed(0, guard, address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -391,9 +399,13 @@ contract OriginTest is SynapseTest {
         }
     }
 
-    function _expectAgentSlashed(uint32 domain, address agent) internal {
+    function _expectAgentSlashed(
+        uint32 domain,
+        address agent,
+        address prover
+    ) internal {
         vm.expectEmit(true, true, true, true);
-        emit AgentSlashed(domain, agent);
+        emit AgentSlashed(domain, agent, prover);
         vm.expectCall(
             address(lightManager),
             abi.encodeWithSelector(lightManager.registrySlash.selector, domain, agent)

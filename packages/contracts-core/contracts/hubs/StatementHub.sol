@@ -6,6 +6,7 @@ import { Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT, State, StateLib } from "..
 import { AttestationReport, AttestationReportLib } from "../libs/AttestationReport.sol";
 import { MerkleLib } from "../libs/Merkle.sol";
 import { StateReport, StateReportLib } from "../libs/StateReport.sol";
+import { AgentFlag, AgentStatus } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { SystemRegistry } from "../system/SystemRegistry.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
@@ -31,102 +32,108 @@ abstract contract StatementHub is SystemRegistry {
 
     /**
      * @dev Recovers a signer from a hashed message, and a EIP-191 signature for it.
-     * Will revert, if the signer is not an active agent.
+     * Will revert, if the signer is not a known agent.
+     * @dev Agent flag could ne eny of these: Active/unstaking/Resting/Slashed
+     * Further checks need to be performed in a caller function.
      * @param _hashedStatement  Hash of the statement that was signed by an Agent
      * @param _signature        Agent signature for the hashed statement
-     * @return domain   Domain where the signed Agent is active
+     * @return status   Struct representing agent status:
+     *                  - flag      Unknown/Active/unstaking/Resting/Slashed
+     *                  - domain    Domain where agent is/was active
+     *                  - index     Index of agent in the Agent Merkle Tree
      * @return agent    Agent that signed the statement
      */
     function _recoverAgent(bytes32 _hashedStatement, bytes memory _signature)
         internal
         view
-        returns (uint32 domain, address agent)
+        returns (AgentStatus memory status, address agent)
     {
         bytes32 ethSignedMsg = ECDSA.toEthSignedMessageHash(_hashedStatement);
         agent = ECDSA.recover(ethSignedMsg, _signature);
         // TODO: ensure that Unstaking agents could be slashed,
         // but their signature is considered invalid for new statements
-        bool isActive;
-        (isActive, domain) = _isActiveAgent(agent);
-        require(isActive, "Not an active agent");
+        status = _agentStatus(agent);
+        // Discard signature of unknown agents.
+        // Further flag checks are supposed to be performed in a caller function.
+        require(status.flag != AgentFlag.Unknown, "Unknown agent");
     }
 
     /**
      * @dev Internal function to verify the signed attestation payload.
      * Reverts if any of these is true:
-     *  - Attestation signer is not an active Notary.
+     *  - Attestation signer is not a known Notary.
      * @param _att              Typed memory view over attestation payload
      * @param _attSignature     Notary signature for the attestation
-     * @return domain           Domain where the signed Notary is active
+     * @return status           Struct representing agent status, see {_recoverAgent}
      * @return notary           Notary that signed the snapshot
      */
     function _verifyAttestation(Attestation _att, bytes memory _attSignature)
         internal
         view
-        returns (uint32 domain, address notary)
+        returns (AgentStatus memory status, address notary)
     {
-        // This will revert if signer is not an active agent
-        (domain, notary) = _recoverAgent(_att.hash(), _attSignature);
+        // This will revert if signer is not a known agent
+        (status, notary) = _recoverAgent(_att.hash(), _attSignature);
         // Attestation signer needs to be a Notary, not a Guard
-        require(domain != 0, "Signer is not a Notary");
+        require(status.domain != 0, "Signer is not a Notary");
     }
 
     /**
      * @dev Internal function to verify the signed attestation report payload.
      * Reverts if any of these is true:
-     *  - Report signer is not an active Guard.
+     *  - Report signer is not a known Guard.
      * @param _report           Typed memory view over report payload
      * @param _arSignature      Guard signature for the report
+     * @return status           Struct representing guard status, see {_recoverAgent}
      * @return guard            Guard that signed the report
      */
     function _verifyAttestationReport(AttestationReport _report, bytes memory _arSignature)
         internal
         view
-        returns (address guard)
+        returns (AgentStatus memory status, address guard)
     {
-        // This will revert if signer is not an active agent
-        uint32 domain;
-        (domain, guard) = _recoverAgent(_report.hash(), _arSignature);
+        // This will revert if signer is not a known agent
+        (status, guard) = _recoverAgent(_report.hash(), _arSignature);
         // Report signer needs to be a Guard, not a Notary
-        require(domain == 0, "Signer is not a Guard");
+        require(status.domain == 0, "Signer is not a Guard");
     }
 
     /**
      * @dev Internal function to verify the signed snapshot report payload.
      * Reverts if any of these is true:
-     *  - Report signer is not an active Guard.
+     *  - Report signer is not a known Guard.
      * @param _report           Typed memory view over report payload
      * @param _srSignature      Guard signature for the report
+     * @return status           Struct representing guard status, see {_recoverAgent}
      * @return guard            Guard that signed the report
      */
     function _verifyStateReport(StateReport _report, bytes memory _srSignature)
         internal
         view
-        returns (address guard)
+        returns (AgentStatus memory status, address guard)
     {
-        // This will revert if signer is not an active agent
-        uint32 domain;
-        (domain, guard) = _recoverAgent(_report.hash(), _srSignature);
+        // This will revert if signer is not a known agent
+        (status, guard) = _recoverAgent(_report.hash(), _srSignature);
         // Report signer needs to be a Guard, not a Notary
-        require(domain == 0, "Signer is not a Guard");
+        require(status.domain == 0, "Signer is not a Guard");
     }
 
     /**
      * @dev Internal function to verify the signed snapshot payload.
      * Reverts if any of these is true:
-     *  - Snapshot signer is not an active Agent.
+     *  - Snapshot signer is not a known Agent.
      * @param _snapshot         Typed memory view over snapshot payload
      * @param _snapSignature    Agent signature for the snapshot
-     * @return domain           Domain where the signed Agent is active
+     * @return status           Struct representing agent status, see {_recoverAgent}
      * @return agent            Agent that signed the snapshot
      */
     function _verifySnapshot(Snapshot _snapshot, bytes memory _snapSignature)
         internal
         view
-        returns (uint32 domain, address agent)
+        returns (AgentStatus memory status, address agent)
     {
-        // This will revert if signer is not an active agent
-        (domain, agent) = _recoverAgent(_snapshot.hash(), _snapSignature);
+        // This will revert if signer is not a known agent
+        (status, agent) = _recoverAgent(_snapshot.hash(), _snapSignature);
         // Guards and Notaries for all domains could sign Snapshots, no further checks are needed.
     }
 
@@ -202,6 +209,26 @@ abstract contract StatementHub is SystemRegistry {
         // Reconstruct snapshot root using proof of inclusion
         // This will revert if snapshot proof length exceeds Snapshot Tree Height
         return MerkleLib.proofRoot(_leftLeafIndex, leftLeaf, _snapProof, SNAPSHOT_TREE_HEIGHT);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            FLAG CHECKERS                             ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Checks that Agent is Active
+    function _verifyActive(AgentStatus memory _status) internal pure {
+        require(
+            _status.flag == AgentFlag.Active,
+            _status.domain == 0 ? "Not an active guard" : "Not an active notary"
+        );
+    }
+
+    /// @dev Checks that Agent is Active or Unstaking
+    function _verifyActiveUnstaking(AgentStatus memory _status) internal pure {
+        require(
+            (_status.flag == AgentFlag.Active || _status.flag == AgentFlag.Unstaking),
+            _status.domain == 0 ? "Not an active guard" : "Not an active notary"
+        );
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
