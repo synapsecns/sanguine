@@ -54,6 +54,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         _verifyActive(status);
         // Check that Notary domain is local domain
         require(status.domain == localDomain, "Wrong Notary domain");
+        // Check that Notary who submitted the attestation is not in dispute
+        require(!_inDispute(notary), "Notary is in dispute");
         // This will revert if snapshot root has been previously submitted
         _saveAttestation(att, notary);
         emit AttestationAccepted(status.domain, notary, _attPayload, _attSignature);
