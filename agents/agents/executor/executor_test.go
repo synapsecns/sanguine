@@ -744,7 +744,7 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 		},
 	}
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
