@@ -62,8 +62,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         agentMap[root][_agent] = _status;
         // Notify local Registries, if agent flag is Slashed
         if (_status.flag == AgentFlag.Slashed) {
-            destination.managerSlash(_status.domain, _agent);
-            origin.managerSlash(_status.domain, _agent);
+            _notifySlashing(DESTINATION | ORIGIN, _status.domain, _agent);
         }
     }
 
@@ -89,7 +88,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         _initiateSlashing(_domain, _agent, _reporter);
         // On chains other than Synapse Chain only Origin could slash Agents
         if (msg.sender == address(origin)) {
-            destination.managerSlash(_domain, _agent);
+            _notifySlashing(DESTINATION, _domain, _agent);
             // Issue a system call to BondingManager on SynChain
             _callAgentManager({
                 _domain: SYNAPSE_DOMAIN,

@@ -74,6 +74,19 @@ abstract contract AgentManager is SystemContract, IAgentManager {
         slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _reporter });
     }
 
+    /// @dev Notifies a given set of local registries about the slashed agent.
+    /// Set is defined by a bitmask, eg: DESTINATION | ORIGIN
+    function _notifySlashing(
+        uint256 _registryMask,
+        uint32 _domain,
+        address _agent
+    ) internal {
+        // Notify Destination, if requested
+        if (_registryMask & DESTINATION != 0) destination.managerSlash(_domain, _agent);
+        // Notify Origin, if requested
+        if (_registryMask & ORIGIN != 0) origin.managerSlash(_domain, _agent);
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL VIEWS                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

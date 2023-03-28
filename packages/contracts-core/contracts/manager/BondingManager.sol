@@ -188,9 +188,9 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         _initiateSlashing(_domain, _agent, _reporter);
         // On SynChain both Origin and Destination (Summit) could slash agents
         if (msg.sender == address(origin)) {
-            destination.managerSlash(_domain, _agent);
+            _notifySlashing(DESTINATION, _domain, _agent);
         } else if (msg.sender == address(destination)) {
-            origin.managerSlash(_domain, _agent);
+            _notifySlashing(ORIGIN, _domain, _agent);
         } else {
             revert("Unauthorized caller");
         }
@@ -214,8 +214,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         // Check that Agent hasn't been already slashed and initiate the slashing
         _initiateSlashing(_domain, _agent, _reporter);
         // Notify local registries about the slashing
-        destination.managerSlash(_domain, _agent);
-        origin.managerSlash(_domain, _agent);
+        _notifySlashing(DESTINATION | ORIGIN, _domain, _agent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
