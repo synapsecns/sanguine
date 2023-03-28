@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Snapshot.sol";
-import { SystemEntity } from "../../contracts/libs/Structures.sol";
+import { DisputeFlag, DisputeStatus, SystemEntity } from "../../contracts/libs/Structures.sol";
 import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { IDisputeHub } from "../../contracts/interfaces/IDisputeHub.sol";
 import { IExecutionHub } from "../../contracts/interfaces/IExecutionHub.sol";
@@ -83,11 +83,11 @@ contract DestinationTest is SynapseTest {
         // Create Guard signature for the report
         address guard = domains[0].agent;
         (bytes memory arPayload, bytes memory arSig) = signAttestationReport(guard, rawAR);
-        // TODO: complete the test when Dispute is implemented
         vm.expectEmit(true, true, true, true);
         emit Dispute(guard, DOMAIN_LOCAL, notary);
         vm.prank(prover);
         InterfaceDestination(destination).submitAttestationReport(arPayload, arSig, attSig);
+        checkDisputeOpened(guard, notary);
     }
 
     function test_submitStateReport(
@@ -110,7 +110,6 @@ contract DestinationTest is SynapseTest {
         address guard = domains[0].agent;
         RawStateReport memory rawSR = RawStateReport(uint8(StateFlag.Invalid), rs);
         (bytes memory srPayload, bytes memory srSig) = signStateReport(guard, rawSR);
-        // TODO: complete the test when Dispute is implemented
         vm.expectEmit(true, true, true, true);
         emit Dispute(guard, DOMAIN_LOCAL, notary);
         vm.prank(prover);
@@ -121,6 +120,7 @@ contract DestinationTest is SynapseTest {
             snapPayload,
             snapSig
         );
+        checkDisputeOpened(guard, notary);
     }
 
     function test_submitStateReportWithProof(
@@ -143,7 +143,6 @@ contract DestinationTest is SynapseTest {
         (bytes memory srPayload, bytes memory srSig) = signStateReport(guard, rawSR);
         // Generate Snapshot Proof
         bytes32[] memory snapProof = genSnapshotProof(stateIndex);
-        // TODO: complete the test when Dispute is implemented
         vm.expectEmit(true, true, true, true);
         emit Dispute(guard, DOMAIN_LOCAL, notary);
         vm.prank(prover);
@@ -155,6 +154,7 @@ contract DestinationTest is SynapseTest {
             attPayload,
             attSig
         );
+        checkDisputeOpened(guard, notary);
     }
 
     function test_execute(
@@ -209,6 +209,10 @@ contract DestinationTest is SynapseTest {
         }
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               HELPERS                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     function createAttestation(
         RawState memory rawState,
         RawAttestation memory ra,
@@ -241,5 +245,15 @@ contract DestinationTest is SynapseTest {
             messages.push(message);
             insertMessage(message);
         }
+    }
+
+    /// @notice Checks that the Dispute was opened between a Guard and a Notary.
+    function checkDisputeOpened(address guard, address notary) public {
+        DisputeStatus memory guardStatus = IDisputeHub(destination).disputeStatus(guard);
+        assertEq(uint8(guardStatus.flag), uint8(DisputeFlag.Pending), "!guard flag");
+        assertEq(guardStatus.counterpart, notary, "!guard counterpart");
+        DisputeStatus memory notaryStatus = IDisputeHub(destination).disputeStatus(notary);
+        assertEq(uint8(notaryStatus.flag), uint8(DisputeFlag.Pending), "!notary flag");
+        assertEq(notaryStatus.counterpart, guard, "!notary counterpart");
     }
 }
