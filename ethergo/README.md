@@ -36,6 +36,8 @@ root
 ├── <a href="./manager">manager</a>: Manages contract deployments.
 ├── <a href="./mocks">mocks</a>: Contains mocks for testing various data types (transactions, addresses, logs, etc)
 ├── <a href="./parser">parser</a>: Parse hardhat deployments
+│   ├── <a href="./parser/hardhat">hardhat</a>: Parses hardhat deployments
+│   ├── <a href="./parser/abiutil">abi</a>: Parses abi function signatures
 ├── <a href="./signer">signer</a>: Signing + tx submission utilities
 │   ├── <a href="./signer/nonce">nonce</a>: Automatically handles race conditions with nonces, used in backends.
 │   ├── <a href="./signer/signer">signer</a>: Various adapters for signing transactions

@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/integralist/go-findroot/find"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/ethergo/parser"
+	"github.com/synapsecns/sanguine/ethergo/parser/hardhat"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/tenderly/tenderly-cli/providers"
 	"math/big"
@@ -67,7 +67,7 @@ func (c *ConfigSuite) TestGenerateConfig() {
 	err = config.GenerateConfig(c.GetTestContext(), omnirpcURL, deploymentsFolder, requiredConfs, outputPath, []int{5, 335, 43113, 1666700000}, testGenerator)
 	Nil(c.T(), err)
 
-	parsedDeployments, err := parser.GetDeployments(deploymentsFolder)
+	parsedDeployments, err := hardhat.GetDeployments(deploymentsFolder)
 	Nil(c.T(), err)
 
 	decodedConfig, err := config.DecodeConfig(outputPath)
