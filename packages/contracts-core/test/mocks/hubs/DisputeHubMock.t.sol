@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { IDisputeHub } from "../../../contracts/interfaces/IDisputeHub.sol";
+import { DisputeStatus, IDisputeHub } from "../../../contracts/interfaces/IDisputeHub.sol";
 
 contract DisputeHubMock is IDisputeHub {
     /// @notice Prevents this contract from being included in the coverage report
@@ -23,4 +23,6 @@ contract DisputeHubMock is IDisputeHub {
         bytes memory _attPayload,
         bytes memory _attSignature
     ) external returns (bool wasAccepted) {}
+
+    function disputeStatus(address _agent) external view returns (DisputeStatus memory status) {}
 }

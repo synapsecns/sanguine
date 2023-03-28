@@ -88,6 +88,15 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                VIEWS                                 ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc IDisputeHub
+    function disputeStatus(address _agent) external view returns (DisputeStatus memory status) {
+        return disputes[_agent];
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
