@@ -123,6 +123,7 @@ func (a summitContract) GetNotarySnapshot(ctx context.Context, nonce *big.Int) (
 	if err != nil {
 		// Check if the error is because "Nonce out of range".
 		if strings.Contains(err.Error(), "Nonce out of range") {
+			//nolint:nilnil
 			return nil, nil
 		}
 
