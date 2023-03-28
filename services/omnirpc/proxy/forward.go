@@ -130,6 +130,7 @@ func (f *Forwarder) forwardRequest(parentCtx context.Context, endpoint string) (
 	ctx, span := f.tracer.Start(parentCtx, "forwardRequest",
 		trace.WithAttributes(attribute.String("endpoint", endpoint)),
 	)
+
 	defer func() {
 		if err != nil {
 			span.RecordError(err)
