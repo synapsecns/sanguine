@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 	"net/http"
@@ -11,7 +12,12 @@ import (
 // nullHandler is a metrics handler that does nothing.
 // it is used to allow metrics collection to be skipped.
 type nullHandler struct {
-	tracer trace.Tracer
+	tracer     trace.Tracer
+	propagator nullPropogator
+}
+
+func (n nullHandler) Propagator() propagation.TextMapPropagator {
+	return n.propagator
 }
 
 func (n nullHandler) GetTracerProvider() trace.TracerProvider {
@@ -43,8 +49,25 @@ func (n nullHandler) Start(_ context.Context) error {
 // NewNullHandler creates a new null transaction handler.
 func NewNullHandler() Handler {
 	return &nullHandler{
-		tracer: trace.NewNoopTracerProvider().Tracer(""),
+		tracer:     trace.NewNoopTracerProvider().Tracer(""),
+		propagator: nullPropogator{},
 	}
 }
 
 var _ Handler = &nullHandler{}
+
+// nullPropogator is a metrics propagator that does nothing.
+type nullPropogator struct{}
+
+func (n nullPropogator) Inject(ctx context.Context, carrier propagation.TextMapCarrier) {
+}
+
+func (n nullPropogator) Extract(ctx context.Context, _ propagation.TextMapCarrier) context.Context {
+	return ctx
+}
+
+func (n nullPropogator) Fields() []string {
+	return []string{}
+}
+
+var _ propagation.TextMapPropagator = &nullPropogator{}
