@@ -120,3 +120,4 @@ profile.cov
 coverage/
 lcov/
 codecov/
+fastcache.tmp*

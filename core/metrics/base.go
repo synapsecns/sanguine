@@ -59,15 +59,22 @@ func (b *baseHandler) Tracer() trace.Tracer {
 
 // newBaseHandler creates a new baseHandler for otel.
 func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProviderOption) *baseHandler {
-	opts := append([]tracesdk.TracerProviderOption{
-		tracesdk.WithResource(resource.NewWithAttributes(
+	// Ensure default SDK resources and the required service name are set.
+	rsr, err := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
 			semconv.SchemaURL,
 			semconv.ServiceName(buildInfo.Name()),
 			attribute.String("ENVIRONMENT", "default"),
 			semconv.ServiceVersion(buildInfo.Version()),
 			attribute.String("commit", buildInfo.Commit()),
-		)),
-	}, extraOpts...)
+		))
+	// TODO: handle error or report
+	if err != nil {
+		logger.Warn("could not merge resources", "error", err)
+	}
+
+	opts := append([]tracesdk.TracerProviderOption{tracesdk.WithResource(rsr)}, extraOpts...)
 
 	tp := tracesdk.NewTracerProvider(opts...)
 	// default tracer for server
