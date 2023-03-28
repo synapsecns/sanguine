@@ -7,17 +7,22 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/gin-gonic/gin"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"strconv"
 	"time"
 )
 
 // SetupGRPCServer sets up the grpc server.
-func SetupGRPCServer(ctx context.Context, engine *gin.Engine, eventDB db.EventDB) (*grpc.Server, error) {
-	s := grpc.NewServer()
+func SetupGRPCServer(ctx context.Context, engine *gin.Engine, eventDB db.EventDB, handler metrics.Handler) (*grpc.Server, error) {
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+	)
 	sImpl := server{
 		db: eventDB,
 	}

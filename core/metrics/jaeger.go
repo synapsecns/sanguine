@@ -12,6 +12,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"os"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -33,19 +34,6 @@ func NewJaegerHandler(buildInfo config.BuildInfo) Handler {
 
 const jaegerEnv = "JAEGER_ENDPOINT"
 
-func (j *jaegerHandler) Shutdown(ctx context.Context) error {
-	err := j.tp.ForceFlush(ctx)
-	if err != nil {
-		logger.Warn("could not add gorm callbacks", "error", err)
-	}
-
-	err = j.exporter.Shutdown(ctx)
-	if err != nil {
-		return fmt.Errorf("could not shutdown exporter: %w", err)
-	}
-	return nil
-}
-
 func (j *jaegerHandler) Start(ctx context.Context) (err error) {
 	endpoint := os.Getenv(jaegerEnv)
 	if endpoint == "" {
@@ -58,21 +46,12 @@ func (j *jaegerHandler) Start(ctx context.Context) (err error) {
 		return fmt.Errorf("could not create jaeger exporter: %w", err)
 	}
 
-	j.baseHandler = newBaseHandler(j.buildInfo, tracesdk.WithBatcher(j.exporter), tracesdk.WithSampler(tracesdk.AlwaysSample()))
+	j.baseHandler = newBaseHandler(j.buildInfo, tracesdk.WithSyncer(j.exporter), tracesdk.WithSampler(tracesdk.AlwaysSample()))
 	err = j.baseHandler.Start(ctx)
 	if err != nil {
 		return fmt.Errorf("could not start base handler: %w", err)
 	}
 
-	go func() {
-		<-ctx.Done()
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		err := j.exporter.Shutdown(shutdownCtx)
-		if err != nil {
-			logger.Warn("could not shutdown exporter", "error", err)
-		}
-	}()
 	return nil
 }
 
@@ -80,8 +59,11 @@ var keepAliveOnFailure = time.Minute * 10
 
 var testMux sync.Mutex
 
-// SetupTestJaeger creates a new test jaegar instance. If the test fails, the instance is kept alive for 5 minutes.
-// we also allow a GLOBAL_JAEGAR env var to be set to a jaegar url to send all traces to in order to avoid having to boot for long running tests.
+// debugjaeger.
+const debugJaeger = true
+
+// SetupTestJaeger creates a new test jaeger instance. If the test fails, the instance is kept alive for 5 minutes.
+// we also allow a GLOBAL_jaeger env var to be set to a jaeger url to send all traces to in order to avoid having to boot for long running tests.
 func SetupTestJaeger(tb testing.TB) {
 	tb.Helper()
 	// make sure we don't setup two
@@ -111,12 +93,17 @@ func SetupTestJaeger(tb testing.TB) {
 
 	tb.Setenv(jaegerEnv, fmt.Sprintf("http://localhost:%s/api/traces", resource.GetPort("14268/tcp")))
 
-	err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
-	assert.Nil(tb, err)
+	if !debugJaeger {
+		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
+		assert.Nil(tb, err)
+	}
 
 	go func() {
 		_ = dockerutil.TailContainerLogs(dockerutil.WithContext(ctx), dockerutil.WithPool(pool), dockerutil.WithResource(resource), dockerutil.WithFollow(true), dockerutil.WithCallback(func(ctx context.Context, metadata processlog.LogMetadata) {
-			logger.Warnf("serving jaegar instance on http://localhost:%s. Container logs will be saved to %s", resource.GetPort("16686/tcp"), metadata.LogDir())
+			logger.Warnf(
+				"serving jaeger instance on http://localhost:%s. Container logs will be saved to %s %s", resource.GetPort("16686/tcp"), metadata.LogDir(),
+				fmt.Sprintf("if you want to persist this session, set debugjaeger to true in %s (currently %t), then set the JAEGER_ENDPOINT to %s", getCurrentFile(), debugJaeger, os.Getenv(jaegerEnv)),
+			)
 		}))
 	}()
 
@@ -124,9 +111,19 @@ func SetupTestJaeger(tb testing.TB) {
 		defer cancel()
 		// TODO: move me
 		if tb.Failed() {
-			logger.Warnf("Test failed, will temporarily continue serving jaegar instance on http://localhost:%s", resource.GetPort("16686/tcp"))
-		} else {
+			logger.Warnf("Test failed, will temporarily continue serving jaeger instance on http://localhost:%s", resource.GetPort("16686/tcp"))
+		} else if !debugJaeger {
+			// TODO: uncomment me
 			_ = pool.Purge(resource)
 		}
 	})
+}
+
+// TODO: clean me up with runtime.caller(2).
+func getCurrentFile() string {
+	_, file, _, ok := runtime.Caller(1)
+	if !ok {
+		return "unknown"
+	}
+	return file
 }

@@ -57,7 +57,7 @@ func (g APISuite) TestRetrieveData() {
 	Equal(g.T(), len(logsRange.Response), 8)
 
 	// test get logs and get logs in a range (GRPC)
-	grpcLogs, res, err := g.grpcClient.ScribeServiceApi.ScribeServiceFilterLogs(g.GetTestContext(), rest.V1FilterLogsRequest{
+	grpcLogs, res, err := g.grpcRestClient.ScribeServiceApi.ScribeServiceFilterLogs(g.GetTestContext(), rest.V1FilterLogsRequest{
 		Filter: &rest.V1LogFilter{
 			ChainId: int64(chainID),
 		},

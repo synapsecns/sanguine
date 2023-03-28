@@ -49,12 +49,13 @@ require (
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/vektah/gqlparser/v2 v2.5.1
 	github.com/vektra/mockery/v2 v2.14.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.40.0
 	go.uber.org/atomic v1.10.0
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 	golang.org/x/oauth2 v0.4.0
 	golang.org/x/sync v0.1.0
-	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
-	google.golang.org/grpc v1.51.0
+	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f
+	google.golang.org/grpc v1.53.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.3.6
@@ -94,7 +95,7 @@ require (
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/c-bata/go-prompt v0.2.6 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/chzyer/logex v1.1.10 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
@@ -291,6 +292,7 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.40.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.40.0 // indirect
+	go.opentelemetry.io/contrib/propagators/b3 v1.15.0 // indirect
 	go.opentelemetry.io/otel v1.14.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.14.0 // indirect
 	go.opentelemetry.io/otel/metric v0.37.0 // indirect

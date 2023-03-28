@@ -11,6 +11,6 @@ by passing in a comma seperated `DD_PROFILES` using the names [here](https://git
 
 Pass in the `NEW_RELIC_LICENSE_KEY` enviornment variable
 
-## Jaegar
+## jaeger
 
-Pass in the `JAEGAR_ENDPOINT` enviornment variable
+Pass in the `jaeger_ENDPOINT` enviornment variable

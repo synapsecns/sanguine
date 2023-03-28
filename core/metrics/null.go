@@ -14,6 +14,10 @@ type nullHandler struct {
 	tracer trace.Tracer
 }
 
+func (n nullHandler) GetTracerProvider() trace.TracerProvider {
+	return trace.NewNoopTracerProvider()
+}
+
 func (n nullHandler) Tracer() trace.Tracer {
 	return n.tracer
 }

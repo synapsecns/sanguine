@@ -7,8 +7,10 @@ import (
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
@@ -20,9 +22,10 @@ import (
 // baseHandler is a base metrics handler that implements the Handler interface.
 // this is used to reduce the amount of boilerplate code needed to implement opentracing methods.
 type baseHandler struct {
-	tp     *tracesdk.TracerProvider
-	tracer trace.Tracer
-	name   string
+	tp         *tracesdk.TracerProvider
+	tracer     trace.Tracer
+	name       string
+	propagator propagation.TextMapPropagator
 }
 
 func (b *baseHandler) Start(ctx context.Context) error {
@@ -45,6 +48,10 @@ func (b *baseHandler) AddGormCallbacks(db *gorm.DB) {
 	}
 }
 
+func (b *baseHandler) GetTracerProvider() trace.TracerProvider {
+	return b.tp
+}
+
 // Tracer returns the tracer provider.
 func (b *baseHandler) Tracer() trace.Tracer {
 	return b.tracer
@@ -63,14 +70,16 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 	}, extraOpts...)
 
 	tp := tracesdk.NewTracerProvider(opts...)
-	otel.SetTracerProvider(tp)
 	// default tracer for server
 	tracer := tp.Tracer(buildInfo.Name())
+	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
+	otel.SetTextMapPropagator(propagator)
 
 	return &baseHandler{
-		tp:     tp,
-		tracer: tracer,
-		name:   buildInfo.Name(),
+		tp:         tp,
+		tracer:     tracer,
+		name:       buildInfo.Name(),
+		propagator: propagator,
 	}
 }
 

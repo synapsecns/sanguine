@@ -21,6 +21,8 @@ type Handler interface {
 	ConfigureHTTPClient(client *http.Client)
 	// AddGormCallbacks adds gorm callbacks for tracing.
 	AddGormCallbacks(db *gorm.DB)
+	// GetTracerProvider returns the tracer provider.
+	GetTracerProvider() trace.TracerProvider
 	// Tracer returns the tracer provider.
 	Tracer() trace.Tracer
 }
