@@ -37,6 +37,10 @@ func (b *baseHandler) Gin() gin.HandlerFunc {
 	return otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp))
 }
 
+func (b *baseHandler) Propagator() propagation.TextMapPropagator {
+	return b.propagator
+}
+
 func (b *baseHandler) ConfigureHTTPClient(client *http.Client) {
 	client.Transport = otelhttp.NewTransport(client.Transport, otelhttp.WithTracerProvider(b.tp))
 }
