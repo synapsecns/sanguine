@@ -117,15 +117,18 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         super._processSlashed(_domain, _agent, _prover);
     }
 
-    /// @dev Resolves a Dispute for a slashed agent, if there was one.
+    /// @dev Resolves a Dispute for a slashed agent, if it hasn't been done already.
     function _resolveDispute(address _slashedAgent) internal virtual {
         DisputeStatus memory status = disputes[_slashedAgent];
-        // Do nothing if there was no Dispute
-        if (status.flag == DisputeFlag.None) return;
+        // Do nothing if dispute was already resolved
+        if (status.flag == DisputeFlag.Slashed) return;
         // Update flag for the slashed agent
+        // Slashed agent might have had no open Dispute, meaning the `counterpart` could be ZERO.
+        // We still want to have the DisputeFlag.Slashed assigned in this case.
         disputes[_slashedAgent].flag = DisputeFlag.Slashed;
         // Delete record of dispute for the counterpart. This sets their Dispute Flag to None.
-        delete disputes[status.counterpart];
+        if (status.counterpart != address(0)) delete disputes[status.counterpart];
+        // TODO: wo we want to use prover address if there was no counterpart?
         emit DisputeResolved(status.counterpart, _slashedAgent);
     }
 
