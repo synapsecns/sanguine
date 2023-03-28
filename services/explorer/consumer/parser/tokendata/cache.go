@@ -3,14 +3,16 @@ package tokendata
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	lru "github.com/hashicorp/golang-lru/v2"
-	"github.com/jpillora/backoff"
-	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
-	"golang.org/x/sync/errgroup"
 	"math/big"
 	"strings"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	lru "github.com/hashicorp/golang-lru/v2"
+	"github.com/jpillora/backoff"
+	"github.com/synapsecns/sanguine/core/retry"
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
+	"golang.org/x/sync/errgroup"
 )
 
 // Service provides data about tokens using either a cache or bridgeconfig
@@ -94,7 +96,8 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
-		return t.retryWithBackoff(ctx, func(ctx context.Context) error {
+		//nolint: wrapcheck
+		return retry.WithBackoff(ctx, func(ctx context.Context) error {
 			tokenData, err := t.service.GetToken(ctx, chainID, token)
 			if err != nil {
 				return fmt.Errorf("could not get token data: %w", err)
@@ -103,11 +106,12 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 			res.decimals = tokenData.TokenDecimals
 
 			return nil
-		})
+		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	})
 
 	g.Go(func() error {
-		return t.retryWithBackoff(ctx, func(ctx context.Context) error {
+		//nolint: wrapcheck
+		return retry.WithBackoff(ctx, func(ctx context.Context) error {
 			nullableTokenID, err := t.service.GetTokenID(ctx, big.NewInt(int64(chainID)), token)
 			if err != nil {
 				return fmt.Errorf("could not get token data: %w", err)
@@ -116,7 +120,7 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 			res.tokenID = *nullableTokenID
 
 			return nil
-		})
+		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	})
 
 	err := g.Wait()
@@ -138,7 +142,7 @@ func (t *tokenDataServiceImpl) retrievePoolTokenData(parentCtx context.Context, 
 	ctx, cancel := context.WithTimeout(parentCtx, maxAttemptTime)
 	defer cancel()
 
-	err := t.retryWithBackoff(ctx, func(ctx context.Context) error {
+	err := retry.WithBackoff(ctx, func(ctx context.Context) error {
 		symbol, decimals, err := swapService.GetTokenMetaData(ctx, token)
 		if err != nil {
 			return fmt.Errorf("could not get token data: %w", err)

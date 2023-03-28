@@ -3,12 +3,14 @@ package tokenpool
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/jpillora/backoff"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
-	"time"
 )
 
 // Service provides data about tokens using either a cache or bridgeconfig
@@ -56,7 +58,8 @@ func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, ch
 	ctx, cancel := context.WithTimeout(parentCtx, maxAttemptTime)
 	defer cancel()
 
-	err := t.retryWithBackoff(ctx, func(ctx context.Context) error {
+	//nolint: wrapcheck
+	err := retry.WithBackoff(ctx, func(ctx context.Context) error {
 		var err error
 		tokenAddress, err = t.service.GetTokenAddress(ctx, tokenIndex)
 		if err != nil {
@@ -68,9 +71,10 @@ func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, ch
 		return nil, fmt.Errorf("could not get token data with retry backoff chainID %d, tokenIndex %d, contractAddress %s: %w", chainID, tokenIndex, contractAddress, err)
 	}
 
-	err = t.retryWithBackoff(ctx, func(ctx context.Context) error {
+	//nolint: wrapcheck
+	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
 		return t.storeTokenIndex(ctx, chainID, tokenIndex, tokenAddress, contractAddress)
-	})
+	}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	if err != nil {
 		return nil, fmt.Errorf("could not store token index: %w", err)
 	}
