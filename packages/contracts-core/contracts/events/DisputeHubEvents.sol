@@ -10,4 +10,12 @@ abstract contract DisputeHubEvents {
      * @param notary    Address of the Notary who signed a reported statement
      */
     event Dispute(address guard, uint32 domain, address notary);
+
+    /**
+     * @notice Emitted when a Dispute between a Guard and a Notary is resolved
+     * by any of the agents getting slashed.
+     * @param honest    The address of the agent who wasn't slashed
+     * @param slashed   The address of the agent who was slashed
+     */
+    event DisputeResolved(address honest, address slashed);
 }

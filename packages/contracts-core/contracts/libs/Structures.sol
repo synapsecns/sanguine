@@ -38,6 +38,27 @@ struct AgentStatus {
     // 184 bits available for tight packing
 }
 
+/// @notice Potential statuses of an agent in terms of being in dispute
+/// - None: agent is not in dispute
+/// - Pending: agent is in unresolved dispute
+/// - Slashed: agent was in dispute that lead to agent being slashed
+/// Note: agent who won the dispute has their status reset to None
+enum DisputeFlag {
+    None,
+    Pending,
+    Slashed
+}
+
+/// @notice Struct representing information about an agent in dispute.
+/// Note: counterpart for Guard is Notary, counterpart for Notary is Guard.
+/// @param flag         Dispute status
+/// @param counterpart  Agent address who the agent is in dispute with
+struct DisputeStatus {
+    DisputeFlag flag;
+    address counterpart;
+    // 88 bits available for tight packing
+}
+
 /// @notice Struct representing information about a slashed agent.
 struct SlashStatus {
     bool isSlashed;

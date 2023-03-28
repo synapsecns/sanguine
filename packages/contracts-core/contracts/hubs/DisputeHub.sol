@@ -1,11 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import { DisputeFlag, DisputeStatus } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentStatus, Attestation, Snapshot, StatementHub, StateReport } from "./StatementHub.sol";
 import { DisputeHubEvents } from "../events/DisputeHubEvents.sol";
 import { IDisputeHub } from "../interfaces/IDisputeHub.sol";
 
 abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               STORAGE                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // (agent => their dispute status)
+    mapping(address => DisputeStatus) internal disputes;
+
+    /// @dev gap for upgrade safety
+    uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        INITIATE DISPUTE LOGIC                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     /// @inheritdoc IDisputeHub
     function submitStateReport(
         uint256 _stateIndex,
@@ -71,6 +87,10 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         return true;
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL LOGIC                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This should be called, when the Guard submits a Report on a statement signed by the Notary.
     function _openDispute(
@@ -78,7 +98,32 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         uint32 _domain,
         address _notary
     ) internal virtual {
-        // TODO: implement this
+        // Check that both agents are not in Dispute yet
+        require(disputes[_guard].flag == DisputeFlag.None, "Guard already in dispute");
+        require(disputes[_notary].flag == DisputeFlag.None, "Notary already in dispute");
+        disputes[_guard] = DisputeStatus(DisputeFlag.Pending, _notary);
+        disputes[_notary] = DisputeStatus(DisputeFlag.Pending, _guard);
         emit Dispute(_guard, _domain, _notary);
+    }
+
+    /// @dev Resolves a Dispute for a slashed agent, if there was one.
+    function _resolveDispute(address _slashedAgent) internal virtual {
+        DisputeStatus memory status = disputes[_slashedAgent];
+        // Do nothing if there was no Dispute
+        if (status.flag == DisputeFlag.None) return;
+        // Update flag for the slashed agent
+        disputes[_slashedAgent].flag = DisputeFlag.Slashed;
+        // Delete record of dispute for the counterpart. This sets their Dispute Flag to None.
+        delete disputes[status.counterpart];
+        emit DisputeResolved(status.counterpart, _slashedAgent);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL VIEWS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Checks if an agent is currently in Dispute.
+    function _inDispute(address agent) internal view returns (bool) {
+        return disputes[agent].flag != DisputeFlag.None;
     }
 }
