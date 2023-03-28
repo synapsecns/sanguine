@@ -53,49 +53,33 @@ export default function ExchangeRateInfo({
         }
       >
         {isGasDropped && (
-          <>
-            <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
-          </>
+          <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
         )}
-        {/* <div
-          className="right-0 font-medium text-gray-300 cursor-pointer hover:text-[#88818C]"
-          onClick={() => toggleExchangeRateInfo(!showExchangeRateInfo)}
-        >
-          <ChevronDownIcon
-            className={`w-4 transition transform ${
-              showExchangeRateInfo ? 'rotate-180' : ''
-            }`}
-          />
-        </div> */}
       </div>
-      {/* {!exchangeRate.eq(0) && ( */}
-      <>
-        <div className="flex justify-between">
-          <div className="flex space-x-2 text-[#88818C]">
-            <p>Expected Price on</p>
-            {toChainId && <ChainInfoLabel chainId={toChainId} />}
-          </div>
-          <span className="text-[#88818C]">
-            {!fromAmount.eq(0) ? (
-              <>
-                {formattedExchangeRate}{' '}
-                <span className="text-white">{toCoin.symbol}</span>
-              </>
-            ) : (
-              '—'
-            )}
-          </span>
+      <div className="flex justify-between">
+        <div className="flex space-x-2 text-[#88818C]">
+          <p>Expected Price on</p>
+          {toChainId && <ChainInfoLabel chainId={toChainId} />}
         </div>
-        <div className="flex justify-between">
-          <p className="text-[#88818C] ">Slippage</p>
-          {!fromAmount.eq(0) && !underFee ? (
-            <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
+        <span className="text-[#88818C]">
+          {!fromAmount.eq(0) ? (
+            <>
+              {formattedExchangeRate}{' '}
+              <span className="text-white">{toCoin.symbol}</span>
+            </>
           ) : (
-            <span className="text-[#88818C]">—</span>
+            '—'
           )}
-        </div>
-      </>
-      {/* )} */}
+        </span>
+      </div>
+      <div className="flex justify-between">
+        <p className="text-[#88818C] ">Slippage</p>
+        {!fromAmount.eq(0) && !underFee ? (
+          <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
+        ) : (
+          <span className="text-[#88818C]">—</span>
+        )}
+      </div>
     </div>
   )
 }

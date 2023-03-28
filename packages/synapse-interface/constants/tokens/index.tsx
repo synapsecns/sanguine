@@ -87,7 +87,6 @@ const getBridgeSwapableTokensByType = (): BridgeSwapableTokensByType => {
       convertArrayToObject(v),
     ])
   )
-  console.log('GG', bridgeSwapableTokensByType)
   Object.values(all).map((token) => {
     let swapableType = String(token?.swapableType)
 

@@ -85,7 +85,6 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
   const [fromTokens, setFromTokens] = useState([])
   const [fromValue, setFromValue] = useState('')
   const [toValue, setToValue] = useState('')
-  const [init, setInit] = useState(false)
   // Auxiliary data
   const [priceImpact, setPriceImpact] = useState(Zero)
   const [exchangeRate, setExchangeRate] = useState(Zero)
@@ -119,13 +118,6 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
       inputCurrency: fromTokenSymbolUrl,
       outputCurrency: toTokenSymbolUrl,
     } = router.query
-    console.log(
-      'dslajldkjasal',
-      router.isReady,
-      toChainIdUrl,
-      fromTokenSymbolUrl,
-      toTokenSymbolUrl
-    )
 
     let tempFromToken: Token = getMostCommonSwapableType(fromChainId)
 
@@ -174,7 +166,6 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
       BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
     )
     let maxTokenLength = 0
-    console.log('chainIdchainIdchainIdchainIdchainId', chainId)
     let mostCommonSwapableType: Token[] = fromChainTokensByType[0]
     fromChainTokensByType.map((tokenArr, i) => {
       if (tokenArr.length > maxTokenLength) {
@@ -242,7 +233,6 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
     positedToSymbol: string | undefined,
     fromChainId: number
   ) => {
-    console.log('HIIEEIEI', token)
     let newToChain = positedToChain ? Number(positedToChain) : DEFAULT_TO_CHAIN
     let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
       String(token.swapableType)
@@ -260,7 +250,6 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
           : Number(bridgeableChains[0])
     }
 
-    console.log('NEW TO CHAIN', newToChain)
     let positedToToken = positedToSymbol
       ? tokenSymbolToToken(newToChain, positedToSymbol)
       : tokenSymbolToToken(newToChain, token.symbol)
@@ -434,7 +423,6 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
         outputCurrency: bridgeableToken.symbol,
       })
     } else {
-      console.log('to token change', token)
       setToToken(token)
       updateUrlParams({
         outputChain: toChainId,
@@ -444,93 +432,85 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
     }
   }
 
-  const triggerRateAndImpact = ({
-    amountToGive,
-    amountToReceive,
-    bridgeFee,
-  }: {
-    amountToGive: BigNumber
-    amountToReceive: BigNumber
-    bridgeFee: BigNumber
-  }) => {
-    setFeeAmount(bridgeFee)
-    let umom = calculateExchangeRate(
-      amountToGive.sub(
-        feeAmount.div(
-          BigNumber.from(10).pow(18 - fromToken.decimals[fromChainId])
-        )
-      ),
-      fromToken.decimals[fromChainId],
-      amountToReceive,
-      toToken.decimals[toChainId]
-    )
-    console.log('umom', umom)
-    setExchangeRate(umom)
-  }
   const getQuote = async () => {
-    let amount: BigintIsh = BigNumber.from(Number(fromValue) * 1000000)
-    const quotes = await SynapseSDK.bridgeQuote(
-      fromChainId, // From Chain
-      toChainId, // To Chain
-      fromToken.addresses[fromChainId].toLowerCase(), // From token Address
-      toToken.addresses[toChainId].toLowerCase(), // To token Address
-      amount // Amount in
-    )
-    console.log('quotesquotesquotesquotes', quotes)
-
-    let maxAmountOut = quotes?.destQuery?.minAmountOut
-      ? quotes.destQuery.minAmountOut
-      : Zero
-    // setToValue(maxAmountOut.div(100000000).toString())
-    // console.log(maxAmountOut.toString(), quotes.originQuery, quotes.destQuery)
-    return {
-      amountToReceive: maxAmountOut,
-      originQuery: quotes.originQuery,
-      destQuery: quotes.destQuery,
-    }
-    // return {quotes.maxAmountOut, quotes.originQuery, quotes.destQuery}
-  }
-  const calculateBridgeAmount = async () => {
-    let cleanedFromValue = sanitizeValue(fromValue)
-    if (checkCleanedValue(cleanedFromValue)) {
-      setToValue('')
-      return
-    }
-
-    if (
-      !(
-        fromChainId &&
-        toChainId &&
-        String(fromToken.addresses[fromChainId]) &&
-        String(toToken.addresses[toChainId]) &&
-        fromValue
+    let fromDecimals = BigNumber.from(10).pow(fromToken.decimals[fromChainId])
+    let toDecimals = BigNumber.from(10).pow(toToken.decimals[toChainId])
+    let fromValueSplit = fromValue.split('.')
+    let fromValueBase = fromValueSplit[0]
+    let fromValueMantissa =
+      fromValueSplit?.[1]?.length > 0 ? fromValueSplit[1] : '0'
+    let fromValueBigNum = BigNumber.from(fromValueBase)
+      .mul(fromDecimals)
+      .add(
+        BigNumber.from(fromValueMantissa)
+          .mul(fromDecimals)
+          .div(BigNumber.from(10).pow(fromValueMantissa.length))
       )
-    ) {
-      return
-    }
-    const amountToGive = parseUnits(
-      cleanedFromValue,
-      fromToken.decimals[fromChainId]
+    // const { feeAmount, bridgeFee, maxAmountOut, originQuery, destQuery } =
+    //   await SynapseSDK.bridgeQuote(
+    //     fromChainId,
+    //     toChainId,
+    //     fromToken.addresses[fromChainId].toLowerCase(),
+    //     toToken.addresses[toChainId].toLowerCase(),
+    //     fromValueBigNum
+    //   )
+    // console.log(
+    //   'quotes',
+    //   feeAmount,
+    //   bridgeFee,
+    //   maxAmountOut,
+    //   originQuery,
+    //   destQuery
+    // )
+    const quoteData = await SynapseSDK.bridgeQuote(
+      fromChainId,
+      toChainId,
+      fromToken.addresses[fromChainId].toLowerCase(),
+      toToken.addresses[toChainId].toLowerCase(),
+      fromValueBigNum
     )
+    console.log('quotes', quoteData)
+    let toValueBigNum = quoteData?.destQuery?.minAmountOut
+      ? quoteData?.destQuery.minAmountOut
+      : Zero
+    let toValueBase = toValueBigNum.div(toDecimals).toString()
+    let toValueMantissa = toValueBigNum.mod(toDecimals).toString()
 
-    const { amountToReceive, originQuery, destQuery } = await getQuote()
-    console.log(
-      ':SDLKDKSJGDKJHSDKJ',
-      amountToGive.toString(),
-      amountToReceive.toString(),
-      typeof amountToGive
+    setToValue(toValueBase + '.' + toValueMantissa)
+    setBridgeQueries({
+      originQuery: quoteData?.originQuery,
+      destQuery: quoteData?.destQuery,
+    })
+    let exchangeRate = toValueBigNum.div(fromValueBigNum)
+    // setFeeAmount(0)
+
+    setExchangeRate(
+      calculateExchangeRate(
+        fromValueBigNum,
+        fromToken.decimals[fromChainId],
+        toValueBigNum,
+        toToken.decimals[toChainId]
+      )
     )
-    // // setToValue(amountToReceive.toString())
-    // if (sanitizeValue(fromRef.current?.value) == sanitizeValue(fromValue)) {
-    //   setToValue(formatUnits(amountToReceive, toToken.decimals[toChainId]))
-    //   triggerRateAndImpact({ amountToGive, amountToReceive, bridgeFee })
-    // }
-    // setBridgeQueries({ originQuery, destQuery })
+    // setExchangeRate(
+    //   calculateExchangeRate(
+    //     fromValueBigNum.sub(feeAmount.mul(fromDecimals)),
+    //     fromToken.decimals[fromChainId],
+    //     maxAmountOut,
+    //     toToken.decimals[toChainId]
+    //   )
+    // )
   }
 
   useEffect(() => {
-    if (fromToken && toToken) {
-      calculateBridgeAmount()
+    if (
+      fromChainId &&
+      toChainId &&
+      String(fromToken.addresses[fromChainId]) &&
+      String(toToken.addresses[toChainId]) &&
+      fromValue
+    ) {
+      getQuote()
     }
   }, [fromToken, toToken, fromValue, fromChainId, toChainId, feeAmount])
 

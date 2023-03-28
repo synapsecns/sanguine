@@ -53,7 +53,6 @@ export function NetworkSlideOver({
   useEffect(() => {
     let tempNetworks: ChainInfo[] = []
     CHAIN_ID_DISPLAY_ORDER.map((cid) => {
-      console.log('CIIIID', possibleChains, cid)
       if (
         isSwapFrom ||
         (!isSwapFrom &&
@@ -63,7 +62,6 @@ export function NetworkSlideOver({
         tempNetworks.push(CHAIN_INFO_MAP[cid])
       }
     })
-    console.log('tempNetworks', tempNetworks, isSwapFrom, Number(chain?.id))
     if (searchStr?.length > 0) {
       tempNetworks = fuse.search(searchStr).map((i) => i.item)
     }

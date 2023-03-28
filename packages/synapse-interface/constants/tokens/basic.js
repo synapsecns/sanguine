@@ -1019,7 +1019,6 @@ for (const [chainId, tokensOnChain] of _.toPairs(BASIC_TOKENS_BY_CHAIN)) {
     TOKEN_HASH_MAP[chainId][_.toLower(token.addresses[chainId])] = token
   }
 }
-console.log("TOKEN_HASH_MAP", TOKEN_HASH_MAP)
 // TOKEN_HASH_MAP[ChainId.AVALANCHE][
 //   _.toLower(GMX.wrapperAddresses[ChainId.AVALANCHE])
 // ] = GMX

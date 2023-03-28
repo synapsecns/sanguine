@@ -44,9 +44,11 @@ class SynapseSDK {
     tokenOut: string,
     amountIn: BigintIsh
   ): Promise<{
+    feeAmount?: BigNumber
+    bridgeFee?: number
     maxAmountOut?: BigNumber
-    originQuery?: Query
-    destQuery?: Query
+    originQuery?: Query | undefined
+    destQuery?: Query | undefined
   }> {
     let originQuery
     let destQuery
@@ -72,7 +74,6 @@ class SynapseSDK {
     }
 
     // Step 1: perform a call to origin SynapseRouter
-
     const originQueries = await originRouter.routerContract.getOriginAmountOut(
       tokenIn,
       symbols,
@@ -81,7 +82,6 @@ class SynapseSDK {
 
     // Step 2: form a list of Destination Requests
     // In practice, there is no need to pass the requests with amountIn = 0, but we will do it for code simplicity
-
     const requests: { symbol: string; amountIn: BigintIsh }[] = []
 
     for (let i = 0; i < bridgeTokens.length; i++) {
@@ -107,10 +107,21 @@ class SynapseSDK {
       }
     }
 
-    // // Throw error if origin quote is zero
-    // if (originQuery.minAmountOut == 0) throw Error("No path found on origin")
+    // Get fee data
+    const feeAmount = await originRouter.routerContract.calculateBridgeFee(
+      tokenIn,
+      amountIn
+    )
 
-    return { maxAmountOut, originQuery, destQuery }
+    const { bridgeFee } = await originRouter.routerContract.fee(tokenIn)
+
+    return {
+      feeAmount,
+      bridgeFee,
+      maxAmountOut,
+      originQuery,
+      destQuery,
+    }
   }
 
   public async bridge(
@@ -135,8 +146,6 @@ class SynapseSDK {
     }
   ): Promise<PopulatedTransaction> {
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
-    console.log(originQuery)
-    console.log(destQuery)
     return originRouter.routerContract.populateTransaction.bridge(
       to,
       destChainId,
@@ -148,4 +157,4 @@ class SynapseSDK {
   }
 }
 
-export { SynapseSDK, BigintIsh }
+export { SynapseSDK }
