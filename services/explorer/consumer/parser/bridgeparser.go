@@ -7,6 +7,8 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
+
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
 	"golang.org/x/sync/errgroup"
 
@@ -34,14 +36,19 @@ type BridgeParser struct {
 	bridgeAddress common.Address
 	// tokenDataService contains the token data service/cache
 	tokenDataService tokendata.Service
+	// tokenPriceService contains the token price service/cache
+	tokenPriceService tokenprice.Service
 	// consumerFetcher is the ScribeFetcher for sender and timestamp.
 	consumerFetcher *fetcher.ScribeFetcher
 	// coinGeckoIDs is the mapping of token id to coin gecko ID
 	coinGeckoIDs map[string]string
 }
 
+const noTokenID = "NO_TOKEN"
+const noPrice = "NO_PRICE"
+
 // NewBridgeParser creates a new parser for a given bridge.
-func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, tokenDataService tokendata.Service, consumerFetcher *fetcher.ScribeFetcher) (*BridgeParser, error) {
+func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, tokenDataService tokendata.Service, consumerFetcher *fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*BridgeParser, error) {
 	filterer, err := bridge.NewSynapseBridgeFilterer(bridgeAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", bridge.SynapseBridgeFilterer{}, err)
@@ -59,13 +66,14 @@ func NewBridgeParser(consumerDB db.ConsumerDB, bridgeAddress common.Address, tok
 	}
 
 	return &BridgeParser{
-		consumerDB:       consumerDB,
-		Filterer:         filterer,
-		FiltererV1:       filtererV1,
-		bridgeAddress:    bridgeAddress,
-		tokenDataService: tokenDataService,
-		consumerFetcher:  consumerFetcher,
-		coinGeckoIDs:     idCoinGeckoIDs,
+		consumerDB:        consumerDB,
+		Filterer:          filterer,
+		FiltererV1:        filtererV1,
+		bridgeAddress:     bridgeAddress,
+		tokenDataService:  tokenDataService,
+		tokenPriceService: tokenPriceService,
+		consumerFetcher:   consumerFetcher,
+		coinGeckoIDs:      idCoinGeckoIDs,
 	}, nil
 }
 
@@ -171,10 +179,9 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 		SwapDeadline:       event.GetSwapDeadline(),
 
 		// Placeholders for further data maturation of this event.
-		TokenID:      sql.NullString{},
 		TimeStamp:    nil,
 		AmountUSD:    nil,
-		FeeAmountUSD: nil,
+		FeeUSD:       nil,
 		TokenDecimal: nil,
 		TokenSymbol:  sql.NullString{},
 	}
@@ -337,7 +344,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 			return iFace, nil
 		default:
-			logger.Errorf("ErrUnknownTopic in bridge: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+			logger.Warnf("ErrUnknownTopic in bridge: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
 
 			return nil, fmt.Errorf(ErrUnknownTopic)
 		}
@@ -385,6 +392,7 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 	bridgeEvent.Sender = *sender
 
 	if tokenData.TokenID() == fetcher.NoTokenID {
+		logger.Errorf("could not get token data token id chain: %d address %s", chainID, log.Address.Hex())
 		// handle an inauthentic token.
 		return &bridgeEvent, nil
 	}
@@ -395,27 +403,30 @@ func (p *BridgeParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint
 
 	// Add the price of the token at the block the event occurred using coin gecko (to bridgeEvent).
 	coinGeckoID := p.coinGeckoIDs[tokenData.TokenID()]
-
-	//// Account for improper value from truncation of usdc
-	// if (coinGeckoID == "usd-coin" || coinGeckoID == "tether" || coinGeckoID == "dai" || coinGeckoID == "binance-usd") && bridgeEvent.Fee != nil && bridgeEvent.Amount.Cmp(bridgeEvent.Fee) == 1 {
-	//	bridgeEvent.Amount = iFace.GetAmount().Mul(iFace.GetAmount(), big.NewInt(1000000000000))
-	//}
+	if coinGeckoID == "" {
+		logger.Warnf("BRIDGE - EMPTY TOKEN ID: %s, TokenID: %s", p.coinGeckoIDs[tokenData.TokenID()], tokenData.TokenID())
+	}
 
 	// Add TokenSymbol to bridgeEvent.
 	bridgeEvent.TokenSymbol = ToNullString(&realID)
 	var tokenPrice *float64
-	if !(coinGeckoID == "xjewel" && *bridgeEvent.TimeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1668646800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
-		tokenPrice, _ = fetcher.GetDefiLlamaData(ctx, int(*bridgeEvent.TimeStamp), coinGeckoID)
-	}
-	if tokenPrice != nil {
-		// Add AmountUSD to bridgeEvent (if price is not nil).
-		bridgeEvent.AmountUSD = GetAmountUSD(bridgeEvent.Amount, tokenData.Decimals(), tokenPrice)
-
-		// Add FeeAmountUSD to bridgeEvent (if price is not nil).
-		if iFace.GetFee() != nil {
-			bridgeEvent.FeeAmountUSD = GetAmountUSD(bridgeEvent.Fee, tokenData.Decimals(), tokenPrice)
+	if coinGeckoID != "" && !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
+		tokenPrice = p.tokenPriceService.GetPriceData(ctx, int(*timeStamp), coinGeckoID)
+		if tokenPrice == nil && coinGeckoID != noTokenID && coinGeckoID != noPrice {
+			if coinGeckoID != "usd-coin" && coinGeckoID != "tether" && coinGeckoID != "dai" || coinGeckoID == "binance-usd" {
+				logger.Warnf("BRIDGE - TOKEN PRICE NULL OR ZERO coinGeckoID: %s, TimeStamp: %d, TokenDecimal: %d, chainID: %d, TxHash: %s", coinGeckoID, *bridgeEvent.TimeStamp, *bridgeEvent.TokenDecimal, chainID, bridgeEvent.TxHash)
+				return nil, fmt.Errorf("BRIDGE could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, bridgeEvent.TxHash, bridgeEvent.TimeStamp)
+			}
+			one := 1.0
+			tokenPrice = &one
 		}
 	}
 
+	if tokenPrice != nil {
+		bridgeEvent.AmountUSD = GetAmountUSD(bridgeEvent.Amount, tokenData.Decimals(), tokenPrice)
+		if iFace.GetFee() != nil {
+			bridgeEvent.FeeUSD = GetAmountUSD(bridgeEvent.Fee, tokenData.Decimals(), tokenPrice)
+		}
+	}
 	return bridgeEvent, nil
 }

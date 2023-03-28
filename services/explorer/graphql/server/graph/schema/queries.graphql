@@ -1,35 +1,50 @@
 type Query {
+
   """
   Returns bridged transactions filterable by chain, to/from address, to/from txn hash, token address, and keccak hash.
   """
   bridgeTransactions(
-    chainId:        Int
-    address:        String
+    chainIDFrom:        [Int]
+    chainIDTo:        [Int]
+    addressFrom:        String
+    addressTo:        String
+    maxAmount:      Int
+    minAmount:      Int
+    maxAmountUsd:      Int
+    minAmountUsd:      Int
+    startTime:      Int
+    endTime:        Int
     txnHash:        String
     kappa:          String
-    includePending: Boolean = true
+    pending:        Boolean
+    useMv:          Boolean = false
     page:           Int = 1
-    tokenAddress:   String
+    tokenAddressFrom:   [String]
+    tokenAddressTo:   [String]
   ): [BridgeTransaction]
 
   """
-  Returns mean/median/total/count of transactions bridged for a given duration, chain and address.
-  Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
+  Message bus transactions
   """
-  bridgeAmountStatistic(
-    type:         StatisticType!
-    duration:     Duration = ALL_TIME
-    chainId:      Int
-    address:      String
-    tokenAddress: String
-  ): ValueResult
+  messageBusTransactions(
+    chainID:        [Int]
+    contractAddress:        String
+    startTime:      Int
+    endTime:        Int
+    txnHash:        String
+    messageID:      String
+    pending:        Boolean = false
+    reverted:       Boolean = false
+    page:           Int = 1
+  ): [MessageBusTransaction]
+
   """
   Returns the COUNT of bridged transactions for a given chain. If direction of bridge transactions
   is not specified, it defaults to IN.
   Specifying no duration defaults to the last 24 hours.
   """
   countByChainId(
-    chainId:    Int
+    chainID:    Int
     address:    String
     direction:  Direction = IN
     hours:      Int = 720
@@ -39,7 +54,7 @@ type Query {
   Specifying no parameters defaults to origin and 24 hours.
   """
   countByTokenAddress(
-    chainId:    Int
+    chainID:    Int
     address:    String
     direction:  Direction = IN
     hours:      Int = 24
@@ -51,11 +66,40 @@ type Query {
   addressRanking(hours: Int = 24): [AddressRanking]
 
   """
-  Historical transactional data
+  Returns mean/median/total/count of transactions transacted for a given duration, chain and address.
+  Specifying no duration defaults to ALL_TIME, and no chain or address searches across all.
   """
-  historicalStatistics(
-    chainId:  Int
-    type:     HistoricalResultType = BRIDGEVOLUME
-    days:     Int = 30
-  ): HistoricalResult
+  amountStatistic(
+    type:         StatisticType!
+    duration:     Duration = ALL_TIME
+    platform:     Platform = ALL
+    chainID:      Int
+    address:      String
+    tokenAddress: String
+    useCache: Boolean = false
+    useMv:          Boolean = false
+
+  ): ValueResult
+
+  """
+  Daily statistic data
+  """
+  dailyStatisticsByChain(
+    chainID:  Int
+    type:     DailyStatisticType = VOLUME
+    platform: Platform = ALL
+    duration:     Duration = ALL_TIME
+    useCache: Boolean = false
+    useMv:          Boolean = false
+
+  ): [DateResultByChain]
+
+  """
+Ranked chainIDs by volume
+  """
+  rankedChainIDsByVolume(
+    duration:     Duration = ALL_TIME
+    useCache: Boolean = false
+  ): [VolumeByChainID]
+
 }

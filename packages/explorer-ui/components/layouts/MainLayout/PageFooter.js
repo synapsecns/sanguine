@@ -1,9 +1,9 @@
 import {
   BRIDGE_PATH,
-  CAREERS_URL,
+  TERMS_OF_SERVICE_PATH,
   DISCORD_URL,
   DOCS_URL,
-  FORUM_URL,
+  PRIVACY_POLICY_PATH,
   GITHUB_URL,
   MEDIUM_URL,
   POOLS_PATH,
@@ -13,7 +13,7 @@ import {
 } from '@urls'
 
 import Grid from '@components/tailwind/Grid'
-import {SynapseTitleLogo} from '.'
+import { SynapseTitleLogo } from '.'
 
 const functions = [
   {
@@ -23,22 +23,22 @@ const functions = [
   },
   {
     text: 'Swap',
-    type: 'path',
+    type: 'url',
     url: SWAP_PATH,
   },
   {
     text: 'Bridge',
-    type: 'path',
+    type: 'url',
     url: BRIDGE_PATH,
   },
   {
     text: 'Pools',
-    type: 'path',
+    type: 'url',
     url: POOLS_PATH,
   },
   {
     text: 'Stake',
-    type: 'path',
+    type: 'url',
     url: STAKE_PATH,
   },
 ]
@@ -86,18 +86,22 @@ const support = [
     text: 'Twitter',
     type: 'url',
     url: TWITTER_URL,
-  },
-  {
-    text: 'Help Center',
-    type: 'url',
-    url: FORUM_URL,
-  },
-  {
-    text: 'Careers',
-    type: 'url',
-    url: CAREERS_URL,
-  },
+  }
 ]
+const admin = [
+
+  {
+    text: 'Terms of Use',
+    type: 'path',
+    url: TERMS_OF_SERVICE_PATH,
+  },
+  {
+    text: 'Privacy Policy',
+    type: 'path',
+    url: PRIVACY_POLICY_PATH,
+  }
+]
+
 
 export function PageFooter() {
   return (
@@ -116,13 +120,16 @@ export function PageFooter() {
           <FooterBlock elements={support} />
         </Grid>
       </div>
+      <div className='text-white pb-[70px] flex direction-row justify-center align-middle'>
+        <div className='mr-2'> <DisplayText element={admin[0]} /> </div>   <p>｜</p>  <div className='ml-2'><DisplayText element={admin[1]} />  </div>
+      </div>
     </footer>
   )
 }
 
 function FooterBlock({ elements }) {
   return (
-    <div className="text-left text-white md:text-left lg:text-right">
+    <div className="text-left text-white md:text-left lg:text-right hover:cursor-pointer">
       {elements.map((element, i) => (
         <DisplayText element={element} key={i} />
       ))}
@@ -148,7 +155,7 @@ function DisplayText({ element }) {
   } else if (type === 'path') {
     return (
       <div className="opacity-50">
-        <a className="hover:opacity-40 hover:underline" to={url}>
+        <a className="hover:opacity-40 hover:underline" href={url}>
           {text}
         </a>
       </div>

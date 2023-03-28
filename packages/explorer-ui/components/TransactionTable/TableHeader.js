@@ -5,7 +5,7 @@ export function TableHeader({headers}) {
         {headers.map((header) => (
           <th
             scope="col"
-            className="px-2 py-2 text-left text-md font-bold text-white"
+            className="px-2 py-2 text-left text-md font-bold text-white "
           >
             {header}
           </th>
