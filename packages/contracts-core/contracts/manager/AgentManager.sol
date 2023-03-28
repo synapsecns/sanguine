@@ -16,7 +16,7 @@ abstract contract AgentManager is SystemContract, IAgentManager {
 
     ISystemRegistry public destination;
 
-    // agent => (bool isSlashed, address slashedBy)
+    // agent => (bool isSlashed, address prover)
     mapping(address => SlashStatus) public slashStatus;
 
     /// @dev gap for upgrade safety
@@ -71,7 +71,7 @@ abstract contract AgentManager is SystemContract, IAgentManager {
                 status.domain == _domain,
             "Slashing could not be initiated"
         );
-        slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _prover });
+        slashStatus[_agent] = SlashStatus({ isSlashed: true, prover: _prover });
     }
 
     /// @dev Notifies a given set of local registries about the slashed agent.

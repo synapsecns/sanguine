@@ -208,9 +208,9 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(originSynapse);
         bondingManager.registrySlash(domain, agent, prover);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
+        (bool isSlashed, address _prover) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, prover);
+        assertEq(_prover, prover);
     }
 
     function test_registrySlash_summit(
@@ -226,9 +226,9 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(summit);
         bondingManager.registrySlash(domain, agent, prover);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
+        (bool isSlashed, address _prover) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, prover);
+        assertEq(_prover, prover);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {
@@ -263,9 +263,9 @@ contract BondingManagerTest is AgentManagerTest {
             _remoteSlashData(domain, agent, prover)
         );
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
+        (bool isSlashed, address _prover) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, prover);
+        assertEq(_prover, prover);
     }
 
     function test_completeSlashing_active(

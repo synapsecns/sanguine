@@ -40,7 +40,7 @@ interface IAgentManager {
      * @notice Returns whether the agent has been slashed.
      * @param _agent        Agent address
      * @return isSlashed    Whether the agent has been slashed
-     * @return slashedBy    Address that presented the proof of fraud committed by the agent
+     * @return prover       Address that presented the proof of fraud committed by the agent
      */
-    function slashStatus(address _agent) external view returns (bool isSlashed, address slashedBy);
+    function slashStatus(address _agent) external view returns (bool isSlashed, address prover);
 }

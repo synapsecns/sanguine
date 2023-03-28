@@ -41,6 +41,6 @@ struct AgentStatus {
 /// @notice Struct representing information about a slashed agent.
 struct SlashStatus {
     bool isSlashed;
-    address slashedBy;
+    address prover;
     // 88 bits available for tight packing
 }

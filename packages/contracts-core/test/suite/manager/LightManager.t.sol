@@ -154,9 +154,9 @@ contract LightManagerTest is AgentManagerTest {
         vm.prank(origin);
         lightManager.registrySlash(domain, agent, prover);
         assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address slashedBy) = lightManager.slashStatus(agent);
+        (bool isSlashed, address _prover) = lightManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, prover);
+        assertEq(_prover, prover);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {
