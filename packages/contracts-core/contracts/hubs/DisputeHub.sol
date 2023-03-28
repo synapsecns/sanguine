@@ -106,6 +106,17 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         emit Dispute(_guard, _domain, _notary);
     }
 
+    /// @dev This is called when the slashing was initiated in this contract or elsewhere.
+    function _processSlashed(
+        uint32 _domain,
+        address _agent,
+        address _prover
+    ) internal virtual override {
+        // TODO: handle the remaining params as well
+        _resolveDispute(_agent);
+        super._processSlashed(_domain, _agent, _prover);
+    }
+
     /// @dev Resolves a Dispute for a slashed agent, if there was one.
     function _resolveDispute(address _slashedAgent) internal virtual {
         DisputeStatus memory status = disputes[_slashedAgent];
