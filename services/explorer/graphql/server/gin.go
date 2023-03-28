@@ -52,7 +52,6 @@ func createServer(es graphql.ExecutableSchema) *handler.Server {
 	srv.SetQueryCache(lru.New(1000))
 	srv.Use(extension.Introspection{})
 	srv.Use(extension.FixedComplexityLimit(300)) // Prevent ddos
-
 	srv.Use(extension.AutomaticPersistedQuery{
 		Cache: lru.New(100),
 	})
