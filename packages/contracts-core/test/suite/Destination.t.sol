@@ -210,6 +210,87 @@ contract DestinationTest is SynapseTest {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                       TESTS: WHILE IN DISPUTE                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_submitAttestation_revert_notaryInDispute(
+        RawAttestation memory ra,
+        RawAttestationReport memory rawAR
+    ) public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitAttestationReport(rawAR);
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        vm.expectRevert("Notary is in dispute");
+        InterfaceDestination(destination).submitAttestation(attPayload, attSig);
+    }
+
+    function test_submitAttestationReport_revert_guardInDispute(
+        RawAttestationReport memory firstAR,
+        RawAttestationReport memory secondAR
+    ) public {
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitAttestationReport(firstAR);
+        // Make sure Flag fits in AttestationFlag enum
+        secondAR.flag = uint8(bound(secondAR.flag, 0, uint8(type(AttestationFlag).max)));
+        // Try to initiate a dispute between Guard 0 and Notary 1
+        address guard = domains[0].agent;
+        (bytes memory arPayload, bytes memory arSig) = signAttestationReport(guard, secondAR);
+        address notary = domains[DOMAIN_LOCAL].agents[1];
+        (, bytes memory attSig) = signAttestation(notary, secondAR.attestation);
+        vm.expectRevert("Guard already in dispute");
+        InterfaceDestination(destination).submitAttestationReport(arPayload, arSig, attSig);
+    }
+
+    function test_submitAttestationReport_revert_notaryInDispute(
+        RawAttestationReport memory firstAR,
+        RawAttestationReport memory secondAR
+    ) public {
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitAttestationReport(firstAR);
+        // Make sure Flag fits in AttestationFlag enum
+        secondAR.flag = uint8(bound(secondAR.flag, 0, uint8(type(AttestationFlag).max)));
+        // Try to initiate a dispute between Guard 1 and Notary 0
+        address guard = domains[0].agents[1];
+        (bytes memory arPayload, bytes memory arSig) = signAttestationReport(guard, secondAR);
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (, bytes memory attSig) = signAttestation(notary, secondAR.attestation);
+        vm.expectRevert("Notary already in dispute");
+        InterfaceDestination(destination).submitAttestationReport(arPayload, arSig, attSig);
+    }
+
+    function test_execute_revert_notaryInDispute(
+        RawState memory rs,
+        RawAttestation memory ra,
+        uint256 statesAmount,
+        uint256 stateIndex,
+        RawAttestationReport memory rawAR
+    ) public {
+        address executor = makeAddr("Executor");
+        address notary = domains[DOMAIN_LOCAL].agent;
+        // Prepare attestation for message execution
+        createMessages();
+        rs.root = getRoot(MESSAGES);
+        rs.origin = DOMAIN_REMOTE;
+        // Remainder of State struct is fuzzed
+        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
+        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+        ra = createAttestation(rs, ra, statesAmount, stateIndex);
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        InterfaceDestination(destination).submitAttestation(attPayload, attSig);
+        // Put Notary 0 and Guard 0 in dispute.
+        // Note that the report doesn't have to reference the created attestation.
+        test_submitAttestationReport(rawAR);
+        // Prepare for message execution
+        skip(PERIOD);
+        bytes32[] memory snapProof = genSnapshotProof(stateIndex);
+        bytes32[] memory originProof = getLatestProof(0);
+        vm.expectRevert("Notary is in dispute");
+        vm.prank(executor);
+        IExecutionHub(destination).execute(messages[0], originProof, snapProof, stateIndex);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               HELPERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -255,5 +336,15 @@ contract DestinationTest is SynapseTest {
         DisputeStatus memory notaryStatus = IDisputeHub(destination).disputeStatus(notary);
         assertEq(uint8(notaryStatus.flag), uint8(DisputeFlag.Pending), "!notary flag");
         assertEq(notaryStatus.counterpart, guard, "!notary counterpart");
+    }
+
+    /// @notice Checks that the Dispute between a Guard and a Notary was resolved.
+    function checkDisputeResolved(address honest, address slashed) public {
+        DisputeStatus memory honestStatus = IDisputeHub(destination).disputeStatus(honest);
+        assertEq(uint8(honestStatus.flag), uint8(DisputeFlag.None), "!honest flag");
+        assertEq(honestStatus.counterpart, address(0), "!honest counterpart");
+        DisputeStatus memory slashedStatus = IDisputeHub(destination).disputeStatus(slashed);
+        assertEq(uint8(slashedStatus.flag), uint8(DisputeFlag.Slashed), "!honest flag");
+        assertEq(slashedStatus.counterpart, honest, "!honest counterpart");
     }
 }
