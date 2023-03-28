@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"github.com/synapsecns/sanguine/services/explorer/api/cache"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 )
@@ -11,8 +12,9 @@ import (
 
 // Resolver is the root resolver.
 //
-//go:generate go run github.com/synapsecns/sanguine/services/explorer/graphql/contrib
+//go:generate go run github.com/synapsecns/sanguine/services/explorer/graphql/contrib/client
 type Resolver struct {
 	DB      db.ConsumerDB
 	Fetcher fetcher.ScribeFetcher
+	Cache   cache.Service
 }

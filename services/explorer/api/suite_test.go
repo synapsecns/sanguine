@@ -2,7 +2,6 @@ package api_test
 
 import (
 	"fmt"
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/services/explorer/api"
@@ -67,7 +66,7 @@ func (g *APISuite) SetupTest() {
 	address := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
 	g.db, err = sql.OpenGormClickhouse(g.GetTestContext(), address, false)
 	Nil(g.T(), err)
-	g.chainIDs = []uint32{gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32(), gofakeit.Uint32()}
+	g.chainIDs = []uint32{1, 10, 25, 56, 137}
 	go func() {
 		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
 			HTTPPort:  uint16(httpport),
