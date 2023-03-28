@@ -214,7 +214,7 @@ contract DestinationTest is DisputeHubTest {
         address notary = domains[DOMAIN_LOCAL].agent;
         // Put Notary 0 and Guard 0 in dispute
         test_submitAttestationReport(ra);
-        // Slash the Notary
+        // Slash the Guard
         vm.prank(address(lightManager));
         ISystemRegistry(destination).managerSlash(0, guard, address(0));
         checkDisputeResolved({ hub: destination, honest: notary, slashed: guard });
