@@ -124,4 +124,13 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         require(_domain == localDomain, "Not a local Notary");
         super._openDispute(_guard, _domain, _notary);
     }
+
+    /// @dev Resolves a Dispute for a slashed agent, if it hasn't been done already.
+    /// This is overridden to resolve disputes only between a Guard and a LOCAL Notary.
+    function _resolveDispute(uint32 _domain, address _slashedAgent) internal virtual override {
+        // Disputes could be only opened between a Guard and a local Notary
+        if (_domain == 0 || _domain == localDomain) {
+            super._resolveDispute(_domain, _slashedAgent);
+        }
+    }
 }

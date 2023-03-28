@@ -112,13 +112,12 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         address _agent,
         address _prover
     ) internal virtual override {
-        // TODO: handle the remaining params as well
-        _resolveDispute(_agent);
+        _resolveDispute(_domain, _agent);
         super._processSlashed(_domain, _agent, _prover);
     }
 
     /// @dev Resolves a Dispute for a slashed agent, if it hasn't been done already.
-    function _resolveDispute(address _slashedAgent) internal virtual {
+    function _resolveDispute(uint32 _domain, address _slashedAgent) internal virtual {
         DisputeStatus memory status = disputes[_slashedAgent];
         // Do nothing if dispute was already resolved
         if (status.flag == DisputeFlag.Slashed) return;
@@ -129,7 +128,7 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         // Delete record of dispute for the counterpart. This sets their Dispute Flag to None.
         if (status.counterpart != address(0)) delete disputes[status.counterpart];
         // TODO: wo we want to use prover address if there was no counterpart?
-        emit DisputeResolved(status.counterpart, _slashedAgent);
+        emit DisputeResolved(status.counterpart, _domain, _slashedAgent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
