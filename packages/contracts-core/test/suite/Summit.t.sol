@@ -388,4 +388,157 @@ contract SummitTest is DisputeHubTest {
         ISystemRegistry(summit).managerSlash(0, guard, address(0));
         checkDisputeResolved({ hub: summit, honest: notary, slashed: guard });
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                       TESTS: WHILE IN DISPUTE                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_submitStateReport_revert_notaryInDispute(
+        RawState memory firstRS,
+        RawState memory secondRS
+    ) public {
+        (uint256 domainId, uint256 statesAmount, uint256 stateIndex) = (1, 1, 0);
+        uint32 domain = allDomains[domainId];
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitStateReport(domainId, firstRS, statesAmount, stateIndex);
+        // Create Notary 0 snapshot
+        (address guard, address notary) = (domains[0].agents[1], domains[domain].agents[0]);
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(
+            notary,
+            secondRS,
+            1,
+            0
+        );
+        // Create report by Guard 1
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
+        vm.expectRevert("Notary already in dispute");
+        IDisputeHub(summit).submitStateReport(0, srPayload, srSig, snapPayload, snapSig);
+    }
+
+    function test_submitStateReport_revert_guardInDispute(
+        RawState memory firstRS,
+        RawState memory secondRS
+    ) public {
+        (uint256 domainId, uint256 statesAmount, uint256 stateIndex) = (1, 1, 0);
+        uint32 domain = allDomains[domainId];
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitStateReport(domainId, firstRS, statesAmount, stateIndex);
+        // Create Notary 1 snapshot
+        (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[1]);
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(
+            notary,
+            secondRS,
+            1,
+            0
+        );
+        // Create report by Guard 0
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
+        vm.expectRevert("Guard already in dispute");
+        IDisputeHub(summit).submitStateReport(0, srPayload, srSig, snapPayload, snapSig);
+    }
+
+    function test_submitStateReportWithProof_revert_notaryInDispute(
+        RawState memory firstRS,
+        RawState memory secondRS,
+        RawAttestation memory ra
+    ) public {
+        (uint256 domainId, uint256 statesAmount, uint256 stateIndex) = (1, 1, 0);
+        uint32 domain = allDomains[domainId];
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitStateReport(domainId, firstRS, statesAmount, stateIndex);
+        // Create Notary 0 attestation
+        (address guard, address notary) = (domains[0].agents[1], domains[domain].agents[0]);
+        ra = createAttestation(secondRS, ra, statesAmount, stateIndex);
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Create Guard 1 signature for the report
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
+        // Generate Snapshot Proof
+        bytes32[] memory snapProof = genSnapshotProof(stateIndex);
+        vm.expectRevert("Notary already in dispute");
+        IDisputeHub(summit).submitStateReportWithProof(
+            stateIndex,
+            srPayload,
+            srSig,
+            snapProof,
+            attPayload,
+            attSig
+        );
+    }
+
+    function test_submitStateReportWithProof_revert_guardInDispute(
+        RawState memory firstRS,
+        RawState memory secondRS,
+        RawAttestation memory ra
+    ) public {
+        (uint256 domainId, uint256 statesAmount, uint256 stateIndex) = (1, 1, 0);
+        uint32 domain = allDomains[domainId];
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitStateReport(domainId, firstRS, statesAmount, stateIndex);
+        // Create Notary 1 attestation
+        (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[1]);
+        ra = createAttestation(secondRS, ra, statesAmount, stateIndex);
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        // Create Guard 0 signature for the report
+        (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
+        // Generate Snapshot Proof
+        bytes32[] memory snapProof = genSnapshotProof(stateIndex);
+        vm.expectRevert("Guard already in dispute");
+        IDisputeHub(summit).submitStateReportWithProof(
+            stateIndex,
+            srPayload,
+            srSig,
+            snapProof,
+            attPayload,
+            attSig
+        );
+    }
+
+    function test_submitSnapshot_revert_notaryInDispute(
+        RawState memory firstRS,
+        RawState memory secondRS
+    ) public {
+        (uint256 domainId, uint256 statesAmount, uint256 stateIndex) = (1, 1, 0);
+        uint32 domain = allDomains[domainId];
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitStateReport(domainId, firstRS, statesAmount, stateIndex);
+        // Make sure state nonce is non-zero
+        if (secondRS.nonce == 0) secondRS.nonce = 1;
+        // Create Guard 1 snapshot
+        (address guard, address notary) = (domains[0].agents[1], domains[domain].agents[0]);
+        (bytes memory snapPayload, bytes memory guardSig) = createSignedSnapshot(
+            guard,
+            secondRS,
+            1,
+            0
+        );
+        // Guard 1 submits snapshot
+        InterfaceSummit(summit).submitSnapshot(snapPayload, guardSig);
+        // Notary 0 signs the same snapshot
+        bytes memory notarySig = signSnapshot(notary, snapPayload);
+        vm.expectRevert("Notary is in dispute");
+        InterfaceSummit(summit).submitSnapshot(snapPayload, notarySig);
+    }
+
+    function test_submitSnapshot_success_guardInDispute(
+        RawState memory firstRS,
+        RawState memory secondRS
+    ) public {
+        (uint256 domainId, uint256 statesAmount, uint256 stateIndex) = (1, 1, 0);
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitStateReport(domainId, firstRS, statesAmount, stateIndex);
+        // Make sure state nonce is non-zero
+        if (secondRS.nonce == 0) secondRS.nonce = 1;
+        // Create Guard 1 snapshot
+        address guard = domains[0].agents[0];
+        (bytes memory snapPayload, bytes memory guardSig) = createSignedSnapshot(
+            guard,
+            secondRS,
+            1,
+            0
+        );
+        // Guard 0 submits snapshot - being in dispute does not interfere with future snapshots
+        vm.expectEmit();
+        emit SnapshotAccepted(0, guard, snapPayload, guardSig);
+        InterfaceSummit(summit).submitSnapshot(snapPayload, guardSig);
+    }
 }
