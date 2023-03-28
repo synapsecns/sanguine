@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { AgentStatus } from "../libs/Structures.sol";
+
 interface IAgentManager {
     /**
      * @notice Local SystemRegistry should call this function to indicate that the agent
@@ -10,12 +12,12 @@ interface IAgentManager {
      * for the OLD agent status.
      * @param _domain   Domain where the slashed agent was active
      * @param _agent    Address of the slashed Agent
-     * @param _reporter Address that initially provided fraud proof in SystemRegistry
+     * @param _prover   Address that initially provided fraud proof in SystemRegistry
      */
     function registrySlash(
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     ) external;
 
     // ═════════════════════════════════ VIEWS ═════════════════════════════════
@@ -26,24 +28,19 @@ interface IAgentManager {
     function agentRoot() external view returns (bytes32);
 
     /**
-     * @notice Returns true if the agent is active on any domain.
-     * Note: that includes both Guards and Notaries.
-     * @return isActive Whether the account is an active agent on any of the domains
-     * @return domain   Domain, where the account is an active agent
+     * @notice Returns (flag, domain, index) for a given agent. See Structures.sol for details.
+     * @dev Will return AgentFlag.Fraudulent for agents that have been proven to commit fraud,
+     * but their status is not updated to Slashed yet.
+     * @param _agent    Agent address
+     * @return          Status for the given agent: (flag, domain, index).
      */
-    function isActiveAgent(address _account) external view returns (bool isActive, uint32 domain);
-
-    /**
-     * @notice Returns true if the agent is active on the given domain.
-     * Note: domain == 0 refers to a Guard, while _domain > 0 refers to a Notary.
-     */
-    function isActiveAgent(uint32 _domain, address _account) external view returns (bool);
+    function agentStatus(address _agent) external view returns (AgentStatus memory);
 
     /**
      * @notice Returns whether the agent has been slashed.
      * @param _agent        Agent address
      * @return isSlashed    Whether the agent has been slashed
-     * @return slashedBy    Address that presented the proof of fraud committed by the agent
+     * @return prover       Address that presented the proof of fraud committed by the agent
      */
-    function slashStatus(address _agent) external view returns (bool isSlashed, address slashedBy);
+    function slashStatus(address _agent) external view returns (bool isSlashed, address prover);
 }

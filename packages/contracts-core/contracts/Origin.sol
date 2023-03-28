@@ -12,7 +12,7 @@ import { OriginEvents } from "./events/OriginEvents.sol";
 import { IAgentManager } from "./interfaces/IAgentManager.sol";
 import { InterfaceOrigin } from "./interfaces/InterfaceOrigin.sol";
 import { StateHub } from "./hubs/StateHub.sol";
-import { Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
+import { AgentStatus, Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
 import { DomainContext, Versioned } from "./system/SystemContract.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
@@ -53,8 +53,10 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     ) external returns (bool isValid) {
         // This will revert if payload is not an attestation
         Attestation att = _wrapAttestation(_attPayload);
-        // This will revert if the attestation signer is not an active Notary
-        (uint32 domain, address notary) = _verifyAttestation(att, _attSignature);
+        // This will revert if the attestation signer is not a known Notary
+        (AgentStatus memory status, address notary) = _verifyAttestation(att, _attSignature);
+        // Notary needs to be Active/Unstaking
+        _verifyActiveUnstaking(status);
         // This will revert if payload is not a snapshot
         Snapshot snapshot = _wrapSnapshot(_snapPayload);
         // This will revert if snapshot/attestation Merkle data doesn't match
@@ -71,7 +73,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
                 _attSignature
             );
             // Slash Notary and notify local AgentManager
-            _slashAgent(domain, notary);
+            _slashAgent(status.domain, notary);
         }
     }
 
@@ -85,8 +87,10 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     ) external returns (bool isValid) {
         // This will revert if payload is not an attestation
         Attestation att = _wrapAttestation(_attPayload);
-        // This will revert if the attestation signer is not an active Notary
-        (uint32 domain, address notary) = _verifyAttestation(att, _attSignature);
+        // This will revert if the attestation signer is not a known Notary
+        (AgentStatus memory status, address notary) = _verifyAttestation(att, _attSignature);
+        // Notary needs to be Active/Unstaking
+        _verifyActiveUnstaking(status);
         // This will revert if payload is not a state
         State state = _wrapState(_statePayload);
         // This will revert if any of these is true:
@@ -100,7 +104,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         if (!isValid) {
             emit InvalidAttestationState(_stateIndex, _statePayload, _attPayload, _attSignature);
             // Slash Notary and notify local AgentManager
-            _slashAgent(domain, notary);
+            _slashAgent(status.domain, notary);
         }
     }
 
@@ -112,14 +116,16 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     ) external returns (bool isValid) {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = _wrapSnapshot(_snapPayload);
-        // This will revert if the snapshot signer is not an active Agent
-        (uint32 domain, address agent) = _verifySnapshot(snapshot, _snapSignature);
+        // This will revert if the snapshot signer is not a known Agent
+        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, _snapSignature);
+        // Agent needs to be Active/Unstaking
+        _verifyActiveUnstaking(status);
         // This will revert, if state index is out of range, or state refers to another domain
         isValid = _isValidState(snapshot.state(_stateIndex));
         if (!isValid) {
             emit InvalidSnapshotState(_stateIndex, _snapPayload, _snapSignature);
             // Slash Agent and notify local AgentManager
-            _slashAgent(domain, agent);
+            _slashAgent(status.domain, agent);
         }
     }
 
@@ -130,8 +136,10 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     {
         // This will revert if payload is not a snapshot report
         StateReport report = _wrapStateReport(_srPayload);
-        // This will revert if the report signer is not an active Guard
-        address guard = _verifyStateReport(report, _srSignature);
+        // This will revert if the report signer is not a known Guard
+        (AgentStatus memory status, address guard) = _verifyStateReport(report, _srSignature);
+        // Guard needs to be Active/Unstaking
+        _verifyActiveUnstaking(status);
         // Report is valid, if the reported state is invalid
         isValid = !_isValidState(report.state());
         if (!isValid) {

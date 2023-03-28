@@ -18,8 +18,8 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @inheritdoc IBondingManager
-    mapping(address => AgentStatus) public agentStatus;
+    // (agent => their status)
+    mapping(address => AgentStatus) private agentMap;
 
     // A list of all agent accounts. First entry is address(0) to make agent indexes start from 1.
     address[] private agents;
@@ -61,7 +61,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         bytes32[] memory _proof
     ) external onlyOwner {
         // Check current status of the added agent
-        AgentStatus memory status = agentStatus[_agent];
+        AgentStatus memory status = _agentStatus(_agent);
         // Agent index in `agents`
         uint32 index;
         // Leaf representing currently saved agent information in the tree
@@ -97,7 +97,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         bytes32[] memory _proof
     ) external onlyOwner {
         // Check current status of the unstaking agent
-        AgentStatus memory status = agentStatus[_agent];
+        AgentStatus memory status = _agentStatus(_agent);
         // Could only initiate the unstaking for the active agent for the domain
         require(
             status.flag == AgentFlag.Active && status.domain == _domain,
@@ -124,7 +124,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         bytes32[] memory _proof
     ) external onlyOwner {
         // Check current status of the unstaking agent
-        AgentStatus memory status = agentStatus[_agent];
+        AgentStatus memory status = _agentStatus(_agent);
         // Could only complete the unstaking, if it was previously initiated
         // TODO: add more checks (time-based, possibly collecting info from other chains)
         require(
@@ -158,7 +158,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         // Check that slashing was initiated by one of the System Registries
         require(slashStatus[_agent].isSlashed, "Slashing not initiated");
         // Check that agent is Active/Unstaking and that the domains match
-        AgentStatus memory status = agentStatus[_agent];
+        AgentStatus memory status = _agentStatus(_agent);
         require(
             (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) &&
                 status.domain == _domain,
@@ -182,27 +182,28 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
     function registrySlash(
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     ) external {
         // Check that Agent hasn't been already slashed and initiate the slashing
-        _registrySlash(_domain, _agent, _reporter);
+        _initiateSlashing(_domain, _agent, _prover);
         // On SynChain both Origin and Destination (Summit) could slash agents
         if (msg.sender == address(origin)) {
-            destination.managerSlash(_domain, _agent);
+            _notifySlashing(DESTINATION, _domain, _agent, _prover);
         } else if (msg.sender == address(destination)) {
-            origin.managerSlash(_domain, _agent);
+            _notifySlashing(ORIGIN, _domain, _agent, _prover);
         } else {
             revert("Unauthorized caller");
         }
     }
 
+    /// @inheritdoc IBondingManager
     function remoteRegistrySlash(
         uint256 _rootSubmittedAt,
         uint32 _callOrigin,
         SystemEntity _systemCaller,
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     )
         external
         onlySystemRouter
@@ -212,10 +213,9 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         // TODO: do we need to save this?
         _callOrigin;
         // Check that Agent hasn't been already slashed and initiate the slashing
-        _registrySlash(_domain, _agent, _reporter);
+        _initiateSlashing(_domain, _agent, _prover);
         // Notify local registries about the slashing
-        destination.managerSlash(_domain, _agent);
-        origin.managerSlash(_domain, _agent);
+        _notifySlashing(DESTINATION | ORIGIN, _domain, _agent, _prover);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -240,7 +240,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
     /// @inheritdoc IBondingManager
     function getProof(address _agent) external view returns (bytes32[] memory proof) {
         bytes32[] memory leafs = allLeafs();
-        AgentStatus memory status = agentStatus[_agent];
+        AgentStatus memory status = _agentStatus(_agent);
         // Use next available index for unknown agents
         uint256 index = status.flag == AgentFlag.Unknown ? agents.length : status.index;
         return MerkleList.calculateProof(leafs, index);
@@ -272,25 +272,6 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Checks and initiates the slashing of an agent.
-    /// Should be called, after one of registries confirmed fraud committed by the agent.
-    function _registrySlash(
-        uint32 _domain,
-        address _agent,
-        address _reporter
-    ) internal {
-        // Check that Agent hasn't been already slashed
-        require(!slashStatus[_agent].isSlashed, "Already slashed");
-        // Check that agent is Active/Unstaking and that the domains match
-        AgentStatus memory status = agentStatus[_agent];
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) &&
-                status.domain == _domain,
-            "Slashing could not be initiated"
-        );
-        slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _reporter });
-    }
-
     /// @dev Updates value in the Agent Merkle Tree to reflect the `_newStatus`.
     /// Will revert, if supplied proof for the old value is incorrect.
     function _updateLeaf(
@@ -303,18 +284,18 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         bytes32 newValue = _agentLeaf(_newStatus.flag, _newStatus.domain, _agent);
         // This will revert if the proof for the old value is incorrect
         bytes32 newRoot = agentTree.update(_newStatus.index, _oldValue, _proof, newValue);
-        agentStatus[_agent] = _newStatus;
+        agentMap[_agent] = _newStatus;
         emit StatusUpdated(_newStatus.flag, _newStatus.domain, _agent, newRoot);
     }
 
     /// @dev Returns the status of the agent.
     function _agentStatus(address _agent) internal view override returns (AgentStatus memory) {
-        return agentStatus[_agent];
+        return agentMap[_agent];
     }
 
     /// @dev Returns the current leaf representing agent in the Agent Merkle Tree.
     function _getLeaf(address _agent) internal view returns (bytes32 leaf) {
-        AgentStatus memory status = agentStatus[_agent];
+        AgentStatus memory status = _agentStatus(_agent);
         if (status.flag != AgentFlag.Unknown) {
             return _agentLeaf(status.flag, status.domain, _agent);
         }

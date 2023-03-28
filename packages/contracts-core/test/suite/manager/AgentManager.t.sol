@@ -16,27 +16,6 @@ abstract contract AgentManagerTest is SynapseTest {
     /// @notice Prevents this contract from being included in the coverage report
     function testAgentManagerTest() external {}
 
-    function checkActive(
-        IAgentManager manager,
-        uint32 domain,
-        address agent
-    ) public {
-        assertTrue(manager.isActiveAgent(domain, agent), "!isActive(domain, agent)");
-        (bool isActive, uint32 _domain) = manager.isActiveAgent(agent);
-        assertTrue(isActive, "!isActive(agent)");
-        assertEq(_domain, domain, "!isActive(agent): domain");
-    }
-
-    function checkInactive(
-        IAgentManager manager,
-        uint32 domain,
-        address agent
-    ) public {
-        assertFalse(manager.isActiveAgent(domain, agent), "!isActive(domain, agent)");
-        (bool isActive, ) = manager.isActiveAgent(agent);
-        assertFalse(isActive, "!isActive(agent)");
-    }
-
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           INTERNAL HELPERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -70,9 +49,9 @@ abstract contract AgentManagerTest is SynapseTest {
     function _remoteSlashData(
         uint32 domain,
         address agent,
-        address reporter
+        address prover
     ) internal view returns (bytes memory) {
-        // (_rootSubmittedAt, _callOrigin, _systemCaller, _domain, _agent, _reporter)
+        // (_rootSubmittedAt, _callOrigin, _systemCaller, _domain, _agent, _prover)
         return
             abi.encodeWithSelector(
                 bondingManager.remoteRegistrySlash.selector,
@@ -81,7 +60,7 @@ abstract contract AgentManagerTest is SynapseTest {
                 0,
                 domain,
                 agent,
-                reporter
+                prover
             );
     }
 }

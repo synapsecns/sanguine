@@ -68,15 +68,14 @@ contract BondingManagerTest is AgentManagerTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_addAgent_new(uint32 domain, address agent) public {
-        (bool isActive, ) = bondingManager.isActiveAgent(agent);
         // Should not be an already added agent
-        vm.assume(!isActive);
+        vm.assume(bondingManager.agentStatus(agent).flag == AgentFlag.Unknown);
         bytes32[] memory proof = getZeroProof();
         bytes32 newRoot = addNewAgent(domain, agent);
         vm.expectEmit(true, true, true, true);
         emit StatusUpdated(AgentFlag.Active, domain, agent, newRoot);
         bondingManager.addAgent(domain, agent, proof);
-        checkActive(bondingManager, domain, agent);
+        checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Active);
         assertEq(bondingManager.agentRoot(), newRoot, "!agentRoot");
     }
 
@@ -87,20 +86,17 @@ contract BondingManagerTest is AgentManagerTest {
         updateStatus(AgentFlag.Unstaking, domain, agent);
         updateStatus(AgentFlag.Resting, domain, agent);
         updateStatus(AgentFlag.Active, domain, agent);
-        checkActive(bondingManager, domain, agent);
     }
 
     function test_initiateUnstaking(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
-        checkInactive(bondingManager, domain, agent);
     }
 
     function test_completeUnstaking(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
         updateStatus(AgentFlag.Resting, domain, agent);
-        checkInactive(bondingManager, domain, agent);
     }
 
     function updateStatus(
@@ -124,9 +120,7 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(caller);
         updateStatusWithProof(flag, domain, agent, proof);
         assertEq(bondingManager.agentRoot(), newRoot, "!agentRoot");
-        (AgentFlag _flag, uint32 _domain, ) = bondingManager.agentStatus(agent);
-        assertEq(uint8(_flag), uint8(flag), "!flag");
-        assertEq(_domain, domain, "!domain");
+        checkAgentStatus(agent, bondingManager.agentStatus(agent), flag);
     }
 
     function updateStatusWithProof(
@@ -204,7 +198,7 @@ contract BondingManagerTest is AgentManagerTest {
     function test_registrySlash_origin(
         uint256 domainId,
         uint256 agentId,
-        address reporter
+        address prover
     ) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         vm.expectCall(
@@ -212,17 +206,17 @@ contract BondingManagerTest is AgentManagerTest {
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
         vm.prank(originSynapse);
-        bondingManager.registrySlash(domain, agent, reporter);
-        checkInactive(bondingManager, domain, agent);
-        (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
+        bondingManager.registrySlash(domain, agent, prover);
+        assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
+        (bool isSlashed, address _prover) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, reporter);
+        assertEq(_prover, prover);
     }
 
     function test_registrySlash_summit(
         uint256 domainId,
         uint256 agentId,
-        address reporter
+        address prover
     ) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         vm.expectCall(
@@ -230,11 +224,11 @@ contract BondingManagerTest is AgentManagerTest {
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
         vm.prank(summit);
-        bondingManager.registrySlash(domain, agent, reporter);
-        checkInactive(bondingManager, domain, agent);
-        (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
+        bondingManager.registrySlash(domain, agent, prover);
+        assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
+        (bool isSlashed, address _prover) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, reporter);
+        assertEq(_prover, prover);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {
@@ -249,7 +243,7 @@ contract BondingManagerTest is AgentManagerTest {
         uint32 callOrigin,
         uint256 domainId,
         uint256 agentId,
-        address reporter
+        address prover
     ) public {
         // Needs to be a REMOTE call
         vm.assume(callOrigin != DOMAIN_SYNAPSE);
@@ -266,12 +260,12 @@ contract BondingManagerTest is AgentManagerTest {
             systemRouterSynapse,
             callOrigin,
             SystemEntity.AgentManager,
-            _remoteSlashData(domain, agent, reporter)
+            _remoteSlashData(domain, agent, prover)
         );
-        checkInactive(bondingManager, domain, agent);
-        (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
+        assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
+        (bool isSlashed, address _prover) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, reporter);
+        assertEq(_prover, prover);
     }
 
     function test_completeSlashing_active(
@@ -288,7 +282,7 @@ contract BondingManagerTest is AgentManagerTest {
             address(1)
         );
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
-        checkInactive(bondingManager, domain, agent);
+        checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
     }
 
     function test_completeSlashing_unstaking(
@@ -306,7 +300,7 @@ contract BondingManagerTest is AgentManagerTest {
             address(1)
         );
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
-        checkInactive(bondingManager, domain, agent);
+        checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -319,9 +313,8 @@ contract BondingManagerTest is AgentManagerTest {
     }
 
     function test_agentLeaf_unknownAgent(address agent) public {
-        (bool isActive, ) = bondingManager.isActiveAgent(agent);
         // Should not be an already added agent
-        vm.assume(!isActive);
+        vm.assume(bondingManager.agentStatus(agent).flag == AgentFlag.Unknown);
         assertEq(bondingManager.agentLeaf(agent), bytes32(0));
     }
 
@@ -333,9 +326,8 @@ contract BondingManagerTest is AgentManagerTest {
     }
 
     function test_getProof_unknownAgent(address agent) public {
-        (bool isActive, ) = bondingManager.isActiveAgent(agent);
         // Should not be an already added agent
-        vm.assume(!isActive);
+        vm.assume(bondingManager.agentStatus(agent).flag == AgentFlag.Unknown);
         bytes32[] memory proof = bondingManager.getProof(agent);
         // Use the next index
         uint256 index = totalAgents + 1;

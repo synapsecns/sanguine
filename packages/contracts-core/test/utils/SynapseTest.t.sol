@@ -196,6 +196,16 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
         lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
     }
 
+    function checkAgentStatus(
+        address agent,
+        AgentStatus memory status,
+        AgentFlag flag
+    ) public {
+        assertEq(uint8(status.flag), uint8(flag), "!flag");
+        assertEq(status.domain, agentDomain[agent], "!domain");
+        assertEq(status.index, agentIndex[agent], "!index");
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               VM UTILS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/

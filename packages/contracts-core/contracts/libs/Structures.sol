@@ -15,13 +15,18 @@ enum SystemEntity {
 /// - Active: has a bond in BondingManager => signature valid
 /// - Unstaking: has a bond in BondingManager, initiated the unstaking => signature not valid
 /// - Resting: used to have a bond in BondingManager, successfully unstaked => signature not valid
-/// - Slashed: was proven to commit fraud => signature will never be valid
+/// - Fraudulent: proven to commit fraud, value in Merkle Tree not updated => signature not valid
+/// - Slashed: proven to commit fraud, value in Merkle Tree was updated => signature not valid
 /// Unstaked agent could later be added back to THE SAME domain by staking a bond again.
+/// Honest agent: Unknown -> Active -> unstaking -> Resting -> Active ...
+/// Malicious agent: Unknown -> Active -> Fraudulent -> Slashed
+/// Malicious agent: Unknown -> Active -> Unstaking -> Fraudulent -> Slashed
 enum AgentFlag {
     Unknown,
     Active,
     Unstaking,
     Resting,
+    Fraudulent,
     Slashed
 }
 
@@ -36,6 +41,6 @@ struct AgentStatus {
 /// @notice Struct representing information about a slashed agent.
 struct SlashStatus {
     bool isSlashed;
-    address slashedBy;
+    address prover;
     // 88 bits available for tight packing
 }

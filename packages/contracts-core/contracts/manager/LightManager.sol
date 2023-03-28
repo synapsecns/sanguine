@@ -22,7 +22,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     bytes32 private latestAgentRoot;
 
     // (agentRoot => (agent => status))
-    mapping(bytes32 => mapping(address => AgentStatus)) public agentStatus;
+    mapping(bytes32 => mapping(address => AgentStatus)) private agentMap;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
@@ -59,7 +59,12 @@ contract LightManager is Versioned, AgentManager, ILightManager {
             "Invalid proof"
         );
         // Update the agent status against this root
-        agentStatus[root][_agent] = _status;
+        agentMap[root][_agent] = _status;
+        // Notify local Registries, if agent flag is Slashed
+        if (_status.flag == AgentFlag.Slashed) {
+            // Prover is msg.sender
+            _notifySlashing(DESTINATION | ORIGIN, _status.domain, _agent, msg.sender);
+        }
     }
 
     /// @inheritdoc ILightManager
@@ -78,26 +83,18 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     function registrySlash(
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     ) external {
-        // Check that Agent hasn't been already slashed
-        require(!slashStatus[_agent].isSlashed, "Already slashed");
-        // Check that agent is Active/Unstaking and that the domains match
-        AgentStatus memory status = _agentStatus(_agent);
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) &&
-                status.domain == _domain,
-            "Slashing could not be initiated"
-        );
-        slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _reporter });
+        // Check that Agent hasn't been already slashed and initiate the slashing
+        _initiateSlashing(_domain, _agent, _prover);
         // On chains other than Synapse Chain only Origin could slash Agents
         if (msg.sender == address(origin)) {
-            destination.managerSlash(_domain, _agent);
+            _notifySlashing(DESTINATION, _domain, _agent, _prover);
             // Issue a system call to BondingManager on SynChain
             _callAgentManager({
                 _domain: SYNAPSE_DOMAIN,
                 _optimisticSeconds: BONDING_OPTIMISTIC_PERIOD,
-                _data: _remoteSlashData(_domain, _agent, _reporter)
+                _data: _remoteSlashData(_domain, _agent, _prover)
             });
         } else {
             revert("Unauthorized caller");
@@ -120,16 +117,16 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     /// @dev Returns the status for the agent: whether or not they have been added
     /// using latest Agent merkle Root.
     function _agentStatus(address _agent) internal view override returns (AgentStatus memory) {
-        return agentStatus[latestAgentRoot][_agent];
+        return agentMap[latestAgentRoot][_agent];
     }
 
     /// @dev Returns data for a system call: remoteRegistrySlash()
     function _remoteSlashData(
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     ) internal pure returns (bytes memory) {
-        // (_rootSubmittedAt, _callOrigin, _systemCaller, _domain, _agent, _reporter)
+        // (_rootSubmittedAt, _callOrigin, _systemCaller, _domain, _agent, _prover)
         return
             abi.encodeWithSelector(
                 IBondingManager.remoteRegistrySlash.selector,
@@ -138,7 +135,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
                 0,
                 _domain,
                 _agent,
-                _reporter
+                _prover
             );
     }
 }

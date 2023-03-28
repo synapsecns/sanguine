@@ -75,7 +75,7 @@ interface IBondingManager {
      * for the OLD agent status.
      * @param _domain   Domain where the slashed agent was active
      * @param _agent    Address of the slashed Agent
-     * @param _reporter Address that initially provided fraud proof in SystemRegistry
+     * @param _prover   Address that initially provided fraud proof in SystemRegistry
      */
     function remoteRegistrySlash(
         uint256 _rootSubmittedAt,
@@ -83,26 +83,10 @@ interface IBondingManager {
         SystemEntity _systemCaller,
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     ) external;
 
     // ═════════════════════════════════ VIEWS ═════════════════════════════════
-
-    /**
-     * @notice Returns current status for a given agent.
-     * @param _agent    Agent address
-     * @return flag     Flag signalling the agent status (see Structures.sol)
-     * @return domain   Domain where the Agent is active (0 for Guards)
-     * @return index    Index of agent in the Agent Merkle Tree
-     */
-    function agentStatus(address _agent)
-        external
-        view
-        returns (
-            AgentFlag flag,
-            uint32 domain,
-            uint32 index
-        );
 
     /**
      * @notice Returns a leaf representing the current status of agent in the Agent Merkle Tree.
