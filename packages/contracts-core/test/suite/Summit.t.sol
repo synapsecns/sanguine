@@ -109,7 +109,8 @@ contract SummitTest is SynapseTest {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestation(attPayload, attSig);
-            expectAgentSlashed(domain, notary);
+            // TODO: check that anyone could make the call
+            expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -143,7 +144,8 @@ contract SummitTest is SynapseTest {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestationReport(arPayload, arSig);
-            expectAgentSlashed(0, guard);
+            // TODO: check that anyone could make the call
+            expectAgentSlashed(0, guard, address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -156,9 +158,13 @@ contract SummitTest is SynapseTest {
         }
     }
 
-    function expectAgentSlashed(uint32 domain, address agent) public {
+    function expectAgentSlashed(
+        uint32 domain,
+        address agent,
+        address prover
+    ) public {
         vm.expectEmit(true, true, true, true);
-        emit AgentSlashed(domain, agent);
+        emit AgentSlashed(domain, agent, prover);
         vm.expectCall(
             address(bondingManager),
             abi.encodeWithSelector(bondingManager.registrySlash.selector, domain, agent)

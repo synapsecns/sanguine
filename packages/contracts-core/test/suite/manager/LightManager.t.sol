@@ -132,10 +132,10 @@ contract LightManagerTest is AgentManagerTest {
     function test_registrySlash_origin(
         uint32 domain,
         address agent,
-        address reporter
+        address prover
     ) public {
         test_addAgent_new(address(this), domain, agent);
-        bytes memory data = _remoteSlashData(domain, agent, reporter);
+        bytes memory data = _remoteSlashData(domain, agent, prover);
         vm.expectCall(
             destination,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
@@ -152,11 +152,11 @@ contract LightManagerTest is AgentManagerTest {
             )
         );
         vm.prank(origin);
-        lightManager.registrySlash(domain, agent, reporter);
+        lightManager.registrySlash(domain, agent, prover);
         assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address slashedBy) = lightManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, reporter);
+        assertEq(slashedBy, prover);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {

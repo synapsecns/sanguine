@@ -198,7 +198,7 @@ contract BondingManagerTest is AgentManagerTest {
     function test_registrySlash_origin(
         uint256 domainId,
         uint256 agentId,
-        address reporter
+        address prover
     ) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         vm.expectCall(
@@ -206,17 +206,17 @@ contract BondingManagerTest is AgentManagerTest {
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
         vm.prank(originSynapse);
-        bondingManager.registrySlash(domain, agent, reporter);
+        bondingManager.registrySlash(domain, agent, prover);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, reporter);
+        assertEq(slashedBy, prover);
     }
 
     function test_registrySlash_summit(
         uint256 domainId,
         uint256 agentId,
-        address reporter
+        address prover
     ) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         vm.expectCall(
@@ -224,11 +224,11 @@ contract BondingManagerTest is AgentManagerTest {
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
         vm.prank(summit);
-        bondingManager.registrySlash(domain, agent, reporter);
+        bondingManager.registrySlash(domain, agent, prover);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, reporter);
+        assertEq(slashedBy, prover);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {
@@ -243,7 +243,7 @@ contract BondingManagerTest is AgentManagerTest {
         uint32 callOrigin,
         uint256 domainId,
         uint256 agentId,
-        address reporter
+        address prover
     ) public {
         // Needs to be a REMOTE call
         vm.assume(callOrigin != DOMAIN_SYNAPSE);
@@ -260,12 +260,12 @@ contract BondingManagerTest is AgentManagerTest {
             systemRouterSynapse,
             callOrigin,
             SystemEntity.AgentManager,
-            _remoteSlashData(domain, agent, reporter)
+            _remoteSlashData(domain, agent, prover)
         );
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address slashedBy) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(slashedBy, reporter);
+        assertEq(slashedBy, prover);
     }
 
     function test_completeSlashing_active(
