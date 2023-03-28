@@ -60,6 +60,11 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         );
         // Update the agent status against this root
         agentMap[root][_agent] = _status;
+        // Notify local Registries, if agent flag is Slashed
+        if (_status.flag == AgentFlag.Slashed) {
+            destination.managerSlash(_status.domain, _agent);
+            origin.managerSlash(_status.domain, _agent);
+        }
     }
 
     /// @inheritdoc ILightManager

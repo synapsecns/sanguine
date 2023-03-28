@@ -80,6 +80,29 @@ contract LightManagerTest is AgentManagerTest {
         checkAgentStatus(agent, lightManager.agentStatus(agent), AgentFlag.Active);
     }
 
+    function test_updateAgentStatus_slashed(
+        address caller,
+        uint256 domainId,
+        uint256 agentId
+    ) public {
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        // Set flag to Slashed in the Merkle Tree
+        bytes32 root = updateAgent(AgentFlag.Slashed, agent);
+        test_setAgentRoot(root);
+        bytes32[] memory proof = getAgentProof(agent);
+        bytes memory expectedCall = abi.encodeWithSelector(
+            ISystemRegistry.managerSlash.selector,
+            domain,
+            agent
+        );
+        vm.expectCall(destination, expectedCall);
+        vm.expectCall(origin, expectedCall);
+        // Anyone could add agents in Light Manager
+        vm.prank(caller);
+        lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
+        checkAgentStatus(agent, lightManager.agentStatus(agent), AgentFlag.Slashed);
+    }
+
     function test_setAgentRoot(bytes32 root) public {
         lightManager.setAgentRoot(root);
         assertEq(lightManager.agentRoot(), root, "!agentRoot");
