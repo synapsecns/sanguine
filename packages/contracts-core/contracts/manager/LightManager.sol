@@ -62,7 +62,8 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         agentMap[root][_agent] = _status;
         // Notify local Registries, if agent flag is Slashed
         if (_status.flag == AgentFlag.Slashed) {
-            _notifySlashing(DESTINATION | ORIGIN, _status.domain, _agent);
+            // Prover is msg.sender
+            _notifySlashing(DESTINATION | ORIGIN, _status.domain, _agent, msg.sender);
         }
     }
 
@@ -82,18 +83,18 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     function registrySlash(
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     ) external {
         // Check that Agent hasn't been already slashed and initiate the slashing
-        _initiateSlashing(_domain, _agent, _reporter);
+        _initiateSlashing(_domain, _agent, _prover);
         // On chains other than Synapse Chain only Origin could slash Agents
         if (msg.sender == address(origin)) {
-            _notifySlashing(DESTINATION, _domain, _agent);
+            _notifySlashing(DESTINATION, _domain, _agent, _prover);
             // Issue a system call to BondingManager on SynChain
             _callAgentManager({
                 _domain: SYNAPSE_DOMAIN,
                 _optimisticSeconds: BONDING_OPTIMISTIC_PERIOD,
-                _data: _remoteSlashData(_domain, _agent, _reporter)
+                _data: _remoteSlashData(_domain, _agent, _prover)
             });
         } else {
             revert("Unauthorized caller");
@@ -123,9 +124,9 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     function _remoteSlashData(
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     ) internal pure returns (bytes memory) {
-        // (_rootSubmittedAt, _callOrigin, _systemCaller, _domain, _agent, _reporter)
+        // (_rootSubmittedAt, _callOrigin, _systemCaller, _domain, _agent, _prover)
         return
             abi.encodeWithSelector(
                 IBondingManager.remoteRegistrySlash.selector,
@@ -134,7 +135,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
                 0,
                 _domain,
                 _agent,
-                _reporter
+                _prover
             );
     }
 }

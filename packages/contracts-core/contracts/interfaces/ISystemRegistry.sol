@@ -9,8 +9,13 @@ interface ISystemRegistry {
      * has been slashed, either on local or remote chain.
      * @param _domain   Domain where the slashed agent was active
      * @param _agent    Address of the slashed Agent
+     * @param _prover   Account that supplied proof leading to agent slashing
      */
-    function managerSlash(uint32 _domain, address _agent) external;
+    function managerSlash(
+        uint32 _domain,
+        address _agent,
+        address _prover
+    ) external;
 
     /**
      * @notice Returns (flag, domain, index) for a given agent. See Structures.sol for details.

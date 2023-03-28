@@ -75,7 +75,7 @@ interface IBondingManager {
      * for the OLD agent status.
      * @param _domain   Domain where the slashed agent was active
      * @param _agent    Address of the slashed Agent
-     * @param _reporter Address that initially provided fraud proof in SystemRegistry
+     * @param _prover   Address that initially provided fraud proof in SystemRegistry
      */
     function remoteRegistrySlash(
         uint256 _rootSubmittedAt,
@@ -83,7 +83,7 @@ interface IBondingManager {
         SystemEntity _systemCaller,
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     ) external;
 
     // ═════════════════════════════════ VIEWS ═════════════════════════════════

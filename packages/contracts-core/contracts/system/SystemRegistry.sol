@@ -41,8 +41,12 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc ISystemRegistry
-    function managerSlash(uint32 _domain, address _agent) external onlyAgentManager {
-        _processSlashed(_domain, _agent);
+    function managerSlash(
+        uint32 _domain,
+        address _agent,
+        address _prover
+    ) external onlyAgentManager {
+        _processSlashed(_domain, _agent, _prover);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -60,13 +64,18 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
 
     /// @dev Child contract could define custom logic for processing the slashed Agent.
     /// This will be called when the slashing was initiated in this contract or elsewhere.
-    function _processSlashed(uint32 _domain, address _agent) internal virtual {}
+    function _processSlashed(
+        uint32 _domain,
+        address _agent,
+        address _prover
+    ) internal virtual {}
 
     /// @dev This function should be called when the agent is proven to commit fraud in this contract.
     function _slashAgent(uint32 _domain, address _agent) internal {
-        _processSlashed(_domain, _agent);
+        // Prover is msg.sender
+        _processSlashed(_domain, _agent, msg.sender);
         agentManager.registrySlash(_domain, _agent, msg.sender);
-        emit AgentSlashed(_domain, _agent);
+        emit AgentSlashed(_domain, _agent, msg.sender);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

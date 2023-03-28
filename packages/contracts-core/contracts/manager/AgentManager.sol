@@ -60,7 +60,7 @@ abstract contract AgentManager is SystemContract, IAgentManager {
     function _initiateSlashing(
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     ) internal {
         // Check that Agent hasn't been already slashed
         require(!slashStatus[_agent].isSlashed, "Already slashed");
@@ -71,7 +71,7 @@ abstract contract AgentManager is SystemContract, IAgentManager {
                 status.domain == _domain,
             "Slashing could not be initiated"
         );
-        slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _reporter });
+        slashStatus[_agent] = SlashStatus({ isSlashed: true, slashedBy: _prover });
     }
 
     /// @dev Notifies a given set of local registries about the slashed agent.
@@ -79,12 +79,13 @@ abstract contract AgentManager is SystemContract, IAgentManager {
     function _notifySlashing(
         uint256 _registryMask,
         uint32 _domain,
-        address _agent
+        address _agent,
+        address _prover
     ) internal {
         // Notify Destination, if requested
-        if (_registryMask & DESTINATION != 0) destination.managerSlash(_domain, _agent);
+        if (_registryMask & DESTINATION != 0) destination.managerSlash(_domain, _agent, _prover);
         // Notify Origin, if requested
-        if (_registryMask & ORIGIN != 0) origin.managerSlash(_domain, _agent);
+        if (_registryMask & ORIGIN != 0) origin.managerSlash(_domain, _agent, _prover);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

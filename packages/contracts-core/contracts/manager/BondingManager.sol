@@ -182,27 +182,28 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
     function registrySlash(
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     ) external {
         // Check that Agent hasn't been already slashed and initiate the slashing
-        _initiateSlashing(_domain, _agent, _reporter);
+        _initiateSlashing(_domain, _agent, _prover);
         // On SynChain both Origin and Destination (Summit) could slash agents
         if (msg.sender == address(origin)) {
-            _notifySlashing(DESTINATION, _domain, _agent);
+            _notifySlashing(DESTINATION, _domain, _agent, _prover);
         } else if (msg.sender == address(destination)) {
-            _notifySlashing(ORIGIN, _domain, _agent);
+            _notifySlashing(ORIGIN, _domain, _agent, _prover);
         } else {
             revert("Unauthorized caller");
         }
     }
 
+    /// @inheritdoc IBondingManager
     function remoteRegistrySlash(
         uint256 _rootSubmittedAt,
         uint32 _callOrigin,
         SystemEntity _systemCaller,
         uint32 _domain,
         address _agent,
-        address _reporter
+        address _prover
     )
         external
         onlySystemRouter
@@ -212,9 +213,9 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         // TODO: do we need to save this?
         _callOrigin;
         // Check that Agent hasn't been already slashed and initiate the slashing
-        _initiateSlashing(_domain, _agent, _reporter);
+        _initiateSlashing(_domain, _agent, _prover);
         // Notify local registries about the slashing
-        _notifySlashing(DESTINATION | ORIGIN, _domain, _agent);
+        _notifySlashing(DESTINATION | ORIGIN, _domain, _agent, _prover);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
