@@ -37,7 +37,7 @@ import {PageFooter} from './PageFooter'
 export function PageWrapper({ children }) {
   return (
     <div
-      className="min-h-screen bg-no-repeat bg-synapse"
+      className="min-h-screen bg-no-repeat bg-synapse tabular-nums"
       // style={{
       //   background:
       //     'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',

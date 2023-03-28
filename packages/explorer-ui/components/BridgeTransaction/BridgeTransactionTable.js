@@ -1,85 +1,107 @@
 import _ from 'lodash'
 
 import { Table } from '@components/TransactionTable/Table'
-import {StyleAddress} from "@components/misc/StyleAddress";
-import {IconAndAmount} from "@components/misc/IconAndAmount";
-import {ChainInfo} from "@components/misc/ChainInfo";
-import {timeAgo} from "@utils/timeAgo";
-import {getBridgeTransactionUrl} from "@urls";
-import {ellipsizeString} from "@utils/ellipsizeString";
+import { StyleAddress } from "@components/misc/StyleAddress";
+import { IconAndAmount } from "@components/misc/IconAndAmount";
+import { ChainInfo } from "@components/misc/ChainInfo";
+import { timeAgo } from "@utils/timeAgo";
+import { getBridgeTransactionUrl } from "@urls";
+import { ellipsizeString } from "@utils/ellipsizeString";
 
-export function BridgeTransactionTable({queryResult}) {
-    let headers = [
-      'From',
-      'To',
-      'Initial',
-      'Final',
-      'Origin',
-      'Destination',
-      'Date',
-      'Tx ID'
-    ]
+export function BridgeTransactionTable({ queryResult }) {
+  const handlePending = (date) => {
+    let now = new Date().getTime()
+    let timeDiff = now - date *1000
+    if (timeDiff > 86400000) {
+      return <p>Indexing</p>
+    } else {
+      return <p>Pending</p>
+    }
+
+  }
+  let headers = [
+    'Initial',
+    'Final',
+    'Origin',
+    'Destination',
+    'From',
+    'To',
+    'Time',
+    'TXID'
+  ]
+
 
   let tableRows = []
-
-  queryResult.map((txn) => {
+  queryResult?.map((txn) => {
     const { kappa, pending, fromInfo, toInfo } = txn
 
       let items = [
-        <StyleAddress sourceInfo={fromInfo} />,
-        <StyleAddress sourceInfo={toInfo} />,
+
         <IconAndAmount
           formattedValue={fromInfo.formattedValue}
           tokenAddress={fromInfo.tokenAddress}
-          chainId={fromInfo.chainId}
+          chainId={fromInfo.chainID}
           tokenSymbol={fromInfo.tokenSymbol}
-          iconSize="w-6 h-6"
+          iconSize="w-4 h-4"
           textSize="text-sm"
           styledCoin={true}
         />,
+        pending ? handlePending(fromInfo.time) :
         <IconAndAmount
           formattedValue={toInfo.formattedValue}
           tokenAddress={toInfo.tokenAddress}
-          chainId={toInfo.chainId}
+          chainId={toInfo.chainID}
           tokenSymbol={toInfo.tokenSymbol}
-          iconSize="w-6 h-6"
+          iconSize="w-4 h-4"
           textSize="text-sm"
           styledCoin={true}
         />,
         <ChainInfo
-          chainId={fromInfo.chainId}
-          imgClassName="w-6 h-6"
-          textClassName="text-white"
+          chainId={fromInfo.chainID}
+          imgClassName="w-6 h-6 rounded-full"
           txHash={fromInfo.hash}
+          useExplorerLink={false}
+
         />,
+        pending ?  <ChainInfo
+        chainId={fromInfo.destinationChainID}
+        imgClassName="w-6 h-6 rounded-full"
+        txHash={""}
+        useExplorerLink={false}
+
+      /> :
         <ChainInfo
-          chainId={toInfo.chainId}
-          imgClassName="w-6 h-6"
-          textClassName="text-white"
+          chainId={toInfo.chainID}
+          imgClassName="w-6 h-6 rounded-full"
           txHash={toInfo.hash}
+          useExplorerLink={false}
+
         />,
+        <StyleAddress sourceInfo={fromInfo} />,
+        pending ? handlePending(fromInfo.time) :
+        <StyleAddress sourceInfo={toInfo} />,
         fromInfo.time
-            ? timeAgo({ timestamp: fromInfo.time })
-            : timeAgo({ timestamp: toInfo.time }),
+          ? timeAgo({ timestamp: fromInfo.time })
+          : timeAgo({ timestamp: toInfo?.time }),
         <a
-          className="underline"
+          className="underline transition ease-out hover:text-[#8FEBFF]"
           href={getBridgeTransactionUrl({
             hash: txn.kappa,
-            chainIdFrom: txn.fromInfo.chainId,
-            chainIdTo: txn.toInfo.chainId,
+            chainIdFrom: txn.fromInfo.chainID,
+            chainIdTo: txn.toInfo?.chainID,
           })}
         >
-          {ellipsizeString({ string: txn.kappa, limiter: 6 })}
+          {ellipsizeString({ string: txn.kappa, limiter: 4 })}
         </a>
       ]
 
-      let row = {
-        items,
-        key: kappa
-      }
-      tableRows.push(row);
-    })
+    let row = {
+      items,
+      key: kappa
+    }
+    tableRows.push(row);
+  })
   return (
-      <Table header={headers} body={tableRows} />
+    <Table header={headers} body={tableRows} />
   )
 }

@@ -3,12 +3,13 @@ package tokenpool
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
-	"time"
 )
 
 // Service provides data about tokens using either a cache or bridgeconfig
@@ -20,6 +21,10 @@ type Service interface {
 }
 
 const cacheSize = 3000
+
+// maxAttemptTime is how many times we will attempt to get the token data.
+const maxAttemptTime = time.Second * 120
+const maxAttempt = 60
 
 type tokenPoolDataServiceImpl struct {
 	consumerDB db.ConsumerDB
@@ -62,7 +67,7 @@ func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, ch
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not get token data with retry backoff: %w", err)
+		return nil, fmt.Errorf("could not get token data with retry backoff chainID %d, tokenIndex %d, contractAddress %s: %w", chainID, tokenIndex, contractAddress, err)
 	}
 
 	//nolint: wrapcheck
@@ -84,7 +89,3 @@ func (t *tokenPoolDataServiceImpl) storeTokenIndex(parentCtx context.Context, ch
 	}
 	return nil
 }
-
-// maxAttemptTime is how many times we will attempt to get the token data.
-var maxAttemptTime = time.Second * 10
-var maxAttempt = 10
