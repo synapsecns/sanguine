@@ -46,8 +46,9 @@ jobs:
 
       - name: 'Version and publish' # Interesting step
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # we're not authed with any repository yet so this shouldn't do anything
+          GH_TOKEN: ${{ secrets.LERNA_FGPAT }}
+        # branch is protected so this must be an admin token, this will expire on 03/01/2024
+        # replacement should be done by a service account with a fine-grained personal access token
         run: |
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor}}@users.noreply.github.com"

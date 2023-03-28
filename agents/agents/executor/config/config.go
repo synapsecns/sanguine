@@ -37,7 +37,7 @@ type Config struct {
 	// included if an embedded Scribe is being used. If a remote Scribe is being used,
 	// this can be left empty.
 	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
-	// DBPrefix is the prefix for the tables in the database.
+	// DBPrefix is the prefix for the tables in the database. This is only to be used with mysql.
 	DBPrefix string `yaml:"db_prefix"`
 }
 

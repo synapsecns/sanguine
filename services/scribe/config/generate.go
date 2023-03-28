@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/parser/hardhat"
 	"os"
 	"strconv"
 	"time"
@@ -12,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/synapsecns/sanguine/ethergo/parser"
 	"golang.org/x/exp/slices"
 )
 
@@ -55,7 +55,7 @@ func (c configList) ContractsForChain(chainID int) (configs []ContractConfig) {
 //
 //nolint:cyclop
 func GenerateConfig(ctx context.Context, omniRPCUrl, deployPath string, requiredConfirmations uint32, outputPath string, skippedChainIDS []int, cg ClientGenerator) error {
-	contracts, err := parser.GetDeployments(deployPath)
+	contracts, err := hardhat.GetDeployments(deployPath)
 	if err != nil {
 		return fmt.Errorf("could not get deployments: %w", err)
 	}
