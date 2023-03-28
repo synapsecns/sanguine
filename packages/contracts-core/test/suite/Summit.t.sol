@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
 import { ISnapshotHub } from "../../contracts/interfaces/ISnapshotHub.sol";
-import { SNAPSHOT_TREE_HEIGHT } from "../../contracts/libs/Constants.sol";
+import { SNAPSHOT_MAX_STATES, SNAPSHOT_TREE_HEIGHT } from "../../contracts/libs/Constants.sol";
 import { MerkleLib } from "../../contracts/libs/Merkle.sol";
 import { SystemEntity } from "../../contracts/libs/Structures.sol";
 
@@ -19,10 +19,11 @@ import {
     RawState
 } from "../utils/libs/SynapseStructs.t.sol";
 import { Random } from "../utils/libs/Random.t.sol";
+import { IDisputeHub, DisputeHubTest } from "./hubs/DisputeHub.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
-contract SummitTest is SynapseTest {
+contract SummitTest is DisputeHubTest {
     struct SignedSnapshot {
         bytes snapshot;
         bytes signature;
@@ -135,11 +136,7 @@ contract SummitTest is SynapseTest {
         // Pick random Guard
         uint256 guardIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
         address guard = domains[0].agents[guardIndex];
-        RawAttestationReport memory rawAR = RawAttestationReport(
-            uint8(AttestationFlag.Invalid),
-            ra
-        );
-        (bytes memory arPayload, bytes memory arSig) = signAttestationReport(guard, rawAR);
+        (bytes memory arPayload, bytes memory arSig) = createSignedAttestationReport(guard, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
@@ -304,5 +301,91 @@ contract SummitTest is SynapseTest {
         //         "!getLatestState"
         //     );
         // }
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                           DISPUTE OPENING                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_submitStateReport(
+        uint256 domainId,
+        RawState memory rs,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) public {
+        // Restrict to non-zero existing domains
+        domainId = bound(domainId, 1, allDomains.length - 1);
+        // Make sure statesAmount, stateIndex are valid entires
+        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
+        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+        check_submitStateReport(summit, allDomains[domainId], rs, statesAmount, stateIndex);
+    }
+
+    function test_submitStateReportWithProof(
+        uint256 domainId,
+        RawState memory rs,
+        RawAttestation memory ra,
+        uint256 statesAmount,
+        uint256 stateIndex
+    ) public {
+        // Restrict to non-zero existing domains
+        domainId = bound(domainId, 1, allDomains.length - 1);
+        // Make sure statesAmount, stateIndex are valid entires
+        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
+        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+        check_submitStateReportWithProof(
+            summit,
+            allDomains[domainId],
+            rs,
+            ra,
+            statesAmount,
+            stateIndex
+        );
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                          DISPUTE RESOLUTION                          ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    function test_managerSlash(
+        uint256 domainId,
+        uint256 agentId,
+        address prover
+    ) public {
+        // no counterpart in this test
+        (uint32 domain, address agent) = getAgent(domainId, agentId);
+        vm.expectEmit();
+        emit DisputeResolved(address(0), domain, agent);
+        vm.expectEmit();
+        emit AgentSlashed(domain, agent, prover);
+        vm.recordLogs();
+        vm.prank(address(bondingManager));
+        ISystemRegistry(summit).managerSlash(domain, agent, prover);
+        assertEq(vm.getRecordedLogs().length, 2);
+        checkDisputeResolved({ hub: summit, honest: address(0), slashed: agent });
+    }
+
+    function test_managerSlash_honestGuard(RawState memory rs) public {
+        (uint256 domainId, uint256 statesAmount, uint256 stateIndex) = (1, 1, 0);
+        uint32 domain = allDomains[domainId];
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitStateReport(domainId, rs, statesAmount, stateIndex);
+        (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[0]);
+        // Slash the Notary
+        vm.prank(address(bondingManager));
+        ISystemRegistry(summit).managerSlash(domain, notary, address(0));
+        checkDisputeResolved({ hub: summit, honest: guard, slashed: notary });
+    }
+
+    function test_managerSlash_honestNotary(RawState memory rs) public {
+        (uint256 domainId, uint256 statesAmount, uint256 stateIndex) = (1, 1, 0);
+        uint32 domain = allDomains[domainId];
+        // Put Notary 0 and Guard 0 in dispute
+        test_submitStateReport(domainId, rs, statesAmount, stateIndex);
+        (address guard, address notary) = (domains[0].agents[0], domains[domain].agents[0]);
+        // Slash the Guard
+        vm.prank(address(bondingManager));
+        ISystemRegistry(summit).managerSlash(0, guard, address(0));
+        checkDisputeResolved({ hub: summit, honest: notary, slashed: guard });
     }
 }
