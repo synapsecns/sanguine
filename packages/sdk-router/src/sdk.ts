@@ -20,7 +20,7 @@ type Query = [string, string, BigNumber, BigNumber, string] & {
   rawParams: string
 }
 
-class SynapseSDK {
+export class SynapseSDK {
   public synapseRouters: SynapseRouters
 
   constructor(chainIds: number[], providers: Provider[]) {
@@ -44,11 +44,8 @@ class SynapseSDK {
     tokenOut: string,
     amountIn: BigintIsh
   ): Promise<{
-    feeAmount?: BigNumber | undefined
-    bridgeFee?: number | undefined
-    maxAmountOut?: BigNumber | undefined
-    originQuery?: Query | undefined
-    destQuery?: Query | undefined
+    originQuery?: Query
+    destQuery?: Query
   }> {
     let originQuery
     let destQuery
@@ -74,6 +71,7 @@ class SynapseSDK {
     }
 
     // Step 1: perform a call to origin SynapseRouter
+
     const originQueries = await originRouter.routerContract.getOriginAmountOut(
       tokenIn,
       symbols,
@@ -82,6 +80,7 @@ class SynapseSDK {
 
     // Step 2: form a list of Destination Requests
     // In practice, there is no need to pass the requests with amountIn = 0, but we will do it for code simplicity
+
     const requests: { symbol: string; amountIn: BigintIsh }[] = []
 
     for (let i = 0; i < bridgeTokens.length; i++) {
@@ -107,20 +106,10 @@ class SynapseSDK {
       }
     }
 
-    // Get fee data
-    const feeAmount = await originRouter.routerContract.calculateBridgeFee(
-      tokenIn,
-      amountIn
-    )
+    // // Throw error if origin quote is zero
+    // if (originQuery.minAmountOut == 0) throw Error("No path found on origin")
 
-    const { bridgeFee } = await originRouter.routerContract.fee(tokenIn)
-    return {
-      feeAmount,
-      bridgeFee,
-      maxAmountOut,
-      originQuery,
-      destQuery,
-    }
+    return { originQuery, destQuery }
   }
 
   public async bridge(
@@ -145,6 +134,8 @@ class SynapseSDK {
     }
   ): Promise<PopulatedTransaction> {
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
+    console.log(originQuery)
+    console.log(destQuery)
     return originRouter.routerContract.populateTransaction.bridge(
       to,
       destChainId,
@@ -155,5 +146,3 @@ class SynapseSDK {
     )
   }
 }
-
-export { SynapseSDK }
