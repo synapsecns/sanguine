@@ -5,7 +5,6 @@
     "target": "esnext",
     "module": "esnext",
     "lib": ["dom", "esnext"],
-    "outDir": "./dist",
     "importHelpers": true,
     // output .d.ts declaration files for consumers
     "declaration": true,

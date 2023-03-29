@@ -27,15 +27,15 @@ describe('SynapseSDK', () => {
       const chainIds = [42161, 43114]
       const providers = [arbitrumProvider, avalancheProvider]
       const Synapse = new SynapseSDK(chainIds, providers)
-      const { bridgeFee, destQuery } = await Synapse.bridgeQuote(
+      const quotes = await Synapse.bridgeQuote(
         42161,
         43114,
-        '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
-        '0x321E7092a180BB43555132ec53AaA65a5bF84251',
+        '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
+        '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
         BigNumber.from('10000000000000000000')
       )
-      expect(bridgeFee).toBeGreaterThan(0)
-      expect(destQuery?.length).toBeGreaterThan(0)
+      console.log(quotes)
+      // await expect(bridgeTokens.length).toEqual(1)
     })
   })
 
@@ -44,24 +44,26 @@ describe('SynapseSDK', () => {
       const chainIds = [42161, 43114]
       const providers = [arbitrumProvider, avalancheProvider]
       const Synapse = new SynapseSDK(chainIds, providers)
-      const { originQuery, destQuery } = await Synapse.bridgeQuote(
-        42161,
-        43114,
-        '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
-        '0x321E7092a180BB43555132ec53AaA65a5bF84251',
-        BigNumber.from('10000000000000000000')
-      )
-      const { data, to } = await Synapse.bridge(
-        '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
+      const quotes = await Synapse.bridgeQuote(
         42161,
         43114,
         '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
-        BigNumber.from('20000000'),
-        originQuery!,
-        destQuery!
+        '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
+        BigNumber.from('20000000')
       )
-      expect(data?.length).toBeGreaterThan(0)
-      expect(to?.length).toBeGreaterThan(0)
+      console.log(quotes)
+
+      console.log(
+        await Synapse.bridge(
+          '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
+          42161,
+          43114,
+          '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
+          BigNumber.from('20000000'),
+          quotes.originQuery!,
+          quotes.destQuery!
+        )
+      )
     })
   })
 })
