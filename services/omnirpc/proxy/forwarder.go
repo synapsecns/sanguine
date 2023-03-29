@@ -3,6 +3,7 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"io"
@@ -43,7 +44,7 @@ type Forwarder struct {
 	// failedForwards is a map of failed forwards
 	failedForwards *xsync.MapOf[error]
 	// rpcRequest is the parsed rpc request
-	rpcRequest RPCRequests
+	rpcRequest rpc.Requests
 	// mux is used to track the release of the forwarder. This should only be used in async methods
 	// as RLock
 	mux sync.RWMutex
@@ -363,7 +364,7 @@ func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 		f.requiredConfirmations = f.chain.ConfirmationsThreshold()
 	}
 	var err error
-	f.rpcRequest, err = parseRPCPayload(f.body)
+	f.rpcRequest, err = rpc.ParseRPCPayload(f.body)
 	if err != nil {
 		f.c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
@@ -372,7 +373,7 @@ func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 	}
 
 	// If any request ina  batch is not confirmable, the entire batch is marks as non-confirmable
-	confirmable, err := f.rpcRequest.isConfirmable()
+	confirmable, err := areConfirmable(f.rpcRequest)
 	if err != nil {
 		f.c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,

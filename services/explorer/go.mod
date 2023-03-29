@@ -71,7 +71,7 @@ require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/aws/smithy-go v1.13.3 // indirect
 	github.com/badoux/checkmail v0.0.0-20181210160741-9661bd69e9ad // indirect
-	github.com/benbjohnson/immutable v0.4.0 // indirect
+	github.com/benbjohnson/immutable v0.4.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/briandowns/spinner v1.6.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.0 // indirect
