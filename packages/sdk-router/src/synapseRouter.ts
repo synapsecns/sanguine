@@ -39,7 +39,6 @@ export class SynapseRouter {
     bridgeTokens: string[],
     amountIn: BigintIsh
   ): Promise<any> {
-    console.log(amountIn)
     return this.routerContract.getOriginAmountOut(
       tokenIn,
       bridgeTokens,
@@ -78,9 +77,6 @@ export class SynapseRouter {
       rawParams: BytesLike
     }
   ): Promise<PopulatedTransaction> {
-    console.log(to)
-    console.log(token)
-    console.log(this.routerContract.address)
     return this.routerContract.populateTransaction.bridge(
       to,
       chainId,
