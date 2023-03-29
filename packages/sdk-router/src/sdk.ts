@@ -44,9 +44,9 @@ class SynapseSDK {
     tokenOut: string,
     amountIn: BigintIsh
   ): Promise<{
-    feeAmount?: BigNumber
-    bridgeFee?: number
-    maxAmountOut?: BigNumber
+    feeAmount?: BigNumber | undefined
+    bridgeFee?: number | undefined
+    maxAmountOut?: BigNumber | undefined
     originQuery?: Query | undefined
     destQuery?: Query | undefined
   }> {
@@ -114,7 +114,7 @@ class SynapseSDK {
     )
 
     const { bridgeFee } = await originRouter.routerContract.fee(tokenIn)
-
+    console.log('bridgeFee', bridgeFee, feeAmount)
     return {
       feeAmount,
       bridgeFee,

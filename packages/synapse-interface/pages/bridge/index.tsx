@@ -1,111 +1,67 @@
 import _ from 'lodash'
 import Grid from '@tw/Grid'
-import Card from '@tw/Card'
 import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
-import { useRef, useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Zero } from '@ethersproject/constants'
 import { Token } from '@utils/classes/Token'
 import { BigNumber } from '@ethersproject/bignumber'
-import { BigintIsh } from '@synapsecns/sdk-router'
 import { useSynapseContext } from '@/utils/SynapseProvider'
-import { parseUnits, formatUnits } from '@ethersproject/units'
-import { checksumAddress } from '@utils/checksum'
-import { PageHeader } from '@components/PageHeader'
-import Image from 'next/image'
-import synLogo from '@assets/icons/synapse.svg'
-
-// import BridgeCard from './BridgeCard'
-// import BridgeWatcher from './BridgeWatcher'
 import { ActionCardFooter } from '@components/ActionCardFooter'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
-import {
-  fetchBalance,
-  switchNetwork,
-  getNetwork,
-  getAccount,
-} from '@wagmi/core'
-
+import { switchNetwork, getNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
-import { ChainId } from '@constants/networks'
+import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import BridgeCard from './BridgeCard'
-// import BridgeWatcher from './BridgeWatcher'
 import {
   BRIDGE_CHAINS_BY_TYPE,
-  BRIDGE_TYPES_BY_CHAIN,
   BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
   BRIDGABLE_TOKENS,
   tokenSymbolToToken,
-  // BRIDGE_SWAPABLE_TOKENS_BY_CHAIN,
 } from '@constants/tokens'
-
 import {
-  DEFAULT_SWAPABLE_TYPE,
   DEFAULT_FROM_CHAIN,
   DEFAULT_TO_CHAIN,
   DEFAULT_FROM_TOKEN,
   DEFAULT_TO_TOKEN,
 } from '@/constants/bridge'
+// import BridgeWatcher from './BridgeWatcher'
 
-import { checkCleanedValue } from '@utils/checkCleanedValue'
-import { sanitizeValue } from '@utils/sanitizeValue'
-import { calculateExchangeRate } from '@utils/calculateExchangeRate'
-
-console.log('BRIDGE_CHAINS_BY_TYPE', BRIDGE_CHAINS_BY_TYPE)
-console.log('BRIDGABLE_TOKENS', BRIDGABLE_TOKENS)
-console.log('BRIDGE_SWAPABLE_TOKENS_BY_TYPE', BRIDGE_SWAPABLE_TOKENS_BY_TYPE)
 const bridgeFee = BigNumber.from('10000')
 export default function BridgePage({ address }: { address: `0x${string}` }) {
-  // move to utils
-
   const router = useRouter()
-
-  // Get SynapseSDK
   const SynapseSDK = useSynapseContext()
 
-  // Set current chain
-  // const getCurrentNetwork = () => {
-  //   const { chain: fromChainIdRaw } = getNetwork()
-  //   return fromChainIdRaw ? fromChainIdRaw?.id : DEFAULT_FROM_CHAIN
-  // }
-  useEffect(() => {
-    const { chain: fromChainIdRaw } = getNetwork()
-    setFromChainId(fromChainIdRaw ? fromChainIdRaw?.id : DEFAULT_FROM_CHAIN)
-  }, [])
   const [fromChainId, setFromChainId] = useState(DEFAULT_FROM_CHAIN)
   const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
-  const chainIdsRef = useRef({ fromChainId, toChainId })
-
-  // Init token
-
   const [fromToken, setFromToken] = useState(DEFAULT_FROM_TOKEN)
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
-
   const [fromTokens, setFromTokens] = useState([])
   const [fromValue, setFromValue] = useState('')
   const [toValue, setToValue] = useState('')
-  // Auxiliary data
   const [priceImpact, setPriceImpact] = useState(Zero)
   const [exchangeRate, setExchangeRate] = useState(Zero)
   const [feeAmount, setFeeAmount] = useState(BigNumber.from('10000'))
   const [error, setError] = useState('')
+
   const [destinationAddress, setDestinationAddress] = useState('')
   const [toBridgeableTokens, setToBridgeableTokens] = useState(
     BRIDGABLE_TOKENS[DEFAULT_TO_CHAIN]
   )
-
-  // TODO set to chain as a idx
   const [toBridgeableChains, setToBridgeableChains] = useState(
     BRIDGE_CHAINS_BY_TYPE[String(DEFAULT_FROM_TOKEN.swapableType)].filter(
       (chain) => Number(chain) !== DEFAULT_FROM_CHAIN
     )
   )
-
   const [bridgeQueries, setBridgeQueries] = useState({
     originQuery: null,
     destQuery: null,
   })
+
+  useEffect(() => {
+    const { chain: fromChainIdRaw } = getNetwork()
+    setFromChainId(fromChainIdRaw ? fromChainIdRaw?.id : DEFAULT_FROM_CHAIN)
+  }, [])
 
   // Upon update from the url query, updates to according states
   // will only execute on initial load of the page
@@ -278,8 +234,6 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
 
   // Handles when chains are flipped or user creates toChainId == fromChainId condition
   const handleChainFlip = async () => {
-    // let oldFromChainId = fromChainId
-    // let oldToChainId = toChainId
     if (address === undefined) {
       alert('Please connect your wallet')
     } else {
@@ -296,16 +250,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
           console.log("can't switch network sir", err)
           return undefined
         })
-      // try {
-      //   let res = await switchNetwork({ chainId: toChainId })
-      //   if (res === undefined) {
-      //     console.log("can't switch network", toChainId)
-      //     return
-      //   }
-      // } catch (err) {
-      //   console.log("can't switch network sir", err)
-      //   return
-      // }
+
       let bridgeableFromTokens: Token[] = sortByVisibilityRank(
         BRIDGE_SWAPABLE_TOKENS_BY_TYPE[fromChainId][
           String(fromToken.swapableType)
@@ -446,60 +391,43 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
           .mul(fromDecimals)
           .div(BigNumber.from(10).pow(fromValueMantissa.length))
       )
-    // const { feeAmount, bridgeFee, maxAmountOut, originQuery, destQuery } =
-    //   await SynapseSDK.bridgeQuote(
-    //     fromChainId,
-    //     toChainId,
-    //     fromToken.addresses[fromChainId].toLowerCase(),
-    //     toToken.addresses[toChainId].toLowerCase(),
-    //     fromValueBigNum
-    //   )
-    // console.log(
-    //   'quotes',
-    //   feeAmount,
-    //   bridgeFee,
-    //   maxAmountOut,
-    //   originQuery,
-    //   destQuery
-    // )
-    const quoteData = await SynapseSDK.bridgeQuote(
+
+    SynapseSDK.bridgeQuote(
       fromChainId,
       toChainId,
       fromToken.addresses[fromChainId].toLowerCase(),
       toToken.addresses[toChainId].toLowerCase(),
       fromValueBigNum
     )
-    console.log('quotes', quoteData)
-    let toValueBigNum = quoteData?.destQuery?.minAmountOut
-      ? quoteData?.destQuery.minAmountOut
-      : Zero
-    let toValueBase = toValueBigNum.div(toDecimals).toString()
-    let toValueMantissa = toValueBigNum.mod(toDecimals).toString()
+      .then(
+        ({ feeAmount, bridgeFee, maxAmountOut, originQuery, destQuery }) => {
+          let toValueBigNum = destQuery.minAmountOut
+            ? destQuery.minAmountOut
+            : Zero
+          let toValueBase = toValueBigNum.div(toDecimals).toString()
+          let toValueMantissa = toValueBigNum.mod(toDecimals).toString()
+          setFeeAmount(feeAmount)
+          setToValue(toValueBase + '.' + toValueMantissa)
+          setBridgeQueries({
+            originQuery: originQuery,
+            destQuery: destQuery,
+          })
+          let exchangeRate = toValueBigNum.div(fromValueBigNum)
+          // setFeeAmount(0)
 
-    setToValue(toValueBase + '.' + toValueMantissa)
-    setBridgeQueries({
-      originQuery: quoteData?.originQuery,
-      destQuery: quoteData?.destQuery,
-    })
-    let exchangeRate = toValueBigNum.div(fromValueBigNum)
-    // setFeeAmount(0)
-
-    setExchangeRate(
-      calculateExchangeRate(
-        fromValueBigNum,
-        fromToken.decimals[fromChainId],
-        toValueBigNum,
-        toToken.decimals[toChainId]
+          setExchangeRate(
+            calculateExchangeRate(
+              fromValueBigNum,
+              fromToken.decimals[fromChainId],
+              toValueBigNum,
+              toToken.decimals[toChainId]
+            )
+          )
+        }
       )
-    )
-    // setExchangeRate(
-    //   calculateExchangeRate(
-    //     fromValueBigNum.sub(feeAmount.mul(fromDecimals)),
-    //     fromToken.decimals[fromChainId],
-    //     maxAmountOut,
-    //     toToken.decimals[toChainId]
-    //   )
-    // )
+      .catch((err) => {
+        console.log('error getting quote', err)
+      })
   }
 
   useEffect(() => {
