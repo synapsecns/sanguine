@@ -42,7 +42,7 @@ func (b *baseHandler) Propagator() propagation.TextMapPropagator {
 }
 
 func (b *baseHandler) ConfigureHTTPClient(client *http.Client) {
-	client.Transport = otelhttp.NewTransport(client.Transport, otelhttp.WithTracerProvider(b.tp))
+	client.Transport = otelhttp.NewTransport(client.Transport, otelhttp.WithTracerProvider(b.tp), otelhttp.WithPropagators(b.propagator))
 }
 
 func (b *baseHandler) AddGormCallbacks(db *gorm.DB) {
@@ -62,6 +62,7 @@ func (b *baseHandler) Tracer() trace.Tracer {
 }
 
 // newBaseHandler creates a new baseHandler for otel.
+// this is exported for testing.
 func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProviderOption) *baseHandler {
 	// Ensure default SDK resources and the required service name are set.
 	rsr, err := resource.Merge(

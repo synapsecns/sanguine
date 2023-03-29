@@ -10,6 +10,8 @@ import (
 	"github.com/google/uuid"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	chainManagerMocks "github.com/synapsecns/sanguine/services/omnirpc/chainmanager/mocks"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
@@ -88,7 +90,7 @@ func (p *ProxySuite) TestAcquireReleaseForwarder() {
 	forwarder.SetRequestID([]byte(uuid.New().String()))
 	forwarder.SetRequiredConfirmations(gofakeit.Uint16())
 	forwarder.SetBlankResMap()
-	forwarder.SetRPCRequest([]proxy.RPCRequest{{
+	forwarder.SetRPCRequest([]rpc.Request{{
 		ID:     gofakeit.Number(1, 2),
 		Method: gofakeit.Word(),
 	}})
@@ -156,7 +158,7 @@ func (p *ProxySuite) TestForwardRequest() {
 	forwarder := prxy.AcquireForwarder()
 	forwarder.SetBody(testBody)
 	forwarder.SetRequestID([]byte(testRequestID))
-	forwarder.SetRPCRequest([]proxy.RPCRequest{{Method: methodName}})
+	forwarder.SetRPCRequest([]rpc.Request{{Method: methodName}})
 
 	_, err := forwarder.ForwardRequest(p.GetTestContext(), testURL)
 	Nil(p.T(), err)
@@ -193,9 +195,9 @@ func (p *ProxySuite) TestOverrideConfirmability() {
 	chainManager.On("URLs").Return(urls)
 	forwarder.SetChain(chainManager)
 
-	forwarder.SetBody(p.MustMarshall(proxy.RPCRequest{
+	forwarder.SetBody(p.MustMarshall(rpc.Request{
 		ID:     1,
-		Method: string(proxy.BlockByNumberMethod),
+		Method: string(client.BlockByNumberMethod),
 		Params: []json.RawMessage{[]byte("\"1\"")},
 	}))
 	testContext, _ := gin.CreateTestContext(httptest.NewRecorder())

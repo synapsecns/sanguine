@@ -8,6 +8,7 @@ import (
 	"github.com/ImVexed/fasturl"
 	"github.com/goccy/go-json"
 	"github.com/jftuga/ellipsis"
+	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -38,7 +39,7 @@ func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string)
 	var standardizedResponse []byte
 	var hasErr bool
 
-	if isBatch(body) {
+	if rpc.IsBatch(body) {
 		standardizedResponse, hasErr, err = f.standardizeBatch(ctx, body)
 		if err != nil {
 			return nil, fmt.Errorf("could not standardize batch response: %w", err)
