@@ -20,6 +20,12 @@ type Query = [string, string, BigNumber, BigNumber, string] & {
   rawParams: string
 }
 
+type FeeConfig = [number, BigNumber, BigNumber] & {
+  bridgeFee: number
+  minFee: BigNumber
+  maxFee: BigNumber
+}
+
 class SynapseSDK {
   public synapseRouters: SynapseRouters
 
@@ -45,7 +51,7 @@ class SynapseSDK {
     amountIn: BigintIsh
   ): Promise<{
     feeAmount?: BigNumber | undefined
-    bridgeFee?: number | undefined
+    feeConfig?: FeeConfig | undefined
     maxAmountOut?: BigNumber | undefined
     originQuery?: Query | undefined
     destQuery?: Query | undefined
@@ -92,7 +98,7 @@ class SynapseSDK {
       tokenOut
     )
     // Step 4: find the best query (in practice, we could return them all)
-    let destInToken = tokenOut
+    let destInToken
     let maxAmountOut: BigNumber = BigNumber.from(0)
     for (let i = 0; i < destQueries.length; i++) {
       if (destQueries[i].minAmountOut.gt(maxAmountOut)) {
@@ -104,18 +110,21 @@ class SynapseSDK {
     }
 
     // Get fee data
-    const feeAmount = originQuery?.minAmountOut
-      ? await destRouter.routerContract.calculateBridgeFee(
-          destInToken,
-          originQuery.minAmountOut
-        )
-      : undefined
+    const feeAmount =
+      originQuery && destInToken
+        ? await destRouter.routerContract.calculateBridgeFee(
+            destInToken,
+            originQuery.minAmountOut
+          )
+        : undefined
 
-    const { bridgeFee } = await destRouter.routerContract.fee(destInToken)
+    const feeConfig = destInToken
+      ? await destRouter.routerContract.fee(destInToken)
+      : undefined
 
     return {
       feeAmount,
-      bridgeFee,
+      feeConfig,
       maxAmountOut,
       originQuery,
       destQuery,
