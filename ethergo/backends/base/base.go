@@ -219,6 +219,9 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 		res, err := b.CallContract(b.ctx, *callMessage, big.NewInt(0).Sub(txReceipt.BlockNumber, big.NewInt(1)))
 		if err != nil {
 			logger.Warnf("could not call contract: %v on tx: %s", err, transaction.Hash())
+			if b.RPCAddress() != "" {
+				logger.Debugf("For more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
+			}
 			return
 		}
 
@@ -243,6 +246,9 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 
 			//nolint: forcetypeassert
 			logger.Debugf("tx %s reverted: %v", transaction.Hash(), vs[0].(string))
+			if b.RPCAddress() != "" {
+				logger.Debugf("For more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
+			}
 		}
 	}()
 }
