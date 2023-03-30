@@ -148,7 +148,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 		summit:      u.TestBackendSummit.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(u.GetTestContext(), excCfg, u.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, u.ExecutorMetrics)
 	Nil(u.T(), err)
 
 	go func() {

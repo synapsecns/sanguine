@@ -60,7 +60,7 @@ func (b BackfillSuite) TestFailedStore() {
 		ContractChunkSize:    1,
 		ContractSubChunkSize: 1,
 	}
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig.Address, mockDB, simulatedChainArr)
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig.Address, mockDB, simulatedChainArr, b.metrics)
 	Nil(b.T(), err)
 	tx, err := testRef.EmitEventA(transactOpts.TransactOpts, big.NewInt(1), big.NewInt(2), big.NewInt(3))
 	Nil(b.T(), err)
@@ -98,7 +98,7 @@ func (b BackfillSuite) TestGetLogsSimulated() {
 		ContractChunkSize:    1,
 		ContractSubChunkSize: 1,
 	}
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig.Address, b.testDB, simulatedChainArr)
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig.Address, b.testDB, simulatedChainArr, b.metrics)
 	Nil(b.T(), err)
 
 	// Emit five events, and then fetch them with GetLogs. The first two will be fetched first,
@@ -193,7 +193,7 @@ func (b BackfillSuite) TestContractBackfill() {
 		ContractChunkSize:    1,
 		ContractSubChunkSize: 1,
 	}
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig.Address, b.testDB, simulatedChainArr)
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig.Address, b.testDB, simulatedChainArr, b.metrics)
 	Nil(b.T(), err)
 
 	// Emit events for the backfiller to read.
@@ -273,7 +273,7 @@ func (b BackfillSuite) TestTxTypeNotSupported() {
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
 	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
-	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1)
+	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1, b.metrics)
 	Nil(b.T(), err)
 	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock, false)
 	Nil(b.T(), err)
@@ -313,7 +313,7 @@ func (b BackfillSuite) TestInvalidTxVRS() {
 		Contracts:             []config.ContractConfig{contractConfig},
 	}
 	backendClientArr := []backfill.ScribeBackend{backendClient, backendClient}
-	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1)
+	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, backendClientArr, chainConfig, 1, b.metrics)
 	Nil(b.T(), err)
 
 	err = chainBackfiller.Backfill(b.GetTestContext(), &contractConfig.StartBlock, false)
@@ -357,7 +357,7 @@ func (b BackfillSuite) TestContractBackfillFromPreIndexed() {
 		ContractChunkSize:    1,
 		ContractSubChunkSize: 1,
 	}
-	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig.Address, b.testDB, simulatedChainArr)
+	backfiller, err := backfill.NewContractBackfiller(chainConfig, contractConfig.Address, b.testDB, simulatedChainArr, b.metrics)
 	Nil(b.T(), err)
 
 	// Emit events for the backfiller to read.
