@@ -390,7 +390,7 @@ notary_files:
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
-        rpc_url: "https://endpoints.omniatech.io/v1/eth/sepolia/public"
+        rpc_url: "https://rpc.sepolia.org"
         start_height: 0
       domain_client2:
         domain_id: 420
@@ -408,7 +408,7 @@ notary_files:
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
-        rpc_url: "https://endpoints.omniatech.io/v1/arbitrum/goerli/public"
+        rpc_url: "https://goerli-rollup.arbitrum.io/rpc"
         start_height: 0
     summit_domain_id: 420
     domain_id: 421613
@@ -471,7 +471,7 @@ notary_files:
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
-        rpc_url: "https://endpoints.omniatech.io/v1/eth/sepolia/public"
+        rpc_url: "https://rpc.sepolia.org"
         start_height: 0
       domain_client2:
         domain_id: 420
@@ -489,7 +489,7 @@ notary_files:
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
-        rpc_url: "https://endpoints.omniatech.io/v1/arbitrum/goerli/public"
+        rpc_url: "https://goerli-rollup.arbitrum.io/rpc"
         start_height: 0
     summit_domain_id: 420
     domain_id: 11155111
@@ -552,7 +552,7 @@ notary_files:
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
-        rpc_url: "https://endpoints.omniatech.io/v1/eth/sepolia/public"
+        rpc_url: "https://rpc.sepolia.org"
         start_height: 0
       domain_client2:
         domain_id: 420
@@ -570,7 +570,7 @@ notary_files:
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
-        rpc_url: "https://endpoints.omniatech.io/v1/arbitrum/goerli/public"
+        rpc_url: "https://goerli-rollup.arbitrum.io/rpc"
         start_height: 0
     summit_domain_id: 420
     domain_id: 420
@@ -635,7 +635,7 @@ guard_files:
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
-        rpc_url: "https://endpoints.omniatech.io/v1/eth/sepolia/public"
+        rpc_url: "https://rpc.sepolia.org"
         start_height: 0
       domain_client2:
         domain_id: 420
@@ -653,7 +653,7 @@ guard_files:
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
-        rpc_url: "https://endpoints.omniatech.io/v1/arbitrum/goerli/public"
+        rpc_url: "https://goerli-rollup.arbitrum.io/rpc"
         start_height: 0
     summit_domain_id: 420
     domain_id: 0
@@ -734,7 +734,7 @@ executor_remote_fresh_files:
     summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
     chains:
       - chain_id: 11155111
-        temp_rpc: "https://endpoints.omniatech.io/v1/eth/sepolia/public"
+        temp_rpc: "https://rpc.sepolia.org"
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
       - chain_id: 420
@@ -742,7 +742,7 @@ executor_remote_fresh_files:
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
       - chain_id: 421613
-        temp_rpc: "https://endpoints.omniatech.io/v1/arbitrum/goerli/public"
+        temp_rpc: "https://goerli-rollup.arbitrum.io/rpc"
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
     unbonded_signer:
@@ -759,7 +759,7 @@ executor_embedded_files:
     summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
     chains:
       - chain_id: 11155111
-        temp_rpc: "https://endpoints.omniatech.io/v1/eth/sepolia/public"
+        temp_rpc: "https://rpc.sepolia.org"
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
       - chain_id: 420
@@ -767,7 +767,7 @@ executor_embedded_files:
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
       - chain_id: 421613
-        temp_rpc: "https://endpoints.omniatech.io/v1/arbitrum/goerli/public"
+        temp_rpc: "https://goerli-rollup.arbitrum.io/rpc"
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
     unbonded_signer:
