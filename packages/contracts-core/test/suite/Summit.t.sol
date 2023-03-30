@@ -40,7 +40,8 @@ contract SummitTest is DisputeHubTest {
 
     function setUp() public virtual override {
         notaryAttestations[0] = RawAttestation({
-            root: bytes32(0),
+            snapRoot: bytes32(0),
+            agentRoot: bytes32(0),
             nonce: 0,
             blockNumber: uint40(block.number),
             timestamp: uint40(block.timestamp)
@@ -76,12 +77,10 @@ contract SummitTest is DisputeHubTest {
         test_notarySnapshots(random);
         // Restrict nonce to existing ones
         uint32 nonce = uint32(bound(random.nextUint32(), 0, DOMAIN_AGENTS));
-        // Attestation is valid if and only if all three fields match
-        bool isValid = mask & 7 == 0;
-        RawAttestation memory ra = notaryAttestations[nonce];
-        ra.root = ra.root ^ bytes32(mask & 1);
-        ra.blockNumber = ra.blockNumber ^ uint40(mask & 2);
-        ra.timestamp = ra.timestamp ^ uint40(mask & 4);
+        // Attestation is valid if and only if all four fields match
+        (bool isValid, RawAttestation memory ra) = notaryAttestations[nonce].modifyAttestation(
+            mask
+        );
         verifyAttestation(random, ra, isValid);
     }
 
@@ -239,7 +238,8 @@ contract SummitTest is DisputeHubTest {
 
             // Calculate root and height using AttestationProofGenerator
             acceptSnapshot(rawStates);
-            ra.root = getSnapshotRoot();
+            ra.snapRoot = getSnapshotRoot();
+            ra.agentRoot = getAgentRoot();
             // This is i-th submitted attestation so far, but attestation nonce starts from 1
             ra.nonce = i + 1;
             notaryAttestations[ra.nonce] = ra;
@@ -266,7 +266,7 @@ contract SummitTest is DisputeHubTest {
                 // Item index is twice the state index (since it's a left child)
                 assertEq(
                     MerkleLib.proofRoot(2 * j, item, snapProof, SNAPSHOT_TREE_HEIGHT),
-                    ra.root,
+                    ra.snapRoot,
                     "!getSnapshotProof"
                 );
             }
