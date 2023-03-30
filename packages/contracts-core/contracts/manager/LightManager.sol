@@ -33,14 +33,12 @@ contract LightManager is Versioned, AgentManager, LightManagerEvents, ILightMana
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
     }
 
-    function initialize(
-        ISystemRegistry _origin,
-        ISystemRegistry _destination,
-        bytes32 _agentRoot
-    ) external initializer {
+    function initialize(ISystemRegistry _origin, ISystemRegistry _destination)
+        external
+        initializer
+    {
         __AgentManager_init(_origin, _destination);
         __Ownable_init();
-        _setAgentRoot(_agentRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

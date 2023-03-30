@@ -23,20 +23,14 @@ contract LightManagerTest is AgentManagerTest {
     function test_initializer(
         address caller,
         address _origin,
-        address _destination,
-        bytes32 _agentRoot
+        address _destination
     ) public {
         lightManager = new LightManager(DOMAIN_LOCAL);
         vm.prank(caller);
-        lightManager.initialize(
-            ISystemRegistry(_origin),
-            ISystemRegistry(_destination),
-            _agentRoot
-        );
+        lightManager.initialize(ISystemRegistry(_origin), ISystemRegistry(_destination));
         assertEq(lightManager.owner(), caller);
         assertEq(address(lightManager.origin()), _origin);
         assertEq(address(lightManager.destination()), _destination);
-        assertEq(lightManager.agentRoot(), _agentRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

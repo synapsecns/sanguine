@@ -23,6 +23,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     bytes32[] private roots;
 
     /// @inheritdoc InterfaceDestination
+    /// @dev Invariant: this is either current LightManager root,
+    /// or the pending root to be passed to LightManager once its optimistic period is over.
     bytes32 public nextAgentRoot;
 
     /// @inheritdoc InterfaceDestination
@@ -40,9 +42,13 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @notice Initializes Destination contract:
     /// - msg.sender is set as contract owner
-    function initialize() external initializer {
+    function initialize(bytes32 _agentRoot) external initializer {
         // Initialize Ownable: msg.sender is set as "owner"
         __Ownable_init();
+        // Set Agent Merkle Root in Light Manager
+        nextAgentRoot = _agentRoot;
+        ILightManager(address(agentManager)).setAgentRoot(_agentRoot);
+        destStatus.agentRootTime = uint48(block.timestamp);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
