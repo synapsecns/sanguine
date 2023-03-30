@@ -48,21 +48,24 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
         deployLightManager();
         deployDestination();
         deployOrigin();
-        initLightManager();
-        deploySystemRouter();
         // Deploy a single set of messaging contracts for synapse chain
         deployBondingManager();
         deploySummit();
         deployOriginSynapse();
+        // Setup agents in BondingManager
         initBondingManager();
+        setupAgentsBM();
+        // Setup agents in LightManager
+        initLightManager();
+        setupAgentsLM();
+        // Deploy and setup System Routers
+        deploySystemRouter();
         deploySystemRouterSynapse();
-        // Setup agents on created contracts
-        setupAgents();
         // Skip block
         skipBlock();
     }
 
-    function setupAgents() public virtual {
+    function setupAgentsBM() public virtual {
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
@@ -70,8 +73,9 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
                 addAgentBM(domain, agent);
             }
         }
-        // TODO: Destination should call this
-        lightManager.setAgentRoot(getAgentRoot());
+    }
+
+    function setupAgentsLM() public virtual {
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
@@ -91,7 +95,11 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
     }
 
     function initLightManager() public virtual {
-        lightManager.initialize(ISystemRegistry(origin), ISystemRegistry(destination));
+        lightManager.initialize(
+            ISystemRegistry(origin),
+            ISystemRegistry(destination),
+            getAgentRoot()
+        );
     }
 
     function deployBondingManager() public virtual {

@@ -23,14 +23,20 @@ contract LightManagerTest is AgentManagerTest {
     function test_initializer(
         address caller,
         address _origin,
-        address _destination
+        address _destination,
+        bytes32 _agentRoot
     ) public {
         lightManager = new LightManager(DOMAIN_LOCAL);
         vm.prank(caller);
-        lightManager.initialize(ISystemRegistry(_origin), ISystemRegistry(_destination));
+        lightManager.initialize(
+            ISystemRegistry(_origin),
+            ISystemRegistry(_destination),
+            _agentRoot
+        );
         assertEq(lightManager.owner(), caller);
         assertEq(address(lightManager.origin()), _origin);
         assertEq(address(lightManager.destination()), _destination);
+        assertEq(lightManager.agentRoot(), _agentRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -52,10 +58,9 @@ contract LightManagerTest is AgentManagerTest {
     ▏*║                TESTS: UNAUTHORIZED ACCESS (NOT OWNER)                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // TODO: this should be only called by Destination
-    function test_setAgentRoot_revert_notOwner(address caller) public {
-        vm.assume(caller != address(this));
-        expectRevertNotOwner();
+    function test_setAgentRoot_revert_notDestination(address caller) public {
+        vm.assume(caller != destination);
+        vm.expectRevert("Only Destination sets agent root");
         vm.prank(caller);
         lightManager.setAgentRoot(bytes32(uint256(1)));
     }
@@ -104,6 +109,7 @@ contract LightManagerTest is AgentManagerTest {
     }
 
     function test_setAgentRoot(bytes32 root) public {
+        vm.prank(destination);
         lightManager.setAgentRoot(root);
         assertEq(lightManager.agentRoot(), root, "!agentRoot");
     }
