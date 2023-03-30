@@ -67,6 +67,61 @@ contract DestinationTest is DisputeHubTest {
         assertEq(Versioned(destination).version(), LATEST_VERSION, "!version");
     }
 
+    function test_submitAttestation(RawAttestation memory ra, uint32 rootSubmittedAt) public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        vm.warp(rootSubmittedAt);
+        vm.expectEmit();
+        emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
+        InterfaceDestination(destination).submitAttestation(attPayload, attSig);
+        (uint48 snapRootTime, , ) = InterfaceDestination(destination).destStatus();
+        assertEq(snapRootTime, rootSubmittedAt);
+    }
+
+    function test_submitAttestation_updatesAgentRoot(
+        RawAttestation memory ra,
+        uint32 rootSubmittedAt
+    ) public {
+        vm.assume(ra.agentRoot != InterfaceDestination(destination).nextAgentRoot());
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        vm.warp(rootSubmittedAt);
+        vm.expectEmit();
+        emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
+        InterfaceDestination(destination).submitAttestation(attPayload, attSig);
+        (, uint48 agentRootTime, address _notary) = InterfaceDestination(destination).destStatus();
+        // Check that values were assigned
+        assertEq(InterfaceDestination(destination).nextAgentRoot(), ra.agentRoot);
+        assertEq(agentRootTime, rootSubmittedAt);
+        assertEq(_notary, notary);
+    }
+
+    function test_passAgentRoot_optimisticPeriodNotOver(
+        RawAttestation memory ra,
+        uint32 rootSubmittedAt,
+        uint32 timePassed
+    ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        // Submit attestation that updates `nextAgentRoot`
+        test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
+        timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
+        skip(timePassed);
+        assertFalse(InterfaceDestination(destination).passAgentRoot());
+        assertEq(lightManager.agentRoot(), agentRootLM);
+    }
+
+    function test_passAgentRoot_optimisticPeriodOver(
+        RawAttestation memory ra,
+        uint32 rootSubmittedAt
+    ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        // Submit attestation that updates `nextAgentRoot`
+        test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
+        assertTrue(InterfaceDestination(destination).passAgentRoot());
+        assertEq(lightManager.agentRoot(), ra.agentRoot);
+    }
+
     function test_submitAttestationReport(RawAttestation memory ra) public {
         address prover = makeAddr("Prover");
         // Create Notary signature for the attestation
@@ -131,15 +186,7 @@ contract DestinationTest is DisputeHubTest {
         ra = createAttestation(rs, ra, statesAmount, stateIndex);
         bytes32[] memory snapProof = genSnapshotProof(stateIndex);
 
-        // Attestation Nonce is fuzzed as well
-        address notary = domains[DOMAIN_LOCAL].agent;
-        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
-
-        vm.warp(rootSubmittedAt);
-        // Should emit event when attestation is accepted
-        vm.expectEmit(true, true, true, true);
-        emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
-        InterfaceDestination(destination).submitAttestation(attPayload, attSig);
+        test_submitAttestation(ra, rootSubmittedAt);
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
             bytes32[] memory originProof = getLatestProof(i);

@@ -51,5 +51,6 @@ abstract contract SynapseTestConstants {
     uint32 internal constant MESSAGES = 10;
     uint256 internal constant BLOCK_TIME = 12 seconds;
 
+    uint32 internal constant AGENT_ROOT_OPTIMISTIC_PERIOD = 1 days;
     uint32 internal constant BONDING_OPTIMISTIC_PERIOD = 1 days;
 }
