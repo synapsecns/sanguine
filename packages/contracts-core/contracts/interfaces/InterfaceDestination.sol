@@ -36,6 +36,8 @@ interface InterfaceDestination {
         bytes memory _attSignature
     ) external returns (bool wasAccepted);
 
+    // ═════════════════════════════════ VIEWS ═════════════════════════════════
+
     /**
      * @notice Returns the total amount of Notaries attestations that have been accepted.
      */
@@ -52,4 +54,24 @@ interface InterfaceDestination {
         external
         view
         returns (bytes32 root, ExecutionAttestation memory execAtt);
+
+    /**
+     * Returns status of Destination contract as far as snapshot/agent roots are concerned
+     * @return snapRootTime     Timestamp when latest snapshot root was accepted
+     * @return agentRootTime    Timestamp when latest agent root was accepted
+     * @return notary           Notary who signed the latest agent root
+     */
+    function destStatus()
+        external
+        view
+        returns (
+            uint48 snapRootTime,
+            uint48 agentRootTime,
+            address notary
+        );
+
+    /**
+     * Returns Agent Merkle Root to be passed to LightManager once its optimistic period is over.
+     */
+    function nextAgentRoot() external view returns (bytes32);
 }

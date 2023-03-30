@@ -49,4 +49,16 @@ contract DestinationMock is
         view
         returns (bytes32 root, ExecutionAttestation memory execAtt)
     {}
+
+    function destStatus()
+        external
+        view
+        returns (
+            uint48 snapRootTime,
+            uint48 agentRootTime,
+            address notary
+        )
+    {}
+
+    function nextAgentRoot() external view returns (bytes32) {}
 }

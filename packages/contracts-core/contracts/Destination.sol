@@ -22,10 +22,10 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @dev All snapshot roots from the saved attestations
     bytes32[] private roots;
 
-    /// @notice Agent Merkle Root to be passed to LightManager once its optimistic period is over
+    /// @inheritdoc InterfaceDestination
     bytes32 public nextAgentRoot;
 
-    /// @notice Status of Destination contract as far as snapshot/agent roots are concerned
+    /// @inheritdoc InterfaceDestination
     DestinationStatus public destStatus;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
