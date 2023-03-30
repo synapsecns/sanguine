@@ -99,15 +99,17 @@ class SynapseSDK {
         maxAmountOut = destQueries[i].minAmountOut
         originQuery = originQueries[i]
         destQuery = destQueries[i]
-        destInToken = filteredTokens?.[i]?.token || filteredTokens[0].token
+        destInToken = filteredTokens[i].token
       }
     }
 
     // Get fee data
-    const feeAmount = await destRouter.routerContract.calculateBridgeFee(
-      destInToken,
-      amountIn
-    )
+    const feeAmount = originQuery?.minAmountOut
+      ? await destRouter.routerContract.calculateBridgeFee(
+          destInToken,
+          originQuery.minAmountOut
+        )
+      : undefined
 
     const { bridgeFee } = await destRouter.routerContract.fee(destInToken)
 
