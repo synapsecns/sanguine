@@ -44,6 +44,8 @@ class SynapseSDK {
     tokenOut: string,
     amountIn: BigintIsh
   ): Promise<{
+    feeAmount?: BigNumber | undefined
+    bridgeFee?: number | undefined
     maxAmountOut?: BigNumber | undefined
     originQuery?: Query | undefined
     destQuery?: Query | undefined
@@ -52,6 +54,7 @@ class SynapseSDK {
     let destQuery
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
     const destRouter: SynapseRouter = this.synapseRouters[destChainId]
+
     // Step 0: find connected bridge tokens on destination
     const bridgeTokens =
       await destRouter.routerContract.getConnectedBridgeTokens(tokenOut)
@@ -60,21 +63,15 @@ class SynapseSDK {
       throw Error('No bridge tokens found for this route')
     }
 
-    const symbols: string[] = []
-    for (const token of bridgeTokens) {
-      if (token.symbol.length === 0) {
-        continue
-      }
-      if (token.token === AddressZero) {
-        continue
-      }
-      symbols.push(token.symbol)
-    }
+    const filteredTokens = bridgeTokens.filter(
+      (bridgeToken) =>
+        bridgeToken.symbol.length !== 0 && bridgeToken.token !== AddressZero
+    )
 
     // Step 1: perform a call to origin SynapseRouter
     const originQueries = await originRouter.routerContract.getOriginAmountOut(
       tokenIn,
-      symbols,
+      filteredTokens.map((bridgeToken) => bridgeToken.symbol),
       amountIn
     )
 
@@ -82,9 +79,9 @@ class SynapseSDK {
     // In practice, there is no need to pass the requests with amountIn = 0, but we will do it for code simplicity
     const requests: { symbol: string; amountIn: BigintIsh }[] = []
 
-    for (let i = 0; i < bridgeTokens.length; i++) {
+    for (let i = 0; i < filteredTokens.length; i++) {
       requests.push({
-        symbol: symbols[i],
+        symbol: filteredTokens[i].symbol,
         amountIn: originQueries[i].minAmountOut,
       })
     }
@@ -95,25 +92,28 @@ class SynapseSDK {
       tokenOut
     )
     // Step 4: find the best query (in practice, we could return them all)
-
+    let destInToken = tokenOut
     let maxAmountOut: BigNumber = BigNumber.from(0)
     for (let i = 0; i < destQueries.length; i++) {
       if (destQueries[i].minAmountOut.gt(maxAmountOut)) {
         maxAmountOut = destQueries[i].minAmountOut
         originQuery = originQueries[i]
         destQuery = destQueries[i]
+        destInToken = filteredTokens?.[i]?.token || filteredTokens[0].token
       }
     }
 
     // Get fee data
-    // const feeAmount = await originRouter.routerContract.calculateBridgeFee(
-    //   tokenIn,
-    //   amountIn
-    // )
+    const feeAmount = await destRouter.routerContract.calculateBridgeFee(
+      destInToken,
+      amountIn
+    )
 
-    // const { bridgeFee } = await originRouter.routerContract.fee(tokenIn)
+    const { bridgeFee } = await destRouter.routerContract.fee(destInToken)
 
     return {
+      feeAmount,
+      bridgeFee,
       maxAmountOut,
       originQuery,
       destQuery,
