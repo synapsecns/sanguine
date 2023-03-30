@@ -4,6 +4,7 @@ package testsuite
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/suite"
 	"sync"
@@ -122,6 +123,15 @@ func runDeferredFunctions(deferredFuncs []func()) {
 
 // TearDownSuite tears down the test suite.
 func (s *TestSuite) TearDownSuite() {
+	// in the case of failures give asynchronous routines (such as ethergo) a chance to finish. We don't allow any blocks here, but this should be enough for some goroutines to report
+	// without context cancellation
+	if s.T().Failed() {
+		err := aws.SleepWithContext(s.testContext.ctx, 30*time.Millisecond)
+		if err != nil {
+			s.T().Log("failed to sleep after test failure")
+		}
+	}
+
 	runDeferredFunctions(s.runAfterSuite)
 	s.suiteContext.cancelFunc()
 
@@ -161,6 +171,16 @@ func (s *TestSuite) GetTestID() int {
 func (s *TestSuite) TearDownTest() {
 	s.testID++
 	runDeferredFunctions(s.runAfterTest)
+
+	// in the case of failures give asynchronous routines (such as ethergo) a chance to finish. We don't allow any blocks here, but this should be enough for some goroutines to report
+	// without context cancellation
+	if s.T().Failed() {
+		err := aws.SleepWithContext(s.testContext.ctx, 30*time.Millisecond)
+		if err != nil {
+			s.T().Log("failed to sleep after test failure")
+		}
+	}
+
 	// this will panic if you failed to call SetupTest() from an inheriting suite
 	s.testContext.cancelFunc()
 	fmt.Printf("finished running test %s with id %d \n", s.T().Name(), s.testID)

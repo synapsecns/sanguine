@@ -11,6 +11,7 @@ require (
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54
 	github.com/Soft/iter v0.1.0
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
+	github.com/aws/aws-sdk-go v1.42.19
 	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cheekybits/genny v1.0.0
