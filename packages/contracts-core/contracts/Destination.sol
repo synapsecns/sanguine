@@ -60,8 +60,11 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         external
         returns (bool wasAccepted)
     {
-        // Call the hook and check if we can accept the statement
-        if (!_beforeStatement()) return false;
+        // First, try passing current agent merkle root
+        (bool rootPassed, bool rootPending) = passAgentRoot();
+        // Don't accept attestation, if the agent root was updated in LightManager,
+        // as the following agent check will fail.
+        if (rootPassed) return false;
         // This will revert if payload is not an attestation
         Attestation att = _wrapAttestation(_attPayload);
         // This will revert if signer is not an known Notary
@@ -75,7 +78,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // This will revert if snapshot root has been previously submitted
         _saveAttestation(att, notary);
         // Save Agent Root if required, and update the Destination's Status
-        destStatus = _saveAgentRoot(att.agentRoot(), notary);
+        destStatus = _saveAgentRoot(rootPending, att.agentRoot(), notary);
         emit AttestationAccepted(status.domain, notary, _attPayload, _attSignature);
         return true;
     }
@@ -191,15 +194,20 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         }
     }
 
-    function _saveAgentRoot(bytes32 _agentRoot, address _notary)
-        internal
-        returns (DestinationStatus memory status)
-    {
+    /// @dev Saves Agent Merkle Root from the accepted attestation, if there is
+    /// no pending root to be passed to LightManager.
+    /// Returns the updated "last snapshot root / last agent root" status struct.
+    function _saveAgentRoot(
+        bool _rootPending,
+        bytes32 _agentRoot,
+        address _notary
+    ) internal returns (DestinationStatus memory status) {
         status = destStatus;
         // Update the timestamp for the latest snapshot root
         status.snapRootTime = uint48(block.timestamp);
+        // Don't update agent root, if there is already a pending one
         // Update the data for latest agent root only if it differs from the saved one
-        if (nextAgentRoot != _agentRoot) {
+        if (!_rootPending && nextAgentRoot != _agentRoot) {
             status.agentRootTime = uint48(block.timestamp);
             status.notary = _notary;
             nextAgentRoot = _agentRoot;
