@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"time"
 
 	// used to embed markdown.
@@ -101,8 +102,13 @@ var backfillCommand = &cli.Command{
 		// TODO delete once livefilling done
 		ctx, cancel := context.WithTimeout(c.Context, time.Minute*5)
 		cancelVar := cancel
+		handler, err := metrics.NewFromEnv(c.Context, metadata.BuildInfo())
+		if err != nil {
+			return fmt.Errorf("could not create metrics handler: %w", err)
+		}
+
 		for {
-			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig)
+			scribeBackfiller, err := backfill.NewScribeBackfiller(db, clients, decodeConfig, handler)
 			if err != nil {
 				return fmt.Errorf("could not create scribe backfiller: %w", err)
 			}

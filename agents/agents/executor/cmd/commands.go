@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/api"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	"github.com/synapsecns/sanguine/core/metrics"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
 	"github.com/synapsecns/sanguine/services/scribe/backfill"
@@ -212,7 +213,12 @@ var ExecutorRunCommand = &cli.Command{
 			return fmt.Errorf("invalid scribe type")
 		}
 
-		executor, err := executor.NewExecutor(c.Context, executorConfig, executorDB, scribeClient, clients)
+		handler, err := metrics.NewFromEnv(c.Context, metadata.BuildInfo())
+		if err != nil {
+			return fmt.Errorf("failed to create metrics handler: %w", err)
+		}
+
+		executor, err := executor.NewExecutor(c.Context, executorConfig, executorDB, scribeClient, clients, handler)
 		if err != nil {
 			return fmt.Errorf("failed to create executor: %w", err)
 		}
