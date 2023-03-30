@@ -175,7 +175,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// @dev Saves a snapshot root with the attestation data provided by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
     function _saveAttestation(Attestation _att, address _notary) internal {
-        bytes32 root = _att.root();
+        bytes32 root = _att.snapRoot();
         require(rootAttestations[root].isEmpty(), "Root already exists");
         rootAttestations[root] = _att.toExecutionAttestation(_notary);
     }

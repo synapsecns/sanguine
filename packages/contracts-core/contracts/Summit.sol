@@ -62,9 +62,11 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         } else {
             // Check that Notary who submitted the snapshot is not in dispute
             require(!_inDispute(agent), "Notary is in dispute");
+            // Fetch current Agent Root from BondingManager
+            bytes32 agentRoot = agentManager.agentRoot();
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
-            attPayload = _acceptNotarySnapshot(snapshot, agent);
+            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent);
             // Save attestation derived from Notary snapshot
             _saveAttestation(attPayload.castToAttestation(), agent);
         }
