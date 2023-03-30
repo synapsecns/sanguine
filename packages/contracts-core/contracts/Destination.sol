@@ -177,11 +177,12 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         status = destStatus;
         // Update the timestamp for the latest snapshot root
         status.snapRootTime = uint48(block.timestamp);
-        // Update the data for latest agent root only if it differs form the saved one
+        // Update the data for latest agent root only if it differs from the saved one
         if (nextAgentRoot != _agentRoot) {
             status.agentRootTime = uint48(block.timestamp);
             status.notary = _notary;
             nextAgentRoot = _agentRoot;
+            emit AgentRootAccepted(_agentRoot);
         }
     }
 }
