@@ -103,7 +103,7 @@ type serverOptions struct {
 	Host         string `anvil:"host"`
 }
 
-// nonAnvilOptions: it's important that these do not include the anvil annotation
+// nonAnvilOptions: it's important that these do not include the anvil annotation.
 type nonAnvilOptions struct {
 	// maxWait is the maximum time to wait for the server to start
 	maxWait time.Duration
