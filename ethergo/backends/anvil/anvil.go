@@ -34,7 +34,6 @@ import (
 	"strings"
 	"sync"
 	"testing"
-	"time"
 )
 
 const gasLimit = 5000000
@@ -68,7 +67,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	pool, err := dockertest.NewPool("")
 	assert.Nil(t, err)
 
-	pool.MaxWait = time.Minute * 2
+	pool.MaxWait = args.maxWait
 	if err != nil {
 		assert.Nil(t, err)
 	}
@@ -87,7 +86,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	}
 
 	resource, err := pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
-		config.AutoRemove = true
+		config.AutoRemove = args.autoremove
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
 	assert.Nil(t, err)
@@ -98,12 +97,10 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		logger.Warn(err)
 	}()
 
-	// Docker will hard kill the container in 4000 seconds (this is a test env).
+	// Docker will hard kill the container in expiryseconds seconds (this is a test env).
 	// containers should be removed on their own, but this is a safety net.
 	// to prevent old containers from piling up, we set a timeout to remove the container.
-	const resourceLifetime = uint(600)
-
-	assert.Nil(t, resource.Expire(resourceLifetime))
+	assert.Nil(t, resource.Expire(args.expirySeconds))
 
 	address := fmt.Sprintf("%s:%s", "http://localhost", resource.GetPort("8545/tcp"))
 

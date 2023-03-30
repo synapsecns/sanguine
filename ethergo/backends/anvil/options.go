@@ -24,6 +24,11 @@ const defaultMnemonic = "tag volcano eight thank tide danger coast health above 
 // NewAnvilOptionBuilder creates a new option builder.
 func NewAnvilOptionBuilder() *OptionBuilder {
 	optionsBuilder := &OptionBuilder{}
+	// set default non-anvil values
+	optionsBuilder.SetMaxWaitTime(time.Minute * 2)
+	optionsBuilder.SetAutoremove(true)
+	optionsBuilder.SetExpirySeconds(600)
+
 	optionsBuilder.SetAccounts(10)
 	optionsBuilder.SetBlockTime(0)
 	optionsBuilder.SetBalance(10000)
@@ -98,12 +103,26 @@ type serverOptions struct {
 	Host         string `anvil:"host"`
 }
 
+// nonAnvilOptions: it's important that these do not include the anvil annotation
+type nonAnvilOptions struct {
+	// runOtterscan is a flag to enable otterscan
+	runOtterscan bool
+	// maxWait is the maximum time to wait for the server to start
+	maxWait time.Duration
+	// expirySeconds is the number of seconds to wait before expiring a request
+	// set to 0 to disable
+	expirySeconds uint
+	// autoremove is wether the container should be deleted after the run
+	autoremove bool
+}
+
 // OptionBuilder is a builder for anvil options.
 type OptionBuilder struct {
 	generalOptions
 	evmOptions
 	executorOptions
 	serverOptions
+	nonAnvilOptions
 }
 
 // ========= General Options =========
@@ -312,6 +331,26 @@ func (o *OptionBuilder) SetPruneHistory(pruneHistory bool) {
 // SetHost sets the host to listen on.
 func (o *OptionBuilder) SetHost(host string) {
 	o.Host = host
+}
+
+// SetOtterscanEnabled enables or disables otterscan.
+func (o *OptionBuilder) SetOtterscanEnabled(enabled bool) {
+	o.runOtterscan = enabled
+}
+
+// SetMaxWaitTime sets the max wait time for the docker image to start.
+func (o *OptionBuilder) SetMaxWaitTime(maxWait time.Duration) {
+	o.maxWait = maxWait
+}
+
+// SetExpirySeconds sets the expiry seconds for the docker image to be removed.
+func (o *OptionBuilder) SetExpirySeconds(expirySeconds uint) {
+	o.expirySeconds = expirySeconds
+}
+
+// SetAutoremove enables or disables autoremove for the docker image.
+func (o *OptionBuilder) SetAutoremove(autoremove bool) {
+	o.autoremove = autoremove
 }
 
 // Build converts the option builder into a list of command line parameters.
