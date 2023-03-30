@@ -5,6 +5,13 @@ import { ExecutionAttestation } from "../libs/Attestation.sol";
 
 interface InterfaceDestination {
     /**
+     * @notice Attempts to pass a quarantined Agent Merkle Root to a local Light Manager.
+     * @dev Will do nothing, if root optimistic period is not over.
+     * @return passed   Whether the agent merkle root was passed to LightManager
+     */
+    function passAgentRoot() external returns (bool passed);
+
+    /**
      * @notice Submit an Attestation signed by a Notary.
      * @dev Will revert if any of these is true:
      *  - Attestation payload is not properly formatted.

@@ -21,6 +21,8 @@ contract DestinationMock is
     /// @notice Prevents this contract from being included in the coverage report
     function testDestinationMock() external {}
 
+    function passAgentRoot() external returns (bool passed) {}
+
     function submitAttestation(bytes memory _attPayload, bytes memory _attSignature)
         external
         returns (bool wasAccepted)

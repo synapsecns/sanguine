@@ -103,7 +103,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     ▏*║                        AGENT ROOT QUARANTINE                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @notice Tries to pass next agent merkle root to a local LightManager
+    /// @inheritdoc InterfaceDestination
     function passAgentRoot() public returns (bool passed) {
         bytes32 oldRoot = agentManager.agentRoot();
         bytes32 newRoot = nextAgentRoot;
