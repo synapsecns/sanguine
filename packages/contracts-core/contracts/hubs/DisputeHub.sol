@@ -1,11 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import { DisputeFlag, DisputeStatus } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentStatus, Attestation, Snapshot, StatementHub, StateReport } from "./StatementHub.sol";
 import { DisputeHubEvents } from "../events/DisputeHubEvents.sol";
 import { IDisputeHub } from "../interfaces/IDisputeHub.sol";
 
 abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                               STORAGE                                ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // (agent => their dispute status)
+    mapping(address => DisputeStatus) internal disputes;
+
+    /// @dev gap for upgrade safety
+    uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        INITIATE DISPUTE LOGIC                        ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     /// @inheritdoc IDisputeHub
     function submitStateReport(
         uint256 _stateIndex,
@@ -71,6 +87,19 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         return true;
     }
 
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                                VIEWS                                 ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc IDisputeHub
+    function disputeStatus(address _agent) external view returns (DisputeStatus memory status) {
+        return disputes[_agent];
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL LOGIC                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This should be called, when the Guard submits a Report on a statement signed by the Notary.
     function _openDispute(
@@ -78,7 +107,45 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         uint32 _domain,
         address _notary
     ) internal virtual {
-        // TODO: implement this
+        // Check that both agents are not in Dispute yet
+        require(disputes[_guard].flag == DisputeFlag.None, "Guard already in dispute");
+        require(disputes[_notary].flag == DisputeFlag.None, "Notary already in dispute");
+        disputes[_guard] = DisputeStatus(DisputeFlag.Pending, _notary);
+        disputes[_notary] = DisputeStatus(DisputeFlag.Pending, _guard);
         emit Dispute(_guard, _domain, _notary);
+    }
+
+    /// @dev This is called when the slashing was initiated in this contract or elsewhere.
+    function _processSlashed(
+        uint32 _domain,
+        address _agent,
+        address _prover
+    ) internal virtual override {
+        _resolveDispute(_domain, _agent);
+        super._processSlashed(_domain, _agent, _prover);
+    }
+
+    /// @dev Resolves a Dispute for a slashed agent, if it hasn't been done already.
+    function _resolveDispute(uint32 _domain, address _slashedAgent) internal virtual {
+        DisputeStatus memory status = disputes[_slashedAgent];
+        // Do nothing if dispute was already resolved
+        if (status.flag == DisputeFlag.Slashed) return;
+        // Update flag for the slashed agent
+        // Slashed agent might have had no open Dispute, meaning the `counterpart` could be ZERO.
+        // We still want to have the DisputeFlag.Slashed assigned in this case.
+        disputes[_slashedAgent].flag = DisputeFlag.Slashed;
+        // Delete record of dispute for the counterpart. This sets their Dispute Flag to None.
+        if (status.counterpart != address(0)) delete disputes[status.counterpart];
+        // TODO: wo we want to use prover address if there was no counterpart?
+        emit DisputeResolved(status.counterpart, _domain, _slashedAgent);
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL VIEWS                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Checks if an agent is currently in Dispute.
+    function _inDispute(address agent) internal view returns (bool) {
+        return disputes[agent].flag != DisputeFlag.None;
     }
 }

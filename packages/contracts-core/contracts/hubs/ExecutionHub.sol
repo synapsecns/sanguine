@@ -160,8 +160,9 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Check if snapshot root has been submitted
         require(!execAtt.isEmpty(), "Invalid snapshot root");
         // Check if Notary who submitted the attestation is still active
-        // TODO: check for dispute status as well
         _verifyActive(_agentStatus(execAtt.notary));
+        // Check that Notary who submitted the attestation is not in dispute
+        require(!_inDispute(execAtt.notary), "Notary is in dispute");
         // Check if optimistic period has passed
         require(
             block.timestamp >= _header.optimisticSeconds() + execAtt.submittedAt,
