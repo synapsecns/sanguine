@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { DisputeStatus } from "../libs/Structures.sol";
+
 /// @notice Common functions for contracts relying on Agent-signed Statements
 interface IDisputeHub {
     /**
@@ -56,4 +58,15 @@ interface IDisputeHub {
         bytes memory _attPayload,
         bytes memory _attSignature
     ) external returns (bool wasAccepted);
+
+    // ═════════════════════════════════ VIEWS ═════════════════════════════════
+
+    /**
+     * @notice Returns the Dispute status of the given agent.
+     * @param _agent    Agent address
+     * @return status   Struct with the Dispute status of the agent:
+     *                  - flag: None/Pending/Slashed (see Structures.sol)
+     *                  - counterpart: who the agent is in dispute with
+     */
+    function disputeStatus(address _agent) external view returns (DisputeStatus memory status);
 }

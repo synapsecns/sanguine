@@ -51,10 +51,17 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // Check that Agent is active
         _verifyActive(status);
         if (status.domain == 0) {
+            /// @dev We don't check if Guard is in dispute for accepting the snapshots.
+            /// Guard could only be in Dispute, if they submitted a Report on a Notary.
+            /// This should not strip away their ability to post snapshots, as they require
+            /// a Notary signature in order to be used / gain tips anyway.
+
             // This will revert if Guard has previously submitted
             // a fresher state than one in the snapshot.
             _acceptGuardSnapshot(snapshot, agent);
         } else {
+            // Check that Notary who submitted the snapshot is not in dispute
+            require(!_inDispute(agent), "Notary is in dispute");
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
             attPayload = _acceptNotarySnapshot(snapshot, agent);
