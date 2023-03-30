@@ -66,6 +66,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         require(!_inDispute(notary), "Notary is in dispute");
         // This will revert if snapshot root has been previously submitted
         _saveAttestation(att, notary);
+        // Save Agent Root if required, and update the Destination's Status
+        destStatus = _saveAgentRoot(att.agentRoot(), notary);
         emit AttestationAccepted(status.domain, notary, _attPayload, _attSignature);
         return true;
     }
@@ -144,7 +146,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            DISPUTE LOGIC                             ║*▕
+    ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @dev Opens a Dispute between a Guard and a Notary.
@@ -165,6 +167,21 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // Disputes could be only opened between a Guard and a local Notary
         if (_domain == 0 || _domain == localDomain) {
             super._resolveDispute(_domain, _slashedAgent);
+        }
+    }
+
+    function _saveAgentRoot(bytes32 _agentRoot, address _notary)
+        internal
+        returns (DestinationStatus memory status)
+    {
+        status = destStatus;
+        // Update the timestamp for the latest snapshot root
+        status.snapRootTime = uint48(block.timestamp);
+        // Update the data for latest agent root only if it differs form the saved one
+        if (nextAgentRoot != _agentRoot) {
+            status.agentRootTime = uint48(block.timestamp);
+            status.notary = _notary;
+            nextAgentRoot = _agentRoot;
         }
     }
 }
