@@ -190,7 +190,7 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 // TODO split two goroutines into sep functions for maintainability
 // store stores the logs, receipts, and transactions for a tx hash.
 //
-//nolint:cyclop, gocognit, maintidx
+//nolint:cyclop,gocognit,maintidx
 func (c *ContractBackfiller) store(parentCtx context.Context, log types.Log) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "store", trace.WithAttributes(
 		attribute.String("contract", c.address),
