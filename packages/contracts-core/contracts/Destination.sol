@@ -3,11 +3,13 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import { Attestation } from "./libs/Attestation.sol";
 import { AttestationReport } from "./libs/AttestationReport.sol";
-import { AgentStatus } from "./libs/Structures.sol";
+import { AGENT_ROOT_OPTIMISTIC_PERIOD } from "./libs/Constants.sol";
+import { AgentStatus, DestinationStatus } from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { IAgentManager } from "./interfaces/IAgentManager.sol";
 import { ExecutionAttestation, InterfaceDestination } from "./interfaces/InterfaceDestination.sol";
+import { ILightManager } from "./interfaces/ILightManager.sol";
 import { ExecutionHub } from "./hubs/ExecutionHub.sol";
 import { DomainContext, Versioned } from "./system/SystemContract.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
@@ -19,6 +21,12 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @dev All snapshot roots from the saved attestations
     bytes32[] private roots;
+
+    /// @notice Agent Merkle Root to be passed to LightManager once its optimistic period is over
+    bytes32 public nextAgentRoot;
+
+    /// @notice Status of Destination contract as far as snapshot/agent roots are concerned
+    DestinationStatus public destStatus;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
@@ -86,6 +94,32 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         _verifyActiveUnstaking(notaryStatus);
         // Reported Attestation was signed by the Notary => open dispute
         _openDispute(guard, notaryStatus.domain, notary);
+        return true;
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                        AGENT ROOT QUARANTINE                         ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @notice Tries to pass next agent merkle root to a local LightManager
+    function passAgentRoot() public returns (bool passed) {
+        bytes32 oldRoot = agentManager.agentRoot();
+        bytes32 newRoot = nextAgentRoot;
+        // Check if agent root differs from the current one in LightManager
+        if (oldRoot == newRoot) return false;
+        DestinationStatus memory status = destStatus;
+        // Invariant: Notary who supplied `newRoot` was registered as active against `oldRoot`
+        // So we just need to check the Dispute status of the Notary
+        if (_inDispute(status.notary)) {
+            // Remove the pending agent merkle root, as its signer is in dispute
+            nextAgentRoot = oldRoot;
+            return false;
+        }
+        // Check if agent root optimistic period is over
+        if (status.agentRootTime + AGENT_ROOT_OPTIMISTIC_PERIOD > block.timestamp) return false;
+        // `newRoot` signer was not disputed, and the root optimistic period is over.
+        // Finally, pass the Agent Merkle Root to LightManager
+        ILightManager(address(agentManager)).setAgentRoot(newRoot);
         return true;
     }
 
