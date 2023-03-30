@@ -37,6 +37,7 @@ func (a *AnvilSuite) SetupSuite() {
 
 	a.forkAddress = core.GetEnv("ETHEREUM_RPC_URI", "https://rpc.ankr.com/eth")
 	options := anvil.NewAnvilOptionBuilder()
+	options.SetOtterscanEnabled(true)
 	err := options.SetForkURL(a.forkAddress)
 	Nil(a.T(), err)
 
