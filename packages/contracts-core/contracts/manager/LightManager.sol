@@ -7,13 +7,14 @@ import { AgentFlag, AgentStatus, SlashStatus } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentManager, IAgentManager, ISystemRegistry } from "./AgentManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
+import { LightManagerEvents } from "../events/LightManagerEvents.sol";
 import { IBondingManager } from "../interfaces/IBondingManager.sol";
 import { ILightManager } from "../interfaces/ILightManager.sol";
 import { Versioned } from "../Version.sol";
 
 /// @notice LightManager keeps track of all agents, staying in sync with the BondingManager.
 /// Used on chains other than Synapse Chain, serves as "light client" for BondingManager.
-contract LightManager is Versioned, AgentManager, ILightManager {
+contract LightManager is Versioned, AgentManager, LightManagerEvents, ILightManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -32,12 +33,14 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
     }
 
-    function initialize(ISystemRegistry _origin, ISystemRegistry _destination)
-        external
-        initializer
-    {
+    function initialize(
+        ISystemRegistry _origin,
+        ISystemRegistry _destination,
+        bytes32 _agentRoot
+    ) external initializer {
         __AgentManager_init(_origin, _destination);
         __Ownable_init();
+        _setAgentRoot(_agentRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -68,11 +71,9 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     }
 
     /// @inheritdoc ILightManager
-    function setAgentRoot(bytes32 _agentRoot) external onlyOwner {
-        // TODO: only destination should be able to call this
-        if (latestAgentRoot != _agentRoot) {
-            latestAgentRoot = _agentRoot;
-        }
+    function setAgentRoot(bytes32 _agentRoot) external {
+        require(msg.sender == address(destination), "Only Destination sets agent root");
+        _setAgentRoot(_agentRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -113,6 +114,14 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Updates the Agent Merkle Root that Light Manager is tracking.
+    function _setAgentRoot(bytes32 _agentRoot) internal {
+        if (latestAgentRoot != _agentRoot) {
+            latestAgentRoot = _agentRoot;
+            emit AgentRootUpdated(_agentRoot);
+        }
+    }
 
     /// @dev Returns the status for the agent: whether or not they have been added
     /// using latest Agent merkle Root.
