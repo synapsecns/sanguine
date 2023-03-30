@@ -100,6 +100,90 @@ contract DestinationTest is DisputeHubTest {
         assertEq(_notary, notary);
     }
 
+    function test_submitAttestation_doesNotOverwritePending(
+        RawAttestation memory firstRA,
+        RawAttestation memory secondRA,
+        uint32 firstRootSubmittedAt,
+        uint32 timePassed
+    ) public {
+        vm.assume(firstRA.snapRoot != secondRA.snapRoot);
+        test_submitAttestation(firstRA, firstRootSubmittedAt);
+        timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
+        skip(timePassed);
+        // Form a second attestation: Notary 1
+        address notaryF = domains[DOMAIN_LOCAL].agents[0];
+        address notaryS = domains[DOMAIN_LOCAL].agents[1];
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notaryS, secondRA);
+        vm.expectEmit();
+        emit AttestationAccepted(DOMAIN_LOCAL, notaryS, attPayload, attSig);
+        assertTrue(InterfaceDestination(destination).submitAttestation(attPayload, attSig));
+        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+            destination
+        ).destStatus();
+        assertEq(snapRootTime, block.timestamp);
+        assertEq(agentRootTime, firstRootSubmittedAt);
+        assertEq(_notary, notaryF);
+    }
+
+    function test_submitAttestation_notAccepted_agentRootUpdated(
+        RawAttestation memory firstRA,
+        uint32 firstRootSubmittedAt
+    ) public {
+        test_submitAttestation(firstRA, firstRootSubmittedAt);
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
+        // Should not accept the attestation before doing any checks,
+        // so we could pass empty values here
+        assertFalse(InterfaceDestination(destination).submitAttestation("", ""));
+        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+            destination
+        ).destStatus();
+        assertEq(snapRootTime, firstRootSubmittedAt);
+        assertEq(agentRootTime, firstRootSubmittedAt);
+        assertEq(_notary, domains[DOMAIN_LOCAL].agent);
+        // Should update the Agent Merkle Root
+        assertEq(lightManager.agentRoot(), firstRA.agentRoot);
+    }
+
+    function test_submitStateReport_notAccepted_agentRootUpdated(
+        RawAttestation memory firstRA,
+        uint32 firstRootSubmittedAt
+    ) public {
+        test_submitAttestation(firstRA, firstRootSubmittedAt);
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
+        // Should not accept the attestation before doing any checks,
+        // so we could pass empty values here
+        assertFalse(IDisputeHub(destination).submitStateReport(0, "", "", "", ""));
+        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+            destination
+        ).destStatus();
+        assertEq(snapRootTime, firstRootSubmittedAt);
+        assertEq(agentRootTime, firstRootSubmittedAt);
+        assertEq(_notary, domains[DOMAIN_LOCAL].agent);
+        // Should update the Agent Merkle Root
+        assertEq(lightManager.agentRoot(), firstRA.agentRoot);
+    }
+
+    function test_submitStateReportWithProof_notAccepted_agentRootUpdated(
+        RawAttestation memory firstRA,
+        uint32 firstRootSubmittedAt
+    ) public {
+        test_submitAttestation(firstRA, firstRootSubmittedAt);
+        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
+        // Should not accept the attestation before doing any checks,
+        // so we could pass empty values here
+        assertFalse(
+            IDisputeHub(destination).submitStateReportWithProof(0, "", "", new bytes32[](0), "", "")
+        );
+        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+            destination
+        ).destStatus();
+        assertEq(snapRootTime, firstRootSubmittedAt);
+        assertEq(agentRootTime, firstRootSubmittedAt);
+        assertEq(_notary, domains[DOMAIN_LOCAL].agent);
+        // Should update the Agent Merkle Root
+        assertEq(lightManager.agentRoot(), firstRA.agentRoot);
+    }
+
     function test_passAgentRoot_optimisticPeriodNotOver(
         RawAttestation memory ra,
         uint32 rootSubmittedAt,
