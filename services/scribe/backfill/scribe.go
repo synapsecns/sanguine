@@ -3,6 +3,7 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"golang.org/x/sync/errgroup"
@@ -18,14 +19,16 @@ type ScribeBackfiller struct {
 	ChainBackfillers map[uint32]*ChainBackfiller
 	// config is the config for the backfiller.
 	config config.Config
+	// handler is the metrics handler for the scribe.
+	handler metrics.Handler
 }
 
 // NewScribeBackfiller creates a new backfiller for the scribe.
-func NewScribeBackfiller(eventDB db.EventDB, clientsMap map[uint32][]ScribeBackend, config config.Config) (*ScribeBackfiller, error) {
+func NewScribeBackfiller(eventDB db.EventDB, clientsMap map[uint32][]ScribeBackend, config config.Config, handler metrics.Handler) (*ScribeBackfiller, error) {
 	chainBackfillers := map[uint32]*ChainBackfiller{}
 
 	for _, chainConfig := range config.Chains {
-		chainBackfiller, err := NewChainBackfiller(eventDB, clientsMap[chainConfig.ChainID], chainConfig, 1)
+		chainBackfiller, err := NewChainBackfiller(eventDB, clientsMap[chainConfig.ChainID], chainConfig, 1, handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not create chain backfiller: %w", err)
 		}
@@ -38,6 +41,7 @@ func NewScribeBackfiller(eventDB db.EventDB, clientsMap map[uint32][]ScribeBacke
 		clients:          clientsMap,
 		ChainBackfillers: chainBackfillers,
 		config:           config,
+		handler:          handler,
 	}, nil
 }
 

@@ -54,7 +54,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
 	e.Nil(err)
 
 	roots := [][32]byte{
@@ -178,7 +178,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
 	e.Nil(err)
 
 	_, err = exec.GetMerkleTree(chainID).Root(1)
@@ -364,7 +364,7 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
 	e.Nil(err)
 
 	nonces := []uint32{1, 2, 3, 4}
@@ -574,7 +574,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		summit:      e.TestBackendSummit.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
 	e.Nil(err)
 
 	go func() {
@@ -760,7 +760,7 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
 	e.Nil(err)
 
 	go func() {

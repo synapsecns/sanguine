@@ -12,6 +12,7 @@ import (
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"math"
 	"math/big"
@@ -48,18 +49,8 @@ type ScribeBackend interface {
 
 // DialBackend returns a scribe backend.
 func DialBackend(ctx context.Context, url string, handler metrics.Handler) (ScribeBackend, error) {
-	c, err := metrics.RPCClient(ctx, handler, url)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create rpc client: %w", err)
-	}
-
-	ethClient := ethclient.NewClient(c)
-	w3Client := w3.NewClient(c)
-
-	return &scribeBackendImpl{
-		Client: ethClient,
-		w3:     w3Client,
-	}, nil
+	//nolint:wrapcheck
+	return client.DialBackend(ctx, url, handler)
 }
 
 type scribeBackendImpl struct {

@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	executormetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"math/big"
@@ -84,6 +85,7 @@ type SimulatedBackendsTestSuite struct {
 	DBPath                              string
 	ExecutorTestDB                      db.ExecutorDB
 	ScribeMetrics                       metrics.Handler
+	ExecutorMetrics                     metrics.Handler
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -102,6 +104,8 @@ func (a *SimulatedBackendsTestSuite) SetupSuite() {
 
 	var err error
 	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	a.Require().Nil(err)
+	a.ExecutorMetrics, err = metrics.NewByType(a.GetSuiteContext(), executormetadata.BuildInfo(), metrics.Jaeger)
 	a.Require().Nil(err)
 }
 
