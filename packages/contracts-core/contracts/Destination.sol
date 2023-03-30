@@ -10,7 +10,7 @@ import { DestinationEvents } from "./events/DestinationEvents.sol";
 import { IAgentManager } from "./interfaces/IAgentManager.sol";
 import { ExecutionAttestation, InterfaceDestination } from "./interfaces/InterfaceDestination.sol";
 import { ILightManager } from "./interfaces/ILightManager.sol";
-import { ExecutionHub } from "./hubs/ExecutionHub.sol";
+import { DisputeHub, ExecutionHub } from "./hubs/ExecutionHub.sol";
 import { DomainContext, Versioned } from "./system/SystemContract.sol";
 import { SystemRegistry } from "./system/SystemRegistry.sol";
 
@@ -60,6 +60,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         external
         returns (bool wasAccepted)
     {
+        // Call the hook and check if we can accept the statement
+        if (!_beforeStatement()) return false;
         // This will revert if payload is not an attestation
         Attestation att = _wrapAttestation(_attPayload);
         // This will revert if signer is not an known Notary
@@ -84,6 +86,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         bytes memory _arSignature,
         bytes memory _attSignature
     ) external returns (bool wasAccepted) {
+        // Call the hook and check if we can accept the statement
+        if (!_beforeStatement()) return false;
         // This will revert if payload is not an attestation report
         AttestationReport report = _wrapAttestationReport(_arPayload);
         // This will revert if the report signer is not a known Guard
@@ -157,6 +161,14 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc DisputeHub
+    function _beforeStatement() internal override returns (bool acceptNext) {
+        (bool rootPassed, ) = passAgentRoot();
+        // We don't accept statements if the root was updated just now,
+        // as all the agent checks will fail otherwise.
+        return !rootPassed;
+    }
 
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This is overridden to allow disputes only between a Guard and a LOCAL Notary.
