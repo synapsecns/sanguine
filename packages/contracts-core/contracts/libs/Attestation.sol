@@ -13,7 +13,8 @@ using {
     AttestationLib.equalToSummit,
     AttestationLib.toExecutionAttestation,
     AttestationLib.hash,
-    AttestationLib.root,
+    AttestationLib.snapRoot,
+    AttestationLib.agentRoot,
     AttestationLib.nonce,
     AttestationLib.blockNumber,
     AttestationLib.timestamp
@@ -21,7 +22,8 @@ using {
 
 /// @dev Struct representing Attestation, as it is stored in the Summit contract.
 struct SummitAttestation {
-    bytes32 root;
+    bytes32 snapRoot;
+    bytes32 agentRoot;
     uint40 blockNumber;
     uint40 timestamp;
 }
@@ -74,18 +76,20 @@ library AttestationLib {
      * Attestation is considered "globally valid", if it is valid in the Summit and all the Origin contracts.
      *
      * @dev Memory layout of Attestation fields
-     * [000 .. 032): root           bytes32 32 bytes    Root for "Snapshot Merkle Tree" created from a Notary snapshot
-     * [032 .. 036): nonce          uint32   4 bytes    Total amount of all accepted Notary snapshots
-     * [036 .. 041): blockNumber    uint40   5 bytes    Block when this Notary snapshot was accepted in Summit
-     * [041 .. 046): timestamp      uint40   5 bytes    Time when this Notary snapshot was accepted in Summit
+     * [000 .. 032): snapRoot       bytes32 32 bytes    Root for "Snapshot Merkle Tree" created from a Notary snapshot
+     * [032 .. 064): agentRoot      bytes32 32 bytes    Root for "Agent Merkle Tree" tracked by BondingManager
+     * [064 .. 068): nonce          uint32   4 bytes    Total amount of all accepted Notary snapshots
+     * [068 .. 073): blockNumber    uint40   5 bytes    Block when this Notary snapshot was accepted in Summit
+     * [073 .. 078): timestamp      uint40   5 bytes    Time when this Notary snapshot was accepted in Summit
      *
      * The variables below are not supposed to be used outside of the library directly.
      */
 
-    uint256 private constant OFFSET_ROOT = 0;
-    uint256 private constant OFFSET_NONCE = 32;
-    uint256 private constant OFFSET_BLOCK_NUMBER = 36;
-    uint256 private constant OFFSET_TIMESTAMP = 41;
+    uint256 private constant OFFSET_SNAP_ROOT = 0;
+    uint256 private constant OFFSET_AGENT_ROOT = 32;
+    uint256 private constant OFFSET_NONCE = 64;
+    uint256 private constant OFFSET_BLOCK_NUMBER = 68;
+    uint256 private constant OFFSET_TIMESTAMP = 73;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             ATTESTATION                              ║*▕
@@ -93,19 +97,21 @@ library AttestationLib {
 
     /**
      * @notice Returns a formatted Attestation payload with provided fields.
-     * @param _root         Snapshot merkle tree's root
+     * @param _snapRoot     Snapshot merkle tree's root
+     * @param _agentRoot    Agent merkle tree's root
      * @param _nonce        Attestation Nonce
      * @param _blockNumber  Block number when attestation was created in Summit
      * @param _timestamp    Block timestamp when attestation was created in Summit
      * @return Formatted attestation
      **/
     function formatAttestation(
-        bytes32 _root,
+        bytes32 _snapRoot,
+        bytes32 _agentRoot,
         uint32 _nonce,
         uint40 _blockNumber,
         uint40 _timestamp
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(_root, _nonce, _blockNumber, _timestamp);
+        return abi.encodePacked(_snapRoot, _agentRoot, _nonce, _blockNumber, _timestamp);
     }
 
     /**
@@ -152,7 +158,8 @@ library AttestationLib {
     {
         return
             formatAttestation({
-                _root: _summitAtt.root,
+                _snapRoot: _summitAtt.snapRoot,
+                _agentRoot: _summitAtt.agentRoot,
                 _nonce: _nonce,
                 _blockNumber: _summitAtt.blockNumber,
                 _timestamp: _summitAtt.timestamp
@@ -161,16 +168,17 @@ library AttestationLib {
 
     /// @notice Returns an empty struct to save in Summit contract upon initialization.
     function emptySummitAttestation() internal view returns (SummitAttestation memory) {
-        return summitAttestation(bytes32(0));
+        return summitAttestation(bytes32(0), bytes32(0));
     }
 
     /// @notice Returns a struct to save in the Summit contract for the given root and height.
-    function summitAttestation(bytes32 _root)
+    function summitAttestation(bytes32 _snapRoot, bytes32 _agentRoot)
         internal
         view
         returns (SummitAttestation memory summitAtt)
     {
-        summitAtt.root = _root;
+        summitAtt.snapRoot = _snapRoot;
+        summitAtt.agentRoot = _agentRoot;
         summitAtt.blockNumber = uint40(block.number);
         summitAtt.timestamp = uint40(block.timestamp);
     }
@@ -182,7 +190,8 @@ library AttestationLib {
         returns (bool)
     {
         return
-            _att.root() == _summitAtt.root &&
+            _att.snapRoot() == _summitAtt.snapRoot &&
+            _att.agentRoot() == _summitAtt.agentRoot &&
             _att.blockNumber() == _summitAtt.blockNumber &&
             _att.timestamp() == _summitAtt.timestamp;
     }
@@ -223,9 +232,15 @@ library AttestationLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns root of the Snapshot merkle tree created in the Summit contract.
-    function root(Attestation _att) internal pure returns (bytes32) {
+    function snapRoot(Attestation _att) internal pure returns (bytes32) {
         bytes29 _view = _att.unwrap();
-        return _view.index({ _index: OFFSET_ROOT, _bytes: 32 });
+        return _view.index({ _index: OFFSET_SNAP_ROOT, _bytes: 32 });
+    }
+
+    /// @notice Returns root of the Agent merkle tree tracked by BondingManager.
+    function agentRoot(Attestation _att) internal pure returns (bytes32) {
+        bytes29 _view = _att.unwrap();
+        return _view.index({ _index: OFFSET_AGENT_ROOT, _bytes: 32 });
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.

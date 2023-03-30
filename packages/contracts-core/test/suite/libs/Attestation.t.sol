@@ -25,7 +25,8 @@ contract AttestationLibraryTest is SynapseLibraryTest {
 
     function test_formatAttestation(RawAttestation memory ra) public {
         bytes memory payload = libHarness.formatAttestation(
-            ra.root,
+            ra.snapRoot,
+            ra.agentRoot,
             ra.nonce,
             ra.blockNumber,
             ra.timestamp
@@ -33,12 +34,13 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         // Test formatting of state
         assertEq(
             payload,
-            abi.encodePacked(ra.root, ra.nonce, ra.blockNumber, ra.timestamp),
+            abi.encodePacked(ra.snapRoot, ra.agentRoot, ra.nonce, ra.blockNumber, ra.timestamp),
             "!formatAttestation"
         );
         checkCastToAttestation({ payload: payload, isAttestation: true });
         // Test getters
-        assertEq(libHarness.root(payload), ra.root, "!root");
+        assertEq(libHarness.snapRoot(payload), ra.snapRoot, "!snapRoot");
+        assertEq(libHarness.agentRoot(payload), ra.agentRoot, "!agentRoot");
         assertEq(libHarness.nonce(payload), ra.nonce, "!nonce");
         assertEq(libHarness.blockNumber(payload), ra.blockNumber, "!blockNumber");
         assertEq(libHarness.timestamp(payload), ra.timestamp, "!timestamp");
@@ -65,12 +67,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         uint40 submittedAt
     ) public {
         vm.warp(submittedAt);
-        bytes memory payload = libHarness.formatAttestation(
-            ra.root,
-            ra.nonce,
-            ra.blockNumber,
-            ra.timestamp
-        );
+        bytes memory payload = ra.formatAttestation();
         ExecutionAttestation memory execAtt = libHarness.toExecutionAttestation(payload, notary);
         assertEq(execAtt.notary, notary, "!notary");
         assertEq(execAtt.nonce, ra.nonce, "!nonce");
@@ -90,11 +87,22 @@ contract AttestationLibraryTest is SynapseLibraryTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function test_formatSummitAttestation(RawAttestation memory ra) public {
-        SummitAttestation memory att = SummitAttestation(ra.root, ra.blockNumber, ra.timestamp);
+        SummitAttestation memory att = SummitAttestation(
+            ra.snapRoot,
+            ra.agentRoot,
+            ra.blockNumber,
+            ra.timestamp
+        );
         bytes memory payload = libHarness.formatSummitAttestation(att, ra.nonce);
         assertEq(
             payload,
-            libHarness.formatAttestation(ra.root, ra.nonce, ra.blockNumber, ra.timestamp),
+            libHarness.formatAttestation(
+                ra.snapRoot,
+                ra.agentRoot,
+                ra.nonce,
+                ra.blockNumber,
+                ra.timestamp
+            ),
             "!formatSummitAttestation"
         );
     }

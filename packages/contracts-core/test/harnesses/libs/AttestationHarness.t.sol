@@ -33,8 +33,12 @@ contract AttestationHarness {
         return _attestation.unwrap().clone();
     }
 
-    function root(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToAttestation().root();
+    function snapRoot(bytes memory _payload) public pure returns (bytes32) {
+        return _payload.castToAttestation().snapRoot();
+    }
+
+    function agentRoot(bytes memory _payload) public pure returns (bytes32) {
+        return _payload.castToAttestation().agentRoot();
     }
 
     function nonce(bytes memory _payload) public pure returns (uint32) {
@@ -86,12 +90,20 @@ contract AttestationHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatAttestation(
-        bytes32 _root,
+        bytes32 _snapRoot,
+        bytes32 _agentRoot,
         uint32 _nonce,
         uint40 _blockNumber,
         uint40 _timestamp
     ) public pure returns (bytes memory) {
-        return AttestationLib.formatAttestation(_root, _nonce, _blockNumber, _timestamp);
+        return
+            AttestationLib.formatAttestation(
+                _snapRoot,
+                _agentRoot,
+                _nonce,
+                _blockNumber,
+                _timestamp
+            );
     }
 
     function isAttestation(bytes memory _payload) public pure returns (bool) {

@@ -68,7 +68,8 @@ using {
 } for RawSnapshot global;
 
 struct RawAttestation {
-    bytes32 root;
+    bytes32 snapRoot;
+    bytes32 agentRoot;
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
@@ -200,12 +201,14 @@ library CastLib {
 
     function castToRawAttestation(
         RawSnapshot memory rawSnap,
+        bytes32 agentRoot,
         uint32 nonce,
         uint40 blockNumber,
         uint40 timestamp
     ) internal view returns (RawAttestation memory ra) {
         Snapshot snapshot = rawSnap.castToSnapshot();
-        ra.root = snapshot.root();
+        ra.snapRoot = snapshot.root();
+        ra.agentRoot = agentRoot;
         ra.nonce = nonce;
         ra.blockNumber = blockNumber;
         ra.timestamp = timestamp;
@@ -237,7 +240,8 @@ library CastLib {
         returns (bytes memory attestation)
     {
         attestation = AttestationLib.formatAttestation({
-            _root: ra.root,
+            _snapRoot: ra.snapRoot,
+            _agentRoot: ra.agentRoot,
             _nonce: ra.nonce,
             _blockNumber: ra.blockNumber,
             _timestamp: ra.timestamp
