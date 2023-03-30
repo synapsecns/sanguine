@@ -27,14 +27,14 @@ describe('SynapseSDK', () => {
       const chainIds = [42161, 43114]
       const providers = [arbitrumProvider, avalancheProvider]
       const Synapse = new SynapseSDK(chainIds, providers)
-      const { bridgeFee, destQuery } = await Synapse.bridgeQuote(
+      const { destQuery } = await Synapse.bridgeQuote(
         42161,
         43114,
         '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
         '0x321E7092a180BB43555132ec53AaA65a5bF84251',
         BigNumber.from('10000000000000000000')
       )
-      expect(bridgeFee).toBeGreaterThan(0)
+      // expect(bridgeFee).toBeGreaterThan(0)
       expect(destQuery?.length).toBeGreaterThan(0)
     })
   })
