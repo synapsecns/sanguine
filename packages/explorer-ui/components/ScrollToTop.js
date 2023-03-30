@@ -1,7 +1,6 @@
 import {useEffect} from 'react'
 
 export function ScrollToTop() {
-  // const { pathname } = useLocation()
   const pathname = ''
 
   useEffect(() => {

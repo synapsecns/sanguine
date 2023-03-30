@@ -66,14 +66,14 @@ spec:
           livenessProbe:
             initialDelaySeconds: {{ .Values.initialDelaySeconds }}
             failureThreshold: 5
-            timeoutSeconds: 30
+            timeoutSeconds: 1
             httpGet:
               path: /health-check
               port: http
           readinessProbe:
             failureThreshold: 5
             initialDelaySeconds: {{ .Values.initialDelaySeconds }}
-            timeoutSeconds: 30
+            timeoutSeconds: 1
             httpGet:
               path: /health-check
               port: http

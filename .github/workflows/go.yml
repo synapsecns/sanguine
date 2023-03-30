@@ -445,16 +445,17 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
-      - name: Install Node Dependencies
-        run: yarn install --immutable
-        if: ${{ contains(matrix.package, 'agents') }}
-
       # Foundry is required for flattening
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         if: ${{ contains(matrix.package, 'agents') }}
         with:
           version: nightly
+
+      - name: Install Node Dependencies
+        run: yarn install --immutable
+        if: ${{ contains(matrix.package, 'agents') }}
+
 
       # Generate flattened files
       - name: Run flattener

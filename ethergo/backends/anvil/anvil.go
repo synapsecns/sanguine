@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/eth/gasprice"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/google/uuid"
@@ -18,7 +17,6 @@ import (
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dockerutil"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/processlog"
@@ -34,7 +32,6 @@ import (
 	"strings"
 	"sync"
 	"testing"
-	"time"
 )
 
 const gasLimit = 5000000
@@ -68,7 +65,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	pool, err := dockertest.NewPool("")
 	assert.Nil(t, err)
 
-	pool.MaxWait = time.Minute * 2
+	pool.MaxWait = args.maxWait
 	if err != nil {
 		assert.Nil(t, err)
 	}
@@ -87,8 +84,8 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	}
 
 	resource, err := pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
-		config.AutoRemove = true
-		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
+		config.AutoRemove = args.autoremove
+		config.RestartPolicy = docker.AlwaysRestart()
 	})
 	assert.Nil(t, err)
 
@@ -108,12 +105,10 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		}
 	}()
 
-	// Docker will hard kill the container in 4000 seconds (this is a test env).
+	// Docker will hard kill the container in expiryseconds seconds (this is a test env).
 	// containers should be removed on their own, but this is a safety net.
 	// to prevent old containers from piling up, we set a timeout to remove the container.
-	const resourceLifetime = uint(600)
-
-	assert.Nil(t, resource.Expire(resourceLifetime))
+	assert.Nil(t, resource.Expire(args.expirySeconds))
 
 	address := fmt.Sprintf("%s:%s", "http://localhost", resource.GetPort("8545/tcp"))
 
@@ -249,16 +244,18 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 	// TODO: this may cause issues when newBal overflows uint64
 	err = anvilClient.SetBalance(ctx, address, newBal.Uint64())
 	assert.Nil(f.T(), err)
+
 }
 
 // WaitForConfirmation checks confirmation if the transaction is signed.
+// nolint: cyclop
 func (f *Backend) WaitForConfirmation(ctx context.Context, tx *types.Transaction) {
 	assert.NotNil(f.T(), tx, "tx is nil")
 	v, r, s := tx.RawSignatureValues()
 	isUnsigned := isZero(v) && isZero(r) && isZero(s)
 	if isUnsigned {
 		warnUnsignedOnce.Do(func() {
-			logger.Warn("WaitForConfirmation called on unsigned (liekly impersonated) transaction, this does nothing")
+			logger.Warn("WaitForConfirmation called on unsigned (likely impersonated) transaction, this does nothing")
 		})
 		return
 	}
@@ -303,11 +300,8 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	auth, err := f.NewKeyedTransactorFromKey(acct.PrivateKey)
 	assert.Nilf(f.T(), err, "could not get transactor for chain %d: %v", f.GetChainID(), err)
 
-	blockNumber, err := f.BlockNumber(ctx)
-	assert.Nilf(f.T(), err, "could not get block number for chain %d: %v", f.GetChainID(), err)
-
-	err = f.Chain.GasSetter().SetGasFee(ctx, auth, blockNumber, core.CopyBigInt(gasprice.DefaultMaxPrice))
-	assert.Nilf(f.T(), err, "could not set gas fee for chain %d: %v", f.GetChainID(), err)
+	auth.GasPrice, err = f.SuggestGasPrice(ctx)
+	assert.Nilf(f.T(), err, "could not get gas price for chain %d: %v", f.GetChainID(), err)
 
 	auth.GasLimit = gasLimit
 
@@ -342,14 +336,15 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 	}()
 
 	tx := transact(&bind.TransactOpts{
-		Context: ctx,
-		From:    address,
-		Signer:  ImpersonatedSigner,
-		NoSend:  true,
+		Context:  ctx,
+		From:     address,
+		Signer:   ImpersonatedSigner,
+		GasLimit: gasLimit,
+		NoSend:   true,
 	})
 
 	err = anvilClient.SendUnsignedTransaction(ctx, address, tx)
-	assert.Nil(f.T(), err, "could not send unsigned transaction for chain %d: %v", f.GetChainID(), err)
+	assert.Nilf(f.T(), err, "could not send unsigned transaction for chain %d: %v from %s", f.GetChainID(), err, address.String())
 
 	return nil
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
@@ -61,7 +60,6 @@ func (r *RPCProxy) Run(ctx context.Context) {
 
 	router := ginhelper.New(logger)
 	router.Use(r.handler.Gin())
-	log.SetAllLoggers(log.LevelDebug)
 
 	router.POST("/rpc/:id", func(c *gin.Context) {
 		chainID, err := strconv.Atoi(c.Param("id"))

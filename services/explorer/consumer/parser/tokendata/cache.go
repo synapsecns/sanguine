@@ -3,14 +3,15 @@ package tokendata
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"strings"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"strings"
-	"time"
 )
 
 // Service provides data about tokens using either a cache or bridgeconfig
@@ -24,6 +25,10 @@ type Service interface {
 }
 
 const cacheSize = 3000
+
+// maxAttemptTime is how many times we will attempt to get the token data.
+const maxAttemptTime = time.Minute * 5
+const maxAttempt = 10
 
 type tokenDataServiceImpl struct {
 	// tokenCache is the tokenCache of the tokenDataServices
@@ -182,8 +187,3 @@ func (t *tokenDataServiceImpl) retrievePoolTokenData(parentCtx context.Context, 
 
 	return res, nil
 }
-
-// maxAttemptTime is how many times we will attempt to get the token data.
-var maxAttemptTime = time.Second * 10
-
-const maxAttempt = 10
