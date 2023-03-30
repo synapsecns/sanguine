@@ -7,9 +7,11 @@ interface InterfaceDestination {
     /**
      * @notice Attempts to pass a quarantined Agent Merkle Root to a local Light Manager.
      * @dev Will do nothing, if root optimistic period is not over.
-     * @return passed   Whether the agent merkle root was passed to LightManager
+     * Note: both returned values can not be true.
+     * @return rootPassed   Whether the agent merkle root was passed to LightManager
+     * @return rootPending  Whether there is a pending agent merkle root left
      */
-    function passAgentRoot() external returns (bool passed);
+    function passAgentRoot() external returns (bool rootPassed, bool rootPending);
 
     /**
      * @notice Submit an Attestation signed by a Notary.

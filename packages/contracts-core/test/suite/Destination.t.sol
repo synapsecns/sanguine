@@ -65,6 +65,10 @@ contract DestinationTest is DisputeHubTest {
         }
         // Check version
         assertEq(Versioned(destination).version(), LATEST_VERSION, "!version");
+        // Check pending Agent Merkle Root
+        (bool rootPassed, bool rootPending) = InterfaceDestination(destination).passAgentRoot();
+        assertFalse(rootPassed);
+        assertFalse(rootPending);
     }
 
     function test_submitAttestation(RawAttestation memory ra, uint32 rootSubmittedAt) public {
@@ -106,7 +110,9 @@ contract DestinationTest is DisputeHubTest {
         test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
         timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
         skip(timePassed);
-        assertFalse(InterfaceDestination(destination).passAgentRoot());
+        (bool rootPassed, bool rootPending) = InterfaceDestination(destination).passAgentRoot();
+        assertFalse(rootPassed);
+        assertTrue(rootPending);
         assertEq(lightManager.agentRoot(), agentRootLM);
     }
 
@@ -114,11 +120,12 @@ contract DestinationTest is DisputeHubTest {
         RawAttestation memory ra,
         uint32 rootSubmittedAt
     ) public {
-        bytes32 agentRootLM = lightManager.agentRoot();
         // Submit attestation that updates `nextAgentRoot`
         test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        assertTrue(InterfaceDestination(destination).passAgentRoot());
+        (bool rootPassed, bool rootPending) = InterfaceDestination(destination).passAgentRoot();
+        assertTrue(rootPassed);
+        assertFalse(rootPending);
         assertEq(lightManager.agentRoot(), ra.agentRoot);
     }
 

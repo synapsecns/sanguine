@@ -104,25 +104,28 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc InterfaceDestination
-    function passAgentRoot() public returns (bool passed) {
+    function passAgentRoot() public returns (bool rootPassed, bool rootPending) {
         bytes32 oldRoot = agentManager.agentRoot();
         bytes32 newRoot = nextAgentRoot;
         // Check if agent root differs from the current one in LightManager
-        if (oldRoot == newRoot) return false;
+        if (oldRoot == newRoot) return (false, false);
         DestinationStatus memory status = destStatus;
         // Invariant: Notary who supplied `newRoot` was registered as active against `oldRoot`
         // So we just need to check the Dispute status of the Notary
         if (_inDispute(status.notary)) {
             // Remove the pending agent merkle root, as its signer is in dispute
             nextAgentRoot = oldRoot;
-            return false;
+            return (false, false);
         }
         // Check if agent root optimistic period is over
-        if (status.agentRootTime + AGENT_ROOT_OPTIMISTIC_PERIOD > block.timestamp) return false;
+        if (status.agentRootTime + AGENT_ROOT_OPTIMISTIC_PERIOD > block.timestamp) {
+            // We didn't pass anything, but there is a pending root
+            return (false, true);
+        }
         // `newRoot` signer was not disputed, and the root optimistic period is over.
         // Finally, pass the Agent Merkle Root to LightManager
         ILightManager(address(agentManager)).setAgentRoot(newRoot);
-        return true;
+        return (true, false);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
