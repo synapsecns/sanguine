@@ -196,6 +196,7 @@ var (
 )
 
 // WaitForConfirmation waits for transaction confirmation.
+// nolint: cyclop
 func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *types.Transaction) {
 	ctx, cancel := onecontext.Merge(b.ctx, parentCtx)
 	defer cancel()

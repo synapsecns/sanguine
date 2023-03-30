@@ -59,6 +59,7 @@ func (f *Backend) BackendName() string {
 }
 
 // NewAnvilBackend creates a test anvil backend.
+// nolint: cyclop
 func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Backend {
 	t.Helper()
 
@@ -85,7 +86,9 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 
 	resource, err := pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 		config.AutoRemove = args.autoremove
-		config.RestartPolicy = docker.AlwaysRestart()
+		if args.restartPolicy != nil {
+			config.RestartPolicy = *args.restartPolicy
+		}
 	})
 	assert.Nil(t, err)
 
@@ -244,7 +247,6 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 	// TODO: this may cause issues when newBal overflows uint64
 	err = anvilClient.SetBalance(ctx, address, newBal.Uint64())
 	assert.Nil(f.T(), err)
-
 }
 
 // WaitForConfirmation checks confirmation if the transaction is signed.
