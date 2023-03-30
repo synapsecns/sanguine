@@ -50,8 +50,6 @@ type Backend struct {
 	chainConfig *params.ChainConfig
 	// impersonationMux is used to lock the impersonation
 	impersonationMux sync.Mutex
-	// otterscanURL is the otterscan url
-	otterscanURL string
 }
 
 // BackendName is the name of the anvil backend.
@@ -76,9 +74,6 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 
 	commandArgs, err := args.Build()
 	assert.Nil(t, err)
-
-	// pull the otterscan image while we boot foundry to speedup the process
-	pullOtterscanIfEnabled(pool.Client, args)
 
 	runOptions := &dockertest.RunOptions{
 		Repository: "ghcr.io/foundry-rs/foundry",
@@ -199,34 +194,6 @@ func tailLogs(ctx context.Context, resource *dockertest.Resource, pool *dockerte
 
 	//nolint: wrapcheck
 	return pool.Client.Logs(opts)
-}
-
-func runOtterscan(pool *dockertest.Pool, url string, args *OptionBuilder) {
-	//runOptions := &dockertest.RunOptions{
-	//	Repository: "ghcr.io/foundry-rs/foundry",
-	//	Tag:        "latest",
-	//	Cmd:        []string{strings.Join(append([]string{"anvil"}, commandArgs...), " ")},
-	//	Labels: map[string]string{
-	//		"test-id": uuid.New().String(),
-	//	},
-	//	ExposedPorts: []string{"8545"},
-	//}
-}
-
-// pullOtterscanIfRequired pulls the otterscan image if it is required.
-// this happens in a goroutine so that it doesn't block the test and is a performance optioizaiton
-func pullOtterscanIfEnabled(client *docker.Client, args *OptionBuilder) {
-	if args.runOtterscan {
-		go func() {
-			err := client.PullImage(docker.PullImageOptions{
-				Repository: "otterscan/otterscan",
-				Tag:        "latest",
-			}, docker.AuthConfiguration{})
-			if err != nil {
-				logger.Warn(err)
-			}
-		}()
-	}
 }
 
 // storeWallets stores preseeded wallets w/ balances.

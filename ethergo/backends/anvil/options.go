@@ -105,8 +105,6 @@ type serverOptions struct {
 
 // nonAnvilOptions: it's important that these do not include the anvil annotation
 type nonAnvilOptions struct {
-	// runOtterscan is a flag to enable otterscan
-	runOtterscan bool
 	// maxWait is the maximum time to wait for the server to start
 	maxWait time.Duration
 	// expirySeconds is the number of seconds to wait before expiring a request
@@ -331,11 +329,6 @@ func (o *OptionBuilder) SetPruneHistory(pruneHistory bool) {
 // SetHost sets the host to listen on.
 func (o *OptionBuilder) SetHost(host string) {
 	o.Host = host
-}
-
-// SetOtterscanEnabled enables or disables otterscan.
-func (o *OptionBuilder) SetOtterscanEnabled(enabled bool) {
-	o.runOtterscan = enabled
 }
 
 // SetMaxWaitTime sets the max wait time for the docker image to start.
