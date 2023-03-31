@@ -40,7 +40,7 @@ jobs:
         run:
           echo "##[set-output name=TAG_NAME;]$(echo $LATEST_TAG_NAME)"
         env:
-          LATEST_TAG_NAME: ghcr.io/synapsecns/jaeger-ui-pyroscope:${{ hashFiles('jaeger-ui-pyroscope.Dockerfile') }}
+          LATEST_TAG_NAME: ghcr.io/synapsecns/jaeger-ui-pyroscope:${{ hashFiles('docker/jaeger-ui-pyroscope.Dockerfile') }}
 
       -
         name: Build and push
