@@ -8,15 +8,15 @@ import { ByteString, SystemEntity, SystemRouter } from "../../../contracts/syste
 contract SystemRouterHarness is SystemRouter {
     using ByteString for bytes;
 
-    /// @notice Prevents this contract from being included in the coverage report
-    function testSystemRouterHarness() external {}
-
     constructor(
         uint32 domain,
         address origin_,
         address destination_,
         address agentManager_
     ) SystemRouter(domain, origin_, destination_, agentManager_) {}
+
+    /// @notice Prevents this contract from being included in the coverage report
+    function testSystemRouterHarness() external {}
 
     /**
      * @notice Pranks a system call: calls a local system recipient, as if the system call
@@ -27,12 +27,12 @@ contract SystemRouterHarness is SystemRouter {
         uint256 rootSubmittedAt,
         uint32 callOrigin,
         SystemEntity systemCaller,
-        bytes memory data
+        bytes memory payload
     ) public {
         bytes memory prefix = abi.encode(rootSubmittedAt, callOrigin, systemCaller);
         _localSystemCall({
-            recipient: uint8(recipient),
-            callData: data.castToCallData(),
+            systemRecipient: uint8(recipient),
+            callData: payload.castToCallData(),
             prefix: prefix.castToRawBytes()
         });
     }

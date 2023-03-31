@@ -6,6 +6,7 @@ import {
     SystemEntity
 } from "../../../contracts/interfaces/InterfaceSystemRouter.sol";
 
+// solhint-disable no-empty-blocks
 contract SystemRouterMock is InterfaceSystemRouter {
     /// @notice Prevents this contract from being included in the coverage report
     function testSystemRouterMock() external {}
