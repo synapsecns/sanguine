@@ -15,7 +15,7 @@ RUN yarn build
 
 FROM nginx:stable-alpine
 
-LABEL org.label-schema.description="Jaeger UI Pyroscope Docker file"
+LABEL org.label-schema.description="Jaeger UI Pyroscope Docker Image"
 LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine/docker"
 LABEL org.label-schema.schema-version="1.0.0"
 LABEL org.label-schema.vcs-url="https://github.com/synapsecns/sanguine"

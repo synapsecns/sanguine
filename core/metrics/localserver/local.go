@@ -33,11 +33,10 @@ type testJaeger struct {
 	pool              *dockertest.Pool
 	logDir            string
 	runID             string
+	commonResourceMux sync.Mutex
 	pyroscopeResource *uiResource
 	jaegerResource    *uiResource
-	// jaegerUIResource is the pyroscope jaeger ui resource. This is not guaranteed to be running.
-	// the proxy should bypass it if it is not running.
-	jaegerUIResource *uiResource
+	jaegerUIResource  *uiResource
 }
 
 // StartServer starts a local jaeger server for testing.
@@ -125,7 +124,7 @@ func (j *testJaeger) buildLogMessage(includeAuxiliary bool) string {
 }
 
 // getDockerizedResources gets all resources that have been dockerized by this process.
-func (j testJaeger) getDockerizedResources() (dockerizedResources []*dockertest.Resource) {
+func (j *testJaeger) getDockerizedResources() (dockerizedResources []*dockertest.Resource) {
 	allResources := []*uiResource{j.jaegerResource, j.pyroscopeResource}
 	for _, resource := range allResources {
 		if resource.Resource == nil {
