@@ -111,9 +111,9 @@ library ByteString {
     {
         // Get the underlying memory view
         bytes29 _view = unwrap(_signature);
-        r = _view.index({ _index: OFFSET_R, _bytes: 32 });
-        s = _view.index({ _index: OFFSET_S, _bytes: 32 });
-        v = uint8(_view.indexUint({ _index: OFFSET_V, _bytes: 1 }));
+        r = _view.index({ index: OFFSET_R, _bytes: 32 });
+        s = _view.index({ index: OFFSET_S, _bytes: 32 });
+        v = uint8(_view.indexUint({ index: OFFSET_V, _bytes: 1 }));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -178,13 +178,13 @@ library ByteString {
     function callSelector(CallData _callData) internal pure returns (bytes29) {
         // Get the underlying memory view
         bytes29 _view = unwrap(_callData);
-        return _view.slice({ _index: OFFSET_SELECTOR, _len: SELECTOR_LENGTH, newType: 0 });
+        return _view.slice({ index: OFFSET_SELECTOR, _len: SELECTOR_LENGTH, newType: 0 });
     }
 
     /// @notice Returns abi encoded arguments for the provided calldata.
     function arguments(CallData _callData) internal pure returns (bytes29) {
         // Get the underlying memory view
         bytes29 _view = unwrap(_callData);
-        return _view.sliceFrom({ _index: OFFSET_ARGUMENTS, newType: 0 });
+        return _view.sliceFrom({ index: OFFSET_ARGUMENTS, newType: 0 });
     }
 }

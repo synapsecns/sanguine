@@ -8,16 +8,16 @@ abstract contract DomainContext {
     /**
      * @notice Ensures that a domain matches the local domain.
      */
-    modifier onlyLocalDomain(uint32 _domain) {
-        _assertLocalDomain(_domain);
+    modifier onlyLocalDomain(uint32 domain) {
+        _assertLocalDomain(domain);
         _;
     }
 
-    constructor(uint32 _domain) {
-        localDomain = _domain;
+    constructor(uint32 domain) {
+        localDomain = domain;
     }
 
-    function _assertLocalDomain(uint32 _domain) internal view {
-        require(_domain == localDomain, "!localDomain");
+    function _assertLocalDomain(uint32 domain) internal view {
+        require(domain == localDomain, "!localDomain");
     }
 }

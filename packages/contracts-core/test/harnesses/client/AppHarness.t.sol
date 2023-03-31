@@ -12,36 +12,36 @@ contract AppHarness is IMessageRecipient {
     bytes32 public expectedSender;
     bytes32 public expectedMessageBodyHash;
 
-    constructor(uint32 _optimisticSeconds) {
-        optimisticSeconds = _optimisticSeconds;
+    constructor(uint32 optimisticSeconds) {
+        optimisticSeconds = optimisticSeconds;
     }
 
     /// @notice Prevents this contract from being included in the coverage report
     function testAppHarness() external {}
 
     function prepare(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes32 _sender,
-        bytes memory _message
+        uint32 origin,
+        uint32 nonce,
+        bytes32 sender,
+        bytes memory message
     ) external {
-        expectedOrigin = _origin;
-        expectedNonce = _nonce;
-        expectedSender = _sender;
-        expectedMessageBodyHash = keccak256(_message);
+        expectedOrigin = origin;
+        expectedNonce = nonce;
+        expectedSender = sender;
+        expectedMessageBodyHash = keccak256(message);
     }
 
     function handle(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes32 _sender,
-        uint256 _rootSubmittedAt,
-        bytes memory _message
+        uint32 origin,
+        uint32 nonce,
+        bytes32 sender,
+        uint256 rootSubmittedAt,
+        bytes memory message
     ) external view {
-        require(block.timestamp >= _rootSubmittedAt + optimisticSeconds, "app: !optimisticSeconds");
-        require(_origin == expectedOrigin, "app: !origin");
-        require(_nonce == expectedNonce, "app: !nonce");
-        require(_sender == expectedSender, "app: !sender");
-        require(keccak256(_message) == expectedMessageBodyHash, "app: !message");
+        require(block.timestamp >= rootSubmittedAt + optimisticSeconds, "app: !optimisticSeconds");
+        require(origin == expectedOrigin, "app: !origin");
+        require(nonce == expectedNonce, "app: !nonce");
+        require(sender == expectedSender, "app: !sender");
+        require(keccak256(message) == expectedMessageBodyHash, "app: !message");
     }
 }

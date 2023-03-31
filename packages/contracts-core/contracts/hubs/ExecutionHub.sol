@@ -56,22 +56,22 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @inheritdoc IExecutionHub
     function execute(
-        bytes memory _message,
-        bytes32[] calldata _originProof,
-        bytes32[] calldata _snapProof,
-        uint256 _stateIndex
+        bytes memory message,
+        bytes32[] calldata originProof,
+        bytes32[] calldata snapProof,
+        uint256 stateIndex
     ) external {
         // This will revert if payload is not a formatted message payload
-        Message message = _message.castToMessage();
+        Message message = message.castToMessage();
         Header header = message.header();
         bytes32 msgLeaf = message.leaf();
         // Check proofs validity and mark message as executed
         ExecutionAttestation memory execAtt = _prove(
             header,
             msgLeaf,
-            _originProof,
-            _snapProof,
-            _stateIndex
+            originProof,
+            snapProof,
+            stateIndex
         );
         // Store message tips
         Tips tips = message.tips();
@@ -100,9 +100,9 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
      * But if SYSTEM_ROUTER value is used for "recipient" field, recipient is Synapse Router.
      * Note: tx will revert in Origin if anyone but SystemRouter uses SYSTEM_ROUTER as recipient.
      */
-    function _checkForSystemRouter(bytes32 _recipient) internal view returns (address recipient) {
+    function _checkForSystemRouter(bytes32 recipient) internal view returns (address recipient) {
         // Check if SYSTEM_ROUTER was specified as message recipient
-        if (_recipient == SYSTEM_ROUTER) {
+        if (recipient == SYSTEM_ROUTER) {
             /**
              * @dev Route message to SystemRouter.
              * Note: Only SystemRouter contract on origin chain can send a message
@@ -111,7 +111,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             recipient = address(systemRouter);
         } else {
             // Cast bytes32 to address otherwise
-            recipient = TypeCasts.bytes32ToAddress(_recipient);
+            recipient = TypeCasts.bytes32ToAddress(recipient);
         }
     }
 
@@ -122,19 +122,19 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
      * After that the snapshot Merkle Root is reconstructed using the snapshot proof.
      * Finally, the optimistic period is checked for the derived snapshot root.
      * @dev Reverts if any of the checks fail.
-     * @param _header       Typed memory view over message header payload
-     * @param _msgLeaf      Message Leaf that was inserted in the Origin Merkle Tree
-     * @param _originProof  Proof of inclusion of Message Leaf in the Origin Merkle Tree
-     * @param _snapProof    Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
-     * @param _stateIndex   Index of Origin State in the Snapshot
+     * @param header        Typed memory view over message header payload
+     * @param msgLeaf       Message Leaf that was inserted in the Origin Merkle Tree
+     * @param originProof   Proof of inclusion of Message Leaf in the Origin Merkle Tree
+     * @param snapProof     Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
+     * @param stateIndex    Index of Origin State in the Snapshot
      * @return execAtt      Attestation data for derived snapshot root
      */
     function _prove(
         Header _header,
         bytes32 _msgLeaf,
-        bytes32[] calldata _originProof,
-        bytes32[] calldata _snapProof,
-        uint256 _stateIndex
+        bytes32[] calldata originProof,
+        bytes32[] calldata snapProof,
+        uint256 stateIndex
     ) internal returns (ExecutionAttestation memory execAtt) {
         // TODO: split into a few smaller functions?
         // Check that message has not been executed before
@@ -147,14 +147,14 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         bytes32 originRoot = MerkleLib.proofRoot(
             _header.nonce() - 1,
             _msgLeaf,
-            _originProof,
+            originProof,
             ORIGIN_TREE_HEIGHT
         );
         // Reconstruct Snapshot Merkle Root using the snapshot proof
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
-        bytes32 snapshotRoot = _snapshotRoot(originRoot, _header.origin(), _snapProof, _stateIndex);
+        bytes32 snapshotRoot = _snapshotRoot(originRoot, _header.origin(), snapProof, stateIndex);
         // Fetch the attestation data for the snapshot root
         execAtt = rootAttestations[snapshotRoot];
         // Check if snapshot root has been submitted
@@ -194,8 +194,8 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     ▏*║                         INTERNAL LOGIC: TIPS                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _storeTips(address _notary, Tips _tips) internal {
+    function _storeTips(address _notary, Tips tips) internal {
         // TODO: implement tips logic
-        emit TipsStored(_notary, _tips.unwrap().clone());
+        emit TipsStored(_notary, tips.unwrap().clone());
     }
 }

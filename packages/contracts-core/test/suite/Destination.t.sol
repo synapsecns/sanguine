@@ -281,7 +281,7 @@ contract DestinationTest is DisputeHubTest {
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
             bytes32[] memory originProof = getLatestProof(i);
-            // (_origin, _nonce, _sender, _rootSubmittedAt, _message)
+            // (origin, nonce, sender, rootSubmittedAt, message)
             vm.expectCall(
                 recipient,
                 abi.encodeWithSelector(

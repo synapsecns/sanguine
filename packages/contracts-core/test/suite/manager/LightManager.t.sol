@@ -22,15 +22,15 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_initializer(
         address caller,
-        address _origin,
-        address _destination
+        address origin,
+        address destination
     ) public {
         lightManager = new LightManager(DOMAIN_LOCAL);
         vm.prank(caller);
-        lightManager.initialize(ISystemRegistry(_origin), ISystemRegistry(_destination));
+        lightManager.initialize(ISystemRegistry(origin), ISystemRegistry(destination));
         assertEq(lightManager.owner(), caller);
-        assertEq(address(lightManager.origin()), _origin);
-        assertEq(address(lightManager.destination()), _destination);
+        assertEq(address(lightManager.origin()), origin);
+        assertEq(address(lightManager.destination()), destination);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -148,7 +148,7 @@ contract LightManagerTest is AgentManagerTest {
             destination,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
-        // (_destination, _optimisticSeconds, _recipient, _data)
+        // (destination, optimisticSeconds, recipient, data)
         vm.expectCall(
             address(systemRouter),
             abi.encodeWithSelector(
@@ -162,9 +162,9 @@ contract LightManagerTest is AgentManagerTest {
         vm.prank(origin);
         lightManager.registrySlash(domain, agent, prover);
         assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address _prover) = lightManager.slashStatus(agent);
+        (bool isSlashed, address prover) = lightManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(_prover, prover);
+        assertEq(prover, prover);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {

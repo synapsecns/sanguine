@@ -62,20 +62,20 @@ contract MessageHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatMessage(
-        uint32 _origin,
-        bytes32 _sender,
-        uint32 _nonce,
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
+        uint32 origin,
+        bytes32 sender,
+        uint32 nonce,
+        uint32 destination,
+        bytes32 recipient,
+        uint32 optimisticSeconds,
         // tips params
         uint96 _notaryTip,
         uint96 _broadcasterTip,
         uint96 _proverTip,
         uint96 _executorTip,
-        bytes memory _messageBody
+        bytes memory messageBody
     ) public pure returns (bytes memory) {
-        bytes memory _tips = TipsLib.formatTips(
+        bytes memory tips = TipsLib.formatTips(
             _notaryTip,
             _broadcasterTip,
             _proverTip,
@@ -83,45 +83,45 @@ contract MessageHarness {
         );
 
         bytes memory _header = HeaderLib.formatHeader(
-            _origin,
-            _sender,
-            _nonce,
-            _destination,
-            _recipient,
-            _optimisticSeconds
+            origin,
+            sender,
+            nonce,
+            destination,
+            recipient,
+            optimisticSeconds
         );
-        return formatMessage(_header, _tips, _messageBody);
+        return formatMessage(_header, tips, messageBody);
     }
 
     function formatMessage(
-        uint32 _origin,
-        bytes32 _sender,
-        uint32 _nonce,
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _tips,
-        bytes memory _messageBody
+        uint32 origin,
+        bytes32 sender,
+        uint32 nonce,
+        uint32 destination,
+        bytes32 recipient,
+        uint32 optimisticSeconds,
+        bytes memory tips,
+        bytes memory messageBody
     ) public pure returns (bytes memory) {
         return
             MessageLib.formatMessage(
-                _origin,
-                _sender,
-                _nonce,
-                _destination,
-                _recipient,
-                _optimisticSeconds,
-                _tips,
-                _messageBody
+                origin,
+                sender,
+                nonce,
+                destination,
+                recipient,
+                optimisticSeconds,
+                tips,
+                messageBody
             );
     }
 
     function formatMessage(
         bytes memory _header,
-        bytes memory _tips,
-        bytes memory _messageBody
+        bytes memory tips,
+        bytes memory messageBody
     ) public pure returns (bytes memory) {
-        return MessageLib.formatMessage(_header, _tips, _messageBody);
+        return MessageLib.formatMessage(_header, tips, messageBody);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

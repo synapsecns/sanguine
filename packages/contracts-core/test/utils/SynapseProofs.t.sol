@@ -104,10 +104,10 @@ abstract contract SynapseProofs {
         return agentGen.getProof(totalAgents + 1);
     }
 
-    function getAgentStatus(address _agent) public view returns (AgentStatus memory) {
-        uint32 index = uint32(agentIndex[_agent]);
+    function getAgentStatus(address agent) public view returns (AgentStatus memory) {
+        uint32 index = uint32(agentIndex[agent]);
         require(index != 0, "Unknown agent");
-        return AgentStatus({ flag: agentFlag[_agent], domain: agentDomain[_agent], index: index });
+        return AgentStatus({ flag: agentFlag[agent], domain: agentDomain[agent], index: index });
     }
 
     function getAgentLeaf(uint256 index) public view returns (bytes32) {
@@ -116,9 +116,9 @@ abstract contract SynapseProofs {
 
     function getAgentLeaf(
         AgentFlag _flag,
-        uint32 _domain,
-        address _agent
+        uint32 domain,
+        address agent
     ) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_flag, _domain, _agent));
+        return keccak256(abi.encodePacked(_flag, domain, agent));
     }
 }

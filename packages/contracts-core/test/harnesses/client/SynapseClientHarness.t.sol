@@ -9,10 +9,10 @@ contract SynapseClientHarness is ClientHarnessEvents, SynapseClient {
     uint32 internal optimisticPeriod;
 
     constructor(
-        address _origin,
-        address _destination,
+        address origin,
+        address destination,
         uint32 _optimisticPeriod
-    ) SynapseClient(_origin, _destination) {
+    ) SynapseClient(origin, destination) {
         optimisticPeriod = _optimisticPeriod;
     }
 
@@ -20,11 +20,11 @@ contract SynapseClientHarness is ClientHarnessEvents, SynapseClient {
     function testSynapseClientHarness() external {}
 
     function sendMessage(
-        uint32 _destination,
-        bytes memory _tips,
-        bytes memory _message
+        uint32 destination,
+        bytes memory tips,
+        bytes memory message
     ) external payable {
-        _send(_destination, _tips, _message);
+        _send(destination, tips, message);
     }
 
     function optimisticSeconds() public view override returns (uint32) {
@@ -32,10 +32,10 @@ contract SynapseClientHarness is ClientHarnessEvents, SynapseClient {
     }
 
     function _handle(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes memory _message
+        uint32 origin,
+        uint32 nonce,
+        bytes memory message
     ) internal override {
-        emit LogClientMessage(_origin, _nonce, _message);
+        emit LogClientMessage(origin, nonce, message);
     }
 }

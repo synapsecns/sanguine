@@ -12,27 +12,27 @@ contract SystemRouterHarness is SystemRouter {
     function testSystemRouterHarness() external {}
 
     constructor(
-        uint32 _domain,
-        address _origin,
-        address _destination,
+        uint32 domain,
+        address origin,
+        address destination,
         address _agentManager
-    ) SystemRouter(_domain, _origin, _destination, _agentManager) {}
+    ) SystemRouter(domain, origin, destination, _agentManager) {}
 
     /**
      * @notice Pranks a system call: calls a local system recipient, as if the system call
      * was initiated by the given caller on the given origin chain.
      */
     function systemPrank(
-        SystemEntity _recipient,
-        uint256 _rootSubmittedAt,
-        uint32 _callOrigin,
-        SystemEntity _systemCaller,
-        bytes memory _data
+        SystemEntity recipient,
+        uint256 rootSubmittedAt,
+        uint32 callOrigin,
+        SystemEntity systemCaller,
+        bytes memory data
     ) public {
-        bytes memory prefix = abi.encode(_rootSubmittedAt, _callOrigin, _systemCaller);
+        bytes memory prefix = abi.encode(rootSubmittedAt, callOrigin, systemCaller);
         _localSystemCall({
-            _recipient: uint8(_recipient),
-            _callData: _data.castToCallData(),
+            recipient: uint8(recipient),
+            _callData: data.castToCallData(),
             _prefix: prefix.castToRawBytes()
         });
     }

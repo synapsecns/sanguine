@@ -74,8 +74,8 @@ library MerkleLib {
     /**
      * @notice Inserts `_node` into merkle tree
      * @dev Reverts if tree is full
-     * @param _newCount Amount of inserted leaves in the tree after the insertion (i.e. current + 1)
-     * @param _node     Element to insert into tree
+     * @param newCount  Amount of inserted leaves in the tree after the insertion (i.e. current + 1)
+     * @param node      Element to insert into tree
      **/
     function insertBase(
         BaseTree storage _tree,
@@ -117,7 +117,7 @@ library MerkleLib {
 
     /**
      * @notice Calculates and returns current root of the merkle tree.
-     * @param _count    Current amount of inserted leaves in the tree
+     * @param count     Current amount of inserted leaves in the tree
      * @return _current Calculated root of `_tree`
      **/
     function rootBase(BaseTree storage _tree, uint256 _count)
@@ -159,7 +159,7 @@ library MerkleLib {
 
     /// @notice Inserts a new leaf into the merkle tree.
     /// @dev Reverts if tree is full.
-    /// @param _node        Element to insert into tree
+    /// @param node         Element to insert into tree
     /// @return newRoot     Merkle root after the leaf was inserted
     function insert(HistoricalTree storage _tree, bytes32 _node)
         internal
@@ -175,7 +175,7 @@ library MerkleLib {
 
     /// @notice Returns the historical root of the merkle tree.
     /// @dev Reverts if not enough leafs have been inserted.
-    /// @param _count           Amount of leafs in the tree at some point of time
+    /// @param count            Amount of leafs in the tree at some point of time
     /// @return historicalRoot  Merkle root after `_count` leafs were inserted
     function root(HistoricalTree storage _tree, uint256 _count)
         internal
@@ -193,27 +193,27 @@ library MerkleLib {
     /**
      * @notice Updates the value for the leaf with the given index in the Dynamic Merkle Tree.
      * @dev Will revert if incorrect proof of inclusion for old value is supplied.
-     * @param _tree         Dynamic merkle tree
-     * @param _index        Index of the leaf to update
-     * @param _oldValue     Previous value of the leaf
-     * @param _branch       Proof of inclusion of previous value into the tree
-     * @param _newValue     New leaf value to assign
+     * @param tree          Dynamic merkle tree
+     * @param index         Index of the leaf to update
+     * @param oldValue      Previous value of the leaf
+     * @param branch        Proof of inclusion of previous value into the tree
+     * @param newValue      New leaf value to assign
      * @return newRoot      New value for the Merkle Root after the leaf is updated
      */
     function update(
         DynamicTree storage _tree,
-        uint256 _index,
+        uint256 index,
         bytes32 _oldValue,
         bytes32[] memory _branch,
         bytes32 _newValue
     ) internal returns (bytes32 newRoot) {
         // Check that the old value + proof result in a correct root
         require(
-            proofRoot(_index, _oldValue, _branch, AGENT_TREE_HEIGHT) == _tree.root,
+            proofRoot(index, _oldValue, _branch, AGENT_TREE_HEIGHT) == _tree.root,
             "Incorrect proof"
         );
         // New root is new value + the same proof (values for sibling nodes are not updated)
-        newRoot = proofRoot(_index, _newValue, _branch, AGENT_TREE_HEIGHT);
+        newRoot = proofRoot(index, _newValue, _branch, AGENT_TREE_HEIGHT);
         // Write the new root
         _tree.root = newRoot;
     }
@@ -225,39 +225,39 @@ library MerkleLib {
     /**
      * @notice Calculates the merkle root for the given leaf and merkle proof.
      * @dev Will revert if proof length exceeds the tree height.
-     * @param _index    Index of `_leaf` in tree
-     * @param _leaf     Leaf of the merkle tree
-     * @param _proof    Proof of inclusion of `leaf` in the tree
-     * @param _height   Height of the merkle tree
+     * @param index     Index of `_leaf` in tree
+     * @param leaf      Leaf of the merkle tree
+     * @param proof     Proof of inclusion of `leaf` in the tree
+     * @param height    Height of the merkle tree
      * @return root_    Calculated Merkle Root
      */
     function proofRoot(
-        uint256 _index,
+        uint256 index,
         bytes32 _leaf,
-        bytes32[] memory _proof,
+        bytes32[] memory proof,
         uint256 _height
     ) internal pure returns (bytes32 root_) {
         // Proof length could not exceed the tree height
-        uint256 proofLen = _proof.length;
+        uint256 proofLen = proof.length;
         require(proofLen <= _height, "Proof too long");
         root_ = _leaf;
         // Go up the tree levels from the leaf following the proof
         for (uint256 h = 0; h < proofLen; ++h) {
             // Get a sibling node on current level: this is proof[h]
-            root_ = getParent(root_, _proof[h], _index, h);
+            root_ = getParent(root_, proof[h], index, h);
         }
         // Go up to the root: the remaining siblings are ZERO
         for (uint256 h = proofLen; h < _height; ++h) {
-            root_ = getParent(root_, bytes32(0), _index, h);
+            root_ = getParent(root_, bytes32(0), index, h);
         }
     }
 
     /**
      * @notice Calculates the parent of a node on the path from one of the leafs to root.
-     * @param _node         Node on a path from tree leaf to root
-     * @param _sibling      Sibling for a given node
-     * @param _leafIndex    Index of the tree leaf
-     * @param _nodeHeight   "Level height" for `_node` (ZERO for leafs, ORIGIN_TREE_HEIGHT for root)
+     * @param node          Node on a path from tree leaf to root
+     * @param sibling       Sibling for a given node
+     * @param leafIndex     Index of the tree leaf
+     * @param nodeHeight    "Level height" for `_node` (ZERO for leafs, ORIGIN_TREE_HEIGHT for root)
      */
     function getParent(
         bytes32 _node,
@@ -280,8 +280,8 @@ library MerkleLib {
     /// @dev We use implementation with H(0,0) = 0
     /// This makes EVERY empty node in the tree equal to ZERO,
     /// saving us from storing H(0,0), H(H(0,0), H(0, 0)), and so on
-    /// @param _leftChild   Left child of the calculated node
-    /// @param _rightChild  Right child of the calculated node
+    /// @param leftChild    Left child of the calculated node
+    /// @param rightChild   Right child of the calculated node
     /// @return parent      Value for the node having above mentioned children
     function getParent(bytes32 _leftChild, bytes32 _rightChild)
         internal

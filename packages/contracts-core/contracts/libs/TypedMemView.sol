@@ -88,7 +88,7 @@ library TypedMemView {
 
     /**
      * @notice Returns the encoded hex character that represents the lower 4 bits of the argument.
-     * @param _byte     The byte
+     * @param byte      The byte
      * @return _char    The encoded hex character
      */
     function nibbleHex(uint8 _byte) internal pure returns (uint8 _char) {
@@ -98,7 +98,7 @@ library TypedMemView {
 
     /**
      * @notice      Returns a uint16 containing the hex-encoded byte.
-     * @param _b    The byte
+     * @param b     The byte
      * @return      encoded - The hex-encoded byte
      */
     function byteHex(uint8 _b) internal pure returns (uint16 encoded) {
@@ -111,7 +111,7 @@ library TypedMemView {
      * @notice      Encodes the uint256 to hex. `first` contains the encoded top 16 bytes.
      *              `second` contains the encoded lower 16 bytes.
      *
-     * @param _b    The 32 bytes as uint256
+     * @param b     The 32 bytes as uint256
      * @return      first - The top 16 bytes
      * @return      second - The bottom 16 bytes
      */
@@ -143,7 +143,7 @@ library TypedMemView {
     /**
      * @notice          Changes the endianness of a uint256.
      * @dev             https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
-     * @param _b        The unsigned integer to reverse
+     * @param b         The unsigned integer to reverse
      * @return          v - The reversed value
      */
     function reverseUint256(uint256 _b) internal pure returns (uint256 v) {
@@ -171,7 +171,7 @@ library TypedMemView {
 
     /**
      * @notice      Create a mask with the highest `_len` bits set.
-     * @param _len  The length
+     * @param len   The length
      * @return      mask - The mask
      */
     function leftMask(uint8 _len) private pure returns (uint256 mask) {
@@ -247,7 +247,7 @@ library TypedMemView {
     /**
      * @notice          Return true if the memview is of the expected type. Otherwise false.
      * @param memView   The view
-     * @param _expected The expected type
+     * @param expected  The expected type
      * @return          bool - True if the memview is of the expected type
      */
     function isType(bytes29 memView, uint40 _expected) internal pure returns (bool) {
@@ -258,7 +258,7 @@ library TypedMemView {
      * @notice          Require that a typed memory view has a specific type.
      * @dev             Returns the view for easy chaining.
      * @param memView   The view
-     * @param _expected The expected type
+     * @param expected  The expected type
      * @return          bytes29 - The view with validated type
      */
     function assertType(bytes29 memView, uint40 _expected) internal pure returns (bytes29) {
@@ -281,7 +281,7 @@ library TypedMemView {
     /**
      * @notice          Return an identical view with a different type.
      * @param memView   The view
-     * @param _newType  The new type
+     * @param newType   The new type
      * @return          newView - The new view with the specified type
      */
     function castTo(bytes29 memView, uint40 _newType) internal pure returns (bytes29 newView) {
@@ -303,9 +303,9 @@ library TypedMemView {
      *                  directly. Prefer `ref` wherever possible.
      * @dev             Unsafe raw pointer construction. This should generally not be called
      *                  directly. Prefer `ref` wherever possible.
-     * @param _type     The type
-     * @param _loc      The memory address
-     * @param _len      The length
+     * @param type      The type
+     * @param loc       The memory address
+     * @param len       The length
      * @return          newView - The new view with the specified type, location and length
      */
     function unsafeBuildUnchecked(
@@ -337,9 +337,9 @@ library TypedMemView {
      *                  directly. Prefer `ref` wherever possible.
      * @dev             Instantiate a new memory view. This should generally not be called
      *                  directly. Prefer `ref` wherever possible.
-     * @param _type     The type
-     * @param _loc      The memory address
-     * @param _len      The length
+     * @param type      The type
+     * @param loc       The memory address
+     * @param len       The length
      * @return          newView - The new view with the specified type, location and length
      */
     function build(
@@ -481,48 +481,48 @@ library TypedMemView {
     /**
      * @notice          Safe slicing without memory modification.
      * @param memView   The view
-     * @param _index    The start index
-     * @param _len      The length
+     * @param index     The start index
+     * @param len       The length
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
     function slice(
         bytes29 memView,
-        uint256 _index,
+        uint256 index,
         uint256 _len,
         uint40 newType
     ) internal pure returns (bytes29) {
         uint256 _loc = loc(memView);
 
         // Ensure it doesn't overrun the view
-        if (_loc + _index + _len > end(memView)) {
+        if (_loc + index + _len > end(memView)) {
             return NULL;
         }
 
-        _loc = _loc + _index;
+        _loc = _loc + index;
         return build(newType, _loc, _len);
     }
 
     /**
      * @notice          Shortcut to `slice`. Gets a view representing
-     *                  bytes from `_index` to end(memView).
+     *                  bytes from `index` to end(memView).
      * @param memView   The view
-     * @param _index    The start index
+     * @param index     The start index
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
     function sliceFrom(
         bytes29 memView,
-        uint256 _index,
+        uint256 index,
         uint40 newType
     ) internal pure returns (bytes29) {
-        return slice(memView, _index, len(memView) - _index, newType);
+        return slice(memView, index, len(memView) - index, newType);
     }
 
     /**
      * @notice          Shortcut to `slice`. Gets a view representing the first `_len` bytes.
      * @param memView   The view
-     * @param _len      The length
+     * @param len       The length
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
@@ -537,7 +537,7 @@ library TypedMemView {
     /**
      * @notice          Shortcut to `slice`. Gets a view representing the last `_len` byte.
      * @param memView   The view
-     * @param _len      The length
+     * @param len       The length
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
@@ -551,21 +551,21 @@ library TypedMemView {
 
     /**
      * @notice          Construct an error message for an indexing overrun.
-     * @param _loc      The memory address
-     * @param _len      The length
-     * @param _index    The index
-     * @param _slice    The slice where the overrun occurred
+     * @param loc       The memory address
+     * @param len       The length
+     * @param index     The index
+     * @param slice     The slice where the overrun occurred
      * @return          err - The err
      */
     function indexErrOverrun(
         uint256 _loc,
         uint256 _len,
-        uint256 _index,
+        uint256 index,
         uint256 _slice
     ) internal pure returns (string memory err) {
         (, uint256 a) = encodeHex(_loc);
         (, uint256 b) = encodeHex(_len);
-        (, uint256 c) = encodeHex(_index);
+        (, uint256 c) = encodeHex(index);
         (, uint256 d) = encodeHex(_slice);
         err = string(
             abi.encodePacked(
@@ -588,20 +588,20 @@ library TypedMemView {
      *                  This can be immediately cast to a smaller fixed-length byte array.
      *                  To automatically cast to an integer, use `indexUint`.
      * @param memView   The view
-     * @param _index    The index
-     * @param _bytes    The bytes
+     * @param index     The index
+     * @param bytes     The bytes
      * @return          result - The 32 byte result
      */
     function index(
         bytes29 memView,
-        uint256 _index,
+        uint256 index,
         uint8 _bytes
     ) internal pure returns (bytes32 result) {
         if (_bytes == 0) {
             return bytes32(0);
         }
-        if (_index + _bytes > len(memView)) {
-            revert(indexErrOverrun(loc(memView), len(memView), _index, uint256(_bytes)));
+        if (index + _bytes > len(memView)) {
+            revert(indexErrOverrun(loc(memView), len(memView), index, uint256(_bytes)));
         }
         require(_bytes <= 32, "Index: more than 32 bytes");
 
@@ -615,53 +615,53 @@ library TypedMemView {
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             // Load a full word using index offset, and apply mask to ignore non-relevant bytes
-            result := and(mload(add(_loc, _index)), _mask)
+            result := and(mload(add(_loc, index)), _mask)
         }
     }
 
     /**
-     * @notice          Parse an unsigned integer from the view at `_index`.
+     * @notice          Parse an unsigned integer from the view at `index`.
      * @dev             Requires that the view have >= `_bytes` bytes following that index.
      * @param memView   The view
-     * @param _index    The index
-     * @param _bytes    The bytes
+     * @param index     The index
+     * @param bytes     The bytes
      * @return          result - The unsigned integer
      */
     function indexUint(
         bytes29 memView,
-        uint256 _index,
+        uint256 index,
         uint8 _bytes
     ) internal pure returns (uint256 result) {
         // `index()` returns left-aligned `_bytes`, while integers are right-aligned
         // Shifting here to right-align with the full 32 bytes word
-        return uint256(index(memView, _index, _bytes)) >> ((32 - _bytes) * 8);
+        return uint256(index(memView, index, _bytes)) >> ((32 - _bytes) * 8);
     }
 
     /**
      * @notice          Parse an unsigned integer from LE bytes.
      * @param memView   The view
-     * @param _index    The index
-     * @param _bytes    The bytes
+     * @param index     The index
+     * @param bytes     The bytes
      * @return          result - The unsigned integer
      */
     function indexLEUint(
         bytes29 memView,
-        uint256 _index,
+        uint256 index,
         uint8 _bytes
     ) internal pure returns (uint256 result) {
-        return reverseUint256(uint256(index(memView, _index, _bytes)));
+        return reverseUint256(uint256(index(memView, index, _bytes)));
     }
 
     /**
-     * @notice          Parse an address from the view at `_index`.
+     * @notice          Parse an address from the view at `index`.
      *                  Requires that the view have >= 20 bytes following that index.
      * @param memView   The view
-     * @param _index    The index
+     * @param index     The index
      * @return          address - The address
      */
-    function indexAddress(bytes29 memView, uint256 _index) internal pure returns (address) {
+    function indexAddress(bytes29 memView, uint256 index) internal pure returns (address) {
         // index 20 bytes as `uint160`, and then cast to `address`
-        return address(uint160(indexUint(memView, _index, 20)));
+        return address(uint160(indexUint(memView, index, 20)));
     }
 
     /**
@@ -790,7 +790,7 @@ library TypedMemView {
      *                  As such it MUST be consumed IMMEDIATELY.
      *                  This function is private to prevent unsafe usage by callers.
      * @param memView   The view
-     * @param _newLoc   The new location
+     * @param newLoc    The new location
      * @return          written - the unsafe memory reference
      */
     function unsafeCopyTo(bytes29 memView, uint256 _newLoc) private view returns (bytes29 written) {

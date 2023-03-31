@@ -16,15 +16,15 @@ contract ReentrantApp is IMessageRecipient {
     function testReentrantApp() external {}
 
     function prepare(
-        bytes memory _message,
-        bytes32[] memory _originProof,
-        bytes32[] memory _snapProof,
-        uint256 _stateIndex
+        bytes memory message,
+        bytes32[] memory originProof,
+        bytes32[] memory snapProof,
+        uint256 stateIndex
     ) external {
-        message = _message;
-        originProof = _originProof;
-        snapProof = _snapProof;
-        stateIndex = _stateIndex;
+        message = message;
+        originProof = originProof;
+        snapProof = snapProof;
+        stateIndex = stateIndex;
     }
 
     function handle(

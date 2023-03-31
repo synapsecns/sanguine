@@ -25,7 +25,7 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
     // ============ Constructor ============
 
     // solhint-disable-next-line no-empty-blocks
-    constructor(address _origin, address _destination) Client(_origin, _destination) {}
+    constructor(address origin, address destination) Client(origin, destination) {}
 
     // ============ Initializer ============
 
@@ -42,8 +42,8 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
     /**
      * @notice  Sets the trusted sender for the given remote chain.
      * @dev     Only callable by owner (Governance).
-     * @param _remoteDomain     The domain of the remote chain
-     * @param _trustedSender    The trusted sender
+     * @param remoteDomain      The domain of the remote chain
+     * @param trustedSender     The trusted sender
      */
     // solhint-disable-next-line ordering
     function setTrustedSender(uint32 _remoteDomain, bytes32 _trustedSender) external onlyOwner {
@@ -53,8 +53,8 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
     /**
      * @notice  Sets the trusted sender for a bunch of remote chains.
      * @dev     Only callable by owner (Governance).
-     * @param _remoteDomains    List of domains for the remote chains
-     * @param _trustedSenders   List of trusted senders for given chains
+     * @param remoteDomains     List of domains for the remote chains
+     * @param trustedSenders    List of trusted senders for given chains
      */
     function setTrustedSenders(uint32[] calldata _remoteDomains, bytes32[] calldata _trustedSenders)
         external

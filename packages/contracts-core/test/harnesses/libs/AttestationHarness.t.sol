@@ -77,12 +77,12 @@ contract AttestationHarness {
     ▏*║                          SUMMIT ATTESTATION                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatSummitAttestation(SummitAttestation memory _summitAtt, uint32 _nonce)
+    function formatSummitAttestation(SummitAttestation memory _summitAtt, uint32 nonce)
         public
         pure
         returns (bytes memory)
     {
-        return _summitAtt.formatSummitAttestation(_nonce);
+        return _summitAtt.formatSummitAttestation(nonce);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -91,19 +91,13 @@ contract AttestationHarness {
 
     function formatAttestation(
         bytes32 _snapRoot,
-        bytes32 _agentRoot,
-        uint32 _nonce,
+        bytes32 agentRoot,
+        uint32 nonce,
         uint40 _blockNumber,
         uint40 _timestamp
     ) public pure returns (bytes memory) {
         return
-            AttestationLib.formatAttestation(
-                _snapRoot,
-                _agentRoot,
-                _nonce,
-                _blockNumber,
-                _timestamp
-            );
+            AttestationLib.formatAttestation(_snapRoot, agentRoot, nonce, _blockNumber, _timestamp);
     }
 
     function isAttestation(bytes memory _payload) public pure returns (bool) {

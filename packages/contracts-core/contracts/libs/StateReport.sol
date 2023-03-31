@@ -50,15 +50,15 @@ library StateReportLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns a formatted StateReport payload with provided fields.
-    /// @param _flag            Flag signalling type of State Report
-    /// @param _statePayload    Raw payload with reported state
+    /// @param flag             Flag signalling type of State Report
+    /// @param statePayload     Raw payload with reported state
     /// @return Formatted state report
-    function formatStateReport(StateFlag _flag, bytes memory _statePayload)
+    function formatStateReport(StateFlag _flag, bytes memory statePayload)
         internal
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(_flag, _statePayload);
+        return abi.encodePacked(_flag, statePayload);
     }
 
     /// @notice Returns a StateReport view over the given payload
@@ -118,11 +118,11 @@ library StateReportLib {
 
     /// @dev Returns StateReport flag without checking that it fits into StateFlag enum.
     function _srFlag(bytes29 _view) internal pure returns (uint8) {
-        return uint8(_view.indexUint({ _index: OFFSET_FLAG, _bytes: 1 }));
+        return uint8(_view.indexUint({ index: OFFSET_FLAG, _bytes: 1 }));
     }
 
     /// @dev Returns an untyped memory view over Report's state without checking if it is properly formatted.
     function _srState(bytes29 _view) internal pure returns (bytes29) {
-        return _view.sliceFrom({ _index: OFFSET_STATE, newType: 0 });
+        return _view.sliceFrom({ index: OFFSET_STATE, newType: 0 });
     }
 }

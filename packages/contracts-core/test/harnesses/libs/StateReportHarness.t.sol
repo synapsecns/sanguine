@@ -43,12 +43,12 @@ contract StateReportHarness {
     ▏*║                       STATE REPORT FORMATTERS                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatStateReport(StateFlag _flag, bytes memory _statePayload)
+    function formatStateReport(StateFlag _flag, bytes memory statePayload)
         public
         pure
         returns (bytes memory)
     {
-        return StateReportLib.formatStateReport(_flag, _statePayload);
+        return StateReportLib.formatStateReport(_flag, statePayload);
     }
 
     function isStateReport(bytes memory _payload) public pure returns (bool) {

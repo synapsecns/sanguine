@@ -38,11 +38,11 @@ abstract contract AgentManagerTest is SynapseTest {
         bytes memory data
     ) internal {
         router.systemPrank({
-            _recipient: SystemEntity.AgentManager,
-            _rootSubmittedAt: callOrigin == _localDomain() ? block.timestamp : rootSubmittedAt,
-            _callOrigin: callOrigin,
-            _systemCaller: systemCaller,
-            _data: data
+            recipient: SystemEntity.AgentManager,
+            rootSubmittedAt: callOrigin == _localDomain() ? block.timestamp : rootSubmittedAt,
+            callOrigin: callOrigin,
+            systemCaller: systemCaller,
+            data: data
         });
     }
 
@@ -51,7 +51,7 @@ abstract contract AgentManagerTest is SynapseTest {
         address agent,
         address prover
     ) internal view returns (bytes memory) {
-        // (_rootSubmittedAt, _callOrigin, _systemCaller, _domain, _agent, _prover)
+        // (rootSubmittedAt, callOrigin, systemCaller, domain, agent, prover)
         return
             abi.encodeWithSelector(
                 bondingManager.remoteRegistrySlash.selector,

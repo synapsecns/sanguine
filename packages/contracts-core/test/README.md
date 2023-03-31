@@ -24,12 +24,12 @@ For the majority of production contracts, there exists a corresponding harness. 
 ```solidity
 // From BasicClientHarness.t.sol
 function _handleUnsafe(
-  uint32 _origin,
-  uint32 _nonce,
-  uint256 _rootSubmittedAt,
-  bytes memory _message
+  uint32 origin,
+  uint32 nonce,
+  uint256 rootSubmittedAt,
+  bytes memory message
 ) internal override {
-  emit LogBasicClientMessage(_origin, _nonce, _rootSubmittedAt, _message);
+  emit LogBasicClientMessage(origin, nonce, rootSubmittedAt, message);
 }
 
 ```
@@ -198,10 +198,10 @@ function prepareApp(
 ) public {
   // App will revert if any of values passed over by Destination will differ (see AppHarness)
   app.prepare({
-    _origin: context.origin,
-    _nonce: nonce,
-    _sender: addressToBytes32(context.sender),
-    _message: _createMockBody(context.origin, context.destination, nonce)
+    origin: context.origin,
+    nonce: nonce,
+    sender: addressToBytes32(context.sender),
+    message: _createMockBody(context.origin, context.destination, nonce)
   });
 }
 

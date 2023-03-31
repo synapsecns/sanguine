@@ -64,62 +64,62 @@ library MessageLib {
 
     /**
      * @notice Returns formatted message with provided fields
-     * @param _header       Formatted header payload
-     * @param _tips         Formatted tips payload
-     * @param _messageBody  Raw bytes of message body
+     * @param header        Formatted header payload
+     * @param tips          Formatted tips payload
+     * @param messageBody   Raw bytes of message body
      * @return Formatted message
      **/
     function formatMessage(
         bytes memory _header,
-        bytes memory _tips,
-        bytes memory _messageBody
+        bytes memory tips,
+        bytes memory messageBody
     ) internal pure returns (bytes memory) {
         // Header and Tips are supposed to fit within 65535 bytes
         return
             abi.encodePacked(
                 MESSAGE_VERSION,
                 uint16(_header.length),
-                uint16(_tips.length),
+                uint16(tips.length),
                 _header,
-                _tips,
-                _messageBody
+                tips,
+                messageBody
             );
     }
 
     /**
      * @notice Returns formatted message with provided fields
-     * @param _origin               Domain of origin chain
-     * @param _sender               Address that sent the message
-     * @param _nonce                Message nonce on origin chain
-     * @param _destination          Domain of destination chain
-     * @param _recipient            Address that will receive the message
-     * @param _optimisticSeconds    Optimistic period for message execution
-     * @param _tips                 Formatted tips payload
-     * @param _messageBody          Raw bytes of message body
+     * @param origin                Domain of origin chain
+     * @param sender                Address that sent the message
+     * @param nonce                 Message nonce on origin chain
+     * @param destination           Domain of destination chain
+     * @param recipient             Address that will receive the message
+     * @param optimisticSeconds     Optimistic period for message execution
+     * @param tips                  Formatted tips payload
+     * @param messageBody           Raw bytes of message body
      * @return Formatted message
      **/
     function formatMessage(
-        uint32 _origin,
-        bytes32 _sender,
-        uint32 _nonce,
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _tips,
-        bytes memory _messageBody
+        uint32 origin,
+        bytes32 sender,
+        uint32 nonce,
+        uint32 destination,
+        bytes32 recipient,
+        uint32 optimisticSeconds,
+        bytes memory tips,
+        bytes memory messageBody
     ) internal pure returns (bytes memory) {
         return
             formatMessage(
                 HeaderLib.formatHeader(
-                    _origin,
-                    _sender,
-                    _nonce,
-                    _destination,
-                    _recipient,
-                    _optimisticSeconds
+                    origin,
+                    sender,
+                    nonce,
+                    destination,
+                    recipient,
+                    optimisticSeconds
                 ),
-                _tips,
-                _messageBody
+                tips,
+                messageBody
             );
     }
 
@@ -195,7 +195,7 @@ library MessageLib {
         bytes29 _view = _msg.unwrap();
         // Determine index where message body payload starts
         uint256 index = OFFSET_HEADER + _getLen(_view, Parts.Header) + _getLen(_view, Parts.Tips);
-        return _view.sliceFrom({ _index: index, newType: 0 });
+        return _view.sliceFrom({ index: index, newType: 0 });
     }
 
     /// @notice Returns message's hash: a leaf to be inserted in the Merkle tree.
@@ -223,7 +223,7 @@ library MessageLib {
     /// if the whole payload or the header are properly formatted.
     function _getHeader(bytes29 _view) private pure returns (bytes29) {
         uint256 length = _getLen(_view, Parts.Header);
-        return _view.slice({ _index: OFFSET_HEADER, _len: length, newType: 0 });
+        return _view.slice({ index: OFFSET_HEADER, _len: length, newType: 0 });
     }
 
     /// @dev Returns a generic memory view over the tips field without checking
@@ -232,6 +232,6 @@ library MessageLib {
         // Determine index where tips payload starts
         uint256 indexFrom = OFFSET_HEADER + _getLen(_view, Parts.Header);
         uint256 length = _getLen(_view, Parts.Tips);
-        return _view.slice({ _index: indexFrom, _len: length, newType: 0 });
+        return _view.slice({ index: indexFrom, _len: length, newType: 0 });
     }
 }

@@ -10,10 +10,10 @@ contract ClientHarness is ClientHarnessEvents, Client {
 
     // solhint-disable-next-line no-empty-blocks
     constructor(
-        address _origin,
-        address _destination,
+        address origin,
+        address destination,
         uint32 _optimisticPeriod
-    ) Client(_origin, _destination) {
+    ) Client(origin, destination) {
         optimisticPeriod = _optimisticPeriod;
     }
 
@@ -21,27 +21,27 @@ contract ClientHarness is ClientHarnessEvents, Client {
     function testClientHarness() external {}
 
     function sendMessage(
-        uint32 _destination,
-        bytes memory _tips,
-        bytes memory _message
+        uint32 destination,
+        bytes memory tips,
+        bytes memory message
     ) public payable {
-        _send(_destination, _tips, _message);
+        _send(destination, tips, message);
     }
 
     function optimisticSeconds() public view override returns (uint32) {
         return optimisticPeriod;
     }
 
-    function trustedSender(uint32 _destination) public pure override returns (bytes32 sender) {
-        sender = bytes32(uint256(_destination));
-        // bytes32(0) for _destination == 0
+    function trustedSender(uint32 destination) public pure override returns (bytes32 sender) {
+        sender = bytes32(uint256(destination));
+        // bytes32(0) for destination == 0
     }
 
     function _handle(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes memory _message
+        uint32 origin,
+        uint32 nonce,
+        bytes memory message
     ) internal override {
-        emit LogClientMessage(_origin, _nonce, _message);
+        emit LogClientMessage(origin, nonce, message);
     }
 }

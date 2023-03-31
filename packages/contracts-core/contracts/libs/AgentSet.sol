@@ -17,8 +17,8 @@ library AgentSet {
     /**
      * @notice Information about all active agents for all domains.
      * @dev We are storing both Notaries (domain > 0) and Guards (domain == 0) this way.
-     * @param _agents   List of active agents for each domain
-     * @param _indexes  Information about every active agent
+     * @param agents    List of active agents for each domain
+     * @param indexes   Information about every active agent
      */
     struct DomainAddressSet {
         // (domain => [list of agents for the domain])

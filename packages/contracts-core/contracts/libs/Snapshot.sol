@@ -73,7 +73,7 @@ library SnapshotLib {
 
     /**
      * @notice Returns a formatted Snapshot payload using a list of States.
-     * @param _states   Arrays of State-typed memory views over Origin states
+     * @param states    Arrays of State-typed memory views over Origin states
      * @return Formatted snapshot
      */
     function formatSnapshot(State[] memory _states) internal view returns (bytes memory) {
@@ -141,13 +141,13 @@ library SnapshotLib {
         return _snapshot.statePtrs.length;
     }
 
-    function getStatePtr(SummitSnapshot memory _snapshot, uint256 _index)
+    function getStatePtr(SummitSnapshot memory _snapshot, uint256 index)
         internal
         pure
         returns (uint256)
     {
-        require(_index < getStatesAmount(_snapshot), "State index out of range");
-        return _snapshot.statePtrs[_index];
+        require(index < getStatesAmount(_snapshot), "State index out of range");
+        return _snapshot.statePtrs[index];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -167,11 +167,11 @@ library SnapshotLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns a state with a given index from the snapshot.
-    function state(Snapshot _snapshot, uint256 _stateIndex) internal pure returns (State) {
+    function state(Snapshot _snapshot, uint256 stateIndex) internal pure returns (State) {
         bytes29 _view = _snapshot.unwrap();
-        uint256 indexFrom = _stateIndex * STATE_LENGTH;
+        uint256 indexFrom = stateIndex * STATE_LENGTH;
         require(indexFrom < _view.len(), "State index out of range");
-        return _view.slice({ _index: indexFrom, _len: STATE_LENGTH, newType: 0 }).castToState();
+        return _view.slice({ index: indexFrom, _len: STATE_LENGTH, newType: 0 }).castToState();
     }
 
     /// @notice Returns the amount of states in the snapshot.
@@ -206,12 +206,12 @@ library SnapshotLib {
 
     /// @notice Returns an Attestation struct to save in the Summit contract.
     /// Current block number and timestamp are used.
-    function toSummitAttestation(Snapshot _snapshot, bytes32 _agentRoot)
+    function toSummitAttestation(Snapshot _snapshot, bytes32 agentRoot)
         internal
         view
         returns (SummitAttestation memory attestation)
     {
-        return AttestationLib.summitAttestation(_snapshot.root(), _agentRoot);
+        return AttestationLib.summitAttestation(_snapshot.root(), agentRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

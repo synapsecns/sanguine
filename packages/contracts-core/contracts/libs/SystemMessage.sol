@@ -36,9 +36,9 @@ library SystemMessageLib {
     /**
      * @notice Returns a formatted SystemMessage payload with provided fields.
      * See: formatAdjustedCallData() for more details.
-     * @param _systemRecipient  System Contract to receive message (see SystemEntity)
-     * @param _callData         Calldata where the first arguments need to be replaced
-     * @param _prefix           ABI-encoded arguments to use as the first arguments in the calldata
+     * @param systemRecipient   System Contract to receive message (see SystemEntity)
+     * @param callData          Calldata where the first arguments need to be replaced
+     * @param prefix            ABI-encoded arguments to use as the first arguments in the calldata
      * @return Formatted SystemMessage payload.
      */
     function formatSystemMessage(
@@ -57,7 +57,7 @@ library SystemMessageLib {
         // Use prefix as the first arguments
         views[2] = _prefix;
         // Use payload's remaining arguments (following prefix)
-        views[3] = arguments.sliceFrom({ _index: _prefix.len(), newType: 0 });
+        views[3] = arguments.sliceFrom({ index: _prefix.len(), newType: 0 });
         return TypedMemView.join(views);
     }
 
@@ -70,8 +70,8 @@ library SystemMessageLib {
      *      Then:
      * - Existing payload will trigger `foo(a0, b0, c0, d0, e0)`
      * - Adjusted payload will trigger `foo(a1, b1, c1, d0, e0)`
-     * @param _callData Calldata where the first arguments need to be replaced
-     * @param _prefix   ABI-encoded arguments to use as the first arguments in the calldata
+     * @param callData  Calldata where the first arguments need to be replaced
+     * @param prefix    ABI-encoded arguments to use as the first arguments in the calldata
      * @return Adjusted calldata with replaced first arguments
      */
     function formatAdjustedCallData(CallData _callData, bytes29 _prefix)
@@ -88,7 +88,7 @@ library SystemMessageLib {
         // Use prefix as the first arguments
         views[1] = _prefix;
         // Use payload's remaining arguments (following prefix)
-        views[2] = arguments.sliceFrom({ _index: _prefix.len(), newType: 0 });
+        views[2] = arguments.sliceFrom({ index: _prefix.len(), newType: 0 });
         return TypedMemView.join(views);
     }
 
@@ -137,7 +137,7 @@ library SystemMessageLib {
     function callRecipient(SystemMessage _systemMessage) internal pure returns (uint8) {
         // Get the underlying memory view
         bytes29 _view = unwrap(_systemMessage);
-        return uint8(_view.indexUint({ _index: OFFSET_RECIPIENT, _bytes: 1 }));
+        return uint8(_view.indexUint({ index: OFFSET_RECIPIENT, _bytes: 1 }));
     }
 
     /**
@@ -158,6 +158,6 @@ library SystemMessageLib {
      * without verifying that this is a valid calldata.
      */
     function _getCallData(bytes29 _view) private pure returns (bytes29) {
-        return _view.sliceFrom({ _index: OFFSET_CALLDATA, newType: 0 });
+        return _view.sliceFrom({ index: OFFSET_CALLDATA, newType: 0 });
     }
 }

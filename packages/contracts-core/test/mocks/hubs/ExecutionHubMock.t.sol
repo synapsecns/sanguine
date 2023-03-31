@@ -8,9 +8,9 @@ contract ExecutionHubMock is IExecutionHub {
     function testExecutionHubMock() external {}
 
     function execute(
-        bytes memory _message,
-        bytes32[] calldata _originProof,
-        bytes32[] calldata _snapProof,
-        uint256 _stateIndex
+        bytes memory message,
+        bytes32[] calldata originProof,
+        bytes32[] calldata snapProof,
+        uint256 stateIndex
     ) external {}
 }

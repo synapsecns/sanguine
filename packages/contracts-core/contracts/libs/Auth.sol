@@ -16,7 +16,7 @@ library Auth {
      * https://eth.wiki/json-rpc/API#eth_sign[`eth_sign`]
      * JSON-RPC method as part of EIP-191.
      * See {recoverSigner}.
-     * @param _dataView Memory view over the data that needs to be signed
+     * @param dataView  Memory view over the data that needs to be signed
      * @return digest   An Ethereum Signed Message for the given data
      */
     function toEthSignedMessageHash(bytes29 _dataView) internal pure returns (bytes32 digest) {
@@ -31,8 +31,8 @@ library Auth {
      * recover to arbitrary addresses for non-hashed data. A safe way to ensure
      * this is by receiving a hash of the original message (which may otherwise
      * be too long), and then calling {toEthSignedMessageHash} on it.
-     * @param _digest       Digest that was signed
-     * @param _signature    Memory view over `signer` signature on `_digest`
+     * @param digest        Digest that was signed
+     * @param signature     Memory view over `signer` signature on `_digest`
      * @return signer       Address that signed the data
      */
     function recoverSigner(bytes32 _digest, Signature _signature)

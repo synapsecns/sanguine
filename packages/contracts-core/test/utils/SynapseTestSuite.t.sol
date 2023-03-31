@@ -88,7 +88,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         }
         // Add guards  via AgentManager
         for (uint256 i = 0; i < GUARDS; ++i) {
-            // agentManager.addAgent({ _domain: 0, _account: guards[i] });
+            // agentManager.addAgent({ domain: 0, _account: guards[i] });
         }
         // Deploy app
         AppHarness app = new AppHarness(APP_OPTIMISTIC_SECONDS);

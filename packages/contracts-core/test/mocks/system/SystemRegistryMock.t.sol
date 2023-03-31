@@ -8,10 +8,10 @@ contract SystemRegistryMock is ISystemRegistry {
     function testSystemRegistryMock() external {}
 
     function managerSlash(
-        uint32 _domain,
-        address _agent,
-        address _prover
+        uint32 domain,
+        address agent,
+        address prover
     ) external {}
 
-    function agentStatus(address _agent) external view returns (AgentStatus memory) {}
+    function agentStatus(address agent) external view returns (AgentStatus memory) {}
 }

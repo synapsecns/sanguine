@@ -38,18 +38,18 @@ contract ProofGenerator is ProofCutter {
     /**
      * @notice Returns a merkle proof for leaf with a given index.
      */
-    function getProof(uint256 _index) external view returns (bytes32[] memory) {
+    function getProof(uint256 index) external view returns (bytes32[] memory) {
         bytes32[] memory proof = new bytes32[](ORIGIN_TREE_HEIGHT);
         for (uint256 d = 0; d < ORIGIN_TREE_HEIGHT; ++d) {
             // Get node's neighbor
-            if (_index % 2 == 0) {
-                ++_index;
+            if (index % 2 == 0) {
+                ++index;
             } else {
-                --_index;
+                --index;
             }
-            proof[d] = getNode(d, _index);
+            proof[d] = getNode(d, index);
             // We need to go deeper
-            _index = _index / 2;
+            index = index / 2;
         }
         return cutProof(proof);
     }
@@ -64,9 +64,9 @@ contract ProofGenerator is ProofCutter {
     /**
      * @notice Returns node of the Merkle Tree given its depth and index.
      */
-    function getNode(uint256 _depth, uint256 _index) public view returns (bytes32 node) {
-        if (_index < merkleTree[_depth].length) {
-            node = merkleTree[_depth][_index];
+    function getNode(uint256 _depth, uint256 index) public view returns (bytes32 node) {
+        if (index < merkleTree[_depth].length) {
+            node = merkleTree[_depth][index];
         } else {
             node = bytes32(0);
         }

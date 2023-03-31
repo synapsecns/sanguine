@@ -37,9 +37,9 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc IStateHub
-    function isValidState(bytes memory _statePayload) external view returns (bool isValid) {
+    function isValidState(bytes memory statePayload) external view returns (bool isValid) {
         // This will revert if payload is not a formatted state
-        State state = _statePayload.castToState();
+        State state = statePayload.castToState();
         return _isValidState(state);
     }
 
@@ -55,11 +55,11 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     }
 
     /// @inheritdoc IStateHub
-    function suggestState(uint32 _nonce) public view returns (bytes memory stateData) {
+    function suggestState(uint32 nonce) public view returns (bytes memory stateData) {
         // This will revert if nonce is out of range
-        bytes32 root = tree.root(_nonce);
-        OriginState memory state = originStates[_nonce];
-        return state.formatOriginState({ _root: root, _origin: localDomain, _nonce: _nonce });
+        bytes32 root = tree.root(nonce);
+        OriginState memory state = originStates[nonce];
+        return state.formatOriginState({ _root: root, origin: localDomain, nonce: nonce });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -88,7 +88,7 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         originStates.push(_state);
         // Emit event with raw state data
         emit StateSaved(
-            _state.formatOriginState({ _root: _root, _origin: localDomain, _nonce: stateNonce })
+            _state.formatOriginState({ _root: _root, origin: localDomain, nonce: stateNonce })
         );
     }
 

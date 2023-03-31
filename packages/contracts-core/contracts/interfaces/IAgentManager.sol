@@ -10,14 +10,14 @@ interface IAgentManager {
      * @dev On Synapse Chain this initiates the process of agent slashing. It could be immediately
      * completed by anyone calling completeSlashing() providing a correct merkle proof
      * for the OLD agent status.
-     * @param _domain   Domain where the slashed agent was active
-     * @param _agent    Address of the slashed Agent
-     * @param _prover   Address that initially provided fraud proof in SystemRegistry
+     * @param domain    Domain where the slashed agent was active
+     * @param agent     Address of the slashed Agent
+     * @param prover    Address that initially provided fraud proof in SystemRegistry
      */
     function registrySlash(
-        uint32 _domain,
-        address _agent,
-        address _prover
+        uint32 domain,
+        address agent,
+        address prover
     ) external;
 
     // ═════════════════════════════════ VIEWS ═════════════════════════════════
@@ -31,16 +31,16 @@ interface IAgentManager {
      * @notice Returns (flag, domain, index) for a given agent. See Structures.sol for details.
      * @dev Will return AgentFlag.Fraudulent for agents that have been proven to commit fraud,
      * but their status is not updated to Slashed yet.
-     * @param _agent    Agent address
+     * @param agent     Agent address
      * @return          Status for the given agent: (flag, domain, index).
      */
-    function agentStatus(address _agent) external view returns (AgentStatus memory);
+    function agentStatus(address agent) external view returns (AgentStatus memory);
 
     /**
      * @notice Returns whether the agent has been slashed.
-     * @param _agent        Agent address
+     * @param agent         Agent address
      * @return isSlashed    Whether the agent has been slashed
      * @return prover       Address that presented the proof of fraud committed by the agent
      */
-    function slashStatus(address _agent) external view returns (bool isSlashed, address prover);
+    function slashStatus(address agent) external view returns (bool isSlashed, address prover);
 }

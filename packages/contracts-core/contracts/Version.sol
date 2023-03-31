@@ -23,19 +23,19 @@ abstract contract Versioned {
     uint256 private immutable _length;
     /// @dev Bytes representation of the "version string".
     /// Strings with length over 32 are not supported!
-    bytes32 private immutable _data;
+    bytes32 private immutable data;
 
     constructor(string memory _version) {
         _length = bytes(_version).length;
         require(_length <= 32, "String length over 32");
         // bytes32 is left-aligned => this will store the byte representation of the string
         // with the trailing zeroes to complete the 32-byte word
-        _data = bytes32(bytes(_version));
+        data = bytes32(bytes(_version));
     }
 
     function version() external view returns (string memory versionString) {
         // Load the immutable values to form the version string
-        _ShortString memory str = _ShortString(_length, _data);
+        _ShortString memory str = _ShortString(_length, data);
         // The only way to do this cast is doing some dirty assembly
         assembly {
             // solhint-disable-previous-line no-inline-assembly

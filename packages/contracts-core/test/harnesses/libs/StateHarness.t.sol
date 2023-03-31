@@ -45,16 +45,16 @@ contract StateHarness {
         return _payload.castToState().subLeafs();
     }
 
-    function leftLeaf(bytes32 _root, uint32 _origin) public pure returns (bytes32) {
-        return StateLib.leftLeaf(_root, _origin);
+    function leftLeaf(bytes32 _root, uint32 origin) public pure returns (bytes32) {
+        return StateLib.leftLeaf(_root, origin);
     }
 
     function rightLeaf(
-        uint32 _nonce,
+        uint32 nonce,
         uint40 _blockNumber,
         uint40 _timestamp
     ) public pure returns (bytes32) {
-        return StateLib.rightLeaf(_nonce, _blockNumber, _timestamp);
+        return StateLib.rightLeaf(nonce, _blockNumber, _timestamp);
     }
 
     function root(bytes memory _payload) public pure returns (bytes32) {
@@ -84,10 +84,10 @@ contract StateHarness {
     function formatOriginState(
         OriginState memory _originState,
         bytes32 _root,
-        uint32 _origin,
-        uint32 _nonce
+        uint32 origin,
+        uint32 nonce
     ) public pure returns (bytes memory) {
-        return _originState.formatOriginState(_root, _origin, _nonce);
+        return _originState.formatOriginState(_root, origin, nonce);
     }
 
     function originState() public view returns (OriginState memory state) {
@@ -120,12 +120,12 @@ contract StateHarness {
 
     function formatState(
         bytes32 _root,
-        uint32 _origin,
-        uint32 _nonce,
+        uint32 origin,
+        uint32 nonce,
         uint40 _blockNumber,
         uint40 _timestamp
     ) public pure returns (bytes memory) {
-        return StateLib.formatState(_root, _origin, _nonce, _blockNumber, _timestamp);
+        return StateLib.formatState(_root, origin, nonce, _blockNumber, _timestamp);
     }
 
     function isState(bytes memory _payload) public pure returns (bool) {

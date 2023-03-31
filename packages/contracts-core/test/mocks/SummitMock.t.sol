@@ -11,20 +11,20 @@ contract SummitMock is SnapshotHubMock, SystemContractMock, SystemRegistryMock, 
     /// @notice Prevents this contract from being included in the coverage report
     function testSummitMock() external {}
 
-    function submitSnapshot(bytes memory _snapPayload, bytes memory _snapSignature)
+    function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
         external
         returns (bytes memory attPayload)
     {}
 
-    function verifyAttestation(bytes memory _attPayload, bytes memory _attSignature)
+    function verifyAttestation(bytes memory attPayload, bytes memory attSignature)
         external
         returns (bool isValid)
     {}
 
-    function verifyAttestationReport(bytes memory _arPayload, bytes memory _arSignature)
+    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
         external
         returns (bool isValid)
     {}
 
-    function getLatestState(uint32 _origin) external view returns (bytes memory statePayload) {}
+    function getLatestState(uint32 origin) external view returns (bytes memory statePayload) {}
 }

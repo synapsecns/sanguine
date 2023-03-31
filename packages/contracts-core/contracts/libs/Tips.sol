@@ -53,10 +53,10 @@ library TipsLib {
 
     /**
      * @notice Returns a formatted Tips payload with provided fields
-     * @param _notaryTip        Tip for the Notary
-     * @param _broadcasterTip   Tip for the Broadcaster
-     * @param _proverTip        Tip for the Prover
-     * @param _executorTip      Tip for the Executor
+     * @param notaryTip         Tip for the Notary
+     * @param broadcasterTip    Tip for the Broadcaster
+     * @param proverTip         Tip for the Prover
+     * @param executorTip       Tip for the Executor
      * @return Formatted tips
      **/
     function formatTips(
@@ -104,8 +104,8 @@ library TipsLib {
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Tips _tips) internal pure returns (bytes29) {
-        return Tips.unwrap(_tips);
+    function unwrap(Tips tips) internal pure returns (bytes29) {
+        return Tips.unwrap(tips);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -113,41 +113,41 @@ library TipsLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns version of formatted tips
-    function version(Tips _tips) internal pure returns (uint16) {
+    function version(Tips tips) internal pure returns (uint16) {
         // Get the underlying memory view
-        bytes29 _view = _tips.unwrap();
+        bytes29 _view = tips.unwrap();
         return _getVersion(_view);
     }
 
     /// @notice Returns notaryTip field
-    function notaryTip(Tips _tips) internal pure returns (uint96) {
-        bytes29 _view = _tips.unwrap();
+    function notaryTip(Tips tips) internal pure returns (uint96) {
+        bytes29 _view = tips.unwrap();
         return uint96(_view.indexUint(OFFSET_NOTARY, 12));
     }
 
     /// @notice Returns broadcasterTip field
-    function broadcasterTip(Tips _tips) internal pure returns (uint96) {
-        bytes29 _view = _tips.unwrap();
+    function broadcasterTip(Tips tips) internal pure returns (uint96) {
+        bytes29 _view = tips.unwrap();
         return uint96(_view.indexUint(OFFSET_BROADCASTER, 12));
     }
 
     /// @notice Returns proverTip field
-    function proverTip(Tips _tips) internal pure returns (uint96) {
-        bytes29 _view = _tips.unwrap();
+    function proverTip(Tips tips) internal pure returns (uint96) {
+        bytes29 _view = tips.unwrap();
         return uint96(_view.indexUint(OFFSET_PROVER, 12));
     }
 
     /// @notice Returns executorTip field
-    function executorTip(Tips _tips) internal pure returns (uint96) {
-        bytes29 _view = _tips.unwrap();
+    function executorTip(Tips tips) internal pure returns (uint96) {
+        bytes29 _view = tips.unwrap();
         return uint96(_view.indexUint(OFFSET_EXECUTOR, 12));
     }
 
     /// @notice Returns total tip amount.
-    function totalTips(Tips _tips) internal pure returns (uint96) {
+    function totalTips(Tips tips) internal pure returns (uint96) {
         // In practice there's no chance that the total tips value would not fit into uint96.
         // TODO: determine if we want to use uint256 here instead anyway.
-        return notaryTip(_tips) + broadcasterTip(_tips) + proverTip(_tips) + executorTip(_tips);
+        return notaryTip(tips) + broadcasterTip(tips) + proverTip(tips) + executorTip(tips);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

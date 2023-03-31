@@ -51,15 +51,15 @@ library AttestationReportLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns a formatted AttestationReport payload with provided fields.
-    /// @param _flag        Flag signalling type of Attestation Report
-    /// @param _attPayload  Raw payload with reported attestation
+    /// @param flag         Flag signalling type of Attestation Report
+    /// @param attPayload   Raw payload with reported attestation
     /// @return Formatted attestation report
-    function formatAttestationReport(AttestationFlag _flag, bytes memory _attPayload)
+    function formatAttestationReport(AttestationFlag _flag, bytes memory attPayload)
         internal
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(_flag, _attPayload);
+        return abi.encodePacked(_flag, attPayload);
     }
 
     /// @notice Returns an AttestationReport view over the given payload
@@ -123,12 +123,12 @@ library AttestationReportLib {
 
     /// @dev Returns AttestationReport without checking that it fits into AttestationFlag enum.
     function _arFlag(bytes29 _view) internal pure returns (uint8) {
-        return uint8(_view.indexUint({ _index: OFFSET_FLAG, _bytes: 1 }));
+        return uint8(_view.indexUint({ index: OFFSET_FLAG, _bytes: 1 }));
     }
 
     /// @dev Returns an untyped memory view over Report's attestation
     /// without checking if it is properly formatted.
     function _arAttestation(bytes29 _view) internal pure returns (bytes29) {
-        return _view.sliceFrom({ _index: OFFSET_ATTESTATION, newType: 0 });
+        return _view.sliceFrom({ index: OFFSET_ATTESTATION, newType: 0 });
     }
 }

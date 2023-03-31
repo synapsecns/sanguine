@@ -10,10 +10,10 @@ contract BasicClientHarness is BasicClientHarnessEvents, BasicClient {
 
     // solhint-disable-next-line no-empty-blocks
     constructor(
-        address _origin,
-        address _destination,
+        address origin,
+        address destination,
         uint32 _optimisticPeriod
-    ) BasicClient(_origin, _destination) {
+    ) BasicClient(origin, destination) {
         optimisticPeriod = _optimisticPeriod;
     }
 
@@ -21,28 +21,28 @@ contract BasicClientHarness is BasicClientHarnessEvents, BasicClient {
     function testBasicClientHarness() external {}
 
     function sendMessage(
-        uint32 _destination,
-        bytes memory _tips,
-        bytes memory _message
+        uint32 destination,
+        bytes memory tips,
+        bytes memory message
     ) public payable {
-        _send(_destination, optimisticSeconds(), _tips, _message);
+        _send(destination, optimisticSeconds(), tips, message);
     }
 
     function optimisticSeconds() public view returns (uint32) {
         return optimisticPeriod;
     }
 
-    function trustedSender(uint32 _destination) public pure override returns (bytes32 sender) {
-        sender = bytes32(uint256(_destination));
-        // bytes32(0) for _destination == 0
+    function trustedSender(uint32 destination) public pure override returns (bytes32 sender) {
+        sender = bytes32(uint256(destination));
+        // bytes32(0) for destination == 0
     }
 
     function _handleUnsafe(
-        uint32 _origin,
-        uint32 _nonce,
-        uint256 _rootSubmittedAt,
-        bytes memory _message
+        uint32 origin,
+        uint32 nonce,
+        uint256 rootSubmittedAt,
+        bytes memory message
     ) internal override {
-        emit LogBasicClientMessage(_origin, _nonce, _rootSubmittedAt, _message);
+        emit LogBasicClientMessage(origin, nonce, rootSubmittedAt, message);
     }
 }

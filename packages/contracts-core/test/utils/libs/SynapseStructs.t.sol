@@ -125,12 +125,12 @@ library CastLib {
 
     function formatHeader(RawHeader memory rh) internal pure returns (bytes memory header) {
         header = HeaderLib.formatHeader({
-            _origin: rh.origin,
-            _sender: rh.sender,
-            _nonce: rh.nonce,
-            _destination: rh.destination,
-            _recipient: rh.recipient,
-            _optimisticSeconds: rh.optimisticSeconds
+            origin: rh.origin,
+            sender: rh.sender,
+            nonce: rh.nonce,
+            destination: rh.destination,
+            recipient: rh.recipient,
+            optimisticSeconds: rh.optimisticSeconds
         });
     }
 
@@ -158,8 +158,8 @@ library CastLib {
     function formatState(RawState memory rs) internal pure returns (bytes memory state) {
         state = StateLib.formatState({
             _root: rs.root,
-            _origin: rs.origin,
-            _nonce: rs.nonce,
+            origin: rs.origin,
+            nonce: rs.nonce,
             _blockNumber: rs.blockNumber,
             _timestamp: rs.timestamp
         });
@@ -245,8 +245,8 @@ library CastLib {
     {
         attestation = AttestationLib.formatAttestation({
             _snapRoot: ra.snapRoot,
-            _agentRoot: ra.agentRoot,
-            _nonce: ra.nonce,
+            agentRoot: ra.agentRoot,
+            nonce: ra.nonce,
             _blockNumber: ra.blockNumber,
             _timestamp: ra.timestamp
         });
