@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ByteString } from "./ByteString.sol";
-import { TypedMemView } from "./TypedMemView.sol";
+import {ByteString} from "./ByteString.sol";
+import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev Tips is a memory over over a formatted message tips payload.
 type Tips is bytes29;
 /// @dev Attach library functions to Tips
+
 using {
     TipsLib.unwrap,
     TipsLib.version,
@@ -59,14 +60,12 @@ library TipsLib {
      * @param executorTip_      Tip for the Executor
      * @return Formatted tips
      */
-    function formatTips(
-        uint96 notaryTip_,
-        uint96 broadcasterTip_,
-        uint96 proverTip_,
-        uint96 executorTip_
-    ) internal pure returns (bytes memory) {
-        return
-            abi.encodePacked(TIPS_VERSION, notaryTip_, broadcasterTip_, proverTip_, executorTip_);
+    function formatTips(uint96 notaryTip_, uint96 broadcasterTip_, uint96 proverTip_, uint96 executorTip_)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return abi.encodePacked(TIPS_VERSION, notaryTip_, broadcasterTip_, proverTip_, executorTip_);
     }
 
     /**

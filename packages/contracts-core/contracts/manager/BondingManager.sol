@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { AgentFlag, AgentStatus, SlashStatus, SystemEntity } from "../libs/Structures.sol";
-import { DynamicTree, MerkleLib } from "../libs/Merkle.sol";
-import { MerkleList } from "../libs/MerkleList.sol";
+
+import {AgentFlag, AgentStatus, SlashStatus, SystemEntity} from "../libs/Structures.sol";
+import {DynamicTree, MerkleLib} from "../libs/Merkle.sol";
+import {MerkleList} from "../libs/MerkleList.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { AgentManager, IAgentManager, ISystemRegistry } from "./AgentManager.sol";
-import { DomainContext } from "../context/DomainContext.sol";
-import { IBondingManager } from "../interfaces/IBondingManager.sol";
-import { Versioned } from "../Version.sol";
+import {AgentManager, IAgentManager, ISystemRegistry} from "./AgentManager.sol";
+import {DomainContext} from "../context/DomainContext.sol";
+import {IBondingManager} from "../interfaces/IBondingManager.sol";
+import {Versioned} from "../Version.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
@@ -36,10 +37,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }
 
-    function initialize(ISystemRegistry origin_, ISystemRegistry destination_)
-        external
-        initializer
-    {
+    function initialize(ISystemRegistry origin_, ISystemRegistry destination_) external initializer {
         __AgentManager_init(origin_, destination_);
         __Ownable_init();
         // Insert a zero address to make indexes for Agents start from 1.
@@ -54,11 +52,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     // TODO: remove these MVP functions once token staking is implemented
 
     /// @inheritdoc IBondingManager
-    function addAgent(
-        uint32 domain,
-        address agent,
-        bytes32[] memory proof
-    ) external onlyOwner {
+    function addAgent(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
         // Check current status of the added agent
         AgentStatus memory status = _agentStatus(agent);
         // Agent index in `_agents`
@@ -90,18 +84,11 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     }
 
     /// @inheritdoc IBondingManager
-    function initiateUnstaking(
-        uint32 domain,
-        address agent,
-        bytes32[] memory proof
-    ) external onlyOwner {
+    function initiateUnstaking(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
         // Check current status of the unstaking agent
         AgentStatus memory status = _agentStatus(agent);
         // Could only initiate the unstaking for the active agent for the domain
-        require(
-            status.flag == AgentFlag.Active && status.domain == domain,
-            "Unstaking could not be initiated"
-        );
+        require(status.flag == AgentFlag.Active && status.domain == domain, "Unstaking could not be initiated");
         // Leaf representing currently saved agent information in the tree.
         // oldValue includes the domain information, so we didn't had to check it above.
         // However, we are still doing this check to have a more appropriate revert string,
@@ -112,19 +99,12 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     }
 
     /// @inheritdoc IBondingManager
-    function completeUnstaking(
-        uint32 domain,
-        address agent,
-        bytes32[] memory proof
-    ) external onlyOwner {
+    function completeUnstaking(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
         // Check current status of the unstaking agent
         AgentStatus memory status = _agentStatus(agent);
         // Could only complete the unstaking, if it was previously initiated
         // TODO: add more checks (time-based, possibly collecting info from other chains)
-        require(
-            status.flag == AgentFlag.Unstaking && status.domain == domain,
-            "Unstaking could not be completed"
-        );
+        require(status.flag == AgentFlag.Unstaking && status.domain == domain, "Unstaking could not be completed");
         // Leaf representing currently saved agent information in the tree
         // oldValue includes the domain information, so we didn't had to check it above.
         // However, we are still doing this check to have a more appropriate revert string,
@@ -139,18 +119,13 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc IBondingManager
-    function completeSlashing(
-        uint32 domain,
-        address agent,
-        bytes32[] memory proof
-    ) external {
+    function completeSlashing(uint32 domain, address agent, bytes32[] memory proof) external {
         // Check that slashing was initiated by one of the System Registries
         require(slashStatus[agent].isSlashed, "Slashing not initiated");
         // Check that agent is Active/Unstaking and that the domains match
         AgentStatus memory status = _agentStatus(agent);
         require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) &&
-                status.domain == domain,
+            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
             "Slashing could not be completed"
         );
         // Leaf representing currently saved agent information in the tree
@@ -163,11 +138,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     }
 
     /// @inheritdoc IAgentManager
-    function registrySlash(
-        uint32 domain,
-        address agent,
-        address prover
-    ) external {
+    function registrySlash(uint32 domain, address agent, address prover) external {
         // Check that Agent hasn't been already slashed and initiate the slashing
         _initiateSlashing(domain, agent, prover);
         // On SynChain both Origin and Destination (Summit) could slash agents
@@ -236,11 +207,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     }
 
     /// @inheritdoc IBondingManager
-    function getLeafs(uint256 indexFrom, uint256 amount)
-        public
-        view
-        returns (bytes32[] memory leafs)
-    {
+    function getLeafs(uint256 indexFrom, uint256 amount) public view returns (bytes32[] memory leafs) {
         uint256 amountTotal = _agents.length;
         require(indexFrom < amountTotal, "Out of range");
         if (indexFrom + amount > amountTotal) {
@@ -258,12 +225,9 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
 
     /// @dev Updates value in the Agent Merkle Tree to reflect the `newStatus`.
     /// Will revert, if supplied proof for the old value is incorrect.
-    function _updateLeaf(
-        bytes32 oldValue,
-        bytes32[] memory proof,
-        AgentStatus memory newStatus,
-        address agent
-    ) internal {
+    function _updateLeaf(bytes32 oldValue, bytes32[] memory proof, AgentStatus memory newStatus, address agent)
+        internal
+    {
         // New leaf value for the agent in the Agent Merkle Tree
         bytes32 newValue = _agentLeaf(newStatus.flag, newStatus.domain, agent);
         // This will revert if the proof for the old value is incorrect

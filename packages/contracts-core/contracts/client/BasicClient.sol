@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
-import { InterfaceOrigin } from "../interfaces/InterfaceOrigin.sol";
+
+import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
+import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 
 /**
  * @dev Basic implementation of IMessageRecipient interface, to be used as recipient of
@@ -49,18 +50,11 @@ abstract contract BasicClient is IMessageRecipient {
      * @param rootSubmittedAt   Time when merkle root (used for proving this message) was submitted
      * @param content           The message content
      */
-    function handle(
-        uint32 origin_,
-        uint32 nonce,
-        bytes32 sender,
-        uint256 rootSubmittedAt,
-        bytes memory content
-    ) external {
+    function handle(uint32 origin_, uint32 nonce, bytes32 sender, uint256 rootSubmittedAt, bytes memory content)
+        external
+    {
         require(msg.sender == destination, "BasicClient: !destination");
-        require(
-            sender == trustedSender(origin_) && sender != bytes32(0),
-            "BasicClient: !trustedSender"
-        );
+        require(sender == trustedSender(origin_) && sender != bytes32(0), "BasicClient: !trustedSender");
         /// @dev root timestamp wasn't checked => potentially unsafe
         /// No need to pass both origin and sender: sender == trustedSender(origin)
         _handleUnsafe(origin_, nonce, rootSubmittedAt, content);
@@ -90,12 +84,9 @@ abstract contract BasicClient is IMessageRecipient {
      * Note: no checks have been done for root timestamp, make sure to enforce optimistic period
      * to protect against executed fake messages on Destination. Hence the "Unsafe" in the name.
      */
-    function _handleUnsafe(
-        uint32 origin_,
-        uint32 nonce,
-        uint256 rootSubmittedAt,
-        bytes memory content
-    ) internal virtual;
+    function _handleUnsafe(uint32 origin_, uint32 nonce, uint256 rootSubmittedAt, bytes memory content)
+        internal
+        virtual;
 
     /**
      * @dev Sends a message to given destination chain.
@@ -104,20 +95,13 @@ abstract contract BasicClient is IMessageRecipient {
      * @param tipsPayload           Payload with information about paid tips
      * @param content               The message content
      */
-    function _send(
-        uint32 destination_,
-        uint32 optimisticSeconds,
-        bytes memory tipsPayload,
-        bytes memory content
-    ) internal {
+    function _send(uint32 destination_, uint32 optimisticSeconds, bytes memory tipsPayload, bytes memory content)
+        internal
+    {
         bytes32 recipient = trustedSender(destination_);
         require(recipient != bytes32(0), "BasicClient: !recipient");
-        InterfaceOrigin(origin).dispatch{ value: msg.value }(
-            destination_,
-            recipient,
-            optimisticSeconds,
-            tipsPayload,
-            content
+        InterfaceOrigin(origin).dispatch{value: msg.value}(
+            destination_, recipient, optimisticSeconds, tipsPayload, content
         );
     }
 }

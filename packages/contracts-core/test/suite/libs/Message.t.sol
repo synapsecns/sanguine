@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
-import { MessageHarness } from "../../harnesses/libs/MessageHarness.t.sol";
+import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {MessageHarness} from "../../harnesses/libs/MessageHarness.t.sol";
 
-import { HeaderLib } from "../../../contracts/libs/Header.sol";
-import { MessageLib } from "../../../contracts/libs/Message.sol";
-import { TipsLib } from "../../../contracts/libs/Tips.sol";
+import {HeaderLib} from "../../../contracts/libs/Header.sol";
+import {MessageLib} from "../../../contracts/libs/Message.sol";
+import {TipsLib} from "../../../contracts/libs/Tips.sol";
 
 // solhint-disable func-name-mixedcase
 contract MessageLibraryTest is SynapseLibraryTest {
@@ -41,20 +41,9 @@ contract MessageLibraryTest is SynapseLibraryTest {
 
     function test_formattedCorrectly(RawHeader memory rh, RawTips memory rt) public {
         // Construct message parts: this has been tested in the dedicated unit tests
-        bytes memory tipsPayload = TipsLib.formatTips(
-            rt.notaryTip,
-            rt.broadcasterTip,
-            rt.proverTip,
-            rt.executorTip
-        );
-        bytes memory header = HeaderLib.formatHeader(
-            rh.origin,
-            rh.sender,
-            rh.nonce,
-            rh.destination,
-            rh.recipient,
-            rh.optimisticSeconds
-        );
+        bytes memory tipsPayload = TipsLib.formatTips(rt.notaryTip, rt.broadcasterTip, rt.proverTip, rt.executorTip);
+        bytes memory header =
+            HeaderLib.formatHeader(rh.origin, rh.sender, rh.nonce, rh.destination, rh.recipient, rh.optimisticSeconds);
         // Prepare message
         bytes memory message = libHarness.formatMessage(
             rh.origin,
@@ -70,16 +59,10 @@ contract MessageLibraryTest is SynapseLibraryTest {
             TEST_MESSAGE_BODY
         );
         // Test formatter against manually constructed payload
-        assertEq(
-            message,
-            constructPayload(MessageLib.MESSAGE_VERSION, header, tipsPayload),
-            "!formatMessage"
-        );
+        assertEq(message, constructPayload(MessageLib.MESSAGE_VERSION, header, tipsPayload), "!formatMessage");
         // All formatters should return the same results
         assertEq(
-            message,
-            libHarness.formatMessage(header, tipsPayload, TEST_MESSAGE_BODY),
-            "!formatMessage: 3 args variant"
+            message, libHarness.formatMessage(header, tipsPayload, TEST_MESSAGE_BODY), "!formatMessage: 3 args variant"
         );
         assertEq(
             message,
@@ -96,7 +79,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
             "!formatMessage: unpacked header variant"
         );
         // Test formatting checker
-        checkCastToMessage({ payload: message, isMessage: true });
+        checkCastToMessage({payload: message, isMessage: true});
         // Test getters (most getters are tested in Header, Tips tests)
         assertEq(libHarness.version(message), MessageLib.MESSAGE_VERSION, "!messageVersion");
         assertEq(libHarness.header(message), header, "!header");
@@ -117,43 +100,39 @@ contract MessageLibraryTest is SynapseLibraryTest {
         // Payload having less bytes than Message's first element (uint16 messageVersion)
         // should be correctly treated as unformatted (i.e. with no reverts)
         bytes memory payload = createShortPayload(payloadLength, FIRST_ELEMENT_BYTES, data);
-        checkCastToMessage({ payload: payload, isMessage: false });
+        checkCastToMessage({payload: payload, isMessage: false});
     }
 
     function test_isMessage_wrongMessageVersion(uint16 messageVersion) public {
         // Wrong message version value means payload is not a formatted Message
         vm.assume(messageVersion != MessageLib.MESSAGE_VERSION);
-        bytes memory payload = constructPayload(
-            messageVersion,
-            createTestHeader(),
-            createTestTips()
-        );
-        checkCastToMessage({ payload: payload, isMessage: false });
+        bytes memory payload = constructPayload(messageVersion, createTestHeader(), createTestTips());
+        checkCastToMessage({payload: payload, isMessage: false});
     }
 
     function test_isMessage_emptyBody() public {
         // A formatted Message could have an empty body
         bytes memory payload = libHarness.formatMessage(createTestHeader(), createTestTips(), "");
-        checkCastToMessage({ payload: payload, isMessage: true });
+        checkCastToMessage({payload: payload, isMessage: true});
     }
 
     function test_isMessage_emptyEverything() public {
         // Empty header or tips means payload is not a formatted Message
         // empty header and tips
         bytes memory payload = libHarness.formatMessage("", "", "");
-        checkCastToMessage({ payload: payload, isMessage: false });
+        checkCastToMessage({payload: payload, isMessage: false});
         payload = libHarness.formatMessage("", "", TEST_MESSAGE_BODY);
-        checkCastToMessage({ payload: payload, isMessage: false });
+        checkCastToMessage({payload: payload, isMessage: false});
         // empty header
         payload = libHarness.formatMessage("", createTestTips(), "");
-        checkCastToMessage({ payload: payload, isMessage: false });
+        checkCastToMessage({payload: payload, isMessage: false});
         payload = libHarness.formatMessage("", createTestTips(), TEST_MESSAGE_BODY);
-        checkCastToMessage({ payload: payload, isMessage: false });
+        checkCastToMessage({payload: payload, isMessage: false});
         // empty tips
         payload = libHarness.formatMessage(createTestHeader(), "", "");
-        checkCastToMessage({ payload: payload, isMessage: false });
+        checkCastToMessage({payload: payload, isMessage: false});
         payload = libHarness.formatMessage(createTestHeader(), "", TEST_MESSAGE_BODY);
-        checkCastToMessage({ payload: payload, isMessage: false });
+        checkCastToMessage({payload: payload, isMessage: false});
     }
 
     function test_isMessage_incorrectLengths() public {
@@ -162,22 +141,11 @@ contract MessageLibraryTest is SynapseLibraryTest {
         bytes memory tipsPayload = createTestTips();
         // With an empty body, specifying a longer length leads
         // to a memory view overrun. Should be treated without a revert/panic.
-        bytes memory payload = abi.encodePacked(
-            version,
-            uint16(header.length + 1),
-            uint16(tipsPayload.length),
-            header,
-            tipsPayload
-        );
-        checkCastToMessage({ payload: payload, isMessage: false });
-        payload = abi.encodePacked(
-            version,
-            uint16(header.length),
-            uint16(tipsPayload.length + 1),
-            header,
-            tipsPayload
-        );
-        checkCastToMessage({ payload: payload, isMessage: false });
+        bytes memory payload =
+            abi.encodePacked(version, uint16(header.length + 1), uint16(tipsPayload.length), header, tipsPayload);
+        checkCastToMessage({payload: payload, isMessage: false});
+        payload = abi.encodePacked(version, uint16(header.length), uint16(tipsPayload.length + 1), header, tipsPayload);
+        checkCastToMessage({payload: payload, isMessage: false});
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -207,19 +175,13 @@ contract MessageLibraryTest is SynapseLibraryTest {
         return TipsLib.emptyTips();
     }
 
-    function constructPayload(
-        uint16 messageVersion,
-        bytes memory header,
-        bytes memory tipsPayload
-    ) public pure returns (bytes memory) {
-        return
-            abi.encodePacked(
-                messageVersion,
-                uint16(header.length),
-                uint16(tipsPayload.length),
-                header,
-                tipsPayload,
-                TEST_MESSAGE_BODY
-            );
+    function constructPayload(uint16 messageVersion, bytes memory header, bytes memory tipsPayload)
+        public
+        pure
+        returns (bytes memory)
+    {
+        return abi.encodePacked(
+            messageVersion, uint16(header.length), uint16(tipsPayload.length), header, tipsPayload, TEST_MESSAGE_BODY
+        );
     }
 }

@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ByteString } from "./ByteString.sol";
-import { TypeCasts } from "./TypeCasts.sol";
-import { TypedMemView } from "./TypedMemView.sol";
+import {ByteString} from "./ByteString.sol";
+import {TypeCasts} from "./TypeCasts.sol";
+import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev Header is a memory over over a formatted message header payload.
 type Header is bytes29;
 /// @dev Attach library functions to Header
+
 using {
     HeaderLib.unwrap,
     HeaderLib.version,
@@ -73,16 +74,7 @@ library HeaderLib {
         bytes32 recipient_,
         uint32 optimisticSeconds_
     ) internal pure returns (bytes memory) {
-        return
-            abi.encodePacked(
-                HEADER_VERSION,
-                origin_,
-                sender_,
-                nonce_,
-                destination_,
-                recipient_,
-                optimisticSeconds_
-            );
+        return abi.encodePacked(HEADER_VERSION, origin_, sender_, nonce_, destination_, recipient_, optimisticSeconds_);
     }
 
     /**

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { TypedMemView } from "./TypedMemView.sol";
+import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev CallData is a memory view over the payload to be used for an external call, i.e.
 /// recipient.call(callData). Its length is always (4 + 32 * N) bytes:
@@ -9,6 +9,7 @@ import { TypedMemView } from "./TypedMemView.sol";
 /// - 32 * N bytes represent N words that function arguments occupy.
 type CallData is bytes29;
 /// @dev Signature is a memory view over a "65 bytes" array representing a ECDSA signature.
+
 type Signature is bytes29;
 
 library ByteString {
@@ -45,7 +46,7 @@ library ByteString {
      * @dev Shortcut for .ref(0) - to be deprecated once "uint40 type" is removed from bytes29.
      */
     function castToRawBytes(bytes memory payload) internal pure returns (bytes29) {
-        return payload.ref({ newType: 0 });
+        return payload.ref({newType: 0});
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -57,11 +58,7 @@ library ByteString {
      * @dev Using ByteString.formatSignature({r: r, s: s, v: v}) will make sure
      * that params are given in the right order.
      */
-    function formatSignature(
-        bytes32 r,
-        bytes32 s,
-        uint8 v
-    ) internal pure returns (bytes memory) {
+    function formatSignature(bytes32 r, bytes32 s, uint8 v) internal pure returns (bytes memory) {
         return abi.encodePacked(r, s, v);
     }
 
@@ -100,20 +97,12 @@ library ByteString {
 
     /// @notice Unpacks signature payload into (r, s, v) parameters.
     /// @dev Make sure to verify signature length with isSignature() beforehand.
-    function toRSV(Signature signature)
-        internal
-        pure
-        returns (
-            bytes32 r,
-            bytes32 s,
-            uint8 v
-        )
-    {
+    function toRSV(Signature signature) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
         // Get the underlying memory view
         bytes29 view_ = unwrap(signature);
-        r = view_.index({ index_: OFFSET_R, bytes_: 32 });
-        s = view_.index({ index_: OFFSET_S, bytes_: 32 });
-        v = uint8(view_.indexUint({ index_: OFFSET_V, bytes_: 1 }));
+        r = view_.index({index_: OFFSET_R, bytes_: 32});
+        s = view_.index({index_: OFFSET_S, bytes_: 32});
+        v = uint8(view_.indexUint({index_: OFFSET_V, bytes_: 1}));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -178,13 +167,13 @@ library ByteString {
     function callSelector(CallData callData) internal pure returns (bytes29) {
         // Get the underlying memory view
         bytes29 view_ = unwrap(callData);
-        return view_.slice({ index_: OFFSET_SELECTOR, len_: SELECTOR_LENGTH, newType: 0 });
+        return view_.slice({index_: OFFSET_SELECTOR, len_: SELECTOR_LENGTH, newType: 0});
     }
 
     /// @notice Returns abi encoded arguments for the provided calldata.
     function arguments(CallData callData) internal pure returns (bytes29) {
         // Get the underlying memory view
         bytes29 view_ = unwrap(callData);
-        return view_.sliceFrom({ index_: OFFSET_ARGUMENTS, newType: 0 });
+        return view_.sliceFrom({index_: OFFSET_ARGUMENTS, newType: 0});
     }
 }

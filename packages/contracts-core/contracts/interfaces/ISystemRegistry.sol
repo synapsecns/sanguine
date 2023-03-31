@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AgentStatus } from "../libs/Structures.sol";
+import {AgentStatus} from "../libs/Structures.sol";
 
 interface ISystemRegistry {
     /**
@@ -11,11 +11,7 @@ interface ISystemRegistry {
      * @param agent     Address of the slashed Agent
      * @param prover    Account that supplied proof leading to agent slashing
      */
-    function managerSlash(
-        uint32 domain,
-        address agent,
-        address prover
-    ) external;
+    function managerSlash(uint32 domain, address agent, address prover) external;
 
     /**
      * @notice Returns (flag, domain, index) for a given agent. See Structures.sol for details.

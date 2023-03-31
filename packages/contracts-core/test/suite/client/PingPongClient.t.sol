@@ -1,15 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {
-    InterfaceOrigin,
-    PingPongClient,
-    TipsLib
-} from "../../../contracts/client/PingPongClient.sol";
+import {InterfaceOrigin, PingPongClient, TipsLib} from "../../../contracts/client/PingPongClient.sol";
 
-import { OriginMock } from "../../mocks/OriginMock.t.sol";
+import {OriginMock} from "../../mocks/OriginMock.t.sol";
 
-import { Test } from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
 contract PingPongTest is Test {
@@ -32,11 +28,7 @@ contract PingPongTest is Test {
         client = new PingPongClient(originMock, destinationMock);
     }
 
-    function test_ping(
-        uint32 destination,
-        address recipient,
-        uint16 counter
-    ) public {
+    function test_ping(uint32 destination, address recipient, uint16 counter) public {
         uint256 pingId = client.pingsSent();
         uint32 nextPeriod = client.nextOptimisticPeriod();
         // Should call Origin
@@ -52,12 +44,7 @@ contract PingPongTest is Test {
         assertEq(client.pongsReceived(), 0);
     }
 
-    function test_pings(
-        uint8 pingCount,
-        uint32 destination,
-        address recipient,
-        uint16 counter
-    ) public {
+    function test_pings(uint8 pingCount, uint32 destination, address recipient, uint16 counter) public {
         uint256 pingId = client.pingsSent();
         uint256 random = client.random();
         uint32[] memory periods = new uint32[](pingCount);
@@ -80,12 +67,7 @@ contract PingPongTest is Test {
         assertEq(client.pongsReceived(), 0);
     }
 
-    function test_receivePing(
-        uint32 origin,
-        address sender,
-        uint256 pingId,
-        uint16 counter
-    ) public {
+    function test_receivePing(uint32 origin, address sender, uint256 pingId, uint16 counter) public {
         uint32 nextPeriod = client.nextOptimisticPeriod();
         // Should emit PingReceived
         vm.expectEmit(true, true, true, true);
@@ -94,13 +76,7 @@ contract PingPongTest is Test {
         emit PongSent(pingId);
         _expectOriginCall(origin, sender, nextPeriod, pingId, false, counter);
         vm.prank(destinationMock);
-        client.handle(
-            origin,
-            0,
-            bytes32(uint256(uint160(sender))),
-            0,
-            content(pingId, true, counter)
-        );
+        client.handle(origin, 0, bytes32(uint256(uint160(sender))), 0, content(pingId, true, counter));
         // Pings sent: 0
         assertEq(client.pingsSent(), 0);
         // Received pings: 1, pongs: 0
@@ -108,12 +84,7 @@ contract PingPongTest is Test {
         assertEq(client.pongsReceived(), 0);
     }
 
-    function test_receivePong(
-        uint32 origin,
-        address sender,
-        uint256 pingId,
-        uint16 counter
-    ) public {
+    function test_receivePong(uint32 origin, address sender, uint256 pingId, uint16 counter) public {
         uint256 localPingId = client.pingsSent();
         uint32 nextPeriod = client.nextOptimisticPeriod();
         // Should emit PongReceived
@@ -126,13 +97,7 @@ contract PingPongTest is Test {
             _expectOriginCall(origin, sender, nextPeriod, localPingId, true, counter - 1);
         }
         vm.prank(destinationMock);
-        client.handle(
-            origin,
-            0,
-            bytes32(uint256(uint160(sender))),
-            0,
-            content(pingId, false, counter)
-        );
+        client.handle(origin, 0, bytes32(uint256(uint160(sender))), 0, content(pingId, false, counter));
         // Pings sent: 0/1 (based on counter being zero / non-zero)
         assertEq(client.pingsSent(), counter == 0 ? 0 : 1);
         // Received pings: 0, pongs: 1
@@ -153,21 +118,12 @@ contract PingPongTest is Test {
         vm.expectCall(
             originMock,
             abi.encodeWithSelector(
-                InterfaceOrigin.dispatch.selector,
-                destination,
-                recipient,
-                optimisticPeriod,
-                tipsPayload,
-                body
+                InterfaceOrigin.dispatch.selector, destination, recipient, optimisticPeriod, tipsPayload, body
             )
         );
     }
 
-    function content(
-        uint256 pingId,
-        bool isPing,
-        uint16 counter
-    ) internal pure returns (bytes memory) {
+    function content(uint256 pingId, bool isPing, uint16 counter) internal pure returns (bytes memory) {
         return abi.encode(pingId, isPing, counter);
     }
 }

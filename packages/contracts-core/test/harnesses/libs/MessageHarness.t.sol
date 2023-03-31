@@ -2,13 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {
-    HeaderLib,
-    Message,
-    MessageLib,
-    TipsLib,
-    TypedMemView
-} from "../../../contracts/libs/Message.sol";
+import {HeaderLib, Message, MessageLib, TipsLib, TypedMemView} from "../../../contracts/libs/Message.sol";
 
 /**
  * @notice Exposes Message methods for testing against golang.
@@ -77,14 +71,7 @@ contract MessageHarness {
     ) public pure returns (bytes memory) {
         bytes memory tips_ = TipsLib.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
 
-        bytes memory header_ = HeaderLib.formatHeader(
-            origin,
-            sender,
-            nonce,
-            destination,
-            recipient,
-            optimisticSeconds
-        );
+        bytes memory header_ = HeaderLib.formatHeader(origin, sender, nonce, destination, recipient, optimisticSeconds);
         return formatMessage(header_, tips_, messageBody);
     }
 
@@ -98,24 +85,16 @@ contract MessageHarness {
         bytes memory tips_,
         bytes memory messageBody
     ) public pure returns (bytes memory) {
-        return
-            MessageLib.formatMessage(
-                origin,
-                sender,
-                nonce,
-                destination,
-                recipient,
-                optimisticSeconds,
-                tips_,
-                messageBody
-            );
+        return MessageLib.formatMessage(
+            origin, sender, nonce, destination, recipient, optimisticSeconds, tips_, messageBody
+        );
     }
 
-    function formatMessage(
-        bytes memory header_,
-        bytes memory tips_,
-        bytes memory messageBody
-    ) public pure returns (bytes memory) {
+    function formatMessage(bytes memory header_, bytes memory tips_, bytes memory messageBody)
+        public
+        pure
+        returns (bytes memory)
+    {
         return MessageLib.formatMessage(header_, tips_, messageBody);
     }
 

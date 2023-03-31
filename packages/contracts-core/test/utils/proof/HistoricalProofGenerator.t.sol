@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ProofCutter } from "./ProofCutter.t.sol";
+import {ProofCutter} from "./ProofCutter.t.sol";
 
 // TODO: move from test directory
 contract HistoricalProofGenerator is ProofCutter {
@@ -71,8 +71,7 @@ contract HistoricalProofGenerator is ProofCutter {
             // Children have [height = h - 1]
             // And X-coordinates [2 * x] and [2 * x + 1]
             merkleTree[h][x][newCount] = _hash(
-                _fetchSavedTreeElement(h - 1, (x << 1), newCount),
-                _fetchSavedTreeElement(h - 1, (x << 1) + 1, newCount)
+                _fetchSavedTreeElement(h - 1, (x << 1), newCount), _fetchSavedTreeElement(h - 1, (x << 1) + 1, newCount)
             );
         }
         ++treeCount;
@@ -84,7 +83,7 @@ contract HistoricalProofGenerator is ProofCutter {
      */
     function getRoot(uint256 count) external view returns (bytes32) {
         require(count <= treeCount, "Not enough leafs inserted");
-        return _fetchSavedTreeElement({ h: ORIGIN_TREE_HEIGHT, x: 0, count: count });
+        return _fetchSavedTreeElement({h: ORIGIN_TREE_HEIGHT, x: 0, count: count});
     }
 
     /**
@@ -118,11 +117,7 @@ contract HistoricalProofGenerator is ProofCutter {
      * @notice Return tree element with height `h`, x-coordinate `x`, after
      * `count` leafs have been inserted. O(1)
      */
-    function _fetchSavedTreeElement(
-        uint256 h,
-        uint256 x,
-        uint256 count
-    ) internal view returns (bytes32 savedValue) {
+    function _fetchSavedTreeElement(uint256 h, uint256 x, uint256 count) internal view returns (bytes32 savedValue) {
         // Should be probably named greatgreat...grandchild, as this
         // references the children in the very bottom (leafs)
         uint256 firstChildLeafIndex = x << h; // x * (2**H)

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { MerkleLib } from "./Merkle.sol";
+import {MerkleLib} from "./Merkle.sol";
 
 library MerkleList {
     /**
@@ -51,11 +51,7 @@ library MerkleList {
      * @param index     Leaf index to generate the proof for
      * @return proof    Generated merkle proof
      */
-    function calculateProof(bytes32[] memory hashes, uint256 index)
-        internal
-        pure
-        returns (bytes32[] memory proof)
-    {
+    function calculateProof(bytes32[] memory hashes, uint256 index) internal pure returns (bytes32[] memory proof) {
         // Use only meaningful values for the shortened proof
         uint256 height = getHeight(hashes.length);
         proof = new bytes32[](height);

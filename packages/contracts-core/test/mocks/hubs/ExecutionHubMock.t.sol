@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { IExecutionHub } from "../../../contracts/interfaces/IExecutionHub.sol";
+import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 
 // solhint-disable no-empty-blocks
 contract ExecutionHubMock is IExecutionHub {

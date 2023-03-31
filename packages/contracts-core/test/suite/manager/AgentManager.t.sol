@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { IAgentManager } from "../../../contracts/interfaces/IAgentManager.sol";
+import {IAgentManager} from "../../../contracts/interfaces/IAgentManager.sol";
 
-import {
-    SystemEntity,
-    SystemRouterHarness
-} from "../../harnesses/system/SystemRouterHarness.t.sol";
+import {SystemEntity, SystemRouterHarness} from "../../harnesses/system/SystemRouterHarness.t.sol";
 
-import { ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
+import {ISystemContract, SynapseTest} from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
@@ -48,21 +45,8 @@ abstract contract AgentManagerTest is SynapseTest {
         });
     }
 
-    function _remoteSlashPayload(
-        uint32 domain,
-        address agent,
-        address prover
-    ) internal view returns (bytes memory) {
+    function _remoteSlashPayload(uint32 domain, address agent, address prover) internal view returns (bytes memory) {
         // (rootSubmittedAt, callOrigin, systemCaller, domain, agent, prover)
-        return
-            abi.encodeWithSelector(
-                bondingManager.remoteRegistrySlash.selector,
-                0,
-                0,
-                0,
-                domain,
-                agent,
-                prover
-            );
+        return abi.encodeWithSelector(bondingManager.remoteRegistrySlash.selector, 0, 0, 0, domain, agent, prover);
     }
 }

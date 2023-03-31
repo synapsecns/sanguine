@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { DisputeStatus } from "../libs/Structures.sol";
+import {DisputeStatus} from "../libs/Structures.sol";
 
 /// @notice Common functions for contracts relying on Agent-signed Statements
 interface IDisputeHub {

@@ -6,11 +6,7 @@ abstract contract OriginEvents {
     // Old Event to ensure that go generation works with the existing Agents
     // TODO: remove once agents are updated to handle the new "Dispatched" event
     event Dispatch(
-        bytes32 indexed messageHash,
-        uint32 indexed nonce,
-        uint32 indexed destination,
-        bytes tips,
-        bytes message
+        bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes tips, bytes message
     );
 
     /**
@@ -20,12 +16,7 @@ abstract contract OriginEvents {
      * @param destination   Destination domain
      * @param message       Raw bytes of message
      */
-    event Dispatched(
-        bytes32 indexed messageHash,
-        uint32 indexed nonce,
-        uint32 indexed destination,
-        bytes message
-    );
+    event Dispatched(bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes message);
 
     /**
      * @notice Emitted when a proof of invalid state in the signed attestation is submitted.
@@ -34,12 +25,7 @@ abstract contract OriginEvents {
      * @param attestation   Raw payload with Attestation data for snapshot
      * @param attSignature  Notary signature for the attestation
      */
-    event InvalidAttestationState(
-        uint256 stateIndex,
-        bytes state,
-        bytes attestation,
-        bytes attSignature
-    );
+    event InvalidAttestationState(uint256 stateIndex, bytes state, bytes attestation, bytes attSignature);
 
     /**
      * @notice Emitted when a proof of invalid state in the signed snapshot is submitted.

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { State, StateLib, STATE_LENGTH } from "../../../contracts/libs/State.sol";
-import { SNAPSHOT_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
-import { MerkleList } from "../../../contracts/libs/MerkleList.sol";
-import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
-import { SnapshotHarness } from "../../harnesses/libs/SnapshotHarness.t.sol";
+import {State, StateLib, STATE_LENGTH} from "../../../contracts/libs/State.sol";
+import {SNAPSHOT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
+import {MerkleList} from "../../../contracts/libs/MerkleList.sol";
+import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {SnapshotHarness} from "../../harnesses/libs/SnapshotHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract SnapshotLibraryTest is SynapseLibraryTest {
@@ -43,7 +43,7 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         bytes32 hashedSnapshot = keccak256(abi.encodePacked(snapshotSalt, keccak256(payload)));
         // Test formatting of snapshot
         assertEq(libHarness.formatSnapshot(statePayloads), payload, "!formatSnapshot");
-        checkCastToSnapshot({ payload: payload, isSnapshot: true });
+        checkCastToSnapshot({payload: payload, isSnapshot: true});
         // Test getters
         assertEq(libHarness.statesAmount(payload), statesAmount, "!statesAmount");
         for (uint256 i = 0; i < statesAmount; ++i) {
@@ -62,18 +62,13 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
         bytes memory payload = new bytes(length);
         checkCastToSnapshot({
             payload: payload,
-            isSnapshot: length > 0 &&
-                length <= MAX_STATES * STATE_LENGTH &&
-                length % STATE_LENGTH == 0
+            isSnapshot: length > 0 && length <= MAX_STATES * STATE_LENGTH && length % STATE_LENGTH == 0
         });
     }
 
     function test_isSnapshot_stateAmounts(uint8 stateAmounts) public {
         bytes memory payload = new bytes(stateAmounts * STATE_LENGTH);
-        checkCastToSnapshot({
-            payload: payload,
-            isSnapshot: stateAmounts > 0 && stateAmounts <= MAX_STATES
-        });
+        checkCastToSnapshot({payload: payload, isSnapshot: stateAmounts > 0 && stateAmounts <= MAX_STATES});
     }
 
     function test_formatSnapshot_tooManyStates(uint256 stateAmounts) public {

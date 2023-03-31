@@ -24,10 +24,5 @@ abstract contract SummitEvents {
      * @param snapshot      Raw payload with snapshot data
      * @param snapSignature Agent signature for the snapshot
      */
-    event SnapshotAccepted(
-        uint32 indexed domain,
-        address indexed agent,
-        bytes snapshot,
-        bytes snapSignature
-    );
+    event SnapshotAccepted(uint32 indexed domain, address indexed agent, bytes snapshot, bytes snapSignature);
 }

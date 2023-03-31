@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ORIGIN_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
-import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
+import {ORIGIN_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
+import {MerkleLib} from "../../../contracts/libs/Merkle.sol";
 
-import { ProofCutter } from "./ProofCutter.t.sol";
+import {ProofCutter} from "./ProofCutter.t.sol";
 
 // TODO: move from test directory
 contract ProofGenerator is ProofCutter {

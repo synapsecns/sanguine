@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SystemEntity } from "../libs/Structures.sol";
+import {SystemEntity} from "../libs/Structures.sol";
 
 interface InterfaceSystemRouter {
     /**
@@ -27,12 +27,8 @@ interface InterfaceSystemRouter {
      * @param recipient             System entity to receive the call on destination chain
      * @param payload               Calldata payload for calling recipient on destination chain
      */
-    function systemCall(
-        uint32 destination,
-        uint32 optimisticSeconds,
-        SystemEntity recipient,
-        bytes memory payload
-    ) external;
+    function systemCall(uint32 destination, uint32 optimisticSeconds, SystemEntity recipient, bytes memory payload)
+        external;
 
     /**
      * @notice Calls a few system contracts using the given calldata for each call.

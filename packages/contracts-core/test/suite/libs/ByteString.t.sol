@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SynapseLibraryTest } from "../../utils/SynapseLibraryTest.t.sol";
-import { ByteStringHarness } from "../../harnesses/libs/ByteStringHarness.t.sol";
-import { ByteStringTools } from "../../tools/libs/ByteStringTools.t.sol";
+import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
+import {ByteStringHarness} from "../../harnesses/libs/ByteStringHarness.t.sol";
+import {ByteStringTools} from "../../tools/libs/ByteStringTools.t.sol";
 
-import { ByteString } from "../../../contracts/libs/ByteString.sol";
-import { SystemMessageLib } from "../../../contracts/libs/SystemMessage.sol";
+import {ByteString} from "../../../contracts/libs/ByteString.sol";
+import {SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
 
 // solhint-disable func-name-mixedcase
 contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
@@ -44,9 +44,7 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         assertEq(libHarness.arguments(callData), arguments, "!arguments");
     }
 
-    function test_formattedCorrectly_callData_adjusted(uint8 wordsPrefix, uint8 wordsFollowing)
-        public
-    {
+    function test_formattedCorrectly_callData_adjusted(uint8 wordsPrefix, uint8 wordsFollowing) public {
         // Set a sensible limit for the total payload length
         vm.assume((uint256(wordsPrefix) + wordsFollowing) * 32 <= MAX_CONTENT_BYTES);
         // Create "random" arguments and new/old prefix with different random seeds
@@ -54,38 +52,24 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         bytes memory following = createTestArguments(wordsFollowing, "following");
         bytes memory prefixNew = createTestArguments(wordsPrefix, "prefixNew");
         bytes memory callData = bytes.concat(selector, prefixOld, following);
-        bytes memory adjustedCallData = SystemMessageLib.formatAdjustedCallData(
-            callData.castToCallData(),
-            prefixNew.castToRawBytes()
-        );
+        bytes memory adjustedCallData =
+            SystemMessageLib.formatAdjustedCallData(callData.castToCallData(), prefixNew.castToRawBytes());
         // Correct formatting is checked in SystemMessage.t.sol
         // Test formatting checker
         assertTrue(libHarness.isCallData(adjustedCallData), "!isCallData");
         assertEq(libHarness.castToCallData(adjustedCallData), adjustedCallData, "!castToCallData");
         // Test CallData getters
-        assertEq(
-            libHarness.argumentWords(adjustedCallData),
-            uint256(wordsPrefix) + wordsFollowing,
-            "!argumentWords"
-        );
-        assertEq(
-            libHarness.callSelector(adjustedCallData),
-            bytes.concat(selector),
-            "!callSelector"
-        );
-        assertEq(
-            libHarness.arguments(adjustedCallData),
-            bytes.concat(prefixNew, following),
-            "!arguments"
-        );
+        assertEq(libHarness.argumentWords(adjustedCallData), uint256(wordsPrefix) + wordsFollowing, "!argumentWords");
+        assertEq(libHarness.callSelector(adjustedCallData), bytes.concat(selector), "!callSelector");
+        assertEq(libHarness.arguments(adjustedCallData), bytes.concat(prefixNew, following), "!arguments");
     }
 
     function test_formattedCorrectly_signature() public {
-        bytes memory signature = signMessage({ privKey: 1, message: "" });
+        bytes memory signature = signMessage({privKey: 1, message: ""});
         // Test related constants
         assertEq(libHarness.signatureLength(), signature.length, "!signatureLength");
         // Test formatting checker
-        checkCastToSignature({ payload: signature, isSignature: true });
+        checkCastToSignature({payload: signature, isSignature: true});
         (bytes32 r, bytes32 s, uint8 v) = libHarness.toRSV(signature);
         assertEq(abi.encodePacked(r, s, v), signature, "!toRSV");
         assertEq(libHarness.formatSignature(r, s, v), signature, "!formatSignature");
@@ -99,7 +83,7 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
     function test_castToSignature_incorrectLength(uint16 length) public {
         vm.assume(length != libHarness.signatureLength());
         bytes memory payload = new bytes(length);
-        checkCastToSignature({ payload: payload, isSignature: false });
+        checkCastToSignature({payload: payload, isSignature: false});
     }
 
     function test_isCallData_firstElementIncomplete(uint8 payloadLength, bytes32 data) public {
@@ -117,24 +101,16 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
 
     function test_isCallData_withArgs() public {
         checkCastToCallData(
-            abi.encodeWithSelector(selector, uint16(42), uint128(4815162342)),
-            "!isCallData: with arguments"
+            abi.encodeWithSelector(selector, uint16(42), uint128(4_815_162_342)), "!isCallData: with arguments"
         );
     }
 
     function test_isCallData_dynamicArgs() public {
+        checkCastToCallData(abi.encodeWithSelector(selector, new bytes(13)), "!isCallData: bytes(13)");
         checkCastToCallData(
-            abi.encodeWithSelector(selector, new bytes(13)),
-            "!isCallData: bytes(13)"
+            abi.encodeWithSelector(selector, new bytes(13), new bytes(42)), "!isCallData: bytes(13), bytes(42)"
         );
-        checkCastToCallData(
-            abi.encodeWithSelector(selector, new bytes(13), new bytes(42)),
-            "!isCallData: bytes(13), bytes(42)"
-        );
-        checkCastToCallData(
-            abi.encodeWithSelector(selector, new uint8[](2)),
-            "!isCallData: uint8[](2)"
-        );
+        checkCastToCallData(abi.encodeWithSelector(selector, new uint8[](2)), "!isCallData: uint8[](2)");
         uint8[2] memory arg;
         checkCastToCallData(abi.encodeWithSelector(selector, arg), "!isCallData: uint8[2]");
     }

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Test } from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
-import { BaseTree, MerkleLib } from "../../../contracts/libs/Merkle.sol";
-import { ORIGIN_TREE_HEIGHT, ProofGenerator } from "./ProofGenerator.t.sol";
+import {BaseTree, MerkleLib} from "../../../contracts/libs/Merkle.sol";
+import {ORIGIN_TREE_HEIGHT, ProofGenerator} from "./ProofGenerator.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract ProofGeneratorTest is Test {
@@ -78,22 +78,14 @@ contract ProofGeneratorTest is Test {
             uint256 index = length;
             // Should be able to generate a valid proof for a null leaf
             bytes32[] memory proof = gen.getProof(index);
-            assertEq(
-                MerkleLib.proofRoot(index, bytes32(0), proof, ORIGIN_TREE_HEIGHT),
-                root,
-                "!proof"
-            );
+            assertEq(MerkleLib.proofRoot(index, bytes32(0), proof, ORIGIN_TREE_HEIGHT), root, "!proof");
         }
         // Cool side effect: could prove message non-inclusion at index from a distant future
         {
-            uint256 index = length + 42069;
+            uint256 index = length + 42_069;
             // Should be able to generate a valid proof for a null leaf
             bytes32[] memory proof = gen.getProof(index);
-            assertEq(
-                MerkleLib.proofRoot(index, bytes32(0), proof, ORIGIN_TREE_HEIGHT),
-                root,
-                "!proof"
-            );
+            assertEq(MerkleLib.proofRoot(index, bytes32(0), proof, ORIGIN_TREE_HEIGHT), root, "!proof");
         }
     }
 }

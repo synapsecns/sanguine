@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { AgentStatus } from "./libs/Structures.sol";
+
+import {AgentStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { AgentManager } from "./manager/AgentManager.sol";
-import { DomainContext } from "./context/DomainContext.sol";
-import { SummitEvents } from "./events/SummitEvents.sol";
-import { IAgentManager } from "./interfaces/IAgentManager.sol";
-import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
-import { DisputeHub, ExecutionHub } from "./hubs/ExecutionHub.sol";
-import { SnapshotHub, SummitAttestation, SummitState } from "./hubs/SnapshotHub.sol";
-import { Attestation, AttestationLib, AttestationReport, Snapshot } from "./hubs/StatementHub.sol";
-import { DomainContext, Versioned } from "./system/SystemContract.sol";
-import { SystemRegistry } from "./system/SystemRegistry.sol";
+import {AgentManager} from "./manager/AgentManager.sol";
+import {DomainContext} from "./context/DomainContext.sol";
+import {SummitEvents} from "./events/SummitEvents.sol";
+import {IAgentManager} from "./interfaces/IAgentManager.sol";
+import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
+import {DisputeHub, ExecutionHub} from "./hubs/ExecutionHub.sol";
+import {SnapshotHub, SummitAttestation, SummitState} from "./hubs/SnapshotHub.sol";
+import {Attestation, AttestationLib, AttestationReport, Snapshot} from "./hubs/StatementHub.sol";
+import {DomainContext, Versioned} from "./system/SystemContract.sol";
+import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
@@ -80,10 +81,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc InterfaceSummit
-    function verifyAttestation(bytes memory attPayload, bytes memory attSignature)
-        external
-        returns (bool isValid)
-    {
+    function verifyAttestation(bytes memory attPayload, bytes memory attSignature) external returns (bool isValid) {
         // This will revert if payload is not an attestation
         Attestation att = _wrapAttestation(attPayload);
         // This will revert if the attestation signer is not a known Notary

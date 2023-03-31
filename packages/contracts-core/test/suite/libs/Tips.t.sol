@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
-import { TipsHarness } from "../../harnesses/libs/TipsHarness.t.sol";
+import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {TipsHarness} from "../../harnesses/libs/TipsHarness.t.sol";
 
-import { TipsLib } from "../../../contracts/libs/Tips.sol";
+import {TipsLib} from "../../../contracts/libs/Tips.sol";
 
 // solhint-disable func-name-mixedcase
 contract TipsLibraryTest is SynapseLibraryTest {
@@ -22,35 +22,19 @@ contract TipsLibraryTest is SynapseLibraryTest {
     ▏*║                          TESTS: FORMATTING                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_formatTips(
-        uint96 notaryTip,
-        uint96 broadcasterTip,
-        uint96 proverTip,
-        uint96 executorTip
-    ) public {
+    function test_formatTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip) public {
         // TODO: Determine if we actually need uint96 for storing tips / totalTips
         uint256 totalTips = uint256(notaryTip) + broadcasterTip + proverTip + executorTip;
         vm.assume(totalTips <= type(uint96).max);
         // Test formatting
-        bytes memory payload = libHarness.formatTips(
-            notaryTip,
-            broadcasterTip,
-            proverTip,
-            executorTip
-        );
+        bytes memory payload = libHarness.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
         assertEq(
             payload,
-            abi.encodePacked(
-                TipsLib.TIPS_VERSION,
-                notaryTip,
-                broadcasterTip,
-                proverTip,
-                executorTip
-            ),
+            abi.encodePacked(TipsLib.TIPS_VERSION, notaryTip, broadcasterTip, proverTip, executorTip),
             "!formatTips"
         );
         // Test formatting checker
-        checkCastToTips({ payload: payload, isTips: true });
+        checkCastToTips({payload: payload, isTips: true});
         // Test getters
         assertEq(libHarness.version(payload), TipsLib.TIPS_VERSION, "!tipsVersion");
         assertEq(libHarness.notaryTip(payload), notaryTip, "!notaryTip");
@@ -86,20 +70,20 @@ contract TipsLibraryTest is SynapseLibraryTest {
         // Payload having less bytes than Tips' first element (uint16 tipsVersion)
         // should be correctly treated as unformatted (i.e. with no reverts)
         bytes memory payload = createShortPayload(payloadLength, FIRST_ELEMENT_BYTES, data);
-        checkCastToTips({ payload: payload, isTips: false });
+        checkCastToTips({payload: payload, isTips: false});
     }
 
     function test_isTips_testPayload() public {
         // Check that manually constructed test payload is considered formatted
         bytes memory payload = createTestPayload();
-        checkCastToTips({ payload: payload, isTips: true });
+        checkCastToTips({payload: payload, isTips: true});
     }
 
     function test_isTips_shorterLength() public {
         // Check that manually constructed test payload without the last byte
         // is not considered formatted
         bytes memory payload = cutLastByte(createTestPayload());
-        checkCastToTips({ payload: payload, isTips: false });
+        checkCastToTips({payload: payload, isTips: false});
     }
 
     function test_isTips_longerLength() public {

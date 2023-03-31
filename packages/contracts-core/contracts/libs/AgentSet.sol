@@ -34,20 +34,13 @@ library AgentSet {
      * Returns true if the agent was added to the domain, that is
      * if it was not already active on any domain.
      */
-    function add(
-        DomainAddressSet storage set,
-        uint32 domain,
-        address account
-    ) internal returns (bool) {
-        (bool isActive, ) = contains(set, account);
+    function add(DomainAddressSet storage set, uint32 domain, address account) internal returns (bool) {
+        (bool isActive,) = contains(set, account);
         if (isActive) return false;
         set._agents[domain].push(account);
         // The agent is stored at length-1, but we add 1 to all indexes
         // and use 0 as a sentinel value
-        set._indexes[account] = AgentIndex({
-            domain: domain,
-            index: uint224(set._agents[domain].length)
-        });
+        set._indexes[account] = AgentIndex({domain: domain, index: uint224(set._agents[domain].length)});
         return true;
     }
 
@@ -58,11 +51,7 @@ library AgentSet {
      * Returns true if the agent was removed from the domain, that is
      * if it was active on that domain.
      */
-    function remove(
-        DomainAddressSet storage set,
-        uint32 domain,
-        address account
-    ) internal returns (bool) {
+    function remove(DomainAddressSet storage set, uint32 domain, address account) internal returns (bool) {
         AgentIndex memory agentIndex = set._indexes[account];
         // Do nothing if agent is not active, or is active but on another domain
         if (agentIndex.index == 0 || agentIndex.domain != domain) return false;
@@ -105,11 +94,7 @@ library AgentSet {
     /**
      * @notice Returns true if the agent is active on the given domain. O(1)
      */
-    function contains(
-        DomainAddressSet storage set,
-        uint32 domain,
-        address account
-    ) internal view returns (bool) {
+    function contains(DomainAddressSet storage set, uint32 domain, address account) internal view returns (bool) {
         // Read from storage just once
         AgentIndex memory agentIndex = set._indexes[account];
         // Check that agent domain matches, and that agent is active
@@ -132,11 +117,7 @@ library AgentSet {
      *
      * - `index` must be strictly less than {length}.
      */
-    function at(
-        DomainAddressSet storage set,
-        uint32 domain,
-        uint256 index
-    ) internal view returns (address) {
+    function at(DomainAddressSet storage set, uint32 domain, uint256 index) internal view returns (address) {
         return set._agents[domain][index];
     }
 
@@ -149,11 +130,7 @@ library AgentSet {
      * of a state-changing function may render the function uncallable if the set grows to a point
      * where copying to memory consumes too much gas to fit in a block.
      */
-    function values(DomainAddressSet storage set, uint32 domain)
-        internal
-        view
-        returns (address[] memory)
-    {
+    function values(DomainAddressSet storage set, uint32 domain) internal view returns (address[] memory) {
         return set._agents[domain];
     }
 }

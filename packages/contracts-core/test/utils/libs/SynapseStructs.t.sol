@@ -2,26 +2,16 @@
 pragma solidity 0.8.17;
 
 import {
-    Header,
-    HeaderLib,
-    Message,
-    MessageLib,
-    Tips,
-    TipsLib,
-    TypedMemView
+    Header, HeaderLib, Message, MessageLib, Tips, TipsLib, TypedMemView
 } from "../../../contracts/libs/Message.sol";
 
-import { Snapshot, SnapshotLib, State, StateLib } from "../../../contracts/libs/Snapshot.sol";
+import {Snapshot, SnapshotLib, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
 
-import { Attestation, AttestationLib } from "../../../contracts/libs/Attestation.sol";
+import {Attestation, AttestationLib} from "../../../contracts/libs/Attestation.sol";
 
-import {
-    AttestationFlag,
-    AttestationReport,
-    AttestationReportLib
-} from "../../../contracts/libs/AttestationReport.sol";
+import {AttestationFlag, AttestationReport, AttestationReportLib} from "../../../contracts/libs/AttestationReport.sol";
 
-import { StateFlag, StateReport, StateReportLib } from "../../../contracts/libs/StateReport.sol";
+import {StateFlag, StateReport, StateReportLib} from "../../../contracts/libs/StateReport.sol";
 
 struct RawHeader {
     uint32 origin;
@@ -31,7 +21,8 @@ struct RawHeader {
     bytes32 recipient;
     uint32 optimisticSeconds;
 }
-using { CastLib.castToHeader, CastLib.formatHeader } for RawHeader global;
+
+using {CastLib.castToHeader, CastLib.formatHeader} for RawHeader global;
 
 struct RawTips {
     uint96 notaryTip;
@@ -39,14 +30,16 @@ struct RawTips {
     uint96 proverTip;
     uint96 executorTip;
 }
-using { CastLib.castToTips, CastLib.formatTips } for RawTips global;
+
+using {CastLib.castToTips, CastLib.formatTips} for RawTips global;
 
 struct RawMessage {
     RawHeader header;
     RawTips tips;
     bytes body;
 }
-using { CastLib.castToMessage, CastLib.formatMessage } for RawMessage global;
+
+using {CastLib.castToMessage, CastLib.formatMessage} for RawMessage global;
 
 struct RawState {
     bytes32 root;
@@ -55,11 +48,13 @@ struct RawState {
     uint40 blockNumber;
     uint40 timestamp;
 }
-using { CastLib.castToState, CastLib.formatState } for RawState global;
+
+using {CastLib.castToState, CastLib.formatState} for RawState global;
 
 struct RawSnapshot {
     RawState[] states;
 }
+
 using {
     CastLib.formatStates,
     CastLib.castToRawAttestation,
@@ -74,26 +69,22 @@ struct RawAttestation {
     uint40 blockNumber;
     uint40 timestamp;
 }
-using {
-    CastLib.castToAttestation,
-    CastLib.formatAttestation,
-    CastLib.modifyAttestation
-} for RawAttestation global;
+
+using {CastLib.castToAttestation, CastLib.formatAttestation, CastLib.modifyAttestation} for RawAttestation global;
 
 struct RawAttestationReport {
     uint8 flag;
     RawAttestation attestation;
 }
-using {
-    CastLib.castToAttestationReport,
-    CastLib.formatAttestationReport
-} for RawAttestationReport global;
+
+using {CastLib.castToAttestationReport, CastLib.formatAttestationReport} for RawAttestationReport global;
 
 struct RawStateReport {
     uint8 flag;
     RawState state;
 }
-using { CastLib.castToStateReport, CastLib.formatStateReport } for RawStateReport global;
+
+using {CastLib.castToStateReport, CastLib.formatStateReport} for RawStateReport global;
 
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
@@ -171,22 +162,14 @@ library CastLib {
         ptr = rs.formatState().castToState();
     }
 
-    function formatStateReport(RawStateReport memory rawSR)
-        internal
-        pure
-        returns (bytes memory stateReport)
-    {
+    function formatStateReport(RawStateReport memory rawSR) internal pure returns (bytes memory stateReport) {
         // Explicit revert when flag out of range
         require(rawSR.flag <= uint8(type(StateFlag).max), "Flag out of range");
         bytes memory state = rawSR.state.formatState();
         stateReport = StateFlag(rawSR.flag).formatStateReport(state);
     }
 
-    function castToStateReport(RawStateReport memory rawSR)
-        internal
-        pure
-        returns (StateReport ptr)
-    {
+    function castToStateReport(RawStateReport memory rawSR) internal pure returns (StateReport ptr) {
         ptr = rawSR.formatStateReport().castToStateReport();
     }
 
@@ -194,11 +177,7 @@ library CastLib {
     ▏*║                               SNAPSHOT                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatStates(RawSnapshot memory rawSnap)
-        internal
-        pure
-        returns (bytes[] memory states)
-    {
+    function formatStates(RawSnapshot memory rawSnap) internal pure returns (bytes[] memory states) {
         states = new bytes[](rawSnap.states.length);
         for (uint256 i = 0; i < rawSnap.states.length; ++i) {
             states[i] = rawSnap.states[i].formatState();
@@ -220,11 +199,7 @@ library CastLib {
         ra.timestamp = timestamp;
     }
 
-    function formatSnapshot(RawSnapshot memory rawSnap)
-        internal
-        view
-        returns (bytes memory snapshot)
-    {
+    function formatSnapshot(RawSnapshot memory rawSnap) internal view returns (bytes memory snapshot) {
         State[] memory states = new State[](rawSnap.states.length);
         for (uint256 i = 0; i < rawSnap.states.length; ++i) {
             states[i] = rawSnap.states[i].castToState();
@@ -240,11 +215,7 @@ library CastLib {
     ▏*║                             ATTESTATION                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatAttestation(RawAttestation memory ra)
-        internal
-        pure
-        returns (bytes memory attestation)
-    {
+    function formatAttestation(RawAttestation memory ra) internal pure returns (bytes memory attestation) {
         attestation = AttestationLib.formatAttestation({
             snapRoot_: ra.snapRoot,
             agentRoot_: ra.agentRoot,
@@ -284,11 +255,7 @@ library CastLib {
         attestationReport = AttestationFlag(rawAR.flag).formatAttestationReport(attestation);
     }
 
-    function castToAttestationReport(RawAttestationReport memory rawAR)
-        internal
-        pure
-        returns (AttestationReport ptr)
-    {
+    function castToAttestationReport(RawAttestationReport memory rawAR) internal pure returns (AttestationReport ptr) {
         ptr = rawAR.formatAttestationReport().castToAttestationReport();
     }
 }

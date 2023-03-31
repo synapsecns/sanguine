@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { MerkleLib, AGENT_TREE_HEIGHT } from "../../../contracts/libs/Merkle.sol";
+import {MerkleLib, AGENT_TREE_HEIGHT} from "../../../contracts/libs/Merkle.sol";
 
-import { ProofCutter } from "./ProofCutter.t.sol";
+import {ProofCutter} from "./ProofCutter.t.sol";
 
 // TODO: move from test directory
 contract DynamicProofGenerator is ProofCutter {
@@ -22,10 +22,7 @@ contract DynamicProofGenerator is ProofCutter {
         for (uint256 h = 1; h <= AGENT_TREE_HEIGHT; ++h) {
             // Traverse to parent
             index >>= 1;
-            merkleTree[h][index] = MerkleLib.getParent(
-                merkleTree[h - 1][2 * index],
-                merkleTree[h - 1][2 * index + 1]
-            );
+            merkleTree[h][index] = MerkleLib.getParent(merkleTree[h - 1][2 * index], merkleTree[h - 1][2 * index + 1]);
         }
     }
 

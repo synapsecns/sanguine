@@ -36,9 +36,7 @@ interface InterfaceSummit {
      * @return isValid          Whether the provided attestation is valid.
      *                          Notary is slashed, if return value is FALSE.
      */
-    function verifyAttestation(bytes memory attPayload, bytes memory attSignature)
-        external
-        returns (bool isValid);
+    function verifyAttestation(bytes memory attPayload, bytes memory attSignature) external returns (bool isValid);
 
     /**
      * @notice Verifies an attestation report signed by a Guard.

@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { AgentSet } from "../../../contracts/libs/AgentSet.sol";
+import {AgentSet} from "../../../contracts/libs/AgentSet.sol";
 
 contract AgentSetHarness {
     using AgentSet for AgentSet.DomainAddressSet;

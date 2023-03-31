@@ -17,9 +17,9 @@ import {
     RawStateReport
 } from "./libs/SynapseStructs.t.sol";
 
-import { SynapseUtilities } from "./SynapseUtilities.t.sol";
+import {SynapseUtilities} from "./SynapseUtilities.t.sol";
 
-import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
@@ -56,9 +56,7 @@ abstract contract SynapseAgents is SynapseUtilities {
         string memory baseAgentName = domain == 0 ? "Guard" : string.concat("Notary(", name, ")");
         domains[domain].agents = new address[](DOMAIN_AGENTS);
         for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
-            domains[domain].agents[i] = createAgent(
-                string.concat(baseAgentName, " ", Strings.toString(i))
-            );
+            domains[domain].agents[i] = createAgent(string.concat(baseAgentName, " ", Strings.toString(i)));
         }
         domains[domain].agent = domains[domain].agents[0];
     }
@@ -73,21 +71,13 @@ abstract contract SynapseAgents is SynapseUtilities {
         agentPK[agent] = privKey;
     }
 
-    function getAgent(uint256 domainId, uint256 agentId)
-        public
-        view
-        returns (uint32 domain, address agent)
-    {
+    function getAgent(uint256 domainId, uint256 agentId) public view returns (uint32 domain, address agent) {
         domain = allDomains[domainId % allDomains.length];
         agent = domains[domain].agents[agentId % DOMAIN_AGENTS];
     }
 
     /// @dev Private to enforce using salt-specific signing
-    function signMessage(address agent, bytes32 hashedMsg)
-        private
-        view
-        returns (bytes memory signature)
-    {
+    function signMessage(address agent, bytes32 hashedMsg) private view returns (bytes memory signature) {
         uint256 privKey = agentPK[agent];
         require(privKey != 0, "Unknown agent");
         return signMessage(privKey, hashedMsg);
@@ -97,11 +87,7 @@ abstract contract SynapseAgents is SynapseUtilities {
     ▏*║                          SIGNING STATEMENTS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function signAttestation(address agent, bytes memory attestation)
-        public
-        view
-        returns (bytes memory signature)
-    {
+    function signAttestation(address agent, bytes memory attestation) public view returns (bytes memory signature) {
         bytes32 hashedAtt = keccak256(attestation);
         return signMessage(agent, keccak256(bytes.concat(ATTESTATION_SALT, hashedAtt)));
     }
@@ -133,11 +119,7 @@ abstract contract SynapseAgents is SynapseUtilities {
         signature = signAttestationReport(agent, attestationReport);
     }
 
-    function signSnapshot(address agent, bytes memory snapshot)
-        public
-        view
-        returns (bytes memory signature)
-    {
+    function signSnapshot(address agent, bytes memory snapshot) public view returns (bytes memory signature) {
         bytes32 hashedSnap = keccak256(snapshot);
         return signMessage(agent, keccak256(bytes.concat(SNAPSHOT_SALT, hashedSnap)));
     }
@@ -160,11 +142,7 @@ abstract contract SynapseAgents is SynapseUtilities {
         signature = signSnapshot(agent, snapshot);
     }
 
-    function signStateReport(address agent, bytes memory srPayload)
-        public
-        view
-        returns (bytes memory signature)
-    {
+    function signStateReport(address agent, bytes memory srPayload) public view returns (bytes memory signature) {
         bytes32 hashedAR = keccak256(srPayload);
         return signMessage(agent, keccak256(bytes.concat(STATE_REPORT_SALT, hashedAR)));
     }

@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { Attestation, ExecutionAttestation } from "../libs/Attestation.sol";
-import { SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT } from "../libs/Constants.sol";
-import { MerkleLib } from "../libs/Merkle.sol";
-import { Header, Message, MessageLib, Tips } from "../libs/Message.sol";
-import { TypeCasts } from "../libs/TypeCasts.sol";
-import { TypedMemView } from "../libs/TypedMemView.sol";
+
+import {Attestation, ExecutionAttestation} from "../libs/Attestation.sol";
+import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
+import {MerkleLib} from "../libs/Merkle.sol";
+import {Header, Message, MessageLib, Tips} from "../libs/Message.sol";
+import {TypeCasts} from "../libs/TypeCasts.sol";
+import {TypedMemView} from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { DisputeHub } from "./DisputeHub.sol";
-import { ExecutionHubEvents } from "../events/ExecutionHubEvents.sol";
-import { IExecutionHub } from "../interfaces/IExecutionHub.sol";
-import { IMessageRecipient } from "../interfaces/IMessageRecipient.sol";
+import {DisputeHub} from "./DisputeHub.sol";
+import {ExecutionHubEvents} from "../events/ExecutionHubEvents.sol";
+import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
+import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 
 /**
  * @notice ExecutionHub is responsible for executing the messages that are
@@ -66,13 +67,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         Header header = message.header();
         bytes32 msgLeaf = message.leaf();
         // Check proofs validity and mark message as executed
-        ExecutionAttestation memory execAtt = _prove(
-            header,
-            msgLeaf,
-            originProof,
-            snapProof,
-            stateIndex
-        );
+        ExecutionAttestation memory execAtt = _prove(header, msgLeaf, originProof, snapProof, stateIndex);
         // Store message tips
         Tips tips = message.tips();
         _storeTips(execAtt.notary, tips);
@@ -81,11 +76,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         address recipient = _checkForSystemRouter(header.recipient());
         // Pass the message to the recipient
         IMessageRecipient(recipient).handle(
-            origin,
-            header.nonce(),
-            header.sender(),
-            execAtt.submittedAt,
-            message.body().clone()
+            origin, header.nonce(), header.sender(), execAtt.submittedAt, message.body().clone()
         );
         emit Executed(origin, msgLeaf);
     }
@@ -132,12 +123,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
         // This will revert if origin proof length exceeds Origin Tree height
-        bytes32 originRoot = MerkleLib.proofRoot(
-            header.nonce() - 1,
-            msgLeaf,
-            originProof,
-            ORIGIN_TREE_HEIGHT
-        );
+        bytes32 originRoot = MerkleLib.proofRoot(header.nonce() - 1, msgLeaf, originProof, ORIGIN_TREE_HEIGHT);
         // Reconstruct Snapshot Merkle Root using the snapshot proof
         // This will revert if:
         //  - State index is out of range.
@@ -152,10 +138,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Check that Notary who submitted the attestation is not in dispute
         require(!_inDispute(execAtt.notary), "Notary is in dispute");
         // Check if optimistic period has passed
-        require(
-            block.timestamp >= header.optimisticSeconds() + execAtt.submittedAt,
-            "!optimisticSeconds"
-        );
+        require(block.timestamp >= header.optimisticSeconds() + execAtt.submittedAt, "!optimisticSeconds");
         // Mark message as executed against the snapshot root
         messageStatus[msgLeaf] = snapshotRoot;
     }
@@ -174,11 +157,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
      * But if SYSTEM_ROUTER value is used for "recipient" field, recipient is Synapse Router.
      * Note: tx will revert in Origin if anyone but SystemRouter uses SYSTEM_ROUTER as recipient.
      */
-    function _checkForSystemRouter(bytes32 recipient)
-        internal
-        view
-        returns (address recipientAddress)
-    {
+    function _checkForSystemRouter(bytes32 recipient) internal view returns (address recipientAddress) {
         // Check if SYSTEM_ROUTER was specified as message recipient
         if (recipient == SYSTEM_ROUTER) {
             /**

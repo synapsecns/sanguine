@@ -2,13 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {
-    Snapshot,
-    SnapshotLib,
-    State,
-    StateLib,
-    TypedMemView
-} from "../../../contracts/libs/Snapshot.sol";
+import {Snapshot, SnapshotLib, State, StateLib, TypedMemView} from "../../../contracts/libs/Snapshot.sol";
 
 // solhint-disable ordering
 
