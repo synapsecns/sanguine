@@ -2,6 +2,8 @@ package localserver
 
 import (
 	"context"
+	"testing"
+
 	// embeds the pyroscope config file.
 	_ "embed"
 	"fmt"
@@ -54,28 +56,22 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 		},
 	}
 
-	tmpFile := filet.TmpFile(j.tb, "", pyroscopeConfig).Name()
-	assert.Nil(j.tb, os.Chmod(tmpFile, 0777))
-
-	fmt.Println(tmpFile)
-
 	resource, err := j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 		config.Mounts = []docker.HostMount{
 			{
-				Type:     string(mount.TypeVolume),
+				Type:     string(mount.TypeBind),
 				Target:   pyroscopePath,
-				Source:   filet.TmpFile(j.tb, "", pyroscopeConfig).Name(),
+				Source:   createConfigPath(j.tb),
 				ReadOnly: true,
 			},
 		}
 		config.AutoRemove = true
-		//config.RestartPolicy = docker.AlwaysRestart()
+		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
 	assert.Nil(j.tb, err)
 
 	j.tb.Setenv(internal.PyroscopeEndpoint, fmt.Sprintf("http://localhost:%s", resource.GetPort("4040/tcp")))
 
-	fmt.Println(os.Getenv(internal.PyroscopeEndpoint))
 	if !j.cfg.keepContainers {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
 		assert.Nil(j.tb, err)
@@ -114,4 +110,18 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 	case logResource := <-logResourceChan:
 		return logResource
 	}
+}
+
+// createConfigFile creates a temporary config file for pyroscope.
+// because github actions docker mount point is wrong:
+// see: https://github.com/actions/runner/issues/1474#issuecomment-965749362
+func createConfigPath(tb testing.TB) string {
+	dir := ""
+	var err error
+	if core.HasEnv("CI") {
+		dir, err = os.UserHomeDir()
+		assert.Nil(tb, err)
+	}
+	configPath := filet.TmpFile(tb, dir, pyroscopeConfig).Name()
+	return configPath
 }
