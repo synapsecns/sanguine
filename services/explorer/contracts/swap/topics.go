@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
 	"github.com/synapsecns/sanguine/services/explorer/types/swap"
 	"strings"
 )
@@ -11,6 +12,10 @@ import (
 func init() {
 	var err error
 	parsedSwap, err := abi.JSON(strings.NewReader(SwapFlashLoanMetaData.ABI))
+	if err != nil {
+		panic(err)
+	}
+	parsedMetaSwap, err := abi.JSON(strings.NewReader(metaswap.MetaSwapMetaData.ABI))
 	if err != nil {
 		panic(err)
 	}
@@ -35,6 +40,8 @@ func init() {
 	StopRampATopic = parsedSwap.Events["StopRampA"].ID
 
 	FlashLoanTopic = parsedSwap.Events["FlashLoan"].ID
+
+	TokenSwapUnderlyingTopic = parsedMetaSwap.Events["TokenSwapUnderlying"].ID
 }
 
 // TokenSwapTopic is the topic used for token swap.
@@ -67,6 +74,9 @@ var StopRampATopic common.Hash
 // FlashLoanTopic is the topic used for Flash Loans.
 var FlashLoanTopic common.Hash
 
+// TokenSwapUnderlyingTopic is the topic used for token swap underlying.
+var TokenSwapUnderlyingTopic common.Hash
+
 // TopicMap maps events to topics.
 // this is returned as a function to assert immutability.
 func TopicMap() map[swap.EventType]common.Hash {
@@ -81,6 +91,7 @@ func TopicMap() map[swap.EventType]common.Hash {
 		swap.RampAEvent:                    RampATopic,
 		swap.StopRampAEvent:                StopRampATopic,
 		swap.FlashLoanEvent:                FlashLoanTopic,
+		swap.TokenSwapUnderlyingEvent:      TokenSwapUnderlyingTopic,
 	}
 }
 

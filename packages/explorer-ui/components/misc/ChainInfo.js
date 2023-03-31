@@ -1,45 +1,50 @@
-import {QuestionMarkCircleIcon} from '@heroicons/react/outline'
+import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
+import { getChainUrl, getExplorerTxUrl } from '@urls'
 
-import {CHAIN_EXPLORER_URLS, CHAIN_INFO_MAP} from '@constants/networks'
-import {getNetworkTextColor} from '@styles/networks'
+import { CHAIN_EXPLORER_URLS, CHAIN_INFO_MAP } from '@constants/networks'
 import Image from 'next/image'
 
 export function ChainInfo({
   chainId,
-  imgClassName = 'w-4 h-4',
-  textClassName = getNetworkTextColor(chainId),
+  imgClassName = 'w-4 h-4 rounded-full',
+  linkClassName = 'float-right text-white transition ease-out hover:text-[#8FEBFF] px-1.5  rounded-md ease-in-out bg-[#191919]',
+  textClassName = "pl-1 whitespace-nowrap text-sm text-white",
   txHash,
+  useExplorerLink = false,
+  noLink = false,
 }) {
   const { chainName, chainImg } = CHAIN_INFO_MAP[chainId] ?? {}
-  const explorer = CHAIN_EXPLORER_URLS[chainId] ?? ''
-
+  var link = ""
+  if (txHash) {
+    link = getExplorerTxUrl({ hash: txHash, chainId: chainId })
+  }
+  if (useExplorerLink) {
+    link = getChainUrl({ chainId: chainId })
+  }
   if (chainName) {
     return (
-      <div className="flex items-center">
-        <Image
-          className={`inline mr-2 rounded-lg ${imgClassName}`}
-          src={chainImg}
-          alt={chainImg}
-        />
-        <span className={textClassName}>{chainName}</span>
-        <a
-          target="_blank"
-          href={explorer + '/tx/' + txHash}
-          className="bg-gray-700 p-1 rounded-md ml-1"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="#8FEBFF"
-            className="w-4 h-4"
-          >
-            <path
-              fillRule="evenodd"
-              d="M15.75 2.25H21a.75.75 0 01.75.75v5.25a.75.75 0 01-1.5 0V4.81L8.03 17.03a.75.75 0 01-1.06-1.06L19.19 3.75h-3.44a.75.75 0 010-1.5zm-10.5 4.5a1.5 1.5 0 00-1.5 1.5v10.5a1.5 1.5 0 001.5 1.5h10.5a1.5 1.5 0 001.5-1.5V10.5a.75.75 0 011.5 0v8.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V8.25a3 3 0 013-3h8.25a.75.75 0 010 1.5H5.25z"
-              clipRule="evenodd"
+      <div className="w-full relative">
+        <div className="flex justify-between ">
+          <div className='flex flex-row w-[90%] items-center'>
+            <Image
+              className={`inline mr-[.5rem] rounded-full ${imgClassName}`}
+              src={chainImg}
+              alt={chainImg}
             />
-          </svg>
-        </a>
+            <p className={textClassName}>{chainName}</p>
+          </div>
+          {noLink ? null : (
+            <div className='flex items-center'>
+              <a
+                type="link"
+                target="_blank"
+                href={link}
+                className={linkClassName}
+              >
+                ↗
+              </a>
+            </div>)}
+        </div>
       </div>
     )
   } else {

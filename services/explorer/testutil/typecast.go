@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
 
@@ -45,4 +46,11 @@ func (d *DeployManager) GetMessageBus(ctx context.Context, backend backends.Simu
 	d.T().Helper()
 
 	return manager.GetContract[*messagebus.MessageBusRef](ctx, d.T(), d, backend, MessageBusType)
+}
+
+// GetMetaSwap gets a typecast meta swap.
+func (d *DeployManager) GetMetaSwap(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *metaswap.MetaSwapRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*metaswap.MetaSwapRef](ctx, d.T(), d, backend, MetaSwapType)
 }

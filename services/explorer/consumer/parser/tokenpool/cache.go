@@ -3,12 +3,13 @@ package tokenpool
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	lru "github.com/hashicorp/golang-lru/v2"
-	"github.com/jpillora/backoff"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/db"
-	"time"
 )
 
 // Service provides data about tokens using either a cache or bridgeconfig
@@ -20,6 +21,10 @@ type Service interface {
 }
 
 const cacheSize = 3000
+
+// maxAttemptTime is how many times we will attempt to get the token data.
+const maxAttemptTime = time.Second * 120
+const maxAttempt = 60
 
 type tokenPoolDataServiceImpl struct {
 	consumerDB db.ConsumerDB
@@ -52,7 +57,8 @@ func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, ch
 	ctx, cancel := context.WithTimeout(parentCtx, maxAttemptTime)
 	defer cancel()
 
-	err := t.retryWithBackoff(ctx, func(ctx context.Context) error {
+	//nolint: wrapcheck
+	err := retry.WithBackoff(ctx, func(ctx context.Context) error {
 		var err error
 		tokenAddress, err = t.service.GetTokenAddress(ctx, tokenIndex)
 		if err != nil {
@@ -61,12 +67,13 @@ func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, ch
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not get token data with retry backoff: %w", err)
+		return nil, fmt.Errorf("could not get token data with retry backoff chainID %d, tokenIndex %d, contractAddress %s: %w", chainID, tokenIndex, contractAddress, err)
 	}
 
-	err = t.retryWithBackoff(ctx, func(ctx context.Context) error {
+	//nolint: wrapcheck
+	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
 		return t.storeTokenIndex(ctx, chainID, tokenIndex, tokenAddress, contractAddress)
-	})
+	}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	if err != nil {
 		return nil, fmt.Errorf("could not store token index: %w", err)
 	}
@@ -81,38 +88,4 @@ func (t *tokenPoolDataServiceImpl) storeTokenIndex(parentCtx context.Context, ch
 		return fmt.Errorf("could not store token index: %w", err)
 	}
 	return nil
-}
-
-// maxAttemptTime is how many times we will attempt to get the token data.
-var maxAttemptTime = time.Second * 10
-var maxAttempt = 10
-
-type retryableFunc func(ctx context.Context) error
-
-// retryWithBackoff will retry to get data with a backoff.
-func (t *tokenPoolDataServiceImpl) retryWithBackoff(ctx context.Context, doFunc retryableFunc) error {
-	b := &backoff.Backoff{
-		Factor: 2,
-		Jitter: true,
-		Min:    200 * time.Millisecond,
-		Max:    5 * time.Second,
-	}
-
-	timeout := time.Duration(0)
-	attempts := 0
-	for attempts < maxAttempt {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("%w while retrying", ctx.Err())
-		case <-time.After(timeout):
-			err := doFunc(ctx)
-			if err != nil {
-				timeout = b.Duration()
-				attempts++
-			} else {
-				return nil
-			}
-		}
-	}
-	return fmt.Errorf("max attempts reached")
 }

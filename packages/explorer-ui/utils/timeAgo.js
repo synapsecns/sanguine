@@ -8,7 +8,7 @@ export function timeAgo({ timestamp }) {
     const date = new Date(milliseconds)
     const timePeriod = formatDistanceToNow(date)
 
-    timeAgo = `${timePeriod} ago`
+    timeAgo = `${timePeriod}`
 
     timeAgo = timeAgo.replace('minutes', 'min')
     timeAgo = timeAgo.replace('minute', 'min')

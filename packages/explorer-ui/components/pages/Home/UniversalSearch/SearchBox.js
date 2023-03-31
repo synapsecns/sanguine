@@ -3,6 +3,7 @@ export function SearchBox({
   setSearchField,
   inputType,
   placeholder,
+  extraStyling,
 }) {
   return (
     <form className="flex items-center">
@@ -18,7 +19,8 @@ export function SearchBox({
             block w-full  px-4 py-2
             text-white
             placeholder:text-white placeholder:text-opacity-60
-          `}
+
+          ` +extraStyling}
           placeholder={placeholder}
           onChange={(e) => {
             setSearchField(e.target.value)

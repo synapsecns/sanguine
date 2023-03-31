@@ -23,8 +23,9 @@ contract DeployerUtils is Script {
     string private constant DEPLOY_CONFIGS = "script/configs/";
 
     // TODO: this is only deployed on 7 chains, deploy our own factory for prod deployments
+    // This is the factory on testnets
     ICreate3Factory internal constant FACTORY =
-        ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
+        ICreate3Factory(0x7D5352B5d0C1d2Df42FF7462233252608A9174db);
 
     /// @dev Whether the script will be broadcasted or not
     bool internal isBroadcasted = false;
