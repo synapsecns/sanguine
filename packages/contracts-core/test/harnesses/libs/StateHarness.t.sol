@@ -106,8 +106,8 @@ contract StateHarness {
     ▏*║                             SUMMIT STATE                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatSummitState(SummitState memory _summitState) public pure returns (bytes memory) {
-        return _summitState.formatSummitState();
+    function formatSummitState(SummitState memory summitState) public pure returns (bytes memory) {
+        return summitState.formatSummitState();
     }
 
     function toSummitState(bytes memory payload) public pure returns (SummitState memory state) {

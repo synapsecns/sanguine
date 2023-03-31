@@ -144,7 +144,7 @@ contract PingPongClient is IMessageRecipient {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @dev Returns a random optimistic period value from 0 to 59 seconds.
-    function _optimisticPeriod() internal returns (uint32 period) {
+    function optimisticPeriod() internal returns (uint32 period) {
         // Use random optimistic period up to one minute
         period = nextOptimisticPeriod();
         // Adjust "random" value
@@ -167,7 +167,7 @@ contract PingPongClient is IMessageRecipient {
         InterfaceOrigin(origin).dispatch(
             destination,
             recipient,
-            _optimisticPeriod(),
+            optimisticPeriod(),
             tips,
             message
         );

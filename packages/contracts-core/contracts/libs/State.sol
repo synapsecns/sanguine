@@ -186,18 +186,18 @@ library StateLib {
      * @param summitState   State struct as it is stored in Summit contract
      * @return Formatted state
      */
-    function formatSummitState(SummitState memory _summitState)
+    function formatSummitState(SummitState memory summitState)
         internal
         pure
         returns (bytes memory)
     {
         return
             formatState({
-                root: _summitState.root,
-                origin: _summitState.origin,
-                nonce: _summitState.nonce,
-                blockNumber: _summitState.blockNumber,
-                timestamp: _summitState.timestamp
+                root: summitState.root,
+                origin: summitState.origin,
+                nonce: summitState.nonce,
+                blockNumber: summitState.blockNumber,
+                timestamp: summitState.timestamp
             });
     }
 

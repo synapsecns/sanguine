@@ -24,10 +24,10 @@ contract ProofGenerator is ProofCutter {
     /**
      * @notice Creates a Merkle Tree from an array of leafs.
      */
-    function createTree(bytes32[] memory _leafs) external {
+    function createTree(bytes32[] memory leafs) external {
         _clearTree();
         // Copy the leafs into the tree
-        uint256 size = _copyLeafs(_leafs);
+        uint256 size = _copyLeafs(leafs);
         // Go upwards the tree and construct parent layers one by one
         for (uint256 d = 1; d <= ORIGIN_TREE_HEIGHT; ++d) {
             size = (size + 1) / 2;
@@ -64,9 +64,9 @@ contract ProofGenerator is ProofCutter {
     /**
      * @notice Returns node of the Merkle Tree given its depth and index.
      */
-    function getNode(uint256 _depth, uint256 index) public view returns (bytes32 node) {
-        if (index < merkleTree[_depth].length) {
-            node = merkleTree[_depth][index];
+    function getNode(uint256 depth, uint256 index) public view returns (bytes32 node) {
+        if (index < merkleTree[depth].length) {
+            node = merkleTree[depth][index];
         } else {
             node = bytes32(0);
         }
@@ -86,30 +86,30 @@ contract ProofGenerator is ProofCutter {
     /**
      * @notice Copies the leafs into the leaf layer of the tree.
      */
-    function _copyLeafs(bytes32[] memory _leafs) internal returns (uint256 size) {
-        size = _leafs.length;
+    function _copyLeafs(bytes32[] memory leafs) internal returns (uint256 size) {
+        size = leafs.length;
         merkleTree[0] = new bytes32[](size);
         for (uint256 i = 0; i < size; ++i) {
-            merkleTree[0][i] = _leafs[i];
+            merkleTree[0][i] = leafs[i];
         }
     }
 
     /**
      * @notice Creates a layer of the tree using its child layer.
      */
-    function _createLayer(uint256 _depth, uint256 _size) internal {
-        merkleTree[_depth] = new bytes32[](_size);
-        for (uint256 i = 0; i < _size; ++i) {
-            merkleTree[_depth][i] = _hash(
-                getNode(_depth - 1, 2 * i),
-                getNode(_depth - 1, 2 * i + 1)
+    function _createLayer(uint256 depth, uint256 size) internal {
+        merkleTree[depth] = new bytes32[](size);
+        for (uint256 i = 0; i < size; ++i) {
+            merkleTree[depth][i] = _hash(
+                getNode(depth - 1, 2 * i),
+                getNode(depth - 1, 2 * i + 1)
             );
         }
     }
 
-    function _hash(bytes32 _left, bytes32 _right) internal pure returns (bytes32) {
-        if (_left != 0 || _right != 0) {
-            return keccak256(abi.encodePacked(_left, _right));
+    function _hash(bytes32 left, bytes32 right) internal pure returns (bytes32) {
+        if (left != 0 || right != 0) {
+            return keccak256(abi.encodePacked(left, right));
         } else {
             return 0;
         }

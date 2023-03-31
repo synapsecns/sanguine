@@ -11,9 +11,9 @@ contract SynapseClientHarness is ClientHarnessEvents, SynapseClient {
     constructor(
         address origin,
         address destination,
-        uint32 _optimisticPeriod
+        uint32 optimisticPeriod
     ) SynapseClient(origin, destination) {
-        optimisticPeriod = _optimisticPeriod;
+        optimisticPeriod = optimisticPeriod;
     }
 
     /// @notice Prevents this contract from being included in the coverage report
