@@ -69,7 +69,7 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 			},
 		}
 		config.AutoRemove = true
-		config.RestartPolicy = docker.AlwaysRestart()
+		//config.RestartPolicy = docker.AlwaysRestart()
 	})
 	assert.Nil(j.tb, err)
 
