@@ -19,11 +19,11 @@ interface InterfaceDestination {
      *  - Attestation payload is not properly formatted.
      *  - Attestation signer is not an active Notary for local domain.
      *  - Attestation's snapshot root has been previously submitted.
-     * @param _attPayload       Raw payload with Attestation data
-     * @param _attSignature     Notary signature for the reported attestation
+     * @param attPayload        Raw payload with Attestation data
+     * @param attSignature      Notary signature for the reported attestation
      * @return wasAccepted      Whether the Attestation was accepted (resulting in Dispute between the agents)
      */
-    function submitAttestation(bytes memory _attPayload, bytes memory _attSignature)
+    function submitAttestation(bytes memory attPayload, bytes memory attSignature)
         external
         returns (bool wasAccepted);
 
@@ -34,15 +34,15 @@ interface InterfaceDestination {
      *  - Report payload is not properly formatted.
      *  - Report signer is not an active Guard.
      *  - Attestation signer is not an active Notary for local domain.
-     * @param _arPayload        Raw payload with AttestationReport data
-     * @param _arSignature      Guard signature for the report
-     * @param _attSignature     Notary signature for the reported attestation
+     * @param arPayload         Raw payload with AttestationReport data
+     * @param arSignature       Guard signature for the report
+     * @param attSignature      Notary signature for the reported attestation
      * @return wasAccepted      Whether the Report was accepted (resulting in Dispute between the agents)
      */
     function submitAttestationReport(
-        bytes memory _arPayload,
-        bytes memory _arSignature,
-        bytes memory _attSignature
+        bytes memory arPayload,
+        bytes memory arSignature,
+        bytes memory attSignature
     ) external returns (bool wasAccepted);
 
     // ═════════════════════════════════ VIEWS ═════════════════════════════════
@@ -55,11 +55,11 @@ interface InterfaceDestination {
     /**
      * @notice Returns an attestation from the list of all accepted Notary attestations.
      * @dev Index refers to attestation's snapshot root position in `roots` array.
-     * @param _index   Attestation index
+     * @param index    Attestation index
      * @return root    Snapshot root for the attestation
      * @return execAtt Rest of attestation data that Destination keeps track of
      */
-    function getAttestation(uint256 _index)
+    function getAttestation(uint256 index)
         external
         view
         returns (bytes32 root, ExecutionAttestation memory execAtt);

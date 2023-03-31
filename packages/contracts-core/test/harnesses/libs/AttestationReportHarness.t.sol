@@ -9,6 +9,7 @@ import {
     TypedMemView
 } from "../../../contracts/libs/AttestationReport.sol";
 
+// solhint-disable ordering
 /// @notice Exposes Report methods for testing against golang.
 contract AttestationReportHarness {
     using AttestationReportLib for bytes;
@@ -20,38 +21,38 @@ contract AttestationReportHarness {
     ▏*║                      ATTESTATION REPORT GETTERS                      ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToAttestationReport(bytes memory _payload) public view returns (bytes memory) {
+    function castToAttestationReport(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        AttestationReport _attReport = AttestationReportLib.castToAttestationReport(_payload);
-        return _attReport.unwrap().clone();
+        AttestationReport attReport = AttestationReportLib.castToAttestationReport(payload);
+        return attReport.unwrap().clone();
     }
 
-    function hash(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToAttestationReport().hash();
+    function hash(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToAttestationReport().hash();
     }
 
-    function flag(bytes memory _payload) public pure returns (AttestationFlag) {
-        return _payload.castToAttestationReport().flag();
+    function flag(bytes memory payload) public pure returns (AttestationFlag) {
+        return payload.castToAttestationReport().flag();
     }
 
-    function attestation(bytes memory _payload) public view returns (bytes memory) {
-        return _payload.castToAttestationReport().attestation().unwrap().clone();
+    function attestation(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToAttestationReport().attestation().unwrap().clone();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                    ATTESTATION REPORT FORMATTERS                     ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatAttestationReport(AttestationFlag _flag, bytes memory _attPayload)
+    function formatAttestationReport(AttestationFlag flag_, bytes memory attPayload)
         public
         pure
         returns (bytes memory)
     {
-        return AttestationReportLib.formatAttestationReport(_flag, _attPayload);
+        return AttestationReportLib.formatAttestationReport(flag_, attPayload);
     }
 
-    function isAttestationReport(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isAttestationReport();
+    function isAttestationReport(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isAttestationReport();
     }
 }

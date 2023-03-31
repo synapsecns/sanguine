@@ -5,15 +5,16 @@ pragma solidity 0.8.17;
 import { SynapseClientUpgradeable } from "../../../contracts/client/SynapseClientUpgradeable.sol";
 import { ClientHarnessEvents } from "../events/ClientHarnessEvents.sol";
 
+// solhint-disable no-empty-blocks
 contract SynapseClientUpgradeableHarness is ClientHarnessEvents, SynapseClientUpgradeable {
     uint32 internal immutable optimisticPeriod;
 
     constructor(
-        address _origin,
-        address _destination,
-        uint32 _optimisticPeriod
-    ) SynapseClientUpgradeable(_origin, _destination) {
-        optimisticPeriod = _optimisticPeriod;
+        address origin_,
+        address destination_,
+        uint32 optimisticPeriod_
+    ) SynapseClientUpgradeable(origin_, destination_) {
+        optimisticPeriod = optimisticPeriod_;
     }
 
     /// @notice Prevents this contract from being included in the coverage report
@@ -24,11 +25,11 @@ contract SynapseClientUpgradeableHarness is ClientHarnessEvents, SynapseClientUp
     }
 
     function sendMessage(
-        uint32 _destination,
-        bytes memory _tips,
-        bytes memory _message
+        uint32 destination_,
+        bytes memory tipsPayload,
+        bytes memory content
     ) external payable {
-        _send(_destination, _tips, _message);
+        _send(destination_, tipsPayload, content);
     }
 
     function optimisticSeconds() public view override returns (uint32) {
@@ -36,10 +37,10 @@ contract SynapseClientUpgradeableHarness is ClientHarnessEvents, SynapseClientUp
     }
 
     function _handle(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes memory _message
+        uint32 origin_,
+        uint32 nonce,
+        bytes memory content
     ) internal override {
-        emit LogClientMessage(_origin, _nonce, _message);
+        emit LogClientMessage(origin_, nonce, content);
     }
 }

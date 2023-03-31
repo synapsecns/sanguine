@@ -31,27 +31,27 @@ contract SystemMessageHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatSystemMessage(
-        uint8 _systemRecipient,
-        bytes memory _callData,
-        bytes memory _prefix
+        uint8 systemRecipient,
+        bytes memory callData_,
+        bytes memory prefix
     ) public view returns (bytes memory) {
         return
             SystemMessageLib.formatSystemMessage(
-                _systemRecipient,
-                _callData.castToCallData(),
-                _prefix.castToRawBytes()
+                systemRecipient,
+                callData_.castToCallData(),
+                prefix.castToRawBytes()
             );
     }
 
-    function formatAdjustedCallData(bytes memory _callData, bytes memory _prefix)
+    function formatAdjustedCallData(bytes memory callData_, bytes memory prefix)
         public
         view
         returns (bytes memory)
     {
         return
             SystemMessageLib.formatAdjustedCallData(
-                _callData.castToCallData(),
-                _prefix.castToRawBytes()
+                callData_.castToCallData(),
+                prefix.castToRawBytes()
             );
     }
 
@@ -59,23 +59,23 @@ contract SystemMessageHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToSystemMessage(bytes memory _payload) public view returns (bytes memory) {
+    function castToSystemMessage(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        SystemMessage sm = SystemMessageLib.castToSystemMessage(_payload);
+        SystemMessage sm = SystemMessageLib.castToSystemMessage(payload);
         return sm.unwrap().clone();
     }
 
-    function callData(bytes memory _payload) public view returns (bytes memory) {
-        return _payload.castToSystemMessage().callData().unwrap().clone();
+    function callData(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToSystemMessage().callData().unwrap().clone();
     }
 
-    function callRecipient(bytes memory _payload) public pure returns (uint8) {
-        return _payload.castToSystemMessage().callRecipient();
+    function callRecipient(bytes memory payload) public pure returns (uint8) {
+        return payload.castToSystemMessage().callRecipient();
     }
 
-    function isSystemMessage(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isSystemMessage();
+    function isSystemMessage(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isSystemMessage();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

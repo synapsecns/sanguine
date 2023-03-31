@@ -20,7 +20,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @dev All snapshot roots from the saved attestations
-    bytes32[] private roots;
+    bytes32[] private _roots;
 
     /// @inheritdoc InterfaceDestination
     /// @dev Invariant: this is either current LightManager root,
@@ -34,20 +34,20 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(uint32 _domain, IAgentManager _agentManager)
-        DomainContext(_domain)
-        SystemRegistry(_agentManager)
+    constructor(uint32 domain, IAgentManager agentManager_)
+        DomainContext(domain)
+        SystemRegistry(agentManager_)
         Versioned("0.0.3")
-    {}
+    {} // solhint-disable-line no-empty-blocks
 
     /// @notice Initializes Destination contract:
     /// - msg.sender is set as contract owner
-    function initialize(bytes32 _agentRoot) external initializer {
+    function initialize(bytes32 agentRoot) external initializer {
         // Initialize Ownable: msg.sender is set as "owner"
         __Ownable_init();
         // Set Agent Merkle Root in Light Manager
-        nextAgentRoot = _agentRoot;
-        ILightManager(address(agentManager)).setAgentRoot(_agentRoot);
+        nextAgentRoot = agentRoot;
+        ILightManager(address(agentManager)).setAgentRoot(agentRoot);
         destStatus.agentRootTime = uint48(block.timestamp);
     }
 
@@ -56,7 +56,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc InterfaceDestination
-    function submitAttestation(bytes memory _attPayload, bytes memory _attSignature)
+    function submitAttestation(bytes memory attPayload, bytes memory attSignature)
         external
         returns (bool wasAccepted)
     {
@@ -66,9 +66,9 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // as the following agent check will fail.
         if (rootPassed) return false;
         // This will revert if payload is not an attestation
-        Attestation att = _wrapAttestation(_attPayload);
+        Attestation att = _wrapAttestation(attPayload);
         // This will revert if signer is not an known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, _attSignature);
+        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
         // Check that Notary is active
         _verifyActive(status);
         // Check that Notary domain is local domain
@@ -79,31 +79,31 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         _saveAttestation(att, notary);
         // Save Agent Root if required, and update the Destination's Status
         destStatus = _saveAgentRoot(rootPending, att.agentRoot(), notary);
-        emit AttestationAccepted(status.domain, notary, _attPayload, _attSignature);
+        emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
         return true;
     }
 
     /// @inheritdoc InterfaceDestination
     function submitAttestationReport(
-        bytes memory _arPayload,
-        bytes memory _arSignature,
-        bytes memory _attSignature
+        bytes memory arPayload,
+        bytes memory arSignature,
+        bytes memory attSignature
     ) external returns (bool wasAccepted) {
         // Call the hook and check if we can accept the statement
         if (!_beforeStatement()) return false;
         // This will revert if payload is not an attestation report
-        AttestationReport report = _wrapAttestationReport(_arPayload);
+        AttestationReport report = _wrapAttestationReport(arPayload);
         // This will revert if the report signer is not a known Guard
         (AgentStatus memory guardStatus, address guard) = _verifyAttestationReport(
             report,
-            _arSignature
+            arSignature
         );
         // Check that Guard is active
         _verifyActive(guardStatus);
         // This will revert if attestation signer is not a known Notary
         (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(
             report.attestation(),
-            _attSignature
+            attSignature
         );
         // Notary needs to be Active/Unstaking
         _verifyActiveUnstaking(notaryStatus);
@@ -146,18 +146,19 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc InterfaceDestination
+    // solhint-disable-next-line ordering
     function attestationsAmount() external view returns (uint256) {
-        return roots.length;
+        return _roots.length;
     }
 
     /// @inheritdoc InterfaceDestination
-    function getAttestation(uint256 _index)
+    function getAttestation(uint256 index)
         external
         view
         returns (bytes32 root, ExecutionAttestation memory execAtt)
     {
-        require(_index < roots.length, "Index out of range");
-        root = roots[_index];
+        require(index < _roots.length, "Index out of range");
+        root = _roots[index];
         execAtt = _getRootAttestation(root);
     }
 
@@ -176,21 +177,21 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This is overridden to allow disputes only between a Guard and a LOCAL Notary.
     function _openDispute(
-        address _guard,
-        uint32 _domain,
-        address _notary
+        address guard,
+        uint32 domain,
+        address notary
     ) internal override {
         // Only disputes for local Notaries could be initiated in Destination
-        require(_domain == localDomain, "Not a local Notary");
-        super._openDispute(_guard, _domain, _notary);
+        require(domain == localDomain, "Not a local Notary");
+        super._openDispute(guard, domain, notary);
     }
 
     /// @dev Resolves a Dispute for a slashed agent, if it hasn't been done already.
     /// This is overridden to resolve disputes only between a Guard and a LOCAL Notary.
-    function _resolveDispute(uint32 _domain, address _slashedAgent) internal virtual override {
+    function _resolveDispute(uint32 domain, address slashedAgent) internal virtual override {
         // Disputes could be only opened between a Guard and a local Notary
-        if (_domain == 0 || _domain == localDomain) {
-            super._resolveDispute(_domain, _slashedAgent);
+        if (domain == 0 || domain == localDomain) {
+            super._resolveDispute(domain, slashedAgent);
         }
     }
 
@@ -198,20 +199,20 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// no pending root to be passed to LightManager.
     /// Returns the updated "last snapshot root / last agent root" status struct.
     function _saveAgentRoot(
-        bool _rootPending,
-        bytes32 _agentRoot,
-        address _notary
+        bool rootPending,
+        bytes32 agentRoot,
+        address notary
     ) internal returns (DestinationStatus memory status) {
         status = destStatus;
         // Update the timestamp for the latest snapshot root
         status.snapRootTime = uint48(block.timestamp);
         // Don't update agent root, if there is already a pending one
         // Update the data for latest agent root only if it differs from the saved one
-        if (!_rootPending && nextAgentRoot != _agentRoot) {
+        if (!rootPending && nextAgentRoot != agentRoot) {
             status.agentRootTime = uint48(block.timestamp);
-            status.notary = _notary;
-            nextAgentRoot = _agentRoot;
-            emit AgentRootAccepted(_agentRoot);
+            status.notary = notary;
+            nextAgentRoot = agentRoot;
+            emit AgentRootAccepted(agentRoot);
         }
     }
 }

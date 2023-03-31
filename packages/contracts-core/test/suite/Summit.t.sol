@@ -23,6 +23,7 @@ import { IDisputeHub, DisputeHubTest } from "./hubs/DisputeHub.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
+// solhint-disable code-complexity
 contract SummitTest is DisputeHubTest {
     struct SignedSnapshot {
         bytes snapshot;

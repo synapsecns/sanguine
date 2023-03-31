@@ -12,35 +12,35 @@ contract OriginMock is StateHubMock, SystemRegistryMock, SystemContractMock, Int
     function testOriginMock() external {}
 
     function dispatch(
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _tips,
-        bytes memory _messageBody
+        uint32 destination,
+        bytes32 recipient,
+        uint32 optimisticSeconds,
+        bytes memory tipsPayload,
+        bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {}
 
     function verifyAttestation(
-        uint256 _stateIndex,
-        bytes memory _snapPayload,
-        bytes memory _attPayload,
-        bytes memory _attSignature
+        uint256 stateIndex,
+        bytes memory snapPayload,
+        bytes memory attPayload,
+        bytes memory attSignature
     ) external returns (bool isValid) {}
 
     function verifyAttestationWithProof(
-        uint256 _stateIndex,
-        bytes memory _statePayload,
-        bytes32[] memory _snapProof,
-        bytes memory _attPayload,
-        bytes memory _attSignature
+        uint256 stateIndex,
+        bytes memory statePayload,
+        bytes32[] memory snapProof,
+        bytes memory attPayload,
+        bytes memory attSignature
     ) external returns (bool isValid) {}
 
     function verifySnapshot(
-        uint256 _stateIndex,
-        bytes memory _snapPayload,
-        bytes memory _snapSignature
+        uint256 stateIndex,
+        bytes memory snapPayload,
+        bytes memory snapSignature
     ) external returns (bool isValid) {}
 
-    function verifyStateReport(bytes memory _srPayload, bytes memory _srSignature)
+    function verifyStateReport(bytes memory srPayload, bytes memory srSignature)
         external
         returns (bool isValid)
     {}

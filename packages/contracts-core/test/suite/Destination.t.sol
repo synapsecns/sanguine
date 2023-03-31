@@ -29,7 +29,7 @@ contract DestinationTest is DisputeHubTest {
     bytes internal constant BODY = "Test Body";
 
     RawMessage[] internal rawMessages;
-    bytes[] internal messages;
+    bytes[] internal msgPayloads;
 
     address internal sender;
     address internal recipient;
@@ -93,11 +93,12 @@ contract DestinationTest is DisputeHubTest {
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
         InterfaceDestination(destination).submitAttestation(attPayload, attSig);
-        (, uint48 agentRootTime, address _notary) = InterfaceDestination(destination).destStatus();
+        (, uint48 agentRootTime, address statusNotary) = InterfaceDestination(destination)
+            .destStatus();
         // Check that values were assigned
         assertEq(InterfaceDestination(destination).nextAgentRoot(), ra.agentRoot);
         assertEq(agentRootTime, rootSubmittedAt);
-        assertEq(_notary, notary);
+        assertEq(statusNotary, notary);
     }
 
     function test_submitAttestation_doesNotOverwritePending(
@@ -117,12 +118,12 @@ contract DestinationTest is DisputeHubTest {
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notaryS, attPayload, attSig);
         assertTrue(InterfaceDestination(destination).submitAttestation(attPayload, attSig));
-        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(
             destination
         ).destStatus();
         assertEq(snapRootTime, block.timestamp);
         assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(_notary, notaryF);
+        assertEq(notary, notaryF);
     }
 
     function test_submitAttestation_notAccepted_agentRootUpdated(
@@ -134,12 +135,12 @@ contract DestinationTest is DisputeHubTest {
         // Should not accept the attestation before doing any checks,
         // so we could pass empty values here
         assertFalse(InterfaceDestination(destination).submitAttestation("", ""));
-        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(
             destination
         ).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(_notary, domains[DOMAIN_LOCAL].agent);
+        assertEq(notary, domains[DOMAIN_LOCAL].agent);
         // Should update the Agent Merkle Root
         assertEq(lightManager.agentRoot(), firstRA.agentRoot);
     }
@@ -153,12 +154,12 @@ contract DestinationTest is DisputeHubTest {
         // Should not accept the attestation before doing any checks,
         // so we could pass empty values here
         assertFalse(IDisputeHub(destination).submitStateReport(0, "", "", "", ""));
-        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(
             destination
         ).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(_notary, domains[DOMAIN_LOCAL].agent);
+        assertEq(notary, domains[DOMAIN_LOCAL].agent);
         // Should update the Agent Merkle Root
         assertEq(lightManager.agentRoot(), firstRA.agentRoot);
     }
@@ -174,12 +175,12 @@ contract DestinationTest is DisputeHubTest {
         assertFalse(
             IDisputeHub(destination).submitStateReportWithProof(0, "", "", new bytes32[](0), "", "")
         );
-        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(
             destination
         ).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(_notary, domains[DOMAIN_LOCAL].agent);
+        assertEq(notary, domains[DOMAIN_LOCAL].agent);
         // Should update the Agent Merkle Root
         assertEq(lightManager.agentRoot(), firstRA.agentRoot);
     }
@@ -281,7 +282,7 @@ contract DestinationTest is DisputeHubTest {
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
             bytes32[] memory originProof = getLatestProof(i);
-            // (_origin, _nonce, _sender, _rootSubmittedAt, _message)
+            // (origin, nonce, sender, rootSubmittedAt, message)
             vm.expectCall(
                 recipient,
                 abi.encodeWithSelector(
@@ -296,9 +297,9 @@ contract DestinationTest is DisputeHubTest {
             // Should emit event when message is executed
             vm.expectEmit(true, true, true, true);
 
-            emit Executed(DOMAIN_REMOTE, keccak256(messages[i]));
+            emit Executed(DOMAIN_REMOTE, keccak256(msgPayloads[i]));
             vm.prank(executor);
-            IExecutionHub(destination).execute(messages[i], originProof, snapProof, stateIndex);
+            IExecutionHub(destination).execute(msgPayloads[i], originProof, snapProof, stateIndex);
         }
     }
 
@@ -438,7 +439,7 @@ contract DestinationTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(0);
         vm.expectRevert("Notary is in dispute");
         vm.prank(executor);
-        IExecutionHub(destination).execute(messages[0], originProof, snapProof, stateIndex);
+        IExecutionHub(destination).execute(msgPayloads[0], originProof, snapProof, stateIndex);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -459,10 +460,10 @@ contract DestinationTest is DisputeHubTest {
                 RawTips(0, 0, 0, 0),
                 BODY
             );
-            bytes memory message = rm.formatMessage();
+            bytes memory msgPayload = rm.formatMessage();
             rawMessages.push(rm);
-            messages.push(message);
-            insertMessage(message);
+            msgPayloads.push(msgPayload);
+            insertMessage(msgPayload);
         }
     }
 }

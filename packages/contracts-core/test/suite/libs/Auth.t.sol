@@ -41,7 +41,7 @@ contract AuthLibraryTest is SynapseLibraryTest {
         // Cut 1 byte from signature
         signature = signature
             .ref(0)
-            .slice({ _index: 0, _len: signature.length - 1, newType: 0 })
+            .slice({ index_: 0, len_: signature.length - 1, newType: 0 })
             .clone();
         vm.expectRevert(REVERT_WRONG_SIG_LENGTH);
         libHarness.recoverSigner(_createDigest(), signature);

@@ -5,26 +5,27 @@ pragma solidity 0.8.17;
 import { SynapseClient } from "../../../contracts/client/SynapseClient.sol";
 import { ClientHarnessEvents } from "../events/ClientHarnessEvents.sol";
 
+// solhint-disable no-empty-blocks
 contract SynapseClientHarness is ClientHarnessEvents, SynapseClient {
     uint32 internal optimisticPeriod;
 
     constructor(
-        address _origin,
-        address _destination,
-        uint32 _optimisticPeriod
-    ) SynapseClient(_origin, _destination) {
-        optimisticPeriod = _optimisticPeriod;
+        address origin_,
+        address destination_,
+        uint32 optimisticPeriod_
+    ) SynapseClient(origin_, destination_) {
+        optimisticPeriod = optimisticPeriod_;
     }
 
     /// @notice Prevents this contract from being included in the coverage report
     function testSynapseClientHarness() external {}
 
     function sendMessage(
-        uint32 _destination,
-        bytes memory _tips,
-        bytes memory _message
+        uint32 destination_,
+        bytes memory tipsPayload,
+        bytes memory content
     ) external payable {
-        _send(_destination, _tips, _message);
+        _send(destination_, tipsPayload, content);
     }
 
     function optimisticSeconds() public view override returns (uint32) {
@@ -32,10 +33,10 @@ contract SynapseClientHarness is ClientHarnessEvents, SynapseClient {
     }
 
     function _handle(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes memory _message
+        uint32 origin_,
+        uint32 nonce,
+        bytes memory content
     ) internal override {
-        emit LogClientMessage(_origin, _nonce, _message);
+        emit LogClientMessage(origin_, nonce, content);
     }
 }

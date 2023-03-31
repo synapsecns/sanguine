@@ -23,17 +23,17 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
     /// @dev gap for upgrade safety
     uint256[50] private __GAP; // solhint-disable-line var-name-mixedcase
 
+    modifier onlyAgentManager() {
+        require(msg.sender == address(agentManager), "!agentManager");
+        _;
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(IAgentManager _agentManager) {
-        agentManager = _agentManager;
-    }
-
-    modifier onlyAgentManager() {
-        require(msg.sender == address(agentManager), "!agentManager");
-        _;
+    constructor(IAgentManager agentManager_) {
+        agentManager = agentManager_;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -42,11 +42,11 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
 
     /// @inheritdoc ISystemRegistry
     function managerSlash(
-        uint32 _domain,
-        address _agent,
-        address _prover
+        uint32 domain,
+        address agent,
+        address prover
     ) external onlyAgentManager {
-        _processSlashed(_domain, _agent, _prover);
+        _processSlashed(domain, agent, prover);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -54,8 +54,8 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc ISystemRegistry
-    function agentStatus(address _agent) external view returns (AgentStatus memory) {
-        return _agentStatus(_agent);
+    function agentStatus(address agent) external view returns (AgentStatus memory) {
+        return _agentStatus(agent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -65,18 +65,18 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
     /// @dev Child contract could define custom logic for processing the slashed Agent.
     /// This will be called when the slashing was initiated in this contract or elsewhere.
     function _processSlashed(
-        uint32 _domain,
-        address _agent,
-        address _prover
+        uint32 domain,
+        address agent,
+        address prover
     ) internal virtual {
-        emit AgentSlashed(_domain, _agent, _prover);
+        emit AgentSlashed(domain, agent, prover);
     }
 
     /// @dev This function should be called when the agent is proven to commit fraud in this contract.
-    function _slashAgent(uint32 _domain, address _agent) internal {
+    function _slashAgent(uint32 domain, address agent) internal {
         // Prover is msg.sender
-        _processSlashed(_domain, _agent, msg.sender);
-        agentManager.registrySlash(_domain, _agent, msg.sender);
+        _processSlashed(domain, agent, msg.sender);
+        agentManager.registrySlash(domain, agent, msg.sender);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -84,7 +84,7 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @dev Returns status of the given agent: (flag, domain, index).
-    function _agentStatus(address _agent) internal view returns (AgentStatus memory) {
-        return agentManager.agentStatus(_agent);
+    function _agentStatus(address agent) internal view returns (AgentStatus memory) {
+        return agentManager.agentStatus(agent);
     }
 }

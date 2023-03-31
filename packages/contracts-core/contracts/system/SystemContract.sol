@@ -49,9 +49,9 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
      * @dev Modifier for functions that are supposed to be called only from
      * System Contracts on all chains (either local or remote).
      * Note: any function protected by this modifier should have last three params:
-     * - uint32 _callOrigin
-     * - SystemEntity _systemCaller
-     * - uint256 _rootSubmittedAt
+     * - uint32 callOrigin
+     * - SystemEntity systemCaller
+     * - uint256 rootSubmittedAt
      * Make sure to check domain/caller, if a function should be only called
      * from a given domain / by a given caller.
      * Make sure to check that a needed amount of time has passed since
@@ -68,8 +68,8 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
      * Note: has to be used alongside with `onlySystemRouter`
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
      */
-    modifier onlySynapseChain(uint32 _callOrigin) {
-        _assertSynapseChain(_callOrigin);
+    modifier onlySynapseChain(uint32 callOrigin) {
+        _assertSynapseChain(callOrigin);
         _;
     }
 
@@ -80,10 +80,10 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
      * Note: check constants section for existing mask constants
      * E.g. to restrict the set of callers to three allowed system callers:
-     *  onlyCallers(MASK_0 | MASK_1 | MASK_2, _systemCaller)
+     *  onlyCallers(MASK_0 | MASK_1 | MASK_2, systemCaller)
      */
-    modifier onlyCallers(uint256 _allowedMask, SystemEntity _systemCaller) {
-        _assertEntityAllowed(_allowedMask, _systemCaller);
+    modifier onlyCallers(uint256 allowedMask, SystemEntity systemCaller) {
+        _assertEntityAllowed(allowedMask, systemCaller);
         _;
     }
 
@@ -93,9 +93,9 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
      * Note: has to be used alongside with `onlySystemRouter`
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
      */
-    modifier onlySynapseChainAgentManager(uint32 _callOrigin, SystemEntity _systemCaller) {
-        _assertSynapseChain(_callOrigin);
-        _assertEntityAllowed(AGENT_MANAGER, _systemCaller);
+    modifier onlySynapseChainAgentManager(uint32 callOrigin, SystemEntity systemCaller) {
+        _assertSynapseChain(callOrigin);
+        _assertEntityAllowed(AGENT_MANAGER, systemCaller);
         _;
     }
 
@@ -105,11 +105,11 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
      * Note: has to be used alongside with `onlySystemRouter`
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
      * Note: message could be sent with a period lower than that, but will be executed
-     * only when `_optimisticSeconds` have passed.
-     * Note: _optimisticSeconds=0 will allow calls from a local chain as well
+     * only when `optimisticSeconds` have passed.
+     * Note: optimisticSeconds=0 will allow calls from a local chain as well
      */
-    modifier onlyOptimisticPeriodOver(uint256 _rootSubmittedAt, uint256 _optimisticSeconds) {
-        _assertOptimisticPeriodOver(_rootSubmittedAt, _optimisticSeconds);
+    modifier onlyOptimisticPeriodOver(uint256 rootSubmittedAt, uint256 optimisticSeconds) {
+        _assertOptimisticPeriodOver(rootSubmittedAt, optimisticSeconds);
         _;
     }
 
@@ -118,8 +118,8 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // solhint-disable-next-line ordering
-    function setSystemRouter(InterfaceSystemRouter _systemRouter) external onlyOwner {
-        systemRouter = _systemRouter;
+    function setSystemRouter(InterfaceSystemRouter systemRouter_) external onlyOwner {
+        systemRouter = systemRouter_;
     }
 
     /**
@@ -136,15 +136,15 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
     /// @dev Perform a System Call to a AgentManager on a given domain
     /// with the given optimistic period and data.
     function _callAgentManager(
-        uint32 _domain,
-        uint32 _optimisticSeconds,
-        bytes memory _data
+        uint32 domain,
+        uint32 optimisticSeconds,
+        bytes memory payload
     ) internal {
         systemRouter.systemCall({
-            _destination: _domain,
-            _optimisticSeconds: _optimisticSeconds,
-            _recipient: SystemEntity.AgentManager,
-            _data: _data
+            destination: domain,
+            optimisticSeconds: optimisticSeconds,
+            recipient: SystemEntity.AgentManager,
+            payload: payload
         });
     }
 
@@ -160,49 +160,45 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
         require(msg.sender == address(systemRouter), "!systemRouter");
     }
 
-    function _assertOptimisticPeriodOver(uint256 _rootSubmittedAt, uint256 _optimisticSeconds)
+    function _assertOptimisticPeriodOver(uint256 rootSubmittedAt, uint256 optimisticSeconds)
         internal
         view
     {
-        require(block.timestamp >= _rootSubmittedAt + _optimisticSeconds, "!optimisticPeriod");
+        require(block.timestamp >= rootSubmittedAt + optimisticSeconds, "!optimisticPeriod");
     }
 
-    function _assertEntityAllowed(uint256 _allowedMask, SystemEntity _caller) internal pure {
-        require(_entityAllowed(_allowedMask, _caller), "!allowedCaller");
+    function _assertEntityAllowed(uint256 allowedMask, SystemEntity caller) internal pure {
+        require(_entityAllowed(allowedMask, caller), "!allowedCaller");
     }
 
-    function _assertSynapseChain(uint32 _domain) internal pure {
-        require(_domain == SYNAPSE_DOMAIN, "!synapseDomain");
+    function _assertSynapseChain(uint32 domain) internal pure {
+        require(domain == SYNAPSE_DOMAIN, "!synapseDomain");
     }
 
     /**
-     * @notice Checks if a given entity is allowed to call a function using a _systemMask
-     * @param _systemMask a mask of allowed entities
-     * @param _entity a system entity to check
-     * @return true if _entity is allowed to call a function
+     * @notice Checks if a given entity is allowed to call a function using a systemMask
+     * @param systemMask  a mask of allowed entities
+     * @param entity  a system entity to check
+     * @return true if entity is allowed to call a function
      *
      * @dev this function works by converting the enum value to a non-zero bit mask
      * we then use a bitwise AND operation to check if permission bits allow the entity
      * to perform this operation, more details can be found here:
      * https://en.wikipedia.org/wiki/Bitwise_operation#AND
      */
-    function _entityAllowed(uint256 _systemMask, SystemEntity _entity)
-        internal
-        pure
-        returns (bool)
-    {
-        return _systemMask & _getSystemMask(_entity) != 0;
+    function _entityAllowed(uint256 systemMask, SystemEntity entity) internal pure returns (bool) {
+        return systemMask & _getSystemMask(entity) != 0;
     }
 
     /**
      * @notice Returns a mask for a given system entity
-     * @param _entity System entity
+     * @param entity  System entity
      * @return a non-zero mask for a given system entity
      *
      * Converts an enum value into a non-zero bit mask used for a bitwise AND check
      * E.g. for Origin (0) returns 1, for Destination (1) returns 2
      */
-    function _getSystemMask(SystemEntity _entity) internal pure returns (uint256) {
-        return 1 << uint8(_entity);
+    function _getSystemMask(SystemEntity entity) internal pure returns (uint256) {
+        return 1 << uint8(entity);
     }
 }

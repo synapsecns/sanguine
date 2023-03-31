@@ -15,7 +15,7 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
      *      (1) send messages to this contract
      *      (2) receive messages from this contract
      */
-    mapping(uint32 => bytes32) internal trustedSenders;
+    mapping(uint32 => bytes32) internal _trustedSenders;
 
     // ============ Upgrade gap ============
 
@@ -25,7 +25,7 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
     // ============ Constructor ============
 
     // solhint-disable-next-line no-empty-blocks
-    constructor(address _origin, address _destination) Client(_origin, _destination) {}
+    constructor(address origin_, address destination_) Client(origin_, destination_) {}
 
     // ============ Initializer ============
 
@@ -42,28 +42,28 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
     /**
      * @notice  Sets the trusted sender for the given remote chain.
      * @dev     Only callable by owner (Governance).
-     * @param _remoteDomain     The domain of the remote chain
-     * @param _trustedSender    The trusted sender
+     * @param remoteDomain      The domain of the remote chain
+     * @param trustedSender_    The trusted sender
      */
     // solhint-disable-next-line ordering
-    function setTrustedSender(uint32 _remoteDomain, bytes32 _trustedSender) external onlyOwner {
-        _setTrustedSender(_remoteDomain, _trustedSender);
+    function setTrustedSender(uint32 remoteDomain, bytes32 trustedSender_) external onlyOwner {
+        _setTrustedSender(remoteDomain, trustedSender_);
     }
 
     /**
      * @notice  Sets the trusted sender for a bunch of remote chains.
      * @dev     Only callable by owner (Governance).
-     * @param _remoteDomains    List of domains for the remote chains
-     * @param _trustedSenders   List of trusted senders for given chains
+     * @param remoteDomains     List of domains for the remote chains
+     * @param trustedSenders    List of trusted senders for given chains
      */
-    function setTrustedSenders(uint32[] calldata _remoteDomains, bytes32[] calldata _trustedSenders)
+    function setTrustedSenders(uint32[] calldata remoteDomains, bytes32[] calldata trustedSenders)
         external
         onlyOwner
     {
-        uint256 length = _trustedSenders.length;
-        require(_remoteDomains.length == length, "!arrays");
+        uint256 length = trustedSenders.length;
+        require(remoteDomains.length == length, "!arrays");
         for (uint256 i = 0; i < length; ) {
-            _setTrustedSender(_remoteDomains[i], _trustedSenders[i]);
+            _setTrustedSender(remoteDomains[i], trustedSenders[i]);
             unchecked {
                 ++i;
             }
@@ -73,16 +73,16 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
     // ============ Public Functions  ============
 
     /// @notice Returns the trusted sender for the given remote chain.
-    function trustedSender(uint32 _remoteDomain) public view override returns (bytes32) {
-        return trustedSenders[_remoteDomain];
+    function trustedSender(uint32 remoteDomain) public view override returns (bytes32) {
+        return _trustedSenders[remoteDomain];
     }
 
     // ============ Internal Functions  ============
 
     /// @dev Checks both domain and trusted sender, then updates the records.
-    function _setTrustedSender(uint32 _remoteDomain, bytes32 _trustedSender) internal {
-        require(_remoteDomain != 0, "!domain");
-        require(_trustedSender != bytes32(0), "!sender");
-        trustedSenders[_remoteDomain] = _trustedSender;
+    function _setTrustedSender(uint32 remoteDomain, bytes32 trustedSender_) internal {
+        require(remoteDomain != 0, "!domain");
+        require(trustedSender_ != bytes32(0), "!sender");
+        _trustedSenders[remoteDomain] = trustedSender_;
     }
 }

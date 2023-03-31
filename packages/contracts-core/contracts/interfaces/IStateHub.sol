@@ -8,10 +8,10 @@ interface IStateHub {
      * upon providing the snapshot and agent signature for it to Origin contract.
      * @dev Will revert if any of these is true:
      *  - State payload is not properly formatted.
-     * @param _statePayload     Raw payload with state data
+     * @param statePayload      Raw payload with state data
      * @return isValid          Whether the provided state is valid
      */
-    function isValidState(bytes memory _statePayload) external view returns (bool isValid);
+    function isValidState(bytes memory statePayload) external view returns (bool isValid);
 
     /**
      * @notice Returns the amount of saved states so far.
@@ -33,8 +33,8 @@ interface IStateHub {
      * Note: signing the suggested state data will will never lead to slashing of the actor,
      * assuming they have confirmed that the block, which number is included in the data,
      * is not subject to reorganization (which is different for every observed chain).
-     * @param _nonce            Historical nonce to form a state
+     * @param nonce             Historical nonce to form a state
      * @return statePayload     Raw payload with historical state data
      */
-    function suggestState(uint32 _nonce) external view returns (bytes memory statePayload);
+    function suggestState(uint32 nonce) external view returns (bytes memory statePayload);
 }

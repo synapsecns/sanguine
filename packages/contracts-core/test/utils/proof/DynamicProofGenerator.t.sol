@@ -17,21 +17,21 @@ contract DynamicProofGenerator is ProofCutter {
     mapping(uint256 => mapping(uint256 => bytes32)) internal merkleTree;
 
     /// @notice Updates a leaf in the Merkle Tree.
-    function update(uint256 _index, bytes32 _newValue) external {
-        merkleTree[0][_index] = _newValue;
+    function update(uint256 index, bytes32 newValue) external {
+        merkleTree[0][index] = newValue;
         for (uint256 h = 1; h <= AGENT_TREE_HEIGHT; ++h) {
             // Traverse to parent
-            _index >>= 1;
-            merkleTree[h][_index] = MerkleLib.getParent(
-                merkleTree[h - 1][2 * _index],
-                merkleTree[h - 1][2 * _index + 1]
+            index >>= 1;
+            merkleTree[h][index] = MerkleLib.getParent(
+                merkleTree[h - 1][2 * index],
+                merkleTree[h - 1][2 * index + 1]
             );
         }
     }
 
     /// @notice Returns current value for the leaf.
-    function getLeaf(uint256 _index) external view returns (bytes32) {
-        return merkleTree[0][_index];
+    function getLeaf(uint256 index) external view returns (bytes32) {
+        return merkleTree[0][index];
     }
 
     /// @notice Returns merkle root of the tree.
@@ -40,13 +40,13 @@ contract DynamicProofGenerator is ProofCutter {
     }
 
     /// @notice Returns a merkle proof for leaf with a given index.
-    function getProof(uint256 _index) external view returns (bytes32[] memory) {
+    function getProof(uint256 index) external view returns (bytes32[] memory) {
         bytes32[] memory proof = new bytes32[](AGENT_TREE_HEIGHT);
         for (uint256 h = 0; h < AGENT_TREE_HEIGHT; ++h) {
             // Get node's sibling
-            proof[h] = merkleTree[h][_index ^ 1];
+            proof[h] = merkleTree[h][index ^ 1];
             // Traverse to parent
-            _index >>= 1;
+            index >>= 1;
         }
         return cutProof(proof);
     }

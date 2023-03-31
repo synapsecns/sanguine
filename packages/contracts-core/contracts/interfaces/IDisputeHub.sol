@@ -15,19 +15,19 @@ interface IDisputeHub {
      *  - Snapshot signer is not an active Notary.
      *  - State index is out of range.
      *  - Snapshot's state and reported state don't match.
-     * @param _stateIndex       Index of the reported State in the Snapshot
-     * @param _srPayload        Raw payload with StateReport data
-     * @param _srSignature      Guard signature for the report
-     * @param _snapPayload      Raw payload with Snapshot data
-     * @param _snapSignature    Notary signature for the Snapshot
+     * @param stateIndex        Index of the reported State in the Snapshot
+     * @param srPayload         Raw payload with StateReport data
+     * @param srSignature       Guard signature for the report
+     * @param snapPayload       Raw payload with Snapshot data
+     * @param snapSignature     Notary signature for the Snapshot
      * @return wasAccepted      Whether the Report was accepted (resulting in Dispute between the agents)
      */
     function submitStateReport(
-        uint256 _stateIndex,
-        bytes memory _srPayload,
-        bytes memory _srSignature,
-        bytes memory _snapPayload,
-        bytes memory _snapSignature
+        uint256 stateIndex,
+        bytes memory srPayload,
+        bytes memory srSignature,
+        bytes memory snapPayload,
+        bytes memory snapSignature
     ) external returns (bool wasAccepted);
 
     /**
@@ -42,31 +42,31 @@ interface IDisputeHub {
      *  - Snapshot Proof's first element does not match the State metadata.
      *  - Snapshot Proof length exceeds Snapshot tree Height.
      *  - State index is out of range.
-     * @param _stateIndex       Index of the reported State in the Snapshot
-     * @param _srPayload        Raw payload with StateReport data
-     * @param _srSignature      Guard signature for the report
-     * @param _snapProof        Proof of inclusion of reported State's Left Leaf into Snapshot Merkle Tree
-     * @param _attPayload       Raw payload with Attestation data
-     * @param _attSignature     Notary signature for the Attestation
+     * @param stateIndex        Index of the reported State in the Snapshot
+     * @param srPayload         Raw payload with StateReport data
+     * @param srSignature       Guard signature for the report
+     * @param snapProof         Proof of inclusion of reported State's Left Leaf into Snapshot Merkle Tree
+     * @param attPayload        Raw payload with Attestation data
+     * @param attSignature      Notary signature for the Attestation
      * @return wasAccepted      Whether the Report was accepted (resulting in Dispute between the agents)
      */
     function submitStateReportWithProof(
-        uint256 _stateIndex,
-        bytes memory _srPayload,
-        bytes memory _srSignature,
-        bytes32[] memory _snapProof,
-        bytes memory _attPayload,
-        bytes memory _attSignature
+        uint256 stateIndex,
+        bytes memory srPayload,
+        bytes memory srSignature,
+        bytes32[] memory snapProof,
+        bytes memory attPayload,
+        bytes memory attSignature
     ) external returns (bool wasAccepted);
 
     // ═════════════════════════════════ VIEWS ═════════════════════════════════
 
     /**
      * @notice Returns the Dispute status of the given agent.
-     * @param _agent    Agent address
+     * @param agent     Agent address
      * @return status   Struct with the Dispute status of the agent:
      *                  - flag: None/Pending/Slashed (see Structures.sol)
      *                  - counterpart: who the agent is in dispute with
      */
-    function disputeStatus(address _agent) external view returns (DisputeStatus memory status);
+    function disputeStatus(address agent) external view returns (DisputeStatus memory status);
 }

@@ -50,50 +50,50 @@ library StateReportLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns a formatted StateReport payload with provided fields.
-    /// @param _flag            Flag signalling type of State Report
-    /// @param _statePayload    Raw payload with reported state
+    /// @param flag_            Flag signalling type of State Report
+    /// @param statePayload     Raw payload with reported state
     /// @return Formatted state report
-    function formatStateReport(StateFlag _flag, bytes memory _statePayload)
+    function formatStateReport(StateFlag flag_, bytes memory statePayload)
         internal
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(_flag, _statePayload);
+        return abi.encodePacked(flag_, statePayload);
     }
 
     /// @notice Returns a StateReport view over the given payload
     /// @dev Will revert if the payload is not a state report.
-    function castToStateReport(bytes memory _payload) internal pure returns (StateReport) {
-        return castToStateReport(_payload.castToRawBytes());
+    function castToStateReport(bytes memory payload) internal pure returns (StateReport) {
+        return castToStateReport(payload.castToRawBytes());
     }
 
     /// @notice Casts a memory view to a StateReport view.
     /// @dev Will revert if if the memory view is not over a StateReport payload.
-    function castToStateReport(bytes29 _view) internal pure returns (StateReport) {
-        require(isStateReport(_view), "Not a state report");
-        return StateReport.wrap(_view);
+    function castToStateReport(bytes29 view_) internal pure returns (StateReport) {
+        require(isStateReport(view_), "Not a state report");
+        return StateReport.wrap(view_);
     }
 
     /// @notice Checks that a payload is a formatted StateReport.
-    function isStateReport(bytes29 _view) internal pure returns (bool) {
+    function isStateReport(bytes29 view_) internal pure returns (bool) {
         // Flag needs to exist
-        if (_view.len() < OFFSET_STATE) return false;
+        if (view_.len() < OFFSET_STATE) return false;
         // Flag should fit into StateFlag enum
-        if (_srFlag(_view) > uint8(type(StateFlag).max)) return false;
+        if (_srFlag(view_) > uint8(type(StateFlag).max)) return false;
         // State should be properly formatted
-        return _srState(_view).isState();
+        return _srState(view_).isState();
     }
 
-    function hash(StateReport _stateReport) internal pure returns (bytes32) {
+    function hash(StateReport stateReport) internal pure returns (bytes32) {
         // Get the underlying memory view
-        bytes29 _view = _stateReport.unwrap();
+        bytes29 view_ = stateReport.unwrap();
         // The final hash to sign is keccak(stateReportSalt, keccak(stateReport))
-        return keccak256(bytes.concat(STATE_REPORT_SALT, _view.keccak()));
+        return keccak256(bytes.concat(STATE_REPORT_SALT, view_.keccak()));
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(StateReport _stateReport) internal pure returns (bytes29) {
-        return StateReport.unwrap(_stateReport);
+    function unwrap(StateReport stateReport) internal pure returns (bytes29) {
+        return StateReport.unwrap(stateReport);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -101,28 +101,28 @@ library StateReportLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns StateFlag used in the report.
-    function flag(StateReport _stateReport) internal pure returns (StateFlag) {
-        bytes29 _view = _stateReport.unwrap();
+    function flag(StateReport stateReport) internal pure returns (StateFlag) {
+        bytes29 view_ = stateReport.unwrap();
         // We check that flag fits into enum, when payload is wrapped
         // into StateReport, so this never reverts
-        return StateFlag(_srFlag(_view));
+        return StateFlag(_srFlag(view_));
     }
 
     /// @notice Returns typed memory view over state used in the report.
-    function state(StateReport _stateReport) internal pure returns (State) {
-        bytes29 _view = _stateReport.unwrap();
+    function state(StateReport stateReport) internal pure returns (State) {
+        bytes29 view_ = stateReport.unwrap();
         // We check that state is properly formatted, when payload is wrapped
         // into StateReport, so this never reverts.
-        return _srState(_view).castToState();
+        return _srState(view_).castToState();
     }
 
     /// @dev Returns StateReport flag without checking that it fits into StateFlag enum.
-    function _srFlag(bytes29 _view) internal pure returns (uint8) {
-        return uint8(_view.indexUint({ _index: OFFSET_FLAG, _bytes: 1 }));
+    function _srFlag(bytes29 view_) internal pure returns (uint8) {
+        return uint8(view_.indexUint({ index_: OFFSET_FLAG, bytes_: 1 }));
     }
 
     /// @dev Returns an untyped memory view over Report's state without checking if it is properly formatted.
-    function _srState(bytes29 _view) internal pure returns (bytes29) {
-        return _view.sliceFrom({ _index: OFFSET_STATE, newType: 0 });
+    function _srState(bytes29 view_) internal pure returns (bytes29) {
+        return view_.sliceFrom({ index_: OFFSET_STATE, newType: 0 });
     }
 }

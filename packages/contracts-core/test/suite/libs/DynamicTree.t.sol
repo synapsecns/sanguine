@@ -8,6 +8,7 @@ import { DynamicProofGenerator } from "../../utils/proof/DynamicProofGenerator.t
 
 import { Random } from "../../utils/libs/Random.t.sol";
 
+// solhint-disable func-name-mixedcase
 contract DynamicTreeTest is Test {
     DynamicProofGenerator internal proofGen;
     DynamicTreeHarness internal tree;

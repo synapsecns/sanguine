@@ -26,35 +26,35 @@ contract MessageHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToMessage(bytes memory _payload) public view returns (bytes memory) {
+    function castToMessage(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        Message _msg = MessageLib.castToMessage(_payload);
-        return _msg.unwrap().clone();
+        Message message = MessageLib.castToMessage(payload);
+        return message.unwrap().clone();
     }
 
-    function header(bytes memory _payload) public view returns (bytes memory) {
-        return _payload.castToMessage().header().unwrap().clone();
+    function header(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToMessage().header().unwrap().clone();
     }
 
-    function tips(bytes memory _payload) public view returns (bytes memory) {
-        return _payload.castToMessage().tips().unwrap().clone();
+    function tips(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToMessage().tips().unwrap().clone();
     }
 
-    function body(bytes memory _payload) public view returns (bytes memory) {
-        return _payload.castToMessage().body().clone();
+    function body(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToMessage().body().clone();
     }
 
-    function version(bytes memory _payload) public pure returns (uint16) {
-        return _payload.castToMessage().version();
+    function version(bytes memory payload) public pure returns (uint16) {
+        return payload.castToMessage().version();
     }
 
-    function leaf(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToMessage().leaf();
+    function leaf(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToMessage().leaf();
     }
 
-    function isMessage(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isMessage();
+    function isMessage(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isMessage();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -62,66 +62,61 @@ contract MessageHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatMessage(
-        uint32 _origin,
-        bytes32 _sender,
-        uint32 _nonce,
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
+        uint32 origin,
+        bytes32 sender,
+        uint32 nonce,
+        uint32 destination,
+        bytes32 recipient,
+        uint32 optimisticSeconds,
         // tips params
-        uint96 _notaryTip,
-        uint96 _broadcasterTip,
-        uint96 _proverTip,
-        uint96 _executorTip,
-        bytes memory _messageBody
+        uint96 notaryTip,
+        uint96 broadcasterTip,
+        uint96 proverTip,
+        uint96 executorTip,
+        bytes memory messageBody
     ) public pure returns (bytes memory) {
-        bytes memory _tips = TipsLib.formatTips(
-            _notaryTip,
-            _broadcasterTip,
-            _proverTip,
-            _executorTip
-        );
+        bytes memory tips_ = TipsLib.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
 
-        bytes memory _header = HeaderLib.formatHeader(
-            _origin,
-            _sender,
-            _nonce,
-            _destination,
-            _recipient,
-            _optimisticSeconds
+        bytes memory header_ = HeaderLib.formatHeader(
+            origin,
+            sender,
+            nonce,
+            destination,
+            recipient,
+            optimisticSeconds
         );
-        return formatMessage(_header, _tips, _messageBody);
+        return formatMessage(header_, tips_, messageBody);
     }
 
     function formatMessage(
-        uint32 _origin,
-        bytes32 _sender,
-        uint32 _nonce,
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _tips,
-        bytes memory _messageBody
+        uint32 origin,
+        bytes32 sender,
+        uint32 nonce,
+        uint32 destination,
+        bytes32 recipient,
+        uint32 optimisticSeconds,
+        bytes memory tips_,
+        bytes memory messageBody
     ) public pure returns (bytes memory) {
         return
             MessageLib.formatMessage(
-                _origin,
-                _sender,
-                _nonce,
-                _destination,
-                _recipient,
-                _optimisticSeconds,
-                _tips,
-                _messageBody
+                origin,
+                sender,
+                nonce,
+                destination,
+                recipient,
+                optimisticSeconds,
+                tips_,
+                messageBody
             );
     }
 
     function formatMessage(
-        bytes memory _header,
-        bytes memory _tips,
-        bytes memory _messageBody
+        bytes memory header_,
+        bytes memory tips_,
+        bytes memory messageBody
     ) public pure returns (bytes memory) {
-        return MessageLib.formatMessage(_header, _tips, _messageBody);
+        return MessageLib.formatMessage(header_, tips_, messageBody);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

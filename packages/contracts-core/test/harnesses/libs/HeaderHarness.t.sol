@@ -20,55 +20,55 @@ contract HeaderHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToHeader(bytes memory _payload) public view returns (bytes memory) {
+    function castToHeader(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        Header _header = HeaderLib.castToHeader(_payload);
-        return _header.unwrap().clone();
+        Header header = HeaderLib.castToHeader(payload);
+        return header.unwrap().clone();
     }
 
     /// @notice Returns header's version field.
-    function version(bytes memory _payload) public pure returns (uint16) {
-        return _payload.castToHeader().version();
+    function version(bytes memory payload) public pure returns (uint16) {
+        return payload.castToHeader().version();
     }
 
     /// @notice Returns header's origin field
-    function origin(bytes memory _payload) public pure returns (uint32) {
-        return _payload.castToHeader().origin();
+    function origin(bytes memory payload) public pure returns (uint32) {
+        return payload.castToHeader().origin();
     }
 
     /// @notice Returns header's sender field
-    function sender(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToHeader().sender();
+    function sender(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToHeader().sender();
     }
 
     /// @notice Returns header's nonce field
-    function nonce(bytes memory _payload) public pure returns (uint32) {
-        return _payload.castToHeader().nonce();
+    function nonce(bytes memory payload) public pure returns (uint32) {
+        return payload.castToHeader().nonce();
     }
 
     /// @notice Returns header's destination field
-    function destination(bytes memory _payload) public pure returns (uint32) {
-        return _payload.castToHeader().destination();
+    function destination(bytes memory payload) public pure returns (uint32) {
+        return payload.castToHeader().destination();
     }
 
     /// @notice Returns header's recipient field as bytes32
-    function recipient(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToHeader().recipient();
+    function recipient(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToHeader().recipient();
     }
 
     /// @notice Returns header's optimistic seconds field
-    function optimisticSeconds(bytes memory _payload) public pure returns (uint32) {
-        return _payload.castToHeader().optimisticSeconds();
+    function optimisticSeconds(bytes memory payload) public pure returns (uint32) {
+        return payload.castToHeader().optimisticSeconds();
     }
 
     /// @notice Returns header's recipient field as an address
-    function recipientAddress(bytes memory _payload) public pure returns (address) {
-        return _payload.castToHeader().recipientAddress();
+    function recipientAddress(bytes memory payload) public pure returns (address) {
+        return payload.castToHeader().recipientAddress();
     }
 
-    function isHeader(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isHeader();
+    function isHeader(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isHeader();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -76,21 +76,21 @@ contract HeaderHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatHeader(
-        uint32 _origin,
-        bytes32 _sender,
-        uint32 _nonce,
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds
+        uint32 origin_,
+        bytes32 sender_,
+        uint32 nonce_,
+        uint32 destination_,
+        bytes32 recipient_,
+        uint32 optimisticSeconds_
     ) public pure returns (bytes memory) {
         return
             HeaderLib.formatHeader(
-                _origin,
-                _sender,
-                _nonce,
-                _destination,
-                _recipient,
-                _optimisticSeconds
+                origin_,
+                sender_,
+                nonce_,
+                destination_,
+                recipient_,
+                optimisticSeconds_
             );
     }
 

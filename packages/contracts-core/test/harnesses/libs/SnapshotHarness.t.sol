@@ -29,27 +29,27 @@ contract SnapshotHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToSnapshot(bytes memory _payload) public view returns (bytes memory) {
+    function castToSnapshot(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        Snapshot _snapshot = SnapshotLib.castToSnapshot(_payload);
-        return _snapshot.unwrap().clone();
+        Snapshot snapshot = SnapshotLib.castToSnapshot(payload);
+        return snapshot.unwrap().clone();
     }
 
-    function hash(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToSnapshot().hash();
+    function hash(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToSnapshot().hash();
     }
 
-    function state(bytes memory _payload, uint256 _stateIndex) public view returns (bytes memory) {
-        return _payload.castToSnapshot().state(_stateIndex).unwrap().clone();
+    function state(bytes memory payload, uint256 stateIndex) public view returns (bytes memory) {
+        return payload.castToSnapshot().state(stateIndex).unwrap().clone();
     }
 
-    function statesAmount(bytes memory _payload) public pure returns (uint256) {
-        return _payload.castToSnapshot().statesAmount();
+    function statesAmount(bytes memory payload) public pure returns (uint256) {
+        return payload.castToSnapshot().statesAmount();
     }
 
-    function root(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToSnapshot().root();
+    function root(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToSnapshot().root();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -65,7 +65,7 @@ contract SnapshotHarness {
         return SnapshotLib.formatSnapshot(states);
     }
 
-    function isSnapshot(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isSnapshot();
+    function isSnapshot(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isSnapshot();
     }
 }

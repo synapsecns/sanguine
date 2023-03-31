@@ -17,9 +17,9 @@ import { SystemRegistry } from "./system/SystemRegistry.sol";
 contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
 
-    constructor(uint32 _domain, IAgentManager _agentManager)
-        DomainContext(_domain)
-        SystemRegistry(_agentManager)
+    constructor(uint32 domain, IAgentManager agentManager_)
+        DomainContext(domain)
+        SystemRegistry(agentManager_)
         Versioned("0.0.3")
     {
         require(_onSynapseChain(), "Only deployed on SynChain");
@@ -40,16 +40,16 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc InterfaceSummit
-    function submitSnapshot(bytes memory _snapPayload, bytes memory _snapSignature)
+    function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
         external
         returns (bytes memory attPayload)
     {
         // Call the hook and check if we can accept the statement
         if (!_beforeStatement()) return "";
         // This will revert if payload is not a snapshot
-        Snapshot snapshot = _wrapSnapshot(_snapPayload);
+        Snapshot snapshot = _wrapSnapshot(snapPayload);
         // This will revert if the signer is not a known Agent
-        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, _snapSignature);
+        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
         // Check that Agent is active
         _verifyActive(status);
         if (status.domain == 0) {
@@ -72,7 +72,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             // Save attestation derived from Notary snapshot
             _saveAttestation(attPayload.castToAttestation(), agent);
         }
-        emit SnapshotAccepted(status.domain, agent, _snapPayload, _snapSignature);
+        emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -80,39 +80,39 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc InterfaceSummit
-    function verifyAttestation(bytes memory _attPayload, bytes memory _attSignature)
+    function verifyAttestation(bytes memory attPayload, bytes memory attSignature)
         external
         returns (bool isValid)
     {
         // This will revert if payload is not an attestation
-        Attestation att = _wrapAttestation(_attPayload);
+        Attestation att = _wrapAttestation(attPayload);
         // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, _attSignature);
+        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
         // Notary needs to be Active/Unstaking
         _verifyActiveUnstaking(status);
         isValid = _isValidAttestation(att);
         if (!isValid) {
-            emit InvalidAttestation(_attPayload, _attSignature);
+            emit InvalidAttestation(attPayload, attSignature);
             // Slash Notary and notify local AgentManager
             _slashAgent(status.domain, notary);
         }
     }
 
     /// @inheritdoc InterfaceSummit
-    function verifyAttestationReport(bytes memory _arPayload, bytes memory _arSignature)
+    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
         external
         returns (bool isValid)
     {
         // This will revert if payload is not an attestation report
-        AttestationReport report = _wrapAttestationReport(_arPayload);
+        AttestationReport report = _wrapAttestationReport(arPayload);
         // This will revert if the report signer is not a known Guard
-        (AgentStatus memory status, address guard) = _verifyAttestationReport(report, _arSignature);
+        (AgentStatus memory status, address guard) = _verifyAttestationReport(report, arSignature);
         // Guard needs to be Active/Unstaking
         _verifyActiveUnstaking(status);
         // Report is valid, if the reported attestation is invalid
         isValid = !_isValidAttestation(report.attestation());
         if (!isValid) {
-            emit InvalidAttestationReport(_arPayload, _arSignature);
+            emit InvalidAttestationReport(arPayload, arSignature);
             // Slash Guard and notify local AgentManager
             _slashAgent(0, guard);
         }
@@ -123,7 +123,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc InterfaceSummit
-    function getLatestState(uint32 _origin) external view returns (bytes memory statePayload) {
+    function getLatestState(uint32 origin) external view returns (bytes memory statePayload) {
         // TODO: implement once Agent Merkle Tree is done
     }
 

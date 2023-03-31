@@ -19,6 +19,7 @@ import { ProductionEvents } from "./events/ProductionEvents.t.sol";
 import { SynapseAgents } from "./SynapseAgents.t.sol";
 import { SynapseProofs } from "./SynapseProofs.t.sol";
 
+// solhint-disable no-empty-blocks
 // solhint-disable ordering
 abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs {
     uint256 private immutable deployMask;
@@ -34,8 +35,8 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
 
     SystemRouterHarness internal systemRouter;
 
-    constructor(uint256 _deployMask) {
-        deployMask = _deployMask;
+    constructor(uint256 deployMask_) {
+        deployMask = deployMask_;
     }
 
     /// @notice Prevents this contract from being included in the coverage report

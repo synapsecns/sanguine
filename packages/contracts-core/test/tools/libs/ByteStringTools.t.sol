@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+// solhint-disable no-empty-blocks
 abstract contract ByteStringTools {
     /// @notice Prevents this contract from being included in the coverage report
     function testByteStringTools() external {}
