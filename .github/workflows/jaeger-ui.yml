@@ -6,8 +6,6 @@ on:
       - '.github/workflows/jaeger-ui.yml'
     branches:
       - master
-      # todo: remove me
-      - feat/tracing-instrument
 
 jobs:
   build-jaeger-ui:
