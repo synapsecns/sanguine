@@ -54,6 +54,8 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 		},
 	}
 
+	fmt.Println(runOptions)
+
 	resource, err := j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 		config.Mounts = []docker.HostMount{
 			{
