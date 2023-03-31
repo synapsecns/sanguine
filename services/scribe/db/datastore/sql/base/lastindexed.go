@@ -4,12 +4,27 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // StoreLastIndexed stores the last indexed block number for a contract.
 // It updates the value if there is a previous last indexed value, and creates a new
 // entry if there is no previous value.
-func (s Store) StoreLastIndexed(ctx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) error {
+func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress common.Address, chainID uint32, blockNumber uint64) (err error) {
+	ctx, span := s.metrics.Tracer().Start(parentCtx, "StoreLastIndexed", trace.WithAttributes(
+		attribute.String("contractAddress", contractAddress.String()),
+		attribute.Int("chainID", int(chainID)),
+		attribute.Int("blockNumber", int(blockNumber)),
+	))
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+
 	entry := LastIndexedInfo{}
 	dbTx := s.DB().WithContext(ctx).
 		Model(&LastIndexedInfo{}).

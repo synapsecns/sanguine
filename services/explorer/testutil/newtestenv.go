@@ -31,7 +31,7 @@ func NewTestEnvDB(ctx context.Context, t *testing.T, handler metrics.Handler) (d
 	t.Helper()
 	dbPath := filet.TmpDir(t, "")
 
-	sqliteStore, err := sqlite.NewSqliteStore(ctx, dbPath)
+	sqliteStore, err := sqlite.NewSqliteStore(ctx, dbPath, handler)
 	assert.Nil(t, err)
 
 	eventDB = sqliteStore

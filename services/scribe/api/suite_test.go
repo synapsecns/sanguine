@@ -66,7 +66,7 @@ func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 	g.dbPath = filet.TmpDir(g.T(), "")
 
-	sqliteStore, err := sqlite.NewSqliteStore(g.GetTestContext(), g.dbPath)
+	sqliteStore, err := sqlite.NewSqliteStore(g.GetTestContext(), g.dbPath, g.metrics)
 	Nil(g.T(), err)
 
 	g.db = sqliteStore

@@ -46,7 +46,7 @@ func (l *LiveSuite) SetupTest() {
 	l.TestSuite.SetupTest()
 
 	var err error
-	l.testDB, err = sqlite.NewSqliteStore(l.GetTestContext(), filet.TmpDir(l.T(), ""))
+	l.testDB, err = sqlite.NewSqliteStore(l.GetTestContext(), filet.TmpDir(l.T(), ""), l.metrics)
 	Nil(l.T(), err)
 
 	l.manager = testutil.NewDeployManager(l.T())

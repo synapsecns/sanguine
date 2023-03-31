@@ -119,7 +119,7 @@ func Start(ctx context.Context, cfg Config, handler metrics.Handler) error {
 func InitDB(ctx context.Context, databaseType string, path string, metrics metrics.Handler) (db.EventDB, error) {
 	switch {
 	case databaseType == "sqlite":
-		sqliteStore, err := sqlite.NewSqliteStore(ctx, path)
+		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
 		}
@@ -131,7 +131,7 @@ func InitDB(ctx context.Context, databaseType string, path string, metrics metri
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
-			mysqlStore, err := mysql.NewMysqlStore(ctx, connString)
+			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, metrics)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
 			}
@@ -141,12 +141,10 @@ func InitDB(ctx context.Context, databaseType string, path string, metrics metri
 			return mysqlStore, nil
 		}
 
-		mysqlStore, err := mysql.NewMysqlStore(ctx, path)
+		mysqlStore, err := mysql.NewMysqlStore(ctx, path, metrics)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}
-
-		metrics.AddGormCallbacks(mysqlStore.DB())
 
 		return mysqlStore, nil
 	default:

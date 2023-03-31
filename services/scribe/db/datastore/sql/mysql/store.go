@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"time"
 
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
@@ -26,8 +27,16 @@ var NamingStrategy = schema.NamingStrategy{
 }
 
 // NewMysqlStore creates a new mysql store for a given data store.
-func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
+func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Handler) (_ *Store, err error) {
 	logger.Debug("creating mysql store")
+
+	ctx, span := handler.Tracer().Start(parentCtx, "start-mysql")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
 		Logger:                 common_base.GetGormLogger(logger),
@@ -50,12 +59,14 @@ func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 	sqlDB.SetMaxIdleConns(MaxIdleConns)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
+	handler.AddGormCallbacks(gdb)
+
 	err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on mysql: %w", err)
 	}
-	return &Store{base.NewStore(gdb)}, nil
+	return &Store{base.NewStore(gdb, handler)}, nil
 }
 
 // var _ db.Service = &Store{}
