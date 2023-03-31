@@ -49,7 +49,7 @@ func (b *BackfillSuite) SetupTest() {
 
 func (b *BackfillSuite) SetupSuite() {
 	b.TestSuite.SetupSuite()
-	metrics.SetupTestJaeger(b.T())
+	metrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
 
 	var err error
 	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)

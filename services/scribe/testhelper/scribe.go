@@ -31,7 +31,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 
 	omnirpcURL := testhelper.NewOmnirpcServer(ctx, tb, backends...)
 
-	metrics.SetupTestJaeger(tb)
+	metrics.SetupTestJaeger(ctx, tb)
 	metricsProvider, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Jaeger)
 	assert.Nil(tb, err)
 

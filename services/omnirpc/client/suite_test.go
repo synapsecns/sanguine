@@ -65,7 +65,7 @@ func (s *TestClientSuite) SetupTest() {
 }
 
 func (s *TestClientSuite) SetupJaeger() {
-	metrics.SetupTestJaeger(s.T())
+	metrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
 
 	var err error
 	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), cmd.BuildInfo(), metrics.Jaeger)

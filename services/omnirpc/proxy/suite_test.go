@@ -25,7 +25,7 @@ func NewProxySuite(tb testing.TB) *ProxySuite {
 func (p *ProxySuite) SetupSuite() {
 	p.TestSuite.SetupSuite()
 
-	metrics.SetupTestJaeger(p.T())
+	metrics.SetupTestJaeger(p.GetSuiteContext(), p.T())
 
 	var err error
 	p.metrics, err = metrics.NewByType(p.GetSuiteContext(), cmd.BuildInfo(), metrics.Jaeger)

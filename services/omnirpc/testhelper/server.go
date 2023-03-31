@@ -43,7 +43,7 @@ func makeConfig(backends []backends.SimulatedTestBackend, clientType omniHTTP.Cl
 func NewOmnirpcServer(ctx context.Context, tb testing.TB, backends ...backends.SimulatedTestBackend) string {
 	tb.Helper()
 
-	metrics.SetupTestJaeger(tb)
+	metrics.SetupTestJaeger(ctx, tb)
 
 	handler, err := metrics.NewByType(ctx, cmd.BuildInfo(), metrics.Jaeger)
 	assert.Nil(tb, err)

@@ -11,7 +11,9 @@ import (
 )
 
 func TestSetupFromEnv(t *testing.T) {
-	metrics.SetupTestJaeger(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	metrics.SetupTestJaeger(ctx, t)
 
 	for _, handler := range metrics.AllHandlerTypes {
 		handler := handler // capture func literal

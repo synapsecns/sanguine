@@ -104,7 +104,7 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 // SetupSuite sets up the test suite.
 func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	a.TestSuite.SetupSuite()
-	metrics.SetupTestJaeger(a.T())
+	metrics.SetupTestJaeger(a.GetSuiteContext(), a.T())
 
 	var err error
 	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
