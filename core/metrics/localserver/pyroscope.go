@@ -62,16 +62,15 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 	resource, err := j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 		config.Mounts = []docker.HostMount{
 			{
-				Type:     string(mount.TypeBind),
+				Type:     string(mount.TypeTmpfs),
 				Target:   pyroscopePath,
 				Source:   filet.TmpFile(j.tb, "", pyroscopeConfig).Name(),
 				ReadOnly: true,
 			},
 		}
-		//config.AutoRemove = true
+		config.AutoRemove = true
 		config.RestartPolicy = docker.AlwaysRestart()
 	})
-	fmt.Println(err)
 	assert.Nil(j.tb, err)
 
 	j.tb.Setenv(internal.PyroscopeEndpoint, fmt.Sprintf("http://localhost:%s", resource.GetPort("4040/tcp")))
