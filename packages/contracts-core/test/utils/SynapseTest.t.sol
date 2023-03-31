@@ -19,6 +19,7 @@ import { ProductionEvents } from "./events/ProductionEvents.t.sol";
 import { SynapseAgents } from "./SynapseAgents.t.sol";
 import { SynapseProofs } from "./SynapseProofs.t.sol";
 
+// solhint-disable no-empty-blocks
 // solhint-disable ordering
 abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs {
     uint256 private immutable deployMask;

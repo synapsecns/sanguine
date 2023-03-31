@@ -6,6 +6,8 @@ import { SystemMessage } from "../../contracts/libs/SystemMessage.sol";
 import { AppHarness, SynapseTestStorage } from "./SynapseTestStorage.t.sol";
 import { SynapseUtilities } from "./SynapseUtilities.t.sol";
 
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
     /// @notice Prevents this contract from being included in the coverage report
     function testSynapseTestSuite() external {}
@@ -79,10 +81,10 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // agentManager.setSystemRouter(systemRouter);
         // Add global notaries via AgentManager
         for (uint256 i = 0; i < DOMAINS; ++i) {
-            uint32 domainToAdd = domains[i];
+            // uint32 domainToAdd = domains[i];
             // Origin and Destination will filter our agents themselves
             for (uint256 j = 0; j < NOTARIES_PER_CHAIN; ++j) {
-                address notary = suiteNotary(domainToAdd, j);
+                // address notary = suiteNotary(domainToAdd, j);
                 // agentManager.addAgent(domainToAdd, notary);
             }
         }
@@ -114,6 +116,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
 
     function signMessage(uint256 privKey, bytes memory message)
         public
+        pure
         returns (bytes memory signature)
     {
         bytes32 digest = keccak256(message);
@@ -124,6 +127,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
 
     function signMessage(address signer, bytes memory message)
         public
+        view
         returns (bytes memory signature)
     {
         uint256 privKey = privKeys[signer];
@@ -133,6 +137,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
 
     function signMessage(uint256[] memory keys, bytes memory message)
         public
+        pure
         returns (bytes memory signatures)
     {
         for (uint256 i = 0; i < keys.length; ++i) {
@@ -143,6 +148,7 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
 
     function signMessage(address[] memory signers, bytes memory message)
         public
+        view
         returns (bytes memory signatures)
     {
         for (uint256 i = 0; i < signers.length; ++i) {

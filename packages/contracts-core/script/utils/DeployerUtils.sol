@@ -13,6 +13,7 @@ interface ICreate3Factory {
         returns (address deployed);
 }
 
+// solhint-disable no-empty-blocks
 // solhint-disable ordering
 contract DeployerUtils is Script {
     using stdJson for string;

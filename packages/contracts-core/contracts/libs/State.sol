@@ -161,6 +161,7 @@ library StateLib {
 
     /// @notice Returns a struct to save in the Origin contract.
     /// Current block number and timestamp are used.
+    // solhint-disable-next-line ordering
     function originState() internal view returns (OriginState memory state) {
         state.blockNumber = uint40(block.number);
         state.timestamp = uint40(block.timestamp);

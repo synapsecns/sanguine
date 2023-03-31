@@ -9,6 +9,7 @@ import { SynapseConstants } from "./SynapseConstants.t.sol";
 import { SynapseEvents } from "./SynapseEvents.t.sol";
 import { HistoricalProofGenerator } from "./proof/HistoricalProofGenerator.t.sol";
 
+// solhint-disable no-empty-blocks
 contract SynapseTestStorage is SynapseConstants, SynapseEvents {
     struct TestDeployments {
         SystemRouterHarness systemRouter;

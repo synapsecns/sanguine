@@ -22,6 +22,8 @@ import { SynapseTestConstants } from "./SynapseTestConstants.t.sol";
 import { Test } from "forge-std/Test.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 abstract contract SynapseAgents is SynapseTestConstants, Test {
     struct Domain {
         string name;

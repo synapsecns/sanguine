@@ -150,6 +150,7 @@ library MerkleLib {
 
     /// @notice Initializes the historical roots for the tree by inserting
     /// a precomputed root of an empty Merkle Tree.
+    // solhint-disable-next-line ordering
     function initializeRoots(HistoricalTree storage tree) internal returns (bytes32 savedRoot) {
         // This should only be called once, when the contract is initialized
         assert(tree.roots.length == 0);

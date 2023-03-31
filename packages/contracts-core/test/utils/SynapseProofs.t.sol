@@ -7,6 +7,8 @@ import { AttestationProofGenerator } from "./proof/AttestationProofGenerator.t.s
 import { DynamicProofGenerator } from "./proof/DynamicProofGenerator.t.sol";
 import { HistoricalProofGenerator } from "./proof/HistoricalProofGenerator.t.sol";
 
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 abstract contract SynapseProofs {
     HistoricalProofGenerator internal originGen;
     AttestationProofGenerator internal summitGen;

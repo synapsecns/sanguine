@@ -206,6 +206,7 @@ library SnapshotLib {
 
     /// @notice Returns an Attestation struct to save in the Summit contract.
     /// Current block number and timestamp are used.
+    // solhint-disable-next-line ordering
     function toSummitAttestation(Snapshot snapshot, bytes32 agentRoot)
         internal
         view

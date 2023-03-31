@@ -95,6 +95,8 @@ struct RawStateReport {
 }
 using { CastLib.castToStateReport, CastLib.formatStateReport } for RawStateReport global;
 
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 library CastLib {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;

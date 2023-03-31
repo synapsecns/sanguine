@@ -167,6 +167,7 @@ library AttestationLib {
     }
 
     /// @notice Returns an empty struct to save in Summit contract upon initialization.
+    // solhint-disable-next-line ordering
     function emptySummitAttestation() internal view returns (SummitAttestation memory) {
         return summitAttestation(bytes32(0), bytes32(0));
     }

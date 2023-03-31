@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import { Test } from "forge-std/Test.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
+// solhint-disable no-empty-blocks
 contract SynapseUtilities is Test {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
