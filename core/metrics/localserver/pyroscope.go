@@ -73,7 +73,7 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 
 	fmt.Println(os.Getenv(internal.PyroscopeEndpoint))
 	if !j.cfg.keepContainers {
-		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
+		//err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
 		assert.Nil(j.tb, err)
 	}
 
