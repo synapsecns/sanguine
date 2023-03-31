@@ -6,6 +6,7 @@ import { ORIGIN_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
 import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
 import { IExecutionHub } from "../../../contracts/interfaces/IExecutionHub.sol";
 
+// solhint-disable no-empty-blocks
 contract ReentrantApp is IMessageRecipient {
     bytes internal msgPayload;
     bytes32[] internal originProof;
@@ -17,14 +18,14 @@ contract ReentrantApp is IMessageRecipient {
 
     function prepare(
         bytes memory msgPayload_,
-        bytes32[] memory originProof,
-        bytes32[] memory snapProof,
-        uint256 stateIndex
+        bytes32[] memory originProof_,
+        bytes32[] memory snapProof_,
+        uint256 stateIndex_
     ) external {
         msgPayload = msgPayload_;
-        originProof = originProof;
-        snapProof = snapProof;
-        stateIndex = stateIndex;
+        originProof = originProof_;
+        snapProof = snapProof_;
+        stateIndex = stateIndex_;
     }
 
     function handle(

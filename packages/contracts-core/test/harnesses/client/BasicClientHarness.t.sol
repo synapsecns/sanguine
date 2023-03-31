@@ -5,10 +5,10 @@ pragma solidity 0.8.17;
 import { BasicClient } from "../../../contracts/client/BasicClient.sol";
 import { BasicClientHarnessEvents } from "../events/BasicClientHarnessEvents.sol";
 
+// solhint-disable no-empty-blocks
 contract BasicClientHarness is BasicClientHarnessEvents, BasicClient {
     uint32 internal optimisticPeriod;
 
-    // solhint-disable-next-line no-empty-blocks
     constructor(
         address origin_,
         address destination_,

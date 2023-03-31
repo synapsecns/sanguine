@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 
 import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
 
+// solhint-disable no-empty-blocks
 contract AppHarness is IMessageRecipient {
     uint32 public optimisticSeconds;
 

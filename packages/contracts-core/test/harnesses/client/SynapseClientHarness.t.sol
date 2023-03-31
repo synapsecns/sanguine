@@ -5,6 +5,7 @@ pragma solidity 0.8.17;
 import { SynapseClient } from "../../../contracts/client/SynapseClient.sol";
 import { ClientHarnessEvents } from "../events/ClientHarnessEvents.sol";
 
+// solhint-disable no-empty-blocks
 contract SynapseClientHarness is ClientHarnessEvents, SynapseClient {
     uint32 internal optimisticPeriod;
 
