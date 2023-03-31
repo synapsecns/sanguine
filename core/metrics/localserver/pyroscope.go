@@ -57,6 +57,8 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 	tmpFile := filet.TmpFile(j.tb, "", pyroscopeConfig).Name()
 	assert.Nil(j.tb, os.Chmod(tmpFile, 0777))
 
+	fmt.Println(tmpFile)
+
 	resource, err := j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 		config.Mounts = []docker.HostMount{
 			{
