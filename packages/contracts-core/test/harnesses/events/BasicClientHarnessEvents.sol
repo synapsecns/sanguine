@@ -6,6 +6,6 @@ abstract contract BasicClientHarnessEvents {
         uint32 origin,
         uint32 nonce,
         uint256 rootSubmittedAt,
-        bytes message
+        bytes content
     );
 }

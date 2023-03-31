@@ -10,6 +10,8 @@ import {
 
 import { ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
 
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 abstract contract AgentManagerTest is SynapseTest {
     uint256 internal rootSubmittedAt;
 
@@ -35,23 +37,23 @@ abstract contract AgentManagerTest is SynapseTest {
         SystemRouterHarness router,
         uint32 callOrigin,
         SystemEntity systemCaller,
-        bytes memory data
+        bytes memory payload
     ) internal {
         router.systemPrank({
-            _recipient: SystemEntity.AgentManager,
-            _rootSubmittedAt: callOrigin == _localDomain() ? block.timestamp : rootSubmittedAt,
-            _callOrigin: callOrigin,
-            _systemCaller: systemCaller,
-            _data: data
+            recipient: SystemEntity.AgentManager,
+            rootSubmittedAt: callOrigin == _localDomain() ? block.timestamp : rootSubmittedAt,
+            callOrigin: callOrigin,
+            systemCaller: systemCaller,
+            payload: payload
         });
     }
 
-    function _remoteSlashData(
+    function _remoteSlashPayload(
         uint32 domain,
         address agent,
         address prover
     ) internal view returns (bytes memory) {
-        // (_rootSubmittedAt, _callOrigin, _systemCaller, _domain, _agent, _prover)
+        // (rootSubmittedAt, callOrigin, systemCaller, domain, agent, prover)
         return
             abi.encodeWithSelector(
                 bondingManager.remoteRegistrySlash.selector,

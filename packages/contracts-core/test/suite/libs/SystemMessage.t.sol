@@ -33,7 +33,7 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
     ) public {
         // Set a sensible limit for the total payload length
         vm.assume(uint256(wordsPrefix) + wordsFollowing >= MIN_ARGUMENT_WORDS);
-        vm.assume((uint256(wordsPrefix) + wordsFollowing) * 32 <= MAX_MESSAGE_BODY_BYTES);
+        vm.assume((uint256(wordsPrefix) + wordsFollowing) * 32 <= MAX_CONTENT_BYTES);
         bytes4 selector = this.setUp.selector;
         // Create "random" arguments and new/old prefix with different random seeds
         bytes memory prefixOld = createTestArguments(wordsPrefix, "prefixOld");
@@ -42,8 +42,8 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
         bytes memory callData = bytes.concat(selector, prefixOld, following);
         // Format the calldata
         bytes memory adjustedCallData = libHarness.formatAdjustedCallData({
-            _callData: callData,
-            _prefix: prefixNew
+            callData_: callData,
+            prefix: prefixNew
         });
         // Test formatter against manually constructed payload
         assertEq(
@@ -53,9 +53,9 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
         );
         // Format the system message
         bytes memory systemMessage = libHarness.formatSystemMessage({
-            _systemRecipient: recipient,
-            _callData: callData,
-            _prefix: prefixNew
+            systemRecipient: recipient,
+            callData_: callData,
+            prefix: prefixNew
         });
         checkCastToSystemMessage({ payload: systemMessage, isSystemMessage: true });
         // Test formatter against manually constructed payload
@@ -76,18 +76,18 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
     ) public {
         uint256 length = uint256(wordsPayload) * 32;
         // Set a sensible limit for the total payload length
-        vm.assume(length <= MAX_MESSAGE_BODY_BYTES);
+        vm.assume(length <= MAX_CONTENT_BYTES);
         vm.assume(bytesExtra != 0);
         // Let "arguments" be shorter than the prefix
         bytes memory callData = bytes.concat(this.setUp.selector, new bytes(length));
         bytes memory prefix = new bytes(length + bytesExtra);
         vm.expectRevert("Payload too short");
-        libHarness.formatAdjustedCallData({ _callData: callData, _prefix: prefix });
+        libHarness.formatAdjustedCallData({ callData_: callData, prefix: prefix });
         vm.expectRevert("Payload too short");
         libHarness.formatSystemMessage({
-            _systemRecipient: recipient,
-            _callData: callData,
-            _prefix: prefix
+            systemRecipient: recipient,
+            callData_: callData,
+            prefix: prefix
         });
     }
 
@@ -173,9 +173,9 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
     function createTestPayload() public view returns (bytes memory) {
         return
             libHarness.formatSystemMessage({
-                _systemRecipient: 0,
-                _callData: TEST_MESSAGE_PAYLOAD,
-                _prefix: ""
+                systemRecipient: 0,
+                callData_: TEST_MESSAGE_PAYLOAD,
+                prefix: ""
             });
     }
 }

@@ -23,15 +23,15 @@ contract DestinationMock is
 
     function passAgentRoot() external returns (bool rootPassed, bool rootPending) {}
 
-    function submitAttestation(bytes memory _attPayload, bytes memory _attSignature)
+    function submitAttestation(bytes memory attPayload, bytes memory attSignature)
         external
         returns (bool wasAccepted)
     {}
 
     function submitAttestationReport(
-        bytes memory _arPayload,
-        bytes memory _arSignature,
-        bytes memory _attSignature
+        bytes memory arPayload,
+        bytes memory arSignature,
+        bytes memory attSignature
     ) external returns (bool wasAccepted) {}
 
     /**
@@ -42,11 +42,11 @@ contract DestinationMock is
     /**
      * @notice Returns an attestation from the list of all accepted Notary attestations.
      * @dev Index refers to attestation's snapshot root position in `roots` array.
-     * @param _index   Attestation index
+     * @param index    Attestation index
      * @return root    Snapshot root for the attestation
      * @return execAtt Rest of attestation data that Destination keeps track of
      */
-    function getAttestation(uint256 _index)
+    function getAttestation(uint256 index)
         external
         view
         returns (bytes32 root, ExecutionAttestation memory execAtt)

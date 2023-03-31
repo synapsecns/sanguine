@@ -5,43 +5,44 @@ pragma solidity 0.8.17;
 import { Client } from "../../../contracts/client/Client.sol";
 import { ClientHarnessEvents } from "../events/ClientHarnessEvents.sol";
 
+// solhint-disable no-empty-blocks
 contract ClientHarness is ClientHarnessEvents, Client {
     uint32 internal optimisticPeriod;
 
     // solhint-disable-next-line no-empty-blocks
     constructor(
-        address _origin,
-        address _destination,
-        uint32 _optimisticPeriod
-    ) Client(_origin, _destination) {
-        optimisticPeriod = _optimisticPeriod;
+        address origin_,
+        address destination_,
+        uint32 optimisticPeriod_
+    ) Client(origin_, destination_) {
+        optimisticPeriod = optimisticPeriod_;
     }
 
     /// @notice Prevents this contract from being included in the coverage report
     function testClientHarness() external {}
 
     function sendMessage(
-        uint32 _destination,
-        bytes memory _tips,
-        bytes memory _message
+        uint32 destination_,
+        bytes memory tipsPayload,
+        bytes memory content
     ) public payable {
-        _send(_destination, _tips, _message);
+        _send(destination_, tipsPayload, content);
     }
 
     function optimisticSeconds() public view override returns (uint32) {
         return optimisticPeriod;
     }
 
-    function trustedSender(uint32 _destination) public pure override returns (bytes32 sender) {
-        sender = bytes32(uint256(_destination));
-        // bytes32(0) for _destination == 0
+    function trustedSender(uint32 destination_) public pure override returns (bytes32 sender) {
+        sender = bytes32(uint256(destination_));
+        // bytes32(0) for destination == 0
     }
 
     function _handle(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes memory _message
+        uint32 origin_,
+        uint32 nonce,
+        bytes memory content
     ) internal override {
-        emit LogClientMessage(_origin, _nonce, _message);
+        emit LogClientMessage(origin_, nonce, content);
     }
 }

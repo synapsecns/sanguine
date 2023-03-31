@@ -16,21 +16,23 @@ import {
 } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 contract LightManagerTest is AgentManagerTest {
     // Deploy mocks for every messaging contract
     constructor() SynapseTest(0) {}
 
     function test_initializer(
         address caller,
-        address _origin,
-        address _destination
+        address origin_,
+        address destination_
     ) public {
         lightManager = new LightManager(DOMAIN_LOCAL);
         vm.prank(caller);
-        lightManager.initialize(ISystemRegistry(_origin), ISystemRegistry(_destination));
+        lightManager.initialize(ISystemRegistry(origin_), ISystemRegistry(destination_));
         assertEq(lightManager.owner(), caller);
-        assertEq(address(lightManager.origin()), _origin);
-        assertEq(address(lightManager.destination()), _destination);
+        assertEq(address(lightManager.origin()), origin_);
+        assertEq(address(lightManager.destination()), destination_);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -141,14 +143,14 @@ contract LightManagerTest is AgentManagerTest {
         address prover
     ) public {
         test_addAgent_new(address(this), domain, agent);
-        bytes memory data = _remoteSlashData(domain, agent, prover);
+        bytes memory data = _remoteSlashPayload(domain, agent, prover);
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         vm.expectCall(
             destination,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
         );
-        // (_destination, _optimisticSeconds, _recipient, _data)
+        // (destination, optimisticSeconds, recipient, data)
         vm.expectCall(
             address(systemRouter),
             abi.encodeWithSelector(
@@ -162,9 +164,9 @@ contract LightManagerTest is AgentManagerTest {
         vm.prank(origin);
         lightManager.registrySlash(domain, agent, prover);
         assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address _prover) = lightManager.slashStatus(agent);
+        (bool isSlashed, address prover_) = lightManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(_prover, prover);
+        assertEq(prover_, prover);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {

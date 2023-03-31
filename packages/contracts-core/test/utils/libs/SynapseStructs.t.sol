@@ -95,6 +95,8 @@ struct RawStateReport {
 }
 using { CastLib.castToStateReport, CastLib.formatStateReport } for RawStateReport global;
 
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 library CastLib {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
@@ -113,10 +115,10 @@ library CastLib {
     ▏*║                               MESSAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatMessage(RawMessage memory rm) internal pure returns (bytes memory message) {
+    function formatMessage(RawMessage memory rm) internal pure returns (bytes memory msgPayload) {
         bytes memory header = rm.header.formatHeader();
-        bytes memory tips = rm.tips.formatTips();
-        message = MessageLib.formatMessage(header, tips, rm.body);
+        bytes memory tipsPayload = rm.tips.formatTips();
+        return MessageLib.formatMessage(header, tipsPayload, rm.body);
     }
 
     function castToMessage(RawMessage memory rm) internal pure returns (Message ptr) {
@@ -125,12 +127,12 @@ library CastLib {
 
     function formatHeader(RawHeader memory rh) internal pure returns (bytes memory header) {
         header = HeaderLib.formatHeader({
-            _origin: rh.origin,
-            _sender: rh.sender,
-            _nonce: rh.nonce,
-            _destination: rh.destination,
-            _recipient: rh.recipient,
-            _optimisticSeconds: rh.optimisticSeconds
+            origin_: rh.origin,
+            sender_: rh.sender,
+            nonce_: rh.nonce,
+            destination_: rh.destination,
+            recipient_: rh.recipient,
+            optimisticSeconds_: rh.optimisticSeconds
         });
     }
 
@@ -138,12 +140,12 @@ library CastLib {
         ptr = rh.formatHeader().castToHeader();
     }
 
-    function formatTips(RawTips memory rt) internal pure returns (bytes memory tips) {
-        tips = TipsLib.formatTips({
-            _notaryTip: rt.notaryTip,
-            _broadcasterTip: rt.broadcasterTip,
-            _proverTip: rt.proverTip,
-            _executorTip: rt.executorTip
+    function formatTips(RawTips memory rt) internal pure returns (bytes memory tipsPayload) {
+        tipsPayload = TipsLib.formatTips({
+            notaryTip_: rt.notaryTip,
+            broadcasterTip_: rt.broadcasterTip,
+            proverTip_: rt.proverTip,
+            executorTip_: rt.executorTip
         });
     }
 
@@ -157,11 +159,11 @@ library CastLib {
 
     function formatState(RawState memory rs) internal pure returns (bytes memory state) {
         state = StateLib.formatState({
-            _root: rs.root,
-            _origin: rs.origin,
-            _nonce: rs.nonce,
-            _blockNumber: rs.blockNumber,
-            _timestamp: rs.timestamp
+            root_: rs.root,
+            origin_: rs.origin,
+            nonce_: rs.nonce,
+            blockNumber_: rs.blockNumber,
+            timestamp_: rs.timestamp
         });
     }
 
@@ -244,11 +246,11 @@ library CastLib {
         returns (bytes memory attestation)
     {
         attestation = AttestationLib.formatAttestation({
-            _snapRoot: ra.snapRoot,
-            _agentRoot: ra.agentRoot,
-            _nonce: ra.nonce,
-            _blockNumber: ra.blockNumber,
-            _timestamp: ra.timestamp
+            snapRoot_: ra.snapRoot,
+            agentRoot_: ra.agentRoot,
+            nonce_: ra.nonce,
+            blockNumber_: ra.blockNumber,
+            timestamp_: ra.timestamp
         });
     }
 

@@ -4,44 +4,45 @@ pragma solidity 0.8.17;
 
 import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
 
+// solhint-disable no-empty-blocks
 contract AppHarness is IMessageRecipient {
     uint32 public optimisticSeconds;
 
     uint32 public expectedOrigin;
     uint32 public expectedNonce;
     bytes32 public expectedSender;
-    bytes32 public expectedMessageBodyHash;
+    bytes32 public expectedContentHash;
 
-    constructor(uint32 _optimisticSeconds) {
-        optimisticSeconds = _optimisticSeconds;
+    constructor(uint32 optimisticSeconds_) {
+        optimisticSeconds = optimisticSeconds_;
     }
 
     /// @notice Prevents this contract from being included in the coverage report
     function testAppHarness() external {}
 
     function prepare(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes32 _sender,
-        bytes memory _message
+        uint32 origin,
+        uint32 nonce,
+        bytes32 sender,
+        bytes memory content
     ) external {
-        expectedOrigin = _origin;
-        expectedNonce = _nonce;
-        expectedSender = _sender;
-        expectedMessageBodyHash = keccak256(_message);
+        expectedOrigin = origin;
+        expectedNonce = nonce;
+        expectedSender = sender;
+        expectedContentHash = keccak256(content);
     }
 
     function handle(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes32 _sender,
-        uint256 _rootSubmittedAt,
-        bytes memory _message
+        uint32 origin,
+        uint32 nonce,
+        bytes32 sender,
+        uint256 rootSubmittedAt,
+        bytes memory content
     ) external view {
-        require(block.timestamp >= _rootSubmittedAt + optimisticSeconds, "app: !optimisticSeconds");
-        require(_origin == expectedOrigin, "app: !origin");
-        require(_nonce == expectedNonce, "app: !nonce");
-        require(_sender == expectedSender, "app: !sender");
-        require(keccak256(_message) == expectedMessageBodyHash, "app: !message");
+        require(block.timestamp >= rootSubmittedAt + optimisticSeconds, "app: !optimisticSeconds");
+        require(origin == expectedOrigin, "app: !origin");
+        require(nonce == expectedNonce, "app: !nonce");
+        require(sender == expectedSender, "app: !sender");
+        require(keccak256(content) == expectedContentHash, "app: !message");
     }
 }

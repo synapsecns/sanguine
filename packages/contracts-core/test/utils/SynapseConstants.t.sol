@@ -18,7 +18,7 @@ contract SynapseConstants {
     // ============ Message ============
     // Maximum bytes per message = 2 KiB
     // (somewhat arbitrarily set to begin)
-    uint256 public constant MAX_MESSAGE_BODY_BYTES = 2 * 2**10;
+    uint256 public constant MAX_CONTENT_BYTES = 2 * 2**10;
     // ============ Bonding ============
     uint256 public constant BONDING_OPTIMISTIC_PERIOD = 1 days;
 }

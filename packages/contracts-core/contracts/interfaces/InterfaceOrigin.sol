@@ -4,20 +4,20 @@ pragma solidity 0.8.17;
 interface InterfaceOrigin {
     /**
      * @notice Dispatch the message to the recipient located on destination domain.
-     * @param _destination          Domain of destination chain
-     * @param _recipient            Address of recipient on destination chain as bytes32
-     * @param _optimisticSeconds    Optimistic period for message execution on destination chain
-     * @param _tips                 Payload with information about paid tips
-     * @param _messageBody          Raw bytes content of message
+     * @param destination           Domain of destination chain
+     * @param recipient             Address of recipient on destination chain as bytes32
+     * @param optimisticSeconds     Optimistic period for message execution on destination chain
+     * @param tipsPayload           Payload with information about paid tips
+     * @param content               Raw bytes content of message
      * @return messageNonce         Nonce of the dispatched message
      * @return messageHash          Hash of the dispatched message
      */
     function dispatch(
-        uint32 _destination,
-        bytes32 _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _tips,
-        bytes memory _messageBody
+        uint32 destination,
+        bytes32 recipient,
+        uint32 optimisticSeconds,
+        bytes memory tipsPayload,
+        bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash);
 
     /**
@@ -31,18 +31,18 @@ interface InterfaceOrigin {
      *  - Snapshot payload is not properly formatted.
      *  - State index is out of range.
      *  - State does not refer to this chain.
-     * @param _stateIndex       State index to check
-     * @param _snapPayload      Raw payload with snapshot data
-     * @param _attPayload       Raw payload with Attestation data
-     * @param _attSignature     Notary signature for the attestation
+     * @param stateIndex        State index to check
+     * @param snapPayload       Raw payload with snapshot data
+     * @param attPayload        Raw payload with Attestation data
+     * @param attSignature      Notary signature for the attestation
      * @return isValid          Whether the requested state is valid.
      *                          Notary is slashed, if return value is FALSE.
      */
     function verifyAttestation(
-        uint256 _stateIndex,
-        bytes memory _snapPayload,
-        bytes memory _attPayload,
-        bytes memory _attSignature
+        uint256 stateIndex,
+        bytes memory snapPayload,
+        bytes memory attPayload,
+        bytes memory attSignature
     ) external returns (bool isValid);
 
     /**
@@ -58,20 +58,20 @@ interface InterfaceOrigin {
      *  - State payload is not properly formatted.
      *  - State index is out of range.
      *  - State does not refer to this chain.
-     * @param _stateIndex       Index of state in the snapshot
-     * @param _statePayload     Raw payload with State data to check
-     * @param _snapProof        Proof of inclusion of provided State's Left Leaf into Snapshot Merkle Tree
-     * @param _attPayload       Raw payload with Attestation data
-     * @param _attSignature     Notary signature for the attestation
+     * @param stateIndex        Index of state in the snapshot
+     * @param statePayload      Raw payload with State data to check
+     * @param snapProof         Proof of inclusion of provided State's Left Leaf into Snapshot Merkle Tree
+     * @param attPayload        Raw payload with Attestation data
+     * @param attSignature      Notary signature for the attestation
      * @return isValid          Whether the requested state is valid.
      *                          Notary is slashed, if return value is FALSE.
      */
     function verifyAttestationWithProof(
-        uint256 _stateIndex,
-        bytes memory _statePayload,
-        bytes32[] memory _snapProof,
-        bytes memory _attPayload,
-        bytes memory _attSignature
+        uint256 stateIndex,
+        bytes memory statePayload,
+        bytes32[] memory snapProof,
+        bytes memory attPayload,
+        bytes memory attSignature
     ) external returns (bool isValid);
 
     /**
@@ -83,16 +83,16 @@ interface InterfaceOrigin {
      *  - Snapshot signer is not an active Agent.
      *  - State index is out of range.
      *  - Snapshot state does not refer to this chain.
-     * @param _stateIndex       State index to check
-     * @param _snapPayload      Raw payload with snapshot data
-     * @param _snapSignature    Agent signature for the snapshot
+     * @param stateIndex        State index to check
+     * @param snapPayload       Raw payload with snapshot data
+     * @param snapSignature     Agent signature for the snapshot
      * @return isValid          Whether the requested state is valid.
      *                          Agent is slashed, if return value is FALSE.
      */
     function verifySnapshot(
-        uint256 _stateIndex,
-        bytes memory _snapPayload,
-        bytes memory _snapSignature
+        uint256 stateIndex,
+        bytes memory snapPayload,
+        bytes memory snapSignature
     ) external returns (bool isValid);
 
     /**
@@ -102,12 +102,12 @@ interface InterfaceOrigin {
      * @dev Will revert if any of these is true:
      *  - Report payload is not properly formatted.
      *  - Report signer is not an active Guard.
-     * @param _srPayload        Raw payload with StateReport data
-     * @param _srSignature      Guard signature for the report
+     * @param srPayload         Raw payload with StateReport data
+     * @param srSignature       Guard signature for the report
      * @return isValid          Whether the provided report is valid.
      *                          Guard is slashed, if return value is FALSE.
      */
-    function verifyStateReport(bytes memory _srPayload, bytes memory _srSignature)
+    function verifyStateReport(bytes memory srPayload, bytes memory srSignature)
         external
         returns (bool isValid);
 }

@@ -30,7 +30,7 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
 
     function test_formattedCorrectly_callData(uint8 words) public {
         // Set a sensible limit for the total payload length
-        vm.assume(uint256(words) * 32 <= MAX_MESSAGE_BODY_BYTES);
+        vm.assume(uint256(words) * 32 <= MAX_CONTENT_BYTES);
         bytes memory arguments = createTestArguments(words, "seed");
         bytes memory callData = abi.encodePacked(selector, arguments);
         require(callData.length == selector.length + 32 * uint256(words), "!length");
@@ -49,7 +49,7 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         public
     {
         // Set a sensible limit for the total payload length
-        vm.assume((uint256(wordsPrefix) + wordsFollowing) * 32 <= MAX_MESSAGE_BODY_BYTES);
+        vm.assume((uint256(wordsPrefix) + wordsFollowing) * 32 <= MAX_CONTENT_BYTES);
         // Create "random" arguments and new/old prefix with different random seeds
         bytes memory prefixOld = createTestArguments(wordsPrefix, "prefixOld");
         bytes memory following = createTestArguments(wordsFollowing, "following");
@@ -140,9 +140,9 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         checkCastToCallData(abi.encodeWithSelector(selector, arg), "!isCallData: uint8[2]");
     }
 
-    function test_isCallData_extraBytes(uint8 _extraBytes) public {
-        vm.assume(_extraBytes != 0);
-        extraBytes = _extraBytes;
+    function test_isCallData_extraBytes(uint8 extraBytes_) public {
+        vm.assume(extraBytes_ != 0);
+        extraBytes = extraBytes_;
         test_isCallData_noArgs();
         test_isCallData_withArgs();
         test_isCallData_dynamicArgs();

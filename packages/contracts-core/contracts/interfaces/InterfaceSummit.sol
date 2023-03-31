@@ -15,12 +15,12 @@ interface InterfaceSummit {
      *  - Guard snapshot contains a state older then they have previously submitted
      *  - Notary snapshot contains a state that hasn't been previously submitted by a Guard.
      * Note that Notary will NOT be slashed for submitting such a snapshot.
-     * @param _snapPayload      Raw payload with snapshot data
-     * @param _snapSignature    Agent signature for the snapshot
+     * @param snapPayload       Raw payload with snapshot data
+     * @param snapSignature     Agent signature for the snapshot
      * @return attPayload       Raw payload with data for attestation derived from Notary snapshot.
      *                          Empty payload, if a Guard snapshot was submitted.
      */
-    function submitSnapshot(bytes memory _snapPayload, bytes memory _snapSignature)
+    function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
         external
         returns (bytes memory attPayload);
 
@@ -31,12 +31,12 @@ interface InterfaceSummit {
      * @dev Will revert if any of these is true:
      *  - Attestation payload is not properly formatted.
      *  - Attestation signer is not an active Notary.
-     * @param _attPayload       Raw payload with Attestation data
-     * @param _attSignature     Notary signature for the attestation
+     * @param attPayload        Raw payload with Attestation data
+     * @param attSignature      Notary signature for the attestation
      * @return isValid          Whether the provided attestation is valid.
      *                          Notary is slashed, if return value is FALSE.
      */
-    function verifyAttestation(bytes memory _attPayload, bytes memory _attSignature)
+    function verifyAttestation(bytes memory attPayload, bytes memory attSignature)
         external
         returns (bool isValid);
 
@@ -47,20 +47,20 @@ interface InterfaceSummit {
      * @dev Will revert if any of these is true:
      *  - Report payload is not properly formatted.
      *  - Report signer is not an active Guard.
-     * @param _arPayload        Raw payload with AttestationReport data
-     * @param _arSignature      Guard signature for the report
+     * @param arPayload         Raw payload with AttestationReport data
+     * @param arSignature       Guard signature for the report
      * @return isValid          Whether the provided report is valid.
      *                          Guard is slashed, if return value is FALSE.
      */
-    function verifyAttestationReport(bytes memory _arPayload, bytes memory _arSignature)
+    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
         external
         returns (bool isValid);
 
     /**
      * @notice Returns the state with the highest known nonce
      * submitted by any of the currently active Guards.
-     * @param _origin       Domain of origin chain
+     * @param origin        Domain of origin chain
      * @return statePayload Raw payload with latest active Guard state for origin
      */
-    function getLatestState(uint32 _origin) external view returns (bytes memory statePayload);
+    function getLatestState(uint32 origin) external view returns (bytes memory statePayload);
 }

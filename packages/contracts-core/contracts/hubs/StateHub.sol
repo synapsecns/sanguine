@@ -24,10 +24,10 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
 
     /// @dev Historical Merkle Tree
     /// Note: Takes two storage slots
-    HistoricalTree private tree;
+    HistoricalTree private _tree;
 
     /// @dev All historical contract States
-    OriginState[] private originStates;
+    OriginState[] private _originStates;
 
     /// @dev gap for upgrade safety
     uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -37,15 +37,15 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc IStateHub
-    function isValidState(bytes memory _statePayload) external view returns (bool isValid) {
+    function isValidState(bytes memory statePayload) external view returns (bool isValid) {
         // This will revert if payload is not a formatted state
-        State state = _statePayload.castToState();
+        State state = statePayload.castToState();
         return _isValidState(state);
     }
 
     /// @inheritdoc IStateHub
     function statesAmount() external view returns (uint256) {
-        return originStates.length;
+        return _originStates.length;
     }
 
     /// @inheritdoc IStateHub
@@ -55,11 +55,11 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     }
 
     /// @inheritdoc IStateHub
-    function suggestState(uint32 _nonce) public view returns (bytes memory stateData) {
+    function suggestState(uint32 nonce) public view returns (bytes memory stateData) {
         // This will revert if nonce is out of range
-        bytes32 root = tree.root(_nonce);
-        OriginState memory state = originStates[_nonce];
-        return state.formatOriginState({ _root: root, _origin: localDomain, _nonce: _nonce });
+        bytes32 root = _tree.root(nonce);
+        OriginState memory state = _originStates[nonce];
+        return state.formatOriginState({ root_: root, origin_: localDomain, nonce_: nonce });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -69,26 +69,26 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     /// @dev Initializes the saved states list by inserting a state for an empty Merkle Tree.
     function _initializeStates() internal {
         // This should only be called once, when the contract is initialized
-        // This will revert if tree.roots is non-empty
-        bytes32 savedRoot = tree.initializeRoots();
-        // Save root for empty merkle tree with block number and timestamp of initialization
+        // This will revert if _tree.roots is non-empty
+        bytes32 savedRoot = _tree.initializeRoots();
+        // Save root for empty merkle _tree with block number and timestamp of initialization
         _saveState(savedRoot, StateLib.originState());
     }
 
     /// @dev Inserts leaf into the Merkle Tree and saves the updated origin State.
-    function _insertAndSave(bytes32 _leaf) internal {
-        bytes32 newRoot = tree.insert(_leaf);
+    function _insertAndSave(bytes32 leaf) internal {
+        bytes32 newRoot = _tree.insert(leaf);
         _saveState(newRoot, StateLib.originState());
     }
 
     /// @dev Saves an updated state of the Origin contract
-    function _saveState(bytes32 _root, OriginState memory _state) internal {
-        // State nonce is its index in `originStates` array
-        uint32 stateNonce = uint32(originStates.length);
-        originStates.push(_state);
+    function _saveState(bytes32 root, OriginState memory state) internal {
+        // State nonce is its index in `_originStates` array
+        uint32 stateNonce = uint32(_originStates.length);
+        _originStates.push(state);
         // Emit event with raw state data
         emit StateSaved(
-            _state.formatOriginState({ _root: _root, _origin: localDomain, _nonce: stateNonce })
+            state.formatOriginState({ root_: root, origin_: localDomain, nonce_: stateNonce })
         );
     }
 
@@ -99,20 +99,20 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     /// @dev Returns nonce of the next dispatched message: the amount of saved States so far.
     /// This always equals to "total amount of dispatched messages" plus 1.
     function _nextNonce() internal view returns (uint32) {
-        return uint32(originStates.length);
+        return uint32(_originStates.length);
     }
 
     /// @dev Checks if a state is valid, i.e. if it matches the historical one.
     /// Reverts, if state refers to another Origin contract.
-    function _isValidState(State _state) internal view returns (bool) {
+    function _isValidState(State state) internal view returns (bool) {
         // Check if state refers to this contract
-        require(_state.origin() == localDomain, "Wrong origin");
+        require(state.origin() == localDomain, "Wrong origin");
         // Check if nonce exists
-        uint32 nonce = _state.nonce();
-        if (nonce >= originStates.length) return false;
+        uint32 nonce = state.nonce();
+        if (nonce >= _originStates.length) return false;
         // Check if state root matches the historical one
-        if (_state.root() != tree.root(nonce)) return false;
+        if (state.root() != _tree.root(nonce)) return false;
         // Check if state metadata matches the historical one
-        return _state.equalToOrigin(originStates[nonce]);
+        return state.equalToOrigin(_originStates[nonce]);
     }
 }

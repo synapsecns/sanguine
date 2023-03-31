@@ -16,6 +16,8 @@ import {
 } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 contract BondingManagerTest is AgentManagerTest {
     bytes internal constant CANT_ADD = "Agent could not be added";
     bytes internal constant CANT_INITIATE = "Unstaking could not be initiated";
@@ -26,15 +28,15 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_initializer(
         address caller,
-        address _origin,
-        address _destination
+        address origin_,
+        address destination_
     ) public {
         bondingManager = new BondingManager(DOMAIN_SYNAPSE);
         vm.prank(caller);
-        bondingManager.initialize(ISystemRegistry(_origin), ISystemRegistry(_destination));
+        bondingManager.initialize(ISystemRegistry(origin_), ISystemRegistry(destination_));
         assertEq(bondingManager.owner(), caller);
-        assertEq(address(bondingManager.origin()), _origin);
-        assertEq(address(bondingManager.destination()), _destination);
+        assertEq(address(bondingManager.origin()), origin_);
+        assertEq(address(bondingManager.destination()), destination_);
         assertEq(bondingManager.leafsAmount(), 1);
     }
 
@@ -214,9 +216,9 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(originSynapse);
         bondingManager.registrySlash(domain, agent, prover);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address _prover) = bondingManager.slashStatus(agent);
+        (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(_prover, prover);
+        assertEq(prover_, prover);
     }
 
     function test_registrySlash_summit(
@@ -234,9 +236,9 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(summit);
         bondingManager.registrySlash(domain, agent, prover);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address _prover) = bondingManager.slashStatus(agent);
+        (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(_prover, prover);
+        assertEq(prover_, prover);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {
@@ -270,12 +272,12 @@ contract BondingManagerTest is AgentManagerTest {
             systemRouterSynapse,
             callOrigin,
             SystemEntity.AgentManager,
-            _remoteSlashData(domain, agent, prover)
+            _remoteSlashPayload(domain, agent, prover)
         );
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address _prover) = bondingManager.slashStatus(agent);
+        (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(_prover, prover);
+        assertEq(prover_, prover);
     }
 
     function test_completeSlashing_active(

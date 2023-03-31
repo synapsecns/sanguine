@@ -25,12 +25,12 @@ abstract contract Versioned {
     /// Strings with length over 32 are not supported!
     bytes32 private immutable _data;
 
-    constructor(string memory _version) {
-        _length = bytes(_version).length;
+    constructor(string memory version_) {
+        _length = bytes(version_).length;
         require(_length <= 32, "String length over 32");
         // bytes32 is left-aligned => this will store the byte representation of the string
         // with the trailing zeroes to complete the 32-byte word
-        _data = bytes32(bytes(_version));
+        _data = bytes32(bytes(version_));
     }
 
     function version() external view returns (string memory versionString) {

@@ -26,8 +26,6 @@ contract MessageLibraryTest is SynapseLibraryTest {
         uint96 executorTip;
     }
 
-    using TypedMemView for bytes;
-
     MessageHarness internal libHarness;
     // First element is (uint16 messageVersion)
     uint8 internal constant FIRST_ELEMENT_BYTES = 16 / 8;
@@ -44,7 +42,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
 
     function test_formattedCorrectly(RawHeader memory rh, RawTips memory rt) public {
         // Construct message parts: this has been tested in the dedicated unit tests
-        bytes memory tips = TipsLib.formatTips(
+        bytes memory tipsPayload = TipsLib.formatTips(
             rt.notaryTip,
             rt.broadcasterTip,
             rt.proverTip,
@@ -75,13 +73,13 @@ contract MessageLibraryTest is SynapseLibraryTest {
         // Test formatter against manually constructed payload
         assertEq(
             message,
-            constructPayload(MessageLib.MESSAGE_VERSION, header, tips),
+            constructPayload(MessageLib.MESSAGE_VERSION, header, tipsPayload),
             "!formatMessage"
         );
         // All formatters should return the same results
         assertEq(
             message,
-            libHarness.formatMessage(header, tips, TEST_MESSAGE_BODY),
+            libHarness.formatMessage(header, tipsPayload, TEST_MESSAGE_BODY),
             "!formatMessage: 3 args variant"
         );
         assertEq(
@@ -93,7 +91,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
                 rh.destination,
                 rh.recipient,
                 rh.optimisticSeconds,
-                tips,
+                tipsPayload,
                 TEST_MESSAGE_BODY
             ),
             "!formatMessage: unpacked header variant"
@@ -103,7 +101,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
         // Test getters (most getters are tested in Header, Tips tests)
         assertEq(libHarness.version(message), MessageLib.MESSAGE_VERSION, "!messageVersion");
         assertEq(libHarness.header(message), header, "!header");
-        assertEq(libHarness.tips(message), tips, "!tips");
+        assertEq(libHarness.tips(message), tipsPayload, "!tips");
         assertEq(libHarness.body(message), TEST_MESSAGE_BODY, "!body");
         assertEq(libHarness.leaf(message), keccak256(message), "!leaf");
     }
@@ -162,23 +160,23 @@ contract MessageLibraryTest is SynapseLibraryTest {
     function test_isMessage_incorrectLengths() public {
         uint16 version = MessageLib.MESSAGE_VERSION;
         bytes memory header = createTestHeader();
-        bytes memory tips = createTestTips();
+        bytes memory tipsPayload = createTestTips();
         // With an empty body, specifying a longer length leads
         // to a memory view overrun. Should be treated without a revert/panic.
         bytes memory payload = abi.encodePacked(
             version,
             uint16(header.length + 1),
-            uint16(tips.length),
+            uint16(tipsPayload.length),
             header,
-            tips
+            tipsPayload
         );
         checkCastToMessage({ payload: payload, isMessage: false });
         payload = abi.encodePacked(
             version,
             uint16(header.length),
-            uint16(tips.length + 1),
+            uint16(tipsPayload.length + 1),
             header,
-            tips
+            tipsPayload
         );
         checkCastToMessage({ payload: payload, isMessage: false });
     }
@@ -213,15 +211,15 @@ contract MessageLibraryTest is SynapseLibraryTest {
     function constructPayload(
         uint16 messageVersion,
         bytes memory header,
-        bytes memory tips
+        bytes memory tipsPayload
     ) public pure returns (bytes memory) {
         return
             abi.encodePacked(
                 messageVersion,
                 uint16(header.length),
-                uint16(tips.length),
+                uint16(tipsPayload.length),
                 header,
-                tips,
+                tipsPayload,
                 TEST_MESSAGE_BODY
             );
     }

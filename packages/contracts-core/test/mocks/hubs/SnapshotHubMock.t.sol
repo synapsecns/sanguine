@@ -8,35 +8,31 @@ contract SnapshotHubMock is ISnapshotHub {
     /// @notice Prevents this contract from being included in the coverage report
     function testSnapshotHubMock() external {}
 
-    function isValidAttestation(bytes memory _attPayload) external view returns (bool isValid) {}
+    function isValidAttestation(bytes memory attPayload) external view returns (bool isValid) {}
 
-    function getAttestation(uint32 _nonce) external view returns (bytes memory attPayload) {}
+    function getAttestation(uint32 nonce) external view returns (bytes memory attPayload) {}
 
-    function getLatestAgentState(uint32 _origin, address _agent)
+    function getLatestAgentState(uint32 origin, address agent)
         external
         view
         returns (bytes memory statePayload)
     {}
 
-    function getGuardSnapshot(uint256 _index)
+    function getGuardSnapshot(uint256 index) external view returns (bytes memory snapshotPayload) {}
+
+    function getNotarySnapshot(uint256 nonce)
         external
         view
         returns (bytes memory snapshotPayload)
     {}
 
-    function getNotarySnapshot(uint256 _nonce)
+    function getNotarySnapshot(bytes memory attPayload)
         external
         view
         returns (bytes memory snapshotPayload)
     {}
 
-    function getNotarySnapshot(bytes memory _attPayload)
-        external
-        view
-        returns (bytes memory snapshotPayload)
-    {}
-
-    function getSnapshotProof(uint256 _nonce, uint256 _stateIndex)
+    function getSnapshotProof(uint256 nonce, uint256 stateIndex)
         external
         view
         returns (bytes32[] memory snapProof)

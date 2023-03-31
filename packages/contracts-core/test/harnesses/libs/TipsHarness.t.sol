@@ -19,45 +19,45 @@ contract TipsHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToTips(bytes memory _payload) public view returns (bytes memory) {
+    function castToTips(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        Tips tips = TipsLib.castToTips(_payload);
+        Tips tips = TipsLib.castToTips(payload);
         return tips.unwrap().clone();
     }
 
     /// @notice Returns version of formatted tips
-    function version(bytes memory _payload) public pure returns (uint16) {
-        return _payload.castToTips().version();
+    function version(bytes memory payload) public pure returns (uint16) {
+        return payload.castToTips().version();
     }
 
     /// @notice Returns notaryTip field
-    function notaryTip(bytes memory _payload) public pure returns (uint96) {
-        return _payload.castToTips().notaryTip();
+    function notaryTip(bytes memory payload) public pure returns (uint96) {
+        return payload.castToTips().notaryTip();
     }
 
     /// @notice Returns broadcasterTip field
-    function broadcasterTip(bytes memory _payload) public pure returns (uint96) {
-        return _payload.castToTips().broadcasterTip();
+    function broadcasterTip(bytes memory payload) public pure returns (uint96) {
+        return payload.castToTips().broadcasterTip();
     }
 
     /// @notice Returns proverTip field
-    function proverTip(bytes memory _payload) public pure returns (uint96) {
-        return _payload.castToTips().proverTip();
+    function proverTip(bytes memory payload) public pure returns (uint96) {
+        return payload.castToTips().proverTip();
     }
 
     /// @notice Returns executorTip field
-    function executorTip(bytes memory _payload) public pure returns (uint96) {
-        return _payload.castToTips().executorTip();
+    function executorTip(bytes memory payload) public pure returns (uint96) {
+        return payload.castToTips().executorTip();
     }
 
     /// @notice Returns total tip amount.
-    function totalTips(bytes memory _payload) public pure returns (uint96) {
-        return _payload.castToTips().totalTips();
+    function totalTips(bytes memory payload) public pure returns (uint96) {
+        return payload.castToTips().totalTips();
     }
 
-    function isTips(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isTips();
+    function isTips(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isTips();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -65,12 +65,12 @@ contract TipsHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatTips(
-        uint96 _notaryTip,
-        uint96 _broadcasterTip,
-        uint96 _proverTip,
-        uint96 _executorTip
+        uint96 notaryTip_,
+        uint96 broadcasterTip_,
+        uint96 proverTip_,
+        uint96 executorTip_
     ) public pure returns (bytes memory) {
-        return TipsLib.formatTips(_notaryTip, _broadcasterTip, _proverTip, _executorTip);
+        return TipsLib.formatTips(notaryTip_, broadcasterTip_, proverTip_, executorTip_);
     }
 
     function emptyTips() public pure returns (bytes memory) {

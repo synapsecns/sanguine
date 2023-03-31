@@ -9,6 +9,7 @@ import {
     TypedMemView
 } from "../../../contracts/libs/StateReport.sol";
 
+// solhint-disable ordering
 /// @notice Exposes Report methods for testing against golang.
 contract StateReportHarness {
     using StateReportLib for bytes;
@@ -20,38 +21,38 @@ contract StateReportHarness {
     ▏*║                         STATE REPORT GETTERS                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToStateReport(bytes memory _payload) public view returns (bytes memory) {
+    function castToStateReport(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        StateReport _stateReport = StateReportLib.castToStateReport(_payload);
-        return _stateReport.unwrap().clone();
+        StateReport stateReport = StateReportLib.castToStateReport(payload);
+        return stateReport.unwrap().clone();
     }
 
-    function hash(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToStateReport().hash();
+    function hash(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToStateReport().hash();
     }
 
-    function flag(bytes memory _payload) public pure returns (StateFlag) {
-        return _payload.castToStateReport().flag();
+    function flag(bytes memory payload) public pure returns (StateFlag) {
+        return payload.castToStateReport().flag();
     }
 
-    function state(bytes memory _payload) public view returns (bytes memory) {
-        return _payload.castToStateReport().state().unwrap().clone();
+    function state(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToStateReport().state().unwrap().clone();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       STATE REPORT FORMATTERS                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatStateReport(StateFlag _flag, bytes memory _statePayload)
+    function formatStateReport(StateFlag flag_, bytes memory statePayload)
         public
         pure
         returns (bytes memory)
     {
-        return StateReportLib.formatStateReport(_flag, _statePayload);
+        return StateReportLib.formatStateReport(flag_, statePayload);
     }
 
-    function isStateReport(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isStateReport();
+    function isStateReport(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isStateReport();
     }
 }

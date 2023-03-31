@@ -27,36 +27,36 @@ contract ByteStringHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToRawBytes(bytes memory _payload) public view returns (bytes memory) {
+    function castToRawBytes(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        bytes29 _view = ByteString.castToRawBytes(_payload);
-        return _view.clone();
+        bytes29 view_ = ByteString.castToRawBytes(payload);
+        return view_.clone();
     }
 
-    function castToSignature(bytes memory _payload) public view returns (bytes memory) {
-        Signature _sig = _payload.castToSignature();
-        return _sig.unwrap().clone();
+    function castToSignature(bytes memory payload) public view returns (bytes memory) {
+        Signature signature = payload.castToSignature();
+        return signature.unwrap().clone();
     }
 
-    function castToCallData(bytes memory _payload) public view returns (bytes memory) {
-        CallData _callData = _payload.castToCallData();
-        return _callData.unwrap().clone();
+    function castToCallData(bytes memory payload) public view returns (bytes memory) {
+        CallData callData = payload.castToCallData();
+        return callData.unwrap().clone();
     }
 
-    function arguments(bytes memory _payload) public view returns (bytes memory) {
-        return _payload.castToCallData().arguments().clone();
+    function arguments(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToCallData().arguments().clone();
     }
 
-    function callSelector(bytes memory _payload) public view returns (bytes memory) {
-        return _payload.castToCallData().callSelector().clone();
+    function callSelector(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToCallData().callSelector().clone();
     }
 
-    function argumentWords(bytes memory _payload) public pure returns (uint256) {
-        return _payload.castToCallData().argumentWords();
+    function argumentWords(bytes memory payload) public pure returns (uint256) {
+        return payload.castToCallData().argumentWords();
     }
 
-    function toRSV(bytes memory _payload)
+    function toRSV(bytes memory payload)
         public
         pure
         returns (
@@ -65,7 +65,7 @@ contract ByteStringHarness {
             uint8
         )
     {
-        return _payload.castToSignature().toRSV();
+        return payload.castToSignature().toRSV();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -80,12 +80,12 @@ contract ByteStringHarness {
         return ByteString.formatSignature({ r: r, s: s, v: v });
     }
 
-    function isSignature(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isSignature();
+    function isSignature(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isSignature();
     }
 
-    function isCallData(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isCallData();
+    function isCallData(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isCallData();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

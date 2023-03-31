@@ -59,8 +59,8 @@ contract OriginTest is SynapseTest {
         address sender = makeAddr("Sender");
         address recipient = makeAddr("Recipient");
         uint32 period = 1 minutes;
-        bytes memory tips = TipsLib.emptyTips();
-        bytes memory body = "test body";
+        bytes memory tipsPayload = TipsLib.emptyTips();
+        bytes memory content = "test content";
 
         RawMessage[] memory rawMessages = new RawMessage[](MESSAGES);
         bytes[] memory messages = new bytes[](MESSAGES);
@@ -76,7 +76,7 @@ contract OriginTest is SynapseTest {
                     optimisticSeconds: period
                 }),
                 RawTips(0, 0, 0, 0),
-                body
+                content
             );
             messages[i] = rawMessages[i].formatMessage();
             insertMessage(messages[i]);
@@ -106,8 +106,8 @@ contract OriginTest is SynapseTest {
                 DOMAIN_REMOTE,
                 addressToBytes32(recipient),
                 period,
-                tips,
-                body
+                tipsPayload,
+                content
             );
             // Check return values
             assertEq(messageNonce, i + 1, "!messageNonce");

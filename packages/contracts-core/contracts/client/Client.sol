@@ -19,7 +19,7 @@ abstract contract Client is BasicClient {
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
     // solhint-disable-next-line no-empty-blocks
-    constructor(address _origin, address _destination) BasicClient(_origin, _destination) {}
+    constructor(address origin_, address destination_) BasicClient(origin_, destination_) {}
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
@@ -42,23 +42,23 @@ abstract contract Client is BasicClient {
      * - Sender on origin chain is a trusted sender
      * Note: no checks have been done for root timestamp, make sure to enforce optimistic period
      * to protect against executed fake messages on Destination.
-     * @param _origin           Domain of the remote chain, where message originated
-     * @param _nonce            Unique identifier for the message from origin to destination chain
-     * @param _rootSubmittedAt  Time when merkle root (sed for proving this message) was submitted
-     * @param _message          The message
+     * @param origin_           Domain of the remote chain, where message originated
+     * @param nonce             Unique identifier for the message from origin to destination chain
+     * @param rootSubmittedAt   Time when merkle root (sed for proving this message) was submitted
+     * @param content           The message content
      */
     function _handleUnsafe(
-        uint32 _origin,
-        uint32 _nonce,
-        uint256 _rootSubmittedAt,
-        bytes memory _message
+        uint32 origin_,
+        uint32 nonce,
+        uint256 rootSubmittedAt,
+        bytes memory content
     ) internal override {
         // solhint-disable-next-line do-not-rely-on-time
         require(
-            block.timestamp >= _rootSubmittedAt + optimisticSeconds(),
+            block.timestamp >= rootSubmittedAt + optimisticSeconds(),
             "Client: !optimisticSeconds"
         );
-        _handle(_origin, _nonce, _message);
+        _handle(origin_, nonce, content);
     }
 
     /**
@@ -71,21 +71,21 @@ abstract contract Client is BasicClient {
      * and message could be safely executed.
      */
     function _handle(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes memory _message
+        uint32 origin_,
+        uint32 nonce,
+        bytes memory content
     ) internal virtual;
 
     /**
      * @dev Sends a message to given destination chain.
-     * @param _destination  Domain of the destination chain
-     * @param _message      The message
+     * @param destination_  Domain of the destination chain
+     * @param content       The message content
      */
     function _send(
-        uint32 _destination,
-        bytes memory _tips,
-        bytes memory _message
+        uint32 destination_,
+        bytes memory tipsPayload,
+        bytes memory content
     ) internal {
-        _send(_destination, optimisticSeconds(), _tips, _message);
+        _send(destination_, optimisticSeconds(), tipsPayload, content);
     }
 }

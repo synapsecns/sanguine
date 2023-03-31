@@ -28,7 +28,7 @@ contract TestClient is IMessageRecipient {
         uint32 nonce,
         bytes32 sender,
         uint256 rootSubmittedAt,
-        bytes message
+        bytes content
     );
 
     event MessageSent(
@@ -36,16 +36,16 @@ contract TestClient is IMessageRecipient {
         uint32 nonce,
         bytes32 sender,
         bytes32 recipient,
-        bytes message
+        bytes content
     );
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(address _origin, address _destination) {
-        origin = _origin;
-        destination = _destination;
+    constructor(address origin_, address destination_) {
+        origin = origin_;
+        destination = destination_;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -53,14 +53,14 @@ contract TestClient is IMessageRecipient {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function handle(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes32 _sender,
-        uint256 _rootSubmittedAt,
-        bytes memory _message
+        uint32 origin_,
+        uint32 nonce,
+        bytes32 sender,
+        uint256 rootSubmittedAt,
+        bytes memory content
     ) external {
         require(msg.sender == destination, "TestClient: !destination");
-        emit MessageReceived(_origin, _nonce, _sender, _rootSubmittedAt, _message);
+        emit MessageReceived(origin_, nonce, sender, rootSubmittedAt, content);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -68,26 +68,26 @@ contract TestClient is IMessageRecipient {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function sendMessage(
-        uint32 _destination,
-        address _recipient,
-        uint32 _optimisticSeconds,
-        bytes memory _message
+        uint32 destination_,
+        address recipientAddress,
+        uint32 optimisticSeconds,
+        bytes memory content
     ) external {
-        bytes32 recipient = TypeCasts.addressToBytes32(_recipient);
-        bytes memory tips = TipsLib.emptyTips();
+        bytes32 recipient = TypeCasts.addressToBytes32(recipientAddress);
+        bytes memory tipsPayload = TipsLib.emptyTips();
         (uint32 nonce, ) = InterfaceOrigin(origin).dispatch(
-            _destination,
+            destination_,
             recipient,
-            _optimisticSeconds,
-            tips,
-            _message
+            optimisticSeconds,
+            tipsPayload,
+            content
         );
         emit MessageSent(
-            _destination,
+            destination_,
             nonce,
             TypeCasts.addressToBytes32(address(this)),
             recipient,
-            _message
+            content
         );
     }
 }

@@ -35,7 +35,7 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
         bytes32[] memory extended = _extendHashes(hashes);
         bytes32 expectedRoot = _calculateRoot(extended);
         bytes32[] memory proof = libHarness.calculateProof(hashes, index);
-        bytes32 root = MerkleLib.proofRoot(index, _leaf(index), proof, _getHeight(length));
+        bytes32 root = MerkleLib.proofRoot(index, leaf(index), proof, _getHeight(length));
         assertEq(root, expectedRoot, "!calculateProof");
     }
 
@@ -54,11 +54,11 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
     function _generateHashes(uint256 length) internal pure returns (bytes32[] memory hashes) {
         hashes = new bytes32[](length);
         for (uint256 i = 0; i < length; ++i) {
-            hashes[i] = _leaf(i);
+            hashes[i] = leaf(i);
         }
     }
 
-    function _leaf(uint256 index) internal pure returns (bytes32) {
+    function leaf(uint256 index) internal pure returns (bytes32) {
         return keccak256(abi.encode("Leaf", index));
     }
 

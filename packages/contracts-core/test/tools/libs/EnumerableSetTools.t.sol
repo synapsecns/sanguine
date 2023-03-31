@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+// solhint-disable no-empty-blocks
 abstract contract EnumerableSetTools {
     uint256 internal constant ELEMENTS = 4;
     uint256[ELEMENTS] internal removalOrder = [2, 0, 1, 3];

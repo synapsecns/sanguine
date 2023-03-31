@@ -17,6 +17,8 @@ import {
 import { AgentFlag, ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 abstract contract DisputeHubTest is SynapseTest {
     /// @notice Prevents this contract from being included in the coverage report
     function testDisputeHub() external {}

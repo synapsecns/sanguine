@@ -28,7 +28,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    bytes32 internal constant MESSAGE_STATUS_NONE = bytes32(0);
+    bytes32 internal constant _MESSAGE_STATUS_NONE = bytes32(0);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
@@ -36,7 +36,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @notice (messageHash => status)
     /// TODO: Store something else as "status"? Notary/timestamp?
-    /// - Message hasn't been executed: MESSAGE_STATUS_NONE
+    /// - Message hasn't been executed: _MESSAGE_STATUS_NONE
     /// - Message has been executed: snapshot root used for proving when executed
     /// @dev Messages coming from different origins will always have a different hash
     /// as origin domain is encoded into the formatted message.
@@ -45,7 +45,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @dev Tracks all saved attestations
     // (root => attestation)
-    mapping(bytes32 => ExecutionAttestation) private rootAttestations;
+    mapping(bytes32 => ExecutionAttestation) private _rootAttestations;
 
     /// @dev gap for upgrade safety
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -56,22 +56,22 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @inheritdoc IExecutionHub
     function execute(
-        bytes memory _message,
-        bytes32[] calldata _originProof,
-        bytes32[] calldata _snapProof,
-        uint256 _stateIndex
+        bytes memory msgPayload,
+        bytes32[] calldata originProof,
+        bytes32[] calldata snapProof,
+        uint256 stateIndex
     ) external {
         // This will revert if payload is not a formatted message payload
-        Message message = _message.castToMessage();
+        Message message = msgPayload.castToMessage();
         Header header = message.header();
         bytes32 msgLeaf = message.leaf();
         // Check proofs validity and mark message as executed
         ExecutionAttestation memory execAtt = _prove(
             header,
             msgLeaf,
-            _originProof,
-            _snapProof,
-            _stateIndex
+            originProof,
+            snapProof,
+            stateIndex
         );
         // Store message tips
         Tips tips = message.tips();
@@ -91,29 +91,17 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                  INTERNAL LOGIC: MESSAGE EXECUTION                   ║*▕
+    ▏*║                         INTERNAL LOGIC: TIPS                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Returns adjusted "recipient" field.
-     * @dev By default, "recipient" field contains the recipient address padded to 32 bytes.
-     * But if SYSTEM_ROUTER value is used for "recipient" field, recipient is Synapse Router.
-     * Note: tx will revert in Origin if anyone but SystemRouter uses SYSTEM_ROUTER as recipient.
-     */
-    function _checkForSystemRouter(bytes32 _recipient) internal view returns (address recipient) {
-        // Check if SYSTEM_ROUTER was specified as message recipient
-        if (_recipient == SYSTEM_ROUTER) {
-            /**
-             * @dev Route message to SystemRouter.
-             * Note: Only SystemRouter contract on origin chain can send a message
-             * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
-             */
-            recipient = address(systemRouter);
-        } else {
-            // Cast bytes32 to address otherwise
-            recipient = TypeCasts.bytes32ToAddress(_recipient);
-        }
+    function _storeTips(address notary, Tips tips) internal {
+        // TODO: implement tips logic
+        emit TipsStored(notary, tips.unwrap().clone());
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                  INTERNAL LOGIC: MESSAGE EXECUTION                   ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Attempts to prove the validity of the cross-chain message.
@@ -122,41 +110,41 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
      * After that the snapshot Merkle Root is reconstructed using the snapshot proof.
      * Finally, the optimistic period is checked for the derived snapshot root.
      * @dev Reverts if any of the checks fail.
-     * @param _header       Typed memory view over message header payload
-     * @param _msgLeaf      Message Leaf that was inserted in the Origin Merkle Tree
-     * @param _originProof  Proof of inclusion of Message Leaf in the Origin Merkle Tree
-     * @param _snapProof    Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
-     * @param _stateIndex   Index of Origin State in the Snapshot
+     * @param header        Typed memory view over message header payload
+     * @param msgLeaf       Message Leaf that was inserted in the Origin Merkle Tree
+     * @param originProof   Proof of inclusion of Message Leaf in the Origin Merkle Tree
+     * @param snapProof     Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
+     * @param stateIndex    Index of Origin State in the Snapshot
      * @return execAtt      Attestation data for derived snapshot root
      */
     function _prove(
-        Header _header,
-        bytes32 _msgLeaf,
-        bytes32[] calldata _originProof,
-        bytes32[] calldata _snapProof,
-        uint256 _stateIndex
+        Header header,
+        bytes32 msgLeaf,
+        bytes32[] calldata originProof,
+        bytes32[] calldata snapProof,
+        uint256 stateIndex
     ) internal returns (ExecutionAttestation memory execAtt) {
         // TODO: split into a few smaller functions?
         // Check that message has not been executed before
-        require(messageStatus[_msgLeaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
+        require(messageStatus[msgLeaf] == _MESSAGE_STATUS_NONE, "!MessageStatus.None");
         // Ensure message was meant for this domain
-        require(_header.destination() == localDomain, "!destination");
+        require(header.destination() == localDomain, "!destination");
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
         // This will revert if origin proof length exceeds Origin Tree height
         bytes32 originRoot = MerkleLib.proofRoot(
-            _header.nonce() - 1,
-            _msgLeaf,
-            _originProof,
+            header.nonce() - 1,
+            msgLeaf,
+            originProof,
             ORIGIN_TREE_HEIGHT
         );
         // Reconstruct Snapshot Merkle Root using the snapshot proof
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
-        bytes32 snapshotRoot = _snapshotRoot(originRoot, _header.origin(), _snapProof, _stateIndex);
+        bytes32 snapshotRoot = _snapshotRoot(originRoot, header.origin(), snapProof, stateIndex);
         // Fetch the attestation data for the snapshot root
-        execAtt = rootAttestations[snapshotRoot];
+        execAtt = _rootAttestations[snapshotRoot];
         // Check if snapshot root has been submitted
         require(!execAtt.isEmpty(), "Invalid snapshot root");
         // Check if Notary who submitted the attestation is still active
@@ -165,37 +153,49 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         require(!_inDispute(execAtt.notary), "Notary is in dispute");
         // Check if optimistic period has passed
         require(
-            block.timestamp >= _header.optimisticSeconds() + execAtt.submittedAt,
+            block.timestamp >= header.optimisticSeconds() + execAtt.submittedAt,
             "!optimisticSeconds"
         );
         // Mark message as executed against the snapshot root
-        messageStatus[_msgLeaf] = snapshotRoot;
+        messageStatus[msgLeaf] = snapshotRoot;
     }
 
     /// @dev Saves a snapshot root with the attestation data provided by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
-    function _saveAttestation(Attestation _att, address _notary) internal {
-        bytes32 root = _att.snapRoot();
-        require(rootAttestations[root].isEmpty(), "Root already exists");
-        rootAttestations[root] = _att.toExecutionAttestation(_notary);
+    function _saveAttestation(Attestation att, address notary) internal {
+        bytes32 root = att.snapRoot();
+        require(_rootAttestations[root].isEmpty(), "Root already exists");
+        _rootAttestations[root] = att.toExecutionAttestation(notary);
+    }
+
+    /**
+     * @notice Returns adjusted "recipient" field.
+     * @dev By default, "recipient" field contains the recipient address padded to 32 bytes.
+     * But if SYSTEM_ROUTER value is used for "recipient" field, recipient is Synapse Router.
+     * Note: tx will revert in Origin if anyone but SystemRouter uses SYSTEM_ROUTER as recipient.
+     */
+    function _checkForSystemRouter(bytes32 recipient)
+        internal
+        view
+        returns (address recipientAddress)
+    {
+        // Check if SYSTEM_ROUTER was specified as message recipient
+        if (recipient == SYSTEM_ROUTER) {
+            /**
+             * @dev Route message to SystemRouter.
+             * Note: Only SystemRouter contract on origin chain can send a message
+             * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
+             */
+            return address(systemRouter);
+        } else {
+            // Cast bytes32 to address otherwise
+            return TypeCasts.bytes32ToAddress(recipient);
+        }
     }
 
     /// @dev Gets a saved attestation for the given snapshot root.
     /// Will return an empty struct, if the snapshot root hasn't been previously saved.
-    function _getRootAttestation(bytes32 _root)
-        internal
-        view
-        returns (ExecutionAttestation memory)
-    {
-        return rootAttestations[_root];
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         INTERNAL LOGIC: TIPS                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function _storeTips(address _notary, Tips _tips) internal {
-        // TODO: implement tips logic
-        emit TipsStored(_notary, _tips.unwrap().clone());
+    function _getRootAttestation(bytes32 root) internal view returns (ExecutionAttestation memory) {
+        return _rootAttestations[root];
     }
 }

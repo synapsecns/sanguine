@@ -7,12 +7,12 @@ contract DynamicTreeHarness {
     DynamicTree internal tree;
 
     function update(
-        uint256 _index,
-        bytes32 _oldValue,
-        bytes32[] memory _branch,
-        bytes32 _newValue
+        uint256 index,
+        bytes32 oldValue,
+        bytes32[] memory branch,
+        bytes32 newValue
     ) external {
-        tree.update(_index, _oldValue, _branch, _newValue);
+        tree.update(index, oldValue, branch, newValue);
     }
 
     function root() external view returns (bytes32) {

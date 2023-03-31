@@ -30,9 +30,9 @@ abstract contract BasicClient is IMessageRecipient {
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(address _origin, address _destination) {
-        origin = _origin;
-        destination = _destination;
+    constructor(address origin_, address destination_) {
+        origin = origin_;
+        destination = destination_;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -43,27 +43,27 @@ abstract contract BasicClient is IMessageRecipient {
      * @notice  Handles an incoming message.
      * @dev     Can only be called by chain's Destination.
      *          Message can only be sent from a trusted sender on the origin chain.
-     * @param _origin           Domain of the remote chain, where message originated
-     * @param _nonce            Unique identifier for the message from origin to destination chain
-     * @param _sender           Sender of the message on the origin chain
-     * @param _rootSubmittedAt  Time when merkle root (used for proving this message) was submitted
-     * @param _message          The message
+     * @param origin_           Domain of the remote chain, where message originated
+     * @param nonce             Unique identifier for the message from origin to destination chain
+     * @param sender            Sender of the message on the origin chain
+     * @param rootSubmittedAt   Time when merkle root (used for proving this message) was submitted
+     * @param content           The message content
      */
     function handle(
-        uint32 _origin,
-        uint32 _nonce,
-        bytes32 _sender,
-        uint256 _rootSubmittedAt,
-        bytes memory _message
+        uint32 origin_,
+        uint32 nonce,
+        bytes32 sender,
+        uint256 rootSubmittedAt,
+        bytes memory content
     ) external {
         require(msg.sender == destination, "BasicClient: !destination");
         require(
-            _sender == trustedSender(_origin) && _sender != bytes32(0),
+            sender == trustedSender(origin_) && sender != bytes32(0),
             "BasicClient: !trustedSender"
         );
         /// @dev root timestamp wasn't checked => potentially unsafe
-        /// No need to pass both _origin and _sender: _sender == trustedSender(_origin)
-        _handleUnsafe(_origin, _nonce, _rootSubmittedAt, _message);
+        /// No need to pass both origin and sender: sender == trustedSender(origin)
+        _handleUnsafe(origin_, nonce, rootSubmittedAt, content);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -76,7 +76,7 @@ abstract contract BasicClient is IMessageRecipient {
      *          (1) send messages to this contract
      *          (2) receive messages from this contract
      */
-    function trustedSender(uint32 _destination) public view virtual returns (bytes32);
+    function trustedSender(uint32 destination) public view virtual returns (bytes32);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          INTERNAL FUNCTIONS                          ║*▕
@@ -91,33 +91,33 @@ abstract contract BasicClient is IMessageRecipient {
      * to protect against executed fake messages on Destination. Hence the "Unsafe" in the name.
      */
     function _handleUnsafe(
-        uint32 _origin,
-        uint32 _nonce,
-        uint256 _rootSubmittedAt,
-        bytes memory _message
+        uint32 origin_,
+        uint32 nonce,
+        uint256 rootSubmittedAt,
+        bytes memory content
     ) internal virtual;
 
     /**
      * @dev Sends a message to given destination chain.
-     * @param _destination          Domain of the destination chain
-     * @param _optimisticSeconds    Optimistic period for message execution on destination chain
-     * @param _tips                 Payload with information about paid tips
-     * @param _message              The message
+     * @param destination_          Domain of the destination chain
+     * @param optimisticSeconds     Optimistic period for message execution on destination chain
+     * @param tipsPayload           Payload with information about paid tips
+     * @param content               The message content
      */
     function _send(
-        uint32 _destination,
-        uint32 _optimisticSeconds,
-        bytes memory _tips,
-        bytes memory _message
+        uint32 destination_,
+        uint32 optimisticSeconds,
+        bytes memory tipsPayload,
+        bytes memory content
     ) internal {
-        bytes32 recipient = trustedSender(_destination);
+        bytes32 recipient = trustedSender(destination_);
         require(recipient != bytes32(0), "BasicClient: !recipient");
         InterfaceOrigin(origin).dispatch{ value: msg.value }(
-            _destination,
+            destination_,
             recipient,
-            _optimisticSeconds,
-            _tips,
-            _message
+            optimisticSeconds,
+            tipsPayload,
+            content
         );
     }
 }

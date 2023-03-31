@@ -20,6 +20,8 @@ using {
     RandomLib.nextAttestation
 } for Random global;
 
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 library RandomLib {
     /// @notice Prevents this contract from being included in the coverage report
     function testRandomLib() external {}

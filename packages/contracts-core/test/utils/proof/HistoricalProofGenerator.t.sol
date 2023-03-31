@@ -144,9 +144,9 @@ contract HistoricalProofGenerator is ProofCutter {
         }
     }
 
-    function _hash(bytes32 _left, bytes32 _right) internal pure returns (bytes32) {
-        if (_left != 0 || _right != 0) {
-            return keccak256(abi.encodePacked(_left, _right));
+    function _hash(bytes32 left, bytes32 right) internal pure returns (bytes32) {
+        if (left != 0 || right != 0) {
+            return keccak256(abi.encodePacked(left, right));
         } else {
             return 0;
         }

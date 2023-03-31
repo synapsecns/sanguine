@@ -7,64 +7,64 @@ interface IBondingManager {
     /**
      * @notice Adds a new agent for the domain. This is either a fresh address (Inactive),
      * or an agent who used to be active on the same domain before (Resting).
-     * @dev Inactive: `_proof` should be the proof of inclusion of an empty leaf
+     * @dev Inactive: `proof` should be the proof of inclusion of an empty leaf
      * having index following the last added agent in the tree.
-     * @dev Resting: `_proof` should be the proof of inclusion of the agent leaf
+     * @dev Resting: `proof` should be the proof of inclusion of the agent leaf
      * with Resting flag having index previously assigned to the agent.
-     * @param _domain   Domain where the Agent will be active
-     * @param _agent    Address of the Agent
-     * @param _proof    Merkle proof of the Inactive/Resting status for the agent
+     * @param domain    Domain where the Agent will be active
+     * @param agent     Address of the Agent
+     * @param proof     Merkle proof of the Inactive/Resting status for the agent
      */
     function addAgent(
-        uint32 _domain,
-        address _agent,
-        bytes32[] memory _proof
+        uint32 domain,
+        address agent,
+        bytes32[] memory proof
     ) external;
 
     /**
      * @notice Initiates the unstaking of the agent bond. Agent signature is immediately no longer
      * considered valid on Synapse Chain, and will be invalid on other chains once the Light Manager
      * updates their agent merkle root on these chains.
-     * @dev `_proof` should be the proof of inclusion of the agent leaf
+     * @dev `proof` should be the proof of inclusion of the agent leaf
      * with Active flag having index previously assigned to the agent.
-     * @param _domain   Domain where the Agent is active
-     * @param _agent    Address of the Agent
-     * @param _proof    Merkle proof of the Active status for the agent
+     * @param domain    Domain where the Agent is active
+     * @param agent     Address of the Agent
+     * @param proof     Merkle proof of the Active status for the agent
      */
     function initiateUnstaking(
-        uint32 _domain,
-        address _agent,
-        bytes32[] memory _proof
+        uint32 domain,
+        address agent,
+        bytes32[] memory proof
     ) external;
 
     /**
      * @notice Completes the unstaking of the agent bond. Agent signature is no longer considered
      * valid on any of the chains.
-     * @dev `_proof` should be the proof of inclusion of the agent leaf
+     * @dev `proof` should be the proof of inclusion of the agent leaf
      * with Unstaking flag having index previously assigned to the agent.
-     * @param _domain   Domain where the Agent was active
-     * @param _agent    Address of the Agent
-     * @param _proof    Merkle proof of the unstaking status for the agent
+     * @param domain    Domain where the Agent was active
+     * @param agent     Address of the Agent
+     * @param proof     Merkle proof of the unstaking status for the agent
      */
     function completeUnstaking(
-        uint32 _domain,
-        address _agent,
-        bytes32[] memory _proof
+        uint32 domain,
+        address agent,
+        bytes32[] memory proof
     ) external;
 
     /**
      * @notice Completes the slashing of the agent bond. Agent signature is no longer considered
      * valid under the updated Agent Merkle Root.
-     * @dev `_proof` should be the proof of inclusion of the agent leaf
+     * @dev `proof` should be the proof of inclusion of the agent leaf
      * with Active/Unstaking flag having index previously assigned to the agent.
-     * @param _domain   Domain where the Agent was active
-     * @param _agent    Address of the Agent
-     * @param _proof    Merkle proof of the active/unstaking status for the agent
+     * @param domain    Domain where the Agent was active
+     * @param agent     Address of the Agent
+     * @param proof     Merkle proof of the active/unstaking status for the agent
      */
     function completeSlashing(
-        uint32 _domain,
-        address _agent,
-        bytes32[] memory _proof
+        uint32 domain,
+        address agent,
+        bytes32[] memory proof
     ) external;
 
     /**
@@ -73,17 +73,17 @@ interface IBondingManager {
      * @dev This initiates the process of agent slashing. It could be immediately
      * completed by anyone calling completeSlashing() providing a correct merkle proof
      * for the OLD agent status.
-     * @param _domain   Domain where the slashed agent was active
-     * @param _agent    Address of the slashed Agent
-     * @param _prover   Address that initially provided fraud proof in SystemRegistry
+     * @param domain    Domain where the slashed agent was active
+     * @param agent     Address of the slashed Agent
+     * @param prover    Address that initially provided fraud proof in SystemRegistry
      */
     function remoteRegistrySlash(
-        uint256 _rootSubmittedAt,
-        uint32 _callOrigin,
-        SystemEntity _systemCaller,
-        uint32 _domain,
-        address _agent,
-        address _prover
+        uint256 rootSubmittedAt,
+        uint32 callOrigin,
+        SystemEntity systemCaller,
+        uint32 domain,
+        address agent,
+        address prover
     ) external;
 
     // ═════════════════════════════════ VIEWS ═════════════════════════════════
@@ -91,10 +91,10 @@ interface IBondingManager {
     /**
      * @notice Returns a leaf representing the current status of agent in the Agent Merkle Tree.
      * @dev Will return an empty leaf, if agent is not added to the tree yet.
-     * @param _agent    Agent address
+     * @param agent     Agent address
      * @return leaf     Agent leaf in the Agent Merkle Tree
      */
-    function agentLeaf(address _agent) external view returns (bytes32 leaf);
+    function agentLeaf(address agent) external view returns (bytes32 leaf);
 
     /**
      * @notice Returns a total amount of leafs representing known agents.
@@ -115,7 +115,7 @@ interface IBondingManager {
      * @dev This might consume a lot of gas, do not use this on-chain.
      * @dev Will return less than `amount` entries, if indexFrom + amount > leafsAmount
      */
-    function getLeafs(uint256 _indexFrom, uint256 _amount)
+    function getLeafs(uint256 indexFrom, uint256 amount)
         external
         view
         returns (bytes32[] memory leafs);
@@ -127,8 +127,8 @@ interface IBondingManager {
      * @dev This WILL consume a lot of gas, do not use this on-chain.
      * @dev The alternative way to create a proof is to fetch the full list of leafs using
      * either {allLeafs} or {getLeafs}, and create a merkle proof from that.
-     * @param _agent    Agent address
+     * @param agent     Agent address
      * @return proof    Merkle proof for the agent
      */
-    function getProof(address _agent) external view returns (bytes32[] memory proof);
+    function getProof(address agent) external view returns (bytes32[] memory proof);
 }
