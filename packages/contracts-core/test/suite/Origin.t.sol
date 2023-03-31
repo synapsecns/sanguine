@@ -22,7 +22,6 @@ import {
     RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
-import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
 import { AgentFlag, ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase

@@ -14,8 +14,7 @@ contract HeaderLibraryTest is SynapseLibraryTest {
     // First element is (uint16 version)
     uint8 internal constant FIRST_ELEMENT_BYTES = 16 / 8;
 
-    function setUp() public override {
-        super.setUp();
+    function setUp() public {
         libHarness = new HeaderHarness();
     }
 

@@ -16,7 +16,7 @@ contract SnapshotLibraryTest is SynapseLibraryTest {
 
     SnapshotHarness internal libHarness;
 
-    function setUp() public override {
+    function setUp() public {
         libHarness = new SnapshotHarness();
     }
 

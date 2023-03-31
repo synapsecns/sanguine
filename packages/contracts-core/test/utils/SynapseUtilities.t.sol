@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { SynapseTestConstants } from "./SynapseTestConstants.t.sol";
+
 import { Test } from "forge-std/Test.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
 // solhint-disable no-empty-blocks
-contract SynapseUtilities is Test {
+contract SynapseUtilities is SynapseTestConstants, Test {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -13,8 +15,6 @@ contract SynapseUtilities is Test {
     bytes internal constant REVERT_ALREADY_INITIALIZED =
         "Initializable: contract is already initialized";
     bytes internal constant REVERT_NOT_OWNER = "Ownable: caller is not the owner";
-
-    uint256 internal constant BLOCK_TIME = 12;
 
     /// @notice Prevents this contract from being included in the coverage report
     function testSynapseUtilities() external {}
@@ -48,22 +48,21 @@ contract SynapseUtilities is Test {
         return address(uint160(uint256(buf)));
     }
 
-    function castToArray(address addr) public pure returns (address[] memory) {
-        if (addr == address(0)) return new address[](0);
-        address[] memory array = new address[](1);
-        array[0] = addr;
-        return array;
+    function signMessage(uint256 privKey, bytes memory message)
+        public
+        pure
+        returns (bytes memory signature)
+    {
+        return signMessage(privKey, keccak256(message));
     }
 
-    function generateAddress(bytes memory salt) public pure returns (address) {
-        return bytes32ToAddress(keccak256(salt));
-    }
-
-    function generatePrivateKey(bytes memory salt) public pure returns (uint256) {
-        return uint256(keccak256(salt));
-    }
-
-    function getActorSuffix(uint256 actorIndex) public pure returns (string memory) {
-        return actorIndex == 0 ? "" : string.concat("[", Strings.toString(actorIndex), "]");
+    function signMessage(uint256 privKey, bytes32 hashedMsg)
+        public
+        pure
+        returns (bytes memory signature)
+    {
+        bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashedMsg));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
+        signature = abi.encodePacked(r, s, v);
     }
 }
