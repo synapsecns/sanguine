@@ -7,7 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/core/mocktesting"
 )
 
-// make sure jaeger checks work correctly
+// make sure jaeger checks work correctly.
 func (l *LocalServerSuite) TestJaegerEndpointEmpty() {
 	l.T().Setenv(internal.JAEGER_ENDPOINT, gofakeit.URL())
 	l.T().Setenv(internal.JAEGER_UI_ENDPOINT, "")

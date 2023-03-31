@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-// UIResource exports ui resource for testing
+// UIResource exports ui resource for testing.
 type UIResource interface {
 	GetResource() *dockertest.Resource
 	GetUIURL() string
@@ -25,7 +25,7 @@ func (u uiResource) GetUIURL() string {
 
 var _ UIResource = &uiResource{}
 
-// TestJaeger exports jaeger for testing
+// TestJaeger exports jaeger for testing.
 type TestJaeger interface {
 	StartJaegerServer(ctx context.Context) UIResource
 	StartPyroscopeServer(ctx context.Context) UIResource
@@ -80,7 +80,7 @@ func (e *exportedJaeger) StartPyroscopeServer(ctx context.Context) UIResource {
 const RunIDLabel = runIDLabel
 const AppLabel = appLabel
 
-// ogDebugLocal is the original debugLocal value
+// ogDebugLocal is the original debugLocal value.
 var ogDebugLocal = debugLocal
 
 func GetOriginalDebugLocal() bool {

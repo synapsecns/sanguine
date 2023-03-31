@@ -21,7 +21,7 @@ type jaegerHandler struct {
 // NewJaegerHandler creates a new jaeger handler for handling jaeger traces.
 // the JAEGER_ENDPOINT environment variable must be set for this to work.
 // Note: currently, this is only suitable for local runs, because of default options we've put in place
-// This can be fixed in a future version through an option builder
+// This can be fixed in a future version through an option builder.
 func NewJaegerHandler(buildInfo config.BuildInfo) Handler {
 	return &jaegerHandler{
 		buildInfo: buildInfo,

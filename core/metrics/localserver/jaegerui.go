@@ -8,7 +8,7 @@ import (
 )
 
 // startUIServer starts a local jaeger server for testing.
-// this will first attempt to route to the jaeger ui container and fallback to jaegerui
+// this will first attempt to route to the jaeger ui container and fallback to jaegerui.
 func (j *testJaeger) startUIServer() {
 	primaryUrl := "http://primary.example.com"
 	secondaryUrl := "http://secondary.example.com"

@@ -7,7 +7,7 @@ import (
 )
 
 // TestStartServerJaegerPreset tests the start server function with jaeger preset.
-// only pyroscope should run
+// only pyroscope should run.
 func (l *LocalServerSuite) TestStartServerJaegerPreset() {
 	l.T().Setenv(internal.JAEGER_ENDPOINT, gofakeit.URL())
 	l.T().Setenv(internal.JAEGER_UI_ENDPOINT, gofakeit.URL())

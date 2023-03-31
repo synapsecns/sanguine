@@ -35,7 +35,7 @@ type testJaeger struct {
 	runID             string
 	pyroscopeResource *uiResource
 	jaegerResource    *uiResource
-	// jaegerUIResource is the pyroscope jaeger ui resource. This is not guranteed to be running.
+	// jaegerUIResource is the pyroscope jaeger ui resource. This is not guaranteed to be running.
 	// the proxy should bypass it if it is not running.
 	jaegerUIResource *uiResource
 }
@@ -46,7 +46,7 @@ func StartServer(parentCtx context.Context, tb testing.TB) {
 }
 
 // startServer starts a local jaeger server for testing.
-// this is a seperate function so we can export testJaeger for testing.
+// this is a separate function so we can export testJaeger for testing.
 func startServer(parentCtx context.Context, tb testing.TB) *testJaeger {
 	// create the test jaegar instance
 	tj := testJaeger{
@@ -124,7 +124,7 @@ func (j *testJaeger) buildLogMessage(includeAuxiliary bool) string {
 	return strings.Join(messages, "\n")
 }
 
-// getDockerizedResources gets all resources that have been dockerized by this process
+// getDockerizedResources gets all resources that have been dockerized by this process.
 func (j testJaeger) getDockerizedResources() (dockerizedResources []*dockertest.Resource) {
 	allResources := []*uiResource{j.jaegerResource, j.pyroscopeResource}
 	for _, resource := range allResources {
@@ -154,13 +154,13 @@ func (j *testJaeger) purgeResources() {
 // uiResource is a wrapper around dockertest.Resource that logs the container logs to a file.
 type uiResource struct {
 	// Resource is the underlying dockertest resource.
-	// this is not guranteed to be set.
+	// this is not guaranteed to be set.
 	*dockertest.Resource
 	uiURL string
 }
 
 // checkURL is a helper function that checks if a url is alive.
-// it does not check the status code
+// it does not check the status code.
 func checkURL(url string) retry.RetryableFunc {
 	return func(ctx context.Context) error {
 		client := http.DefaultClient
