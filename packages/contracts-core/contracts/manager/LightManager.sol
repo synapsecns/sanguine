@@ -93,7 +93,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
             _callAgentManager({
                 domain: SYNAPSE_DOMAIN,
                 optimisticSeconds: BONDING_OPTIMISTIC_PERIOD,
-                data: _remoteSlashData(domain, agent, prover)
+                payload: _remoteSlashPayload(domain, agent, prover)
             });
         } else {
             revert("Unauthorized caller");
@@ -128,7 +128,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     }
 
     /// @dev Returns data for a system call: remoteRegistrySlash()
-    function _remoteSlashData(
+    function _remoteSlashPayload(
         uint32 domain,
         address agent,
         address prover

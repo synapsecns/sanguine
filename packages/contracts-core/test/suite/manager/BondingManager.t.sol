@@ -272,7 +272,7 @@ contract BondingManagerTest is AgentManagerTest {
             systemRouterSynapse,
             callOrigin,
             SystemEntity.AgentManager,
-            _remoteSlashData(domain, agent, prover)
+            _remoteSlashPayload(domain, agent, prover)
         );
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);

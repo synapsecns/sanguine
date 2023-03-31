@@ -48,7 +48,7 @@ abstract contract AgentManagerTest is SynapseTest {
         });
     }
 
-    function _remoteSlashData(
+    function _remoteSlashPayload(
         uint32 domain,
         address agent,
         address prover

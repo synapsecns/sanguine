@@ -23,17 +23,17 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
     /// @dev gap for upgrade safety
     uint256[50] private __GAP; // solhint-disable-line var-name-mixedcase
 
+    modifier onlyAgentManager() {
+        require(msg.sender == address(agentManager), "!agentManager");
+        _;
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     constructor(IAgentManager agentManager_) {
         agentManager = agentManager_;
-    }
-
-    modifier onlyAgentManager() {
-        require(msg.sender == address(agentManager), "!agentManager");
-        _;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

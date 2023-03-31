@@ -143,7 +143,7 @@ contract LightManagerTest is AgentManagerTest {
         address prover
     ) public {
         test_addAgent_new(address(this), domain, agent);
-        bytes memory data = _remoteSlashData(domain, agent, prover);
+        bytes memory data = _remoteSlashPayload(domain, agent, prover);
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         vm.expectCall(
