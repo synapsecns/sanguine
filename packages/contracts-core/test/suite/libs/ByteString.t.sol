@@ -19,8 +19,7 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
     // First element is (bytes4 selector)
     uint8 internal constant FIRST_ELEMENT_BYTES = 4;
 
-    function setUp() public override {
-        super.setUp();
+    function setUp() public {
         libHarness = new ByteStringHarness();
     }
 
