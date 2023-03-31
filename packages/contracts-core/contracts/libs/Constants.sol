@@ -27,7 +27,7 @@ bytes32 constant STATE_REPORT_SALT = keccak256("STATE_REPORT_SALT");
 uint256 constant AGENT_ROOT_OPTIMISTIC_PERIOD = 1 days;
 // ══════════════════════════════════ ORIGIN ═══════════════════════════════════
 /// @dev Maximum bytes per message = 2 KiB (somewhat arbitrarily set to begin)
-uint256 constant MAX_MESSAGE_BODY_BYTES = 2 * 2**10;
+uint256 constant MAX_CONTENT_BYTES = 2 * 2**10;
 // ═══════════════════════════════ SYSTEM ROUTER ═══════════════════════════════
 /// @dev Custom address used for sending and receiving system messages.
 /// - Origin will dispatch messages from SystemRouter as if they were "sent by this sender".

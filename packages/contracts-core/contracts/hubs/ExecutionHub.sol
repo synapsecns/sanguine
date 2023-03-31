@@ -56,13 +56,13 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @inheritdoc IExecutionHub
     function execute(
-        bytes memory message,
+        bytes memory msgPayload,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
         uint256 stateIndex
     ) external {
         // This will revert if payload is not a formatted message payload
-        Message message = message.castToMessage();
+        Message message = msgPayload.castToMessage();
         Header header = message.header();
         bytes32 msgLeaf = message.leaf();
         // Check proofs validity and mark message as executed

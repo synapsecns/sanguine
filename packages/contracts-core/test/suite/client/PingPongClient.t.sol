@@ -99,7 +99,7 @@ contract PingPongTest is Test {
             0,
             bytes32(uint256(uint160(sender))),
             0,
-            messageBody(pingId, true, counter)
+            content(pingId, true, counter)
         );
         // Pings sent: 0
         assertEq(client.pingsSent(), 0);
@@ -131,7 +131,7 @@ contract PingPongTest is Test {
             0,
             bytes32(uint256(uint160(sender))),
             0,
-            messageBody(pingId, false, counter)
+            content(pingId, false, counter)
         );
         // Pings sent: 0/1 (based on counter being zero / non-zero)
         assertEq(client.pingsSent(), counter == 0 ? 0 : 1);
@@ -149,7 +149,7 @@ contract PingPongTest is Test {
         uint16 counter
     ) internal {
         bytes memory tips = TipsLib.emptyTips();
-        bytes memory body = messageBody(pingId, isPing, counter);
+        bytes memory body = content(pingId, isPing, counter);
         vm.expectCall(
             originMock,
             abi.encodeWithSelector(
@@ -163,7 +163,7 @@ contract PingPongTest is Test {
         );
     }
 
-    function messageBody(
+    function content(
         uint256 pingId,
         bool isPing,
         uint16 counter

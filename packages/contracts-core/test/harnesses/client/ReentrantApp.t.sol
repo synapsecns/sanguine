@@ -7,7 +7,7 @@ import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipie
 import { IExecutionHub } from "../../../contracts/interfaces/IExecutionHub.sol";
 
 contract ReentrantApp is IMessageRecipient {
-    bytes internal message;
+    bytes internal msgPayload;
     bytes32[] internal originProof;
     bytes32[] internal snapProof;
     uint256 internal stateIndex;
@@ -16,12 +16,12 @@ contract ReentrantApp is IMessageRecipient {
     function testReentrantApp() external {}
 
     function prepare(
-        bytes memory message,
+        bytes memory msgPayload_,
         bytes32[] memory originProof,
         bytes32[] memory snapProof,
         uint256 stateIndex
     ) external {
-        message = message;
+        msgPayload = msgPayload_;
         originProof = originProof;
         snapProof = snapProof;
         stateIndex = stateIndex;
@@ -34,6 +34,6 @@ contract ReentrantApp is IMessageRecipient {
         uint256,
         bytes memory
     ) external {
-        IExecutionHub(msg.sender).execute(message, originProof, snapProof, stateIndex);
+        IExecutionHub(msg.sender).execute(msgPayload, originProof, snapProof, stateIndex);
     }
 }

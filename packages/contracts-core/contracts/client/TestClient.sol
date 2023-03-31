@@ -28,7 +28,7 @@ contract TestClient is IMessageRecipient {
         uint32 nonce,
         bytes32 sender,
         uint256 rootSubmittedAt,
-        bytes message
+        bytes content
     );
 
     event MessageSent(
@@ -36,7 +36,7 @@ contract TestClient is IMessageRecipient {
         uint32 nonce,
         bytes32 sender,
         bytes32 recipient,
-        bytes message
+        bytes content
     );
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -57,10 +57,10 @@ contract TestClient is IMessageRecipient {
         uint32 nonce,
         bytes32 sender,
         uint256 rootSubmittedAt,
-        bytes memory message
+        bytes memory content
     ) external {
         require(msg.sender == destination, "TestClient: !destination");
-        emit MessageReceived(origin_, nonce, sender, rootSubmittedAt, message);
+        emit MessageReceived(origin_, nonce, sender, rootSubmittedAt, content);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -71,7 +71,7 @@ contract TestClient is IMessageRecipient {
         uint32 destination_,
         address recipientAddress,
         uint32 optimisticSeconds,
-        bytes memory message
+        bytes memory content
     ) external {
         bytes32 recipient = TypeCasts.addressToBytes32(recipientAddress);
         bytes memory tips = TipsLib.emptyTips();
@@ -80,14 +80,14 @@ contract TestClient is IMessageRecipient {
             recipient,
             optimisticSeconds,
             tips,
-            message
+            content
         );
         emit MessageSent(
             destination_,
             nonce,
             TypeCasts.addressToBytes32(address(this)),
             recipient,
-            message
+            content
         );
     }
 }

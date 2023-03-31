@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { MAX_MESSAGE_BODY_BYTES, SYSTEM_ROUTER } from "./libs/Constants.sol";
+import { MAX_CONTENT_BYTES, SYSTEM_ROUTER } from "./libs/Constants.sol";
 import { HeaderLib, MessageLib } from "./libs/Message.sol";
 import { StateReport } from "./libs/StateReport.sol";
 import { State, StateLib, TypedMemView } from "./libs/State.sol";
@@ -159,13 +159,13 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         bytes32 recipient,
         uint32 optimisticSeconds,
         bytes memory tips,
-        bytes memory messageBody
+        bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
         // Modifiers are removed because they prevent from slashing the last active Guard/Notary
         // haveActiveGuard
         // haveActiveNotary(destination)
         // TODO: figure out a way to filter out unknown domains once Agent Merkle Tree is implemented
-        require(messageBody.length <= MAX_MESSAGE_BODY_BYTES, "msg too long");
+        require(content.length <= MAX_CONTENT_BYTES, "content too long");
         // This will revert if payload is not a formatted tips payload
         Tips tips = tips.castToTips();
         // Total tips must exactly match msg.value
@@ -181,14 +181,14 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
             optimisticSeconds: optimisticSeconds
         });
         // Format the full message payload
-        bytes memory message = MessageLib.formatMessage(header, tips, messageBody);
+        bytes memory msgPayload = MessageLib.formatMessage(header, tips, content);
 
         // Insert new leaf into the Origin Merkle Tree and save the updated state
-        messageHash = keccak256(message);
+        messageHash = keccak256(msgPayload);
         _insertAndSave(messageHash);
 
         // Emit Dispatched event with message information
-        emit Dispatched(messageHash, messageNonce, destination, message);
+        emit Dispatched(messageHash, messageNonce, destination, msgPayload);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

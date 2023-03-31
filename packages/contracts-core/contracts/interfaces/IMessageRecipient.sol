@@ -7,6 +7,6 @@ interface IMessageRecipient {
         uint32 nonce,
         bytes32 sender,
         uint256 rootSubmittedAt,
-        bytes memory message
+        bytes memory content
     ) external;
 }

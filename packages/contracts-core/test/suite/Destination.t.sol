@@ -29,7 +29,7 @@ contract DestinationTest is DisputeHubTest {
     bytes internal constant BODY = "Test Body";
 
     RawMessage[] internal rawMessages;
-    bytes[] internal messages;
+    bytes[] internal msgPayloads;
 
     address internal sender;
     address internal recipient;
@@ -296,9 +296,9 @@ contract DestinationTest is DisputeHubTest {
             // Should emit event when message is executed
             vm.expectEmit(true, true, true, true);
 
-            emit Executed(DOMAIN_REMOTE, keccak256(messages[i]));
+            emit Executed(DOMAIN_REMOTE, keccak256(msgPayloads[i]));
             vm.prank(executor);
-            IExecutionHub(destination).execute(messages[i], originProof, snapProof, stateIndex);
+            IExecutionHub(destination).execute(msgPayloads[i], originProof, snapProof, stateIndex);
         }
     }
 
@@ -438,7 +438,7 @@ contract DestinationTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(0);
         vm.expectRevert("Notary is in dispute");
         vm.prank(executor);
-        IExecutionHub(destination).execute(messages[0], originProof, snapProof, stateIndex);
+        IExecutionHub(destination).execute(msgPayloads[0], originProof, snapProof, stateIndex);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -459,10 +459,10 @@ contract DestinationTest is DisputeHubTest {
                 RawTips(0, 0, 0, 0),
                 BODY
             );
-            bytes memory message = rm.formatMessage();
+            bytes memory msgPayload = rm.formatMessage();
             rawMessages.push(rm);
-            messages.push(message);
-            insertMessage(message);
+            msgPayloads.push(msgPayload);
+            insertMessage(msgPayload);
         }
     }
 }

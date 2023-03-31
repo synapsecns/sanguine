@@ -84,23 +84,23 @@ contract PingPongClient is IMessageRecipient {
         uint32,
         bytes32 sender,
         uint256,
-        bytes memory message
+        bytes memory content
     ) external {
         require(msg.sender == destination, "PingPongClient: !destination");
-        PingPongMessage memory pingPongMsg = abi.decode(message, (PingPongMessage));
-        if (pingPongMsg.isPing) {
+        PingPongMessage memory message = abi.decode(content, (PingPongMessage));
+        if (message.isPing) {
             // Ping is received
             ++pingsReceived;
-            emit PingReceived(pingPongMsg.pingId);
+            emit PingReceived(message.pingId);
             // Send Pong back
-            _pong(origin, sender, pingPongMsg);
+            _pong(origin_, sender, message);
         } else {
             // Pong is received
             ++pongsReceived;
             emit PongReceived(message.pingId);
             // Send extra ping, if initially requested
-            if (pingPongMsg.counter != 0) {
-                _ping(origin_, sender, pingPongMsg.counter - 1);
+            if (message.counter != 0) {
+                _ping(origin_, sender, message.counter - 1);
             }
         }
     }
@@ -155,21 +155,21 @@ contract PingPongClient is IMessageRecipient {
      * @dev Send a "Ping" or "Pong" message.
      * @param destination_  Domain of destination chain
      * @param recipient     Message recipient on destination chain
-     * @param pingPongMsg   Ping-pong message
+     * @param message   Ping-pong message
      */
     function _sendMessage(
         uint32 destination_,
         bytes32 recipient,
-        PingPongMessage memory pingPongMsg
+        PingPongMessage memory message
     ) internal {
         bytes memory tips = TipsLib.emptyTips();
-        bytes memory message = abi.encode(pingPongMsg);
+        bytes memory content = abi.encode(message);
         InterfaceOrigin(origin).dispatch(
             destination_,
             recipient,
             optimisticPeriod(),
             tips,
-            message
+            content
         );
     }
 

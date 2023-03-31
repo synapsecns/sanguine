@@ -23,9 +23,9 @@ contract ClientHarness is ClientHarnessEvents, Client {
     function sendMessage(
         uint32 destination_,
         bytes memory tips,
-        bytes memory message
+        bytes memory content
     ) public payable {
-        _send(destination_, tips, message);
+        _send(destination_, tips, content);
     }
 
     function optimisticSeconds() public view override returns (uint32) {
@@ -40,8 +40,8 @@ contract ClientHarness is ClientHarnessEvents, Client {
     function _handle(
         uint32 origin_,
         uint32 nonce,
-        bytes memory message
+        bytes memory content
     ) internal override {
-        emit LogClientMessage(origin_, nonce, message);
+        emit LogClientMessage(origin_, nonce, content);
     }
 }

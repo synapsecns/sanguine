@@ -10,7 +10,7 @@ contract AppHarness is IMessageRecipient {
     uint32 public expectedOrigin;
     uint32 public expectedNonce;
     bytes32 public expectedSender;
-    bytes32 public expectedMessageBodyHash;
+    bytes32 public expectedContentHash;
 
     constructor(uint32 optimisticSeconds_) {
         optimisticSeconds = optimisticSeconds_;
@@ -23,12 +23,12 @@ contract AppHarness is IMessageRecipient {
         uint32 origin,
         uint32 nonce,
         bytes32 sender,
-        bytes memory message
+        bytes memory content
     ) external {
         expectedOrigin = origin;
         expectedNonce = nonce;
         expectedSender = sender;
-        expectedMessageBodyHash = keccak256(message);
+        expectedContentHash = keccak256(content);
     }
 
     function handle(
@@ -36,12 +36,12 @@ contract AppHarness is IMessageRecipient {
         uint32 nonce,
         bytes32 sender,
         uint256 rootSubmittedAt,
-        bytes memory message
+        bytes memory content
     ) external view {
         require(block.timestamp >= rootSubmittedAt + optimisticSeconds, "app: !optimisticSeconds");
         require(origin == expectedOrigin, "app: !origin");
         require(nonce == expectedNonce, "app: !nonce");
         require(sender == expectedSender, "app: !sender");
-        require(keccak256(message) == expectedMessageBodyHash, "app: !message");
+        require(keccak256(content) == expectedContentHash, "app: !message");
     }
 }

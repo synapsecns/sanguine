@@ -258,11 +258,11 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         uint32,
         uint32,
         uint256 rootSubmittedAt,
-        bytes memory message
+        bytes memory content
     ) internal override {
         // TODO: use TypedMemView for encoding/decoding instead
         // Deserialize the message into a series of system calls to perform
-        bytes[] memory systemMessages = abi.decode(message, (bytes[]));
+        bytes[] memory systemMessages = abi.decode(content, (bytes[]));
         uint256 amount = systemMessages.length;
         // Received a message containing a remote system call, use the corresponding prefix
         bytes29 prefix = _prefixReceiveCall(rootSubmittedAt).castToRawBytes();
@@ -316,12 +316,12 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     ) internal {
         // TODO: use TypedMemView for encoding/decoding instead
         // Serialize the series of system calls into a byte string
-        bytes memory message = abi.encode(systemMessages);
+        bytes memory content = abi.encode(systemMessages);
         /**
          * @dev Origin will use SYSTEM_ROUTER as "sender" field for messages
          * sent by System Router.
          */
-        _send(destination, optimisticSeconds, TipsLib.emptyTips(), message);
+        _send(destination, optimisticSeconds, TipsLib.emptyTips(), content);
     }
 
     /**

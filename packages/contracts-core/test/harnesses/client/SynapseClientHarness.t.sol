@@ -22,9 +22,9 @@ contract SynapseClientHarness is ClientHarnessEvents, SynapseClient {
     function sendMessage(
         uint32 destination_,
         bytes memory tips,
-        bytes memory message
+        bytes memory content
     ) external payable {
-        _send(destination_, tips, message);
+        _send(destination_, tips, content);
     }
 
     function optimisticSeconds() public view override returns (uint32) {
@@ -34,8 +34,8 @@ contract SynapseClientHarness is ClientHarnessEvents, SynapseClient {
     function _handle(
         uint32 origin_,
         uint32 nonce,
-        bytes memory message
+        bytes memory content
     ) internal override {
-        emit LogClientMessage(origin_, nonce, message);
+        emit LogClientMessage(origin_, nonce, content);
     }
 }

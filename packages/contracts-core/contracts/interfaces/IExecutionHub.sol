@@ -14,13 +14,13 @@ interface IExecutionHub {
      *  - Recipient doesn't implement a `handle` method (refer to IMessageRecipient.sol)
      *  - Recipient reverted upon receiving a message
      * Note: refer to libs/State.sol for details about Origin State's sub-leafs.
-     * @param message       Raw payload with a formatted message to execute
+     * @param msgPayload    Raw payload with a formatted message to execute
      * @param originProof   Proof of inclusion of message in the Origin Merkle Tree
      * @param snapProof     Proof of inclusion of Origin State's Left Leaf into Snapshot Merkle Tree
      * @param stateIndex    Index of Origin State in the Snapshot
      */
     function execute(
-        bytes memory message,
+        bytes memory msgPayload,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
         uint256 stateIndex

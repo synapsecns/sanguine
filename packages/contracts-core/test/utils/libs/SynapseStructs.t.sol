@@ -113,10 +113,10 @@ library CastLib {
     ▏*║                               MESSAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatMessage(RawMessage memory rm) internal pure returns (bytes memory message) {
+    function formatMessage(RawMessage memory rm) internal pure returns (bytes memory msgPayload) {
         bytes memory header = rm.header.formatHeader();
         bytes memory tips = rm.tips.formatTips();
-        message = MessageLib.formatMessage(header, tips, rm.body);
+        return MessageLib.formatMessage(header, tips, rm.body);
     }
 
     function castToMessage(RawMessage memory rm) internal pure returns (Message ptr) {

@@ -47,14 +47,14 @@ abstract contract BasicClient is IMessageRecipient {
      * @param nonce             Unique identifier for the message from origin to destination chain
      * @param sender            Sender of the message on the origin chain
      * @param rootSubmittedAt   Time when merkle root (used for proving this message) was submitted
-     * @param message           The message
+     * @param content           The message content
      */
     function handle(
         uint32 origin_,
         uint32 nonce,
         bytes32 sender,
         uint256 rootSubmittedAt,
-        bytes memory message
+        bytes memory content
     ) external {
         require(msg.sender == destination, "BasicClient: !destination");
         require(
@@ -63,7 +63,7 @@ abstract contract BasicClient is IMessageRecipient {
         );
         /// @dev root timestamp wasn't checked => potentially unsafe
         /// No need to pass both origin and sender: sender == trustedSender(origin)
-        _handleUnsafe(origin_, nonce, rootSubmittedAt, message);
+        _handleUnsafe(origin_, nonce, rootSubmittedAt, content);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -94,7 +94,7 @@ abstract contract BasicClient is IMessageRecipient {
         uint32 origin_,
         uint32 nonce,
         uint256 rootSubmittedAt,
-        bytes memory message
+        bytes memory content
     ) internal virtual;
 
     /**
@@ -102,13 +102,13 @@ abstract contract BasicClient is IMessageRecipient {
      * @param destination_          Domain of the destination chain
      * @param optimisticSeconds     Optimistic period for message execution on destination chain
      * @param tips                  Payload with information about paid tips
-     * @param message               The message
+     * @param content               The message content
      */
     function _send(
         uint32 destination_,
         uint32 optimisticSeconds,
         bytes memory tips,
-        bytes memory message
+        bytes memory content
     ) internal {
         bytes32 recipient = trustedSender(destination_);
         require(recipient != bytes32(0), "BasicClient: !recipient");
@@ -117,7 +117,7 @@ abstract contract BasicClient is IMessageRecipient {
             recipient,
             optimisticSeconds,
             tips,
-            message
+            content
         );
     }
 }

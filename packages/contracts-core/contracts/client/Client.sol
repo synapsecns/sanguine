@@ -45,20 +45,20 @@ abstract contract Client is BasicClient {
      * @param origin_           Domain of the remote chain, where message originated
      * @param nonce             Unique identifier for the message from origin to destination chain
      * @param rootSubmittedAt   Time when merkle root (sed for proving this message) was submitted
-     * @param message           The message
+     * @param content           The message content
      */
     function _handleUnsafe(
         uint32 origin_,
         uint32 nonce,
         uint256 rootSubmittedAt,
-        bytes memory message
+        bytes memory content
     ) internal override {
         // solhint-disable-next-line do-not-rely-on-time
         require(
             block.timestamp >= rootSubmittedAt + optimisticSeconds(),
             "Client: !optimisticSeconds"
         );
-        _handle(origin_, nonce, message);
+        _handle(origin_, nonce, content);
     }
 
     /**
@@ -73,19 +73,19 @@ abstract contract Client is BasicClient {
     function _handle(
         uint32 origin_,
         uint32 nonce,
-        bytes memory message
+        bytes memory content
     ) internal virtual;
 
     /**
      * @dev Sends a message to given destination chain.
      * @param destination_  Domain of the destination chain
-     * @param message       The message
+     * @param content       The message content
      */
     function _send(
         uint32 destination_,
         bytes memory tips,
-        bytes memory message
+        bytes memory content
     ) internal {
-        _send(destination_, optimisticSeconds(), tips, message);
+        _send(destination_, optimisticSeconds(), tips, content);
     }
 }

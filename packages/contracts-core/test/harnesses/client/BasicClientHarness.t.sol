@@ -23,9 +23,9 @@ contract BasicClientHarness is BasicClientHarnessEvents, BasicClient {
     function sendMessage(
         uint32 destination_,
         bytes memory tips,
-        bytes memory message
+        bytes memory content
     ) public payable {
-        _send(destination_, optimisticSeconds(), tips, message);
+        _send(destination_, optimisticSeconds(), tips, content);
     }
 
     function optimisticSeconds() public view returns (uint32) {
@@ -41,8 +41,8 @@ contract BasicClientHarness is BasicClientHarnessEvents, BasicClient {
         uint32 origin_,
         uint32 nonce,
         uint256 rootSubmittedAt,
-        bytes memory message
+        bytes memory content
     ) internal override {
-        emit LogBasicClientMessage(origin_, nonce, rootSubmittedAt, message);
+        emit LogBasicClientMessage(origin_, nonce, rootSubmittedAt, content);
     }
 }
