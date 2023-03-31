@@ -1,5 +1,7 @@
 name: Changeset integrity checker
 on:
+  paths:
+    - 'packages/**'
   pull_request_target:
     branches:
       - master
