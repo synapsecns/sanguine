@@ -42,8 +42,8 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
         bytes memory callData = bytes.concat(selector, prefixOld, following);
         // Format the calldata
         bytes memory adjustedCallData = libHarness.formatAdjustedCallData({
-            _callData: callData,
-            _prefix: prefixNew
+            callData: callData,
+            prefix: prefixNew
         });
         // Test formatter against manually constructed payload
         assertEq(
@@ -53,9 +53,9 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
         );
         // Format the system message
         bytes memory systemMessage = libHarness.formatSystemMessage({
-            _systemRecipient: recipient,
-            _callData: callData,
-            _prefix: prefixNew
+            systemRecipient: recipient,
+            callData: callData,
+            prefix: prefixNew
         });
         checkCastToSystemMessage({ payload: systemMessage, isSystemMessage: true });
         // Test formatter against manually constructed payload
@@ -82,12 +82,12 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
         bytes memory callData = bytes.concat(this.setUp.selector, new bytes(length));
         bytes memory prefix = new bytes(length + bytesExtra);
         vm.expectRevert("Payload too short");
-        libHarness.formatAdjustedCallData({ _callData: callData, _prefix: prefix });
+        libHarness.formatAdjustedCallData({ callData: callData, prefix: prefix });
         vm.expectRevert("Payload too short");
         libHarness.formatSystemMessage({
-            _systemRecipient: recipient,
-            _callData: callData,
-            _prefix: prefix
+            systemRecipient: recipient,
+            callData: callData,
+            prefix: prefix
         });
     }
 
@@ -173,9 +173,9 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
     function createTestPayload() public view returns (bytes memory) {
         return
             libHarness.formatSystemMessage({
-                _systemRecipient: 0,
-                _callData: TEST_MESSAGE_PAYLOAD,
-                _prefix: ""
+                systemRecipient: 0,
+                callData: TEST_MESSAGE_PAYLOAD,
+                prefix: ""
             });
     }
 }

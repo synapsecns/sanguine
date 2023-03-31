@@ -105,40 +105,40 @@ library AttestationLib {
      * @return Formatted attestation
      **/
     function formatAttestation(
-        bytes32 _snapRoot,
+        bytes32 snapRoot,
         bytes32 agentRoot,
         uint32 nonce,
-        uint40 _blockNumber,
-        uint40 _timestamp
+        uint40 blockNumber,
+        uint40 timestamp
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(_snapRoot, agentRoot, nonce, _blockNumber, _timestamp);
+        return abi.encodePacked(snapRoot, agentRoot, nonce, blockNumber, timestamp);
     }
 
     /**
      * @notice Returns an Attestation view over the given payload.
      * @dev Will revert if the payload is not an attestation.
      */
-    function castToAttestation(bytes memory _payload) internal pure returns (Attestation) {
-        return castToAttestation(_payload.castToRawBytes());
+    function castToAttestation(bytes memory payload) internal pure returns (Attestation) {
+        return castToAttestation(payload.castToRawBytes());
     }
 
     /**
      * @notice Casts a memory view to an Attestation view.
      * @dev Will revert if the memory view is not over an attestation.
      */
-    function castToAttestation(bytes29 _view) internal pure returns (Attestation) {
-        require(isAttestation(_view), "Not an attestation");
-        return Attestation.wrap(_view);
+    function castToAttestation(bytes29 view_) internal pure returns (Attestation) {
+        require(isAttestation(view_), "Not an attestation");
+        return Attestation.wrap(view_);
     }
 
     /// @notice Checks that a payload is a formatted Attestation.
-    function isAttestation(bytes29 _view) internal pure returns (bool) {
-        return _view.len() == ATTESTATION_LENGTH;
+    function isAttestation(bytes29 view_) internal pure returns (bool) {
+        return view_.len() == ATTESTATION_LENGTH;
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Attestation _att) internal pure returns (bytes29) {
-        return Attestation.unwrap(_att);
+    function unwrap(Attestation att) internal pure returns (bytes29) {
+        return Attestation.unwrap(att);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -151,18 +151,18 @@ library AttestationLib {
      * @param nonce         Attestation nonce
      * @return Formatted attestation
      */
-    function formatSummitAttestation(SummitAttestation memory _summitAtt, uint32 nonce)
+    function formatSummitAttestation(SummitAttestation memory summitAtt, uint32 nonce)
         internal
         pure
         returns (bytes memory)
     {
         return
             formatAttestation({
-                _snapRoot: _summitAtt.snapRoot,
-                agentRoot: _summitAtt.agentRoot,
+                snapRoot: summitAtt.snapRoot,
+                agentRoot: summitAtt.agentRoot,
                 nonce: nonce,
-                _blockNumber: _summitAtt.blockNumber,
-                _timestamp: _summitAtt.timestamp
+                blockNumber: summitAtt.blockNumber,
+                timestamp: summitAtt.timestamp
             });
     }
 
@@ -172,47 +172,47 @@ library AttestationLib {
     }
 
     /// @notice Returns a struct to save in the Summit contract for the given root and height.
-    function summitAttestation(bytes32 _snapRoot, bytes32 agentRoot)
+    function summitAttestation(bytes32 snapRoot, bytes32 agentRoot)
         internal
         view
         returns (SummitAttestation memory summitAtt)
     {
-        summitAtt.snapRoot = _snapRoot;
+        summitAtt.snapRoot = snapRoot;
         summitAtt.agentRoot = agentRoot;
         summitAtt.blockNumber = uint40(block.number);
         summitAtt.timestamp = uint40(block.timestamp);
     }
 
     /// @notice Checks that an Attestation and its Summit representation are equal.
-    function equalToSummit(Attestation _att, SummitAttestation memory _summitAtt)
+    function equalToSummit(Attestation att, SummitAttestation memory summitAtt)
         internal
         pure
         returns (bool)
     {
         return
-            _att.snapRoot() == _summitAtt.snapRoot &&
-            _att.agentRoot() == _summitAtt.agentRoot &&
-            _att.blockNumber() == _summitAtt.blockNumber &&
-            _att.timestamp() == _summitAtt.timestamp;
+            att.snapRoot() == summitAtt.snapRoot &&
+            att.agentRoot() == summitAtt.agentRoot &&
+            att.blockNumber() == summitAtt.blockNumber &&
+            att.timestamp() == summitAtt.timestamp;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       DESTINATION ATTESTATION                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function toExecutionAttestation(Attestation _att, address _notary)
+    function toExecutionAttestation(Attestation att, address notary)
         internal
         view
         returns (ExecutionAttestation memory attestation)
     {
-        attestation.notary = _notary;
-        attestation.nonce = _att.nonce();
+        attestation.notary = notary;
+        attestation.nonce = att.nonce();
         // We need to store the timestamp when attestation was submitted to Destination
         attestation.submittedAt = uint40(block.timestamp);
     }
 
-    function isEmpty(ExecutionAttestation memory _execAtt) internal pure returns (bool) {
-        return _execAtt.notary == address(0);
+    function isEmpty(ExecutionAttestation memory execAtt) internal pure returns (bool) {
+        return execAtt.notary == address(0);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -220,11 +220,11 @@ library AttestationLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns the hash of an Attestation, that could be later signed by a Notary.
-    function hash(Attestation _att) internal pure returns (bytes32) {
+    function hash(Attestation att) internal pure returns (bytes32) {
         // Get the underlying memory view
-        bytes29 _view = _att.unwrap();
+        bytes29 view_ = att.unwrap();
         // The final hash to sign is keccak(attestationSalt, keccak(attestation))
-        return keccak256(bytes.concat(ATTESTATION_SALT, _view.keccak()));
+        return keccak256(bytes.concat(ATTESTATION_SALT, view_.keccak()));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -232,33 +232,33 @@ library AttestationLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns root of the Snapshot merkle tree created in the Summit contract.
-    function snapRoot(Attestation _att) internal pure returns (bytes32) {
-        bytes29 _view = _att.unwrap();
-        return _view.index({ index: OFFSET_SNAP_ROOT, _bytes: 32 });
+    function snapRoot(Attestation att) internal pure returns (bytes32) {
+        bytes29 view_ = att.unwrap();
+        return view_.index({ index: OFFSET_SNAP_ROOT, bytes_: 32 });
     }
 
     /// @notice Returns root of the Agent merkle tree tracked by BondingManager.
-    function agentRoot(Attestation _att) internal pure returns (bytes32) {
-        bytes29 _view = _att.unwrap();
-        return _view.index({ index: OFFSET_AGENT_ROOT, _bytes: 32 });
+    function agentRoot(Attestation att) internal pure returns (bytes32) {
+        bytes29 view_ = att.unwrap();
+        return view_.index({ index: OFFSET_AGENT_ROOT, bytes_: 32 });
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.
-    function nonce(Attestation _att) internal pure returns (uint32) {
-        bytes29 _view = _att.unwrap();
-        return uint32(_view.indexUint({ index: OFFSET_NONCE, _bytes: 4 }));
+    function nonce(Attestation att) internal pure returns (uint32) {
+        bytes29 view_ = att.unwrap();
+        return uint32(view_.indexUint({ index: OFFSET_NONCE, bytes_: 4 }));
     }
 
     /// @notice Returns a block number when attestation was created in Summit.
-    function blockNumber(Attestation _att) internal pure returns (uint40) {
-        bytes29 _view = _att.unwrap();
-        return uint40(_view.indexUint({ index: OFFSET_BLOCK_NUMBER, _bytes: 5 }));
+    function blockNumber(Attestation att) internal pure returns (uint40) {
+        bytes29 view_ = att.unwrap();
+        return uint40(view_.indexUint({ index: OFFSET_BLOCK_NUMBER, bytes_: 5 }));
     }
 
     /// @notice Returns a block timestamp when attestation was created in Summit.
     /// @dev This is the timestamp according to the Synapse Chain.
-    function timestamp(Attestation _att) internal pure returns (uint40) {
-        bytes29 _view = _att.unwrap();
-        return uint40(_view.indexUint({ index: OFFSET_TIMESTAMP, _bytes: 5 }));
+    function timestamp(Attestation att) internal pure returns (uint40) {
+        bytes29 view_ = att.unwrap();
+        return uint40(view_.indexUint({ index: OFFSET_TIMESTAMP, bytes_: 5 }));
     }
 }

@@ -87,20 +87,20 @@ contract PingPongClient is IMessageRecipient {
         bytes memory message
     ) external {
         require(msg.sender == destination, "PingPongClient: !destination");
-        PingPongMessage memory _msg = abi.decode(message, (PingPongMessage));
-        if (_msg.isPing) {
+        PingPongMessage memory message = abi.decode(message, (PingPongMessage));
+        if (message.isPing) {
             // Ping is received
             ++pingsReceived;
-            emit PingReceived(_msg.pingId);
+            emit PingReceived(message.pingId);
             // Send Pong back
-            _pong(origin, sender, _msg);
+            _pong(origin, sender, message);
         } else {
             // Pong is received
             ++pongsReceived;
-            emit PongReceived(_msg.pingId);
+            emit PongReceived(message.pingId);
             // Send extra ping, if initially requested
-            if (_msg.counter != 0) {
-                _ping(origin, sender, _msg.counter - 1);
+            if (message.counter != 0) {
+                _ping(origin, sender, message.counter - 1);
             }
         }
     }
@@ -160,10 +160,10 @@ contract PingPongClient is IMessageRecipient {
     function _sendMessage(
         uint32 destination,
         bytes32 recipient,
-        PingPongMessage memory _msg
+        PingPongMessage memory message
     ) internal {
         bytes memory tips = TipsLib.emptyTips();
-        bytes memory message = abi.encode(_msg);
+        bytes memory message = abi.encode(message);
         InterfaceOrigin(origin).dispatch(
             destination,
             recipient,
@@ -192,13 +192,13 @@ contract PingPongClient is IMessageRecipient {
     function _pong(
         uint32 destination,
         bytes32 recipient,
-        PingPongMessage memory _msg
+        PingPongMessage memory message
     ) internal {
         _sendMessage(
             destination,
             recipient,
-            PingPongMessage({ pingId: _msg.pingId, isPing: false, counter: _msg.counter })
+            PingPongMessage({ pingId: message.pingId, isPing: false, counter: message.counter })
         );
-        emit PongSent(_msg.pingId);
+        emit PongSent(message.pingId);
     }
 }

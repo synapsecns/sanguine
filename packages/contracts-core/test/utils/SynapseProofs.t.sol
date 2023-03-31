@@ -115,10 +115,10 @@ abstract contract SynapseProofs {
     }
 
     function getAgentLeaf(
-        AgentFlag _flag,
+        AgentFlag flag,
         uint32 domain,
         address agent
     ) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_flag, domain, agent));
+        return keccak256(abi.encodePacked(flag, domain, agent));
     }
 }

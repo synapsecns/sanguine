@@ -93,11 +93,11 @@ contract DestinationTest is DisputeHubTest {
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
         InterfaceDestination(destination).submitAttestation(attPayload, attSig);
-        (, uint48 agentRootTime, address _notary) = InterfaceDestination(destination).destStatus();
+        (, uint48 agentRootTime, address notary) = InterfaceDestination(destination).destStatus();
         // Check that values were assigned
         assertEq(InterfaceDestination(destination).nextAgentRoot(), ra.agentRoot);
         assertEq(agentRootTime, rootSubmittedAt);
-        assertEq(_notary, notary);
+        assertEq(notary, notary);
     }
 
     function test_submitAttestation_doesNotOverwritePending(
@@ -117,12 +117,12 @@ contract DestinationTest is DisputeHubTest {
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notaryS, attPayload, attSig);
         assertTrue(InterfaceDestination(destination).submitAttestation(attPayload, attSig));
-        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(
             destination
         ).destStatus();
         assertEq(snapRootTime, block.timestamp);
         assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(_notary, notaryF);
+        assertEq(notary, notaryF);
     }
 
     function test_submitAttestation_notAccepted_agentRootUpdated(
@@ -134,12 +134,12 @@ contract DestinationTest is DisputeHubTest {
         // Should not accept the attestation before doing any checks,
         // so we could pass empty values here
         assertFalse(InterfaceDestination(destination).submitAttestation("", ""));
-        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(
             destination
         ).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(_notary, domains[DOMAIN_LOCAL].agent);
+        assertEq(notary, domains[DOMAIN_LOCAL].agent);
         // Should update the Agent Merkle Root
         assertEq(lightManager.agentRoot(), firstRA.agentRoot);
     }
@@ -153,12 +153,12 @@ contract DestinationTest is DisputeHubTest {
         // Should not accept the attestation before doing any checks,
         // so we could pass empty values here
         assertFalse(IDisputeHub(destination).submitStateReport(0, "", "", "", ""));
-        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(
             destination
         ).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(_notary, domains[DOMAIN_LOCAL].agent);
+        assertEq(notary, domains[DOMAIN_LOCAL].agent);
         // Should update the Agent Merkle Root
         assertEq(lightManager.agentRoot(), firstRA.agentRoot);
     }
@@ -174,12 +174,12 @@ contract DestinationTest is DisputeHubTest {
         assertFalse(
             IDisputeHub(destination).submitStateReportWithProof(0, "", "", new bytes32[](0), "", "")
         );
-        (uint48 snapRootTime, uint48 agentRootTime, address _notary) = InterfaceDestination(
+        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(
             destination
         ).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(_notary, domains[DOMAIN_LOCAL].agent);
+        assertEq(notary, domains[DOMAIN_LOCAL].agent);
         // Should update the Agent Merkle Root
         assertEq(lightManager.agentRoot(), firstRA.agentRoot);
     }

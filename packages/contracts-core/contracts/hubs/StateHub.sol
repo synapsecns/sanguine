@@ -59,7 +59,7 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         // This will revert if nonce is out of range
         bytes32 root = tree.root(nonce);
         OriginState memory state = originStates[nonce];
-        return state.formatOriginState({ _root: root, origin: localDomain, nonce: nonce });
+        return state.formatOriginState({ root: root, origin: localDomain, nonce: nonce });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -76,19 +76,19 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     }
 
     /// @dev Inserts leaf into the Merkle Tree and saves the updated origin State.
-    function _insertAndSave(bytes32 _leaf) internal {
-        bytes32 newRoot = tree.insert(_leaf);
+    function _insertAndSave(bytes32 leaf) internal {
+        bytes32 newRoot = tree.insert(leaf);
         _saveState(newRoot, StateLib.originState());
     }
 
     /// @dev Saves an updated state of the Origin contract
-    function _saveState(bytes32 _root, OriginState memory _state) internal {
+    function _saveState(bytes32 root, OriginState memory state) internal {
         // State nonce is its index in `originStates` array
         uint32 stateNonce = uint32(originStates.length);
-        originStates.push(_state);
+        originStates.push(state);
         // Emit event with raw state data
         emit StateSaved(
-            _state.formatOriginState({ _root: _root, origin: localDomain, nonce: stateNonce })
+            state.formatOriginState({ root: root, origin: localDomain, nonce: stateNonce })
         );
     }
 
@@ -104,15 +104,15 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
 
     /// @dev Checks if a state is valid, i.e. if it matches the historical one.
     /// Reverts, if state refers to another Origin contract.
-    function _isValidState(State _state) internal view returns (bool) {
+    function _isValidState(State state) internal view returns (bool) {
         // Check if state refers to this contract
-        require(_state.origin() == localDomain, "Wrong origin");
+        require(state.origin() == localDomain, "Wrong origin");
         // Check if nonce exists
-        uint32 nonce = _state.nonce();
+        uint32 nonce = state.nonce();
         if (nonce >= originStates.length) return false;
         // Check if state root matches the historical one
-        if (_state.root() != tree.root(nonce)) return false;
+        if (state.root() != tree.root(nonce)) return false;
         // Check if state metadata matches the historical one
-        return _state.equalToOrigin(originStates[nonce]);
+        return state.equalToOrigin(originStates[nonce]);
     }
 }

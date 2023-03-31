@@ -130,7 +130,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
      * @return execAtt      Attestation data for derived snapshot root
      */
     function _prove(
-        Header _header,
+        Header header,
         bytes32 _msgLeaf,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
@@ -140,12 +140,12 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Check that message has not been executed before
         require(messageStatus[_msgLeaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
         // Ensure message was meant for this domain
-        require(_header.destination() == localDomain, "!destination");
+        require(header.destination() == localDomain, "!destination");
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
         // This will revert if origin proof length exceeds Origin Tree height
         bytes32 originRoot = MerkleLib.proofRoot(
-            _header.nonce() - 1,
+            header.nonce() - 1,
             _msgLeaf,
             originProof,
             ORIGIN_TREE_HEIGHT
@@ -154,7 +154,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
-        bytes32 snapshotRoot = _snapshotRoot(originRoot, _header.origin(), snapProof, stateIndex);
+        bytes32 snapshotRoot = _snapshotRoot(originRoot, header.origin(), snapProof, stateIndex);
         // Fetch the attestation data for the snapshot root
         execAtt = rootAttestations[snapshotRoot];
         // Check if snapshot root has been submitted
@@ -165,7 +165,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         require(!_inDispute(execAtt.notary), "Notary is in dispute");
         // Check if optimistic period has passed
         require(
-            block.timestamp >= _header.optimisticSeconds() + execAtt.submittedAt,
+            block.timestamp >= header.optimisticSeconds() + execAtt.submittedAt,
             "!optimisticSeconds"
         );
         // Mark message as executed against the snapshot root
@@ -174,28 +174,24 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @dev Saves a snapshot root with the attestation data provided by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
-    function _saveAttestation(Attestation _att, address _notary) internal {
-        bytes32 root = _att.snapRoot();
+    function _saveAttestation(Attestation att, address notary) internal {
+        bytes32 root = att.snapRoot();
         require(rootAttestations[root].isEmpty(), "Root already exists");
-        rootAttestations[root] = _att.toExecutionAttestation(_notary);
+        rootAttestations[root] = att.toExecutionAttestation(notary);
     }
 
     /// @dev Gets a saved attestation for the given snapshot root.
     /// Will return an empty struct, if the snapshot root hasn't been previously saved.
-    function _getRootAttestation(bytes32 _root)
-        internal
-        view
-        returns (ExecutionAttestation memory)
-    {
-        return rootAttestations[_root];
+    function _getRootAttestation(bytes32 root) internal view returns (ExecutionAttestation memory) {
+        return rootAttestations[root];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                         INTERNAL LOGIC: TIPS                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function _storeTips(address _notary, Tips tips) internal {
+    function _storeTips(address notary, Tips tips) internal {
         // TODO: implement tips logic
-        emit TipsStored(_notary, tips.unwrap().clone());
+        emit TipsStored(notary, tips.unwrap().clone());
     }
 }

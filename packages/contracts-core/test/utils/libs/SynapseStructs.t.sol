@@ -140,10 +140,10 @@ library CastLib {
 
     function formatTips(RawTips memory rt) internal pure returns (bytes memory tips) {
         tips = TipsLib.formatTips({
-            _notaryTip: rt.notaryTip,
-            _broadcasterTip: rt.broadcasterTip,
-            _proverTip: rt.proverTip,
-            _executorTip: rt.executorTip
+            notaryTip: rt.notaryTip,
+            broadcasterTip: rt.broadcasterTip,
+            proverTip: rt.proverTip,
+            executorTip: rt.executorTip
         });
     }
 
@@ -157,11 +157,11 @@ library CastLib {
 
     function formatState(RawState memory rs) internal pure returns (bytes memory state) {
         state = StateLib.formatState({
-            _root: rs.root,
+            root: rs.root,
             origin: rs.origin,
             nonce: rs.nonce,
-            _blockNumber: rs.blockNumber,
-            _timestamp: rs.timestamp
+            blockNumber: rs.blockNumber,
+            timestamp: rs.timestamp
         });
     }
 
@@ -244,11 +244,11 @@ library CastLib {
         returns (bytes memory attestation)
     {
         attestation = AttestationLib.formatAttestation({
-            _snapRoot: ra.snapRoot,
+            snapRoot: ra.snapRoot,
             agentRoot: ra.agentRoot,
             nonce: ra.nonce,
-            _blockNumber: ra.blockNumber,
-            _timestamp: ra.timestamp
+            blockNumber: ra.blockNumber,
+            timestamp: ra.timestamp
         });
     }
 

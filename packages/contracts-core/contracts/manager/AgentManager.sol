@@ -95,11 +95,11 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
 
     /// @dev Generates leaf to be saved in the Agent Merkle Tree
     function _agentLeaf(
-        AgentFlag _flag,
+        AgentFlag flag,
         uint32 domain,
         address agent
     ) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_flag, domain, agent));
+        return keccak256(abi.encodePacked(flag, domain, agent));
     }
 
     /// @dev Returns the last known status for the agent from the Agent Merkle Tree.

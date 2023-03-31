@@ -17,8 +17,8 @@ contract DynamicProofGenerator is ProofCutter {
     mapping(uint256 => mapping(uint256 => bytes32)) internal merkleTree;
 
     /// @notice Updates a leaf in the Merkle Tree.
-    function update(uint256 index, bytes32 _newValue) external {
-        merkleTree[0][index] = _newValue;
+    function update(uint256 index, bytes32 newValue) external {
+        merkleTree[0][index] = newValue;
         for (uint256 h = 1; h <= AGENT_TREE_HEIGHT; ++h) {
             // Traverse to parent
             index >>= 1;

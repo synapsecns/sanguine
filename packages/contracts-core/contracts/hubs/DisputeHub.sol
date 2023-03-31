@@ -113,14 +113,14 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     function _openDispute(
         address _guard,
         uint32 domain,
-        address _notary
+        address notary
     ) internal virtual {
         // Check that both agents are not in Dispute yet
         require(disputes[_guard].flag == DisputeFlag.None, "Guard already in dispute");
-        require(disputes[_notary].flag == DisputeFlag.None, "Notary already in dispute");
-        disputes[_guard] = DisputeStatus(DisputeFlag.Pending, _notary);
-        disputes[_notary] = DisputeStatus(DisputeFlag.Pending, _guard);
-        emit Dispute(_guard, domain, _notary);
+        require(disputes[notary].flag == DisputeFlag.None, "Notary already in dispute");
+        disputes[_guard] = DisputeStatus(DisputeFlag.Pending, notary);
+        disputes[notary] = DisputeStatus(DisputeFlag.Pending, _guard);
+        emit Dispute(_guard, domain, notary);
     }
 
     /// @dev This is called when the slashing was initiated in this contract or elsewhere.

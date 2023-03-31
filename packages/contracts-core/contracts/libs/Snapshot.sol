@@ -76,13 +76,13 @@ library SnapshotLib {
      * @param states    Arrays of State-typed memory views over Origin states
      * @return Formatted snapshot
      */
-    function formatSnapshot(State[] memory _states) internal view returns (bytes memory) {
-        require(_isValidAmount(_states.length), "Invalid states amount");
+    function formatSnapshot(State[] memory states) internal view returns (bytes memory) {
+        require(_isValidAmount(states.length), "Invalid states amount");
         // First we unwrap State-typed views into generic views
-        uint256 length = _states.length;
+        uint256 length = states.length;
         bytes29[] memory views = new bytes29[](length);
         for (uint256 i = 0; i < length; ++i) {
-            views[i] = _states[i].unwrap();
+            views[i] = states[i].unwrap();
         }
         // Finally, we join them in a single payload. This avoids doing unnecessary copies in the process.
         return TypedMemView.join(views);
@@ -92,62 +92,62 @@ library SnapshotLib {
      * @notice Returns a Snapshot view over for the given payload.
      * @dev Will revert if the payload is not a snapshot payload.
      */
-    function castToSnapshot(bytes memory _payload) internal pure returns (Snapshot) {
-        return castToSnapshot(_payload.castToRawBytes());
+    function castToSnapshot(bytes memory payload) internal pure returns (Snapshot) {
+        return castToSnapshot(payload.castToRawBytes());
     }
 
     /**
      * @notice Casts a memory view to a Snapshot view.
      * @dev Will revert if the memory view is not over a snapshot payload.
      */
-    function castToSnapshot(bytes29 _view) internal pure returns (Snapshot) {
-        require(isSnapshot(_view), "Not a snapshot");
-        return Snapshot.wrap(_view);
+    function castToSnapshot(bytes29 view_) internal pure returns (Snapshot) {
+        require(isSnapshot(view_), "Not a snapshot");
+        return Snapshot.wrap(view_);
     }
 
     /**
      * @notice Checks that a payload is a formatted Snapshot.
      */
-    function isSnapshot(bytes29 _view) internal pure returns (bool) {
+    function isSnapshot(bytes29 view_) internal pure returns (bool) {
         // Snapshot needs to have exactly N * STATE_LENGTH bytes length
         // N needs to be in [1 .. SNAPSHOT_MAX_STATES] range
-        uint256 length = _view.len();
-        uint256 _statesAmount = length / STATE_LENGTH;
-        return _statesAmount * STATE_LENGTH == length && _isValidAmount(_statesAmount);
+        uint256 length = view_.len();
+        uint256 statesAmount = length / STATE_LENGTH;
+        return statesAmount * STATE_LENGTH == length && _isValidAmount(statesAmount);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Snapshot _snapshot) internal pure returns (bytes29) {
-        return Snapshot.unwrap(_snapshot);
+    function unwrap(Snapshot snapshot) internal pure returns (bytes29) {
+        return Snapshot.unwrap(snapshot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                           SUMMIT SNAPSHOT                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function toSummitSnapshot(uint256[] memory _statePtrs)
+    function toSummitSnapshot(uint256[] memory statePtrs)
         internal
         pure
         returns (SummitSnapshot memory snapshot)
     {
-        snapshot.statePtrs = _statePtrs;
+        snapshot.statePtrs = statePtrs;
     }
 
     function emptySummitSnapshot() internal pure returns (SummitSnapshot memory snapshot) {
         snapshot.statePtrs = new uint256[](0);
     }
 
-    function getStatesAmount(SummitSnapshot memory _snapshot) internal pure returns (uint256) {
-        return _snapshot.statePtrs.length;
+    function getStatesAmount(SummitSnapshot memory snapshot) internal pure returns (uint256) {
+        return snapshot.statePtrs.length;
     }
 
-    function getStatePtr(SummitSnapshot memory _snapshot, uint256 index)
+    function getStatePtr(SummitSnapshot memory snapshot, uint256 index)
         internal
         pure
         returns (uint256)
     {
-        require(index < getStatesAmount(_snapshot), "State index out of range");
-        return _snapshot.statePtrs[index];
+        require(index < getStatesAmount(snapshot), "State index out of range");
+        return snapshot.statePtrs[index];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -155,11 +155,11 @@ library SnapshotLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns the hash of a Snapshot, that could be later signed by an Agent.
-    function hash(Snapshot _snapshot) internal pure returns (bytes32 hashedSnapshot) {
+    function hash(Snapshot snapshot) internal pure returns (bytes32 hashedSnapshot) {
         // Get the underlying memory view
-        bytes29 _view = _snapshot.unwrap();
+        bytes29 view_ = snapshot.unwrap();
         // The final hash to sign is keccak(attestationSalt, keccak(attestation))
-        return keccak256(bytes.concat(SNAPSHOT_SALT, _view.keccak()));
+        return keccak256(bytes.concat(SNAPSHOT_SALT, view_.keccak()));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -167,17 +167,17 @@ library SnapshotLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns a state with a given index from the snapshot.
-    function state(Snapshot _snapshot, uint256 stateIndex) internal pure returns (State) {
-        bytes29 _view = _snapshot.unwrap();
+    function state(Snapshot snapshot, uint256 stateIndex) internal pure returns (State) {
+        bytes29 view_ = snapshot.unwrap();
         uint256 indexFrom = stateIndex * STATE_LENGTH;
-        require(indexFrom < _view.len(), "State index out of range");
-        return _view.slice({ index: indexFrom, _len: STATE_LENGTH, newType: 0 }).castToState();
+        require(indexFrom < view_.len(), "State index out of range");
+        return view_.slice({ index: indexFrom, len: STATE_LENGTH, newType: 0 }).castToState();
     }
 
     /// @notice Returns the amount of states in the snapshot.
-    function statesAmount(Snapshot _snapshot) internal pure returns (uint256) {
-        bytes29 _view = _snapshot.unwrap();
-        return _view.len() / STATE_LENGTH;
+    function statesAmount(Snapshot snapshot) internal pure returns (uint256) {
+        bytes29 view_ = snapshot.unwrap();
+        return view_.len() / STATE_LENGTH;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -185,13 +185,13 @@ library SnapshotLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
-    function root(Snapshot _snapshot) internal pure returns (bytes32) {
-        uint256 _statesAmount = _snapshot.statesAmount();
-        bytes32[] memory hashes = new bytes32[](_statesAmount);
-        for (uint256 i = 0; i < _statesAmount; ++i) {
+    function root(Snapshot snapshot) internal pure returns (bytes32) {
+        uint256 statesAmount = snapshot.statesAmount();
+        bytes32[] memory hashes = new bytes32[](statesAmount);
+        for (uint256 i = 0; i < statesAmount; ++i) {
             // Each State has two sub-leafs, which are used as the "leafs" in "Snapshot Merkle Tree"
             // We save their parent in order to calculate the root for the whole tree later
-            hashes[i] = _snapshot.state(i).leaf();
+            hashes[i] = snapshot.state(i).leaf();
         }
         // We are subtracting one here, as we already calculated the hashes
         // for the tree level above the "leaf level".
@@ -206,12 +206,12 @@ library SnapshotLib {
 
     /// @notice Returns an Attestation struct to save in the Summit contract.
     /// Current block number and timestamp are used.
-    function toSummitAttestation(Snapshot _snapshot, bytes32 agentRoot)
+    function toSummitAttestation(Snapshot snapshot, bytes32 agentRoot)
         internal
         view
         returns (SummitAttestation memory attestation)
     {
-        return AttestationLib.summitAttestation(_snapshot.root(), agentRoot);
+        return AttestationLib.summitAttestation(snapshot.root(), agentRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -219,9 +219,9 @@ library SnapshotLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @dev Checks if snapshot's states amount is valid.
-    function _isValidAmount(uint256 _statesAmount) internal pure returns (bool) {
+    function _isValidAmount(uint256 statesAmount) internal pure returns (bool) {
         // Need to have at least one state in a snapshot.
         // Also need to have no more than `SNAPSHOT_MAX_STATES` states in a snapshot.
-        return _statesAmount > 0 && _statesAmount <= SNAPSHOT_MAX_STATES;
+        return statesAmount > 0 && statesAmount <= SNAPSHOT_MAX_STATES;
     }
 }

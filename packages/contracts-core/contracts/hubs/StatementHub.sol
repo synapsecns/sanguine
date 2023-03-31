@@ -43,13 +43,13 @@ abstract contract StatementHub is SystemRegistry {
      *                  - index     Index of agent in the Agent Merkle Tree
      * @return agent    Agent that signed the statement
      */
-    function _recoverAgent(bytes32 _hashedStatement, bytes memory _signature)
+    function _recoverAgent(bytes32 _hashedStatement, bytes memory signature)
         internal
         view
         returns (AgentStatus memory status, address agent)
     {
         bytes32 ethSignedMsg = ECDSA.toEthSignedMessageHash(_hashedStatement);
-        agent = ECDSA.recover(ethSignedMsg, _signature);
+        agent = ECDSA.recover(ethSignedMsg, signature);
         // TODO: ensure that Unstaking agents could be slashed,
         // but their signature is considered invalid for new statements
         status = _agentStatus(agent);
@@ -67,13 +67,13 @@ abstract contract StatementHub is SystemRegistry {
      * @return status           Struct representing agent status, see {_recoverAgent}
      * @return notary           Notary that signed the snapshot
      */
-    function _verifyAttestation(Attestation _att, bytes memory attSignature)
+    function _verifyAttestation(Attestation att, bytes memory attSignature)
         internal
         view
         returns (AgentStatus memory status, address notary)
     {
         // This will revert if signer is not a known agent
-        (status, notary) = _recoverAgent(_att.hash(), attSignature);
+        (status, notary) = _recoverAgent(att.hash(), attSignature);
         // Attestation signer needs to be a Notary, not a Guard
         require(status.domain != 0, "Signer is not a Notary");
     }
@@ -127,13 +127,13 @@ abstract contract StatementHub is SystemRegistry {
      * @return status           Struct representing agent status, see {_recoverAgent}
      * @return agent            Agent that signed the snapshot
      */
-    function _verifySnapshot(Snapshot _snapshot, bytes memory snapSignature)
+    function _verifySnapshot(Snapshot snapshot, bytes memory snapSignature)
         internal
         view
         returns (AgentStatus memory status, address agent)
     {
         // This will revert if signer is not a known agent
-        (status, agent) = _recoverAgent(_snapshot.hash(), snapSignature);
+        (status, agent) = _recoverAgent(snapshot.hash(), snapSignature);
         // Guards and Notaries for all domains could sign Snapshots, no further checks are needed.
     }
 
@@ -144,8 +144,8 @@ abstract contract StatementHub is SystemRegistry {
      * @param att           Typed memory view over Attestation
      * @param snapshot      Typed memory view over snapshot payload
      */
-    function _verifySnapshotMerkle(Attestation _att, Snapshot _snapshot) internal pure {
-        require(_att.snapRoot() == _snapshot.root(), "Incorrect snapshot root");
+    function _verifySnapshotMerkle(Attestation att, Snapshot snapshot) internal pure {
+        require(att.snapRoot() == snapshot.root(), "Incorrect snapshot root");
     }
 
     /**
@@ -161,21 +161,21 @@ abstract contract StatementHub is SystemRegistry {
      * @param snapProof         Raw payload with snapshot data
      */
     function _verifySnapshotMerkle(
-        Attestation _att,
+        Attestation att,
         uint256 stateIndex,
-        State _state,
+        State state,
         bytes32[] memory snapProof
     ) internal pure {
         // Snapshot proof first element should match State metadata (aka "right sub-leaf")
-        (, bytes32 rightSubLeaf) = _state.subLeafs();
+        (, bytes32 rightSubLeaf) = state.subLeafs();
         require(snapProof[0] == rightSubLeaf, "Incorrect proof[0]");
         // Reconstruct Snapshot Merkle Root using the snapshot proof
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
-        bytes32 snapshotRoot = _snapshotRoot(_state.root(), _state.origin(), snapProof, stateIndex);
+        bytes32 snapshotRoot = _snapshotRoot(state.root(), state.origin(), snapProof, stateIndex);
         // Snapshot root should match the attestation root
-        require(_att.snapRoot() == snapshotRoot, "Incorrect snapshot root");
+        require(att.snapRoot() == snapshotRoot, "Incorrect snapshot root");
     }
 
     /**

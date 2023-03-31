@@ -121,7 +121,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
      * @dev Only System contracts are allowed to call this function.
      * Note: knowledge of recipient address is not required, routing will be done by SystemRouter
      * on the destination chain. Following call will be made on destination chain:
-     * - recipient.call(_callData, callOrigin, systemCaller, rootSubmittedAt)
+     * - recipient.call(callData, callOrigin, systemCaller, rootSubmittedAt)
      * This allows recipient to check:
      * - callOrigin: domain where a system call originated (local domain in this case)
      * - systemCaller: system entity who initiated the call (msg.sender on local chain)
@@ -139,7 +139,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         uint32 destination,
         uint32 optimisticSeconds,
         SystemEntity recipient,
-        bytes memory _callData
+        bytes memory callData
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
@@ -148,7 +148,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         SystemEntity[] memory recipients = new SystemEntity[](1);
         CallData[] memory callDataArray = new CallData[](1);
         recipients[0] = recipient;
-        callDataArray[0] = _callData.castToCallData();
+        callDataArray[0] = callData.castToCallData();
         _multiCall(caller, destination, optimisticSeconds, recipients, callDataArray);
     }
 
@@ -185,15 +185,15 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         uint32 destination,
         uint32 optimisticSeconds,
         SystemEntity[] memory recipients,
-        bytes memory _callData
+        bytes memory callData
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
         uint256 amount = recipients.length;
         CallData[] memory callDataArray = new CallData[](amount);
-        CallData callData = _callData.castToCallData();
+        CallData callData = callData.castToCallData();
         for (uint256 i = 0; i < amount; ++i) {
-            // `_callData` is never modified, so we can reuse the same memory view here
+            // `callData` is never modified, so we can reuse the same memory view here
             callDataArray[i] = callData;
         }
         _multiCall(caller, destination, optimisticSeconds, recipients, callDataArray);
@@ -267,9 +267,9 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         // Received a message containing a remote system call, use the corresponding prefix
         bytes29 prefix = _prefixReceiveCall(rootSubmittedAt).castToRawBytes();
         for (uint256 i = 0; i < amount; ++i) {
-            SystemMessage _systemMessage = systemMessages[i].castToSystemMessage();
+            SystemMessage systemMessage = systemMessages[i].castToSystemMessage();
             // Route the system call to specified recipient
-            _localSystemCall(_systemMessage.callRecipient(), _systemMessage.callData(), prefix);
+            _localSystemCall(systemMessage.callRecipient(), systemMessage.callData(), prefix);
         }
     }
 
@@ -286,10 +286,10 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
      */
     function _localSystemCall(
         uint8 recipient,
-        CallData _callData,
-        bytes29 _prefix
+        CallData callData,
+        bytes29 prefix
     ) internal {
-        // We adjust the first arguments for the call using the given `_prefix`.
+        // We adjust the first arguments for the call using the given `prefix`.
         // For remote system calls:
         // - (rootSubmittedAt, callOrigin, systemCaller) are adjusted on origin chain
         // - (rootSubmittedAt) is readjusted on destination chain
@@ -300,7 +300,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         address recipient = _getSystemAddress(recipient);
         require(recipient != address(0), "System Contract not set");
         // recipient.functionCall() calls recipient and bubbles the revert from the external call
-        recipient.functionCall(SystemMessageLib.formatAdjustedCallData(_callData, _prefix));
+        recipient.functionCall(SystemMessageLib.formatAdjustedCallData(callData, prefix));
     }
 
     /**
@@ -354,9 +354,9 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
             bytes[] memory systemMessages = new bytes[](amount);
             for (uint256 i = 0; i < amount; ++i) {
                 systemMessages[i] = SystemMessageLib.formatSystemMessage({
-                    _systemRecipient: uint8(recipients[i]),
-                    _callData: _callDataArray[i],
-                    _prefix: prefix
+                    systemRecipient: uint8(recipients[i]),
+                    callData: _callDataArray[i],
+                    prefix: prefix
                 });
             }
             _remoteSystemCall(destination, optimisticSeconds, systemMessages);

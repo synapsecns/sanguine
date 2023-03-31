@@ -18,14 +18,10 @@ contract AuthHarness {
         return Auth.toEthSignedMessageHash(data.castToRawBytes());
     }
 
-    function recoverSigner(bytes32 _digest, bytes memory _signature)
-        external
-        pure
-        returns (address)
-    {
+    function recoverSigner(bytes32 digest, bytes memory signature) external pure returns (address) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        address signer = Auth.recoverSigner(_digest, _signature.castToSignature());
+        address signer = Auth.recoverSigner(digest, signature.castToSignature());
         return signer;
     }
 }

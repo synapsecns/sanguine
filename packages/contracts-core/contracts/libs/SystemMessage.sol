@@ -42,22 +42,22 @@ library SystemMessageLib {
      * @return Formatted SystemMessage payload.
      */
     function formatSystemMessage(
-        uint8 _systemRecipient,
-        CallData _callData,
-        bytes29 _prefix
+        uint8 systemRecipient,
+        CallData callData,
+        bytes29 prefix
     ) internal view returns (bytes memory) {
-        bytes29 arguments = _callData.arguments();
+        bytes29 arguments = callData.arguments();
         // Arguments payload should be at least as long as the replacement prefix
-        require(arguments.len() >= _prefix.len(), "Payload too short");
+        require(arguments.len() >= prefix.len(), "Payload too short");
         bytes29[] memory views = new bytes29[](4);
         // First byte is encoded system recipient
-        views[0] = abi.encodePacked(_systemRecipient).castToRawBytes();
+        views[0] = abi.encodePacked(systemRecipient).castToRawBytes();
         // Use payload's function selector
-        views[1] = _callData.callSelector();
+        views[1] = callData.callSelector();
         // Use prefix as the first arguments
-        views[2] = _prefix;
+        views[2] = prefix;
         // Use payload's remaining arguments (following prefix)
-        views[3] = arguments.sliceFrom({ index: _prefix.len(), newType: 0 });
+        views[3] = arguments.sliceFrom({ index: prefix.len(), newType: 0 });
         return TypedMemView.join(views);
     }
 
@@ -74,21 +74,21 @@ library SystemMessageLib {
      * @param prefix    ABI-encoded arguments to use as the first arguments in the calldata
      * @return Adjusted calldata with replaced first arguments
      */
-    function formatAdjustedCallData(CallData _callData, bytes29 _prefix)
+    function formatAdjustedCallData(CallData callData, bytes29 prefix)
         internal
         view
         returns (bytes memory)
     {
-        bytes29 arguments = _callData.arguments();
+        bytes29 arguments = callData.arguments();
         // Arguments payload should be at least as long as the replacement prefix
-        require(arguments.len() >= _prefix.len(), "Payload too short");
+        require(arguments.len() >= prefix.len(), "Payload too short");
         bytes29[] memory views = new bytes29[](3);
         // Use payload's function selector
-        views[0] = _callData.callSelector();
+        views[0] = callData.callSelector();
         // Use prefix as the first arguments
-        views[1] = _prefix;
+        views[1] = prefix;
         // Use payload's remaining arguments (following prefix)
-        views[2] = arguments.sliceFrom({ index: _prefix.len(), newType: 0 });
+        views[2] = arguments.sliceFrom({ index: prefix.len(), newType: 0 });
         return TypedMemView.join(views);
     }
 
@@ -96,30 +96,30 @@ library SystemMessageLib {
      * @notice Returns a SystemMessage view over for the given payload.
      * @dev Will revert if the payload is not a system message.
      */
-    function castToSystemMessage(bytes memory _payload) internal pure returns (SystemMessage) {
-        return castToSystemMessage(_payload.castToRawBytes());
+    function castToSystemMessage(bytes memory payload) internal pure returns (SystemMessage) {
+        return castToSystemMessage(payload.castToRawBytes());
     }
 
     /**
      * @notice Casts a memory view to a SystemMessage view.
      * @dev Will revert if the payload is not a system message.
      */
-    function castToSystemMessage(bytes29 _view) internal pure returns (SystemMessage) {
-        require(isSystemMessage(_view), "Not a system message");
-        return SystemMessage.wrap(_view);
+    function castToSystemMessage(bytes29 view_) internal pure returns (SystemMessage) {
+        require(isSystemMessage(view_), "Not a system message");
+        return SystemMessage.wrap(view_);
     }
 
     /**
      * @notice Checks that a payload is a formatted System Message.
      */
-    function isSystemMessage(bytes29 _view) internal pure returns (bool) {
+    function isSystemMessage(bytes29 view_) internal pure returns (bool) {
         // Payload needs to exist (system calls are never done via fallback function)
-        if (_view.len() < OFFSET_CALLDATA) return false;
-        bytes29 _callData = _getCallData(_view);
+        if (view_.len() < OFFSET_CALLDATA) return false;
+        bytes29 callData = _getCallData(view_);
         // Payload needs to be a proper calldata
-        if (!_callData.isCallData()) return false;
+        if (!callData.isCallData()) return false;
         // Payload needs to have at least this amount of argument words
-        return _callData.castToCallData().argumentWords() >= CALLDATA_MIN_ARGUMENT_WORDS;
+        return callData.castToCallData().argumentWords() >= CALLDATA_MIN_ARGUMENT_WORDS;
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -134,19 +134,19 @@ library SystemMessageLib {
     /**
      * @notice Returns int value of System Message recipient (see SystemEntity).
      */
-    function callRecipient(SystemMessage _systemMessage) internal pure returns (uint8) {
+    function callRecipient(SystemMessage systemMessage) internal pure returns (uint8) {
         // Get the underlying memory view
-        bytes29 _view = unwrap(_systemMessage);
-        return uint8(_view.indexUint({ index: OFFSET_RECIPIENT, _bytes: 1 }));
+        bytes29 view_ = unwrap(systemMessage);
+        return uint8(view_.indexUint({ index: OFFSET_RECIPIENT, bytes_: 1 }));
     }
 
     /**
      * @notice Returns System Message calldata.
      */
-    function callData(SystemMessage _systemMessage) internal pure returns (CallData) {
+    function callData(SystemMessage systemMessage) internal pure returns (CallData) {
         // Get the underlying memory view
-        bytes29 _view = unwrap(_systemMessage);
-        return _getCallData(_view).castToCallData();
+        bytes29 view_ = unwrap(systemMessage);
+        return _getCallData(view_).castToCallData();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -157,7 +157,7 @@ library SystemMessageLib {
      * @notice Returns a generic memory view over System Message calldata,
      * without verifying that this is a valid calldata.
      */
-    function _getCallData(bytes29 _view) private pure returns (bytes29) {
-        return _view.sliceFrom({ index: OFFSET_CALLDATA, newType: 0 });
+    function _getCallData(bytes29 view_) private pure returns (bytes29) {
+        return view_.sliceFrom({ index: OFFSET_CALLDATA, newType: 0 });
     }
 }

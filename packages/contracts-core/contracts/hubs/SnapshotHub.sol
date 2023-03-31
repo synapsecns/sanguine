@@ -134,12 +134,12 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Accepts a Snapshot signed by a Guard.
     /// It is assumed that the Guard signature has been checked outside of this contract.
-    function _acceptGuardSnapshot(Snapshot _snapshot, address _guard) internal {
+    function _acceptGuardSnapshot(Snapshot snapshot, address _guard) internal {
         // Snapshot Signer is a Guard: save the states for later use.
-        uint256 statesAmount = _snapshot.statesAmount();
+        uint256 statesAmount = snapshot.statesAmount();
         uint256[] memory statePtrs = new uint256[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
-            statePtrs[i] = _saveState(_snapshot.state(i), _guard);
+            statePtrs[i] = _saveState(snapshot.state(i), _guard);
             // Guard either submitted a fresh state, or reused state submitted by another Guard
             // In any case, the "state pointer" would never be zero
             assert(statePtrs[i] != 0);
@@ -152,29 +152,29 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// It is assumed that the Notary signature has been checked outside of this contract.
     /// Returns the attestation created from the Notary snapshot.
     function _acceptNotarySnapshot(
-        Snapshot _snapshot,
+        Snapshot snapshot,
         bytes32 agentRoot,
-        address _notary
+        address notary
     ) internal returns (bytes memory attPayload) {
         // Snapshot Signer is a Notary: construct a Snapshot Merkle Tree,
         // while checking that the states were previously saved.
-        uint256 statesAmount = _snapshot.statesAmount();
+        uint256 statesAmount = snapshot.statesAmount();
         uint256[] memory statePtrs = new uint256[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
-            State state = _snapshot.state(i);
+            State state = snapshot.state(i);
             uint256 statePtr = _statePtr(state);
             // Notary can only used states previously submitted by any fo the Guards
             require(statePtr != 0, "State doesn't exist");
             statePtrs[i] = statePtr;
             // Check that Notary hasn't used a fresher state for this origin before
             uint32 origin = state.origin();
-            require(state.nonce() > _latestState(origin, _notary).nonce, "Outdated nonce");
+            require(state.nonce() > _latestState(origin, notary).nonce, "Outdated nonce");
             // Update Notary latest state for origin
-            latestStatePtr[origin][_notary] = statePtrs[i];
+            latestStatePtr[origin][notary] = statePtrs[i];
         }
         // Derive the snapshot merkle root and save it for a Notary attestation.
         // Save Notary snapshot for later retrieval
-        return _saveNotarySnapshot(_snapshot, statePtrs, agentRoot);
+        return _saveNotarySnapshot(snapshot, statePtrs, agentRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -198,13 +198,13 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// @dev Saves the Notary snapshot and the attestation created from it.
     /// Returns the created attestation.
     function _saveNotarySnapshot(
-        Snapshot _snapshot,
+        Snapshot snapshot,
         uint256[] memory statePtrs,
         bytes32 agentRoot
     ) internal returns (bytes memory attPayload) {
         // Attestation nonce is its index in `attestations` array
         uint32 attNonce = uint32(attestations.length);
-        SummitAttestation memory summitAtt = _snapshot.toSummitAttestation(agentRoot);
+        SummitAttestation memory summitAtt = snapshot.toSummitAttestation(agentRoot);
         attPayload = summitAtt.formatSummitAttestation(attNonce);
         /// @dev Add a single element to both `attestations` and `notarySnapshots`,
         /// enforcing the (attestations.length == notarySnapshots.length) invariant.
@@ -215,22 +215,22 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @dev Saves the state signed by a Guard.
-    function _saveState(State _state, address _guard) internal returns (uint256 statePtr) {
-        uint32 origin = _state.origin();
+    function _saveState(State state, address _guard) internal returns (uint256 statePtr) {
+        uint32 origin = state.origin();
         // Check that Guard hasn't submitted a fresher State before
-        require(_state.nonce() > _latestState(origin, _guard).nonce, "Outdated nonce");
-        bytes32 stateHash = _state.leaf();
+        require(state.nonce() > _latestState(origin, _guard).nonce, "Outdated nonce");
+        bytes32 stateHash = state.leaf();
         statePtr = leafPtr[origin][stateHash];
         // Save state only if it wasn't previously submitted
         if (statePtr == 0) {
             // Extract data that needs to be saved
-            SummitState memory state = _state.toSummitState();
+            SummitState memory state = state.toSummitState();
             guardStates.push(state);
             // State is stored at (length - 1), but we are tracking "index PLUS 1" as "pointer"
             statePtr = guardStates.length;
             leafPtr[origin][stateHash] = statePtr;
             // Emit event with raw state data
-            emit StateSaved(_state.unwrap().clone());
+            emit StateSaved(state.unwrap().clone());
         }
         // Update latest guard state for origin
         latestStatePtr[origin][_guard] = statePtr;
@@ -246,25 +246,21 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @dev Checks if attestation was previously submitted by a Notary (as a signed snapshot).
-    function _isValidAttestation(Attestation _att) internal view returns (bool) {
+    function _isValidAttestation(Attestation att) internal view returns (bool) {
         // Check if nonce exists
-        uint32 nonce = _att.nonce();
+        uint32 nonce = att.nonce();
         if (nonce >= attestations.length) return false;
         // Check if Attestation matches the historical one
-        return _att.equalToSummit(attestations[nonce]);
+        return att.equalToSummit(attestations[nonce]);
     }
 
     /// @dev Restores Snapshot payload from a list of state pointers used for the snapshot.
-    function _restoreSnapshot(SummitSnapshot memory _snapshot)
-        internal
-        view
-        returns (bytes memory)
-    {
-        uint256 statesAmount = _snapshot.getStatesAmount();
+    function _restoreSnapshot(SummitSnapshot memory snapshot) internal view returns (bytes memory) {
+        uint256 statesAmount = snapshot.getStatesAmount();
         State[] memory states = new State[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
             // Get value for "index in guardStates PLUS 1"
-            uint256 statePtr = _snapshot.getStatePtr(i);
+            uint256 statePtr = snapshot.getStatePtr(i);
             // We are never saving zero values when accepting Guard/Notary snapshots, so this holds
             assert(statePtr != 0);
             SummitState memory state = guardStates[statePtr - 1];
@@ -275,8 +271,8 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @dev Returns the pointer for a matching Guard State, if it exists.
-    function _statePtr(State _state) internal view returns (uint256) {
-        return leafPtr[_state.origin()][_state.leaf()];
+    function _statePtr(State state) internal view returns (uint256) {
+        return leafPtr[state.origin()][state.leaf()];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

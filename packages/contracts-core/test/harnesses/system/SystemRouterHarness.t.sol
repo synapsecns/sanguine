@@ -32,8 +32,8 @@ contract SystemRouterHarness is SystemRouter {
         bytes memory prefix = abi.encode(rootSubmittedAt, callOrigin, systemCaller);
         _localSystemCall({
             recipient: uint8(recipient),
-            _callData: data.castToCallData(),
-            _prefix: prefix.castToRawBytes()
+            callData: data.castToCallData(),
+            prefix: prefix.castToRawBytes()
         });
     }
 }

@@ -178,11 +178,11 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     function _openDispute(
         address _guard,
         uint32 domain,
-        address _notary
+        address notary
     ) internal override {
         // Only disputes for local Notaries could be initiated in Destination
         require(domain == localDomain, "Not a local Notary");
-        super._openDispute(_guard, domain, _notary);
+        super._openDispute(_guard, domain, notary);
     }
 
     /// @dev Resolves a Dispute for a slashed agent, if it hasn't been done already.
@@ -200,7 +200,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     function _saveAgentRoot(
         bool _rootPending,
         bytes32 agentRoot,
-        address _notary
+        address notary
     ) internal returns (DestinationStatus memory status) {
         status = destStatus;
         // Update the timestamp for the latest snapshot root
@@ -209,7 +209,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // Update the data for latest agent root only if it differs from the saved one
         if (!_rootPending && nextAgentRoot != agentRoot) {
             status.agentRootTime = uint48(block.timestamp);
-            status.notary = _notary;
+            status.notary = notary;
             nextAgentRoot = agentRoot;
             emit AgentRootAccepted(agentRoot);
         }

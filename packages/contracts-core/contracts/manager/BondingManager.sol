@@ -256,7 +256,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     /// @dev Updates value in the Agent Merkle Tree to reflect the `_newStatus`.
     /// Will revert, if supplied proof for the old value is incorrect.
     function _updateLeaf(
-        bytes32 _oldValue,
+        bytes32 oldValue,
         bytes32[] memory proof,
         AgentStatus memory _newStatus,
         address agent
@@ -264,7 +264,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         // New leaf value for the agent in the Agent Merkle Tree
         bytes32 newValue = _agentLeaf(_newStatus.flag, _newStatus.domain, agent);
         // This will revert if the proof for the old value is incorrect
-        bytes32 newRoot = agentTree.update(_newStatus.index, _oldValue, proof, newValue);
+        bytes32 newRoot = agentTree.update(_newStatus.index, oldValue, proof, newValue);
         agentMap[agent] = _newStatus;
         emit StatusUpdated(_newStatus.flag, _newStatus.domain, agent);
         emit RootUpdated(newRoot);

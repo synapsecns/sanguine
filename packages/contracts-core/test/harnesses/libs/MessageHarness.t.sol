@@ -26,35 +26,35 @@ contract MessageHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToMessage(bytes memory _payload) public view returns (bytes memory) {
+    function castToMessage(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        Message _msg = MessageLib.castToMessage(_payload);
-        return _msg.unwrap().clone();
+        Message message = MessageLib.castToMessage(payload);
+        return message.unwrap().clone();
     }
 
-    function header(bytes memory _payload) public view returns (bytes memory) {
-        return _payload.castToMessage().header().unwrap().clone();
+    function header(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToMessage().header().unwrap().clone();
     }
 
-    function tips(bytes memory _payload) public view returns (bytes memory) {
-        return _payload.castToMessage().tips().unwrap().clone();
+    function tips(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToMessage().tips().unwrap().clone();
     }
 
-    function body(bytes memory _payload) public view returns (bytes memory) {
-        return _payload.castToMessage().body().clone();
+    function body(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToMessage().body().clone();
     }
 
-    function version(bytes memory _payload) public pure returns (uint16) {
-        return _payload.castToMessage().version();
+    function version(bytes memory payload) public pure returns (uint16) {
+        return payload.castToMessage().version();
     }
 
-    function leaf(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToMessage().leaf();
+    function leaf(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToMessage().leaf();
     }
 
-    function isMessage(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isMessage();
+    function isMessage(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isMessage();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -69,20 +69,15 @@ contract MessageHarness {
         bytes32 recipient,
         uint32 optimisticSeconds,
         // tips params
-        uint96 _notaryTip,
-        uint96 _broadcasterTip,
-        uint96 _proverTip,
-        uint96 _executorTip,
+        uint96 notaryTip,
+        uint96 broadcasterTip,
+        uint96 proverTip,
+        uint96 executorTip,
         bytes memory messageBody
     ) public pure returns (bytes memory) {
-        bytes memory tips = TipsLib.formatTips(
-            _notaryTip,
-            _broadcasterTip,
-            _proverTip,
-            _executorTip
-        );
+        bytes memory tips = TipsLib.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
 
-        bytes memory _header = HeaderLib.formatHeader(
+        bytes memory header = HeaderLib.formatHeader(
             origin,
             sender,
             nonce,
@@ -90,7 +85,7 @@ contract MessageHarness {
             recipient,
             optimisticSeconds
         );
-        return formatMessage(_header, tips, messageBody);
+        return formatMessage(header, tips, messageBody);
     }
 
     function formatMessage(
@@ -117,11 +112,11 @@ contract MessageHarness {
     }
 
     function formatMessage(
-        bytes memory _header,
+        bytes memory header,
         bytes memory tips,
         bytes memory messageBody
     ) public pure returns (bytes memory) {
-        return MessageLib.formatMessage(_header, tips, messageBody);
+        return MessageLib.formatMessage(header, tips, messageBody);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

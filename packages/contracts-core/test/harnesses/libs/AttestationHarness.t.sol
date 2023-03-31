@@ -26,63 +26,63 @@ contract AttestationHarness {
     ▏*║                               GETTERS                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function castToAttestation(bytes memory _payload) public view returns (bytes memory) {
+    function castToAttestation(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        Attestation _attestation = AttestationLib.castToAttestation(_payload);
+        Attestation _attestation = AttestationLib.castToAttestation(payload);
         return _attestation.unwrap().clone();
     }
 
-    function snapRoot(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToAttestation().snapRoot();
+    function snapRoot(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToAttestation().snapRoot();
     }
 
-    function agentRoot(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToAttestation().agentRoot();
+    function agentRoot(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToAttestation().agentRoot();
     }
 
-    function nonce(bytes memory _payload) public pure returns (uint32) {
-        return _payload.castToAttestation().nonce();
+    function nonce(bytes memory payload) public pure returns (uint32) {
+        return payload.castToAttestation().nonce();
     }
 
-    function blockNumber(bytes memory _payload) public pure returns (uint40) {
-        return _payload.castToAttestation().blockNumber();
+    function blockNumber(bytes memory payload) public pure returns (uint40) {
+        return payload.castToAttestation().blockNumber();
     }
 
-    function timestamp(bytes memory _payload) public pure returns (uint40) {
-        return _payload.castToAttestation().timestamp();
+    function timestamp(bytes memory payload) public pure returns (uint40) {
+        return payload.castToAttestation().timestamp();
     }
 
-    function hash(bytes memory _payload) public pure returns (bytes32) {
-        return _payload.castToAttestation().hash();
+    function hash(bytes memory payload) public pure returns (bytes32) {
+        return payload.castToAttestation().hash();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                       DESTINATION ATTESTATION                        ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function toExecutionAttestation(bytes memory _payload, address _notary)
+    function toExecutionAttestation(bytes memory payload, address notary)
         public
         view
         returns (ExecutionAttestation memory)
     {
-        return _payload.castToAttestation().toExecutionAttestation(_notary);
+        return payload.castToAttestation().toExecutionAttestation(notary);
     }
 
-    function isEmpty(ExecutionAttestation memory _execAtt) public pure returns (bool) {
-        return _execAtt.isEmpty();
+    function isEmpty(ExecutionAttestation memory execAtt) public pure returns (bool) {
+        return execAtt.isEmpty();
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          SUMMIT ATTESTATION                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatSummitAttestation(SummitAttestation memory _summitAtt, uint32 nonce)
+    function formatSummitAttestation(SummitAttestation memory summitAtt, uint32 nonce)
         public
         pure
         returns (bytes memory)
     {
-        return _summitAtt.formatSummitAttestation(nonce);
+        return summitAtt.formatSummitAttestation(nonce);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -90,17 +90,16 @@ contract AttestationHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatAttestation(
-        bytes32 _snapRoot,
+        bytes32 snapRoot,
         bytes32 agentRoot,
         uint32 nonce,
-        uint40 _blockNumber,
-        uint40 _timestamp
+        uint40 blockNumber,
+        uint40 timestamp
     ) public pure returns (bytes memory) {
-        return
-            AttestationLib.formatAttestation(_snapRoot, agentRoot, nonce, _blockNumber, _timestamp);
+        return AttestationLib.formatAttestation(snapRoot, agentRoot, nonce, blockNumber, timestamp);
     }
 
-    function isAttestation(bytes memory _payload) public pure returns (bool) {
-        return _payload.ref(0).isAttestation();
+    function isAttestation(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isAttestation();
     }
 }

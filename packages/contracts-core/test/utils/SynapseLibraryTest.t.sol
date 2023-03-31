@@ -20,11 +20,11 @@ abstract contract SynapseLibraryTest is SynapseTestSuite {
         // 8 bytes should be enough
         bytes memory payload = abi.encodePacked(data, data, data, data, data, data, data, data);
         // Use first `payloadLength` bytes
-        return payload.ref(0).slice({ index: 0, _len: payloadLength, newType: 0 }).clone();
+        return payload.ref(0).slice({ index: 0, len: payloadLength, newType: 0 }).clone();
     }
 
     function cutLastByte(bytes memory payload) public view returns (bytes memory) {
-        return payload.ref(0).slice({ index: 0, _len: payload.length - 1, newType: 0 }).clone();
+        return payload.ref(0).slice({ index: 0, len: payload.length - 1, newType: 0 }).clone();
     }
 
     function addLastByte(bytes memory payload) public pure returns (bytes memory) {
