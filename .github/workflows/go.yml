@@ -18,7 +18,6 @@ jobs:
         with:
           cancel_others: 'true'
 
-
   # changes allows us to only run a job on changed packages
   changes:
     name: Change Detection
