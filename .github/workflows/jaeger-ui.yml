@@ -46,7 +46,7 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: ./docker/
+          context: ./docker/jaeger-ui
           push: true
           file: ./docker/jaeger-ui/Dockerfile
           # TODO this needs to be versioned
