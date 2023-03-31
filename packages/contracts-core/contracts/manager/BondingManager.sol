@@ -7,13 +7,12 @@ import { MerkleList } from "../libs/MerkleList.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentManager, IAgentManager, ISystemRegistry } from "./AgentManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
-import { BondingManagerEvents } from "../events/BondingManagerEvents.sol";
 import { IBondingManager } from "../interfaces/IBondingManager.sol";
 import { Versioned } from "../Version.sol";
 
 /// @notice BondingManager keeps track of all existing agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
-contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondingManager {
+contract BondingManager is Versioned, AgentManager, IBondingManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -285,7 +284,8 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, IBondi
         // This will revert if the proof for the old value is incorrect
         bytes32 newRoot = agentTree.update(_newStatus.index, _oldValue, _proof, newValue);
         agentMap[_agent] = _newStatus;
-        emit StatusUpdated(_newStatus.flag, _newStatus.domain, _agent, newRoot);
+        emit StatusUpdated(_newStatus.flag, _newStatus.domain, _agent);
+        emit RootUpdated(newRoot);
     }
 
     /// @dev Returns the status of the agent.

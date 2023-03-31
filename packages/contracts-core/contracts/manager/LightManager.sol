@@ -60,6 +60,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         );
         // Update the agent status against this root
         agentMap[root][_agent] = _status;
+        emit StatusUpdated(_status.flag, _status.domain, _agent);
         // Notify local Registries, if agent flag is Slashed
         if (_status.flag == AgentFlag.Slashed) {
             // Prover is msg.sender
@@ -68,11 +69,9 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     }
 
     /// @inheritdoc ILightManager
-    function setAgentRoot(bytes32 _agentRoot) external onlyOwner {
-        // TODO: only destination should be able to call this
-        if (latestAgentRoot != _agentRoot) {
-            latestAgentRoot = _agentRoot;
-        }
+    function setAgentRoot(bytes32 _agentRoot) external {
+        require(msg.sender == address(destination), "Only Destination sets agent root");
+        _setAgentRoot(_agentRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -113,6 +112,14 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Updates the Agent Merkle Root that Light Manager is tracking.
+    function _setAgentRoot(bytes32 _agentRoot) internal {
+        if (latestAgentRoot != _agentRoot) {
+            latestAgentRoot = _agentRoot;
+            emit RootUpdated(_agentRoot);
+        }
+    }
 
     /// @dev Returns the status for the agent: whether or not they have been added
     /// using latest Agent merkle Root.

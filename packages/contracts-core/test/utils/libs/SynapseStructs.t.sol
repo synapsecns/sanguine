@@ -68,12 +68,17 @@ using {
 } for RawSnapshot global;
 
 struct RawAttestation {
-    bytes32 root;
+    bytes32 snapRoot;
+    bytes32 agentRoot;
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
 }
-using { CastLib.castToAttestation, CastLib.formatAttestation } for RawAttestation global;
+using {
+    CastLib.castToAttestation,
+    CastLib.formatAttestation,
+    CastLib.modifyAttestation
+} for RawAttestation global;
 
 struct RawAttestationReport {
     uint8 flag;
@@ -200,12 +205,14 @@ library CastLib {
 
     function castToRawAttestation(
         RawSnapshot memory rawSnap,
+        bytes32 agentRoot,
         uint32 nonce,
         uint40 blockNumber,
         uint40 timestamp
     ) internal view returns (RawAttestation memory ra) {
         Snapshot snapshot = rawSnap.castToSnapshot();
-        ra.root = snapshot.root();
+        ra.snapRoot = snapshot.root();
+        ra.agentRoot = agentRoot;
         ra.nonce = nonce;
         ra.blockNumber = blockNumber;
         ra.timestamp = timestamp;
@@ -237,7 +244,8 @@ library CastLib {
         returns (bytes memory attestation)
     {
         attestation = AttestationLib.formatAttestation({
-            _root: ra.root,
+            _snapRoot: ra.snapRoot,
+            _agentRoot: ra.agentRoot,
             _nonce: ra.nonce,
             _blockNumber: ra.blockNumber,
             _timestamp: ra.timestamp
@@ -246,6 +254,21 @@ library CastLib {
 
     function castToAttestation(RawAttestation memory ra) internal pure returns (Attestation ptr) {
         ptr = ra.formatAttestation().castToAttestation();
+    }
+
+    function modifyAttestation(RawAttestation memory ra, uint256 mask)
+        internal
+        pure
+        returns (bool isEqual, RawAttestation memory mra)
+    {
+        // Don't modify the nonce
+        mra.nonce = ra.nonce;
+        // Check if at least one value was modified by checking last 4 bits
+        isEqual = mask & 15 == 0;
+        mra.snapRoot = ra.snapRoot ^ bytes32(mask & 1);
+        mra.agentRoot = ra.agentRoot ^ bytes32(mask & 2);
+        mra.blockNumber = ra.blockNumber ^ uint40(mask & 4);
+        mra.timestamp = ra.timestamp ^ uint40(mask & 8);
     }
 
     function formatAttestationReport(RawAttestationReport memory rawAR)

@@ -11,4 +11,6 @@ abstract contract DestinationEvents {
      * @param attSignature  Notary signature for the attestation
      */
     event AttestationAccepted(uint32 domain, address notary, bytes attestation, bytes attSignature);
+
+    event AgentRootAccepted(bytes32 agentRoot);
 }

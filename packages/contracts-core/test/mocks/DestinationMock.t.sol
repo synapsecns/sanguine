@@ -21,6 +21,8 @@ contract DestinationMock is
     /// @notice Prevents this contract from being included in the coverage report
     function testDestinationMock() external {}
 
+    function passAgentRoot() external returns (bool rootPassed, bool rootPending) {}
+
     function submitAttestation(bytes memory _attPayload, bytes memory _attSignature)
         external
         returns (bool wasAccepted)
@@ -49,4 +51,16 @@ contract DestinationMock is
         view
         returns (bytes32 root, ExecutionAttestation memory execAtt)
     {}
+
+    function destStatus()
+        external
+        view
+        returns (
+            uint48 snapRootTime,
+            uint48 agentRootTime,
+            address notary
+        )
+    {}
+
+    function nextAgentRoot() external view returns (bytes32) {}
 }
