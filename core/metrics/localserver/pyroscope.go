@@ -56,8 +56,8 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 	}
 
 	// github actions functions on a bridge so the host mount happens on the machine host
-	// rather than in the isolated container enviorment. This causes the pyroscope config
-	// to be inaccessible. To get around this we remove the enviorment variables from the
+	// rather than in the isolated container environment. This causes the pyroscope config
+	// to be inaccessible. To get around this we remove the environment variables from the
 	// container.
 	// See:  https://stackoverflow.com/a/60202672 for details.
 	if core.HasEnv("CI") {
