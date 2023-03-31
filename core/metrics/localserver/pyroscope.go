@@ -65,7 +65,7 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 				ReadOnly: true,
 			},
 		}
-		config.AutoRemove = true
+		//config.AutoRemove = true
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
 	assert.Nil(j.tb, err)
