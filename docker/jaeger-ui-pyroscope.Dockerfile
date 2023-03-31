@@ -13,6 +13,7 @@ LABEL org.label-schema.schema-version="1.0.0"
 LABEL org.label-schema.vcs-url="https://github.com/synapsecns/sanguine"
 LABEL org.opencontainers.image.source="https://github.com/synapsecns/sanguine"
 
+
 RUN yarn install || true
 ENV HOST=0.0.0.0
 RUN sed -i s/localhost/jaeger/ ./packages/jaeger-ui/src/setupProxy.js
