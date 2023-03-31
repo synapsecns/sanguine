@@ -64,24 +64,24 @@ library MessageLib {
 
     /**
      * @notice Returns formatted message with provided fields
-     * @param header        Formatted header payload
-     * @param tips          Formatted tips payload
+     * @param header_       Formatted header payload
+     * @param tips_         Formatted tips payload
      * @param messageBody   Raw bytes of message body
      * @return Formatted message
      **/
     function formatMessage(
-        bytes memory header,
-        bytes memory tips,
+        bytes memory header_,
+        bytes memory tips_,
         bytes memory messageBody
     ) internal pure returns (bytes memory) {
         // Header and Tips are supposed to fit within 65535 bytes
         return
             abi.encodePacked(
                 MESSAGE_VERSION,
-                uint16(header.length),
-                uint16(tips.length),
-                header,
-                tips,
+                uint16(header_.length),
+                uint16(tips_.length),
+                header_,
+                tips_,
                 messageBody
             );
     }
@@ -94,7 +94,7 @@ library MessageLib {
      * @param destination           Domain of destination chain
      * @param recipient             Address that will receive the message
      * @param optimisticSeconds     Optimistic period for message execution
-     * @param tips                  Formatted tips payload
+     * @param tips_                 Formatted tips payload
      * @param messageBody           Raw bytes of message body
      * @return Formatted message
      **/
@@ -105,7 +105,7 @@ library MessageLib {
         uint32 destination,
         bytes32 recipient,
         uint32 optimisticSeconds,
-        bytes memory tips,
+        bytes memory tips_,
         bytes memory messageBody
     ) internal pure returns (bytes memory) {
         return
@@ -118,7 +118,7 @@ library MessageLib {
                     recipient,
                     optimisticSeconds
                 ),
-                tips,
+                tips_,
                 messageBody
             );
     }

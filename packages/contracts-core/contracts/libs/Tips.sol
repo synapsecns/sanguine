@@ -53,19 +53,20 @@ library TipsLib {
 
     /**
      * @notice Returns a formatted Tips payload with provided fields
-     * @param notaryTip         Tip for the Notary
-     * @param broadcasterTip    Tip for the Broadcaster
-     * @param proverTip         Tip for the Prover
-     * @param executorTip       Tip for the Executor
+     * @param notaryTip_        Tip for the Notary
+     * @param broadcasterTip_   Tip for the Broadcaster
+     * @param proverTip_        Tip for the Prover
+     * @param executorTip_      Tip for the Executor
      * @return Formatted tips
      **/
     function formatTips(
-        uint96 notaryTip,
-        uint96 broadcasterTip,
-        uint96 proverTip,
-        uint96 executorTip
+        uint96 notaryTip_,
+        uint96 broadcasterTip_,
+        uint96 proverTip_,
+        uint96 executorTip_
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(TIPS_VERSION, notaryTip, broadcasterTip, proverTip, executorTip);
+        return
+            abi.encodePacked(TIPS_VERSION, notaryTip_, broadcasterTip_, proverTip_, executorTip_);
     }
 
     /**

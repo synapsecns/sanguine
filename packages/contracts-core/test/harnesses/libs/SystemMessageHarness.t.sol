@@ -32,25 +32,25 @@ contract SystemMessageHarness {
 
     function formatSystemMessage(
         uint8 systemRecipient,
-        bytes memory callData,
+        bytes memory callData_,
         bytes memory prefix
     ) public view returns (bytes memory) {
         return
             SystemMessageLib.formatSystemMessage(
                 systemRecipient,
-                callData.castToCallData(),
+                callData_.castToCallData(),
                 prefix.castToRawBytes()
             );
     }
 
-    function formatAdjustedCallData(bytes memory callData, bytes memory prefix)
+    function formatAdjustedCallData(bytes memory callData_, bytes memory prefix)
         public
         view
         returns (bytes memory)
     {
         return
             SystemMessageLib.formatAdjustedCallData(
-                callData.castToCallData(),
+                callData_.castToCallData(),
                 prefix.castToRawBytes()
             );
     }

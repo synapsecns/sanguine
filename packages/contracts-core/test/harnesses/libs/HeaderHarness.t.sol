@@ -76,21 +76,21 @@ contract HeaderHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatHeader(
-        uint32 origin,
-        bytes32 sender,
-        uint32 nonce,
-        uint32 destination,
-        bytes32 recipient,
-        uint32 optimisticSeconds
+        uint32 origin_,
+        bytes32 sender_,
+        uint32 nonce_,
+        uint32 destination_,
+        bytes32 recipient_,
+        uint32 optimisticSeconds_
     ) public pure returns (bytes memory) {
         return
             HeaderLib.formatHeader(
-                origin,
-                sender,
-                nonce,
-                destination,
-                recipient,
-                optimisticSeconds
+                origin_,
+                sender_,
+                nonce_,
+                destination_,
+                recipient_,
+                optimisticSeconds_
             );
     }
 

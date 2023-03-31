@@ -77,12 +77,12 @@ contract AttestationHarness {
     ▏*║                          SUMMIT ATTESTATION                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatSummitAttestation(SummitAttestation memory summitAtt, uint32 nonce)
+    function formatSummitAttestation(SummitAttestation memory summitAtt, uint32 nonce_)
         public
         pure
         returns (bytes memory)
     {
-        return summitAtt.formatSummitAttestation(nonce);
+        return summitAtt.formatSummitAttestation(nonce_);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -90,13 +90,20 @@ contract AttestationHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatAttestation(
-        bytes32 snapRoot,
-        bytes32 agentRoot,
-        uint32 nonce,
-        uint40 blockNumber,
-        uint40 timestamp
+        bytes32 snapRoot_,
+        bytes32 agentRoot_,
+        uint32 nonce_,
+        uint40 blockNumber_,
+        uint40 timestamp_
     ) public pure returns (bytes memory) {
-        return AttestationLib.formatAttestation(snapRoot, agentRoot, nonce, blockNumber, timestamp);
+        return
+            AttestationLib.formatAttestation(
+                snapRoot_,
+                agentRoot_,
+                nonce_,
+                blockNumber_,
+                timestamp_
+            );
     }
 
     function isAttestation(bytes memory payload) public pure returns (bool) {

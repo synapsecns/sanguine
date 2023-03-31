@@ -65,12 +65,12 @@ contract TipsHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatTips(
-        uint96 notaryTip,
-        uint96 broadcasterTip,
-        uint96 proverTip,
-        uint96 executorTip
+        uint96 notaryTip_,
+        uint96 broadcasterTip_,
+        uint96 proverTip_,
+        uint96 executorTip_
     ) public pure returns (bytes memory) {
-        return TipsLib.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
+        return TipsLib.formatTips(notaryTip_, broadcasterTip_, proverTip_, executorTip_);
     }
 
     function emptyTips() public pure returns (bytes memory) {

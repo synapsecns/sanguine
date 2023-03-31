@@ -45,16 +45,16 @@ contract StateHarness {
         return payload.castToState().subLeafs();
     }
 
-    function leftLeaf(bytes32 root, uint32 origin) public pure returns (bytes32) {
-        return StateLib.leftLeaf(root, origin);
+    function leftLeaf(bytes32 root_, uint32 origin_) public pure returns (bytes32) {
+        return StateLib.leftLeaf(root_, origin_);
     }
 
     function rightLeaf(
-        uint32 nonce,
-        uint40 blockNumber,
-        uint40 timestamp
+        uint32 nonce_,
+        uint40 blockNumber_,
+        uint40 timestamp_
     ) public pure returns (bytes32) {
-        return StateLib.rightLeaf(nonce, blockNumber, timestamp);
+        return StateLib.rightLeaf(nonce_, blockNumber_, timestamp_);
     }
 
     function root(bytes memory payload) public pure returns (bytes32) {
@@ -82,24 +82,24 @@ contract StateHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatOriginState(
-        OriginState memory originState,
-        bytes32 root,
-        uint32 origin,
-        uint32 nonce
+        OriginState memory originState_,
+        bytes32 root_,
+        uint32 origin_,
+        uint32 nonce_
     ) public pure returns (bytes memory) {
-        return originState.formatOriginState(root, origin, nonce);
+        return originState_.formatOriginState(root_, origin_, nonce_);
     }
 
     function originState() public view returns (OriginState memory state) {
         return StateLib.originState();
     }
 
-    function equalToOrigin(bytes memory payload, OriginState memory originState)
+    function equalToOrigin(bytes memory payload, OriginState memory originState_)
         public
         pure
         returns (bool)
     {
-        return payload.castToState().equalToOrigin(originState);
+        return payload.castToState().equalToOrigin(originState_);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -119,13 +119,13 @@ contract StateHarness {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function formatState(
-        bytes32 root,
-        uint32 origin,
-        uint32 nonce,
-        uint40 blockNumber,
-        uint40 timestamp
+        bytes32 root_,
+        uint32 origin_,
+        uint32 nonce_,
+        uint40 blockNumber_,
+        uint40 timestamp_
     ) public pure returns (bytes memory) {
-        return StateLib.formatState(root, origin, nonce, blockNumber, timestamp);
+        return StateLib.formatState(root_, origin_, nonce_, blockNumber_, timestamp_);
     }
 
     function isState(bytes memory payload) public pure returns (bool) {

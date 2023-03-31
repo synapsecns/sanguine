@@ -112,8 +112,8 @@ library SnapshotLib {
         // Snapshot needs to have exactly N * STATE_LENGTH bytes length
         // N needs to be in [1 .. SNAPSHOT_MAX_STATES] range
         uint256 length = view_.len();
-        uint256 statesAmount = length / STATE_LENGTH;
-        return statesAmount * STATE_LENGTH == length && _isValidAmount(statesAmount);
+        uint256 statesAmount_ = length / STATE_LENGTH;
+        return statesAmount_ * STATE_LENGTH == length && _isValidAmount(statesAmount_);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -186,9 +186,9 @@ library SnapshotLib {
 
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
     function root(Snapshot snapshot) internal pure returns (bytes32) {
-        uint256 statesAmount = snapshot.statesAmount();
+        uint256 statesAmount_ = snapshot.statesAmount();
         bytes32[] memory hashes = new bytes32[](statesAmount);
-        for (uint256 i = 0; i < statesAmount; ++i) {
+        for (uint256 i = 0; i < statesAmount_; ++i) {
             // Each State has two sub-leafs, which are used as the "leafs" in "Snapshot Merkle Tree"
             // We save their parent in order to calculate the root for the whole tree later
             hashes[i] = snapshot.state(i).leaf();
@@ -219,9 +219,9 @@ library SnapshotLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @dev Checks if snapshot's states amount is valid.
-    function _isValidAmount(uint256 statesAmount) internal pure returns (bool) {
+    function _isValidAmount(uint256 statesAmount_) internal pure returns (bool) {
         // Need to have at least one state in a snapshot.
         // Also need to have no more than `SNAPSHOT_MAX_STATES` states in a snapshot.
-        return statesAmount > 0 && statesAmount <= SNAPSHOT_MAX_STATES;
+        return statesAmount_ > 0 && statesAmount_ <= SNAPSHOT_MAX_STATES;
     }
 }

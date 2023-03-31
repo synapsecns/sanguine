@@ -43,12 +43,12 @@ contract AttestationReportHarness {
     ▏*║                    ATTESTATION REPORT FORMATTERS                     ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatAttestationReport(AttestationFlag flag, bytes memory attPayload)
+    function formatAttestationReport(AttestationFlag flag_, bytes memory attPayload)
         public
         pure
         returns (bytes memory)
     {
-        return AttestationReportLib.formatAttestationReport(flag, attPayload);
+        return AttestationReportLib.formatAttestationReport(flag_, attPayload);
     }
 
     function isAttestationReport(bytes memory payload) public pure returns (bool) {

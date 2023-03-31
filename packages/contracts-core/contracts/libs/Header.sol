@@ -57,31 +57,31 @@ library HeaderLib {
 
     /**
      * @notice Returns a formatted Header payload with provided fields
-     * @param origin                Domain of origin chain
-     * @param sender                Address that sent the message
-     * @param nonce                 Message nonce on origin chain
-     * @param destination           Domain of destination chain
-     * @param recipient             Address that will receive the message
-     * @param optimisticSeconds     Optimistic period for message execution
+     * @param origin_               Domain of origin chain
+     * @param sender_               Address that sent the message
+     * @param nonce_                Message nonce on origin chain
+     * @param destination_          Domain of destination chain
+     * @param recipient_            Address that will receive the message
+     * @param optimisticSeconds_    Optimistic period for message execution
      * @return Formatted header
      **/
     function formatHeader(
-        uint32 origin,
-        bytes32 sender,
-        uint32 nonce,
-        uint32 destination,
-        bytes32 recipient,
-        uint32 optimisticSeconds
+        uint32 origin_,
+        bytes32 sender_,
+        uint32 nonce_,
+        uint32 destination_,
+        bytes32 recipient_,
+        uint32 optimisticSeconds_
     ) internal pure returns (bytes memory) {
         return
             abi.encodePacked(
                 HEADER_VERSION,
-                origin,
-                sender,
-                nonce,
-                destination,
-                recipient,
-                optimisticSeconds
+                origin_,
+                sender_,
+                nonce_,
+                destination_,
+                recipient_,
+                optimisticSeconds_
             );
     }
 

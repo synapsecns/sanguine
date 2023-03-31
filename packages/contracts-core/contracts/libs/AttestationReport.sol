@@ -51,15 +51,15 @@ library AttestationReportLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns a formatted AttestationReport payload with provided fields.
-    /// @param flag         Flag signalling type of Attestation Report
+    /// @param flag_        Flag signalling type of Attestation Report
     /// @param attPayload   Raw payload with reported attestation
     /// @return Formatted attestation report
-    function formatAttestationReport(AttestationFlag flag, bytes memory attPayload)
+    function formatAttestationReport(AttestationFlag flag_, bytes memory attPayload)
         internal
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(flag, attPayload);
+        return abi.encodePacked(flag_, attPayload);
     }
 
     /// @notice Returns an AttestationReport view over the given payload

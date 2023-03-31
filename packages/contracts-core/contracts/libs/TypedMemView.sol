@@ -170,18 +170,18 @@ library TypedMemView {
     }
 
     /**
-     * @notice      Create a mask with the highest `len` bits set.
-     * @param len   The length
+     * @notice      Create a mask with the highest `len_` bits set.
+     * @param len_  The length
      * @return      mask - The mask
      */
-    function leftMask(uint8 len) private pure returns (uint256 mask) {
+    function leftMask(uint8 len_) private pure returns (uint256 mask) {
         // 0x800...00 binary representation is 100...00
         // sar stands for "signed arithmetic shift": https://en.wikipedia.org/wiki/Arithmetic_shift
         // sar(N-1, 100...00) = 11...100..00, with exactly N highest bits set to 1
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             mask := sar(
-                sub(len, 1),
+                sub(len_, 1),
                 0x8000000000000000000000000000000000000000000000000000000000000000
             )
         }
@@ -217,7 +217,7 @@ library TypedMemView {
      *                  in memory.
      * @dev             We perform this check by examining solidity's unallocated memory
      *                  pointer and ensuring that the view's upper bound is less than that.
-     * @param view_   The view
+     * @param view_     The view
      * @return          ret - True if the view is valid
      */
     function isValid(bytes29 view_) internal pure returns (bool ret) {
@@ -236,7 +236,7 @@ library TypedMemView {
     /**
      * @notice          Require that a typed memory view be valid.
      * @dev             Returns the view for easy chaining.
-     * @param view_   The view
+     * @param view_     The view
      * @return          bytes29 - The validated view
      */
     function assertValid(bytes29 view_) internal pure returns (bytes29) {
@@ -246,7 +246,7 @@ library TypedMemView {
 
     /**
      * @notice          Return true if the view_ is of the expected type. Otherwise false.
-     * @param view_   The view
+     * @param view_     The view
      * @param expected  The expected type
      * @return          bool - True if the view_ is of the expected type
      */
@@ -257,7 +257,7 @@ library TypedMemView {
     /**
      * @notice          Require that a typed memory view has a specific type.
      * @dev             Returns the view for easy chaining.
-     * @param view_   The view
+     * @param view_     The view
      * @param expected  The expected type
      * @return          bytes29 - The view with validated type
      */
@@ -280,7 +280,7 @@ library TypedMemView {
 
     /**
      * @notice          Return an identical view with a different type.
-     * @param view_   The view
+     * @param view_     The view
      * @param newType   The new type
      * @return          newView - The new view with the specified type
      */
@@ -304,14 +304,14 @@ library TypedMemView {
      * @dev             Unsafe raw pointer construction. This should generally not be called
      *                  directly. Prefer `ref` wherever possible.
      * @param type_     The type
-     * @param loc       The memory address
-     * @param len       The length
+     * @param loc_      The memory address
+     * @param len_      The length
      * @return          newView - The new view with the specified type, location and length
      */
     function unsafeBuildUnchecked(
         uint256 type_,
-        uint256 loc,
-        uint256 len
+        uint256 loc_,
+        uint256 len_
     ) private pure returns (bytes29 newView) {
         uint256 bitsLoc = BITS_LOC;
         uint256 bitsLen = BITS_LEN;
@@ -326,9 +326,9 @@ library TypedMemView {
             // insert `type`, shift to prepare empty bits for `loc`
             newView := shl(bitsLoc, or(newView, type_))
             // insert `loc`, shift to prepare empty bits for `len`
-            newView := shl(bitsLen, or(newView, loc))
+            newView := shl(bitsLen, or(newView, loc_))
             // insert `len`, shift to insert 3 blank lowest bits
-            newView := shl(bitsEmpty, or(newView, len))
+            newView := shl(bitsEmpty, or(newView, len_))
         }
     }
 
@@ -338,16 +338,16 @@ library TypedMemView {
      * @dev             Instantiate a new memory view. This should generally not be called
      *                  directly. Prefer `ref` wherever possible.
      * @param type_     The type
-     * @param loc       The memory address
-     * @param len       The length
+     * @param loc_      The memory address
+     * @param len_      The length
      * @return          newView - The new view with the specified type, location and length
      */
     function build(
         uint256 type_,
-        uint256 loc,
-        uint256 len
+        uint256 loc_,
+        uint256 len_
     ) internal pure returns (bytes29 newView) {
-        uint256 end_ = loc + len;
+        uint256 end_ = loc_ + len_;
         // Make sure that a view is not constructed that points to unallocated memory
         // as this could be indicative of a buffer overflow attack
         assembly {
@@ -359,7 +359,7 @@ library TypedMemView {
         if (end_ == 0) {
             return NULL;
         }
-        newView = unsafeBuildUnchecked(type_, loc, len);
+        newView = unsafeBuildUnchecked(type_, loc_, len_);
     }
 
     /**
@@ -371,23 +371,23 @@ library TypedMemView {
      * @return          bytes29 - The memory view
      */
     function ref(bytes memory arr, uint40 newType) internal pure returns (bytes29) {
-        uint256 len = arr.length;
+        uint256 len_ = arr.length;
         // `bytes arr` is stored in memory in the following way
         // 1. First, uint256 arr.length is stored. That requires 32 bytes (0x20).
         // 2. Then, the array data is stored.
-        uint256 loc;
+        uint256 loc_;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             // We add 0x20, so that the view starts exactly where the array data starts
-            loc := add(arr, 0x20)
+            loc_ := add(arr, 0x20)
         }
 
-        return build(newType, loc, len);
+        return build(newType, loc_, len_);
     }
 
     /**
      * @notice          Return the associated type information.
-     * @param view_   The memory view
+     * @param view_     The memory view
      * @return          type_ - The type associated with the view
      */
     function typeOf(bytes29 view_) internal pure returns (uint40 type_) {
@@ -414,10 +414,10 @@ library TypedMemView {
 
     /**
      * @notice          Return the memory address of the underlying bytes.
-     * @param view_   The view
-     * @return          loc - The memory address
+     * @param view_     The view
+     * @return          loc_ - The memory address
      */
-    function loc(bytes29 view_) internal pure returns (uint96 loc) {
+    function loc(bytes29 view_) internal pure returns (uint96 loc_) {
         // How many bits are the "loc bits" shifted from the bottom
         uint256 shiftLoc = SHIFT_LOC;
         // Mask for the bottom 96 bits
@@ -426,13 +426,13 @@ library TypedMemView {
             // solhint-disable-previous-line no-inline-assembly
             // Shift out the bottom bits preceding "loc bits".
             // Then use the lowest 96 bits to determine `loc` by applying the bit-mask.
-            loc := and(shr(shiftLoc, view_), uint96Mask)
+            loc_ := and(shr(shiftLoc, view_), uint96Mask)
         }
     }
 
     /**
      * @notice          The number of memory words this memory view occupies, rounded up.
-     * @param view_   The view
+     * @param view_     The view
      * @return          uint256 - The number of memory words
      */
     function words(bytes29 view_) internal pure returns (uint256) {
@@ -451,10 +451,10 @@ library TypedMemView {
 
     /**
      * @notice          The number of bytes of the view.
-     * @param view_   The view
-     * @return          len - The length of the view
+     * @param view_     The view
+     * @return          len_ - The length of the view
      */
-    function len(bytes29 view_) internal pure returns (uint96 len) {
+    function len(bytes29 view_) internal pure returns (uint96 len_) {
         // How many bits are the "len bits" shifted from the bottom
         uint256 shiftLen = SHIFT_LEN;
         // Mask for the bottom 96 bits
@@ -463,7 +463,7 @@ library TypedMemView {
             // solhint-disable-previous-line no-inline-assembly
             // Shift out the bottom bits preceding "len bits".
             // Then use the lowest 96 bits to determine `len` by applying the bit-mask.
-            len := and(shr(shiftLen, view_), uint96Mask)
+            len_ := and(shr(shiftLen, view_), uint96Mask)
         }
     }
 
@@ -480,93 +480,93 @@ library TypedMemView {
 
     /**
      * @notice          Safe slicing without memory modification.
-     * @param view_   The view
-     * @param index     The start index
-     * @param len       The length
+     * @param view_     The view
+     * @param index_    The start index
+     * @param len_      The length
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
     function slice(
         bytes29 view_,
-        uint256 index,
-        uint256 len,
+        uint256 index_,
+        uint256 len_,
         uint40 newType
     ) internal pure returns (bytes29) {
-        uint256 loc = loc(view_);
+        uint256 loc_ = loc(view_);
 
         // Ensure it doesn't overrun the view
-        if (loc + index + len > end(view_)) {
+        if (loc_ + index_ + len_ > end(view_)) {
             return NULL;
         }
 
-        loc = loc + index;
-        return build(newType, loc, len);
+        loc_ = loc_ + index_;
+        return build(newType, loc_, len_);
     }
 
     /**
      * @notice          Shortcut to `slice`. Gets a view representing
      *                  bytes from `index` to end(view_).
-     * @param view_   The view
-     * @param index     The start index
+     * @param view_     The view
+     * @param index_    The start index
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
     function sliceFrom(
         bytes29 view_,
-        uint256 index,
+        uint256 index_,
         uint40 newType
     ) internal pure returns (bytes29) {
-        return slice(view_, index, len(view_) - index, newType);
+        return slice(view_, index_, len(view_) - index_, newType);
     }
 
     /**
      * @notice          Shortcut to `slice`. Gets a view representing the first `len` bytes.
-     * @param view_   The view
-     * @param len       The length
+     * @param view_     The view
+     * @param len_      The length
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
     function prefix(
         bytes29 view_,
-        uint256 len,
+        uint256 len_,
         uint40 newType
     ) internal pure returns (bytes29) {
-        return slice(view_, 0, len, newType);
+        return slice(view_, 0, len_, newType);
     }
 
     /**
      * @notice          Shortcut to `slice`. Gets a view representing the last `len` byte.
-     * @param view_   The view
-     * @param len       The length
+     * @param view_     The view
+     * @param len_      The length
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
     function postfix(
         bytes29 view_,
-        uint256 len,
+        uint256 len_,
         uint40 newType
     ) internal pure returns (bytes29) {
-        return slice(view_, uint256(len(view_)) - len, len, newType);
+        return slice(view_, uint256(len(view_)) - len_, len_, newType);
     }
 
     /**
      * @notice          Construct an error message for an indexing overrun.
-     * @param loc       The memory address
-     * @param len       The length
-     * @param index     The index
-     * @param slice     The slice where the overrun occurred
+     * @param loc_      The memory address
+     * @param len_      The length
+     * @param index_    The index
+     * @param slice_    The slice where the overrun occurred
      * @return          err - The err
      */
     function indexErrOverrun(
-        uint256 loc,
-        uint256 len,
-        uint256 index,
-        uint256 slice
+        uint256 loc_,
+        uint256 len_,
+        uint256 index_,
+        uint256 slice_
     ) internal pure returns (string memory err) {
-        (, uint256 a) = encodeHex(loc);
-        (, uint256 b) = encodeHex(len);
-        (, uint256 c) = encodeHex(index);
-        (, uint256 d) = encodeHex(slice);
+        (, uint256 a) = encodeHex(loc_);
+        (, uint256 b) = encodeHex(len_);
+        (, uint256 c) = encodeHex(index_);
+        (, uint256 d) = encodeHex(slice_);
         err = string(
             abi.encodePacked(
                 "TypedMemView/index - Overran the view. Slice is at 0x",
@@ -587,21 +587,21 @@ library TypedMemView {
      * @dev             Returns a bytes32 with only the `bytes_` highest bytes set.
      *                  This can be immediately cast to a smaller fixed-length byte array.
      *                  To automatically cast to an integer, use `indexUint`.
-     * @param view_   The view
-     * @param index     The index
+     * @param view_     The view
+     * @param index_    The index
      * @param bytes_    The bytes
      * @return          result - The 32 byte result
      */
     function index(
         bytes29 view_,
-        uint256 index,
+        uint256 index_,
         uint8 bytes_
     ) internal pure returns (bytes32 result) {
         if (bytes_ == 0) {
             return bytes32(0);
         }
-        if (index + bytes_ > len(view_)) {
-            revert(indexErrOverrun(loc(view_), len(view_), index, uint256(bytes_)));
+        if (index_ + bytes_ > len(view_)) {
+            revert(indexErrOverrun(loc(view_), len(view_), index_, uint256(bytes_)));
         }
         require(bytes_ <= 32, "Index: more than 32 bytes");
 
@@ -609,90 +609,90 @@ library TypedMemView {
         unchecked {
             bitLength = bytes_ * 8;
         }
-        uint256 loc = loc(view_);
+        uint256 loc_ = loc(view_);
         // Get a mask with `bitLength` highest bits set
         uint256 mask = leftMask(bitLength);
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             // Load a full word using index offset, and apply mask to ignore non-relevant bytes
-            result := and(mload(add(loc, index)), mask)
+            result := and(mload(add(loc_, index_)), mask)
         }
     }
 
     /**
      * @notice          Parse an unsigned integer from the view at `index`.
      * @dev             Requires that the view have >= `bytes_` bytes following that index.
-     * @param view_   The view
-     * @param index     The index
+     * @param view_     The view
+     * @param index_    The index
      * @param bytes_    The bytes
      * @return          result - The unsigned integer
      */
     function indexUint(
         bytes29 view_,
-        uint256 index,
+        uint256 index_,
         uint8 bytes_
     ) internal pure returns (uint256 result) {
         // `index()` returns left-aligned `bytes_`, while integers are right-aligned
         // Shifting here to right-align with the full 32 bytes word
-        return uint256(index(view_, index, bytes_)) >> ((32 - bytes_) * 8);
+        return uint256(index(view_, index_, bytes_)) >> ((32 - bytes_) * 8);
     }
 
     /**
      * @notice          Parse an unsigned integer from LE bytes.
-     * @param view_   The view
-     * @param index     The index
+     * @param view_     The view
+     * @param index_    The index
      * @param bytes_    The bytes
      * @return          result - The unsigned integer
      */
     function indexLEUint(
         bytes29 view_,
-        uint256 index,
+        uint256 index_,
         uint8 bytes_
     ) internal pure returns (uint256 result) {
-        return reverseUint256(uint256(index(view_, index, bytes_)));
+        return reverseUint256(uint256(index(view_, index_, bytes_)));
     }
 
     /**
      * @notice          Parse an address from the view at `index`.
      *                  Requires that the view have >= 20 bytes following that index.
-     * @param view_   The view
-     * @param index     The index
+     * @param view_     The view
+     * @param index_    The index
      * @return          address - The address
      */
-    function indexAddress(bytes29 view_, uint256 index) internal pure returns (address) {
+    function indexAddress(bytes29 view_, uint256 index_) internal pure returns (address) {
         // index 20 bytes as `uint160`, and then cast to `address`
-        return address(uint160(indexUint(view_, index, 20)));
+        return address(uint160(indexUint(view_, index_, 20)));
     }
 
     /**
      * @notice          Return the keccak256 hash of the underlying memory
-     * @param view_   The view
+     * @param view_     The view
      * @return          digest - The keccak256 hash of the underlying memory
      */
     function keccak(bytes29 view_) internal pure returns (bytes32 digest) {
-        uint256 loc = loc(view_);
-        uint256 len = len(view_);
+        uint256 loc_ = loc(view_);
+        uint256 len_ = len(view_);
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            digest := keccak256(loc, len)
+            digest := keccak256(loc_, len_)
         }
     }
 
     /**
      * @notice          Return the sha2 digest of the underlying memory.
      * @dev             We explicitly deallocate memory afterwards.
-     * @param view_   The view
+     * @param view_     The view
      * @return          digest - The sha2 hash of the underlying memory
      */
     function sha2(bytes29 view_) internal view returns (bytes32 digest) {
-        uint256 loc = loc(view_);
-        uint256 len = len(view_);
+        uint256 loc_ = loc(view_);
+        uint256 len_ = len(view_);
         bool res;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             let ptr := mload(0x40)
             // sha2 precompile is 0x02
-            res := staticcall(gas(), 0x02, loc, len, ptr, 0x20)
+            res := staticcall(gas(), 0x02, loc_, len_, ptr, 0x20)
             digest := mload(ptr)
         }
         require(res, "sha2: out of gas");
@@ -700,18 +700,18 @@ library TypedMemView {
 
     /**
      * @notice          Implements bitcoin's hash160 (rmd160(sha2()))
-     * @param view_   The pre-image
+     * @param view_     The pre-image
      * @return          digest - the Digest
      */
     function hash160(bytes29 view_) internal view returns (bytes20 digest) {
-        uint256 loc = loc(view_);
-        uint256 len = len(view_);
+        uint256 loc_ = loc(view_);
+        uint256 len_ = len(view_);
         bool res;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             let ptr := mload(0x40)
             // sha2 precompile is 0x02
-            res := staticcall(gas(), 0x02, loc, len, ptr, 0x20)
+            res := staticcall(gas(), 0x02, loc_, len_, ptr, 0x20)
             // rmd160 precompile is 0x03
             res := and(res, staticcall(gas(), 0x03, ptr, 0x20, ptr, 0x20))
             digest := mload(add(ptr, 0xc)) // return value is 0-prefixed.
@@ -721,18 +721,18 @@ library TypedMemView {
 
     /**
      * @notice          Implements bitcoin's hash256 (double sha2)
-     * @param view_   A view of the preimage
+     * @param view_     A view of the preimage
      * @return          digest - the Digest
      */
     function hash256(bytes29 view_) internal view returns (bytes32 digest) {
-        uint256 loc = loc(view_);
-        uint256 len = len(view_);
+        uint256 loc_ = loc(view_);
+        uint256 len_ = len(view_);
         bool res;
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             let ptr := mload(0x40)
             // sha2 precompile is 0x02
-            res := staticcall(gas(), 0x02, loc, len, ptr, 0x20)
+            res := staticcall(gas(), 0x02, loc_, len_, ptr, 0x20)
             res := and(res, staticcall(gas(), 0x02, ptr, 0x20, ptr, 0x20))
             digest := mload(ptr)
         }
@@ -789,14 +789,14 @@ library TypedMemView {
      *                  This reference can be overwritten if anything else modifies memory (!!!).
      *                  As such it MUST be consumed IMMEDIATELY.
      *                  This function is private to prevent unsafe usage by callers.
-     * @param view_   The view
+     * @param view_     The view
      * @param newLoc    The new location
      * @return          written - the unsafe memory reference
      */
     function unsafeCopyTo(bytes29 view_, uint256 newLoc) private view returns (bytes29 written) {
         require(notNull(view_), "copyTo: Null pointer deref");
         require(isValid(view_), "copyTo: Invalid pointer deref");
-        uint256 len = len(view_);
+        uint256 len_ = len(view_);
         uint256 oldLoc = loc(view_);
 
         uint256 ptr;
@@ -810,23 +810,23 @@ library TypedMemView {
             }
 
             // use the identity precompile (0x04) to copy
-            res := staticcall(gas(), 0x04, oldLoc, len, newLoc, len)
+            res := staticcall(gas(), 0x04, oldLoc, len_, newLoc, len_)
         }
         require(res, "identity: out of gas");
 
-        written = unsafeBuildUnchecked(typeOf(view_), newLoc, len);
+        written = unsafeBuildUnchecked(typeOf(view_), newLoc, len_);
     }
 
     /**
      * @notice          Copies the referenced memory to a new loc in memory,
      *                  returning a `bytes` pointing to the new memory.
      * @dev             Shortcuts if the pointers are identical, otherwise compares type and digest.
-     * @param view_   The view
+     * @param view_     The view
      * @return          ret - The view pointing to the new memory
      */
     function clone(bytes29 view_) internal view returns (bytes memory ret) {
         uint256 ptr;
-        uint256 len = len(view_);
+        uint256 len_ = len(view_);
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             ptr := mload(0x40) // load unused memory pointer
@@ -837,8 +837,8 @@ library TypedMemView {
         }
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            mstore(0x40, add(add(ptr, len), 0x20)) // write new unused pointer
-            mstore(ptr, len) // write len of new array (in bytes)
+            mstore(0x40, add(add(ptr, len_), 0x20)) // write new unused pointer
+            mstore(ptr, len_) // write len of new array (in bytes)
         }
     }
 

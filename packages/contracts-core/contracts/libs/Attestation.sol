@@ -97,21 +97,21 @@ library AttestationLib {
 
     /**
      * @notice Returns a formatted Attestation payload with provided fields.
-     * @param snapRoot      Snapshot merkle tree's root
-     * @param agentRoot     Agent merkle tree's root
-     * @param nonce         Attestation Nonce
-     * @param blockNumber   Block number when attestation was created in Summit
-     * @param timestamp     Block timestamp when attestation was created in Summit
+     * @param snapRoot_     Snapshot merkle tree's root
+     * @param agentRoot_    Agent merkle tree's root
+     * @param nonce_        Attestation Nonce
+     * @param blockNumber_  Block number when attestation was created in Summit
+     * @param timestamp_    Block timestamp when attestation was created in Summit
      * @return Formatted attestation
      **/
     function formatAttestation(
-        bytes32 snapRoot,
-        bytes32 agentRoot,
-        uint32 nonce,
-        uint40 blockNumber,
-        uint40 timestamp
+        bytes32 snapRoot_,
+        bytes32 agentRoot_,
+        uint32 nonce_,
+        uint40 blockNumber_,
+        uint40 timestamp_
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(snapRoot, agentRoot, nonce, blockNumber, timestamp);
+        return abi.encodePacked(snapRoot_, agentRoot_, nonce_, blockNumber_, timestamp_);
     }
 
     /**
@@ -148,21 +148,21 @@ library AttestationLib {
     /**
      * @notice Returns a formatted Attestation payload with provided fields.
      * @param summitAtt     Attestation struct as it stored in Summit contract
-     * @param nonce         Attestation nonce
+     * @param nonce_        Attestation nonce
      * @return Formatted attestation
      */
-    function formatSummitAttestation(SummitAttestation memory summitAtt, uint32 nonce)
+    function formatSummitAttestation(SummitAttestation memory summitAtt, uint32 nonce_)
         internal
         pure
         returns (bytes memory)
     {
         return
             formatAttestation({
-                snapRoot: summitAtt.snapRoot,
-                agentRoot: summitAtt.agentRoot,
-                nonce: nonce,
-                blockNumber: summitAtt.blockNumber,
-                timestamp: summitAtt.timestamp
+                snapRoot_: summitAtt.snapRoot,
+                agentRoot_: summitAtt.agentRoot,
+                nonce_: nonce_,
+                blockNumber_: summitAtt.blockNumber,
+                timestamp_: summitAtt.timestamp
             });
     }
 
@@ -172,13 +172,13 @@ library AttestationLib {
     }
 
     /// @notice Returns a struct to save in the Summit contract for the given root and height.
-    function summitAttestation(bytes32 snapRoot, bytes32 agentRoot)
+    function summitAttestation(bytes32 snapRoot_, bytes32 agentRoot_)
         internal
         view
         returns (SummitAttestation memory summitAtt)
     {
-        summitAtt.snapRoot = snapRoot;
-        summitAtt.agentRoot = agentRoot;
+        summitAtt.snapRoot = snapRoot_;
+        summitAtt.agentRoot = agentRoot_;
         summitAtt.blockNumber = uint40(block.number);
         summitAtt.timestamp = uint40(block.timestamp);
     }

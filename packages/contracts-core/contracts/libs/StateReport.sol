@@ -50,15 +50,15 @@ library StateReportLib {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns a formatted StateReport payload with provided fields.
-    /// @param flag             Flag signalling type of State Report
+    /// @param flag_            Flag signalling type of State Report
     /// @param statePayload     Raw payload with reported state
     /// @return Formatted state report
-    function formatStateReport(StateFlag flag, bytes memory statePayload)
+    function formatStateReport(StateFlag flag_, bytes memory statePayload)
         internal
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(flag, statePayload);
+        return abi.encodePacked(flag_, statePayload);
     }
 
     /// @notice Returns a StateReport view over the given payload

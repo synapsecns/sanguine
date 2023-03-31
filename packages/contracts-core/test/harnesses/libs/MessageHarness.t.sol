@@ -75,9 +75,9 @@ contract MessageHarness {
         uint96 executorTip,
         bytes memory messageBody
     ) public pure returns (bytes memory) {
-        bytes memory tips = TipsLib.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
+        bytes memory tips_ = TipsLib.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
 
-        bytes memory header = HeaderLib.formatHeader(
+        bytes memory header_ = HeaderLib.formatHeader(
             origin,
             sender,
             nonce,
@@ -85,7 +85,7 @@ contract MessageHarness {
             recipient,
             optimisticSeconds
         );
-        return formatMessage(header, tips, messageBody);
+        return formatMessage(header_, tips_, messageBody);
     }
 
     function formatMessage(
@@ -95,7 +95,7 @@ contract MessageHarness {
         uint32 destination,
         bytes32 recipient,
         uint32 optimisticSeconds,
-        bytes memory tips,
+        bytes memory tips_,
         bytes memory messageBody
     ) public pure returns (bytes memory) {
         return
@@ -106,17 +106,17 @@ contract MessageHarness {
                 destination,
                 recipient,
                 optimisticSeconds,
-                tips,
+                tips_,
                 messageBody
             );
     }
 
     function formatMessage(
-        bytes memory header,
-        bytes memory tips,
+        bytes memory header_,
+        bytes memory tips_,
         bytes memory messageBody
     ) public pure returns (bytes memory) {
-        return MessageLib.formatMessage(header, tips, messageBody);
+        return MessageLib.formatMessage(header_, tips_, messageBody);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
