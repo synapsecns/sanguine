@@ -6,18 +6,16 @@ import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import Image from 'next/image'
 export default function ExchangeRateInfo({
   fromAmount,
-  fromCoin,
+  fromToken,
   toCoin,
   exchangeRate,
-  gasDropAmount,
   fromChainId,
   toChainId,
 }: {
   fromAmount: BigNumber
-  fromCoin: any
+  fromToken: any
   toCoin: any
   exchangeRate: BigNumber
-  gasDropAmount: BigNumber
   fromChainId: number
   toChainId: number
 }) {
@@ -41,7 +39,7 @@ export default function ExchangeRateInfo({
     textColor = 'text-red-500'
   }
 
-  const isGasDropped = gasDropAmount.gt(0)
+  const isGasDropped = exchangeRate.gt(0)
 
   return (
     <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base">
@@ -52,9 +50,11 @@ export default function ExchangeRateInfo({
             : 'flex justify-end'
         }
       >
+        {/*
+        TODO need to add gas retrieval to sdk
         {isGasDropped && (
           <GasDropLabel gasDropAmount={gasDropAmount} toChainId={toChainId} />
-        )}
+        )} */}
       </div>
       <div className="flex justify-between">
         <div className="flex space-x-2 text-[#88818C]">

@@ -18,31 +18,32 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 
 export default function BridgeInputContainer({
-  selected,
-  inputValue,
-  isSwapFrom,
-  onChangeAmount,
-  swapFromToChains,
-  setDisplayType,
+  address,
+  isOrigin,
+  chains,
   chainId,
-  onChangeChain,
-  possibleChains,
+  inputString,
+  selectedToken,
   connectedChainId,
+  onChangeChain,
+  onChangeAmount,
+  setDisplayType,
+  swapFromToChains,
 }: {
-  isSwapFrom: boolean
-  selected: Token
-  onChangeAmount: (v: string) => void
-  inputValue: string
+  isOrigin: boolean
+  address: `0x${string}`
+  selectedToken: Token
+  onChangeAmount?: (v: string) => void
+  inputString: string
   swapFromToChains?: () => void
   tokens: any[]
   chainId: number
   setDisplayType: (v: string) => void
   onChangeChain: (v: number) => void
-  possibleChains: string[]
+  chains: string[]
   connectedChainId: number
 }) {
-  const { address } = useAccount()
-  const tokenAddr = selected.addresses[chainId as keyof Token['addresses']]
+  const tokenAddr = selectedToken.addresses[chainId as keyof Token['addresses']]
 
   let tokenBalance: BigNumber
   if (!tokenAddr) {
@@ -62,7 +63,7 @@ export default function BridgeInputContainer({
 
   const formattedBalance = formatBNToString(
     tokenBalance,
-    selected.decimals[chainId as keyof Token['decimals']],
+    selectedToken.decimals[chainId as keyof Token['decimals']],
     4
   )
 
@@ -80,20 +81,20 @@ export default function BridgeInputContainer({
     onChangeAmount(
       formatBNToString(
         tokenBalance,
-        selected.decimals[chainId as keyof Token['decimals']],
+        selectedToken.decimals[chainId as keyof Token['decimals']],
         4
       )
     )
   }
 
   let balanceLabel
-  if (isSwapFrom) {
+  if (isOrigin) {
     balanceLabel = (
       <a onClick={onClickBalance} className="hover:underline group">
         <small className="text-xs text-gray-500 cursor-pointer group-hover:underline">
           Max:{' '}
           <span className="font-medium text-gray-400 ">{formattedBalance}</span>{' '}
-          {selected.symbol}
+          {selectedToken.symbol}
         </small>
       </a>
     )
@@ -107,7 +108,7 @@ export default function BridgeInputContainer({
     >
       <div>
         <div className="pt-1 pb-3">
-          {!isSwapFrom && (
+          {!isOrigin && (
             <div className="absolute">
               <div className="-mt-12">
                 <SwitchButton onClick={swapFromToChains ?? (() => null)} />
@@ -115,11 +116,11 @@ export default function BridgeInputContainer({
             </div>
           )}
           <ChainLabel
-            isSwapFrom={isSwapFrom}
+            isOrigin={isOrigin}
             chainId={chainId}
             setDisplayType={setDisplayType}
             onChangeChain={onChangeChain}
-            possibleChains={possibleChains}
+            chains={chains}
             connectedChainId={connectedChainId}
           />
         </div>
@@ -133,25 +134,25 @@ export default function BridgeInputContainer({
             rounded-xl
             border border-white border-opacity-20
             ${
-              isSwapFrom &&
+              isOrigin &&
               ' transform-gpu transition-all duration-75 hover:border-opacity-30'
             }
           `}
         >
           <SelectTokenDropdown
             chainId={chainId}
-            selected={selected}
+            selectedToken={selectedToken}
             onClick={() => {
-              setDisplayType(isSwapFrom ? 'from' : 'to')
+              setDisplayType(isOrigin ? 'from' : 'to')
             }}
           />
 
           <input
             pattern="[0-9.]+"
-            disabled={!isSwapFrom} // may cause issues idk goal is to prevent to result from being selectable
+            disabled={!isOrigin} // may cause issues idk goal is to prevent to result from being selectable
             className={`
               ml-4
-              ${isSwapFrom && isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
+              ${isOrigin && isConnected ? '-mt-0 md:-mt-4' : '-mt-0'}
               focus:outline-none
               bg-transparent
               pr-4
@@ -160,11 +161,11 @@ export default function BridgeInputContainer({
              text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
             `}
             placeholder="0.0000"
-            onChange={isSwapFrom ? onChange : () => {}}
-            value={inputValue}
+            onChange={onChange ?? (() => null)}
+            value={inputString}
             name="inputRow"
           />
-          {isSwapFrom && isConnected && (
+          {isOrigin && isConnected && (
             <label
               htmlFor="inputRow"
               className="absolute hidden pt-1 mt-8 ml-40 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer"
@@ -177,7 +178,7 @@ export default function BridgeInputContainer({
               </span>
             </label>
           )}
-          {isSwapFrom && isConnected && (
+          {isOrigin && isConnected && (
             <div className="hidden mr-2 sm:inline-block">
               <MiniMaxButton onClickBalance={onClickBalance} />
             </div>

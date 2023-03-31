@@ -7,50 +7,34 @@ import Tooltip from '@tw/Tooltip'
 import { useNetwork } from 'wagmi'
 import { use, useEffect, useState } from 'react'
 
-export function ChainLabel({
-  isSwapFrom,
+export const ChainLabel = ({
+  isOrigin,
+  chains,
   chainId,
-  setDisplayType,
-  labelClassNameOverride,
   titleText,
-  onChangeChain,
-  possibleChains,
   connectedChainId,
+  labelClassNameOverride,
+  onChangeChain,
+  setDisplayType,
 }: {
-  isSwapFrom: boolean
+  isOrigin: boolean
+  chains: string[] | undefined
   chainId: number
-  setDisplayType: (v: string) => void
-  labelClassNameOverride?: string
   titleText?: string
-  onChangeChain: (v: number) => void
-  possibleChains: string[] | undefined
   connectedChainId: number
-}) {
+  labelClassNameOverride?: string
+  onChangeChain: (v: number) => void
+  setDisplayType: (v: string) => void
+}) => {
+  const displayType = isOrigin ? 'fromChain' : 'toChain'
+  const title = titleText ?? (isOrigin ? 'Origin' : 'Dest.')
+  const labelClassName = 'text-sm'
   const [orderedChains, setOrderedChains] = useState<number[]>([])
   useEffect(() => {
     setOrderedChains(
-      chainOrderBySwapSide(
-        connectedChainId,
-        isSwapFrom,
-        chainId,
-        possibleChains
-      )
+      chainOrderBySwapSide(connectedChainId, isOrigin, chainId, chains)
     )
-  }, [chainId, connectedChainId, possibleChains])
-
-  let displayType: string
-  let title: string
-  let labelClassName
-
-  if (isSwapFrom) {
-    title = titleText ?? 'Origin'
-    displayType = 'fromChain'
-    labelClassName = 'text-sm'
-  } else {
-    title = titleText ?? 'Dest.'
-    displayType = 'toChain'
-    labelClassName = 'text-sm'
-  }
+  }, [chainId, connectedChainId, chains])
 
   return (
     <div className="flex items-center justify-center md:justify-between">
@@ -85,13 +69,13 @@ export function ChainLabel({
   )
 }
 
-function PossibleChain({
+const PossibleChain = ({
   chainId,
   onChangeChain,
 }: {
   chainId: number
   onChangeChain: (v: number) => void
-}) {
+}) => {
   const { chainImg, chainName } = CHAIN_INFO_MAP[chainId]
   const onClick = () => {
     onChangeChain(chainId)
@@ -118,7 +102,7 @@ function PossibleChain({
   )
 }
 
-function SelectedChain({ chainId }: { chainId: number }) {
+const SelectedChain = ({ chainId }: { chainId: number }) => {
   const { chainName, chainImg } = CHAIN_INFO_MAP[chainId]
   return (
     <div
@@ -145,24 +129,19 @@ function SelectedChain({ chainId }: { chainId: number }) {
   )
 }
 
-function chainOrderBySwapSide(
+const chainOrderBySwapSide = (
   connectedChain: number,
-  isSwapFrom: boolean,
+  isOrigin: boolean,
   chainId: number,
-  possibleChains: string[] | undefined
-) {
+  chains: string[] | undefined
+) => {
   let orderedChains
-  if (isSwapFrom) {
+  if (isOrigin) {
     orderedChains = CHAIN_ID_DISPLAY_ORDER.filter((e) => e !== chainId)
     orderedChains = orderedChains.slice(0, 5)
     orderedChains.unshift(chainId)
-    console.log('YOUOO', chainId, orderedChains)
-
     return orderedChains
   } else {
-    let h = getOrderedChains(connectedChain, chainId, possibleChains)
-    console.log('YwwOUOO', chainId, possibleChains, h)
-
-    return h
+    return getOrderedChains(connectedChain, chainId, chains)
   }
 }

@@ -8,14 +8,14 @@ import {
 
 export default function SelectTokenDropdown({
   chainId,
-  selected,
+  selectedToken,
   onClick,
 }: {
   chainId: number
-  selected: any
+  selectedToken: any
   onClick: () => void
 }) {
-  const symbol = displaySymbol(chainId, selected)
+  const symbol = displaySymbol(chainId, selectedToken)
 
   return (
     <button
@@ -34,9 +34,9 @@ export default function SelectTokenDropdown({
             flex justify-center md:justify-start
             bg-[#49444c] bg-opacity-100
             transform-gpu transition-all duration-100
-            ${getMenuItemHoverBgForCoin(selected)}
+            ${getMenuItemHoverBgForCoin(selectedToken)}
             border border-transparent
-            ${getBorderStyleForCoinHover(selected)}
+            ${getBorderStyleForCoinHover(selectedToken)}
             items-center
             rounded-lg
             py-1.5 pl-2 h-14
@@ -47,7 +47,7 @@ export default function SelectTokenDropdown({
               <Image
                 alt="token image"
                 className="rounded-md w-7 h-7"
-                src={selected.icon}
+                src={selectedToken.icon}
               />
             </div>
           </div>

@@ -36,6 +36,7 @@ describe('SynapseSDK', () => {
       )
       expect(bridgeFee).toBeGreaterThan(0)
       expect(destQuery?.length).toBeGreaterThan(0)
+      console.log(destQuery)
     })
   })
 
@@ -60,6 +61,7 @@ describe('SynapseSDK', () => {
         originQuery!,
         destQuery!
       )
+      console.log(data, 'ttttt', to)
       expect(data?.length).toBeGreaterThan(0)
       expect(to?.length).toBeGreaterThan(0)
     })

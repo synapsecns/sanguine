@@ -15,7 +15,7 @@ import {
   KLAYTN_USDC,
   KLAYTN_DAI,
   KLAYTN_WETH,
-  DOGECHAIN_BUSD
+  DOGECHAIN_BUSD,
 } from '@constants/tokens/basic'
 import { ChainId, CHAIN_INFO_MAP } from '@constants/networks'
 import { BRIDGABLE_TOKENS } from '@constants/bridge'
@@ -29,7 +29,7 @@ import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import { stringifyParams } from '@/constants/urls/stringifyParams'
 
 import { checkCleanedValue } from '@utils/checkCleanedValue'
-import { sanitizeValue } from '@utils/sanitizeValue'
+import { sanitizeValue } from '@/utils/stringToBigNum'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 
 import { useNetworkController } from '@hooks/wallet/useNetworkController'
@@ -55,10 +55,10 @@ import { ActionCardFooter } from '@components/ActionCardFooter'
 export default function BridgePage() {
   // get stuff from the url
   const router = useRouter()
-  const {outputChain, inputCurrency, outputCurrency} = router.query
+  const { outputChain, inputCurrency, outputCurrency } = router.query
   const toChainQuery = String(outputChain)
-  const fromQuery = String( inputCurrency)
-  const toQuery =  String(outputCurrency)
+  const fromQuery = String(inputCurrency)
+  const toQuery = String(outputCurrency)
 
   // get the current account and chainId from wagmi (nuke)
   const { account, chainId } = useActiveWeb3React()
@@ -83,7 +83,6 @@ export default function BridgePage() {
     activeChainId: fromChainId,
     setActiveChainId: setFromChainId,
   } = useNetworkController()
-
 
   // nuke this shit for now lmfao
   // seems like it handles an edgecase where a url might be fucked, can handle that up
@@ -146,11 +145,10 @@ export default function BridgePage() {
 
   const [destinationAddress, setDestinationAddress] = useState('')
 
-
   // update with next router stuff
   //const router = useRouter();
-// router.query.NEWPARAMS = "VALUE"
-// router.push(router)
+  // router.query.NEWPARAMS = "VALUE"
+  // router.push(router)
   function updateUrlParams(params) {
     const { pid } = router.query
     history.replace(`${BRIDGE_PATH}?${stringifyParams(params)}`)
@@ -245,8 +243,7 @@ export default function BridgePage() {
     setExchangeRate(Zero)
   }
 
-
-// Handle a chain swap
+  // Handle a chain swap
   function swapFromToChains() {
     triggerChainSwitch(toChainId)
       .then(() => {
@@ -264,7 +261,6 @@ export default function BridgePage() {
     setExchangeRate(Zero)
     setDestinationAddress('')
   }
-
 
   function onSelectFromCoin(coin) {
     setLastChangeType('from')
@@ -393,13 +389,14 @@ export default function BridgePage() {
           setToCoin(KLAYTN_DAI)
         }
       } else if (
-        fromCoin.swapableType == 'USD' && toCoin.swapableType == 'USD' &&
-        ((toChainId == ChainId.DOGECHAIN && fromChainId == ChainId.BSC))
-        ) {
-          setFromCoin(DOGECHAIN_BUSD)
-          setToCoin(DOGECHAIN_BUSD)
-      }
-       else {
+        fromCoin.swapableType == 'USD' &&
+        toCoin.swapableType == 'USD' &&
+        toChainId == ChainId.DOGECHAIN &&
+        fromChainId == ChainId.BSC
+      ) {
+        setFromCoin(DOGECHAIN_BUSD)
+        setToCoin(DOGECHAIN_BUSD)
+      } else {
         if (fromCoin.symbol === SYN.symbol) {
           setToCoin(SYN)
         }
@@ -461,14 +458,15 @@ export default function BridgePage() {
           setToCoin(KLAYTN_DAI)
         }
       } else if (
-        fromCoin.swapableType == 'USD' && toCoin.swapableType == 'USD' &&
-        ((fromChainId == ChainId.DOGECHAIN && toChainId == ChainId.BUSD)) ||
-        ((fromChainId == ChainId.BSC && toChainId == ChainId.DOGECHAIN))
+        (fromCoin.swapableType == 'USD' &&
+          toCoin.swapableType == 'USD' &&
+          fromChainId == ChainId.DOGECHAIN &&
+          toChainId == ChainId.BUSD) ||
+        (fromChainId == ChainId.BSC && toChainId == ChainId.DOGECHAIN)
       ) {
-          setFromCoin(DOGECHAIN_BUSD)
-          setToCoin(DOGECHAIN_BUSD)
-      }
-      else {
+        setFromCoin(DOGECHAIN_BUSD)
+        setToCoin(DOGECHAIN_BUSD)
+      } else {
         if (toCoin.symbol === SYN.symbol) {
           setFromCoin(SYN)
         }
@@ -500,7 +498,6 @@ export default function BridgePage() {
       }
     }
   }, [fromCoin, toCoin, toChainId, fromChainId])
-
 
   // REDO WITH SDK
   function calculateBridgeAmount() {
@@ -595,14 +592,22 @@ export default function BridgePage() {
   )
 }
 
-export function HarmonyCheck({ fromChainId, toChainId }: { fromChainId: number; toChainId: number }) {
+export function HarmonyCheck({
+  fromChainId,
+  toChainId,
+}: {
+  fromChainId: number
+  toChainId: number
+}) {
   return (
     <>
       {(toChainId === ChainId.HARMONY || fromChainId === ChainId.HARMONY) && (
         <div
           className={`bg-gray-800 shadow-lg pt-3 px-6 pb-6 rounded-lg text-white`}
         >
-          The native Harmony bridge has been exploited, which lead to a hard depeg of the following Harmony-specific tokens: 1DAI, 1USDC, 1USDT, 1ETH.
+          The native Harmony bridge has been exploited, which lead to a hard
+          depeg of the following Harmony-specific tokens: 1DAI, 1USDC, 1USDT,
+          1ETH.
           <br /> Please see the{' '}
           <a
             className="underline"

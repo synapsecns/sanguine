@@ -12,6 +12,8 @@ import { switchNetwork, getNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
+import { stringToBigNum } from '@/utils/stringToBigNum'
+
 import BridgeCard from './BridgeCard'
 import {
   BRIDGE_CHAINS_BY_TYPE,
@@ -37,13 +39,8 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
   const [fromToken, setFromToken] = useState(DEFAULT_FROM_TOKEN)
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [fromTokens, setFromTokens] = useState([])
-  const [fromValue, setFromValue] = useState('')
-  const [toValue, setToValue] = useState('')
-  const [priceImpact, setPriceImpact] = useState(Zero)
-  const [exchangeRate, setExchangeRate] = useState(Zero)
-  const [feeAmount, setFeeAmount] = useState(BigNumber.from('10000'))
+  const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [error, setError] = useState('')
-
   const [destinationAddress, setDestinationAddress] = useState('')
   const [toBridgeableTokens, setToBridgeableTokens] = useState(
     BRIDGABLE_TOKENS[DEFAULT_TO_CHAIN]
@@ -53,11 +50,14 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
       (chain) => Number(chain) !== DEFAULT_FROM_CHAIN
     )
   )
-  const [bridgeQueries, setBridgeQueries] = useState({
-    originQuery: null,
-    destQuery: null,
+  const [bridgeQuote, setBridgeQuote] = useState({
+    outputAmount: Zero,
+    outputAmountString: '',
+    exchangeRate: Zero,
+    feeAmount: Zero,
+    delta: Zero,
+    quotes: { originQuery: null, destQuery: null },
   })
-
   useEffect(() => {
     const { chain: fromChainIdRaw } = getNetwork()
     setFromChainId(fromChainIdRaw ? fromChainIdRaw?.id : DEFAULT_FROM_CHAIN)
@@ -84,7 +84,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
       }
     }
     const { bridgeableToken, newToChain, bridgeableTokens, bridgeableChains } =
-      handleNewFromTokenNew(
+      handleNewFromToken(
         tempFromToken,
         toChainIdUrl ? Number(toChainIdUrl) : undefined,
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
@@ -135,8 +135,14 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
 
   // Helpers
   const resetRates = () => {
-    setPriceImpact(Zero)
-    setExchangeRate(Zero)
+    setBridgeQuote({
+      outputAmount: Zero,
+      outputAmountString: '',
+      exchangeRate: Zero,
+      feeAmount: Zero,
+      delta: Zero,
+      quotes: { originQuery: null, destQuery: null },
+    })
   }
   const onChangeFromAmount = (value: string) => {
     if (
@@ -145,18 +151,10 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
         fromToken[fromChainId as keyof Token['decimals']]
       )
     ) {
-      setFromValue(value)
-    }
-  }
-
-  const onChangeToAmount = (value: string) => {
-    if (
-      !(
-        value.split('.')[1]?.length >
-        toToken[toChainId as keyof Token['decimals']]
-      )
-    ) {
-      setToValue(value)
+      setFromInput({
+        string: value,
+        bigNum: stringToBigNum(value, fromToken.decimals[fromChainId]),
+      })
     }
   }
 
@@ -183,7 +181,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
     )
   }
 
-  const handleNewFromTokenNew = (
+  const handleNewFromToken = (
     token: Token,
     positedToChain: number | undefined,
     positedToSymbol: string | undefined,
@@ -266,7 +264,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
         newToChain,
         bridgeableTokens,
         bridgeableChains,
-      } = handleNewFromTokenNew(
+      } = handleNewFromToken(
         tempFromToken,
         oldFromChain,
         toToken.symbol,
@@ -324,7 +322,8 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
         newToChain,
         bridgeableTokens,
         bridgeableChains,
-      } = handleNewFromTokenNew(tempFromToken, chainId, toToken.symbol, chainId)
+      } = handleNewFromToken(tempFromToken, chainId, toToken.symbol, chainId)
+
       setFromChainId(chainId)
       setToChainId(newToChain)
       setFromToken(fromToken)
@@ -357,7 +356,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
         newToChain,
         bridgeableTokens,
         bridgeableChains,
-      } = handleNewFromTokenNew(token, toChainId, toToken.symbol, fromChainId)
+      } = handleNewFromToken(token, toChainId, toToken.symbol, fromChainId)
       setToChainId(newToChain)
       setToToken(bridgeableToken)
       setToBridgeableChains(bridgeableChains)
@@ -378,51 +377,39 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
   }
 
   const getQuote = async () => {
-    let fromDecimals = BigNumber.from(10).pow(fromToken.decimals[fromChainId])
     let toDecimals = BigNumber.from(10).pow(toToken.decimals[toChainId])
-    let fromValueSplit = fromValue.split('.')
-    let fromValueBase = fromValueSplit[0]
-    let fromValueMantissa =
-      fromValueSplit?.[1]?.length > 0 ? fromValueSplit[1] : '0'
-    let fromValueBigNum = BigNumber.from(fromValueBase)
-      .mul(fromDecimals)
-      .add(
-        BigNumber.from(fromValueMantissa)
-          .mul(fromDecimals)
-          .div(BigNumber.from(10).pow(fromValueMantissa.length))
-      )
 
     SynapseSDK.bridgeQuote(
       fromChainId,
       toChainId,
       fromToken.addresses[fromChainId].toLowerCase(),
       toToken.addresses[toChainId].toLowerCase(),
-      fromValueBigNum
+      fromInput.bigNum
     )
       .then(
-        ({ feeAmount, bridgeFee, maxAmountOut, originQuery, destQuery }) => {
+        ({ feeAmount, feeConfig, maxAmountOut, originQuery, destQuery }) => {
           let toValueBigNum = destQuery.minAmountOut
             ? destQuery.minAmountOut
             : Zero
           let toValueBase = toValueBigNum.div(toDecimals).toString()
           let toValueMantissa = toValueBigNum.mod(toDecimals).toString()
-          setFeeAmount(feeAmount)
-          setToValue(toValueBase + '.' + toValueMantissa)
-          setBridgeQueries({
-            originQuery: originQuery,
-            destQuery: destQuery,
-          })
-          let exchangeRate = toValueBigNum.div(fromValueBigNum)
-          // setFeeAmount(0)
 
-          setExchangeRate(
-            calculateExchangeRate(
-              fromValueBigNum,
+          setBridgeQuote({
+            outputAmount: toValueBigNum,
+            outputAmountString: toValueBase + '.' + toValueMantissa,
+            exchangeRate: calculateExchangeRate(
+              fromInput.bigNum,
               fromToken.decimals[fromChainId],
               toValueBigNum,
               toToken.decimals[toChainId]
-            )
-          )
+            ),
+            feeAmount: feeAmount,
+            delta: maxAmountOut,
+            quotes: {
+              originQuery: originQuery,
+              destQuery: destQuery,
+            },
+          })
         }
       )
       .catch((err) => {
@@ -436,11 +423,11 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
       toChainId &&
       String(fromToken.addresses[fromChainId]) &&
       String(toToken.addresses[toChainId]) &&
-      fromValue
+      fromInput
     ) {
       getQuote()
     }
-  }, [fromToken, toToken, fromValue, fromChainId, toChainId, feeAmount])
+  }, [fromToken, toToken, fromInput, fromChainId, toChainId])
 
   return (
     <LandingPageWrapper>
@@ -455,31 +442,24 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
               <div className="flex justify-center">
                 <div className="pb-3 place-self-center">
                   <BridgeCard
+                    error={error}
                     address={address}
+                    bridgeQuote={bridgeQuote}
+                    fromInput={fromInput}
+                    fromToken={fromToken}
+                    fromTokens={fromTokens}
                     fromChainId={fromChainId}
+                    toToken={toToken}
                     toChainId={toChainId}
+                    toBridgeableChains={toBridgeableChains}
+                    toBridgeableTokens={toBridgeableTokens}
+                    destinationAddress={destinationAddress}
+                    handleChainFlip={handleChainFlip}
+                    handleTokenChange={handleTokenChange}
+                    onChangeFromAmount={onChangeFromAmount}
                     onSelectFromChain={handleFromChainChange}
                     onSelectToChain={handleToChainChange}
-                    swapFromToChains={handleChainFlip}
-                    onChangeFromAmount={onChangeFromAmount}
-                    onChangeToAmount={onChangeToAmount}
-                    fromCoin={fromToken}
-                    toCoin={toToken}
-                    possibleChains={toBridgeableChains}
-                    handleTokenChange={handleTokenChange}
-                    toBridgeableTokens={toBridgeableTokens}
-                    quotes={bridgeQueries}
-                    fromTokens={fromTokens}
-                    {...{
-                      fromValue,
-                      toValue,
-                      error,
-                      priceImpact,
-                      exchangeRate,
-                      feeAmount,
-                      destinationAddress,
-                      setDestinationAddress,
-                    }}
+                    setDestinationAddress={setDestinationAddress}
                   />
 
                   <ActionCardFooter link={HOW_TO_BRIDGE_URL} />

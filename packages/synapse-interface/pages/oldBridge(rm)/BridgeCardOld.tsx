@@ -18,7 +18,7 @@ import { useTokenBalance } from '@hooks/tokens/useTokenBalances'
 
 import { ChainId } from '@constants/networks'
 
-import { sanitizeValue } from '@utils/sanitizeValue'
+import { sanitizeValue } from '@/utils/stringToBigNum'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
 
 import { BRIDGABLE_TOKENS } from '@constants/bridge'
