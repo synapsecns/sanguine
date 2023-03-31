@@ -59,7 +59,7 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         // This will revert if nonce is out of range
         bytes32 root = _tree.root(nonce);
         OriginState memory state = _originStates[nonce];
-        return state.formatOriginState({ root: root, origin: localDomain, nonce: nonce });
+        return state.formatOriginState({ root_: root, origin_: localDomain, nonce_: nonce });
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -88,7 +88,7 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         _originStates.push(state);
         // Emit event with raw state data
         emit StateSaved(
-            state.formatOriginState({ root: root, origin: localDomain, nonce: stateNonce })
+            state.formatOriginState({ root_: root, origin_: localDomain, nonce_: stateNonce })
         );
     }
 

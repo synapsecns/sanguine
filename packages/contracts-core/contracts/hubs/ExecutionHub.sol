@@ -91,33 +91,17 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                  INTERNAL LOGIC: MESSAGE EXECUTION                   ║*▕
+    ▏*║                         INTERNAL LOGIC: TIPS                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /**
-     * @notice Returns adjusted "recipient" field.
-     * @dev By default, "recipient" field contains the recipient address padded to 32 bytes.
-     * But if SYSTEM_ROUTER value is used for "recipient" field, recipient is Synapse Router.
-     * Note: tx will revert in Origin if anyone but SystemRouter uses SYSTEM_ROUTER as recipient.
-     */
-    function _checkForSystemRouter(bytes32 recipient)
-        internal
-        view
-        returns (address recipientAddress)
-    {
-        // Check if SYSTEM_ROUTER was specified as message recipient
-        if (recipient == SYSTEM_ROUTER) {
-            /**
-             * @dev Route message to SystemRouter.
-             * Note: Only SystemRouter contract on origin chain can send a message
-             * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
-             */
-            return address(systemRouter);
-        } else {
-            // Cast bytes32 to address otherwise
-            return TypeCasts.bytes32ToAddress(recipient);
-        }
+    function _storeTips(address notary, Tips tips) internal {
+        // TODO: implement tips logic
+        emit TipsStored(notary, tips.unwrap().clone());
     }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                  INTERNAL LOGIC: MESSAGE EXECUTION                   ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /**
      * @notice Attempts to prove the validity of the cross-chain message.
@@ -184,18 +168,34 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         _rootAttestations[root] = att.toExecutionAttestation(notary);
     }
 
+    /**
+     * @notice Returns adjusted "recipient" field.
+     * @dev By default, "recipient" field contains the recipient address padded to 32 bytes.
+     * But if SYSTEM_ROUTER value is used for "recipient" field, recipient is Synapse Router.
+     * Note: tx will revert in Origin if anyone but SystemRouter uses SYSTEM_ROUTER as recipient.
+     */
+    function _checkForSystemRouter(bytes32 recipient)
+        internal
+        view
+        returns (address recipientAddress)
+    {
+        // Check if SYSTEM_ROUTER was specified as message recipient
+        if (recipient == SYSTEM_ROUTER) {
+            /**
+             * @dev Route message to SystemRouter.
+             * Note: Only SystemRouter contract on origin chain can send a message
+             * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
+             */
+            return address(systemRouter);
+        } else {
+            // Cast bytes32 to address otherwise
+            return TypeCasts.bytes32ToAddress(recipient);
+        }
+    }
+
     /// @dev Gets a saved attestation for the given snapshot root.
     /// Will return an empty struct, if the snapshot root hasn't been previously saved.
     function _getRootAttestation(bytes32 root) internal view returns (ExecutionAttestation memory) {
         return _rootAttestations[root];
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         INTERNAL LOGIC: TIPS                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function _storeTips(address notary, Tips tips) internal {
-        // TODO: implement tips logic
-        emit TipsStored(notary, tips.unwrap().clone());
     }
 }
