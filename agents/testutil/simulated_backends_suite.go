@@ -1,9 +1,11 @@
 package testutil
 
 import (
-	executormetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
+	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
+	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
+	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/scribe/metadata"
+	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
 	"math/big"
 	"testing"
 
@@ -86,6 +88,8 @@ type SimulatedBackendsTestSuite struct {
 	ExecutorTestDB                      db.ExecutorDB
 	ScribeMetrics                       metrics.Handler
 	ExecutorMetrics                     metrics.Handler
+	NotaryMetrics                       metrics.Handler
+	GuardMetrics                        metrics.Handler
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -103,9 +107,13 @@ func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	metrics.SetupTestJaeger(a.T())
 
 	var err error
-	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
 	a.Require().Nil(err)
-	a.ExecutorMetrics, err = metrics.NewByType(a.GetSuiteContext(), executormetadata.BuildInfo(), metrics.Jaeger)
+	a.ExecutorMetrics, err = metrics.NewByType(a.GetSuiteContext(), executorMetadata.BuildInfo(), metrics.Jaeger)
+	a.Require().Nil(err)
+	a.NotaryMetrics, err = metrics.NewByType(a.GetSuiteContext(), notaryMetadata.BuildInfo(), metrics.Jaeger)
+	a.Require().Nil(err)
+	a.GuardMetrics, err = metrics.NewByType(a.GetSuiteContext(), guardMetadata.BuildInfo(), metrics.Jaeger)
 	a.Require().Nil(err)
 }
 

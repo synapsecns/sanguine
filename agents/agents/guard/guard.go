@@ -3,6 +3,9 @@ package guard
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"time"
 
 	"github.com/synapsecns/sanguine/agents/config"
@@ -21,12 +24,13 @@ type Guard struct {
 	refreshInterval    time.Duration
 	summitLatestStates map[uint32]types.State
 	originLatestStates map[uint32]types.State
+	handler            metrics.Handler
 }
 
 // NewGuard creates a new guard.
 //
 //nolint:cyclop
-func NewGuard(ctx context.Context, cfg config.AgentConfig) (_ Guard, err error) {
+func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handler) (_ Guard, err error) {
 	guard := Guard{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
@@ -57,38 +61,67 @@ func NewGuard(ctx context.Context, cfg config.AgentConfig) (_ Guard, err error) 
 	guard.summitLatestStates = make(map[uint32]types.State, len(guard.domains))
 	guard.originLatestStates = make(map[uint32]types.State, len(guard.domains))
 
+	guard.handler = handler
+
 	return guard, nil
 }
 
 //nolint:cyclop
-func (g Guard) loadSummitLatestStates(ctx context.Context) {
+func (g Guard) loadSummitLatestStates(parentCtx context.Context) {
 	for _, domain := range g.domains {
+		ctx, span := g.handler.Tracer().Start(parentCtx, "loadSummitLatestStates", trace.WithAttributes(
+			attribute.Int("domain", int(domain.Config().DomainID)),
+		))
+
 		originID := domain.Config().DomainID
 		latestState, err := g.summitDomain.Summit().GetLatestAgentState(ctx, originID, g.bondedSigner)
 		if err != nil {
 			latestState = nil
 			logger.Errorf("Failed calling GetLatestAgentState for originID %d on the Summit contract: err = %v", originID, err)
+			span.AddEvent("Failed calling GetLatestAgentState for originID on the Summit contract", trace.WithAttributes(
+				attribute.Int("originID", int(originID)),
+				attribute.String("err", err.Error()),
+			))
 		}
 		if latestState != nil && latestState.Nonce() > uint32(0) {
 			g.summitLatestStates[originID] = latestState
 		}
+
+		func() {
+			span.End()
+		}()
 	}
 }
 
 //nolint:cyclop
-func (g Guard) loadOriginLatestStates(ctx context.Context) {
+func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
 	for _, domain := range g.domains {
+		ctx, span := g.handler.Tracer().Start(parentCtx, "loadOriginLatestStates", trace.WithAttributes(
+			attribute.Int("domain", int(domain.Config().DomainID)),
+		))
+
 		originID := domain.Config().DomainID
 		latestState, err := domain.Origin().SuggestLatestState(ctx)
 		if err != nil {
 			latestState = nil
 			logger.Errorf("Failed calling SuggestLatestState for originID %d on the Origin contract: %v", originID, err)
+			span.AddEvent("Failed calling SuggestLatestState for originID on the Origin contract", trace.WithAttributes(
+				attribute.Int("originID", int(originID)),
+				attribute.String("err", err.Error()),
+			))
 		} else if latestState == nil || latestState.Nonce() == uint32(0) {
 			logger.Errorf("No latest state found for origin id %d", originID)
+			span.AddEvent("No latest state found for origin id", trace.WithAttributes(
+				attribute.Int("originID", int(originID)),
+			))
 		}
 		if latestState != nil {
 			g.originLatestStates[originID] = latestState
 		}
+
+		func() {
+			span.End()
+		}()
 	}
 }
 
@@ -126,7 +159,17 @@ func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 }
 
 //nolint:cyclop
-func (g Guard) submitLatestSnapshot(ctx context.Context) {
+func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
+	ctx, span := g.handler.Tracer().Start(parentCtx, "submitLatestSnapshot", trace.WithAttributes(
+		attribute.Int("domain", int(g.summitDomain.Config().DomainID)),
+	))
+
+	defer func() {
+		go func() {
+			span.End()
+		}()
+	}()
+
 	snapshot, statesToSubmit := g.getLatestSnapshot()
 	if snapshot == nil {
 		return
@@ -135,10 +178,16 @@ func (g Guard) submitLatestSnapshot(ctx context.Context) {
 	snapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(ctx, g.bondedSigner)
 	if err != nil {
 		logger.Errorf("Error signing snapshot: %v", err)
+		span.AddEvent("Error signing snapshot", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
 	} else {
 		err := g.summitDomain.Summit().SubmitSnapshot(ctx, g.unbondedSigner, encodedSnapshot, snapshotSignature)
 		if err != nil {
 			logger.Errorf("Failed to submit snapshot to summit: %v", err)
+			span.AddEvent("Failed to submit snapshot to summit", trace.WithAttributes(
+				attribute.String("err", err.Error()),
+			))
 		} else {
 			for originID, state := range statesToSubmit {
 				g.summitLatestStates[originID] = state
