@@ -3,7 +3,7 @@ on:
   push:
     paths:
       - 'docker/jaeger-ui/**'
-      - './github/workflows/jaeger-ui.yml'
+      - '.github/workflows/jaeger-ui.yml'
     branches:
       - master
       # todo: remove me
