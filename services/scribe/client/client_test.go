@@ -6,6 +6,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
@@ -40,7 +41,7 @@ func (g *ClientSuite) SetupTest() {
 
 func (g *ClientSuite) SetupSuite() {
 	g.TestSuite.SetupSuite()
-	metrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
 
 	var err error
 	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)

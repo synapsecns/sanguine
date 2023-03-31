@@ -1,11 +1,11 @@
-package localserver_test
+package localmetrics_test
 
 import (
 	"fmt"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/core/metrics/localserver"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"testing"
 )
@@ -35,7 +35,7 @@ func TestCommonSuite(t *testing.T) {
 }
 
 func (l *LocalServerSuite) hasContainerWithRunID(runID string) bool {
-	containers := l.ContainersWithLabel(localserver.RunIDLabel, runID)
+	containers := l.ContainersWithLabel(localmetrics.RunIDLabel, runID)
 	return len(containers) > 0
 }
 

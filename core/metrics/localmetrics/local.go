@@ -1,4 +1,4 @@
-package localserver
+package localmetrics
 
 import (
 	"context"
@@ -38,12 +38,6 @@ type testJaeger struct {
 	// this is not guaranteed to be set and only required for pyroscope-jaeger
 	network *dockertest.Network
 	cfg     *config
-}
-
-// StartServer starts a local jaeger server for testing.
-func StartServer(parentCtx context.Context, tb testing.TB, options ...Option) {
-	tb.Helper()
-	startServer(parentCtx, tb, options...)
 }
 
 // startServer starts a local jaeger server for testing.

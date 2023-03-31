@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/services/omnirpc/cmd"
 	"testing"
@@ -25,7 +26,7 @@ func NewProxySuite(tb testing.TB) *ProxySuite {
 func (p *ProxySuite) SetupSuite() {
 	p.TestSuite.SetupSuite()
 
-	metrics.SetupTestJaeger(p.GetSuiteContext(), p.T())
+	localmetrics.SetupTestJaeger(p.GetSuiteContext(), p.T())
 
 	var err error
 	p.metrics, err = metrics.NewByType(p.GetSuiteContext(), cmd.BuildInfo(), metrics.Jaeger)

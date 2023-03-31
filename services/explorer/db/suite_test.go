@@ -3,6 +3,7 @@ package db_test
 import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
@@ -37,7 +38,7 @@ func NewDBSuite(tb testing.TB) *DBSuite {
 
 func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
-	metrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
 
 	var err error
 	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)

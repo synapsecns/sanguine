@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
@@ -83,7 +84,7 @@ func (c *NodeSuite) SetupTest() {
 func (c *NodeSuite) SetupSuite() {
 	c.TestSuite.SetupSuite()
 
-	metrics.SetupTestJaeger(c.GetSuiteContext(), c.T())
+	localmetrics.SetupTestJaeger(c.GetSuiteContext(), c.T())
 	var err error
 	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	c.Require().Nil(err)

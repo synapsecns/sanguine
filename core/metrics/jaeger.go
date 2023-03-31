@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
-	"github.com/synapsecns/sanguine/core/metrics/localserver"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"os"
-	"testing"
 )
 
 type jaegerHandler struct {
@@ -52,12 +50,4 @@ func (j *jaegerHandler) Start(ctx context.Context) (err error) {
 	}
 
 	return nil
-}
-
-// SetupTestJaeger creates a new test jaeger instance. If the test fails, the instance is kept alive for 5 minutes.
-// we also allow a GLOBAL_jaeger env var to be set to a jaeger url to send all traces to in order to avoid having to boot for long running tests.
-func SetupTestJaeger(ctx context.Context, tb testing.TB, opts ...localserver.Option) {
-	tb.Helper()
-
-	localserver.StartServer(ctx, tb, opts...)
 }

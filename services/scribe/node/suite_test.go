@@ -2,6 +2,7 @@ package node_test
 
 import (
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"testing"
 
@@ -35,7 +36,7 @@ func NewLiveSuite(tb testing.TB) *LiveSuite {
 
 func (l *LiveSuite) SetupSuite() {
 	l.TestSuite.SetupSuite()
-	metrics.SetupTestJaeger(l.GetSuiteContext(), l.T())
+	localmetrics.SetupTestJaeger(l.GetSuiteContext(), l.T())
 	var err error
 
 	l.metrics, err = metrics.NewByType(l.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)

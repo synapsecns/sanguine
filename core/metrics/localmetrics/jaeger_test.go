@@ -1,9 +1,9 @@
-package localserver_test
+package localmetrics_test
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
-	"github.com/synapsecns/sanguine/core/metrics/localserver"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/mocktesting"
 )
 
@@ -13,7 +13,7 @@ func (l *LocalServerSuite) TestJaegerEndpointEmpty() {
 	l.T().Setenv(internal.JaegerUIEndpoint, "")
 
 	mockTester := mocktesting.NewMockTester("")
-	jaegerTest := localserver.NewTestJaeger(mockTester)
+	jaegerTest := localmetrics.NewTestJaeger(mockTester)
 
 	resource := jaegerTest.StartJaegerServer(l.GetTestContext())
 
@@ -28,7 +28,7 @@ func (l *LocalServerSuite) TestJaegerEndpointsSet() {
 	l.T().Setenv(internal.JaegerEndpoint, gofakeit.URL())
 	l.T().Setenv(internal.JaegerUIEndpoint, uiEndpoint)
 
-	jaegerTest := localserver.NewTestJaeger(l.T())
+	jaegerTest := localmetrics.NewTestJaeger(l.T())
 	retVal := jaegerTest.StartJaegerServer(l.GetTestContext())
 	l.Require().NotNil(retVal)
 	l.Require().Nil(retVal.GetResource())

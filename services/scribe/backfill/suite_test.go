@@ -2,6 +2,7 @@ package backfill_test
 
 import (
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"testing"
 	"time"
@@ -49,7 +50,7 @@ func (b *BackfillSuite) SetupTest() {
 
 func (b *BackfillSuite) SetupSuite() {
 	b.TestSuite.SetupSuite()
-	metrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
+	localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
 
 	var err error
 	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)

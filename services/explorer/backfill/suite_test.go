@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -50,7 +51,7 @@ func NewBackfillSuite(tb testing.TB) *BackfillSuite {
 
 func (b *BackfillSuite) SetupSuite() {
 	b.TestSuite.SetupSuite()
-	metrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
+	localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
 
 	var err error
 	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)

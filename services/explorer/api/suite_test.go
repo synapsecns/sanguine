@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/services/explorer/api"
 	explorerclient "github.com/synapsecns/sanguine/services/explorer/consumer/client"
@@ -53,7 +54,7 @@ func NewTestSuite(tb testing.TB) *APISuite {
 
 func (g *APISuite) SetupSuite() {
 	g.TestSuite.SetupSuite()
-	metrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
 
 	var err error
 	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)

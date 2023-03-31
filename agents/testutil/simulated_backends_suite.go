@@ -5,6 +5,7 @@ import (
 	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
 	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
 	"math/big"
 	"testing"
@@ -104,7 +105,7 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 // SetupSuite sets up the test suite.
 func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	a.TestSuite.SetupSuite()
-	metrics.SetupTestJaeger(a.GetSuiteContext(), a.T())
+	localmetrics.SetupTestJaeger(a.GetSuiteContext(), a.T())
 
 	var err error
 	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)

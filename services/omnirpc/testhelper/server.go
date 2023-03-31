@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/services/omnirpc/cmd"
@@ -43,7 +44,7 @@ func makeConfig(backends []backends.SimulatedTestBackend, clientType omniHTTP.Cl
 func NewOmnirpcServer(ctx context.Context, tb testing.TB, backends ...backends.SimulatedTestBackend) string {
 	tb.Helper()
 
-	metrics.SetupTestJaeger(ctx, tb)
+	localmetrics.SetupTestJaeger(ctx, tb)
 
 	handler, err := metrics.NewByType(ctx, cmd.BuildInfo(), metrics.Jaeger)
 	assert.Nil(tb, err)

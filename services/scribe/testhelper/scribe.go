@@ -7,6 +7,7 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
@@ -31,7 +32,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 
 	omnirpcURL := testhelper.NewOmnirpcServer(ctx, tb, backends...)
 
-	metrics.SetupTestJaeger(ctx, tb)
+	localmetrics.SetupTestJaeger(ctx, tb)
 	metricsProvider, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Jaeger)
 	assert.Nil(tb, err)
 

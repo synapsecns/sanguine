@@ -1,4 +1,4 @@
-package localserver
+package localmetrics
 
 type config struct {
 	enablePyroscope       bool
