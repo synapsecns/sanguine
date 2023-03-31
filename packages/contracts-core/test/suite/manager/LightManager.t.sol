@@ -73,6 +73,8 @@ contract LightManagerTest is AgentManagerTest {
         bytes32 root = addNewAgent(domain, agent);
         test_setAgentRoot(root);
         bytes32[] memory proof = getAgentProof(agent);
+        vm.expectEmit();
+        emit StatusUpdated(AgentFlag.Active, domain, agent);
         // Anyone could add agents in Light Manager
         vm.prank(caller);
         lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
@@ -89,6 +91,8 @@ contract LightManagerTest is AgentManagerTest {
         bytes32 root = updateAgent(AgentFlag.Slashed, agent);
         test_setAgentRoot(root);
         bytes32[] memory proof = getAgentProof(agent);
+        vm.expectEmit();
+        emit StatusUpdated(AgentFlag.Slashed, domain, agent);
         bytes memory expectedCall = abi.encodeWithSelector(
             ISystemRegistry.managerSlash.selector,
             domain,
@@ -103,6 +107,8 @@ contract LightManagerTest is AgentManagerTest {
     }
 
     function test_setAgentRoot(bytes32 root) public {
+        vm.expectEmit();
+        emit RootUpdated(root);
         vm.prank(destination);
         lightManager.setAgentRoot(root);
         assertEq(lightManager.agentRoot(), root, "!agentRoot");
@@ -136,6 +142,8 @@ contract LightManagerTest is AgentManagerTest {
     ) public {
         test_addAgent_new(address(this), domain, agent);
         bytes memory data = _remoteSlashData(domain, agent, prover);
+        vm.expectEmit();
+        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         vm.expectCall(
             destination,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
