@@ -36,8 +36,11 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }
 
-    function initialize(ISystemRegistry origin, ISystemRegistry destination) external initializer {
-        __AgentManager_init(origin, destination);
+    function initialize(ISystemRegistry origin_, ISystemRegistry destination_)
+        external
+        initializer
+    {
+        __AgentManager_init(origin_, destination_);
         __Ownable_init();
         // Insert a zero address to make indexes for Agents start from 1.
         // Zeroed index is supposed to be used as a sentinel value meaning "no agent".

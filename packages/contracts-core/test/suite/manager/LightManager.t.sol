@@ -16,6 +16,8 @@ import {
 } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 contract LightManagerTest is AgentManagerTest {
     // Deploy mocks for every messaging contract
     constructor() SynapseTest(0) {}
@@ -162,9 +164,9 @@ contract LightManagerTest is AgentManagerTest {
         vm.prank(origin);
         lightManager.registrySlash(domain, agent, prover);
         assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address prover) = lightManager.slashStatus(agent);
+        (bool isSlashed, address prover_) = lightManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(prover, prover);
+        assertEq(prover_, prover);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {

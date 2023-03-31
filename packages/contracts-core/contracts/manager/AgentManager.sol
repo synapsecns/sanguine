@@ -26,6 +26,7 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
     ▏*║                             INITIALIZER                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
+    // solhint-disable-next-line func-name-mixedcase
     function __AgentManager_init(ISystemRegistry origin_, ISystemRegistry destination_)
         internal
         onlyInitializing
@@ -39,6 +40,7 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc IAgentManager
+    // solhint-disable-next-line ordering
     function agentRoot() external view virtual returns (bytes32);
 
     /// @inheritdoc IAgentManager

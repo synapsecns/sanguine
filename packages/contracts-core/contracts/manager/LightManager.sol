@@ -32,8 +32,11 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
     }
 
-    function initialize(ISystemRegistry origin, ISystemRegistry destination) external initializer {
-        __AgentManager_init(origin, destination);
+    function initialize(ISystemRegistry origin_, ISystemRegistry destination_)
+        external
+        initializer
+    {
+        __AgentManager_init(origin_, destination_);
         __Ownable_init();
     }
 
@@ -111,10 +114,10 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @dev Updates the Agent Merkle Root that Light Manager is tracking.
-    function _setAgentRoot(bytes32 agentRoot) internal {
-        if (_latestAgentRoot != agentRoot) {
-            _latestAgentRoot = agentRoot;
-            emit RootUpdated(agentRoot);
+    function _setAgentRoot(bytes32 _agentRoot) internal {
+        if (_latestAgentRoot != _agentRoot) {
+            _latestAgentRoot = _agentRoot;
+            emit RootUpdated(_agentRoot);
         }
     }
 

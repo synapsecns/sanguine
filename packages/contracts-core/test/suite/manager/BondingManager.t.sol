@@ -16,6 +16,8 @@ import {
 } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 contract BondingManagerTest is AgentManagerTest {
     bytes internal constant CANT_ADD = "Agent could not be added";
     bytes internal constant CANT_INITIATE = "Unstaking could not be initiated";
@@ -214,9 +216,9 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(originSynapse);
         bondingManager.registrySlash(domain, agent, prover);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address prover) = bondingManager.slashStatus(agent);
+        (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(prover, prover);
+        assertEq(prover_, prover);
     }
 
     function test_registrySlash_summit(
@@ -234,9 +236,9 @@ contract BondingManagerTest is AgentManagerTest {
         vm.prank(summit);
         bondingManager.registrySlash(domain, agent, prover);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address prover) = bondingManager.slashStatus(agent);
+        (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(prover, prover);
+        assertEq(prover_, prover);
     }
 
     function test_registrySlash_revertUnauthorized(address caller) public {
@@ -273,9 +275,9 @@ contract BondingManagerTest is AgentManagerTest {
             _remoteSlashData(domain, agent, prover)
         );
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address prover) = bondingManager.slashStatus(agent);
+        (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
-        assertEq(prover, prover);
+        assertEq(prover_, prover);
     }
 
     function test_completeSlashing_active(

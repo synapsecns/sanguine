@@ -10,6 +10,8 @@ import {
 
 import { ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
 
+// solhint-disable no-empty-blocks
+// solhint-disable ordering
 abstract contract AgentManagerTest is SynapseTest {
     uint256 internal rootSubmittedAt;
 
@@ -35,14 +37,14 @@ abstract contract AgentManagerTest is SynapseTest {
         SystemRouterHarness router,
         uint32 callOrigin,
         SystemEntity systemCaller,
-        bytes memory data
+        bytes memory payload
     ) internal {
         router.systemPrank({
             recipient: SystemEntity.AgentManager,
             rootSubmittedAt: callOrigin == _localDomain() ? block.timestamp : rootSubmittedAt,
             callOrigin: callOrigin,
             systemCaller: systemCaller,
-            data: data
+            payload: payload
         });
     }
 
