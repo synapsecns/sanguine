@@ -2,10 +2,10 @@
 pragma solidity 0.8.17;
 
 import { TypedMemView } from "../../contracts/libs/TypedMemView.sol";
-import { SynapseTestSuite } from "../utils/SynapseTestSuite.t.sol";
+import { SynapseUtilities } from "./SynapseUtilities.t.sol";
 
 // solhint-disable no-empty-blocks
-abstract contract SynapseLibraryTest is SynapseTestSuite {
+abstract contract SynapseLibraryTest is SynapseUtilities {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 

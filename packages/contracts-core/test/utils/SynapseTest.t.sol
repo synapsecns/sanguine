@@ -218,21 +218,4 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
         assertEq(status.domain, agentDomain[agent], "!domain");
         assertEq(status.index, agentIndex[agent], "!index");
     }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               VM UTILS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function expectRevertNotOwner() public {
-        vm.expectRevert("Ownable: caller is not the owner");
-    }
-
-    function skipBlock() public {
-        skipBlocks(1);
-    }
-
-    function skipBlocks(uint256 blocks) public {
-        vm.roll(block.number + blocks);
-        skip(blocks * 12 seconds);
-    }
 }
