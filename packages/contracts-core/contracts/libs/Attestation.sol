@@ -234,31 +234,31 @@ library AttestationLib {
     /// @notice Returns root of the Snapshot merkle tree created in the Summit contract.
     function snapRoot(Attestation att) internal pure returns (bytes32) {
         bytes29 view_ = att.unwrap();
-        return view_.index({ index: OFFSET_SNAP_ROOT, bytes_: 32 });
+        return view_.index({ index_: OFFSET_SNAP_ROOT, bytes_: 32 });
     }
 
     /// @notice Returns root of the Agent merkle tree tracked by BondingManager.
     function agentRoot(Attestation att) internal pure returns (bytes32) {
         bytes29 view_ = att.unwrap();
-        return view_.index({ index: OFFSET_AGENT_ROOT, bytes_: 32 });
+        return view_.index({ index_: OFFSET_AGENT_ROOT, bytes_: 32 });
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.
     function nonce(Attestation att) internal pure returns (uint32) {
         bytes29 view_ = att.unwrap();
-        return uint32(view_.indexUint({ index: OFFSET_NONCE, bytes_: 4 }));
+        return uint32(view_.indexUint({ index_: OFFSET_NONCE, bytes_: 4 }));
     }
 
     /// @notice Returns a block number when attestation was created in Summit.
     function blockNumber(Attestation att) internal pure returns (uint40) {
         bytes29 view_ = att.unwrap();
-        return uint40(view_.indexUint({ index: OFFSET_BLOCK_NUMBER, bytes_: 5 }));
+        return uint40(view_.indexUint({ index_: OFFSET_BLOCK_NUMBER, bytes_: 5 }));
     }
 
     /// @notice Returns a block timestamp when attestation was created in Summit.
     /// @dev This is the timestamp according to the Synapse Chain.
     function timestamp(Attestation att) internal pure returns (uint40) {
         bytes29 view_ = att.unwrap();
-        return uint40(view_.indexUint({ index: OFFSET_TIMESTAMP, bytes_: 5 }));
+        return uint40(view_.indexUint({ index_: OFFSET_TIMESTAMP, bytes_: 5 }));
     }
 }

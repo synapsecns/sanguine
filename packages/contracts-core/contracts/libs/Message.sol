@@ -195,7 +195,7 @@ library MessageLib {
         bytes29 view_ = message.unwrap();
         // Determine index where message body payload starts
         uint256 index = OFFSET_HEADER + _getLen(view_, Parts.Header) + _getLen(view_, Parts.Tips);
-        return view_.sliceFrom({ index: index, newType: 0 });
+        return view_.sliceFrom({ index_: index, newType: 0 });
     }
 
     /// @notice Returns message's hash: a leaf to be inserted in the Merkle tree.
@@ -223,7 +223,7 @@ library MessageLib {
     /// if the whole payload or the header are properly formatted.
     function _getHeader(bytes29 view_) private pure returns (bytes29) {
         uint256 length = _getLen(view_, Parts.Header);
-        return view_.slice({ index: OFFSET_HEADER, len: length, newType: 0 });
+        return view_.slice({ index_: OFFSET_HEADER, len_: length, newType: 0 });
     }
 
     /// @dev Returns a generic memory view over the tips field without checking
@@ -232,6 +232,6 @@ library MessageLib {
         // Determine index where tips payload starts
         uint256 indexFrom = OFFSET_HEADER + _getLen(view_, Parts.Header);
         uint256 length = _getLen(view_, Parts.Tips);
-        return view_.slice({ index: indexFrom, len: length, newType: 0 });
+        return view_.slice({ index_: indexFrom, len_: length, newType: 0 });
     }
 }

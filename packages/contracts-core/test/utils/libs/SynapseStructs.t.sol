@@ -125,12 +125,12 @@ library CastLib {
 
     function formatHeader(RawHeader memory rh) internal pure returns (bytes memory header) {
         header = HeaderLib.formatHeader({
-            origin: rh.origin,
-            sender: rh.sender,
-            nonce: rh.nonce,
-            destination: rh.destination,
-            recipient: rh.recipient,
-            optimisticSeconds: rh.optimisticSeconds
+            origin_: rh.origin,
+            sender_: rh.sender,
+            nonce_: rh.nonce,
+            destination_: rh.destination,
+            recipient_: rh.recipient,
+            optimisticSeconds_: rh.optimisticSeconds
         });
     }
 
@@ -140,10 +140,10 @@ library CastLib {
 
     function formatTips(RawTips memory rt) internal pure returns (bytes memory tipsPayload) {
         tipsPayload = TipsLib.formatTips({
-            notaryTip: rt.notaryTip,
-            broadcasterTip: rt.broadcasterTip,
-            proverTip: rt.proverTip,
-            executorTip: rt.executorTip
+            notaryTip_: rt.notaryTip,
+            broadcasterTip_: rt.broadcasterTip,
+            proverTip_: rt.proverTip,
+            executorTip_: rt.executorTip
         });
     }
 
@@ -157,11 +157,11 @@ library CastLib {
 
     function formatState(RawState memory rs) internal pure returns (bytes memory state) {
         state = StateLib.formatState({
-            root: rs.root,
-            origin: rs.origin,
-            nonce: rs.nonce,
-            blockNumber: rs.blockNumber,
-            timestamp: rs.timestamp
+            root_: rs.root,
+            origin_: rs.origin,
+            nonce_: rs.nonce,
+            blockNumber_: rs.blockNumber,
+            timestamp_: rs.timestamp
         });
     }
 
@@ -244,11 +244,11 @@ library CastLib {
         returns (bytes memory attestation)
     {
         attestation = AttestationLib.formatAttestation({
-            snapRoot: ra.snapRoot,
-            agentRoot: ra.agentRoot,
-            nonce: ra.nonce,
-            blockNumber: ra.blockNumber,
-            timestamp: ra.timestamp
+            snapRoot_: ra.snapRoot,
+            agentRoot_: ra.agentRoot,
+            nonce_: ra.nonce,
+            blockNumber_: ra.blockNumber,
+            timestamp_: ra.timestamp
         });
     }
 

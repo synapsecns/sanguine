@@ -123,12 +123,12 @@ library AttestationReportLib {
 
     /// @dev Returns AttestationReport without checking that it fits into AttestationFlag enum.
     function _arFlag(bytes29 view_) internal pure returns (uint8) {
-        return uint8(view_.indexUint({ index: OFFSET_FLAG, bytes_: 1 }));
+        return uint8(view_.indexUint({ index_: OFFSET_FLAG, bytes_: 1 }));
     }
 
     /// @dev Returns an untyped memory view over Report's attestation
     /// without checking if it is properly formatted.
     function _arAttestation(bytes29 view_) internal pure returns (bytes29) {
-        return view_.sliceFrom({ index: OFFSET_ATTESTATION, newType: 0 });
+        return view_.sliceFrom({ index_: OFFSET_ATTESTATION, newType: 0 });
     }
 }

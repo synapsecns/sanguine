@@ -171,7 +171,7 @@ library SnapshotLib {
         bytes29 view_ = snapshot.unwrap();
         uint256 indexFrom = stateIndex * STATE_LENGTH;
         require(indexFrom < view_.len(), "State index out of range");
-        return view_.slice({ index: indexFrom, len: STATE_LENGTH, newType: 0 }).castToState();
+        return view_.slice({ index_: indexFrom, len_: STATE_LENGTH, newType: 0 }).castToState();
     }
 
     /// @notice Returns the amount of states in the snapshot.
@@ -187,7 +187,7 @@ library SnapshotLib {
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
     function root(Snapshot snapshot) internal pure returns (bytes32) {
         uint256 statesAmount_ = snapshot.statesAmount();
-        bytes32[] memory hashes = new bytes32[](statesAmount);
+        bytes32[] memory hashes = new bytes32[](statesAmount_);
         for (uint256 i = 0; i < statesAmount_; ++i) {
             // Each State has two sub-leafs, which are used as the "leafs" in "Snapshot Merkle Tree"
             // We save their parent in order to calculate the root for the whole tree later

@@ -42,7 +42,7 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
         bytes memory callData = bytes.concat(selector, prefixOld, following);
         // Format the calldata
         bytes memory adjustedCallData = libHarness.formatAdjustedCallData({
-            callData: callData,
+            callData_: callData,
             prefix: prefixNew
         });
         // Test formatter against manually constructed payload
@@ -54,7 +54,7 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
         // Format the system message
         bytes memory systemMessage = libHarness.formatSystemMessage({
             systemRecipient: recipient,
-            callData: callData,
+            callData_: callData,
             prefix: prefixNew
         });
         checkCastToSystemMessage({ payload: systemMessage, isSystemMessage: true });
@@ -82,11 +82,11 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
         bytes memory callData = bytes.concat(this.setUp.selector, new bytes(length));
         bytes memory prefix = new bytes(length + bytesExtra);
         vm.expectRevert("Payload too short");
-        libHarness.formatAdjustedCallData({ callData: callData, prefix: prefix });
+        libHarness.formatAdjustedCallData({ callData_: callData, prefix: prefix });
         vm.expectRevert("Payload too short");
         libHarness.formatSystemMessage({
             systemRecipient: recipient,
-            callData: callData,
+            callData_: callData,
             prefix: prefix
         });
     }
@@ -174,7 +174,7 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
         return
             libHarness.formatSystemMessage({
                 systemRecipient: 0,
-                callData: TEST_MESSAGE_PAYLOAD,
+                callData_: TEST_MESSAGE_PAYLOAD,
                 prefix: ""
             });
     }

@@ -10,9 +10,8 @@ import {
     TypedMemView
 } from "../../../contracts/libs/Attestation.sol";
 
-/**
- * @notice Exposes Attestation methods for testing against golang.
- */
+// solhint-disable ordering
+/// @notice Exposes Attestation methods for testing against golang.
 contract AttestationHarness {
     using AttestationLib for bytes;
     using AttestationLib for bytes29;

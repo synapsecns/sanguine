@@ -26,8 +26,6 @@ contract MessageLibraryTest is SynapseLibraryTest {
         uint96 executorTip;
     }
 
-    using TypedMemView for bytes;
-
     MessageHarness internal libHarness;
     // First element is (uint16 messageVersion)
     uint8 internal constant FIRST_ELEMENT_BYTES = 16 / 8;

@@ -118,11 +118,11 @@ library StateReportLib {
 
     /// @dev Returns StateReport flag without checking that it fits into StateFlag enum.
     function _srFlag(bytes29 view_) internal pure returns (uint8) {
-        return uint8(view_.indexUint({ index: OFFSET_FLAG, bytes_: 1 }));
+        return uint8(view_.indexUint({ index_: OFFSET_FLAG, bytes_: 1 }));
     }
 
     /// @dev Returns an untyped memory view over Report's state without checking if it is properly formatted.
     function _srState(bytes29 view_) internal pure returns (bytes29) {
-        return view_.sliceFrom({ index: OFFSET_STATE, newType: 0 });
+        return view_.sliceFrom({ index_: OFFSET_STATE, newType: 0 });
     }
 }

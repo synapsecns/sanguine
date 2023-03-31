@@ -9,6 +9,7 @@ import {
     TypedMemView
 } from "../../../contracts/libs/StateReport.sol";
 
+// solhint-disable ordering
 /// @notice Exposes Report methods for testing against golang.
 contract StateReportHarness {
     using StateReportLib for bytes;

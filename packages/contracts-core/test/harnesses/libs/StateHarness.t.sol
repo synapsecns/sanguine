@@ -10,9 +10,8 @@ import {
     TypedMemView
 } from "../../../contracts/libs/State.sol";
 
-/**
- * @notice Exposes State methods for testing against golang.
- */
+// solhint-disable ordering
+/// @notice Exposes State methods for testing against golang.
 contract StateHarness {
     using StateLib for bytes;
     using StateLib for bytes29;
