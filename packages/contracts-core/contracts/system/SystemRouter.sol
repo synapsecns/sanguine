@@ -312,11 +312,11 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     function _remoteSystemCall(
         uint32 destination,
         uint32 optimisticSeconds,
-        bytes[] memory _systemMessages
+        bytes[] memory systemMessages
     ) internal {
         // TODO: use TypedMemView for encoding/decoding instead
         // Serialize the series of system calls into a byte string
-        bytes memory message = abi.encode(_systemMessages);
+        bytes memory message = abi.encode(systemMessages);
         /**
          * @dev Origin will use SYSTEM_ROUTER as "sender" field for messages
          * sent by System Router.

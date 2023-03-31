@@ -210,8 +210,8 @@ library MessageLib {
 
     /// @dev Returns length for a given part of the message
     /// without checking if the payload is properly formatted.
-    function _getLen(bytes29 view_, Parts _part) private pure returns (uint256) {
-        return view_.indexUint(uint256(_part) * TWO_BYTES, TWO_BYTES);
+    function _getLen(bytes29 view_, Parts part) private pure returns (uint256) {
+        return view_.indexUint(uint256(part) * TWO_BYTES, TWO_BYTES);
     }
 
     /// @dev Returns a version field without checking if the payload is properly formatted.

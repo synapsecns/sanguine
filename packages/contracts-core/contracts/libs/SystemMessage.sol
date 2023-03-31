@@ -123,8 +123,8 @@ library SystemMessageLib {
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(SystemMessage _sm) internal pure returns (bytes29) {
-        return SystemMessage.unwrap(_sm);
+    function unwrap(SystemMessage systemMessage) internal pure returns (bytes29) {
+        return SystemMessage.unwrap(systemMessage);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

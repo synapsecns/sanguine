@@ -217,21 +217,21 @@ library StateLib {
     /// @notice Returns the hash of the State.
     /// @dev We are using the Merkle Root of a tree with two leafs (see below) as state hash.
     function leaf(State state) internal pure returns (bytes32) {
-        (bytes32 _leftLeaf, bytes32 _rightLeaf) = state.subLeafs();
+        (bytes32 leftLeaf, bytes32 rightLeaf) = state.subLeafs();
         // Final hash is the parent of these leafs
-        return keccak256(bytes.concat(_leftLeaf, _rightLeaf));
+        return keccak256(bytes.concat(leftLeaf, rightLeaf));
     }
 
     /// @notice Returns "sub-leafs" of the State. Hash of these "sub leafs" is going to be used
     /// as a "state leaf" in the "Snapshot Merkle Tree".
     /// This enables proving that leftLeaf = (root, origin) was a part of the "Snapshot Merkle Tree",
     /// by combining `rightLeaf` with the remainder of the "Snapshot Merkle Proof".
-    function subLeafs(State state) internal pure returns (bytes32 _leftLeaf, bytes32 _rightLeaf) {
+    function subLeafs(State state) internal pure returns (bytes32 leftLeaf, bytes32 rightLeaf) {
         bytes29 view_ = state.unwrap();
         // Left leaf is (root, origin)
-        _leftLeaf = view_.prefix({ len: OFFSET_NONCE, newType: 0 }).keccak();
+        leftLeaf = view_.prefix({ len: OFFSET_NONCE, newType: 0 }).keccak();
         // Right leaf is (metadata), or (nonce, blockNumber, timestamp)
-        _rightLeaf = view_.sliceFrom({ index: OFFSET_NONCE, newType: 0 }).keccak();
+        rightLeaf = view_.sliceFrom({ index: OFFSET_NONCE, newType: 0 }).keccak();
     }
 
     /// @notice Returns the left "sub-leaf" of the State.

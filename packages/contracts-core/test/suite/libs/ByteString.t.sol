@@ -140,9 +140,9 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         checkCastToCallData(abi.encodeWithSelector(selector, arg), "!isCallData: uint8[2]");
     }
 
-    function test_isCallData_extraBytes(uint8 _extraBytes) public {
-        vm.assume(_extraBytes != 0);
-        extraBytes = _extraBytes;
+    function test_isCallData_extraBytes(uint8 extraBytes_) public {
+        vm.assume(extraBytes_ != 0);
+        extraBytes = extraBytes_;
         test_isCallData_noArgs();
         test_isCallData_withArgs();
         test_isCallData_dynamicArgs();

@@ -164,13 +164,7 @@ contract PingPongClient is IMessageRecipient {
     ) internal {
         bytes memory tips = TipsLib.emptyTips();
         bytes memory message = abi.encode(message);
-        InterfaceOrigin(origin).dispatch(
-            destination,
-            recipient,
-            optimisticPeriod(),
-            tips,
-            message
-        );
+        InterfaceOrigin(origin).dispatch(destination, recipient, optimisticPeriod(), tips, message);
     }
 
     /// @dev Initiate a new Ping-Pong round.

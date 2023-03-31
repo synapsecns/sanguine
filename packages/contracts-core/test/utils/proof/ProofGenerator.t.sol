@@ -100,10 +100,7 @@ contract ProofGenerator is ProofCutter {
     function _createLayer(uint256 depth, uint256 size) internal {
         merkleTree[depth] = new bytes32[](size);
         for (uint256 i = 0; i < size; ++i) {
-            merkleTree[depth][i] = _hash(
-                getNode(depth - 1, 2 * i),
-                getNode(depth - 1, 2 * i + 1)
-            );
+            merkleTree[depth][i] = _hash(getNode(depth - 1, 2 * i), getNode(depth - 1, 2 * i + 1));
         }
     }
 

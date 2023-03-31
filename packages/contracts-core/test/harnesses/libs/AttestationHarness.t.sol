@@ -29,8 +29,8 @@ contract AttestationHarness {
     function castToAttestation(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        Attestation _attestation = AttestationLib.castToAttestation(payload);
-        return _attestation.unwrap().clone();
+        Attestation attestation = AttestationLib.castToAttestation(payload);
+        return attestation.unwrap().clone();
     }
 
     function snapRoot(bytes memory payload) public pure returns (bytes32) {

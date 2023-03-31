@@ -12,18 +12,18 @@ library TypeCasts {
     }
 
     // treat it as a null-terminated string of max 32 bytes
-    function coerceString(bytes32 buf) internal pure returns (string memory _newStr) {
-        uint8 _slen = 0;
-        while (_slen < 32 && buf[_slen] != 0) {
-            _slen++;
+    function coerceString(bytes32 buf) internal pure returns (string memory newStr) {
+        uint8 sLen = 0;
+        while (sLen < 32 && buf[sLen] != 0) {
+            sLen++;
         }
 
         // solhint-disable-next-line no-inline-assembly
         assembly {
-            _newStr := mload(0x40)
-            mstore(0x40, add(_newStr, 0x40)) // may end up with extra
-            mstore(_newStr, _slen)
-            mstore(add(_newStr, 0x20), buf)
+            newStr := mload(0x40)
+            mstore(0x40, add(newStr, 0x40)) // may end up with extra
+            mstore(newStr, sLen)
+            mstore(add(newStr, 0x20), buf)
         }
     }
 

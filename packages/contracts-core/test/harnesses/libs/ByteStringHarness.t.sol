@@ -35,8 +35,8 @@ contract ByteStringHarness {
     }
 
     function castToSignature(bytes memory payload) public view returns (bytes memory) {
-        Signature _sig = payload.castToSignature();
-        return _sig.unwrap().clone();
+        Signature signature = payload.castToSignature();
+        return signature.unwrap().clone();
     }
 
     function castToCallData(bytes memory payload) public view returns (bytes memory) {

@@ -48,11 +48,11 @@ contract DeployerUtils is Script {
         isBroadcasted = false;
     }
 
-    function startBroadcast(bool _isBroadcasted) public {
+    function startBroadcast(bool isBroadcasted_) public {
         chainAlias = getChainAlias();
-        if (_isBroadcasted) createDir(string.concat(DEPLOYMENTS, chainAlias));
+        if (isBroadcasted_) createDir(string.concat(DEPLOYMENTS, chainAlias));
         vm.startBroadcast(broadcasterPK);
-        isBroadcasted = _isBroadcasted;
+        isBroadcasted = isBroadcasted_;
     }
 
     function setupDeployerPK() public {

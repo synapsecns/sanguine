@@ -34,8 +34,8 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
 
     SystemRouterHarness internal systemRouter;
 
-    constructor(uint256 _deployMask) {
-        deployMask = _deployMask;
+    constructor(uint256 deployMask_) {
+        deployMask = deployMask_;
     }
 
     /// @notice Prevents this contract from being included in the coverage report
