@@ -11,7 +11,6 @@ jobs:
   cancel-outdated:
     name: Cancel Outdated Jobs
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' }}
     steps:
       - id: skip_check
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref || contains(github.event.head_commit.message, '[no_skip]') }}
