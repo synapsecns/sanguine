@@ -54,8 +54,6 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 		},
 	}
 
-	fmt.Println(runOptions)
-
 	resource, err := j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 		config.Mounts = []docker.HostMount{
 			{
@@ -73,6 +71,7 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 
 	j.tb.Setenv(internal.PyroscopeEndpoint, fmt.Sprintf("http://localhost:%s", resource.GetPort("4040/tcp")))
 
+	fmt.Println(internal.PyroscopeEndpoint)
 	if !j.cfg.keepContainers {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
 		assert.Nil(j.tb, err)
