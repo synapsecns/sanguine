@@ -6,7 +6,7 @@ pragma solidity 0.8.17;
  * @notice Version getter for contracts. Doesn't use any storage slots, meaning
  * it will never cause any troubles with the upgradeable contracts. For instance, this contract
  * can be added or removed from the inheritance chain without shifting the storage layout.
- **/
+ */
 abstract contract Versioned {
     /**
      * @notice Struct that is mimicking the storage layout of a string with 32 bytes or less.

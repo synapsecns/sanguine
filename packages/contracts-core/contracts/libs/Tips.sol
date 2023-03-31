@@ -58,7 +58,7 @@ library TipsLib {
      * @param proverTip_        Tip for the Prover
      * @param executorTip_      Tip for the Executor
      * @return Formatted tips
-     **/
+     */
     function formatTips(
         uint96 notaryTip_,
         uint96 broadcasterTip_,
@@ -72,7 +72,7 @@ library TipsLib {
     /**
      * @notice Returns a formatted Tips payload specifying empty tips.
      * @return Formatted tips
-     **/
+     */
     function emptyTips() internal pure returns (bytes memory) {
         return formatTips(0, 0, 0, 0);
     }

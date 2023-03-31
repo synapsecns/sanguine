@@ -64,7 +64,7 @@ library HeaderLib {
      * @param recipient_            Address that will receive the message
      * @param optimisticSeconds_    Optimistic period for message execution
      * @return Formatted header
-     **/
+     */
     function formatHeader(
         uint32 origin_,
         bytes32 sender_,

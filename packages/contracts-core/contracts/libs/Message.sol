@@ -68,7 +68,7 @@ library MessageLib {
      * @param tips_         Formatted tips payload
      * @param messageBody   Raw bytes of message body
      * @return Formatted message
-     **/
+     */
     function formatMessage(
         bytes memory header_,
         bytes memory tips_,
@@ -97,7 +97,7 @@ library MessageLib {
      * @param tips_                 Formatted tips payload
      * @param messageBody           Raw bytes of message body
      * @return Formatted message
-     **/
+     */
     function formatMessage(
         uint32 origin,
         bytes32 sender,

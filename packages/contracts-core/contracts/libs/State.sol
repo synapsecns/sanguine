@@ -88,7 +88,7 @@ library StateLib {
      * @param blockNumber_  Block number when root was saved in Origin
      * @param timestamp_    Block timestamp when root was saved in Origin
      * @return Formatted state
-     **/
+     */
     function formatState(
         bytes32 root_,
         uint32 origin_,

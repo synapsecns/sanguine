@@ -76,7 +76,7 @@ library MerkleLib {
      * @dev Reverts if tree is full
      * @param newCount  Amount of inserted leaves in the tree after the insertion (i.e. current + 1)
      * @param node      Element to insert into tree
-     **/
+     */
     function insertBase(
         BaseTree storage tree,
         uint256 newCount,
@@ -119,7 +119,7 @@ library MerkleLib {
      * @notice Calculates and returns current root of the merkle tree.
      * @param count     Current amount of inserted leaves in the tree
      * @return current  Calculated root of `tree`
-     **/
+     */
     function rootBase(BaseTree storage tree, uint256 count)
         internal
         view

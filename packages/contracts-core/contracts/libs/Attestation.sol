@@ -103,7 +103,7 @@ library AttestationLib {
      * @param blockNumber_  Block number when attestation was created in Summit
      * @param timestamp_    Block timestamp when attestation was created in Summit
      * @return Formatted attestation
-     **/
+     */
     function formatAttestation(
         bytes32 snapRoot_,
         bytes32 agentRoot_,
