@@ -145,7 +145,7 @@ abstract contract StatementHub is SystemRegistry {
      * @param _snapshot     Typed memory view over snapshot payload
      */
     function _verifySnapshotMerkle(Attestation _att, Snapshot _snapshot) internal pure {
-        require(_att.root() == _snapshot.root(), "Incorrect snapshot root");
+        require(_att.snapRoot() == _snapshot.root(), "Incorrect snapshot root");
     }
 
     /**
@@ -180,7 +180,7 @@ abstract contract StatementHub is SystemRegistry {
             _stateIndex
         );
         // Snapshot root should match the attestation root
-        require(_att.root() == snapshotRoot, "Incorrect snapshot root");
+        require(_att.snapRoot() == snapshotRoot, "Incorrect snapshot root");
     }
 
     /**

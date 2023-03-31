@@ -72,8 +72,10 @@ contract BondingManagerTest is AgentManagerTest {
         vm.assume(bondingManager.agentStatus(agent).flag == AgentFlag.Unknown);
         bytes32[] memory proof = getZeroProof();
         bytes32 newRoot = addNewAgent(domain, agent);
-        vm.expectEmit(true, true, true, true);
-        emit StatusUpdated(AgentFlag.Active, domain, agent, newRoot);
+        vm.expectEmit();
+        emit StatusUpdated(AgentFlag.Active, domain, agent);
+        vm.expectEmit();
+        emit RootUpdated(newRoot);
         bondingManager.addAgent(domain, agent, proof);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Active);
         assertEq(bondingManager.agentRoot(), newRoot, "!agentRoot");
@@ -115,8 +117,10 @@ contract BondingManagerTest is AgentManagerTest {
     ) public {
         bytes32[] memory proof = getAgentProof(agent);
         bytes32 newRoot = updateAgent(flag, agent);
-        vm.expectEmit(true, true, true, true);
-        emit StatusUpdated(flag, domain, agent, newRoot);
+        vm.expectEmit();
+        emit StatusUpdated(flag, domain, agent);
+        vm.expectEmit();
+        emit RootUpdated(newRoot);
         vm.prank(caller);
         updateStatusWithProof(flag, domain, agent, proof);
         assertEq(bondingManager.agentRoot(), newRoot, "!agentRoot");
@@ -201,6 +205,8 @@ contract BondingManagerTest is AgentManagerTest {
         address prover
     ) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
+        vm.expectEmit();
+        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         vm.expectCall(
             summit,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
@@ -219,6 +225,8 @@ contract BondingManagerTest is AgentManagerTest {
         address prover
     ) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
+        vm.expectEmit();
+        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         vm.expectCall(
             originSynapse,
             abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
@@ -254,6 +262,8 @@ contract BondingManagerTest is AgentManagerTest {
             agent
         );
         _skipBondingOptimisticPeriod();
+        vm.expectEmit();
+        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         vm.expectCall(summit, localCall);
         vm.expectCall(originSynapse, localCall);
         _systemPrank(

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { BondingManagerEvents } from "../../../contracts/events/BondingManagerEvents.sol";
+import { AgentManagerEvents } from "../../../contracts/events/AgentManagerEvents.sol";
 import { DestinationEvents } from "../../../contracts/events/DestinationEvents.sol";
 import { DisputeHubEvents } from "../../../contracts/events/DisputeHubEvents.sol";
 import { ExecutionHubEvents } from "../../../contracts/events/ExecutionHubEvents.sol";
@@ -12,7 +12,7 @@ import { SystemRegistryEvents } from "../../../contracts/events/SystemRegistryEv
 
 // solhint-disable no-empty-blocks
 abstract contract ProductionEvents is
-    BondingManagerEvents,
+    AgentManagerEvents,
     DestinationEvents,
     DisputeHubEvents,
     ExecutionHubEvents,

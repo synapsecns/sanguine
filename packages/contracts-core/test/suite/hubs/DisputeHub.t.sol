@@ -99,7 +99,7 @@ abstract contract DisputeHubTest is SynapseTest {
         bytes[] memory states = rawSnap.formatStates();
         acceptSnapshot(states);
         // Reuse existing metadata in RawAttestation
-        return rawSnap.castToRawAttestation(ra.nonce, ra.blockNumber, ra.timestamp);
+        return rawSnap.castToRawAttestation(ra.agentRoot, ra.nonce, ra.blockNumber, ra.timestamp);
     }
 
     function createSignedSnapshot(

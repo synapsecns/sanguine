@@ -5,6 +5,15 @@ import { ExecutionAttestation } from "../libs/Attestation.sol";
 
 interface InterfaceDestination {
     /**
+     * @notice Attempts to pass a quarantined Agent Merkle Root to a local Light Manager.
+     * @dev Will do nothing, if root optimistic period is not over.
+     * Note: both returned values can not be true.
+     * @return rootPassed   Whether the agent merkle root was passed to LightManager
+     * @return rootPending  Whether there is a pending agent merkle root left
+     */
+    function passAgentRoot() external returns (bool rootPassed, bool rootPending);
+
+    /**
      * @notice Submit an Attestation signed by a Notary.
      * @dev Will revert if any of these is true:
      *  - Attestation payload is not properly formatted.
@@ -36,6 +45,8 @@ interface InterfaceDestination {
         bytes memory _attSignature
     ) external returns (bool wasAccepted);
 
+    // ═════════════════════════════════ VIEWS ═════════════════════════════════
+
     /**
      * @notice Returns the total amount of Notaries attestations that have been accepted.
      */
@@ -52,4 +63,24 @@ interface InterfaceDestination {
         external
         view
         returns (bytes32 root, ExecutionAttestation memory execAtt);
+
+    /**
+     * Returns status of Destination contract as far as snapshot/agent roots are concerned
+     * @return snapRootTime     Timestamp when latest snapshot root was accepted
+     * @return agentRootTime    Timestamp when latest agent root was accepted
+     * @return notary           Notary who signed the latest agent root
+     */
+    function destStatus()
+        external
+        view
+        returns (
+            uint48 snapRootTime,
+            uint48 agentRootTime,
+            address notary
+        );
+
+    /**
+     * Returns Agent Merkle Root to be passed to LightManager once its optimistic period is over.
+     */
+    function nextAgentRoot() external view returns (bytes32);
 }

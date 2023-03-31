@@ -155,10 +155,11 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// @dev Accepts a Snapshot signed by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
     /// Returns the attestation created from the Notary snapshot.
-    function _acceptNotarySnapshot(Snapshot _snapshot, address _notary)
-        internal
-        returns (bytes memory attPayload)
-    {
+    function _acceptNotarySnapshot(
+        Snapshot _snapshot,
+        bytes32 _agentRoot,
+        address _notary
+    ) internal returns (bytes memory attPayload) {
         // Snapshot Signer is a Notary: construct a Snapshot Merkle Tree,
         // while checking that the states were previously saved.
         uint256 statesAmount = _snapshot.statesAmount();
@@ -177,7 +178,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         }
         // Derive the snapshot merkle root and save it for a Notary attestation.
         // Save Notary snapshot for later retrieval
-        return _saveNotarySnapshot(_snapshot, statePtrs);
+        return _saveNotarySnapshot(_snapshot, statePtrs, _agentRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -200,13 +201,14 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Saves the Notary snapshot and the attestation created from it.
     /// Returns the created attestation.
-    function _saveNotarySnapshot(Snapshot _snapshot, uint256[] memory statePtrs)
-        internal
-        returns (bytes memory attPayload)
-    {
+    function _saveNotarySnapshot(
+        Snapshot _snapshot,
+        uint256[] memory statePtrs,
+        bytes32 _agentRoot
+    ) internal returns (bytes memory attPayload) {
         // Attestation nonce is its index in `attestations` array
         uint32 attNonce = uint32(attestations.length);
-        SummitAttestation memory summitAtt = _snapshot.toSummitAttestation();
+        SummitAttestation memory summitAtt = _snapshot.toSummitAttestation(_agentRoot);
         attPayload = summitAtt.formatSummitAttestation(attNonce);
         /// @dev Add a single element to both `attestations` and `notarySnapshots`,
         /// enforcing the (attestations.length == notarySnapshots.length) invariant.

@@ -8,7 +8,7 @@ import { DomainContext } from "./context/DomainContext.sol";
 import { SummitEvents } from "./events/SummitEvents.sol";
 import { IAgentManager } from "./interfaces/IAgentManager.sol";
 import { InterfaceSummit } from "./interfaces/InterfaceSummit.sol";
-import { ExecutionHub } from "./hubs/ExecutionHub.sol";
+import { DisputeHub, ExecutionHub } from "./hubs/ExecutionHub.sol";
 import { SnapshotHub, SummitAttestation, SummitState } from "./hubs/SnapshotHub.sol";
 import { Attestation, AttestationLib, AttestationReport, Snapshot } from "./hubs/StatementHub.sol";
 import { DomainContext, Versioned } from "./system/SystemContract.sol";
@@ -44,6 +44,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         external
         returns (bytes memory attPayload)
     {
+        // Call the hook and check if we can accept the statement
+        if (!_beforeStatement()) return "";
         // This will revert if payload is not a snapshot
         Snapshot snapshot = _wrapSnapshot(_snapPayload);
         // This will revert if the signer is not a known Agent
@@ -62,9 +64,11 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         } else {
             // Check that Notary who submitted the snapshot is not in dispute
             require(!_inDispute(agent), "Notary is in dispute");
+            // Fetch current Agent Root from BondingManager
+            bytes32 agentRoot = agentManager.agentRoot();
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
-            attPayload = _acceptNotarySnapshot(snapshot, agent);
+            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent);
             // Save attestation derived from Notary snapshot
             _saveAttestation(attPayload.castToAttestation(), agent);
         }
@@ -121,5 +125,15 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     /// @inheritdoc InterfaceSummit
     function getLatestState(uint32 _origin) external view returns (bytes memory statePayload) {
         // TODO: implement once Agent Merkle Tree is done
+    }
+
+    /*╔══════════════════════════════════════════════════════════════════════╗*\
+    ▏*║                            INTERNAL LOGIC                            ║*▕
+    \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @inheritdoc DisputeHub
+    function _beforeStatement() internal pure override returns (bool acceptNext) {
+        // Summit is always open for new Guard/Notary statements
+        return true;
     }
 }

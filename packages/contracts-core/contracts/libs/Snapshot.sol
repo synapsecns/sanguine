@@ -206,12 +206,12 @@ library SnapshotLib {
 
     /// @notice Returns an Attestation struct to save in the Summit contract.
     /// Current block number and timestamp are used.
-    function toSummitAttestation(Snapshot _snapshot)
+    function toSummitAttestation(Snapshot _snapshot, bytes32 _agentRoot)
         internal
         view
         returns (SummitAttestation memory attestation)
     {
-        return AttestationLib.summitAttestation(_snapshot.root());
+        return AttestationLib.summitAttestation(_snapshot.root(), _agentRoot);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

@@ -97,6 +97,6 @@ library RandomLib {
         RawSnapshot memory rawSnap,
         uint32 nonce
     ) internal view returns (RawAttestation memory ra) {
-        return rawSnap.castToRawAttestation(nonce, r.nextUint40(), r.nextUint40());
+        return rawSnap.castToRawAttestation(r.next(), nonce, r.nextUint40(), r.nextUint40());
     }
 }

@@ -30,6 +30,8 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         bytes memory _snapPayload,
         bytes memory _snapSignature
     ) external returns (bool wasAccepted) {
+        // Call the hook and check if we can accept the statement
+        if (!_beforeStatement()) return false;
         // This will revert if payload is not a state report
         StateReport report = _wrapStateReport(_srPayload);
         // This will revert if the report signer is not an known Guard
@@ -64,6 +66,8 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         bytes memory _attPayload,
         bytes memory _attSignature
     ) external returns (bool wasAccepted) {
+        // Call the hook and check if we can accept the statement
+        if (!_beforeStatement()) return false;
         // This will revert if payload is not a state report
         StateReport report = _wrapStateReport(_srPayload);
         // This will revert if the report signer is not an known Guard
@@ -99,6 +103,10 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
+
+    /// @dev Hook that is called before every statement is handled.
+    /// @return acceptNext  Whether to accept the next statement
+    function _beforeStatement() internal virtual returns (bool acceptNext);
 
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This should be called, when the Guard submits a Report on a statement signed by the Notary.
