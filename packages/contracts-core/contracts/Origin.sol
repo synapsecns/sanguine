@@ -26,9 +26,9 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
 
     constructor(uint32 domain, IAgentManager agentManager_)
         DomainContext(domain)
-        SystemRegistry(agentManager)
+        SystemRegistry(agentManager_)
         Versioned("0.0.3")
-    {}
+    {} // solhint-disable-line no-empty-blocks
 
     /// @notice Initializes Origin contract:
     /// - msg.sender is set as contract owner
@@ -172,16 +172,16 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         require(tips.totalTips() == msg.value, "!tips: totalTips");
         // Format the message header
         messageNonce = _nextNonce();
-        bytes memory header = HeaderLib.formatHeader({
-            origin: localDomain,
-            sender: _checkForSystemRouter(recipient),
-            nonce: messageNonce,
-            destination: destination,
-            recipient: recipient,
-            optimisticSeconds: optimisticSeconds
+        bytes memory headerPayload = HeaderLib.formatHeader({
+            origin_: localDomain,
+            sender_: _checkForSystemRouter(recipient),
+            nonce_: messageNonce,
+            destination_: destination,
+            recipient_: recipient,
+            optimisticSeconds_: optimisticSeconds
         });
         // Format the full message payload
-        bytes memory msgPayload = MessageLib.formatMessage(header, tips, content);
+        bytes memory msgPayload = MessageLib.formatMessage(headerPayload, tipsPayload, content);
 
         // Insert new leaf into the Origin Merkle Tree and save the updated state
         messageHash = keccak256(msgPayload);

@@ -19,7 +19,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     constructor(uint32 domain, IAgentManager agentManager_)
         DomainContext(domain)
-        SystemRegistry(agentManager)
+        SystemRegistry(agentManager_)
         Versioned("0.0.3")
     {
         require(_onSynapseChain(), "Only deployed on SynChain");

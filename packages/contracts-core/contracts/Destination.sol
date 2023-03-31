@@ -36,9 +36,9 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     constructor(uint32 domain, IAgentManager agentManager_)
         DomainContext(domain)
-        SystemRegistry(agentManager)
+        SystemRegistry(agentManager_)
         Versioned("0.0.3")
-    {}
+    {} // solhint-disable-line no-empty-blocks
 
     /// @notice Initializes Destination contract:
     /// - msg.sender is set as contract owner
@@ -146,6 +146,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc InterfaceDestination
+    // solhint-disable-next-line ordering
     function attestationsAmount() external view returns (uint256) {
         return _roots.length;
     }
