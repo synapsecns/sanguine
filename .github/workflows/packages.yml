@@ -37,6 +37,12 @@ jobs:
       - name: Install Node Dependencies
         run: yarn install --immutable
 
+      # Foundry is required for formatting
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
       - name: Run tests # Run tests of all packages
         run: npx lerna exec npm run ci:lint --parallel
   test:
