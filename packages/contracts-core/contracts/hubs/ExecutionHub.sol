@@ -28,7 +28,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    bytes32 internal constant MESSAGE_STATUS_NONE = bytes32(0);
+    bytes32 internal constant _MESSAGE_STATUS_NONE = bytes32(0);
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
@@ -36,7 +36,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @notice (messageHash => status)
     /// TODO: Store something else as "status"? Notary/timestamp?
-    /// - Message hasn't been executed: MESSAGE_STATUS_NONE
+    /// - Message hasn't been executed: _MESSAGE_STATUS_NONE
     /// - Message has been executed: snapshot root used for proving when executed
     /// @dev Messages coming from different origins will always have a different hash
     /// as origin domain is encoded into the formatted message.
@@ -45,7 +45,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @dev Tracks all saved attestations
     // (root => attestation)
-    mapping(bytes32 => ExecutionAttestation) private rootAttestations;
+    mapping(bytes32 => ExecutionAttestation) private _rootAttestations;
 
     /// @dev gap for upgrade safety
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -138,7 +138,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     ) internal returns (ExecutionAttestation memory execAtt) {
         // TODO: split into a few smaller functions?
         // Check that message has not been executed before
-        require(messageStatus[msgLeaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
+        require(messageStatus[msgLeaf] == _MESSAGE_STATUS_NONE, "!MessageStatus.None");
         // Ensure message was meant for this domain
         require(header.destination() == localDomain, "!destination");
         // Reconstruct Origin Merkle Root using the origin proof
@@ -156,7 +156,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         //  - Snapshot Proof length exceeds Snapshot tree Height.
         bytes32 snapshotRoot = _snapshotRoot(originRoot, header.origin(), snapProof, stateIndex);
         // Fetch the attestation data for the snapshot root
-        execAtt = rootAttestations[snapshotRoot];
+        execAtt = _rootAttestations[snapshotRoot];
         // Check if snapshot root has been submitted
         require(!execAtt.isEmpty(), "Invalid snapshot root");
         // Check if Notary who submitted the attestation is still active
@@ -176,14 +176,14 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// It is assumed that the Notary signature has been checked outside of this contract.
     function _saveAttestation(Attestation att, address notary) internal {
         bytes32 root = att.snapRoot();
-        require(rootAttestations[root].isEmpty(), "Root already exists");
-        rootAttestations[root] = att.toExecutionAttestation(notary);
+        require(_rootAttestations[root].isEmpty(), "Root already exists");
+        _rootAttestations[root] = att.toExecutionAttestation(notary);
     }
 
     /// @dev Gets a saved attestation for the given snapshot root.
     /// Will return an empty struct, if the snapshot root hasn't been previously saved.
     function _getRootAttestation(bytes32 root) internal view returns (ExecutionAttestation memory) {
-        return rootAttestations[root];
+        return _rootAttestations[root];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

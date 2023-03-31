@@ -15,7 +15,7 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
      *      (1) send messages to this contract
      *      (2) receive messages from this contract
      */
-    mapping(uint32 => bytes32) internal trustedSenders;
+    mapping(uint32 => bytes32) internal _trustedSenders;
 
     // ============ Upgrade gap ============
 
@@ -74,7 +74,7 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
 
     /// @notice Returns the trusted sender for the given remote chain.
     function trustedSender(uint32 remoteDomain) public view override returns (bytes32) {
-        return trustedSenders[remoteDomain];
+        return _trustedSenders[remoteDomain];
     }
 
     // ============ Internal Functions  ============
@@ -83,6 +83,6 @@ abstract contract SynapseClientUpgradeable is Client, OwnableUpgradeable {
     function _setTrustedSender(uint32 remoteDomain, bytes32 trustedSender) internal {
         require(remoteDomain != 0, "!domain");
         require(trustedSender != bytes32(0), "!sender");
-        trustedSenders[remoteDomain] = trustedSender;
+        _trustedSenders[remoteDomain] = trustedSender;
     }
 }

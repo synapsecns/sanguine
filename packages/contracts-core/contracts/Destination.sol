@@ -20,7 +20,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @dev All snapshot roots from the saved attestations
-    bytes32[] private roots;
+    bytes32[] private _roots;
 
     /// @inheritdoc InterfaceDestination
     /// @dev Invariant: this is either current LightManager root,
@@ -147,7 +147,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @inheritdoc InterfaceDestination
     function attestationsAmount() external view returns (uint256) {
-        return roots.length;
+        return _roots.length;
     }
 
     /// @inheritdoc InterfaceDestination
@@ -156,8 +156,8 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         view
         returns (bytes32 root, ExecutionAttestation memory execAtt)
     {
-        require(index < roots.length, "Index out of range");
-        root = roots[index];
+        require(index < _roots.length, "Index out of range");
+        root = _roots[index];
         execAtt = _getRootAttestation(root);
     }
 

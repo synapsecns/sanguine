@@ -13,7 +13,7 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // (agent => their dispute status)
-    mapping(address => DisputeStatus) internal disputes;
+    mapping(address => DisputeStatus) internal _disputes;
 
     /// @dev gap for upgrade safety
     uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -97,7 +97,7 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
 
     /// @inheritdoc IDisputeHub
     function disputeStatus(address agent) external view returns (DisputeStatus memory status) {
-        return disputes[agent];
+        return _disputes[agent];
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -116,10 +116,10 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         address notary
     ) internal virtual {
         // Check that both agents are not in Dispute yet
-        require(disputes[guard].flag == DisputeFlag.None, "Guard already in dispute");
-        require(disputes[notary].flag == DisputeFlag.None, "Notary already in dispute");
-        disputes[guard] = DisputeStatus(DisputeFlag.Pending, notary);
-        disputes[notary] = DisputeStatus(DisputeFlag.Pending, guard);
+        require(_disputes[guard].flag == DisputeFlag.None, "Guard already in dispute");
+        require(_disputes[notary].flag == DisputeFlag.None, "Notary already in dispute");
+        _disputes[guard] = DisputeStatus(DisputeFlag.Pending, notary);
+        _disputes[notary] = DisputeStatus(DisputeFlag.Pending, guard);
         emit Dispute(guard, domain, notary);
     }
 
@@ -135,15 +135,15 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
 
     /// @dev Resolves a Dispute for a slashed agent, if it hasn't been done already.
     function _resolveDispute(uint32 domain, address slashedAgent) internal virtual {
-        DisputeStatus memory status = disputes[slashedAgent];
+        DisputeStatus memory status = _disputes[slashedAgent];
         // Do nothing if dispute was already resolved
         if (status.flag == DisputeFlag.Slashed) return;
         // Update flag for the slashed agent
         // Slashed agent might have had no open Dispute, meaning the `counterpart` could be ZERO.
         // We still want to have the DisputeFlag.Slashed assigned in this case.
-        disputes[slashedAgent].flag = DisputeFlag.Slashed;
+        _disputes[slashedAgent].flag = DisputeFlag.Slashed;
         // Delete record of dispute for the counterpart. This sets their Dispute Flag to None.
-        if (status.counterpart != address(0)) delete disputes[status.counterpart];
+        if (status.counterpart != address(0)) delete _disputes[status.counterpart];
         // TODO: wo we want to use prover address if there was no counterpart?
         emit DisputeResolved(status.counterpart, domain, slashedAgent);
     }
@@ -154,6 +154,6 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
 
     /// @dev Checks if an agent is currently in Dispute.
     function _inDispute(address agent) internal view returns (bool) {
-        return disputes[agent].flag != DisputeFlag.None;
+        return _disputes[agent].flag != DisputeFlag.None;
     }
 }

@@ -10,7 +10,7 @@ import { DomainContext } from "../context/DomainContext.sol";
 import { IBondingManager } from "../interfaces/IBondingManager.sol";
 import { Versioned } from "../Version.sol";
 
-/// @notice BondingManager keeps track of all existing agents.
+/// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
 contract BondingManager is Versioned, AgentManager, IBondingManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -18,15 +18,15 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // (agent => their status)
-    mapping(address => AgentStatus) private agentMap;
+    mapping(address => AgentStatus) private _agentMap;
 
     // A list of all agent accounts. First entry is address(0) to make agent indexes start from 1.
-    address[] private agents;
+    address[] private _agents;
 
     // Merkle Tree for Agents.
     // leafs[0] = 0
-    // leafs[index > 0] = keccak(agentFlag, domain, agents[index])
-    DynamicTree private agentTree;
+    // leafs[index > 0] = keccak(agentFlag, domain, _agents[index])
+    DynamicTree private _agentTree;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
@@ -41,7 +41,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         __Ownable_init();
         // Insert a zero address to make indexes for Agents start from 1.
         // Zeroed index is supposed to be used as a sentinel value meaning "no agent".
-        agents.push(address(0));
+        _agents.push(address(0));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -58,20 +58,20 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     ) external onlyOwner {
         // Check current status of the added agent
         AgentStatus memory status = _agentStatus(agent);
-        // Agent index in `agents`
+        // Agent index in `_agents`
         uint32 index;
         // Leaf representing currently saved agent information in the tree
         bytes32 oldValue;
         if (status.flag == AgentFlag.Unknown) {
             // Unknown address could be added to any domain
-            // New agent will need to be added to `agents` list
-            require(agents.length < type(uint32).max, "Agents list if full");
-            index = uint32(agents.length);
+            // New agent will need to be added to `_agents` list
+            require(_agents.length < type(uint32).max, "Agents list if full");
+            index = uint32(_agents.length);
             // Current leaf for index is bytes32(0), which is already assigned to `leaf`
-            agents.push(agent);
+            _agents.push(agent);
         } else if (status.flag == AgentFlag.Resting && status.domain == domain) {
             // Resting agent could be only added back to the same domain
-            // Agent is already in `agents`, fetch the saved index
+            // Agent is already in `_agents`, fetch the saved index
             index = status.index;
             // Generate the current leaf for the agent
             // oldValue includes the domain information, so we didn't had to check it above.
@@ -205,7 +205,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
 
     /// @inheritdoc IAgentManager
     function agentRoot() external view override returns (bytes32) {
-        return agentTree.root;
+        return _agentTree.root;
     }
 
     /// @inheritdoc IBondingManager
@@ -215,7 +215,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
 
     /// @inheritdoc IBondingManager
     function leafsAmount() external view returns (uint256 amount) {
-        return agents.length;
+        return _agents.length;
     }
 
     /// @inheritdoc IBondingManager
@@ -223,13 +223,13 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         bytes32[] memory leafs = allLeafs();
         AgentStatus memory status = _agentStatus(agent);
         // Use next available index for unknown agents
-        uint256 index = status.flag == AgentFlag.Unknown ? agents.length : status.index;
+        uint256 index = status.flag == AgentFlag.Unknown ? _agents.length : status.index;
         return MerkleList.calculateProof(leafs, index);
     }
 
     /// @inheritdoc IBondingManager
     function allLeafs() public view returns (bytes32[] memory leafs) {
-        return getLeafs(0, agents.length);
+        return getLeafs(0, _agents.length);
     }
 
     /// @inheritdoc IBondingManager
@@ -238,7 +238,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         view
         returns (bytes32[] memory leafs)
     {
-        uint256 amountTotal = agents.length;
+        uint256 amountTotal = _agents.length;
         require(indexFrom < amountTotal, "Out of range");
         if (indexFrom + amount > amountTotal) {
             amount = amountTotal - indexFrom;
@@ -264,15 +264,15 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         // New leaf value for the agent in the Agent Merkle Tree
         bytes32 newValue = _agentLeaf(newStatus.flag, newStatus.domain, agent);
         // This will revert if the proof for the old value is incorrect
-        bytes32 newRoot = agentTree.update(newStatus.index, oldValue, proof, newValue);
-        agentMap[agent] = newStatus;
+        bytes32 newRoot = _agentTree.update(newStatus.index, oldValue, proof, newValue);
+        _agentMap[agent] = newStatus;
         emit StatusUpdated(newStatus.flag, newStatus.domain, agent);
         emit RootUpdated(newRoot);
     }
 
     /// @dev Returns the status of the agent.
     function _agentStatus(address agent) internal view override returns (AgentStatus memory) {
-        return agentMap[agent];
+        return _agentMap[agent];
     }
 
     /// @dev Returns the current leaf representing agent in the Agent Merkle Tree.
@@ -281,13 +281,13 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         if (status.flag != AgentFlag.Unknown) {
             return _agentLeaf(status.flag, status.domain, agent);
         }
-        // Return empty leaf for unknown agents
+        // Return empty leaf for unknown _agents
     }
 
     /// @dev Returns a leaf from the Agent Merkle Tree with a given index.
     function _getLeaf(uint256 index) internal view returns (bytes32 leaf) {
         if (index != 0) {
-            return _getLeaf(agents[index]);
+            return _getLeaf(_agents[index]);
         }
         // Return empty leaf for a zero index
     }
