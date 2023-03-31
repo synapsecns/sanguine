@@ -66,6 +66,7 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 		config.AutoRemove = true
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
+	fmt.Println(err)
 	assert.Nil(j.tb, err)
 
 	j.tb.Setenv(internal.PyroscopeEndpoint, fmt.Sprintf("http://localhost:%s", resource.GetPort("4040/tcp")))

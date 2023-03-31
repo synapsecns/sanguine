@@ -13,6 +13,7 @@ import (
 func TestSetupFromEnv(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
 	metrics.SetupTestJaeger(ctx, t)
 
 	for _, handler := range metrics.AllHandlerTypes {
