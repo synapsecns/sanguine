@@ -46,7 +46,7 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ./docker/
           push: true
           file: ./docker/jaeger-ui-pyroscope.Dockerfile
           # TODO this needs to be versioned
