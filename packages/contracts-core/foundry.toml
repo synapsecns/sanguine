@@ -13,6 +13,11 @@ verbosity = 4
 [fuzz]
 runs = 400
 
+[fmt]
+line_length = 120
+multiline_func_header = 'attributes_first'
+number_underscore = 'thousands'
+
 [rpc_endpoints]
 avalanche = "${RPC_AVALANCHE}"
 optimism = "${RPC_OPTIMISM}"
