@@ -83,9 +83,9 @@ abstract contract Client is BasicClient {
      */
     function _send(
         uint32 destination_,
-        bytes memory tips,
+        bytes memory tipsPayload,
         bytes memory content
     ) internal {
-        _send(destination_, optimisticSeconds(), tips, content);
+        _send(destination_, optimisticSeconds(), tipsPayload, content);
     }
 }

@@ -105,7 +105,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         address destination_,
         address agentManager_
     ) BasicClient(origin_, destination_) DomainContext(domain) Versioned("0.0.3") {
-        agentManager = agentManager;
+        agentManager = agentManager_;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

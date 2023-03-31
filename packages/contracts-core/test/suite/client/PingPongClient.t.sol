@@ -148,7 +148,7 @@ contract PingPongTest is Test {
         bool isPing,
         uint16 counter
     ) internal {
-        bytes memory tips = TipsLib.emptyTips();
+        bytes memory tipsPayload = TipsLib.emptyTips();
         bytes memory body = content(pingId, isPing, counter);
         vm.expectCall(
             originMock,
@@ -157,7 +157,7 @@ contract PingPongTest is Test {
                 destination,
                 recipient,
                 optimisticPeriod,
-                tips,
+                tipsPayload,
                 body
             )
         );

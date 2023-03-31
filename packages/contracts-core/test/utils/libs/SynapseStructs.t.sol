@@ -115,8 +115,8 @@ library CastLib {
 
     function formatMessage(RawMessage memory rm) internal pure returns (bytes memory msgPayload) {
         bytes memory header = rm.header.formatHeader();
-        bytes memory tips = rm.tips.formatTips();
-        return MessageLib.formatMessage(header, tips, rm.body);
+        bytes memory tipsPayload = rm.tips.formatTips();
+        return MessageLib.formatMessage(header, tipsPayload, rm.body);
     }
 
     function castToMessage(RawMessage memory rm) internal pure returns (Message ptr) {
@@ -138,8 +138,8 @@ library CastLib {
         ptr = rh.formatHeader().castToHeader();
     }
 
-    function formatTips(RawTips memory rt) internal pure returns (bytes memory tips) {
-        tips = TipsLib.formatTips({
+    function formatTips(RawTips memory rt) internal pure returns (bytes memory tipsPayload) {
+        tipsPayload = TipsLib.formatTips({
             notaryTip: rt.notaryTip,
             broadcasterTip: rt.broadcasterTip,
             proverTip: rt.proverTip,

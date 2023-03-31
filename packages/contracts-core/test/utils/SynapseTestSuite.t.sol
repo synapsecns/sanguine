@@ -103,8 +103,8 @@ contract SynapseTestSuite is SynapseUtilities, SynapseTestStorage {
         // Save deployments
         // chains[domain].destination = destination;
         // chains[domain].origin = origin;
-        // chains[domain].agentManager = agentManager;
-        // chains[domain].systemRouter = systemRouter;
+        // chains[domain].agentManager = agentManager_;
+        // chains[domain].systemRouter = systemRouter_;
         chains[domain].app = app;
     }
 

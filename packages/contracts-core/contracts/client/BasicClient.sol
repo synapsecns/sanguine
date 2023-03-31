@@ -101,13 +101,13 @@ abstract contract BasicClient is IMessageRecipient {
      * @dev Sends a message to given destination chain.
      * @param destination_          Domain of the destination chain
      * @param optimisticSeconds     Optimistic period for message execution on destination chain
-     * @param tips                  Payload with information about paid tips
+     * @param tipsPayload           Payload with information about paid tips
      * @param content               The message content
      */
     function _send(
         uint32 destination_,
         uint32 optimisticSeconds,
-        bytes memory tips,
+        bytes memory tipsPayload,
         bytes memory content
     ) internal {
         bytes32 recipient = trustedSender(destination_);
@@ -116,7 +116,7 @@ abstract contract BasicClient is IMessageRecipient {
             destination_,
             recipient,
             optimisticSeconds,
-            tips,
+            tipsPayload,
             content
         );
     }

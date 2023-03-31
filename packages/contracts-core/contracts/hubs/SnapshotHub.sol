@@ -224,8 +224,8 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         // Save state only if it wasn't previously submitted
         if (statePtr == 0) {
             // Extract data that needs to be saved
-            SummitState memory state = state.toSummitState();
-            _guardStates.push(state);
+            SummitState memory summitState = state.toSummitState();
+            _guardStates.push(summitState);
             // State is stored at (length - 1), but we are tracking "index PLUS 1" as "pointer"
             statePtr = _guardStates.length;
             _leafPtr[origin][stateHash] = statePtr;

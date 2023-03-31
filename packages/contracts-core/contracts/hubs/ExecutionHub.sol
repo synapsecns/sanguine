@@ -100,7 +100,11 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
      * But if SYSTEM_ROUTER value is used for "recipient" field, recipient is Synapse Router.
      * Note: tx will revert in Origin if anyone but SystemRouter uses SYSTEM_ROUTER as recipient.
      */
-    function _checkForSystemRouter(bytes32 recipient) internal view returns (address recipient) {
+    function _checkForSystemRouter(bytes32 recipient)
+        internal
+        view
+        returns (address recipientAddress)
+    {
         // Check if SYSTEM_ROUTER was specified as message recipient
         if (recipient == SYSTEM_ROUTER) {
             /**
@@ -108,10 +112,10 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
              * Note: Only SystemRouter contract on origin chain can send a message
              * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
              */
-            recipient = address(systemRouter);
+            return address(systemRouter);
         } else {
             // Cast bytes32 to address otherwise
-            recipient = TypeCasts.bytes32ToAddress(recipient);
+            return TypeCasts.bytes32ToAddress(recipient);
         }
     }
 

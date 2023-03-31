@@ -74,12 +74,12 @@ contract TestClient is IMessageRecipient {
         bytes memory content
     ) external {
         bytes32 recipient = TypeCasts.addressToBytes32(recipientAddress);
-        bytes memory tips = TipsLib.emptyTips();
+        bytes memory tipsPayload = TipsLib.emptyTips();
         (uint32 nonce, ) = InterfaceOrigin(origin).dispatch(
             destination_,
             recipient,
             optimisticSeconds,
-            tips,
+            tipsPayload,
             content
         );
         emit MessageSent(

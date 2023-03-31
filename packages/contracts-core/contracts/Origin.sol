@@ -24,7 +24,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(uint32 domain, IAgentManager agentManager)
+    constructor(uint32 domain, IAgentManager agentManager_)
         DomainContext(domain)
         SystemRegistry(agentManager)
         Versioned("0.0.3")
@@ -158,7 +158,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         uint32 destination,
         bytes32 recipient,
         uint32 optimisticSeconds,
-        bytes memory tips,
+        bytes memory tipsPayload,
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
         // Modifiers are removed because they prevent from slashing the last active Guard/Notary
@@ -167,7 +167,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         // TODO: figure out a way to filter out unknown domains once Agent Merkle Tree is implemented
         require(content.length <= MAX_CONTENT_BYTES, "content too long");
         // This will revert if payload is not a formatted tips payload
-        Tips tips = tips.castToTips();
+        Tips tips = tipsPayload.castToTips();
         // Total tips must exactly match msg.value
         require(tips.totalTips() == msg.value, "!tips: totalTips");
         // Format the message header

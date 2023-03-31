@@ -66,9 +66,9 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     }
 
     /// @inheritdoc ILightManager
-    function setAgentRoot(bytes32 agentRoot) external {
+    function setAgentRoot(bytes32 agentRoot_) external {
         require(msg.sender == address(destination), "Only Destination sets agent root");
-        _setAgentRoot(agentRoot);
+        _setAgentRoot(agentRoot_);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

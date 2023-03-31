@@ -13,7 +13,7 @@ abstract contract ExecutionHubEvents {
     /**
      * @notice Emitted when tips are stored.
      * @param notary        Notary who signed the Snapshot Root used for proving the message
-     * @param tips          Raw payload with tips paid for the off-chain agents
+     * @param tipsPayload   Raw payload with tips paid for the off-chain agents
      */
-    event TipsStored(address indexed notary, bytes tips);
+    event TipsStored(address indexed notary, bytes tipsPayload);
 }

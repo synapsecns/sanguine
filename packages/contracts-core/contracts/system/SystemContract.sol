@@ -118,8 +118,8 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // solhint-disable-next-line ordering
-    function setSystemRouter(InterfaceSystemRouter systemRouter) external onlyOwner {
-        systemRouter = systemRouter;
+    function setSystemRouter(InterfaceSystemRouter systemRouter_) external onlyOwner {
+        systemRouter = systemRouter_;
     }
 
     /**

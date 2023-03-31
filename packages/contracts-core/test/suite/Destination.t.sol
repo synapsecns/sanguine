@@ -93,11 +93,12 @@ contract DestinationTest is DisputeHubTest {
         vm.expectEmit();
         emit AttestationAccepted(DOMAIN_LOCAL, notary, attPayload, attSig);
         InterfaceDestination(destination).submitAttestation(attPayload, attSig);
-        (, uint48 agentRootTime, address notary) = InterfaceDestination(destination).destStatus();
+        (, uint48 agentRootTime, address statusNotary) = InterfaceDestination(destination)
+            .destStatus();
         // Check that values were assigned
         assertEq(InterfaceDestination(destination).nextAgentRoot(), ra.agentRoot);
         assertEq(agentRootTime, rootSubmittedAt);
-        assertEq(notary, notary);
+        assertEq(statusNotary, notary);
     }
 
     function test_submitAttestation_doesNotOverwritePending(

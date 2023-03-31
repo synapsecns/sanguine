@@ -17,7 +17,7 @@ import { SystemRegistry } from "./system/SystemRegistry.sol";
 contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
 
-    constructor(uint32 domain, IAgentManager agentManager)
+    constructor(uint32 domain, IAgentManager agentManager_)
         DomainContext(domain)
         SystemRegistry(agentManager)
         Versioned("0.0.3")

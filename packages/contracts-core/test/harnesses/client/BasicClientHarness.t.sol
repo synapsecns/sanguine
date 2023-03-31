@@ -22,10 +22,10 @@ contract BasicClientHarness is BasicClientHarnessEvents, BasicClient {
 
     function sendMessage(
         uint32 destination_,
-        bytes memory tips,
+        bytes memory tipsPayload,
         bytes memory content
     ) public payable {
-        _send(destination_, optimisticSeconds(), tips, content);
+        _send(destination_, optimisticSeconds(), tipsPayload, content);
     }
 
     function optimisticSeconds() public view returns (uint32) {

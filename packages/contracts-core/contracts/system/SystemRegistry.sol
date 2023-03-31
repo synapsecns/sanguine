@@ -27,8 +27,8 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(IAgentManager agentManager) {
-        agentManager = agentManager;
+    constructor(IAgentManager agentManager_) {
+        agentManager = agentManager_;
     }
 
     modifier onlyAgentManager() {

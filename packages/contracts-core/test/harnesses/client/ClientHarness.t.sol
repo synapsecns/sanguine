@@ -22,10 +22,10 @@ contract ClientHarness is ClientHarnessEvents, Client {
 
     function sendMessage(
         uint32 destination_,
-        bytes memory tips,
+        bytes memory tipsPayload,
         bytes memory content
     ) public payable {
-        _send(destination_, tips, content);
+        _send(destination_, tipsPayload, content);
     }
 
     function optimisticSeconds() public view override returns (uint32) {
