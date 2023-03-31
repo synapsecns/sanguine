@@ -131,14 +131,14 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
      */
     function _prove(
         Header header,
-        bytes32 _msgLeaf,
+        bytes32 msgLeaf,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
         uint256 stateIndex
     ) internal returns (ExecutionAttestation memory execAtt) {
         // TODO: split into a few smaller functions?
         // Check that message has not been executed before
-        require(messageStatus[_msgLeaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
+        require(messageStatus[msgLeaf] == MESSAGE_STATUS_NONE, "!MessageStatus.None");
         // Ensure message was meant for this domain
         require(header.destination() == localDomain, "!destination");
         // Reconstruct Origin Merkle Root using the origin proof
@@ -146,7 +146,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // This will revert if origin proof length exceeds Origin Tree height
         bytes32 originRoot = MerkleLib.proofRoot(
             header.nonce() - 1,
-            _msgLeaf,
+            msgLeaf,
             originProof,
             ORIGIN_TREE_HEIGHT
         );
@@ -169,7 +169,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             "!optimisticSeconds"
         );
         // Mark message as executed against the snapshot root
-        messageStatus[_msgLeaf] = snapshotRoot;
+        messageStatus[msgLeaf] = snapshotRoot;
     }
 
     /// @dev Saves a snapshot root with the attestation data provided by a Notary.

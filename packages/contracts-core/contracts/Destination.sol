@@ -34,9 +34,9 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(uint32 domain, IAgentManager _agentManager)
+    constructor(uint32 domain, IAgentManager agentManager)
         DomainContext(domain)
-        SystemRegistry(_agentManager)
+        SystemRegistry(agentManager)
         Versioned("0.0.3")
     {}
 
@@ -176,21 +176,21 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This is overridden to allow disputes only between a Guard and a LOCAL Notary.
     function _openDispute(
-        address _guard,
+        address guard,
         uint32 domain,
         address notary
     ) internal override {
         // Only disputes for local Notaries could be initiated in Destination
         require(domain == localDomain, "Not a local Notary");
-        super._openDispute(_guard, domain, notary);
+        super._openDispute(guard, domain, notary);
     }
 
     /// @dev Resolves a Dispute for a slashed agent, if it hasn't been done already.
     /// This is overridden to resolve disputes only between a Guard and a LOCAL Notary.
-    function _resolveDispute(uint32 domain, address _slashedAgent) internal virtual override {
+    function _resolveDispute(uint32 domain, address slashedAgent) internal virtual override {
         // Disputes could be only opened between a Guard and a local Notary
         if (domain == 0 || domain == localDomain) {
-            super._resolveDispute(domain, _slashedAgent);
+            super._resolveDispute(domain, slashedAgent);
         }
     }
 
@@ -198,7 +198,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// no pending root to be passed to LightManager.
     /// Returns the updated "last snapshot root / last agent root" status struct.
     function _saveAgentRoot(
-        bool _rootPending,
+        bool rootPending,
         bytes32 agentRoot,
         address notary
     ) internal returns (DestinationStatus memory status) {
@@ -207,7 +207,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         status.snapRootTime = uint48(block.timestamp);
         // Don't update agent root, if there is already a pending one
         // Update the data for latest agent root only if it differs from the saved one
-        if (!_rootPending && nextAgentRoot != agentRoot) {
+        if (!rootPending && nextAgentRoot != agentRoot) {
             status.agentRootTime = uint48(block.timestamp);
             status.notary = notary;
             nextAgentRoot = agentRoot;

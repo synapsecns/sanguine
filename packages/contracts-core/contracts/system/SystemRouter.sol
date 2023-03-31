@@ -103,9 +103,9 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         uint32 domain,
         address origin,
         address destination,
-        address _agentManager
+        address agentManager
     ) BasicClient(origin, destination) DomainContext(domain) Versioned("0.0.3") {
-        agentManager = _agentManager;
+        agentManager = agentManager;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -162,7 +162,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         uint32 destination,
         uint32 optimisticSeconds,
         SystemEntity[] memory recipients,
-        bytes[] memory _callDataArray
+        bytes[] memory callDataArray
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
@@ -170,7 +170,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         CallData[] memory callDataArray = new CallData[](amount);
         for (uint256 i = 0; i < amount; ++i) {
             // Do a cast to a CallData view for every element
-            callDataArray[i] = _callDataArray[i].castToCallData();
+            callDataArray[i] = callDataArray[i].castToCallData();
         }
         _multiCall(caller, destination, optimisticSeconds, recipients, callDataArray);
     }
@@ -209,18 +209,18 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         uint32 destination,
         uint32 optimisticSeconds,
         SystemEntity recipient,
-        bytes[] memory _callDataArray
+        bytes[] memory callDataArray
     ) external {
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
-        uint256 amount = _callDataArray.length;
+        uint256 amount = callDataArray.length;
         CallData[] memory callDataArray = new CallData[](amount);
         SystemEntity[] memory recipients = new SystemEntity[](amount);
         for (uint256 i = 0; i < amount; ++i) {
             // Every call recipient is the same
             recipients[i] = recipient;
             // Do a cast to a CallData view for every element
-            callDataArray[i] = _callDataArray[i].castToCallData();
+            callDataArray[i] = callDataArray[i].castToCallData();
         }
         _multiCall(caller, destination, optimisticSeconds, recipients, callDataArray);
     }
@@ -326,7 +326,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
 
     /**
      * @notice Performs a system multicall with given parameters.
-     * @dev `_caller` is derived from msg.sender
+     * @dev `caller` is derived from msg.sender
      * @param caller                System entity that initiated the system multicall
      * @param destination           Destination domain where system multicall will be performed
      * @param optimisticSeconds     Optimistic period for the executing the system multicall
@@ -334,20 +334,20 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
      * @param callDataArray         List of memory views over calldata
      */
     function _multiCall(
-        SystemEntity _caller,
+        SystemEntity caller,
         uint32 destination,
         uint32 optimisticSeconds,
         SystemEntity[] memory recipients,
-        CallData[] memory _callDataArray
+        CallData[] memory callDataArray
     ) internal {
         uint256 amount = recipients.length;
         // Performing a system call on origin chain,
         // Get a prefix for performing the call on origin chain, use the corresponding prefix
-        bytes29 prefix = _prefixPerformCall(_caller).castToRawBytes();
+        bytes29 prefix = _prefixPerformCall(caller).castToRawBytes();
         if (destination == localDomain) {
             // Performing a local system multicall
             for (uint256 i = 0; i < amount; ++i) {
-                _localSystemCall(uint8(recipients[i]), _callDataArray[i], prefix);
+                _localSystemCall(uint8(recipients[i]), callDataArray[i], prefix);
             }
         } else {
             // Performing a remote system multicall
@@ -355,7 +355,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
             for (uint256 i = 0; i < amount; ++i) {
                 systemMessages[i] = SystemMessageLib.formatSystemMessage({
                     systemRecipient: uint8(recipients[i]),
-                    callData: _callDataArray[i],
+                    callData: callDataArray[i],
                     prefix: prefix
                 });
             }
@@ -368,10 +368,10 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns a corresponding System Entity for a given caller.
-    function _getSystemEntity(address _caller) internal view returns (SystemEntity) {
-        if (_caller == origin) return SystemEntity.Origin;
-        if (_caller == destination) return SystemEntity.Destination;
-        if (_caller == agentManager) return SystemEntity.AgentManager;
+    function _getSystemEntity(address caller) internal view returns (SystemEntity) {
+        if (caller == origin) return SystemEntity.Origin;
+        if (caller == destination) return SystemEntity.Destination;
+        if (caller == agentManager) return SystemEntity.AgentManager;
         revert("Unauthorized caller");
     }
 
@@ -385,9 +385,9 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
 
     /// @notice Returns prefix with the security arguments
     /// for making a system call on origin chain.
-    function _prefixPerformCall(SystemEntity _caller) internal view returns (bytes memory) {
+    function _prefixPerformCall(SystemEntity caller) internal view returns (bytes memory) {
         // Origin chain: adjust (rootSubmittedAt, callOrigin, systemCaller)
-        return abi.encode(block.timestamp, localDomain, _caller);
+        return abi.encode(block.timestamp, localDomain, caller);
         // Passing current timestamp for consistency
         // For a cross-chain call (rootSubmittedAt) will be later adjusted on destination chain
     }

@@ -17,9 +17,9 @@ import { SystemRegistry } from "./system/SystemRegistry.sol";
 contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
 
-    constructor(uint32 domain, IAgentManager _agentManager)
+    constructor(uint32 domain, IAgentManager agentManager)
         DomainContext(domain)
-        SystemRegistry(_agentManager)
+        SystemRegistry(agentManager)
         Versioned("0.0.3")
     {
         require(_onSynapseChain(), "Only deployed on SynChain");

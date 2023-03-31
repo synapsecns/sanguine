@@ -111,16 +111,16 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This should be called, when the Guard submits a Report on a statement signed by the Notary.
     function _openDispute(
-        address _guard,
+        address guard,
         uint32 domain,
         address notary
     ) internal virtual {
         // Check that both agents are not in Dispute yet
-        require(disputes[_guard].flag == DisputeFlag.None, "Guard already in dispute");
+        require(disputes[guard].flag == DisputeFlag.None, "Guard already in dispute");
         require(disputes[notary].flag == DisputeFlag.None, "Notary already in dispute");
-        disputes[_guard] = DisputeStatus(DisputeFlag.Pending, notary);
-        disputes[notary] = DisputeStatus(DisputeFlag.Pending, _guard);
-        emit Dispute(_guard, domain, notary);
+        disputes[guard] = DisputeStatus(DisputeFlag.Pending, notary);
+        disputes[notary] = DisputeStatus(DisputeFlag.Pending, guard);
+        emit Dispute(guard, domain, notary);
     }
 
     /// @dev This is called when the slashing was initiated in this contract or elsewhere.
@@ -134,18 +134,18 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     }
 
     /// @dev Resolves a Dispute for a slashed agent, if it hasn't been done already.
-    function _resolveDispute(uint32 domain, address _slashedAgent) internal virtual {
-        DisputeStatus memory status = disputes[_slashedAgent];
+    function _resolveDispute(uint32 domain, address slashedAgent) internal virtual {
+        DisputeStatus memory status = disputes[slashedAgent];
         // Do nothing if dispute was already resolved
         if (status.flag == DisputeFlag.Slashed) return;
         // Update flag for the slashed agent
         // Slashed agent might have had no open Dispute, meaning the `counterpart` could be ZERO.
         // We still want to have the DisputeFlag.Slashed assigned in this case.
-        disputes[_slashedAgent].flag = DisputeFlag.Slashed;
+        disputes[slashedAgent].flag = DisputeFlag.Slashed;
         // Delete record of dispute for the counterpart. This sets their Dispute Flag to None.
         if (status.counterpart != address(0)) delete disputes[status.counterpart];
         // TODO: wo we want to use prover address if there was no counterpart?
-        emit DisputeResolved(status.counterpart, domain, _slashedAgent);
+        emit DisputeResolved(status.counterpart, domain, slashedAgent);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

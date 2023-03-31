@@ -134,12 +134,12 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Accepts a Snapshot signed by a Guard.
     /// It is assumed that the Guard signature has been checked outside of this contract.
-    function _acceptGuardSnapshot(Snapshot snapshot, address _guard) internal {
+    function _acceptGuardSnapshot(Snapshot snapshot, address guard) internal {
         // Snapshot Signer is a Guard: save the states for later use.
         uint256 statesAmount = snapshot.statesAmount();
         uint256[] memory statePtrs = new uint256[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
-            statePtrs[i] = _saveState(snapshot.state(i), _guard);
+            statePtrs[i] = _saveState(snapshot.state(i), guard);
             // Guard either submitted a fresh state, or reused state submitted by another Guard
             // In any case, the "state pointer" would never be zero
             assert(statePtrs[i] != 0);
@@ -215,10 +215,10 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @dev Saves the state signed by a Guard.
-    function _saveState(State state, address _guard) internal returns (uint256 statePtr) {
+    function _saveState(State state, address guard) internal returns (uint256 statePtr) {
         uint32 origin = state.origin();
         // Check that Guard hasn't submitted a fresher State before
-        require(state.nonce() > _latestState(origin, _guard).nonce, "Outdated nonce");
+        require(state.nonce() > _latestState(origin, guard).nonce, "Outdated nonce");
         bytes32 stateHash = state.leaf();
         statePtr = leafPtr[origin][stateHash];
         // Save state only if it wasn't previously submitted
@@ -233,7 +233,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             emit StateSaved(state.unwrap().clone());
         }
         // Update latest guard state for origin
-        latestStatePtr[origin][_guard] = statePtr;
+        latestStatePtr[origin][guard] = statePtr;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

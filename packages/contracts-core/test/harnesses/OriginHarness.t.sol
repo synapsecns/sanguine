@@ -9,7 +9,7 @@ import { SystemRouterMock } from "../mocks/system/SystemRouterMock.t.sol";
 /// @notice Harness for standalone Go tests.
 /// Do not use for tests requiring interactions between messaging contracts.
 contract OriginHarness is Origin {
-    constructor(uint32 domain, address _agentManager) Origin(domain, IAgentManager(_agentManager)) {
+    constructor(uint32 domain, address agentManager) Origin(domain, IAgentManager(agentManager)) {
         // Add Mock for SystemRouter for standalone tests
         systemRouter = new SystemRouterMock();
     }

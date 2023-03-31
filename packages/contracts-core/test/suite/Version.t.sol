@@ -6,7 +6,7 @@ import { Versioned } from "../../contracts/Version.sol";
 
 contract VersionImpl is Versioned {
     // solhint-disable-next-line no-empty-blocks
-    constructor(string memory _version) Versioned(_version) {}
+    constructor(string memory version_) Versioned(version_) {}
 }
 
 contract VersionTest is Test {

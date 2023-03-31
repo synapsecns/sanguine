@@ -82,8 +82,8 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
      * E.g. to restrict the set of callers to three allowed system callers:
      *  onlyCallers(MASK_0 | MASK_1 | MASK_2, systemCaller)
      */
-    modifier onlyCallers(uint256 _allowedMask, SystemEntity systemCaller) {
-        _assertEntityAllowed(_allowedMask, systemCaller);
+    modifier onlyCallers(uint256 allowedMask, SystemEntity systemCaller) {
+        _assertEntityAllowed(allowedMask, systemCaller);
         _;
     }
 
@@ -118,8 +118,8 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     // solhint-disable-next-line ordering
-    function setSystemRouter(InterfaceSystemRouter _systemRouter) external onlyOwner {
-        systemRouter = _systemRouter;
+    function setSystemRouter(InterfaceSystemRouter systemRouter) external onlyOwner {
+        systemRouter = systemRouter;
     }
 
     /**
@@ -167,8 +167,8 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
         require(block.timestamp >= rootSubmittedAt + optimisticSeconds, "!optimisticPeriod");
     }
 
-    function _assertEntityAllowed(uint256 _allowedMask, SystemEntity _caller) internal pure {
-        require(_entityAllowed(_allowedMask, _caller), "!allowedCaller");
+    function _assertEntityAllowed(uint256 allowedMask, SystemEntity caller) internal pure {
+        require(_entityAllowed(allowedMask, caller), "!allowedCaller");
     }
 
     function _assertSynapseChain(uint32 domain) internal pure {
@@ -176,22 +176,18 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
     }
 
     /**
-     * @notice Checks if a given entity is allowed to call a function using a _systemMask
+     * @notice Checks if a given entity is allowed to call a function using a systemMask
      * @param systemMask  a mask of allowed entities
      * @param entity  a system entity to check
-     * @return true if _entity is allowed to call a function
+     * @return true if entity is allowed to call a function
      *
      * @dev this function works by converting the enum value to a non-zero bit mask
      * we then use a bitwise AND operation to check if permission bits allow the entity
      * to perform this operation, more details can be found here:
      * https://en.wikipedia.org/wiki/Bitwise_operation#AND
      */
-    function _entityAllowed(uint256 _systemMask, SystemEntity _entity)
-        internal
-        pure
-        returns (bool)
-    {
-        return _systemMask & _getSystemMask(_entity) != 0;
+    function _entityAllowed(uint256 systemMask, SystemEntity entity) internal pure returns (bool) {
+        return systemMask & _getSystemMask(entity) != 0;
     }
 
     /**
@@ -202,7 +198,7 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
      * Converts an enum value into a non-zero bit mask used for a bitwise AND check
      * E.g. for Origin (0) returns 1, for Destination (1) returns 2
      */
-    function _getSystemMask(SystemEntity _entity) internal pure returns (uint256) {
-        return 1 << uint8(_entity);
+    function _getSystemMask(SystemEntity entity) internal pure returns (uint256) {
+        return 1 << uint8(entity);
     }
 }

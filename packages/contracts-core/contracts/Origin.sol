@@ -24,9 +24,9 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(uint32 domain, IAgentManager _agentManager)
+    constructor(uint32 domain, IAgentManager agentManager)
         DomainContext(domain)
-        SystemRegistry(_agentManager)
+        SystemRegistry(agentManager)
         Versioned("0.0.3")
     {}
 

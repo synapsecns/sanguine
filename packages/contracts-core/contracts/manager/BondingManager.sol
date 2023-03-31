@@ -233,19 +233,19 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     }
 
     /// @inheritdoc IBondingManager
-    function getLeafs(uint256 _indexFrom, uint256 _amount)
+    function getLeafs(uint256 indexFrom, uint256 amount)
         public
         view
         returns (bytes32[] memory leafs)
     {
         uint256 amountTotal = agents.length;
-        require(_indexFrom < amountTotal, "Out of range");
-        if (_indexFrom + _amount > amountTotal) {
-            _amount = amountTotal - _indexFrom;
+        require(indexFrom < amountTotal, "Out of range");
+        if (indexFrom + amount > amountTotal) {
+            amount = amountTotal - indexFrom;
         }
-        leafs = new bytes32[](_amount);
-        for (uint256 i = 0; i < _amount; ++i) {
-            leafs[i] = _getLeaf(_indexFrom + i);
+        leafs = new bytes32[](amount);
+        for (uint256 i = 0; i < amount; ++i) {
+            leafs[i] = _getLeaf(indexFrom + i);
         }
     }
 
@@ -253,20 +253,20 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     ▏*║                            INTERNAL LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Updates value in the Agent Merkle Tree to reflect the `_newStatus`.
+    /// @dev Updates value in the Agent Merkle Tree to reflect the `newStatus`.
     /// Will revert, if supplied proof for the old value is incorrect.
     function _updateLeaf(
         bytes32 oldValue,
         bytes32[] memory proof,
-        AgentStatus memory _newStatus,
+        AgentStatus memory newStatus,
         address agent
     ) internal {
         // New leaf value for the agent in the Agent Merkle Tree
-        bytes32 newValue = _agentLeaf(_newStatus.flag, _newStatus.domain, agent);
+        bytes32 newValue = _agentLeaf(newStatus.flag, newStatus.domain, agent);
         // This will revert if the proof for the old value is incorrect
-        bytes32 newRoot = agentTree.update(_newStatus.index, oldValue, proof, newValue);
-        agentMap[agent] = _newStatus;
-        emit StatusUpdated(_newStatus.flag, _newStatus.domain, agent);
+        bytes32 newRoot = agentTree.update(newStatus.index, oldValue, proof, newValue);
+        agentMap[agent] = newStatus;
+        emit StatusUpdated(newStatus.flag, newStatus.domain, agent);
         emit RootUpdated(newRoot);
     }
 

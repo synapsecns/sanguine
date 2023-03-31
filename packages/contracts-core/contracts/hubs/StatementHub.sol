@@ -43,12 +43,12 @@ abstract contract StatementHub is SystemRegistry {
      *                  - index     Index of agent in the Agent Merkle Tree
      * @return agent    Agent that signed the statement
      */
-    function _recoverAgent(bytes32 _hashedStatement, bytes memory signature)
+    function _recoverAgent(bytes32 hashedStatement, bytes memory signature)
         internal
         view
         returns (AgentStatus memory status, address agent)
     {
-        bytes32 ethSignedMsg = ECDSA.toEthSignedMessageHash(_hashedStatement);
+        bytes32 ethSignedMsg = ECDSA.toEthSignedMessageHash(hashedStatement);
         agent = ECDSA.recover(ethSignedMsg, signature);
         // TODO: ensure that Unstaking agents could be slashed,
         // but their signature is considered invalid for new statements
@@ -87,13 +87,13 @@ abstract contract StatementHub is SystemRegistry {
      * @return status           Struct representing guard status, see {_recoverAgent}
      * @return guard            Guard that signed the report
      */
-    function _verifyAttestationReport(AttestationReport _report, bytes memory arSignature)
+    function _verifyAttestationReport(AttestationReport report, bytes memory arSignature)
         internal
         view
         returns (AgentStatus memory status, address guard)
     {
         // This will revert if signer is not a known agent
-        (status, guard) = _recoverAgent(_report.hash(), arSignature);
+        (status, guard) = _recoverAgent(report.hash(), arSignature);
         // Report signer needs to be a Guard, not a Notary
         require(status.domain == 0, "Signer is not a Guard");
     }
@@ -107,13 +107,13 @@ abstract contract StatementHub is SystemRegistry {
      * @return status           Struct representing guard status, see {_recoverAgent}
      * @return guard            Guard that signed the report
      */
-    function _verifyStateReport(StateReport _report, bytes memory srSignature)
+    function _verifyStateReport(StateReport report, bytes memory srSignature)
         internal
         view
         returns (AgentStatus memory status, address guard)
     {
         // This will revert if signer is not a known agent
-        (status, guard) = _recoverAgent(_report.hash(), srSignature);
+        (status, guard) = _recoverAgent(report.hash(), srSignature);
         // Report signer needs to be a Guard, not a Notary
         require(status.domain == 0, "Signer is not a Guard");
     }
@@ -190,7 +190,7 @@ abstract contract StatementHub is SystemRegistry {
      * @param stateIndex    Index of Origin State in the Snapshot
      */
     function _snapshotRoot(
-        bytes32 _originRoot,
+        bytes32 originRoot,
         uint32 origin,
         bytes32[] memory snapProof,
         uint256 stateIndex
@@ -200,7 +200,7 @@ abstract contract StatementHub is SystemRegistry {
         // Check that "leftLeaf" index fits into Snapshot Merkle Tree
         require(_leftLeafIndex < (1 << SNAPSHOT_TREE_HEIGHT), "State index out of range");
         // Reconstruct left sub-leaf of the Origin State: (originRoot, originDomain)
-        bytes32 leftLeaf = StateLib.leftLeaf(_originRoot, origin);
+        bytes32 leftLeaf = StateLib.leftLeaf(originRoot, origin);
         // Reconstruct snapshot root using proof of inclusion
         // This will revert if snapshot proof length exceeds Snapshot Tree Height
         return MerkleLib.proofRoot(_leftLeafIndex, leftLeaf, snapProof, SNAPSHOT_TREE_HEIGHT);

@@ -110,28 +110,28 @@ contract PingPongClient is IMessageRecipient {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function doPings(
-        uint16 _pingCount,
+        uint16 pingCount,
         uint32 destination,
         address recipient,
-        uint16 _counter
+        uint16 counter
     ) external {
-        for (uint256 i = 0; i < _pingCount; ++i) {
-            _ping(destination, recipient.addressToBytes32(), _counter);
+        for (uint256 i = 0; i < pingCount; ++i) {
+            _ping(destination, recipient.addressToBytes32(), counter);
         }
     }
 
     /// @notice Send a Ping message to destination chain.
     /// Upon receiving a Ping, a Pong message will be sent back.
-    /// If `_counter > 0`, this process will be repeated when the Pong message is received.
+    /// If `counter > 0`, this process will be repeated when the Pong message is received.
     /// @param destination  Chain to send Ping message to
     /// @param recipient    Recipient of Ping message
     /// @param counter      Additional amount of Ping-Pong rounds to conclude
     function doPing(
         uint32 destination,
         address recipient,
-        uint16 _counter
+        uint16 counter
     ) external {
-        _ping(destination, recipient.addressToBytes32(), _counter);
+        _ping(destination, recipient.addressToBytes32(), counter);
     }
 
     function nextOptimisticPeriod() public view returns (uint32 period) {
@@ -177,13 +177,13 @@ contract PingPongClient is IMessageRecipient {
     function _ping(
         uint32 destination,
         bytes32 recipient,
-        uint16 _counter
+        uint16 counter
     ) internal {
         uint256 pingId = pingsSent++;
         _sendMessage(
             destination,
             recipient,
-            PingPongMessage({ pingId: pingId, isPing: true, counter: _counter })
+            PingPongMessage({ pingId: pingId, isPing: true, counter: counter })
         );
         emit PingSent(pingId);
     }

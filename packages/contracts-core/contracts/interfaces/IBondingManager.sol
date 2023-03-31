@@ -115,7 +115,7 @@ interface IBondingManager {
      * @dev This might consume a lot of gas, do not use this on-chain.
      * @dev Will return less than `amount` entries, if indexFrom + amount > leafsAmount
      */
-    function getLeafs(uint256 _indexFrom, uint256 _amount)
+    function getLeafs(uint256 indexFrom, uint256 amount)
         external
         view
         returns (bytes32[] memory leafs);
