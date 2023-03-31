@@ -30,19 +30,6 @@ func (l *LocalServerSuite) SetupSuite() {
 	l.client = pool.Client
 }
 
-// SetupTest sets up the test.
-func (l *LocalServerSuite) SetupTest() {
-	l.TestSuite.SetupTest()
-	// remove debug local
-	localserver.SetDebugLocal(false)
-}
-
-func (l *LocalServerSuite) TearDownTest() {
-	l.TestSuite.TearDownTest()
-	// reset debug local
-	localserver.SetDebugLocal(localserver.GetOriginalDebugLocal())
-}
-
 func TestCommonSuite(t *testing.T) {
 	suite.Run(t, NewLocalServerSuite(t))
 }

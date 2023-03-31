@@ -12,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/core/retry"
 	"net/http"
 	"os"
-	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -22,9 +21,6 @@ import (
 var keepAliveOnFailure = time.Minute * 10
 
 var testMux sync.Mutex
-
-// debugLocal should be turned on to persist containers.
-var debugLocal = true
 
 const appLabel = "app"
 const runIDLabel = "runID"
@@ -39,23 +35,27 @@ type testJaeger struct {
 	jaegerPyroscopeUIResource *uiResource
 	networkMux                sync.Mutex
 	// this should not be used directly, use getNetwork
+	// this is not guaranteed to be set and only required for pyroscope-jaeger
 	network *dockertest.Network
+	cfg     *config
 }
 
 // StartServer starts a local jaeger server for testing.
-func StartServer(parentCtx context.Context, tb testing.TB) {
+func StartServer(parentCtx context.Context, tb testing.TB, options ...Option) {
 	tb.Helper()
-	startServer(parentCtx, tb)
+	startServer(parentCtx, tb, options...)
 }
 
 // startServer starts a local jaeger server for testing.
 // this is a separate function so we can export testJaeger for testing.
-func startServer(parentCtx context.Context, tb testing.TB) *testJaeger {
+func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *testJaeger {
 	tb.Helper()
+
 	// create the test jaegar instance
 	tj := testJaeger{
 		tb:    tb,
 		runID: gofakeit.UUID(),
+		cfg:   makeConfig(options),
 	}
 
 	tb.Helper()
@@ -78,6 +78,11 @@ func startServer(parentCtx context.Context, tb testing.TB) *testJaeger {
 	go func() {
 		defer wg.Done()
 		tj.jaegerResource = tj.StartJaegerServer(ctx)
+		// if pyroscope jaeger is enabled, we'll use that ui otherwise we'll use this one
+		if !tj.cfg.enablePyroscopeJaeger {
+			err = os.Setenv(internal.JaegerUIEndpoint, tj.jaegerResource.uiURL)
+			assert.Nil(tb, err)
+		}
 	}()
 
 	go func() {
@@ -97,7 +102,7 @@ func startServer(parentCtx context.Context, tb testing.TB) *testJaeger {
 		// TODO: move me
 		if tb.Failed() {
 			logger.Warn("Test failed, will temporarily continue serving \n" + tj.buildLogMessage(false))
-		} else if !debugLocal {
+		} else if !tj.cfg.keepContainers {
 			tj.purgeResources()
 			if tj.network != nil {
 				_ = tj.network.Close()
@@ -108,14 +113,18 @@ func startServer(parentCtx context.Context, tb testing.TB) *testJaeger {
 	return &tj
 }
 
-// createDockerResources creates the docker resources.
-// this must be called by each container.
-func (j *testJaeger) getNetwork() *dockertest.Network {
+// getNetworks gets the networks to be associaed with each container.
+func (j *testJaeger) getNetworks() []*dockertest.Network {
+	// no need to hit the mutex if no network is required
+	if !j.cfg.requiresNetwork {
+		return []*dockertest.Network{}
+	}
+
 	j.networkMux.Lock()
 	defer j.networkMux.Unlock()
 
 	if j.network != nil {
-		return j.network
+		return []*dockertest.Network{j.network}
 	}
 
 	var err error
@@ -130,22 +139,20 @@ func (j *testJaeger) getNetwork() *dockertest.Network {
 		j.tb.Fatal(err)
 	}
 
-	return j.network
+	return []*dockertest.Network{j.network}
 }
 
 // buildLogMessage builds a log message for the test jaeger instance.
 func (j *testJaeger) buildLogMessage(includeAuxiliary bool) string {
 	var messages []string
 	messages = append(messages, fmt.Sprintf("jaeger ui: %s", os.Getenv(internal.JaegerUIEndpoint)))
-	messages = append(messages, fmt.Sprintf("pyroscope ui: %s", j.pyroscopeResource.uiURL))
+	if j.cfg.enablePyroscope {
+		messages = append(messages, fmt.Sprintf("pyroscope ui: %s", os.Getenv(internal.PyroscopeEndpoint)))
+	}
 
 	var bootMessages []string
 	if len(j.getDockerizedResources()) > 0 {
 		bootMessages = append(bootMessages, fmt.Sprintf("Container logs will be saved to %s", j.logDir))
-	}
-
-	if j.jaegerResource != nil {
-		bootMessages = append(bootMessages, fmt.Sprintf("if you want to persist this session, set debugLocal to true in %s (currently %t), then set the JAEGER_ENDPOINT to %s", getCurrentFile(), debugLocal, os.Getenv(internal.JaegerEndpoint)))
 	}
 
 	if len(bootMessages) > 0 && includeAuxiliary {
@@ -211,13 +218,4 @@ func checkURL(url string) retry.RetryableFunc {
 
 		return nil
 	}
-}
-
-// TODO: clean me up with runtime.caller(2).
-func getCurrentFile() string {
-	_, file, _, ok := runtime.Caller(1)
-	if !ok {
-		return "unknown"
-	}
-	return file
 }

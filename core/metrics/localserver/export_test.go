@@ -36,7 +36,9 @@ type TestJaeger interface {
 // StartTestServer starts a local jaeger server for testing.
 // this will return a TestJaeger that can be used to start other servers.
 func StartTestServer(ctx context.Context, tb testing.TB) TestJaeger {
-	tj := startServer(ctx, tb)
+	tb.Helper()
+
+	tj := startServer(ctx, tb, WithPyroscopeJaeger(true))
 	return &exportedJaeger{
 		tj: tj,
 	}
@@ -46,10 +48,14 @@ type exportedJaeger struct {
 	tj *testJaeger
 }
 
-func NewTestJaeger(tb testing.TB) TestJaeger {
+func NewTestJaeger(tb testing.TB, opts ...Option) TestJaeger {
+	tb.Helper()
+
 	logDir := filet.TmpDir(tb, "")
 	pool, err := dockertest.NewPool("")
 	assert.NoError(tb, err)
+
+	cfg := makeConfig(opts)
 
 	return &exportedJaeger{
 		tj: &testJaeger{
@@ -57,6 +63,7 @@ func NewTestJaeger(tb testing.TB) TestJaeger {
 			logDir: logDir,
 			pool:   pool,
 			runID:  gofakeit.UUID(),
+			cfg:    cfg,
 		},
 	}
 }
@@ -79,14 +86,3 @@ func (e *exportedJaeger) StartPyroscopeServer(ctx context.Context) UIResource {
 
 const RunIDLabel = runIDLabel
 const AppLabel = appLabel
-
-// ogDebugLocal is the original debugLocal value.
-var ogDebugLocal = debugLocal
-
-func GetOriginalDebugLocal() bool {
-	return ogDebugLocal
-}
-
-func SetDebugLocal(enabled bool) {
-	debugLocal = enabled
-}

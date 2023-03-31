@@ -83,6 +83,9 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 
 	// TODO: add a way for users to pass in extra pyroscope options
 	tp := PyroscopeWrapTracerProvider(tracesdk.NewTracerProvider(opts...), buildInfo)
+	// will do nothing if not enabled.
+	StartPyroscope(buildInfo)
+
 	// default tracer for server
 	tracer := tp.Tracer(buildInfo.Name())
 	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))

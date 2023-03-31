@@ -29,14 +29,12 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		}
 	}
 
-	network := j.getNetwork()
-
 	runOptions := &dockertest.RunOptions{
 		Repository:   "jaegertracing/all-in-one",
 		Tag:          "latest",
 		Hostname:     "jaeger",
 		ExposedPorts: []string{"14268", "16686"},
-		Networks:     []*dockertest.Network{network},
+		Networks:     j.getNetworks(),
 		Labels: map[string]string{
 			appLabel:   "jaeger",
 			runIDLabel: j.runID,
@@ -52,7 +50,7 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 	// uiEndpoint is the jaeger endpoint, we want to instead use the pyroscope endpoint
 	uiEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("16686/tcp"))
 
-	if !debugLocal {
+	if !j.cfg.keepContainers {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
 		assert.Nil(j.tb, err)
 	}
@@ -95,13 +93,16 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 			uiURL: os.Getenv(internal.JaegerUIEndpoint),
 		}
 	}
-	network := j.getNetwork()
+
+	// we use this to  let pyroscope no to include profiles as span tags
+	err := os.Setenv(internal.PyroscopeJaegerUIEnabled, "true")
+	assert.Nil(j.tb, err)
 
 	runOptions := &dockertest.RunOptions{
 		Repository:   "ghcr.io/synapsecns/jaeger-ui-pyroscope",
 		Tag:          "latest",
 		ExposedPorts: []string{"80"},
-		Networks:     []*dockertest.Network{network},
+		Networks:     j.getNetworks(),
 		Labels: map[string]string{
 			appLabel:   "jaeger-ui",
 			runIDLabel: j.runID,
@@ -116,7 +117,7 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 	// must only be done after the container is started
 	j.tb.Setenv(internal.JaegerUIEndpoint, fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp")))
 
-	if !debugLocal {
+	if !j.cfg.keepContainers {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
 		assert.Nil(j.tb, err)
 	}
