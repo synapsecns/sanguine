@@ -5,12 +5,11 @@ import {
     InterfaceSystemRouter,
     ISystemContract
 } from "../../../contracts/interfaces/ISystemContract.sol";
-import { ExcludeCoverage } from "../ExcludeCoverage.sol";
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 // solhint-disable no-empty-blocks
-contract SystemContractMock is ExcludeCoverage, Ownable, ISystemContract {
+contract SystemContractMock is Ownable, ISystemContract {
     InterfaceSystemRouter public systemRouter;
 
     modifier onlySystemRouter() {
