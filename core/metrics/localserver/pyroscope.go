@@ -23,11 +23,14 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 		}
 	}
 
+	network := j.getNetwork()
+
 	runOptions := &dockertest.RunOptions{
 		Repository:   "pyroscope/pyroscope",
 		Tag:          "latest",
 		Cmd:          []string{"server"},
 		ExposedPorts: []string{"4040"},
+		Networks:     []*dockertest.Network{network},
 		Labels: map[string]string{
 			appLabel:   "pyroscope",
 			runIDLabel: j.runID,

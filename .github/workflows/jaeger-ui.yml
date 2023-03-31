@@ -2,7 +2,7 @@ name: Jaeger UI (Pyroscope)
 on:
   push:
     paths:
-      - 'docker/jaeger-ui-pyroscope.Dockerfile'
+      - 'docker/jaeger-ui/**'
     branches:
       - master
       # todo: remove me
@@ -40,7 +40,7 @@ jobs:
         run:
           echo "##[set-output name=TAG_NAME;]$(echo $LATEST_TAG_NAME)"
         env:
-          LATEST_TAG_NAME: ghcr.io/synapsecns/jaeger-ui-pyroscope:${{ hashFiles('docker/jaeger-ui-pyroscope.Dockerfile') }}
+          LATEST_TAG_NAME: ghcr.io/synapsecns/jaeger-ui-pyroscope:${{ hashFiles('docker/jaeger-ui/**') }}
 
       -
         name: Build and push
@@ -48,7 +48,7 @@ jobs:
         with:
           context: ./docker/
           push: true
-          file: ./docker/jaeger-ui-pyroscope.Dockerfile
+          file: ./docker/jaeger-ui/Dockerfile
           # TODO this needs to be versioned
           tags: ghcr.io/synapsecns/jaeger-ui-pyroscope:latest,${{ steps.name-export.outputs.TAG_NAME }}
           cache-from: type=registry,ref=ghcr.io/synapsecns/jaeger-ui-pyroscope:buildcache

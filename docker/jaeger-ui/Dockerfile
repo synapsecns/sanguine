@@ -22,7 +22,7 @@ LABEL org.label-schema.vcs-url="https://github.com/synapsecns/sanguine"
 LABEL org.opencontainers.image.source="https://github.com/synapsecns/sanguine"
 
 COPY --from=builder /opt/jaeger-ui/packages/jaeger-ui/build /usr/share/nginx/html
-COPY ./jaeger-ui/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 

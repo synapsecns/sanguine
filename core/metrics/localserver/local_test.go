@@ -6,6 +6,13 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics/localserver"
 )
 
+func (l *LocalServerSuite) TestFullJaeger() {
+	ts := localserver.StartTestServer(l.GetTestContext(), l.T())
+
+	containers := l.ContainersWithLabel(localserver.RunIDLabel, ts.GetRunID())
+	l.Require().Len(containers, 3)
+}
+
 // TestStartServerJaegerPreset tests the start server function with jaeger preset.
 // only pyroscope should run.
 func (l *LocalServerSuite) TestStartServerJaegerPreset() {

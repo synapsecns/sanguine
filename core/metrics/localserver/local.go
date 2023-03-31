@@ -6,6 +6,7 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
 	"github.com/synapsecns/sanguine/core/retry"
@@ -29,14 +30,16 @@ const appLabel = "app"
 const runIDLabel = "runID"
 
 type testJaeger struct {
-	tb                testing.TB
-	pool              *dockertest.Pool
-	logDir            string
-	runID             string
-	commonResourceMux sync.Mutex
-	pyroscopeResource *uiResource
-	jaegerResource    *uiResource
-	jaegerUIResource  *uiResource
+	tb                        testing.TB
+	pool                      *dockertest.Pool
+	logDir                    string
+	runID                     string
+	pyroscopeResource         *uiResource
+	jaegerResource            *uiResource
+	jaegerPyroscopeUIResource *uiResource
+	networkMux                sync.Mutex
+	// this should not be used directly, use getNetwork
+	network *dockertest.Network
 }
 
 // StartServer starts a local jaeger server for testing.
@@ -51,11 +54,6 @@ func startServer(parentCtx context.Context, tb testing.TB) *testJaeger {
 	tj := testJaeger{
 		tb:    tb,
 		runID: gofakeit.UUID(),
-		// this is run after the fact, we fill it in here to make sure it is not nil
-		// when the server starts
-		jaegerUIResource: &uiResource{
-			uiURL: "",
-		},
 	}
 
 	tb.Helper()
@@ -74,7 +72,7 @@ func startServer(parentCtx context.Context, tb testing.TB) *testJaeger {
 	tj.logDir = filet.TmpDir(tb, "")
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 	go func() {
 		defer wg.Done()
 		tj.jaegerResource = tj.StartJaegerServer(ctx)
@@ -83,6 +81,10 @@ func startServer(parentCtx context.Context, tb testing.TB) *testJaeger {
 	go func() {
 		defer wg.Done()
 		tj.pyroscopeResource = tj.StartPyroscopeServer(ctx)
+	}()
+	go func() {
+		defer wg.Done()
+		tj.jaegerPyroscopeUIResource = tj.StartJaegerPyroscopeUI(ctx)
 	}()
 	wg.Wait()
 
@@ -101,10 +103,35 @@ func startServer(parentCtx context.Context, tb testing.TB) *testJaeger {
 	return &tj
 }
 
+// createDockerResources creates the docker resources.
+// this must be called by each container.
+func (j *testJaeger) getNetwork() *dockertest.Network {
+	j.networkMux.Lock()
+	defer j.networkMux.Unlock()
+
+	if j.network != nil {
+		return j.network
+	}
+
+	var err error
+	j.network, err = j.pool.CreateNetwork(j.runID, func(config *docker.CreateNetworkOptions) {
+		config.Driver = "bridge"
+		config.Labels = map[string]string{
+			runIDLabel: j.runID,
+		}
+	})
+
+	if err != nil {
+		j.tb.Fatal(err)
+	}
+
+	return j.network
+}
+
 // buildLogMessage builds a log message for the test jaeger instance.
 func (j *testJaeger) buildLogMessage(includeAuxiliary bool) string {
 	var messages []string
-	messages = append(messages, fmt.Sprintf("jaeger ui: %s", j.jaegerResource.uiURL))
+	messages = append(messages, fmt.Sprintf("jaeger ui: %s", os.Getenv(internal.JAEGER_UI_ENDPOINT)))
 	messages = append(messages, fmt.Sprintf("pyroscope ui: %s", j.pyroscopeResource.uiURL))
 
 	var bootMessages []string
