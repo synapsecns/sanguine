@@ -19,7 +19,7 @@ abstract contract Client is BasicClient {
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
     // solhint-disable-next-line no-empty-blocks
-    constructor(address origin, address destination) BasicClient(origin, destination) {}
+    constructor(address origin_, address destination_) BasicClient(origin_, destination_) {}
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                VIEWS                                 ║*▕
@@ -42,13 +42,13 @@ abstract contract Client is BasicClient {
      * - Sender on origin chain is a trusted sender
      * Note: no checks have been done for root timestamp, make sure to enforce optimistic period
      * to protect against executed fake messages on Destination.
-     * @param origin            Domain of the remote chain, where message originated
+     * @param origin_           Domain of the remote chain, where message originated
      * @param nonce             Unique identifier for the message from origin to destination chain
      * @param rootSubmittedAt   Time when merkle root (sed for proving this message) was submitted
      * @param message           The message
      */
     function _handleUnsafe(
-        uint32 origin,
+        uint32 origin_,
         uint32 nonce,
         uint256 rootSubmittedAt,
         bytes memory message
@@ -58,7 +58,7 @@ abstract contract Client is BasicClient {
             block.timestamp >= rootSubmittedAt + optimisticSeconds(),
             "Client: !optimisticSeconds"
         );
-        _handle(origin, nonce, message);
+        _handle(origin_, nonce, message);
     }
 
     /**
@@ -71,21 +71,21 @@ abstract contract Client is BasicClient {
      * and message could be safely executed.
      */
     function _handle(
-        uint32 origin,
+        uint32 origin_,
         uint32 nonce,
         bytes memory message
     ) internal virtual;
 
     /**
      * @dev Sends a message to given destination chain.
-     * @param destination   Domain of the destination chain
+     * @param destination_  Domain of the destination chain
      * @param message       The message
      */
     function _send(
-        uint32 destination,
+        uint32 destination_,
         bytes memory tips,
         bytes memory message
     ) internal {
-        _send(destination, optimisticSeconds(), tips, message);
+        _send(destination_, optimisticSeconds(), tips, message);
     }
 }

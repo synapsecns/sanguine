@@ -26,12 +26,12 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
     ▏*║                             INITIALIZER                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function __AgentManager_init(ISystemRegistry origin, ISystemRegistry destination)
+    function __AgentManager_init(ISystemRegistry origin_, ISystemRegistry destination_)
         internal
         onlyInitializing
     {
-        origin = origin;
-        destination = destination;
+        origin = origin_;
+        destination = destination_;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

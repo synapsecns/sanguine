@@ -12,8 +12,8 @@ contract AppHarness is IMessageRecipient {
     bytes32 public expectedSender;
     bytes32 public expectedMessageBodyHash;
 
-    constructor(uint32 optimisticSeconds) {
-        optimisticSeconds = optimisticSeconds;
+    constructor(uint32 optimisticSeconds_) {
+        optimisticSeconds = optimisticSeconds_;
     }
 
     /// @notice Prevents this contract from being included in the coverage report

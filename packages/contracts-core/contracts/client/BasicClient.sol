@@ -30,9 +30,9 @@ abstract contract BasicClient is IMessageRecipient {
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(address origin, address destination) {
-        origin = origin;
-        destination = destination;
+    constructor(address origin_, address destination_) {
+        origin = origin_;
+        destination = destination_;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -43,14 +43,14 @@ abstract contract BasicClient is IMessageRecipient {
      * @notice  Handles an incoming message.
      * @dev     Can only be called by chain's Destination.
      *          Message can only be sent from a trusted sender on the origin chain.
-     * @param origin            Domain of the remote chain, where message originated
+     * @param origin_           Domain of the remote chain, where message originated
      * @param nonce             Unique identifier for the message from origin to destination chain
      * @param sender            Sender of the message on the origin chain
      * @param rootSubmittedAt   Time when merkle root (used for proving this message) was submitted
      * @param message           The message
      */
     function handle(
-        uint32 origin,
+        uint32 origin_,
         uint32 nonce,
         bytes32 sender,
         uint256 rootSubmittedAt,
@@ -58,12 +58,12 @@ abstract contract BasicClient is IMessageRecipient {
     ) external {
         require(msg.sender == destination, "BasicClient: !destination");
         require(
-            sender == trustedSender(origin) && sender != bytes32(0),
+            sender == trustedSender(origin_) && sender != bytes32(0),
             "BasicClient: !trustedSender"
         );
         /// @dev root timestamp wasn't checked => potentially unsafe
         /// No need to pass both origin and sender: sender == trustedSender(origin)
-        _handleUnsafe(origin, nonce, rootSubmittedAt, message);
+        _handleUnsafe(origin_, nonce, rootSubmittedAt, message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -91,7 +91,7 @@ abstract contract BasicClient is IMessageRecipient {
      * to protect against executed fake messages on Destination. Hence the "Unsafe" in the name.
      */
     function _handleUnsafe(
-        uint32 origin,
+        uint32 origin_,
         uint32 nonce,
         uint256 rootSubmittedAt,
         bytes memory message
@@ -99,21 +99,21 @@ abstract contract BasicClient is IMessageRecipient {
 
     /**
      * @dev Sends a message to given destination chain.
-     * @param destination           Domain of the destination chain
+     * @param destination_          Domain of the destination chain
      * @param optimisticSeconds     Optimistic period for message execution on destination chain
      * @param tips                  Payload with information about paid tips
      * @param message               The message
      */
     function _send(
-        uint32 destination,
+        uint32 destination_,
         uint32 optimisticSeconds,
         bytes memory tips,
         bytes memory message
     ) internal {
-        bytes32 recipient = trustedSender(destination);
+        bytes32 recipient = trustedSender(destination_);
         require(recipient != bytes32(0), "BasicClient: !recipient");
         InterfaceOrigin(origin).dispatch{ value: msg.value }(
-            destination,
+            destination_,
             recipient,
             optimisticSeconds,
             tips,

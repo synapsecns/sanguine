@@ -13,10 +13,10 @@ contract SystemRouterHarness is SystemRouter {
 
     constructor(
         uint32 domain,
-        address origin,
-        address destination,
-        address agentManager
-    ) SystemRouter(domain, origin, destination, agentManager) {}
+        address origin_,
+        address destination_,
+        address agentManager_
+    ) SystemRouter(domain, origin_, destination_, agentManager_) {}
 
     /**
      * @notice Pranks a system call: calls a local system recipient, as if the system call

@@ -26,15 +26,15 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_initializer(
         address caller,
-        address origin,
-        address destination
+        address origin_,
+        address destination_
     ) public {
         bondingManager = new BondingManager(DOMAIN_SYNAPSE);
         vm.prank(caller);
-        bondingManager.initialize(ISystemRegistry(origin), ISystemRegistry(destination));
+        bondingManager.initialize(ISystemRegistry(origin_), ISystemRegistry(destination_));
         assertEq(bondingManager.owner(), caller);
-        assertEq(address(bondingManager.origin()), origin);
-        assertEq(address(bondingManager.destination()), destination);
+        assertEq(address(bondingManager.origin()), origin_);
+        assertEq(address(bondingManager.destination()), destination_);
         assertEq(bondingManager.leafsAmount(), 1);
     }
 

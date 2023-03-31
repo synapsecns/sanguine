@@ -43,9 +43,9 @@ contract TestClient is IMessageRecipient {
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(address origin, address destination) {
-        origin = origin;
-        destination = destination;
+    constructor(address origin_, address destination_) {
+        origin = origin_;
+        destination = destination_;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -53,14 +53,14 @@ contract TestClient is IMessageRecipient {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function handle(
-        uint32 origin,
+        uint32 origin_,
         uint32 nonce,
         bytes32 sender,
         uint256 rootSubmittedAt,
         bytes memory message
     ) external {
         require(msg.sender == destination, "TestClient: !destination");
-        emit MessageReceived(origin, nonce, sender, rootSubmittedAt, message);
+        emit MessageReceived(origin_, nonce, sender, rootSubmittedAt, message);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -68,22 +68,22 @@ contract TestClient is IMessageRecipient {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function sendMessage(
-        uint32 destination,
-        address recipient,
+        uint32 destination_,
+        address recipientAddress,
         uint32 optimisticSeconds,
         bytes memory message
     ) external {
-        bytes32 recipient = TypeCasts.addressToBytes32(recipient);
+        bytes32 recipient = TypeCasts.addressToBytes32(recipientAddress);
         bytes memory tips = TipsLib.emptyTips();
         (uint32 nonce, ) = InterfaceOrigin(origin).dispatch(
-            destination,
+            destination_,
             recipient,
             optimisticSeconds,
             tips,
             message
         );
         emit MessageSent(
-            destination,
+            destination_,
             nonce,
             TypeCasts.addressToBytes32(address(this)),
             recipient,

@@ -101,10 +101,10 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
 
     constructor(
         uint32 domain,
-        address origin,
-        address destination,
-        address agentManager
-    ) BasicClient(origin, destination) DomainContext(domain) Versioned("0.0.3") {
+        address origin_,
+        address destination_,
+        address agentManager_
+    ) BasicClient(origin_, destination_) DomainContext(domain) Versioned("0.0.3") {
         agentManager = agentManager;
     }
 
