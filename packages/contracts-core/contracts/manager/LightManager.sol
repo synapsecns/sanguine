@@ -7,14 +7,13 @@ import { AgentFlag, AgentStatus, SlashStatus } from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import { AgentManager, IAgentManager, ISystemRegistry } from "./AgentManager.sol";
 import { DomainContext } from "../context/DomainContext.sol";
-import { LightManagerEvents } from "../events/LightManagerEvents.sol";
 import { IBondingManager } from "../interfaces/IBondingManager.sol";
 import { ILightManager } from "../interfaces/ILightManager.sol";
 import { Versioned } from "../Version.sol";
 
 /// @notice LightManager keeps track of all agents, staying in sync with the BondingManager.
 /// Used on chains other than Synapse Chain, serves as "light client" for BondingManager.
-contract LightManager is Versioned, AgentManager, LightManagerEvents, ILightManager {
+contract LightManager is Versioned, AgentManager, ILightManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -61,6 +60,7 @@ contract LightManager is Versioned, AgentManager, LightManagerEvents, ILightMana
         );
         // Update the agent status against this root
         agentMap[root][_agent] = _status;
+        emit StatusUpdated(_status.flag, _status.domain, _agent);
         // Notify local Registries, if agent flag is Slashed
         if (_status.flag == AgentFlag.Slashed) {
             // Prover is msg.sender
@@ -117,7 +117,7 @@ contract LightManager is Versioned, AgentManager, LightManagerEvents, ILightMana
     function _setAgentRoot(bytes32 _agentRoot) internal {
         if (latestAgentRoot != _agentRoot) {
             latestAgentRoot = _agentRoot;
-            emit AgentRootUpdated(_agentRoot);
+            emit RootUpdated(_agentRoot);
         }
     }
 

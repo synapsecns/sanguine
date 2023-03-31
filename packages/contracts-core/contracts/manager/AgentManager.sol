@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import { AgentManagerEvents } from "../events/AgentManagerEvents.sol";
 import { IAgentManager } from "../interfaces/IAgentManager.sol";
 import { ISystemRegistry } from "../interfaces/ISystemRegistry.sol";
 import { AgentFlag, AgentStatus, SlashStatus } from "../libs/Structures.sol";
 import { SystemContract } from "../system/SystemContract.sol";
 
-// TODO: adjust when Agent Merkle Tree is implemented
-abstract contract AgentManager is SystemContract, IAgentManager {
+abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -72,6 +72,7 @@ abstract contract AgentManager is SystemContract, IAgentManager {
             "Slashing could not be initiated"
         );
         slashStatus[_agent] = SlashStatus({ isSlashed: true, prover: _prover });
+        emit StatusUpdated(AgentFlag.Fraudulent, _domain, _agent);
     }
 
     /// @dev Notifies a given set of local registries about the slashed agent.
