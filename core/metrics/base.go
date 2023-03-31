@@ -22,7 +22,7 @@ import (
 // baseHandler is a base metrics handler that implements the Handler interface.
 // this is used to reduce the amount of boilerplate code needed to implement opentracing methods.
 type baseHandler struct {
-	tp         *tracesdk.TracerProvider
+	tp         trace.TracerProvider
 	tracer     trace.Tracer
 	name       string
 	propagator propagation.TextMapPropagator
@@ -81,7 +81,8 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 
 	opts := append([]tracesdk.TracerProviderOption{tracesdk.WithResource(rsr)}, extraOpts...)
 
-	tp := tracesdk.NewTracerProvider(opts...)
+	// TODO: add a way for users to pass in extra pyroscope options
+	tp := PyroscopeWrapTracerProvider(tracesdk.NewTracerProvider(opts...), buildInfo)
 	// default tracer for server
 	tracer := tp.Tracer(buildInfo.Name())
 	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))

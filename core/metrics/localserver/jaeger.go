@@ -17,15 +17,15 @@ import (
 
 // StartJaegerServer starts a new jaeger instance.
 func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
-	if core.HasEnv(internal.JAEGER_ENDPOINT) && !core.HasEnv(internal.JAEGER_UI_ENDPOINT) {
-		j.tb.Fatalf("%s is set but %s is not, please remove %s or set %s", internal.JAEGER_ENDPOINT, internal.JAEGER_UI_ENDPOINT, internal.JAEGER_ENDPOINT, internal.JAEGER_UI_ENDPOINT)
+	if core.HasEnv(internal.JaegerEndpoint) && !core.HasEnv(internal.JaegerUiEndpoint) {
+		j.tb.Fatalf("%s is set but %s is not, please remove %s or set %s", internal.JaegerEndpoint, internal.JaegerUiEndpoint, internal.JaegerEndpoint, internal.JaegerUiEndpoint)
 		return nil
 	}
 
-	if core.HasEnv(internal.JAEGER_ENDPOINT) {
+	if core.HasEnv(internal.JaegerEndpoint) {
 		return &uiResource{
 			Resource: nil,
-			uiURL:    os.Getenv(internal.JAEGER_UI_ENDPOINT),
+			uiURL:    os.Getenv(internal.JaegerUiEndpoint),
 		}
 	}
 
@@ -48,7 +48,7 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 	})
 	assert.Nil(j.tb, err)
 
-	j.tb.Setenv(internal.JAEGER_ENDPOINT, fmt.Sprintf("http://localhost:%s/api/traces", resource.GetPort("14268/tcp")))
+	j.tb.Setenv(internal.JaegerEndpoint, fmt.Sprintf("http://localhost:%s/api/traces", resource.GetPort("14268/tcp")))
 	// uiEndpoint is the jaeger endpoint, we want to instead use the pyroscope endpoint
 	uiEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("16686/tcp"))
 
@@ -75,7 +75,7 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 	}()
 
 	// make sure client is alive
-	err = retry.WithBackoff(ctx, checkURL(os.Getenv(internal.JAEGER_ENDPOINT)), retry.WithMax(time.Millisecond*10), retry.WithMax(time.Minute))
+	err = retry.WithBackoff(ctx, checkURL(os.Getenv(internal.JaegerEndpoint)), retry.WithMax(time.Millisecond*10), retry.WithMax(time.Minute))
 	if err != nil {
 		return nil
 	}
@@ -90,9 +90,9 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 
 // StartJaegerPyroscopeUI starts a new jaeger pyroscope ui instance.
 func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
-	if core.HasEnv(internal.JAEGER_UI_ENDPOINT) {
+	if core.HasEnv(internal.JaegerUiEndpoint) {
 		return &uiResource{
-			uiURL: os.Getenv(internal.JAEGER_UI_ENDPOINT),
+			uiURL: os.Getenv(internal.JaegerUiEndpoint),
 		}
 	}
 	network := j.getNetwork()
@@ -114,7 +114,7 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 	assert.Nil(j.tb, err)
 
 	// must only be done after the container is started
-	j.tb.Setenv(internal.JAEGER_UI_ENDPOINT, fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp")))
+	j.tb.Setenv(internal.JaegerUiEndpoint, fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp")))
 
 	if !debugLocal {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
@@ -131,7 +131,7 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 					return
 				case logResourceChan <- &uiResource{
 					Resource: resource,
-					uiURL:    os.Getenv(internal.JAEGER_UI_ENDPOINT),
+					uiURL:    os.Getenv(internal.JaegerUiEndpoint),
 				}:
 					return
 				}
@@ -139,7 +139,7 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 	}()
 
 	// make sure client is alive
-	err = retry.WithBackoff(ctx, checkURL(os.Getenv(internal.JAEGER_ENDPOINT)), retry.WithMax(time.Millisecond*10), retry.WithMax(time.Minute))
+	err = retry.WithBackoff(ctx, checkURL(os.Getenv(internal.JaegerEndpoint)), retry.WithMax(time.Millisecond*10), retry.WithMax(time.Minute))
 	if err != nil {
 		return nil
 	}

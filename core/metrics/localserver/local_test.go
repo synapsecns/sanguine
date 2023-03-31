@@ -16,8 +16,8 @@ func (l *LocalServerSuite) TestFullJaeger() {
 // TestStartServerJaegerPreset tests the start server function with jaeger preset.
 // only pyroscope should run.
 func (l *LocalServerSuite) TestStartServerJaegerPreset() {
-	l.T().Setenv(internal.JAEGER_ENDPOINT, gofakeit.URL())
-	l.T().Setenv(internal.JAEGER_UI_ENDPOINT, gofakeit.URL())
+	l.T().Setenv(internal.JaegerEndpoint, gofakeit.URL())
+	l.T().Setenv(internal.JaegerUiEndpoint, gofakeit.URL())
 
 	ts := localserver.StartTestServer(l.GetTestContext(), l.T())
 
@@ -28,7 +28,8 @@ func (l *LocalServerSuite) TestStartServerJaegerPreset() {
 }
 
 func (l *LocalServerSuite) TestStartServerPyroscopePreset() {
-	l.T().Setenv(internal.PYROSCOPE_ENDPOINT, gofakeit.URL())
+	l.T().Setenv(internal.PyroscopeEndpoint, gofakeit.URL())
+	l.T().Setenv(internal.JaegerUiEndpoint, gofakeit.URL())
 	ts := localserver.StartTestServer(l.GetTestContext(), l.T())
 
 	containers := l.ContainersWithLabel(localserver.RunIDLabel, ts.GetRunID())

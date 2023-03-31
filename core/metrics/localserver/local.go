@@ -50,6 +50,7 @@ func StartServer(parentCtx context.Context, tb testing.TB) {
 // startServer starts a local jaeger server for testing.
 // this is a separate function so we can export testJaeger for testing.
 func startServer(parentCtx context.Context, tb testing.TB) *testJaeger {
+	tb.Helper()
 	// create the test jaegar instance
 	tj := testJaeger{
 		tb:    tb,
@@ -97,6 +98,9 @@ func startServer(parentCtx context.Context, tb testing.TB) *testJaeger {
 			logger.Warn("Test failed, will temporarily continue serving \n" + tj.buildLogMessage(false))
 		} else if !debugLocal {
 			tj.purgeResources()
+			if tj.network != nil {
+				_ = tj.network.Close()
+			}
 		}
 	})
 
@@ -131,7 +135,7 @@ func (j *testJaeger) getNetwork() *dockertest.Network {
 // buildLogMessage builds a log message for the test jaeger instance.
 func (j *testJaeger) buildLogMessage(includeAuxiliary bool) string {
 	var messages []string
-	messages = append(messages, fmt.Sprintf("jaeger ui: %s", os.Getenv(internal.JAEGER_UI_ENDPOINT)))
+	messages = append(messages, fmt.Sprintf("jaeger ui: %s", os.Getenv(internal.JaegerUiEndpoint)))
 	messages = append(messages, fmt.Sprintf("pyroscope ui: %s", j.pyroscopeResource.uiURL))
 
 	var bootMessages []string
@@ -140,7 +144,7 @@ func (j *testJaeger) buildLogMessage(includeAuxiliary bool) string {
 	}
 
 	if j.jaegerResource != nil {
-		bootMessages = append(bootMessages, fmt.Sprintf("if you want to persist this session, set debugLocal to true in %s (currently %t), then set the JAEGER_ENDPOINT to %s", getCurrentFile(), debugLocal, os.Getenv(internal.JAEGER_ENDPOINT)))
+		bootMessages = append(bootMessages, fmt.Sprintf("if you want to persist this session, set debugLocal to true in %s (currently %t), then set the JAEGER_ENDPOINT to %s", getCurrentFile(), debugLocal, os.Getenv(internal.JaegerEndpoint)))
 	}
 
 	if len(bootMessages) > 0 && includeAuxiliary {
@@ -192,11 +196,16 @@ func checkURL(url string) retry.RetryableFunc {
 		client := http.DefaultClient
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not create request: %w", err)
 		}
-		_, err = client.Do(req)
+
+		resp, err := client.Do(req)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not get response: %w", err)
+		}
+
+		if resp != nil {
+			_ = resp.Body.Close()
 		}
 
 		return nil

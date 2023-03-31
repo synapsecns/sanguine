@@ -43,6 +43,7 @@ require (
 	github.com/prometheus/exporter-toolkit v0.7.1
 	github.com/prometheus/pushgateway v1.4.3
 	github.com/pyroscope-io/client v0.7.0
+	github.com/pyroscope-io/otel-profiling-go v0.4.0
 	github.com/rung/go-safecast v1.0.1
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
 	github.com/stretchr/testify v1.8.2

@@ -8,7 +8,7 @@ import (
 
 func (l *LocalServerSuite) TestPyroscopeEndpointSet() {
 	uiEndpoint := gofakeit.URL()
-	l.T().Setenv(internal.PYROSCOPE_ENDPOINT, uiEndpoint)
+	l.T().Setenv(internal.PyroscopeEndpoint, uiEndpoint)
 
 	jaegerTest := localserver.NewTestJaeger(l.T())
 	retVal := jaegerTest.StartPyroscopeServer(l.GetTestContext())
