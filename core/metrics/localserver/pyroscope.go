@@ -2,12 +2,11 @@ package localserver
 
 import (
 	"context"
-	"testing"
+	"github.com/Flaque/filet"
 
 	// embeds the pyroscope config file.
 	_ "embed"
 	"fmt"
-	"github.com/Flaque/filet"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/ory/dockertest/v3/docker/types/mount"
@@ -56,16 +55,26 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 		},
 	}
 
+	// github actions functions on a bridge so the host mount happens on the machine host
+	// rather than in the isolated container enviorment. This causes the pyroscope config
+	// to be inaccessible. To get around this we remove the enviorment variables from the
+	// container.
+	// See:  https://stackoverflow.com/a/60202672 for details.
+	if core.HasEnv("CI") {
+		runOptions.Env = []string{}
+	}
+
 	resource, err := j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 		config.Mounts = []docker.HostMount{
 			{
 				Type:     string(mount.TypeBind),
 				Target:   pyroscopePath,
-				Source:   createConfigPath(j.tb),
+				Source:   filet.TmpFile(j.tb, "", pyroscopeConfig).Name(),
 				ReadOnly: true,
 			},
 		}
-		//config.AutoRemove = true
+		config.VolumesFrom = []string{}
+		config.AutoRemove = true
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
 	assert.Nil(j.tb, err)
@@ -110,18 +119,4 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 	case logResource := <-logResourceChan:
 		return logResource
 	}
-}
-
-// createConfigFile creates a temporary config file for pyroscope.
-// because github actions docker mount point is wrong:
-// see: https://github.com/actions/runner/issues/1474#issuecomment-965749362
-func createConfigPath(tb testing.TB) string {
-	dir := ""
-	var err error
-	if core.HasEnv("CI") {
-		dir, err = os.UserHomeDir()
-		assert.Nil(tb, err)
-	}
-	configPath := filet.TmpFile(tb, dir, pyroscopeConfig).Name()
-	return configPath
 }
