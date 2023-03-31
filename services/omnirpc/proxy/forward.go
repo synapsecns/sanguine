@@ -8,6 +8,7 @@ import (
 	"github.com/ImVexed/fasturl"
 	"github.com/goccy/go-json"
 	"github.com/jftuga/ellipsis"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
 	"go.opentelemetry.io/otel/attribute"
@@ -133,10 +134,7 @@ func (f *Forwarder) forwardRequest(parentCtx context.Context, endpoint string) (
 	)
 
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	endpointURL, err := fasturl.ParseURL(endpoint)

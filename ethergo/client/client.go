@@ -91,10 +91,7 @@ func (c *clientImpl) Batch(ctx context.Context, calls ...w3types.Caller) (err er
 	span.SetAttributes(attribute.String(endpointAttribute, c.endpoint))
 
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 	//nolint: wrapcheck
 	return c.w3.CallCtx(ctx, calls...)
@@ -109,10 +106,7 @@ func (c *clientImpl) BatchCallContext(ctx context.Context, b []rpc.BatchElem) (e
 	span.SetAttributes(attribute.String(endpointAttribute, c.endpoint))
 
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.rpcClient.BatchCallContext(requestCtx, b)
@@ -130,10 +124,7 @@ func (c *clientImpl) startSpan(parentCtx context.Context, method RPCMethod) (con
 func (c *clientImpl) CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) (contractResponse []byte, err error) {
 	requestCtx, span := c.startSpan(ctx, CallMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.CallContract(requestCtx, call, blockNumber)
@@ -145,10 +136,7 @@ func (c *clientImpl) CallContract(ctx context.Context, call ethereum.CallMsg, bl
 func (c *clientImpl) PendingCallContract(ctx context.Context, call ethereum.CallMsg) (contractResponse []byte, err error) {
 	requestCtx, span := c.startSpan(ctx, CallMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.PendingCallContract(requestCtx, call)
@@ -160,10 +148,7 @@ func (c *clientImpl) PendingCallContract(ctx context.Context, call ethereum.Call
 func (c *clientImpl) PendingCodeAt(ctx context.Context, account common.Address) (codeResponse []byte, err error) {
 	requestCtx, span := c.startSpan(ctx, GetCodeMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.PendingCodeAt(requestCtx, account)
@@ -175,10 +160,7 @@ func (c *clientImpl) PendingCodeAt(ctx context.Context, account common.Address) 
 func (c *clientImpl) PendingBalanceAt(ctx context.Context, account common.Address) (pendingBalance *big.Int, err error) {
 	requestCtx, span := c.startSpan(ctx, GetBalanceMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.PendingBalanceAt(requestCtx, account)
@@ -190,10 +172,7 @@ func (c *clientImpl) PendingBalanceAt(ctx context.Context, account common.Addres
 func (c *clientImpl) PendingStorageAt(ctx context.Context, account common.Address, key common.Hash) (pendingStorage []byte, err error) {
 	requestCtx, span := c.startSpan(ctx, StorageAtMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.PendingStorageAt(requestCtx, account, key)
@@ -205,10 +184,7 @@ func (c *clientImpl) PendingStorageAt(ctx context.Context, account common.Addres
 func (c *clientImpl) PendingNonceAt(ctx context.Context, account common.Address) (pendingNonce uint64, err error) {
 	requestCtx, span := c.startSpan(ctx, TransactionCountMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.PendingNonceAt(requestCtx, account)
@@ -220,10 +196,7 @@ func (c *clientImpl) PendingNonceAt(ctx context.Context, account common.Address)
 func (c *clientImpl) PendingTransactionCount(ctx context.Context) (count uint, err error) {
 	requestCtx, span := c.startSpan(ctx, PendingTransactionCountMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.PendingTransactionCount(requestCtx)
@@ -235,10 +208,7 @@ func (c *clientImpl) PendingTransactionCount(ctx context.Context) (count uint, e
 func (c *clientImpl) NetworkID(ctx context.Context) (id *big.Int, err error) {
 	requestCtx, span := c.startSpan(ctx, NetVersionMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.NetworkID(requestCtx)
@@ -250,10 +220,7 @@ func (c *clientImpl) NetworkID(ctx context.Context) (id *big.Int, err error) {
 func (c *clientImpl) SyncProgress(ctx context.Context) (syncProgress *ethereum.SyncProgress, err error) {
 	requestCtx, span := c.startSpan(ctx, SyncProgressMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 	return c.ethClient.SyncProgress(requestCtx)
 }
@@ -264,10 +231,7 @@ func (c *clientImpl) SyncProgress(ctx context.Context) (syncProgress *ethereum.S
 func (c *clientImpl) SuggestGasPrice(ctx context.Context) (gasPrice *big.Int, err error) {
 	requestCtx, span := c.startSpan(ctx, GasPriceMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.SuggestGasPrice(requestCtx)
@@ -279,10 +243,7 @@ func (c *clientImpl) SuggestGasPrice(ctx context.Context) (gasPrice *big.Int, er
 func (c *clientImpl) EstimateGas(ctx context.Context, call ethereum.CallMsg) (gas uint64, err error) {
 	requestCtx, span := c.startSpan(ctx, EstimateGasMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.EstimateGas(requestCtx, call)
@@ -294,10 +255,7 @@ func (c *clientImpl) EstimateGas(ctx context.Context, call ethereum.CallMsg) (ga
 func (c *clientImpl) SendTransaction(ctx context.Context, tx *types.Transaction) (err error) {
 	requestCtx, span := c.startSpan(ctx, SendRawTransactionMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.SendTransaction(requestCtx, tx)
@@ -309,10 +267,7 @@ func (c *clientImpl) SendTransaction(ctx context.Context, tx *types.Transaction)
 func (c *clientImpl) FilterLogs(ctx context.Context, query ethereum.FilterQuery) (logs []types.Log, err error) {
 	requestCtx, span := c.startSpan(ctx, GetLogsMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.FilterLogs(requestCtx, query)
@@ -324,10 +279,7 @@ func (c *clientImpl) FilterLogs(ctx context.Context, query ethereum.FilterQuery)
 func (c *clientImpl) SubscribeFilterLogs(ctx context.Context, query ethereum.FilterQuery, ch chan<- types.Log) (sub ethereum.Subscription, err error) {
 	requestCtx, span := c.startSpan(ctx, SubscribeMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 	return c.ethClient.SubscribeFilterLogs(requestCtx, query, ch)
 }
@@ -338,10 +290,7 @@ func (c *clientImpl) SubscribeFilterLogs(ctx context.Context, query ethereum.Fil
 func (c *clientImpl) BlockByHash(ctx context.Context, hash common.Hash) (block *types.Block, err error) {
 	requestCtx, span := c.startSpan(ctx, BlockByHashMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.BlockByHash(requestCtx, hash)
@@ -353,10 +302,7 @@ func (c *clientImpl) BlockByHash(ctx context.Context, hash common.Hash) (block *
 func (c *clientImpl) BlockByNumber(ctx context.Context, number *big.Int) (block *types.Block, err error) {
 	requestCtx, span := c.startSpan(ctx, BlockByNumberMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.BlockByNumber(requestCtx, number)
@@ -368,10 +314,7 @@ func (c *clientImpl) BlockByNumber(ctx context.Context, number *big.Int) (block 
 func (c *clientImpl) HeaderByHash(ctx context.Context, hash common.Hash) (header *types.Header, err error) {
 	requestCtx, span := c.startSpan(ctx, BlockByHashMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.HeaderByHash(requestCtx, hash)
@@ -383,10 +326,7 @@ func (c *clientImpl) HeaderByHash(ctx context.Context, hash common.Hash) (header
 func (c *clientImpl) HeaderByNumber(ctx context.Context, number *big.Int) (header *types.Header, err error) {
 	requestCtx, span := c.startSpan(ctx, BlockByNumberMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.HeaderByNumber(requestCtx, number)
@@ -398,10 +338,7 @@ func (c *clientImpl) HeaderByNumber(ctx context.Context, number *big.Int) (heade
 func (c *clientImpl) TransactionCount(ctx context.Context, blockHash common.Hash) (txCount uint, err error) {
 	requestCtx, span := c.startSpan(ctx, TransactionCountByHashMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.TransactionCount(requestCtx, blockHash)
@@ -413,10 +350,7 @@ func (c *clientImpl) TransactionCount(ctx context.Context, blockHash common.Hash
 func (c *clientImpl) TransactionInBlock(ctx context.Context, blockHash common.Hash, index uint) (tx *types.Transaction, err error) {
 	requestCtx, span := c.startSpan(ctx, TransactionByBlockHashAndIndexMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.TransactionInBlock(requestCtx, blockHash, index)
@@ -428,10 +362,7 @@ func (c *clientImpl) TransactionInBlock(ctx context.Context, blockHash common.Ha
 func (c *clientImpl) SubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (sub ethereum.Subscription, err error) {
 	requestCtx, span := c.startSpan(ctx, SubscribeMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.SubscribeNewHead(requestCtx, ch)
@@ -443,10 +374,7 @@ func (c *clientImpl) SubscribeNewHead(ctx context.Context, ch chan<- *types.Head
 func (c *clientImpl) TransactionByHash(ctx context.Context, txHash common.Hash) (tx *types.Transaction, isPending bool, err error) {
 	requestCtx, span := c.startSpan(ctx, TransactionByHashMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.TransactionByHash(requestCtx, txHash)
@@ -458,10 +386,7 @@ func (c *clientImpl) TransactionByHash(ctx context.Context, txHash common.Hash) 
 func (c *clientImpl) TransactionReceipt(ctx context.Context, txHash common.Hash) (receipt *types.Receipt, err error) {
 	requestCtx, span := c.startSpan(ctx, TransactionReceiptByHashMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.TransactionReceipt(requestCtx, txHash)
@@ -473,10 +398,7 @@ func (c *clientImpl) TransactionReceipt(ctx context.Context, txHash common.Hash)
 func (c *clientImpl) BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (balance *big.Int, err error) {
 	requestCtx, span := c.startSpan(ctx, GetBalanceMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.BalanceAt(requestCtx, account, blockNumber)
@@ -488,10 +410,7 @@ func (c *clientImpl) BalanceAt(ctx context.Context, account common.Address, bloc
 func (c *clientImpl) StorageAt(ctx context.Context, account common.Address, key common.Hash, blockNumber *big.Int) (storage []byte, err error) {
 	requestCtx, span := c.startSpan(ctx, StorageAtMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.StorageAt(requestCtx, account, key, blockNumber)
@@ -503,10 +422,7 @@ func (c *clientImpl) StorageAt(ctx context.Context, account common.Address, key 
 func (c *clientImpl) BlockNumber(ctx context.Context) (_ uint64, err error) {
 	requestCtx, span := c.startSpan(ctx, BlockNumberMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.BlockNumber(requestCtx)
@@ -518,10 +434,7 @@ func (c *clientImpl) BlockNumber(ctx context.Context) (_ uint64, err error) {
 func (c *clientImpl) CodeAt(ctx context.Context, account common.Address, blockNumber *big.Int) (codeAt []byte, err error) {
 	requestCtx, span := c.startSpan(ctx, GetCodeMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.CodeAt(requestCtx, account, blockNumber)
@@ -533,10 +446,7 @@ func (c *clientImpl) CodeAt(ctx context.Context, account common.Address, blockNu
 func (c *clientImpl) SuggestGasTipCap(ctx context.Context) (tip *big.Int, err error) {
 	requestCtx, span := c.startSpan(ctx, MaxPriorityMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.SuggestGasTipCap(requestCtx)
@@ -548,10 +458,7 @@ func (c *clientImpl) SuggestGasTipCap(ctx context.Context) (tip *big.Int, err er
 func (c *clientImpl) CallContext(ctx context.Context, result interface{}, method string, args ...interface{}) (err error) {
 	requestCtx, span := c.startSpan(ctx, RPCMethod(method))
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.rpcClient.CallContext(requestCtx, result, method, args...)
@@ -563,10 +470,7 @@ func (c *clientImpl) CallContext(ctx context.Context, result interface{}, method
 func (c *clientImpl) NonceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (nonce uint64, err error) {
 	requestCtx, span := c.startSpan(ctx, TransactionCountMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 	return c.ethClient.NonceAt(requestCtx, account, blockNumber)
 }
@@ -577,10 +481,7 @@ func (c *clientImpl) NonceAt(ctx context.Context, account common.Address, blockN
 func (c *clientImpl) ChainID(ctx context.Context) (chainID *big.Int, err error) {
 	requestCtx, span := c.startSpan(ctx, ChainIDMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.ChainID(requestCtx)
@@ -592,10 +493,7 @@ func (c *clientImpl) ChainID(ctx context.Context) (chainID *big.Int, err error) 
 func (c *clientImpl) FeeHistory(ctx context.Context, blockCount uint64, lastBlock *big.Int, rewardPercentiles []float64) (_ *ethereum.FeeHistory, err error) {
 	requestCtx, span := c.startSpan(ctx, FeeHistoryMethod)
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	return c.ethClient.FeeHistory(requestCtx, blockCount, lastBlock, rewardPercentiles)

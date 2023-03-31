@@ -32,10 +32,7 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 
 	ctx, span := handler.Tracer().Start(parentCtx, "start-mysql")
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{

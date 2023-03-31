@@ -87,12 +87,7 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 	))
 
 	defer func() {
-		go func() {
-			if err != nil {
-				span.RecordError(err)
-			}
-			span.End()
-		}()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	g, groupCtx := errgroup.WithContext(ctx)
@@ -198,12 +193,7 @@ func (c *ContractBackfiller) store(parentCtx context.Context, log types.Log) (er
 	))
 
 	defer func() {
-		go func() {
-			if err != nil {
-				span.RecordError(err)
-			}
-			span.End()
-		}()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	startTime := time.Now()
@@ -317,9 +307,7 @@ func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, end
 	ctx, span := c.handler.Tracer().Start(parentCtx, "getLogs")
 
 	defer func() {
-		go func() {
-			span.End()
-		}()
+		metrics.EndSpan(span)
 	}()
 
 	// rangeFilter generates filter type that will retrieve logs from omnirpc in chunks of batch requests specified in the config.
@@ -401,12 +389,7 @@ func (c *ContractBackfiller) fetchTx(parentCtx context.Context, txhash common.Ha
 	))
 
 	defer func() {
-		go func() {
-			if err != nil {
-				span.RecordError(err)
-			}
-			span.End()
-		}()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 OUTER:

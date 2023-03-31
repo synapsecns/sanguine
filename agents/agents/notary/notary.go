@@ -219,7 +219,7 @@ func (n Notary) loadSummitGuardLatestStates(ctx context.Context) {
 func (n Notary) isValidOnOrigin(ctx context.Context, state types.State, domain domains.DomainClient) bool {
 	stateOnOrigin, err := domain.Origin().SuggestState(ctx, state.Nonce())
 	if err != nil {
-		logger.Errorf("Failed calling SuggestState for originID %d on the Origin contract: err = %v", err)
+		logger.Errorf("Failed calling SuggestState for originID %d on the Origin contract: err = %v", domain.Config().DomainID, err)
 		// return false since we weren't able to validate the state on the origin
 		return false
 	}

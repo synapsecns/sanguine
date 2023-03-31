@@ -282,10 +282,7 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	))
 
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
@@ -466,12 +463,7 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 	))
 
 	defer func() {
-		go func() {
-			if err != nil {
-				span.RecordError(err)
-			}
-			span.End()
-		}()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	stateMask := execTypes.DBState{
@@ -517,12 +509,7 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 	))
 
 	defer func() {
-		go func() {
-			if err != nil {
-				span.RecordError(err)
-			}
-			span.End()
-		}()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	messageMask := execTypes.DBMessage{
@@ -697,12 +684,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 	))
 
 	defer func() {
-		go func() {
-			if err != nil {
-				span.RecordError(err)
-			}
-			span.End()
-		}()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	switch contractEvent.contractType {
@@ -886,12 +868,7 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 					}
 				}
 
-				go func() {
-					if err != nil {
-						span.RecordError(err)
-					}
-					span.End()
-				}()
+				metrics.EndSpanWithErr(span, err)
 
 				page++
 			}
@@ -966,12 +943,7 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				}
 			}
 
-			go func() {
-				if err != nil {
-					span.RecordError(err)
-				}
-				span.End()
-			}()
+			metrics.EndSpanWithErr(span, err)
 		}
 	}
 }

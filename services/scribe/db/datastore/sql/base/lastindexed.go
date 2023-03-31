@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -19,10 +20,7 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 	))
 
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	entry := LastIndexedInfo{}

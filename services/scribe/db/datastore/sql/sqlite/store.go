@@ -23,10 +23,7 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 
 	ctx, span := handler.Tracer().Start(parentCtx, "start-sqlite")
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-		}
-		span.End()
+		metrics.EndSpanWithErr(span, err)
 	}()
 
 	// create the directory to the store if it doesn't exist
