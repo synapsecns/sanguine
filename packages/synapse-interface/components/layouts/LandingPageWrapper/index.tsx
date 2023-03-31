@@ -1,40 +1,36 @@
 import { Fragment } from 'react'
-import { Transition, Popover } from '@headlessui/react'
-
+import { Popover, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
-
-import {
-  SWAP_PATH,
-  POOLS_PATH,
-  BRIDGE_PATH,
-  STAKE_PATH,
-  CONTRACTS_PATH,
-  PORTFOLIO_PATH,
-  DOCS_URL,
-  DISCORD_URL,
-  TELEGRAM_URL,
-  FORUM_URL,
-  TWITTER_URL,
-  getBuySynUrl,
-  LANDING_PATH,
-  ANALYTICS_PATH,
-} from '@/constants/urls'
-
 import Grid from '@tw/Grid'
-
 import ForumIcon from '@icons/ForumIcon'
 import TwitterIcon from '@icons/TwitterIcon'
 import DiscordIcon from '@icons/DiscordIcon'
 import TelegramIcon from '@icons/TelegramIcon'
 import DocumentTextIcon from '@icons/DocsIcon'
+import { Wallet } from '@components/Wallet'
 
-import { SynapseLogoWithTitleSvg, SynapseLogoSvg } from './SynapseLogoSvg'
+import { SynapseLogoSvg, SynapseLogoWithTitleSvg } from './SynapseLogoSvg'
 import { TopBarNavLink } from './TopBarNavLink'
-import {Wallet} from '@components/Wallet'
+import {
+  ANALYTICS_PATH,
+  BRIDGE_PATH,
+  CONTRACTS_PATH,
+  DISCORD_URL,
+  DOCS_URL,
+  FORUM_URL,
+  LANDING_PATH,
+  POOLS_PATH,
+  PORTFOLIO_PATH,
+  STAKE_PATH,
+  SWAP_PATH,
+  TELEGRAM_URL,
+  TWITTER_URL,
+  getBuySynUrl,
+} from '@/constants/urls'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 
-export function LandingPageWrapper({ children }:{children:any}) {
+export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div
       className="min-h-screen bg-no-repeat"
@@ -160,7 +156,13 @@ export function LandingNav() {
   )
 }
 
-function PopoverPanelContainer({ children, className }:{children:any, className?:string}) {
+function PopoverPanelContainer({
+  children,
+  className,
+}: {
+  children: any
+  className?: string
+}) {
   return (
     <Transition
       as={Fragment}
@@ -206,7 +208,6 @@ function TopBarButtons() {
 }
 
 function MoreInfoButtons() {
-
   return (
     <>
       <MoreInfoItem
@@ -231,7 +232,7 @@ function MoreInfoButtons() {
 
 function SocialButtons() {
   return (
-    <Grid cols={{ xs: 2, sm: 1 }} gapY={"1"}>
+    <Grid cols={{ xs: 2, sm: 1 }} gapY={'1'}>
       <MiniInfoItem
         href={DOCS_URL}
         labelText="Docs"
@@ -274,8 +275,7 @@ function MobileBarButtons() {
   )
 }
 
-function MobileBarItem({ to, labelText }:{to:string, labelText:string}) {
-
+function MobileBarItem({ to, labelText }: { to: string; labelText: string }) {
   const match =
     location.pathname.split('/')[1] === to.split('/')[1] && to !== '#'
   const isInternal = to[0] === '/' || to[0] === '#'
@@ -301,7 +301,17 @@ function MobileBarItem({ to, labelText }:{to:string, labelText:string}) {
   )
 }
 
-function MoreInfoItem({ to, labelText, description, className }: {to:string, labelText:string, description:string, className?:string}) {
+function MoreInfoItem({
+  to,
+  labelText,
+  description,
+  className,
+}: {
+  to: string
+  labelText: string
+  description: string
+  className?: string
+}) {
   return (
     <a
       key={labelText}
@@ -317,7 +327,15 @@ function MoreInfoItem({ to, labelText, description, className }: {to:string, lab
   )
 }
 
-function MiniInfoItem({ href, icon, labelText }:{href:string, icon:JSX.Element, labelText:string}) {
+function MiniInfoItem({
+  href,
+  icon,
+  labelText,
+}: {
+  href: string
+  icon: JSX.Element
+  labelText: string
+}) {
   return (
     <a
       key={labelText}
@@ -335,7 +353,7 @@ function MiniInfoItem({ href, icon, labelText }:{href:string, icon:JSX.Element, 
   )
 }
 
-export function SynapseTitleLogo({ showText }:{showText:boolean}) {
+export function SynapseTitleLogo({ showText }: { showText: boolean }) {
   return (
     <a href={LANDING_PATH} className="flex">
       <div className="flex items-center flex-shrink-0 py-1 ">

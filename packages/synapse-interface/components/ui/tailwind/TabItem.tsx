@@ -1,4 +1,12 @@
-export default function TabItem({ onClick, children, isActive }: { onClick: any; children: any; isActive: any }) {
+export default function TabItem({
+  onClick,
+  children,
+  isActive,
+}: {
+  onClick: any
+  children: any
+  isActive: any
+}) {
   let statusClassname
   if (isActive) {
     statusClassname = `

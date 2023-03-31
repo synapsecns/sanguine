@@ -1,12 +1,22 @@
-import { useState, createRef } from 'react'
+import { createRef, useState } from 'react'
 import { createPopper } from '@popperjs/core'
 
-export default function Tooltip({ children, title, content, className }:{children:any, title?:string, content:string, className?:string}) {
+export default function Tooltip({
+  children,
+  title,
+  content,
+  className,
+}: {
+  children: any
+  title?: string
+  content: string
+  className?: string
+}) {
   const [tooltipShow, setTooltipShow] = useState(false)
   const btnRef = createRef<HTMLDivElement>()
   const tooltipRef = createRef<HTMLDivElement>()
   const openLeftTooltip = () => {
-    createPopper(btnRef.current , tooltipRef.current, {
+    createPopper(btnRef.current, tooltipRef.current, {
       placement: 'bottom',
     })
     setTooltipShow(true)

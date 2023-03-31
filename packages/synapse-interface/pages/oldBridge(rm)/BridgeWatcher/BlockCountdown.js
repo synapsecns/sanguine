@@ -1,23 +1,21 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import {
-  ChevronRightIcon,
   ChevronDoubleRightIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/outline'
 import { Arc } from '@visx/shape'
 import { Chord } from '@visx/chord'
-
 import { getNetworkTextColor } from '@styles/networks'
 import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@constants/bridge'
 import { useBlockHeight } from '@hooks/useBlockHeight'
-
 import { getCoinTextColorCombined } from '@styles/coins'
 
 import {
-  SubTransactionItem,
-  EmptySubTransactionItem,
   CheckingConfPlaceholder,
-  PendingCreditTransactionItem,
   CreditedTransactionItem,
+  EmptySubTransactionItem,
+  PendingCreditTransactionItem,
+  SubTransactionItem,
 } from './TransactionItems'
 
 export default function BlockCountdown({

@@ -1,3 +1,3 @@
 export const Footer = () => {
-  return(<p>synapse bridge footer</p>)
+  return <p>synapse bridge footer</p>
 }

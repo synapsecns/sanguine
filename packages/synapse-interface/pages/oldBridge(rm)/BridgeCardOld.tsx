@@ -1,49 +1,37 @@
 import { useEffect, useState } from 'react'
-
 import { Zero } from '@ethersproject/constants'
 import { parseUnits } from '@ethersproject/units'
-
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
-
 import { useSettings } from '@hooks/settings/useSettings'
 import { useGasDropAmount } from '@hooks/useGasDropAmount'
 import { useBridgeSwap } from '@hooks/actions/useBridgeSwap'
 import { useTerraUstBalance } from '@hooks/terra/useTerraUstBalance'
 import { useSynapseContract } from '@hooks/contracts/useSynapseContract'
-
 import { useBridgeZapContract } from '@hooks/contracts/useBridgeZapContract'
 import { APPROVAL_STATE, useApproveToken } from '@hooks/actions/useApproveToken'
 import { useTokenBalance } from '@hooks/tokens/useTokenBalances'
-
 import { ChainId } from '@constants/networks'
-
-import { sanitizeValue } from '@/utils/stringToBigNum'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
-
 import { BRIDGABLE_TOKENS } from '@constants/bridge'
 import { GMX } from '@constants/tokens/mintable'
-
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
-
 import Grid from '@tw/Grid'
 import Card from '@tw/Card'
 import Button from '@tw/Button'
-
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
 import { TransactionButton } from '@components/buttons/SubmitTxButton'
 import { PageHeader } from '@components/PageHeader'
-
-import BridgeInputContainer from './BridgeInputContainer'
 import { CoinSlideOver } from '@components/misc/CoinSlideOver'
 import { NetworkSlideOver } from '@components/misc/NetworkSlideOver'
-import SettingsSlideOver from './SettingsSlideOver'
-import { DestinationAddressInput } from './DestinationAddressInput'
-
 import { validateTerraAddress } from '@utils/validateTerraAddress'
-
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
+
+import { DestinationAddressInput } from './DestinationAddressInput'
+import SettingsSlideOver from './SettingsSlideOver'
+import BridgeInputContainer from './BridgeInputContainer'
+import { sanitizeValue } from '@/utils/stringToBigNum'
 
 const ACTION_BTN_CLASSNAME = `
   w-full rounded-lg my-2 px-4 py-3 tracking-wide

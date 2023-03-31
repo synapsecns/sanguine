@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
-import { ChainId, CHAIN_INFO_MAP, CHAIN_PARAMS } from '@constants/networks'
+import { CHAIN_INFO_MAP, CHAIN_PARAMS, ChainId } from '@constants/networks'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import Image from 'next/image'
 export default function ExchangeRateInfo({
@@ -92,7 +92,7 @@ function GasDropLabel({
   toChainId: number
 }) {
   let decimalsToDisplay
-  let symbol = CHAIN_PARAMS[toChainId].nativeCurrency.symbol
+  const symbol = CHAIN_PARAMS[toChainId].nativeCurrency.symbol
 
   if ([ChainId.FANTOM].includes(toChainId)) {
     decimalsToDisplay = 2
@@ -110,7 +110,7 @@ function GasDropLabel({
     decimalsToDisplay
   )
 
-  let airdropInDollars = getAirdropInDollars(symbol, formattedGasDropAmount)
+  const airdropInDollars = getAirdropInDollars(symbol, formattedGasDropAmount)
 
   return (
     <div className="flex justify-between text-[#88818C]">
@@ -146,10 +146,10 @@ function ChainInfoLabel({ chainId }: { chainId: number }) {
 }
 
 function getAirdropInDollars(symbol: string, formattedGasDropAmount: string) {
-  let price = useCoingeckoPrice(symbol)
+  const price = useCoingeckoPrice(symbol)
 
   if (price) {
-    let airdropInDollars = parseFloat(formattedGasDropAmount) * price
+    const airdropInDollars = parseFloat(formattedGasDropAmount) * price
 
     return airdropInDollars.toFixed(2)
   } else {

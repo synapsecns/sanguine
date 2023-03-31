@@ -20,10 +20,10 @@ export default function Button({
   className?: string
   onClick: () => void
 }) {
-  let mergedClassName = twMerge(`${baseClassname} ${className}`)
+  const mergedClassName = twMerge(`${baseClassname} ${className}`)
 
   return (
-    <button className={mergedClassName}{...props}>
+    <button className={mergedClassName} {...props}>
       {children}
     </button>
   )

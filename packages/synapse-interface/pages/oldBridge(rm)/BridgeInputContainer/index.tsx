@@ -1,20 +1,16 @@
 import _ from 'lodash'
 import { Zero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
-
-import SelectTokenDropdown from './SelectTokenDropdown'
-import { ChainLabel } from './ChainLabel'
-
 import { ChainId } from '@constants/networks'
-
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
-
 import { useTerraUstBalance } from '@hooks/terra/useTerraUstBalance'
 import { useTokenBalance } from '@hooks/tokens/useTokenBalances'
 import { useNetworkController } from '@hooks/wallet/useNetworkController'
-
 import { cleanNumberInput } from '@utils/cleanNumberInput'
+
+import { ChainLabel } from './ChainLabel'
+import SelectTokenDropdown from './SelectTokenDropdown'
 
 export default function BridgeInputContainer({
   selected,
@@ -38,12 +34,12 @@ export default function BridgeInputContainer({
     4
   )
 
-  let isConnected = account || terraAddress
+  const isConnected = account || terraAddress
 
   function onChange(e) {
-    let val = e.target.value
+    const val = e.target.value
 
-    let cleanValue = cleanNumberInput(val)
+    const cleanValue = cleanNumberInput(val)
 
     onChangeAmount(cleanValue)
   }

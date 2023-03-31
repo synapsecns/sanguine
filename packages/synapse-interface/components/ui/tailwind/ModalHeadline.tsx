@@ -1,6 +1,6 @@
 import { twMerge } from 'tailwind-merge'
 
-let baseClassname = `
+const baseClassname = `
   mb-3 text-sm text-secondaryTextColor text-opacity-50
 `
 
@@ -15,7 +15,7 @@ export default function ModalHeadline({
   onClose: any
   titleClassName?: string
 }) {
-  let mergedTitleClassName = twMerge(`${baseClassname} ${titleClassName}`)
+  const mergedTitleClassName = twMerge(`${baseClassname} ${titleClassName}`)
 
   return (
     <div>

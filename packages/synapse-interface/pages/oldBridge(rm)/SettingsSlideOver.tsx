@@ -1,13 +1,12 @@
 import _ from 'lodash'
 import { useEffect } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/outline'
-
 import { Switch } from '@headlessui/react'
-
 import { useKeyPress } from '@hooks/useKeyPress'
-import { DeadlineInput } from './DeadlineInput'
 import Tooltip from '@tw/Tooltip'
 import Button from '@tw/Button'
+
+import { DeadlineInput } from './DeadlineInput'
 
 export default function SettingsSlideOver({
   settings,

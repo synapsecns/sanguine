@@ -1,20 +1,17 @@
 import '@styles/global.css'
 import '@rainbow-me/rainbowkit/styles.css'
-import { SynapseProvider } from '@/utils/SynapseProvider'
 import type { AppProps } from 'next/app'
 import { Provider as EthersProvider } from '@ethersproject/abstract-provider'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import {
-  klaytn,
   boba,
   cronos,
   dfk,
   dogechain,
+  klaytn,
 } from '@constants/extraWagmiChains'
-
-import { configureChains, createClient, WagmiConfig } from 'wagmi'
+import { WagmiConfig, configureChains, createClient } from 'wagmi'
 import {
-  mainnet,
   arbitrum,
   aurora,
   avalanche,
@@ -23,23 +20,25 @@ import {
   celo,
   fantom,
   harmonyOne,
+  mainnet,
   metis,
   moonbeam,
   moonriver,
   optimism,
   polygon,
 } from 'wagmi/chains'
-
 import {
-  getDefaultWallets,
   RainbowKitProvider,
   darkTheme,
+  getDefaultWallets,
 } from '@rainbow-me/rainbowkit'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import { CHAIN_INFO_MAP } from '@constants/networks'
+
+import { SynapseProvider } from '@/utils/SynapseProvider'
 export default function App({ Component, pageProps }: AppProps) {
-  let rawChains = [
+  const rawChains = [
     mainnet,
     arbitrum,
     aurora,
@@ -61,8 +60,8 @@ export default function App({ Component, pageProps }: AppProps) {
   ]
 
   // Add custom icons
-  let chainsWithIcons: any[] = []
-  for (let chain of rawChains) {
+  const chainsWithIcons: any[] = []
+  for (const chain of rawChains) {
     chainsWithIcons.push({
       ...chain,
       iconUrl: CHAIN_INFO_MAP[chain.id].chainImg.src,
@@ -85,9 +84,11 @@ export default function App({ Component, pageProps }: AppProps) {
   })
 
   // Synapse client
-  let synapseProviders: EthersProvider[] = []
+  const synapseProviders: EthersProvider[] = []
   chains.map((chain) => {
-    let rpc: EthersProvider = new JsonRpcProvider(chain.rpcUrls.default.http[0])
+    const rpc: EthersProvider = new JsonRpcProvider(
+      chain.rpcUrls.default.http[0]
+    )
     synapseProviders.push(rpc)
   })
   return (

@@ -1,18 +1,14 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { id } from '@ethersproject/hash'
-
 import { ChainId } from '@constants/networks'
-
 import { formatTimestampToDate } from '@utils/datetime'
-
 import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 import { useGenericSynapseContract } from '@hooks/contracts/useSynapseContract'
 import { useSingleCallResult } from '@hooks/multicall'
+import { useTerraKappaCheck } from '@hooks/terra/useTerraKappaCheck'
 
 import { SubTransactionItem } from './TransactionItems'
-
 import BlockCountdown from './BlockCountdown'
-import { useTerraKappaCheck } from '@hooks/terra/useTerraKappaCheck'
 
 export default function PairedTransactionItem({ inputTx, outputTx }) {
   const { chainId } = useActiveWeb3React()
@@ -43,8 +39,8 @@ export default function PairedTransactionItem({ inputTx, outputTx }) {
     outAmount = outAmount.sub(outputTx?.args?.fee)
   }
 
-  let inToken = inputTx?.inputToken
-  let outToken = outputTx?.outputToken
+  const inToken = inputTx?.inputToken
+  const outToken = outputTx?.outputToken
 
   try {
     return (

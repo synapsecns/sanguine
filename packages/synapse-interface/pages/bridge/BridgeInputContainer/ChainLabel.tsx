@@ -1,11 +1,10 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
-import { CHAIN_INFO_MAP, CHAIN_ID_DISPLAY_ORDER } from '@constants/networks'
+import { CHAIN_ID_DISPLAY_ORDER, CHAIN_INFO_MAP } from '@constants/networks'
 import { getNetworkButtonBorder } from '@styles/networks'
 import { getOrderedChains } from '@utils/getOrderedChains'
 import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
-import { useNetwork } from 'wagmi'
-import { use, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export const ChainLabel = ({
   isOrigin,
@@ -26,9 +25,10 @@ export const ChainLabel = ({
   onChangeChain: (v: number) => void
   setDisplayType: (v: string) => void
 }) => {
+  const labelClassName = 'text-sm'
   const displayType = isOrigin ? 'fromChain' : 'toChain'
   const title = titleText ?? (isOrigin ? 'Origin' : 'Dest.')
-  const labelClassName = 'text-sm'
+
   const [orderedChains, setOrderedChains] = useState<number[]>([])
   useEffect(() => {
     setOrderedChains(

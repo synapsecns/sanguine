@@ -1,7 +1,6 @@
-import { ChainId, CHAIN_INFO_MAP } from '@constants/networks'
+import { CHAIN_INFO_MAP, ChainId } from '@constants/networks'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
 import { useNetworkController } from '@hooks/wallet/useNetworkController'
-
 import Button from '@tw/Button'
 
 export function DestinationAddressInput({

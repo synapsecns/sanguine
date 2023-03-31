@@ -1,4 +1,4 @@
-import {Wallet} from "@components/Wallet"
+import { Wallet } from '@components/Wallet'
 
 export const Header = () => {
   return (
@@ -6,7 +6,7 @@ export const Header = () => {
       <p>synapse bridge header</p>
       <div className="flex items-center">
         <Wallet />
-        </div>
+      </div>
     </>
   )
 }

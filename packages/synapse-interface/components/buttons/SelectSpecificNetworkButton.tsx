@@ -1,11 +1,11 @@
-import { useRef, useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { CHAIN_INFO_MAP } from '@constants/networks'
 import Image from 'next/image'
 import {
-  getNetworkButtonBorderHover,
-  getNetworkHover,
   getNetworkButtonBgClassName,
   getNetworkButtonBorder,
+  getNetworkButtonBorderHover,
+  getNetworkHover,
 } from '@styles/networks'
 
 export function SelectSpecificNetworkButton({

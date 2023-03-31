@@ -1,22 +1,23 @@
+import Grid from '@tw/Grid'
+import Link from 'next/link'
+
 import {
-  DOCS_URL,
+  BRIDGE_PATH,
+  CAREERS_URL,
   DISCORD_URL,
+  DOCS_URL,
   FORUM_URL,
-  TWITTER_URL,
   GITHUB_URL,
   MIRROR_URL,
-  SWAP_PATH,
-  BRIDGE_PATH,
   POOLS_PATH,
-  STAKE_PATH,
-  CAREERS_URL,
-  TERMS_OF_SERVICE_PATH,
   PRIVACY_POLICY_PATH,
+  STAKE_PATH,
+  SWAP_PATH,
+  TERMS_OF_SERVICE_PATH,
+  TWITTER_URL,
 } from '@/constants/urls'
-
-import Grid from '@tw/Grid'
 import { SynapseTitleLogo } from '.'
-import Link from 'next/link'
+
 const functions = [
   {
     text: 'Functions',

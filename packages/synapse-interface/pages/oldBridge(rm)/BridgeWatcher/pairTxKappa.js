@@ -1,36 +1,36 @@
 import _ from 'lodash'
 
-
 function checkTxIn(tx) {
-  if (tx.args?.chainId) { // if (tx.args?.chainId ?? false) { //
+  if (tx.args?.chainId) {
+    // if (tx.args?.chainId ?? false) { //
     return true
   } else {
     return false
   }
 }
 
-
 /**
  * @param {Transaction[]} transactions
  * @return {Transaction[][]}
  */
 export function pairTxKappa(transactions) {
-  let transactionsByHash = {}
+  const transactionsByHash = {}
   for (const tx of transactions) {
     transactionsByHash[tx.transactionHash] = tx
   }
 
-  const inputTxns = transactions.filter(tx => tx.kekTxSig).filter(checkTxIn)
-  const outputTxns = transactions.filter(tx => tx.kekTxSig).filter(tx => !checkTxIn(tx))
+  const inputTxns = transactions.filter((tx) => tx.kekTxSig).filter(checkTxIn)
+  const outputTxns = transactions
+    .filter((tx) => tx.kekTxSig)
+    .filter((tx) => !checkTxIn(tx))
 
-
-  let outputTxnsDict = {}
+  const outputTxnsDict = {}
 
   for (const tx of outputTxns) {
     outputTxnsDict[tx.args?.kappa] = tx
   }
 
-  let pairSetsByChain = []
+  const pairSetsByChain = []
 
   for (const inTx of inputTxns) {
     const outTx = outputTxnsDict[inTx.kekTxSig]
@@ -40,8 +40,12 @@ export function pairTxKappa(transactions) {
       pairSetsByChain.push([inTx, undefined])
     }
   }
-  const outTxnKeys = pairSetsByChain.map(([inTx, outTx]) => outTx?.transactionHash)
-  const remainingOuts = outputTxns.filter(tx => !outTxnKeys.includes(tx.transactionHash))
+  const outTxnKeys = pairSetsByChain.map(
+    ([inTx, outTx]) => outTx?.transactionHash
+  )
+  const remainingOuts = outputTxns.filter(
+    (tx) => !outTxnKeys.includes(tx.transactionHash)
+  )
 
   for (const outTx of remainingOuts) {
     pairSetsByChain.push([undefined, outTx])
@@ -51,4 +55,3 @@ export function pairTxKappa(transactions) {
     return -(outTx?.timestamp ?? inTx?.timestamp)
   })
 }
-

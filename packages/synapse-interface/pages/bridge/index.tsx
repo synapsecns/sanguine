@@ -2,29 +2,29 @@ import _ from 'lodash'
 import Grid from '@tw/Grid'
 import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Zero } from '@ethersproject/constants'
 import { Token } from '@utils/classes/Token'
 import { BigNumber } from '@ethersproject/bignumber'
-import { useSynapseContext } from '@/utils/SynapseProvider'
 import { ActionCardFooter } from '@components/ActionCardFooter'
-import { switchNetwork, getNetwork } from '@wagmi/core'
+import { getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
-import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
-import { stringToBigNum } from '@/utils/stringToBigNum'
-
-import BridgeCard from './BridgeCard'
 import {
+  BRIDGABLE_TOKENS,
   BRIDGE_CHAINS_BY_TYPE,
   BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
-  BRIDGABLE_TOKENS,
   tokenSymbolToToken,
 } from '@constants/tokens'
+
+import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
+import { stringToBigNum } from '@/utils/stringToBigNum'
+import BridgeCard from './BridgeCard'
+import { useSynapseContext } from '@/utils/SynapseProvider'
 import {
   DEFAULT_FROM_CHAIN,
-  DEFAULT_TO_CHAIN,
   DEFAULT_FROM_TOKEN,
+  DEFAULT_TO_CHAIN,
   DEFAULT_TO_TOKEN,
 } from '@/constants/bridge'
 // import BridgeWatcher from './BridgeWatcher'
@@ -78,7 +78,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
     let tempFromToken: Token = getMostCommonSwapableType(fromChainId)
 
     if (fromTokenSymbolUrl) {
-      let token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
+      const token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
       if (token) {
         tempFromToken = token
       }
@@ -118,7 +118,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
   }, [fromChainId])
 
   const getMostCommonSwapableType = (chainId: number) => {
-    let fromChainTokensByType = Object.values(
+    const fromChainTokensByType = Object.values(
       BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
     )
     let maxTokenLength = 0
@@ -171,9 +171,9 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
       {
         pathname: BRIDGE_PATH,
         query: {
-          outputChain: outputChain,
-          inputCurrency: inputCurrency,
-          outputCurrency: outputCurrency,
+          outputChain,
+          inputCurrency,
+          outputCurrency,
         },
       },
       undefined,
@@ -191,7 +191,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
     let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
       String(token.swapableType)
     ].filter((chainId) => Number(chainId) !== fromChainId)
-    let swapExceptionsArr: number[] =
+    const swapExceptionsArr: number[] =
       token?.swapExceptions?.[fromChainId as keyof Token['swapExceptions']]
     if (swapExceptionsArr?.length > 0) {
       bridgeableChains = swapExceptionsArr.map((chainId) => String(chainId))
@@ -204,7 +204,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
           : Number(bridgeableChains[0])
     }
 
-    let positedToToken = positedToSymbol
+    const positedToToken = positedToSymbol
       ? tokenSymbolToToken(newToChain, positedToSymbol)
       : tokenSymbolToToken(newToChain, token.symbol)
 
@@ -223,10 +223,10 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
       bridgeableToken = bridgeableTokens[0]
     }
     return {
-      bridgeableToken: bridgeableToken,
-      newToChain: newToChain,
-      bridgeableTokens: bridgeableTokens,
-      bridgeableChains: bridgeableChains,
+      bridgeableToken,
+      newToChain,
+      bridgeableTokens,
+      bridgeableChains,
     }
   }
 
@@ -235,8 +235,8 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
     if (address === undefined) {
       alert('Please connect your wallet')
     } else {
-      let oldFromChain = fromChainId
-      let res = switchNetwork({ chainId: toChainId })
+      const oldFromChain = fromChainId
+      const res = switchNetwork({ chainId: toChainId })
         .then((res) => {
           if (res === undefined) {
             console.log("can't switch network", toChainId)
@@ -249,7 +249,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
           return undefined
         })
 
-      let bridgeableFromTokens: Token[] = sortByVisibilityRank(
+      const bridgeableFromTokens: Token[] = sortByVisibilityRank(
         BRIDGE_SWAPABLE_TOKENS_BY_TYPE[fromChainId][
           String(fromToken.swapableType)
         ]
@@ -292,7 +292,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
     if (address === undefined) {
       alert('Please connect your wallet')
     } else {
-      let res = switchNetwork({ chainId: chainId })
+      const res = switchNetwork({ chainId })
         .then((res) => {
           if (res === undefined) {
             console.log("can't switch network", chainId)
@@ -309,7 +309,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
         return
       }
 
-      let bridgeableFromTokens: Token[] = sortByVisibilityRank(
+      const bridgeableFromTokens: Token[] = sortByVisibilityRank(
         BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][String(fromToken.swapableType)]
       )
       let tempFromToken: Token = fromToken
@@ -377,7 +377,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
   }
 
   const getQuote = async () => {
-    let toDecimals = BigNumber.from(10).pow(toToken.decimals[toChainId])
+    const toDecimals = BigNumber.from(10).pow(toToken.decimals[toChainId])
 
     SynapseSDK.bridgeQuote(
       fromChainId,
@@ -388,11 +388,11 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
     )
       .then(
         ({ feeAmount, feeConfig, maxAmountOut, originQuery, destQuery }) => {
-          let toValueBigNum = destQuery.minAmountOut
+          const toValueBigNum = destQuery.minAmountOut
             ? destQuery.minAmountOut
             : Zero
-          let toValueBase = toValueBigNum.div(toDecimals).toString()
-          let toValueMantissa = toValueBigNum.mod(toDecimals).toString()
+          const toValueBase = toValueBigNum.div(toDecimals).toString()
+          const toValueMantissa = toValueBigNum.mod(toDecimals).toString()
 
           setBridgeQuote({
             outputAmount: toValueBigNum,
@@ -403,11 +403,11 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
               toValueBigNum,
               toToken.decimals[toChainId]
             ),
-            feeAmount: feeAmount,
+            feeAmount,
             delta: maxAmountOut,
             quotes: {
-              originQuery: originQuery,
-              destQuery: destQuery,
+              originQuery,
+              destQuery,
             },
           })
         }

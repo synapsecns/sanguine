@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import Fuse from 'fuse.js'
 import Zero from '@ethersproject/constants'
 import { useKeyPress } from '@hooks/useKeyPress'
-
 import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
@@ -29,7 +28,7 @@ export const CoinSlideOver = ({
   let tokenList: any[] = []
   if (!isSwapFrom) {
     tokens.map((token) => {
-      tokenList.push({ token: token, balance: Zero })
+      tokenList.push({ token, balance: Zero })
     })
   } else {
     tokenList = tokens

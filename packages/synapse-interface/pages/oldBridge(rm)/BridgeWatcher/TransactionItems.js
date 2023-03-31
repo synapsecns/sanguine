@@ -1,13 +1,9 @@
 import { BigNumber } from '@ethersproject/bignumber'
-
-import { WETH, ETH } from '@constants/tokens/basic'
+import { ETH, WETH } from '@constants/tokens/basic'
 import { CHAIN_INFO_MAP } from '@constants/networks'
-
 import { formatBNToString } from '@bignumber/format'
-
 import { getCoinTextColorCombined } from '@styles/coins'
 import { getNetworkLinkTextColor } from '@styles/networks'
-
 import ExplorerLink from '@components/ExplorerLink'
 import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 import { AddToWalletMiniButton } from '@components/buttons/AddToWalletButton'

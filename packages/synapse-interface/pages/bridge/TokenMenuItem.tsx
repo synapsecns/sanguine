@@ -1,5 +1,4 @@
-import { useRef, useEffect } from 'react'
-
+import { useEffect, useRef } from 'react'
 import { commify } from '@ethersproject/units'
 import { formatBnMagic } from '@bignumber/format'
 import { Token } from '@utils/classes/Token'
@@ -10,9 +9,7 @@ import Image from 'next/image'
 // import { useGenericTokenBalance } from '@hooks/tokens/useTokenBalances'
 import { getTokenOnChain } from '@hooks/tokens/useTokenInfo'
 import { useAccount, useBalance, useNetwork } from 'wagmi'
-
 import { displaySymbol } from '@utils/displaySymbol'
-
 import {
   getBorderStyleForCoinHover,
   getMenuItemStyleForCoinCombined,

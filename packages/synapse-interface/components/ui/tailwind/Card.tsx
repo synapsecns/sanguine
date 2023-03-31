@@ -23,8 +23,10 @@ export default function Card({
   titleClassName?: string
   divider: boolean
 }) {
-  let mergedClassName = twMerge(`${baseClassname} ${className}`)
-  let mergedTitleClassname = twMerge(`${titleBaseClassname} ${titleClassName}`)
+  const mergedClassName = twMerge(`${baseClassname} ${className}`)
+  const mergedTitleClassname = twMerge(
+    `${titleBaseClassname} ${titleClassName}`
+  )
 
   let titleContent = null
   if (title) {

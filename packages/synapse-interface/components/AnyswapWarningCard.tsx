@@ -1,8 +1,8 @@
 import {
-  ANYSWAP_ROUTER_ADDRESSES,
   ANYNATIVE_ADDRESSES,
+  ANYSWAP_ROUTER_ADDRESSES,
 } from '@constants/anyswap'
-import { ChainId, CHAIN_PARAMS } from '@constants/networks'
+import { CHAIN_PARAMS, ChainId } from '@constants/networks'
 import { WAVAX, WBNB, WETH, WMATIC } from '@constants/tokens/basic'
 import { useRevokeToken } from '@hooks/actions/useRevokeToken'
 import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
@@ -121,7 +121,17 @@ export default function AnyswapWarningCard() {
   }
 }
 
-function RevokeRow({ token, targetChainId, dappAddr, type }:{ token: any, targetChainId: any, dappAddr: any, type: any }) {
+function RevokeRow({
+  token,
+  targetChainId,
+  dappAddr,
+  type,
+}: {
+  token: any
+  targetChainId: any
+  dappAddr: any
+  type: any
+}) {
   const { chainId } = useActiveWeb3React()
   const revokeToken = useRevokeToken(token)
   const isCurrentChain = targetChainId == chainId

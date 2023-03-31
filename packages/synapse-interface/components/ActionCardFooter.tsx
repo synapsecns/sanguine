@@ -1,7 +1,8 @@
-import { ANALYTICS_PATH } from '@/constants/urls'
 import { ArrowSmRightIcon, ChartSquareBarIcon } from '@heroicons/react/outline'
 
-export const ActionCardFooter = ({ link }: { link: string }) =>{
+import { ANALYTICS_PATH } from '@/constants/urls'
+
+export const ActionCardFooter = ({ link }: { link: string }) => {
   return (
     <div className="flex-wrap items-center justify-between ml-5 mr-5 text-[15px] md:flex lg:flex">
       <div className="flex items-center text-secondaryTextColor">

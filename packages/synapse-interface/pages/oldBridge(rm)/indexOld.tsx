@@ -1,56 +1,45 @@
 import _ from 'lodash'
-
-import { useRef, useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-
 import { BigNumber } from '@ethersproject/bignumber'
-import { parseUnits, formatUnits } from '@ethersproject/units'
+import { formatUnits, parseUnits } from '@ethersproject/units'
 import { Zero } from '@ethersproject/constants'
 import { useAccount, useBalance, useNetwork } from 'wagmi'
-
 import {
-  SYN,
-  KLAYTN_USDT,
-  KLAYTN_USDC,
-  KLAYTN_DAI,
-  KLAYTN_WETH,
   DOGECHAIN_BUSD,
+  KLAYTN_DAI,
+  KLAYTN_USDC,
+  KLAYTN_USDT,
+  KLAYTN_WETH,
+  SYN,
 } from '@constants/tokens/basic'
-import { ChainId, CHAIN_INFO_MAP } from '@constants/networks'
+import { CHAIN_INFO_MAP, ChainId } from '@constants/networks'
 import { BRIDGABLE_TOKENS } from '@constants/bridge'
 import {
-  BRIDGE_SWAPABLE_TYPES_BY_CHAIN,
-  BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
   BRIDGE_CHAINS_BY_TYPE,
+  BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
+  BRIDGE_SWAPABLE_TYPES_BY_CHAIN,
 } from '@constants/tokens/tokenGroups'
-
-import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
-import { stringifyParams } from '@/constants/urls/stringifyParams'
-
 import { checkCleanedValue } from '@utils/checkCleanedValue'
-import { sanitizeValue } from '@/utils/stringToBigNum'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
-
 import { useNetworkController } from '@hooks/wallet/useNetworkController'
 import { usePrevious } from '@hooks/usePrevious'
 import { useUrlQuery } from '@hooks/useUrlQuery'
 import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
-
 import { useCalculateBridgeRate } from '@hooks/useCalculateBridgeRate'
 import { useTerraWallet } from '@hooks/terra/useTerraWallet'
-
 import Grid from '@tw/Grid'
-
 import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import StandardPageContainer from '@layouts/StandardPageContainer'
-
 import AnyswapWarningCard from '@components/AnyswapWarningCard'
+import { ActionCardFooter } from '@components/ActionCardFooter'
 
 import BridgeCard from './BridgeCard'
 import BridgeWatcher from './BridgeWatcher'
-
-import { ActionCardFooter } from '@components/ActionCardFooter'
+import { sanitizeValue } from '@/utils/stringToBigNum'
+import { stringifyParams } from '@/constants/urls/stringifyParams'
+import { BRIDGE_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
 
 export default function BridgePage() {
   // get stuff from the url
@@ -137,7 +126,7 @@ export default function BridgePage() {
   // persist last change type
   const [lastChangeType, setLastChangeType] = useState('from')
 
-  let defaultSwapableType = fromCoin.swapableType
+  const defaultSwapableType = fromCoin.swapableType
   const [swapableType, setSwapableType] = useState(defaultSwapableType ?? 'USD')
 
   const fromTokenSymbols = fromChainTokens.map((i) => i.symbol)
@@ -501,7 +490,7 @@ export default function BridgePage() {
 
   // REDO WITH SDK
   function calculateBridgeAmount() {
-    let cleanedFromValue = sanitizeValue(fromValue)
+    const cleanedFromValue = sanitizeValue(fromValue)
     if (checkCleanedValue(cleanedFromValue)) {
       setToValue('')
       return

@@ -1,11 +1,9 @@
-import { ConnectButton, AuthenticationStatus } from '@rainbow-me/rainbowkit'
+import { AuthenticationStatus, ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount } from 'wagmi'
 import Image from 'next/image'
-
 import { MetamaskIcon } from '@icons/WalletIcons/Metamask'
 import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
-
 import { IconProps, WalletId } from '@utils/types'
 
 const WALLETS = [

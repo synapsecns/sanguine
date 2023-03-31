@@ -1,9 +1,8 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { displaySymbol } from '@utils/displaySymbol'
-
 import {
-  getMenuItemHoverBgForCoin,
   getBorderStyleForCoinHover,
+  getMenuItemHoverBgForCoin,
 } from '@styles/coins'
 
 export default function SelectTokenDropdown({ chainId, selected, onClick }) {

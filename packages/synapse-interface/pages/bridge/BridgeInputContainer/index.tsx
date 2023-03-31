@@ -1,14 +1,9 @@
 import _ from 'lodash'
 import { Zero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
-
-import SelectTokenDropdown from './SelectTokenDropdown'
-import { ChainLabel } from './ChainLabel'
 import { Token } from '@utils/classes/Token'
 import { useAccount, useBalance, useNetwork } from 'wagmi'
-
 import { ChainId } from '@constants/networks'
-
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
 import { BigNumber } from '@ethersproject/bignumber'
@@ -16,6 +11,9 @@ import { BigNumber } from '@ethersproject/bignumber'
 // import { useNetworkController } from '@hooks/wallet/useNetworkController'
 
 import { cleanNumberInput } from '@utils/cleanNumberInput'
+
+import { ChainLabel } from './ChainLabel'
+import SelectTokenDropdown from './SelectTokenDropdown'
 
 export default function BridgeInputContainer({
   address,
@@ -48,14 +46,14 @@ export default function BridgeInputContainer({
   let tokenBalance: BigNumber
   if (!tokenAddr) {
     const { data: rawTokenBalance } = useBalance({
-      chainId: chainId,
-      address: address,
+      chainId,
+      address,
     })
     tokenBalance = rawTokenBalance?.value ?? Zero
   } else {
     const { data: rawTokenBalance } = useBalance({
-      chainId: chainId,
-      address: address,
+      chainId,
+      address,
       token: `0x${tokenAddr.slice(2)}`,
     })
     tokenBalance = rawTokenBalance?.value ?? Zero
@@ -67,12 +65,12 @@ export default function BridgeInputContainer({
     4
   )
 
-  let isConnected = address !== null
+  const isConnected = address !== null
 
   function onChange(e: any) {
-    let val = e.target.value
+    const val = e.target.value
 
-    let cleanValue = cleanNumberInput(val)
+    const cleanValue = cleanNumberInput(val)
 
     onChangeAmount(cleanValue)
   }

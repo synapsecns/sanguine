@@ -1,10 +1,8 @@
-import { useEffect, useContext, useState } from 'react'
-
-import { Zero, One } from '@ethersproject/constants'
+import { useContext, useEffect, useState } from 'react'
+import { One, Zero } from '@ethersproject/constants'
 import { parseUnits } from '@ethersproject/units'
 import { useBalance } from 'wagmi'
 import { useSettings } from '@hooks/settings/useSettings'
-
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
 // import { useSettings } from '@hooks/settings/useSettings'
@@ -13,31 +11,26 @@ import { Transition } from '@headlessui/react'
 // import { useSynapseContract } fromnpm i '@hooks/contracts/useSynapseContract'
 
 // import { APPROVAL_STATE, useApproveToken } from '@hooks/actions/useApproveToken'
-import { useSynapseContext } from '@/utils/SynapseProvider'
 
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
-
 import { BRIDGABLE_TOKENS } from '@constants/tokens'
-
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import { Token } from '@utils/classes/Token'
-
 import Grid from '@tw/Grid'
 import Card from '@tw/Card'
 import Button from '@tw/Button'
-
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
 import { TransactionButton } from '@components/buttons/SubmitTxButton'
 import { PageHeader } from '@components/PageHeader'
-
-import BridgeInputContainer from './BridgeInputContainer'
 import { CoinSlideOver } from '@components/misc/CoinSlideOver'
 import { NetworkSlideOver } from '@components/misc/NetworkSlideOver'
-import SettingsSlideOver from './SettingsSlideOver'
-import { DestinationAddressInput } from './DestinationAddressInput'
-
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatBNToString } from '@bignumber/format'
+
+import SettingsSlideOver from './SettingsSlideOver'
+import { DestinationAddressInput } from './DestinationAddressInput'
+import BridgeInputContainer from './BridgeInputContainer'
+import { useSynapseContext } from '@/utils/SynapseProvider'
 
 // import { getBridgeQuote } from '@hooks/synapse'
 
@@ -123,13 +116,13 @@ export default function BridgeCard({
   if (!tokenAddr) {
     const { data: rawTokenBalance } = useBalance({
       chainId: fromChainId,
-      address: address,
+      address,
     })
     fromTokenBalance = rawTokenBalance?.value ?? Zero
   } else {
     const { data: rawTokenBalance } = useBalance({
       chainId: fromChainId,
-      address: address,
+      address,
       token: `0x${tokenAddr.slice(2)}`,
     })
     fromTokenBalance = rawTokenBalance?.value ?? Zero
@@ -153,15 +146,15 @@ export default function BridgeCard({
   const toArgs = {
     isSwapFrom: false,
     selected: toToken,
-    address: address,
+    address,
     connectedChainId: fromChainId,
-    handleTokenChange: handleTokenChange,
+    handleTokenChange,
     // inputValue: toValue,
     tokens: toBridgeableTokens,
     chainId: toChainId,
     handleChainFlip,
-    toBridgeableChains: toBridgeableChains,
-    toBridgeableTokens: toBridgeableTokens,
+    toBridgeableChains,
+    toBridgeableTokens,
     setDisplayType,
     onChangeChain: onSelectToChain,
   }
@@ -285,7 +278,7 @@ export default function BridgeCard({
     />
   )
 
-  let approvalRequired = true
+  const approvalRequired = true
   // if (
   //   fromChainId === ChainId.AVALANCHE &&
   //   GMX.addresses[ChainId.AVALANCHE] === fromToken.addresses[ChainId.AVALANCHE]
@@ -295,7 +288,7 @@ export default function BridgeCard({
   //   approvalRequired = true
   // }
 
-  let actionBtn = swapBtn
+  const actionBtn = swapBtn
   // if (approvalState === APPROVAL_STATE.NOT_APPROVED && approvalRequired) {
   //   actionBtn = approvalBtn
   //   //    } else if ([fromChainId, toChainId].includes(ChainId.POLYGON)) {

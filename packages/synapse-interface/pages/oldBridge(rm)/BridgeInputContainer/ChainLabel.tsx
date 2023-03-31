@@ -1,8 +1,7 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
-import { CHAIN_INFO_MAP, CHAIN_ID_DISPLAY_ORDER } from '@constants/networks'
+import { CHAIN_ID_DISPLAY_ORDER, CHAIN_INFO_MAP } from '@constants/networks'
 import { getNetworkButtonBorder } from '@styles/networks'
 import { getOrderedChains } from '@utils/getOrderedChains'
-
 import Tooltip from '@tw/Tooltip'
 
 export function ChainLabel({
@@ -16,7 +15,7 @@ export function ChainLabel({
   let displayType
   let title
   let labelClassName
-  let orderedChains = chainOrderBySwapSide(isSwapFrom, chainId)
+  const orderedChains = chainOrderBySwapSide(isSwapFrom, chainId)
 
   if (isSwapFrom) {
     title = titleText ?? 'Origin'

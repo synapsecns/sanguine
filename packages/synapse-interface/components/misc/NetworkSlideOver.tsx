@@ -1,17 +1,13 @@
 import _ from 'lodash'
-import { useEffect, useRef, useState, useCallback } from 'react'
-
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Fuse from 'fuse.js'
-
 import { useKeyPress } from '@hooks/useKeyPress'
-
 import {
   CHAIN_ID_DISPLAY_ORDER,
   CHAIN_INFO_MAP,
-  ChainInfoMap,
   ChainInfo,
+  ChainInfoMap,
 } from '@constants/networks'
-
 import { SelectSpecificNetworkButton } from '@components/buttons/SelectSpecificNetworkButton'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
@@ -108,7 +104,7 @@ export function NetworkSlideOver({
 
   function enterPressedFunc() {
     if (enterPressed && currentIdx > -1) {
-      let currentChain = networks[currentIdx]
+      const currentChain = networks[currentIdx]
       onChangeChain(currentChain.chainId)
       onClose()
     }
@@ -142,7 +138,7 @@ export function NetworkSlideOver({
       >
         {networks.map((chainData, idx) => {
           const itemChainId = chainData.chainId
-          let chaindata = itemChainId
+          const chaindata = itemChainId
           const isCurrentChain = selectedChainId === itemChainId
 
           let onClickSpecificNetwork

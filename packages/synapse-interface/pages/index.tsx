@@ -1,6 +1,7 @@
 import Head from 'next/head'
-import BridgePage from './bridge'
 import { useAccount } from 'wagmi'
+
+import BridgePage from './bridge'
 
 export default function Home() {
   const { address } = useAccount()

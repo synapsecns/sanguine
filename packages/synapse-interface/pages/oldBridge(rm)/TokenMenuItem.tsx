@@ -1,14 +1,10 @@
-import { useRef, useEffect } from 'react'
-
+import { useEffect, useRef } from 'react'
 import { commify } from '@ethersproject/units'
 import { formatBnMagic } from '@bignumber/format'
-
 import { CHAIN_INFO_MAP } from '@constants/networks'
-
 import { useGenericTokenBalance } from '@hooks/tokens/useTokenBalances'
 import { getTokenOnChain } from '@hooks/tokens/useTokenInfo'
 import { displaySymbol } from '@utils/displaySymbol'
-
 import {
   getBorderStyleForCoinHover,
   getMenuItemStyleForCoinCombined,

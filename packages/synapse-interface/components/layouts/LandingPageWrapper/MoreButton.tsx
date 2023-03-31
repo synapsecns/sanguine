@@ -1,11 +1,21 @@
 import Button from '@tw/Button'
 import { DotsHorizontalIcon } from '@heroicons/react/outline'
 
-export function MoreButton({ open, onClick, className, ...props }:{open:boolean, onClick?:()=>void, className?:string, props?:any}) {
+export function MoreButton({
+  open,
+  onClick,
+  className,
+  ...props
+}: {
+  open: boolean
+  onClick?: () => void
+  className?: string
+  props?: any
+}) {
   return (
     <Button
-    onClick={onClick? onClick : ()=>{}}
-    className={`
+      onClick={onClick ? onClick : () => {}}
+      className={`
         w-full
         group rounded-lg
         px-2.5 py-2.5

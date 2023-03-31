@@ -1,7 +1,15 @@
 import { useEffect } from 'react'
 import { useKeyPress } from '@hooks/useKeyPress'
 
-export default function Modal({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: any }) {
+export default function Modal({
+  isOpen,
+  onClose,
+  children,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  children: any
+}) {
   const escPressed = useKeyPress('Escape')
 
   function escEffect() {
