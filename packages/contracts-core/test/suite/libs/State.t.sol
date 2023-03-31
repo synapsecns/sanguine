@@ -20,7 +20,7 @@ contract StateLibraryTest is SynapseLibraryTest {
 
     StateHarness internal libHarness;
 
-    function setUp() public override {
+    function setUp() public {
         libHarness = new StateHarness();
     }
 

@@ -31,8 +31,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
     uint8 internal constant FIRST_ELEMENT_BYTES = 16 / 8;
     bytes internal constant TEST_MESSAGE_BODY = "This is a test message body";
 
-    function setUp() public override {
-        super.setUp();
+    function setUp() public {
         libHarness = new MessageHarness();
     }
 

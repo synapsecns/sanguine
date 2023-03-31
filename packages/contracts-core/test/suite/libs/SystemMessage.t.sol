@@ -21,8 +21,7 @@ contract SystemMessageLibraryTest is ByteStringTools, SynapseLibraryTest {
 
     SystemMessageHarness internal libHarness;
 
-    function setUp() public override {
-        super.setUp();
+    function setUp() public {
         libHarness = new SystemMessageHarness();
     }
 

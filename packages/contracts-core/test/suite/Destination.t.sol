@@ -18,7 +18,6 @@ import {
     RawState,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
-import { addressToBytes32 } from "../utils/libs/SynapseUtilities.t.sol";
 import { AgentFlag, ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
 import { DisputeHubTest } from "./hubs/DisputeHub.t.sol";
 

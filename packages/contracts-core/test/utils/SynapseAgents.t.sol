@@ -17,14 +17,13 @@ import {
     RawStateReport
 } from "./libs/SynapseStructs.t.sol";
 
-import { SynapseTestConstants } from "./SynapseTestConstants.t.sol";
+import { SynapseUtilities } from "./SynapseUtilities.t.sol";
 
-import { Test } from "forge-std/Test.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
-abstract contract SynapseAgents is SynapseTestConstants, Test {
+abstract contract SynapseAgents is SynapseUtilities {
     struct Domain {
         string name;
         address agent;
@@ -81,16 +80,6 @@ abstract contract SynapseAgents is SynapseTestConstants, Test {
     {
         domain = allDomains[domainId % allDomains.length];
         agent = domains[domain].agents[agentId % DOMAIN_AGENTS];
-    }
-
-    function signMessage(uint256 privKey, bytes32 hashedMsg)
-        public
-        pure
-        returns (bytes memory signature)
-    {
-        bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashedMsg));
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
-        signature = abi.encodePacked(r, s, v);
     }
 
     /// @dev Private to enforce using salt-specific signing
