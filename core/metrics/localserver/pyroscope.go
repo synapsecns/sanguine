@@ -29,6 +29,7 @@ const pyroscopePath = "/pyroscope.yaml"
 // StartPyroscopeServer starts a new pyroscope instance.
 // See:  https://github.com/grafana/pyroscope/blob/main/examples/tracing/jaeger/docker-compose.yml
 // for details.
+// nolint: cyclop
 func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 	if !j.cfg.enablePyroscope {
 		return nil
