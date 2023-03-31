@@ -17,15 +17,15 @@ import (
 
 // StartJaegerServer starts a new jaeger instance.
 func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
-	if core.HasEnv(internal.JaegerEndpoint) && !core.HasEnv(internal.JaegerUiEndpoint) {
-		j.tb.Fatalf("%s is set but %s is not, please remove %s or set %s", internal.JaegerEndpoint, internal.JaegerUiEndpoint, internal.JaegerEndpoint, internal.JaegerUiEndpoint)
+	if core.HasEnv(internal.JaegerEndpoint) && !core.HasEnv(internal.JaegerUIEndpoint) {
+		j.tb.Fatalf("%s is set but %s is not, please remove %s or set %s", internal.JaegerEndpoint, internal.JaegerUIEndpoint, internal.JaegerEndpoint, internal.JaegerUIEndpoint)
 		return nil
 	}
 
 	if core.HasEnv(internal.JaegerEndpoint) {
 		return &uiResource{
 			Resource: nil,
-			uiURL:    os.Getenv(internal.JaegerUiEndpoint),
+			uiURL:    os.Getenv(internal.JaegerUIEndpoint),
 		}
 	}
 
@@ -90,9 +90,9 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 
 // StartJaegerPyroscopeUI starts a new jaeger pyroscope ui instance.
 func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
-	if core.HasEnv(internal.JaegerUiEndpoint) {
+	if core.HasEnv(internal.JaegerUIEndpoint) {
 		return &uiResource{
-			uiURL: os.Getenv(internal.JaegerUiEndpoint),
+			uiURL: os.Getenv(internal.JaegerUIEndpoint),
 		}
 	}
 	network := j.getNetwork()
@@ -114,7 +114,7 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 	assert.Nil(j.tb, err)
 
 	// must only be done after the container is started
-	j.tb.Setenv(internal.JaegerUiEndpoint, fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp")))
+	j.tb.Setenv(internal.JaegerUIEndpoint, fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp")))
 
 	if !debugLocal {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
@@ -131,7 +131,7 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 					return
 				case logResourceChan <- &uiResource{
 					Resource: resource,
-					uiURL:    os.Getenv(internal.JaegerUiEndpoint),
+					uiURL:    os.Getenv(internal.JaegerUIEndpoint),
 				}:
 					return
 				}

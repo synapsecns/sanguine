@@ -10,7 +10,7 @@ import (
 // make sure jaeger checks work correctly.
 func (l *LocalServerSuite) TestJaegerEndpointEmpty() {
 	l.T().Setenv(internal.JaegerEndpoint, gofakeit.URL())
-	l.T().Setenv(internal.JaegerUiEndpoint, "")
+	l.T().Setenv(internal.JaegerUIEndpoint, "")
 
 	mockTester := mocktesting.NewMockTester("")
 	jaegerTest := localserver.NewTestJaeger(mockTester)
@@ -26,7 +26,7 @@ func (l *LocalServerSuite) TestJaegerEndpointEmpty() {
 func (l *LocalServerSuite) TestJaegerEndpointsSet() {
 	uiEndpoint := gofakeit.URL()
 	l.T().Setenv(internal.JaegerEndpoint, gofakeit.URL())
-	l.T().Setenv(internal.JaegerUiEndpoint, uiEndpoint)
+	l.T().Setenv(internal.JaegerUIEndpoint, uiEndpoint)
 
 	jaegerTest := localserver.NewTestJaeger(l.T())
 	retVal := jaegerTest.StartJaegerServer(l.GetTestContext())

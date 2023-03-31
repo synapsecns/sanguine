@@ -7,8 +7,6 @@ const (
 	JaegerEndpoint = "JAEGER_ENDPOINT"
 	// PyroscopeEndpoint is the environment variable name for Pyroscope endpoint.
 	PyroscopeEndpoint = "PYROSCOPE_ENDPOINT"
-	// JaegerUiEndpoint is the environment variable name for Jaeger UI.
-	JaegerUiEndpoint = "JAEGER_UI"
-	// PyroscopeStarted is the environment variable name for Pyroscope started.
-	PyroscopeStarted = "PYROSCOPE_STARTED"
+	// JaegerUIEndpoint is the environment variable name for Jaeger UI.
+	JaegerUIEndpoint = "JAEGER_UI"
 )

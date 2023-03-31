@@ -44,6 +44,7 @@ type testJaeger struct {
 
 // StartServer starts a local jaeger server for testing.
 func StartServer(parentCtx context.Context, tb testing.TB) {
+	tb.Helper()
 	startServer(parentCtx, tb)
 }
 
@@ -135,7 +136,7 @@ func (j *testJaeger) getNetwork() *dockertest.Network {
 // buildLogMessage builds a log message for the test jaeger instance.
 func (j *testJaeger) buildLogMessage(includeAuxiliary bool) string {
 	var messages []string
-	messages = append(messages, fmt.Sprintf("jaeger ui: %s", os.Getenv(internal.JaegerUiEndpoint)))
+	messages = append(messages, fmt.Sprintf("jaeger ui: %s", os.Getenv(internal.JaegerUIEndpoint)))
 	messages = append(messages, fmt.Sprintf("pyroscope ui: %s", j.pyroscopeResource.uiURL))
 
 	var bootMessages []string

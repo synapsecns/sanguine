@@ -110,7 +110,7 @@ func (j *testJaeger) StartPyroscope() {
 	runtime.SetBlockProfileRate(5)
 
 	// note: because pyroscope is a profiler, we cannot use buildinfo for the application name.
-	_, err := pyroscope.Start(pyroscope.Config{
+	pf, err := pyroscope.Start(pyroscope.Config{
 		ApplicationName: "sanguine",
 
 		// replace this with the address of pyroscope server
@@ -142,6 +142,10 @@ func (j *testJaeger) StartPyroscope() {
 	if err != nil {
 		j.tb.Error(err)
 	}
+
+	j.tb.Cleanup(func() {
+		_ = pf.Stop()
+	})
 }
 
 type pyroscopeLogger struct{}

@@ -247,6 +247,8 @@ require (
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/prometheus/tsdb v0.10.0 // indirect
 	github.com/puzpuzpuz/xsync v1.4.3 // indirect
+	github.com/pyroscope-io/client v0.7.0 // indirect
+	github.com/pyroscope-io/godeltaprof v0.1.0 // indirect
 	github.com/pyroscope-io/otel-profiling-go v0.4.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/rbretecher/go-postman-collection v0.9.0 // indirect
