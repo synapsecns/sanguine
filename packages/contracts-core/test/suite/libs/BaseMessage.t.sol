@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {TIPS_LENGTH} from "../../../contracts/libs/Constants.sol";
-
 import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
 import {BaseMessageHarness} from "../../harnesses/libs/BaseMessageHarness.t.sol";
 
@@ -36,7 +34,7 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
 
     function test_isBaseMessage(uint8 length) public {
         bytes memory payload = new bytes(length);
-        checkCastToBaseMessage({payload: payload, isBaseMessage: length >= 32 + 32 + TIPS_LENGTH});
+        checkCastToBaseMessage({payload: payload, isBaseMessage: length >= MIN_BASE_MESSAGE_LENGTH});
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
