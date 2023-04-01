@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {MAX_CONTENT_BYTES, SYSTEM_ROUTER} from "./libs/Constants.sol";
 import {HeaderLib, MessageLib} from "./libs/Message.sol";
 import {StateReport} from "./libs/StateReport.sol";
@@ -21,9 +21,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     using TipsLib for bytes;
     using TypedMemView for bytes29;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, IAgentManager agentManager_)
         DomainContext(domain)
@@ -41,9 +39,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         _initializeStates();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          VERIFY STATEMENTS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ VERIFY STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceOrigin
     function verifyAttestation(
@@ -141,9 +137,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          DISPATCH MESSAGES                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ SEND MESSAGES ═══════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceOrigin
     function dispatch(
@@ -183,9 +177,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         emit Dispatched(messageHash, messageNonce, destination, msgPayload);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /**
      * @notice Returns adjusted "sender" field.
