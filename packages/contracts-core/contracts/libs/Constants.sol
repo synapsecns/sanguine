@@ -17,6 +17,8 @@ uint256 constant ATTESTATION_LENGTH = 78;
 uint256 constant STATE_LENGTH = 50;
 /// @dev Maximum amount of states in a single snapshot. Each state produces two leafs in the tree
 uint256 constant SNAPSHOT_MAX_STATES = 1 << (SNAPSHOT_TREE_HEIGHT - 1);
+/// @dev See Tips.sol: (uint16,uint96,uint96,uint96,uint96): 2+12+12+12+12
+uint256 constant TIPS_LENGTH = 50;
 // ══════════════════════════════ STATEMENT SALTS ══════════════════════════════
 /// @dev Salts for signing various statements
 bytes32 constant ATTESTATION_SALT = keccak256("ATTESTATION_SALT");

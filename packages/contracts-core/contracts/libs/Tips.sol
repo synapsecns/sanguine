@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {ByteString} from "./ByteString.sol";
+import {TIPS_LENGTH} from "./Constants.sol";
 import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev Tips is a memory over over a formatted message tips payload.
@@ -45,8 +46,6 @@ library TipsLib {
     uint256 internal constant OFFSET_BROADCASTER = 14;
     uint256 internal constant OFFSET_PROVER = 26;
     uint256 internal constant OFFSET_EXECUTOR = 38;
-
-    uint256 internal constant TIPS_LENGTH = 50;
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                                 TIPS                                 ║*▕
