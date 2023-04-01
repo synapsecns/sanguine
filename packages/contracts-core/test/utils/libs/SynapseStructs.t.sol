@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {BaseMessage, BaseMessageLib} from "../../../contracts/libs/BaseMessage.sol";
+import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
 
-import {
-    Header, HeaderLib, Message, MessageLib, Tips, TipsLib, TypedMemView
-} from "../../../contracts/libs/Message.sol";
+import {Header, HeaderLib, Message, MessageFlag, MessageLib, TypedMemView} from "../../../contracts/libs/Message.sol";
 
 import {Snapshot, SnapshotLib, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
 
@@ -43,8 +41,8 @@ struct RawBaseMessage {
 using {CastLib.castToBaseMessage, CastLib.formatBaseMessage} for RawBaseMessage global;
 
 struct RawMessage {
+    uint8 flag;
     RawHeader header;
-    RawTips tips;
     bytes body;
 }
 
@@ -115,9 +113,9 @@ library CastLib {
     // ══════════════════════════════════════════════════ MESSAGE ══════════════════════════════════════════════════════
 
     function formatMessage(RawMessage memory rm) internal pure returns (bytes memory msgPayload) {
-        bytes memory header = rm.header.formatHeader();
-        bytes memory tipsPayload = rm.tips.formatTips();
-        return MessageLib.formatMessage(header, tipsPayload, rm.body);
+        // Explicit revert when out of range
+        require(rm.flag <= uint8(type(MessageFlag).max), "Flag out of range");
+        return MessageLib.formatMessage(MessageFlag(rm.flag), rm.header.formatHeader(), rm.body);
     }
 
     function castToMessage(RawMessage memory rm) internal pure returns (Message ptr) {
