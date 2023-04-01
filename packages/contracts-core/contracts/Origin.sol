@@ -2,10 +2,13 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {MAX_CONTENT_BYTES, SYSTEM_ROUTER} from "./libs/Constants.sol";
-import {HeaderLib, MessageLib} from "./libs/Message.sol";
+import {BaseMessageLib} from "./libs/BaseMessage.sol";
+import {ByteString} from "./libs/ByteString.sol";
+import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
+import {HeaderLib, MessageFlag} from "./libs/Message.sol";
 import {StateReport} from "./libs/StateReport.sol";
-import {State, StateLib, TypedMemView} from "./libs/State.sol";
+import {State, TypedMemView} from "./libs/State.sol";
+import {SystemMessageLib} from "./libs/SystemMessage.sol";
 import {Tips, TipsLib} from "./libs/Tips.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -18,7 +21,10 @@ import {DomainContext, Versioned} from "./system/SystemContract.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
+    using ByteString for bytes;
+    using SystemMessageLib for bytes29;
     using TipsLib for bytes;
+    using TypeCasts for address;
     using TypedMemView for bytes29;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
@@ -140,65 +146,62 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     // ═══════════════════════════════════════════════ SEND MESSAGES ═══════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceOrigin
-    function dispatch(
+    function sendBaseMessage(
         uint32 destination,
         bytes32 recipient,
-        uint32 optimisticSeconds,
+        uint32 optimisticPeriod,
         bytes memory tipsPayload,
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
-        // Modifiers are removed because they prevent from slashing the last active Guard/Notary
-        // haveActiveGuard
-        // haveActiveNotary(destination)
-        // TODO: figure out a way to filter out unknown domains once Agent Merkle Tree is implemented
+        // Check that content is not too large
         require(content.length <= MAX_CONTENT_BYTES, "content too long");
         // This will revert if payload is not a formatted tips payload
         Tips tips = tipsPayload.castToTips();
         // Total tips must exactly match msg.value
         require(tips.totalTips() == msg.value, "!tips: totalTips");
-        // Format the message header
-        messageNonce = _nextNonce();
-        bytes memory headerPayload = HeaderLib.formatHeader({
-            origin_: localDomain,
-            sender_: _checkForSystemRouter(recipient),
-            nonce_: messageNonce,
-            destination_: destination,
+        // Format the BaseMessage body
+        bytes memory body = BaseMessageLib.formatBaseMessage({
+            sender_: msg.sender.addressToBytes32(),
             recipient_: recipient,
-            optimisticSeconds_: optimisticSeconds
+            tipsPayload: tipsPayload,
+            content_: content
         });
-        // Format the full message payload
-        bytes memory msgPayload = MessageLib.formatMessage(headerPayload, tipsPayload, content);
+        // Send the message
+        return _sendMessage(destination, optimisticPeriod, MessageFlag.Base, body);
+    }
 
-        // Insert new leaf into the Origin Merkle Tree and save the updated state
-        messageHash = keccak256(msgPayload);
-        _insertAndSave(messageHash);
-
-        // Emit Dispatched event with message information
-        emit Dispatched(messageHash, messageNonce, destination, msgPayload);
+    /// @inheritdoc InterfaceOrigin
+    function sendSystemMessage(uint32 destination, uint32 optimisticPeriod, bytes memory body)
+        external
+        onlySystemRouter
+        returns (uint32 messageNonce, bytes32 messageHash)
+    {
+        // SystemRouter (checked via modifier) is responsible for constructing the body correctly.
+        return _sendMessage(destination, optimisticPeriod, MessageFlag.System, body);
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
-    /**
-     * @notice Returns adjusted "sender" field.
-     * @dev By default, "sender" field is msg.sender address casted to bytes32.
-     * However, if SYSTEM_ROUTER is used for "recipient" field, and msg.sender is SystemRouter,
-     * SYSTEM_ROUTER is also used as "sender" field.
-     * Note: tx will revert if anyone but SystemRouter uses SYSTEM_ROUTER as the recipient.
-     */
-    function _checkForSystemRouter(bytes32 recipient) internal view returns (bytes32 sender) {
-        if (recipient != SYSTEM_ROUTER) {
-            sender = TypeCasts.addressToBytes32(msg.sender);
-            /**
-             * @dev Note: SYSTEM_ROUTER has only the highest 12 bytes set,
-             * whereas TypeCasts.addressToBytes32 sets only the lowest 20 bytes.
-             * Thus, in this branch: sender != SYSTEM_ROUTER
-             */
-        } else {
-            // Check that SystemRouter specified SYSTEM_ROUTER as recipient, revert otherwise.
-            _assertSystemRouter();
-            // Adjust "sender" field for correct processing on remote chain.
-            sender = SYSTEM_ROUTER;
-        }
+    /// @dev Sends the given message to the specified destination. Message hash is inserted
+    /// into the Origin Merkle Tree, which will enable message execution on destination chain.
+    function _sendMessage(uint32 destination, uint32 optimisticPeriod, MessageFlag flag, bytes memory body)
+        internal
+        returns (uint32 messageNonce, bytes32 messageHash)
+    {
+        // Format the message header
+        messageNonce = _nextNonce();
+        bytes memory headerPayload = HeaderLib.formatHeader({
+            origin_: localDomain,
+            nonce_: messageNonce,
+            destination_: destination,
+            optimisticPeriod_: optimisticPeriod
+        });
+        // Format the full message payload
+        bytes memory msgPayload = flag.formatMessage(headerPayload, body);
+        // Insert new leaf into the Origin Merkle Tree and save the updated state
+        messageHash = keccak256(msgPayload);
+        _insertAndSave(messageHash);
+        // Emit event with message information
+        emit Sent(messageHash, messageNonce, destination, msgPayload);
     }
 }

@@ -10,13 +10,13 @@ abstract contract OriginEvents {
     );
 
     /**
-     * @notice Emitted when a new message is dispatched.
+     * @notice Emitted when a new message is sent.
      * @param messageHash   Hash of message; the leaf inserted to the Merkle tree for the message
      * @param nonce         Nonce of sent message (starts from 1)
      * @param destination   Destination domain
      * @param message       Raw bytes of message
      */
-    event Dispatched(bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes message);
+    event Sent(bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes message);
 
     /**
      * @notice Emitted when a proof of invalid state in the signed attestation is submitted.
