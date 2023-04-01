@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {BaseMessage, BaseMessageLib} from "../../../contracts/libs/BaseMessage.sol";
+
 import {
     Header, HeaderLib, Message, MessageLib, Tips, TipsLib, TypedMemView
 } from "../../../contracts/libs/Message.sol";
@@ -32,6 +34,15 @@ struct RawTips {
 }
 
 using {CastLib.castToTips, CastLib.formatTips} for RawTips global;
+
+struct RawBaseMessage {
+    bytes32 sender;
+    bytes32 recipient;
+    RawTips tips;
+    bytes content;
+}
+
+using {CastLib.castToBaseMessage, CastLib.formatBaseMessage} for RawBaseMessage global;
 
 struct RawMessage {
     RawHeader header;
@@ -91,6 +102,7 @@ using {CastLib.castToStateReport, CastLib.formatStateReport} for RawStateReport 
 library CastLib {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
+    using BaseMessageLib for bytes;
     using HeaderLib for bytes;
     using MessageLib for bytes;
     using SnapshotLib for bytes;
@@ -102,9 +114,7 @@ library CastLib {
     /// @notice Prevents this contract from being included in the coverage report
     function testCastLib() external {}
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               MESSAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ MESSAGE ══════════════════════════════════════════════════════
 
     function formatMessage(RawMessage memory rm) internal pure returns (bytes memory msgPayload) {
         bytes memory header = rm.header.formatHeader();
@@ -144,9 +154,20 @@ library CastLib {
         ptr = rt.formatTips().castToTips();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                STATE                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    function formatBaseMessage(RawBaseMessage memory rbm) internal pure returns (bytes memory bmPayload) {
+        bmPayload = BaseMessageLib.formatBaseMessage({
+            sender_: rbm.sender,
+            recipient_: rbm.recipient,
+            tipsPayload: rbm.tips.formatTips(),
+            content_: rbm.content
+        });
+    }
+
+    function castToBaseMessage(RawBaseMessage memory rbm) internal pure returns (BaseMessage ptr) {
+        ptr = rbm.formatBaseMessage().castToBaseMessage();
+    }
+
+    // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
 
     function formatState(RawState memory rs) internal pure returns (bytes memory state) {
         state = StateLib.formatState({
@@ -173,9 +194,7 @@ library CastLib {
         ptr = rawSR.formatStateReport().castToStateReport();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               SNAPSHOT                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════════ SNAPSHOT ══════════════════════════════════════════════════════
 
     function formatStates(RawSnapshot memory rawSnap) internal pure returns (bytes[] memory states) {
         states = new bytes[](rawSnap.states.length);
@@ -211,9 +230,7 @@ library CastLib {
         ptr = rawSnap.formatSnapshot().castToSnapshot();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             ATTESTATION                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ ATTESTATION ════════════════════════════════════════════════════
 
     function formatAttestation(RawAttestation memory ra) internal pure returns (bytes memory attestation) {
         attestation = AttestationLib.formatAttestation({
