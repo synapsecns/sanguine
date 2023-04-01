@@ -3,9 +3,12 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, ExecutionAttestation} from "../libs/Attestation.sol";
+import {BaseMessage, BaseMessageLib} from "../libs/BaseMessage.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
-import {Header, Message, MessageLib, Tips} from "../libs/Message.sol";
+import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
+import {SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
+import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 import {TypedMemView} from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -22,7 +25,9 @@ import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
  * On the other chains Notaries are submitting the attestations that are later used for proving.
  */
 abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub {
+    using BaseMessageLib for bytes29;
     using MessageLib for bytes;
+    using TypeCasts for bytes32;
     using TypedMemView for bytes29;
 
     bytes32 internal constant _MESSAGE_STATUS_NONE = bytes32(0);
@@ -62,19 +67,19 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         require(header.destination() == localDomain, "!destination");
         uint32 origin = header.origin();
         uint32 nonce = header.nonce();
-        // Check proofs validity and mark message as executed
+        // Check proofs validity and optimistically mark message as executed
         ExecutionAttestation memory execAtt =
             _proveAttestation(origin, nonce, msgLeaf, originProof, snapProof, stateIndex);
         // Check if optimistic period has passed
-        require(block.timestamp >= header.optimisticPeriod() + execAtt.submittedAt, "!optimisticSeconds");
-        // Store message tips
-        Tips tips = message.tips();
-        _storeTips(execAtt.notary, tips);
-        // Get the specified recipient address
-        address recipient = _checkForSystemRouter(header.recipient());
-        bytes32 sender = header.sender();
-        // Pass the message to the recipient
-        IMessageRecipient(recipient).handle(origin, nonce, sender, execAtt.submittedAt, message.body().clone());
+        uint256 rootSubmittedAt = execAtt.submittedAt;
+        require(block.timestamp >= rootSubmittedAt + header.optimisticPeriod(), "!optimisticPeriod");
+        // Only System/Base message flags exist
+        if (message.flag() == MessageFlag.System) {
+            _executeSystemMessage(origin, nonce, rootSubmittedAt, message.body());
+        } else {
+            // This will revert if message body is not a formatted BaseMessage payload
+            _executeBaseMessage(origin, nonce, rootSubmittedAt, execAtt.notary, message.body().castToBaseMessage());
+        }
         emit Executed(origin, msgLeaf);
     }
 
@@ -83,6 +88,34 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     function _storeTips(address notary, Tips tips) internal {
         // TODO: implement tips logic
         emit TipsStored(notary, tips.unwrap().clone());
+    }
+
+    // ═════════════════════════════════════ INTERNAL LOGIC: MESSAGE EXECUTION ═════════════════════════════════════════
+
+    /// @dev Passes message content to recipient that conforms to IMessageRecipient interface.
+    function _executeBaseMessage(
+        uint32 origin,
+        uint32 nonce,
+        uint256 rootSubmittedAt,
+        address notary,
+        BaseMessage baseMessage
+    ) internal {
+        // Store message tips
+        _storeTips(notary, baseMessage.tips());
+        // TODO: check that the discarded bits are empty
+        address recipient = baseMessage.recipient().bytes32ToAddress();
+        // Forward message content to the recipient
+        // TODO: this should be "receive base message"
+        IMessageRecipient(recipient).handle(
+            origin, nonce, baseMessage.sender(), rootSubmittedAt, baseMessage.content().clone()
+        );
+    }
+
+    function _executeSystemMessage(uint32 origin, uint32 nonce, uint256 rootSubmittedAt, bytes29 body) internal {
+        // TODO: introduce incentives for executing System Messages?
+        // Forward system message to System Router
+        // TODO: this should be a separate function to receive system messages
+        IMessageRecipient(address(systemRouter)).handle(origin, nonce, SYSTEM_ROUTER, rootSubmittedAt, body.clone());
     }
 
     // ══════════════════════════════════════ INTERNAL LOGIC: MESSAGE PROVING ══════════════════════════════════════════
@@ -139,27 +172,6 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         bytes32 root = att.snapRoot();
         require(_rootAttestations[root].isEmpty(), "Root already exists");
         _rootAttestations[root] = att.toExecutionAttestation(notary);
-    }
-
-    /**
-     * @notice Returns adjusted "recipient" field.
-     * @dev By default, "recipient" field contains the recipient address padded to 32 bytes.
-     * But if SYSTEM_ROUTER value is used for "recipient" field, recipient is Synapse Router.
-     * Note: tx will revert in Origin if anyone but SystemRouter uses SYSTEM_ROUTER as recipient.
-     */
-    function _checkForSystemRouter(bytes32 recipient) internal view returns (address recipientAddress) {
-        // Check if SYSTEM_ROUTER was specified as message recipient
-        if (recipient == SYSTEM_ROUTER) {
-            /**
-             * @dev Route message to SystemRouter.
-             * Note: Only SystemRouter contract on origin chain can send a message
-             * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
-             */
-            return address(systemRouter);
-        } else {
-            // Cast bytes32 to address otherwise
-            return TypeCasts.bytes32ToAddress(recipient);
-        }
     }
 
     /// @dev Gets a saved attestation for the given snapshot root.
