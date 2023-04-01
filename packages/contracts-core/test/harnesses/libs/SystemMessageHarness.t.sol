@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { SYSTEM_ROUTER } from "../../../contracts/libs/Constants.sol";
+import {SYSTEM_ROUTER} from "../../../contracts/libs/Constants.sol";
 import {
     ByteString,
     CallData,
@@ -30,29 +30,17 @@ contract SystemMessageHarness {
     ▏*║                              FORMATTERS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatSystemMessage(
-        uint8 systemRecipient,
-        bytes memory callData_,
-        bytes memory prefix
-    ) public view returns (bytes memory) {
-        return
-            SystemMessageLib.formatSystemMessage(
-                systemRecipient,
-                callData_.castToCallData(),
-                prefix.castToRawBytes()
-            );
-    }
-
-    function formatAdjustedCallData(bytes memory callData_, bytes memory prefix)
+    function formatSystemMessage(uint8 systemRecipient, bytes memory callData_, bytes memory prefix)
         public
         view
         returns (bytes memory)
     {
         return
-            SystemMessageLib.formatAdjustedCallData(
-                callData_.castToCallData(),
-                prefix.castToRawBytes()
-            );
+            SystemMessageLib.formatSystemMessage(systemRecipient, callData_.castToCallData(), prefix.castToRawBytes());
+    }
+
+    function formatAdjustedCallData(bytes memory callData_, bytes memory prefix) public view returns (bytes memory) {
+        return SystemMessageLib.formatAdjustedCallData(callData_.castToCallData(), prefix.castToRawBytes());
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

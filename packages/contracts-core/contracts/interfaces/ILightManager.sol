@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AgentStatus } from "../libs/Structures.sol";
+import {AgentStatus} from "../libs/Structures.sol";
 
 interface ILightManager {
     /**
@@ -11,11 +11,7 @@ interface ILightManager {
      * @param status    Structure specifying agent status: (flag, domain, index)
      * @param proof     Merkle proof of Active status for the agent
      */
-    function updateAgentStatus(
-        address agent,
-        AgentStatus memory status,
-        bytes32[] memory proof
-    ) external;
+    function updateAgentStatus(address agent, AgentStatus memory status, bytes32[] memory proof) external;
 
     /**
      * @notice Updates the root of Agent Merkle Tree that the Light Manager is tracking.

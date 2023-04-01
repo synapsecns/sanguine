@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { Attestation } from "./libs/Attestation.sol";
-import { AttestationReport } from "./libs/AttestationReport.sol";
-import { AGENT_ROOT_OPTIMISTIC_PERIOD } from "./libs/Constants.sol";
-import { AgentStatus, DestinationStatus } from "./libs/Structures.sol";
+
+import {Attestation} from "./libs/Attestation.sol";
+import {AttestationReport} from "./libs/AttestationReport.sol";
+import {AGENT_ROOT_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
+import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { DestinationEvents } from "./events/DestinationEvents.sol";
-import { IAgentManager } from "./interfaces/IAgentManager.sol";
-import { ExecutionAttestation, InterfaceDestination } from "./interfaces/InterfaceDestination.sol";
-import { ILightManager } from "./interfaces/ILightManager.sol";
-import { DisputeHub, ExecutionHub } from "./hubs/ExecutionHub.sol";
-import { DomainContext, Versioned } from "./system/SystemContract.sol";
-import { SystemRegistry } from "./system/SystemRegistry.sol";
+import {DestinationEvents} from "./events/DestinationEvents.sol";
+import {IAgentManager} from "./interfaces/IAgentManager.sol";
+import {ExecutionAttestation, InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
+import {ILightManager} from "./interfaces/ILightManager.sol";
+import {DisputeHub, ExecutionHub} from "./hubs/ExecutionHub.sol";
+import {DomainContext, Versioned} from "./system/SystemContract.sol";
+import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -84,27 +85,20 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     }
 
     /// @inheritdoc InterfaceDestination
-    function submitAttestationReport(
-        bytes memory arPayload,
-        bytes memory arSignature,
-        bytes memory attSignature
-    ) external returns (bool wasAccepted) {
+    function submitAttestationReport(bytes memory arPayload, bytes memory arSignature, bytes memory attSignature)
+        external
+        returns (bool wasAccepted)
+    {
         // Call the hook and check if we can accept the statement
         if (!_beforeStatement()) return false;
         // This will revert if payload is not an attestation report
         AttestationReport report = _wrapAttestationReport(arPayload);
         // This will revert if the report signer is not a known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyAttestationReport(
-            report,
-            arSignature
-        );
+        (AgentStatus memory guardStatus, address guard) = _verifyAttestationReport(report, arSignature);
         // Check that Guard is active
         _verifyActive(guardStatus);
         // This will revert if attestation signer is not a known Notary
-        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(
-            report.attestation(),
-            attSignature
-        );
+        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(report.attestation(), attSignature);
         // Notary needs to be Active/Unstaking
         _verifyActiveUnstaking(notaryStatus);
         // Reported Attestation was signed by the Notary => open dispute
@@ -152,11 +146,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     }
 
     /// @inheritdoc InterfaceDestination
-    function getAttestation(uint256 index)
-        external
-        view
-        returns (bytes32 root, ExecutionAttestation memory execAtt)
-    {
+    function getAttestation(uint256 index) external view returns (bytes32 root, ExecutionAttestation memory execAtt) {
         require(index < _roots.length, "Index out of range");
         root = _roots[index];
         execAtt = _getRootAttestation(root);
@@ -168,7 +158,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @inheritdoc DisputeHub
     function _beforeStatement() internal override returns (bool acceptNext) {
-        (bool rootPassed, ) = passAgentRoot();
+        (bool rootPassed,) = passAgentRoot();
         // We don't accept statements if the root was updated just now,
         // as all the agent checks will fail otherwise.
         return !rootPassed;
@@ -176,11 +166,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This is overridden to allow disputes only between a Guard and a LOCAL Notary.
-    function _openDispute(
-        address guard,
-        uint32 domain,
-        address notary
-    ) internal override {
+    function _openDispute(address guard, uint32 domain, address notary) internal override {
         // Only disputes for local Notaries could be initiated in Destination
         require(domain == localDomain, "Not a local Notary");
         super._openDispute(guard, domain, notary);
@@ -198,11 +184,10 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @dev Saves Agent Merkle Root from the accepted attestation, if there is
     /// no pending root to be passed to LightManager.
     /// Returns the updated "last snapshot root / last agent root" status struct.
-    function _saveAgentRoot(
-        bool rootPending,
-        bytes32 agentRoot,
-        address notary
-    ) internal returns (DestinationStatus memory status) {
+    function _saveAgentRoot(bool rootPending, bytes32 agentRoot, address notary)
+        internal
+        returns (DestinationStatus memory status)
+    {
         status = destStatus;
         // Update the timestamp for the latest snapshot root
         status.snapRootTime = uint48(block.timestamp);

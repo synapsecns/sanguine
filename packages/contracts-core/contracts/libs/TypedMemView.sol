@@ -116,7 +116,7 @@ library TypedMemView {
      * @return      second - The bottom 16 bytes
      */
     function encodeHex(uint256 b) internal pure returns (uint256 first, uint256 second) {
-        for (uint8 i = 31; i > 15; ) {
+        for (uint8 i = 31; i > 15;) {
             uint8 byte_ = uint8(b >> (i * 8));
             first |= byteHex(byte_);
             if (i != 16) {
@@ -128,7 +128,7 @@ library TypedMemView {
         }
 
         // abusing underflow here =_=
-        for (uint8 i = 15; i < 255; ) {
+        for (uint8 i = 15; i < 255;) {
             uint8 byte_ = uint8(b >> (i * 8));
             second |= byteHex(byte_);
             if (i != 0) {
@@ -150,21 +150,17 @@ library TypedMemView {
         v = b;
 
         // swap bytes
-        v =
-            ((v >> 8) & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) |
-            ((v & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) << 8);
+        v = ((v >> 8) & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF)
+            | ((v & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) << 8);
         // swap 2-byte long pairs
-        v =
-            ((v >> 16) & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) |
-            ((v & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) << 16);
+        v = ((v >> 16) & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF)
+            | ((v & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) << 16);
         // swap 4-byte long pairs
-        v =
-            ((v >> 32) & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) |
-            ((v & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) << 32);
+        v = ((v >> 32) & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF)
+            | ((v & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) << 32);
         // swap 8-byte long pairs
-        v =
-            ((v >> 64) & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) |
-            ((v & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) << 64);
+        v = ((v >> 64) & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF)
+            | ((v & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) << 64);
         // swap 16-byte long pairs
         v = (v >> 128) | (v << 128);
     }
@@ -180,10 +176,7 @@ library TypedMemView {
         // sar(N-1, 100...00) = 11...100..00, with exactly N highest bits set to 1
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            mask := sar(
-                sub(len_, 1),
-                0x8000000000000000000000000000000000000000000000000000000000000000
-            )
+            mask := sar(sub(len_, 1), 0x8000000000000000000000000000000000000000000000000000000000000000)
         }
     }
 
@@ -265,14 +258,8 @@ library TypedMemView {
         if (!isType(view_, expected)) {
             (, uint256 g) = encodeHex(uint256(typeOf(view_)));
             (, uint256 e) = encodeHex(uint256(expected));
-            string memory err = string(
-                abi.encodePacked(
-                    "Type assertion failed. Got 0x",
-                    uint80(g),
-                    ". Expected 0x",
-                    uint80(e)
-                )
-            );
+            string memory err =
+                string(abi.encodePacked("Type assertion failed. Got 0x", uint80(g), ". Expected 0x", uint80(e)));
             revert(err);
         }
         return view_;
@@ -308,11 +295,7 @@ library TypedMemView {
      * @param len_      The length
      * @return          newView - The new view with the specified type, location and length
      */
-    function unsafeBuildUnchecked(
-        uint256 type_,
-        uint256 loc_,
-        uint256 len_
-    ) private pure returns (bytes29 newView) {
+    function unsafeBuildUnchecked(uint256 type_, uint256 loc_, uint256 len_) private pure returns (bytes29 newView) {
         uint256 bitsLoc = BITS_LOC;
         uint256 bitsLen = BITS_LEN;
         uint256 bitsEmpty = BITS_EMPTY;
@@ -342,19 +325,13 @@ library TypedMemView {
      * @param len_      The length
      * @return          newView - The new view with the specified type, location and length
      */
-    function build(
-        uint256 type_,
-        uint256 loc_,
-        uint256 len_
-    ) internal pure returns (bytes29 newView) {
+    function build(uint256 type_, uint256 loc_, uint256 len_) internal pure returns (bytes29 newView) {
         uint256 end_ = loc_ + len_;
         // Make sure that a view is not constructed that points to unallocated memory
         // as this could be indicative of a buffer overflow attack
         assembly {
             // solhint-disable-previous-line no-inline-assembly
-            if gt(end_, mload(0x40)) {
-                end_ := 0
-            }
+            if gt(end_, mload(0x40)) { end_ := 0 }
         }
         if (end_ == 0) {
             return NULL;
@@ -486,12 +463,7 @@ library TypedMemView {
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
-    function slice(
-        bytes29 view_,
-        uint256 index_,
-        uint256 len_,
-        uint40 newType
-    ) internal pure returns (bytes29) {
+    function slice(bytes29 view_, uint256 index_, uint256 len_, uint40 newType) internal pure returns (bytes29) {
         uint256 loc_ = loc(view_);
 
         // Ensure it doesn't overrun the view
@@ -511,11 +483,7 @@ library TypedMemView {
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
-    function sliceFrom(
-        bytes29 view_,
-        uint256 index_,
-        uint40 newType
-    ) internal pure returns (bytes29) {
+    function sliceFrom(bytes29 view_, uint256 index_, uint40 newType) internal pure returns (bytes29) {
         return slice(view_, index_, len(view_) - index_, newType);
     }
 
@@ -526,11 +494,7 @@ library TypedMemView {
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
-    function prefix(
-        bytes29 view_,
-        uint256 len_,
-        uint40 newType
-    ) internal pure returns (bytes29) {
+    function prefix(bytes29 view_, uint256 len_, uint40 newType) internal pure returns (bytes29) {
         return slice(view_, 0, len_, newType);
     }
 
@@ -541,11 +505,7 @@ library TypedMemView {
      * @param newType   The new type
      * @return          bytes29 - The new view
      */
-    function postfix(
-        bytes29 view_,
-        uint256 len_,
-        uint40 newType
-    ) internal pure returns (bytes29) {
+    function postfix(bytes29 view_, uint256 len_, uint40 newType) internal pure returns (bytes29) {
         return slice(view_, uint256(len(view_)) - len_, len_, newType);
     }
 
@@ -557,12 +517,11 @@ library TypedMemView {
      * @param slice_    The slice where the overrun occurred
      * @return          err - The err
      */
-    function indexErrOverrun(
-        uint256 loc_,
-        uint256 len_,
-        uint256 index_,
-        uint256 slice_
-    ) internal pure returns (string memory err) {
+    function indexErrOverrun(uint256 loc_, uint256 len_, uint256 index_, uint256 slice_)
+        internal
+        pure
+        returns (string memory err)
+    {
         (, uint256 a) = encodeHex(loc_);
         (, uint256 b) = encodeHex(len_);
         (, uint256 c) = encodeHex(index_);
@@ -592,11 +551,7 @@ library TypedMemView {
      * @param bytes_    The bytes
      * @return          result - The 32 byte result
      */
-    function index(
-        bytes29 view_,
-        uint256 index_,
-        uint8 bytes_
-    ) internal pure returns (bytes32 result) {
+    function index(bytes29 view_, uint256 index_, uint8 bytes_) internal pure returns (bytes32 result) {
         if (bytes_ == 0) {
             return bytes32(0);
         }
@@ -627,11 +582,7 @@ library TypedMemView {
      * @param bytes_    The bytes
      * @return          result - The unsigned integer
      */
-    function indexUint(
-        bytes29 view_,
-        uint256 index_,
-        uint8 bytes_
-    ) internal pure returns (uint256 result) {
+    function indexUint(bytes29 view_, uint256 index_, uint8 bytes_) internal pure returns (uint256 result) {
         // `index()` returns left-aligned `bytes_`, while integers are right-aligned
         // Shifting here to right-align with the full 32 bytes word
         return uint256(index(view_, index_, bytes_)) >> ((32 - bytes_) * 8);
@@ -644,11 +595,7 @@ library TypedMemView {
      * @param bytes_    The bytes
      * @return          result - The unsigned integer
      */
-    function indexLEUint(
-        bytes29 view_,
-        uint256 index_,
-        uint8 bytes_
-    ) internal pure returns (uint256 result) {
+    function indexLEUint(bytes29 view_, uint256 index_, uint8 bytes_) internal pure returns (uint256 result) {
         return reverseUint256(uint256(index(view_, index_, bytes_)));
     }
 
@@ -746,8 +693,7 @@ library TypedMemView {
      * @return          bool - True if the underlying memory is equal
      */
     function untypedEqual(bytes29 left, bytes29 right) internal pure returns (bool) {
-        return
-            (loc(left) == loc(right) && len(left) == len(right)) || keccak(left) == keccak(right);
+        return (loc(left) == loc(right) && len(left) == len(right)) || keccak(left) == keccak(right);
     }
 
     /**
@@ -805,9 +751,7 @@ library TypedMemView {
             // solhint-disable-previous-line no-inline-assembly
             ptr := mload(0x40)
             // revert if we're writing in occupied memory
-            if gt(ptr, newLoc) {
-                revert(0x60, 0x20) // empty revert message
-            }
+            if gt(ptr, newLoc) { revert(0x60, 0x20) } // empty revert message
 
             // use the identity precompile (0x04) to copy
             res := staticcall(gas(), 0x04, oldLoc, len_, newLoc, len_)
@@ -852,18 +796,12 @@ library TypedMemView {
      * @param memViews  The views
      * @return          unsafeView - The conjoined view pointing to the new memory
      */
-    function unsafeJoin(bytes29[] memory memViews, uint256 location)
-        private
-        view
-        returns (bytes29 unsafeView)
-    {
+    function unsafeJoin(bytes29[] memory memViews, uint256 location) private view returns (bytes29 unsafeView) {
         assembly {
             // solhint-disable-previous-line no-inline-assembly
             let ptr := mload(0x40)
             // revert if we're writing in occupied memory
-            if gt(ptr, location) {
-                revert(0x60, 0x20) // empty revert message
-            }
+            if gt(ptr, location) { revert(0x60, 0x20) } // empty revert message
         }
 
         uint256 offset = 0;

@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
+import {IMessageRecipient} from "../../../contracts/interfaces/IMessageRecipient.sol";
 
 // solhint-disable no-empty-blocks
 contract AppHarness is IMessageRecipient {
@@ -20,25 +20,17 @@ contract AppHarness is IMessageRecipient {
     /// @notice Prevents this contract from being included in the coverage report
     function testAppHarness() external {}
 
-    function prepare(
-        uint32 origin,
-        uint32 nonce,
-        bytes32 sender,
-        bytes memory content
-    ) external {
+    function prepare(uint32 origin, uint32 nonce, bytes32 sender, bytes memory content) external {
         expectedOrigin = origin;
         expectedNonce = nonce;
         expectedSender = sender;
         expectedContentHash = keccak256(content);
     }
 
-    function handle(
-        uint32 origin,
-        uint32 nonce,
-        bytes32 sender,
-        uint256 rootSubmittedAt,
-        bytes memory content
-    ) external view {
+    function handle(uint32 origin, uint32 nonce, bytes32 sender, uint256 rootSubmittedAt, bytes memory content)
+        external
+        view
+    {
         require(block.timestamp >= rootSubmittedAt + optimisticSeconds, "app: !optimisticSeconds");
         require(origin == expectedOrigin, "app: !origin");
         require(nonce == expectedNonce, "app: !nonce");

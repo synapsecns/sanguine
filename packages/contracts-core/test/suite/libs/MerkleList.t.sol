@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
+import {MerkleLib} from "../../../contracts/libs/Merkle.sol";
 
-import { SynapseLibraryTest } from "../../utils/SynapseLibraryTest.t.sol";
-import { MerkleListHarness } from "../../harnesses/libs/MerkleListHarness.t.sol";
+import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
+import {MerkleListHarness} from "../../harnesses/libs/MerkleListHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract MerkleListLibraryTest is SynapseLibraryTest {
@@ -76,11 +76,7 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
     }
 
     /// @dev Extend `hashes` with `zeroHash` values until list length is a power of two.
-    function _extendHashes(bytes32[] memory hashes)
-        internal
-        pure
-        returns (bytes32[] memory extended)
-    {
+    function _extendHashes(bytes32[] memory hashes) internal pure returns (bytes32[] memory extended) {
         uint256 length = hashes.length;
         // Find the lowest power of two that is greater or equal than length
         uint256 lengthExtended = 1;

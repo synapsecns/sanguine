@@ -1,26 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ByteString } from "./ByteString.sol";
-import { STATE_REPORT_SALT } from "./Constants.sol";
-import { State, StateLib } from "./State.sol";
-import { TypedMemView } from "./TypedMemView.sol";
+import {ByteString} from "./ByteString.sol";
+import {STATE_REPORT_SALT} from "./Constants.sol";
+import {State, StateLib} from "./State.sol";
+import {TypedMemView} from "./TypedMemView.sol";
 /// @dev StateReport is a memory view over a formatted Guard report for invalid State
+
 type StateReport is bytes29;
 /// @dev Possible flags for the StateReport
 /// Currently has only one possible value, but enables different types of reports in the future
-enum StateFlag {
-    Invalid
-}
+
+enum StateFlag {Invalid}
 /// @dev Attach library functions to StateFlag
-using { StateReportLib.formatStateReport } for StateFlag global;
+
+using {StateReportLib.formatStateReport} for StateFlag global;
 /// @dev Attach library functions to StateReport
-using {
-    StateReportLib.hash,
-    StateReportLib.unwrap,
-    StateReportLib.flag,
-    StateReportLib.state
-} for StateReport global;
+using {StateReportLib.hash, StateReportLib.unwrap, StateReportLib.flag, StateReportLib.state} for StateReport global;
 
 library StateReportLib {
     using ByteString for bytes;
@@ -53,11 +49,7 @@ library StateReportLib {
     /// @param flag_            Flag signalling type of State Report
     /// @param statePayload     Raw payload with reported state
     /// @return Formatted state report
-    function formatStateReport(StateFlag flag_, bytes memory statePayload)
-        internal
-        pure
-        returns (bytes memory)
-    {
+    function formatStateReport(StateFlag flag_, bytes memory statePayload) internal pure returns (bytes memory) {
         return abi.encodePacked(flag_, statePayload);
     }
 
@@ -118,11 +110,11 @@ library StateReportLib {
 
     /// @dev Returns StateReport flag without checking that it fits into StateFlag enum.
     function _srFlag(bytes29 view_) internal pure returns (uint8) {
-        return uint8(view_.indexUint({ index_: OFFSET_FLAG, bytes_: 1 }));
+        return uint8(view_.indexUint({index_: OFFSET_FLAG, bytes_: 1}));
     }
 
     /// @dev Returns an untyped memory view over Report's state without checking if it is properly formatted.
     function _srState(bytes29 view_) internal pure returns (bytes29) {
-        return view_.sliceFrom({ index_: OFFSET_STATE, newType: 0 });
+        return view_.sliceFrom({index_: OFFSET_STATE, newType: 0});
     }
 }

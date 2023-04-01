@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { HistoricalTree } from "../libs/Merkle.sol";
-import { OriginState, State, StateLib } from "../libs/State.sol";
+
+import {HistoricalTree} from "../libs/Merkle.sol";
+import {OriginState, State, StateLib} from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { DomainContext } from "../context/DomainContext.sol";
-import { StateHubEvents } from "../events/StateHubEvents.sol";
-import { IStateHub } from "../interfaces/IStateHub.sol";
+import {DomainContext} from "../context/DomainContext.sol";
+import {StateHubEvents} from "../events/StateHubEvents.sol";
+import {IStateHub} from "../interfaces/IStateHub.sol";
 
 /**
  * @notice Hub to accept, save and verify states for a local contract.
@@ -59,7 +60,7 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         // This will revert if nonce is out of range
         bytes32 root = _tree.root(nonce);
         OriginState memory state = _originStates[nonce];
-        return state.formatOriginState({ root_: root, origin_: localDomain, nonce_: nonce });
+        return state.formatOriginState({root_: root, origin_: localDomain, nonce_: nonce});
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -87,9 +88,7 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         uint32 stateNonce = uint32(_originStates.length);
         _originStates.push(state);
         // Emit event with raw state data
-        emit StateSaved(
-            state.formatOriginState({ root_: root, origin_: localDomain, nonce_: stateNonce })
-        );
+        emit StateSaved(state.formatOriginState({root_: root, origin_: localDomain, nonce_: stateNonce}));
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

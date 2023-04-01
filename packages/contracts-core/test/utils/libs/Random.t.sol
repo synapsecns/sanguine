@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { RawAttestation, RawState, RawSnapshot } from "./SynapseStructs.t.sol";
+import {RawAttestation, RawState, RawSnapshot} from "./SynapseStructs.t.sol";
 
 struct Random {
     bytes32 seed;
@@ -82,11 +82,7 @@ library RandomLib {
         return address(r.nextUint160());
     }
 
-    function nextState(
-        Random memory r,
-        uint32 origin,
-        uint32 nonce
-    ) internal pure returns (RawState memory state) {
+    function nextState(Random memory r, uint32 origin, uint32 nonce) internal pure returns (RawState memory state) {
         state.root = r.next();
         state.origin = origin;
         state.nonce = nonce;
@@ -94,11 +90,11 @@ library RandomLib {
         state.timestamp = r.nextUint40();
     }
 
-    function nextAttestation(
-        Random memory r,
-        RawSnapshot memory rawSnap,
-        uint32 nonce
-    ) internal view returns (RawAttestation memory ra) {
+    function nextAttestation(Random memory r, RawSnapshot memory rawSnap, uint32 nonce)
+        internal
+        view
+        returns (RawAttestation memory ra)
+    {
         return rawSnap.castToRawAttestation(r.next(), nonce, r.nextUint40(), r.nextUint40());
     }
 }

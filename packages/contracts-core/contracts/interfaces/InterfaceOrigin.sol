@@ -89,11 +89,9 @@ interface InterfaceOrigin {
      * @return isValid          Whether the requested state is valid.
      *                          Agent is slashed, if return value is FALSE.
      */
-    function verifySnapshot(
-        uint256 stateIndex,
-        bytes memory snapPayload,
-        bytes memory snapSignature
-    ) external returns (bool isValid);
+    function verifySnapshot(uint256 stateIndex, bytes memory snapPayload, bytes memory snapSignature)
+        external
+        returns (bool isValid);
 
     /**
      * @notice Verifies a snapshot report signed by a Guard.
@@ -107,7 +105,5 @@ interface InterfaceOrigin {
      * @return isValid          Whether the provided report is valid.
      *                          Guard is slashed, if return value is FALSE.
      */
-    function verifyStateReport(bytes memory srPayload, bytes memory srSignature)
-        external
-        returns (bool isValid);
+    function verifyStateReport(bytes memory srPayload, bytes memory srSignature) external returns (bool isValid);
 }

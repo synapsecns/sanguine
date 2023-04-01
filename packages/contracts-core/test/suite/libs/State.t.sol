@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { STATE_LENGTH } from "../../../contracts/libs/Constants.sol";
+import {STATE_LENGTH} from "../../../contracts/libs/Constants.sol";
 
-import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
-import { OriginState, StateHarness, SummitState } from "../../harnesses/libs/StateHarness.t.sol";
+import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {OriginState, StateHarness, SummitState} from "../../harnesses/libs/StateHarness.t.sol";
 
 struct RawState {
     bytes32 root;
@@ -25,20 +25,10 @@ contract StateLibraryTest is SynapseLibraryTest {
     }
 
     function test_formatState(RawState memory rs) public {
-        bytes memory payload = libHarness.formatState(
-            rs.root,
-            rs.origin,
-            rs.nonce,
-            rs.blockNumber,
-            rs.timestamp
-        );
+        bytes memory payload = libHarness.formatState(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp);
         // Test formatting of state
-        assertEq(
-            payload,
-            abi.encodePacked(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp),
-            "!formatState"
-        );
-        checkCastToState({ payload: payload, isState: true });
+        assertEq(payload, abi.encodePacked(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp), "!formatState");
+        checkCastToState({payload: payload, isState: true});
         // Test getters
         assertEq(libHarness.root(payload), rs.root, "!root");
         assertEq(libHarness.origin(payload), rs.origin, "!origin");
@@ -51,17 +41,9 @@ contract StateLibraryTest is SynapseLibraryTest {
         (bytes32 leftLeaf, bytes32 rightLeaf) = libHarness.subLeafs(payload);
         assertEq(libHarness.leftLeaf(rs.root, rs.origin), leftChild, "!leftLeaf");
         assertEq(leftLeaf, leftChild, "!subLeafs: left");
-        assertEq(
-            libHarness.rightLeaf(rs.nonce, rs.blockNumber, rs.timestamp),
-            rightChild,
-            "!rightLeaf"
-        );
+        assertEq(libHarness.rightLeaf(rs.nonce, rs.blockNumber, rs.timestamp), rightChild, "!rightLeaf");
         assertEq(rightLeaf, rightChild, "!subLeafs: right");
-        assertEq(
-            libHarness.leaf(payload),
-            keccak256(abi.encodePacked(leftChild, rightChild)),
-            "!leaf"
-        );
+        assertEq(libHarness.leaf(payload), keccak256(abi.encodePacked(leftChild, rightChild)), "!leaf");
     }
 
     function test_equals(RawState memory a, uint256 mask) public {
@@ -82,12 +64,7 @@ contract StateLibraryTest is SynapseLibraryTest {
         OriginState memory originState = libHarness.originState();
         assertEq(originState.blockNumber, rs.blockNumber, "!blockNumber");
         assertEq(originState.timestamp, rs.timestamp, "!timestamp");
-        bytes memory payload = libHarness.formatOriginState(
-            originState,
-            rs.root,
-            rs.origin,
-            rs.nonce
-        );
+        bytes memory payload = libHarness.formatOriginState(originState, rs.root, rs.origin, rs.nonce);
         assertEq(
             payload,
             libHarness.formatState(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp),
@@ -116,20 +93,14 @@ contract StateLibraryTest is SynapseLibraryTest {
         // State -> SummitState -> State trip test
         vm.roll(rs.blockNumber);
         vm.warp(rs.timestamp);
-        bytes memory payload = libHarness.formatState(
-            rs.root,
-            rs.origin,
-            rs.nonce,
-            rs.blockNumber,
-            rs.timestamp
-        );
+        bytes memory payload = libHarness.formatState(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp);
         SummitState memory state = libHarness.toSummitState(payload);
         assertEq(libHarness.formatSummitState(state), payload, "!summitState");
     }
 
     function test_isState(uint8 length) public {
         bytes memory payload = new bytes(length);
-        checkCastToState({ payload: payload, isState: length == STATE_LENGTH });
+        checkCastToState({payload: payload, isState: length == STATE_LENGTH});
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

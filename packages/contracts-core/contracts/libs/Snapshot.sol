@@ -1,21 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AttestationLib, SummitAttestation } from "./Attestation.sol";
-import { ByteString } from "./ByteString.sol";
-import {
-    SNAPSHOT_MAX_STATES,
-    SNAPSHOT_SALT,
-    SNAPSHOT_TREE_HEIGHT,
-    STATE_LENGTH
-} from "./Constants.sol";
-import { MerkleList } from "./MerkleList.sol";
-import { State, StateLib } from "./State.sol";
-import { TypedMemView } from "./TypedMemView.sol";
+import {AttestationLib, SummitAttestation} from "./Attestation.sol";
+import {ByteString} from "./ByteString.sol";
+import {SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
+import {MerkleList} from "./MerkleList.sol";
+import {State, StateLib} from "./State.sol";
+import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev Snapshot is a memory view over a formatted snapshot payload: a list of states.
 type Snapshot is bytes29;
 /// @dev Attach library functions to Snapshot
+
 using {
     SnapshotLib.unwrap,
     SnapshotLib.hash,
@@ -33,7 +29,8 @@ struct SummitSnapshot {
     uint256[] statePtrs;
 }
 /// @dev Attach library functions to SummitSnapshot
-using { SnapshotLib.getStatesAmount, SnapshotLib.getStatePtr } for SummitSnapshot global;
+
+using {SnapshotLib.getStatesAmount, SnapshotLib.getStatePtr} for SummitSnapshot global;
 
 library SnapshotLib {
     using ByteString for bytes;
@@ -125,11 +122,7 @@ library SnapshotLib {
     ▏*║                           SUMMIT SNAPSHOT                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function toSummitSnapshot(uint256[] memory statePtrs)
-        internal
-        pure
-        returns (SummitSnapshot memory snapshot)
-    {
+    function toSummitSnapshot(uint256[] memory statePtrs) internal pure returns (SummitSnapshot memory snapshot) {
         snapshot.statePtrs = statePtrs;
     }
 
@@ -141,11 +134,7 @@ library SnapshotLib {
         return snapshot.statePtrs.length;
     }
 
-    function getStatePtr(SummitSnapshot memory snapshot, uint256 index)
-        internal
-        pure
-        returns (uint256)
-    {
+    function getStatePtr(SummitSnapshot memory snapshot, uint256 index) internal pure returns (uint256) {
         require(index < getStatesAmount(snapshot), "State index out of range");
         return snapshot.statePtrs[index];
     }
@@ -171,7 +160,7 @@ library SnapshotLib {
         bytes29 view_ = snapshot.unwrap();
         uint256 indexFrom = stateIndex * STATE_LENGTH;
         require(indexFrom < view_.len(), "State index out of range");
-        return view_.slice({ index_: indexFrom, len_: STATE_LENGTH, newType: 0 }).castToState();
+        return view_.slice({index_: indexFrom, len_: STATE_LENGTH, newType: 0}).castToState();
     }
 
     /// @notice Returns the amount of states in the snapshot.

@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.17;
 
-import { ORIGIN_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
-import { IMessageRecipient } from "../../../contracts/interfaces/IMessageRecipient.sol";
-import { IExecutionHub } from "../../../contracts/interfaces/IExecutionHub.sol";
+import {ORIGIN_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
+import {IMessageRecipient} from "../../../contracts/interfaces/IMessageRecipient.sol";
+import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 
 // solhint-disable no-empty-blocks
 contract ReentrantApp is IMessageRecipient {
@@ -28,13 +28,7 @@ contract ReentrantApp is IMessageRecipient {
         stateIndex = stateIndex_;
     }
 
-    function handle(
-        uint32,
-        uint32,
-        bytes32,
-        uint256,
-        bytes memory
-    ) external {
+    function handle(uint32, uint32, bytes32, uint256, bytes memory) external {
         IExecutionHub(msg.sender).execute(msgPayload, originProof, snapProof, stateIndex);
     }
 }

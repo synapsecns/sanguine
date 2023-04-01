@@ -1,19 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.sol";
-import { AGENT_TREE_HEIGHT } from "../../../contracts/libs/Constants.sol";
-import { MerkleLib } from "../../../contracts/libs/Merkle.sol";
-import { AgentFlag, SlashStatus, SystemEntity } from "../../../contracts/libs/Structures.sol";
-import { AgentManagerTest } from "./AgentManager.t.sol";
+import {ISystemRegistry} from "../../../contracts/interfaces/ISystemRegistry.sol";
+import {AGENT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
+import {MerkleLib} from "../../../contracts/libs/Merkle.sol";
+import {AgentFlag, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
+import {AgentManagerTest} from "./AgentManager.t.sol";
 
-import {
-    BondingManager,
-    ISystemContract,
-    ISystemRegistry,
-    Summit,
-    SynapseTest
-} from "../../utils/SynapseTest.t.sol";
+import {BondingManager, ISystemContract, ISystemRegistry, Summit, SynapseTest} from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -26,11 +20,7 @@ contract BondingManagerTest is AgentManagerTest {
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
 
-    function test_initializer(
-        address caller,
-        address origin_,
-        address destination_
-    ) public {
+    function test_initializer(address caller, address origin_, address destination_) public {
         bondingManager = new BondingManager(DOMAIN_SYNAPSE);
         vm.prank(caller);
         bondingManager.initialize(ISystemRegistry(origin_), ISystemRegistry(destination_));
@@ -103,20 +93,11 @@ contract BondingManagerTest is AgentManagerTest {
         updateStatus(AgentFlag.Resting, domain, agent);
     }
 
-    function updateStatus(
-        AgentFlag flag,
-        uint32 domain,
-        address agent
-    ) public {
+    function updateStatus(AgentFlag flag, uint32 domain, address agent) public {
         updateStatus(address(this), flag, domain, agent);
     }
 
-    function updateStatus(
-        address caller,
-        AgentFlag flag,
-        uint32 domain,
-        address agent
-    ) public {
+    function updateStatus(address caller, AgentFlag flag, uint32 domain, address agent) public {
         bytes32[] memory proof = getAgentProof(agent);
         bytes32 newRoot = updateAgent(flag, agent);
         vm.expectEmit();
@@ -129,12 +110,7 @@ contract BondingManagerTest is AgentManagerTest {
         checkAgentStatus(agent, bondingManager.agentStatus(agent), flag);
     }
 
-    function updateStatusWithProof(
-        AgentFlag flag,
-        uint32 domain,
-        address agent,
-        bytes32[] memory proof
-    ) public {
+    function updateStatusWithProof(AgentFlag flag, uint32 domain, address agent, bytes32[] memory proof) public {
         if (flag == AgentFlag.Unstaking) {
             bondingManager.initiateUnstaking(domain, agent, proof);
         } else if (flag == AgentFlag.Resting) {
@@ -186,12 +162,7 @@ contract BondingManagerTest is AgentManagerTest {
         updateStatusWithRevert(AgentFlag.Resting, domain, agent, CANT_COMPLETE);
     }
 
-    function updateStatusWithRevert(
-        AgentFlag flag,
-        uint32 domain,
-        address agent,
-        bytes memory revertMsg
-    ) public {
+    function updateStatusWithRevert(AgentFlag flag, uint32 domain, address agent, bytes memory revertMsg) public {
         bytes32[] memory proof = getAgentProof(agent);
         vm.expectRevert(revertMsg);
         updateStatusWithProof(flag, domain, agent, proof);
@@ -201,18 +172,11 @@ contract BondingManagerTest is AgentManagerTest {
     ▏*║                        TEST: SLASHING AGENTS                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_registrySlash_origin(
-        uint256 domainId,
-        uint256 agentId,
-        address prover
-    ) public {
+    function test_registrySlash_origin(uint256 domainId, uint256 agentId, address prover) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        vm.expectCall(
-            summit,
-            abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
-        );
+        vm.expectCall(summit, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
         vm.prank(originSynapse);
         bondingManager.registrySlash(domain, agent, prover);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
@@ -221,18 +185,11 @@ contract BondingManagerTest is AgentManagerTest {
         assertEq(prover_, prover);
     }
 
-    function test_registrySlash_summit(
-        uint256 domainId,
-        uint256 agentId,
-        address prover
-    ) public {
+    function test_registrySlash_summit(uint256 domainId, uint256 agentId, address prover) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        vm.expectCall(
-            originSynapse,
-            abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
-        );
+        vm.expectCall(originSynapse, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
         vm.prank(summit);
         bondingManager.registrySlash(domain, agent, prover);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
@@ -249,30 +206,18 @@ contract BondingManagerTest is AgentManagerTest {
         bondingManager.registrySlash(0, domains[0].agent, address(0));
     }
 
-    function test_remoteRegistrySlash(
-        uint32 callOrigin,
-        uint256 domainId,
-        uint256 agentId,
-        address prover
-    ) public {
+    function test_remoteRegistrySlash(uint32 callOrigin, uint256 domainId, uint256 agentId, address prover) public {
         // Needs to be a REMOTE call
         vm.assume(callOrigin != DOMAIN_SYNAPSE);
         (uint32 domain, address agent) = getAgent(domainId, agentId);
-        bytes memory localCall = abi.encodeWithSelector(
-            ISystemRegistry.managerSlash.selector,
-            domain,
-            agent
-        );
+        bytes memory localCall = abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent);
         _skipBondingOptimisticPeriod();
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         vm.expectCall(summit, localCall);
         vm.expectCall(originSynapse, localCall);
         _systemPrank(
-            systemRouterSynapse,
-            callOrigin,
-            SystemEntity.AgentManager,
-            _remoteSlashPayload(domain, agent, prover)
+            systemRouterSynapse, callOrigin, SystemEntity.AgentManager, _remoteSlashPayload(domain, agent, prover)
         );
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
@@ -280,37 +225,23 @@ contract BondingManagerTest is AgentManagerTest {
         assertEq(prover_, prover);
     }
 
-    function test_completeSlashing_active(
-        uint256 domainId,
-        uint256 agentId,
-        address slasher,
-        bool initiatedByOrigin
-    ) public {
+    function test_completeSlashing_active(uint256 domainId, uint256 agentId, address slasher, bool initiatedByOrigin)
+        public
+    {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         // Initiate slashing by one of the Registries
-        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_summit)(
-            domainId,
-            agentId,
-            address(1)
-        );
+        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_summit)(domainId, agentId, address(1));
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
     }
 
-    function test_completeSlashing_unstaking(
-        uint256 domainId,
-        uint256 agentId,
-        address slasher,
-        bool initiatedByOrigin
-    ) public {
+    function test_completeSlashing_unstaking(uint256 domainId, uint256 agentId, address slasher, bool initiatedByOrigin)
+        public
+    {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
         // Initiate slashing by one of the Registries
-        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_summit)(
-            domainId,
-            agentId,
-            address(1)
-        );
+        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_summit)(domainId, agentId, address(1));
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
     }
@@ -347,10 +278,7 @@ contract BondingManagerTest is AgentManagerTest {
     }
 
     function checkProof(uint256 index, bytes32[] memory proof) public {
-        assertEq(
-            MerkleLib.proofRoot(index, getAgentLeaf(index), proof, AGENT_TREE_HEIGHT),
-            getAgentRoot()
-        );
+        assertEq(MerkleLib.proofRoot(index, getAgentLeaf(index), proof, AGENT_TREE_HEIGHT), getAgentRoot());
     }
 
     function test_allLeafs() public {

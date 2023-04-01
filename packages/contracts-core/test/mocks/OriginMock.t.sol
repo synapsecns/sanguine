@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { InterfaceOrigin } from "../../contracts/interfaces/InterfaceOrigin.sol";
-import { StateHubMock } from "./hubs/StateHubMock.t.sol";
-import { SystemContractMock } from "./system/SystemContractMock.t.sol";
-import { SystemRegistryMock } from "./system/SystemRegistryMock.t.sol";
+import {InterfaceOrigin} from "../../contracts/interfaces/InterfaceOrigin.sol";
+import {StateHubMock} from "./hubs/StateHubMock.t.sol";
+import {SystemContractMock} from "./system/SystemContractMock.t.sol";
+import {SystemRegistryMock} from "./system/SystemRegistryMock.t.sol";
 
 // solhint-disable no-empty-blocks
 contract OriginMock is StateHubMock, SystemRegistryMock, SystemContractMock, InterfaceOrigin {
@@ -34,14 +34,10 @@ contract OriginMock is StateHubMock, SystemRegistryMock, SystemContractMock, Int
         bytes memory attSignature
     ) external returns (bool isValid) {}
 
-    function verifySnapshot(
-        uint256 stateIndex,
-        bytes memory snapPayload,
-        bytes memory snapSignature
-    ) external returns (bool isValid) {}
-
-    function verifyStateReport(bytes memory srPayload, bytes memory srSignature)
+    function verifySnapshot(uint256 stateIndex, bytes memory snapPayload, bytes memory snapSignature)
         external
         returns (bool isValid)
     {}
+
+    function verifyStateReport(bytes memory srPayload, bytes memory srSignature) external returns (bool isValid) {}
 }

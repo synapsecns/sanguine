@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AgentFlag, AgentStatus } from "../../contracts/libs/Structures.sol";
+import {AgentFlag, AgentStatus} from "../../contracts/libs/Structures.sol";
 
-import { AttestationProofGenerator } from "./proof/AttestationProofGenerator.t.sol";
-import { DynamicProofGenerator } from "./proof/DynamicProofGenerator.t.sol";
-import { HistoricalProofGenerator } from "./proof/HistoricalProofGenerator.t.sol";
+import {AttestationProofGenerator} from "./proof/AttestationProofGenerator.t.sol";
+import {DynamicProofGenerator} from "./proof/DynamicProofGenerator.t.sol";
+import {HistoricalProofGenerator} from "./proof/HistoricalProofGenerator.t.sol";
 
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
@@ -109,18 +109,14 @@ abstract contract SynapseProofs {
     function getAgentStatus(address agent) public view returns (AgentStatus memory) {
         uint32 index = uint32(agentIndex[agent]);
         require(index != 0, "Unknown agent");
-        return AgentStatus({ flag: agentFlag[agent], domain: agentDomain[agent], index: index });
+        return AgentStatus({flag: agentFlag[agent], domain: agentDomain[agent], index: index});
     }
 
     function getAgentLeaf(uint256 index) public view returns (bytes32) {
         return agentGen.getLeaf(index);
     }
 
-    function getAgentLeaf(
-        AgentFlag flag,
-        uint32 domain,
-        address agent
-    ) internal pure returns (bytes32) {
+    function getAgentLeaf(AgentFlag flag, uint32 domain, address agent) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(flag, domain, agent));
     }
 }

@@ -2,18 +2,15 @@
 
 pragma solidity 0.8.17;
 
-import { ByteString, SystemEntity, SystemRouter } from "../../../contracts/system/SystemRouter.sol";
+import {ByteString, SystemEntity, SystemRouter} from "../../../contracts/system/SystemRouter.sol";
 
 // solhint-disable no-empty-blocks
 contract SystemRouterHarness is SystemRouter {
     using ByteString for bytes;
 
-    constructor(
-        uint32 domain,
-        address origin_,
-        address destination_,
-        address agentManager_
-    ) SystemRouter(domain, origin_, destination_, agentManager_) {}
+    constructor(uint32 domain, address origin_, address destination_, address agentManager_)
+        SystemRouter(domain, origin_, destination_, agentManager_)
+    {}
 
     /// @notice Prevents this contract from being included in the coverage report
     function testSystemRouterHarness() external {}

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AgentFlag } from "../libs/Structures.sol";
+import {AgentFlag} from "../libs/Structures.sol";
 
 abstract contract AgentManagerEvents {
     /**

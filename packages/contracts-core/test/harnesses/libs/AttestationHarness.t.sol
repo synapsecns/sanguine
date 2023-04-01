@@ -95,14 +95,7 @@ contract AttestationHarness {
         uint40 blockNumber_,
         uint40 timestamp_
     ) public pure returns (bytes memory) {
-        return
-            AttestationLib.formatAttestation(
-                snapRoot_,
-                agentRoot_,
-                nonce_,
-                blockNumber_,
-                timestamp_
-            );
+        return AttestationLib.formatAttestation(snapRoot_, agentRoot_, nonce_, blockNumber_, timestamp_);
     }
 
     function isAttestation(bytes memory payload) public pure returns (bool) {

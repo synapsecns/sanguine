@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Test } from "forge-std/Test.sol";
-import { Versioned } from "../../contracts/Version.sol";
+import {Test} from "forge-std/Test.sol";
+import {Versioned} from "../../contracts/Version.sol";
 
 contract VersionImpl is Versioned {
     // solhint-disable-next-line no-empty-blocks

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { Client } from "./Client.sol";
+
+import {Client} from "./Client.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 abstract contract SynapseClient is Client, Ownable {
     // ============ Internal Variables ============
@@ -38,13 +39,10 @@ abstract contract SynapseClient is Client, Ownable {
      * @param remoteDomains     List of domains for the remote chains
      * @param trustedSenders    List of trusted senders for given chains
      */
-    function setTrustedSenders(uint32[] calldata remoteDomains, bytes32[] calldata trustedSenders)
-        external
-        onlyOwner
-    {
+    function setTrustedSenders(uint32[] calldata remoteDomains, bytes32[] calldata trustedSenders) external onlyOwner {
         uint256 length = trustedSenders.length;
         require(remoteDomains.length == length, "!arrays");
-        for (uint256 i = 0; i < length; ) {
+        for (uint256 i = 0; i < length;) {
             _setTrustedSender(remoteDomains[i], trustedSenders[i]);
             unchecked {
                 ++i;

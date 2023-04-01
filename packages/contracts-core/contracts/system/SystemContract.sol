@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { SystemEntity } from "../libs/Structures.sol";
+
+import {SystemEntity} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { DomainContext } from "../context/DomainContext.sol";
-import { ISystemContract } from "../interfaces/ISystemContract.sol";
-import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
-import { Versioned } from "../Version.sol";
+import {DomainContext} from "../context/DomainContext.sol";
+import {ISystemContract} from "../interfaces/ISystemContract.sol";
+import {InterfaceSystemRouter} from "../interfaces/InterfaceSystemRouter.sol";
+import {Versioned} from "../Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
-import {
-    OwnableUpgradeable
-} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  * @notice Shared utilities between Synapse System Contracts: Origin, Destination, etc.
@@ -135,11 +134,7 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
 
     /// @dev Perform a System Call to a AgentManager on a given domain
     /// with the given optimistic period and data.
-    function _callAgentManager(
-        uint32 domain,
-        uint32 optimisticSeconds,
-        bytes memory payload
-    ) internal {
+    function _callAgentManager(uint32 domain, uint32 optimisticSeconds, bytes memory payload) internal {
         systemRouter.systemCall({
             destination: domain,
             optimisticSeconds: optimisticSeconds,
@@ -160,10 +155,7 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
         require(msg.sender == address(systemRouter), "!systemRouter");
     }
 
-    function _assertOptimisticPeriodOver(uint256 rootSubmittedAt, uint256 optimisticSeconds)
-        internal
-        view
-    {
+    function _assertOptimisticPeriodOver(uint256 rootSubmittedAt, uint256 optimisticSeconds) internal view {
         require(block.timestamp >= rootSubmittedAt + optimisticSeconds, "!optimisticPeriod");
     }
 

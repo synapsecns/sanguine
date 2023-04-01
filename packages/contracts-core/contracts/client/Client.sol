@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { BasicClient } from "./BasicClient.sol";
+
+import {BasicClient} from "./BasicClient.sol";
 
 /**
  * @dev Implementation of IMessageRecipient interface, to be used as recipient of
@@ -47,17 +48,12 @@ abstract contract Client is BasicClient {
      * @param rootSubmittedAt   Time when merkle root (sed for proving this message) was submitted
      * @param content           The message content
      */
-    function _handleUnsafe(
-        uint32 origin_,
-        uint32 nonce,
-        uint256 rootSubmittedAt,
-        bytes memory content
-    ) internal override {
+    function _handleUnsafe(uint32 origin_, uint32 nonce, uint256 rootSubmittedAt, bytes memory content)
+        internal
+        override
+    {
         // solhint-disable-next-line do-not-rely-on-time
-        require(
-            block.timestamp >= rootSubmittedAt + optimisticSeconds(),
-            "Client: !optimisticSeconds"
-        );
+        require(block.timestamp >= rootSubmittedAt + optimisticSeconds(), "Client: !optimisticSeconds");
         _handle(origin_, nonce, content);
     }
 
@@ -70,22 +66,14 @@ abstract contract Client is BasicClient {
      * Note: this usually means that all security checks have passed
      * and message could be safely executed.
      */
-    function _handle(
-        uint32 origin_,
-        uint32 nonce,
-        bytes memory content
-    ) internal virtual;
+    function _handle(uint32 origin_, uint32 nonce, bytes memory content) internal virtual;
 
     /**
      * @dev Sends a message to given destination chain.
      * @param destination_  Domain of the destination chain
      * @param content       The message content
      */
-    function _send(
-        uint32 destination_,
-        bytes memory tipsPayload,
-        bytes memory content
-    ) internal {
+    function _send(uint32 destination_, bytes memory tipsPayload, bytes memory content) internal {
         _send(destination_, optimisticSeconds(), tipsPayload, content);
     }
 }

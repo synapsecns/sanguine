@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { ByteString, CallData } from "../libs/ByteString.sol";
-import { SYSTEM_ROUTER } from "../libs/Constants.sol";
-import { SystemMessage, SystemMessageLib } from "../libs/SystemMessage.sol";
-import { SystemEntity } from "../libs/Structures.sol";
-import { TipsLib } from "../libs/Tips.sol";
+
+import {ByteString, CallData} from "../libs/ByteString.sol";
+import {SYSTEM_ROUTER} from "../libs/Constants.sol";
+import {SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
+import {SystemEntity} from "../libs/Structures.sol";
+import {TipsLib} from "../libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { BasicClient } from "../client/BasicClient.sol";
-import { DomainContext } from "../context/DomainContext.sol";
-import { InterfaceSystemRouter } from "../interfaces/InterfaceSystemRouter.sol";
-import { Versioned } from "../Version.sol";
+import {BasicClient} from "../client/BasicClient.sol";
+import {DomainContext} from "../context/DomainContext.sol";
+import {InterfaceSystemRouter} from "../interfaces/InterfaceSystemRouter.sol";
+import {Versioned} from "../Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
-import { Address } from "@openzeppelin/contracts/utils/Address.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
  * @notice Router for calls between system contracts (aka "System Calls").
@@ -99,12 +100,11 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     ▏*║                             CONSTRUCTOR                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    constructor(
-        uint32 domain,
-        address origin_,
-        address destination_,
-        address agentManager_
-    ) BasicClient(origin_, destination_) DomainContext(domain) Versioned("0.0.3") {
+    constructor(uint32 domain, address origin_, address destination_, address agentManager_)
+        BasicClient(origin_, destination_)
+        DomainContext(domain)
+        Versioned("0.0.3")
+    {
         agentManager = agentManager_;
     }
 
@@ -113,12 +113,9 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc InterfaceSystemRouter
-    function systemCall(
-        uint32 destination_,
-        uint32 optimisticSeconds,
-        SystemEntity recipient,
-        bytes memory payload
-    ) external {
+    function systemCall(uint32 destination_, uint32 optimisticSeconds, SystemEntity recipient, bytes memory payload)
+        external
+    {
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
         // To generalize things, a system call is always a multicall.
@@ -217,12 +214,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
      * @dev Handles an incoming message. Security checks are done in BasicClient.handle()
      * Optimistic period could be anything at this point.
      */
-    function _handleUnsafe(
-        uint32,
-        uint32,
-        uint256 rootSubmittedAt,
-        bytes memory content
-    ) internal override {
+    function _handleUnsafe(uint32, uint32, uint256 rootSubmittedAt, bytes memory content) internal override {
         // TODO: use TypedMemView for encoding/decoding instead
         // Deserialize the message into a series of system calls to perform
         bytes[] memory systemMessages = abi.decode(content, (bytes[]));
@@ -247,11 +239,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
      * Following call will be performed:
      * - recipient.foo(x, y, z, d, e, f);
      */
-    function _localSystemCall(
-        uint8 systemRecipient,
-        CallData callData,
-        bytes29 prefix
-    ) internal {
+    function _localSystemCall(uint8 systemRecipient, CallData callData, bytes29 prefix) internal {
         // We adjust the first arguments for the call using the given `prefix`.
         // For remote system calls:
         // - (rootSubmittedAt, callOrigin, systemCaller) are adjusted on origin chain
@@ -272,11 +260,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
      * @param optimisticSeconds     Optimistic period for the executing the system multicall
      * @param systemCalls           List of system calls to execute on destination chain
      */
-    function _remoteSystemCall(
-        uint32 destination_,
-        uint32 optimisticSeconds,
-        bytes[] memory systemCalls
-    ) internal {
+    function _remoteSystemCall(uint32 destination_, uint32 optimisticSeconds, bytes[] memory systemCalls) internal {
         // TODO: use TypedMemView for encoding/decoding instead
         // Serialize the series of system calls into a byte string
         bytes memory content = abi.encode(systemCalls);

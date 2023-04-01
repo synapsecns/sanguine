@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ByteString } from "./ByteString.sol";
-import { STATE_LENGTH } from "./Constants.sol";
-import { TypedMemView } from "./TypedMemView.sol";
+import {ByteString} from "./ByteString.sol";
+import {STATE_LENGTH} from "./Constants.sol";
+import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev State is a memory view over a formatted state payload.
 type State is bytes29;
 /// @dev Attach library functions to State
+
 using {
     StateLib.unwrap,
     StateLib.equals,
@@ -26,10 +27,11 @@ using {
 struct OriginState {
     uint40 blockNumber;
     uint40 timestamp;
-    // 176 bits left for tight packing
 }
+// 176 bits left for tight packing
 /// @dev Attach library functions to OriginState
-using { StateLib.formatOriginState } for OriginState global;
+
+using {StateLib.formatOriginState} for OriginState global;
 
 /// @dev Struct representing State, as it is stored in the Summit contract.
 struct SummitState {
@@ -38,10 +40,11 @@ struct SummitState {
     uint32 nonce;
     uint40 blockNumber;
     uint40 timestamp;
-    // 112 bits left for tight packing
 }
+// 112 bits left for tight packing
 /// @dev Attach library functions to SummitState
-using { StateLib.formatSummitState } for SummitState global;
+
+using {StateLib.formatSummitState} for SummitState global;
 
 library StateLib {
     using ByteString for bytes;
@@ -88,14 +91,12 @@ library StateLib {
      * @param blockNumber_  Block number when root was saved in Origin
      * @param timestamp_    Block timestamp when root was saved in Origin
      * @return Formatted state
-     **/
-    function formatState(
-        bytes32 root_,
-        uint32 origin_,
-        uint32 nonce_,
-        uint40 blockNumber_,
-        uint40 timestamp_
-    ) internal pure returns (bytes memory) {
+     */
+    function formatState(bytes32 root_, uint32 origin_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_)
+        internal
+        pure
+        returns (bytes memory)
+    {
         return abi.encodePacked(root_, origin_, nonce_, blockNumber_, timestamp_);
     }
 
@@ -143,20 +144,18 @@ library StateLib {
      * @param originState_  State struct as it is stored in Origin contract
      * @return Formatted state
      */
-    function formatOriginState(
-        OriginState memory originState_,
-        bytes32 root_,
-        uint32 origin_,
-        uint32 nonce_
-    ) internal pure returns (bytes memory) {
-        return
-            formatState({
-                root_: root_,
-                origin_: origin_,
-                nonce_: nonce_,
-                blockNumber_: originState_.blockNumber,
-                timestamp_: originState_.timestamp
-            });
+    function formatOriginState(OriginState memory originState_, bytes32 root_, uint32 origin_, uint32 nonce_)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return formatState({
+            root_: root_,
+            origin_: origin_,
+            nonce_: nonce_,
+            blockNumber_: originState_.blockNumber,
+            timestamp_: originState_.timestamp
+        });
     }
 
     /// @notice Returns a struct to save in the Origin contract.
@@ -168,14 +167,8 @@ library StateLib {
     }
 
     /// @notice Checks that a state and its Origin representation are equal.
-    function equalToOrigin(State state, OriginState memory originState_)
-        internal
-        pure
-        returns (bool)
-    {
-        return
-            state.blockNumber() == originState_.blockNumber &&
-            state.timestamp() == originState_.timestamp;
+    function equalToOrigin(State state, OriginState memory originState_) internal pure returns (bool) {
+        return state.blockNumber() == originState_.blockNumber && state.timestamp() == originState_.timestamp;
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -187,19 +180,14 @@ library StateLib {
      * @param summitState   State struct as it is stored in Summit contract
      * @return Formatted state
      */
-    function formatSummitState(SummitState memory summitState)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return
-            formatState({
-                root_: summitState.root,
-                origin_: summitState.origin,
-                nonce_: summitState.nonce,
-                blockNumber_: summitState.blockNumber,
-                timestamp_: summitState.timestamp
-            });
+    function formatSummitState(SummitState memory summitState) internal pure returns (bytes memory) {
+        return formatState({
+            root_: summitState.root,
+            origin_: summitState.origin,
+            nonce_: summitState.nonce,
+            blockNumber_: summitState.blockNumber,
+            timestamp_: summitState.timestamp
+        });
     }
 
     /// @notice Returns a struct to save in the Summit contract.
@@ -230,9 +218,9 @@ library StateLib {
     function subLeafs(State state) internal pure returns (bytes32 leftLeaf_, bytes32 rightLeaf_) {
         bytes29 view_ = state.unwrap();
         // Left leaf is (root, origin)
-        leftLeaf_ = view_.prefix({ len_: OFFSET_NONCE, newType: 0 }).keccak();
+        leftLeaf_ = view_.prefix({len_: OFFSET_NONCE, newType: 0}).keccak();
         // Right leaf is (metadata), or (nonce, blockNumber, timestamp)
-        rightLeaf_ = view_.sliceFrom({ index_: OFFSET_NONCE, newType: 0 }).keccak();
+        rightLeaf_ = view_.sliceFrom({index_: OFFSET_NONCE, newType: 0}).keccak();
     }
 
     /// @notice Returns the left "sub-leaf" of the State.
@@ -242,11 +230,7 @@ library StateLib {
     }
 
     /// @notice Returns the right "sub-leaf" of the State.
-    function rightLeaf(
-        uint32 nonce_,
-        uint40 blockNumber_,
-        uint40 timestamp_
-    ) internal pure returns (bytes32) {
+    function rightLeaf(uint32 nonce_, uint40 blockNumber_, uint40 timestamp_) internal pure returns (bytes32) {
         // We use encodePacked here to simulate the State memory layout
         return keccak256(abi.encodePacked(nonce_, blockNumber_, timestamp_));
     }
@@ -258,31 +242,31 @@ library StateLib {
     /// @notice Returns a historical Merkle root from the Origin contract.
     function root(State state) internal pure returns (bytes32) {
         bytes29 view_ = state.unwrap();
-        return view_.index({ index_: OFFSET_ROOT, bytes_: 32 });
+        return view_.index({index_: OFFSET_ROOT, bytes_: 32});
     }
 
     /// @notice Returns domain of chain where the Origin contract is deployed.
     function origin(State state) internal pure returns (uint32) {
         bytes29 view_ = state.unwrap();
-        return uint32(view_.indexUint({ index_: OFFSET_ORIGIN, bytes_: 4 }));
+        return uint32(view_.indexUint({index_: OFFSET_ORIGIN, bytes_: 4}));
     }
 
     /// @notice Returns nonce of Origin contract at the time, when `root` was the Merkle root.
     function nonce(State state) internal pure returns (uint32) {
         bytes29 view_ = state.unwrap();
-        return uint32(view_.indexUint({ index_: OFFSET_NONCE, bytes_: 4 }));
+        return uint32(view_.indexUint({index_: OFFSET_NONCE, bytes_: 4}));
     }
 
     /// @notice Returns a block number when `root` was saved in Origin.
     function blockNumber(State state) internal pure returns (uint40) {
         bytes29 view_ = state.unwrap();
-        return uint40(view_.indexUint({ index_: OFFSET_BLOCK_NUMBER, bytes_: 5 }));
+        return uint40(view_.indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
     }
 
     /// @notice Returns a block timestamp when `root` was saved in Origin.
     /// @dev This is the timestamp according to the origin chain.
     function timestamp(State state) internal pure returns (uint40) {
         bytes29 view_ = state.unwrap();
-        return uint40(view_.indexUint({ index_: OFFSET_TIMESTAMP, bytes_: 5 }));
+        return uint40(view_.indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
     }
 }

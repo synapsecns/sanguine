@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Test } from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
-import { DynamicTreeHarness } from "../../harnesses/libs/DynamicTreeHarness.t.sol";
-import { DynamicProofGenerator } from "../../utils/proof/DynamicProofGenerator.t.sol";
+import {DynamicTreeHarness} from "../../harnesses/libs/DynamicTreeHarness.t.sol";
+import {DynamicProofGenerator} from "../../utils/proof/DynamicProofGenerator.t.sol";
 
-import { Random } from "../../utils/libs/Random.t.sol";
+import {Random} from "../../utils/libs/Random.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract DynamicTreeTest is Test {

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SystemEntity } from "../../../contracts/libs/Structures.sol";
-import { ISystemRegistry } from "../../../contracts/interfaces/ISystemRegistry.sol";
+import {SystemEntity} from "../../../contracts/libs/Structures.sol";
+import {ISystemRegistry} from "../../../contracts/interfaces/ISystemRegistry.sol";
 
-import { AgentManagerTest } from "./AgentManager.t.sol";
+import {AgentManagerTest} from "./AgentManager.t.sol";
 
 import {
     AgentFlag,
@@ -22,11 +22,7 @@ contract LightManagerTest is AgentManagerTest {
     // Deploy mocks for every messaging contract
     constructor() SynapseTest(0) {}
 
-    function test_initializer(
-        address caller,
-        address origin_,
-        address destination_
-    ) public {
+    function test_initializer(address caller, address origin_, address destination_) public {
         lightManager = new LightManager(DOMAIN_LOCAL);
         vm.prank(caller);
         lightManager.initialize(ISystemRegistry(origin_), ISystemRegistry(destination_));
@@ -65,11 +61,7 @@ contract LightManagerTest is AgentManagerTest {
     ▏*║                       TESTS: ADD/REMOVE AGENTS                       ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_addAgent_new(
-        address caller,
-        uint32 domain,
-        address agent
-    ) public {
+    function test_addAgent_new(address caller, uint32 domain, address agent) public {
         // Should not be an already added agent
         vm.assume(lightManager.agentStatus(agent).flag == AgentFlag.Unknown);
         bytes32 root = addNewAgent(domain, agent);
@@ -83,11 +75,7 @@ contract LightManagerTest is AgentManagerTest {
         checkAgentStatus(agent, lightManager.agentStatus(agent), AgentFlag.Active);
     }
 
-    function test_updateAgentStatus_slashed(
-        address caller,
-        uint256 domainId,
-        uint256 agentId
-    ) public {
+    function test_updateAgentStatus_slashed(address caller, uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         // Set flag to Slashed in the Merkle Tree
         bytes32 root = updateAgent(AgentFlag.Slashed, agent);
@@ -95,11 +83,7 @@ contract LightManagerTest is AgentManagerTest {
         bytes32[] memory proof = getAgentProof(agent);
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Slashed, domain, agent);
-        bytes memory expectedCall = abi.encodeWithSelector(
-            ISystemRegistry.managerSlash.selector,
-            domain,
-            agent
-        );
+        bytes memory expectedCall = abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent);
         vm.expectCall(destination, expectedCall);
         vm.expectCall(origin, expectedCall);
         // Anyone could add agents in Light Manager
@@ -137,19 +121,12 @@ contract LightManagerTest is AgentManagerTest {
     ▏*║                         TEST: REGISTRY SLASH                         ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function test_registrySlash_origin(
-        uint32 domain,
-        address agent,
-        address prover
-    ) public {
+    function test_registrySlash_origin(uint32 domain, address agent, address prover) public {
         test_addAgent_new(address(this), domain, agent);
         bytes memory data = _remoteSlashPayload(domain, agent, prover);
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        vm.expectCall(
-            destination,
-            abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent)
-        );
+        vm.expectCall(destination, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
         // (destination, optimisticSeconds, recipient, data)
         vm.expectCall(
             address(systemRouter),

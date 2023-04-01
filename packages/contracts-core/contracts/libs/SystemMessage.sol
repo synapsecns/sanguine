@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ByteString, CallData } from "./ByteString.sol";
-import { TypedMemView } from "./TypedMemView.sol";
+import {ByteString, CallData} from "./ByteString.sol";
+import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev SystemMessage is a memory view over the message with instructions for a system call.
 type SystemMessage is bytes29;
@@ -41,11 +41,11 @@ library SystemMessageLib {
      * @param prefix            ABI-encoded arguments to use as the first arguments in the calldata
      * @return Formatted SystemMessage payload.
      */
-    function formatSystemMessage(
-        uint8 systemRecipient,
-        CallData callData_,
-        bytes29 prefix
-    ) internal view returns (bytes memory) {
+    function formatSystemMessage(uint8 systemRecipient, CallData callData_, bytes29 prefix)
+        internal
+        view
+        returns (bytes memory)
+    {
         bytes29 arguments = callData_.arguments();
         // Arguments payload should be at least as long as the replacement prefix
         require(arguments.len() >= prefix.len(), "Payload too short");
@@ -57,7 +57,7 @@ library SystemMessageLib {
         // Use prefix as the first arguments
         views[2] = prefix;
         // Use payload's remaining arguments (following prefix)
-        views[3] = arguments.sliceFrom({ index_: prefix.len(), newType: 0 });
+        views[3] = arguments.sliceFrom({index_: prefix.len(), newType: 0});
         return TypedMemView.join(views);
     }
 
@@ -74,11 +74,7 @@ library SystemMessageLib {
      * @param prefix    ABI-encoded arguments to use as the first arguments in the calldata
      * @return Adjusted calldata with replaced first arguments
      */
-    function formatAdjustedCallData(CallData callData_, bytes29 prefix)
-        internal
-        view
-        returns (bytes memory)
-    {
+    function formatAdjustedCallData(CallData callData_, bytes29 prefix) internal view returns (bytes memory) {
         bytes29 arguments = callData_.arguments();
         // Arguments payload should be at least as long as the replacement prefix
         require(arguments.len() >= prefix.len(), "Payload too short");
@@ -88,7 +84,7 @@ library SystemMessageLib {
         // Use prefix as the first arguments
         views[1] = prefix;
         // Use payload's remaining arguments (following prefix)
-        views[2] = arguments.sliceFrom({ index_: prefix.len(), newType: 0 });
+        views[2] = arguments.sliceFrom({index_: prefix.len(), newType: 0});
         return TypedMemView.join(views);
     }
 
@@ -137,7 +133,7 @@ library SystemMessageLib {
     function callRecipient(SystemMessage systemMessage) internal pure returns (uint8) {
         // Get the underlying memory view
         bytes29 view_ = unwrap(systemMessage);
-        return uint8(view_.indexUint({ index_: OFFSET_RECIPIENT, bytes_: 1 }));
+        return uint8(view_.indexUint({index_: OFFSET_RECIPIENT, bytes_: 1}));
     }
 
     /**
@@ -158,6 +154,6 @@ library SystemMessageLib {
      * without verifying that this is a valid calldata.
      */
     function _getCallData(bytes29 view_) private pure returns (bytes29) {
-        return view_.sliceFrom({ index_: OFFSET_CALLDATA, newType: 0 });
+        return view_.sliceFrom({index_: OFFSET_CALLDATA, newType: 0});
     }
 }

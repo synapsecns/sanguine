@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { IDisputeHub } from "../../../contracts/interfaces/IDisputeHub.sol";
-import { DisputeFlag, DisputeStatus, SystemEntity } from "../../../contracts/libs/Structures.sol";
+import {IDisputeHub} from "../../../contracts/interfaces/IDisputeHub.sol";
+import {DisputeFlag, DisputeStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 
-import { fakeSnapshot } from "../../utils/libs/FakeIt.t.sol";
+import {fakeSnapshot} from "../../utils/libs/FakeIt.t.sol";
 import {
     AttestationFlag,
     StateFlag,
@@ -14,7 +14,7 @@ import {
     RawState,
     RawStateReport
 } from "../../utils/libs/SynapseStructs.t.sol";
-import { AgentFlag, ISystemContract, SynapseTest } from "../../utils/SynapseTest.t.sol";
+import {AgentFlag, ISystemContract, SynapseTest} from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -37,12 +37,7 @@ abstract contract DisputeHubTest is SynapseTest {
         address prover = makeAddr("Prover");
         // Create Notary signature for the snapshot
         address notary = domains[notaryDomain].agent;
-        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(
-            notary,
-            rs,
-            statesAmount,
-            stateIndex
-        );
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, statesAmount, stateIndex);
         // Create Guard signature for the report
         address guard = domains[0].agent;
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
@@ -74,14 +69,7 @@ abstract contract DisputeHubTest is SynapseTest {
         vm.expectEmit();
         emit Dispute(guard, notaryDomain, notary);
         vm.prank(prover);
-        IDisputeHub(hub).submitStateReportWithProof(
-            stateIndex,
-            srPayload,
-            srSig,
-            snapProof,
-            attPayload,
-            attSig
-        );
+        IDisputeHub(hub).submitStateReportWithProof(stateIndex, srPayload, srSig, snapProof, attPayload, attSig);
         checkDisputeOpened(hub, guard, notary);
     }
 
@@ -104,12 +92,11 @@ abstract contract DisputeHubTest is SynapseTest {
         return rawSnap.castToRawAttestation(ra.agentRoot, ra.nonce, ra.blockNumber, ra.timestamp);
     }
 
-    function createSignedSnapshot(
-        address notary,
-        RawState memory rs,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public view returns (bytes memory snapPayload, bytes memory snapSig) {
+    function createSignedSnapshot(address notary, RawState memory rs, uint256 statesAmount, uint256 stateIndex)
+        public
+        view
+        returns (bytes memory snapPayload, bytes memory snapSig)
+    {
         RawSnapshot memory rawSnap = fakeSnapshot(rs, statesAmount, stateIndex);
         return signSnapshot(notary, rawSnap);
     }
@@ -119,10 +106,7 @@ abstract contract DisputeHubTest is SynapseTest {
         view
         returns (bytes memory arPayload, bytes memory arSig)
     {
-        RawAttestationReport memory rawAR = RawAttestationReport(
-            uint8(AttestationFlag.Invalid),
-            ra
-        );
+        RawAttestationReport memory rawAR = RawAttestationReport(uint8(AttestationFlag.Invalid), ra);
         return signAttestationReport(guard, rawAR);
     }
 
@@ -136,11 +120,7 @@ abstract contract DisputeHubTest is SynapseTest {
     }
 
     /// @notice Checks that the Dispute was opened between a Guard and a Notary.
-    function checkDisputeOpened(
-        address hub,
-        address guard,
-        address notary
-    ) public {
+    function checkDisputeOpened(address hub, address guard, address notary) public {
         DisputeStatus memory guardStatus = IDisputeHub(hub).disputeStatus(guard);
         assertEq(uint8(guardStatus.flag), uint8(DisputeFlag.Pending), "!guard flag");
         assertEq(guardStatus.counterpart, notary, "!guard counterpart");
@@ -150,11 +130,7 @@ abstract contract DisputeHubTest is SynapseTest {
     }
 
     /// @notice Checks that the Dispute between a Guard and a Notary was resolved.
-    function checkDisputeResolved(
-        address hub,
-        address honest,
-        address slashed
-    ) public {
+    function checkDisputeResolved(address hub, address honest, address slashed) public {
         DisputeStatus memory honestStatus = IDisputeHub(hub).disputeStatus(honest);
         assertEq(uint8(honestStatus.flag), uint8(DisputeFlag.None), "!honest flag");
         assertEq(honestStatus.counterpart, address(0), "!honest counterpart");
