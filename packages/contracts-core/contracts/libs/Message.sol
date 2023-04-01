@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ByteString } from "./ByteString.sol";
-import { Header, HeaderLib } from "./Header.sol";
-import { Tips, TipsLib } from "./Tips.sol";
-import { TypedMemView } from "./TypedMemView.sol";
+import {ByteString} from "./ByteString.sol";
+import {Header, HeaderLib} from "./Header.sol";
+import {Tips, TipsLib} from "./Tips.sol";
+import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev Message is a memory over over a formatted message payload.
 type Message is bytes29;
 /// @dev Attach library functions to Message
+
 using {
     MessageLib.unwrap,
     MessageLib.version,
@@ -68,22 +69,15 @@ library MessageLib {
      * @param tips_         Formatted tips payload
      * @param messageBody   Raw bytes of message body
      * @return Formatted message
-     **/
-    function formatMessage(
-        bytes memory header_,
-        bytes memory tips_,
-        bytes memory messageBody
-    ) internal pure returns (bytes memory) {
+     */
+    function formatMessage(bytes memory header_, bytes memory tips_, bytes memory messageBody)
+        internal
+        pure
+        returns (bytes memory)
+    {
         // Header and Tips are supposed to fit within 65535 bytes
         return
-            abi.encodePacked(
-                MESSAGE_VERSION,
-                uint16(header_.length),
-                uint16(tips_.length),
-                header_,
-                tips_,
-                messageBody
-            );
+            abi.encodePacked(MESSAGE_VERSION, uint16(header_.length), uint16(tips_.length), header_, tips_, messageBody);
     }
 
     /**
@@ -97,7 +91,7 @@ library MessageLib {
      * @param tips_                 Formatted tips payload
      * @param messageBody           Raw bytes of message body
      * @return Formatted message
-     **/
+     */
     function formatMessage(
         uint32 origin,
         bytes32 sender,
@@ -108,19 +102,9 @@ library MessageLib {
         bytes memory tips_,
         bytes memory messageBody
     ) internal pure returns (bytes memory) {
-        return
-            formatMessage(
-                HeaderLib.formatHeader(
-                    origin,
-                    sender,
-                    nonce,
-                    destination,
-                    recipient,
-                    optimisticSeconds
-                ),
-                tips_,
-                messageBody
-            );
+        return formatMessage(
+            HeaderLib.formatHeader(origin, sender, nonce, destination, recipient, optimisticSeconds), tips_, messageBody
+        );
     }
 
     /**
@@ -195,7 +179,7 @@ library MessageLib {
         bytes29 view_ = message.unwrap();
         // Determine index where message body payload starts
         uint256 index = OFFSET_HEADER + _getLen(view_, Parts.Header) + _getLen(view_, Parts.Tips);
-        return view_.sliceFrom({ index_: index, newType: 0 });
+        return view_.sliceFrom({index_: index, newType: 0});
     }
 
     /// @notice Returns message's hash: a leaf to be inserted in the Merkle tree.
@@ -223,7 +207,7 @@ library MessageLib {
     /// if the whole payload or the header are properly formatted.
     function _getHeader(bytes29 view_) private pure returns (bytes29) {
         uint256 length = _getLen(view_, Parts.Header);
-        return view_.slice({ index_: OFFSET_HEADER, len_: length, newType: 0 });
+        return view_.slice({index_: OFFSET_HEADER, len_: length, newType: 0});
     }
 
     /// @dev Returns a generic memory view over the tips field without checking
@@ -232,6 +216,6 @@ library MessageLib {
         // Determine index where tips payload starts
         uint256 indexFrom = OFFSET_HEADER + _getLen(view_, Parts.Header);
         uint256 length = _getLen(view_, Parts.Tips);
-        return view_.slice({ index_: indexFrom, len_: length, newType: 0 });
+        return view_.slice({index_: indexFrom, len_: length, newType: 0});
     }
 }

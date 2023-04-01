@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
-import { IStateHub } from "../../contracts/interfaces/IStateHub.sol";
-import { SNAPSHOT_MAX_STATES } from "../../contracts/libs/Constants.sol";
-import { SystemEntity } from "../../contracts/libs/Structures.sol";
-import { TipsLib } from "../../contracts/libs/Tips.sol";
+import {ISystemRegistry} from "../../contracts/interfaces/ISystemRegistry.sol";
+import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
+import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
+import {SystemEntity} from "../../contracts/libs/Structures.sol";
+import {TipsLib} from "../../contracts/libs/Tips.sol";
 
-import { InterfaceOrigin } from "../../contracts/Origin.sol";
-import { Versioned } from "../../contracts/Version.sol";
+import {InterfaceOrigin} from "../../contracts/Origin.sol";
+import {Versioned} from "../../contracts/Version.sol";
 
-import { fakeState, fakeSnapshot } from "../utils/libs/FakeIt.t.sol";
-import { Random } from "../utils/libs/Random.t.sol";
+import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
+import {Random} from "../utils/libs/Random.t.sol";
 import {
     StateFlag,
     RawAttestation,
@@ -22,7 +22,7 @@ import {
     RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
-import { AgentFlag, ISystemContract, SynapseTest } from "../utils/SynapseTest.t.sol";
+import {AgentFlag, ISystemContract, SynapseTest} from "../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -32,22 +32,14 @@ contract OriginTest is SynapseTest {
 
     function test_setupCorrectly() public {
         // Check Messaging addresses
-        assertEq(
-            address(ISystemContract(origin).systemRouter()),
-            address(systemRouter),
-            "!systemRouter"
-        );
+        assertEq(address(ISystemContract(origin).systemRouter()), address(systemRouter), "!systemRouter");
         // TODO: adjust when Agent Merkle Tree is implemented
         // Check Agents: currently all Agents are known in LightManager
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
             for (uint256 i = 0; i < domains[domain].agents.length; ++i) {
                 address agent = domains[domain].agents[i];
-                checkAgentStatus(
-                    agent,
-                    ISystemRegistry(origin).agentStatus(agent),
-                    AgentFlag.Active
-                );
+                checkAgentStatus(agent, ISystemRegistry(origin).agentStatus(agent), AgentFlag.Active);
             }
         }
         // Check version
@@ -102,11 +94,7 @@ contract OriginTest is SynapseTest {
         for (uint32 i = 0; i < MESSAGES; ++i) {
             vm.prank(sender);
             (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).dispatch(
-                DOMAIN_REMOTE,
-                addressToBytes32(recipient),
-                period,
-                tipsPayload,
-                content
+                DOMAIN_REMOTE, addressToBytes32(recipient), period, tipsPayload, content
             );
             // Check return values
             assertEq(messageNonce, i + 1, "!messageNonce");
@@ -146,30 +134,19 @@ contract OriginTest is SynapseTest {
         assertEq(hub.suggestLatestState(), state, "!suggestLatestState");
     }
 
-    function test_verifySnapshot_valid(
-        uint32 nonce,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public {
+    function test_verifySnapshot_valid(uint32 nonce, uint256 statesAmount, uint256 stateIndex) public {
         // Use empty mutation mask
         test_verifySnapshot_existingNonce(nonce, 0, statesAmount, stateIndex);
     }
 
-    function test_verifySnapshot_existingNonce(
-        uint32 nonce,
-        uint256 mask,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public {
+    function test_verifySnapshot_existingNonce(uint32 nonce, uint256 mask, uint256 statesAmount, uint256 stateIndex)
+        public
+    {
         (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
         _verifySnapshot(rs, isValid, statesAmount, stateIndex);
     }
 
-    function test_verifySnapshot_unknownNonce(
-        RawState memory rs,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public {
+    function test_verifySnapshot_unknownNonce(RawState memory rs, uint256 statesAmount, uint256 stateIndex) public {
         // Restrict nonce to non-existing ones
         rs.nonce = uint32(bound(rs.nonce, MESSAGES + 1, type(uint32).max));
         rs.origin = DOMAIN_LOCAL;
@@ -181,11 +158,7 @@ contract OriginTest is SynapseTest {
         test_verifyAttestation_existingNonce(random, nonce, 0);
     }
 
-    function test_verifyAttestation_existingNonce(
-        Random memory random,
-        uint32 nonce,
-        uint256 mask
-    ) public {
+    function test_verifyAttestation_existingNonce(Random memory random, uint32 nonce, uint256 mask) public {
         (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
         _verifyAttestation(random, rs, isValid);
     }
@@ -203,18 +176,12 @@ contract OriginTest is SynapseTest {
         test_verifyAttestationWithProof_existingNonce(random, nonce, 0);
     }
 
-    function test_verifyAttestationWithProof_existingNonce(
-        Random memory random,
-        uint32 nonce,
-        uint256 mask
-    ) public {
+    function test_verifyAttestationWithProof_existingNonce(Random memory random, uint32 nonce, uint256 mask) public {
         (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
         _verifyAttestationWithProof(random, rs, isValid);
     }
 
-    function test_verifyAttestationWithProof_unknownNonce(Random memory random, RawState memory rs)
-        public
-    {
+    function test_verifyAttestationWithProof_unknownNonce(Random memory random, RawState memory rs) public {
         // Restrict nonce to non-existing ones
         rs.nonce = uint32(bound(rs.nonce, MESSAGES + 1, type(uint32).max));
         rs.origin = DOMAIN_LOCAL;
@@ -222,10 +189,7 @@ contract OriginTest is SynapseTest {
         _verifyAttestationWithProof(random, rs, false);
     }
 
-    function _prepareExistingState(uint32 nonce, uint256 mask)
-        internal
-        returns (bool isValid, RawState memory rs)
-    {
+    function _prepareExistingState(uint32 nonce, uint256 mask) internal returns (bool isValid, RawState memory rs) {
         uint40 initialBN = uint40(block.number - 1);
         uint40 initialTS = uint40(block.timestamp - BLOCK_TIME);
         test_dispatch();
@@ -247,13 +211,7 @@ contract OriginTest is SynapseTest {
 
     function _prepareAttestation(Random memory random, RawState memory rawState)
         internal
-        returns (
-            uint32 domain,
-            address notary,
-            uint256 stateIndex,
-            bytes memory snapshot,
-            RawAttestation memory ra
-        )
+        returns (uint32 domain, address notary, uint256 stateIndex, bytes memory snapshot, RawAttestation memory ra)
     {
         // Pick random domain expect for 0
         uint256 domainIndex = bound(random.nextUint256(), 1, allDomains.length - 1);
@@ -272,18 +230,9 @@ contract OriginTest is SynapseTest {
         acceptSnapshot(rawSnap.formatStates());
     }
 
-    function _verifyAttestation(
-        Random memory random,
-        RawState memory rawState,
-        bool isValid
-    ) internal {
-        (
-            uint32 domain,
-            address notary,
-            uint256 stateIndex,
-            bytes memory snapshot,
-            RawAttestation memory ra
-        ) = _prepareAttestation(random, rawState);
+    function _verifyAttestation(Random memory random, RawState memory rawState, bool isValid) internal {
+        (uint32 domain, address notary, uint256 stateIndex, bytes memory snapshot, RawAttestation memory ra) =
+            _prepareAttestation(random, rawState);
         bytes memory state = rawState.formatState();
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
@@ -295,27 +244,16 @@ contract OriginTest is SynapseTest {
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyAttestation(stateIndex, snapshot, attPayload, attSig),
-            isValid,
-            "!returnValue"
+            InterfaceOrigin(origin).verifyAttestation(stateIndex, snapshot, attPayload, attSig), isValid, "!returnValue"
         );
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
     }
 
-    function _verifyAttestationWithProof(
-        Random memory random,
-        RawState memory rawState,
-        bool isValid
-    ) internal {
-        (
-            uint32 domain,
-            address notary,
-            uint256 stateIndex,
-            ,
-            RawAttestation memory ra
-        ) = _prepareAttestation(random, rawState);
+    function _verifyAttestationWithProof(Random memory random, RawState memory rawState, bool isValid) internal {
+        (uint32 domain, address notary, uint256 stateIndex,, RawAttestation memory ra) =
+            _prepareAttestation(random, rawState);
         bytes32[] memory snapProof = genSnapshotProof(stateIndex);
         bytes memory state = rawState.formatState();
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
@@ -328,13 +266,7 @@ contract OriginTest is SynapseTest {
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyAttestationWithProof(
-                stateIndex,
-                state,
-                snapProof,
-                attPayload,
-                attSig
-            ),
+            InterfaceOrigin(origin).verifyAttestationWithProof(stateIndex, state, snapProof, attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -343,12 +275,9 @@ contract OriginTest is SynapseTest {
         }
     }
 
-    function _verifySnapshot(
-        RawState memory rawState,
-        bool isValid,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) internal {
+    function _verifySnapshot(RawState memory rawState, bool isValid, uint256 statesAmount, uint256 stateIndex)
+        internal
+    {
         // Fuzz the position of invalid state in the snapshot
         statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
         stateIndex = bound(stateIndex, 0, statesAmount - 1);
@@ -363,11 +292,7 @@ contract OriginTest is SynapseTest {
             // TODO: check that anyone could make the call
             _expectAgentSlashed(DOMAIN_REMOTE, notary, address(this));
         }
-        assertEq(
-            InterfaceOrigin(origin).verifySnapshot(stateIndex, snapPayload, snapSig),
-            isValid,
-            "!returnValue"
-        );
+        assertEq(InterfaceOrigin(origin).verifySnapshot(stateIndex, snapPayload, snapSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -388,26 +313,15 @@ contract OriginTest is SynapseTest {
             _expectAgentSlashed(0, guard, address(this));
         }
         vm.recordLogs();
-        assertEq(
-            InterfaceOrigin(origin).verifyStateReport(srPayload, srSig),
-            isValid,
-            "!returnValue"
-        );
+        assertEq(InterfaceOrigin(origin).verifyStateReport(srPayload, srSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
     }
 
-    function _expectAgentSlashed(
-        uint32 domain,
-        address agent,
-        address prover
-    ) internal {
+    function _expectAgentSlashed(uint32 domain, address agent, address prover) internal {
         vm.expectEmit(true, true, true, true);
         emit AgentSlashed(domain, agent, prover);
-        vm.expectCall(
-            address(lightManager),
-            abi.encodeWithSelector(lightManager.registrySlash.selector, domain, agent)
-        );
+        vm.expectCall(address(lightManager), abi.encodeWithSelector(lightManager.registrySlash.selector, domain, agent));
     }
 }

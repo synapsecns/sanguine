@@ -1,23 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AgentFlag, BondingManager } from "../../contracts/manager/BondingManager.sol";
-import { AgentStatus, LightManager } from "../../contracts/manager/LightManager.sol";
-import { ISystemContract } from "../../contracts/interfaces/ISystemContract.sol";
-import { ISystemRegistry } from "../../contracts/interfaces/ISystemRegistry.sol";
-import { Destination } from "../../contracts/Destination.sol";
-import { Origin } from "../../contracts/Origin.sol";
-import { Summit } from "../../contracts/Summit.sol";
+import {AgentFlag, BondingManager} from "../../contracts/manager/BondingManager.sol";
+import {AgentStatus, LightManager} from "../../contracts/manager/LightManager.sol";
+import {ISystemContract} from "../../contracts/interfaces/ISystemContract.sol";
+import {ISystemRegistry} from "../../contracts/interfaces/ISystemRegistry.sol";
+import {Destination} from "../../contracts/Destination.sol";
+import {Origin} from "../../contracts/Origin.sol";
+import {Summit} from "../../contracts/Summit.sol";
 
-import { SystemRouterHarness } from "../harnesses/system/SystemRouterHarness.t.sol";
+import {SystemRouterHarness} from "../harnesses/system/SystemRouterHarness.t.sol";
 
-import { DestinationMock } from "../mocks/DestinationMock.t.sol";
-import { OriginMock } from "../mocks/OriginMock.t.sol";
-import { SummitMock } from "../mocks/SummitMock.t.sol";
+import {DestinationMock} from "../mocks/DestinationMock.t.sol";
+import {OriginMock} from "../mocks/OriginMock.t.sol";
+import {SummitMock} from "../mocks/SummitMock.t.sol";
 
-import { ProductionEvents } from "./events/ProductionEvents.t.sol";
-import { SynapseAgents } from "./SynapseAgents.t.sol";
-import { SynapseProofs } from "./SynapseProofs.t.sol";
+import {ProductionEvents} from "./events/ProductionEvents.t.sol";
+import {SynapseAgents} from "./SynapseAgents.t.sol";
+import {SynapseProofs} from "./SynapseProofs.t.sol";
 
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
@@ -209,11 +209,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
         lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
     }
 
-    function checkAgentStatus(
-        address agent,
-        AgentStatus memory status,
-        AgentFlag flag
-    ) public {
+    function checkAgentStatus(address agent, AgentStatus memory status, AgentFlag flag) public {
         assertEq(uint8(status.flag), uint8(flag), "!flag");
         assertEq(status.domain, agentDomain[agent], "!domain");
         assertEq(status.index, agentIndex[agent], "!index");

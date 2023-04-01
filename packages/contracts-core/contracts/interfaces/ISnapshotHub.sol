@@ -26,10 +26,7 @@ interface ISnapshotHub {
      * @param agent         Agent address
      * @return statePayload Raw payload with agent's latest state for origin
      */
-    function getLatestAgentState(uint32 origin, address agent)
-        external
-        view
-        returns (bytes memory statePayload);
+    function getLatestAgentState(uint32 origin, address agent) external view returns (bytes memory statePayload);
 
     /**
      * @notice Returns Guard snapshot for the list of all accepted Guard snapshots.
@@ -55,10 +52,7 @@ interface ISnapshotHub {
      * @param attPayload        Raw payload with attestation data
      * @return snapshotPayload  Raw payload with Notary snapshot used for creating the attestation
      */
-    function getNotarySnapshot(bytes memory attPayload)
-        external
-        view
-        returns (bytes memory snapshotPayload);
+    function getNotarySnapshot(bytes memory attPayload) external view returns (bytes memory snapshotPayload);
 
     /**
      * @notice Returns proof of inclusion of (root, origin) fields of a given snapshot's state
@@ -70,8 +64,5 @@ interface ISnapshotHub {
      * @param stateIndex    Index of state in the attestation's snapshot
      * @return snapProof    The snapshot proof
      */
-    function getSnapshotProof(uint256 nonce, uint256 stateIndex)
-        external
-        view
-        returns (bytes32[] memory snapProof);
+    function getSnapshotProof(uint256 nonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof);
 }

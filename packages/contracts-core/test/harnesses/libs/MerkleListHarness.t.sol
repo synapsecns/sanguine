@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { MerkleList } from "../../../contracts/libs/MerkleList.sol";
+import {MerkleList} from "../../../contracts/libs/MerkleList.sol";
 
 contract MerkleListHarness {
     // Note: we don't add an empty test() function here, as it currently leads
@@ -13,11 +13,7 @@ contract MerkleListHarness {
         return hashes[0];
     }
 
-    function calculateProof(bytes32[] memory hashes, uint256 index)
-        public
-        pure
-        returns (bytes32[] memory proof)
-    {
+    function calculateProof(bytes32[] memory hashes, uint256 index) public pure returns (bytes32[] memory proof) {
         return MerkleList.calculateProof(hashes, index);
     }
 }

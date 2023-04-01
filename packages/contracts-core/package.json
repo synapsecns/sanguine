@@ -11,10 +11,10 @@
     "test:coverage": "echo 'Please use foundry'",
     "build:typescript": "typechain --target ethers-v5 'artifacts/**/*json'",
     "test": "forge test",
-    "lint:contracts:fix": "prettier --write '{contracts,script,test}/**/*.sol' && solhint --fix -c .solhint.json --ignore-path .prettierignore '{contracts,script,test}/**/*.sol'",
+    "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{contracts,script,test}/**/*.sol'",
     "lint:fix": "yarn lint:contracts:fix",
-    "lint": "prettier '{contracts,script,test}/**/*.sol'",
-    "ci:lint": "prettier '{contracts,script,test}/**/*.sol' --check && solhint -c .solhint.json --ignore-path .prettierignore contracts/**/*.sol test/**/*.sol"
+    "lint": "forge fmt",
+    "ci:lint": "forge fmt --check && solhint -c .solhint.json '{contracts,script,test}/**/*.sol'"
   },
   "license": "MIT",
   "devDependencies": {

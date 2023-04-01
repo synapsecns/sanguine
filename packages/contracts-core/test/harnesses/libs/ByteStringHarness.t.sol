@@ -2,12 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {
-    ByteString,
-    CallData,
-    Signature,
-    TypedMemView
-} from "../../../contracts/libs/ByteString.sol";
+import {ByteString, CallData, Signature, TypedMemView} from "../../../contracts/libs/ByteString.sol";
 
 /**
  * @notice Exposes ByteString methods for testing against golang.
@@ -56,15 +51,7 @@ contract ByteStringHarness {
         return payload.castToCallData().argumentWords();
     }
 
-    function toRSV(bytes memory payload)
-        public
-        pure
-        returns (
-            bytes32,
-            bytes32,
-            uint8
-        )
-    {
+    function toRSV(bytes memory payload) public pure returns (bytes32, bytes32, uint8) {
         return payload.castToSignature().toRSV();
     }
 
@@ -72,12 +59,8 @@ contract ByteStringHarness {
     ▏*║                              FORMATTING                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatSignature(
-        bytes32 r,
-        bytes32 s,
-        uint8 v
-    ) public pure returns (bytes memory) {
-        return ByteString.formatSignature({ r: r, s: s, v: v });
+    function formatSignature(bytes32 r, bytes32 s, uint8 v) public pure returns (bytes memory) {
+        return ByteString.formatSignature({r: r, s: s, v: v});
     }
 
     function isSignature(bytes memory payload) public pure returns (bool) {

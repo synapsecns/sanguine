@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SynapseTestConstants } from "./SynapseTestConstants.t.sol";
+import {SynapseTestConstants} from "./SynapseTestConstants.t.sol";
 
-import { Test } from "forge-std/Test.sol";
-import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+import {Test} from "forge-std/Test.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 // solhint-disable no-empty-blocks
 contract SynapseUtilities is SynapseTestConstants, Test {
@@ -12,8 +12,7 @@ contract SynapseUtilities is SynapseTestConstants, Test {
     ▏*║                              CONSTANTS                               ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    bytes internal constant REVERT_ALREADY_INITIALIZED =
-        "Initializable: contract is already initialized";
+    bytes internal constant REVERT_ALREADY_INITIALIZED = "Initializable: contract is already initialized";
     bytes internal constant REVERT_NOT_OWNER = "Ownable: caller is not the owner";
 
     /// @notice Prevents this contract from being included in the coverage report
@@ -48,19 +47,11 @@ contract SynapseUtilities is SynapseTestConstants, Test {
         return address(uint160(uint256(buf)));
     }
 
-    function signMessage(uint256 privKey, bytes memory message)
-        public
-        pure
-        returns (bytes memory signature)
-    {
+    function signMessage(uint256 privKey, bytes memory message) public pure returns (bytes memory signature) {
         return signMessage(privKey, keccak256(message));
     }
 
-    function signMessage(uint256 privKey, bytes32 hashedMsg)
-        public
-        pure
-        returns (bytes memory signature)
-    {
+    function signMessage(uint256 privKey, bytes32 hashedMsg) public pure returns (bytes memory signature) {
         bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashedMsg));
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
         signature = abi.encodePacked(r, s, v);

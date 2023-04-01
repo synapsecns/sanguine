@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { AgentFlag, SystemEntity } from "../libs/Structures.sol";
+import {AgentFlag, SystemEntity} from "../libs/Structures.sol";
 
 interface IBondingManager {
     /**
@@ -15,11 +15,7 @@ interface IBondingManager {
      * @param agent     Address of the Agent
      * @param proof     Merkle proof of the Inactive/Resting status for the agent
      */
-    function addAgent(
-        uint32 domain,
-        address agent,
-        bytes32[] memory proof
-    ) external;
+    function addAgent(uint32 domain, address agent, bytes32[] memory proof) external;
 
     /**
      * @notice Initiates the unstaking of the agent bond. Agent signature is immediately no longer
@@ -31,11 +27,7 @@ interface IBondingManager {
      * @param agent     Address of the Agent
      * @param proof     Merkle proof of the Active status for the agent
      */
-    function initiateUnstaking(
-        uint32 domain,
-        address agent,
-        bytes32[] memory proof
-    ) external;
+    function initiateUnstaking(uint32 domain, address agent, bytes32[] memory proof) external;
 
     /**
      * @notice Completes the unstaking of the agent bond. Agent signature is no longer considered
@@ -46,11 +38,7 @@ interface IBondingManager {
      * @param agent     Address of the Agent
      * @param proof     Merkle proof of the unstaking status for the agent
      */
-    function completeUnstaking(
-        uint32 domain,
-        address agent,
-        bytes32[] memory proof
-    ) external;
+    function completeUnstaking(uint32 domain, address agent, bytes32[] memory proof) external;
 
     /**
      * @notice Completes the slashing of the agent bond. Agent signature is no longer considered
@@ -61,11 +49,7 @@ interface IBondingManager {
      * @param agent     Address of the Agent
      * @param proof     Merkle proof of the active/unstaking status for the agent
      */
-    function completeSlashing(
-        uint32 domain,
-        address agent,
-        bytes32[] memory proof
-    ) external;
+    function completeSlashing(uint32 domain, address agent, bytes32[] memory proof) external;
 
     /**
      * @notice Remote AgentManager should call this function to indicate that the agent
@@ -115,10 +99,7 @@ interface IBondingManager {
      * @dev This might consume a lot of gas, do not use this on-chain.
      * @dev Will return less than `amount` entries, if indexFrom + amount > leafsAmount
      */
-    function getLeafs(uint256 indexFrom, uint256 amount)
-        external
-        view
-        returns (bytes32[] memory leafs);
+    function getLeafs(uint256 indexFrom, uint256 amount) external view returns (bytes32[] memory leafs);
 
     /**
      * @notice Returns a proof of inclusion of the agent in the Agent Merkle Tree.

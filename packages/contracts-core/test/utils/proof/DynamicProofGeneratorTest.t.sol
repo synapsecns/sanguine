@@ -1,12 +1,12 @@
 //  SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Test } from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
-import { BaseTree, MerkleLib, AGENT_TREE_HEIGHT } from "../../../contracts/libs/Merkle.sol";
-import { DynamicProofGenerator } from "./DynamicProofGenerator.t.sol";
+import {BaseTree, MerkleLib, AGENT_TREE_HEIGHT} from "../../../contracts/libs/Merkle.sol";
+import {DynamicProofGenerator} from "./DynamicProofGenerator.t.sol";
 
-import { Random } from "../libs/Random.t.sol";
+import {Random} from "../libs/Random.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract DynamicProofGeneratorTest is Test {
@@ -44,11 +44,7 @@ contract DynamicProofGeneratorTest is Test {
         }
     }
 
-    function _checkRootParity(
-        Random memory random,
-        uint256 amount,
-        uint256 updates
-    ) internal {
+    function _checkRootParity(Random memory random, uint256 amount, uint256 updates) internal {
         bytes32[] memory leafs = new bytes32[](amount);
         for (uint256 i = 0; i < updates; ++i) {
             uint256 index = random.nextUint256() % amount;

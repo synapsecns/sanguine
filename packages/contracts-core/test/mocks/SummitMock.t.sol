@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { InterfaceSummit } from "../../contracts/interfaces/InterfaceSummit.sol";
-import { SnapshotHubMock } from "./hubs/SnapshotHubMock.t.sol";
-import { SystemContractMock } from "./system/SystemContractMock.t.sol";
-import { SystemRegistryMock } from "./system/SystemRegistryMock.t.sol";
+import {InterfaceSummit} from "../../contracts/interfaces/InterfaceSummit.sol";
+import {SnapshotHubMock} from "./hubs/SnapshotHubMock.t.sol";
+import {SystemContractMock} from "./system/SystemContractMock.t.sol";
+import {SystemRegistryMock} from "./system/SystemRegistryMock.t.sol";
 
 // solhint-disable no-empty-blocks
 contract SummitMock is SnapshotHubMock, SystemContractMock, SystemRegistryMock, InterfaceSummit {
@@ -16,10 +16,7 @@ contract SummitMock is SnapshotHubMock, SystemContractMock, SystemRegistryMock, 
         returns (bytes memory attPayload)
     {}
 
-    function verifyAttestation(bytes memory attPayload, bytes memory attSignature)
-        external
-        returns (bool isValid)
-    {}
+    function verifyAttestation(bytes memory attPayload, bytes memory attSignature) external returns (bool isValid) {}
 
     function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
         external

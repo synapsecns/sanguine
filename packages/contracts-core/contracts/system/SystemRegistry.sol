@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { SystemContract } from "./SystemContract.sol";
-import { SystemRegistryEvents } from "../events/SystemRegistryEvents.sol";
-import { AgentStatus, IAgentManager } from "../interfaces/IAgentManager.sol";
-import { ISystemRegistry } from "../interfaces/ISystemRegistry.sol";
+
+import {SystemContract} from "./SystemContract.sol";
+import {SystemRegistryEvents} from "../events/SystemRegistryEvents.sol";
+import {AgentStatus, IAgentManager} from "../interfaces/IAgentManager.sol";
+import {ISystemRegistry} from "../interfaces/ISystemRegistry.sol";
 
 /// @notice Shared utilities for Origin, Destination/Summit contracts.
 /// This abstract contract is responsible for all interactions with the local AgentManager,
@@ -41,11 +42,7 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc ISystemRegistry
-    function managerSlash(
-        uint32 domain,
-        address agent,
-        address prover
-    ) external onlyAgentManager {
+    function managerSlash(uint32 domain, address agent, address prover) external onlyAgentManager {
         _processSlashed(domain, agent, prover);
     }
 
@@ -64,11 +61,7 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
 
     /// @dev Child contract could define custom logic for processing the slashed Agent.
     /// This will be called when the slashing was initiated in this contract or elsewhere.
-    function _processSlashed(
-        uint32 domain,
-        address agent,
-        address prover
-    ) internal virtual {
+    function _processSlashed(uint32 domain, address agent, address prover) internal virtual {
         emit AgentSlashed(domain, agent, prover);
     }
 

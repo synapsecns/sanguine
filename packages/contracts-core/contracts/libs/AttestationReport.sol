@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Attestation, AttestationLib } from "./Attestation.sol";
-import { ByteString } from "./ByteString.sol";
-import { ATTESTATION_REPORT_SALT } from "./Constants.sol";
-import { TypedMemView } from "./TypedMemView.sol";
+import {Attestation, AttestationLib} from "./Attestation.sol";
+import {ByteString} from "./ByteString.sol";
+import {ATTESTATION_REPORT_SALT} from "./Constants.sol";
+import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev AttestationReport is a memory view over a formatted Guard report for invalid Attestation
 type AttestationReport is bytes29;
 /// @dev Possible flags for the AttestationReport
 /// Currently has only one possible value, but enables different types of reports in the future
-enum AttestationFlag {
-    Invalid
-}
+
+enum AttestationFlag {Invalid}
 /// @dev Attach library functions to AttestationFlag
-using { AttestationReportLib.formatAttestationReport } for AttestationFlag global;
+
+using {AttestationReportLib.formatAttestationReport} for AttestationFlag global;
 /// @dev Attach library functions to AttestationReport
 using {
     AttestationReportLib.hash,
@@ -64,11 +64,7 @@ library AttestationReportLib {
 
     /// @notice Returns an AttestationReport view over the given payload
     /// @dev Will revert if the payload is not an attestation report.
-    function castToAttestationReport(bytes memory payload)
-        internal
-        pure
-        returns (AttestationReport)
-    {
+    function castToAttestationReport(bytes memory payload) internal pure returns (AttestationReport) {
         return castToAttestationReport(payload.castToRawBytes());
     }
 
@@ -123,12 +119,12 @@ library AttestationReportLib {
 
     /// @dev Returns AttestationReport without checking that it fits into AttestationFlag enum.
     function _arFlag(bytes29 view_) internal pure returns (uint8) {
-        return uint8(view_.indexUint({ index_: OFFSET_FLAG, bytes_: 1 }));
+        return uint8(view_.indexUint({index_: OFFSET_FLAG, bytes_: 1}));
     }
 
     /// @dev Returns an untyped memory view over Report's attestation
     /// without checking if it is properly formatted.
     function _arAttestation(bytes29 view_) internal pure returns (bytes29) {
-        return view_.sliceFrom({ index_: OFFSET_ATTESTATION, newType: 0 });
+        return view_.sliceFrom({index_: OFFSET_ATTESTATION, newType: 0});
     }
 }

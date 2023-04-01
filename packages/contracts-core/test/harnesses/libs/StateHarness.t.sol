@@ -2,13 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {
-    OriginState,
-    State,
-    StateLib,
-    SummitState,
-    TypedMemView
-} from "../../../contracts/libs/State.sol";
+import {OriginState, State, StateLib, SummitState, TypedMemView} from "../../../contracts/libs/State.sol";
 
 // solhint-disable ordering
 /// @notice Exposes State methods for testing against golang.
@@ -48,11 +42,7 @@ contract StateHarness {
         return StateLib.leftLeaf(root_, origin_);
     }
 
-    function rightLeaf(
-        uint32 nonce_,
-        uint40 blockNumber_,
-        uint40 timestamp_
-    ) public pure returns (bytes32) {
+    function rightLeaf(uint32 nonce_, uint40 blockNumber_, uint40 timestamp_) public pure returns (bytes32) {
         return StateLib.rightLeaf(nonce_, blockNumber_, timestamp_);
     }
 
@@ -80,12 +70,11 @@ contract StateHarness {
     ▏*║                             ORIGIN STATE                             ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatOriginState(
-        OriginState memory originState_,
-        bytes32 root_,
-        uint32 origin_,
-        uint32 nonce_
-    ) public pure returns (bytes memory) {
+    function formatOriginState(OriginState memory originState_, bytes32 root_, uint32 origin_, uint32 nonce_)
+        public
+        pure
+        returns (bytes memory)
+    {
         return originState_.formatOriginState(root_, origin_, nonce_);
     }
 
@@ -93,11 +82,7 @@ contract StateHarness {
         return StateLib.originState();
     }
 
-    function equalToOrigin(bytes memory payload, OriginState memory originState_)
-        public
-        pure
-        returns (bool)
-    {
+    function equalToOrigin(bytes memory payload, OriginState memory originState_) public pure returns (bool) {
         return payload.castToState().equalToOrigin(originState_);
     }
 
@@ -117,13 +102,11 @@ contract StateHarness {
     ▏*║                           STATE FORMATTERS                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatState(
-        bytes32 root_,
-        uint32 origin_,
-        uint32 nonce_,
-        uint40 blockNumber_,
-        uint40 timestamp_
-    ) public pure returns (bytes memory) {
+    function formatState(bytes32 root_, uint32 origin_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_)
+        public
+        pure
+        returns (bytes memory)
+    {
         return StateLib.formatState(root_, origin_, nonce_, blockNumber_, timestamp_);
     }
 

@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { Attestation, AttestationLib, SummitAttestation } from "../libs/Attestation.sol";
-import { MerkleList } from "../libs/MerkleList.sol";
-import { Snapshot, SnapshotLib, SummitSnapshot } from "../libs/Snapshot.sol";
-import { State, StateLib, SummitState } from "../libs/State.sol";
-import { TypedMemView } from "../libs/TypedMemView.sol";
+
+import {Attestation, AttestationLib, SummitAttestation} from "../libs/Attestation.sol";
+import {MerkleList} from "../libs/MerkleList.sol";
+import {Snapshot, SnapshotLib, SummitSnapshot} from "../libs/Snapshot.sol";
+import {State, StateLib, SummitState} from "../libs/State.sol";
+import {TypedMemView} from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { SnapshotHubEvents } from "../events/SnapshotHubEvents.sol";
-import { ISnapshotHub } from "../interfaces/ISnapshotHub.sol";
+import {SnapshotHubEvents} from "../events/SnapshotHubEvents.sol";
+import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
 
 /**
  * @notice Hub to accept and save snapshots, as well as verify _attestations.
@@ -67,11 +68,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getLatestAgentState(uint32 origin, address agent)
-        external
-        view
-        returns (bytes memory stateData)
-    {
+    function getLatestAgentState(uint32 origin, address agent) external view returns (bytes memory stateData) {
         SummitState memory latestState = _latestState(origin, agent);
         if (latestState.nonce == 0) return bytes("");
         return latestState.formatSummitState();
@@ -90,11 +87,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getNotarySnapshot(bytes memory attPayload)
-        external
-        view
-        returns (bytes memory snapshotPayload)
-    {
+    function getNotarySnapshot(bytes memory attPayload) external view returns (bytes memory snapshotPayload) {
         // This will revert if payload is not a formatted attestation
         Attestation attestation = attPayload.castToAttestation();
         require(_isValidAttestation(attestation), "Invalid attestation");
@@ -104,11 +97,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getSnapshotProof(uint256 nonce, uint256 stateIndex)
-        external
-        view
-        returns (bytes32[] memory snapProof)
-    {
+    function getSnapshotProof(uint256 nonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof) {
         require(nonce < _notarySnapshots.length, "Nonce out of range");
         SummitSnapshot memory snap = _notarySnapshots[nonce];
         uint256 statesAmount = snap.getStatesAmount();
@@ -151,11 +140,10 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// @dev Accepts a Snapshot signed by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
     /// Returns the attestation created from the Notary snapshot.
-    function _acceptNotarySnapshot(
-        Snapshot snapshot,
-        bytes32 agentRoot,
-        address notary
-    ) internal returns (bytes memory attPayload) {
+    function _acceptNotarySnapshot(Snapshot snapshot, bytes32 agentRoot, address notary)
+        internal
+        returns (bytes memory attPayload)
+    {
         // Snapshot Signer is a Notary: construct a Snapshot Merkle Tree,
         // while checking that the states were previously saved.
         uint256 statesAmount = snapshot.statesAmount();
@@ -197,11 +185,10 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Saves the Notary snapshot and the attestation created from it.
     /// Returns the created attestation.
-    function _saveNotarySnapshot(
-        Snapshot snapshot,
-        uint256[] memory statePtrs,
-        bytes32 agentRoot
-    ) internal returns (bytes memory attPayload) {
+    function _saveNotarySnapshot(Snapshot snapshot, uint256[] memory statePtrs, bytes32 agentRoot)
+        internal
+        returns (bytes memory attPayload)
+    {
         // Attestation nonce is its index in `_attestations` array
         uint32 attNonce = uint32(_attestations.length);
         SummitAttestation memory summitAtt = snapshot.toSummitAttestation(agentRoot);
@@ -281,11 +268,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Returns the latest state submitted by the Agent for the origin.
     /// Will return an empty struct, if the Agent hasn't submitted a single origin State yet.
-    function _latestState(uint32 origin, address agent)
-        internal
-        view
-        returns (SummitState memory state)
-    {
+    function _latestState(uint32 origin, address agent) internal view returns (SummitState memory state) {
         // Get value for "index in _guardStates PLUS 1"
         uint256 latestPtr = _latestStatePtr[origin][agent];
         // Check if the Agent has submitted at least one State for origin

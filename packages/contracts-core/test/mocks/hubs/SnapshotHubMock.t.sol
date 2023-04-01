@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ISnapshotHub } from "../../../contracts/interfaces/ISnapshotHub.sol";
+import {ISnapshotHub} from "../../../contracts/interfaces/ISnapshotHub.sol";
 
 // solhint-disable no-empty-blocks
 contract SnapshotHubMock is ISnapshotHub {
@@ -12,29 +12,13 @@ contract SnapshotHubMock is ISnapshotHub {
 
     function getAttestation(uint32 nonce) external view returns (bytes memory attPayload) {}
 
-    function getLatestAgentState(uint32 origin, address agent)
-        external
-        view
-        returns (bytes memory statePayload)
-    {}
+    function getLatestAgentState(uint32 origin, address agent) external view returns (bytes memory statePayload) {}
 
     function getGuardSnapshot(uint256 index) external view returns (bytes memory snapshotPayload) {}
 
-    function getNotarySnapshot(uint256 nonce)
-        external
-        view
-        returns (bytes memory snapshotPayload)
-    {}
+    function getNotarySnapshot(uint256 nonce) external view returns (bytes memory snapshotPayload) {}
 
-    function getNotarySnapshot(bytes memory attPayload)
-        external
-        view
-        returns (bytes memory snapshotPayload)
-    {}
+    function getNotarySnapshot(bytes memory attPayload) external view returns (bytes memory snapshotPayload) {}
 
-    function getSnapshotProof(uint256 nonce, uint256 stateIndex)
-        external
-        view
-        returns (bytes32[] memory snapProof)
-    {}
+    function getSnapshotProof(uint256 nonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof) {}
 }

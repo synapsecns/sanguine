@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { Attestation, AttestationLib } from "../libs/Attestation.sol";
-import { Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT, State, StateLib } from "../libs/Snapshot.sol";
-import { AttestationReport, AttestationReportLib } from "../libs/AttestationReport.sol";
-import { MerkleLib } from "../libs/Merkle.sol";
-import { StateReport, StateReportLib } from "../libs/StateReport.sol";
-import { AgentFlag, AgentStatus } from "../libs/Structures.sol";
+
+import {Attestation, AttestationLib} from "../libs/Attestation.sol";
+import {Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT, State, StateLib} from "../libs/Snapshot.sol";
+import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
+import {MerkleLib} from "../libs/Merkle.sol";
+import {StateReport, StateReportLib} from "../libs/StateReport.sol";
+import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { SystemRegistry } from "../system/SystemRegistry.sol";
+import {SystemRegistry} from "../system/SystemRegistry.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /**
  * @notice This abstract contract is used for verifying Guards and Notaries
@@ -160,12 +161,10 @@ abstract contract StatementHub is SystemRegistry {
      * @param state             Typed memory view over the provided state payload
      * @param snapProof         Raw payload with snapshot data
      */
-    function _verifySnapshotMerkle(
-        Attestation att,
-        uint256 stateIndex,
-        State state,
-        bytes32[] memory snapProof
-    ) internal pure {
+    function _verifySnapshotMerkle(Attestation att, uint256 stateIndex, State state, bytes32[] memory snapProof)
+        internal
+        pure
+    {
         // Snapshot proof first element should match State metadata (aka "right sub-leaf")
         (, bytes32 rightSubLeaf) = state.subLeafs();
         require(snapProof[0] == rightSubLeaf, "Incorrect proof[0]");
@@ -189,12 +188,11 @@ abstract contract StatementHub is SystemRegistry {
      * @param snapProof     Proof of inclusion of State Merkle Data into Snapshot Merkle Tree
      * @param stateIndex    Index of Origin State in the Snapshot
      */
-    function _snapshotRoot(
-        bytes32 originRoot,
-        uint32 origin,
-        bytes32[] memory snapProof,
-        uint256 stateIndex
-    ) internal pure returns (bytes32 snapshotRoot) {
+    function _snapshotRoot(bytes32 originRoot, uint32 origin, bytes32[] memory snapProof, uint256 stateIndex)
+        internal
+        pure
+        returns (bytes32 snapshotRoot)
+    {
         // Index of "leftLeaf" is twice the state position in the snapshot
         uint256 leftLeafIndex = stateIndex << 1;
         // Check that "leftLeaf" index fits into Snapshot Merkle Tree
@@ -212,10 +210,7 @@ abstract contract StatementHub is SystemRegistry {
 
     /// @dev Checks that Agent is Active
     function _verifyActive(AgentStatus memory status) internal pure {
-        require(
-            status.flag == AgentFlag.Active,
-            status.domain == 0 ? "Not an active guard" : "Not an active notary"
-        );
+        require(status.flag == AgentFlag.Active, status.domain == 0 ? "Not an active guard" : "Not an active notary");
     }
 
     /// @dev Checks that Agent is Active or Unstaking
@@ -238,11 +233,7 @@ abstract contract StatementHub is SystemRegistry {
     }
 
     /// @dev Wraps AttestationReport payload into a typed memory view. Reverts if not properly formatted.
-    function _wrapAttestationReport(bytes memory arPayload)
-        internal
-        pure
-        returns (AttestationReport)
-    {
+    function _wrapAttestationReport(bytes memory arPayload) internal pure returns (AttestationReport) {
         return arPayload.castToAttestationReport();
     }
 

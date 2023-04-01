@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Tips, TipsLib, TypedMemView } from "../../../contracts/libs/Tips.sol";
+import {Tips, TipsLib, TypedMemView} from "../../../contracts/libs/Tips.sol";
 
 /**
  * @notice Exposes TipsLib methods for testing against golang.
@@ -64,12 +64,11 @@ contract TipsHarness {
     ▏*║                              FORMATTERS                              ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function formatTips(
-        uint96 notaryTip_,
-        uint96 broadcasterTip_,
-        uint96 proverTip_,
-        uint96 executorTip_
-    ) public pure returns (bytes memory) {
+    function formatTips(uint96 notaryTip_, uint96 broadcasterTip_, uint96 proverTip_, uint96 executorTip_)
+        public
+        pure
+        returns (bytes memory)
+    {
         return TipsLib.formatTips(notaryTip_, broadcasterTip_, proverTip_, executorTip_);
     }
 

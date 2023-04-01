@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { SynapseLibraryTest, TypedMemView } from "../../utils/SynapseLibraryTest.t.sol";
-import { HeaderHarness } from "../../harnesses/libs/HeaderHarness.t.sol";
+import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {HeaderHarness} from "../../harnesses/libs/HeaderHarness.t.sol";
 
-import { HeaderLib } from "../../../contracts/libs/Header.sol";
+import {HeaderLib} from "../../../contracts/libs/Header.sol";
 
 // solhint-disable func-name-mixedcase
 contract HeaderLibraryTest is SynapseLibraryTest {
@@ -31,29 +31,14 @@ contract HeaderLibraryTest is SynapseLibraryTest {
         uint32 optimisticSeconds
     ) public {
         // Test formatting
-        bytes memory payload = libHarness.formatHeader(
-            origin,
-            sender,
-            nonce,
-            destination,
-            recipient,
-            optimisticSeconds
-        );
+        bytes memory payload = libHarness.formatHeader(origin, sender, nonce, destination, recipient, optimisticSeconds);
         assertEq(
             payload,
-            abi.encodePacked(
-                HeaderLib.HEADER_VERSION,
-                origin,
-                sender,
-                nonce,
-                destination,
-                recipient,
-                optimisticSeconds
-            ),
+            abi.encodePacked(HeaderLib.HEADER_VERSION, origin, sender, nonce, destination, recipient, optimisticSeconds),
             "!formatHeader"
         );
         // Test formatting checker
-        checkCastToHeader({ payload: payload, isHeader: true });
+        checkCastToHeader({payload: payload, isHeader: true});
         // Test getters
         assertEq(libHarness.version(payload), HeaderLib.HEADER_VERSION, "!headerVersion");
         assertEq(libHarness.origin(payload), origin, "!origin");
@@ -62,11 +47,7 @@ contract HeaderLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.destination(payload), destination, "!destination");
         assertEq(libHarness.recipient(payload), recipient, "!recipient");
         assertEq(libHarness.optimisticSeconds(payload), optimisticSeconds, "!optimisticSeconds");
-        assertEq(
-            libHarness.recipientAddress(payload),
-            address(uint160(uint256(recipient))),
-            "!recipientAddress"
-        );
+        assertEq(libHarness.recipientAddress(payload), address(uint160(uint256(recipient))), "!recipientAddress");
     }
 
     function test_constants() public {
@@ -92,27 +73,27 @@ contract HeaderLibraryTest is SynapseLibraryTest {
         // Payload having less bytes than Header's first element (uint16 version)
         // should be correctly treated as unformatted (i.e. with no reverts)
         bytes memory payload = createShortPayload(payloadLength, FIRST_ELEMENT_BYTES, data);
-        checkCastToHeader({ payload: payload, isHeader: false });
+        checkCastToHeader({payload: payload, isHeader: false});
     }
 
     function test_isHeader_testPayload() public {
         // Check that manually constructed test payload is considered formatted
         bytes memory payload = createTestPayload();
-        checkCastToHeader({ payload: payload, isHeader: true });
+        checkCastToHeader({payload: payload, isHeader: true});
     }
 
     function test_isHeader_shorterLength() public {
         // Check that manually constructed test payload without the last byte
         // is not considered formatted
         bytes memory payload = cutLastByte(createTestPayload());
-        checkCastToHeader({ payload: payload, isHeader: false });
+        checkCastToHeader({payload: payload, isHeader: false});
     }
 
     function test_isHeader_longerLength() public {
         // Check that manually constructed test payload with an extra last byte
         // is not considered formatted
         bytes memory payload = addLastByte(createTestPayload());
-        checkCastToHeader({ payload: payload, isHeader: false });
+        checkCastToHeader({payload: payload, isHeader: false});
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

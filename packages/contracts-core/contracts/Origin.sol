@@ -1,20 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { MAX_CONTENT_BYTES, SYSTEM_ROUTER } from "./libs/Constants.sol";
-import { HeaderLib, MessageLib } from "./libs/Message.sol";
-import { StateReport } from "./libs/StateReport.sol";
-import { State, StateLib, TypedMemView } from "./libs/State.sol";
-import { Tips, TipsLib } from "./libs/Tips.sol";
-import { TypeCasts } from "./libs/TypeCasts.sol";
+
+import {MAX_CONTENT_BYTES, SYSTEM_ROUTER} from "./libs/Constants.sol";
+import {HeaderLib, MessageLib} from "./libs/Message.sol";
+import {StateReport} from "./libs/StateReport.sol";
+import {State, StateLib, TypedMemView} from "./libs/State.sol";
+import {Tips, TipsLib} from "./libs/Tips.sol";
+import {TypeCasts} from "./libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { OriginEvents } from "./events/OriginEvents.sol";
-import { IAgentManager } from "./interfaces/IAgentManager.sol";
-import { InterfaceOrigin } from "./interfaces/InterfaceOrigin.sol";
-import { StateHub } from "./hubs/StateHub.sol";
-import { AgentStatus, Attestation, Snapshot, StatementHub } from "./hubs/StatementHub.sol";
-import { DomainContext, Versioned } from "./system/SystemContract.sol";
-import { SystemRegistry } from "./system/SystemRegistry.sol";
+import {OriginEvents} from "./events/OriginEvents.sol";
+import {IAgentManager} from "./interfaces/IAgentManager.sol";
+import {InterfaceOrigin} from "./interfaces/InterfaceOrigin.sol";
+import {StateHub} from "./hubs/StateHub.sol";
+import {AgentStatus, Attestation, Snapshot, StatementHub} from "./hubs/StatementHub.sol";
+import {DomainContext, Versioned} from "./system/SystemContract.sol";
+import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     using TipsLib for bytes;
@@ -66,12 +67,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         // This will revert if  state refers to another domain
         isValid = _isValidState(state);
         if (!isValid) {
-            emit InvalidAttestationState(
-                stateIndex,
-                state.unwrap().clone(),
-                attPayload,
-                attSignature
-            );
+            emit InvalidAttestationState(stateIndex, state.unwrap().clone(), attPayload, attSignature);
             // Slash Notary and notify local AgentManager
             _slashAgent(status.domain, notary);
         }
@@ -109,11 +105,10 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     }
 
     /// @inheritdoc InterfaceOrigin
-    function verifySnapshot(
-        uint256 stateIndex,
-        bytes memory snapPayload,
-        bytes memory snapSignature
-    ) external returns (bool isValid) {
+    function verifySnapshot(uint256 stateIndex, bytes memory snapPayload, bytes memory snapSignature)
+        external
+        returns (bool isValid)
+    {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = _wrapSnapshot(snapPayload);
         // This will revert if the snapshot signer is not a known Agent
@@ -130,10 +125,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     }
 
     /// @inheritdoc InterfaceOrigin
-    function verifyStateReport(bytes memory srPayload, bytes memory srSignature)
-        external
-        returns (bool isValid)
-    {
+    function verifyStateReport(bytes memory srPayload, bytes memory srSignature) external returns (bool isValid) {
         // This will revert if payload is not a snapshot report
         StateReport report = _wrapStateReport(srPayload);
         // This will revert if the report signer is not a known Guard

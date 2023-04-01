@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { IStateHub } from "../../../contracts/interfaces/IStateHub.sol";
+import {IStateHub} from "../../../contracts/interfaces/IStateHub.sol";
 
 // solhint-disable no-empty-blocks
 contract StateHubMock is IStateHub {

@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { DisputeFlag, DisputeStatus } from "../libs/Structures.sol";
+
+import {DisputeFlag, DisputeStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { AgentStatus, Attestation, Snapshot, StatementHub, StateReport } from "./StatementHub.sol";
-import { DisputeHubEvents } from "../events/DisputeHubEvents.sol";
-import { IDisputeHub } from "../interfaces/IDisputeHub.sol";
+import {AgentStatus, Attestation, Snapshot, StatementHub, StateReport} from "./StatementHub.sol";
+import {DisputeHubEvents} from "../events/DisputeHubEvents.sol";
+import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
 
 abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
@@ -41,10 +42,7 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         // This will revert if payload is not a snapshot
         Snapshot snapshot = _wrapSnapshot(snapPayload);
         // This will revert if the snapshot signer is not a known Agent
-        (AgentStatus memory notaryStatus, address notary) = _verifySnapshot(
-            snapshot,
-            snapSignature
-        );
+        (AgentStatus memory notaryStatus, address notary) = _verifySnapshot(snapshot, snapSignature);
         // Snapshot signer needs to be a Notary, not a Guard
         require(notaryStatus.domain != 0, "Snapshot signer is not a Notary");
         // Notary needs to be Active/Unstaking
@@ -110,11 +108,7 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
 
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This should be called, when the Guard submits a Report on a statement signed by the Notary.
-    function _openDispute(
-        address guard,
-        uint32 domain,
-        address notary
-    ) internal virtual {
+    function _openDispute(address guard, uint32 domain, address notary) internal virtual {
         // Check that both agents are not in Dispute yet
         require(_disputes[guard].flag == DisputeFlag.None, "Guard already in dispute");
         require(_disputes[notary].flag == DisputeFlag.None, "Notary already in dispute");
@@ -124,11 +118,7 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     }
 
     /// @dev This is called when the slashing was initiated in this contract or elsewhere.
-    function _processSlashed(
-        uint32 domain,
-        address agent,
-        address prover
-    ) internal virtual override {
+    function _processSlashed(uint32 domain, address agent, address prover) internal virtual override {
         _resolveDispute(domain, agent);
         super._processSlashed(domain, agent, prover);
     }

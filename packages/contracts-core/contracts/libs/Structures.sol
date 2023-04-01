@@ -35,8 +35,8 @@ struct AgentStatus {
     AgentFlag flag;
     uint32 domain;
     uint32 index;
-    // 184 bits available for tight packing
 }
+// 184 bits available for tight packing
 
 /// @notice Potential statuses of an agent in terms of being in dispute
 /// - None: agent is not in dispute
@@ -56,15 +56,15 @@ enum DisputeFlag {
 struct DisputeStatus {
     DisputeFlag flag;
     address counterpart;
-    // 88 bits available for tight packing
 }
+// 88 bits available for tight packing
 
 /// @notice Struct representing information about a slashed agent.
 struct SlashStatus {
     bool isSlashed;
     address prover;
-    // 88 bits available for tight packing
 }
+// 88 bits available for tight packing
 
 /// @notice Struct representing the status of Destination contract.
 /// @param snapRootTime     Timestamp when latest snapshot root was accepted

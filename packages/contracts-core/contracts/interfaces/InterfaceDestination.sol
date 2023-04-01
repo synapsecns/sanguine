@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { ExecutionAttestation } from "../libs/Attestation.sol";
+import {ExecutionAttestation} from "../libs/Attestation.sol";
 
 interface InterfaceDestination {
     /**
@@ -39,11 +39,9 @@ interface InterfaceDestination {
      * @param attSignature      Notary signature for the reported attestation
      * @return wasAccepted      Whether the Report was accepted (resulting in Dispute between the agents)
      */
-    function submitAttestationReport(
-        bytes memory arPayload,
-        bytes memory arSignature,
-        bytes memory attSignature
-    ) external returns (bool wasAccepted);
+    function submitAttestationReport(bytes memory arPayload, bytes memory arSignature, bytes memory attSignature)
+        external
+        returns (bool wasAccepted);
 
     // ═════════════════════════════════ VIEWS ═════════════════════════════════
 
@@ -59,10 +57,7 @@ interface InterfaceDestination {
      * @return root    Snapshot root for the attestation
      * @return execAtt Rest of attestation data that Destination keeps track of
      */
-    function getAttestation(uint256 index)
-        external
-        view
-        returns (bytes32 root, ExecutionAttestation memory execAtt);
+    function getAttestation(uint256 index) external view returns (bytes32 root, ExecutionAttestation memory execAtt);
 
     /**
      * Returns status of Destination contract as far as snapshot/agent roots are concerned
@@ -70,14 +65,7 @@ interface InterfaceDestination {
      * @return agentRootTime    Timestamp when latest agent root was accepted
      * @return notary           Notary who signed the latest agent root
      */
-    function destStatus()
-        external
-        view
-        returns (
-            uint48 snapRootTime,
-            uint48 agentRootTime,
-            address notary
-        );
+    function destStatus() external view returns (uint48 snapRootTime, uint48 agentRootTime, address notary);
 
     /**
      * Returns Agent Merkle Root to be passed to LightManager once its optimistic period is over.

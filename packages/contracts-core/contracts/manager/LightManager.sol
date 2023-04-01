@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import { AGENT_TREE_HEIGHT } from "../libs/Constants.sol";
-import { MerkleLib } from "../libs/Merkle.sol";
-import { AgentFlag, AgentStatus, SlashStatus } from "../libs/Structures.sol";
+
+import {AGENT_TREE_HEIGHT} from "../libs/Constants.sol";
+import {MerkleLib} from "../libs/Merkle.sol";
+import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import { AgentManager, IAgentManager, ISystemRegistry } from "./AgentManager.sol";
-import { DomainContext } from "../context/DomainContext.sol";
-import { IBondingManager } from "../interfaces/IBondingManager.sol";
-import { ILightManager } from "../interfaces/ILightManager.sol";
-import { Versioned } from "../Version.sol";
+import {AgentManager, IAgentManager, ISystemRegistry} from "./AgentManager.sol";
+import {DomainContext} from "../context/DomainContext.sol";
+import {IBondingManager} from "../interfaces/IBondingManager.sol";
+import {ILightManager} from "../interfaces/ILightManager.sol";
+import {Versioned} from "../Version.sol";
 
 /// @notice LightManager keeps track of all agents, staying in sync with the BondingManager.
 /// Used on chains other than Synapse Chain, serves as "light client" for BondingManager.
@@ -32,10 +33,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
     }
 
-    function initialize(ISystemRegistry origin_, ISystemRegistry destination_)
-        external
-        initializer
-    {
+    function initialize(ISystemRegistry origin_, ISystemRegistry destination_) external initializer {
         __AgentManager_init(origin_, destination_);
         __Ownable_init();
     }
@@ -45,19 +43,12 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc ILightManager
-    function updateAgentStatus(
-        address agent,
-        AgentStatus memory status,
-        bytes32[] memory proof
-    ) external {
+    function updateAgentStatus(address agent, AgentStatus memory status, bytes32[] memory proof) external {
         // Reconstruct the agent leaf: flag should be Active
         bytes32 leaf = _agentLeaf(status.flag, status.domain, agent);
         bytes32 root = _latestAgentRoot;
         // Check that proof matches the latest merkle root
-        require(
-            MerkleLib.proofRoot(status.index, leaf, proof, AGENT_TREE_HEIGHT) == root,
-            "Invalid proof"
-        );
+        require(MerkleLib.proofRoot(status.index, leaf, proof, AGENT_TREE_HEIGHT) == root, "Invalid proof");
         // Update the agent status against this root
         _agentMap[root][agent] = status;
         emit StatusUpdated(status.flag, status.domain, agent);
@@ -79,11 +70,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @inheritdoc IAgentManager
-    function registrySlash(
-        uint32 domain,
-        address agent,
-        address prover
-    ) external {
+    function registrySlash(uint32 domain, address agent, address prover) external {
         // Check that Agent hasn't been already slashed and initiate the slashing
         _initiateSlashing(domain, agent, prover);
         // On chains other than Synapse Chain only Origin could slash Agents
@@ -128,21 +115,8 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     }
 
     /// @dev Returns data for a system call: remoteRegistrySlash()
-    function _remoteSlashPayload(
-        uint32 domain,
-        address agent,
-        address prover
-    ) internal pure returns (bytes memory) {
+    function _remoteSlashPayload(uint32 domain, address agent, address prover) internal pure returns (bytes memory) {
         // (rootSubmittedAt, callOrigin, systemCaller, domain, agent, prover)
-        return
-            abi.encodeWithSelector(
-                IBondingManager.remoteRegistrySlash.selector,
-                0,
-                0,
-                0,
-                domain,
-                agent,
-                prover
-            );
+        return abi.encodeWithSelector(IBondingManager.remoteRegistrySlash.selector, 0, 0, 0, domain, agent, prover);
     }
 }

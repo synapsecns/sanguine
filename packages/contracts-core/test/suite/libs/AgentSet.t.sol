@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import { Test } from "forge-std/Test.sol";
-import { AgentSetHarness } from "../../harnesses/libs/AgentSetHarness.t.sol";
-import { EnumerableSetTools } from "../../tools/libs/EnumerableSetTools.t.sol";
+import {Test} from "forge-std/Test.sol";
+import {AgentSetHarness} from "../../harnesses/libs/AgentSetHarness.t.sol";
+import {EnumerableSetTools} from "../../tools/libs/EnumerableSetTools.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract AgentSetTest is EnumerableSetTools, Test {
@@ -44,11 +44,7 @@ contract AgentSetTest is EnumerableSetTools, Test {
         _addAgent(domain, account);
         assertEq(libHarness.add(domain, account), toBeAdded, "!add: return value");
         // Agent should be marked as active on given domain, if it was added or active there before
-        assertEq(
-            libHarness.contains(domain, account),
-            toBeAdded || wasActiveDomain,
-            "!add: contains(domain, account)"
-        );
+        assertEq(libHarness.contains(domain, account), toBeAdded || wasActiveDomain, "!add: contains(domain, account)");
         (bool isActive, uint32 domain_) = libHarness.contains(account);
         // Agent should be marked as active globally
         assertEq(isActive, agents[account].isActive, "!add: contains(account), isActive");
@@ -177,7 +173,7 @@ contract AgentSetTest is EnumerableSetTools, Test {
 
     function _addAgent(uint32 domain, address account) internal {
         if (!_isActive(account)) {
-            agents[account] = agent({ isActive: true, domain: domain });
+            agents[account] = agent({isActive: true, domain: domain});
         }
     }
 

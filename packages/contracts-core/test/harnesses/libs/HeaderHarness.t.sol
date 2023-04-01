@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import { Header, HeaderLib, TypedMemView } from "../../../contracts/libs/Header.sol";
+import {Header, HeaderLib, TypedMemView} from "../../../contracts/libs/Header.sol";
 
 /**
  * @notice Exposes Header methods for testing against golang.
@@ -83,15 +83,7 @@ contract HeaderHarness {
         bytes32 recipient_,
         uint32 optimisticSeconds_
     ) public pure returns (bytes memory) {
-        return
-            HeaderLib.formatHeader(
-                origin_,
-                sender_,
-                nonce_,
-                destination_,
-                recipient_,
-                optimisticSeconds_
-            );
+        return HeaderLib.formatHeader(origin_, sender_, nonce_, destination_, recipient_, optimisticSeconds_);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
