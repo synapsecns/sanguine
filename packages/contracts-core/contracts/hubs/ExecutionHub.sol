@@ -58,18 +58,23 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         Message message = msgPayload.castToMessage();
         Header header = message.header();
         bytes32 msgLeaf = message.leaf();
+        // Ensure message was meant for this domain
+        require(header.destination() == localDomain, "!destination");
+        uint32 origin = header.origin();
+        uint32 nonce = header.nonce();
         // Check proofs validity and mark message as executed
-        ExecutionAttestation memory execAtt = _prove(header, msgLeaf, originProof, snapProof, stateIndex);
+        ExecutionAttestation memory execAtt =
+            _proveAttestation(origin, nonce, msgLeaf, originProof, snapProof, stateIndex);
+        // Check if optimistic period has passed
+        require(block.timestamp >= header.optimisticPeriod() + execAtt.submittedAt, "!optimisticSeconds");
         // Store message tips
         Tips tips = message.tips();
         _storeTips(execAtt.notary, tips);
         // Get the specified recipient address
-        uint32 origin = header.origin();
         address recipient = _checkForSystemRouter(header.recipient());
+        bytes32 sender = header.sender();
         // Pass the message to the recipient
-        IMessageRecipient(recipient).handle(
-            origin, header.nonce(), header.sender(), execAtt.submittedAt, message.body().clone()
-        );
+        IMessageRecipient(recipient).handle(origin, nonce, sender, execAtt.submittedAt, message.body().clone());
         emit Executed(origin, msgLeaf);
     }
 
@@ -87,36 +92,35 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
      * First, the origin Merkle Root is reconstructed using the origin proof.
      * Then the origin state's "left leaf" is reconstructed using the origin domain.
      * After that the snapshot Merkle Root is reconstructed using the snapshot proof.
-     * Finally, the optimistic period is checked for the derived snapshot root.
+     * The snapshot root needs to have been submitted by an undisputed Notary.
      * @dev Reverts if any of the checks fail.
-     * @param header        Typed memory view over message header payload
+     * @param origin        Domain where message originated
+     * @param nonce         Message nonce on the origin domain
      * @param msgLeaf       Message Leaf that was inserted in the Origin Merkle Tree
      * @param originProof   Proof of inclusion of Message Leaf in the Origin Merkle Tree
      * @param snapProof     Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
      * @param stateIndex    Index of Origin State in the Snapshot
      * @return execAtt      Attestation data for derived snapshot root
      */
-    function _prove(
-        Header header,
+    function _proveAttestation(
+        uint32 origin,
+        uint32 nonce,
         bytes32 msgLeaf,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
         uint256 stateIndex
     ) internal returns (ExecutionAttestation memory execAtt) {
-        // TODO: split into a few smaller functions?
         // Check that message has not been executed before
         require(messageStatus[msgLeaf] == _MESSAGE_STATUS_NONE, "!MessageStatus.None");
-        // Ensure message was meant for this domain
-        require(header.destination() == localDomain, "!destination");
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
         // This will revert if origin proof length exceeds Origin Tree height
-        bytes32 originRoot = MerkleLib.proofRoot(header.nonce() - 1, msgLeaf, originProof, ORIGIN_TREE_HEIGHT);
+        bytes32 originRoot = MerkleLib.proofRoot(nonce - 1, msgLeaf, originProof, ORIGIN_TREE_HEIGHT);
         // Reconstruct Snapshot Merkle Root using the snapshot proof
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
-        bytes32 snapshotRoot = _snapshotRoot(originRoot, header.origin(), snapProof, stateIndex);
+        bytes32 snapshotRoot = _snapshotRoot(originRoot, origin, snapProof, stateIndex);
         // Fetch the attestation data for the snapshot root
         execAtt = _rootAttestations[snapshotRoot];
         // Check if snapshot root has been submitted
@@ -125,8 +129,6 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         _verifyActive(_agentStatus(execAtt.notary));
         // Check that Notary who submitted the attestation is not in dispute
         require(!_inDispute(execAtt.notary), "Notary is in dispute");
-        // Check if optimistic period has passed
-        require(block.timestamp >= header.optimisticSeconds() + execAtt.submittedAt, "!optimisticSeconds");
         // Mark message as executed against the snapshot root
         messageStatus[msgLeaf] = snapshotRoot;
     }
