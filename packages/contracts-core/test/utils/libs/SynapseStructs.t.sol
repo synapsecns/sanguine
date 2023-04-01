@@ -17,11 +17,9 @@ import {StateFlag, StateReport, StateReportLib} from "../../../contracts/libs/St
 
 struct RawHeader {
     uint32 origin;
-    bytes32 sender;
     uint32 nonce;
     uint32 destination;
-    bytes32 recipient;
-    uint32 optimisticSeconds;
+    uint32 optimisticPeriod;
 }
 
 using {CastLib.castToHeader, CastLib.formatHeader} for RawHeader global;
@@ -129,11 +127,9 @@ library CastLib {
     function formatHeader(RawHeader memory rh) internal pure returns (bytes memory header) {
         header = HeaderLib.formatHeader({
             origin_: rh.origin,
-            sender_: rh.sender,
             nonce_: rh.nonce,
             destination_: rh.destination,
-            recipient_: rh.recipient,
-            optimisticSeconds_: rh.optimisticSeconds
+            optimisticPeriod_: rh.optimisticPeriod
         });
     }
 
