@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, ExecutionAttestation} from "../libs/Attestation.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
@@ -25,15 +25,9 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     using MessageLib for bytes;
     using TypedMemView for bytes29;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              CONSTANTS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
     bytes32 internal constant _MESSAGE_STATUS_NONE = bytes32(0);
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     /// @notice (messageHash => status)
     /// TODO: Store something else as "status"? Notary/timestamp?
@@ -51,9 +45,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// @dev gap for upgrade safety
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           EXECUTE MESSAGES                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ EXECUTE MESSAGES ══════════════════════════════════════════════════
 
     /// @inheritdoc IExecutionHub
     function execute(
@@ -81,18 +73,14 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         emit Executed(origin, msgLeaf);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         INTERNAL LOGIC: TIPS                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════ INTERNAL LOGIC: TIPS ════════════════════════════════════════════════
 
     function _storeTips(address notary, Tips tips) internal {
         // TODO: implement tips logic
         emit TipsStored(notary, tips.unwrap().clone());
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                  INTERNAL LOGIC: MESSAGE EXECUTION                   ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════ INTERNAL LOGIC: MESSAGE PROVING ══════════════════════════════════════════
 
     /**
      * @notice Attempts to prove the validity of the cross-chain message.
