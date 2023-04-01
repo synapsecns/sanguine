@@ -5,7 +5,6 @@ import {BaseMessageLib} from "./BaseMessage.sol";
 import {ByteString} from "./ByteString.sol";
 import {Header, HEADER_LENGTH, HeaderLib} from "./Header.sol";
 import {SystemMessageLib} from "./SystemMessage.sol";
-import {MessageFlag} from "./Structures.sol";
 import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev Message is a memory over over a formatted message payload.
@@ -13,6 +12,17 @@ type Message is bytes29;
 
 /// @dev Attach library functions to Message
 using {MessageLib.unwrap, MessageLib.leaf, MessageLib.flag, MessageLib.header, MessageLib.body} for Message global;
+
+/// @dev Types of messages supported by Origin-Destination
+/// - System: message sent between system contracts located on different chains
+/// - Base: message sent by protocol user, contains tips
+enum MessageFlag {
+    System,
+    Base
+}
+
+/// @dev Attach library functions to MessageFlag
+using {MessageLib.formatMessage} for MessageFlag global;
 
 /**
  * @notice Library for formatting the various messages supported by Origin and Destination.

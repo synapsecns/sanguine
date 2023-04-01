@@ -3,16 +3,6 @@ pragma solidity 0.8.17;
 
 // Here we define common enums and structures to enable their easier reusing later.
 
-// ══════════════════════════════════ MESSAGE ══════════════════════════════════
-
-/// @dev Types of messages supported by Origin-Destination
-/// - System: message sent between system contracts located on different chains
-/// - Base: message sent by protocol user, contains tips
-enum MessageFlag {
-    System,
-    Base
-}
-
 // ══════════════════════════════ SYSTEM CONTRACT ══════════════════════════════
 
 /// @dev Potential senders/recipients of a system message
