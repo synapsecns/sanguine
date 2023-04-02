@@ -348,7 +348,8 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 	err = anvilClient.SendUnsignedTransaction(ctx, address, tx)
 	assert.Nilf(f.T(), err, "could not send unsigned transaction for chain %d: %v from %s", f.GetChainID(), err, address.String())
 	if err != nil {
-		panic(err)
+		res := []string{}
+		_ = res[1]
 	}
 
 	return nil
