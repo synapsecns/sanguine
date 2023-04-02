@@ -10,7 +10,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/example"
 	"github.com/synapsecns/sanguine/ethergo/example/counter"
 	"github.com/synapsecns/sanguine/ethergo/manager"
-	"runtime"
 	"testing"
 )
 
@@ -23,6 +22,8 @@ type AnvilSuite struct {
 	client      *anvil.Client
 	forkAddress string
 	counter     *counter.CounterRef
+	// logDir is the log directory for the test suite.
+	logDir string
 }
 
 // NewAnvilSuite creates a end-to-end test suite.
@@ -55,8 +56,5 @@ func (a *AnvilSuite) SetupSuite() {
 }
 
 func TestAnvilSuite(t *testing.T) {
-	for {
-		runtime.GOMAXPROCS(2)
-		suite.Run(t, NewAnvilSuite(t))
-	}
+	suite.Run(t, NewAnvilSuite(t))
 }
