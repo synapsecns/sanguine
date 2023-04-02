@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {ByteString, CallData} from "../libs/ByteString.sol";
 import {SYSTEM_ROUTER} from "../libs/Constants.sol";
 import {SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
@@ -90,15 +90,9 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
      * - `remainingArgs` part is provided by the system entity on origin chain
      */
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              IMMUTABLES                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
     address public immutable agentManager;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             CONSTRUCTOR                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ CONSTRUCTOR ════════════════════════════════════════════════════
 
     constructor(uint32 domain, address origin_, address destination_, address agentManager_)
         BasicClient(origin_, destination_)
@@ -108,9 +102,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         agentManager = agentManager_;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ EXTERNAL FUNCTIONS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSystemRouter
     function systemCall(uint32 destination_, uint32 optimisticSeconds, SystemEntity recipient, bytes memory payload)
@@ -185,9 +177,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         _multiCall(caller, destination_, optimisticSeconds, recipients, callDataArray);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           PUBLIC FUNCTIONS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**
      * @notice Returns eligible address of sender/receiver on given remote chain.
@@ -206,9 +196,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         return SYSTEM_ROUTER;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ INTERNAL FUNCTIONS ═════════════════════════════════════════════════
 
     /**
      * @dev Handles an incoming message. Security checks are done in BasicClient.handle()
@@ -311,9 +299,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL VIEWS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @notice Returns a corresponding System Entity for a given caller.
     function _getSystemEntity(address caller) internal view returns (SystemEntity) {
