@@ -29,9 +29,7 @@ library SystemMessageLib {
      */
     uint256 internal constant CALLDATA_MIN_ARGUMENT_WORDS = 3;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            SYSTEM MESSAGE                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ SYSTEM MESSAGE ═══════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted SystemMessage payload with provided fields.
@@ -123,9 +121,7 @@ library SystemMessageLib {
         return SystemMessage.unwrap(systemMessage);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                        SYSTEM MESSAGE SLICING                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════ SYSTEM MESSAGE SLICING ═══════════════════════════════════════════════
 
     /**
      * @notice Returns int value of System Message recipient (see SystemEntity).
@@ -145,9 +141,7 @@ library SystemMessageLib {
         return _getCallData(view_).castToCallData();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          PRIVATE FUNCTIONS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ PRIVATE FUNCTIONS ═════════════════════════════════════════════════
 
     /**
      * @notice Returns a generic memory view over System Message calldata,
