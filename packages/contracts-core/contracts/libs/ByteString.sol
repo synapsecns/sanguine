@@ -8,8 +8,8 @@ import {TypedMemView} from "./TypedMemView.sol";
 /// - First 4 bytes represent the function selector.
 /// - 32 * N bytes represent N words that function arguments occupy.
 type CallData is bytes29;
-/// @dev Signature is a memory view over a "65 bytes" array representing a ECDSA signature.
 
+/// @dev Signature is a memory view over a "65 bytes" array representing a ECDSA signature.
 type Signature is bytes29;
 
 library ByteString {
@@ -49,9 +49,7 @@ library ByteString {
         return payload.ref({newType: 0});
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              SIGNATURE                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════════ SIGNATURE ═════════════════════════════════════════════════════
 
     /**
      * @notice Constructs the signature payload from the given values.
@@ -91,9 +89,7 @@ library ByteString {
         return Signature.unwrap(signature);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SIGNATURE SLICING                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ SIGNATURE SLICING ═════════════════════════════════════════════════
 
     /// @notice Unpacks signature payload into (r, s, v) parameters.
     /// @dev Make sure to verify signature length with isSignature() beforehand.
@@ -105,9 +101,7 @@ library ByteString {
         v = uint8(view_.indexUint({index_: OFFSET_V, bytes_: 1}));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               CALLDATA                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════════ CALLDATA ══════════════════════════════════════════════════════
 
     /**
      * @notice Returns a CallData view over for the given payload.
@@ -145,9 +139,7 @@ library ByteString {
         return CallData.unwrap(callData);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           CALLDATA SLICING                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ CALLDATA SLICING ══════════════════════════════════════════════════
 
     /**
      * @notice Returns amount of memory words (32 byte chunks) the function arguments
