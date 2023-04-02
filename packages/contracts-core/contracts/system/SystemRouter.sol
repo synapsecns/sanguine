@@ -108,13 +108,15 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
     // ════════════════════════════════════════════ EXTERNAL FUNCTIONS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSystemRouter
-    function receiveSystemMessage(uint32, uint32, uint256 rootSubmittedAt, bytes memory body) external {
-        // TODO: figure out if we need origin/nonce to be passed here
+    function receiveSystemMessage(uint32 origin_, uint32, uint256 rootSubmittedAt, bytes memory body) external {
+        // TODO: figure out if we need nonce to be passed here
         // This will revert if message body is not a system message
         SystemMessage systemMessage = body.castToSystemMessage();
-        // Received a system message, use the corresponding prefix to adjust `rootSubmittedAt`
-        bytes29 prefix = _prefixReceiveMessage(rootSubmittedAt).castToRawBytes();
-        _callSystemRecipient(systemMessage.recipient(), systemMessage.callData(), prefix);
+        // Destination chain: set (rootSubmittedAt, origin, systemSender) values for system message
+        bytes memory prefix = abi.encode(rootSubmittedAt, origin_, systemMessage.sender());
+        // Add the (rootSubmittedAt, origin, systemSender) values to the calldata
+        bytes memory payload = systemMessage.callData().addPrefix(prefix);
+        _callSystemRecipient(systemMessage.recipient(), payload);
     }
 
     /// @inheritdoc InterfaceSystemRouter
@@ -123,44 +125,25 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
     {
         require(destination_ != localDomain, "Must be a remote destination");
         /// @dev This will revert if msg.sender is not a system contract
-        SystemEntity caller = _getSystemEntity(msg.sender);
+        SystemEntity sender = _getSystemEntity(msg.sender);
         // Construct the System Message: use the prefix for sending a message
-        bytes memory body = SystemMessageLib.formatSystemMessage({
-            sender_: caller,
-            recipient_: recipient,
-            callData_: payload.castToCallData(),
-            prefix: _prefixSendMessage(caller).castToRawBytes()
-        });
+        bytes memory body = SystemMessageLib.formatSystemMessage(sender, recipient, payload);
         InterfaceOrigin(origin).sendSystemMessage(destination_, optimisticPeriod, body);
     }
 
     // ════════════════════════════════════════════ INTERNAL FUNCTIONS ═════════════════════════════════════════════════
 
-    /**
-     * @notice Calls a local System Contract, using calldata from the received system message:
-     * and abi-encoded security arguments as the calldata prefix adjustment.
-     * @dev Suppose following values were passed:
-     * - recipient: System Contract to call
-     * - callData = abi.encodeWithSelector(foo.selector, a, b, c, d, e, f);
-     * - prefix = abi.encode(x, y, z)
-     * - (a, b, c) types match (x, y, z) types, and they are all static
-     * Following call will be performed:
-     * - recipient.foo(x, y, z, d, e, f);
-     */
-    function _callSystemRecipient(SystemEntity systemRecipient, CallData callData, bytes29 prefix) internal {
-        // We adjust the first arguments for the call using the given `prefix`.
-        // Prefix containing the security arguments:
-        // - (rootSubmittedAt, callOrigin, systemCaller) are adjusted on origin chain
-        // - (rootSubmittedAt) is readjusted on destination chain
+    /// @dev Calls a local System Contract, using calldata from the received system message.
+    function _callSystemRecipient(SystemEntity systemRecipient, bytes memory payload) internal {
         address recipient = _getSystemAddress(systemRecipient);
         require(recipient != address(0), "System Contract not set");
         // recipient.functionCall() calls recipient and bubbles the revert from the external call
-        recipient.functionCall(SystemMessageLib.formatAdjustedCallData(callData, prefix));
+        recipient.functionCall(payload);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
-    /// @notice Returns a corresponding System Entity for a given message sender.
+    /// @dev Returns a corresponding System Entity for a given message sender.
     function _getSystemEntity(address sender) internal view returns (SystemEntity) {
         if (sender == origin) return SystemEntity.Origin;
         if (sender == destination) return SystemEntity.Destination;
@@ -168,7 +151,7 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
         revert("Unauthorized caller");
     }
 
-    /// @notice Returns a corresponding address for a given system recipient.
+    /// @dev Returns a corresponding address for a given system recipient.
     function _getSystemAddress(SystemEntity entity) internal view returns (address) {
         // Possible SystemEntity values: AgentManager / Destination / Origin
         if (entity == SystemEntity.AgentManager) {
@@ -178,19 +161,5 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
         } else {
             return origin;
         }
-    }
-
-    /// @notice Returns prefix with the security arguments for sending a system message from origin chain.
-    function _prefixSendMessage(SystemEntity caller) internal view returns (bytes memory) {
-        // Origin chain: adjust (rootSubmittedAt, callOrigin, systemCaller)
-        // Passing current timestamp for consistency: rootSubmittedAt will be later adjusted on destination chain
-        return abi.encode(block.timestamp, localDomain, caller);
-    }
-
-    /// @notice Returns prefix with the security arguments for receiving a system message on destination chain.
-    function _prefixReceiveMessage(uint256 rootSubmittedAt) internal pure returns (bytes memory) {
-        // Destination chain: adjust (rootSubmittedAt)
-        // (callOrigin, systemCaller) were adjusted on origin chain, no need to touch these
-        return abi.encode(rootSubmittedAt);
     }
 }
