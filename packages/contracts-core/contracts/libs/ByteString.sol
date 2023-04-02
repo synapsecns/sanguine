@@ -110,31 +110,29 @@ library ByteString {
     // ═════════════════════════════════════════════════ CALLDATA ══════════════════════════════════════════════════════
 
     /**
-     * @notice Constructs the calldata having the first arguments replaced with given prefix.
+     * @notice Constructs the calldata with the modified arguments:
+     * the existing arguments are prepended with the arguments from the prefix.
      * @dev Given:
-     * - `calldata = abi.encodeWithSelector(foo.selector, a0, b0, c0, d0, e0);`
-     * - `prefix = abi.encode(a1, b1, c1);`
-     * - `a`, `b`, `c` are static type arguments
+     *  - `calldata = abi.encodeWithSelector(foo.selector, d, e);`
+     *  - `prefix = abi.encode(a, b, c);`
+     *  - `a`, `b`, `c` are arguments of static type (i.e. not dynamically sized ones)
      *      Then:
-     * - Existing calldata will trigger `foo(a0, b0, c0, d0, e0)`
-     * - Adjusted calldata will trigger `foo(a1, b1, c1, d0, e0)`
-     * @param callData  Calldata where the first arguments need to be replaced
-     * @param prefix    ABI-encoded arguments to use as the first arguments in the calldata
-     * @return Adjusted calldata with replaced first arguments
+     *  - Function will return abi.encodeWithSelector(foo.selector, a, c, c, d, e)
+     *  - Returned calldata will trigger `foo(a, b, c, d, e)` when used for a contract call.
+     * @param callData  Calldata that needs to be modified
+     * @param prefix    ABI-encoded arguments to use as the first arguments in the new calldata
+     * @return Modified calldata having prefix as the first arguments.
      */
-    function adjustPrefix(CallData callData, bytes memory prefix) internal view returns (bytes memory) {
+    function addPrefix(CallData callData, bytes memory prefix) internal view returns (bytes memory) {
         // Prefix should occupy a whole amount of words in memory
         require(_fullWords(prefix.length), "Incorrect prefix");
-        bytes29 arguments_ = callData.arguments();
-        // Arguments payload should be at least as long as the replacement prefix
-        require(arguments_.len() >= prefix.length, "Payload too short");
         bytes29[] memory views = new bytes29[](3);
         // Use payload's function selector
         views[0] = callData.callSelector();
         // Use prefix as the first arguments
         views[1] = castToRawBytes(prefix);
-        // Use payload's remaining arguments (following prefix)
-        views[2] = arguments_.sliceFrom({index_: prefix.length, newType: 0});
+        // Use payload's remaining arguments
+        views[2] = callData.arguments();
         return TypedMemView.join(views);
     }
 
