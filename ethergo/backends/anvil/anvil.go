@@ -77,8 +77,10 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 
 	runOptions := &dockertest.RunOptions{
 		Repository: "ghcr.io/foundry-rs/foundry",
-		Tag:        "latest",
-		Cmd:        []string{strings.Join(append([]string{"anvil"}, commandArgs...), " ")},
+		// Note: https://github.com/foundry-rs/foundry/commit/6e041f9751efa6b75420689b862df05b0934022b introduces a breaking change with regards to
+		// eth_sendTransaction. The commit changes the way tx fields are detected. This will be fixed (on the anvil or ethergo sides) in a future version.
+		Tag: "nightly-7398b65e831f2339d1d0a0bb05ade799e4f9d01e",
+		Cmd: []string{strings.Join(append([]string{"anvil"}, commandArgs...), " ")},
 		Labels: map[string]string{
 			"test-id": uuid.New().String(),
 		},
