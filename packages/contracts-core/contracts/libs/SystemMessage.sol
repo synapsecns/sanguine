@@ -41,31 +41,17 @@ library SystemMessageLib {
 
     /**
      * @notice Returns a formatted SystemMessage payload with provided fields.
-     * See: formatAdjustedCallData() for more details.
      * @param sender_           System Contract that sent receive message
      * @param recipient_        System Contract to receive message
-     * @param callData_         Calldata where the first arguments need to be replaced
-     * @param prefix            ABI-encoded arguments to use as the first arguments in the calldata
+     * @param callData_         Raw bytes with calldata payload
      * @return Formatted SystemMessage payload.
      */
-    function formatSystemMessage(SystemEntity sender_, SystemEntity recipient_, CallData callData_, bytes29 prefix)
+    function formatSystemMessage(SystemEntity sender_, SystemEntity recipient_, bytes memory callData_)
         internal
-        view
+        pure
         returns (bytes memory)
     {
-        bytes29 arguments = callData_.arguments();
-        // Arguments payload should be at least as long as the replacement prefix
-        require(arguments.len() >= prefix.len(), "Payload too short");
-        bytes29[] memory views = new bytes29[](4);
-        // First two bytes are (sender, recipient)
-        views[0] = abi.encodePacked(sender_, recipient_).castToRawBytes();
-        // Use payload's function selector
-        views[1] = callData_.callSelector();
-        // Use prefix as the first arguments
-        views[2] = prefix;
-        // Use payload's remaining arguments (following prefix)
-        views[3] = arguments.sliceFrom({index_: prefix.len(), newType: 0});
-        return TypedMemView.join(views);
+        return abi.encodePacked(sender_, recipient_, callData_);
     }
 
     /**
