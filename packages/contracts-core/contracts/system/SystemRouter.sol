@@ -15,80 +15,32 @@ import {Versioned} from "../Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
-// TODO: update docs
 /**
- * @notice Router for calls between system contracts (aka "System Calls").
- * SystemRouter makes it possible to perform a call from one system contract to another
- * without knowing the recipient address. This works for both on-chain calls, when caller and
- * recipient are deployed on the same chain, and for cross-chain calls, when caller and
- * recipient are deployed on different chains.
- *
- * SystemRouter allows both calls and "multi calls". Multicall performs a series of calls,
- * calling requested recipients one by one, supplying the requested calldata. The whole multicall
- * will fail, if any of the calls reverts.
- *
- * SystemRouter keeps track of all system contracts deployed on current chain. This enables sending
- * calls "to Origin", "to Destination" without actually knowing the Origin/Destination address.
- *
- * For the on-chain calls, SystemRouter is simply forwarding the call to the requested recipient(s).
- *
- * For the cross-chain calls, SystemRouter sends a message to SystemRouter on destination chain,
- * in order for it to forward the call to the request recipient(s). SystemRouter doesn't need to be
- * aware of System Router address on destination chain. It uses a special value SYSTEM_ROUTER for
- * the recipient instead. Origin contract on origin chain enforces the invariant that only
- * the system router could specify such a recipient. For these messages Origin uses SYSTEM_ROUTER
- * for "sender" field, instead of actual System Router address (as it does for usual messages).
- * Destination contract routes messages, where SYSTEM_ROUTER is specified as recipient, to a local
- * System Router. System Router only accepts incoming messages with "sender = SYSTEM_ROUTER",
- * enforcing the invariant that only origin's System Router is able to send cross-chain messages to
- * destination's System Router, assuming no optimistic verification fraud (more on this below).
- *
- * @dev Security considerations
- * System Router only accepts calls from the system contracts, so it's not possible for the attacker
- * to initiate a system call through the system router. However, every system contract that wants
- * to expose one of its external functions for the system calls, should do the following:
- * 1. Such functions should have the same first three arguments:
- * - foo(uint256 rootSubmittedAt, uint32 callOrigin, SystemEntity systemCaller, <...>)
- * These arguments are filled by the System Routers on origin and destination chain. This allows
- * the recipient to set the restrictions for receiving the call in a very granular way.
- * To perform a call, use any values for `(rootSubmittedAt, callOrigin,systemCaller)`
- * i.e. `payload = abi.encodeWithSelector(foo.selector, 0, 0, 0, <...>);`
- * These values are overwritten, so using non-zero values will not achieve anything.
- * 2. Guard such function with `onlySystemRouter` modifier to prevent unauthorized direct calls.
- * Guard function with additional modifiers based on `rootSubmittedAt`, `origin` and `caller`.
- * `rootSubmittedAt` based modifier is a must for receiving cross-chain system calls. Any Notary
- * can potentially commit fraud, and try to execute an arbitrary message, including
- * a "message to System Router". By enforcing a minimum optimistic latency for the recipient this
- * attack can be mitigated, assuming there is at least one honest Guard willing to report the fraud.
+ * @notice Router for cross-chain calls between system contracts (aka "System Calls").
+ * This contract enables system contracts to issue a cross-chain call to another system contract,
+ * without knowing the recipient address. Instead both sender and recipient are encoded as SystemEntity:
+ *  - AgentManager
+ *  - Destination
+ *  - Origin
+ * The system calls are performed by sending a "system message" via Origin-Destination contracts.
+ * Note: System Router should be only used for remote calls.
+ * System Contracts are supposed to know the local addresses for on-chain calls.
+ * @dev Security considerations.
+ *  - System Router only accepts calls from the system contracts, so it's not possible for anyone but
+ *  the system contracts to initiate a system call.
+ *  - System Contracts should expose functions for receveing cross-chain system calls:
+ *  `function foo(uint256 rootSubmittedAt, uint32 origin, SystemEntity sender, *args)`
+ *  - The first three arguments in these functions are the security arguments, which will be filled
+ *  by SystemRouter on the destination chain.
+ *  - Such functions should be protected with `onlySystemRouter` modifier.
+ *  - The system contract should verify the security arguments before handling the remaining `*args`.
+ *  - To perform a system call, contract should omit the security arguments when abi-encoding the payload
+ *  `payload = abi.encodeWithSelector(foo.selector, *args);`
  */
 contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
     using Address for address;
     using ByteString for bytes;
     using SystemMessageLib for bytes;
-
-    /**
-     * @dev System entity initiates a system call with given calldata.
-     *      Entity provides calldata = (foo.selector, security arguments, remaining arguments).
-     *      Provided security arguments are overwritten by System Routers with the correct ones.
-     *      Full calldata for the performed call on destination chain is:
-     * ============   GIVEN ENTITY DATA             ============
-     * 1. Selector from given calldata.
-     * ============   FILLED ON DESTINATION CHAIN   ============
-     * 2. Root timestamp is the first security argument filled by SystemRouter:
-     * - rootSubmittedAt: time when merkle root used for proving a message
-     * with a system call was submitted.
-     * For local system calls: rootSubmittedAt = block.timestamp
-     * ============   FILLED ON ORIGIN CHAIN        ============
-     * 3. (callOrigin, systemCaller) are second and third security arguments filled by SystemRouter:
-     * - callOrigin: domain where system call originated
-     * - systemCaller: entity that initiated the system call on origin chain
-     * ============   GIVEN ENTITY DATA             ============
-     * 4. Remaining arguments from given calldata.
-     *
-     * As the result, following call is performed: `recipient.foo(securityArgs, remainingArgs)`
-     * - `securityArgs` part is filled collectively by System Routers on origin, destination chains
-     * - `remainingArgs` part is provided by the system entity on origin chain
-     */
 
     address public immutable agentManager;
     address public immutable destination;
