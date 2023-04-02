@@ -109,15 +109,17 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     function systemCall(uint32 destination_, uint32 optimisticSeconds, SystemEntity recipient, bytes memory payload)
         external
     {
+        require(destination_ != localDomain, "Must be a remote destination");
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
-        // To generalize things, a system call is always a multicall.
-        // In case of a "single system call", this is a multicall with exactly one call inside.
-        SystemEntity[] memory recipients = new SystemEntity[](1);
-        CallData[] memory callDataArray = new CallData[](1);
-        recipients[0] = recipient;
-        callDataArray[0] = payload.castToCallData();
-        _multiCall(caller, destination_, optimisticSeconds, recipients, callDataArray);
+        // Construct the System Message: use the prefix for sending a message
+        bytes memory content = SystemMessageLib.formatSystemMessage({
+            systemRecipient: uint8(recipient),
+            callData_: payload.castToCallData(),
+            prefix: _prefixPerformCall(caller).castToRawBytes()
+        });
+        // TODO: this should use origin.sendSystemMessage()
+        _send(destination_, optimisticSeconds, TipsLib.emptyTips(), content);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -146,17 +148,11 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
      * Optimistic period could be anything at this point.
      */
     function _handleUnsafe(uint32, uint32, uint256 rootSubmittedAt, bytes memory content) internal override {
-        // TODO: use TypedMemView for encoding/decoding instead
-        // Deserialize the message into a series of system calls to perform
-        bytes[] memory systemMessages = abi.decode(content, (bytes[]));
-        uint256 amount = systemMessages.length;
+        // This will revert if content is not a system message
+        SystemMessage systemMessage = content.castToSystemMessage();
         // Received a message containing a remote system call, use the corresponding prefix
         bytes29 prefix = _prefixReceiveCall(rootSubmittedAt).castToRawBytes();
-        for (uint256 i = 0; i < amount; ++i) {
-            SystemMessage systemMessage = systemMessages[i].castToSystemMessage();
-            // Route the system call to specified recipient
-            _callSystemRecipient(systemMessage.callRecipient(), systemMessage.callData(), prefix);
-        }
+        _callSystemRecipient(systemMessage.callRecipient(), systemMessage.callData(), prefix);
     }
 
     /**
@@ -183,57 +179,6 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         require(recipient != address(0), "System Contract not set");
         // recipient.functionCall() calls recipient and bubbles the revert from the external call
         recipient.functionCall(SystemMessageLib.formatAdjustedCallData(callData, prefix));
-    }
-
-    /**
-     * @notice Performs the "sending part" of a remote system multicall.
-     * @param destination_          Destination domain where system multicall will be performed
-     * @param optimisticSeconds     Optimistic period for the executing the system multicall
-     * @param systemCalls           List of system calls to execute on destination chain
-     */
-    function _remoteSystemCall(uint32 destination_, uint32 optimisticSeconds, bytes[] memory systemCalls) internal {
-        // TODO: use TypedMemView for encoding/decoding instead
-        // Serialize the series of system calls into a byte string
-        bytes memory content = abi.encode(systemCalls);
-        /**
-         * @dev Origin will use SYSTEM_ROUTER as "sender" field for messages
-         * sent by System Router.
-         */
-        // TODO: this should use origin.sendSystemMessage()
-        _send(destination_, optimisticSeconds, TipsLib.emptyTips(), content);
-    }
-
-    /**
-     * @notice Performs a system multicall with given parameters.
-     * @dev `caller` is derived from msg.sender
-     * @param caller                System entity that initiated the system multicall
-     * @param destination_          Destination domain where system multicall will be performed
-     * @param optimisticSeconds     Optimistic period for the executing the system multicall
-     * @param recipients            List of system entities to route the system call to
-     * @param callDataArray         List of memory views over calldata
-     */
-    function _multiCall(
-        SystemEntity caller,
-        uint32 destination_,
-        uint32 optimisticSeconds,
-        SystemEntity[] memory recipients,
-        CallData[] memory callDataArray
-    ) internal {
-        uint256 amount = recipients.length;
-        // Performing a system call on origin chain,
-        // Get a prefix for performing the call on origin chain, use the corresponding prefix
-        bytes29 prefix = _prefixPerformCall(caller).castToRawBytes();
-        require(destination_ != localDomain, "Must be remote destination");
-        // Performing a remote system multicall
-        bytes[] memory systemMessages = new bytes[](amount);
-        for (uint256 i = 0; i < amount; ++i) {
-            systemMessages[i] = SystemMessageLib.formatSystemMessage({
-                systemRecipient: uint8(recipients[i]),
-                callData_: callDataArray[i],
-                prefix: prefix
-            });
-        }
-        _remoteSystemCall(destination_, optimisticSeconds, systemMessages);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
