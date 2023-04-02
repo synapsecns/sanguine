@@ -19,12 +19,14 @@ const (
 	SwapContractType = "swap"
 	// MessageBusContractType is the type of a message bus contract.
 	MessageBusContractType = "messagebus"
+	// MetaSwapContractType is the type of a meta swap contract.
+	MetaSwapContractType = "metaswap"
 )
 
 // Config is used to configure the explorer's data consumption.
 type Config struct {
 	// RefreshRate is the rate at which the explorer will refresh the last block height in seconds.
-	RefreshRate uint `yaml:"refresh_rate"`
+	RefreshRate int `yaml:"refresh_rate"`
 	// ScribeURL is the URL of the Scribe server.
 	ScribeURL string `yaml:"scribe_url"`
 	// RPCURL is the URL of the RPC server.

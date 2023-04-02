@@ -73,13 +73,13 @@ func (s SwapFlashLoanAddLiquidity) GetLPTokenSupply() *big.Int {
 	return core.CopyBigInt(s.LpTokenSupply)
 }
 
-// GetBoughtId gets the bought id.
-func (s SwapFlashLoanAddLiquidity) GetBoughtId() *big.Int {
+// GetBoughtID gets the bought id.
+func (s SwapFlashLoanAddLiquidity) GetBoughtID() *big.Int {
 	return nil
 }
 
-// GetSoldId gets the solid id.
-func (s SwapFlashLoanAddLiquidity) GetSoldId() *big.Int {
+// GetSoldID gets the solid id.
+func (s SwapFlashLoanAddLiquidity) GetSoldID() *big.Int {
 	return nil
 }
 
@@ -203,7 +203,7 @@ func (s SwapFlashLoanRemoveLiquidity) GetAmount() map[uint8]string {
 
 // GetAmountFee gets the fees.
 func (s SwapFlashLoanRemoveLiquidity) GetAmountFee() map[uint8]string {
-	return nil
+	return map[uint8]string{}
 }
 
 // GetLPTokenSupply gets the LP token supply.
@@ -211,13 +211,13 @@ func (s SwapFlashLoanRemoveLiquidity) GetLPTokenSupply() *big.Int {
 	return s.LpTokenSupply
 }
 
-// GetBoughtId gets the bought id.
-func (s SwapFlashLoanRemoveLiquidity) GetBoughtId() *big.Int {
+// GetBoughtID gets the bought id.
+func (s SwapFlashLoanRemoveLiquidity) GetBoughtID() *big.Int {
 	return nil
 }
 
-// GetSoldId gets the solid id.
-func (s SwapFlashLoanRemoveLiquidity) GetSoldId() *big.Int {
+// GetSoldID gets the solid id.
+func (s SwapFlashLoanRemoveLiquidity) GetSoldID() *big.Int {
 	return nil
 }
 
@@ -342,8 +342,8 @@ func (s SwapFlashLoanRemoveLiquidityOne) GetLPTokenSupply() *big.Int {
 	return core.CopyBigInt(s.LpTokenSupply)
 }
 
-// GetBoughtId gets the bought id.
-func (s SwapFlashLoanRemoveLiquidityOne) GetBoughtId() *big.Int {
+// GetBoughtID gets the bought id.
+func (s SwapFlashLoanRemoveLiquidityOne) GetBoughtID() *big.Int {
 	return core.CopyBigInt(s.BoughtId)
 }
 
@@ -358,14 +358,14 @@ func (s SwapFlashLoanRemoveLiquidityOne) GetAmount() map[uint8]string {
 	return output
 }
 
-// GetSoldId gets the solid id.
-func (s SwapFlashLoanRemoveLiquidityOne) GetSoldId() *big.Int {
+// GetSoldID gets the solid id.
+func (s SwapFlashLoanRemoveLiquidityOne) GetSoldID() *big.Int {
 	return nil
 }
 
 // GetAmountFee gets the amount.
 func (s SwapFlashLoanRemoveLiquidityOne) GetAmountFee() map[uint8]string {
-	return nil
+	return map[uint8]string{}
 }
 
 // GetProtocolFee gets the protocol fee of the tx.
@@ -503,8 +503,8 @@ func (s SwapFlashLoanRemoveLiquidityImbalance) GetLPTokenSupply() *big.Int {
 	return core.CopyBigInt(s.LpTokenSupply)
 }
 
-// GetSoldId gets the solid id.
-func (s SwapFlashLoanRemoveLiquidityImbalance) GetSoldId() *big.Int {
+// GetSoldID gets the solid id.
+func (s SwapFlashLoanRemoveLiquidityImbalance) GetSoldID() *big.Int {
 	return nil
 }
 
@@ -568,8 +568,8 @@ func (s SwapFlashLoanRemoveLiquidityImbalance) GetTime() *big.Int {
 	return nil
 }
 
-// GetBoughtId gets the bought id.
-func (s SwapFlashLoanRemoveLiquidityImbalance) GetBoughtId() *big.Int {
+// GetBoughtID gets the bought id.
+func (s SwapFlashLoanRemoveLiquidityImbalance) GetBoughtID() *big.Int {
 	return nil
 }
 

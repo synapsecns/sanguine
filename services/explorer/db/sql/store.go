@@ -49,6 +49,10 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 		if err != nil {
 			return nil, fmt.Errorf("could not migrate token indexes on clickhouse: %w", err)
 		}
+		err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=MergeTree ORDER BY (chain_id, contract_address, block_number, fee_type)").AutoMigrate(&SwapFees{})
+		if err != nil {
+			return nil, fmt.Errorf("could not migrate token indexes on clickhouse: %w", err)
+		}
 	}
 	db, err := clickhouseDB.DB()
 
@@ -56,7 +60,7 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool) (*St
 		return nil, fmt.Errorf("failed to get clickhouse db: %w", err)
 	}
 
-	db.SetConnMaxIdleTime(300 * time.Second)
-	db.SetConnMaxLifetime(300 * time.Second)
+	db.SetConnMaxIdleTime(1 * time.Second)
+	db.SetConnMaxLifetime(30 * time.Second)
 	return &Store{clickhouseDB}, nil
 }
