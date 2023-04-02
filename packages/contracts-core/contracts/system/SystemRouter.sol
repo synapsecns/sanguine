@@ -8,7 +8,6 @@ import {SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
 import {SystemEntity} from "../libs/Structures.sol";
 import {TipsLib} from "../libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {BasicClient} from "../client/BasicClient.sol";
 import {DomainContext} from "../context/DomainContext.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 import {InterfaceSystemRouter} from "../interfaces/InterfaceSystemRouter.sol";
@@ -62,7 +61,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
  * a "message to System Router". By enforcing a minimum optimistic latency for the recipient this
  * attack can be mitigated, assuming there is at least one honest Guard willing to report the fraud.
  */
-contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Versioned {
+contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
     using Address for address;
     using ByteString for bytes;
     using SystemMessageLib for bytes;
@@ -93,18 +92,31 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
      */
 
     address public immutable agentManager;
+    address public immutable destination;
+    address public immutable origin;
 
     // ════════════════════════════════════════════════ CONSTRUCTOR ════════════════════════════════════════════════════
 
     constructor(uint32 domain, address origin_, address destination_, address agentManager_)
-        BasicClient(origin_, destination_)
         DomainContext(domain)
         Versioned("0.0.3")
     {
+        origin = origin_;
+        destination = destination_;
         agentManager = agentManager_;
     }
 
     // ════════════════════════════════════════════ EXTERNAL FUNCTIONS ═════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceSystemRouter
+    function receiveSystemMessage(uint32, uint32, uint256 rootSubmittedAt, bytes memory body) external {
+        // TODO: figure out if we need origin/nonce to be passed here
+        // This will revert if message body is not a system message
+        SystemMessage systemMessage = body.castToSystemMessage();
+        // Received a system message, use the corresponding prefix to adjust `rootSubmittedAt`
+        bytes29 prefix = _prefixReceiveMessage(rootSubmittedAt).castToRawBytes();
+        _callSystemRecipient(systemMessage.callRecipient(), systemMessage.callData(), prefix);
+    }
 
     /// @inheritdoc InterfaceSystemRouter
     function systemCall(uint32 destination_, uint32 optimisticPeriod, SystemEntity recipient, bytes memory payload)
@@ -122,38 +134,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         InterfaceOrigin(origin).sendSystemMessage(destination_, optimisticPeriod, body);
     }
 
-    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
-
-    /**
-     * @notice Returns eligible address of sender/receiver on given remote chain.
-     */
-    function trustedSender(uint32) public pure override returns (bytes32) {
-        /**
-         * @dev SystemRouter will be sending messages to SYSTEM_ROUTER address,
-         * and will only accept incoming messages from SYSTEM_ROUTER as well (see Client.sol).
-         *
-         * It's not possible for anyone but SystemRouter
-         * to send messages "from SYSTEM_ROUTER" on other deployed chains.
-         *
-         * Destination is supposed to reject messages
-         * from unknown chains, so we can skip origin check here.
-         */
-        return SYSTEM_ROUTER;
-    }
-
     // ════════════════════════════════════════════ INTERNAL FUNCTIONS ═════════════════════════════════════════════════
-
-    /**
-     * @dev Handles an incoming message. Security checks are done in BasicClient.handle()
-     * Optimistic period could be anything at this point.
-     */
-    function _handleUnsafe(uint32, uint32, uint256 rootSubmittedAt, bytes memory content) internal override {
-        // This will revert if content is not a system message
-        SystemMessage systemMessage = content.castToSystemMessage();
-        // Received a system message, use the corresponding prefix to adjust `rootSubmittedAt`
-        bytes29 prefix = _prefixReceiveMessage(rootSubmittedAt).castToRawBytes();
-        _callSystemRecipient(systemMessage.callRecipient(), systemMessage.callData(), prefix);
-    }
 
     /**
      * @notice Calls a local System Contract, using calldata from the received system message:

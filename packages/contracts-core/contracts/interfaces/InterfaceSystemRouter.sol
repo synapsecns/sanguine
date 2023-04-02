@@ -5,6 +5,21 @@ import {SystemEntity} from "../libs/Structures.sol";
 
 interface InterfaceSystemRouter {
     /**
+     * @notice Message recipient needs to implement this function in order to
+     * receive cross-chain messages.
+     * @dev Message recipient needs to ensure that merkle proof for the message
+     * is at least as old as the optimistic period that the recipient is using.
+     * Note: as this point it is checked that the "message optimistic period" has passed,
+     * however the period value itself could be anything, and thus could differ from the one
+     * that the recipient would like to enforce.
+     * @param origin            Domain where message originated
+     * @param nonce             Message nonce on the origin domain
+     * @param rootSubmittedAt   Time when merkle root (used for proving this message) was submitted
+     * @param body              Body of the system message
+     */
+    function receiveSystemMessage(uint32 origin, uint32 nonce, uint256 rootSubmittedAt, bytes memory body) external;
+
+    /**
      * @notice Call a System Contract on the destination chain with a given calldata.
      * Note: for system calls on the local chain
      * - use `destination = localDomain`
