@@ -13,8 +13,10 @@ import {Versioned} from "../../contracts/Version.sol";
 import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
 import {
+    MessageFlag,
     StateFlag,
     RawAttestation,
+    RawBaseMessage,
     RawHeader,
     RawMessage,
     RawSnapshot,
@@ -52,24 +54,20 @@ contract OriginTest is SynapseTest {
         uint32 period = 1 minutes;
         bytes memory tipsPayload = TipsLib.emptyTips();
         bytes memory content = "test content";
-
-        RawMessage[] memory rawMessages = new RawMessage[](MESSAGES);
+        bytes memory body = RawBaseMessage({
+            sender: addressToBytes32(sender),
+            recipient: addressToBytes32(recipient),
+            tips: RawTips(0, 0, 0, 0),
+            content: content
+        }).formatBaseMessage();
         bytes[] memory messages = new bytes[](MESSAGES);
         bytes32[] memory roots = new bytes32[](MESSAGES);
         for (uint32 i = 0; i < MESSAGES; ++i) {
-            rawMessages[i] = RawMessage(
-                RawHeader({
-                    origin: DOMAIN_LOCAL,
-                    sender: addressToBytes32(sender),
-                    nonce: i + 1,
-                    destination: DOMAIN_REMOTE,
-                    recipient: addressToBytes32(recipient),
-                    optimisticSeconds: period
-                }),
-                RawTips(0, 0, 0, 0),
-                content
-            );
-            messages[i] = rawMessages[i].formatMessage();
+            messages[i] = RawMessage(
+                uint8(MessageFlag.Base),
+                RawHeader({origin: DOMAIN_LOCAL, nonce: i + 1, destination: DOMAIN_REMOTE, optimisticPeriod: period}),
+                body
+            ).formatMessage();
             insertMessage(messages[i]);
             roots[i] = getRoot(i + 1);
         }
