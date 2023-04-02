@@ -1,5 +1,5 @@
-import {ClipboardCheckIcon, ClipboardCopyIcon} from '@heroicons/react/outline'
-import {useState} from 'react'
+import { ClipboardCheckIcon, ClipboardCopyIcon } from '@heroicons/react/outline'
+import { useState } from 'react'
 import Tooltip from '@components/tailwind/Tooltip'
 
 export function CopyButtonIcon({
@@ -18,7 +18,7 @@ export function CopyButtonIcon({
         }, 5000)
       },
       (err) => {
-        console.log('Copy failed', err.mesage)
+        console.log(err)
       }
     )
   }

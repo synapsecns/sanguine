@@ -31,8 +31,8 @@ func (s ScribeFetcher) FetchTxSender(ctx context.Context, chainID uint32, txHash
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    1 * time.Second,
-		Max:    10 * time.Second,
+		Min:    10 * time.Millisecond,
+		Max:    3 * time.Second,
 	}
 	timeout := time.Duration(0)
 RETRY:
@@ -61,11 +61,12 @@ RETRY:
 // FetchLastIndexed fetches the last indexed block per contract.
 func (s ScribeFetcher) FetchLastIndexed(ctx context.Context, chainID uint32, contractAddress string) (uint64, error) {
 	lastIndexed, err := s.FetchClient.GetLastIndexed(ctx, int(chainID), contractAddress)
-
+	fmt.Println("YYYY", lastIndexed, lastIndexed.Response, fmt.Sprintf("%v", err))
 	if err != nil || lastIndexed == nil || lastIndexed.Response == nil {
+		fmt.Println("lastIndexed.Response", lastIndexed.Response)
 		return 0, fmt.Errorf("could not get last indexed for contract %s: %w", contractAddress, err)
 	}
-
+	fmt.Println("UNRWPA", *lastIndexed.Response)
 	return uint64(*lastIndexed.Response), nil
 }
 
@@ -107,8 +108,8 @@ func (s ScribeFetcher) FetchBlockTime(ctx context.Context, chainID int, blockNum
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    1 * time.Second,
-		Max:    10 * time.Second,
+		Min:    10 * time.Millisecond,
+		Max:    3 * time.Second,
 	}
 	timeout := time.Duration(0)
 	attempts := 0
@@ -146,7 +147,7 @@ func (s ScribeFetcher) FetchTx(ctx context.Context, tx string, chainID int, bloc
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    1 * time.Second,
+		Min:    10 * time.Millisecond,
 		Max:    3 * time.Second,
 	}
 	attempts := 0
@@ -172,8 +173,7 @@ RETRY:
 
 		res, err := s.FetchClient.GetTransactions(ctx, chainID, 1, &tx)
 
-		if err != nil || res == nil || res.Response == nil {
-			logger.Errorf("could not get tx for log, trying again %s, chainID: %d: %v", tx, chainID, err)
+		if err != nil || res == nil || res.Response == nil || len(res.Response) == 0 {
 			timeout = b.Duration()
 			goto RETRY
 		}

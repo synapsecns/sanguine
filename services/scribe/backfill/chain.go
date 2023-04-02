@@ -162,7 +162,7 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 	}
 
 	if err := backfillGroup.Wait(); err != nil {
-		LogEvent(ErrorLevel, "Could not backfill with error group", LogData{"cid": c.chainID, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
+		LogEvent(ErrorLevel, "Could not backfill with error group", LogData{"cid": c.chainID, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
 
 		return fmt.Errorf("could not backfill: %w", err)
 	}

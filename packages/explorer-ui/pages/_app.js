@@ -6,7 +6,7 @@ import '../styles/global.css'
 function MyApp({ Component, pageProps }) {
   return (
     <ApolloProvider client={client}>
-      <PageWrapper>
+      <PageWrapper >
         <Component {...pageProps} />
       </PageWrapper>
     </ApolloProvider>

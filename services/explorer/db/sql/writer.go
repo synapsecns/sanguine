@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // StoreEvent stores a generic event that has the proper fields set by `eventToBridgeEvent`.
@@ -76,6 +77,7 @@ func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
 func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error {
 	entry := LastBlock{}
 	dbTx := s.db.WithContext(ctx).
+		Select(fmt.Sprintf("max(%s) as %s", BlockNumberFieldName, BlockNumberFieldName)).
 		Model(&LastBlock{}).
 		Where(&LastBlock{
 			ChainID:         chainID,
@@ -86,8 +88,12 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 		return fmt.Errorf("could not retrieve last block: %w", dbTx.Error)
 	}
 	if dbTx.RowsAffected == 0 {
-		dbTx = s.db.WithContext(ctx).
-			Model(&LastBlock{}).
+		dbTx = s.db.WithContext(ctx).Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: BlockNumberFieldName},
+			},
+			DoNothing: true,
+		}).Model(&LastBlock{}).
 			Create(&LastBlock{
 				ChainID:         chainID,
 				BlockNumber:     blockNumber,
@@ -101,7 +107,12 @@ func (s *Store) StoreLastBlock(ctx context.Context, chainID uint32, blockNumber 
 	}
 
 	if blockNumber > entry.BlockNumber {
-		dbTx = s.db.WithContext(ctx).
+		dbTx = s.db.WithContext(ctx).Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}, {Name: BlockNumberFieldName},
+			},
+			DoNothing: true,
+		}).
 			Model(&LastBlock{}).
 			Create(&LastBlock{
 				ChainID:         chainID,
@@ -157,6 +168,41 @@ func (s *Store) StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex 
 				TokenIndex:      tokenIndex,
 				ContractAddress: contractAddress,
 				TokenAddress:    tokenAddress,
+			})
+		if dbTx.Error != nil {
+			return fmt.Errorf("could not store last block: %w", dbTx.Error)
+		}
+
+		return nil
+	}
+	return nil
+}
+
+// StoreSwapFee stores the swap fee.
+func (s *Store) StoreSwapFee(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string, fee uint64, feeType string) error {
+	entry := SwapFees{}
+	dbTx := s.db.WithContext(ctx).
+		Model(&SwapFees{}).
+		Where(&SwapFees{
+			ChainID:         chainID,
+			BlockNumber:     blockNumber,
+			ContractAddress: contractAddress,
+			FeeType:         feeType,
+		}).
+		Limit(1).
+		Find(&entry)
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not retrieve last block: %w", dbTx.Error)
+	}
+	if blockNumber != entry.BlockNumber {
+		dbTx = s.db.WithContext(ctx).
+			Model(&SwapFees{}).
+			Create(&SwapFees{
+				ChainID:         chainID,
+				ContractAddress: contractAddress,
+				BlockNumber:     blockNumber,
+				FeeType:         feeType,
+				Fee:             fee,
 			})
 		if dbTx.Error != nil {
 			return fmt.Errorf("could not store last block: %w", dbTx.Error)
