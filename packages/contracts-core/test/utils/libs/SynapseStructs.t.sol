@@ -20,7 +20,7 @@ struct RawHeader {
     uint32 optimisticPeriod;
 }
 
-using {CastLib.castToHeader, CastLib.formatHeader} for RawHeader global;
+using CastLib for RawHeader global;
 
 struct RawTips {
     uint96 notaryTip;
@@ -29,7 +29,7 @@ struct RawTips {
     uint96 executorTip;
 }
 
-using {CastLib.castToTips, CastLib.formatTips} for RawTips global;
+using CastLib for RawTips global;
 
 struct RawBaseMessage {
     bytes32 sender;
@@ -38,7 +38,7 @@ struct RawBaseMessage {
     bytes content;
 }
 
-using {CastLib.castToBaseMessage, CastLib.formatBaseMessage} for RawBaseMessage global;
+using CastLib for RawBaseMessage global;
 
 struct RawMessage {
     uint8 flag;
@@ -46,7 +46,7 @@ struct RawMessage {
     bytes body;
 }
 
-using {CastLib.castToMessage, CastLib.formatMessage} for RawMessage global;
+using CastLib for RawMessage global;
 
 struct RawState {
     bytes32 root;
@@ -56,18 +56,13 @@ struct RawState {
     uint40 timestamp;
 }
 
-using {CastLib.castToState, CastLib.formatState} for RawState global;
+using CastLib for RawState global;
 
 struct RawSnapshot {
     RawState[] states;
 }
 
-using {
-    CastLib.formatStates,
-    CastLib.castToRawAttestation,
-    CastLib.castToSnapshot,
-    CastLib.formatSnapshot
-} for RawSnapshot global;
+using CastLib for RawSnapshot global;
 
 struct RawAttestation {
     bytes32 snapRoot;
@@ -77,21 +72,21 @@ struct RawAttestation {
     uint40 timestamp;
 }
 
-using {CastLib.castToAttestation, CastLib.formatAttestation, CastLib.modifyAttestation} for RawAttestation global;
+using CastLib for RawAttestation global;
 
 struct RawAttestationReport {
     uint8 flag;
     RawAttestation attestation;
 }
 
-using {CastLib.castToAttestationReport, CastLib.formatAttestationReport} for RawAttestationReport global;
+using CastLib for RawAttestationReport global;
 
 struct RawStateReport {
     uint8 flag;
     RawState state;
 }
 
-using {CastLib.castToStateReport, CastLib.formatStateReport} for RawStateReport global;
+using CastLib for RawStateReport global;
 
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
