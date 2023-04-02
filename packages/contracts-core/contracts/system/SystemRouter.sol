@@ -114,7 +114,7 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
         SystemMessage systemMessage = body.castToSystemMessage();
         // Received a system message, use the corresponding prefix to adjust `rootSubmittedAt`
         bytes29 prefix = _prefixReceiveMessage(rootSubmittedAt).castToRawBytes();
-        _callSystemRecipient(systemMessage.callRecipient(), systemMessage.callData(), prefix);
+        _callSystemRecipient(systemMessage.recipient(), systemMessage.callData(), prefix);
     }
 
     /// @inheritdoc InterfaceSystemRouter
@@ -126,7 +126,8 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
         SystemEntity caller = _getSystemEntity(msg.sender);
         // Construct the System Message: use the prefix for sending a message
         bytes memory body = SystemMessageLib.formatSystemMessage({
-            systemRecipient: uint8(recipient),
+            sender_: caller,
+            recipient_: recipient,
             callData_: payload.castToCallData(),
             prefix: _prefixSendMessage(caller).castToRawBytes()
         });
@@ -146,7 +147,7 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
      * Following call will be performed:
      * - recipient.foo(x, y, z, d, e, f);
      */
-    function _callSystemRecipient(uint8 systemRecipient, CallData callData, bytes29 prefix) internal {
+    function _callSystemRecipient(SystemEntity systemRecipient, CallData callData, bytes29 prefix) internal {
         // We adjust the first arguments for the call using the given `prefix`.
         // Prefix containing the security arguments:
         // - (rootSubmittedAt, callOrigin, systemCaller) are adjusted on origin chain
@@ -159,20 +160,24 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
-    /// @notice Returns a corresponding System Entity for a given caller.
-    function _getSystemEntity(address caller) internal view returns (SystemEntity) {
-        if (caller == origin) return SystemEntity.Origin;
-        if (caller == destination) return SystemEntity.Destination;
-        if (caller == agentManager) return SystemEntity.AgentManager;
+    /// @notice Returns a corresponding System Entity for a given message sender.
+    function _getSystemEntity(address sender) internal view returns (SystemEntity) {
+        if (sender == origin) return SystemEntity.Origin;
+        if (sender == destination) return SystemEntity.Destination;
+        if (sender == agentManager) return SystemEntity.AgentManager;
         revert("Unauthorized caller");
     }
 
     /// @notice Returns a corresponding address for a given system recipient.
-    function _getSystemAddress(uint8 entity) internal view returns (address) {
-        if (entity == uint8(SystemEntity.Origin)) return origin;
-        if (entity == uint8(SystemEntity.Destination)) return destination;
-        if (entity == uint8(SystemEntity.AgentManager)) return agentManager;
-        revert("Unknown recipient");
+    function _getSystemAddress(SystemEntity entity) internal view returns (address) {
+        // Possible SystemEntity values: AgentManager / Destination / Origin
+        if (entity == SystemEntity.AgentManager) {
+            return agentManager;
+        } else if (entity == SystemEntity.Destination) {
+            return destination;
+        } else {
+            return origin;
+        }
     }
 
     /// @notice Returns prefix with the security arguments for sending a system message from origin chain.
