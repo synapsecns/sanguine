@@ -87,12 +87,12 @@ library MessageLib {
     function isMessage(bytes29 view_) internal pure returns (bool) {
         uint256 length = view_.len();
         // Check if flag and header exist in the payload
-        if (length < OFFSET_HEADER) return false;
+        if (length < OFFSET_BODY) return false;
         uint8 flag_ = _flag(view_);
         // Check that Flag fits into MessageFlag enum
         if (flag_ > uint8(type(MessageFlag).max)) return false;
         // Check that Header is formatted
-        if (_header(view_).isHeader()) return false;
+        if (!_header(view_).isHeader()) return false;
         // Check that body is formatted according to the flag
         // Only System/Base message flags exist
         if (flag_ == uint8(MessageFlag.System)) {
