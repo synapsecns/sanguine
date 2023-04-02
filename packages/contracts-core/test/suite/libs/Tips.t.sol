@@ -18,9 +18,7 @@ contract TipsLibraryTest is SynapseLibraryTest {
         libHarness = new TipsHarness();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          TESTS: FORMATTING                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ TESTS: FORMATTING ═════════════════════════════════════════════════
 
     function test_formatTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip) public {
         // TODO: Determine if we actually need uint96 for storing tips / totalTips
@@ -92,9 +90,7 @@ contract TipsLibraryTest is SynapseLibraryTest {
         assertFalse(libHarness.isTips(addLastByte(createTestPayload())), "!isTips: 1 byte longer");
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function checkCastToTips(bytes memory payload, bool isTips) public {
         if (isTips) {

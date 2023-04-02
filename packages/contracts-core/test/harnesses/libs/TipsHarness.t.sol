@@ -15,9 +15,7 @@ contract TipsHarness {
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               GETTERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
     function castToTips(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
@@ -60,9 +58,7 @@ contract TipsHarness {
         return payload.ref(0).isTips();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              FORMATTERS                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
     function formatTips(uint96 notaryTip_, uint96 broadcasterTip_, uint96 proverTip_, uint96 executorTip_)
         public
@@ -76,9 +72,7 @@ contract TipsHarness {
         return TipsLib.emptyTips();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           CONSTANT GETTERS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ CONSTANT GETTERS ══════════════════════════════════════════════════
 
     function tipsLength() public pure returns (uint256) {
         return TIPS_LENGTH;

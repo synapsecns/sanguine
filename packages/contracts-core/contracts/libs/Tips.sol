@@ -7,8 +7,8 @@ import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev Tips is a memory over over a formatted message tips payload.
 type Tips is bytes29;
-/// @dev Attach library functions to Tips
 
+/// @dev Attach library functions to Tips
 using {
     TipsLib.unwrap,
     TipsLib.version,
@@ -47,9 +47,7 @@ library TipsLib {
     uint256 internal constant OFFSET_PROVER = 26;
     uint256 internal constant OFFSET_EXECUTOR = 38;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                 TIPS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ TIPS ════════════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted Tips payload with provided fields
@@ -106,9 +104,7 @@ library TipsLib {
         return Tips.unwrap(tips);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             TIPS SLICING                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ TIPS SLICING ════════════════════════════════════════════════════
 
     /// @notice Returns version of formatted tips
     function version(Tips tips) internal pure returns (uint16) {
@@ -148,9 +144,7 @@ library TipsLib {
         return notaryTip(tips) + broadcasterTip(tips) + proverTip(tips) + executorTip(tips);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           PRIVATE HELPERS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
 
     /// @notice Returns a version field without checking if payload is properly formatted.
     function _getVersion(bytes29 view_) private pure returns (uint16) {
