@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"gorm.io/gorm"
@@ -17,6 +18,8 @@ type ConsumerDBWriter interface {
 	StoreLastBlock(ctx context.Context, chainID uint32, blockNumber uint64, contractAddress string) error
 	// StoreTokenIndex stores the token index data.
 	StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error
+	// StoreSwapFee stores the swap fee data.
+	StoreSwapFee(ctx context.Context, chainID uint32, timestamp uint64, contractAddress string, fee uint64, feeType string) error
 	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
 	//
 	//nolint:golint
@@ -42,15 +45,16 @@ type ConsumerDBReader interface {
 	GetBridgeEvents(ctx context.Context, query string) ([]sql.BridgeEvent, error)
 	// GetAllBridgeEvents returns a bridge event.
 	GetAllBridgeEvents(ctx context.Context, query string) ([]sql.HybridBridgeEvent, error)
+	// GetAllMessageBusEvents returns a bridge event.
+	GetAllMessageBusEvents(ctx context.Context, query string) ([]sql.HybridMessageBusEvent, error)
 	// GetDateResults gets day by day data for a given query.
 	GetDateResults(ctx context.Context, query string) ([]*model.DateResult, error)
 	// GetAddressRanking gets AddressRanking for a given query.
 	GetAddressRanking(ctx context.Context, query string) ([]*model.AddressRanking, error)
-
-	// PartialInfosFromIdentifiers returns events given identifiers.
-	PartialInfosFromIdentifiers(ctx context.Context, query string) ([]*model.PartialInfo, error)
-	// PartialInfosFromIdentifiersByChain returns events given identifiers.
-	PartialInfosFromIdentifiersByChain(ctx context.Context, query string) (map[int]*model.PartialInfo, error)
+	// GetDailyTotals gets the daily stats for each date broken down by chain
+	GetDailyTotals(ctx context.Context, query string) ([]*model.DateResultByChain, error)
+	// GetRankedChainsByVolume gets the volume for each chain
+	GetRankedChainsByVolume(ctx context.Context, query string) ([]*model.VolumeByChainID, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.

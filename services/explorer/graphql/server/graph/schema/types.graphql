@@ -14,7 +14,8 @@ type BridgeTransaction {
 PartialInfo is a transaction that occurred on one chain.
 """
 type PartialInfo {
-  chainId: Int
+  chainID: Int
+  destinationChainID: Int
   address: String
   txnHash: String
   value:          String
@@ -24,6 +25,7 @@ type PartialInfo {
   tokenSymbol:    String
   blockNumber:    Int
   time:           Int
+  formattedTime: String
 }
 """
 DateResult is a given statistic for a given date.
@@ -40,6 +42,7 @@ type HistoricalResult {
   dateResults:  [DateResult]
   type:         HistoricalResultType
 }
+
 """
 ValueResult is a value result of either USD or numeric value.
 """
@@ -50,14 +53,14 @@ type ValueResult {
 TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
 """
 type TransactionCountResult {
-  chainId:  Int
+  chainID:  Int
   count:    Int
 }
 """
 TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
 """
 type TokenCountResult {
-  chainId:      Int
+  chainID:      Int
   tokenAddress: String
   count:        Int
 }
@@ -72,6 +75,9 @@ type AddressRanking {
 enum Duration {
   PAST_DAY
   PAST_MONTH
+  PAST_3_MONTHS
+  PAST_6_MONTHS
+  PAST_YEAR
   ALL_TIME
 }
 enum Direction {
@@ -82,6 +88,9 @@ enum StatisticType {
   MEAN_VOLUME_USD
   MEDIAN_VOLUME_USD
   TOTAL_VOLUME_USD
+  MEAN_FEE_USD
+  MEDIAN_FEE_USD
+  TOTAL_FEE_USD
   COUNT_TRANSACTIONS
   COUNT_ADDRESSES
 }
@@ -89,4 +98,71 @@ enum HistoricalResultType {
   BRIDGEVOLUME
   TRANSACTIONS
   ADDRESSES
+}
+
+enum Platform{
+  ALL
+  SWAP
+  BRIDGE
+  MESSAGE_BUS
+}
+
+enum DailyStatisticType {
+  VOLUME
+  TRANSACTIONS
+  ADDRESSES
+  FEE
+}
+
+
+type MessageBusTransaction {
+  fromInfo:   PartialMessageBusInfo
+  toInfo:     PartialMessageBusInfo
+  pending:    Boolean
+  messageID:  String
+}
+
+type PartialMessageBusInfo {
+  chainID: Int
+  chainName: String
+  destinationChainID: Int
+  destinationChainName: String
+  contractAddress: String
+  txnHash: String
+  message:        String
+  messageType: MessageType
+  blockNumber:    Int
+  time:           Int
+  formattedTime: String
+  revertedReason: String
+}
+"""
+DateResult is a given statistic for a given date.
+"""
+type DateResultByChain {
+  date: String
+  ethereum: Float
+  optimism: Float
+  cronos: Float
+  bsc: Float
+  polygon: Float
+  fantom: Float
+  boba: Float
+  metis: Float
+  moonbeam: Float
+  moonriver: Float
+  klaytn: Float
+  arbitrum: Float
+  avalanche: Float
+  dfk: Float
+  aurora: Float
+  harmony: Float
+  canto: Float
+  dogechain: Float
+  total:  Float
+}
+
+type VolumeByChainID {
+  chainID:  Int
+  total:    Float
 }
