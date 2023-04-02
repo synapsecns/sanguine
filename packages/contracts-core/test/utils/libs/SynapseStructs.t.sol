@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {
-    Header, HeaderLib, Message, MessageLib, Tips, TipsLib, TypedMemView
-} from "../../../contracts/libs/Message.sol";
+import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
+
+import {Header, HeaderLib, Message, MessageFlag, MessageLib, TypedMemView} from "../../../contracts/libs/Message.sol";
 
 import {Snapshot, SnapshotLib, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
 
@@ -15,11 +15,9 @@ import {StateFlag, StateReport, StateReportLib} from "../../../contracts/libs/St
 
 struct RawHeader {
     uint32 origin;
-    bytes32 sender;
     uint32 nonce;
     uint32 destination;
-    bytes32 recipient;
-    uint32 optimisticSeconds;
+    uint32 optimisticPeriod;
 }
 
 using {CastLib.castToHeader, CastLib.formatHeader} for RawHeader global;
@@ -33,9 +31,18 @@ struct RawTips {
 
 using {CastLib.castToTips, CastLib.formatTips} for RawTips global;
 
-struct RawMessage {
-    RawHeader header;
+struct RawBaseMessage {
+    bytes32 sender;
+    bytes32 recipient;
     RawTips tips;
+    bytes content;
+}
+
+using {CastLib.castToBaseMessage, CastLib.formatBaseMessage} for RawBaseMessage global;
+
+struct RawMessage {
+    uint8 flag;
+    RawHeader header;
     bytes body;
 }
 
@@ -91,6 +98,7 @@ using {CastLib.castToStateReport, CastLib.formatStateReport} for RawStateReport 
 library CastLib {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
+    using BaseMessageLib for bytes;
     using HeaderLib for bytes;
     using MessageLib for bytes;
     using SnapshotLib for bytes;
@@ -102,14 +110,12 @@ library CastLib {
     /// @notice Prevents this contract from being included in the coverage report
     function testCastLib() external {}
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               MESSAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ MESSAGE ══════════════════════════════════════════════════════
 
     function formatMessage(RawMessage memory rm) internal pure returns (bytes memory msgPayload) {
-        bytes memory header = rm.header.formatHeader();
-        bytes memory tipsPayload = rm.tips.formatTips();
-        return MessageLib.formatMessage(header, tipsPayload, rm.body);
+        // Explicit revert when out of range
+        require(rm.flag <= uint8(type(MessageFlag).max), "Flag out of range");
+        return MessageLib.formatMessage(MessageFlag(rm.flag), rm.header.formatHeader(), rm.body);
     }
 
     function castToMessage(RawMessage memory rm) internal pure returns (Message ptr) {
@@ -119,11 +125,9 @@ library CastLib {
     function formatHeader(RawHeader memory rh) internal pure returns (bytes memory header) {
         header = HeaderLib.formatHeader({
             origin_: rh.origin,
-            sender_: rh.sender,
             nonce_: rh.nonce,
             destination_: rh.destination,
-            recipient_: rh.recipient,
-            optimisticSeconds_: rh.optimisticSeconds
+            optimisticPeriod_: rh.optimisticPeriod
         });
     }
 
@@ -144,9 +148,20 @@ library CastLib {
         ptr = rt.formatTips().castToTips();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                STATE                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    function formatBaseMessage(RawBaseMessage memory rbm) internal pure returns (bytes memory bmPayload) {
+        bmPayload = BaseMessageLib.formatBaseMessage({
+            sender_: rbm.sender,
+            recipient_: rbm.recipient,
+            tipsPayload: rbm.tips.formatTips(),
+            content_: rbm.content
+        });
+    }
+
+    function castToBaseMessage(RawBaseMessage memory rbm) internal pure returns (BaseMessage ptr) {
+        ptr = rbm.formatBaseMessage().castToBaseMessage();
+    }
+
+    // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
 
     function formatState(RawState memory rs) internal pure returns (bytes memory state) {
         state = StateLib.formatState({
@@ -173,9 +188,7 @@ library CastLib {
         ptr = rawSR.formatStateReport().castToStateReport();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               SNAPSHOT                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════════ SNAPSHOT ══════════════════════════════════════════════════════
 
     function formatStates(RawSnapshot memory rawSnap) internal pure returns (bytes[] memory states) {
         states = new bytes[](rawSnap.states.length);
@@ -211,9 +224,7 @@ library CastLib {
         ptr = rawSnap.formatSnapshot().castToSnapshot();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             ATTESTATION                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ ATTESTATION ════════════════════════════════════════════════════
 
     function formatAttestation(RawAttestation memory ra) internal pure returns (bytes memory attestation) {
         attestation = AttestationLib.formatAttestation({

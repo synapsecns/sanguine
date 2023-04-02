@@ -55,20 +55,20 @@ library StateLib {
      * State is structured in a way to track the updates of the Origin Merkle Tree. State includes
      * root of the Origin Merkle Tree, origin domain and some additional metadata.
      *
-     * Hash of every dispatched message is inserted in the Origin Merkle Tree, which changes the
+     * Hash of every sent message is inserted in the Origin Merkle Tree, which changes the
      * value of Origin Merkle Root (which is the root for the mentioned tree).
      * Origin has a single Merkle Tree for all messages, regardless of their destination domain.
-     * This leads to Origin state being updated if and only if a message was dispatched in a block.
+     * This leads to Origin state being updated if and only if a message was sent in a block.
      *
      * Origin contract is a "source of truth" for states: a state is considered "valid" in its Origin,
-     * if it matches the state of the Origin contract after the N-th (nonce) message was dispatched.
+     * if it matches the state of the Origin contract after the N-th (nonce) message was sent.
      *
      * @dev Memory layout of State fields
      * [000 .. 032): root           bytes32 32 bytes    Root of the Origin Merkle Tree
      * [032 .. 036): origin         uint32   4 bytes    Domain where Origin is located
-     * [036 .. 040): nonce          uint32   4 bytes    Amount of dispatched messages
-     * [040 .. 045): blockNumber    uint40   5 bytes    Block of last dispatched message
-     * [045 .. 050): timestamp      uint40   5 bytes    Time of last dispatched message
+     * [036 .. 040): nonce          uint32   4 bytes    Amount of sent messages
+     * [040 .. 045): blockNumber    uint40   5 bytes    Block of last sent message
+     * [045 .. 050): timestamp      uint40   5 bytes    Time of last sent message
      *
      * The variables below are not supposed to be used outside of the library directly.
      */

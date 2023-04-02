@@ -100,7 +100,7 @@ abstract contract BasicClient is IMessageRecipient {
     {
         bytes32 recipient = trustedSender(destination_);
         require(recipient != bytes32(0), "BasicClient: !recipient");
-        InterfaceOrigin(origin).dispatch{value: msg.value}(
+        InterfaceOrigin(origin).sendBaseMessage{value: msg.value}(
             destination_, recipient, optimisticSeconds, tipsPayload, content
         );
     }

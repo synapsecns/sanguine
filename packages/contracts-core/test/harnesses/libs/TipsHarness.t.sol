@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Tips, TipsLib, TypedMemView} from "../../../contracts/libs/Tips.sol";
+import {Tips, TipsLib, TIPS_LENGTH, TypedMemView} from "../../../contracts/libs/Tips.sol";
 
 /**
  * @notice Exposes TipsLib methods for testing against golang.
@@ -15,20 +15,13 @@ contract TipsHarness {
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               GETTERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
     function castToTips(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
         Tips tips = TipsLib.castToTips(payload);
         return tips.unwrap().clone();
-    }
-
-    /// @notice Returns version of formatted tips
-    function version(bytes memory payload) public pure returns (uint16) {
-        return payload.castToTips().version();
     }
 
     /// @notice Returns notaryTip field
@@ -60,9 +53,7 @@ contract TipsHarness {
         return payload.ref(0).isTips();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              FORMATTERS                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
     function formatTips(uint96 notaryTip_, uint96 broadcasterTip_, uint96 proverTip_, uint96 executorTip_)
         public
@@ -76,20 +67,10 @@ contract TipsHarness {
         return TipsLib.emptyTips();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           CONSTANT GETTERS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ CONSTANT GETTERS ══════════════════════════════════════════════════
 
     function tipsLength() public pure returns (uint256) {
-        return TipsLib.TIPS_LENGTH;
-    }
-
-    function tipsVersion() public pure returns (uint16) {
-        return TipsLib.TIPS_VERSION;
-    }
-
-    function offsetVersion() public pure returns (uint256) {
-        return TipsLib.OFFSET_VERSION;
+        return TIPS_LENGTH;
     }
 
     function offsetNotary() public pure returns (uint256) {

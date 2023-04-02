@@ -2,23 +2,41 @@
 pragma solidity 0.8.17;
 
 interface InterfaceOrigin {
+    // ═══════════════════════════════════════════════ SEND MESSAGES ═══════════════════════════════════════════════════
+
     /**
-     * @notice Dispatch the message to the recipient located on destination domain.
+     * @notice Send a message to the recipient located on destination domain.
+     * @dev Recipient has to conform to IMessageRecipient interface, otherwise message won't be delivered.
      * @param destination           Domain of destination chain
      * @param recipient             Address of recipient on destination chain as bytes32
-     * @param optimisticSeconds     Optimistic period for message execution on destination chain
+     * @param optimisticPeriod      Optimistic period for message execution on destination chain
      * @param tipsPayload           Payload with information about paid tips
      * @param content               Raw bytes content of message
-     * @return messageNonce         Nonce of the dispatched message
-     * @return messageHash          Hash of the dispatched message
+     * @return messageNonce         Nonce of the sent message
+     * @return messageHash          Hash of the sent message
      */
-    function dispatch(
+    function sendBaseMessage(
         uint32 destination,
         bytes32 recipient,
-        uint32 optimisticSeconds,
+        uint32 optimisticPeriod,
         bytes memory tipsPayload,
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash);
+
+    /**
+     * @notice Send a system message to the destination domain.
+     * @dev This could only be called by SystemRouter, which takes care of encoding/decoding the message body.
+     * The message body includes the sender and the recipient of the system message.
+     * Note: function is not payable, as no tips are required for sending a system message.
+     * @param destination           Domain of destination chain
+     * @param optimisticPeriod      Optimistic period for message execution on destination chain
+     * @param body                  Body of the system message
+     */
+    function sendSystemMessage(uint32 destination, uint32 optimisticPeriod, bytes memory body)
+        external
+        returns (uint32 messageNonce, bytes32 messageHash);
+
+    // ═════════════════════════════════════════════ VERIFY STATEMENTS ═════════════════════════════════════════════════
 
     /**
      * @notice Verifies a state from the snapshot, that was used for the Notary-signed attestation.

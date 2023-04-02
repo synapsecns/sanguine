@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, ExecutionAttestation} from "../libs/Attestation.sol";
+import {BaseMessage, BaseMessageLib} from "../libs/BaseMessage.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
-import {Header, Message, MessageLib, Tips} from "../libs/Message.sol";
+import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
+import {SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
+import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 import {TypedMemView} from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -22,18 +25,14 @@ import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
  * On the other chains Notaries are submitting the attestations that are later used for proving.
  */
 abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub {
+    using BaseMessageLib for bytes29;
     using MessageLib for bytes;
+    using TypeCasts for bytes32;
     using TypedMemView for bytes29;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              CONSTANTS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     bytes32 internal constant _MESSAGE_STATUS_NONE = bytes32(0);
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     /// @notice (messageHash => status)
     /// TODO: Store something else as "status"? Notary/timestamp?
@@ -51,9 +50,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// @dev gap for upgrade safety
     uint256[48] private __GAP; // solhint-disable-line var-name-mixedcase
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           EXECUTE MESSAGES                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ EXECUTE MESSAGES ══════════════════════════════════════════════════
 
     /// @inheritdoc IExecutionHub
     function execute(
@@ -66,69 +63,97 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         Message message = msgPayload.castToMessage();
         Header header = message.header();
         bytes32 msgLeaf = message.leaf();
-        // Check proofs validity and mark message as executed
-        ExecutionAttestation memory execAtt = _prove(header, msgLeaf, originProof, snapProof, stateIndex);
-        // Store message tips
-        Tips tips = message.tips();
-        _storeTips(execAtt.notary, tips);
-        // Get the specified recipient address
+        // Ensure message was meant for this domain
+        require(header.destination() == localDomain, "!destination");
         uint32 origin = header.origin();
-        address recipient = _checkForSystemRouter(header.recipient());
-        // Pass the message to the recipient
-        IMessageRecipient(recipient).handle(
-            origin, header.nonce(), header.sender(), execAtt.submittedAt, message.body().clone()
-        );
+        uint32 nonce = header.nonce();
+        // Check proofs validity and optimistically mark message as executed
+        ExecutionAttestation memory execAtt =
+            _proveAttestation(origin, nonce, msgLeaf, originProof, snapProof, stateIndex);
+        // Check if optimistic period has passed
+        uint256 rootSubmittedAt = execAtt.submittedAt;
+        require(block.timestamp >= rootSubmittedAt + header.optimisticPeriod(), "!optimisticPeriod");
+        // Only System/Base message flags exist
+        if (message.flag() == MessageFlag.System) {
+            _executeSystemMessage(origin, nonce, rootSubmittedAt, message.body());
+        } else {
+            // This will revert if message body is not a formatted BaseMessage payload
+            _executeBaseMessage(origin, nonce, rootSubmittedAt, execAtt.notary, message.body().castToBaseMessage());
+        }
         emit Executed(origin, msgLeaf);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         INTERNAL LOGIC: TIPS                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════ INTERNAL LOGIC: TIPS ════════════════════════════════════════════════
 
     function _storeTips(address notary, Tips tips) internal {
         // TODO: implement tips logic
         emit TipsStored(notary, tips.unwrap().clone());
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                  INTERNAL LOGIC: MESSAGE EXECUTION                   ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════ INTERNAL LOGIC: MESSAGE EXECUTION ═════════════════════════════════════════
+
+    /// @dev Passes message content to recipient that conforms to IMessageRecipient interface.
+    function _executeBaseMessage(
+        uint32 origin,
+        uint32 nonce,
+        uint256 rootSubmittedAt,
+        address notary,
+        BaseMessage baseMessage
+    ) internal {
+        // Store message tips
+        _storeTips(notary, baseMessage.tips());
+        // TODO: check that the discarded bits are empty
+        address recipient = baseMessage.recipient().bytes32ToAddress();
+        // Forward message content to the recipient
+        // TODO: this should be "receive base message"
+        IMessageRecipient(recipient).handle(
+            origin, nonce, baseMessage.sender(), rootSubmittedAt, baseMessage.content().clone()
+        );
+    }
+
+    function _executeSystemMessage(uint32 origin, uint32 nonce, uint256 rootSubmittedAt, bytes29 body) internal {
+        // TODO: introduce incentives for executing System Messages?
+        // Forward system message to System Router
+        // TODO: this should be a separate function to receive system messages
+        IMessageRecipient(address(systemRouter)).handle(origin, nonce, SYSTEM_ROUTER, rootSubmittedAt, body.clone());
+    }
+
+    // ══════════════════════════════════════ INTERNAL LOGIC: MESSAGE PROVING ══════════════════════════════════════════
 
     /**
      * @notice Attempts to prove the validity of the cross-chain message.
      * First, the origin Merkle Root is reconstructed using the origin proof.
      * Then the origin state's "left leaf" is reconstructed using the origin domain.
      * After that the snapshot Merkle Root is reconstructed using the snapshot proof.
-     * Finally, the optimistic period is checked for the derived snapshot root.
+     * The snapshot root needs to have been submitted by an undisputed Notary.
      * @dev Reverts if any of the checks fail.
-     * @param header        Typed memory view over message header payload
+     * @param origin        Domain where message originated
+     * @param nonce         Message nonce on the origin domain
      * @param msgLeaf       Message Leaf that was inserted in the Origin Merkle Tree
      * @param originProof   Proof of inclusion of Message Leaf in the Origin Merkle Tree
      * @param snapProof     Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
      * @param stateIndex    Index of Origin State in the Snapshot
      * @return execAtt      Attestation data for derived snapshot root
      */
-    function _prove(
-        Header header,
+    function _proveAttestation(
+        uint32 origin,
+        uint32 nonce,
         bytes32 msgLeaf,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
         uint256 stateIndex
     ) internal returns (ExecutionAttestation memory execAtt) {
-        // TODO: split into a few smaller functions?
         // Check that message has not been executed before
         require(messageStatus[msgLeaf] == _MESSAGE_STATUS_NONE, "!MessageStatus.None");
-        // Ensure message was meant for this domain
-        require(header.destination() == localDomain, "!destination");
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
         // This will revert if origin proof length exceeds Origin Tree height
-        bytes32 originRoot = MerkleLib.proofRoot(header.nonce() - 1, msgLeaf, originProof, ORIGIN_TREE_HEIGHT);
+        bytes32 originRoot = MerkleLib.proofRoot(nonce - 1, msgLeaf, originProof, ORIGIN_TREE_HEIGHT);
         // Reconstruct Snapshot Merkle Root using the snapshot proof
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
-        bytes32 snapshotRoot = _snapshotRoot(originRoot, header.origin(), snapProof, stateIndex);
+        bytes32 snapshotRoot = _snapshotRoot(originRoot, origin, snapProof, stateIndex);
         // Fetch the attestation data for the snapshot root
         execAtt = _rootAttestations[snapshotRoot];
         // Check if snapshot root has been submitted
@@ -137,8 +162,6 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         _verifyActive(_agentStatus(execAtt.notary));
         // Check that Notary who submitted the attestation is not in dispute
         require(!_inDispute(execAtt.notary), "Notary is in dispute");
-        // Check if optimistic period has passed
-        require(block.timestamp >= header.optimisticSeconds() + execAtt.submittedAt, "!optimisticSeconds");
         // Mark message as executed against the snapshot root
         messageStatus[msgLeaf] = snapshotRoot;
     }
@@ -149,27 +172,6 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         bytes32 root = att.snapRoot();
         require(_rootAttestations[root].isEmpty(), "Root already exists");
         _rootAttestations[root] = att.toExecutionAttestation(notary);
-    }
-
-    /**
-     * @notice Returns adjusted "recipient" field.
-     * @dev By default, "recipient" field contains the recipient address padded to 32 bytes.
-     * But if SYSTEM_ROUTER value is used for "recipient" field, recipient is Synapse Router.
-     * Note: tx will revert in Origin if anyone but SystemRouter uses SYSTEM_ROUTER as recipient.
-     */
-    function _checkForSystemRouter(bytes32 recipient) internal view returns (address recipientAddress) {
-        // Check if SYSTEM_ROUTER was specified as message recipient
-        if (recipient == SYSTEM_ROUTER) {
-            /**
-             * @dev Route message to SystemRouter.
-             * Note: Only SystemRouter contract on origin chain can send a message
-             * using SYSTEM_ROUTER as "recipient" field (enforced in Origin.sol).
-             */
-            return address(systemRouter);
-        } else {
-            // Cast bytes32 to address otherwise
-            return TypeCasts.bytes32ToAddress(recipient);
-        }
     }
 
     /// @dev Gets a saved attestation for the given snapshot root.
