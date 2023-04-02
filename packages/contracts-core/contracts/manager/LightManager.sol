@@ -79,7 +79,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
             // Issue a system call to BondingManager on SynChain
             _callAgentManager({
                 domain: SYNAPSE_DOMAIN,
-                optimisticSeconds: BONDING_OPTIMISTIC_PERIOD,
+                optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
                 payload: _remoteSlashPayload(domain, agent, prover)
             });
         } else {

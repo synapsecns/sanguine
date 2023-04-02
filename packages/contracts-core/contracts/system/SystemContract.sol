@@ -134,10 +134,10 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
 
     /// @dev Perform a System Call to a AgentManager on a given domain
     /// with the given optimistic period and data.
-    function _callAgentManager(uint32 domain, uint32 optimisticSeconds, bytes memory payload) internal {
+    function _callAgentManager(uint32 domain, uint32 optimisticPeriod, bytes memory payload) internal {
         systemRouter.systemCall({
             destination: domain,
-            optimisticSeconds: optimisticSeconds,
+            optimisticPeriod: optimisticPeriod,
             recipient: SystemEntity.AgentManager,
             payload: payload
         });

@@ -10,6 +10,7 @@ import {TipsLib} from "../libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {BasicClient} from "../client/BasicClient.sol";
 import {DomainContext} from "../context/DomainContext.sol";
+import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 import {InterfaceSystemRouter} from "../interfaces/InterfaceSystemRouter.sol";
 import {Versioned} from "../Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
@@ -106,20 +107,19 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     // ════════════════════════════════════════════ EXTERNAL FUNCTIONS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSystemRouter
-    function systemCall(uint32 destination_, uint32 optimisticSeconds, SystemEntity recipient, bytes memory payload)
+    function systemCall(uint32 destination_, uint32 optimisticPeriod, SystemEntity recipient, bytes memory payload)
         external
     {
         require(destination_ != localDomain, "Must be a remote destination");
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity caller = _getSystemEntity(msg.sender);
         // Construct the System Message: use the prefix for sending a message
-        bytes memory content = SystemMessageLib.formatSystemMessage({
+        bytes memory body = SystemMessageLib.formatSystemMessage({
             systemRecipient: uint8(recipient),
             callData_: payload.castToCallData(),
             prefix: _prefixSendMessage(caller).castToRawBytes()
         });
-        // TODO: this should use origin.sendSystemMessage()
-        _send(destination_, optimisticSeconds, TipsLib.emptyTips(), content);
+        InterfaceOrigin(origin).sendSystemMessage(destination_, optimisticPeriod, body);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════

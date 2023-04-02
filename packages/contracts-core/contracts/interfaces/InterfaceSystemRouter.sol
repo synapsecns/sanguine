@@ -23,10 +23,10 @@ interface InterfaceSystemRouter {
      *   - For on-chain calls: timestamp of the current block
      *
      * @param destination           Domain of destination chain
-     * @param optimisticSeconds     Optimistic period for the message
+     * @param optimisticPeriod      Optimistic period for the message
      * @param recipient             System entity to receive the call on destination chain
      * @param payload               Calldata payload for calling recipient on destination chain
      */
-    function systemCall(uint32 destination, uint32 optimisticSeconds, SystemEntity recipient, bytes memory payload)
+    function systemCall(uint32 destination, uint32 optimisticPeriod, SystemEntity recipient, bytes memory payload)
         external;
 }
