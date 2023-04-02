@@ -10,8 +10,6 @@ import {ByteString, CallData, Signature, TypedMemView} from "../../../contracts/
 contract ByteStringHarness {
     using ByteString for bytes;
     using ByteString for bytes29;
-    using ByteString for CallData;
-    using ByteString for Signature;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 

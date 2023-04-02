@@ -9,8 +9,14 @@ import {TypedMemView} from "./TypedMemView.sol";
 /// - 32 * N bytes represent N words that function arguments occupy.
 type CallData is bytes29;
 
+/// @dev Attach library functions to CallData
+using ByteString for CallData global;
+
 /// @dev Signature is a memory view over a "65 bytes" array representing a ECDSA signature.
 type Signature is bytes29;
+
+/// @dev Attach library functions to Signature
+using ByteString for Signature global;
 
 library ByteString {
     using TypedMemView for bytes;

@@ -14,7 +14,6 @@ using SystemMessageLib for SystemMessage global;
 library SystemMessageLib {
     using ByteString for bytes;
     using ByteString for bytes29;
-    using ByteString for CallData;
     using TypedMemView for bytes29;
 
     /**

@@ -16,7 +16,6 @@ import {
  */
 contract SystemMessageHarness {
     using ByteString for bytes;
-    using ByteString for CallData;
     using SystemMessageLib for bytes;
     using SystemMessageLib for bytes29;
     using TypedMemView for bytes;
