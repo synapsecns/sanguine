@@ -15,6 +15,7 @@ import {Versioned} from "../Version.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
+// TODO: update docs
 /**
  * @notice Router for calls between system contracts (aka "System Calls").
  * SystemRouter makes it possible to perform a call from one system contract to another
@@ -116,64 +117,6 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         CallData[] memory callDataArray = new CallData[](1);
         recipients[0] = recipient;
         callDataArray[0] = payload.castToCallData();
-        _multiCall(caller, destination_, optimisticSeconds, recipients, callDataArray);
-    }
-
-    /// @inheritdoc InterfaceSystemRouter
-    function systemMultiCall(
-        uint32 destination_,
-        uint32 optimisticSeconds,
-        SystemEntity[] memory recipients,
-        bytes[] memory payloadArray
-    ) external {
-        /// @dev This will revert if msg.sender is not a system contract
-        SystemEntity caller = _getSystemEntity(msg.sender);
-        uint256 amount = recipients.length;
-        CallData[] memory callDataArray = new CallData[](amount);
-        for (uint256 i = 0; i < amount; ++i) {
-            // Do a cast to a CallData view for every element
-            callDataArray[i] = payloadArray[i].castToCallData();
-        }
-        _multiCall(caller, destination_, optimisticSeconds, recipients, callDataArray);
-    }
-
-    /// @inheritdoc InterfaceSystemRouter
-    function systemMultiCall(
-        uint32 destination_,
-        uint32 optimisticSeconds,
-        SystemEntity[] memory recipients,
-        bytes memory payload
-    ) external {
-        /// @dev This will revert if msg.sender is not a system contract
-        SystemEntity caller = _getSystemEntity(msg.sender);
-        uint256 amount = recipients.length;
-        CallData[] memory callDataArray = new CallData[](amount);
-        CallData callData = payload.castToCallData();
-        for (uint256 i = 0; i < amount; ++i) {
-            // `callData` is never modified, so we can reuse the same memory view here
-            callDataArray[i] = callData;
-        }
-        _multiCall(caller, destination_, optimisticSeconds, recipients, callDataArray);
-    }
-
-    /// @inheritdoc InterfaceSystemRouter
-    function systemMultiCall(
-        uint32 destination_,
-        uint32 optimisticSeconds,
-        SystemEntity recipient,
-        bytes[] memory payloadArray
-    ) external {
-        /// @dev This will revert if msg.sender is not a system contract
-        SystemEntity caller = _getSystemEntity(msg.sender);
-        uint256 amount = payloadArray.length;
-        CallData[] memory callDataArray = new CallData[](amount);
-        SystemEntity[] memory recipients = new SystemEntity[](amount);
-        for (uint256 i = 0; i < amount; ++i) {
-            // Every call recipient is the same
-            recipients[i] = recipient;
-            // Do a cast to a CallData view for every element
-            callDataArray[i] = payloadArray[i].castToCallData();
-        }
         _multiCall(caller, destination_, optimisticSeconds, recipients, callDataArray);
     }
 

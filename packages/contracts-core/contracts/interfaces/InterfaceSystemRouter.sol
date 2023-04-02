@@ -29,43 +29,4 @@ interface InterfaceSystemRouter {
      */
     function systemCall(uint32 destination, uint32 optimisticSeconds, SystemEntity recipient, bytes memory payload)
         external;
-
-    /**
-     * @notice Calls a few system contracts using the given calldata for each call.
-     * See `systemCall` for details on system calls.
-     * Note: tx will revert if any of the calls revert, guaranteeing
-     * that either all calls succeed or none.
-     */
-    function systemMultiCall(
-        uint32 destination,
-        uint32 optimisticSeconds,
-        SystemEntity[] memory recipients,
-        bytes[] memory payloadArray
-    ) external;
-
-    /**
-     * @notice Calls a few system contracts using the same calldata for each call.
-     * See `systemCall` for details on system calls.
-     * Note: tx will revert if any of the calls revert, guaranteeing
-     * that either all calls succeed or none.
-     */
-    function systemMultiCall(
-        uint32 destination,
-        uint32 optimisticSeconds,
-        SystemEntity[] memory recipients,
-        bytes memory payload
-    ) external;
-
-    /**
-     * @notice Calls a single system contract a few times using the given calldata for each call.
-     * See `systemCall` for details on system calls.
-     * Note: tx will revert if any of the calls revert, guaranteeing
-     * that either all calls succeed or none.
-     */
-    function systemMultiCall(
-        uint32 destination,
-        uint32 optimisticSeconds,
-        SystemEntity recipient,
-        bytes[] memory payloadArray
-    ) external;
 }

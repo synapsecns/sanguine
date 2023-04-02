@@ -11,25 +11,4 @@ contract SystemRouterMock is InterfaceSystemRouter {
     function systemCall(uint32 destination, uint32 optimisticSeconds, SystemEntity recipient, bytes memory data)
         external
     {}
-
-    function systemMultiCall(
-        uint32 destination,
-        uint32 optimisticSeconds,
-        SystemEntity[] memory recipients,
-        bytes[] memory dataArray
-    ) external {}
-
-    function systemMultiCall(
-        uint32 destination,
-        uint32 optimisticSeconds,
-        SystemEntity[] memory recipients,
-        bytes memory data
-    ) external {}
-
-    function systemMultiCall(
-        uint32 destination,
-        uint32 optimisticSeconds,
-        SystemEntity recipient,
-        bytes[] memory dataArray
-    ) external {}
 }
