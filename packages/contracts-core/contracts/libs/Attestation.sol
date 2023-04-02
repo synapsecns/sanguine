@@ -60,11 +60,11 @@ library AttestationLib {
      *
      * Similar to Origin, every derived Notary's "Snapshot Merkle Root" is saved in Summit contract.
      * The main difference is that Origin contract itself is keeping track of an incremental merkle tree,
-     * by inserting the hash of the dispatched message and calculating the new "Origin Merkle Root".
+     * by inserting the hash of the sent message and calculating the new "Origin Merkle Root".
      * While Summit relies on Guards and Notaries to provide snapshot data, which is used to calculate the
      * "Snapshot Merkle Root".
      *
-     * Origin's State is "state of Origin Merkle Tree after N-th message was dispatched".
+     * Origin's State is "state of Origin Merkle Tree after N-th message was sent".
      * Summit's Attestation is "data for the N-th accepted Notary Snapshot".
      *
      * Attestation is considered "valid" in Summit contract, if it matches the N-th (nonce)

@@ -146,7 +146,7 @@ contract PingPongClient is IMessageRecipient {
     function _sendMessage(uint32 destination_, bytes32 recipient, PingPongMessage memory message) internal {
         bytes memory tipsPayload = TipsLib.emptyTips();
         bytes memory content = abi.encode(message);
-        InterfaceOrigin(origin).dispatch(destination_, recipient, optimisticPeriod(), tipsPayload, content);
+        InterfaceOrigin(origin).sendBaseMessage(destination_, recipient, optimisticPeriod(), tipsPayload, content);
     }
 
     /// @dev Initiate a new Ping-Pong round.

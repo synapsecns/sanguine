@@ -95,8 +95,8 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     ▏*║                          VERIFY STATE DATA                           ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev Returns nonce of the next dispatched message: the amount of saved States so far.
-    /// This always equals to "total amount of dispatched messages" plus 1.
+    /// @dev Returns nonce of the next sent message: the amount of saved States so far.
+    /// This always equals to "total amount of sent messages" plus 1.
     function _nextNonce() internal view returns (uint32) {
         return uint32(_originStates.length);
     }

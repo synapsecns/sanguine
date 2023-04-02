@@ -46,7 +46,7 @@ contract OriginTest is SynapseTest {
         assertEq(Versioned(origin).version(), LATEST_VERSION, "!version");
     }
 
-    function test_dispatch() public {
+    function test_sendBaseMessage() public {
         address sender = makeAddr("Sender");
         address recipient = makeAddr("Recipient");
         uint32 period = 1 minutes;
@@ -76,7 +76,7 @@ contract OriginTest is SynapseTest {
 
         // Expect Origin Events
         for (uint32 i = 0; i < MESSAGES; ++i) {
-            // 1 block is skipped after each dispatched message
+            // 1 block is skipped after each sent message
             RawState memory rs = RawState({
                 root: roots[i],
                 origin: DOMAIN_LOCAL,
@@ -93,7 +93,7 @@ contract OriginTest is SynapseTest {
 
         for (uint32 i = 0; i < MESSAGES; ++i) {
             vm.prank(sender);
-            (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).dispatch(
+            (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).sendBaseMessage(
                 DOMAIN_REMOTE, addressToBytes32(recipient), period, tipsPayload, content
             );
             // Check return values
@@ -118,8 +118,8 @@ contract OriginTest is SynapseTest {
         bytes memory state = rs.formatState();
         assertEq(hub.suggestState(0), state, "!state: 0");
         assertEq(hub.suggestState(0), hub.suggestLatestState(), "!latest state: 0");
-        // Dispatch some messages
-        test_dispatch();
+        // Send some messages
+        test_sendBaseMessage();
         // Check saved States
         assertEq(hub.statesAmount(), MESSAGES + 1, "!statesAmount");
         assertEq(hub.suggestState(0), state, "!suggestState: 0");
@@ -192,7 +192,7 @@ contract OriginTest is SynapseTest {
     function _prepareExistingState(uint32 nonce, uint256 mask) internal returns (bool isValid, RawState memory rs) {
         uint40 initialBN = uint40(block.number - 1);
         uint40 initialTS = uint40(block.timestamp - BLOCK_TIME);
-        test_dispatch();
+        test_sendBaseMessage();
         // State is valid if and only if all three fields match
         isValid = mask & 7 == 0;
         // Restrict nonce to existing ones
