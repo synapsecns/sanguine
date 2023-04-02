@@ -20,7 +20,7 @@ interface IStateHub {
     function statesAmount() external view returns (uint256);
 
     /**
-     * @notice Suggest the data (state after latest dispatched message) to sign for an Agent.
+     * @notice Suggest the data (state after latest sent message) to sign for an Agent.
      * Note: signing the suggested state data will will never lead to slashing of the actor,
      * assuming they have confirmed that the block, which number is included in the data,
      * is not subject to reorganization (which is different for every observed chain).

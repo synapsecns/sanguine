@@ -3,12 +3,16 @@ pragma solidity 0.8.17;
 
 // Here we define common enums and structures to enable their easier reusing later.
 
+// ══════════════════════════════ SYSTEM CONTRACT ══════════════════════════════
+
 /// @dev Potential senders/recipients of a system message
 enum SystemEntity {
     Origin,
     Destination,
     AgentManager
 }
+
+// ═══════════════════════════════ AGENT STATUS ════════════════════════════════
 
 /// @dev Potential statuses for the off-chain bonded agent:
 /// - Unknown: never provided a bond => signature not valid
@@ -65,6 +69,8 @@ struct SlashStatus {
     address prover;
 }
 // 88 bits available for tight packing
+
+// ════════════════════════════════ DESTINATION ════════════════════════════════
 
 /// @notice Struct representing the status of Destination contract.
 /// @param snapRootTime     Timestamp when latest snapshot root was accepted

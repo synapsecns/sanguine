@@ -268,6 +268,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
          * @dev Origin will use SYSTEM_ROUTER as "sender" field for messages
          * sent by System Router.
          */
+        // TODO: this should use origin.sendSystemMessage()
         _send(destination_, optimisticSeconds, TipsLib.emptyTips(), content);
     }
 

@@ -11,7 +11,15 @@ import {InterfaceDestination} from "../../contracts/Destination.sol";
 import {Versioned} from "../../contracts/Version.sol";
 
 import {MessageRecipientMock} from "../mocks/client/MessageRecipientMock.t.sol";
-import {RawAttestation, RawHeader, RawMessage, RawState, RawTips} from "../utils/libs/SynapseStructs.t.sol";
+import {
+    MessageFlag,
+    RawAttestation,
+    RawBaseMessage,
+    RawHeader,
+    RawMessage,
+    RawState,
+    RawTips
+} from "../utils/libs/SynapseStructs.t.sol";
 import {AgentFlag, ISystemContract, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {DisputeHubTest} from "./hubs/DisputeHub.t.sol";
 
@@ -19,7 +27,7 @@ import {DisputeHubTest} from "./hubs/DisputeHub.t.sol";
 // solhint-disable no-empty-blocks
 contract DestinationTest is DisputeHubTest {
     uint32 internal constant PERIOD = 1 minutes;
-    bytes internal constant BODY = "Test Body";
+    bytes internal constant CONTENT = "Test Content";
 
     RawMessage[] internal rawMessages;
     bytes[] internal msgPayloads;
@@ -243,7 +251,7 @@ contract DestinationTest is DisputeHubTest {
             vm.expectCall(
                 recipient,
                 abi.encodeWithSelector(
-                    MessageRecipientMock.handle.selector, DOMAIN_REMOTE, i + 1, sender, rootSubmittedAt, BODY
+                    MessageRecipientMock.handle.selector, DOMAIN_REMOTE, i + 1, sender, rootSubmittedAt, CONTENT
                 )
             );
             // Should emit event when message is executed
@@ -386,18 +394,17 @@ contract DestinationTest is DisputeHubTest {
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function createMessages() public {
+        bytes memory body = RawBaseMessage({
+            sender: addressToBytes32(sender),
+            recipient: addressToBytes32(recipient),
+            tips: RawTips(0, 0, 0, 0),
+            content: CONTENT
+        }).formatBaseMessage();
         for (uint32 i = 0; i < MESSAGES; ++i) {
             RawMessage memory rm = RawMessage(
-                RawHeader({
-                    origin: DOMAIN_REMOTE,
-                    sender: addressToBytes32(sender),
-                    nonce: i + 1,
-                    destination: DOMAIN_LOCAL,
-                    recipient: addressToBytes32(recipient),
-                    optimisticSeconds: PERIOD
-                }),
-                RawTips(0, 0, 0, 0),
-                BODY
+                uint8(MessageFlag.Base),
+                RawHeader({origin: DOMAIN_REMOTE, nonce: i + 1, destination: DOMAIN_LOCAL, optimisticPeriod: PERIOD}),
+                body
             );
             bytes memory msgPayload = rm.formatMessage();
             rawMessages.push(rm);

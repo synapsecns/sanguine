@@ -11,13 +11,18 @@ contract OriginMock is StateHubMock, SystemRegistryMock, SystemContractMock, Int
     /// @notice Prevents this contract from being included in the coverage report
     function testOriginMock() external {}
 
-    function dispatch(
+    function sendBaseMessage(
         uint32 destination,
         bytes32 recipient,
-        uint32 optimisticSeconds,
+        uint32 optimisticPeriod,
         bytes memory tipsPayload,
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {}
+
+    function sendSystemMessage(uint32 destination, uint32 optimisticPeriod, bytes memory body)
+        external
+        returns (uint32 messageNonce, bytes32 messageHash)
+    {}
 
     function verifyAttestation(
         uint256 stateIndex,

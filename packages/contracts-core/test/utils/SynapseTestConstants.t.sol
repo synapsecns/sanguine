@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {TIPS_LENGTH} from "../../contracts/libs/Constants.sol";
+
 abstract contract SynapseTestConstants {
     string internal constant LATEST_VERSION = "0.0.3";
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               DOMAINS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ DOMAINS ══════════════════════════════════════════════════════
 
     uint32 internal constant DOMAIN_LOCAL = 1000;
     uint32 internal constant DOMAIN_REMOTE = 1500;
@@ -15,9 +15,7 @@ abstract contract SynapseTestConstants {
 
     uint256 internal constant DOMAIN_AGENTS = 4;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                   MASKS FOR TEST SUITE DEPLOYMENTS                   ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════ MASKS FOR TEST SUITE DEPLOYMENTS ══════════════════════════════════════════
 
     uint256 internal constant DEPLOY_MASK_DESTINATION = 0xF;
     // Default option for deploying Destination
@@ -44,9 +42,11 @@ abstract contract SynapseTestConstants {
     uint256 internal constant DEPLOY_MOCK_SUMMIT = 0x00000;
     uint256 internal constant DEPLOY_PROD_SUMMIT = 0x10000;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            MESSAGE TESTS                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ ENCODING TESTS ═══════════════════════════════════════════════════
+
+    uint256 internal constant MIN_BASE_MESSAGE_LENGTH = 32 + 32 + TIPS_LENGTH;
+
+    // ═══════════════════════════════════════════════ MESSAGE TESTS ═══════════════════════════════════════════════════
 
     uint256 internal constant MAX_CONTENT_BYTES = 2 * 2 ** 10;
 

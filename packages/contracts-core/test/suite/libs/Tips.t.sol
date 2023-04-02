@@ -4,23 +4,19 @@ pragma solidity 0.8.17;
 import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
 import {TipsHarness} from "../../harnesses/libs/TipsHarness.t.sol";
 
-import {TipsLib} from "../../../contracts/libs/Tips.sol";
+import {TIPS_LENGTH} from "../../../contracts/libs/Tips.sol";
 
 // solhint-disable func-name-mixedcase
 contract TipsLibraryTest is SynapseLibraryTest {
     using TypedMemView for bytes;
 
     TipsHarness internal libHarness;
-    // First element is (uint16 tipsVersion)
-    uint8 internal constant FIRST_ELEMENT_BYTES = 16 / 8;
 
     function setUp() public {
         libHarness = new TipsHarness();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          TESTS: FORMATTING                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ TESTS: FORMATTING ═════════════════════════════════════════════════
 
     function test_formatTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip) public {
         // TODO: Determine if we actually need uint96 for storing tips / totalTips
@@ -28,15 +24,10 @@ contract TipsLibraryTest is SynapseLibraryTest {
         vm.assume(totalTips <= type(uint96).max);
         // Test formatting
         bytes memory payload = libHarness.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
-        assertEq(
-            payload,
-            abi.encodePacked(TipsLib.TIPS_VERSION, notaryTip, broadcasterTip, proverTip, executorTip),
-            "!formatTips"
-        );
+        assertEq(payload, abi.encodePacked(notaryTip, broadcasterTip, proverTip, executorTip), "!formatTips");
         // Test formatting checker
         checkCastToTips({payload: payload, isTips: true});
         // Test getters
-        assertEq(libHarness.version(payload), TipsLib.TIPS_VERSION, "!tipsVersion");
         assertEq(libHarness.notaryTip(payload), notaryTip, "!notaryTip");
         assertEq(libHarness.broadcasterTip(payload), broadcasterTip, "!broadcasterTip");
         assertEq(libHarness.proverTip(payload), proverTip, "!proverTip");
@@ -45,56 +36,23 @@ contract TipsLibraryTest is SynapseLibraryTest {
     }
 
     function test_constants() public {
-        assertEq(libHarness.tipsVersion(), 1);
-        // TODO: figure out why this doesn't mark offsetVersion as covered
-        assertEq(libHarness.offsetVersion(), 0);
-        assertEq(libHarness.offsetNotary(), 2);
-        // 2 + 12
-        assertEq(libHarness.offsetBroadcaster(), 14);
-        // 2 + 12 + 12
-        assertEq(libHarness.offsetProver(), 26);
-        // 2 + 12 + 12 + 12
-        assertEq(libHarness.offsetExecutor(), 38);
-        // 2 + 12 + 12 + 12 + 12
-        assertEq(libHarness.tipsLength(), 50);
+        // TODO: figure out why this doesn't mark offsetNotary as covered
+        assertEq(libHarness.offsetNotary(), 0);
+        assertEq(libHarness.offsetBroadcaster(), 12);
+        // 12 + 12
+        assertEq(libHarness.offsetProver(), 24);
+        // 12 + 12 + 12
+        assertEq(libHarness.offsetExecutor(), 36);
+        // 12 + 12 + 12 + 12
+        assertEq(libHarness.tipsLength(), 48);
     }
 
-    function test_emptyTips() public {
-        bytes memory payload = libHarness.emptyTips();
-        assertEq(payload, createTestPayload(), "!formatTips");
-        // Check formatting
-        test_formatTips(0, 0, 0, 0);
+    function test_isTips(uint8 length) public {
+        bytes memory payload = new bytes(length);
+        checkCastToTips({payload: payload, isTips: length == TIPS_LENGTH});
     }
 
-    function test_isTips_firstElementIncomplete(uint8 payloadLength, bytes32 data) public {
-        // Payload having less bytes than Tips' first element (uint16 tipsVersion)
-        // should be correctly treated as unformatted (i.e. with no reverts)
-        bytes memory payload = createShortPayload(payloadLength, FIRST_ELEMENT_BYTES, data);
-        checkCastToTips({payload: payload, isTips: false});
-    }
-
-    function test_isTips_testPayload() public {
-        // Check that manually constructed test payload is considered formatted
-        bytes memory payload = createTestPayload();
-        checkCastToTips({payload: payload, isTips: true});
-    }
-
-    function test_isTips_shorterLength() public {
-        // Check that manually constructed test payload without the last byte
-        // is not considered formatted
-        bytes memory payload = cutLastByte(createTestPayload());
-        checkCastToTips({payload: payload, isTips: false});
-    }
-
-    function test_isTips_longerLength() public {
-        // Check that manually constructed test payload with an extra last byte
-        // is not considered formatted
-        assertFalse(libHarness.isTips(addLastByte(createTestPayload())), "!isTips: 1 byte longer");
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function checkCastToTips(bytes memory payload, bool isTips) public {
         if (isTips) {
@@ -105,9 +63,5 @@ contract TipsLibraryTest is SynapseLibraryTest {
             vm.expectRevert("Not a tips payload");
             libHarness.castToTips(payload);
         }
-    }
-
-    function createTestPayload() public view returns (bytes memory) {
-        return libHarness.formatTips(0, 0, 0, 0);
     }
 }
