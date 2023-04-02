@@ -54,33 +54,6 @@ library SystemMessageLib {
     }
 
     /**
-     * @notice Constructs the calldata having the first arguments replaced with given prefix.
-     * @dev Given:
-     * - `payload = abi.encodeWithSelector(foo.selector, a0, b0, c0, d0, e0);`
-     * - `prefix = abi.encode(a1, b1, c1);`
-     * - `a`, `b`, `c` are static type arguments
-     *      Then:
-     * - Existing payload will trigger `foo(a0, b0, c0, d0, e0)`
-     * - Adjusted payload will trigger `foo(a1, b1, c1, d0, e0)`
-     * @param callData_ Calldata where the first arguments need to be replaced
-     * @param prefix    ABI-encoded arguments to use as the first arguments in the calldata
-     * @return Adjusted calldata with replaced first arguments
-     */
-    function formatAdjustedCallData(CallData callData_, bytes29 prefix) internal view returns (bytes memory) {
-        bytes29 arguments = callData_.arguments();
-        // Arguments payload should be at least as long as the replacement prefix
-        require(arguments.len() >= prefix.len(), "Payload too short");
-        bytes29[] memory views = new bytes29[](3);
-        // Use payload's function selector
-        views[0] = callData_.callSelector();
-        // Use prefix as the first arguments
-        views[1] = prefix;
-        // Use payload's remaining arguments (following prefix)
-        views[2] = arguments.sliceFrom({index_: prefix.len(), newType: 0});
-        return TypedMemView.join(views);
-    }
-
-    /**
      * @notice Returns a SystemMessage view over for the given payload.
      * @dev Will revert if the payload is not a system message.
      */

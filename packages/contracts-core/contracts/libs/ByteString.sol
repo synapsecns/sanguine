@@ -110,6 +110,35 @@ library ByteString {
     // ═════════════════════════════════════════════════ CALLDATA ══════════════════════════════════════════════════════
 
     /**
+     * @notice Constructs the calldata having the first arguments replaced with given prefix.
+     * @dev Given:
+     * - `calldata = abi.encodeWithSelector(foo.selector, a0, b0, c0, d0, e0);`
+     * - `prefix = abi.encode(a1, b1, c1);`
+     * - `a`, `b`, `c` are static type arguments
+     *      Then:
+     * - Existing calldata will trigger `foo(a0, b0, c0, d0, e0)`
+     * - Adjusted calldata will trigger `foo(a1, b1, c1, d0, e0)`
+     * @param callData  Calldata where the first arguments need to be replaced
+     * @param prefix    ABI-encoded arguments to use as the first arguments in the calldata
+     * @return Adjusted calldata with replaced first arguments
+     */
+    function adjustPrefix(CallData callData, bytes memory prefix) internal view returns (bytes memory) {
+        // Prefix should occupy a whole amount of words in memory
+        require(_fullWords(prefix.length), "Incorrect prefix");
+        bytes29 arguments_ = callData.arguments();
+        // Arguments payload should be at least as long as the replacement prefix
+        require(arguments_.len() >= prefix.length, "Payload too short");
+        bytes29[] memory views = new bytes29[](3);
+        // Use payload's function selector
+        views[0] = callData.callSelector();
+        // Use prefix as the first arguments
+        views[1] = castToRawBytes(prefix);
+        // Use payload's remaining arguments (following prefix)
+        views[2] = arguments_.sliceFrom({index_: prefix.length, newType: 0});
+        return TypedMemView.join(views);
+    }
+
+    /**
      * @notice Returns a CallData view over for the given payload.
      * @dev Will revert if the memory view is not over a calldata.
      */
@@ -134,10 +163,8 @@ library ByteString {
         uint256 length = view_.len();
         // Calldata should at least have a function selector
         if (length < SELECTOR_LENGTH) return false;
-        // The remainder of the calldata should be exactly N words (N >= 0), i.e.
-        // (length - SELECTOR_LENGTH) % 32 == 0
-        // We're using logical AND here to speed it up a bit
-        return (length - SELECTOR_LENGTH) & 31 == 0;
+        // The remainder of the calldata should be exactly N memory words (N >= 0)
+        return _fullWords(length - SELECTOR_LENGTH);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -173,5 +200,13 @@ library ByteString {
         // Get the underlying memory view
         bytes29 view_ = unwrap(callData);
         return view_.sliceFrom({index_: OFFSET_ARGUMENTS, newType: 0});
+    }
+
+    // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
+
+    /// @dev Checks if length is full amount of memory words (32 bytes).
+    function _fullWords(uint256 length) internal pure returns (bool) {
+        // The equivalent of length % 32 == 0
+        return length & 31 == 0;
     }
 }
