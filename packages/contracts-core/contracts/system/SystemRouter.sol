@@ -212,7 +212,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         for (uint256 i = 0; i < amount; ++i) {
             SystemMessage systemMessage = systemMessages[i].castToSystemMessage();
             // Route the system call to specified recipient
-            _localSystemCall(systemMessage.callRecipient(), systemMessage.callData(), prefix);
+            _callSystemRecipient(systemMessage.callRecipient(), systemMessage.callData(), prefix);
         }
     }
 
@@ -227,7 +227,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
      * Following call will be performed:
      * - recipient.foo(x, y, z, d, e, f);
      */
-    function _localSystemCall(uint8 systemRecipient, CallData callData, bytes29 prefix) internal {
+    function _callSystemRecipient(uint8 systemRecipient, CallData callData, bytes29 prefix) internal {
         // We adjust the first arguments for the call using the given `prefix`.
         // For remote system calls:
         // - (rootSubmittedAt, callOrigin, systemCaller) are adjusted on origin chain
@@ -280,23 +280,17 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         // Performing a system call on origin chain,
         // Get a prefix for performing the call on origin chain, use the corresponding prefix
         bytes29 prefix = _prefixPerformCall(caller).castToRawBytes();
-        if (destination_ == localDomain) {
-            // Performing a local system multicall
-            for (uint256 i = 0; i < amount; ++i) {
-                _localSystemCall(uint8(recipients[i]), callDataArray[i], prefix);
-            }
-        } else {
-            // Performing a remote system multicall
-            bytes[] memory systemMessages = new bytes[](amount);
-            for (uint256 i = 0; i < amount; ++i) {
-                systemMessages[i] = SystemMessageLib.formatSystemMessage({
-                    systemRecipient: uint8(recipients[i]),
-                    callData_: callDataArray[i],
-                    prefix: prefix
-                });
-            }
-            _remoteSystemCall(destination_, optimisticSeconds, systemMessages);
+        require(destination_ != localDomain, "Must be remote destination");
+        // Performing a remote system multicall
+        bytes[] memory systemMessages = new bytes[](amount);
+        for (uint256 i = 0; i < amount; ++i) {
+            systemMessages[i] = SystemMessageLib.formatSystemMessage({
+                systemRecipient: uint8(recipients[i]),
+                callData_: callDataArray[i],
+                prefix: prefix
+            });
         }
+        _remoteSystemCall(destination_, optimisticSeconds, systemMessages);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
