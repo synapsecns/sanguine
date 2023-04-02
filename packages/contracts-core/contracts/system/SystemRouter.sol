@@ -116,7 +116,7 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         bytes memory content = SystemMessageLib.formatSystemMessage({
             systemRecipient: uint8(recipient),
             callData_: payload.castToCallData(),
-            prefix: _prefixPerformCall(caller).castToRawBytes()
+            prefix: _prefixSendMessage(caller).castToRawBytes()
         });
         // TODO: this should use origin.sendSystemMessage()
         _send(destination_, optimisticSeconds, TipsLib.emptyTips(), content);
@@ -150,14 +150,14 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
     function _handleUnsafe(uint32, uint32, uint256 rootSubmittedAt, bytes memory content) internal override {
         // This will revert if content is not a system message
         SystemMessage systemMessage = content.castToSystemMessage();
-        // Received a message containing a remote system call, use the corresponding prefix
-        bytes29 prefix = _prefixReceiveCall(rootSubmittedAt).castToRawBytes();
+        // Received a system message, use the corresponding prefix to adjust `rootSubmittedAt`
+        bytes29 prefix = _prefixReceiveMessage(rootSubmittedAt).castToRawBytes();
         _callSystemRecipient(systemMessage.callRecipient(), systemMessage.callData(), prefix);
     }
 
     /**
-     * @notice Routes a system call to a local System Contract, using provided
-     * calldata, and abi-encoded arguments to add as the prefix.
+     * @notice Calls a local System Contract, using calldata from the received system message:
+     * and abi-encoded security arguments as the calldata prefix adjustment.
      * @dev Suppose following values were passed:
      * - recipient: System Contract to call
      * - callData = abi.encodeWithSelector(foo.selector, a, b, c, d, e, f);
@@ -168,13 +168,9 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
      */
     function _callSystemRecipient(uint8 systemRecipient, CallData callData, bytes29 prefix) internal {
         // We adjust the first arguments for the call using the given `prefix`.
-        // For remote system calls:
+        // Prefix containing the security arguments:
         // - (rootSubmittedAt, callOrigin, systemCaller) are adjusted on origin chain
         // - (rootSubmittedAt) is readjusted on destination chain
-        // For local system calls:
-        // - (rootSubmittedAt, callOrigin, systemCaller) is adjusted
-        // That gives us the following first three arguments for the system call (remote or local):
-        // - (rootSubmittedAt, callOrigin, systemCaller)
         address recipient = _getSystemAddress(systemRecipient);
         require(recipient != address(0), "System Contract not set");
         // recipient.functionCall() calls recipient and bubbles the revert from the external call
@@ -199,18 +195,15 @@ contract SystemRouter is DomainContext, BasicClient, InterfaceSystemRouter, Vers
         revert("Unknown recipient");
     }
 
-    /// @notice Returns prefix with the security arguments
-    /// for making a system call on origin chain.
-    function _prefixPerformCall(SystemEntity caller) internal view returns (bytes memory) {
+    /// @notice Returns prefix with the security arguments for sending a system message from origin chain.
+    function _prefixSendMessage(SystemEntity caller) internal view returns (bytes memory) {
         // Origin chain: adjust (rootSubmittedAt, callOrigin, systemCaller)
+        // Passing current timestamp for consistency: rootSubmittedAt will be later adjusted on destination chain
         return abi.encode(block.timestamp, localDomain, caller);
-        // Passing current timestamp for consistency
-        // For a cross-chain call (rootSubmittedAt) will be later adjusted on destination chain
     }
 
-    /// @notice Returns prefix with the security arguments
-    /// for receiving a remote system call on destination chain.
-    function _prefixReceiveCall(uint256 rootSubmittedAt) internal pure returns (bytes memory) {
+    /// @notice Returns prefix with the security arguments for receiving a system message on destination chain.
+    function _prefixReceiveMessage(uint256 rootSubmittedAt) internal pure returns (bytes memory) {
         // Destination chain: adjust (rootSubmittedAt)
         // (callOrigin, systemCaller) were adjusted on origin chain, no need to touch these
         return abi.encode(rootSubmittedAt);
