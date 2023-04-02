@@ -27,8 +27,8 @@ library BaseMessageLib {
      * @dev Memory layout of BaseMessage fields
      * [000 .. 032): sender         bytes32 32 bytes    Sender address on origin chain
      * [032 .. 064): recipient      bytes32 32 bytes    Recipient address on destination chain
-     * [064 .. 114): tips           bytes   50 bytes    Tips paid on origin chain
-     * [114 .. AAA): content        bytes   ?? bytes    Content to be passed to recipient
+     * [064 .. 112): tips           bytes   48 bytes    Tips paid on origin chain
+     * [112 .. AAA): content        bytes   ?? bytes    Content to be passed to recipient
      *
      * The variables below are not supposed to be used outside of the library directly.
      */

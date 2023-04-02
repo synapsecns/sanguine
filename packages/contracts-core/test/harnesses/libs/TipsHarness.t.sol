@@ -24,11 +24,6 @@ contract TipsHarness {
         return tips.unwrap().clone();
     }
 
-    /// @notice Returns version of formatted tips
-    function version(bytes memory payload) public pure returns (uint16) {
-        return payload.castToTips().version();
-    }
-
     /// @notice Returns notaryTip field
     function notaryTip(bytes memory payload) public pure returns (uint96) {
         return payload.castToTips().notaryTip();
@@ -76,14 +71,6 @@ contract TipsHarness {
 
     function tipsLength() public pure returns (uint256) {
         return TIPS_LENGTH;
-    }
-
-    function tipsVersion() public pure returns (uint16) {
-        return TipsLib.TIPS_VERSION;
-    }
-
-    function offsetVersion() public pure returns (uint256) {
-        return TipsLib.OFFSET_VERSION;
     }
 
     function offsetNotary() public pure returns (uint256) {

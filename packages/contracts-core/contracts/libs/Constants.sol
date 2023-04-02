@@ -20,8 +20,8 @@ uint256 constant SNAPSHOT_MAX_STATES = 1 << (SNAPSHOT_TREE_HEIGHT - 1);
 // ══════════════════════════════════ MESSAGE ══════════════════════════════════
 /// @dev See Header.sol: (uint32,uint32,uint32,uint32): 4+4+4+4
 uint256 constant HEADER_LENGTH = 16;
-/// @dev See Tips.sol: (uint16,uint96,uint96,uint96,uint96): 2+12+12+12+12
-uint256 constant TIPS_LENGTH = 50;
+/// @dev See Tips.sol: (uint96,uint96,uint96,uint96): 12+12+12+12
+uint256 constant TIPS_LENGTH = 48;
 // ══════════════════════════════ STATEMENT SALTS ══════════════════════════════
 /// @dev Salts for signing various statements
 bytes32 constant ATTESTATION_SALT = keccak256("ATTESTATION_SALT");
