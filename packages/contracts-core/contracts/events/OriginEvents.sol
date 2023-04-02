@@ -4,10 +4,8 @@ pragma solidity 0.8.17;
 /// @notice A collection of events emitted by the Origin contract
 abstract contract OriginEvents {
     // Old Event to ensure that go generation works with the existing Agents
-    // TODO: remove once agents are updated to handle the new "Dispatched" event
-    event Dispatch(
-        bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes tips, bytes message
-    );
+    // TODO: remove once agents are updated to handle the new "Sent" event
+    event Dispatch(bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes message);
 
     /**
      * @notice Emitted when a new message is sent.

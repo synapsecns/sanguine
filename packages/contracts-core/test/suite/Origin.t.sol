@@ -88,7 +88,7 @@ contract OriginTest is SynapseTest {
             vm.expectEmit(true, true, true, true);
             emit StateSaved(state);
             vm.expectEmit(true, true, true, true);
-            emit Dispatched(keccak256(messages[i]), i + 1, DOMAIN_REMOTE, messages[i]);
+            emit Sent(keccak256(messages[i]), i + 1, DOMAIN_REMOTE, messages[i]);
         }
 
         for (uint32 i = 0; i < MESSAGES; ++i) {
