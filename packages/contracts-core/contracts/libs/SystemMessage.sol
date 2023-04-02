@@ -116,10 +116,14 @@ library SystemMessageLib {
      * @notice Checks that a payload is a formatted System Message.
      */
     function isSystemMessage(bytes29 view_) internal pure returns (bool) {
-        // Payload needs to exist (system calls are never done via fallback function)
+        // Check if sender and recipient exist in the payload
         if (view_.len() < OFFSET_CALLDATA) return false;
+        // Check if sender fits into SystemEntity enum
+        if (_sender(view_) > uint8(type(SystemEntity).max)) return false;
+        // Check if recipient fits into SystemEntity enum
+        if (_recipient(view_) > uint8(type(SystemEntity).max)) return false;
         bytes29 callDataView = _callData(view_);
-        // Payload needs to be a proper calldata
+        // Check that "calldata" field is a proper calldata
         if (!callDataView.isCallData()) return false;
         // Payload needs to have at least this amount of argument words
         return callDataView.castToCallData().argumentWords() >= CALLDATA_MIN_ARGUMENT_WORDS;
@@ -132,18 +136,25 @@ library SystemMessageLib {
 
     // ══════════════════════════════════════════ SYSTEM MESSAGE SLICING ═══════════════════════════════════════════════
 
-    /**
-     * @notice Returns int value of System Message recipient (see SystemEntity).
-     */
-    function callRecipient(SystemMessage systemMessage) internal pure returns (uint8) {
+    /// @notice Returns system message's recipient.
+    function sender(SystemMessage systemMessage) internal pure returns (SystemEntity) {
         // Get the underlying memory view
         bytes29 view_ = systemMessage.unwrap();
-        return uint8(view_.indexUint({index_: OFFSET_RECIPIENT, bytes_: 1}));
+        // We check that sender fits into enum, when payload is wrapped
+        // into SystemMessage, so this never reverts
+        return SystemEntity(_sender(view_));
     }
 
-    /**
-     * @notice Returns System Message calldata.
-     */
+    /// @notice Returns system message's recipient.
+    function recipient(SystemMessage systemMessage) internal pure returns (SystemEntity) {
+        // Get the underlying memory view
+        bytes29 view_ = systemMessage.unwrap();
+        // We check that recipient fits into enum, when payload is wrapped
+        // into SystemMessage, so this never reverts
+        return SystemEntity(_recipient(view_));
+    }
+
+    /// @notice Returns typed memory view over the calldata used in the system message.
     function callData(SystemMessage systemMessage) internal pure returns (CallData) {
         // Get the underlying memory view
         bytes29 view_ = systemMessage.unwrap();
