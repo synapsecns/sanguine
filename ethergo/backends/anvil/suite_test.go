@@ -24,7 +24,7 @@ type AnvilSuite struct {
 	counter     *counter.CounterRef
 }
 
-// NewAnvilSuite creates a end-to-end test suite.
+// NewAnvilSuite creates a end-to-end test suite for anvil.
 func NewAnvilSuite(tb testing.TB) *AnvilSuite {
 	tb.Helper()
 	return &AnvilSuite{
