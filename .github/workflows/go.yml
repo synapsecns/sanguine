@@ -140,6 +140,30 @@ jobs:
           sleep 1
           done
 
+      - name: debug
+        uses: lhotari/action-upterm@v1
+        if: ${{ contains(github.event.head_commit.message, '[godebug]') }}
+        with:
+          ## limits ssh access and adds the ssh public key for the user which triggered the workflow
+          limit-access-to-actor: true
+          # limit to specific users
+          limit-access-to-users: trajan0x,ChiTimesChi,simonmahns,joecroninallen,aureliusbtc
+        env:
+          # TODO: any envs added here should be added below
+          ENABLE_MYSQL_TEST: true
+          MYSQL_HOST: 0.0.0.0
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
+          GOMAXPROCS: 18
+          GANACHE_KEYS: /tmp/keys/rinkeby
+          GANACHE_RPC_URL: http://0.0.0.0:8045
+          GOMEMLIMIT: 6GiB
+          GOGC: 2000
+          ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
+
       - name: Test
         uses: nick-fields/retry@v2
         with:
@@ -160,6 +184,7 @@ jobs:
           GOMEMLIMIT: 6GiB
           GOGC: 2000
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
+
 
       - name: Get Coverage name
         id: coverage

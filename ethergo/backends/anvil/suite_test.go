@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/example"
 	"github.com/synapsecns/sanguine/ethergo/example/counter"
 	"github.com/synapsecns/sanguine/ethergo/manager"
+	"runtime"
 	"testing"
 )
 
@@ -54,5 +55,8 @@ func (a *AnvilSuite) SetupSuite() {
 }
 
 func TestAnvilSuite(t *testing.T) {
-	suite.Run(t, NewAnvilSuite(t))
+	for {
+		runtime.GOMAXPROCS(2)
+		suite.Run(t, NewAnvilSuite(t))
+	}
 }
