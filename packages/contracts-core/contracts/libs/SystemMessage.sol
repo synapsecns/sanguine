@@ -118,7 +118,7 @@ library SystemMessageLib {
     function isSystemMessage(bytes29 view_) internal pure returns (bool) {
         // Payload needs to exist (system calls are never done via fallback function)
         if (view_.len() < OFFSET_CALLDATA) return false;
-        bytes29 callDataView = _getCallData(view_);
+        bytes29 callDataView = _callData(view_);
         // Payload needs to be a proper calldata
         if (!callDataView.isCallData()) return false;
         // Payload needs to have at least this amount of argument words
@@ -147,16 +147,24 @@ library SystemMessageLib {
     function callData(SystemMessage systemMessage) internal pure returns (CallData) {
         // Get the underlying memory view
         bytes29 view_ = systemMessage.unwrap();
-        return _getCallData(view_).castToCallData();
+        return _callData(view_).castToCallData();
     }
 
     // ═════════════════════════════════════════════ PRIVATE FUNCTIONS ═════════════════════════════════════════════════
 
-    /**
-     * @notice Returns a generic memory view over System Message calldata,
-     * without verifying that this is a valid calldata.
-     */
-    function _getCallData(bytes29 view_) private pure returns (bytes29) {
+    /// @dev Returns message's sender without checking that it fits into SystemEntity enum.
+    function _sender(bytes29 view_) private pure returns (uint8) {
+        return uint8(view_.indexUint({index_: OFFSET_SENDER, bytes_: 1}));
+    }
+
+    /// @dev Returns message's recipient without checking that it fits into SystemEntity enum.
+    function _recipient(bytes29 view_) private pure returns (uint8) {
+        return uint8(view_.indexUint({index_: OFFSET_RECIPIENT, bytes_: 1}));
+    }
+
+    /// @dev Returns an untyped memory view over the calldata field without checking
+    /// if the whole payload or the calldata are properly formatted.
+    function _callData(bytes29 view_) private pure returns (bytes29) {
         return view_.sliceFrom({index_: OFFSET_CALLDATA, newType: 0});
     }
 }
