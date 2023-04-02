@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {ByteString, CallData} from "./ByteString.sol";
+import {SystemEntity} from "./Structures.sol";
 import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev SystemMessage is a memory view over the message with instructions for a system call.
@@ -18,12 +19,16 @@ library SystemMessageLib {
 
     /**
      * @dev SystemMessage memory layout
-     * [000 .. 001): recipient      uint8   1 bytes
-     * [001 .. END]: calldata       bytes   ? bytes
+     * [000 .. 001): sender         uint8   1 byte      SystemEntity that sent the message on origin chain
+     * [001 .. 002): recipient      uint8   1 byte      SystemEntity to receive the message on destination chain
+     * [002 .. END]: calldata       bytes   ? bytes     Raw bytes of payload to call system recipient
+     *
+     * The variables below are not supposed to be used outside of the library directly.
      */
 
-    uint256 internal constant OFFSET_RECIPIENT = 0;
-    uint256 internal constant OFFSET_CALLDATA = 1;
+    uint256 private constant OFFSET_SENDER = 0;
+    uint256 private constant OFFSET_RECIPIENT = 1;
+    uint256 private constant OFFSET_CALLDATA = 2;
 
     /**
      * @dev System Router is supposed to modify (rootSubmittedAt, origin, caller)
@@ -37,12 +42,13 @@ library SystemMessageLib {
     /**
      * @notice Returns a formatted SystemMessage payload with provided fields.
      * See: formatAdjustedCallData() for more details.
-     * @param systemRecipient   System Contract to receive message (see SystemEntity)
+     * @param sender_           System Contract that sent receive message
+     * @param recipient_        System Contract to receive message
      * @param callData_         Calldata where the first arguments need to be replaced
      * @param prefix            ABI-encoded arguments to use as the first arguments in the calldata
      * @return Formatted SystemMessage payload.
      */
-    function formatSystemMessage(uint8 systemRecipient, CallData callData_, bytes29 prefix)
+    function formatSystemMessage(SystemEntity sender_, SystemEntity recipient_, CallData callData_, bytes29 prefix)
         internal
         view
         returns (bytes memory)
@@ -51,8 +57,8 @@ library SystemMessageLib {
         // Arguments payload should be at least as long as the replacement prefix
         require(arguments.len() >= prefix.len(), "Payload too short");
         bytes29[] memory views = new bytes29[](4);
-        // First byte is encoded system recipient
-        views[0] = abi.encodePacked(systemRecipient).castToRawBytes();
+        // First two bytes are (sender, recipient)
+        views[0] = abi.encodePacked(sender_, recipient_).castToRawBytes();
         // Use payload's function selector
         views[1] = callData_.callSelector();
         // Use prefix as the first arguments
