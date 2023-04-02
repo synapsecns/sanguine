@@ -65,7 +65,6 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
     using Address for address;
     using ByteString for bytes;
     using SystemMessageLib for bytes;
-    using SystemMessageLib for SystemMessage;
 
     /**
      * @dev System entity initiates a system call with given calldata.

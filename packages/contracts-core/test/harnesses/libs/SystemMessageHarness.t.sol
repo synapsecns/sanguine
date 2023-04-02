@@ -19,7 +19,6 @@ contract SystemMessageHarness {
     using ByteString for CallData;
     using SystemMessageLib for bytes;
     using SystemMessageLib for bytes29;
-    using SystemMessageLib for SystemMessage;
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 

@@ -7,6 +7,9 @@ import {TypedMemView} from "./TypedMemView.sol";
 /// @dev SystemMessage is a memory view over the message with instructions for a system call.
 type SystemMessage is bytes29;
 
+/// @dev Attach library functions to SystemMessage
+using SystemMessageLib for SystemMessage global;
+
 library SystemMessageLib {
     using ByteString for bytes;
     using ByteString for bytes29;
@@ -128,7 +131,7 @@ library SystemMessageLib {
      */
     function callRecipient(SystemMessage systemMessage) internal pure returns (uint8) {
         // Get the underlying memory view
-        bytes29 view_ = unwrap(systemMessage);
+        bytes29 view_ = systemMessage.unwrap();
         return uint8(view_.indexUint({index_: OFFSET_RECIPIENT, bytes_: 1}));
     }
 
@@ -137,7 +140,7 @@ library SystemMessageLib {
      */
     function callData(SystemMessage systemMessage) internal pure returns (CallData) {
         // Get the underlying memory view
-        bytes29 view_ = unwrap(systemMessage);
+        bytes29 view_ = systemMessage.unwrap();
         return _getCallData(view_).castToCallData();
     }
 
