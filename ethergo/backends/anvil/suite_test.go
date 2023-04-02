@@ -22,8 +22,6 @@ type AnvilSuite struct {
 	client      *anvil.Client
 	forkAddress string
 	counter     *counter.CounterRef
-	// logDir is the log directory for the test suite.
-	logDir string
 }
 
 // NewAnvilSuite creates a end-to-end test suite.
