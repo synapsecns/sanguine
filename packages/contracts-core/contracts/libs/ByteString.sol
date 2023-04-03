@@ -119,6 +119,8 @@ library ByteString {
      *      Then:
      *  - Function will return abi.encodeWithSelector(foo.selector, a, c, c, d, e)
      *  - Returned calldata will trigger `foo(a, b, c, d, e)` when used for a contract call.
+     * Note: for clarification as to what types are considered static, see
+     * https://docs.soliditylang.org/en/latest/abi-spec.html#formal-specification-of-the-encoding
      * @param callData  Calldata that needs to be modified
      * @param prefix    ABI-encoded arguments to use as the first arguments in the new calldata
      * @return Modified calldata having prefix as the first arguments.
