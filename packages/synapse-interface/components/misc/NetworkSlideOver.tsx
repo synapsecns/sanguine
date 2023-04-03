@@ -2,35 +2,30 @@ import _ from 'lodash'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
-import {
-  CHAIN_ID_DISPLAY_ORDER,
-  CHAIN_INFO_MAP,
-  ChainInfo,
-  ChainInfoMap,
-} from '@constants/networks'
+import * as CHAINS from '@constants/chains/master'
 import { SelectSpecificNetworkButton } from '@components/buttons/SelectSpecificNetworkButton'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 import { useNetwork } from 'wagmi'
 
-export function NetworkSlideOver({
-  selectedChainId,
-  isSwapFrom,
+export const NetworkSlideOver = ({
+  isOrigin,
+  chains,
+  chainId,
   onChangeChain,
   setDisplayType,
-  possibleChains,
 }: {
-  selectedChainId: number
-  isSwapFrom: boolean
+  isOrigin: boolean
+  chains: string[] | undefined
+  chainId: number
   onChangeChain: (v: number) => void
   setDisplayType: (v: string) => void
-  possibleChains: string[] | undefined
-}) {
+}) => {
   const { chain } = useNetwork()
   const [currentIdx, setCurrentIdx] = useState(-1)
 
   const [searchStr, setSearchStr] = useState('')
-  const [networks, setNetworks] = useState<ChainInfo[]>([])
+  const [networks, setNetworks] = useState([])
   const fuse = new Fuse(networks, {
     includeScore: true,
     threshold: 0.0,
@@ -47,15 +42,15 @@ export function NetworkSlideOver({
   // let networks: ChainInfo[] = []
 
   useEffect(() => {
-    let tempNetworks: ChainInfo[] = []
-    CHAIN_ID_DISPLAY_ORDER.map((cid) => {
+    let tempNetworks = []
+    Object.values(CHAINS).map((chain) => {
       if (
-        isSwapFrom ||
-        (!isSwapFrom &&
-          possibleChains?.includes(String(cid)) &&
-          cid !== Number(chain?.id))
+        isOrigin ||
+        (!isOrigin &&
+          chains?.includes(String(chain.id)) &&
+          chain.id !== Number(chain?.id))
       ) {
-        tempNetworks.push(CHAIN_INFO_MAP[cid])
+        tempNetworks.push(chain)
       }
     })
     if (searchStr?.length > 0) {
@@ -139,7 +134,7 @@ export function NetworkSlideOver({
         {networks.map((chainData, idx) => {
           const itemChainId = chainData.chainId
           const chaindata = itemChainId
-          const isCurrentChain = selectedChainId === itemChainId
+          const isCurrentChain = chainId === itemChainId
 
           let onClickSpecificNetwork
           if (isCurrentChain) {

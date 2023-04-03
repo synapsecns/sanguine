@@ -1,7 +1,11 @@
-import * as all from './masterTokenList'
-import { Token } from '@utils/classes/Token'
+import * as all from './master'
+import * as allPool from './poolMaster'
+import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
 
-interface BridgeableTokens {
+import * as CHAINS from '@constants/chains/master'
+import { Token } from '@/utils/types'
+
+interface TokensByChain {
   [cID: string]: Token[]
 }
 
@@ -23,8 +27,8 @@ const sortedTokens = Object.values(all).sort(
   (a, b) => b.visibilityRank - a.visibilityRank
 )
 
-const getBridgeableTokens = (): BridgeableTokens => {
-  let bridgeableTokens: BridgeableTokens = {}
+const getBridgeableTokens = (): TokensByChain => {
+  let bridgeableTokens: TokensByChain = {}
   Object.values(all).map((token) => {
     for (const cID of Object.keys(token.addresses)) {
       if (!bridgeableTokens[cID]) {
@@ -93,13 +97,13 @@ const getBridgeSwapableTokensByType = (): BridgeSwapableTokensByType => {
     for (const cID of Object.keys(token.addresses)) {
       if (bridgeSwapableTokensByType[cID][swapableType].length == 0) {
         bridgeSwapableTokensByType[cID][swapableType] = [token]
-      } else {
-        if (!bridgeSwapableTokensByType[cID][swapableType]?.includes(token)) {
-          bridgeSwapableTokensByType[cID][swapableType] = [
-            ...bridgeSwapableTokensByType[cID][swapableType],
-            token,
-          ]
-        }
+      } else if (
+        !bridgeSwapableTokensByType[cID][swapableType]?.includes(token)
+      ) {
+        bridgeSwapableTokensByType[cID][swapableType] = [
+          ...bridgeSwapableTokensByType[cID][swapableType],
+          token,
+        ]
       }
     }
   })
@@ -123,3 +127,152 @@ export const tokenSymbolToToken = (chainId: number, symbol: string) => {
   })
   return token
 }
+
+// SWAPS
+const getSwapableTokens = (): TokensByChain => {
+  let swapTokens: TokensByChain = {}
+  Object.values(all).map((token) => {
+    if (!(token?.swapableOn?.length > 0)) return
+    for (const cID of token.swapableOn) {
+      if (!swapTokens[cID]) {
+        swapTokens[cID] = [token]
+      } else if (!swapTokens[cID]?.includes(token)) {
+        swapTokens[cID] = [...swapTokens[cID], token]
+      }
+    }
+  })
+  return swapTokens
+}
+const getSwapPriorityRanking = () => {
+  let swapPriorityRanking = {}
+  Object.values(allPool).map((token) => {
+    if (!token.priorityPool) return
+    for (const cID of Object.keys(token.addresses)) {
+      if (!swapPriorityRanking[cID]) {
+        swapPriorityRanking[cID] = {}
+      }
+      for (const poolToken of token.poolTokens) {
+        swapPriorityRanking[cID][poolToken.symbol] = token
+      }
+    }
+  })
+  return swapPriorityRanking
+}
+export const SWAPABLE_TOKENS = getSwapableTokens()
+export const POOL_PRIORITY_RANKING = getSwapPriorityRanking()
+
+console.log('SWAPABLE_TOKENS', SWAPABLE_TOKENS)
+
+console.log('POOL_PRIORITY_RANKING', POOL_PRIORITY_RANKING)
+// POOLS
+const getPoolsByChain = (displayOnly: boolean): TokensByChain => {
+  let poolTokens: TokensByChain = {}
+  Object.values(allPool).map((token) => {
+    if (displayOnly && !token.display) return
+    for (const cID of Object.keys(token.addresses)) {
+      if (!poolTokens[cID]) {
+        poolTokens[cID] = [token]
+      } else {
+        if (!poolTokens[cID]?.includes(token)) {
+          poolTokens[cID] = [...poolTokens[cID], token]
+        }
+      }
+    }
+  })
+  return poolTokens
+}
+
+const getChainsByPoolName = () => {
+  let CHAINS_BY_POOL_NAME = {}
+  const poolsByChain = getPoolsByChain(false)
+  Object.keys(poolsByChain).map((chainId) => {
+    for (const swapToken of poolsByChain[chainId]) {
+      CHAINS_BY_POOL_NAME[swapToken.poolName] = chainId
+    }
+  })
+  return CHAINS_BY_POOL_NAME
+}
+
+const getTokensByPoolTypeByChain = (type: string) => {
+  let poolTokens: TokensByChain = {}
+  Object.values(allPool).map((token) => {
+    if (!token.display || !token?.poolType?.includes(type)) return
+    for (const cID of Object.keys(token.addresses)) {
+      if (!poolTokens[cID]) {
+        poolTokens[cID] = [token]
+      } else {
+        if (!poolTokens[cID]?.includes(token)) {
+          poolTokens[cID] = [...poolTokens[cID], token]
+        }
+      }
+    }
+  })
+  return poolTokens
+}
+
+const getLegacyTokensByChain = () => {
+  let poolTokens: TokensByChain = {}
+  Object.values(allPool).map((token) => {
+    if (!token.legacy) return
+    for (const cID of Object.keys(token.addresses)) {
+      if (!poolTokens[cID]) {
+        poolTokens[cID] = [token]
+      } else {
+        if (!poolTokens[cID]?.includes(token)) {
+          poolTokens[cID] = [...poolTokens[cID], token]
+        }
+      }
+    }
+  })
+  return poolTokens
+}
+
+export const POOL_CHAINS_BY_NAME = getChainsByPoolName()
+export const POOLS_BY_CHAIN = getPoolsByChain(false)
+export const DISPLAY_POOLS_BY_CHAIN = getPoolsByChain(true)
+export const USD_POOLS_BY_CHAIN = getTokensByPoolTypeByChain('USD')
+export const ETH_POOLS_BY_CHAIN = getTokensByPoolTypeByChain('ETH')
+export const LEGACY_POOLS_BY_CHAIN = getLegacyTokensByChain()
+
+export const STAKABLE_TOKENS = {
+  ...getChainsByPoolName(),
+  [CHAINS.ETH.id]: [...POOLS_BY_CHAIN[CHAINS.ETH.id], SYN_ETH_SUSHI_TOKEN],
+}
+
+const getStakingMap = () => {
+  let STAKING_MAP_TOKENS = {}
+  Object.keys(STAKABLE_TOKENS).map((chainId) => {
+    STAKING_MAP_TOKENS[chainId] = {}
+    for (const token of STAKABLE_TOKENS[chainId]) {
+      STAKING_MAP_TOKENS[chainId][token.poolName] = token
+    }
+  })
+  return STAKING_MAP_TOKENS
+}
+export const STAKING_MAP_TOKENS = getStakingMap()
+
+// The numbers in staking maps are significant contract wise, important to leave as is
+
+console.log('POOLS_BY_CHAIN', POOLS_BY_CHAIN)
+console.log('DISPLAY_POOLS_BY_CHAIN', DISPLAY_POOLS_BY_CHAIN)
+
+console.log('POOL_CHAINS_BY_NAME', POOL_CHAINS_BY_NAME)
+console.log('USD_POOLS_BY_CHAIN', USD_POOLS_BY_CHAIN)
+console.log('ETH_POOLS_BY_CHAIN', ETH_POOLS_BY_CHAIN)
+
+// export const Sw = Object.values(all).filter( )
+// export const STAKABLE_TOKENS = {
+//   ...POOLS_BY_CHAIN,
+//   [ChainId.ETH]: [...POOLS_BY_CHAIN[ChainId.ETH], SYN_ETH_SUSHI_TOKEN],
+// }
+
+// // The numbers in staking maps are significant contract wise, important to leave as is
+// let STAKING_MAP_TOKENS = {}
+// for (const [chainId, arr] of Object.entries(STAKABLE_TOKENS)) {
+//   STAKING_MAP_TOKENS[chainId] = {}
+//   for (const token of arr) {
+//     STAKING_MAP_TOKENS[chainId][token.poolName] = token
+//   }
+// }
+
+// export { STAKING_MAP_TOKENS }

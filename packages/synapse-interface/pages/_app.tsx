@@ -34,7 +34,7 @@ import {
 } from '@rainbow-me/rainbowkit'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
-import { CHAIN_INFO_MAP } from '@constants/networks'
+import * as CHAINS from '@constants/chains/master'
 
 import { SynapseProvider } from '@/utils/SynapseProvider'
 export default function App({ Component, pageProps }: AppProps) {
@@ -62,9 +62,12 @@ export default function App({ Component, pageProps }: AppProps) {
   // Add custom icons
   const chainsWithIcons: any[] = []
   for (const chain of rawChains) {
+    const iconUrl = Object.values(CHAINS).filter(
+      (chainObj) => chainObj.id === chain.id
+    )[0].chainImg.src
     chainsWithIcons.push({
       ...chain,
-      iconUrl: CHAIN_INFO_MAP[chain.id].chainImg.src,
+      iconUrl: iconUrl,
     })
   }
   const { chains, provider } = configureChains(chainsWithIcons, [

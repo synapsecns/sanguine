@@ -1,22 +1,21 @@
 import { useState } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
-import { CHAIN_INFO_MAP, CHAIN_PARAMS, ChainId } from '@constants/networks'
+import { CHAINS_BY_ID } from '@constants/chains'
+import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import Image from 'next/image'
+import { Token } from '@/utils/types'
+
 export default function ExchangeRateInfo({
   fromAmount,
-  fromToken,
-  toCoin,
+  toToken,
   exchangeRate,
-  fromChainId,
   toChainId,
 }: {
   fromAmount: BigNumber
-  fromToken: any
-  toCoin: any
+  toToken: Token
   exchangeRate: BigNumber
-  fromChainId: number
   toChainId: number
 }) {
   const [showExchangeRateInfo, toggleExchangeRateInfo] = useState(false)
@@ -65,7 +64,7 @@ export default function ExchangeRateInfo({
           {!fromAmount.eq(0) ? (
             <>
               {formattedExchangeRate}{' '}
-              <span className="text-white">{toCoin.symbol}</span>
+              <span className="text-white">{toToken.symbol}</span>
             </>
           ) : (
             '—'
@@ -92,12 +91,12 @@ function GasDropLabel({
   toChainId: number
 }) {
   let decimalsToDisplay
-  const symbol = CHAIN_PARAMS[toChainId].nativeCurrency.symbol
+  const symbol = CHAINS_BY_ID[toChainId].nativeCurrency.symbol
 
-  if ([ChainId.FANTOM].includes(toChainId)) {
+  if ([CHAINS.FANTOM.id].includes(toChainId)) {
     decimalsToDisplay = 2
   } else if (
-    [ChainId.BSC, ChainId.AVALANCHE, ChainId.BOBA].includes(toChainId)
+    [CHAINS.BNB.id, CHAINS.AVALANCHE.id, CHAINS.BOBA.id].includes(toChainId)
   ) {
     decimalsToDisplay = 3
   } else {
@@ -129,20 +128,19 @@ function GasDropLabel({
 }
 
 function ChainInfoLabel({ chainId }: { chainId: number }) {
-  const { chainName, chainSymbol, chainImg } = CHAIN_INFO_MAP[chainId]
-
-  return (
+  const chain = CHAINS_BY_ID[chainId]
+  return chain ? (
     <span className="flex items-center space-x-1">
       <Image
         alt="chain image"
-        src={chainImg}
+        src={chain.chainImg}
         className="w-4 h-4 rounded-full"
       />
       <span className="text-white">
-        {chainName.length > 10 ? chainSymbol : chainName}
+        {chain.chainName.length > 10 ? chain.chainSymbol : chain.chainName}
       </span>
     </span>
-  )
+  ) : null
 }
 
 function getAirdropInDollars(symbol: string, formattedGasDropAmount: string) {

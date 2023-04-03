@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { CHAIN_INFO_MAP } from '@constants/networks'
+import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
 import {
   getNetworkButtonBgClassName,
@@ -62,19 +62,19 @@ export function SelectSpecificNetworkButton({
 }
 
 function ButtonContent({ chainId }: { chainId: number }) {
-  const { chainImg, chainName, layer } = CHAIN_INFO_MAP[chainId]
+  const chain = CHAINS_BY_ID[chainId]
 
-  return (
+  return chain ? (
     <>
       <Image
-        src={chainImg}
+        src={chain.chainImg}
         alt="Switch Network"
         className="w-10 h-10 ml-2 mr-4 rounded-full"
       />
       <div className="flex-col text-left">
-        <div className="text-lg font-medium text-white">{chainName}</div>
-        <div className="text-sm text-white opacity-50">Layer {layer}</div>
+        <div className="text-lg font-medium text-white">{chain.chainName}</div>
+        <div className="text-sm text-white opacity-50">Layer {chain.layer}</div>
       </div>
     </>
-  )
+  ) : null
 }

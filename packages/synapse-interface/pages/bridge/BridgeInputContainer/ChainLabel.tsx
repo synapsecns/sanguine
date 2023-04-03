@@ -1,5 +1,6 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
-import { CHAIN_ID_DISPLAY_ORDER, CHAIN_INFO_MAP } from '@constants/networks'
+import { CHAINS_BY_ID, ORDERED_CHAINS_BY_ID } from '@constants/chains'
+import * as CHAINS from '@constants/chains/master'
 import { getNetworkButtonBorder } from '@styles/networks'
 import { getOrderedChains } from '@utils/getOrderedChains'
 import Image from 'next/image'
@@ -76,11 +77,12 @@ const PossibleChain = ({
   chainId: number
   onChangeChain: (v: number) => void
 }) => {
-  const { chainImg, chainName } = CHAIN_INFO_MAP[chainId]
   const onClick = () => {
     onChangeChain(chainId)
   }
-  return (
+  const chain = CHAINS_BY_ID[chainId]
+
+  return chain ? (
     <button
       className="
         w-7 h-7
@@ -91,20 +93,20 @@ const PossibleChain = ({
       tabIndex={0}
       onClick={onClick}
     >
-      <Tooltip content={chainName}>
+      <Tooltip content={chain.chainName}>
         <Image
-          src={chainImg}
+          src={chain.chainImg}
           className="duration-300 rounded-full hover:scale-125"
-          alt={chainName}
+          alt={chain.chainName}
         />
       </Tooltip>
     </button>
-  )
+  ) : null
 }
 
 const SelectedChain = ({ chainId }: { chainId: number }) => {
-  const { chainName, chainImg } = CHAIN_INFO_MAP[chainId]
-  return (
+  const chain = CHAINS_BY_ID[chainId]
+  return chain ? (
     <div
       className={`
         px-1
@@ -117,16 +119,16 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
     >
       <Image
         alt="chain image"
-        src={chainImg}
+        src={chain.chainImg}
         className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80"
       />
       <div className="hidden md:inline-block lg:inline-block">
         <div className="mr-2 text-sm text-white">
-          {chainName === 'Boba Network' ? 'Boba' : chainName}
+          {chain.chainName === 'Boba Network' ? 'Boba' : chain.chainName}
         </div>
       </div>
     </div>
-  )
+  ) : null
 }
 
 const chainOrderBySwapSide = (
@@ -137,7 +139,7 @@ const chainOrderBySwapSide = (
 ) => {
   let orderedChains
   if (isOrigin) {
-    orderedChains = CHAIN_ID_DISPLAY_ORDER.filter((e) => e !== chainId)
+    orderedChains = ORDERED_CHAINS_BY_ID.filter((e) => e !== chainId)
     orderedChains = orderedChains.slice(0, 5)
     orderedChains.unshift(chainId)
     return orderedChains

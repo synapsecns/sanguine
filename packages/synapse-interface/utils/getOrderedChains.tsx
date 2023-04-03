@@ -1,11 +1,11 @@
-import { CHAIN_ID_DISPLAY_ORDER } from '@constants/networks'
+import { ORDERED_CHAINS_BY_ID } from '@constants/chains'
 
 export function getOrderedChains(
   connectedChainId: number,
   chainId: number,
   possibleChains: string[] | undefined
 ) {
-  let filteredChains = CHAIN_ID_DISPLAY_ORDER.filter(
+  let filteredChains = ORDERED_CHAINS_BY_ID.filter(
     (id) => id !== connectedChainId && possibleChains?.includes(String(id))
   )
   console.log('filteredChains', filteredChains)

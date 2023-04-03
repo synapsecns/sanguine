@@ -1,4 +1,4 @@
-import { CHAIN_INFO_MAP } from '@constants/networks'
+import { CHAINS_BY_ID } from '@constants/chains'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 
 // import { useNetworkController } from '@hooks/wallet/useNetworkController'
@@ -14,8 +14,8 @@ export function DestinationAddressInput({
   destinationAddress: string
   setDestinationAddress: (val: string) => void
 }) {
-  const { chainName } = CHAIN_INFO_MAP[toChainId]
-
+  const chain = CHAINS_BY_ID[toChainId]
+  const chainName = chain?.chainName || 'nulls'
   let placeholder
   placeholder = `Enter ${chainName} address...`
 

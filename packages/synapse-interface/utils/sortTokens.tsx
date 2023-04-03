@@ -1,5 +1,5 @@
 import { fetchBalance } from '@wagmi/core'
-import { Token } from '@utils/classes/Token'
+import { Token } from '@/utils/types'
 import { Zero } from '@ethersproject/constants'
 
 export const sortByVisibilityRank = (tokens: Token[]) => {

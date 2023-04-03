@@ -5,28 +5,27 @@ import { useKeyPress } from '@hooks/useKeyPress'
 import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
-import { Token } from '@utils/classes/Token'
+import { Token } from '@/utils/types'
 
 export const CoinSlideOver = ({
-  chainId,
+  isOrigin,
   tokens,
-  selected,
+  chainId,
+  selectedToken,
   setDisplayType,
   handleTokenChange,
-  isSwapFrom,
 }: {
-  address: `0x${string}` | undefined
-  chainId: number
+  isOrigin: boolean
   tokens: any[]
-  selected: any
+  chainId: number
+  selectedToken: Token
   setDisplayType: (v: string) => void
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
-  isSwapFrom: boolean
 }) => {
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
   let tokenList: any[] = []
-  if (!isSwapFrom) {
+  if (!isOrigin) {
     tokens.map((token) => {
       tokenList.push({ token, balance: Zero })
     })
@@ -61,7 +60,7 @@ export const CoinSlideOver = ({
   }
 
   function onMenuItemClick(coin: any) {
-    handleTokenChange(coin, isSwapFrom ? 'from' : 'to')
+    handleTokenChange(coin, isOrigin ? 'from' : 'to')
     onClose()
   }
 
@@ -131,8 +130,8 @@ export const CoinSlideOver = ({
           <TokenMenuItem
             key={idx}
             chainId={chainId}
-            coin={token.token}
-            selected={selected}
+            token={token.token}
+            selectedToken={selectedToken}
             active={idx === currentIdx}
             tokenBalance={token.balance}
             onClick={() => {

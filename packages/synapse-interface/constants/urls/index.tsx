@@ -1,7 +1,7 @@
-import { ETH, SYN } from '@constants/tokens/basic'
+import { ETH, SYN } from '@constants/tokens/master'
 
-import { ChainId, CHAIN_EXPLORER_URLS } from '@constants/networks'
-import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/lp'
+import * as CHAINS from '@constants/chains/master'
+import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 // Hardcoding this shit for now until actual plan around routing
 console.log(process?.env?.NODE_ENV)
 let SYNAPSE_BASE_URL = ''
@@ -32,19 +32,19 @@ export const PRIVACY_POLICY_PATH =
 
 export const SYNAPSE_PFP_PATH = '/returntomonke'
 
-export function getPoolUrl({
+export const getPoolUrl = ({
   token,
   poolRouterIndex,
 }: {
   token?: any
   poolRouterIndex?: number
-}) {
+}) => {
   if (token) {
     if (token.symbol === SYN_ETH_SUSHI_TOKEN.symbol) {
       return getSushiSwapUrl({
         fromCoin: ETH,
         toCoin: SYN,
-        chainId: ChainId.ETH,
+        chainId: CHAINS.ETH.id,
       })
     } else {
       return `${POOLS_PATH}/${token.routerIndex}`
@@ -54,7 +54,7 @@ export function getPoolUrl({
   return `${POOLS_PATH}/${poolRouterIndex}`
 }
 
-export function getExplorerTxUrl({
+export const getExplorerTxUrl = ({
   hash,
   data,
   chainId = 56,
@@ -64,13 +64,16 @@ export function getExplorerTxUrl({
   data?: string
   chainId?: number
   type?: string
-}) {
-  let baseUrl = CHAIN_EXPLORER_URLS[chainId] ?? CHAIN_EXPLORER_URLS[ChainId.ETH]
+}) => {
+  let explorerUrl = Object.values(CHAINS).filter(
+    (chain) => chain.id === chainId
+  )[0].explorerUrl
+  let baseUrl = explorerUrl ?? CHAINS.ETH.explorerUrl
 
   return `${baseUrl}/${type}/${hash ?? data}`
 }
 
-export function getCompleteUrl(uriPath: string) {
+export const getCompleteUrl = (uriPath: string) => {
   return `${SYNAPSE_BASE_URL}${uriPath}`
 }
 
@@ -97,7 +100,7 @@ export const SYNAPSE_DOCS_URL = 'https://docs.synapseprotocol.com'
 
 const SUSHISWAP_BASE_URL = 'https://app.sushi.com'
 // Need to switch this with fei url
-function getSushiSwapUrl({
+const getSushiSwapUrl = ({
   fromCoin,
   toCoin,
   chainId,
@@ -105,7 +108,7 @@ function getSushiSwapUrl({
   fromCoin?: any
   toCoin?: any
   chainId: number
-}) {
+}) => {
   const inputCurrency = fromCoin?.addresses?.[chainId] ?? ''
   const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
   return `${SUSHISWAP_BASE_URL}/swap?inputCurrency=${inputCurrency}&outputCurrency=${outputCurrency}`
@@ -113,7 +116,7 @@ function getSushiSwapUrl({
 
 const TRADERJOE_BASE_URL = `https://www.traderjoexyz.com/#`
 
-function getTraderJoeSwapUrl({
+const getTraderJoeSwapUrl = ({
   fromCoin,
   toCoin,
   chainId,
@@ -121,7 +124,7 @@ function getTraderJoeSwapUrl({
   fromCoin?: any
   toCoin?: any
   chainId: number
-}) {
+}) => {
   const inputCurrency = fromCoin?.addresses?.[chainId] ?? ''
   const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
   return `${TRADERJOE_BASE_URL}/trade?inputCurrency=${inputCurrency}&outputCurrency=${outputCurrency}`
@@ -129,7 +132,7 @@ function getTraderJoeSwapUrl({
 
 const FIREBIRD_BASE_URL = 'https://app.firebird.finance'
 
-function getFirebirdSwapUrl({
+const getFirebirdSwapUrl = ({
   fromCoin,
   toCoin,
   chainId,
@@ -137,7 +140,7 @@ function getFirebirdSwapUrl({
   fromCoin?: any
   toCoin?: any
   chainId: number
-}) {
+}) => {
   const inputCurrency = fromCoin?.addresses?.[chainId] ?? ''
   const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
   return `${FIREBIRD_BASE_URL}/swap?outputCurrency=${outputCurrency}&net=${chainId}`
@@ -145,7 +148,7 @@ function getFirebirdSwapUrl({
 
 const UNISWAP_BASE_URL = 'https://app.uniswap.org/#'
 
-function getUniswapSwapUrl({
+const getUniswapSwapUrl = ({
   fromCoin,
   toCoin,
   chainId,
@@ -153,21 +156,21 @@ function getUniswapSwapUrl({
   fromCoin?: any
   toCoin?: any
   chainId: number
-}) {
+}) => {
   const inputCurrency = fromCoin?.addresses?.[chainId] ?? ''
   const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
   return `${UNISWAP_BASE_URL}/swap?outputCurrency=${outputCurrency}`
 }
 
-export function getBuySynUrl({ chainId }: { chainId: number }) {
+export const getBuySynUrl = ({ chainId }: { chainId: number }) => {
   const params = { toCoin: SYN, chainId }
 
   switch (chainId) {
-    case ChainId.ETH:
+    case CHAINS.ETH.id:
       return getUniswapSwapUrl(params)
-    case ChainId.AVALANCHE:
+    case CHAINS.AVALANCHE.id:
       return getTraderJoeSwapUrl(params)
-    case ChainId.FANTOM:
+    case CHAINS.FANTOM.id:
       return getFirebirdSwapUrl(params)
     default:
       return getSushiSwapUrl(params)

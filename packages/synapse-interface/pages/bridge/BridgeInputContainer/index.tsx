@@ -1,17 +1,12 @@
 import _ from 'lodash'
 import { Zero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
-import { Token } from '@utils/classes/Token'
-import { useAccount, useBalance, useNetwork } from 'wagmi'
-import { ChainId } from '@constants/networks'
+import { Token } from '@/utils/types'
+import { useBalance } from 'wagmi'
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
 import { BigNumber } from '@ethersproject/bignumber'
-// import { useTokenBalance } from '@hooks/tokens/useTokenBalances'
-// import { useNetworkController } from '@hooks/wallet/useNetworkController'
-
 import { cleanNumberInput } from '@utils/cleanNumberInput'
-
 import { ChainLabel } from './ChainLabel'
 import SelectTokenDropdown from './SelectTokenDropdown'
 
@@ -26,20 +21,19 @@ export default function BridgeInputContainer({
   onChangeChain,
   onChangeAmount,
   setDisplayType,
-  swapFromToChains,
+  handleChainFlip,
 }: {
-  isOrigin: boolean
   address: `0x${string}`
-  selectedToken: Token
-  onChangeAmount?: (v: string) => void
-  inputString: string
-  swapFromToChains?: () => void
-  tokens: any[]
-  chainId: number
-  setDisplayType: (v: string) => void
-  onChangeChain: (v: number) => void
+  isOrigin: boolean
   chains: string[]
+  chainId: number
+  inputString: string
+  selectedToken: Token
   connectedChainId: number
+  setDisplayType: (v: string) => void
+  handleChainFlip?: () => void
+  onChangeAmount?: (v: string) => void
+  onChangeChain: (v: number) => void
 }) {
   const tokenAddr = selectedToken.addresses[chainId as keyof Token['addresses']]
 
@@ -109,7 +103,7 @@ export default function BridgeInputContainer({
           {!isOrigin && (
             <div className="absolute">
               <div className="-mt-12">
-                <SwitchButton onClick={swapFromToChains ?? (() => null)} />
+                <SwitchButton onClick={handleChainFlip ?? (() => null)} />
               </div>
             </div>
           )}

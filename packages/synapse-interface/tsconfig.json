@@ -46,7 +46,11 @@
       "@hooks": ["./utils/hooks"],
       "@hooks/*": ["./utils/hooks/*"],
       "@bignumber": ["./utils/bignumber"],
-      "@bignumber/*": ["./utils/bignumber/*"]
+      "@bignumber/*": ["./utils/bignumber/*"],
+      "@store": ["./utils/store"],
+      "@store/*": ["./utils/store/*"],
+      "@types": ["./utils/types"],
+      "@types/*": ["./utils/types/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

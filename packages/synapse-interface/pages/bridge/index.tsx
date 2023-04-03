@@ -4,8 +4,9 @@ import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { Zero } from '@ethersproject/constants'
-import { Token } from '@utils/classes/Token'
+import { Token } from '@/utils/types'
 import { BigNumber } from '@ethersproject/bignumber'
+import { BridgeQuote } from '@/utils/types'
 import { ActionCardFooter } from '@components/ActionCardFooter'
 import { getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
@@ -29,17 +30,16 @@ import {
 } from '@/constants/bridge'
 // import BridgeWatcher from './BridgeWatcher'
 
-const bridgeFee = BigNumber.from('10000')
 export default function BridgePage({ address }: { address: `0x${string}` }) {
   const router = useRouter()
   const SynapseSDK = useSynapseContext()
 
   const [fromChainId, setFromChainId] = useState(DEFAULT_FROM_CHAIN)
-  const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
   const [fromToken, setFromToken] = useState(DEFAULT_FROM_TOKEN)
-  const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [fromTokens, setFromTokens] = useState([])
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
+  const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
+  const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [error, setError] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
   const [toBridgeableTokens, setToBridgeableTokens] = useState(
@@ -50,7 +50,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
       (chain) => Number(chain) !== DEFAULT_FROM_CHAIN
     )
   )
-  const [bridgeQuote, setBridgeQuote] = useState({
+  const [bridgeQuote, setBridgeQuote] = useState<BridgeQuote>({
     outputAmount: Zero,
     outputAmountString: '',
     exchangeRate: Zero,

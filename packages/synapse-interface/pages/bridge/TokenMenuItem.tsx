@@ -1,36 +1,33 @@
-import { useEffect, useRef } from 'react'
 import { commify } from '@ethersproject/units'
-import { formatBnMagic } from '@bignumber/format'
-import { Token } from '@utils/classes/Token'
+import { formatBNToString } from '@bignumber/format'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
-import { CHAIN_INFO_MAP } from '@constants/networks'
+import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
 // import { useGenericTokenBalance } from '@hooks/tokens/useTokenBalances'
-import { getTokenOnChain } from '@hooks/tokens/useTokenInfo'
-import { useAccount, useBalance, useNetwork } from 'wagmi'
 import { displaySymbol } from '@utils/displaySymbol'
 import {
   getBorderStyleForCoinHover,
   getMenuItemStyleForCoinCombined,
 } from '@styles/coins'
+import { Token } from '@/utils/types'
 
 export default function TokenMenuItem({
-  chainId,
+  token,
   active,
-  coin,
-  selected,
+  chainId,
+  selectedToken,
   tokenBalance,
   onClick,
 }: {
-  chainId: number
+  token: Token
   active: boolean
-  coin: any
-  selected: any
+  chainId: number
+  selectedToken: Token
   tokenBalance: BigNumber | undefined
   onClick: () => void
 }) {
-  const isCurrentlySelected = selected.symbol === coin.symbol
+  const isCurrentlySelected = selectedToken.symbol === token.symbol
 
   // useEffect(() => {
   //   if (active) {
@@ -56,13 +53,13 @@ export default function TokenMenuItem({
         px-2 py-3
         cursor-pointer
         border border-transparent
-        ${getBorderStyleForCoinHover(coin)}
-        ${getMenuItemStyleForCoinCombined(coin)}
+        ${getBorderStyleForCoinHover(token)}
+        ${getMenuItemStyleForCoinCombined(token)}
         ${bgClassName}
       `}
     >
       <ButtonContent
-        token={coin}
+        token={token}
         chainId={chainId}
         tokenBalance={tokenBalance ? tokenBalance : Zero}
       />
@@ -97,7 +94,7 @@ function ButtonContent({
 }
 
 function CoinOnChain({ token, chainId }: { token: Token; chainId: number }) {
-  const { chainImg, chainName } = CHAIN_INFO_MAP[chainId]
+  const { chainImg, chainName } = CHAINS_BY_ID[chainId]
 
   return (
     <div className="flex-col text-left">
@@ -127,8 +124,13 @@ function TokenBalance({
   chainId: number
   tokenBalance: BigNumber
 }) {
-  const tokenInfo = getTokenOnChain(chainId, token)
-  const formattedBalance = commify(formatBnMagic(tokenBalance, tokenInfo, 2))
+  const formattedBalance = commify(
+    formatBNToString(
+      tokenBalance,
+      token?.decimals?.[chainId as keyof Token['decimals']],
+      2
+    )
+  )
   return (
     <div className="ml-auto mr-5 text-lg text-white">
       {!tokenBalance.eq(0) && (
