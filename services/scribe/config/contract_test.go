@@ -9,12 +9,22 @@ import (
 
 func contractConfigFixture() config.ContractConfig {
 	return config.ContractConfig{
-		Address:    mocks.MockAddress().String(),
-		StartBlock: gofakeit.Uint64(),
+		Address:     mocks.MockAddress().String(),
+		StartBlock:  gofakeit.Uint64(),
+		RefreshRate: gofakeit.Uint64(),
 	}
 }
 
 func (c ConfigSuite) TestAddress() {
+	contractConfig := contractConfigFixture()
+	contractConfig.Address = ""
+
+	ok, err := contractConfig.IsValid(c.GetTestContext())
+	False(c.T(), ok)
+	ErrorIs(c.T(), err, config.ErrRequiredField)
+}
+
+func (c ConfigSuite) TestRefreshRate() {
 	contractConfig := contractConfigFixture()
 	contractConfig.Address = ""
 
