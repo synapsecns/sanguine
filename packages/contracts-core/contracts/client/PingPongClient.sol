@@ -69,8 +69,11 @@ contract PingPongClient is IMessageRecipient {
 
     // ═══════════════════════════════════════════════ MESSAGE LOGIC ═══════════════════════════════════════════════════
 
-    /// @notice Called by Destination upon executing the message.
-    function handle(uint32 origin_, uint32, bytes32 sender, uint256, bytes memory content) external {
+    /// @inheritdoc IMessageRecipient
+    function receiveBaseMessage(uint32 origin_, uint32, bytes32 sender, uint256, bytes memory content)
+        external
+        payable
+    {
         require(msg.sender == destination, "PingPongClient: !destination");
         PingPongMessage memory message = abi.decode(content, (PingPongMessage));
         if (message.isPing) {

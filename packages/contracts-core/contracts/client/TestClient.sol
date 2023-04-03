@@ -25,9 +25,14 @@ contract TestClient is IMessageRecipient {
         destination = destination_;
     }
 
-    function handle(uint32 origin_, uint32 nonce, bytes32 sender, uint256 rootSubmittedAt, bytes memory content)
-        external
-    {
+    /// @inheritdoc IMessageRecipient
+    function receiveBaseMessage(
+        uint32 origin_,
+        uint32 nonce,
+        bytes32 sender,
+        uint256 rootSubmittedAt,
+        bytes memory content
+    ) external payable {
         require(msg.sender == destination, "TestClient: !destination");
         emit MessageReceived(origin_, nonce, sender, rootSubmittedAt, content);
     }
