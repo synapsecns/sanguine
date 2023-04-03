@@ -3,34 +3,29 @@ pragma solidity 0.8.17;
 
 import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
 import {ByteStringHarness} from "../../harnesses/libs/ByteStringHarness.t.sol";
-import {ByteStringTools} from "../../tools/libs/ByteStringTools.t.sol";
 
 import {ByteString} from "../../../contracts/libs/ByteString.sol";
 import {SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
 
+import {Random} from "../../utils/libs/Random.t.sol";
+
 // solhint-disable func-name-mixedcase
-contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
+contract ByteStringLibraryTest is SynapseLibraryTest {
     using ByteString for bytes;
 
     ByteStringHarness internal libHarness;
     uint256 internal extraBytes = 0;
-    bytes4 internal selector = this.setUp.selector;
-
-    // First element is (bytes4 selector)
-    uint8 internal constant FIRST_ELEMENT_BYTES = 4;
 
     function setUp() public {
         libHarness = new ByteStringHarness();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          TESTS: FORMATTING                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ TESTS: FORMATTING ═════════════════════════════════════════════════
 
-    function test_formattedCorrectly_callData(uint8 words) public {
+    function test_formattedCorrectly_callData(bytes4 selector, uint256 words) public {
         // Set a sensible limit for the total payload length
-        vm.assume(uint256(words) * 32 <= MAX_CONTENT_BYTES);
-        bytes memory arguments = createTestArguments(words, "seed");
+        words = words % MAX_SYSTEM_CALL_WORDS;
+        bytes memory arguments = Random("random").nextBytesWords(words);
         bytes memory callData = abi.encodePacked(selector, arguments);
         require(callData.length == selector.length + 32 * uint256(words), "!length");
         // Test related constants
@@ -44,24 +39,25 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         assertEq(libHarness.arguments(callData), arguments, "!arguments");
     }
 
-    function test_formattedCorrectly_callData_adjusted(uint8 wordsPrefix, uint8 wordsFollowing) public {
+    function test_formattedCorrectly_callData_added(bytes4 selector, uint256 wordsPrefix, uint256 wordsFollowing)
+        public
+    {
         // Set a sensible limit for the total payload length
-        vm.assume((uint256(wordsPrefix) + wordsFollowing) * 32 <= MAX_CONTENT_BYTES);
+        wordsPrefix = wordsPrefix % MAX_SYSTEM_CALL_WORDS;
+        wordsFollowing = bound(wordsFollowing, 0, MAX_SYSTEM_CALL_WORDS - wordsPrefix);
         // Create "random" arguments and new/old prefix with different random seeds
-        bytes memory prefixOld = createTestArguments(wordsPrefix, "prefixOld");
-        bytes memory following = createTestArguments(wordsFollowing, "following");
-        bytes memory prefixNew = createTestArguments(wordsPrefix, "prefixNew");
-        bytes memory callData = bytes.concat(selector, prefixOld, following);
-        bytes memory adjustedCallData =
-            SystemMessageLib.formatAdjustedCallData(callData.castToCallData(), prefixNew.castToRawBytes());
-        // Correct formatting is checked in SystemMessage.t.sol
+        bytes memory prefix = Random("prefix").nextBytesWords(wordsPrefix);
+        bytes memory following = Random("following").nextBytesWords(wordsFollowing);
+        // Initial calldata
+        bytes memory callData = bytes.concat(selector, following);
+        bytes memory finalCallData = libHarness.addPrefix(callData, prefix);
         // Test formatting checker
-        assertTrue(libHarness.isCallData(adjustedCallData), "!isCallData");
-        assertEq(libHarness.castToCallData(adjustedCallData), adjustedCallData, "!castToCallData");
+        assertTrue(libHarness.isCallData(finalCallData), "!isCallData");
+        assertEq(libHarness.castToCallData(finalCallData), finalCallData, "!castToCallData");
         // Test CallData getters
-        assertEq(libHarness.argumentWords(adjustedCallData), uint256(wordsPrefix) + wordsFollowing, "!argumentWords");
-        assertEq(libHarness.callSelector(adjustedCallData), bytes.concat(selector), "!callSelector");
-        assertEq(libHarness.arguments(adjustedCallData), bytes.concat(prefixNew, following), "!arguments");
+        assertEq(libHarness.argumentWords(finalCallData), wordsPrefix + wordsFollowing, "!argumentWords");
+        assertEq(libHarness.callSelector(finalCallData), bytes.concat(selector), "!callSelector");
+        assertEq(libHarness.arguments(finalCallData), bytes.concat(prefix, following), "!arguments");
     }
 
     function test_formattedCorrectly_signature() public {
@@ -86,26 +82,22 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         checkCastToSignature({payload: payload, isSignature: false});
     }
 
-    function test_isCallData_firstElementIncomplete(uint8 payloadLength, bytes32 data) public {
-        // Payload having less bytes than CallData's first element (bytes4 selector)
-        // should be correctly treated as unformatted (i.e. with no reverts)
-        bytes memory payload = createShortPayload(payloadLength, FIRST_ELEMENT_BYTES, data);
-        assertFalse(libHarness.isCallData(payload), "!isCallData: short payload");
-        vm.expectRevert("Not a calldata");
-        libHarness.castToCallData(payload);
+    function test_isCallData(uint8 length) public {
+        bytes memory payload = new bytes(length);
+        checkCastToCallData(payload, "Empty payload");
     }
 
-    function test_isCallData_noArgs() public {
+    function test_isCallData_noArgs(bytes4 selector) public {
         checkCastToCallData(abi.encodeWithSelector(selector), "!isCallData: no arguments");
     }
 
-    function test_isCallData_withArgs() public {
+    function test_isCallData_withArgs(bytes4 selector) public {
         checkCastToCallData(
             abi.encodeWithSelector(selector, uint16(42), uint128(4_815_162_342)), "!isCallData: with arguments"
         );
     }
 
-    function test_isCallData_dynamicArgs() public {
+    function test_isCallData_dynamicArgs(bytes4 selector) public {
         checkCastToCallData(abi.encodeWithSelector(selector, new bytes(13)), "!isCallData: bytes(13)");
         checkCastToCallData(
             abi.encodeWithSelector(selector, new bytes(13), new bytes(42)), "!isCallData: bytes(13), bytes(42)"
@@ -115,17 +107,15 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
         checkCastToCallData(abi.encodeWithSelector(selector, arg), "!isCallData: uint8[2]");
     }
 
-    function test_isCallData_extraBytes(uint8 extraBytes_) public {
+    function test_isCallData_extraBytes(bytes4 selector, uint8 extraBytes_) public {
         vm.assume(extraBytes_ != 0);
         extraBytes = extraBytes_;
-        test_isCallData_noArgs();
-        test_isCallData_withArgs();
-        test_isCallData_dynamicArgs();
+        test_isCallData_noArgs(selector);
+        test_isCallData_withArgs(selector);
+        test_isCallData_dynamicArgs(selector);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function checkCastToSignature(bytes memory payload, bool isSignature) public {
         if (isSignature) {
@@ -141,7 +131,7 @@ contract ByteStringLibraryTest is ByteStringTools, SynapseLibraryTest {
     function checkCastToCallData(bytes memory payload, string memory revertMessage) public {
         // Add extra bytes to the call payload
         payload = bytes.concat(payload, new bytes(extraBytes));
-        bool isCallData = extraBytes % 32 == 0;
+        bool isCallData = payload.length % 32 == 4;
         if (isCallData) {
             assertTrue(libHarness.isCallData(payload), "!isCallData: when valid");
             assertEq(libHarness.castToCallData(payload), payload, "!castToCallData: when valid");
