@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"io"
 	"strconv"
 	"time"
@@ -39,12 +40,13 @@ type Notary struct {
 	summitParser            summit.Parser
 	scribeGrpcClient        pbscribe.ScribeServiceClient
 	lastSummitBlock         uint64
+	handler                 metrics.Handler
 }
 
 // NewNotary creates a new notary.
 //
 //nolint:cyclop
-func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error) {
+func NewNotary(ctx context.Context, cfg config.AgentConfig, handler metrics.Handler) (_ Notary, err error) {
 	notary := Notary{
 		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
@@ -95,6 +97,8 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig) (_ Notary, err error
 	}
 
 	notary.scribeGrpcClient = pbscribe.NewScribeServiceClient(conn)
+
+	notary.handler = handler
 
 	return notary, nil
 }

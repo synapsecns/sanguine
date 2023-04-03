@@ -9,7 +9,9 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"os"
 	"sync"
@@ -21,6 +23,7 @@ type DBSuite struct {
 	*testsuite.TestSuite
 	dbs      []db.ExecutorDB
 	logIndex atomic.Int64
+	Metrics  metrics.Handler
 }
 
 // NewEventDBSuite creates a new EventDBSuite.
@@ -37,7 +40,11 @@ func (t *DBSuite) SetupTest() {
 
 	t.logIndex.Store(0)
 
-	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""))
+	var err error
+	t.Metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	t.Require().Nil(err)
+
+	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.Metrics)
 	Nil(t.T(), err)
 
 	t.dbs = []db.ExecutorDB{sqliteStore}
@@ -69,7 +76,7 @@ func (t *DBSuite) setupMysqlDB() {
 	mysql.MaxIdleConns = 10
 
 	// create the sql store
-	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString)
+	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.Metrics)
 	Nil(t.T(), err)
 	// add the db
 	t.dbs = append(t.dbs, mysqlStore)
