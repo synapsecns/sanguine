@@ -338,9 +338,9 @@ scribe:
     config.yaml: |-
       chains:
         - chain_id: 11155111
-          required_confirmations: 50
-          contract_sub_chunk_size: 1000
-          contract_chunk_size: 1000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -349,9 +349,9 @@ scribe:
             - address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
               start_block: 3168998
         - chain_id: 420
-          required_confirmations: 50
-          contract_sub_chunk_size: 500
-          contract_chunk_size: 500
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -362,9 +362,9 @@ scribe:
             - address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
               start_block: 7216932
         - chain_id: 421613
-          required_confirmations: 50
-          contract_sub_chunk_size: 2000
-          contract_chunk_size: 10000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -386,7 +386,7 @@ notary_files:
       domain_client1:
         domain_id: 11155111
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -395,7 +395,7 @@ notary_files:
       domain_client2:
         domain_id: 420
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -404,7 +404,7 @@ notary_files:
       domain_client3:
         domain_id: 421613
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -421,9 +421,9 @@ notary_files:
     embedded_scribe_config:
       chains:
         - chain_id: 11155111
-          required_confirmations: 50
-          contract_sub_chunk_size: 1000
-          contract_chunk_size: 1000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -432,9 +432,9 @@ notary_files:
             - address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
               start_block: 3168998
         - chain_id: 420
-          required_confirmations: 50
-          contract_sub_chunk_size: 500
-          contract_chunk_size: 500
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -445,9 +445,9 @@ notary_files:
             - address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
               start_block: 7216932
         - chain_id: 421613
-          required_confirmations: 50
-          contract_sub_chunk_size: 2000
-          contract_chunk_size: 10000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -457,6 +457,7 @@ notary_files:
               start_block: 13771874
       rpc_url: "https://rpc.interoperability.institute/confirmations"
       refresh_rate: 0
+
   notary_signer2.txt: |-
     528f549442e0b9d5a66f9bc8b8d466cb85c57c2cf9f1651934de389c0b0a2a09
   notary_config2.yaml: |-
@@ -467,7 +468,7 @@ notary_files:
       domain_client1:
         domain_id: 11155111
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -476,7 +477,7 @@ notary_files:
       domain_client2:
         domain_id: 420
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -485,7 +486,7 @@ notary_files:
       domain_client3:
         domain_id: 421613
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -502,9 +503,9 @@ notary_files:
     embedded_scribe_config:
       chains:
         - chain_id: 11155111
-          required_confirmations: 50
-          contract_sub_chunk_size: 1000
-          contract_chunk_size: 1000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -513,9 +514,9 @@ notary_files:
             - address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
               start_block: 3168998
         - chain_id: 420
-          required_confirmations: 50
-          contract_sub_chunk_size: 500
-          contract_chunk_size: 500
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -526,9 +527,9 @@ notary_files:
             - address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
               start_block: 7216932
         - chain_id: 421613
-          required_confirmations: 50
-          contract_sub_chunk_size: 2000
-          contract_chunk_size: 10000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -548,7 +549,7 @@ notary_files:
       domain_client1:
         domain_id: 11155111
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -557,7 +558,7 @@ notary_files:
       domain_client2:
         domain_id: 420
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -566,7 +567,7 @@ notary_files:
       domain_client3:
         domain_id: 421613
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -583,9 +584,9 @@ notary_files:
     embedded_scribe_config:
       chains:
         - chain_id: 11155111
-          required_confirmations: 50
-          contract_sub_chunk_size: 1000
-          contract_chunk_size: 1000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -594,9 +595,9 @@ notary_files:
             - address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
               start_block: 3168998
         - chain_id: 420
-          required_confirmations: 50
-          contract_sub_chunk_size: 500
-          contract_chunk_size: 500
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -607,9 +608,9 @@ notary_files:
             - address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
               start_block: 7216932
         - chain_id: 421613
-          required_confirmations: 50
-          contract_sub_chunk_size: 2000
-          contract_chunk_size: 10000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -631,7 +632,7 @@ guard_files:
       domain_client1:
         domain_id: 11155111
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -640,7 +641,7 @@ guard_files:
       domain_client2:
         domain_id: 420
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -649,7 +650,7 @@ guard_files:
       domain_client3:
         domain_id: 421613
         type: EVM
-        required_confirmations: 50
+        required_confirmations: 1
         origin_address: 0xca23124Ffb26c26A00ac70bA49B240A392794566
         summit_address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
         destination_address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
@@ -666,9 +667,9 @@ guard_files:
     embedded_scribe_config:
       chains:
         - chain_id: 11155111
-          required_confirmations: 50
-          contract_sub_chunk_size: 1000
-          contract_chunk_size: 1000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -677,9 +678,9 @@ guard_files:
             - address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
               start_block: 3168998
         - chain_id: 420
-          required_confirmations: 50
-          contract_sub_chunk_size: 500
-          contract_chunk_size: 500
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -690,9 +691,9 @@ guard_files:
             - address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
               start_block: 7216932
         - chain_id: 421613
-          required_confirmations: 50
-          contract_sub_chunk_size: 2000
-          contract_chunk_size: 10000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -776,9 +777,9 @@ executor_embedded_files:
     embedded_scribe_config:
       chains:
         - chain_id: 11155111
-          required_confirmations: 50
-          contract_sub_chunk_size: 1000
-          contract_chunk_size: 1000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -787,9 +788,9 @@ executor_embedded_files:
             - address: 0x2Acc3EF916b168826F8FC67Cf261D9B5D2cA22e6
               start_block: 3168998
         - chain_id: 420
-          required_confirmations: 50
-          contract_sub_chunk_size: 500
-          contract_chunk_size: 500
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -800,9 +801,9 @@ executor_embedded_files:
             - address: 0x4E804e74268d6cF2C26DE0765260cFd9796DEd44
               start_block: 7216932
         - chain_id: 421613
-          required_confirmations: 50
-          contract_sub_chunk_size: 2000
-          contract_chunk_size: 10000
+          required_confirmations: 1
+          contract_sub_chunk_size: 100
+          contract_chunk_size: 100
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
