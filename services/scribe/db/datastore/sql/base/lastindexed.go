@@ -24,31 +24,7 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	entry := LastIndexedInfo{}
 	dbTx := s.DB().WithContext(ctx).
-		Model(&LastIndexedInfo{}).
-		Where(&LastIndexedInfo{
-			ContractAddress: contractAddress.String(),
-			ChainID:         chainID,
-		}).
-		Scan(&entry)
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not retrieve last indexed info: %w", dbTx.Error)
-	}
-	if dbTx.RowsAffected == 0 {
-		dbTx = s.DB().WithContext(ctx).
-			Model(&LastIndexedInfo{}).
-			Create(&LastIndexedInfo{
-				ContractAddress: contractAddress.String(),
-				ChainID:         chainID,
-				BlockNumber:     blockNumber,
-			})
-		if dbTx.Error != nil {
-			return fmt.Errorf("could not store last indexed info: %w", dbTx.Error)
-		}
-		return nil
-	}
-	dbTx = s.DB().WithContext(ctx).
 		Clauses(clause.Where{
 			Exprs: []clause.Expression{
 				clause.And(
