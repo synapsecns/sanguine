@@ -15,10 +15,6 @@ abstract contract AgentManagerTest is SynapseTest {
     /// @notice Prevents this contract from being included in the coverage report
     function testAgentManagerTest() external {}
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           INTERNAL HELPERS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
     function _localDomain() internal view virtual returns (uint32);
 
     function _skipBondingOptimisticPeriod() internal {
@@ -46,7 +42,7 @@ abstract contract AgentManagerTest is SynapseTest {
     }
 
     function _remoteSlashPayload(uint32 domain, address agent, address prover) internal view returns (bytes memory) {
-        // (rootSubmittedAt, callOrigin, systemCaller, domain, agent, prover)
-        return abi.encodeWithSelector(bondingManager.remoteRegistrySlash.selector, 0, 0, 0, domain, agent, prover);
+        // (rootSubmittedAt, callOrigin, systemCaller) are omitted; (domain, agent, prover)
+        return abi.encodeWithSelector(bondingManager.remoteRegistrySlash.selector, domain, agent, prover);
     }
 }
