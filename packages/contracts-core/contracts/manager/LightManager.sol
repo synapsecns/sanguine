@@ -15,19 +15,14 @@ import {Versioned} from "../Version.sol";
 /// @notice LightManager keeps track of all agents, staying in sync with the BondingManager.
 /// Used on chains other than Synapse Chain, serves as "light client" for BondingManager.
 contract LightManager is Versioned, AgentManager, ILightManager {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
     // Latest known Agent Merkle Root
     bytes32 private _latestAgentRoot;
 
     // (agentRoot => (agent => status))
     mapping(bytes32 => mapping(address => AgentStatus)) private _agentMap;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain) DomainContext(domain) Versioned("0.0.3") {
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
@@ -38,9 +33,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         __Ownable_init();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             AGENTS LOGIC                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ AGENTS LOGIC ════════════════════════════════════════════════════
 
     /// @inheritdoc ILightManager
     function updateAgentStatus(address agent, AgentStatus memory status, bytes32[] memory proof) external {
@@ -65,9 +58,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         _setAgentRoot(agentRoot_);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            SLASHING LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ SLASHING LOGIC ═══════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
     function registrySlash(uint32 domain, address agent, address prover) external {
@@ -79,7 +70,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
             // Issue a system call to BondingManager on SynChain
             _callAgentManager({
                 domain: SYNAPSE_DOMAIN,
-                optimisticSeconds: BONDING_OPTIMISTIC_PERIOD,
+                optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
                 payload: _remoteSlashPayload(domain, agent, prover)
             });
         } else {
@@ -87,18 +78,14 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                VIEWS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
     function agentRoot() public view override returns (bytes32) {
         return _latestAgentRoot;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Updates the Agent Merkle Root that Light Manager is tracking.
     function _setAgentRoot(bytes32 _agentRoot) internal {
@@ -116,7 +103,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
 
     /// @dev Returns data for a system call: remoteRegistrySlash()
     function _remoteSlashPayload(uint32 domain, address agent, address prover) internal pure returns (bytes memory) {
-        // (rootSubmittedAt, callOrigin, systemCaller, domain, agent, prover)
-        return abi.encodeWithSelector(IBondingManager.remoteRegistrySlash.selector, 0, 0, 0, domain, agent, prover);
+        // (rootSubmittedAt, callOrigin, systemCaller) are omitted; (domain, agent, prover)
+        return abi.encodeWithSelector(IBondingManager.remoteRegistrySlash.selector, domain, agent, prover);
     }
 }

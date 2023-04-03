@@ -49,6 +49,7 @@ abstract contract SynapseTestConstants {
     // ═══════════════════════════════════════════════ MESSAGE TESTS ═══════════════════════════════════════════════════
 
     uint256 internal constant MAX_CONTENT_BYTES = 2 * 2 ** 10;
+    uint256 internal constant MAX_SYSTEM_CALL_WORDS = MAX_CONTENT_BYTES / 32;
 
     uint32 internal constant MESSAGES = 10;
     uint256 internal constant BLOCK_TIME = 12 seconds;

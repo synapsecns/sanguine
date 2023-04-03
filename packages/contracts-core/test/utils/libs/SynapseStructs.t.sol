@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
+import {ByteString, CallData, TypedMemView} from "../../../contracts/libs/ByteString.sol";
 
-import {Header, HeaderLib, Message, MessageFlag, MessageLib, TypedMemView} from "../../../contracts/libs/Message.sol";
+import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
+import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
+import {SystemEntity, SystemMessage, SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
 
 import {Snapshot, SnapshotLib, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
 
@@ -20,7 +22,7 @@ struct RawHeader {
     uint32 optimisticPeriod;
 }
 
-using {CastLib.castToHeader, CastLib.formatHeader} for RawHeader global;
+using CastLib for RawHeader global;
 
 struct RawTips {
     uint96 notaryTip;
@@ -29,7 +31,31 @@ struct RawTips {
     uint96 executorTip;
 }
 
-using {CastLib.castToTips, CastLib.formatTips} for RawTips global;
+using CastLib for RawTips global;
+
+struct RawCallData {
+    bytes4 selector;
+    bytes args;
+}
+
+using CastLib for RawCallData global;
+
+struct RawSystemMessage {
+    uint8 sender;
+    uint8 recipient;
+    RawCallData callData;
+}
+
+using CastLib for RawSystemMessage global;
+
+struct RawSystemCall {
+    uint32 origin;
+    uint32 nonce;
+    uint256 rootSubmittedAt;
+    RawSystemMessage systemMessage;
+}
+
+using CastLib for RawSystemCall global;
 
 struct RawBaseMessage {
     bytes32 sender;
@@ -38,7 +64,7 @@ struct RawBaseMessage {
     bytes content;
 }
 
-using {CastLib.castToBaseMessage, CastLib.formatBaseMessage} for RawBaseMessage global;
+using CastLib for RawBaseMessage global;
 
 struct RawMessage {
     uint8 flag;
@@ -46,7 +72,7 @@ struct RawMessage {
     bytes body;
 }
 
-using {CastLib.castToMessage, CastLib.formatMessage} for RawMessage global;
+using CastLib for RawMessage global;
 
 struct RawState {
     bytes32 root;
@@ -56,18 +82,13 @@ struct RawState {
     uint40 timestamp;
 }
 
-using {CastLib.castToState, CastLib.formatState} for RawState global;
+using CastLib for RawState global;
 
 struct RawSnapshot {
     RawState[] states;
 }
 
-using {
-    CastLib.formatStates,
-    CastLib.castToRawAttestation,
-    CastLib.castToSnapshot,
-    CastLib.formatSnapshot
-} for RawSnapshot global;
+using CastLib for RawSnapshot global;
 
 struct RawAttestation {
     bytes32 snapRoot;
@@ -77,33 +98,35 @@ struct RawAttestation {
     uint40 timestamp;
 }
 
-using {CastLib.castToAttestation, CastLib.formatAttestation, CastLib.modifyAttestation} for RawAttestation global;
+using CastLib for RawAttestation global;
 
 struct RawAttestationReport {
     uint8 flag;
     RawAttestation attestation;
 }
 
-using {CastLib.castToAttestationReport, CastLib.formatAttestationReport} for RawAttestationReport global;
+using CastLib for RawAttestationReport global;
 
 struct RawStateReport {
     uint8 flag;
     RawState state;
 }
 
-using {CastLib.castToStateReport, CastLib.formatStateReport} for RawStateReport global;
+using CastLib for RawStateReport global;
 
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 library CastLib {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
+    using ByteString for bytes;
     using BaseMessageLib for bytes;
     using HeaderLib for bytes;
     using MessageLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
     using StateReportLib for bytes;
+    using SystemMessageLib for bytes;
     using TipsLib for bytes;
     using TypedMemView for bytes29;
 
@@ -159,6 +182,43 @@ library CastLib {
 
     function castToBaseMessage(RawBaseMessage memory rbm) internal pure returns (BaseMessage ptr) {
         ptr = rbm.formatBaseMessage().castToBaseMessage();
+    }
+
+    // ══════════════════════════════════════════════ SYSTEM MESSAGE ═══════════════════════════════════════════════════
+
+    function formatCallData(RawCallData memory rcd) internal pure returns (bytes memory cdPayload) {
+        // Explicit revert when args are not taking whole amount of words
+        require(rcd.args.length % 32 == 0, "Args don't take exactly N words");
+        cdPayload = abi.encodePacked(rcd.selector, rcd.args);
+    }
+
+    function castToCallData(RawCallData memory rcd) internal pure returns (CallData ptr) {
+        ptr = rcd.formatCallData().castToCallData();
+    }
+
+    function formatSystemMessage(RawSystemMessage memory rsm) internal pure returns (bytes memory smPayload) {
+        // Explicit revert when sender out of range
+        require(rsm.sender <= uint8(type(SystemEntity).max), "Sender out of range");
+        // Explicit revert when recipient out of range
+        require(rsm.recipient <= uint8(type(SystemEntity).max), "Recipient out of range");
+        smPayload = SystemMessageLib.formatSystemMessage(
+            SystemEntity(rsm.sender), SystemEntity(rsm.recipient), rsm.callData.formatCallData()
+        );
+    }
+
+    function castToSystemMessage(RawSystemMessage memory rsm) internal pure returns (SystemMessage ptr) {
+        ptr = rsm.formatSystemMessage().castToSystemMessage();
+    }
+
+    function boundEntities(RawSystemMessage memory rsm) internal pure {
+        rsm.sender = rsm.sender % (uint8(type(SystemEntity).max) + 1);
+        rsm.recipient = rsm.recipient % (uint8(type(SystemEntity).max) + 1);
+    }
+
+    function callPayload(RawSystemCall memory rsc) internal view returns (bytes memory scPayload) {
+        scPayload = rsc.systemMessage.callData.castToCallData().addPrefix(
+            abi.encode(rsc.rootSubmittedAt, rsc.origin, rsc.systemMessage.sender)
+        );
     }
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
