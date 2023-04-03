@@ -121,11 +121,10 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 		LogEvent(InfoLevel, "Starting livefilling contracts", LogData{"cid": c.chainID})
 		backfillGroup.Go(func() error {
 			timeout = time.Duration(0)
-
 			for {
 				select {
 				case <-backfillCtx.Done():
-					LogEvent(ErrorLevel, "Could not livefill contract, context canceled", LogData{"cid": c.chainID, "ca": contractBackfiller.contractConfig.Address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
+					LogEvent(ErrorLevel, "Couldn't livefill contract, context canceled", LogData{"cid": c.chainID, "ca": contractBackfiller.contractConfig.Address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
 
 					return fmt.Errorf("%s chain context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
 				case <-time.After(timeout):
