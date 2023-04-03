@@ -18,12 +18,13 @@ import {OriginMock} from "../mocks/OriginMock.t.sol";
 import {SummitMock} from "../mocks/SummitMock.t.sol";
 
 import {ProductionEvents} from "./events/ProductionEvents.t.sol";
+import {SuiteEvents} from "./events/SuiteEvents.t.sol";
 import {SynapseAgents} from "./SynapseAgents.t.sol";
 import {SynapseProofs} from "./SynapseProofs.t.sol";
 
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
-abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs {
+abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, SynapseProofs {
     uint256 private immutable deployMask;
 
     address internal originSynapse;
