@@ -82,18 +82,6 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
 
     /**
      * @dev Modifier for functions that are supposed to be called only from
-     * AgentManager on Synapse Chain.
-     * Note: has to be used alongside with `onlySystemRouter`
-     * See `onlySystemRouter` for details about the functions protected by such modifiers.
-     */
-    modifier onlySynapseChainAgentManager(uint32 callOrigin, SystemEntity systemCaller) {
-        _assertSynapseChain(callOrigin);
-        _assertEntityAllowed(AGENT_MANAGER, systemCaller);
-        _;
-    }
-
-    /**
-     * @dev Modifier for functions that are supposed to be called only from
      * System Contracts on remote chain with a defined minimum optimistic period.
      * Note: has to be used alongside with `onlySystemRouter`
      * See `onlySystemRouter` for details about the functions protected by such modifiers.
