@@ -98,7 +98,7 @@ var scribeURL = &cli.StringFlag{
 	Usage: "--scribe-url <url>",
 }
 
-func createExecutorParameters(c *cli.Context) (executorConfig config.Config, executorDB db.ExecutorDB, clients map[uint32]executor.Backend, err error) {
+func createExecutorParameters(c *cli.Context, metrics metrics.Handler) (executorConfig config.Config, executorDB db.ExecutorDB, clients map[uint32]executor.Backend, err error) {
 	executorConfig, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
 		return executorConfig, nil, nil, fmt.Errorf("failed to decode config: %w", err)
@@ -112,7 +112,7 @@ func createExecutorParameters(c *cli.Context) (executorConfig config.Config, exe
 		executorConfig.DBPrefix = ""
 	}
 
-	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix)
+	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix, metrics)
 	if err != nil {
 		return executorConfig, nil, nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
@@ -152,7 +152,7 @@ var ExecutorRunCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		metricsProvider := metrics.Get()
 
-		executorConfig, executorDB, clients, err := createExecutorParameters(c)
+		executorConfig, executorDB, clients, err := createExecutorParameters(c, metricsProvider)
 		if err != nil {
 			return err
 		}
@@ -252,10 +252,10 @@ var ExecutorRunCommand = &cli.Command{
 // InitExecutorDB initializes a database given a database type and path.
 //
 //nolint:cyclop
-func InitExecutorDB(ctx context.Context, database string, path string, tablePrefix string) (db.ExecutorDB, error) {
+func InitExecutorDB(ctx context.Context, database string, path string, tablePrefix string, metrics metrics.Handler) (db.ExecutorDB, error) {
 	switch {
 	case database == "sqlite":
-		sqliteStore, err := sqlite.NewSqliteStore(ctx, path)
+		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, metrics)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
 		}
@@ -267,7 +267,7 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
 
-			mysqlStore, err := mysql.NewMysqlStore(ctx, connString)
+			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, metrics)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
 			}
@@ -281,7 +281,7 @@ func InitExecutorDB(ctx context.Context, database string, path string, tablePref
 
 		mysql.NamingStrategy = namingStrategy
 
-		mysqlStore, err := mysql.NewMysqlStore(ctx, path)
+		mysqlStore, err := mysql.NewMysqlStore(ctx, path, metrics)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}

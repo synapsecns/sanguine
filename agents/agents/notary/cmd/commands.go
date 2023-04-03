@@ -130,7 +130,7 @@ var NotaryRunCommand = &cli.Command{
 
 			notaryConfig.ScribeURL = scribeClient.URL
 			notaryConfig.ScribePort = uint32(scribeClient.Port)
-			notary, err := notary.NewNotary(c.Context, notaryConfig)
+			notary, err := notary.NewNotary(c.Context, notaryConfig, metricsProvider)
 			if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
 				return fmt.Errorf("failed to create notary: %w", err)
 			}
