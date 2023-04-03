@@ -61,6 +61,8 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
 
     /// @inheritdoc InterfaceSystemRouter
     function receiveSystemMessage(uint32 origin_, uint32, uint256 rootSubmittedAt, bytes memory body) external {
+        // Only Destination can deliver messages
+        require(msg.sender == destination, "SystemRouter: !destination");
         // TODO: figure out if we need nonce to be passed here
         // This will revert if message body is not a system message
         SystemMessage systemMessage = body.castToSystemMessage();
