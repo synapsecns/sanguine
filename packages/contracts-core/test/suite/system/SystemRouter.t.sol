@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {SystemRouterHarness} from "../../harnesses/system/SystemRouterHarness.t.sol";
 import {InterfaceOrigin, SystemContractMock} from "../../mocks/OriginMock.t.sol";
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
 
@@ -49,6 +50,20 @@ contract SystemRouterTest is SynapseTest {
         );
     }
 
+    function test_sendSystemMessage_revert_sameDomain(RawSystemMessage memory rsm, RawHeader memory rh) public {
+        // Make sure sender/recipient are valid SystemEntity values
+        rsm.boundEntities();
+        address sender = systemAddress(SystemEntity(rsm.sender));
+        vm.expectRevert("Must be a remote destination");
+        vm.prank(sender);
+        systemRouter.systemCall(
+            DOMAIN_LOCAL,
+            rh.optimisticPeriod,
+            SystemEntity(rsm.recipient),
+            bytes.concat(SystemContractMock.remoteMockFunc.selector)
+        );
+    }
+
     // ═══════════════════════════════════════ TESTS: RECEIVING SYSTEM CALLS ═══════════════════════════════════════════
 
     function test_receiveSystemMessage(RawSystemCall memory rsc, bytes32 data) public {
@@ -75,6 +90,18 @@ contract SystemRouterTest is SynapseTest {
         systemRouter.receiveSystemMessage(
             rsc.origin, rsc.nonce, rsc.rootSubmittedAt, rsc.systemMessage.formatSystemMessage()
         );
+    }
+
+    function test_receiveSystemMessage_revert_contractNotSet() public {
+        systemRouter = new SystemRouterHarness(DOMAIN_LOCAL, origin, destination, address(0));
+        vm.expectRevert("System Contract not set");
+        systemRouter.systemPrank({
+            recipient: SystemEntity.AgentManager,
+            rootSubmittedAt: 0,
+            callOrigin: 0,
+            systemCaller: SystemEntity.AgentManager,
+            payload: bytes.concat(SystemContractMock.remoteMockFunc.selector)
+        });
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
