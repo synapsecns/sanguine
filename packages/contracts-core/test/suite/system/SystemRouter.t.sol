@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {InterfaceOrigin} from "../../mocks/OriginMock.t.sol";
+import {InterfaceOrigin, SystemContractMock} from "../../mocks/OriginMock.t.sol";
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
 
 import {SystemEntity, RawHeader, RawSystemCall, RawSystemMessage} from "../../utils/libs/SynapseStructs.t.sol";
@@ -38,6 +38,7 @@ contract SystemRouterTest is SynapseTest {
         address caller
     ) public {
         vm.assume(caller != address(lightManager) && caller != destination && caller != origin);
+        vm.assume(rh.destination != DOMAIN_LOCAL);
         rsm.callData.args = "";
         // Make sure sender/recipient are valid SystemEntity values
         rsm.boundEntities();
@@ -50,9 +51,9 @@ contract SystemRouterTest is SynapseTest {
 
     // ═══════════════════════════════════════ TESTS: RECEIVING SYSTEM CALLS ═══════════════════════════════════════════
 
-    function test_receiveSystemMessage(RawSystemCall memory rsc, uint256 words) public {
-        words = words % MAX_SYSTEM_CALL_WORDS;
-        rsc.systemMessage.callData.args = Random("receiveSystemMessage").nextBytesWords(words);
+    function test_receiveSystemMessage(RawSystemCall memory rsc, bytes32 data) public {
+        rsc.systemMessage.callData.selector = SystemContractMock.remoteMockFunc.selector;
+        rsc.systemMessage.callData.args = bytes.concat(data);
         // Make sure sender/recipient are valid SystemEntity values
         rsc.systemMessage.boundEntities();
         address recipient = systemAddress(SystemEntity(rsc.systemMessage.recipient));
