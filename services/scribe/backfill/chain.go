@@ -146,6 +146,11 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 					err = contractBackfiller.Backfill(backfillCtx, startHeight, *latestBlock)
 					if err != nil {
 						timeout = b.Duration()
+
+						// If the contract has been given a specific refresh rate, then use that refresh rate for error handling.
+						if contractBackfiller.contractConfig.RefreshRate > 1 {
+							timeout = time.Duration(contractBackfiller.contractConfig.RefreshRate) * time.Second
+						}
 						LogEvent(WarnLevel, "Could not backfill contract, retrying", LogData{"cid": c.chainID, "ca": contractBackfiller.contractConfig.Address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
 
 						continue
