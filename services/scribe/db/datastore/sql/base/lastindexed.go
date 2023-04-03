@@ -24,7 +24,7 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	dbTx : = s.DB().WithContext(ctx).
+	dbTx := s.DB().WithContext(ctx).
 		Clauses(clause.Where{
 			Exprs: []clause.Expression{
 				clause.And(
