@@ -173,6 +173,7 @@ class SynapseSDK {
       destQuery
     )
   }
+  // TODO: add gas from bridge
 }
 
 export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS }
