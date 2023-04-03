@@ -8,11 +8,10 @@ import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 /**
  * @dev Implementation of IMessageRecipient interface, to be used as the recipient of
  * base messages passed by the Destination contract.
- * BaseClient could be used as a backbone for cross-chain apps, assuming:
- * - A single app contract per chain (aka trusted sender)
- * - Only app contracts from other chains are able to send messages to app
- * - App is responsible for enforcing optimistic period
- *
+ * BaseClient could be used as a backbone for cross-chain apps:
+ * - A single BaseClient contract per chain (aka trusted sender)
+ * - Only BaseClient instances from other chains are able to send messages to this contract
+ * - BaseClient enforces a common optimistic period for all types of messages
  * Note: BaseClient is forever stateless, meaning it can be potentially used as a parent
  * for the upgradeable contract without worrying about storage collision.
  */
@@ -40,12 +39,18 @@ abstract contract BaseClient is IMessageRecipient {
     ) external payable {
         require(msg.sender == destination, "BaseClient: !destination");
         require(sender == trustedSender(origin_) && sender != bytes32(0), "BaseClient: !trustedSender");
-        /// @dev root timestamp wasn't checked => potentially unsafe
-        /// No need to pass both origin and sender: sender == trustedSender(origin)
-        _handleUnsafe(origin_, nonce, rootSubmittedAt, content);
+        require(block.timestamp >= rootSubmittedAt + optimisticPeriod(), "BaseClient: !optimisticPeriod");
+        // All security checks are passed, handle the message content
+        _receiveBaseMessage(origin_, nonce, content);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /**
+     * @dev Period of time since the root was submitted to Destination. Once this period is over,
+     * root can be used for proving and executing a message though this Client.
+     */
+    function optimisticPeriod() public view virtual returns (uint32);
 
     /**
      * @dev Address of the trusted sender on the destination chain.
@@ -58,31 +63,25 @@ abstract contract BaseClient is IMessageRecipient {
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /**
-     * @dev Child contracts should implement the handling logic.
+     * @dev Child contracts should implement the logic for receiving a Base Message.
      * At this point it has been confirmed:
-     * - Destination called this.handle()
-     * - Sender on origin chain is a trusted sender
-     * Note: no checks have been done for root timestamp, make sure to enforce optimistic period
-     * to protect against executed fake messages on Destination. Hence the "Unsafe" in the name.
+     *  - receiveBaseMessage() was called by Destination (i.e. this is a legit base message)
+     *  - Message sender on origin chain is a trusted sender
+     *  - Optimistic period for the message have passed
      */
-    function _handleUnsafe(uint32 origin_, uint32 nonce, uint256 rootSubmittedAt, bytes memory content)
-        internal
-        virtual;
+    function _receiveBaseMessage(uint32 origin_, uint32 nonce, bytes memory content) internal virtual;
 
     /**
      * @dev Sends a message to given destination chain.
      * @param destination_          Domain of the destination chain
-     * @param optimisticSeconds     Optimistic period for message execution on destination chain
      * @param tipsPayload           Payload with information about paid tips
      * @param content               The message content
      */
-    function _send(uint32 destination_, uint32 optimisticSeconds, bytes memory tipsPayload, bytes memory content)
-        internal
-    {
+    function _send(uint32 destination_, bytes memory tipsPayload, bytes memory content) internal {
         bytes32 recipient = trustedSender(destination_);
         require(recipient != bytes32(0), "BaseClient: !recipient");
         InterfaceOrigin(origin).sendBaseMessage{value: msg.value}(
-            destination_, recipient, optimisticSeconds, tipsPayload, content
+            destination_, recipient, optimisticPeriod(), tipsPayload, content
         );
     }
 }
