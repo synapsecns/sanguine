@@ -30,19 +30,14 @@ abstract contract BaseClient is IMessageRecipient {
 
     // ═══════════════════════════════════════════ RECEIVE BASE MESSAGES ═══════════════════════════════════════════════
 
-    /**
-     * @notice  Handles an incoming message.
-     * @dev     Can only be called by chain's Destination.
-     *          Message can only be sent from a trusted sender on the origin chain.
-     * @param origin_           Domain of the remote chain, where message originated
-     * @param nonce             Unique identifier for the message from origin to destination chain
-     * @param sender            Sender of the message on the origin chain
-     * @param rootSubmittedAt   Time when merkle root (used for proving this message) was submitted
-     * @param content           The message content
-     */
-    function handle(uint32 origin_, uint32 nonce, bytes32 sender, uint256 rootSubmittedAt, bytes memory content)
-        external
-    {
+    /// @inheritdoc IMessageRecipient
+    function receiveBaseMessage(
+        uint32 origin_,
+        uint32 nonce,
+        bytes32 sender,
+        uint256 rootSubmittedAt,
+        bytes memory content
+    ) external payable {
         require(msg.sender == destination, "BaseClient: !destination");
         require(sender == trustedSender(origin_) && sender != bytes32(0), "BaseClient: !trustedSender");
         /// @dev root timestamp wasn't checked => potentially unsafe
