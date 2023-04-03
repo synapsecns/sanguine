@@ -54,6 +54,8 @@ func NewContractBackfiller(chainConfig config.ChainConfig, contractConfig config
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize cache: %w", err)
 	}
+
+	// Default refresh rate is instant
 	if contractConfig.RefreshRate == 0 {
 		contractConfig.RefreshRate = 1
 	}
