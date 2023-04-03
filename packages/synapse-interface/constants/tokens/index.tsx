@@ -161,9 +161,6 @@ const getSwapPriorityRanking = () => {
 export const SWAPABLE_TOKENS = getSwapableTokens()
 export const POOL_PRIORITY_RANKING = getSwapPriorityRanking()
 
-console.log('SWAPABLE_TOKENS', SWAPABLE_TOKENS)
-
-console.log('POOL_PRIORITY_RANKING', POOL_PRIORITY_RANKING)
 // POOLS
 const getPoolsByChain = (displayOnly: boolean): TokensByChain => {
   let poolTokens: TokensByChain = {}
@@ -250,29 +247,3 @@ const getStakingMap = () => {
   return STAKING_MAP_TOKENS
 }
 export const STAKING_MAP_TOKENS = getStakingMap()
-
-// The numbers in staking maps are significant contract wise, important to leave as is
-
-console.log('POOLS_BY_CHAIN', POOLS_BY_CHAIN)
-console.log('DISPLAY_POOLS_BY_CHAIN', DISPLAY_POOLS_BY_CHAIN)
-
-console.log('POOL_CHAINS_BY_NAME', POOL_CHAINS_BY_NAME)
-console.log('USD_POOLS_BY_CHAIN', USD_POOLS_BY_CHAIN)
-console.log('ETH_POOLS_BY_CHAIN', ETH_POOLS_BY_CHAIN)
-
-// export const Sw = Object.values(all).filter( )
-// export const STAKABLE_TOKENS = {
-//   ...POOLS_BY_CHAIN,
-//   [ChainId.ETH]: [...POOLS_BY_CHAIN[ChainId.ETH], SYN_ETH_SUSHI_TOKEN],
-// }
-
-// // The numbers in staking maps are significant contract wise, important to leave as is
-// let STAKING_MAP_TOKENS = {}
-// for (const [chainId, arr] of Object.entries(STAKABLE_TOKENS)) {
-//   STAKING_MAP_TOKENS[chainId] = {}
-//   for (const token of arr) {
-//     STAKING_MAP_TOKENS[chainId][token.poolName] = token
-//   }
-// }
-
-// export { STAKING_MAP_TOKENS }

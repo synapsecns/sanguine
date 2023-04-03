@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSettings } from '@hooks/useSettings'
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
@@ -15,16 +15,20 @@ import { PageHeader } from '@components/PageHeader'
 import { CoinSlideOver } from '@components/misc/CoinSlideOver'
 import { NetworkSlideOver } from '@components/misc/NetworkSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
+import { Zero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
 import SettingsSlideOver from './SettingsSlideOver'
 import { DestinationAddressInput } from './DestinationAddressInput'
 import BridgeInputContainer from './BridgeInputContainer'
 import { useSynapseContext } from '@/utils/SynapseProvider'
-
+// import { writeContract, prepareSendTransaction } from '@wagmi/core'
+import { fetchSigner } from '@wagmi/core'
+// import { optimism } from '@wagmi/core/chains'
 import { SECTION_TRANSITION_PROPS } from '@styles/transitions'
+import { ethers, Contract } from 'ethers'
+import { erc20ABI } from 'wagmi'
 // import { useGasDropAmount } from '@hooks/useGasDropAmount'
-
-export default function BridgeCard({
+const BridgeCard = ({
   error,
   address,
   bridgeQuote,
@@ -49,7 +53,7 @@ export default function BridgeCard({
   bridgeQuote: BridgeQuote
   fromInput: { string: string; bigNum: BigNumber }
   fromToken: Token
-  fromTokens: { token: Token; balance: number }[]
+  fromTokens: { token: Token; balance: BigNumber }[]
   fromChainId: number
   toToken: Token
   toChainId: number
@@ -62,19 +66,29 @@ export default function BridgeCard({
   onSelectFromChain: (chainId: number) => void
   onSelectToChain: (chainId: number) => void
   setDestinationAddress: (address: string) => void
-}) {
+}) => {
   const SynapseSDK = useSynapseContext()
   // const [settings, setSettings] = useSettings()
   const [displayType, setDisplayType] = useState('')
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
+  const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
 
+  useEffect(() => {
+    if (fromTokens && fromToken) {
+      setFromTokenBalance(
+        fromTokens.filter((token) => token.token === fromToken)[0]?.balance
+          ? fromTokens.filter((token) => token.token === fromToken)[0]?.balance
+          : Zero
+      )
+    }
+  }, [fromToken, fromTokens])
   const tokenAddr = fromToken.addresses[fromChainId as keyof Token['addresses']]
-  let fromTokenBalance = fromTokens.filter(
-    (token) => token.token === fromToken
-  )[0]?.balance
+
+  console.log('fromTokens', 'fromTokens', fromTokens, fromTokenBalance)
 
   const fromArgs = {
     address,
+    fromTokenBalance,
     isOrigin: true,
     chains: toBridgeableChains,
     tokens: fromTokens,
@@ -112,18 +126,17 @@ export default function BridgeCard({
     deadlineMinutes,
     setDeadlineMinutes,
   }
-  const deleteme = async () => {
-    await console.log('deleteme')
-  }
-  const approvalBtn = (
-    <TransactionButton
-      onClick={deleteme}
-      label={`Approve ${fromToken.symbol}`}
-      pendingLabel={`Approving ${fromToken.symbol}  `}
-    />
-  )
 
-  const isFromBalanceEnough = fromTokenBalance > Number(fromInput.string)
+  // const approvalBtn = (
+  //   <TransactionButton
+  //     onClick={}
+  //     label={`Approve ${fromToken.symbol}`}
+  //     pendingLabel={`Approving ${fromToken.symbol}  `}
+  //   />
+  // )
+
+  console.log('fromTokenBalance', fromTokenBalance)
+  const isFromBalanceEnough = fromTokenBalance?.gt(fromInput.bigNum)
 
   let destAddrNotValid
   let btnLabel
@@ -135,7 +148,7 @@ export default function BridgeCard({
     btnLabel = `Insufficient ${fromToken.symbol} Balance`
   } else if (bridgeQuote.exchangeRate.eq(0) && !fromInput.bigNum.eq(0)) {
     btnLabel = `Amount must be greater than fee`
-  } else if (fromChainId == toChainId) {
+  } else if (fromChainId === toChainId) {
     btnLabel = 'Why are you bridging to the same network?'
   } else if (
     destinationAddress &&
@@ -165,22 +178,91 @@ export default function BridgeCard({
   }
 
   const disabled =
-    fromChainId == toChainId ||
+    fromChainId === toChainId ||
     bridgeQuote.outputAmount.eq(0) ||
     !isFromBalanceEnough ||
     error != null ||
     destAddrNotValid
 
   const executeBridge = async () => {
-    await SynapseSDK.bridge(
+    const wallet = await fetchSigner({
+      chainId: fromChainId,
+    })
+    console.log('wallet', wallet)
+    const erc20 = new Contract(
+      fromToken.addresses[fromChainId],
+      erc20ABI,
+      wallet
+    )
+    const approvalAddress = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
+    const allowance = await erc20.allowance(
+      await wallet.getAddress(),
+      approvalAddress
+    )
+    console.log('allowance', allowance)
+    if (allowance.lt(fromInput.bigNum)) {
+      const approveTx = await erc20.approve(approvalAddress, fromInput.bigNum, {
+        gasPrice: await wallet.provider.getGasPrice(),
+      })
+      try {
+        await approveTx.wait()
+        console.log(`Transaction mined succesfully: ${approveTx.hash}`)
+      } catch (error) {
+        console.log(`Transaction failed with error: ${error}`)
+      }
+    }
+    const data = await SynapseSDK.bridge(
       address, //To Address
-      42161,
-      43114,
-      '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8', // To token Address **
-      BigNumber.from('20000000'),
+      fromChainId,
+      toChainId,
+      tokenAddr, // To token Address **
+      fromInput.bigNum,
       bridgeQuote.quotes.originQuery,
       bridgeQuote.quotes.destQuery
     )
+      .then((res) => {
+        console.log('bridge', res, BigNumber.from(res.data))
+        const tx = res
+        fetchSigner({
+          chainId: fromChainId,
+        })
+          .then((signer) => {
+            console.log('fetchSigner', signer)
+            signer
+              .sendTransaction(tx)
+              .then((res) => {
+                console.log('sendTransaction', res)
+              })
+              .catch((err) => console.log('sendTransaction', err))
+
+            return res
+          })
+          .catch((err) => console.log('fetchSigner', err))
+      })
+      // .then((res) => {
+      //   console.log('bridge', res, BigNumber.from(res.data))
+      //   prepareSendTransaction({
+      //     request: {
+      //       to: res.to,
+      //       value: BigNumber.from(res.data),
+      //     },
+      //   })
+      //     .then((res) => {
+      //       console.log('prepareSendTransaction', res)
+      //       sendTransaction(res)
+      //         .then((res) => {
+      //           console.log('sendTransaction', res)
+      //         })
+      //         .catch((err) => console.log('sendTransaction', err))
+      //     })
+      //     .catch((err) => console.log('prepareSendTransaction', err))
+      //   return res
+      // })
+      .catch((err) => {
+        console.log('bridge', err)
+      })
+
+    console.log('data', data)
   }
   const swapBtn = (
     <TransactionButton
@@ -398,3 +480,5 @@ export default function BridgeCard({
 //     </div>
 //   )
 // }
+
+export default BridgeCard

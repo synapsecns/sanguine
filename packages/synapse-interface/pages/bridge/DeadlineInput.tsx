@@ -35,7 +35,6 @@ export function DeadlineInput({
             `}
           placeholder="Custom deadline..."
           onChange={(e) => {
-            console.log(e.target.value)
             setDeadlineMinutes(e.target.value)
           }}
           value={deadlineMinutes}

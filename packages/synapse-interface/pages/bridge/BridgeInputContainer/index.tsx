@@ -2,7 +2,6 @@ import _ from 'lodash'
 import { Zero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
 import { Token } from '@/utils/types'
-import { useBalance } from 'wagmi'
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
 import { BigNumber } from '@ethersproject/bignumber'
@@ -22,6 +21,7 @@ export default function BridgeInputContainer({
   onChangeAmount,
   setDisplayType,
   handleChainFlip,
+  fromTokenBalance,
 }: {
   address: `0x${string}`
   isOrigin: boolean
@@ -34,31 +34,17 @@ export default function BridgeInputContainer({
   handleChainFlip?: () => void
   onChangeAmount?: (v: string) => void
   onChangeChain: (v: number) => void
+  fromTokenBalance?: BigNumber
 }) {
-  const tokenAddr = selectedToken.addresses[chainId as keyof Token['addresses']]
-
-  let tokenBalance: BigNumber
-  if (!tokenAddr) {
-    const { data: rawTokenBalance } = useBalance({
-      chainId,
-      address,
-    })
-    tokenBalance = rawTokenBalance?.value ?? Zero
-  } else {
-    const { data: rawTokenBalance } = useBalance({
-      chainId,
-      address,
-      token: `0x${tokenAddr.slice(2)}`,
-    })
-    tokenBalance = rawTokenBalance?.value ?? Zero
+  let formattedBalance = ''
+  if (fromTokenBalance) {
+    formattedBalance = formatBNToString(
+      fromTokenBalance,
+      selectedToken.decimals[chainId as keyof Token['decimals']],
+      4
+    )
   }
-
-  const formattedBalance = formatBNToString(
-    tokenBalance,
-    selectedToken.decimals[chainId as keyof Token['decimals']],
-    4
-  )
-
+  console.log(fromTokenBalance, `fromTokenBalance`)
   const isConnected = address !== null
 
   function onChange(e: any) {
@@ -72,7 +58,7 @@ export default function BridgeInputContainer({
   function onClickBalance() {
     onChangeAmount(
       formatBNToString(
-        tokenBalance,
+        fromTokenBalance,
         selectedToken.decimals[chainId as keyof Token['decimals']],
         4
       )

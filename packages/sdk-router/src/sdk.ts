@@ -8,6 +8,12 @@ import { PopulatedTransaction } from 'ethers'
 import { BigintIsh } from './constants'
 import { SynapseRouter } from './synapseRouter'
 
+const ETH_NATIVE = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+
+const handleNativeToken = (tokenAddr: string) => {
+  return tokenAddr === '' || tokenAddr === AddressZero ? ETH_NATIVE : tokenAddr
+}
+
 type SynapseRouters = {
   [key: number]: SynapseRouter
 }
@@ -56,6 +62,8 @@ class SynapseSDK {
     originQuery?: Query | undefined
     destQuery?: Query | undefined
   }> {
+    tokenOut = handleNativeToken(tokenOut)
+    tokenIn = handleNativeToken(tokenIn)
     let originQuery
     let destQuery
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
@@ -150,6 +158,7 @@ class SynapseSDK {
       rawParams: BytesLike
     }
   ): Promise<PopulatedTransaction> {
+    token = handleNativeToken(token)
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
     return originRouter.routerContract.populateTransaction.bridge(
       to,
@@ -161,5 +170,43 @@ class SynapseSDK {
     )
   }
 }
+//   public async bridgeWagmi(
+//     to: string,
+//     originChainId: number,
+//     destChainId: number,
+//     token: string,
+//     amount: BigintIsh,
+//     originQuery: {
+//       swapAdapter: string
+//       tokenOut: string
+//       minAmountOut: BigintIsh
+//       deadline: BigintIsh
+//       rawParams: BytesLike
+//     },
+//     destQuery: {
+//       swapAdapter: string
+//       tokenOut: string
+//       minAmountOut: BigintIsh
+//       deadline: BigintIsh
+//       rawParams: BytesLike
+//     }
+//   ): Promise<PrepareWriteContractResult> {
+//     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
+//     const { sendTransaction } = await writeContract({
+//       mode: 'recklesslyUnprepared',
+//       address: '0xecb504d39723b0be0e3a9aa33d646642d1051ee1',
+//       abi: wagmigotchiABI,
+//       functionName: 'feed',
+//     })
+//     return originRouter.routerContract.populateTransaction.bridge(
+//       to,
+//       destChainId,
+//       token,
+//       amount,
+//       originQuery,
+//       destQuery
+//     )
+//   }
+// }
 
 export { SynapseSDK }

@@ -1,6 +1,6 @@
 import { fetchBalance } from '@wagmi/core'
 import { Token } from '@/utils/types'
-import { Zero } from '@ethersproject/constants'
+import { Zero, AddressZero } from '@ethersproject/constants'
 
 export const sortByVisibilityRank = (tokens: Token[]) => {
   if (tokens === undefined) {
@@ -30,21 +30,22 @@ export const sortByTokenBalance = async (
       i++
       continue
     }
-    let tokenAddr = tokens[i].addresses[chainId as keyof Token['addresses']]
+    const tokenAddr = tokens[i].addresses[chainId as keyof Token['addresses']]
 
     let rawTokenBalance: any
     // Check for native token
-    if (tokenAddr === '') {
+    console.log('tokenAddr', tokenAddr, AddressZero, tokenAddr === AddressZero)
+    if (tokenAddr === '' || tokenAddr === AddressZero) {
       const data = await fetchBalance({
-        address: address,
-        chainId: chainId,
+        address,
+        chainId,
       })
       rawTokenBalance = data
     } else if (tokenAddr?.length > 0) {
       const data = await fetchBalance({
-        address: address,
+        address,
         token: `0x${tokenAddr.slice(2)}`,
-        chainId: chainId,
+        chainId,
       })
       rawTokenBalance = data
     }
@@ -65,13 +66,6 @@ export const sortByTokenBalance = async (
     }
     i++
   }
-  console.log(
-    'zeroTokensWithBalances',
-    zeroTokensWithBalances,
-    'tokensWithBalances',
-    tokensWithBalances
-  )
-  let tokenList = zeroTokensWithBalances.concat(tokensWithBalances)
-  console.log('tokenBalances', tokenList)
-  return tokenList
+
+  return zeroTokensWithBalances.concat(tokensWithBalances)
 }

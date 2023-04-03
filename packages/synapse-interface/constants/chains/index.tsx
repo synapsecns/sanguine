@@ -36,5 +36,4 @@ export const CHAIN_IDS = getids() // used to be ids
 export const CHAINS_BY_ID = getChainsByID()
 export const ORDERED_CHAINS_BY_ID = CHAINS_ARR.map((chain) => chain.id)
 
-console.log('CHAINS_ARR', CHAINS_ARR)
 // export const INVERTED_CHAIN_IDS =  Object.fromEntries(CHAIN_IDS).map((k, v) => v, k)// used to be INVERTED_CHAIN_ID_MAP

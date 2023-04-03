@@ -30,7 +30,7 @@ import {
 } from '@/constants/bridge'
 // import BridgeWatcher from './BridgeWatcher'
 
-export default function BridgePage({ address }: { address: `0x${string}` }) {
+const BridgePage = ({ address }: { address: `0x${string}` }) => {
   const router = useRouter()
   const SynapseSDK = useSynapseContext()
 
@@ -90,6 +90,8 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
         toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
         fromChainId
       )
+    resetRates()
+
     setToChainId(newToChain)
     setFromToken(tempFromToken)
     setToToken(bridgeableToken)
@@ -143,6 +145,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
       delta: Zero,
       quotes: { originQuery: null, destQuery: null },
     })
+    setFromInput({ string: '', bigNum: Zero })
   }
   const onChangeFromAmount = (value: string) => {
     if (
@@ -151,9 +154,11 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
         fromToken[fromChainId as keyof Token['decimals']]
       )
     ) {
+      const ee = stringToBigNum(value, fromToken.decimals[fromChainId])
+      console.log('eeeeee', ee.toString())
       setFromInput({
         string: value,
-        bigNum: stringToBigNum(value, fromToken.decimals[fromChainId]),
+        bigNum: ee,
       })
     }
   }
@@ -271,7 +276,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
         toChainId
       )
       setFromChainId(toChainId)
-
+      resetRates()
       setToChainId(newToChain)
       setFromToken(tempFromToken)
       setToToken(bridgeableToken)
@@ -323,6 +328,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
         bridgeableTokens,
         bridgeableChains,
       } = handleNewFromToken(tempFromToken, chainId, toToken.symbol, chainId)
+      resetRates()
 
       setFromChainId(chainId)
       setToChainId(newToChain)
@@ -348,7 +354,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
   }
 
   const handleTokenChange = (token: Token, type: 'from' | 'to') => {
-    if (type == 'from') {
+    if (type === 'from') {
       console.log('from token change', token, token.swapableType, token.symbol)
       setFromToken(token)
       const {
@@ -357,6 +363,8 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
         bridgeableTokens,
         bridgeableChains,
       } = handleNewFromToken(token, toChainId, toToken.symbol, fromChainId)
+      resetRates()
+
       setToChainId(newToChain)
       setToToken(bridgeableToken)
       setToBridgeableChains(bridgeableChains)
@@ -378,7 +386,7 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
 
   const getQuote = async () => {
     const toDecimals = BigNumber.from(10).pow(toToken.decimals[toChainId])
-
+    console.log('jshdkahdk', fromInput.bigNum.toString())
     SynapseSDK.bridgeQuote(
       fromChainId,
       toChainId,
@@ -426,6 +434,19 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
       fromInput
     ) {
       getQuote()
+    } else {
+      console.log(
+        'KJHKJHJKHJKHJK',
+        fromChainId,
+        toChainId,
+        fromToken,
+        toToken,
+        fromToken.addresses[fromChainId],
+        toToken.addresses[toChainId],
+        String(fromToken.addresses[fromChainId]),
+        String(toToken.addresses[toChainId]),
+        fromInput
+      )
     }
   }, [fromToken, toToken, fromInput, fromChainId, toChainId])
 
@@ -495,3 +516,4 @@ export default function BridgePage({ address }: { address: `0x${string}` }) {
 //     </>
 //   )
 // }
+export default BridgePage

@@ -92,6 +92,7 @@ export default function App({ Component, pageProps }: AppProps) {
     const rpc: EthersProvider = new JsonRpcProvider(
       chain.rpcUrls.default.http[0]
     )
+    rpc['projectId'] = chain.id
     synapseProviders.push(rpc)
   })
   return (
