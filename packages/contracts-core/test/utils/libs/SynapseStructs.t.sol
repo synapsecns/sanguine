@@ -48,6 +48,15 @@ struct RawSystemMessage {
 
 using CastLib for RawSystemMessage global;
 
+struct RawSystemCall {
+    uint32 origin;
+    uint32 nonce;
+    uint256 rootSubmittedAt;
+    RawSystemMessage systemMessage;
+}
+
+using CastLib for RawSystemCall global;
+
 struct RawBaseMessage {
     bytes32 sender;
     bytes32 recipient;
@@ -199,6 +208,17 @@ library CastLib {
 
     function castToSystemMessage(RawSystemMessage memory rsm) internal pure returns (SystemMessage ptr) {
         ptr = rsm.formatSystemMessage().castToSystemMessage();
+    }
+
+    function boundEntities(RawSystemMessage memory rsm) internal pure {
+        rsm.sender = rsm.sender % (uint8(type(SystemEntity).max) + 1);
+        rsm.recipient = rsm.recipient % (uint8(type(SystemEntity).max) + 1);
+    }
+
+    function callPayload(RawSystemCall memory rsc) internal view returns (bytes memory scPayload) {
+        scPayload = rsc.systemMessage.callData.castToCallData().addPrefix(
+            abi.encode(rsc.rootSubmittedAt, rsc.origin, rsc.systemMessage.sender)
+        );
     }
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
