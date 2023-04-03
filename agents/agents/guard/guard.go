@@ -23,6 +23,7 @@ type Guard struct {
 	summitDomain       domains.DomainClient
 	refreshInterval    time.Duration
 	summitLatestStates map[uint32]types.State
+	// TODO: change to metrics type
 	originLatestStates map[uint32]types.State
 	handler            metrics.Handler
 }
@@ -116,6 +117,7 @@ func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
 			))
 		}
 		if latestState != nil {
+			// TODO: if overwriting, end span and start a new one
 			g.originLatestStates[originID] = latestState
 		}
 
@@ -142,6 +144,7 @@ func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
 			// Here this guard already submitted this state
 			continue
 		}
+		// TODO: add event for submitting that state
 		statesToSubmit[originID] = originLatest
 	}
 	snapshotStates := make([]types.State, 0, len(statesToSubmit))

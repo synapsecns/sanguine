@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"os"
 	"sync"
@@ -40,9 +41,11 @@ func (t *DBSuite) SetupTest() {
 
 	t.logIndex.Store(0)
 
+	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+
 	var err error
 	t.Metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
-	t.Require().Nil(err)
+	Nil(t.T(), err)
 
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.Metrics)
 	Nil(t.T(), err)
