@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 
@@ -17,28 +17,18 @@ import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
  * for the upgradeable contract without worrying about storage collision.
  */
 abstract contract BaseClient is IMessageRecipient {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              IMMUTABLES                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // local chain Origin: used for sending messages
+    /// @notice Local chain Origin: used for sending messages
     address public immutable origin;
 
-    // local chain Destination: used for receiving messages
+    /// @notice Local chain Destination: used for receiving messages
     address public immutable destination;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             CONSTRUCTOR                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     constructor(address origin_, address destination_) {
         origin = origin_;
         destination = destination_;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          EXTERNAL FUNCTIONS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════ RECEIVE BASE MESSAGES ═══════════════════════════════════════════════
 
     /**
      * @notice  Handles an incoming message.
@@ -60,9 +50,7 @@ abstract contract BaseClient is IMessageRecipient {
         _handleUnsafe(origin_, nonce, rootSubmittedAt, content);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                VIEWS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**
      * @dev Address of the trusted sender on the destination chain.
@@ -72,9 +60,7 @@ abstract contract BaseClient is IMessageRecipient {
      */
     function trustedSender(uint32 destination) public view virtual returns (bytes32);
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          INTERNAL FUNCTIONS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /**
      * @dev Child contracts should implement the handling logic.
