@@ -11,7 +11,6 @@ import {SystemEntity, RawSystemMessage} from "../../utils/libs/SynapseStructs.t.
 contract SystemMessageLibraryTest is SynapseLibraryTest {
     using TypedMemView for bytes;
 
-    uint256 internal constant MIN_ARGUMENT_WORDS = 3;
     uint256 internal constant OFFSET_ARGUMENTS = 6;
 
     SystemMessageHarness internal libHarness;
@@ -27,7 +26,7 @@ contract SystemMessageLibraryTest is SynapseLibraryTest {
         rsm.sender = uint8(bound(rsm.sender, 0, uint8(type(SystemEntity).max)));
         rsm.recipient = uint8(bound(rsm.recipient, 0, uint8(type(SystemEntity).max)));
         // Set a sensible limit for the total payload length
-        words = bound(words, MIN_ARGUMENT_WORDS, MAX_SYSTEM_CALL_WORDS);
+        words = words % MAX_SYSTEM_CALL_WORDS;
         rsm.callData.args = Random("args").nextBytesWords(words);
         bytes memory callData = rsm.callData.formatCallData();
         // Format the system message
@@ -43,13 +42,8 @@ contract SystemMessageLibraryTest is SynapseLibraryTest {
     }
 
     function test_isSystemMessage(uint8 length) public {
-        // Payload having less bytes than SystemMessage's first element (uint8 recipient)
-        // should be correctly treated as unformatted (i.e. with no reverts)
         bytes memory payload = new bytes(length);
-        checkCastToSystemMessage({
-            payload: payload,
-            isSystemMessage: length % 32 == OFFSET_ARGUMENTS && length / 32 >= MIN_ARGUMENT_WORDS
-        });
+        checkCastToSystemMessage({payload: payload, isSystemMessage: length % 32 == OFFSET_ARGUMENTS});
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
