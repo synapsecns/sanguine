@@ -114,8 +114,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     function _executeSystemMessage(uint32 origin, uint32 nonce, uint256 rootSubmittedAt, bytes29 body) internal {
         // TODO: introduce incentives for executing System Messages?
         // Forward system message to System Router
-        // TODO: this should be a separate function to receive system messages
-        IMessageRecipient(address(systemRouter)).handle(origin, nonce, SYSTEM_ROUTER, rootSubmittedAt, body.clone());
+        systemRouter.receiveSystemMessage(origin, nonce, rootSubmittedAt, body.clone());
     }
 
     // ══════════════════════════════════════ INTERNAL LOGIC: MESSAGE PROVING ══════════════════════════════════════════

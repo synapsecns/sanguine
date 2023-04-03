@@ -8,9 +8,15 @@ import {TypedMemView} from "./TypedMemView.sol";
 /// - First 4 bytes represent the function selector.
 /// - 32 * N bytes represent N words that function arguments occupy.
 type CallData is bytes29;
-/// @dev Signature is a memory view over a "65 bytes" array representing a ECDSA signature.
 
+/// @dev Attach library functions to CallData
+using ByteString for CallData global;
+
+/// @dev Signature is a memory view over a "65 bytes" array representing a ECDSA signature.
 type Signature is bytes29;
+
+/// @dev Attach library functions to Signature
+using ByteString for Signature global;
 
 library ByteString {
     using TypedMemView for bytes;
@@ -49,9 +55,7 @@ library ByteString {
         return payload.ref({newType: 0});
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              SIGNATURE                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════════ SIGNATURE ═════════════════════════════════════════════════════
 
     /**
      * @notice Constructs the signature payload from the given values.
@@ -91,9 +95,7 @@ library ByteString {
         return Signature.unwrap(signature);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SIGNATURE SLICING                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ SIGNATURE SLICING ═════════════════════════════════════════════════
 
     /// @notice Unpacks signature payload into (r, s, v) parameters.
     /// @dev Make sure to verify signature length with isSignature() beforehand.
@@ -105,9 +107,36 @@ library ByteString {
         v = uint8(view_.indexUint({index_: OFFSET_V, bytes_: 1}));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               CALLDATA                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════════ CALLDATA ══════════════════════════════════════════════════════
+
+    /**
+     * @notice Constructs the calldata with the modified arguments:
+     * the existing arguments are prepended with the arguments from the prefix.
+     * @dev Given:
+     *  - `calldata = abi.encodeWithSelector(foo.selector, d, e);`
+     *  - `prefix = abi.encode(a, b, c);`
+     *  - `a`, `b`, `c` are arguments of static type (i.e. not dynamically sized ones)
+     *      Then:
+     *  - Function will return abi.encodeWithSelector(foo.selector, a, c, c, d, e)
+     *  - Returned calldata will trigger `foo(a, b, c, d, e)` when used for a contract call.
+     * Note: for clarification as to what types are considered static, see
+     * https://docs.soliditylang.org/en/latest/abi-spec.html#formal-specification-of-the-encoding
+     * @param callData  Calldata that needs to be modified
+     * @param prefix    ABI-encoded arguments to use as the first arguments in the new calldata
+     * @return Modified calldata having prefix as the first arguments.
+     */
+    function addPrefix(CallData callData, bytes memory prefix) internal view returns (bytes memory) {
+        // Prefix should occupy a whole amount of words in memory
+        require(_fullWords(prefix.length), "Incorrect prefix");
+        bytes29[] memory views = new bytes29[](3);
+        // Use payload's function selector
+        views[0] = callData.callSelector();
+        // Use prefix as the first arguments
+        views[1] = castToRawBytes(prefix);
+        // Use payload's remaining arguments
+        views[2] = callData.arguments();
+        return TypedMemView.join(views);
+    }
 
     /**
      * @notice Returns a CallData view over for the given payload.
@@ -134,10 +163,8 @@ library ByteString {
         uint256 length = view_.len();
         // Calldata should at least have a function selector
         if (length < SELECTOR_LENGTH) return false;
-        // The remainder of the calldata should be exactly N words (N >= 0), i.e.
-        // (length - SELECTOR_LENGTH) % 32 == 0
-        // We're using logical AND here to speed it up a bit
-        return (length - SELECTOR_LENGTH) & 31 == 0;
+        // The remainder of the calldata should be exactly N memory words (N >= 0)
+        return _fullWords(length - SELECTOR_LENGTH);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -145,9 +172,7 @@ library ByteString {
         return CallData.unwrap(callData);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           CALLDATA SLICING                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ CALLDATA SLICING ══════════════════════════════════════════════════
 
     /**
      * @notice Returns amount of memory words (32 byte chunks) the function arguments
@@ -175,5 +200,13 @@ library ByteString {
         // Get the underlying memory view
         bytes29 view_ = unwrap(callData);
         return view_.sliceFrom({index_: OFFSET_ARGUMENTS, newType: 0});
+    }
+
+    // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
+
+    /// @dev Checks if length is full amount of memory words (32 bytes).
+    function _fullWords(uint256 length) internal pure returns (bool) {
+        // The equivalent of length % 32 == 0
+        return length & 31 == 0;
     }
 }

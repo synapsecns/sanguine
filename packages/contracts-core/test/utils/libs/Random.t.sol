@@ -7,18 +7,7 @@ struct Random {
     bytes32 seed;
 }
 
-using {
-    RandomLib.next,
-    RandomLib.nextBytes,
-    RandomLib.nextUint256,
-    RandomLib.nextUint160,
-    RandomLib.nextUint40,
-    RandomLib.nextUint32,
-    RandomLib.nextUint8,
-    RandomLib.nextAddress,
-    RandomLib.nextState,
-    RandomLib.nextAttestation
-} for Random global;
+using RandomLib for Random global;
 
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
@@ -50,6 +39,15 @@ library RandomLib {
                 value[32 * words + j] = word[j];
             }
         }
+    }
+
+    // @notice Returns next "random" bytes value having N memory words and updates the Random's seed.
+    function nextBytesWords(Random memory r, uint256 words) internal pure returns (bytes memory value) {
+        bytes32[] memory args = new bytes32[](words);
+        for (uint256 i = 0; i < words; ++i) {
+            args[i] = r.next();
+        }
+        return abi.encodePacked(args);
     }
 
     // @notice Returns next "random" uint256 value and updates the Random's seed.

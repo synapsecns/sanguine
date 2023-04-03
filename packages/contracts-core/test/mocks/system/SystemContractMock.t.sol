@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {InterfaceSystemRouter, ISystemContract} from "../../../contracts/interfaces/ISystemContract.sol";
+import {SystemEntity} from "./SystemRouterMock.t.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -20,4 +21,9 @@ contract SystemContractMock is Ownable, ISystemContract {
     function setSystemRouter(InterfaceSystemRouter systemRouter_) external {
         systemRouter = systemRouter_;
     }
+
+    function remoteMockFunc(uint256 rootSubmittedAt, uint32 origin, SystemEntity sender, bytes32 data)
+        external
+        onlySystemRouter
+    {}
 }

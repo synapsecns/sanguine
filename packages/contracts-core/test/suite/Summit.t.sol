@@ -188,7 +188,9 @@ contract SummitTest is DisputeHubTest {
             State[] memory states = new State[](STATES);
             for (uint256 j = 0; j < STATES; ++j) {
                 // Pick a random Guard to choose their state for domain (J+1)
-                uint256 guardIndex = random.nextUint256() % DOMAIN_AGENTS;
+                // To ensure that all Notary snapshots are different pick Guard
+                // with the same index as Notary for the first state
+                uint256 guardIndex = j == 0 ? i : random.nextUint256() % DOMAIN_AGENTS;
                 rawStates[j] = guardStates[guardIndex][j].formatState();
                 states[j] = guardStates[guardIndex][j].castToState();
             }

@@ -9,6 +9,8 @@ import {Destination} from "../../contracts/Destination.sol";
 import {Origin} from "../../contracts/Origin.sol";
 import {Summit} from "../../contracts/Summit.sol";
 
+import {BondingManagerHarness} from "../harnesses/manager/BondingManagerHarness.t.sol";
+import {LightManagerHarness} from "../harnesses/manager/LightManagerHarness.t.sol";
 import {SystemRouterHarness} from "../harnesses/system/SystemRouterHarness.t.sol";
 
 import {DestinationMock} from "../mocks/DestinationMock.t.sol";
@@ -100,7 +102,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function deployLightManager() public virtual {
-        lightManager = new LightManager(DOMAIN_LOCAL);
+        lightManager = new LightManagerHarness(DOMAIN_LOCAL);
         vm.label(address(lightManager), "LightManager");
     }
 
@@ -109,7 +111,7 @@ abstract contract SynapseTest is ProductionEvents, SynapseAgents, SynapseProofs 
     }
 
     function deployBondingManager() public virtual {
-        bondingManager = new BondingManager(DOMAIN_SYNAPSE);
+        bondingManager = new BondingManagerHarness(DOMAIN_SYNAPSE);
         vm.label(address(bondingManager), "BondingManager");
     }
 

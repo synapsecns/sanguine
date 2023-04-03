@@ -5,67 +5,42 @@ import {SystemEntity} from "../libs/Structures.sol";
 
 interface InterfaceSystemRouter {
     /**
-     * @notice Call a System Contract on the destination chain with a given calldata.
-     * Note: for system calls on the local chain
-     * - use `destination = localDomain`
-     * - `optimisticSeconds` value will be ignored
-     *
+     * @notice Message recipient needs to implement this function in order to
+     * receive cross-chain messages.
+     * @dev Message recipient needs to ensure that merkle proof for the message
+     * is at least as old as the optimistic period that the recipient is using.
+     * Note: as this point it is checked that the "message optimistic period" has passed,
+     * however the period value itself could be anything, and thus could differ from the one
+     * that the recipient would like to enforce.
+     * @param origin            Domain where message originated
+     * @param nonce             Message nonce on the origin domain
+     * @param rootSubmittedAt   Time when merkle root (used for proving this message) was submitted
+     * @param body              Body of the system message
+     */
+    function receiveSystemMessage(uint32 origin, uint32 nonce, uint256 rootSubmittedAt, bytes memory body) external;
+
+    /**
+     * @notice Call a System Contract on the remote chain with a given calldata.
+     * This is done by sending a system message to the System Router on the destination chain.
+     * Note: knowledge of recipient address is not required, routing will be done by the System Router.
      * @dev Only System contracts are allowed to call this function.
-     * Note: knowledge of recipient address is not required, routing will be done by SystemRouter
-     * on the destination chain. Following call will be made on destination chain:
-     * - recipient.call(payload, callOrigin, systemCaller, rootSubmittedAt)
+     * System Entities should expose functions for cross-chain system calls using this template:
+     *  - `function foo(uint256 rootSubmittedAt, uint32 origin, SystemEntity sender, *args)`
+     *  - `(rootSubmittedAt, origin, sender)` are later referenced as "security arguments" filled by SystemRouter
+     *  - `*args` is used to denote the non-security function arguments (that could be of any type).
+     * Note: such function should be protected with onlySystemRouter modifier
+     * @dev Assuming `payload = abi.encodeWithSelector(foo.selector, *args)`,
+     * following call will be made on destination chain:
+     *  - `recipient.foo(rootSubmittedAt, origin, sender, *args)`
      * This allows recipient to check:
-     * - callOrigin: domain where a system call originated (local domain in this case)
-     * - systemCaller: system entity who initiated the call (msg.sender on local chain)
-     * - rootSubmittedAt:
-     *   - For cross-chain calls: timestamp when merkle root (used for executing the system call)
-     *     was submitted to destination and its optimistic timer started ticking
-     *   - For on-chain calls: timestamp of the current block
-     *
+     * - `uint256 rootSubmittedAt`: time when merkle root (used for proving the system message) was submitted
+     * - `uint32 origin`: domain where a system call originated
+     * - `SystemEntity `sender`: system entity who initiated the call on origin chain
      * @param destination           Domain of destination chain
-     * @param optimisticSeconds     Optimistic period for the message
-     * @param recipient             System entity to receive the call on destination chain
-     * @param payload               Calldata payload for calling recipient on destination chain
+     * @param optimisticPeriod      Optimistic period for the message
+     * @param recipient             System entity to be called on destination chain
+     * @param payload               Calldata payload without security arguments
      */
-    function systemCall(uint32 destination, uint32 optimisticSeconds, SystemEntity recipient, bytes memory payload)
+    function systemCall(uint32 destination, uint32 optimisticPeriod, SystemEntity recipient, bytes memory payload)
         external;
-
-    /**
-     * @notice Calls a few system contracts using the given calldata for each call.
-     * See `systemCall` for details on system calls.
-     * Note: tx will revert if any of the calls revert, guaranteeing
-     * that either all calls succeed or none.
-     */
-    function systemMultiCall(
-        uint32 destination,
-        uint32 optimisticSeconds,
-        SystemEntity[] memory recipients,
-        bytes[] memory payloadArray
-    ) external;
-
-    /**
-     * @notice Calls a few system contracts using the same calldata for each call.
-     * See `systemCall` for details on system calls.
-     * Note: tx will revert if any of the calls revert, guaranteeing
-     * that either all calls succeed or none.
-     */
-    function systemMultiCall(
-        uint32 destination,
-        uint32 optimisticSeconds,
-        SystemEntity[] memory recipients,
-        bytes memory payload
-    ) external;
-
-    /**
-     * @notice Calls a single system contract a few times using the given calldata for each call.
-     * See `systemCall` for details on system calls.
-     * Note: tx will revert if any of the calls revert, guaranteeing
-     * that either all calls succeed or none.
-     */
-    function systemMultiCall(
-        uint32 destination,
-        uint32 optimisticSeconds,
-        SystemEntity recipient,
-        bytes[] memory payloadArray
-    ) external;
 }

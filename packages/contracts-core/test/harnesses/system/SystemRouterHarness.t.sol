@@ -12,8 +12,8 @@ contract SystemRouterHarness is SystemRouter {
         SystemRouter(domain, origin_, destination_, agentManager_)
     {}
 
-    /// @notice Prevents this contract from being included in the coverage report
-    function testSystemRouterHarness() external {}
+    // Note: we don't add an empty test() function here, as it currently leads
+    // to zero coverage on the SystemRouter.
 
     /**
      * @notice Pranks a system call: calls a local system recipient, as if the system call
@@ -27,10 +27,6 @@ contract SystemRouterHarness is SystemRouter {
         bytes memory payload
     ) public {
         bytes memory prefix = abi.encode(rootSubmittedAt, callOrigin, systemCaller);
-        _localSystemCall({
-            systemRecipient: uint8(recipient),
-            callData: payload.castToCallData(),
-            prefix: prefix.castToRawBytes()
-        });
+        _callSystemRecipient({systemRecipient: recipient, payload: payload.castToCallData().addPrefix(prefix)});
     }
 }
