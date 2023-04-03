@@ -15,9 +15,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
  * @notice Shared utilities between Synapse System Contracts: Origin, Destination, etc.
  */
 abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable, ISystemContract {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              CONSTANTS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════════ CONSTANTS ═════════════════════════════════════════════════════
 
     // domain of the Synapse Chain
     // For MVP this is Optimism chainId
@@ -31,18 +29,14 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
     // TODO: reevaluate optimistic period for staking/unstaking bonds
     uint32 internal constant BONDING_OPTIMISTIC_PERIOD = 1 days;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     InterfaceSystemRouter public systemRouter;
 
     /// @dev gap for upgrade safety
     uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              MODIFIERS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════════ MODIFIERS ═════════════════════════════════════════════════════
 
     /**
      * @dev Modifier for functions that are supposed to be called only from
@@ -112,9 +106,7 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
         _;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              OWNER ONLY                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ OWNER ONLY ═════════════════════════════════════════════════════
 
     // solhint-disable-next-line ordering
     function setSystemRouter(InterfaceSystemRouter systemRouter_) external onlyOwner {
@@ -128,9 +120,7 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
      */
     function renounceOwnership() public override onlyOwner {} //solhint-disable-line no-empty-blocks
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                        SYSTEM CALL SHORTCUTS                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════ SYSTEM CALL SHORTCUTS ═══════════════════════════════════════════════
 
     /// @dev Perform a System Call to a AgentManager on a given domain
     /// with the given optimistic period and data.
@@ -143,9 +133,7 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
         });
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                 INTERNAL VIEWS: SECURITY ASSERTIONS                  ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     function _onSynapseChain() internal view returns (bool) {
         return localDomain == SYNAPSE_DOMAIN;
