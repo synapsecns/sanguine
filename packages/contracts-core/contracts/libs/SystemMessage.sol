@@ -18,6 +18,7 @@ library SystemMessageLib {
 
     /**
      * @dev SystemMessage memory layout
+     * Note: calldata does not include the security arguments, these are added by SystemRouter on destination chain.
      * [000 .. 001): sender         uint8   1 byte      SystemEntity that sent the message on origin chain
      * [001 .. 002): recipient      uint8   1 byte      SystemEntity to receive the message on destination chain
      * [002 .. END]: calldata       bytes   ? bytes     Raw bytes of payload to call system recipient
@@ -28,13 +29,6 @@ library SystemMessageLib {
     uint256 private constant OFFSET_SENDER = 0;
     uint256 private constant OFFSET_RECIPIENT = 1;
     uint256 private constant OFFSET_CALLDATA = 2;
-
-    /**
-     * @dev System Router is supposed to modify (rootSubmittedAt, origin, caller)
-     * in the given calldata, meaning for a valid system calldata
-     * there has to exist at least three arguments, occupying at least three words in total.
-     */
-    uint256 internal constant CALLDATA_MIN_ARGUMENT_WORDS = 3;
 
     // ══════════════════════════════════════════════ SYSTEM MESSAGE ═══════════════════════════════════════════════════
 
@@ -82,9 +76,7 @@ library SystemMessageLib {
         if (_recipient(view_) > uint8(type(SystemEntity).max)) return false;
         bytes29 callDataView = _callData(view_);
         // Check that "calldata" field is a proper calldata
-        if (!callDataView.isCallData()) return false;
-        // Payload needs to have at least this amount of argument words
-        return callDataView.castToCallData().argumentWords() >= CALLDATA_MIN_ARGUMENT_WORDS;
+        return callDataView.isCallData();
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
