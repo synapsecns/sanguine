@@ -80,7 +80,7 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
         require(destination_ != localDomain, "Must be a remote destination");
         /// @dev This will revert if msg.sender is not a system contract
         SystemEntity sender = _getSystemEntity(msg.sender);
-        // Construct the System Message: use the prefix for sending a message
+        // Construct the System Message: no security arguments are added on origin chain
         bytes memory body = SystemMessageLib.formatSystemMessage(sender, recipient, payload);
         InterfaceOrigin(origin).sendSystemMessage(destination_, optimisticPeriod, body);
     }
