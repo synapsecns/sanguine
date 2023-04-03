@@ -159,9 +159,13 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 				}
 
 			case doneFlag := <-doneChan:
-
 				if doneFlag {
 					LogEvent(InfoLevel, "Received doneChan", LogData{"cid": c.chainConfig.ChainID, "ca": c.address})
+
+					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.address), c.chainConfig.ChainID, endHeight)
+					if err != nil {
+						return fmt.Errorf("could not store last indexed block: %w", err)
+					}
 
 					return nil
 				}

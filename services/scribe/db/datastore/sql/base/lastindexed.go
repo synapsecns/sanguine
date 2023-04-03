@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"gorm.io/gorm/clause"
 )
 
 // StoreLastIndexed stores the last indexed block number for a contract.
@@ -48,6 +49,28 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 		return nil
 	}
 	dbTx = s.DB().WithContext(ctx).
+		Clauses(clause.Where{
+			Exprs: []clause.Expression{
+				clause.And(
+					clause.Where{
+						Exprs: []clause.Expression{
+							clause.Eq{
+								Column: clause.Column{Name: ContractAddressFieldName},
+								Value:  contractAddress.String(),
+							},
+							clause.Eq{
+								Column: clause.Column{Name: ChainIDFieldName},
+								Value:  chainID,
+							},
+						},
+					},
+					clause.Gt{
+						Column: clause.Column{Name: BlockNumberFieldName},
+						Value:  blockNumber,
+					},
+				),
+			},
+		}).
 		Model(&LastIndexedInfo{}).
 		Where(&LastIndexedInfo{
 			ContractAddress: contractAddress.String(),
