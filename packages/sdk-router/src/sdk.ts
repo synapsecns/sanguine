@@ -12,12 +12,6 @@ import {
 import { BigintIsh } from './constants'
 import { SynapseRouter } from './synapseRouter'
 
-const ETH_NATIVE = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-
-const handleNativeToken = (tokenAddr: string) => {
-  return tokenAddr === '' || tokenAddr === AddressZero ? ETH_NATIVE : tokenAddr
-}
-
 type SynapseRouters = {
   [key: number]: SynapseRouter
 }
