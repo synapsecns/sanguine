@@ -88,9 +88,7 @@ func (g Guard) loadSummitLatestStates(parentCtx context.Context) {
 			g.summitLatestStates[originID] = latestState
 		}
 
-		func() {
-			span.End()
-		}()
+		span.End()
 	}
 }
 
@@ -121,9 +119,7 @@ func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
 			g.originLatestStates[originID] = latestState
 		}
 
-		func() {
-			span.End()
-		}()
+		span.End()
 	}
 }
 
@@ -168,9 +164,7 @@ func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
 	))
 
 	defer func() {
-		go func() {
-			span.End()
-		}()
+		span.End()
 	}()
 
 	snapshot, statesToSubmit := g.getLatestSnapshot()
