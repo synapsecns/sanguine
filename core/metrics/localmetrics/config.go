@@ -1,6 +1,7 @@
 package localmetrics
 
 type config struct {
+	enableNgrok           bool
 	enablePyroscope       bool
 	enablePyroscopeJaeger bool
 	keepContainers        bool
@@ -32,6 +33,12 @@ func WithKeepContainers(enabled bool) Option {
 func WithPyroscopeEnabled(enabled bool) Option {
 	return func(c *config) {
 		c.enablePyroscope = enabled
+	}
+}
+
+func WithNgrokEnabled(enabled bool) Option {
+	return func(c *config) {
+		c.enableNgrok = enabled
 	}
 }
 
