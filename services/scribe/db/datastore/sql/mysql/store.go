@@ -60,6 +60,7 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 
 	// migrate in a transaction since we skip this by default
 	err = gdb.Transaction(func(tx *gorm.DB) error {
+		//nolint: wrapcheck
 		return gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
 	})
 
