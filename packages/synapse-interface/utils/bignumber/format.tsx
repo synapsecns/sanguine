@@ -16,7 +16,7 @@ export const formatBNToString = (
     // don't include decimal point if places = 0
     const rawNumber = Number(fullPrecision)
 
-    if (rawNumber == 0) {
+    if (rawNumber === 0) {
       return rawNumber.toFixed(1)
     } else {
       return rawNumber.toFixed(decimalPlaces) //.slice(0, num)
@@ -27,12 +27,12 @@ export const formatBNToString = (
 export const formatBNToPercentString = (
   bn: BigNumber,
   nativePrecison: number,
-  decimalPlaces: number = 2
+  decimalPlaces = 2
 ) => {
   return `${formatBNToString(bn, nativePrecison - 2, decimalPlaces)}%`
 }
 
-export const commifyBnToString = (bn: BigNumber, decimals: number = 2) => {
+export const commifyBnToString = (bn: BigNumber, decimals = 2) => {
   return commify(formatBNToString(bn, 18, decimals))
 }
 

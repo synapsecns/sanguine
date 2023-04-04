@@ -1,6 +1,5 @@
-import _ from 'lodash'
-import { Zero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
+
 import { Token } from '@/utils/types'
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
@@ -9,7 +8,7 @@ import { cleanNumberInput } from '@utils/cleanNumberInput'
 import { ChainLabel } from './ChainLabel'
 import SelectTokenDropdown from './SelectTokenDropdown'
 
-export default function BridgeInputContainer({
+const BridgeInputContainer = ({
   address,
   isOrigin,
   chains,
@@ -35,7 +34,7 @@ export default function BridgeInputContainer({
   onChangeAmount?: (v: string) => void
   onChangeChain: (v: number) => void
   fromTokenBalance?: BigNumber
-}) {
+}) => {
   let formattedBalance = ''
   if (fromTokenBalance) {
     formattedBalance = formatBNToString(
@@ -44,10 +43,9 @@ export default function BridgeInputContainer({
       4
     )
   }
-  console.log(fromTokenBalance, `fromTokenBalance`)
   const isConnected = address !== null
 
-  function onChange(e: any) {
+  const onChange = (e: any) => {
     const val = e.target.value
 
     const cleanValue = cleanNumberInput(val)
@@ -55,7 +53,7 @@ export default function BridgeInputContainer({
     onChangeAmount(cleanValue)
   }
 
-  function onClickBalance() {
+  const onClickBalance = () => {
     onChangeAmount(
       formatBNToString(
         fromTokenBalance,
@@ -65,18 +63,6 @@ export default function BridgeInputContainer({
     )
   }
 
-  let balanceLabel
-  if (isOrigin) {
-    balanceLabel = (
-      <a onClick={onClickBalance} className="hover:underline group">
-        <small className="text-xs text-gray-500 cursor-pointer group-hover:underline">
-          Max:{' '}
-          <span className="font-medium text-gray-400 ">{formattedBalance}</span>{' '}
-          {selectedToken.symbol}
-        </small>
-      </a>
-    )
-  }
   return (
     <div
       className={`
@@ -166,3 +152,5 @@ export default function BridgeInputContainer({
     </div>
   )
 }
+
+export default BridgeInputContainer

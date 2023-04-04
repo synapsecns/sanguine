@@ -84,8 +84,6 @@ const BridgeCard = ({
   }, [fromToken, fromTokens])
   const tokenAddr = fromToken.addresses[fromChainId as keyof Token['addresses']]
 
-  console.log('fromTokens', 'fromTokens', fromTokens, fromTokenBalance)
-
   const fromArgs = {
     address,
     fromTokenBalance,

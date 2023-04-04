@@ -20,7 +20,6 @@ import {
   FTMETH,
   METISETH,
   CANTOETH,
-  // JEWEL,
   WJEWEL,
   SYNAVAX,
   SYNJEWEL,
