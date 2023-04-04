@@ -125,10 +125,6 @@ guard:
       value: "json"
     - name: GOLOG_LOG_LEVEL
       value: "info"
-    - name: "METRICS_HANDLER"
-      value: "jaeger"
-    - name: "JAEGER_ENDPOINT"
-      value: "http://agents-jaeger-collector:16686/api/traces"
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
