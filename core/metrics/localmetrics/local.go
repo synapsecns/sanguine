@@ -136,6 +136,12 @@ func (j *testJaeger) getNetworks() []*dockertest.Network {
 	return []*dockertest.Network{j.network}
 }
 
+// getEndpoint gets the endpoint for the given environment variable.
+// if ngrok is enabled, the public url is added to ngrok config if it doesn't exist and the ngrok url is returned.
+func (j *testJaeger) getEndpoint(env string) {
+
+}
+
 // buildLogMessage builds a log message for the test jaeger instance.
 func (j *testJaeger) buildLogMessage(includeAuxiliary bool) string {
 	var messages []string
