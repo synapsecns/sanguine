@@ -153,6 +153,7 @@ func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint
 					}
 
 					// Reset context TODO make this better
+					gS, storeCtx = errgroup.WithContext(ctx)
 					concurrentCalls = 0
 					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.contractConfig.Address), c.chainConfig.ChainID, log.BlockNumber)
 					if err != nil {

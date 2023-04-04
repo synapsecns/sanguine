@@ -58,7 +58,10 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 
 	handler.AddGormCallbacks(gdb)
 
-	err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
+	// migrate in a transaction since we skip this by default
+	err = gdb.Transaction(func(tx *gorm.DB) error {
+		return gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
+	})
 
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate on mysql: %w", err)

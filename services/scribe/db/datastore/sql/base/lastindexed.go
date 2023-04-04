@@ -25,34 +25,37 @@ func (s Store) StoreLastIndexed(parentCtx context.Context, contractAddress commo
 	}()
 
 	dbTx := s.DB().WithContext(ctx).
-		Clauses(clause.Where{
-			Exprs: []clause.Expression{
-				clause.And(
-					clause.Where{
-						Exprs: []clause.Expression{
-							clause.Eq{
-								Column: clause.Column{Name: ContractAddressFieldName},
-								Value:  contractAddress.String(),
-							},
-							clause.Eq{
-								Column: clause.Column{Name: ChainIDFieldName},
-								Value:  chainID,
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: ContractAddressFieldName}, {Name: ChainIDFieldName}},
+			DoUpdates: clause.AssignmentColumns([]string{BlockNumberFieldName}),
+			Where: clause.Where{
+				Exprs: []clause.Expression{
+					clause.And(
+						clause.Where{
+							Exprs: []clause.Expression{
+								clause.Eq{
+									Column: clause.Column{Name: ContractAddressFieldName},
+									Value:  contractAddress.String(),
+								},
+								clause.Eq{
+									Column: clause.Column{Name: ChainIDFieldName},
+									Value:  chainID,
+								},
 							},
 						},
-					},
-					clause.Gt{
-						Column: clause.Column{Name: BlockNumberFieldName},
-						Value:  blockNumber,
-					},
-				),
+						clause.Lt{
+							Column: clause.Column{Name: BlockNumberFieldName},
+							Value:  blockNumber,
+						},
+					),
+				},
 			},
 		}).
-		Model(&LastIndexedInfo{}).
-		Where(&LastIndexedInfo{
+		Create(&LastIndexedInfo{
 			ContractAddress: contractAddress.String(),
 			ChainID:         chainID,
-		}).
-		Update(BlockNumberFieldName, blockNumber)
+			BlockNumber:     blockNumber,
+		})
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not update last indexed info: %w", dbTx.Error)
 	}
