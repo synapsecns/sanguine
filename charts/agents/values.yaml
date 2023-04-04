@@ -339,8 +339,8 @@ scribe:
       chains:
         - chain_id: 11155111
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -350,8 +350,8 @@ scribe:
               start_block: 3168998
         - chain_id: 420
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -363,8 +363,8 @@ scribe:
               start_block: 7216932
         - chain_id: 421613
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -422,8 +422,8 @@ notary_files:
       chains:
         - chain_id: 11155111
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -433,8 +433,8 @@ notary_files:
               start_block: 3168998
         - chain_id: 420
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -446,8 +446,8 @@ notary_files:
               start_block: 7216932
         - chain_id: 421613
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -504,8 +504,8 @@ notary_files:
       chains:
         - chain_id: 11155111
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -515,8 +515,8 @@ notary_files:
               start_block: 3168998
         - chain_id: 420
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -528,8 +528,8 @@ notary_files:
               start_block: 7216932
         - chain_id: 421613
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -585,8 +585,8 @@ notary_files:
       chains:
         - chain_id: 11155111
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -596,8 +596,8 @@ notary_files:
               start_block: 3168998
         - chain_id: 420
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -609,8 +609,8 @@ notary_files:
               start_block: 7216932
         - chain_id: 421613
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -668,8 +668,8 @@ guard_files:
       chains:
         - chain_id: 11155111
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -679,8 +679,8 @@ guard_files:
               start_block: 3168998
         - chain_id: 420
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -692,8 +692,8 @@ guard_files:
               start_block: 7216932
         - chain_id: 421613
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -778,8 +778,8 @@ executor_embedded_files:
       chains:
         - chain_id: 11155111
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -789,8 +789,8 @@ executor_embedded_files:
               start_block: 3168998
         - chain_id: 420
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
@@ -802,8 +802,8 @@ executor_embedded_files:
               start_block: 7216932
         - chain_id: 421613
           required_confirmations: 1
-          contract_sub_chunk_size: 100
-          contract_chunk_size: 100
+          contract_sub_chunk_size: 100000
+          contract_chunk_size: 100000
           store_concurrency: 1
           store_concurrency_threshold: 500
           contracts:
