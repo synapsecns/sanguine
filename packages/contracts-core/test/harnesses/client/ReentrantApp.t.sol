@@ -28,7 +28,7 @@ contract ReentrantApp is IMessageRecipient {
         stateIndex = stateIndex_;
     }
 
-    function handle(uint32, uint32, bytes32, uint256, bytes memory) external {
+    function receiveBaseMessage(uint32, uint32, bytes32, uint256, bytes memory) external payable {
         IExecutionHub(msg.sender).execute(msgPayload, originProof, snapProof, stateIndex);
     }
 }

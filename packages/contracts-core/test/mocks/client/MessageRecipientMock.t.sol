@@ -8,7 +8,11 @@ contract MessageRecipientMock is IMessageRecipient {
     /// @notice Prevents this contract from being included in the coverage report
     function testMessageRecipientMock() external {}
 
-    function handle(uint32 origin, uint32 nonce, bytes32 sender, uint256 rootSubmittedAt, bytes memory content)
-        external
-    {}
+    function receiveBaseMessage(
+        uint32 origin,
+        uint32 nonce,
+        bytes32 sender,
+        uint256 rootSubmittedAt,
+        bytes memory content
+    ) external payable {}
 }

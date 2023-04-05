@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {TipsLib} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -17,19 +17,15 @@ contract PingPongClient is IMessageRecipient {
         uint16 counter;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              IMMUTABLES                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
 
-    // local chain Origin: used for sending messages
+    /// @notice Local chain Origin: used for sending messages
     address public immutable origin;
 
-    // local chain Destination: used for receiving messages
+    /// @notice Local chain Destination: used for receiving messages
     address public immutable destination;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     uint256 public random;
 
@@ -44,9 +40,7 @@ contract PingPongClient is IMessageRecipient {
     /// When all messages are delivered, should be equal to `pingsSent`
     uint256 public pongsReceived;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ EVENTS ═══════════════════════════════════════════════════════
 
     /// @notice Emitted when a Ping message is sent.
     /// Triggered externally, or by receveing a Pong message with instructions to do more pings.
@@ -64,9 +58,7 @@ contract PingPongClient is IMessageRecipient {
     /// Will initiate a new Ping, if the counter in the message is non-zero.
     event PongReceived(uint256 pingId);
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             CONSTRUCTOR                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ CONSTRUCTOR ════════════════════════════════════════════════════
 
     constructor(address origin_, address destination_) {
         origin = origin_;
@@ -75,12 +67,13 @@ contract PingPongClient is IMessageRecipient {
         random = uint256(keccak256(abi.encode(block.number)));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          RECEIVING MESSAGES                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ MESSAGE LOGIC ═══════════════════════════════════════════════════
 
-    /// @notice Called by Destination upon executing the message.
-    function handle(uint32 origin_, uint32, bytes32 sender, uint256, bytes memory content) external {
+    /// @inheritdoc IMessageRecipient
+    function receiveBaseMessage(uint32 origin_, uint32, bytes32 sender, uint256, bytes memory content)
+        external
+        payable
+    {
         require(msg.sender == destination, "PingPongClient: !destination");
         PingPongMessage memory message = abi.decode(content, (PingPongMessage));
         if (message.isPing) {
@@ -100,10 +93,6 @@ contract PingPongClient is IMessageRecipient {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           SENDING MESSAGES                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
     function doPings(uint16 pingCount, uint32 destination_, address recipient, uint16 counter) external {
         for (uint256 i = 0; i < pingCount; ++i) {
             _ping(destination_, recipient.addressToBytes32(), counter);
@@ -120,14 +109,14 @@ contract PingPongClient is IMessageRecipient {
         _ping(destination_, recipient.addressToBytes32(), counter);
     }
 
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
     function nextOptimisticPeriod() public view returns (uint32 period) {
         // Use random optimistic period up to one minute
         return uint32(random % 1 minutes);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Returns a random optimistic period value from 0 to 59 seconds.
     function optimisticPeriod() internal returns (uint32 period) {

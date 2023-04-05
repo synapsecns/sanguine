@@ -76,7 +76,7 @@ contract PingPongTest is Test {
         emit PongSent(pingId);
         _expectOriginCall(origin, sender, nextPeriod, pingId, false, counter);
         vm.prank(destinationMock);
-        client.handle(origin, 0, bytes32(uint256(uint160(sender))), 0, content(pingId, true, counter));
+        client.receiveBaseMessage(origin, 0, bytes32(uint256(uint160(sender))), 0, content(pingId, true, counter));
         // Pings sent: 0
         assertEq(client.pingsSent(), 0);
         // Received pings: 1, pongs: 0
@@ -97,7 +97,7 @@ contract PingPongTest is Test {
             _expectOriginCall(origin, sender, nextPeriod, localPingId, true, counter - 1);
         }
         vm.prank(destinationMock);
-        client.handle(origin, 0, bytes32(uint256(uint160(sender))), 0, content(pingId, false, counter));
+        client.receiveBaseMessage(origin, 0, bytes32(uint256(uint160(sender))), 0, content(pingId, false, counter));
         // Pings sent: 0/1 (based on counter being zero / non-zero)
         assertEq(client.pingsSent(), counter == 0 ? 0 : 1);
         // Received pings: 0, pongs: 1

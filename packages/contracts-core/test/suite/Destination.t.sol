@@ -251,7 +251,12 @@ contract DestinationTest is DisputeHubTest {
             vm.expectCall(
                 recipient,
                 abi.encodeWithSelector(
-                    MessageRecipientMock.handle.selector, DOMAIN_REMOTE, i + 1, sender, rootSubmittedAt, CONTENT
+                    MessageRecipientMock.receiveBaseMessage.selector,
+                    DOMAIN_REMOTE,
+                    i + 1,
+                    sender,
+                    rootSubmittedAt,
+                    CONTENT
                 )
             );
             // Should emit event when message is executed

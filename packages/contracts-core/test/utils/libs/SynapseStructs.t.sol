@@ -167,6 +167,13 @@ library CastLib {
         });
     }
 
+    function boundTips(RawTips memory rt, uint96 maxTipValue) internal pure {
+        rt.notaryTip = rt.notaryTip % maxTipValue;
+        rt.broadcasterTip = rt.broadcasterTip % maxTipValue;
+        rt.proverTip = rt.proverTip % maxTipValue;
+        rt.executorTip = rt.executorTip % maxTipValue;
+    }
+
     function castToTips(RawTips memory rt) internal pure returns (Tips ptr) {
         ptr = rt.formatTips().castToTips();
     }
