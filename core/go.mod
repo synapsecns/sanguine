@@ -59,6 +59,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.14.0
 	go.uber.org/zap v1.23.0
 	golang.ngrok.com/ngrok v1.0.0
+	golang.org/x/crypto v0.6.0
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 	golang.org/x/sync v0.1.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.44.1
@@ -188,7 +189,6 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go4.org/intern v0.0.0-20211027215823-ae77deb06f29 // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20220617031537-928513b29760 // indirect
-	golang.org/x/crypto v0.4.0 // indirect
 	golang.org/x/mod v0.7.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.4.0 // indirect

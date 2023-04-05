@@ -105,7 +105,7 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 			res.decimals = tokenData.TokenDecimals
 
 			return nil
-		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+		}, retry.WithMaxAttemptsTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	})
 
 	g.Go(func() error {
@@ -119,7 +119,7 @@ func (t *tokenDataServiceImpl) retrieveTokenData(parentCtx context.Context, chai
 			res.tokenID = *nullableTokenID
 
 			return nil
-		}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+		}, retry.WithMaxAttemptsTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	})
 
 	err := g.Wait()
