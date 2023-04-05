@@ -62,7 +62,7 @@ interface IBondingManager {
      * @param prover    Address that initially provided fraud proof in SystemRegistry
      */
     function remoteRegistrySlash(
-        uint256 rootSubmittedAt,
+        uint256 proofMaturity,
         uint32 callOrigin,
         SystemEntity systemCaller,
         uint32 domain,

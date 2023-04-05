@@ -103,7 +103,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
 
     /// @dev Returns data for a system call: remoteRegistrySlash()
     function _remoteSlashPayload(uint32 domain, address agent, address prover) internal pure returns (bytes memory) {
-        // (rootSubmittedAt, callOrigin, systemCaller) are omitted; (domain, agent, prover)
+        // (proofMaturity, callOrigin, systemCaller) are omitted; (domain, agent, prover)
         return abi.encodeWithSelector(IBondingManager.remoteRegistrySlash.selector, domain, agent, prover);
     }
 }

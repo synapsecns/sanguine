@@ -16,7 +16,7 @@ contract TestClient is IMessageRecipient {
     /// @notice Local chain Destination: used for receiving messages
     address public immutable destination;
 
-    event MessageReceived(uint32 origin, uint32 nonce, bytes32 sender, uint256 rootSubmittedAt, bytes content);
+    event MessageReceived(uint32 origin, uint32 nonce, bytes32 sender, uint256 proofMaturity, bytes content);
 
     event MessageSent(uint32 destination, uint32 nonce, bytes32 sender, bytes32 recipient, bytes content);
 
@@ -30,11 +30,11 @@ contract TestClient is IMessageRecipient {
         uint32 origin_,
         uint32 nonce,
         bytes32 sender,
-        uint256 rootSubmittedAt,
+        uint256 proofMaturity,
         bytes memory content
     ) external payable {
         require(msg.sender == destination, "TestClient: !destination");
-        emit MessageReceived(origin_, nonce, sender, rootSubmittedAt, content);
+        emit MessageReceived(origin_, nonce, sender, proofMaturity, content);
     }
 
     function sendMessage(uint32 destination_, address recipientAddress, uint32 optimisticSeconds, bytes memory content)
