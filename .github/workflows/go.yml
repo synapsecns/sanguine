@@ -171,6 +171,7 @@ jobs:
           echo "::set-output name=flag::$(echo "${{ matrix.package }}" | rev | cut -d/ -f1 | rev)"
 
       - uses: actions/upload-artifact@v3
+        if: always()
         with:
           name: go-report-${{ steps.coverage.outputs.flag }}
           path: ${{matrix.package}}/report.html
