@@ -30,6 +30,10 @@ func (u *AgentsIntegrationSuite) SetupTest() {
 	u.SetTestTimeout(time.Minute * 3)
 }
 
+func (u *AgentsIntegrationSuite) SetupSuite() {
+	u.SimulatedBackendsTestSuite.SetupSuite()
+}
+
 func TestAgentsIntegrationSuite(t *testing.T) {
 	suite.Run(t, NewAgentsIntegrationSuite(t))
 }

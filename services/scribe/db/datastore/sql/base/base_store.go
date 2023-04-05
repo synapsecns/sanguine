@@ -1,18 +1,20 @@
 package base
 
 import (
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"gorm.io/gorm"
 )
 
 // Store is the sqlite store. It extends the base store for sqlite specific queries.
 type Store struct {
-	db *gorm.DB
+	db      *gorm.DB
+	metrics metrics.Handler
 }
 
 // NewStore creates a new store.
-func NewStore(db *gorm.DB) *Store {
-	return &Store{db: db}
+func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
+	return &Store{db: db, metrics: metrics}
 }
 
 // DB gets the database.

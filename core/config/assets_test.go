@@ -3,12 +3,12 @@ package config_test
 import (
 	"bytes"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/internal/assets"
 	"os"
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/core/assets"
 	"github.com/synapsecns/sanguine/core/config"
 )
 

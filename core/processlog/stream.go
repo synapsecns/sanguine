@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"io"
 	"sync"
+	"time"
 )
 
 const pipeBufferSize = 64
@@ -21,9 +22,24 @@ func newBufferedPipe() *bufferedPipe {
 
 	rb := bufio.NewReaderSize(r, pipeBufferSize)
 	wb := &bufferedWriteCloser{
-		Writer: bufio.NewWriterSize(w, pipeBufferSize),
-		closer: w,
+		Writer:    bufio.NewWriterSize(w, pipeBufferSize),
+		closer:    w,
+		closeChan: make(chan bool),
 	}
+
+	// use a timer to prevent deadlocks
+	timer := time.NewTimer(1 * time.Second)
+
+	go func() {
+		for {
+			select {
+			case <-wb.closeChan:
+				return
+			case <-timer.C:
+				_ = wb.Flush()
+			}
+		}
+	}()
 
 	return &bufferedPipe{
 		ReadCloser:  io.NopCloser(rb),
@@ -33,7 +49,8 @@ func newBufferedPipe() *bufferedPipe {
 
 type bufferedWriteCloser struct {
 	*bufio.Writer
-	closer io.Closer
+	closer    io.Closer
+	closeChan chan bool
 }
 
 func (bwc *bufferedWriteCloser) Close() error {
@@ -45,6 +62,7 @@ func (bwc *bufferedWriteCloser) Close() error {
 	if err != nil {
 		return fmt.Errorf("could not close pipe: %w", err)
 	}
+	bwc.closeChan <- true
 	return nil
 }
 

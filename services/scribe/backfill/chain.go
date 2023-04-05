@@ -3,6 +3,7 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"math"
 	"time"
 
@@ -31,6 +32,8 @@ type ChainBackfiller struct {
 	chainConfig config.ChainConfig
 	// refreshRate is the rate at which the backfiller will refresh when livefilling.
 	refreshRate int
+	// handler is the metrics handler for the scribe.
+	handler metrics.Handler
 }
 
 // Used for handling logging of various context types.
@@ -43,7 +46,7 @@ const (
 // NewChainBackfiller creates a new backfiller for a chain. This is done by passing through all the function parameters
 // into the ChainBackfiller struct, as well as iterating through all the contracts in the chain config and creating
 // ContractBackfillers for each contract.
-func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig config.ChainConfig, refreshRate int) (*ChainBackfiller, error) {
+func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig config.ChainConfig, refreshRate int, handler metrics.Handler) (*ChainBackfiller, error) {
 	var contractBackfillers []*ContractBackfiller
 
 	startHeights := make(map[string]uint64)
@@ -70,8 +73,7 @@ func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig 
 	minBlockHeight := uint64(math.MaxUint64)
 
 	for _, contract := range chainConfig.Contracts {
-		contractBackfiller, err := NewContractBackfiller(chainConfig, contract, eventDB, client)
-
+		contractBackfiller, err := NewContractBackfiller(chainConfig, contract, eventDB, client, handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not create contract backfiller: %w", err)
 		}
@@ -92,6 +94,7 @@ func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig 
 		minBlockHeight:      minBlockHeight,
 		chainConfig:         chainConfig,
 		refreshRate:         refreshRate,
+		handler:             handler,
 	}, nil
 }
 

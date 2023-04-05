@@ -134,7 +134,7 @@ func (r Resolver) getBlockTime(ctx context.Context, chainID uint32, blockNumber 
 
 	timeout := time.Duration(0)
 	var backendClient backfill.ScribeBackend
-	backendClient, err := backfill.DialBackend(ctx, fmt.Sprintf("%s/%d", r.OmniRPCURL, chainID))
+	backendClient, err := backfill.DialBackend(ctx, fmt.Sprintf("%s/%d", r.OmniRPCURL, chainID), r.Metrics)
 	if err != nil {
 		return nil, fmt.Errorf("could not create backend client: %w", err)
 	}

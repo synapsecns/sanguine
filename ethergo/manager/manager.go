@@ -4,7 +4,6 @@ package manager
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -139,8 +138,6 @@ func GetContract[T any](ctx context.Context, tb testing.TB, deployManager IDeplo
 
 	return deployedContract, contractHandle
 }
-
-var _ suite.TestingSuite = &DeployerManager{}
 
 // DeployManagerFactory is a factory for a deploy manager.
 type DeployManagerFactory func() IDeployManager

@@ -53,6 +53,6 @@ func (a *AnvilSuite) SetupSuite() {
 	True(a.T(), ok)
 }
 
-func TestTestUtilSuite(t *testing.T) {
+func TestAnvilSuite(t *testing.T) {
 	suite.Run(t, NewAnvilSuite(t))
 }

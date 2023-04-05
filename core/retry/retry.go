@@ -59,8 +59,8 @@ func WithMaxAttempts(maxAttempts int) WithBackoffConfigurator {
 	}
 }
 
-// WithMaxAttemptTime sets the maximum number of retry attempts.
-func WithMaxAttemptTime(maxAttemptTime time.Duration) WithBackoffConfigurator {
+// WithMaxAttemptsTime sets the maximum time of all retry attempts.
+func WithMaxAttemptsTime(maxAttemptTime time.Duration) WithBackoffConfigurator {
 	return func(c *retryWithBackoffConfig) {
 		c.maxAttemptTime = maxAttemptTime
 	}

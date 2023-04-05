@@ -17,6 +17,7 @@ import (
 )
 
 type newRelicHandler struct {
+	*baseHandler
 	app       *newrelic.Application
 	startMux  sync.Mutex
 	buildInfo config.BuildInfo
@@ -24,8 +25,11 @@ type newRelicHandler struct {
 
 // NewRelicMetricsHandler creates a new newrelic metrics handler.
 func NewRelicMetricsHandler(buildInfo config.BuildInfo) Handler {
+	logger.Warn("new relic metrics handler is not fully implemented, please add an otel bride")
+
 	return &newRelicHandler{
-		buildInfo: buildInfo,
+		buildInfo:   buildInfo,
+		baseHandler: newBaseHandler(buildInfo),
 	}
 }
 
@@ -42,6 +46,7 @@ func (n *newRelicHandler) Gin() gin.HandlerFunc {
 func (n *newRelicHandler) Start(_ context.Context) (err error) {
 	n.startMux.Lock()
 	defer n.startMux.Unlock()
+
 	if n.app == nil {
 		n.app, err = newrelic.NewApplication(
 			newrelic.ConfigAppName(n.buildInfo.Name()),
