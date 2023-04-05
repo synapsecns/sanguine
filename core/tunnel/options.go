@@ -36,7 +36,8 @@ func WithProvider(provider Provider) Option {
 
 func makeConfig(opts []Option) (*config, error) {
 	c := &config{
-		provider: Moe,
+		// TODO: switch to moe once it's ready
+		provider: Ngrok,
 	}
 	for _, opt := range opts {
 		opt(c)
