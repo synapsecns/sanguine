@@ -1,15 +1,19 @@
-package proxy
+package client
 
 import (
 	"github.com/benbjohnson/immutable"
+	"github.com/ipfs/go-log"
 	"strings"
 )
+
+var logger = log.Logger("ethergo-client-logger")
 
 // RPCMethod is an enum type for an rpc method.
 type RPCMethod string
 
 // NOTE: any changes here must be added to allMethods list below.
-// TODO: this should be replaced by a go:generate in the near future.
+
+// ETH METHODS:.
 const (
 	// ChainIDMethod is used to retrieve the current chain ID for transaction replay protection.
 	ChainIDMethod RPCMethod = "eth_chainId"
@@ -53,12 +57,20 @@ const (
 	PendingTransactionCountMethod RPCMethod = "eth_getBlockTransactionCountByNumber"
 	// SendRawTransactionMethod sends a raw tx.
 	SendRawTransactionMethod RPCMethod = "eth_sendRawTransaction"
+	// SubscribeMethod subscribes to an event.
+	SubscribeMethod RPCMethod = "eth_subscribe"
+)
+
+// NetMethods:.
+const (
+	// NetVersionMethod gets the network version.
+	NetVersionMethod RPCMethod = "net_version"
 )
 
 // allMethods gets all available rpc methods.
 var allMethods = []RPCMethod{ChainIDMethod, BlockByHashMethod, BlockByNumberMethod, BlockNumberMethod,
 	BlockNumberMethod, TransactionByHashMethod, TransactionByBlockHashAndIndexMethod, TransactionCountByHashMethod,
-	TransactionReceiptByHashMethod, SyncProgressMethod, GetBalanceMethod}
+	TransactionReceiptByHashMethod, SyncProgressMethod, GetBalanceMethod, SubscribeMethod, NetVersionMethod}
 
 var methodMap *immutable.Map[RPCMethod, string]
 
@@ -79,4 +91,9 @@ func (r RPCMethod) Comparable() string {
 	}
 
 	return res
+}
+
+// String returns the string representation of an rpc method.
+func (r RPCMethod) String() string {
+	return string(r)
 }

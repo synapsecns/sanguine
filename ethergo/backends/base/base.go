@@ -22,7 +22,6 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -197,6 +196,7 @@ var (
 )
 
 // WaitForConfirmation waits for transaction confirmation.
+// nolint: cyclop
 func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *types.Transaction) {
 	ctx, cancel := onecontext.Merge(b.ctx, parentCtx)
 	defer cancel()
@@ -219,7 +219,11 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 
 		res, err := b.CallContract(b.ctx, *callMessage, big.NewInt(0).Sub(txReceipt.BlockNumber, big.NewInt(1)))
 		if err != nil {
-			logger.Warnf("could not call contract: %v on tx: %s", err, transaction.Hash())
+			errMessage := fmt.Sprintf("could not call contract: %v on tx: %s", err, transaction.Hash())
+			if b.RPCAddress() != "" {
+				errMessage += fmt.Sprintf("For more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
+			}
+			logger.Error(errMessage)
 			return
 		}
 
@@ -243,7 +247,11 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 			}
 
 			//nolint: forcetypeassert
-			logger.Debugf("tx %s reverted: %v", transaction.Hash(), vs[0].(string))
+			errMessage := fmt.Sprintf("tx %s reverted: %v", transaction.Hash(), vs[0].(string))
+			if b.RPCAddress() != "" {
+				errMessage += fmt.Sprintf("For more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
+			}
+			logger.Error(errMessage)
 		}
 	}()
 }
@@ -268,6 +276,7 @@ type ConfirmationClient interface {
 
 // WaitForConfirmation is a helper that can be called by various inheriting funcs.
 // it blocks until the transaction is confirmed.
+// nolint: cyclop
 func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transaction *types.Transaction, timeout time.Duration) {
 	// if tx is nil , we should panic here so we can see the call context
 	_ = transaction.Hash()
@@ -277,7 +286,7 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 	wait.UntilWithContext(txConfirmedCtx, func(ctx context.Context) {
 		tx, isPending, _ := client.TransactionByHash(txConfirmedCtx, transaction.Hash())
 		logOnce.Do(func() {
-			logger.Warnf("waiting for tx %s", transaction.Hash())
+			logger.Debugf("waiting for tx %s", transaction.Hash())
 		})
 		if !isPending && tx != nil {
 			receipt, err := client.TransactionReceipt(ctx, tx.Hash())
@@ -297,4 +306,3 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 
 //nolint:staticcheck
 var _ chain.Chain = &Backend{}
-var _ suite.TestingSuite = &Backend{}

@@ -14,13 +14,20 @@ func (c *CoreSuite) TestGetEnv() {
 
 	Equal(c.T(), common.GetEnv(testWord, testValue), testValue)
 
-	err := os.Setenv(testWord, gofakeit.Word())
-	Nil(c.T(), err)
+	c.T().Setenv(testWord, gofakeit.Word())
 	NotEqual(c.T(), testValue, common.GetEnv(testWord, testValue))
 
-	err = os.Setenv(testWord, testValue)
-	Nil(c.T(), err)
+	c.T().Setenv(testWord, testValue)
 	Equal(c.T(), testValue, common.GetEnv(testWord, testValue))
+}
+
+func (c *CoreSuite) TestHasEnv() {
+	fakeEnvWord := gofakeit.Word()
+	realEnvWord := gofakeit.Word()
+
+	c.T().Setenv(realEnvWord, gofakeit.Word())
+	c.Require().True(common.HasEnv(realEnvWord))
+	c.Require().False(common.HasEnv(fakeEnvWord))
 }
 
 func (c *CoreSuite) TestGetEnvInt() {

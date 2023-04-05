@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -105,55 +107,55 @@ type feeHistoryResultMarshaling struct {
 // StandardizeResponse produces a standardized json response for hashing (strips extra fields)
 //
 //nolint:gocognit,cyclop
-func standardizeResponse(ctx context.Context, req *RPCRequest, rpcMessage JSONRPCMessage) (out []byte, err error) {
+func standardizeResponse(ctx context.Context, req *rpc.Request, rpcMessage JSONRPCMessage) (out []byte, err error) {
 	// TODO: use a sync.pool for acquiring/releasing these structs
 	method := req.Method
 
 OUTER:
-	switch RPCMethod(method) {
-	case ChainIDMethod, BlockNumberMethod, TransactionCountByHashMethod, GetBalanceMethod, GasPriceMethod, MaxPriorityMethod:
+	switch client.RPCMethod(method) {
+	case client.ChainIDMethod, client.BlockNumberMethod, client.TransactionCountByHashMethod, client.GetBalanceMethod, client.GasPriceMethod, client.MaxPriorityMethod:
 		var result hexutil.Big
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case StorageAtMethod, GetCodeMethod:
+	case client.StorageAtMethod, client.GetCodeMethod:
 		var result hexutil.Bytes
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case TransactionCountMethod, EstimateGasMethod:
+	case client.TransactionCountMethod, client.EstimateGasMethod:
 		var result hexutil.Uint64
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case PendingTransactionCountMethod:
+	case client.PendingTransactionCountMethod:
 		var result hexutil.Uint
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case TransactionByHashMethod, TransactionByBlockHashAndIndexMethod:
+	case client.TransactionByHashMethod, client.TransactionByBlockHashAndIndexMethod:
 		var rpcBody rpcTransaction
 		if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(rpcBody)
-	case GetLogsMethod:
+	case client.GetLogsMethod:
 		var result []types.Log
 		if err = json.Unmarshal(rpcMessage.Result, &result); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(result)
-	case TransactionReceiptByHashMethod:
+	case client.TransactionReceiptByHashMethod:
 		var rpcBody *types.Receipt
 		if err = json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(rpcBody)
-	case SyncProgressMethod:
+	case client.SyncProgressMethod:
 		var syncing bool
 		if err = json.Unmarshal(rpcMessage.Result, &syncing); err == nil {
 			out, err = json.Marshal(syncing)
@@ -165,14 +167,14 @@ OUTER:
 		}
 
 		out, err = json.Marshal(p)
-	case FeeHistoryMethod:
+	case client.FeeHistoryMethod:
 		var rpcBody feeHistoryResultMarshaling
 		if err := json.Unmarshal(rpcMessage.Result, &rpcBody); err != nil {
 			return nil, fmt.Errorf("could not parse: %w", err)
 		}
 		out, err = json.Marshal(rpcBody)
 
-	case BlockByHashMethod, BlockByNumberMethod:
+	case client.BlockByHashMethod, client.BlockByNumberMethod:
 		var head *types.Header
 		var rpcBody rpcBlock
 		var rpcBlockNoTx rpcBlockNoTx
@@ -247,8 +249,10 @@ OUTER:
 			return nil, fmt.Errorf("could not unmarshall full block: %w", err)
 		}
 	// we don't do anything here, kept for exhaustiveness
-	case CallMethod, SendRawTransactionMethod:
+	case client.CallMethod, client.SendRawTransactionMethod:
 		return out, nil
+	case client.NetVersionMethod, client.SubscribeMethod:
+		return out, fmt.Errorf("method %s is not supported", rpcMessage.Method)
 	}
 
 	//nolint: wrapcheck

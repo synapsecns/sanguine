@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/eth/gasprice"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/google/uuid"
@@ -18,7 +17,7 @@ import (
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/dockerutil"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/processlog"
 	"github.com/synapsecns/sanguine/ethergo/backends"
@@ -27,7 +26,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/teivah/onecontext"
-	"io"
 	"math"
 	"math/big"
 	"os"
@@ -61,6 +59,7 @@ func (f *Backend) BackendName() string {
 }
 
 // NewAnvilBackend creates a test anvil backend.
+// nolint: cyclop
 func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Backend {
 	t.Helper()
 
@@ -89,14 +88,26 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 
 	resource, err := pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 		config.AutoRemove = args.autoremove
-		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
+		if args.restartPolicy != nil {
+			config.RestartPolicy = *args.restartPolicy
+		}
 	})
 	assert.Nil(t, err)
 
 	logInfoChan := make(chan processlog.LogMetadata)
 	go func() {
-		err = tailLogs(ctx, resource, pool, true, logInfoChan)
-		logger.Warn(err)
+		defer close(logInfoChan)
+		err = dockerutil.TailContainerLogs(dockerutil.WithContext(ctx), dockerutil.WithResource(resource), dockerutil.WithPool(pool), dockerutil.WithFollow(true), dockerutil.WithCallback(func(ctx context.Context, metadata processlog.LogMetadata) {
+			select {
+			case <-ctx.Done():
+				return
+			case logInfoChan <- metadata:
+			}
+		}))
+
+		if ctx.Err() != nil {
+			logger.Warn(err)
+		}
 	}()
 
 	// Docker will hard kill the container in expiryseconds seconds (this is a test env).
@@ -155,48 +166,11 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		<-ctx.Done()
 		_ = pool.Purge(resource)
 	}()
+
 	return &backend
 }
 
 var logger = log.Logger("anvil-docker")
-
-// tailLogs tails the logs of a docker container.
-func tailLogs(ctx context.Context, resource *dockertest.Resource, pool *dockertest.Pool, follow bool, logInfoChan chan<- processlog.LogMetadata) error {
-	stdoutReader, stdoutWriter := io.Pipe()
-	stderrReader, stderrWriter := io.Pipe()
-
-	opts := docker.LogsOptions{
-		Context: ctx,
-
-		Stderr:      true,
-		Stdout:      true,
-		Follow:      follow,
-		Timestamps:  false,
-		RawTerminal: true,
-
-		Container: resource.Container.ID,
-
-		ErrorStream:  stderrWriter,
-		OutputStream: stdoutWriter,
-	}
-
-	logInfo, err := processlog.StartLogs(processlog.WithStdOut(stdoutReader), processlog.WithStdErr(stderrReader), processlog.WithCtx(ctx))
-	if err != nil {
-		return fmt.Errorf("failed to get container logs: %w", err)
-	}
-
-	select {
-	case <-ctx.Done():
-		return fmt.Errorf("context canceled: %w", ctx.Err())
-	case logInfoChan <- logInfo:
-		break
-	}
-
-	close(logInfoChan)
-
-	//nolint: wrapcheck
-	return pool.Client.Logs(opts)
-}
 
 // storeWallets stores preseeded wallets w/ balances.
 func (f *Backend) storeWallets(args *OptionBuilder) error {
@@ -278,13 +252,14 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 }
 
 // WaitForConfirmation checks confirmation if the transaction is signed.
+// nolint: cyclop
 func (f *Backend) WaitForConfirmation(ctx context.Context, tx *types.Transaction) {
 	assert.NotNil(f.T(), tx, "tx is nil")
 	v, r, s := tx.RawSignatureValues()
 	isUnsigned := isZero(v) && isZero(r) && isZero(s)
 	if isUnsigned {
 		warnUnsignedOnce.Do(func() {
-			logger.Warn("WaitForConfirmation called on unsigned (liekly impersonated) transaction, this does nothing")
+			logger.Warn("WaitForConfirmation called on unsigned (likely impersonated) transaction, this does nothing")
 		})
 		return
 	}
@@ -329,11 +304,8 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	auth, err := f.NewKeyedTransactorFromKey(acct.PrivateKey)
 	assert.Nilf(f.T(), err, "could not get transactor for chain %d: %v", f.GetChainID(), err)
 
-	blockNumber, err := f.BlockNumber(ctx)
-	assert.Nilf(f.T(), err, "could not get block number for chain %d: %v", f.GetChainID(), err)
-
-	err = f.Chain.GasSetter().SetGasFee(ctx, auth, blockNumber, core.CopyBigInt(gasprice.DefaultMaxPrice))
-	assert.Nilf(f.T(), err, "could not set gas fee for chain %d: %v", f.GetChainID(), err)
+	auth.GasPrice, err = f.SuggestGasPrice(ctx)
+	assert.Nilf(f.T(), err, "could not get gas price for chain %d: %v", f.GetChainID(), err)
 
 	auth.GasLimit = gasLimit
 
@@ -368,14 +340,15 @@ func (f *Backend) ImpersonateAccount(ctx context.Context, address common.Address
 	}()
 
 	tx := transact(&bind.TransactOpts{
-		Context: ctx,
-		From:    address,
-		Signer:  ImpersonatedSigner,
-		NoSend:  true,
+		Context:  ctx,
+		From:     address,
+		Signer:   ImpersonatedSigner,
+		GasLimit: gasLimit,
+		NoSend:   true,
 	})
 
 	err = anvilClient.SendUnsignedTransaction(ctx, address, tx)
-	assert.Nil(f.T(), err, "could not send unsigned transaction for chain %d: %v", f.GetChainID(), err)
+	assert.Nilf(f.T(), err, "could not send unsigned transaction for chain %d: %v from %s", f.GetChainID(), err, address.String())
 
 	return nil
 }

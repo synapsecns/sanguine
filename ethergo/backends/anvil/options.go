@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ImVexed/fasturl"
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ory/dockertest/v3/docker"
 	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/exp/slices"
 	"reflect"
@@ -26,7 +27,7 @@ func NewAnvilOptionBuilder() *OptionBuilder {
 	optionsBuilder := &OptionBuilder{}
 	// set default non-anvil values
 	optionsBuilder.SetMaxWaitTime(time.Minute * 2)
-	optionsBuilder.SetAutoremove(true)
+	optionsBuilder.SetRestartPolicy(Autoremove)
 	optionsBuilder.SetExpirySeconds(600)
 
 	optionsBuilder.SetAccounts(10)
@@ -112,6 +113,8 @@ type nonAnvilOptions struct {
 	expirySeconds uint
 	// autoremove is wether the container should be deleted after the run
 	autoremove bool
+	// restartPolicy restarts a policy
+	restartPolicy *docker.RestartPolicy
 }
 
 // OptionBuilder is a builder for anvil options.
@@ -341,10 +344,45 @@ func (o *OptionBuilder) SetExpirySeconds(expirySeconds uint) {
 	o.expirySeconds = expirySeconds
 }
 
-// SetAutoremove enables or disables autoremove for the docker image.
-func (o *OptionBuilder) SetAutoremove(autoremove bool) {
-	o.autoremove = autoremove
+// SetRestartPolicy sets the restart policy for the docker container.
+func (o *OptionBuilder) SetRestartPolicy(restartPolicy RestartPolicy) {
+	alwaysRestart := docker.AlwaysRestart()
+	failure := docker.RestartOnFailure(10)
+	unlessStopped := docker.RestartUnlessStopped()
+	neverRestart := docker.NeverRestart()
+
+	o.autoremove = false
+
+	switch restartPolicy {
+	case Restart:
+		o.restartPolicy = &alwaysRestart
+	case Failure:
+		o.restartPolicy = &failure
+	case UnlessStopped:
+		o.restartPolicy = &unlessStopped
+	case No:
+		o.restartPolicy = &neverRestart
+	case Autoremove:
+		o.restartPolicy = nil
+		o.autoremove = true
+	}
 }
+
+// RestartPolicy defines the restart policy for the docker container.
+type RestartPolicy string
+
+const (
+	// Restart defines the restart policy for the docker container.
+	Restart RestartPolicy = "always"
+	// Failure defines the restart policy for the docker container.
+	Failure = "on-failure"
+	// UnlessStopped defines the restart policy for the docker container.
+	UnlessStopped = "unless-stopped"
+	// No defines the restart policy for the docker container.
+	No = "no"
+	// Autoremove removes the container when it's finished.
+	Autoremove = "autoremove"
+)
 
 // Build converts the option builder into a list of command line parameters.
 // for use in anvil.

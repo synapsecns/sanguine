@@ -96,7 +96,7 @@ func (b *BackfillSuite) TestLogsInRange() {
 
 	wg.Wait()
 
-	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host)
+	scribeBackend, err := backfill.DialBackend(b.GetTestContext(), host, b.metrics)
 	Nil(b.T(), err)
 
 	chainID, err := scribeBackend.ChainID(b.GetTestContext())

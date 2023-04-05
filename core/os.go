@@ -26,6 +26,12 @@ func GetEnv(name, defaultVal string) string {
 	return val
 }
 
+// HasEnv checks if an environment variable is set.
+func HasEnv(name string) bool {
+	val := os.Getenv(name)
+	return val != ""
+}
+
 // GetEnvInt gets an environment variable as an int. if not found or cast the
 // defaultVal is returned.
 func GetEnvInt(name string, defaultVal int) int {
