@@ -285,6 +285,6 @@ func (c *ClientSuite) TestParseRPCPayload() {
 	// note: single batch requests will fail checkRequest since it is a helper function that expects more than one call, this could be checked manually
 	// if so desired
 	c.checkRequest(func(client TestEVM) {
-		_ = client.Batch(c.GetTestContext(), eth.ChainID().Returns(nil), eth.ChainID().Returns(nil))
+		_ = client.BatchWithContext(c.GetTestContext(), eth.ChainID().Returns(nil), eth.ChainID().Returns(nil))
 	})
 }
