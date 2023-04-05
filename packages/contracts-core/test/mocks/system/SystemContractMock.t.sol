@@ -22,7 +22,7 @@ contract SystemContractMock is Ownable, ISystemContract {
         systemRouter = systemRouter_;
     }
 
-    function remoteMockFunc(uint256 rootSubmittedAt, uint32 origin, SystemEntity sender, bytes32 data)
+    function remoteMockFunc(uint256 proofMaturity, uint32 origin, SystemEntity sender, bytes32 data)
         external
         onlySystemRouter
     {}

@@ -41,12 +41,12 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
     /**
      * @dev Modifier for functions that are supposed to be called only from
      * System Contracts on all chains (either local or remote).
-     * Note: any function protected by this modifier should have last three params:
-     * - uint32 callOrigin
-     * - SystemEntity systemCaller
-     * - uint256 rootSubmittedAt
-     * Make sure to check domain/caller, if a function should be only called
-     * from a given domain / by a given caller.
+     * Note: any function protected by this modifier should have first three params as:
+     * - uint256 proofMaturity
+     * - uint32 origin
+     * - SystemEntity sender
+     * Make sure to check domain/sender, if a function should be only called
+     * from a given domain / by a given sender.
      * Make sure to check that a needed amount of time has passed since
      * root submission for the cross-chain calls.
      */
@@ -77,20 +77,6 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
      */
     modifier onlyCallers(uint256 allowedMask, SystemEntity systemCaller) {
         _assertEntityAllowed(allowedMask, systemCaller);
-        _;
-    }
-
-    /**
-     * @dev Modifier for functions that are supposed to be called only from
-     * System Contracts on remote chain with a defined minimum optimistic period.
-     * Note: has to be used alongside with `onlySystemRouter`
-     * See `onlySystemRouter` for details about the functions protected by such modifiers.
-     * Note: message could be sent with a period lower than that, but will be executed
-     * only when `optimisticSeconds` have passed.
-     * Note: optimisticSeconds=0 will allow calls from a local chain as well
-     */
-    modifier onlyOptimisticPeriodOver(uint256 rootSubmittedAt, uint256 optimisticSeconds) {
-        _assertOptimisticPeriodOver(rootSubmittedAt, optimisticSeconds);
         _;
     }
 
@@ -129,10 +115,6 @@ abstract contract SystemContract is DomainContext, Versioned, OwnableUpgradeable
 
     function _assertSystemRouter() internal view {
         require(msg.sender == address(systemRouter), "!systemRouter");
-    }
-
-    function _assertOptimisticPeriodOver(uint256 rootSubmittedAt, uint256 optimisticSeconds) internal view {
-        require(block.timestamp >= rootSubmittedAt + optimisticSeconds, "!optimisticPeriod");
     }
 
     function _assertEntityAllowed(uint256 allowedMask, SystemEntity caller) internal pure {
