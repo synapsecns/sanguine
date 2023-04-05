@@ -22,6 +22,7 @@ import {
     RawCallData,
     RawHeader,
     RawMessage,
+    RawRequest,
     RawState,
     RawSystemMessage,
     RawTips
@@ -441,6 +442,7 @@ contract DestinationTest is DisputeHubTest {
             sender: addressToBytes32(sender),
             recipient: addressToBytes32(recipient),
             tips: RawTips(0, 0, 0, 0),
+            request: RawRequest(0),
             content: CONTENT
         }).formatBaseMessage();
         for (uint32 i = 0; i < MESSAGES; ++i) {

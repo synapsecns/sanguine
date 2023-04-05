@@ -11,6 +11,7 @@ interface InterfaceOrigin {
      * @param recipient             Address of recipient on destination chain as bytes32
      * @param optimisticPeriod      Optimistic period for message execution on destination chain
      * @param tipsPayload           Payload with information about paid tips
+     * @param requestPayload        Payload with message execution request on destination chain
      * @param content               Raw bytes content of message
      * @return messageNonce         Nonce of the sent message
      * @return messageHash          Hash of the sent message
@@ -20,6 +21,7 @@ interface InterfaceOrigin {
         bytes32 recipient,
         uint32 optimisticPeriod,
         bytes memory tipsPayload,
+        bytes memory requestPayload,
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash);
 
