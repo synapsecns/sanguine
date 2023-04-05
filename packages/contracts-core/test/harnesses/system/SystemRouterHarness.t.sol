@@ -21,12 +21,12 @@ contract SystemRouterHarness is SystemRouter {
      */
     function systemPrank(
         SystemEntity recipient,
-        uint256 rootSubmittedAt,
+        uint256 proofMaturity,
         uint32 callOrigin,
         SystemEntity systemCaller,
         bytes memory payload
     ) public {
-        bytes memory prefix = abi.encode(rootSubmittedAt, callOrigin, systemCaller);
+        bytes memory prefix = abi.encode(proofMaturity, callOrigin, systemCaller);
         _callSystemRecipient({systemRecipient: recipient, payload: payload.castToCallData().addPrefix(prefix)});
     }
 }

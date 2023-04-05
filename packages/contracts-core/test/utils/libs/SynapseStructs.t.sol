@@ -51,7 +51,7 @@ using CastLib for RawSystemMessage global;
 struct RawSystemCall {
     uint32 origin;
     uint32 nonce;
-    uint256 rootSubmittedAt;
+    uint256 proofMaturity;
     RawSystemMessage systemMessage;
 }
 
@@ -224,7 +224,7 @@ library CastLib {
 
     function callPayload(RawSystemCall memory rsc) internal view returns (bytes memory scPayload) {
         scPayload = rsc.systemMessage.callData.castToCallData().addPrefix(
-            abi.encode(rsc.rootSubmittedAt, rsc.origin, rsc.systemMessage.sender)
+            abi.encode(rsc.proofMaturity, rsc.origin, rsc.systemMessage.sender)
         );
     }
 

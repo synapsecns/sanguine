@@ -8,7 +8,7 @@ contract SystemRouterMock is InterfaceSystemRouter {
     /// @notice Prevents this contract from being included in the coverage report
     function testSystemRouterMock() external {}
 
-    function receiveSystemMessage(uint32 origin, uint32 nonce, uint256 rootSubmittedAt, bytes memory body) external {}
+    function receiveSystemMessage(uint32 origin, uint32 nonce, uint256 proofMaturity, bytes memory body) external {}
 
     function systemCall(uint32 destination, uint32 optimisticSeconds, SystemEntity recipient, bytes memory data)
         external

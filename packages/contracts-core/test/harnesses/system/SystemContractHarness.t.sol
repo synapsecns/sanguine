@@ -5,7 +5,7 @@ import {SystemContract, SystemEntity} from "../../../contracts/system/SystemCont
 
 // solhint-disable no-empty-blocks
 abstract contract SystemContractHarness is SystemContract {
-    function remoteMockFunc(uint256 rootSubmittedAt, uint32 origin, SystemEntity sender, bytes32 data)
+    function remoteMockFunc(uint256 proofMaturity, uint32 origin, SystemEntity sender, bytes32 data)
         external
         onlySystemRouter
     {}

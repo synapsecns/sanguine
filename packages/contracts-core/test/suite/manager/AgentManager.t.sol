@@ -34,7 +34,7 @@ abstract contract AgentManagerTest is SynapseTest {
     ) internal {
         router.systemPrank({
             recipient: SystemEntity.AgentManager,
-            rootSubmittedAt: callOrigin == _localDomain() ? block.timestamp : rootSubmittedAt,
+            proofMaturity: block.timestamp - rootSubmittedAt,
             callOrigin: callOrigin,
             systemCaller: systemCaller,
             payload: payload
@@ -42,7 +42,7 @@ abstract contract AgentManagerTest is SynapseTest {
     }
 
     function _remoteSlashPayload(uint32 domain, address agent, address prover) internal view returns (bytes memory) {
-        // (rootSubmittedAt, callOrigin, systemCaller) are omitted; (domain, agent, prover)
+        // (proofMaturity, callOrigin, systemCaller) are omitted; (domain, agent, prover)
         return abi.encodeWithSelector(bondingManager.remoteRegistrySlash.selector, domain, agent, prover);
     }
 }

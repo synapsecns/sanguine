@@ -12,7 +12,7 @@ contract MessageRecipientMock is IMessageRecipient {
         uint32 origin,
         uint32 nonce,
         bytes32 sender,
-        uint256 rootSubmittedAt,
+        uint256 proofMaturity,
         bytes memory content
     ) external payable {}
 }
