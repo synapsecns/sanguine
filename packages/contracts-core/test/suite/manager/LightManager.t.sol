@@ -93,11 +93,22 @@ contract LightManagerTest is AgentManagerTest {
     }
 
     function test_setAgentRoot(bytes32 root) public {
-        vm.expectEmit();
-        emit RootUpdated(root);
+        bool isDifferent = root != lightManager.agentRoot();
+        if (isDifferent) {
+            vm.expectEmit();
+            emit RootUpdated(root);
+        }
+        vm.recordLogs();
         vm.prank(destination);
         lightManager.setAgentRoot(root);
+        if (!isDifferent) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't have");
+        }
         assertEq(lightManager.agentRoot(), root, "!agentRoot");
+    }
+
+    function test_setAgentRoot_equal() public {
+        test_setAgentRoot(lightManager.agentRoot());
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

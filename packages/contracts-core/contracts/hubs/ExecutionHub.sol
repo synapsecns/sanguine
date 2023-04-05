@@ -105,8 +105,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // TODO: check that the discarded bits are empty
         address recipient = baseMessage.recipient().bytes32ToAddress();
         // Forward message content to the recipient
-        // TODO: this should be "receive base message"
-        IMessageRecipient(recipient).handle(
+        IMessageRecipient(recipient).receiveBaseMessage(
             origin, nonce, baseMessage.sender(), rootSubmittedAt, baseMessage.content().clone()
         );
     }

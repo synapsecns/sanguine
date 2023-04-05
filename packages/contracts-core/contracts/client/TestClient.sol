@@ -10,47 +10,32 @@ import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 
 contract TestClient is IMessageRecipient {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              IMMUTABLES                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    // local chain Origin: used for sending messages
+    /// @notice Local chain Origin: used for sending messages
     address public immutable origin;
 
-    // local chain Destination: used for receiving messages
+    /// @notice Local chain Destination: used for receiving messages
     address public immutable destination;
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                EVENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     event MessageReceived(uint32 origin, uint32 nonce, bytes32 sender, uint256 rootSubmittedAt, bytes content);
 
     event MessageSent(uint32 destination, uint32 nonce, bytes32 sender, bytes32 recipient, bytes content);
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             CONSTRUCTOR                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     constructor(address origin_, address destination_) {
         origin = origin_;
         destination = destination_;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          RECEIVING MESSAGES                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function handle(uint32 origin_, uint32 nonce, bytes32 sender, uint256 rootSubmittedAt, bytes memory content)
-        external
-    {
+    /// @inheritdoc IMessageRecipient
+    function receiveBaseMessage(
+        uint32 origin_,
+        uint32 nonce,
+        bytes32 sender,
+        uint256 rootSubmittedAt,
+        bytes memory content
+    ) external payable {
         require(msg.sender == destination, "TestClient: !destination");
         emit MessageReceived(origin_, nonce, sender, rootSubmittedAt, content);
     }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           SENDING MESSAGES                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function sendMessage(uint32 destination_, address recipientAddress, uint32 optimisticSeconds, bytes memory content)
         external
