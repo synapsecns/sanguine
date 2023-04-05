@@ -68,6 +68,7 @@ struct RawBaseMessage {
     bytes32 sender;
     bytes32 recipient;
     RawTips tips;
+    RawRequest request;
     bytes content;
 }
 
@@ -199,6 +200,7 @@ library CastLib {
             sender_: rbm.sender,
             recipient_: rbm.recipient,
             tipsPayload: rbm.tips.formatTips(),
+            requestPayload: rbm.request.formatRequest(),
             content_: rbm.content
         });
     }
