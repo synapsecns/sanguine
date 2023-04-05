@@ -101,8 +101,6 @@ func createTunnel(ctx context.Context, sshAddr string, localPort, remotePort int
 	case <-ctx.Done():
 		return "", fmt.Errorf("context canceled: %w", ctx.Err())
 	case host := <-hostChan:
-		fmt.Println(host)
-		fmt.Println(localPort)
 		// after this point, we'll need to consume and log the errors since we can't tell the client anything
 		go func() {
 			select {
