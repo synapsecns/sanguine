@@ -165,15 +165,15 @@ jobs:
           GOGC: -1
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: go-report-${{ matrix.package }}
-          path: ${{matrix.package}}/report.html
-
       - name: Get Coverage name
         id: coverage
         run: |
           echo "::set-output name=flag::$(echo "${{ matrix.package }}" | rev | cut -d/ -f1 | rev)"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: go-report-${{ steps.coverage.outputs.flag }}
+          path: ${{matrix.package}}/report.html
 
       - uses: codecov/codecov-action@v3
         name: Send Coverage (Codecov)
