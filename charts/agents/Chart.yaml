@@ -36,3 +36,7 @@ dependencies:
     version: "0.2.3"
     repository: "file://../scribe/"
     condition: scribe.enabled
+  - name: jaeger
+    version: 0.69.1
+    repository: https://jaegertracing.github.io/helm-charts
+    condition: jaeger.enabled

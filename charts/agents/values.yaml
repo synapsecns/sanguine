@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "631fca1a79fff1c68393a6201f92406a3c055e08"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -77,6 +77,10 @@ notary:
       value: "json"
     - name: GOLOG_LOG_LEVEL
       value: "info"
+    - name: METRICS_HANDLER
+      value: "jaeger"
+    - name: JAEGER_ENDPOINT
+      value: "http://agents-jaeger-collector:14268/api/traces"
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -125,6 +129,10 @@ guard:
       value: "json"
     - name: GOLOG_LOG_LEVEL
       value: "info"
+    - name: METRICS_HANDLER
+      value: "jaeger"
+    - name: JAEGER_ENDPOINT
+      value: "http://agents-jaeger-collector:14268/api/traces"
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -154,6 +162,10 @@ executor_remote_existing:
       value: "json"
     - name: GOLOG_LOG_LEVEL
       value: "error"
+    - name: METRICS_HANDLER
+      value: "jaeger"
+    - name: JAEGER_ENDPOINT
+      value: "http://agents-jaeger-collector:14268/api/traces"
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -196,6 +208,10 @@ executor_remote_fresh:
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
+    - name: METRICS_HANDLER
+      value: "jaeger"
+    - name: JAEGER_ENDPOINT
+      value: "http://agents-jaeger-collector:14268/api/traces"
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -256,8 +272,23 @@ executor_embedded:
       value: "json"
     - name: GOLOG_LOG_LEVEL
       value: "error"
+    - name: METRICS_HANDLER
+      value: "jaeger"
+    - name: JAEGER_ENDPOINT
+      value: "http://agents-jaeger-collector:14268/api/traces"
   tolerations: {}
   extraInitContainers:
+#    - name: wait-for-jaeger
+#      image: busybox:latest
+#      imagePullPolicy: IfNotPresent
+#      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 16686; do echo "Waiting for jaeger..."; sleep 1; done;']
+#      env:
+#        - name: POD_NAME
+#          value: agents-jaeger
+#        - name: POD_NAMESPACE
+#          valueFrom:
+#              fieldRef:
+#                fieldPath: metadata.namespace
     - name: wait-for-omnirpc
       image: busybox:latest
       imagePullPolicy: IfNotPresent
@@ -324,6 +355,21 @@ mysql:
     # Note: this should be used in production instead of auth.password
     # existingSecret: mysql-password
     rootPassword: MysqlPassword
+
+jaeger:
+  enabled: true
+  provisionDataStore:
+    cassandra: false
+  allInOne:
+    enabled: true
+  storage:
+    type: none
+  agent:
+    enabled: false
+  collector:
+    enabled: false
+  query:
+    enabled: false
 
 omnirpc:
   # this can be remote in production, we just want to use the public rpc servers here
