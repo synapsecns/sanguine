@@ -132,6 +132,10 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
+        # TODO: dockerize
+      - name: Install Go Test Report
+        run: go install github.com/trajan0x/go-test-report@v0.0.1
+
       - name: Verify MariaDB connection
         env:
           PORT: ${{ job.services.mariadb.ports[3306] }}
@@ -143,7 +147,7 @@ jobs:
       - name: Test
         uses: nick-fields/retry@v2
         with:
-          command: cd ${{matrix.package}} && go test -coverpkg=./... ./... -coverprofile=profile.cov
+          command: cd ${{matrix.package}} && go test -json -coverpkg=./... ./... -coverprofile=profile.cov | go-test-report --verbose --output=report.html
           max_attempts: 6
           timeout_minutes: 15
         env:
@@ -161,6 +165,10 @@ jobs:
           GOGC: -1
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: go-report-${{ matrix.package }}
+          path: ${{matrix.package}}/report.html
 
       - name: Get Coverage name
         id: coverage

@@ -1,6 +1,6 @@
 # Core
 
-Core contains common libraries used across our Go repositories.
+Core contains common libraries used across the Go repositories.
 
 ## Directory Structure
 
