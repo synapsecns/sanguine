@@ -60,7 +60,7 @@ require (
 	go.uber.org/zap v1.23.0
 	golang.ngrok.com/ngrok v1.0.0
 	golang.org/x/crypto v0.6.0
-	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
+	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
 	golang.org/x/sync v0.1.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.44.1
 	gorm.io/driver/sqlite v1.4.3
