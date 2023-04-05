@@ -224,7 +224,7 @@ contract DestinationTest is DisputeHubTest {
         check_submitStateReportWithProof(destination, DOMAIN_LOCAL, rs, ra, statesAmount, stateIndex);
     }
 
-    function test_execute(
+    function test_execute_base(
         RawState memory rs,
         RawAttestation memory ra,
         uint256 statesAmount,
@@ -236,7 +236,7 @@ contract DestinationTest is DisputeHubTest {
         statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
         stateIndex = bound(stateIndex, 0, statesAmount - 1);
 
-        createMessages();
+        createBaseMessages();
         rs.root = getRoot(MESSAGES);
         rs.origin = DOMAIN_REMOTE;
         // Remainder of State struct is fuzzed
@@ -263,9 +263,7 @@ contract DestinationTest is DisputeHubTest {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          DISPUTE RESOLUTION                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ DISPUTE RESOLUTION ═════════════════════════════════════════════════
 
     function test_managerSlash(uint256 domainId, uint256 agentId, address prover) public {
         // no counterpart in this test
@@ -312,9 +310,7 @@ contract DestinationTest is DisputeHubTest {
         checkDisputeResolved({hub: destination, honest: notary, slashed: guard});
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       TESTS: WHILE IN DISPUTE                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════ TESTS: WHILE IN DISPUTE ══════════════════════════════════════════════
 
     function test_submitAttestation_revert_notaryInDispute(
         RawAttestation memory firstRA,
@@ -368,7 +364,7 @@ contract DestinationTest is DisputeHubTest {
         address executor = makeAddr("Executor");
         address notary = domains[DOMAIN_LOCAL].agent;
         // Prepare attestation for message execution
-        createMessages();
+        createBaseMessages();
         rs.root = getRoot(MESSAGES);
         rs.origin = DOMAIN_REMOTE;
         // Remainder of State struct is fuzzed
@@ -389,11 +385,9 @@ contract DestinationTest is DisputeHubTest {
         IExecutionHub(destination).execute(msgPayloads[0], originProof, snapProof, stateIndex);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    function createMessages() public {
+    function createBaseMessages() public {
         bytes memory body = RawBaseMessage({
             sender: addressToBytes32(sender),
             recipient: addressToBytes32(recipient),
