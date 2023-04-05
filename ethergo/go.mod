@@ -27,7 +27,7 @@ require (
 	github.com/ipfs/go-log v1.0.5
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/jpillora/backoff v1.0.0
-	github.com/keep-network/keep-common v1.7.1-0.20211012131917-7102d7b9c6a0
+	github.com/keep-network/keep-common v1.7.1-0.20230307133730-2632871d696c
 	github.com/lmittmann/w3 v0.10.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mattn/go-isatty v0.0.17
