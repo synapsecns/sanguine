@@ -153,18 +153,14 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
 
     /// @inheritdoc IBondingManager
     function remoteRegistrySlash(
-        uint256 rootSubmittedAt,
+        uint256 proofMaturity,
         uint32 callOrigin,
         SystemEntity systemCaller,
         uint32 domain,
         address agent,
         address prover
-    )
-        external
-        onlySystemRouter
-        onlyCallers(AGENT_MANAGER, systemCaller)
-        onlyOptimisticPeriodOver(rootSubmittedAt, BONDING_OPTIMISTIC_PERIOD)
-    {
+    ) external onlySystemRouter onlyCallers(AGENT_MANAGER, systemCaller) {
+        require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
         // TODO: do we need to save this?
         callOrigin;
         // Check that Agent hasn't been already slashed and initiate the slashing

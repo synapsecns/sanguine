@@ -34,12 +34,12 @@ abstract contract BaseClient is IMessageRecipient {
         uint32 origin_,
         uint32 nonce,
         bytes32 sender,
-        uint256 rootSubmittedAt,
+        uint256 proofMaturity,
         bytes memory content
     ) external payable {
         require(msg.sender == destination, "BaseClient: !destination");
         require(sender == trustedSender(origin_) && sender != bytes32(0), "BaseClient: !trustedSender");
-        require(block.timestamp >= rootSubmittedAt + optimisticPeriod(), "BaseClient: !optimisticPeriod");
+        require(proofMaturity >= optimisticPeriod(), "BaseClient: !optimisticPeriod");
         // All security checks are passed, handle the message content
         _receiveBaseMessage(origin_, nonce, content);
     }

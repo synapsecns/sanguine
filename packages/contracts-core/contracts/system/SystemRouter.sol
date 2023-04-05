@@ -29,7 +29,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
  *  - System Router only accepts calls from the system contracts, so it's not possible for anyone but
  *  the system contracts to initiate a system call.
  *  - System Contracts should expose functions for receveing cross-chain system calls:
- *  `function foo(uint256 rootSubmittedAt, uint32 origin, SystemEntity sender, *args)`
+ *  `function foo(uint256 proofMaturity, uint32 origin, SystemEntity sender, *args)`
  *  - The first three arguments in these functions are the security arguments, which will be filled
  *  by SystemRouter on the destination chain.
  *  - Such functions should be protected with `onlySystemRouter` modifier.
@@ -60,15 +60,15 @@ contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
     // ════════════════════════════════════════════ EXTERNAL FUNCTIONS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSystemRouter
-    function receiveSystemMessage(uint32 origin_, uint32, uint256 rootSubmittedAt, bytes memory body) external {
+    function receiveSystemMessage(uint32 origin_, uint32, uint256 proofMaturity, bytes memory body) external {
         // Only Destination can deliver messages
         require(msg.sender == destination, "SystemRouter: !destination");
         // TODO: figure out if we need nonce to be passed here
         // This will revert if message body is not a system message
         SystemMessage systemMessage = body.castToSystemMessage();
-        // Destination chain: set (rootSubmittedAt, origin, systemSender) values for system message
-        bytes memory prefix = abi.encode(rootSubmittedAt, origin_, systemMessage.sender());
-        // Add the (rootSubmittedAt, origin, systemSender) values to the calldata
+        // Destination chain: set (proofMaturity, origin, systemSender) values for system message
+        bytes memory prefix = abi.encode(proofMaturity, origin_, systemMessage.sender());
+        // Add the (proofMaturity, origin, systemSender) values to the calldata
         bytes memory payload = systemMessage.callData().addPrefix(prefix);
         _callSystemRecipient(systemMessage.recipient(), payload);
     }

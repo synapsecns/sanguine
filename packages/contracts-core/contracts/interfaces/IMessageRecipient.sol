@@ -13,14 +13,14 @@ interface IMessageRecipient {
      * @param origin            Domain where message originated
      * @param nonce             Message nonce on the origin domain
      * @param sender            Sender address on origin chain
-     * @param rootSubmittedAt   Time when merkle root (used for proving this message) was submitted
+     * @param proofMaturity     Message's merkle proof age in seconds
      * @param content           Raw bytes content of message
      */
     function receiveBaseMessage(
         uint32 origin,
         uint32 nonce,
         bytes32 sender,
-        uint256 rootSubmittedAt,
+        uint256 proofMaturity,
         bytes memory content
     ) external payable;
 }

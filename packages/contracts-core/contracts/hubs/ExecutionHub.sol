@@ -71,14 +71,14 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         ExecutionAttestation memory execAtt =
             _proveAttestation(origin, nonce, msgLeaf, originProof, snapProof, stateIndex);
         // Check if optimistic period has passed
-        uint256 rootSubmittedAt = execAtt.submittedAt;
-        require(block.timestamp >= rootSubmittedAt + header.optimisticPeriod(), "!optimisticPeriod");
+        uint256 proofMaturity = block.timestamp - execAtt.submittedAt;
+        require(proofMaturity >= header.optimisticPeriod(), "!optimisticPeriod");
         // Only System/Base message flags exist
         if (message.flag() == MessageFlag.System) {
-            _executeSystemMessage(origin, nonce, rootSubmittedAt, message.body());
+            _executeSystemMessage(origin, nonce, proofMaturity, message.body());
         } else {
             // This will revert if message body is not a formatted BaseMessage payload
-            _executeBaseMessage(origin, nonce, rootSubmittedAt, execAtt.notary, message.body().castToBaseMessage());
+            _executeBaseMessage(origin, nonce, proofMaturity, execAtt.notary, message.body().castToBaseMessage());
         }
         emit Executed(origin, msgLeaf);
     }
@@ -96,7 +96,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     function _executeBaseMessage(
         uint32 origin,
         uint32 nonce,
-        uint256 rootSubmittedAt,
+        uint256 proofMaturity,
         address notary,
         BaseMessage baseMessage
     ) internal {
@@ -106,14 +106,14 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         address recipient = baseMessage.recipient().bytes32ToAddress();
         // Forward message content to the recipient
         IMessageRecipient(recipient).receiveBaseMessage(
-            origin, nonce, baseMessage.sender(), rootSubmittedAt, baseMessage.content().clone()
+            origin, nonce, baseMessage.sender(), proofMaturity, baseMessage.content().clone()
         );
     }
 
-    function _executeSystemMessage(uint32 origin, uint32 nonce, uint256 rootSubmittedAt, bytes29 body) internal {
+    function _executeSystemMessage(uint32 origin, uint32 nonce, uint256 proofMaturity, bytes29 body) internal {
         // TODO: introduce incentives for executing System Messages?
         // Forward system message to System Router
-        systemRouter.receiveSystemMessage(origin, nonce, rootSubmittedAt, body.clone());
+        systemRouter.receiveSystemMessage(origin, nonce, proofMaturity, body.clone());
     }
 
     // ══════════════════════════════════════ INTERNAL LOGIC: MESSAGE PROVING ══════════════════════════════════════════

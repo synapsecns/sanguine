@@ -10,14 +10,20 @@ import {IExecutionHub} from "../../contracts/interfaces/IExecutionHub.sol";
 import {InterfaceDestination} from "../../contracts/Destination.sol";
 import {Versioned} from "../../contracts/Version.sol";
 
+import {SystemRouterHarness} from "../harnesses/system/SystemRouterHarness.t.sol";
 import {MessageRecipientMock} from "../mocks/client/MessageRecipientMock.t.sol";
+import {SystemContractMock} from "../mocks/system/SystemContractMock.t.sol";
+import {SystemRouterMock} from "../mocks/system/SystemRouterMock.t.sol";
 import {
     MessageFlag,
+    SystemEntity,
     RawAttestation,
     RawBaseMessage,
+    RawCallData,
     RawHeader,
     RawMessage,
     RawState,
+    RawSystemMessage,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import {AgentFlag, ISystemContract, SynapseTest} from "../utils/SynapseTest.t.sol";
@@ -224,7 +230,7 @@ contract DestinationTest is DisputeHubTest {
         check_submitStateReportWithProof(destination, DOMAIN_LOCAL, rs, ra, statesAmount, stateIndex);
     }
 
-    function test_execute(
+    function test_execute_base(
         RawState memory rs,
         RawAttestation memory ra,
         uint256 statesAmount,
@@ -236,7 +242,7 @@ contract DestinationTest is DisputeHubTest {
         statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
         stateIndex = bound(stateIndex, 0, statesAmount - 1);
 
-        createMessages();
+        createBaseMessages();
         rs.root = getRoot(MESSAGES);
         rs.origin = DOMAIN_REMOTE;
         // Remainder of State struct is fuzzed
@@ -247,16 +253,11 @@ contract DestinationTest is DisputeHubTest {
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
             bytes32[] memory originProof = getLatestProof(i);
-            // (origin, nonce, sender, rootSubmittedAt, message)
+            // (origin, nonce, sender, proofMaturity, message)
             vm.expectCall(
                 recipient,
                 abi.encodeWithSelector(
-                    MessageRecipientMock.receiveBaseMessage.selector,
-                    DOMAIN_REMOTE,
-                    i + 1,
-                    sender,
-                    rootSubmittedAt,
-                    CONTENT
+                    MessageRecipientMock.receiveBaseMessage.selector, DOMAIN_REMOTE, i + 1, sender, PERIOD, CONTENT
                 )
             );
             // Should emit event when message is executed
@@ -268,9 +269,50 @@ contract DestinationTest is DisputeHubTest {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          DISPUTE RESOLUTION                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    function test_execute_system(
+        RawState memory rs,
+        RawAttestation memory ra,
+        uint256 statesAmount,
+        uint256 stateIndex,
+        uint32 rootSubmittedAt,
+        uint32 proofMaturity
+    ) public {
+        // Use System Router Mock for this test
+        systemRouter = SystemRouterHarness(address(new SystemRouterMock()));
+        ISystemContract(destination).setSystemRouter(systemRouter);
+        address executor = makeAddr("Executor");
+        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
+        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+        createSystemMessages();
+        rs.root = getRoot(MESSAGES);
+        rs.origin = DOMAIN_REMOTE;
+        // Remainder of State struct is fuzzed
+        ra = createAttestation(rs, ra, statesAmount, stateIndex);
+        bytes32[] memory snapProof = genSnapshotProof(stateIndex);
+        test_submitAttestation(ra, rootSubmittedAt);
+        proofMaturity = uint32(bound(proofMaturity, PERIOD, type(uint32).max));
+        skip(proofMaturity);
+        for (uint32 i = 0; i < MESSAGES; ++i) {
+            bytes32[] memory originProof = getLatestProof(i);
+            // (origin, nonce, proofMaturity, body)
+            vm.expectCall(
+                address(systemRouter),
+                abi.encodeWithSelector(
+                    systemRouter.receiveSystemMessage.selector,
+                    DOMAIN_REMOTE,
+                    i + 1,
+                    proofMaturity,
+                    createSystemMessageBody(i + 1)
+                )
+            );
+            vm.expectEmit();
+            emit Executed(DOMAIN_REMOTE, keccak256(msgPayloads[i]));
+            vm.prank(executor);
+            IExecutionHub(destination).execute(msgPayloads[i], originProof, snapProof, stateIndex);
+        }
+    }
+
+    // ════════════════════════════════════════════ DISPUTE RESOLUTION ═════════════════════════════════════════════════
 
     function test_managerSlash(uint256 domainId, uint256 agentId, address prover) public {
         // no counterpart in this test
@@ -317,9 +359,7 @@ contract DestinationTest is DisputeHubTest {
         checkDisputeResolved({hub: destination, honest: notary, slashed: guard});
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       TESTS: WHILE IN DISPUTE                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════ TESTS: WHILE IN DISPUTE ══════════════════════════════════════════════
 
     function test_submitAttestation_revert_notaryInDispute(
         RawAttestation memory firstRA,
@@ -373,7 +413,7 @@ contract DestinationTest is DisputeHubTest {
         address executor = makeAddr("Executor");
         address notary = domains[DOMAIN_LOCAL].agent;
         // Prepare attestation for message execution
-        createMessages();
+        createBaseMessages();
         rs.root = getRoot(MESSAGES);
         rs.origin = DOMAIN_REMOTE;
         // Remainder of State struct is fuzzed
@@ -394,11 +434,9 @@ contract DestinationTest is DisputeHubTest {
         IExecutionHub(destination).execute(msgPayloads[0], originProof, snapProof, stateIndex);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    function createMessages() public {
+    function createBaseMessages() public {
         bytes memory body = RawBaseMessage({
             sender: addressToBytes32(sender),
             recipient: addressToBytes32(recipient),
@@ -416,5 +454,28 @@ contract DestinationTest is DisputeHubTest {
             msgPayloads.push(msgPayload);
             insertMessage(msgPayload);
         }
+    }
+
+    function createSystemMessages() public {
+        for (uint32 i = 0; i < MESSAGES; ++i) {
+            RawMessage memory rm = RawMessage(
+                uint8(MessageFlag.System),
+                RawHeader({origin: DOMAIN_REMOTE, nonce: i + 1, destination: DOMAIN_LOCAL, optimisticPeriod: PERIOD}),
+                createSystemMessageBody(i + 1)
+            );
+            bytes memory msgPayload = rm.formatMessage();
+            rawMessages.push(rm);
+            msgPayloads.push(msgPayload);
+            insertMessage(msgPayload);
+        }
+    }
+
+    function createSystemMessageBody(uint32 nonce) public pure returns (bytes memory) {
+        uint8 enumModulo = uint8(type(SystemEntity).max) + 1;
+        RawSystemMessage memory rsm;
+        rsm.sender = uint8(nonce % enumModulo);
+        rsm.recipient = uint8((nonce + 1) % enumModulo);
+        rsm.callData = RawCallData({selector: SystemContractMock.remoteMockFunc.selector, args: abi.encode(nonce)});
+        return rsm.formatSystemMessage();
     }
 }
