@@ -236,12 +236,15 @@ contract DestinationTest is DisputeHubTest {
         RawAttestation memory ra,
         uint256 statesAmount,
         uint256 stateIndex,
-        uint32 rootSubmittedAt
+        uint32 rootSubmittedAt,
+        uint64 gasLimit
     ) public {
         address executor = makeAddr("Executor");
 
         statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
         stateIndex = bound(stateIndex, 0, statesAmount - 1);
+        // Specify minimum gas limit, so that recipient mock doesn't run out of gas
+        gasLimit = uint64(bound(gasLimit, 1000, 1_000_000));
 
         createBaseMessages();
         rs.root = getRoot(MESSAGES);
@@ -254,19 +257,21 @@ contract DestinationTest is DisputeHubTest {
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
             bytes32[] memory originProof = getLatestProof(i);
+            // expectCall(address callee, uint256 msgValue, uint64 gas, bytes calldata data)
             // (origin, nonce, sender, proofMaturity, message)
             vm.expectCall(
                 recipient,
+                0, // msgValue
+                gasLimit,
                 abi.encodeWithSelector(
                     MessageRecipientMock.receiveBaseMessage.selector, DOMAIN_REMOTE, i + 1, sender, PERIOD, CONTENT
                 )
             );
             // Should emit event when message is executed
-            vm.expectEmit(true, true, true, true);
-
+            vm.expectEmit();
             emit Executed(DOMAIN_REMOTE, keccak256(msgPayloads[i]));
             vm.prank(executor);
-            IExecutionHub(destination).execute(msgPayloads[i], originProof, snapProof, stateIndex);
+            IExecutionHub(destination).execute(msgPayloads[i], originProof, snapProof, stateIndex, gasLimit);
         }
     }
 
@@ -309,7 +314,7 @@ contract DestinationTest is DisputeHubTest {
             vm.expectEmit();
             emit Executed(DOMAIN_REMOTE, keccak256(msgPayloads[i]));
             vm.prank(executor);
-            IExecutionHub(destination).execute(msgPayloads[i], originProof, snapProof, stateIndex);
+            IExecutionHub(destination).execute(msgPayloads[i], originProof, snapProof, stateIndex, 0);
         }
     }
 
@@ -432,7 +437,7 @@ contract DestinationTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(0);
         vm.expectRevert("Notary is in dispute");
         vm.prank(executor);
-        IExecutionHub(destination).execute(msgPayloads[0], originProof, snapProof, stateIndex);
+        IExecutionHub(destination).execute(msgPayloads[0], originProof, snapProof, stateIndex, 0);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
