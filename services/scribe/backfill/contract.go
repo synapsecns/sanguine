@@ -426,7 +426,7 @@ OUTER:
 		calls[headerIndex] = eth.HeaderByNumber(new(big.Int).SetUint64(blockNumber)).Returns(&tx.blockHeader)
 
 		//nolint: nestif
-		if err := c.client[i].Batch(ctx, calls...); err != nil {
+		if err := c.client[i].BatchWithContext(ctx, calls...); err != nil {
 			//nolint: errorlint
 			callErr, ok := err.(w3.CallErrors)
 			if !ok {

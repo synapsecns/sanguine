@@ -46,8 +46,8 @@ type EVM interface {
 	BatchCallContext(ctx context.Context, b []rpc.BatchElem) error
 	// BlockNumber gets the latest block number
 	BlockNumber(ctx context.Context) (uint64, error)
-	// Batch batches multiple
-	Batch(ctx context.Context, calls ...w3types.Caller) error
+	// BatchWithContext batches multiple w3type calls
+	BatchWithContext(ctx context.Context, calls ...w3types.Caller) error
 }
 
 type clientImpl struct {
@@ -85,7 +85,7 @@ const (
 )
 
 // Batch batches multiple w3 calls.
-func (c *clientImpl) Batch(ctx context.Context, calls ...w3types.Caller) (err error) {
+func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.Caller) (err error) {
 	ctx, span := c.tracing.Tracer().Start(ctx, batchAttribute)
 	span.SetAttributes(parseCalls(calls))
 	span.SetAttributes(attribute.String(endpointAttribute, c.endpoint))
