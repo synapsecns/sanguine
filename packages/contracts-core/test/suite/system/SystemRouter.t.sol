@@ -76,7 +76,7 @@ contract SystemRouterTest is SynapseTest {
         vm.expectCall(recipient, expectedCall);
         vm.prank(destination);
         systemRouter.receiveSystemMessage(
-            rsc.origin, rsc.nonce, rsc.rootSubmittedAt, rsc.systemMessage.formatSystemMessage()
+            rsc.origin, rsc.nonce, rsc.proofMaturity, rsc.systemMessage.formatSystemMessage()
         );
     }
 
@@ -88,7 +88,7 @@ contract SystemRouterTest is SynapseTest {
         vm.expectRevert("SystemRouter: !destination");
         vm.prank(caller);
         systemRouter.receiveSystemMessage(
-            rsc.origin, rsc.nonce, rsc.rootSubmittedAt, rsc.systemMessage.formatSystemMessage()
+            rsc.origin, rsc.nonce, rsc.proofMaturity, rsc.systemMessage.formatSystemMessage()
         );
     }
 
@@ -97,7 +97,7 @@ contract SystemRouterTest is SynapseTest {
         vm.expectRevert("System Contract not set");
         systemRouter.systemPrank({
             recipient: SystemEntity.AgentManager,
-            rootSubmittedAt: 0,
+            proofMaturity: 0,
             callOrigin: 0,
             systemCaller: SystemEntity.AgentManager,
             payload: bytes.concat(SystemContractMock.remoteMockFunc.selector)

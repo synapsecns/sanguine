@@ -71,7 +71,7 @@ contract BaseClientTest is SynapseTest {
         // msg.value should be zero
         emit BaseMessageReceived(0, rh.origin, rh.nonce, content);
         vm.prank(destination);
-        client.receiveBaseMessage(rh.origin, rh.nonce, sender, rootSubmittedAt, content);
+        client.receiveBaseMessage(rh.origin, rh.nonce, sender, secondsPassed, content);
     }
 
     function test_receiveBaseMessage_revert_notDestination(RawHeader memory rh, uint256 rootSubmittedAt, address caller)
@@ -87,7 +87,7 @@ contract BaseClientTest is SynapseTest {
         vm.warp(rootSubmittedAt + optimisticPeriod);
         vm.expectRevert("BaseClient: !destination");
         vm.prank(caller);
-        client.receiveBaseMessage(rh.origin, rh.nonce, sender, rootSubmittedAt, "");
+        client.receiveBaseMessage(rh.origin, rh.nonce, sender, optimisticPeriod, "");
     }
 
     function test_receiveBaseMessage_revert_notTrustedSender(
@@ -104,7 +104,7 @@ contract BaseClientTest is SynapseTest {
         vm.warp(rootSubmittedAt + optimisticPeriod);
         vm.expectRevert("BaseClient: !trustedSender");
         vm.prank(destination);
-        client.receiveBaseMessage(rh.origin, rh.nonce, sender, rootSubmittedAt, "");
+        client.receiveBaseMessage(rh.origin, rh.nonce, sender, optimisticPeriod, "");
     }
 
     function test_receiveBaseMessage_revert_optimisticPeriodNotOver(
@@ -122,6 +122,6 @@ contract BaseClientTest is SynapseTest {
         vm.warp(rootSubmittedAt + secondsPassed);
         vm.expectRevert("BaseClient: !optimisticPeriod");
         vm.prank(destination);
-        client.receiveBaseMessage(rh.origin, rh.nonce, sender, rootSubmittedAt, "");
+        client.receiveBaseMessage(rh.origin, rh.nonce, sender, secondsPassed, "");
     }
 }

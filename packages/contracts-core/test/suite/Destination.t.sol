@@ -247,16 +247,11 @@ contract DestinationTest is DisputeHubTest {
         skip(PERIOD);
         for (uint256 i = 0; i < MESSAGES; ++i) {
             bytes32[] memory originProof = getLatestProof(i);
-            // (origin, nonce, sender, rootSubmittedAt, message)
+            // (origin, nonce, sender, proofMaturity, message)
             vm.expectCall(
                 recipient,
                 abi.encodeWithSelector(
-                    MessageRecipientMock.receiveBaseMessage.selector,
-                    DOMAIN_REMOTE,
-                    i + 1,
-                    sender,
-                    rootSubmittedAt,
-                    CONTENT
+                    MessageRecipientMock.receiveBaseMessage.selector, DOMAIN_REMOTE, i + 1, sender, PERIOD, CONTENT
                 )
             );
             // Should emit event when message is executed
