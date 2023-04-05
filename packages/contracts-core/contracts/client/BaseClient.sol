@@ -75,13 +75,19 @@ abstract contract BaseClient is IMessageRecipient {
      * @dev Sends a message to given destination chain.
      * @param destination_          Domain of the destination chain
      * @param tipsPayload           Payload with information about paid tips
+     * @param requestPayload        Payload with message execution request on destination chain
      * @param content               The message content
      */
-    function _sendBaseMessage(uint32 destination_, bytes memory tipsPayload, bytes memory content) internal {
+    function _sendBaseMessage(
+        uint32 destination_,
+        bytes memory tipsPayload,
+        bytes memory requestPayload,
+        bytes memory content
+    ) internal {
         bytes32 recipient = trustedSender(destination_);
         require(recipient != bytes32(0), "BaseClient: !recipient");
         InterfaceOrigin(origin).sendBaseMessage{value: msg.value}(
-            destination_, recipient, optimisticPeriod(), tipsPayload, content
+            destination_, recipient, optimisticPeriod(), tipsPayload, requestPayload, content
         );
     }
 }
