@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/synapsecns/sanguine/agents
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "34ab2dd7163d2558a361f6bb8a1a87b9626ae8b1"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -65,6 +65,21 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+definitions:
+  - env: &default_env
+    - name: GOLOG_LOG_FMT
+      value: "json"
+    - name: GOLOG_LOG_LEVEL
+      value: "error"
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: METRICS_HANDLER
+      value: "jaeger"
+    - name: JAEGER_ENDPOINT
+      value: "http://agents-jaeger-collector:14268/api/traces"
+
 notary:
   enabled: true
   args: ["notary-run", "--config=/config/notary_config1.yaml", "--metrics-port=5080"]
@@ -72,15 +87,7 @@ notary:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
-  env:
-    - name: GOLOG_LOG_FMT
-      value: "json"
-    - name: GOLOG_LOG_LEVEL
-      value: "info"
-    - name: METRICS_HANDLER
-      value: "jaeger"
-    - name: JAEGER_ENDPOINT
-      value: "http://agents-jaeger-collector:14268/api/traces"
+  env: *default_env
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -124,15 +131,7 @@ guard:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
-  env:
-    - name: GOLOG_LOG_FMT
-      value: "json"
-    - name: GOLOG_LOG_LEVEL
-      value: "info"
-    - name: METRICS_HANDLER
-      value: "jaeger"
-    - name: JAEGER_ENDPOINT
-      value: "http://agents-jaeger-collector:14268/api/traces"
+  env: *default_env
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -157,15 +156,7 @@ executor_remote_existing:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
-  env:
-    - name: GOLOG_LOG_FMT
-      value: "json"
-    - name: GOLOG_LOG_LEVEL
-      value: "error"
-    - name: METRICS_HANDLER
-      value: "jaeger"
-    - name: JAEGER_ENDPOINT
-      value: "http://agents-jaeger-collector:14268/api/traces"
+  env: *default_env
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -199,19 +190,7 @@ executor_remote_fresh:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
-  env:
-    - name: GOLOG_LOG_FMT
-      value: "json"
-    - name: GOLOG_LOG_LEVEL
-      value: "error"
-    - name: POD_NAMESPACE
-      valueFrom:
-        fieldRef:
-          fieldPath: metadata.namespace
-    - name: METRICS_HANDLER
-      value: "jaeger"
-    - name: JAEGER_ENDPOINT
-      value: "http://agents-jaeger-collector:14268/api/traces"
+  env: *default_env
   tolerations: {}
   extraInitContainers:
     - name: wait-for-omnirpc
@@ -267,28 +246,9 @@ executor_embedded:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
-  env:
-    - name: GOLOG_LOG_FMT
-      value: "json"
-    - name: GOLOG_LOG_LEVEL
-      value: "error"
-    - name: METRICS_HANDLER
-      value: "jaeger"
-    - name: JAEGER_ENDPOINT
-      value: "http://agents-jaeger-collector:14268/api/traces"
+  env: *default_env
   tolerations: {}
   extraInitContainers:
-#    - name: wait-for-jaeger
-#      image: busybox:latest
-#      imagePullPolicy: IfNotPresent
-#      command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_NAMESPACE} 16686; do echo "Waiting for jaeger..."; sleep 1; done;']
-#      env:
-#        - name: POD_NAME
-#          value: agents-jaeger
-#        - name: POD_NAMESPACE
-#          valueFrom:
-#              fieldRef:
-#                fieldPath: metadata.namespace
     - name: wait-for-omnirpc
       image: busybox:latest
       imagePullPolicy: IfNotPresent
