@@ -4,9 +4,11 @@ on:
   pull_request:
     paths:
       - 'packages/contracts-core/**'
+      - '.github/workflows/solidity.yml'
   push:
     paths:
       - 'packages/contracts-core/**'
+      - '.github/workflows/solidity.yml'
 
 jobs:
   slither:
@@ -54,7 +56,7 @@ jobs:
           npx lerna exec npm run build:slither
 
       - name: Run Slither
-        uses: crytic/slither-action@v0.1.1
+        uses: crytic/slither-action@v0.3.0
         continue-on-error: true
         id: slither
         with:
