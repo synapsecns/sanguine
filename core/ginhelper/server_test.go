@@ -48,3 +48,10 @@ func (g *GinHelperSuite) TestRequestID() {
 	_, err = uuid.Parse(res)
 	Nil(g.T(), err)
 }
+
+// AssertContextWithFallback asserts that the context is set with the fallback value.
+// this is required for using opentracing. Please use caution and ask @trajan0x before disabling.
+func (g *GinHelperSuite) AssertContextWithFallback() {
+	engine := ginhelper.New(g.logger)
+	g.True(engine.ContextWithFallback)
+}

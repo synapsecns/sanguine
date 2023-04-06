@@ -79,6 +79,18 @@ func WithStdErr(stdErr io.ReadCloser) StdStreamLogArgsOption {
 	}
 }
 
+// WithReader returns a function that modifies the StdOut or StdErr field of a stdStreamLogArgs struct.
+func WithReader(readerType ReaderType, reader io.ReadCloser) StdStreamLogArgsOption {
+	return func(args *stdStreamLogArgs) {
+		switch readerType {
+		case StdOut:
+			WithStdOut(reader)(args)
+		case StdErr:
+			WithStdErr(reader)(args)
+		}
+	}
+}
+
 // WithPrintFunc returns a function that modifies the PrintFunc field of a stdStreamLogArgs struct.
 func WithPrintFunc(printFunc PrintFunc) StdStreamLogArgsOption {
 	return func(args *stdStreamLogArgs) {
@@ -121,10 +133,49 @@ func WithCtx(ctx context.Context) StdStreamLogArgsOption {
 	}
 }
 
+// ReaderType is the type of reader (stdout or stderr).
+//
+//go:generate go run golang.org/x/tools/cmd/stringer -type=ReaderType -linecomment
+type ReaderType uint8
+
+const (
+	// StdOut is the stdout reader type.
+	StdOut ReaderType = iota // stdout
+	// StdErr is the stderr reader type.
+	StdErr ReaderType = iota // stderr
+)
+
+// HasReader returns true if the given reader type is set.
+func HasReader(readerType ReaderType, opts ...StdStreamLogArgsOption) bool {
+	args := makeRawArgs(opts)
+
+	switch readerType {
+	case StdOut:
+		if args.StdOut != nil {
+			return true
+		}
+	case StdErr:
+		if args.StdErr != nil {
+			return true
+		}
+	}
+	return false
+}
+
 // makeArgs creates a new stdStreamLogArgs struct with the given options applied.
 // It takes in a variadic list of StdStreamLogArgsOption functions and applies each of them to the new struct instance.
 // It returns the modified struct instance.
 func makeArgs(opts []StdStreamLogArgsOption) (_ *stdStreamLogArgs, err error) {
+	args := makeRawArgs(opts)
+	if err := args.Validate(); err != nil {
+		return nil, err
+	}
+	return args, nil
+}
+
+// makeRawArgs creates a new stdStreamLogArgs struct with the given options applied.
+// it performs no validation.
+func makeRawArgs(opts []StdStreamLogArgsOption) *stdStreamLogArgs {
 	args := &stdStreamLogArgs{}
 	args.LogFileName = "test"
 	args.LogFrequency = time.Second
@@ -140,8 +191,5 @@ func makeArgs(opts []StdStreamLogArgsOption) (_ *stdStreamLogArgs, err error) {
 		opt(args)
 	}
 
-	if err := args.Validate(); err != nil {
-		return nil, err
-	}
-	return args, nil
+	return args
 }

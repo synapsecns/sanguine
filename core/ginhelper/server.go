@@ -29,6 +29,8 @@ var robots []byte
 // restrictive robots.txt.
 func New(logger *log.ZapEventLogger) *gin.Engine {
 	server := gin.New()
+	// required for opentracing.
+	server.ContextWithFallback = true
 	server.Use(helmet.Default())
 	server.Use(gin.Recovery())
 	server.Use(cors.New(cors.Config{

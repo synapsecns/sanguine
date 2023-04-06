@@ -17,14 +17,15 @@ import (
 // GinHelperSuite defines the basic test suite.
 type GinHelperSuite struct {
 	*testsuite.TestSuite
-	url string
+	url    string
+	logger *log.ZapEventLogger
 }
 
 func (g *GinHelperSuite) SetupTest() {
 	g.TestSuite.SetupTest()
-	logger := log.Logger(fmt.Sprintf("test-%d-logger", g.GetTestID()))
+	g.logger = log.Logger(fmt.Sprintf("test-%d-logger", g.GetTestID()))
 
-	testServer := ginhelper.New(logger)
+	testServer := ginhelper.New(g.logger)
 	freePort, err := freeport.GetFreePort()
 	Nil(g.T(), err)
 
@@ -45,8 +46,8 @@ func (g *GinHelperSuite) SetupTest() {
 func NewTestSuite(tb testing.TB) *GinHelperSuite {
 	tb.Helper()
 	return &GinHelperSuite{
-		testsuite.NewTestSuite(tb),
-		"",
+		TestSuite: testsuite.NewTestSuite(tb),
+		url:       "",
 	}
 }
 

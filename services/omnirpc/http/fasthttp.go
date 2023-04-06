@@ -207,7 +207,7 @@ func (f *fastHTTPRequest) Do() (Response, error) {
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
 
-	err := hostClient.DoTimeout(f.Request, resp, time.Second*10)
+	err := hostClient.DoTimeout(f.Request, resp, time.Second*30)
 	if err != nil {
 		return nil, fmt.Errorf("could not get response: %w", err)
 	}

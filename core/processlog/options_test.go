@@ -42,10 +42,26 @@ func TestMakeArgs(t *testing.T) {
 			expectErr: true,
 		},
 		{
+			name: "missing StdOut (reader)",
+			opts: []processlog.StdStreamLogArgsOption{
+				processlog.WithCtx(context.Background()),
+				processlog.WithReader(processlog.StdErr, pr),
+			},
+			expectErr: true,
+		},
+		{
 			name: "missing StdErr",
 			opts: []processlog.StdStreamLogArgsOption{
 				processlog.WithCtx(context.Background()),
 				processlog.WithStdOut(pr),
+			},
+			expectErr: true,
+		},
+		{
+			name: "missing StdErr (reader)",
+			opts: []processlog.StdStreamLogArgsOption{
+				processlog.WithCtx(context.Background()),
+				processlog.WithReader(processlog.StdOut, pr),
 			},
 			expectErr: true,
 		},
@@ -71,5 +87,57 @@ func TestMakeArgs(t *testing.T) {
 				t.Errorf("expected nil error but got %v", err)
 			}
 		})
+	}
+}
+
+func TestHasReader(t *testing.T) {
+	setReader, _ := io.Pipe()
+
+	// Set up test data.
+	testCases := []struct {
+		readerType processlog.ReaderType
+		opts       []processlog.StdStreamLogArgsOption
+		expected   bool
+	}{
+		{
+			readerType: processlog.StdOut,
+			opts: []processlog.StdStreamLogArgsOption{
+				processlog.WithStdOut(nil),
+				processlog.WithStdErr(nil),
+			},
+			expected: false,
+		},
+		{
+			readerType: processlog.StdOut,
+			opts: []processlog.StdStreamLogArgsOption{
+				processlog.WithStdOut(setReader),
+				processlog.WithStdErr(nil),
+			},
+			expected: true,
+		},
+		{
+			readerType: processlog.StdErr,
+			opts: []processlog.StdStreamLogArgsOption{
+				processlog.WithStdOut(nil),
+				processlog.WithStdErr(setReader),
+			},
+			expected: true,
+		},
+		{
+			readerType: processlog.StdErr,
+			opts: []processlog.StdStreamLogArgsOption{
+				processlog.WithStdOut(nil),
+				processlog.WithStdErr(nil),
+			},
+			expected: false,
+		},
+	}
+
+	// Run tests.
+	for _, tc := range testCases {
+		actual := processlog.HasReader(tc.readerType, tc.opts...)
+		if actual != tc.expected {
+			t.Errorf("HasReader(%v, %v) = %v, expected %v", tc.readerType, tc.opts, actual, tc.expected)
+		}
 	}
 }

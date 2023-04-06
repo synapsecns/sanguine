@@ -39,6 +39,8 @@ jobs:
         working-directory: charts/
         run: make dependencies
 
+      # Even if there are no changes to the chart itself, if running `make lint` changes Chart.lock,
+      # then lint-test will fail due to version bump. To solve this, run `make lint` and version bump.
       - name: Run chart-testing (list-changed)
         id: list-changed
         run: |

@@ -3,6 +3,9 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"io"
 	"net/http"
 	"strconv"
@@ -41,10 +44,14 @@ type Forwarder struct {
 	// failedForwards is a map of failed forwards
 	failedForwards *xsync.MapOf[error]
 	// rpcRequest is the parsed rpc request
-	rpcRequest RPCRequests
+	rpcRequest rpc.Requests
 	// mux is used to track the release of the forwarder. This should only be used in async methods
 	// as RLock
 	mux sync.RWMutex
+	// span is the span for the request
+	span trace.Span
+	// tracer is the tracer for the request
+	tracer trace.Tracer
 }
 
 // Reset resets the forwarder so it can be reused.
@@ -61,6 +68,7 @@ func (f *Forwarder) Reset() {
 	f.resMap = nil
 	f.failedForwards = nil
 	f.rpcRequest = nil
+	f.span = nil
 }
 
 // AcquireForwarder allocates a forwarder and allows it to be released when not in use
@@ -71,6 +79,7 @@ func (r *RPCProxy) AcquireForwarder() *Forwarder {
 		return &Forwarder{
 			r:      r,
 			client: r.client,
+			tracer: r.tracer,
 		}
 	}
 	//nolint: forcetypeassert
@@ -86,14 +95,20 @@ func (r *RPCProxy) ReleaseForwarder(f *Forwarder) {
 // Forward forwards the rpc request to the servers and makes assertions around confirmation thresholds.
 // required confirmations can be used to override the required confirmations count.
 func (r *RPCProxy) Forward(c *gin.Context, chainID uint32, requiredConfirmationsOverride *uint16) {
+	ctx, span := r.tracer.Start(c, "rpcRequest",
+		trace.WithAttributes(attribute.Int("chainID", int(chainID))),
+	)
+
 	forwarder := r.AcquireForwarder()
 	defer func() {
 		go func() {
 			r.ReleaseForwarder(forwarder)
+			span.End()
 		}()
 	}()
 
 	forwarder.c = c
+	forwarder.span = span
 	forwarder.resMap = xsync.NewMapOf[[]rawResponse]()
 	forwarder.failedForwards = xsync.NewMapOf[error]()
 	if requiredConfirmationsOverride != nil {
@@ -104,7 +119,7 @@ func (r *RPCProxy) Forward(c *gin.Context, chainID uint32, requiredConfirmations
 		return
 	}
 
-	forwarder.attemptForwardAndValidate()
+	forwarder.attemptForwardAndValidate(ctx)
 }
 
 // attemptForwardAndValidate attempts to forward the request and
@@ -112,14 +127,14 @@ func (r *RPCProxy) Forward(c *gin.Context, chainID uint32, requiredConfirmations
 // TODO: maybe the context shouldn't be used from a struct here?
 //
 //nolint:gocognit,cyclop
-func (f *Forwarder) attemptForwardAndValidate() {
+func (f *Forwarder) attemptForwardAndValidate(ctx context.Context) {
 	urlIter := threaditer.ThreadSafe(iter.Slice(f.chain.URLs()))
 
 	// setup the channels we use for confirmation
 	errChan := make(chan FailedForward)
 	resChan := make(chan rawResponse)
 
-	forwardCtx, cancel := context.WithCancel(f.c)
+	forwardCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	// start requiredConfirmations workers
@@ -332,6 +347,7 @@ func (f *Forwarder) fillAndValidate(chainID uint32) (ok bool) {
 	}
 
 	f.requestID = []byte(f.c.GetHeader(omniHTTP.XRequestIDString))
+	f.span.SetAttributes(attribute.String("request_id", string(f.requestID)))
 
 	if ok := f.checkAndSetConfirmability(); !ok {
 		return false
@@ -348,7 +364,7 @@ func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 		f.requiredConfirmations = f.chain.ConfirmationsThreshold()
 	}
 	var err error
-	f.rpcRequest, err = parseRPCPayload(f.body)
+	f.rpcRequest, err = rpc.ParseRPCPayload(f.body)
 	if err != nil {
 		f.c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
@@ -357,7 +373,7 @@ func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 	}
 
 	// If any request ina  batch is not confirmable, the entire batch is marks as non-confirmable
-	confirmable, err := f.rpcRequest.isConfirmable()
+	confirmable, err := areConfirmable(f.rpcRequest)
 	if err != nil {
 		f.c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
@@ -374,6 +390,10 @@ func (f *Forwarder) checkAndSetConfirmability() (ok bool) {
 	f.c.Header("x-confirmable", strconv.FormatBool(confirmable))
 	// this will be 1 if not confirmable
 	f.c.Header("x-required-confirmations", strconv.Itoa(int(f.requiredConfirmations)))
+
+	f.span.SetAttributes(attribute.Int("required_confirmations", int(f.requiredConfirmations)))
+	f.span.SetAttributes(attribute.Bool("confirmable", confirmable))
+	f.span.SetAttributes(attribute.String("method", f.rpcRequest.Method()))
 
 	// make sure we have enough urls to hit the required confirmation threshold
 	if len(f.chain.URLs()) < int(f.requiredConfirmations) {
