@@ -68,11 +68,10 @@ jobs:
         id: slither
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-          target: ./packages/contracts-core/contracts
+          target: ./packages/contracts-core/
           ignore-compile: true
           sarif: results.sarif
-        env:
-          SOLC_VERSION: 0.8.17
+          solc-version: 0.8.17
 
       - name: Upload SARIF file
         if: ${{!github.event.repository.private}}
