@@ -71,6 +71,8 @@ jobs:
           target: ./packages/contracts-core/contracts
           ignore-compile: true
           sarif: results.sarif
+        env:
+          SOLC_VERSION: 0.8.17
 
       - name: Upload SARIF file
         if: ${{!github.event.repository.private}}
