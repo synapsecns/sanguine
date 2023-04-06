@@ -61,7 +61,7 @@ jobs:
         id: slither
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-          target: ./packages/contracts-core
+          target: ./packages/contracts-core/contracts
           ignore-compile: false
           sarif: results.sarif
 
