@@ -5,6 +5,7 @@ import { useKeyPress } from '@hooks/useKeyPress'
 import TokenMenuItem from '@pages/bridge/TokenMenuItem'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
+
 import { Token } from '@/utils/types'
 
 export const CoinSlideOver = ({

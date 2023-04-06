@@ -59,7 +59,7 @@ const App = ({ Component, pageProps }: AppProps) => {
   ]
 
   // Add custom icons
-  const chainsWithIcons: any[] = []
+  const chainsWithIcons = []
   for (const chain of rawChains) {
     const iconUrl = Object.values(CHAINS).filter(
       (chainObj) => chainObj.id === chain.id

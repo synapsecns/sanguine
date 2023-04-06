@@ -1,19 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSettings } from '@hooks/useSettings'
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
-import { BridgeQuote } from '@/utils/types'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
-import {
-  TRANSITIONS_PROPS,
-  SETTINGS_TRANSITIONS_PROPS,
-} from '@constants/bridge'
+import { TRANSITIONS_PROPS } from '@constants/bridge'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
-
-import { Token } from '@/utils/types'
 import { ORDERED_CHAINS_BY_ID } from '@constants/chains'
 import { erc20ABI } from 'wagmi'
-
 import Grid from '@tw/Grid'
 import Card from '@tw/Card'
 import Button from '@tw/Button'
@@ -25,15 +18,19 @@ import { NetworkSlideOver } from '@components/misc/NetworkSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
+import { fetchSigner } from '@wagmi/core'
+import { SECTION_TRANSITION_PROPS } from '@styles/transitions'
+import { Contract } from 'ethers'
+
 import SettingsSlideOver from './SettingsSlideOver'
 import { DestinationAddressInput } from './DestinationAddressInput'
 import BridgeInputContainer from './BridgeInputContainer'
 import { useSynapseContext } from '@/utils/SynapseProvider'
 // import { writeContract, prepareSendTransaction } from '@wagmi/core'
-import { fetchSigner } from '@wagmi/core'
 // import { optimism } from '@wagmi/core/chains'
-import { SECTION_TRANSITION_PROPS } from '@styles/transitions'
-import { Contract } from 'ethers'
+
+import { Token } from '@/utils/types'
+import { BridgeQuote } from '@/utils/types'
 // import { useGasDropAmount } from '@hooks/useGasDropAmount'
 const BridgeCard = ({
   error,

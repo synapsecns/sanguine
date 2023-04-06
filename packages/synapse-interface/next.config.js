@@ -4,7 +4,6 @@ const nextConfig = {
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
   },
-
 }
 
 module.exports = {

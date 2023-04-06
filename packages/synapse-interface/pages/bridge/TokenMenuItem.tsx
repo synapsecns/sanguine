@@ -10,6 +10,7 @@ import {
   getBorderStyleForCoinHover,
   getMenuItemStyleForCoinCombined,
 } from '@styles/coins'
+
 import { Token } from '@/utils/types'
 
 export default function TokenMenuItem({

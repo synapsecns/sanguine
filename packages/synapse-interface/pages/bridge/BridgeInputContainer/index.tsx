@@ -1,10 +1,10 @@
 import { formatBNToString } from '@bignumber/format'
-
-import { Token } from '@/utils/types'
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
 import { BigNumber } from '@ethersproject/bignumber'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
+
+import { Token } from '@/utils/types'
 import { ChainLabel } from './ChainLabel'
 import SelectTokenDropdown from './SelectTokenDropdown'
 

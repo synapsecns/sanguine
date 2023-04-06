@@ -1,4 +1,5 @@
-import toast, { Toaster, ToastBar } from 'react-hot-toast'
+import toast, { ToastBar, Toaster } from 'react-hot-toast'
+
 import ToastContent from './ToastContent'
 
 const CustomToaster = () => {
