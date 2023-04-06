@@ -50,7 +50,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     ) public {
         address executor = makeAddr("Executor");
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh);
+        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -76,7 +76,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh);
+        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -98,7 +98,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         vm.assume(rh.optimisticPeriod != 0);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh);
+        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -117,7 +117,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         vm.assume(rh.optimisticPeriod != 0);
         // Create messages and get origin proof
-        bytes memory msgPayload = createBaseMessages(rbm, rh);
+        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -133,6 +133,29 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
     }
 
+    function check_execute_base_revert_wrongDestination(address hub, Random memory random, uint32 destination_)
+        public
+    {
+        vm.assume(destination_ != localDomain());
+        address executor = makeAddr("Executor");
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        vm.assume(rh.optimisticPeriod != 0);
+        // Create messages and get origin proof
+        bytes memory msgPayload = createBaseMessages(rbm, rh, destination_);
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        bytes32[] memory snapProof = prepareExecution(sm);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        vm.expectRevert("!destination");
+        vm.prank(executor);
+        IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, 0);
+    }
+
     // ══════════════════════════════════════ TESTS: EXECUTE SYSTEM MESSAGES ═══════════════════════════════════════════
 
     function check_execute_system(
@@ -146,7 +169,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     ) public {
         address executor = makeAddr("Executor");
         // Create messages and get origin proof
-        bytes memory msgPayload = createSystemMessages(rsm, rh);
+        bytes memory msgPayload = createSystemMessages(rsm, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -175,11 +198,11 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     /// @notice Local domain for ExecutionHub tests
     function localDomain() public view virtual returns (uint32);
 
-    function createBaseMessages(RawBaseMessage memory rbm, RawHeader memory rh)
+    function createBaseMessages(RawBaseMessage memory rbm, RawHeader memory rh, uint32 destination_)
         public
         returns (bytes memory msgPayload)
     {
-        adjustHeader(rh);
+        adjustHeader(rh, destination_);
         rbm.recipient = addressToBytes32(recipient);
         // Set sensible limitations for tips/request
         rbm.tips.boundTips(1e20);
@@ -188,11 +211,11 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         createMessages(rh.nonce, msgPayload);
     }
 
-    function createSystemMessages(RawSystemMessage memory rsm, RawHeader memory rh)
+    function createSystemMessages(RawSystemMessage memory rsm, RawHeader memory rh, uint32 destination_)
         public
         returns (bytes memory msgPayload)
     {
-        adjustHeader(rh);
+        adjustHeader(rh, destination_);
         rsm.boundEntities();
         rsm.callData.selector = SystemContractMock.remoteMockFunc.selector;
         rsm.callData.args = abi.encode(rh.nonce);
@@ -224,10 +247,10 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     }
 
     /// @notice Sets realistic values for the message header
-    function adjustHeader(RawHeader memory rh) public view {
+    function adjustHeader(RawHeader memory rh, uint32 destination_) public view {
         rh.origin = DOMAIN_REMOTE;
         rh.nonce = uint32(bound(rh.nonce, 1, MESSAGES));
-        rh.destination = localDomain();
+        rh.destination = destination_;
         rh.optimisticPeriod = rh.optimisticPeriod % 1 days;
     }
 
