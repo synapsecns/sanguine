@@ -10,7 +10,7 @@ const BASE_PROPERTIES = `
     bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
   `
 
-export function TransactionButton({
+export const TransactionButton = ({
   className,
   onClick,
   pendingLabel,
@@ -25,7 +25,7 @@ export function TransactionButton({
   label: string
   onSuccess?: () => void
   disabled?: boolean
-}) {
+}) => {
   const { isPending, pendingTxWrapFunc } = usePendingTxWrapper()
 
   return (

@@ -17,7 +17,6 @@ import {
   avalanche,
   bsc,
   canto,
-  celo,
   fantom,
   harmonyOne,
   mainnet,
@@ -37,7 +36,7 @@ import { publicProvider } from 'wagmi/providers/public'
 import * as CHAINS from '@constants/chains/master'
 
 import { SynapseProvider } from '@/utils/SynapseProvider'
-export default function App({ Component, pageProps }: AppProps) {
+const App = ({ Component, pageProps }: AppProps) => {
   const rawChains = [
     mainnet,
     arbitrum,
@@ -67,7 +66,7 @@ export default function App({ Component, pageProps }: AppProps) {
     )[0].chainImg.src
     chainsWithIcons.push({
       ...chain,
-      iconUrl: iconUrl,
+      iconUrl,
     })
   }
   const { chains, provider } = configureChains(chainsWithIcons, [
@@ -108,3 +107,5 @@ export default function App({ Component, pageProps }: AppProps) {
     </WagmiConfig>
   )
 }
+
+export default App

@@ -3,9 +3,8 @@ import { useAccount } from 'wagmi'
 
 import BridgePage from './bridge'
 
-export default function Home() {
+const Home = () => {
   const { address } = useAccount()
-
   return (
     <>
       <Head>
@@ -18,3 +17,5 @@ export default function Home() {
     </>
   )
 }
+
+export default Home

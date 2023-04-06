@@ -20,6 +20,8 @@ export type Chain = {
 export type BridgeQuote = {
   outputAmount: BigNumber
   outputAmountString: string
+  routerAddress: string
+  allowance: BigNumber
   exchangeRate: BigNumber
   feeAmount: BigNumber
   delta: BigNumber
@@ -68,7 +70,7 @@ export class Token {
   swapableType?: string // swapable type
   isNative = false // is native
   swapExceptions: number | Record<number, number[]> = {} // for specifying tokens where limited dest chains are available.
-  visibilityRank: number = 0 // rank in which token is displayed, least visible is 0, there is no max
+  visibilityRank = 0 // rank in which token is displayed, least visible is 0, there is no max
   isMeta = false // is meta
   isEthSwap = false // is eth swap
   category: { bridge: boolean; swap: boolean; pool: boolean } = {
@@ -77,8 +79,8 @@ export class Token {
     pool: true,
   } // list of categories on each chain
   swapableOn: number[] = [] // list of chains where token is swapable
-  display: boolean = true // display token
-  legacy: boolean = false // legacy token
+  display = true // display token
+  legacy = false // legacy token
   priorityPool?: boolean = false // priority pool
 
   constructor({

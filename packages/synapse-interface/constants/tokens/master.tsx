@@ -35,7 +35,8 @@ import h2oLogo from '@assets/icons/h2o.svg'
 import gmxLogo from '@assets/icons/gmx.png'
 import ageurLogo from '@assets/icons/ageur.svg'
 import mimLogo from '@assets/icons/mim.svg'
-import { ethers } from 'ethers'
+import { AddressZero } from '@ethersproject/constants'
+
 // MINTABLE TOKENS
 export const GOHM = new Token({
   addresses: {
@@ -925,10 +926,10 @@ export const KLAYTN_WETH = new Token({
 
 export const ETH = new Token({
   addresses: {
-    [CHAINS.ETH.id]: ethers.constants.AddressZero,
-    [CHAINS.BOBA.id]: ethers.constants.AddressZero,
-    [CHAINS.ARBITRUM.id]: ethers.constants.AddressZero,
-    [CHAINS.OPTIMISM.id]: ethers.constants.AddressZero,
+    [CHAINS.ETH.id]: AddressZero,
+    [CHAINS.BOBA.id]: AddressZero,
+    [CHAINS.ARBITRUM.id]: AddressZero,
+    [CHAINS.OPTIMISM.id]: AddressZero,
   },
   decimals: 18,
   symbol: 'ETH',

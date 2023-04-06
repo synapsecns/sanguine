@@ -29,7 +29,6 @@ export const ChainLabel = ({
   const labelClassName = 'text-sm'
   const displayType = isOrigin ? 'fromChain' : 'toChain'
   const title = titleText ?? (isOrigin ? 'Origin' : 'Dest.')
-
   const [orderedChains, setOrderedChains] = useState<number[]>([])
   useEffect(() => {
     setOrderedChains(
@@ -46,11 +45,11 @@ export const ChainLabel = ({
       </div>
       <div className="flex items-center space-x-4 md:space-x-3">
         {orderedChains.map((id) =>
-          id === chainId ? (
-            <SelectedChain chainId={id} key={id} />
+          Number(id) === chainId ? (
+            <SelectedChain chainId={Number(id)} key={id} />
           ) : (
             <PossibleChain
-              chainId={id}
+              chainId={Number(id)}
               onChangeChain={onChangeChain}
               key={id}
             />
@@ -77,9 +76,6 @@ const PossibleChain = ({
   chainId: number
   onChangeChain: (v: number) => void
 }) => {
-  const onClick = () => {
-    onChangeChain(chainId)
-  }
   const chain = CHAINS_BY_ID[chainId]
 
   return chain ? (
@@ -91,7 +87,7 @@ const PossibleChain = ({
         border border-gray-500 rounded-full
       "
       tabIndex={0}
-      onClick={onClick}
+      onClick={() => onChangeChain(chainId)}
     >
       <Tooltip content={chain.chainName}>
         <Image
@@ -139,7 +135,7 @@ const chainOrderBySwapSide = (
 ) => {
   let orderedChains
   if (isOrigin) {
-    orderedChains = ORDERED_CHAINS_BY_ID.filter((e) => e !== chainId)
+    orderedChains = ORDERED_CHAINS_BY_ID.filter((e) => e !== String(chainId))
     orderedChains = orderedChains.slice(0, 5)
     orderedChains.unshift(chainId)
     return orderedChains

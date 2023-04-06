@@ -1,13 +1,13 @@
 import { ExternalLinkIcon } from '@heroicons/react/outline'
 import { getExplorerTxUrl } from '@urls'
 
-export default function ExplorerToastLink({
+const ExplorerToastLink =({
   transactionHash,
   chainId,
 }: {
   transactionHash: string
   chainId: number
-}) {
+}) =>{
   const explorerTxUrl = getExplorerTxUrl({ hash: transactionHash, chainId })
   const len = transactionHash.length
   return (
@@ -17,3 +17,4 @@ export default function ExplorerToastLink({
     </a>
   )
 }
+export default

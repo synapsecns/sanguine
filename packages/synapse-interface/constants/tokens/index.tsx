@@ -1,8 +1,8 @@
+import * as CHAINS from '@constants/chains/master'
+
 import * as all from './master'
 import * as allPool from './poolMaster'
 import { SYN_ETH_SUSHI_TOKEN } from './sushiMaster'
-
-import * as CHAINS from '@constants/chains/master'
 import { Token } from '@/utils/types'
 
 interface TokensByChain {
@@ -28,7 +28,7 @@ const sortedTokens = Object.values(all).sort(
 )
 
 const getBridgeableTokens = (): TokensByChain => {
-  let bridgeableTokens: TokensByChain = {}
+  const bridgeableTokens: TokensByChain = {}
   Object.values(all).map((token) => {
     for (const cID of Object.keys(token.addresses)) {
       if (!bridgeableTokens[cID]) {
@@ -44,10 +44,10 @@ const getBridgeableTokens = (): TokensByChain => {
 }
 
 const getBridgeChainsByType = (): BridgeChainsByType => {
-  let bridgeChainsByType: BridgeChainsByType = {}
+  const bridgeChainsByType: BridgeChainsByType = {}
   Object.values(all).map((token) => {
-    let swapableType = String(token?.swapableType)
-    let keys = Object.keys(token.addresses).filter(
+    const swapableType = String(token?.swapableType)
+    const keys = Object.keys(token.addresses).filter(
       (a) => !bridgeChainsByType[swapableType]?.includes(a)
     )
     if (bridgeChainsByType[swapableType]) {
@@ -62,8 +62,8 @@ const getBridgeChainsByType = (): BridgeChainsByType => {
   return bridgeChainsByType
 }
 const getBridgeTypeByChain = (): BridgeTypeByChain => {
-  let bridgeChainByType = getBridgeChainsByType()
-  let bridgeTypeByChain: BridgeTypeByChain = {}
+  const bridgeChainByType = getBridgeChainsByType()
+  const bridgeTypeByChain: BridgeTypeByChain = {}
   Object.keys(bridgeChainByType).forEach((key) => {
     bridgeChainByType[key].forEach((value) => {
       if (bridgeTypeByChain[value]) {
@@ -84,18 +84,18 @@ const convertArrayToObject = (array: any) => {
 }
 
 const getBridgeSwapableTokensByType = (): BridgeSwapableTokensByType => {
-  let bridgeTypeByChain = getBridgeTypeByChain()
-  let bridgeSwapableTokensByType = Object.fromEntries(
+  const bridgeTypeByChain = getBridgeTypeByChain()
+  const bridgeSwapableTokensByType = Object.fromEntries(
     Object.entries(bridgeTypeByChain).map(([k, v]) => [
       k,
       convertArrayToObject(v),
     ])
   )
   Object.values(all).map((token) => {
-    let swapableType = String(token?.swapableType)
+    const swapableType = String(token?.swapableType)
 
     for (const cID of Object.keys(token.addresses)) {
-      if (bridgeSwapableTokensByType[cID][swapableType].length == 0) {
+      if (bridgeSwapableTokensByType[cID][swapableType].length === 0) {
         bridgeSwapableTokensByType[cID][swapableType] = [token]
       } else if (
         !bridgeSwapableTokensByType[cID][swapableType]?.includes(token)
@@ -130,7 +130,7 @@ export const tokenSymbolToToken = (chainId: number, symbol: string) => {
 
 // SWAPS
 const getSwapableTokens = (): TokensByChain => {
-  let swapTokens: TokensByChain = {}
+  const swapTokens: TokensByChain = {}
   Object.values(all).map((token) => {
     if (!(token?.swapableOn?.length > 0)) return
     for (const cID of token.swapableOn) {
@@ -144,7 +144,7 @@ const getSwapableTokens = (): TokensByChain => {
   return swapTokens
 }
 const getSwapPriorityRanking = () => {
-  let swapPriorityRanking = {}
+  const swapPriorityRanking = {}
   Object.values(allPool).map((token) => {
     if (!token.priorityPool) return
     for (const cID of Object.keys(token.addresses)) {
@@ -163,7 +163,7 @@ export const POOL_PRIORITY_RANKING = getSwapPriorityRanking()
 
 // POOLS
 const getPoolsByChain = (displayOnly: boolean): TokensByChain => {
-  let poolTokens: TokensByChain = {}
+  const poolTokens: TokensByChain = {}
   Object.values(allPool).map((token) => {
     if (displayOnly && !token.display) return
     for (const cID of Object.keys(token.addresses)) {
@@ -180,7 +180,7 @@ const getPoolsByChain = (displayOnly: boolean): TokensByChain => {
 }
 
 const getChainsByPoolName = () => {
-  let CHAINS_BY_POOL_NAME = {}
+  const CHAINS_BY_POOL_NAME = {}
   const poolsByChain = getPoolsByChain(false)
   Object.keys(poolsByChain).map((chainId) => {
     for (const swapToken of poolsByChain[chainId]) {
@@ -191,7 +191,7 @@ const getChainsByPoolName = () => {
 }
 
 const getTokensByPoolTypeByChain = (type: string) => {
-  let poolTokens: TokensByChain = {}
+  const poolTokens: TokensByChain = {}
   Object.values(allPool).map((token) => {
     if (!token.display || !token?.poolType?.includes(type)) return
     for (const cID of Object.keys(token.addresses)) {
@@ -208,7 +208,7 @@ const getTokensByPoolTypeByChain = (type: string) => {
 }
 
 const getLegacyTokensByChain = () => {
-  let poolTokens: TokensByChain = {}
+  const poolTokens: TokensByChain = {}
   Object.values(allPool).map((token) => {
     if (!token.legacy) return
     for (const cID of Object.keys(token.addresses)) {
@@ -237,7 +237,7 @@ export const STAKABLE_TOKENS = {
 }
 
 const getStakingMap = () => {
-  let STAKING_MAP_TOKENS = {}
+  const STAKING_MAP_TOKENS = {}
   Object.keys(STAKABLE_TOKENS).map((chainId) => {
     STAKING_MAP_TOKENS[chainId] = {}
     for (const token of STAKABLE_TOKENS[chainId]) {

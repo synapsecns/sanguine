@@ -34,7 +34,6 @@ export const sortByTokenBalance = async (
 
     let rawTokenBalance: any
     // Check for native token
-    console.log('tokenAddr', tokenAddr, AddressZero, tokenAddr === AddressZero)
     if (tokenAddr === '' || tokenAddr === AddressZero) {
       const data = await fetchBalance({
         address,

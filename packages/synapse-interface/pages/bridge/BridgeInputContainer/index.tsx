@@ -45,14 +45,6 @@ const BridgeInputContainer = ({
   }
   const isConnected = address !== null
 
-  const onChange = (e: any) => {
-    const val = e.target.value
-
-    const cleanValue = cleanNumberInput(val)
-
-    onChangeAmount(cleanValue)
-  }
-
   const onClickBalance = () => {
     onChangeAmount(
       formatBNToString(
@@ -125,7 +117,11 @@ const BridgeInputContainer = ({
              text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
             `}
             placeholder="0.0000"
-            onChange={onChange ?? (() => null)}
+            onChange={
+              isOrigin
+                ? (e) => onChangeAmount(cleanNumberInput(e.target.value))
+                : () => null
+            }
             value={inputString}
             name="inputRow"
           />

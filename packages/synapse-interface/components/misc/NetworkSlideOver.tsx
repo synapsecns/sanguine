@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Fuse from 'fuse.js'
 import { useKeyPress } from '@hooks/useKeyPress'
@@ -16,14 +15,13 @@ export const NetworkSlideOver = ({
   setDisplayType,
 }: {
   isOrigin: boolean
-  chains: string[] | undefined
+  chains: string[]
   chainId: number
   onChangeChain: (v: number) => void
   setDisplayType: (v: string) => void
 }) => {
   const { chain } = useNetwork()
   const [currentIdx, setCurrentIdx] = useState(-1)
-
   const [searchStr, setSearchStr] = useState('')
   const [networks, setNetworks] = useState([])
   const fuse = new Fuse(networks, {
@@ -44,12 +42,7 @@ export const NetworkSlideOver = ({
   useEffect(() => {
     let tempNetworks = []
     Object.values(CHAINS).map((chain) => {
-      if (
-        isOrigin ||
-        (!isOrigin &&
-          chains?.includes(String(chain.id)) &&
-          chain.id !== Number(chain?.id))
-      ) {
+      if (isOrigin || (!isOrigin && chains?.includes(String(chain.id)))) {
         tempNetworks.push(chain)
       }
     })
@@ -58,8 +51,6 @@ export const NetworkSlideOver = ({
     }
     setNetworks(tempNetworks)
   }, [chain, searchStr])
-
-  const ref = useRef(null)
 
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
@@ -71,49 +62,42 @@ export const NetworkSlideOver = ({
     setDisplayType('')
   }, [setDisplayType])
 
-  function escFunc() {
+  const escFunc = () => {
     if (escPressed) {
       onClose()
     }
   }
-
-  useEffect(escFunc, [escPressed])
-
-  function arrowDownFunc() {
+  const arrowDownFunc = () => {
     const nextIdx = currentIdx + 1
     if (arrowDown && nextIdx < networks.length) {
       setCurrentIdx(nextIdx)
     }
   }
 
-  useEffect(arrowDownFunc, [arrowDown])
-
-  function arrowUpFunc() {
+  const arrowUpFunc = () => {
     const nextIdx = currentIdx - 1
     if (arrowUp && -1 < nextIdx) {
       setCurrentIdx(nextIdx)
     }
   }
 
-  useEffect(arrowUpFunc, [arrowUp])
-
-  function enterPressedFunc() {
+  const enterPressedFunc = () => {
     if (enterPressed && currentIdx > -1) {
       const currentChain = networks[currentIdx]
       onChangeChain(currentChain.chainId)
       onClose()
     }
   }
-
-  useEffect(enterPressedFunc, [enterPressed])
-
-  // useEffect(() => ref?.current?.scrollTo(0, 0), [])
-  useEffect(() => window.scrollTo(0, 0), [])
-
-  function onSearch(str: string) {
+  const onSearch = (str: string) => {
     setSearchStr(str)
     setCurrentIdx(-1)
   }
+
+  useEffect(arrowDownFunc, [arrowDown])
+  useEffect(escFunc, [escPressed])
+  useEffect(arrowUpFunc, [arrowUp])
+  useEffect(enterPressedFunc, [enterPressed])
+  useEffect(() => window.scrollTo(0, 0), [])
 
   return (
     <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
@@ -127,29 +111,22 @@ export const NetworkSlideOver = ({
           <DrawerButton onClick={onClose} />
         </div>
       </div>
-      <div
-        ref={ref}
-        className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6 rounded-xl"
-      >
-        {networks.map((chainData, idx) => {
-          const itemChainId = chainData.chainId
-          const chaindata = itemChainId
-          const isCurrentChain = chainId === itemChainId
-
+      <div className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6 rounded-xl">
+        {networks.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork
-          if (isCurrentChain) {
+          if (chainId === mapChainId) {
             onClickSpecificNetwork = () => console.log('INCEPTION')
           } else {
             onClickSpecificNetwork = () => {
-              onChangeChain(chainData.chainId)
+              onChangeChain(mapChainId)
               onClose()
             }
           }
           return (
             <SelectSpecificNetworkButton
               key={idx}
-              itemChainId={itemChainId}
-              isCurrentChain={isCurrentChain}
+              itemChainId={mapChainId}
+              isCurrentChain={chainId === mapChainId}
               active={idx === currentIdx}
               onClick={onClickSpecificNetwork}
             />

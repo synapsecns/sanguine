@@ -5,9 +5,10 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import Image from 'next/image'
+
 import { Token } from '@/utils/types'
 
-export default function ExchangeRateInfo({
+const ExchangeRateInfo = ({
   fromAmount,
   toToken,
   exchangeRate,
@@ -17,14 +18,9 @@ export default function ExchangeRateInfo({
   toToken: Token
   exchangeRate: BigNumber
   toChainId: number
-}) {
-  const [showExchangeRateInfo, toggleExchangeRateInfo] = useState(false)
-
+}) => {
   const formattedExchangeRate = formatBNToString(exchangeRate, 18, 4)
-
-  // rewrite the below
   const numExchangeRate = Number(formattedExchangeRate)
-
   const slippage = exchangeRate.sub(BigNumber.from(10).pow(18))
   const formattedPercentSlippage = formatBNToPercentString(slippage, 18)
   const underFee = exchangeRate.eq(0) && !fromAmount.eq(0)
@@ -83,13 +79,13 @@ export default function ExchangeRateInfo({
   )
 }
 
-function GasDropLabel({
+const GasDropLabel = ({
   gasDropAmount,
   toChainId,
 }: {
   gasDropAmount: BigNumber
   toChainId: number
-}) {
+}) => {
   let decimalsToDisplay
   const symbol = CHAINS_BY_ID[toChainId].nativeCurrency.symbol
 
@@ -115,11 +111,11 @@ function GasDropLabel({
     <div className="flex justify-between text-[#88818C]">
       <span className="text-[#88818C]">
         Will also receive {formattedGasDropAmount}{' '}
-      </span>{' '}
+      </span>
       <span className="ml-1 font-medium text-white">
-        {symbol}
+        {' '}
+        {symbol}{' '}
         <span className="text-[#88818C] font-normal">
-          {' '}
           {airdropInDollars && `($${airdropInDollars})`}
         </span>
       </span>
@@ -127,7 +123,7 @@ function GasDropLabel({
   )
 }
 
-function ChainInfoLabel({ chainId }: { chainId: number }) {
+const ChainInfoLabel = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
   return chain ? (
     <span className="flex items-center space-x-1">
@@ -143,7 +139,10 @@ function ChainInfoLabel({ chainId }: { chainId: number }) {
   ) : null
 }
 
-function getAirdropInDollars(symbol: string, formattedGasDropAmount: string) {
+const getAirdropInDollars = (
+  symbol: string,
+  formattedGasDropAmount: string
+) => {
   const price = useCoingeckoPrice(symbol)
 
   if (price) {
@@ -154,3 +153,4 @@ function getAirdropInDollars(symbol: string, formattedGasDropAmount: string) {
     return undefined
   }
 }
+export default ExchangeRateInfo
