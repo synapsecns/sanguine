@@ -68,14 +68,11 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         bytes32 msgLeaf = message.leaf();
         // Ensure message was meant for this domain
         require(header.destination() == localDomain, "!destination");
-        uint32 origin = header.origin();
-        uint32 nonce = header.nonce();
         // Check that message has not been executed before
         ExecutionStatus memory execStatus = _executionStatus[msgLeaf];
         require(execStatus.flag != MessageStatus.Success, "Already executed");
         // Check proofs validity
-        ExecutionAttestation memory execAtt =
-            _proveAttestation(origin, nonce, msgLeaf, originProof, snapProof, stateIndex);
+        ExecutionAttestation memory execAtt = _proveAttestation(header, msgLeaf, originProof, snapProof, stateIndex);
         // Check if optimistic period has passed
         uint256 proofMaturity = block.timestamp - execAtt.submittedAt;
         require(proofMaturity >= header.optimisticPeriod(), "!optimisticPeriod");
@@ -83,12 +80,11 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Only System/Base message flags exist
         if (message.flag() == MessageFlag.System) {
             // gasLimit is ignored when executing system messages
-            success = _executeSystemMessage(origin, nonce, proofMaturity, message.body());
+            success = _executeSystemMessage(header, proofMaturity, message.body());
         } else {
             // This will revert if message body is not a formatted BaseMessage payload
-            success = _executeBaseMessage(
-                origin, nonce, proofMaturity, execAtt.notary, gasLimit, message.body().castToBaseMessage()
-            );
+            success =
+                _executeBaseMessage(header, proofMaturity, execAtt.notary, gasLimit, message.body().castToBaseMessage());
         }
         if (execStatus.flag == MessageStatus.None) {
             // This is the first valid attempt to execute the message => save the executor
@@ -99,7 +95,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             execStatus.flag = success ? MessageStatus.Success : MessageStatus.Failed;
             _executionStatus[msgLeaf] = execStatus;
         }
-        emit Executed(origin, msgLeaf);
+        emit Executed(header.origin(), msgLeaf);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -120,8 +116,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @dev Passes message content to recipient that conforms to IMessageRecipient interface.
     function _executeBaseMessage(
-        uint32 origin,
-        uint32 nonce,
+        Header header,
         uint256 proofMaturity,
         address notary,
         uint64 gasLimit,
@@ -138,7 +133,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Forward message content to the recipient, and limit the amount of forwarded gas
         require(gasleft() > gasLimit, "Not enough gas supplied");
         try IMessageRecipient(recipient).receiveBaseMessage{gas: gasLimit}(
-            origin, nonce, baseMessage.sender(), proofMaturity, baseMessage.content().clone()
+            header.origin(), header.nonce(), baseMessage.sender(), proofMaturity, baseMessage.content().clone()
         ) {
             return true;
         } catch {
@@ -146,13 +141,10 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         }
     }
 
-    function _executeSystemMessage(uint32 origin, uint32 nonce, uint256 proofMaturity, bytes29 body)
-        internal
-        returns (bool)
-    {
+    function _executeSystemMessage(Header header, uint256 proofMaturity, bytes29 body) internal returns (bool) {
         // TODO: introduce incentives for executing System Messages?
         // Forward system message to System Router
-        systemRouter.receiveSystemMessage(origin, nonce, proofMaturity, body.clone());
+        systemRouter.receiveSystemMessage(header.origin(), header.nonce(), proofMaturity, body.clone());
         return true;
     }
 
@@ -165,8 +157,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
      * After that the snapshot Merkle Root is reconstructed using the snapshot proof.
      * The snapshot root needs to have been submitted by an undisputed Notary.
      * @dev Reverts if any of the checks fail.
-     * @param origin        Domain where message originated
-     * @param nonce         Message nonce on the origin domain
+     * @param header        Memory view over the message header
      * @param msgLeaf       Message Leaf that was inserted in the Origin Merkle Tree
      * @param originProof   Proof of inclusion of Message Leaf in the Origin Merkle Tree
      * @param snapProof     Proof of inclusion of Origin State Left Leaf into Snapshot Merkle Tree
@@ -174,8 +165,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
      * @return execAtt      Attestation data for derived snapshot root
      */
     function _proveAttestation(
-        uint32 origin,
-        uint32 nonce,
+        Header header,
         bytes32 msgLeaf,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
@@ -184,12 +174,12 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
         // This will revert if origin proof length exceeds Origin Tree height
-        bytes32 originRoot = MerkleLib.proofRoot(nonce - 1, msgLeaf, originProof, ORIGIN_TREE_HEIGHT);
+        bytes32 originRoot = MerkleLib.proofRoot(header.nonce() - 1, msgLeaf, originProof, ORIGIN_TREE_HEIGHT);
         // Reconstruct Snapshot Merkle Root using the snapshot proof
         // This will revert if:
         //  - State index is out of range.
         //  - Snapshot Proof length exceeds Snapshot tree Height.
-        bytes32 snapshotRoot = _snapshotRoot(originRoot, origin, snapProof, stateIndex);
+        bytes32 snapshotRoot = _snapshotRoot(originRoot, header.origin(), snapProof, stateIndex);
         // Fetch the attestation data for the snapshot root
         execAtt = _rootAttestations[snapshotRoot];
         // Check if snapshot root has been submitted
