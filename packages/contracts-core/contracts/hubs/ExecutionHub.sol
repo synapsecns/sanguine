@@ -114,6 +114,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // TODO: check that the discarded bits are empty
         address recipient = baseMessage.recipient().bytes32ToAddress();
         // Forward message content to the recipient, and limit the amount of forwarded gas
+        require(gasleft() > gasLimit, "Not enough gas supplied");
         IMessageRecipient(recipient).receiveBaseMessage{gas: gasLimit}(
             origin, nonce, baseMessage.sender(), proofMaturity, baseMessage.content().clone()
         );

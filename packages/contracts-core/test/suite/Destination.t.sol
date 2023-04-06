@@ -350,6 +350,10 @@ contract DestinationTest is ExecutionHubTest {
         check_execute_base_revert_gasLimitTooLow(destination, random);
     }
 
+    function test_execute_base_revert_gasSuppliedTooLow(Random memory random) public {
+        check_execute_base_revert_gasSuppliedTooLow(destination, random);
+    }
+
     function test_execute_revert_wrongDestination(Random memory random, uint32 destination_) public {
         check_execute_base_revert_wrongDestination(destination, random, destination_);
     }

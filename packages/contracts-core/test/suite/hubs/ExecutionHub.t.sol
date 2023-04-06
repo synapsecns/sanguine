@@ -155,7 +155,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
-        vm.assume(rh.optimisticPeriod != 0);
         // Create messages and get origin proof
         bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
@@ -173,6 +172,29 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
     }
 
+    function check_execute_base_revert_gasSuppliedTooLow(address hub, Random memory random) public {
+        address executor = makeAddr("Executor");
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        rbm.request.gasLimit = 200_000;
+        // Create messages and get origin proof
+        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        bytes32[] memory snapProof = prepareExecution(sm);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        vm.expectRevert("Not enough gas supplied");
+        vm.prank(executor);
+        // Limit amount of gas for the whole call
+        IExecutionHub(hub).execute{gas: rbm.request.gasLimit}(
+            msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit
+        );
+    }
+
     function check_execute_base_revert_wrongDestination(address hub, Random memory random, uint32 destination_)
         public
     {
@@ -180,7 +202,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
-        vm.assume(rh.optimisticPeriod != 0);
         // Create messages and get origin proof
         bytes memory msgPayload = createBaseMessages(rbm, rh, destination_);
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
