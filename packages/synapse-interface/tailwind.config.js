@@ -1,15 +1,17 @@
 const defaultTheme = require('tailwindcss/defaultTheme')
 const colors = require('tailwindcss/colors')
 
-// delete colors["lightBlue"] // delete deprecated colors manually
-// delete colors["warmGray"]  // so that no warnings pop up
-// delete colors["trueGray"]  // when destructuring colors
-// delete colors["coolGray"]  // in the extended theme
-// delete colors["blueGray"]  // color palette
+
+
+delete colors['lightBlue'];
+delete colors['warmGray'];
+delete colors['trueGray'];
+delete colors['coolGray'];
+delete colors['blueGray'];
 
 // make some colored shadows cause gradients
-let makeShadow = (name, rgb) => {
-  let obj = {}
+const makeShadow = (name, rgb) => {
+  const obj = {}
 
   obj[name + "-xs"] = `0 0 0 1px rgba(${rgb}, 0.05)`;
   obj[name + "-xs"] = `0 0 0 1px rgba(${rgb}, 0.05)`;
@@ -186,7 +188,6 @@ module.exports = {
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
     require('@tailwindcss/aspect-ratio'),
-    require('@tailwindcss/line-clamp'),
     require('tailwind-scrollbar-hide'),
     require('tailwindcss-border-gradient-radius'),
   ],
