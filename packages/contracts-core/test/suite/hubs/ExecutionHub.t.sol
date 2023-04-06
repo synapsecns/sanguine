@@ -73,14 +73,8 @@ abstract contract ExecutionHubTest is DisputeHubTest {
 
     function check_execute_base_revert_notaryInDispute(address hub, Random memory random) public {
         address executor = makeAddr("Executor");
-        // Create test message
-        RawBaseMessage memory rbm;
-        rbm.sender = random.next();
-        rbm.content = "Test content";
-        RawHeader memory rh;
-        rh.nonce = random.nextUint32();
-        rh.optimisticPeriod = random.nextUint32();
-        SnapshotMock memory sm = SnapshotMock(random.nextState(), random.nextUint256(), random.nextUint256());
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
         bytes memory msgPayload = createBaseMessages(rbm, rh);
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
@@ -96,6 +90,47 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         vm.expectRevert("Notary is in dispute");
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, 0);
+    }
+
+    function check_execute_base_revert_optimisticPeriodNotOver(address hub, Random memory random) public {
+        address executor = makeAddr("Executor");
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        vm.assume(rh.optimisticPeriod != 0);
+        // Create messages and get origin proof
+        bytes memory msgPayload = createBaseMessages(rbm, rh);
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        bytes32[] memory snapProof = prepareExecution(sm);
+        // Make sure that optimistic period is NOT over
+        uint32 timePassed = random.nextUint32() % rh.optimisticPeriod;
+        skip(timePassed);
+        vm.expectRevert("!optimisticPeriod");
+        vm.prank(executor);
+        IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, 0);
+    }
+
+    function check_execute_base_revert_gasLimitTooLow(address hub, Random memory random) public {
+        address executor = makeAddr("Executor");
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        vm.assume(rh.optimisticPeriod != 0);
+        // Create messages and get origin proof
+        bytes memory msgPayload = createBaseMessages(rbm, rh);
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        bytes32[] memory snapProof = prepareExecution(sm);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        // Make sure gas limit is lower than requested
+        uint64 gasLimit = random.nextUint64() % rbm.request.gasLimit;
+        vm.expectRevert("Gas limit too low");
+        vm.prank(executor);
+        IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
     }
 
     // ══════════════════════════════════════ TESTS: EXECUTE SYSTEM MESSAGES ═══════════════════════════════════════════
@@ -173,6 +208,19 @@ abstract contract ExecutionHubTest is DisputeHubTest {
                 insertMessage(abi.encode("Mocked payload", nonce));
             }
         }
+    }
+
+    /// @notice Creates some simple data for the revert test
+    function createDataRevertTest(Random memory random)
+        public
+        pure
+        returns (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm)
+    {
+        rbm.sender = random.next();
+        rbm.content = "Test content";
+        rh.nonce = random.nextUint32();
+        rh.optimisticPeriod = random.nextUint32();
+        sm = SnapshotMock(random.nextState(), random.nextUint256(), random.nextUint256());
     }
 
     /// @notice Sets realistic values for the message header

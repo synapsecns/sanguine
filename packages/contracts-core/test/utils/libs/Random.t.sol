@@ -60,6 +60,11 @@ library RandomLib {
         return uint160(r.nextUint256());
     }
 
+    // @notice Returns next "random" uint64 value and updates the Random's seed.
+    function nextUint64(Random memory r) internal pure returns (uint64 value) {
+        return uint64(r.nextUint256());
+    }
+
     // @notice Returns next "random" uint40 value and updates the Random's seed.
     function nextUint40(Random memory r) internal pure returns (uint40 value) {
         return uint40(r.nextUint256());

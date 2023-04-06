@@ -334,6 +334,14 @@ contract DestinationTest is ExecutionHubTest {
         check_execute_base_revert_notaryInDispute(destination, random);
     }
 
+    function test_execute_revert_optimisticPeriodNotOver(Random memory random) public {
+        check_execute_base_revert_optimisticPeriodNotOver(destination, random);
+    }
+
+    function test_execute_revert_gasLimitTooLow(Random memory random) public {
+        check_execute_base_revert_gasLimitTooLow(destination, random);
+    }
+
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Prepares execution of the created messages
