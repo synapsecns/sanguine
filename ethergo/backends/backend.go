@@ -7,10 +7,10 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"math/big"
+	"testing"
 )
 
 // AuthType is the type used for authentication.
@@ -30,8 +30,10 @@ type SimulatedTestBackend interface {
 	EnableTenderly() (enabled bool)
 	// BackendName gets the name of the backend
 	BackendName() string
-	// TestingSuite allows access to T() and SetT() methods for testing
-	suite.TestingSuite
+	// T is the testing.T
+	T() *testing.T
+	// SetT sets the testing.T
+	SetT(t *testing.T)
 	// Manager is used for concurrent signing while generating nonce
 	nonce.Manager
 	// ContractVerifier are contract verification hooks

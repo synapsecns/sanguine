@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"io"
 	"math/big"
 	"strconv"
@@ -79,6 +83,8 @@ type Executor struct {
 	signer signer.Signer
 	// chainExecutors is a map from chain ID -> chain executor.
 	chainExecutors map[uint32]*chainExecutor
+	// handler is the metrics handler.
+	handler metrics.Handler
 }
 
 // logOrderInfo is a struct to keep track of the order of a log.
@@ -92,9 +98,13 @@ const logChanSize = 1000
 // NewExecutor creates a new executor agent.
 //
 //nolint:cyclop
-func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend) (*Executor, error) {
+func NewExecutor(ctx context.Context, config config.Config, executorDB db.ExecutorDB, scribeClient client.ScribeClient, clients map[uint32]Backend, handler metrics.Handler) (*Executor, error) {
 	chainExecutors := make(map[uint32]*chainExecutor)
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("could not dial grpc: %w", err)
 	}
@@ -189,6 +199,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 		grpcClient:     grpcClient,
 		signer:         executorSigner,
 		chainExecutors: chainExecutors,
+		handler:        handler,
 	}, nil
 }
 
@@ -266,7 +277,19 @@ func (e Executor) Stop(chainID uint32) {
 // TODO: Use multi-call to batch execute.
 //
 //nolint:cyclop
-func (e Executor) Execute(ctx context.Context, message types.Message) (bool, error) {
+func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ bool, err error) {
+	originDomain := message.OriginDomain()
+	destinationDomain := message.DestinationDomain()
+
+	ctx, span := e.handler.Tracer().Start(parentCtx, "Execute", trace.WithAttributes(
+		attribute.Int("originDomain", int(originDomain)),
+		attribute.Int("destinationDomain", int(destinationDomain)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	nonce, err := e.verifyMessageOptimisticPeriod(ctx, message)
 	if err != nil {
 		return false, fmt.Errorf("could not verify optimistic period: %w", err)
@@ -276,8 +299,6 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 		return false, nil
 	}
 
-	originDomain := message.OriginDomain()
-	destinationDomain := message.DestinationDomain()
 	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
 	state, err := e.executorDB.GetEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce, e.config.DBPrefix)
 	if err != nil {
@@ -370,7 +391,11 @@ func (e Executor) Execute(ctx context.Context, message types.Message) (bool, err
 			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)))
 			if err != nil {
 				timeout = b.Duration()
-				logger.Errorf("got error %v when trying to execute the message on chain %d. trying again in %f seconds", err, message.DestinationDomain(), timeout.Seconds())
+				span.AddEvent("error when executing", trace.WithAttributes(
+					attribute.Int("chainID", int(message.DestinationDomain())),
+					attribute.String("error", err.Error()),
+					attribute.Float64("timeout", timeout.Seconds()),
+				))
 				continue
 			}
 
@@ -432,10 +457,19 @@ func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) 
 // verifyStateMerkleProof verifies that a state is in the snapshot merkle tree.
 //
 //nolint:unused
-func (e Executor) verifyStateMerkleProof(ctx context.Context, state types.State) (bool, error) {
+func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.State) (_ bool, err error) {
 	stateRoot := state.Root()
 	root := common.BytesToHash(stateRoot[:]).String()
 	chainID := state.Origin()
+
+	ctx, span := e.handler.Tracer().Start(parentCtx, "verifyStateMerkleProof", trace.WithAttributes(
+		attribute.String("root", root),
+		attribute.Int("chainID", int(chainID)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
 
 	stateMask := execTypes.DBState{
 		Root:    &root,
@@ -468,10 +502,21 @@ func (e Executor) verifyStateMerkleProof(ctx context.Context, state types.State)
 }
 
 // verifyMessageOptimisticPeriod verifies that the optimistic period is valid.
-func (e Executor) verifyMessageOptimisticPeriod(ctx context.Context, message types.Message) (*uint32, error) {
+func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, message types.Message) (_ *uint32, err error) {
 	chainID := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 	nonce := message.Nonce()
+
+	ctx, span := e.handler.Tracer().Start(parentCtx, "verifyMessageOptimisticPeriod", trace.WithAttributes(
+		attribute.Int("originChainID", int(chainID)),
+		attribute.Int("destinationChainID", int(destinationDomain)),
+		attribute.Int("nonce", int(nonce)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	messageMask := execTypes.DBMessage{
 		ChainID:     &chainID,
 		Destination: &destinationDomain,
@@ -634,8 +679,18 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 // processLog processes the log and updates the merkle tree.
 //
 //nolint:cyclop,gocognit
-func (e Executor) processLog(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainID uint32) (err error) {
 	contractEvent := e.logType(log, chainID)
+
+	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
+		attribute.Int("chainID", int(chainID)),
+		attribute.Int("contract", int(contractEvent.contractType)),
+		attribute.Int("event", int(contractEvent.eventType)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
 
 	switch contractEvent.contractType {
 	case originContract:
@@ -757,11 +812,11 @@ func (e Executor) receiveLogs(ctx context.Context, chainID uint32) error {
 // executeExecutable executes executable messages in the database.
 //
 //nolint:gocognit,cyclop
-func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
+func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (err error) {
 	for {
 		select {
-		case <-ctx.Done():
-			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-parentCtx.Done():
+			return fmt.Errorf("context canceled: %w", parentCtx.Err())
 		case <-time.After(time.Duration(e.config.ExecuteInterval) * time.Second):
 			page := 1
 			currentTime := uint64(time.Now().Unix())
@@ -771,7 +826,7 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 			}
 
 			for {
-				messages, err := e.executorDB.GetExecutableMessages(ctx, messageMask, currentTime, page)
+				messages, err := e.executorDB.GetExecutableMessages(parentCtx, messageMask, currentTime, page)
 				if err != nil {
 					return fmt.Errorf("could not get executable messages: %w", err)
 				}
@@ -779,6 +834,12 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 				if len(messages) == 0 {
 					break
 				}
+
+				ctx, span := e.handler.Tracer().Start(parentCtx, "executeExecutable", trace.WithAttributes(
+					attribute.Int("chain_id", int(chainID)),
+					attribute.Int("num_messages", len(messages)),
+					attribute.Int("page", page),
+				))
 
 				for _, message := range messages {
 					leaf, err := message.ToLeaf()
@@ -812,6 +873,8 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 					}
 				}
 
+				metrics.EndSpanWithErr(span, err)
+
 				page++
 			}
 		}
@@ -821,11 +884,11 @@ func (e Executor) executeExecutable(ctx context.Context, chainID uint32) error {
 // setMinimumTime sets the minimum time for the message to be executed by checking for associated attestations.
 //
 //nolint:gocognit,cyclop
-func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
+func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err error) {
 	for {
 		select {
-		case <-ctx.Done():
-			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case <-parentCtx.Done():
+			return fmt.Errorf("context canceled: %w", parentCtx.Err())
 		case <-time.After(time.Duration(e.config.SetMinimumTimeInterval) * time.Second):
 			page := 1
 			messageMask := execTypes.DBMessage{
@@ -836,7 +899,7 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 
 			// Get all unset messages.
 			for {
-				messages, err := e.executorDB.GetUnsetMinimumTimeMessages(ctx, messageMask, page)
+				messages, err := e.executorDB.GetUnsetMinimumTimeMessages(parentCtx, messageMask, page)
 				if err != nil {
 					return fmt.Errorf("could not get messages without minimum time: %w", err)
 				}
@@ -853,6 +916,12 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 			if len(unsetMessages) == 0 {
 				continue
 			}
+
+			ctx, span := e.handler.Tracer().Start(parentCtx, "setMinimumTime", trace.WithAttributes(
+				attribute.Int("chain_id", int(chainID)),
+				attribute.Int("num_unset_messages", len(unsetMessages)),
+				attribute.Int("page", page),
+			))
 
 			for _, message := range unsetMessages {
 				nonce := message.Nonce()
@@ -878,6 +947,8 @@ func (e Executor) setMinimumTime(ctx context.Context, chainID uint32) error {
 					return fmt.Errorf("could not set minimum time: %w", err)
 				}
 			}
+
+			metrics.EndSpanWithErr(span, err)
 		}
 	}
 }

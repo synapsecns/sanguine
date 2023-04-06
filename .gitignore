@@ -120,3 +120,8 @@ profile.cov
 coverage/
 lcov/
 codecov/
+# fasthttp
+fastcache.tmp*
+
+# ignore all go built files in local dirs
+main

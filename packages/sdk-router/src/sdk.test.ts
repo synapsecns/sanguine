@@ -7,6 +7,9 @@ jest.setTimeout(30000)
 // TODO add more tests checking parity of to and from values
 // as well as more token/chain combinations
 describe('SynapseSDK', () => {
+  const ethProvider: Provider = new etherProvider.JsonRpcProvider(
+    'https://rpc.builder0x69.io	'
+  )
   const arbitrumProvider: Provider = new etherProvider.JsonRpcProvider(
     'https://arb1.arbitrum.io/rpc'
   )
@@ -36,16 +39,19 @@ describe('SynapseSDK', () => {
       const chainIds = [42161, 10]
       const providers = [arbitrumProvider, optimisimProvider]
       const Synapse = new SynapseSDK(chainIds, providers)
-      const { feeConfig, originQuery, destQuery } = await Synapse.bridgeQuote(
-        42161,
-        10,
-        '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
-        '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
-        BigNumber.from('100000000')
-      )
+      const { feeConfig, originQuery, destQuery, routerAddress } =
+        await Synapse.bridgeQuote(
+          42161,
+          10,
+          '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+          '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
+          BigNumber.from('100000000')
+        )
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
       expect(originQuery?.length).toBeGreaterThan(0)
       expect(destQuery?.length).toBeGreaterThan(0)
+      expect(routerAddress?.length).toBeGreaterThan(0)
+
       const { data, to } = await Synapse.bridge(
         '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
         42161,
@@ -103,6 +109,35 @@ describe('SynapseSDK', () => {
         '0x321E7092a180BB43555132ec53AaA65a5bF84251',
         BigNumber.from('10000000000000000000')
       )
+      expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
+      expect(originQuery?.length).toBeGreaterThan(0)
+      expect(destQuery?.length).toBeGreaterThan(0)
+      const { data, to } = await Synapse.bridge(
+        '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
+        42161,
+        43114,
+        '0x321E7092a180BB43555132ec53AaA65a5bF84251',
+        BigNumber.from('10000000000000000000'),
+        originQuery!,
+        destQuery!
+      )
+      expect(data?.length).toBeGreaterThan(0)
+      expect(to?.length).toBeGreaterThan(0)
+    })
+  })
+  describe('bridge', () => {
+    it('test', async () => {
+      const chainIds = [1, 42161]
+      const providers = [ethProvider, arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const { feeConfig, originQuery, destQuery } = await Synapse.bridgeQuote(
+        1,
+        42161,
+        '',
+        '',
+        BigNumber.from('1000000000000000000')
+      )
+
       expect(feeConfig?.bridgeFee).toBeGreaterThan(0)
       expect(originQuery?.length).toBeGreaterThan(0)
       expect(destQuery?.length).toBeGreaterThan(0)

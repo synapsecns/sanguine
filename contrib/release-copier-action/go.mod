@@ -7,7 +7,7 @@ require (
 	github.com/google/go-github/v41 v41.0.0
 	github.com/migueleliasweb/go-github-mock v0.0.16
 	github.com/sethvargo/go-githubactions v1.1.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	golang.org/x/oauth2 v0.4.0
 )
@@ -31,8 +31,8 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
-	golang.org/x/crypto v0.4.0 // indirect
-	golang.org/x/net v0.5.0 // indirect
+	golang.org/x/crypto v0.6.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect

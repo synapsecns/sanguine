@@ -1,6 +1,9 @@
 package graph
 
-import "github.com/synapsecns/sanguine/services/scribe/db"
+import (
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/scribe/db"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -12,4 +15,5 @@ import "github.com/synapsecns/sanguine/services/scribe/db"
 type Resolver struct {
 	OmniRPCURL string
 	DB         db.EventDB
+	Metrics    metrics.Handler
 }

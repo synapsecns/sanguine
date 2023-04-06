@@ -41,7 +41,7 @@ func GetConfigDir() (string, error) {
 }
 
 // readmeName is the name of the readme file.
-const readmeName = "readme.md"
+const readmeName = "README.md"
 
 // readmeContents are the contents of the readme file.
 var readmeContents = fmt.Sprintf("This is the config directory for the %s application.", AppName)

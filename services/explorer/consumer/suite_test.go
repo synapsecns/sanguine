@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -17,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"go.uber.org/atomic"
 	"math/big"
 	"testing"
@@ -34,6 +36,7 @@ type ConsumerSuite struct {
 	deployManager        *testutil.DeployManager
 	testDeployManager    *testcontracts.DeployManager
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
+	scribeMetrics        metrics.Handler
 }
 
 // NewConsumerSuite creates an end-to-end test suite.
@@ -79,7 +82,7 @@ var testTokens = []TestToken{{
 func (c *ConsumerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
-	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup, c.testBackend, c.deployManager = testutil.NewTestEnvDB(c.GetTestContext(), c.T())
+	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup, c.testBackend, c.deployManager = testutil.NewTestEnvDB(c.GetTestContext(), c.T(), c.scribeMetrics)
 
 	var deployInfo contracts.DeployedContract
 	deployInfo, c.bridgeConfigContract = c.deployManager.GetBridgeConfigV3(c.GetTestContext(), c.testBackend)
@@ -90,6 +93,14 @@ func (c *ConsumerSuite) SetupTest() {
 		c.Require().NoError(err)
 		c.testBackend.WaitForConfirmation(c.GetTestContext(), tx)
 	}
+}
+
+func (c *ConsumerSuite) SetupSuite() {
+	c.TestSuite.SetupSuite()
+
+	var err error
+	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	c.Require().Nil(err)
 }
 
 // TestConsumerSuite runs the integration test suite.

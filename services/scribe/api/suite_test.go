@@ -2,10 +2,17 @@ package api_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/api"
 	"github.com/synapsecns/sanguine/services/scribe/grpc/client/rest"
+	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/phayes/freeport"
@@ -22,11 +29,13 @@ import (
 // APISuite defines the basic test suite.
 type APISuite struct {
 	*testsuite.TestSuite
-	db         db.EventDB
-	dbPath     string
-	gqlClient  *client.Client
-	grpcClient *rest.APIClient
-	logIndex   atomic.Int64
+	db             db.EventDB
+	dbPath         string
+	gqlClient      *client.Client
+	grpcRestClient *rest.APIClient
+	grpcClient     pbscribe.ScribeServiceClient
+	logIndex       atomic.Int64
+	metrics        metrics.Handler
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -39,11 +48,26 @@ func NewTestSuite(tb testing.TB) *APISuite {
 	}
 }
 
+func (g *APISuite) SetupSuite() {
+	g.TestSuite.SetupSuite()
+
+	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+
+	var err error
+	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	g.Require().Nil(err)
+}
+
+func (g *APISuite) TearDownSuite() {
+	g.TestSuite.TearDownSuite()
+	time.Sleep(time.Second * 10)
+}
+
 func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 	g.dbPath = filet.TmpDir(g.T(), "")
 
-	sqliteStore, err := sqlite.NewSqliteStore(g.GetTestContext(), g.dbPath)
+	sqliteStore, err := sqlite.NewSqliteStore(g.GetTestContext(), g.dbPath, g.metrics)
 	Nil(g.T(), err)
 
 	g.db = sqliteStore
@@ -58,22 +82,28 @@ func (g *APISuite) SetupTest() {
 			Database:   "sqlite",
 			Path:       g.dbPath,
 			OmniRPCURL: "https://rpc.interoperability.institute/confirmations/1/rpc",
-		}))
+		}, g.metrics))
 	}()
 
-	baseURL := fmt.Sprintf("http://127.0.0.1:%d", port)
+	hostName := fmt.Sprintf("127.0.0.1:%d", port)
+	baseURL := fmt.Sprintf("http://%s", hostName)
 
 	g.gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
 
 	config := rest.NewConfiguration()
 	config.BasePath = baseURL
 	config.Host = baseURL
-	g.grpcClient = rest.NewAPIClient(config)
+
+	g.grpcRestClient = rest.NewAPIClient(config)
+	rawGrpcClient, err := grpc.DialContext(g.GetTestContext(), hostName, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	g.NoError(err)
+
+	g.grpcClient = pbscribe.NewScribeServiceClient(rawGrpcClient)
 
 	// var request *http.Request
 	g.Eventually(func() bool {
 		request, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, fmt.Sprintf("%s%s", baseURL, server.GraphiqlEndpoint), nil)
-		Nil(g.T(), err)
+		g.NoError(err)
 		res, err := g.gqlClient.Client.Client.Do(request)
 		if err == nil {
 			defer func() {
@@ -85,7 +115,7 @@ func (g *APISuite) SetupTest() {
 	})
 
 	g.Eventually(func() bool {
-		res, realRes, err := g.grpcClient.ScribeServiceApi.ScribeServiceCheck(g.GetTestContext(), rest.V1HealthCheckRequest{
+		res, realRes, err := g.grpcRestClient.ScribeServiceApi.ScribeServiceCheck(g.GetTestContext(), rest.V1HealthCheckRequest{
 			Service: "any",
 		})
 		if err == nil {
@@ -94,6 +124,17 @@ func (g *APISuite) SetupTest() {
 			}()
 
 			return *res.Status == rest.SERVING_HealthCheckResponseServingStatus
+		}
+
+		return false
+	})
+
+	g.Eventually(func() bool {
+		res, err := g.grpcClient.Check(g.GetTestContext(), &pbscribe.HealthCheckRequest{
+			Service: "any",
+		})
+		if err == nil {
+			return res.Status == pbscribe.HealthCheckResponse_SERVING
 		}
 
 		return false

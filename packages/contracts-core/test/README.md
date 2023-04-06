@@ -351,7 +351,6 @@ abstract contract OriginTools is MessageTools {
     });
   }
 }
-
 ```
 
 Here `OriginTools` implements a function to construct a payload for a dispatched message. It reuses the generic `createMessage()` from `MessageTools` instead of manually encoding the payload from scratch.

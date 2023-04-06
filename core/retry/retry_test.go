@@ -88,7 +88,7 @@ func TestRetryWithBackoff(t *testing.T) {
 		Equal(t, withMax, newCfg.GetMax())
 	})
 
-	t.Run("WithMaxAttemptTime", func(t *testing.T) {
+	t.Run("WithMaxAttemptsTime", func(t *testing.T) {
 		err := retry.WithBackoff(context.Background(), func(ctx context.Context) error {
 			select {
 			case <-ctx.Done():
@@ -96,7 +96,7 @@ func TestRetryWithBackoff(t *testing.T) {
 			case <-time.After(time.Millisecond):
 				return nil
 			}
-		}, retry.WithMaxAttemptTime(1))
+		}, retry.WithMaxAttemptsTime(1))
 		NotNil(t, err)
 	})
 }

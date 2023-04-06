@@ -38,7 +38,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 		},
 	}
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -54,7 +54,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
 	e.Nil(err)
 
 	roots := [][32]byte{
@@ -131,16 +131,16 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{chainConfig},
 	}
-	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
+	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
 	clients := map[uint32][]backfill.ScribeBackend{
 		chainID: {simulatedClient, simulatedClient},
 	}
 
-	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
 	e.Nil(err)
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -178,7 +178,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
 	e.Nil(err)
 
 	_, err = exec.GetMerkleTree(chainID).Root(1)
@@ -348,7 +348,7 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 		},
 	}
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -364,7 +364,7 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
 	e.Nil(err)
 
 	nonces := []uint32{1, 2, 3, 4}
@@ -473,11 +473,11 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	testContractDest, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
 
-	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
+	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
+	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	summitClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress())
+	summitClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
 
 	originConfig := config.ContractConfig{
@@ -522,10 +522,10 @@ func (e *ExecutorSuite) TestExecutor() {
 		summit:      {summitClient, summitClient},
 	}
 
-	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
 	e.Nil(err)
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -574,7 +574,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		summit:      e.TestBackendSummit.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
 	e.Nil(err)
 
 	go func() {
@@ -744,7 +744,7 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 		},
 	}
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -760,7 +760,7 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
 	e.Nil(err)
 
 	go func() {

@@ -1,10 +1,14 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { AddressZero } from '@ethersproject/constants'
 import invariant from 'tiny-invariant'
 import { BigNumber } from '@ethersproject/bignumber'
 import { BytesLike } from '@ethersproject/bytes'
 import { PopulatedTransaction } from 'ethers'
+import { AddressZero } from '@ethersproject/constants'
 
+import {
+  handleNativeToken,
+  ETH_NATIVE_TOKEN_ADDRESS,
+} from './utils/handleNativeToken'
 import { BigintIsh } from './constants'
 import { SynapseRouter } from './synapseRouter'
 
@@ -52,10 +56,13 @@ class SynapseSDK {
   ): Promise<{
     feeAmount?: BigNumber | undefined
     feeConfig?: FeeConfig | undefined
+    routerAddress?: string | undefined
     maxAmountOut?: BigNumber | undefined
     originQuery?: Query | undefined
     destQuery?: Query | undefined
   }> {
+    tokenOut = handleNativeToken(tokenOut)
+    tokenIn = handleNativeToken(tokenIn)
     let originQuery
     let destQuery
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
@@ -120,9 +127,14 @@ class SynapseSDK {
       )
       feeConfig = await destRouter.routerContract.fee(destInToken)
     }
+
+    // Router address so allowance handling be set by client
+    const routerAddress = originRouter.routerContract.address
+
     return {
       feeAmount,
       feeConfig,
+      routerAddress,
       maxAmountOut,
       originQuery,
       destQuery,
@@ -150,6 +162,7 @@ class SynapseSDK {
       rawParams: BytesLike
     }
   ): Promise<PopulatedTransaction> {
+    token = handleNativeToken(token)
     const originRouter: SynapseRouter = this.synapseRouters[originChainId]
     return originRouter.routerContract.populateTransaction.bridge(
       to,
@@ -160,6 +173,7 @@ class SynapseSDK {
       destQuery
     )
   }
+  // TODO: add gas from bridge
 }
 
-export { SynapseSDK }
+export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS }

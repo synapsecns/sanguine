@@ -8,7 +8,11 @@ import (
 	"github.com/ImVexed/fasturl"
 	"github.com/goccy/go-json"
 	"github.com/jftuga/ellipsis"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slices"
 	goHTTP "net/http"
 	"strings"
@@ -36,7 +40,7 @@ func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string)
 	var standardizedResponse []byte
 	var hasErr bool
 
-	if isBatch(body) {
+	if rpc.IsBatch(body) {
 		standardizedResponse, hasErr, err = f.standardizeBatch(ctx, body)
 		if err != nil {
 			return nil, fmt.Errorf("could not standardize batch response: %w", err)
@@ -124,7 +128,15 @@ const (
 	httpsSchema = "https"
 )
 
-func (f *Forwarder) forwardRequest(ctx context.Context, endpoint string) (*rawResponse, error) {
+func (f *Forwarder) forwardRequest(parentCtx context.Context, endpoint string) (_ *rawResponse, err error) {
+	ctx, span := f.tracer.Start(parentCtx, "forwardRequest",
+		trace.WithAttributes(attribute.String("endpoint", endpoint)),
+	)
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	endpointURL, err := fasturl.ParseURL(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse endpoint (%s): %w", endpointURL, err)
