@@ -74,7 +74,7 @@ jobs:
           solc-version: 0.8.17
 
       - name: Upload SARIF file
-#        if: ${{!github.event.repository.private}}
+        if: ${{!github.event.repository.private}}
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ./packages/contracts-core/results.sarif
