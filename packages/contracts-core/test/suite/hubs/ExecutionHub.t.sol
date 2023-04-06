@@ -5,6 +5,7 @@ import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Snapshot.sol";
 import {ExecutionStatus, MessageStatus} from "../../../contracts/libs/Structures.sol";
 
+import {RevertingApp} from "../../harnesses/client/RevertingApp.t.sol";
 import {MessageRecipientMock} from "../../mocks/client/MessageRecipientMock.t.sol";
 import {SystemContractMock} from "../../mocks/system/SystemContractMock.t.sol";
 
@@ -73,6 +74,39 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
         ExecutionStatus memory status = IExecutionHub(hub).executionStatus(keccak256(msgPayload));
         assertEq(uint8(status.flag), uint8(MessageStatus.Success), "!flag");
+        assertEq(status.executor, executor, "!executor");
+    }
+
+    function check_execute_base_recipientReverted(address hub, Random memory random) public {
+        recipient = address(new RevertingApp());
+        address executor = makeAddr("Executor");
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        bytes32[] memory snapProof = prepareExecution(sm);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        vm.expectEmit();
+        emit Executed(rh.origin, keccak256(msgPayload));
+        vm.prank(executor);
+        IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
+        ExecutionStatus memory status = IExecutionHub(hub).executionStatus(keccak256(msgPayload));
+        assertEq(uint8(status.flag), uint8(MessageStatus.Failed), "!flag");
+        assertEq(status.executor, executor, "!executor");
+        // Retry the same failed message
+        RevertingApp(recipient).toggleRevert(false);
+        address executorNew = makeAddr("Executor New");
+        vm.prank(executorNew);
+        IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
+        status = IExecutionHub(hub).executionStatus(keccak256(msgPayload));
+        assertEq(uint8(status.flag), uint8(MessageStatus.Success), "!flag");
+        // Should be equal to the first executor
         assertEq(status.executor, executor, "!executor");
     }
 
