@@ -150,6 +150,14 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     // ══════════════════════════════════════ INTERNAL LOGIC: MESSAGE PROVING ══════════════════════════════════════════
 
+    /// @dev Saves a snapshot root with the attestation data provided by a Notary.
+    /// It is assumed that the Notary signature has been checked outside of this contract.
+    function _saveAttestation(Attestation att, address notary) internal {
+        bytes32 root = att.snapRoot();
+        require(_rootAttestations[root].isEmpty(), "Root already exists");
+        _rootAttestations[root] = att.toExecutionAttestation(notary);
+    }
+
     /**
      * @notice Attempts to prove the validity of the cross-chain message.
      * First, the origin Merkle Root is reconstructed using the origin proof.
@@ -188,14 +196,6 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         _verifyActive(_agentStatus(execAtt.notary));
         // Check that Notary who submitted the attestation is not in dispute
         require(!_inDispute(execAtt.notary), "Notary is in dispute");
-    }
-
-    /// @dev Saves a snapshot root with the attestation data provided by a Notary.
-    /// It is assumed that the Notary signature has been checked outside of this contract.
-    function _saveAttestation(Attestation att, address notary) internal {
-        bytes32 root = att.snapRoot();
-        require(_rootAttestations[root].isEmpty(), "Root already exists");
-        _rootAttestations[root] = att.toExecutionAttestation(notary);
     }
 
     /// @dev Gets a saved attestation for the given snapshot root.
