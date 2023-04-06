@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "npm run lint -- --fix",
+    "lint:check": "eslint . --max-warnings=0 --ext ts --ext tsx --ext js --ext jsx",
     "ci:lint": "npm run lint:check"
   },
   "dependencies": {
