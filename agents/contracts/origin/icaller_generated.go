@@ -15,49 +15,18 @@ type IOriginCaller interface {
 	//
 	// Solidity: function SYNAPSE_DOMAIN() view returns(uint32)
 	SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error)
-	// AllAgents is a free data retrieval call binding the contract method 0x64ecb518.
+	// AgentManager is a free data retrieval call binding the contract method 0x7622f78d.
 	//
-	// Solidity: function allAgents(uint32 _domain) view returns(address[])
-	AllAgents(opts *bind.CallOpts, _domain uint32) ([]common.Address, error)
-	// AllDomains is a free data retrieval call binding the contract method 0x6f225878.
+	// Solidity: function agentManager() view returns(address)
+	AgentManager(opts *bind.CallOpts) (common.Address, error)
+	// AgentStatus is a free data retrieval call binding the contract method 0x28f3fac9.
 	//
-	// Solidity: function allDomains() view returns(uint32[] domains_)
-	AllDomains(opts *bind.CallOpts) ([]uint32, error)
-	// AmountAgents is a free data retrieval call binding the contract method 0x32254098.
-	//
-	// Solidity: function amountAgents(uint32 _domain) view returns(uint256)
-	AmountAgents(opts *bind.CallOpts, _domain uint32) (*big.Int, error)
-	// AmountDomains is a free data retrieval call binding the contract method 0x61b0b357.
-	//
-	// Solidity: function amountDomains() view returns(uint256)
-	AmountDomains(opts *bind.CallOpts) (*big.Int, error)
-	// GetAgent is a free data retrieval call binding the contract method 0x1d82873b.
-	//
-	// Solidity: function getAgent(uint32 _domain, uint256 _agentIndex) view returns(address)
-	GetAgent(opts *bind.CallOpts, _domain uint32, _agentIndex *big.Int) (common.Address, error)
-	// GetDomain is a free data retrieval call binding the contract method 0x1a7a98e2.
-	//
-	// Solidity: function getDomain(uint256 _domainIndex) view returns(uint32)
-	GetDomain(opts *bind.CallOpts, _domainIndex *big.Int) (uint32, error)
-	// IsActiveAgent is a free data retrieval call binding the contract method 0x0958117d.
-	//
-	// Solidity: function isActiveAgent(uint32 _domain, address _account) view returns(bool)
-	IsActiveAgent(opts *bind.CallOpts, _domain uint32, _account common.Address) (bool, error)
-	// IsActiveAgent0 is a free data retrieval call binding the contract method 0x65e1e466.
-	//
-	// Solidity: function isActiveAgent(address _account) view returns(bool isActive, uint32 domain)
-	IsActiveAgent0(opts *bind.CallOpts, _account common.Address) (struct {
-		IsActive bool
-		Domain   uint32
-	}, error)
-	// IsActiveDomain is a free data retrieval call binding the contract method 0x4f5dbc0d.
-	//
-	// Solidity: function isActiveDomain(uint32 _domain) view returns(bool)
-	IsActiveDomain(opts *bind.CallOpts, _domain uint32) (bool, error)
+	// Solidity: function agentStatus(address agent) view returns((uint8,uint32,uint32))
+	AgentStatus(opts *bind.CallOpts, agent common.Address) (AgentStatus, error)
 	// IsValidState is a free data retrieval call binding the contract method 0xa9dcf22d.
 	//
-	// Solidity: function isValidState(bytes _statePayload) view returns(bool isValid)
-	IsValidState(opts *bind.CallOpts, _statePayload []byte) (bool, error)
+	// Solidity: function isValidState(bytes statePayload) view returns(bool isValid)
+	IsValidState(opts *bind.CallOpts, statePayload []byte) (bool, error)
 	// LocalDomain is a free data retrieval call binding the contract method 0x8d3638f4.
 	//
 	// Solidity: function localDomain() view returns(uint32)
@@ -76,8 +45,8 @@ type IOriginCaller interface {
 	SuggestLatestState(opts *bind.CallOpts) ([]byte, error)
 	// SuggestState is a free data retrieval call binding the contract method 0xb4596b4b.
 	//
-	// Solidity: function suggestState(uint32 _nonce) view returns(bytes stateData)
-	SuggestState(opts *bind.CallOpts, _nonce uint32) ([]byte, error)
+	// Solidity: function suggestState(uint32 nonce) view returns(bytes stateData)
+	SuggestState(opts *bind.CallOpts, nonce uint32) ([]byte, error)
 	// SystemRouter is a free data retrieval call binding the contract method 0x529d1549.
 	//
 	// Solidity: function systemRouter() view returns(address)
