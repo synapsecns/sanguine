@@ -51,6 +51,13 @@ jobs:
         with:
           version: nightly
 
+      # TODO: find a flag for this
+      - name: Delete Untested Files
+        working-directory: ./packages/contracts-core
+        run: |
+          rm -rf test/
+          rm -rf script/
+
       - name: Build Contracts
         run: |
           npx lerna exec npm run build:slither
