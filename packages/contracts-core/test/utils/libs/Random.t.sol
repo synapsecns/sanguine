@@ -88,6 +88,14 @@ library RandomLib {
         state.timestamp = r.nextUint40();
     }
 
+    function nextState(Random memory r) internal pure returns (RawState memory state) {
+        state.root = r.next();
+        state.origin = r.nextUint32();
+        state.nonce = r.nextUint32();
+        state.blockNumber = r.nextUint40();
+        state.timestamp = r.nextUint40();
+    }
+
     function nextAttestation(Random memory r, uint32 nonce) internal pure returns (RawAttestation memory ra) {
         ra.snapRoot = r.next();
         ra.agentRoot = r.next();

@@ -330,36 +330,8 @@ contract DestinationTest is ExecutionHubTest {
         check_execute_system(destination, address(router), rsm, rh, sm, timePassed, gasLimit);
     }
 
-    function test_execute_revert_notaryInDispute(
-        RawAttestation memory reportedRA,
-        RawState memory rs,
-        RawAttestation memory ra,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public {
-        // TODO: enable this test
-        // address executor = makeAddr("Executor");
-        // address notary = domains[DOMAIN_LOCAL].agent;
-        // // Prepare attestation for message execution
-        // createBaseMessages();
-        // rs.root = getRoot(MESSAGES);
-        // rs.origin = DOMAIN_REMOTE;
-        // // Remainder of State struct is fuzzed
-        // statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
-        // stateIndex = bound(stateIndex, 0, statesAmount - 1);
-        // ra = createAttestation(rs, ra, statesAmount, stateIndex);
-        // (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
-        // InterfaceDestination(destination).submitAttestation(attPayload, attSig);
-        // // Put Notary 0 and Guard 0 in dispute.
-        // // Note that the report doesn't have to reference the created attestation.
-        // test_submitAttestationReport(reportedRA);
-        // // Prepare for message execution
-        // skip(PERIOD);
-        // bytes32[] memory snapProof = genSnapshotProof(stateIndex);
-        // bytes32[] memory originProof = getLatestProof(0);
-        // vm.expectRevert("Notary is in dispute");
-        // vm.prank(executor);
-        // IExecutionHub(destination).execute(msgPayloads[0], originProof, snapProof, stateIndex, 0);
+    function test_execute_revert_notaryInDispute(Random memory random) public {
+        check_execute_base_revert_notaryInDispute(destination, random);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

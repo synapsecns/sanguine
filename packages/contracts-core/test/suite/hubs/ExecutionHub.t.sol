@@ -7,6 +7,7 @@ import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Snapshot.sol";
 import {MessageRecipientMock} from "../../mocks/client/MessageRecipientMock.t.sol";
 import {SystemContractMock} from "../../mocks/system/SystemContractMock.t.sol";
 
+import {Random} from "../../utils/libs/Random.t.sol";
 import {
     MessageFlag,
     RawBaseMessage,
@@ -15,7 +16,7 @@ import {
     RawState,
     RawSystemMessage
 } from "../../utils/libs/SynapseStructs.t.sol";
-import {DisputeHubTest} from "./DisputeHub.t.sol";
+import {DisputeHubTest, IDisputeHub} from "./DisputeHub.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -68,6 +69,33 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
+    }
+
+    function check_execute_base_revert_notaryInDispute(address hub, Random memory random) public {
+        address executor = makeAddr("Executor");
+        // Create test message
+        RawBaseMessage memory rbm;
+        rbm.sender = random.next();
+        rbm.content = "Test content";
+        RawHeader memory rh;
+        rh.nonce = random.nextUint32();
+        rh.optimisticPeriod = random.nextUint32();
+        SnapshotMock memory sm = SnapshotMock(random.nextState(), random.nextUint256(), random.nextUint256());
+        // Create messages and get origin proof
+        bytes memory msgPayload = createBaseMessages(rbm, rh);
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        bytes32[] memory snapProof = prepareExecution(sm);
+        // initiate dispute
+        check_submitStateReport(hub, localDomain(), sm.rs, sm.statesAmount, sm.stateIndex);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        vm.expectRevert("Notary is in dispute");
+        vm.prank(executor);
+        IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, 0);
     }
 
     // ══════════════════════════════════════ TESTS: EXECUTE SYSTEM MESSAGES ═══════════════════════════════════════════
