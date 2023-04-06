@@ -86,8 +86,8 @@ ignore:
   - '**/*_gen.go'
   - '**/*.pb.go'
   # solidity test files
-  - '*/test/*.sol'
+  - '**/test/**.sol'
   - '*/lib/*.sol'
   - 'packages/contracts-core/contracts/libs/*.sol'
-  - 'packages/contracts-core/test/*.sol'
+  - 'packages/contracts-core/test/**.sol'
   - 'services/scribe/grpc/client/*'
