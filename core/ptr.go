@@ -12,7 +12,7 @@ func PtrTo[T any](v T) *T {
 
 // ArePointersEqual returns true if the given pointers are equal.
 // Will return false if either of the given values are not pointers.
-// nolint: cyclop, forcedtypeassert
+// nolint: cyclop, forcetypeassert
 func ArePointersEqual(a, b interface{}) bool {
 	if a == nil && b == nil {
 		return true
