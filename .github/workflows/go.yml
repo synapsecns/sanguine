@@ -176,6 +176,10 @@ jobs:
           name: go-report-${{ steps.coverage.outputs.flag }}
           path: ${{matrix.package}}/report.html
 
+      - run:
+          if ${{ steps.coverage.outputs.flag }} == ""; then
+            exit 1
+          fi
       - uses: codecov/codecov-action@v3
         name: Send Coverage (Codecov)
         with:
