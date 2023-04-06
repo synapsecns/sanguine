@@ -4,9 +4,11 @@ on:
   pull_request:
     paths:
       - 'packages/contracts-core/**'
+      - '.github/workflows/solidity.yml'
   push:
     paths:
       - 'packages/contracts-core/**'
+      - '.github/workflows/solidity.yml'
 
 jobs:
   slither:
@@ -49,19 +51,27 @@ jobs:
         with:
           version: nightly
 
+      # TODO: find a flag for this
+      - name: Delete Untested Files
+        working-directory: ./packages/contracts-core
+        run: |
+          rm -rf test/
+          rm -rf script/
+
       - name: Build Contracts
         run: |
           npx lerna exec npm run build:slither
 
       - name: Run Slither
-        uses: crytic/slither-action@v0.1.1
+        uses: crytic/slither-action@v0.3.0
         continue-on-error: true
         id: slither
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-          target: ./packages/contracts-core
+          target: ./packages/contracts-core/
           ignore-compile: true
           sarif: results.sarif
+          solc-version: 0.8.17
 
       - name: Upload SARIF file
         if: ${{!github.event.repository.private}}
