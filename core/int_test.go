@@ -12,6 +12,8 @@ func (c *CoreSuite) TestCopyBigInt() {
 	newBigInt := core.CopyBigInt(ogBigInt)
 
 	Equal(c.T(), ogBigInt.Int64(), newBigInt.Int64())
+	// make sure pointers are different
+	False(c.T(), core.ArePointersEqual(ogBigInt, newBigInt))
 	Equal(c.T(), ogBigInt.Int64(), int64(ogInt))
 }
 

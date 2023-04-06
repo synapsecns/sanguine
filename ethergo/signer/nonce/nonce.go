@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 	"sync"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 )
@@ -148,7 +148,7 @@ func (n *nonceManagerImp) NewKeyedTransactor(realSigner *bind.TransactOpts) (*bi
 				return nil, fmt.Errorf("could not get next nonce: %w", err)
 			}
 
-			copiedTx, err := n.copyTxWithNonce(transaction, nonce.Uint64())
+			copiedTx, err := util.CopyTXWithNonce(transaction, nonce.Uint64())
 			if err != nil {
 				return nil, fmt.Errorf("could not copy tx: %w", err)
 			}
@@ -167,47 +167,6 @@ func (n *nonceManagerImp) NewKeyedTransactor(realSigner *bind.TransactOpts) (*bi
 	}, nil
 }
 
-// copyTxWithNonce copies a transaction but changes the nonce.
-func (n *nonceManagerImp) copyTxWithNonce(unsignedTx *types.Transaction, nonce uint64) (*types.Transaction, error) {
-	// tx is immutable except within the confines of type. Here we manually copy over the inner values
-
-	// these are overwritten, but copied over anyway for parity
-	v, r, s := unsignedTx.RawSignatureValues()
-
-	switch unsignedTx.Type() {
-	case types.LegacyTxType:
-		return types.NewTx(&types.LegacyTx{
-			Nonce:    nonce,
-			GasPrice: unsignedTx.GasPrice(),
-			Gas:      unsignedTx.Gas(),
-			To:       unsignedTx.To(),
-			Value:    unsignedTx.Value(),
-			Data:     unsignedTx.Data(),
-			V:        v,
-			R:        r,
-			S:        s,
-		}), nil
-	case types.AccessListTxType:
-		return nil, fmt.Errorf("unsupported tx type %d", types.AccessListTxType)
-	case types.DynamicFeeTxType:
-		return types.NewTx(&types.DynamicFeeTx{
-			ChainID:    unsignedTx.ChainId(),
-			Nonce:      nonce,
-			GasTipCap:  unsignedTx.GasTipCap(),
-			GasFeeCap:  unsignedTx.GasFeeCap(),
-			Gas:        unsignedTx.Gas(),
-			To:         unsignedTx.To(),
-			Value:      unsignedTx.Value(),
-			Data:       unsignedTx.Data(),
-			AccessList: unsignedTx.AccessList(),
-			V:          v,
-			R:          r,
-			S:          s,
-		}), nil
-	}
-	return nil, errors.New("an unexpected error occurred")
-}
-
 // SignTx signs a legacy tx.
 func (n *nonceManagerImp) SignTx(ogTx *types.Transaction, signer types.Signer, prv *ecdsa.PrivateKey) (*types.Transaction, error) {
 	address := crypto.PubkeyToAddress(prv.PublicKey)
@@ -220,7 +179,7 @@ func (n *nonceManagerImp) SignTx(ogTx *types.Transaction, signer types.Signer, p
 		return nil, fmt.Errorf("could not get nonce: %w", err)
 	}
 
-	tx, err := n.copyTxWithNonce(ogTx, nonce.Uint64())
+	tx, err := util.CopyTXWithNonce(ogTx, nonce.Uint64())
 	if err != nil {
 		return nil, fmt.Errorf("could not copy tx: %w", err)
 	}

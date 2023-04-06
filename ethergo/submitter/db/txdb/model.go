@@ -1,0 +1,53 @@
+package txdb
+
+import (
+	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/ethergo/submitter/db"
+)
+
+// define common field names. See package docs  for an explanation of why we have to do this.
+// note: some models share names. In cases where they do, we run the check against all names.
+// This is cheap because it's only done at startup.
+func init() {
+	namer := dbcommon.NewNamer(GetAllModels())
+	txHashFieldName = namer.GetConsistentName("TXHash")
+	fromFieldName = namer.GetConsistentName("From")
+	chainIDFieldName = namer.GetConsistentName("ChainID")
+	nonceFieldName = namer.GetConsistentName("Nonce")
+	statusFieldName = namer.GetConsistentName("Status")
+}
+
+var (
+	// txHashFieldName is the field name of the tx hash.
+	txHashFieldName string
+	// fromFieldName is the field name of the from address.
+	fromFieldName string
+	// chainIDFieldName is the field name of the to address.
+	chainIDFieldName string
+	// nonceFieldName is the field name of the nonce.
+	nonceFieldName string
+	// statusFieldName is the field name of the status.
+	statusFieldName string
+)
+
+// ETHTX contains a raw evm transaction that is unsigned.
+type ETHTX struct {
+	TXHash string `gorm:"column:tx_hash;primaryKey"`
+	// From is the sender of the transaction
+	From string `gorm:"from;index"`
+	// ChainID is the chain id the transaction hash will be sent on
+	ChainID uint64 `gorm:"column:chain_id;index"`
+	// Nonce is the nonce of the raw evm tx
+	Nonce uint64 `gorm:"column:nonce;index"`
+	// RawTx is the raw serialized transaction
+	RawTx []byte `gorm:"column:raw_tx"`
+	// Status is the status of the transaction
+	Status db.Status `gorm:"column:status;index"`
+}
+
+// GetAllModels gets all models to migrate
+// see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
+func GetAllModels() (allModels []interface{}) {
+	allModels = []interface{}{&ETHTX{}}
+	return allModels
+}

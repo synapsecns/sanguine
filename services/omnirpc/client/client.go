@@ -2,13 +2,17 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
+	"math/big"
 )
 
 // RPCClient is an interface for the omnirpc service.
 type RPCClient interface {
+	submitter.ClientFetcher
 	// GetEndpoint returns the endpoint for the given chainID and confirmations.
 	GetEndpoint(chainID, confirmations int) string
 	// GetDefaultEndpoint returns the endpoint with the default confirmation count for the chain id.
@@ -33,6 +37,14 @@ func NewOmnirpcClient(endpoint string, handler metrics.Handler, options ...Optio
 	c.handler = handler
 
 	return &c
+}
+
+func (c *rpcClient) GetClient(ctx context.Context, chainID *big.Int) (client.EVM, error) {
+	if !chainID.IsInt64() {
+		return nil, errors.New("chain id is not a uint64")
+	}
+
+	return c.GetChainClient(ctx, int(chainID.Uint64()))
 }
 
 func (c *rpcClient) GetEndpoint(chainID, confirmations int) string {
