@@ -87,7 +87,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
-        vm.expectRevert("!MessageStatus.None");
+        vm.expectRevert("Already executed");
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
     }
