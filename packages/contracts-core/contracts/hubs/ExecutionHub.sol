@@ -31,14 +31,9 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     using TypeCasts for bytes32;
     using TypedMemView for bytes29;
 
-    bytes32 internal constant _MESSAGE_STATUS_NONE = bytes32(0);
-
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     /// @notice (messageHash => status)
-    /// TODO: Store something else as "status"? Notary/timestamp?
-    /// - Message hasn't been executed: _MESSAGE_STATUS_NONE
-    /// - Message has been executed: snapshot root used for proving when executed
     /// @dev Messages coming from different origins will always have a different hash
     /// as origin domain is encoded into the formatted message.
     /// Thus we can use hash as a key instead of an (origin, hash) tuple.
