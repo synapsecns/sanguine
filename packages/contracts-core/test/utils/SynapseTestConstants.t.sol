@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {TIPS_LENGTH} from "../../contracts/libs/Constants.sol";
+import {TIPS_LENGTH, REQUEST_LENGTH} from "../../contracts/libs/Constants.sol";
 
 abstract contract SynapseTestConstants {
     string internal constant LATEST_VERSION = "0.0.3";
@@ -44,7 +44,7 @@ abstract contract SynapseTestConstants {
 
     // ══════════════════════════════════════════════ ENCODING TESTS ═══════════════════════════════════════════════════
 
-    uint256 internal constant MIN_BASE_MESSAGE_LENGTH = 32 + 32 + TIPS_LENGTH;
+    uint256 internal constant MIN_BASE_MESSAGE_LENGTH = 32 + 32 + TIPS_LENGTH + REQUEST_LENGTH;
 
     // ═══════════════════════════════════════════════ MESSAGE TESTS ═══════════════════════════════════════════════════
 

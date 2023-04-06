@@ -2,7 +2,8 @@
 pragma solidity 0.8.17;
 
 import {ByteString} from "./ByteString.sol";
-import {TIPS_LENGTH} from "./Constants.sol";
+import {REQUEST_LENGTH, TIPS_LENGTH} from "./Constants.sol";
+import {Request, RequestLib} from "./Request.sol";
 import {Tips, TipsLib} from "./Tips.sol";
 import {TypedMemView} from "./TypedMemView.sol";
 
@@ -10,16 +11,11 @@ import {TypedMemView} from "./TypedMemView.sol";
 type BaseMessage is bytes29;
 
 /// @dev Attach library functions to BaseMessage
-using {
-    BaseMessageLib.unwrap,
-    BaseMessageLib.sender,
-    BaseMessageLib.recipient,
-    BaseMessageLib.tips,
-    BaseMessageLib.content
-} for BaseMessage global;
+using BaseMessageLib for BaseMessage global;
 
 library BaseMessageLib {
     using ByteString for bytes;
+    using RequestLib for bytes29;
     using TipsLib for bytes29;
     using TypedMemView for bytes29;
 
@@ -28,7 +24,8 @@ library BaseMessageLib {
      * [000 .. 032): sender         bytes32 32 bytes    Sender address on origin chain
      * [032 .. 064): recipient      bytes32 32 bytes    Recipient address on destination chain
      * [064 .. 112): tips           bytes   48 bytes    Tips paid on origin chain
-     * [112 .. AAA): content        bytes   ?? bytes    Content to be passed to recipient
+     * [112 .. 120): request        bytes    8 bytes    Request for message execution on destination chain
+     * [120 .. AAA): content        bytes   ?? bytes    Content to be passed to recipient
      *
      * The variables below are not supposed to be used outside of the library directly.
      */
@@ -36,7 +33,8 @@ library BaseMessageLib {
     uint256 private constant OFFSET_SENDER = 0;
     uint256 private constant OFFSET_RECIPIENT = 32;
     uint256 private constant OFFSET_TIPS = 64;
-    uint256 private constant OFFSET_CONTENT = OFFSET_TIPS + TIPS_LENGTH;
+    uint256 private constant OFFSET_REQUEST = OFFSET_TIPS + TIPS_LENGTH;
+    uint256 private constant OFFSET_CONTENT = OFFSET_REQUEST + REQUEST_LENGTH;
 
     // ═══════════════════════════════════════════════ BASE MESSAGE ════════════════════════════════════════════════════
 
@@ -48,12 +46,14 @@ library BaseMessageLib {
      * @param content_      Raw content to be passed to recipient on destination chain
      * @return Formatted base message
      */
-    function formatBaseMessage(bytes32 sender_, bytes32 recipient_, bytes memory tipsPayload, bytes memory content_)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return abi.encodePacked(sender_, recipient_, tipsPayload, content_);
+    function formatBaseMessage(
+        bytes32 sender_,
+        bytes32 recipient_,
+        bytes memory tipsPayload,
+        bytes memory requestPayload,
+        bytes memory content_
+    ) internal pure returns (bytes memory) {
+        return abi.encodePacked(sender_, recipient_, tipsPayload, requestPayload, content_);
     }
 
     /**
@@ -78,7 +78,9 @@ library BaseMessageLib {
         // Check if sender, recipient, tips fields exist
         if (view_.len() < OFFSET_CONTENT) return false;
         // Check if tips payload is formatted
-        return _tips(view_).isTips();
+        if (!_tips(view_).isTips()) return false;
+        // Check if tips payload is formatted
+        return _request(view_).isRequest();
         // Content could be empty, so we don't check that
     }
 
@@ -110,6 +112,14 @@ library BaseMessageLib {
         return _tips(view_).castToTips();
     }
 
+    /// @notice Returns a typed memory view over the payload with request for message execution on destination chain.
+    function request(BaseMessage baseMessage) internal pure returns (Request) {
+        bytes29 view_ = baseMessage.unwrap();
+        // We check that request payload is properly formatted, when the whole payload is wrapped
+        // into BaseMessage, so this never reverts.
+        return _request(view_).castToRequest();
+    }
+
     /// @notice Returns an untyped memory view over the content to be passed to recipient.
     function content(BaseMessage baseMessage) internal pure returns (bytes29) {
         bytes29 view_ = baseMessage.unwrap();
@@ -122,5 +132,11 @@ library BaseMessageLib {
     /// if the whole payload or the tips are properly formatted.
     function _tips(bytes29 view_) private pure returns (bytes29) {
         return view_.slice({index_: OFFSET_TIPS, len_: TIPS_LENGTH, newType: 0});
+    }
+
+    /// @dev Returns an untyped memory view over the request field without checking
+    /// if the whole payload or the request are properly formatted.
+    function _request(bytes29 view_) private pure returns (bytes29) {
+        return view_.slice({index_: OFFSET_REQUEST, len_: REQUEST_LENGTH, newType: 0});
     }
 }

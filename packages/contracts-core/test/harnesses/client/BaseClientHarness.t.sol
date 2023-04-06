@@ -11,8 +11,13 @@ contract BaseClientHarness is BaseClient, BaseClientHarnessEvents {
     constructor(address origin_, address destination_) BaseClient(origin_, destination_) {}
 
     /// @notice Exposes _sendBaseMessage for testing
-    function sendBaseMessage(uint32 destination_, bytes memory tipsPayload, bytes memory content) external payable {
-        _sendBaseMessage(destination_, tipsPayload, content);
+    function sendBaseMessage(
+        uint32 destination_,
+        bytes memory tipsPayload,
+        bytes memory requestPayload,
+        bytes memory content
+    ) external payable {
+        _sendBaseMessage(destination_, tipsPayload, requestPayload, content);
     }
 
     /// @inheritdoc BaseClient

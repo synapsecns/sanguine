@@ -19,6 +19,7 @@ import {
     RawBaseMessage,
     RawHeader,
     RawMessage,
+    RawRequest,
     RawSnapshot,
     RawState,
     RawStateReport,
@@ -48,16 +49,18 @@ contract OriginTest is SynapseTest {
         assertEq(Versioned(origin).version(), LATEST_VERSION, "!version");
     }
 
-    function test_sendBaseMessage() public {
+    function test_sendMessages() public {
         address sender = makeAddr("Sender");
         address recipient = makeAddr("Recipient");
         uint32 period = 1 minutes;
         bytes memory tipsPayload = TipsLib.emptyTips();
+        bytes memory requestPayload = RawRequest(100_000).formatRequest();
         bytes memory content = "test content";
         bytes memory body = RawBaseMessage({
             sender: addressToBytes32(sender),
             recipient: addressToBytes32(recipient),
             tips: RawTips(0, 0, 0, 0),
+            request: RawRequest(100_000),
             content: content
         }).formatBaseMessage();
         bytes[] memory messages = new bytes[](MESSAGES);
@@ -92,7 +95,7 @@ contract OriginTest is SynapseTest {
         for (uint32 i = 0; i < MESSAGES; ++i) {
             vm.prank(sender);
             (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).sendBaseMessage(
-                DOMAIN_REMOTE, addressToBytes32(recipient), period, tipsPayload, content
+                DOMAIN_REMOTE, addressToBytes32(recipient), period, tipsPayload, requestPayload, content
             );
             // Check return values
             assertEq(messageNonce, i + 1, "!messageNonce");
@@ -117,7 +120,7 @@ contract OriginTest is SynapseTest {
         assertEq(hub.suggestState(0), state, "!state: 0");
         assertEq(hub.suggestState(0), hub.suggestLatestState(), "!latest state: 0");
         // Send some messages
-        test_sendBaseMessage();
+        test_sendMessages();
         // Check saved States
         assertEq(hub.statesAmount(), MESSAGES + 1, "!statesAmount");
         assertEq(hub.suggestState(0), state, "!suggestState: 0");
@@ -190,7 +193,7 @@ contract OriginTest is SynapseTest {
     function _prepareExistingState(uint32 nonce, uint256 mask) internal returns (bool isValid, RawState memory rs) {
         uint40 initialBN = uint40(block.number - 1);
         uint40 initialTS = uint40(block.timestamp - BLOCK_TIME);
-        test_sendBaseMessage();
+        test_sendMessages();
         // State is valid if and only if all three fields match
         isValid = mask & 7 == 0;
         // Restrict nonce to existing ones

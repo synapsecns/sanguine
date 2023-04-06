@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {InterfaceOrigin, PingPongClient, TipsLib} from "../../../contracts/client/PingPongClient.sol";
+import {InterfaceOrigin, PingPongClient, RequestLib, TipsLib} from "../../../contracts/client/PingPongClient.sol";
 
 import {OriginMock} from "../../mocks/OriginMock.t.sol";
 
@@ -76,7 +76,7 @@ contract PingPongTest is Test {
         emit PongSent(pingId);
         _expectOriginCall(origin, sender, nextPeriod, pingId, false, counter);
         vm.prank(destinationMock);
-        client.receiveBaseMessage(origin, 0, bytes32(uint256(uint160(sender))), 0, content(pingId, true, counter));
+        client.receiveBaseMessage(origin, 0, bytes32(uint256(uint160(sender))), 0, _content(pingId, true, counter));
         // Pings sent: 0
         assertEq(client.pingsSent(), 0);
         // Received pings: 1, pongs: 0
@@ -97,7 +97,7 @@ contract PingPongTest is Test {
             _expectOriginCall(origin, sender, nextPeriod, localPingId, true, counter - 1);
         }
         vm.prank(destinationMock);
-        client.receiveBaseMessage(origin, 0, bytes32(uint256(uint160(sender))), 0, content(pingId, false, counter));
+        client.receiveBaseMessage(origin, 0, bytes32(uint256(uint160(sender))), 0, _content(pingId, false, counter));
         // Pings sent: 0/1 (based on counter being zero / non-zero)
         assertEq(client.pingsSent(), counter == 0 ? 0 : 1);
         // Received pings: 0, pongs: 1
@@ -114,16 +114,23 @@ contract PingPongTest is Test {
         uint16 counter
     ) internal {
         bytes memory tipsPayload = TipsLib.emptyTips();
-        bytes memory body = content(pingId, isPing, counter);
+        bytes memory requestPayload = RequestLib.formatRequest(0);
+        bytes memory content = _content(pingId, isPing, counter);
         vm.expectCall(
             originMock,
             abi.encodeWithSelector(
-                InterfaceOrigin.sendBaseMessage.selector, destination, recipient, optimisticPeriod, tipsPayload, body
+                InterfaceOrigin.sendBaseMessage.selector,
+                destination,
+                recipient,
+                optimisticPeriod,
+                tipsPayload,
+                requestPayload,
+                content
             )
         );
     }
 
-    function content(uint256 pingId, bool isPing, uint16 counter) internal pure returns (bytes memory) {
+    function _content(uint256 pingId, bool isPing, uint16 counter) internal pure returns (bytes memory) {
         return abi.encode(pingId, isPing, counter);
     }
 }

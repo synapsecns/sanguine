@@ -6,6 +6,7 @@ import {ByteString, CallData, TypedMemView} from "../../../contracts/libs/ByteSt
 import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
 import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
 import {SystemEntity, SystemMessage, SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
+import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
 
 import {Snapshot, SnapshotLib, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
 
@@ -23,6 +24,12 @@ struct RawHeader {
 }
 
 using CastLib for RawHeader global;
+
+struct RawRequest {
+    uint64 gasLimit;
+}
+
+using CastLib for RawRequest global;
 
 struct RawTips {
     uint96 notaryTip;
@@ -61,6 +68,7 @@ struct RawBaseMessage {
     bytes32 sender;
     bytes32 recipient;
     RawTips tips;
+    RawRequest request;
     bytes content;
 }
 
@@ -123,6 +131,7 @@ library CastLib {
     using BaseMessageLib for bytes;
     using HeaderLib for bytes;
     using MessageLib for bytes;
+    using RequestLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
     using StateReportLib for bytes;
@@ -158,6 +167,14 @@ library CastLib {
         ptr = rh.formatHeader().castToHeader();
     }
 
+    function formatRequest(RawRequest memory rr) internal pure returns (bytes memory request) {
+        request = RequestLib.formatRequest({gasLimit_: rr.gasLimit});
+    }
+
+    function castToRequest(RawRequest memory rr) internal pure returns (Request ptr) {
+        ptr = rr.formatRequest().castToRequest();
+    }
+
     function formatTips(RawTips memory rt) internal pure returns (bytes memory tipsPayload) {
         tipsPayload = TipsLib.formatTips({
             notaryTip_: rt.notaryTip,
@@ -183,6 +200,7 @@ library CastLib {
             sender_: rbm.sender,
             recipient_: rbm.recipient,
             tipsPayload: rbm.tips.formatTips(),
+            requestPayload: rbm.request.formatRequest(),
             content_: rbm.content
         });
     }

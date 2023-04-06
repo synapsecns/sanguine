@@ -57,7 +57,8 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         bytes memory msgPayload,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
-        uint256 stateIndex
+        uint256 stateIndex,
+        uint64 gasLimit
     ) external {
         // This will revert if payload is not a formatted message payload
         Message message = msgPayload.castToMessage();
@@ -75,10 +76,13 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         require(proofMaturity >= header.optimisticPeriod(), "!optimisticPeriod");
         // Only System/Base message flags exist
         if (message.flag() == MessageFlag.System) {
+            // gasLimit is ignored when executing system messages
             _executeSystemMessage(origin, nonce, proofMaturity, message.body());
         } else {
             // This will revert if message body is not a formatted BaseMessage payload
-            _executeBaseMessage(origin, nonce, proofMaturity, execAtt.notary, message.body().castToBaseMessage());
+            _executeBaseMessage(
+                origin, nonce, proofMaturity, execAtt.notary, gasLimit, message.body().castToBaseMessage()
+            );
         }
         emit Executed(origin, msgLeaf);
     }
@@ -98,14 +102,20 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         uint32 nonce,
         uint256 proofMaturity,
         address notary,
+        uint64 gasLimit,
         BaseMessage baseMessage
     ) internal {
+        // Check that gas limit covers the one requested by the sender.
+        // We let the executor specify gas limit higher than requested to guarantee the execution of
+        // messages with gas limit set too low.
+        require(gasLimit >= baseMessage.request().gasLimit(), "Gas limit too low");
         // Store message tips
         _storeTips(notary, baseMessage.tips());
         // TODO: check that the discarded bits are empty
         address recipient = baseMessage.recipient().bytes32ToAddress();
-        // Forward message content to the recipient
-        IMessageRecipient(recipient).receiveBaseMessage(
+        // Forward message content to the recipient, and limit the amount of forwarded gas
+        require(gasleft() > gasLimit, "Not enough gas supplied");
+        IMessageRecipient(recipient).receiveBaseMessage{gas: gasLimit}(
             origin, nonce, baseMessage.sender(), proofMaturity, baseMessage.content().clone()
         );
     }

@@ -36,12 +36,17 @@ contract BaseMessageHarness {
         return payload.castToBaseMessage().recipient();
     }
 
-    /// @notice Returns baseMessage's optimistic seconds field
+    /// @notice Returns baseMessage's tips field
     function tips(bytes memory payload) public view returns (bytes memory) {
         return payload.castToBaseMessage().tips().unwrap().clone();
     }
 
-    /// @notice Returns baseMessage's recipient field as an address
+    /// @notice Returns baseMessage's request field
+    function request(bytes memory payload) public view returns (bytes memory) {
+        return payload.castToBaseMessage().request().unwrap().clone();
+    }
+
+    /// @notice Returns baseMessage's content field
     function content(bytes memory payload) public view returns (bytes memory) {
         return payload.castToBaseMessage().content().clone();
     }
@@ -52,11 +57,13 @@ contract BaseMessageHarness {
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
-    function formatBaseMessage(bytes32 sender_, bytes32 recipient_, bytes memory tipsPayload, bytes memory content_)
-        public
-        pure
-        returns (bytes memory)
-    {
-        return BaseMessageLib.formatBaseMessage(sender_, recipient_, tipsPayload, content_);
+    function formatBaseMessage(
+        bytes32 sender_,
+        bytes32 recipient_,
+        bytes memory tipsPayload,
+        bytes memory requestPayload,
+        bytes memory content_
+    ) public pure returns (bytes memory) {
+        return BaseMessageLib.formatBaseMessage(sender_, recipient_, tipsPayload, requestPayload, content_);
     }
 }

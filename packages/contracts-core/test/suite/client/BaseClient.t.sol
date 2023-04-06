@@ -5,7 +5,7 @@ import {BaseClientHarness} from "../../harnesses/client/BaseClientHarness.t.sol"
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
 import {InterfaceOrigin} from "../../mocks/OriginMock.t.sol";
 
-import {RawBaseMessage, RawHeader, RawTips} from "../../utils/libs/SynapseStructs.t.sol";
+import {RawBaseMessage, RawHeader, RawRequest, RawTips} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -20,37 +20,53 @@ contract BaseClientTest is SynapseTest {
         client = new BaseClientHarness(origin, destination);
     }
 
-    function test_sendBaseMessage(address user, uint32 destination_, RawTips memory rt, bytes memory content) public {
+    function test_sendBaseMessage(
+        address user,
+        uint32 destination_,
+        RawTips memory rt,
+        RawRequest memory rr,
+        bytes memory content
+    ) public {
         vm.assume(destination_ != 0 && destination_ != DOMAIN_LOCAL);
         vm.label(user, "User");
         // Set some sensible limit for fuzzed tips values
         rt.boundTips(1e20);
         uint256 totalTips = rt.castToTips().totalTips();
         bytes memory tipsPayload = rt.formatTips();
+        bytes memory requestPayload = rr.formatRequest();
         vm.deal(user, totalTips);
         // Get expected values for sending a message
         bytes32 recipient = client.trustedSender(destination_);
         uint32 optimisticPeriod = client.optimisticPeriod();
         bytes memory expectedCall = abi.encodeWithSelector(
-            InterfaceOrigin.sendBaseMessage.selector, destination_, recipient, optimisticPeriod, tipsPayload, content
+            InterfaceOrigin.sendBaseMessage.selector,
+            destination_,
+            recipient,
+            optimisticPeriod,
+            tipsPayload,
+            requestPayload,
+            content
         );
         vm.expectCall(origin, totalTips, expectedCall);
         vm.prank(user);
-        client.sendBaseMessage{value: totalTips}(destination_, tipsPayload, content);
+        client.sendBaseMessage{value: totalTips}(destination_, tipsPayload, requestPayload, content);
     }
 
-    function test_sendBaseMessage_revert_recipientNotSet(address user, RawTips memory rt) public {
+    function test_sendBaseMessage_revert_recipientNotSet(address user, RawTips memory rt, RawRequest memory rr)
+        public
+    {
         // There is no trustedSender for this domain => will revert in BaseClient
         uint32 destination_ = 0;
         vm.label(user, "User");
         // Set some sensible limit for fuzzed tips values
         rt.boundTips(1e20);
         uint256 totalTips = rt.castToTips().totalTips();
+        bytes memory requestPayload = rr.formatRequest();
         bytes memory tipsPayload = rt.formatTips();
         vm.deal(user, totalTips);
         vm.expectRevert("BaseClient: !recipient");
         vm.prank(user);
-        client.sendBaseMessage{value: totalTips}(destination_, tipsPayload, "");
+        client.sendBaseMessage{value: totalTips}(destination_, tipsPayload, requestPayload, "");
     }
 
     function test_receiveBaseMessage(

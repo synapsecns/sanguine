@@ -151,6 +151,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         bytes32 recipient,
         uint32 optimisticPeriod,
         bytes memory tipsPayload,
+        bytes memory requestPayload,
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
         // Check that content is not too large
@@ -164,6 +165,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
             sender_: msg.sender.addressToBytes32(),
             recipient_: recipient,
             tipsPayload: tipsPayload,
+            requestPayload: requestPayload,
             content_: content
         });
         // Send the message
