@@ -330,12 +330,20 @@ contract DestinationTest is ExecutionHubTest {
         check_execute_system(destination, address(router), rsm, rh, sm, timePassed, gasLimit);
     }
 
+    function test_execute_base_revert_alreadyExecuted(Random memory random) public {
+        check_execute_base_revert_alreadyExecuted(destination, random);
+    }
+
     function test_execute_revert_notaryInDispute(Random memory random) public {
         check_execute_base_revert_notaryInDispute(destination, random);
     }
 
     function test_execute_revert_optimisticPeriodNotOver(Random memory random) public {
         check_execute_base_revert_optimisticPeriodNotOver(destination, random);
+    }
+
+    function test_execute_revert_snapRootUnknown(Random memory random) public {
+        check_execute_base_revert_snapRootUnknown(destination, random);
     }
 
     function test_execute_revert_gasLimitTooLow(Random memory random) public {
@@ -350,9 +358,8 @@ contract DestinationTest is ExecutionHubTest {
 
     /// @notice Prepares execution of the created messages
     function prepareExecution(SnapshotMock memory sm) public override returns (bytes32[] memory snapProof) {
-        RawAttestation memory ra = Random(sm.rs.root).nextAttestation(1);
-        ra = createAttestation(sm.rs, ra, sm.statesAmount, sm.stateIndex);
-        snapProof = genSnapshotProof(sm.stateIndex);
+        RawAttestation memory ra;
+        (ra, snapProof) = createSnapshotProof(sm);
         (bytes memory attPayload, bytes memory attSig) = signAttestation(domains[DOMAIN_LOCAL].agent, ra);
         InterfaceDestination(destination).submitAttestation(attPayload, attSig);
     }
