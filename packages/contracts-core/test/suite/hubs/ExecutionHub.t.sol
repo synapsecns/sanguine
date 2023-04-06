@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Snapshot.sol";
+import {ExecutionStatus, MessageStatus} from "../../../contracts/libs/Structures.sol";
 
 import {MessageRecipientMock} from "../../mocks/client/MessageRecipientMock.t.sol";
 import {SystemContractMock} from "../../mocks/system/SystemContractMock.t.sol";
@@ -70,6 +71,9 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
+        ExecutionStatus memory status = IExecutionHub(hub).executionStatus(keccak256(msgPayload));
+        assertEq(uint8(status.flag), uint8(MessageStatus.Success), "!flag");
+        assertEq(status.executor, executor, "!executor");
     }
 
     function check_execute_base_revert_alreadyExecuted(address hub, Random memory random) public {
@@ -249,6 +253,9 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
+        ExecutionStatus memory status = IExecutionHub(hub).executionStatus(keccak256(msgPayload));
+        assertEq(uint8(status.flag), uint8(MessageStatus.Success), "!flag");
+        assertEq(status.executor, executor, "!executor");
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
