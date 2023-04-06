@@ -32,9 +32,7 @@ contract RequestLibraryTest is SynapseLibraryTest {
         checkCastToRequest({payload: payload, isRequest: length == REQUEST_LENGTH});
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function checkCastToRequest(bytes memory payload, bool isRequest) public {
         if (isRequest) {
