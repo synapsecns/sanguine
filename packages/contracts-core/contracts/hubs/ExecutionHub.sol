@@ -102,6 +102,13 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         emit Executed(origin, msgLeaf);
     }
 
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc IExecutionHub
+    function executionStatus(bytes32 messageHash) external view returns (ExecutionStatus memory status) {
+        return _executionStatus[messageHash];
+    }
+
     // ═══════════════════════════════════════════ INTERNAL LOGIC: TIPS ════════════════════════════════════════════════
 
     function _storeTips(address notary, Tips tips) internal {

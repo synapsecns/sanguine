@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {ExecutionStatus} from "../libs/Structures.sol";
+
 interface IExecutionHub {
     /**
      * @notice Attempts to prove inclusion of message into one of Snapshot Merkle Trees,
@@ -28,4 +30,13 @@ interface IExecutionHub {
         uint256 stateIndex,
         uint64 gasLimit
     ) external;
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /**
+     * @notice Returns execution status of a message.
+     * @param messageHash   Hash of the message payload
+     * @return status       Structure describing execution status (see Structures.sol)
+     */
+    function executionStatus(bytes32 messageHash) external view returns (ExecutionStatus memory status);
 }
