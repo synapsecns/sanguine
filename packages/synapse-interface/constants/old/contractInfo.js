@@ -12,13 +12,11 @@ import {
   FRAX,
   WETHE,
 } from '@constants/tokens/basic'
-
 import {
   BOBA_ETH_SWAP_TOKEN,
   ARBITRUM_ETH_SWAP_TOKEN,
-  AVALANCHE_AVETH_SWAP_TOKEN
+  AVALANCHE_AVETH_SWAP_TOKEN,
 } from '@constants/tokens/ethswap'
-
 import {
   ETH_POOL_SWAP_TOKEN,
   BSC_POOL_SWAP_TOKEN,
@@ -30,8 +28,6 @@ import {
   HARMONY_POOL_SWAP_TOKEN,
   AURORA_TS_POOL_SWAP_TOKEN,
 } from '@constants/tokens/poolswap'
-
-
 
 export const CONTRACT_INFO = {
   [ChainId.ETH]: {
@@ -74,14 +70,14 @@ export const CONTRACT_INFO = {
     LP_TOKENS: [],
     SWAP_TOKENS: [],
     STABLES: [FRAX],
-    TOKENS: []
+    TOKENS: [],
   },
   [ChainId.MOONRIVER]: {
     OPERATIONAL: [SYN],
     LP_TOKENS: [],
     SWAP_TOKENS: [],
     STABLES: [FRAX],
-    TOKENS: []
+    TOKENS: [],
   },
   [ChainId.ARBITRUM]: {
     OPERATIONAL: [SYN],
@@ -117,6 +113,5 @@ export const CONTRACT_INFO = {
     SWAP_TOKENS: [ARBITRUM_ETH_SWAP_TOKEN],
     STABLES: [],
     TOKENS: [NETH, ETH],
-  }
+  },
 }
-

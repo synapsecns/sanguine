@@ -1,8 +1,7 @@
-
 import { POOLS_BY_CHAIN } from '@constants/tokens'
 
-let POOL_ROUTER_INDEX = {}
-let POOL_INVERTED_ROUTER_INDEX = {}
+const POOL_ROUTER_INDEX = {}
+const POOL_INVERTED_ROUTER_INDEX = {}
 
 for (const [chainId, arr] of Object.entries(POOLS_BY_CHAIN)) {
   POOL_INVERTED_ROUTER_INDEX[chainId] = {}
@@ -12,7 +11,4 @@ for (const [chainId, arr] of Object.entries(POOLS_BY_CHAIN)) {
   }
 }
 
-export {
-  POOL_ROUTER_INDEX,
-  POOL_INVERTED_ROUTER_INDEX,
-}
+export { POOL_ROUTER_INDEX, POOL_INVERTED_ROUTER_INDEX }

@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  pageExtensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-
+  resolve: {
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+  },
 }
 
 module.exports = {

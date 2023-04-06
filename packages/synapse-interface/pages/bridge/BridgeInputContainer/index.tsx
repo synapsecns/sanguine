@@ -1,4 +1,5 @@
 import { formatBNToString } from '@bignumber/format'
+import React from 'react'
 import SwitchButton from '@components/buttons/SwitchButton'
 import MiniMaxButton from '@components/buttons/MiniMaxButton'
 import { BigNumber } from '@ethersproject/bignumber'

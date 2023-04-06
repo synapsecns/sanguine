@@ -1,5 +1,6 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { displaySymbol } from '@utils/displaySymbol'
+import React from 'react'
 import Image from 'next/image'
 import {
   getBorderStyleForCoinHover,

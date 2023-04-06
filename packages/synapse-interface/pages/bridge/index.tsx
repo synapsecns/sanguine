@@ -88,9 +88,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       setFromTokens(tokens)
     })
   }, [fromChainId])
-  // useEffect(() => {}, [bridgeQuote])
   useEffect(() => {
-    console.log('TIME')
     if (
       fromChainId &&
       toChainId &&

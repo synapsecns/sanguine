@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSettings } from '@hooks/useSettings'
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
@@ -26,12 +26,9 @@ import SettingsSlideOver from './SettingsSlideOver'
 import { DestinationAddressInput } from './DestinationAddressInput'
 import BridgeInputContainer from './BridgeInputContainer'
 import { useSynapseContext } from '@/utils/SynapseProvider'
-// import { writeContract, prepareSendTransaction } from '@wagmi/core'
-// import { optimism } from '@wagmi/core/chains'
 
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
-// import { useGasDropAmount } from '@hooks/useGasDropAmount'
 const BridgeCard = ({
   error,
   address,
@@ -328,32 +325,7 @@ const BridgeCard = ({
               setDestinationAddress={setDestinationAddress}
             />
           </Transition>
-          <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">
-            {actionButton}
-            {/* {generateActionButton()} */}
-            {/* {bridgeQuote?.allowance &&
-            bridgeQuote?.allowance?.lt(fromInput.bigNum) ? (
-              <TransactionButton
-                onClick={() => approveToken()}
-                label={`Approve ${fromToken.symbol}`}
-                onSuccess={() => {
-                  console.log('YIUGJHGJHGJHGJHGHJ')
-                }}
-                pendingLabel={`Approving ${fromToken.symbol}  `}
-              />
-            ) : (
-              <TransactionButton
-                className={btnClassName}
-                disabled={disabled}
-                onClick={() => executeBridge()}
-                onSuccess={() => {
-                  onChangeFromAmount('')
-                }}
-                label={btnLabel}
-                pendingLabel={`Bridging funds...`}
-              />
-            )} */}
-          </div>
+          <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">{actionButton}</div>
           <Transition
             show={
               ['fromChain', 'toChain'].includes(displayType)
