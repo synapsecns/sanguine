@@ -20,15 +20,22 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
 
     function test_formatBaseMessage(RawBaseMessage memory rbm) public {
         bytes memory tipsPayload = rbm.tips.formatTips();
+        bytes memory requestPayload = rbm.request.formatRequest();
         // Test formatting
-        bytes memory payload = libHarness.formatBaseMessage(rbm.sender, rbm.recipient, tipsPayload, rbm.content);
-        assertEq(payload, abi.encodePacked(rbm.sender, rbm.recipient, tipsPayload, rbm.content), "!formatBaseMessage");
+        bytes memory payload =
+            libHarness.formatBaseMessage(rbm.sender, rbm.recipient, tipsPayload, requestPayload, rbm.content);
+        assertEq(
+            payload,
+            abi.encodePacked(rbm.sender, rbm.recipient, tipsPayload, requestPayload, rbm.content),
+            "!formatBaseMessage"
+        );
         // Test formatting checker
         checkCastToBaseMessage({payload: payload, isBaseMessage: true});
         // Test getters
         assertEq(libHarness.sender(payload), rbm.sender, "!sender");
         assertEq(libHarness.recipient(payload), rbm.recipient, "!recipient");
         assertEq(libHarness.tips(payload), tipsPayload, "!tips");
+        assertEq(libHarness.request(payload), requestPayload, "!request");
         assertEq(libHarness.content(payload), rbm.content, "!content");
     }
 

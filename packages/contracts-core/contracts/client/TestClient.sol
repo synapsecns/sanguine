@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {RequestLib} from "../libs/Request.sol";
 import {TipsLib} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
-
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
@@ -42,8 +42,11 @@ contract TestClient is IMessageRecipient {
     {
         bytes32 recipient = TypeCasts.addressToBytes32(recipientAddress);
         bytes memory tipsPayload = TipsLib.emptyTips();
-        (uint32 nonce,) =
-            InterfaceOrigin(origin).sendBaseMessage(destination_, recipient, optimisticSeconds, tipsPayload, content);
+        // TODO: figure out the logic for a message test
+        bytes memory requestPayload = RequestLib.formatRequest(0);
+        (uint32 nonce,) = InterfaceOrigin(origin).sendBaseMessage(
+            destination_, recipient, optimisticSeconds, tipsPayload, requestPayload, content
+        );
         emit MessageSent(destination_, nonce, TypeCasts.addressToBytes32(address(this)), recipient, content);
     }
 }

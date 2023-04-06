@@ -60,6 +60,11 @@ library RandomLib {
         return uint160(r.nextUint256());
     }
 
+    // @notice Returns next "random" uint64 value and updates the Random's seed.
+    function nextUint64(Random memory r) internal pure returns (uint64 value) {
+        return uint64(r.nextUint256());
+    }
+
     // @notice Returns next "random" uint40 value and updates the Random's seed.
     function nextUint40(Random memory r) internal pure returns (uint40 value) {
         return uint40(r.nextUint256());
@@ -86,6 +91,22 @@ library RandomLib {
         state.nonce = nonce;
         state.blockNumber = r.nextUint40();
         state.timestamp = r.nextUint40();
+    }
+
+    function nextState(Random memory r) internal pure returns (RawState memory state) {
+        state.root = r.next();
+        state.origin = r.nextUint32();
+        state.nonce = r.nextUint32();
+        state.blockNumber = r.nextUint40();
+        state.timestamp = r.nextUint40();
+    }
+
+    function nextAttestation(Random memory r, uint32 nonce) internal pure returns (RawAttestation memory ra) {
+        ra.snapRoot = r.next();
+        ra.agentRoot = r.next();
+        ra.nonce = nonce;
+        ra.blockNumber = r.nextUint40();
+        ra.timestamp = r.nextUint40();
     }
 
     function nextAttestation(Random memory r, RawSnapshot memory rawSnap, uint32 nonce)

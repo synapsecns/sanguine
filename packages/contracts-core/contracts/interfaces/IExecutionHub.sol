@@ -11,6 +11,7 @@ interface IExecutionHub {
      *  - Snapshot root (reconstructed from message hash and proofs) is unknown
      *  - Snapshot root is known, but was submitted by an inactive Notary
      *  - Snapshot root is known, but optimistic period for a message hasn't passed
+     *  - Provided gas limit is lower than the one requested in the message
      *  - Recipient doesn't implement a `handle` method (refer to IMessageRecipient.sol)
      *  - Recipient reverted upon receiving a message
      * Note: refer to libs/State.sol for details about Origin State's sub-leafs.
@@ -18,11 +19,13 @@ interface IExecutionHub {
      * @param originProof   Proof of inclusion of message in the Origin Merkle Tree
      * @param snapProof     Proof of inclusion of Origin State's Left Leaf into Snapshot Merkle Tree
      * @param stateIndex    Index of Origin State in the Snapshot
+     * @param gasLimit      Gas limit for message execution
      */
     function execute(
         bytes memory msgPayload,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
-        uint256 stateIndex
+        uint256 stateIndex,
+        uint64 gasLimit
     ) external;
 }
