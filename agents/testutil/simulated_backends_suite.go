@@ -1,6 +1,12 @@
 package testutil
 
 import (
+	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
+	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
+	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
+	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
 	"math/big"
 	"testing"
 
@@ -81,6 +87,10 @@ type SimulatedBackendsTestSuite struct {
 	ScribeTestDB                        scribedb.EventDB
 	DBPath                              string
 	ExecutorTestDB                      db.ExecutorDB
+	ScribeMetrics                       metrics.Handler
+	ExecutorMetrics                     metrics.Handler
+	NotaryMetrics                       metrics.Handler
+	GuardMetrics                        metrics.Handler
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -90,6 +100,22 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 	return &SimulatedBackendsTestSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
 	}
+}
+
+// SetupSuite sets up the test suite.
+func (a *SimulatedBackendsTestSuite) SetupSuite() {
+	a.TestSuite.SetupSuite()
+	localmetrics.SetupTestJaeger(a.GetSuiteContext(), a.T(), localmetrics.WithKeepContainers(true))
+
+	var err error
+	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
+	a.Require().Nil(err)
+	a.ExecutorMetrics, err = metrics.NewByType(a.GetSuiteContext(), executorMetadata.BuildInfo(), metrics.Jaeger)
+	a.Require().Nil(err)
+	a.NotaryMetrics, err = metrics.NewByType(a.GetSuiteContext(), notaryMetadata.BuildInfo(), metrics.Jaeger)
+	a.Require().Nil(err)
+	a.GuardMetrics, err = metrics.NewByType(a.GetSuiteContext(), guardMetadata.BuildInfo(), metrics.Jaeger)
+	a.Require().Nil(err)
 }
 
 // SetupOrigin sets up the backend that will have the origin contract deployed on it.
@@ -333,12 +359,12 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.SetupSummit(a.TestDeployManager)
 
 	a.DBPath = filet.TmpDir(a.T(), "")
-	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath)
+	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ScribeMetrics)
 	if err != nil {
 		a.T().Fatal(err)
 	}
 	a.ScribeTestDB = scribeSqliteStore
-	sqliteStore, err := executorsqllite.NewSqliteStore(a.GetTestContext(), a.DBPath)
+	sqliteStore, err := executorsqllite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ExecutorMetrics)
 	if err != nil {
 		a.T().Fatal(err)
 	}

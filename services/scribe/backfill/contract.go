@@ -8,6 +8,9 @@ import (
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/core/mapmutex"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"math/big"
 	"time"
 
@@ -34,6 +37,8 @@ type ContractBackfiller struct {
 	cache *lru.Cache
 	// mux is the mutex used to prevent double inserting logs from the same tx
 	mux mapmutex.StringerMapMutex
+	// handler is the metrics handler for the scribe.
+	handler metrics.Handler
 }
 
 // retryTolerance is the number of times to retry a failed operation before rerunning the entire Backfill function.
@@ -49,7 +54,7 @@ const invalidTxVRSError = "invalid transaction v, r, s values"
 const txNotFoundError = "not found"
 
 // NewContractBackfiller creates a new backfiller for a contract.
-func NewContractBackfiller(chainConfig config.ChainConfig, contractConfig config.ContractConfig, eventDB db.EventDB, client []ScribeBackend) (*ContractBackfiller, error) {
+func NewContractBackfiller(chainConfig config.ChainConfig, contractConfig config.ContractConfig, eventDB db.EventDB, client []ScribeBackend, handler metrics.Handler) (*ContractBackfiller, error) {
 	cache, err := lru.New(500)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize cache: %w", err)
@@ -60,12 +65,13 @@ func NewContractBackfiller(chainConfig config.ChainConfig, contractConfig config
 		contractConfig.RefreshRate = 1
 	}
 	return &ContractBackfiller{
-		contractConfig: contractConfig,
 		chainConfig:    chainConfig,
+		contractConfig: contractConfig,
 		eventDB:        eventDB,
 		client:         client,
 		cache:          cache,
 		mux:            mapmutex.NewStringerMapMutex(),
+		handler:        handler,
 	}, nil
 }
 
@@ -76,7 +82,18 @@ func NewContractBackfiller(chainConfig config.ChainConfig, contractConfig config
 //   - Get the transaction for each log and store it.
 //
 //nolint:gocognit, cyclop
-func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, endHeight uint64) error {
+func (c *ContractBackfiller) Backfill(parentCtx context.Context, givenStart uint64, endHeight uint64) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "contract.Backfill", trace.WithAttributes(
+		attribute.Int("chain", int(c.chainConfig.ChainID)),
+		attribute.String("address", c.contractConfig.Address),
+		attribute.Int("start", int(givenStart)),
+		attribute.Int("end", int(endHeight)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	g, groupCtx := errgroup.WithContext(ctx)
 	startHeight := givenStart
 	lastBlockIndexed, err := c.eventDB.RetrieveLastIndexed(groupCtx, common.HexToAddress(c.contractConfig.Address), c.chainConfig.ChainID)
@@ -147,9 +164,13 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 				}
 
 			case doneFlag := <-doneChan:
-
 				if doneFlag {
 					LogEvent(InfoLevel, "Received doneChan", LogData{"cid": c.chainConfig.ChainID, "ca": c.contractConfig.Address})
+
+					err = c.eventDB.StoreLastIndexed(ctx, common.HexToAddress(c.contractConfig.Address), c.chainConfig.ChainID, endHeight)
+					if err != nil {
+						return fmt.Errorf("could not store last indexed block: %w", err)
+					}
 
 					return nil
 				}
@@ -172,8 +193,18 @@ func (c *ContractBackfiller) Backfill(ctx context.Context, givenStart uint64, en
 // TODO split two goroutines into sep functions for maintainability
 // store stores the logs, receipts, and transactions for a tx hash.
 //
-//nolint:cyclop, gocognit, maintidx
-func (c *ContractBackfiller) store(ctx context.Context, log types.Log) (err error) {
+//nolint:cyclop,gocognit,maintidx
+func (c *ContractBackfiller) store(parentCtx context.Context, log types.Log) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "store", trace.WithAttributes(
+		attribute.String("contract", c.contractConfig.Address),
+		attribute.String("tx", log.TxHash.Hex()),
+		attribute.String("block", fmt.Sprintf("%d", log.BlockNumber)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	startTime := time.Now()
 
 	b := &backoff.Backoff{
@@ -281,9 +312,16 @@ OUTER:
 	return nil
 }
 
-func (c *ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
-	// rangeFilter generates filter type that will retrives logs from omnirpc in chunks of batch requests specified in the config.
+func (c *ContractBackfiller) getLogs(parentCtx context.Context, startHeight, endHeight uint64) (<-chan types.Log, <-chan bool) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "getLogs")
+
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
+	// rangeFilter generates filter type that will retrieve logs from omnirpc in chunks of batch requests specified in the config.
 	rangeFilter := NewRangeFilter(common.HexToAddress(c.contractConfig.Address), c.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), c.chainConfig.ContractChunkSize, true, c.chainConfig.ContractSubChunkSize, c.chainConfig.ChainID)
+
 	logsChan := make(chan types.Log)
 	doneChan := make(chan bool)
 	// This go routine is responsible for running the range filter and collect logs from omnirpc and put it into it's logChan (see filter.go).
@@ -321,6 +359,7 @@ func (c *ContractBackfiller) getLogs(ctx context.Context, startHeight, endHeight
 			}
 		}
 	}()
+
 	return logsChan, doneChan
 }
 
@@ -353,7 +392,16 @@ var errNoTx = errors.New("tx is not supported by the client")
 
 // fetchTx tries to fetch a transaction from the cache, if it's not there it tries to fetch it from the database.
 // nolint: cyclop
-func (c *ContractBackfiller) fetchTx(ctx context.Context, txhash common.Hash, blockNumber uint64) (tx *txData, err error) {
+func (c *ContractBackfiller) fetchTx(parentCtx context.Context, txhash common.Hash, blockNumber uint64) (tx *txData, err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "fetchTx", trace.WithAttributes(
+		attribute.String("tx", txhash.Hex()),
+		attribute.String("block", fmt.Sprintf("%d", blockNumber)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 OUTER:
 	// increasing this across more clients puts too much load on the server, results in failed requests. TODO investigate
 	for i := range c.client[0:1] {
@@ -378,7 +426,7 @@ OUTER:
 		calls[headerIndex] = eth.HeaderByNumber(new(big.Int).SetUint64(blockNumber)).Returns(&tx.blockHeader)
 
 		//nolint: nestif
-		if err := c.client[i].Batch(ctx, calls...); err != nil {
+		if err := c.client[i].BatchWithContext(ctx, calls...); err != nil {
 			//nolint: errorlint
 			callErr, ok := err.(w3.CallErrors)
 			if !ok {

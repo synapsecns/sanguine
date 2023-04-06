@@ -1,0 +1,7 @@
+cors:
+  allowed-origins:
+    ['*']
+  allowed-methods: ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
+  allowed-headers:
+    ['Content-Type', 'Accept', 'Accept-Language', 'Content-Language', 'Origin']
+  allow-credentials: true

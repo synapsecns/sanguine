@@ -17,7 +17,7 @@ func (a *AnvilSuite) TestFundAccount() {
 	a.backend.FundAccount(a.GetTestContext(), fundedAccount.Address, *ether)
 
 	realBalance, err := a.backend.BalanceAt(a.GetTestContext(), fundedAccount.Address, nil)
-	Nil(a.T(), err)
+	a.Require().NoError(err)
 
 	Equal(a.T(), ether, realBalance)
 }
@@ -26,40 +26,40 @@ func (a *AnvilSuite) TestGetTxContext() {
 	res := a.backend.GetTxContext(a.GetTestContext(), nil)
 
 	prevCount, err := a.counter.GetCount(&bind.CallOpts{Context: a.GetTestContext()})
-	Nil(a.T(), err)
+	a.Require().NoError(err)
 
 	res.TransactOpts.NoSend = true
 	tx, err := a.counter.IncrementCounter(res.TransactOpts)
-	Nil(a.T(), err)
+	a.Require().NoError(err)
 
 	sender, err := util.TxToCall(tx)
-	Nil(a.T(), err)
+	a.Require().NoError(err)
 
 	Equal(a.T(), res.TransactOpts.From, sender.From)
 
 	a.backend.WaitForConfirmation(a.GetTestContext(), tx)
 
 	newCount, err := a.counter.GetCount(&bind.CallOpts{Context: a.GetTestContext()})
-	Nil(a.T(), err)
+	a.Require().NoError(err)
 
 	Equal(a.T(), prevCount.Uint64()+1, newCount.Uint64())
 }
 
 func (a *AnvilSuite) TestImpersonateAccount() {
 	ogCount, err := a.counter.GetVitalikCount(&bind.CallOpts{Context: a.GetTestContext()})
-	Nil(a.T(), err)
+	a.Require().NoError(err)
 
 	// impersonate vitalik, and send the fren some eth
 	err = a.backend.ImpersonateAccount(a.GetTestContext(), vitalik, func(transactOpts *bind.TransactOpts) *types.Transaction {
 		tx, err := a.counter.VitalikIncrement(transactOpts)
-		Nil(a.T(), err)
+		a.Require().NoError(err)
 
 		return tx
 	})
-	Nil(a.T(), err)
+	a.Require().NoError(err)
 
 	vitalikCount, err := a.counter.GetVitalikCount(&bind.CallOpts{Context: a.GetTestContext()})
-	Nil(a.T(), err)
+	a.Require().NoError(err)
 
 	Equal(a.T(), ogCount.Uint64()+10, vitalikCount.Uint64())
 }

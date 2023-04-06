@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"github.com/synapsecns/sanguine/agents/agents/guard/metadata"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"sync/atomic"
 	"time"
 
@@ -59,6 +61,10 @@ var GuardRunCommand = &cli.Command{
 	Description: "runs the guard service",
 	Flags:       []cli.Flag{configFlag, metricsPortFlag, ignoreInitErrorsFlag},
 	Action: func(c *cli.Context) error {
+		handler, err := metrics.NewFromEnv(c.Context, metadata.BuildInfo())
+		if err != nil {
+			return fmt.Errorf("failed to create metrics handler: %w", err)
+		}
 		guardConfig, err := config.DecodeAgentConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("failed to decode config: %w", err)
@@ -72,7 +78,7 @@ var GuardRunCommand = &cli.Command{
 
 			g, _ := errgroup.WithContext(c.Context)
 
-			guard, err := guard.NewGuard(c.Context, guardConfig)
+			guard, err := guard.NewGuard(c.Context, guardConfig, handler)
 			if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
 				return fmt.Errorf("failed to create guard: %w", err)
 			}
