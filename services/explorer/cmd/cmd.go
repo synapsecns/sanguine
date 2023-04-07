@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/urfave/cli/v2"
 )
 
@@ -19,6 +20,12 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	app.Description = buildInfo.VersionString() + "An indexer + API serving platform analytics"
 	app.Usage = "explorer help"
 	app.EnableBashCompletion = true
+
+	// TODO: should we really halt boot on because of metrics?
+	app.Before = func(c *cli.Context) error {
+		// nolint:wrapcheck
+		return metrics.Setup(c.Context, buildInfo)
+	}
 
 	// commands
 	app.Commands = cli.Commands{infoCommand, serverCommand, backfillCommand, livefillCommand}

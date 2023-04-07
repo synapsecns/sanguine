@@ -18,7 +18,7 @@ func (b BackfillSuite) TestFilterLogsMaxAttempts() {
 	b.T().Skip("flake")
 	chainID := big.NewInt(int64(1))
 	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), chainID)
-	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress())
+	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress(), b.metrics)
 	Nil(b.T(), err)
 	mockFilterer := new(mocks.EVMClient)
 	contractAddress := etherMocks.MockAddress()

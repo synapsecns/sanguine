@@ -104,7 +104,7 @@ func (t *MockTester) Log(args ...interface{}) {
 	formattedOut := fmt.Sprintln(args...)
 	t.output = append(t.output, formattedOut)
 	if t.printErrors {
-		t.outputHandler(fmt.Sprintln(args...))
+		t.outputHandler(fmt.Sprintln(formattedOut))
 	}
 }
 
@@ -119,7 +119,7 @@ func (t *MockTester) Logf(format string, args ...interface{}) {
 	formattedOut := fmt.Sprintf(format, args...)
 	t.output = append(t.output, formattedOut)
 	if t.printLogs {
-		t.outputHandler(fmt.Sprintln(args...))
+		t.outputHandler(fmt.Sprintln(formattedOut))
 	}
 }
 

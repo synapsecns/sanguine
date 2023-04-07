@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/ImVexed/fasturl"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"net/http"
 	"sync"
@@ -16,8 +15,8 @@ var logOnce = sync.Once{}
 const httpScheme = "http"
 const httpsScheme = "https"
 
-// EthClient is a wrapper around ethclient.Client that adds metrics/tracing.
-func EthClient(ctx context.Context, metrics Handler, url string) (*ethclient.Client, error) {
+// RPCClient is a wrapper around rpc.Client that adds metrics/tracing.
+func RPCClient(ctx context.Context, metrics Handler, url string) (*rpc.Client, error) {
 	u, err := fasturl.ParseURL(url)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse url: %w", err)
@@ -31,12 +30,13 @@ func EthClient(ctx context.Context, metrics Handler, url string) (*ethclient.Cli
 		if err != nil {
 			return nil, fmt.Errorf("could not dial http: %w", err)
 		}
-		return ethclient.NewClient(rpcclient), nil
+
+		return rpcclient, nil
 	default:
 		logOnce.Do(func() {
 			logger.Warnf("unsupported protocol: %s: only %s and %s are supported for metrics, future warnings will be surprssed", u.Protocol, httpScheme, httpsScheme)
 		})
 		//nolint: wrapcheck
-		return ethclient.DialContext(ctx, url)
+		return rpc.DialContext(ctx, url)
 	}
 }

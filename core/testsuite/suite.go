@@ -70,7 +70,7 @@ type TestSuite struct {
 // Every test suite in the synapse library should inherit from this suite and override where necessary.
 func NewTestSuite(tb testing.TB) *TestSuite {
 	tb.Helper()
-	log.SetAllLoggers(log.LevelDebug)
+	log.SetAllLoggers(log.LevelWarn)
 	ctx := context.Background()
 	return &TestSuite{
 		context: ctx,

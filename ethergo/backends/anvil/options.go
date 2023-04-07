@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ImVexed/fasturl"
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ory/dockertest/v3/docker"
 	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/exp/slices"
 	"reflect"
@@ -24,6 +25,11 @@ const defaultMnemonic = "tag volcano eight thank tide danger coast health above 
 // NewAnvilOptionBuilder creates a new option builder.
 func NewAnvilOptionBuilder() *OptionBuilder {
 	optionsBuilder := &OptionBuilder{}
+	// set default non-anvil values
+	optionsBuilder.SetMaxWaitTime(time.Minute * 2)
+	optionsBuilder.SetRestartPolicy(Autoremove)
+	optionsBuilder.SetExpirySeconds(600)
+
 	optionsBuilder.SetAccounts(10)
 	optionsBuilder.SetBlockTime(0)
 	optionsBuilder.SetBalance(10000)
@@ -98,12 +104,26 @@ type serverOptions struct {
 	Host         string `anvil:"host"`
 }
 
+// nonAnvilOptions: it's important that these do not include the anvil annotation.
+type nonAnvilOptions struct {
+	// maxWait is the maximum time to wait for the server to start
+	maxWait time.Duration
+	// expirySeconds is the number of seconds to wait before expiring a request
+	// set to 0 to disable
+	expirySeconds uint
+	// autoremove is wether the container should be deleted after the run
+	autoremove bool
+	// restartPolicy restarts a policy
+	restartPolicy *docker.RestartPolicy
+}
+
 // OptionBuilder is a builder for anvil options.
 type OptionBuilder struct {
 	generalOptions
 	evmOptions
 	executorOptions
 	serverOptions
+	nonAnvilOptions
 }
 
 // ========= General Options =========
@@ -313,6 +333,56 @@ func (o *OptionBuilder) SetPruneHistory(pruneHistory bool) {
 func (o *OptionBuilder) SetHost(host string) {
 	o.Host = host
 }
+
+// SetMaxWaitTime sets the max wait time for the docker image to start.
+func (o *OptionBuilder) SetMaxWaitTime(maxWait time.Duration) {
+	o.maxWait = maxWait
+}
+
+// SetExpirySeconds sets the expiry seconds for the docker image to be removed.
+func (o *OptionBuilder) SetExpirySeconds(expirySeconds uint) {
+	o.expirySeconds = expirySeconds
+}
+
+// SetRestartPolicy sets the restart policy for the docker container.
+func (o *OptionBuilder) SetRestartPolicy(restartPolicy RestartPolicy) {
+	alwaysRestart := docker.AlwaysRestart()
+	failure := docker.RestartOnFailure(10)
+	unlessStopped := docker.RestartUnlessStopped()
+	neverRestart := docker.NeverRestart()
+
+	o.autoremove = false
+
+	switch restartPolicy {
+	case Restart:
+		o.restartPolicy = &alwaysRestart
+	case Failure:
+		o.restartPolicy = &failure
+	case UnlessStopped:
+		o.restartPolicy = &unlessStopped
+	case No:
+		o.restartPolicy = &neverRestart
+	case Autoremove:
+		o.restartPolicy = nil
+		o.autoremove = true
+	}
+}
+
+// RestartPolicy defines the restart policy for the docker container.
+type RestartPolicy string
+
+const (
+	// Restart defines the restart policy for the docker container.
+	Restart RestartPolicy = "always"
+	// Failure defines the restart policy for the docker container.
+	Failure = "on-failure"
+	// UnlessStopped defines the restart policy for the docker container.
+	UnlessStopped = "unless-stopped"
+	// No defines the restart policy for the docker container.
+	No = "no"
+	// Autoremove removes the container when it's finished.
+	Autoremove = "autoremove"
+)
 
 // Build converts the option builder into a list of command line parameters.
 // for use in anvil.
