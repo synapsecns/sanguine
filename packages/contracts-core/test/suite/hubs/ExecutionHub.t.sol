@@ -72,7 +72,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
-        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Success, executor, executor);
+        verify_executionStatus(hub, rh, MessageStatus.Success, executor, executor);
     }
 
     function check_execute_base_recipientReverted(address hub, Random memory random) public {
@@ -94,13 +94,13 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
-        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Failed, executor, address(0));
+        verify_executionStatus(hub, rh, MessageStatus.Failed, executor, address(0));
         // Retry the same failed message
         RevertingApp(recipient).toggleRevert(false);
         address executorNew = makeAddr("Executor New");
         vm.prank(executorNew);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
-        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Success, executor, executorNew);
+        verify_executionStatus(hub, rh, MessageStatus.Success, executor, executorNew);
     }
 
     function check_execute_base_revert_alreadyExecuted(address hub, Random memory random) public {
@@ -279,20 +279,20 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
-        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Success, executor, executor);
+        verify_executionStatus(hub, rh, MessageStatus.Success, executor, executor);
     }
 
     // ═════════════════════════════════════════════════ VERIFIERS ═════════════════════════════════════════════════════
 
     function verify_executionStatus(
         address hub,
-        bytes32 messageHash,
+        RawHeader memory rh,
         MessageStatus flag,
         address firstExecutor,
         address successExecutor
     ) public {
         (MessageStatus flag_, address firstExecutor_, address successExecutor_) =
-            IExecutionHub(hub).executionStatus(messageHash);
+            IExecutionHub(hub).executionStatus(rh.origin, rh.nonce);
         assertEq(uint8(flag_), uint8(flag), "!flag");
         assertEq(firstExecutor_, firstExecutor, "!firstExecutor");
         assertEq(successExecutor_, successExecutor, "!successExecutor");
