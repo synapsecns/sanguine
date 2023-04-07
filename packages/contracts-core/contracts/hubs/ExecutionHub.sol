@@ -102,16 +102,21 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         if (execStatus.status == MessageStatus.None) {
             // This is the first valid attempt to execute the message, save the attestation nonce
             execStatus.attNonce = execAtt.nonce;
-            // Save the executor address, if execution failed
-            if (!success) _firstExecutor[originAndNonce] = msg.sender;
-        }
-        if (success) {
+            if (success) {
+                // This is the successful attempt to execute the message => save the executor
+                execStatus.status = MessageStatus.Success;
+                execStatus.executor = msg.sender;
+            } else {
+                // Save as the "first executor", if execution failed
+                execStatus.status = MessageStatus.Failed;
+                _firstExecutor[originAndNonce] = msg.sender;
+            }
+            _executionStatus[originAndNonce] = execStatus;
+        } else if (success) {
+            // There has been a failed attempt to execute the message before => don't touch attNonce
             // This is the successful attempt to execute the message => save the executor
+            execStatus.status = MessageStatus.Success;
             execStatus.executor = msg.sender;
-        }
-        if (execStatus.status == MessageStatus.None || success) {
-            // Message execution status was updated
-            execStatus.status = success ? MessageStatus.Success : MessageStatus.Failed;
             _executionStatus[originAndNonce] = execStatus;
         }
         emit Executed(header.origin(), msgLeaf);
