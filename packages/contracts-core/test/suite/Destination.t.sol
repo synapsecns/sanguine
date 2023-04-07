@@ -317,6 +317,10 @@ contract DestinationTest is ExecutionHubTest {
         check_execute_base(destination, rbm, rh, sm, timePassed, gasLimit);
     }
 
+    function test_execute_base_recipientReverted(Random memory random) public {
+        check_execute_base_recipientReverted(destination, random);
+    }
+
     function test_execute_system(
         RawSystemMessage memory rsm,
         RawHeader memory rh,

@@ -3,7 +3,9 @@ pragma solidity 0.8.17;
 
 import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Snapshot.sol";
+import {MessageStatus} from "../../../contracts/libs/Structures.sol";
 
+import {RevertingApp} from "../../harnesses/client/RevertingApp.t.sol";
 import {MessageRecipientMock} from "../../mocks/client/MessageRecipientMock.t.sol";
 import {SystemContractMock} from "../../mocks/system/SystemContractMock.t.sol";
 
@@ -70,6 +72,35 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
+        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Success, executor, executor);
+    }
+
+    function check_execute_base_recipientReverted(address hub, Random memory random) public {
+        recipient = address(new RevertingApp());
+        address executor = makeAddr("Executor");
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        bytes32[] memory snapProof = prepareExecution(sm);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        vm.expectEmit();
+        emit Executed(rh.origin, keccak256(msgPayload));
+        vm.prank(executor);
+        IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
+        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Failed, executor, address(0));
+        // Retry the same failed message
+        RevertingApp(recipient).toggleRevert(false);
+        address executorNew = makeAddr("Executor New");
+        vm.prank(executorNew);
+        IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
+        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Success, executor, executorNew);
     }
 
     function check_execute_base_revert_alreadyExecuted(address hub, Random memory random) public {
@@ -87,7 +118,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
-        vm.expectRevert("!MessageStatus.None");
+        vm.expectRevert("Already executed");
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
     }
@@ -136,9 +167,9 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
-        vm.assume(rh.optimisticPeriod != 0);
         // Create messages and get origin proof
         bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        vm.assume(rh.optimisticPeriod != 0);
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -176,7 +207,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
-        rbm.request.gasLimit = 200_000;
         // Create messages and get origin proof
         bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
@@ -190,7 +220,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         vm.expectRevert("Not enough gas supplied");
         vm.prank(executor);
         // Limit amount of gas for the whole call
-        IExecutionHub(hub).execute{gas: rbm.request.gasLimit}(
+        IExecutionHub(hub).execute{gas: rbm.request.gasLimit + 20_000}(
             msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit
         );
     }
@@ -249,6 +279,23 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
+        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Success, executor, executor);
+    }
+
+    // ═════════════════════════════════════════════════ VERIFIERS ═════════════════════════════════════════════════════
+
+    function verify_executionStatus(
+        address hub,
+        bytes32 messageHash,
+        MessageStatus flag,
+        address firstExecutor,
+        address successExecutor
+    ) public {
+        (MessageStatus flag_, address firstExecutor_, address successExecutor_) =
+            IExecutionHub(hub).executionStatus(messageHash);
+        assertEq(uint8(flag_), uint8(flag), "!flag");
+        assertEq(firstExecutor_, firstExecutor, "!firstExecutor");
+        assertEq(successExecutor_, successExecutor, "!successExecutor");
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
@@ -267,7 +314,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         rbm.recipient = addressToBytes32(recipient);
         // Set sensible limitations for tips/request
         rbm.tips.boundTips(1e20);
-        rbm.request.gasLimit = uint64(bound(rbm.request.gasLimit, 10_000, 1_000_000));
+        rbm.request.gasLimit = uint64(bound(rbm.request.gasLimit, 50_000, 200_000));
         msgPayload = RawMessage(uint8(MessageFlag.Base), rh, rbm.formatBaseMessage()).formatMessage();
         createMessages(rh.nonce, msgPayload);
     }
