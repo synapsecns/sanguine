@@ -10,13 +10,7 @@ import {TypedMemView} from "./TypedMemView.sol";
 type Header is bytes29;
 
 /// @dev Attach library functions to Header
-using {
-    HeaderLib.unwrap,
-    HeaderLib.origin,
-    HeaderLib.nonce,
-    HeaderLib.destination,
-    HeaderLib.optimisticPeriod
-} for Header global;
+using HeaderLib for Header global;
 
 /**
  * @notice Library for versioned formatting [the header part]
@@ -100,6 +94,12 @@ library HeaderLib {
     function nonce(Header header) internal pure returns (uint32) {
         bytes29 view_ = unwrap(header);
         return uint32(view_.indexUint(OFFSET_NONCE, 4));
+    }
+
+    /// @notice Returns header's origin and nonce fields combined in a composite key.
+    function originAndNonce(Header header) internal pure returns (uint64) {
+        bytes29 view_ = unwrap(header);
+        return uint64(view_.indexUint(OFFSET_ORIGIN, 8));
     }
 
     /// @notice Returns header's destination field

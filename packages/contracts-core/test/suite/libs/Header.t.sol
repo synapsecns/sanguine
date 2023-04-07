@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {Composite} from "../../../contracts/libs/Composite.sol";
 import {HEADER_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
@@ -29,6 +30,7 @@ contract HeaderLibraryTest is SynapseLibraryTest {
         // Test getters
         assertEq(libHarness.origin(payload), rh.origin, "!origin");
         assertEq(libHarness.nonce(payload), rh.nonce, "!nonce");
+        assertEq(libHarness.originAndNonce(payload), Composite.mergeUint32(rh.origin, rh.nonce), "!originAndNonce");
         assertEq(libHarness.destination(payload), rh.destination, "!destination");
         assertEq(libHarness.optimisticPeriod(payload), rh.optimisticPeriod, "!optimisticPeriod");
     }

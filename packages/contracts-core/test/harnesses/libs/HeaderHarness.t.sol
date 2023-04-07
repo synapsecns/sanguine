@@ -35,6 +35,11 @@ contract HeaderHarness {
         return payload.castToHeader().nonce();
     }
 
+    /// @notice Returns header's origin and nonce fields combined in a composite key.
+    function originAndNonce(bytes memory payload) public pure returns (uint64) {
+        return payload.castToHeader().originAndNonce();
+    }
+
     /// @notice Returns header's destination field
     function destination(bytes memory payload) public pure returns (uint32) {
         return payload.castToHeader().destination();
