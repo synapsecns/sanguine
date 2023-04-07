@@ -1,4 +1,4 @@
-# Note: this is a temporary workaround until we're open source.
+# Note: this is a temporary workaround until we're open source .
 name: Release Charts (OCI)
 
 on:
@@ -34,7 +34,7 @@ jobs:
           name: agents
           repository: synapsecns/sanguine/helm
           # note: this must be manually updated for the workaround
-          tag: 0.1.5
+          tag: 0.1.6
           path: charts/agents # Default charts/{name}
           registry: ghcr.io
           registry_username: ${{ github.actor }}
