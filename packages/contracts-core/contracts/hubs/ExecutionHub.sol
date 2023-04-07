@@ -34,12 +34,14 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @notice Struct representing the status of Message in Execution Hub.
     /// @param flag         Message execution status
+    /// @param attNonce     Nonce of the attestation used for proving the message
     /// @param executor     Executor who successfully executed the message
     struct ExecutionStatus {
         MessageStatus flag;
+        uint32 attNonce;
         address executor;
     }
-    // 88 bits available for tight packing
+    // 16 bits available for tight packing
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -98,9 +100,11 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
                 originAndNonce, proofMaturity, execAtt.notary, gasLimit, message.body().castToBaseMessage()
             );
         }
-        if (execStatus.flag == MessageStatus.None && !success) {
-            // This is the first valid attempt to execute the message, which failed
-            _failedExecutor[originAndNonce] = msg.sender;
+        if (execStatus.flag == MessageStatus.None) {
+            // This is the first valid attempt to execute the message, save the attestation nonce
+            execStatus.attNonce = execAtt.nonce;
+            // Save the executor address, if execution failed
+            if (!success) _failedExecutor[originAndNonce] = msg.sender;
         }
         if (success) {
             // This is the successful attempt to execute the message => save the executor
