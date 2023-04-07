@@ -1,10 +1,10 @@
-export function DeadlineInput({
+export const DeadlineInput = ({
   deadlineMinutes,
   setDeadlineMinutes,
 }: {
   deadlineMinutes: string
   setDeadlineMinutes: (value: string) => void
-}) {
+}) => {
   return (
     <div className="flex h-16 pb-4 space-x-2 text-left">
       <div

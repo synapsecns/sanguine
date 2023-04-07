@@ -241,6 +241,95 @@ const BridgeCard = ({
       pendingLabel={pendingLabel}
     />
   )
+  const swapBtn = (
+    <TransactionButton
+      className={btnClassName}
+      disabled={disabled}
+      onClick={() => executeBridge()}
+      onSuccess={() => {
+        onChangeFromAmount('')
+      }}
+      label={btnLabel}
+      pendingLabel={`Bridging funds...`}
+    />
+  )
+
+  const actionBtn = swapBtn
+  const bridgeCardMainContent = (
+    <>
+      <Grid cols={{ xs: 1 }} gap={10} className="py-1 place-content-center">
+        <div className="mt-2">
+          <BridgeInputContainer {...fromArgs} />
+        </div>
+        <BridgeInputContainer {...toArgs} />
+      </Grid>
+      <Transition
+        appear={true}
+        unmount={false}
+        show={!fromInput.bigNum.eq(0)}
+        {...SECTION_TRANSITION_PROPS}
+      >
+        <ExchangeRateInfo
+          fromAmount={fromInput.bigNum}
+          toToken={toToken}
+          exchangeRate={bridgeQuote.exchangeRate}
+          toChainId={toChainId}
+        />
+      </Transition>
+      <Transition
+        appear={false}
+        unmount={false}
+        show={settings.expertMode}
+        {...SECTION_TRANSITION_PROPS}
+      >
+        <DestinationAddressInput
+          toChainId={toChainId}
+          destinationAddress={destinationAddress}
+          setDestinationAddress={setDestinationAddress}
+        />
+      </Transition>
+      <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">{actionBtn}</div>
+    </>
+  )
+
+  const fromCardContent = <CoinSlideOver key="fromBlock" {...fromArgs} />
+  const toCardContent = <CoinSlideOver key="toBlock" {...toArgs} />
+
+  const fromChainCardContent = (
+    <NetworkSlideOver key="fromChainBlock" {...fromArgs} />
+  )
+  const toChainCardContent = <NetworkSlideOver key="toChainBlock" {...toArgs} />
+
+  const settingsCardContent = (
+    <SettingsSlideOver key="settings" {...settingsArgs} />
+  )
+
+  const transitionProps = {
+    ...COIN_SLIDE_OVER_PROPS,
+    className: `
+      origin-bottom absolute
+      w-full h-full
+      md:w-[95%] md:h-[95%]
+      -ml-0 md:-ml-3
+      md:mt-3
+      bg-bgBase
+      z-20 rounded-3xl
+    `,
+  }
+
+  const settingsTransitionProps = {
+    ...COIN_SLIDE_OVER_PROPS,
+    className: `
+      origin-bottom absolute
+      w-full h-full
+      md:w-[95%]
+      -ml-0 md:-ml-3
+      md:-mt-3
+      bg-bgBase
+      z-20 rounded-3xl
+    `,
+  }
+
   return (
     <>
       <div className="flex items-center justify-between mb-5 ml-5 mr-5 space-x-2">
@@ -279,53 +368,25 @@ const BridgeCard = ({
         className="max-w-lg px-1 pb-0 mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6"
       >
         <div>
-          <Transition show={displayType === 'from'} {...TRANSITIONS_PROPS}>
-            <CoinSlideOver key="fromBlock" {...fromArgs} />
+          <Transition show={displayType === 'from'} {...transitionProps}>
+            {fromCardContent}
           </Transition>
-          <Transition show={displayType === 'to'} {...TRANSITIONS_PROPS}>
-            <CoinSlideOver key="toBlock" {...toArgs} />
+          <Transition show={displayType === 'to'} {...transitionProps}>
+            {toCardContent}
           </Transition>
-          <Transition show={displayType === 'fromChain'} {...TRANSITIONS_PROPS}>
-            <NetworkSlideOver key="fromChainBlock" {...fromArgs} />
+          <Transition show={displayType === 'fromChain'} {...transitionProps}>
+            {fromChainCardContent}
           </Transition>
-          <Transition show={displayType === 'toChain'} {...TRANSITIONS_PROPS}>
-            <NetworkSlideOver key="toChainBlock" {...toArgs} />
-          </Transition>
-          <Transition show={displayType === 'settings'} {...TRANSITIONS_PROPS}>
-            <SettingsSlideOver key="settings" {...settingsArgs} />
-          </Transition>
-          <Grid cols={{ xs: 1 }} gap={10} className="py-1 place-content-center">
-            <div className="mt-2">
-              <BridgeInputContainer {...fromArgs} />
-            </div>
-            <BridgeInputContainer {...toArgs} />
-          </Grid>
-          <Transition
-            appear={true}
-            unmount={false}
-            show={!fromInput.bigNum.eq(0)}
-            {...SECTION_TRANSITION_PROPS}
-          >
-            <ExchangeRateInfo
-              fromAmount={fromInput.bigNum}
-              toToken={toToken}
-              exchangeRate={bridgeQuote.exchangeRate}
-              toChainId={toChainId}
-            />
+          <Transition show={displayType === 'toChain'} {...transitionProps}>
+            {toChainCardContent}
           </Transition>
           <Transition
-            appear={false}
-            unmount={false}
-            show={settings.expertMode}
-            {...SECTION_TRANSITION_PROPS}
+            show={displayType === 'settings'}
+            {...settingsTransitionProps}
           >
-            <DestinationAddressInput
-              toChainId={toChainId}
-              destinationAddress={destinationAddress}
-              setDestinationAddress={setDestinationAddress}
-            />
+            {settingsCardContent}
           </Transition>
-          <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">{actionButton}</div>
+          {bridgeCardMainContent}
           <Transition
             show={
               ['fromChain', 'toChain'].includes(displayType)
