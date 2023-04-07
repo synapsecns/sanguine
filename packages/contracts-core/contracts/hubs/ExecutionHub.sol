@@ -97,9 +97,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             success = _executeSystemMessage(originAndNonce, proofMaturity, message.body());
         } else {
             // This will revert if message body is not a formatted BaseMessage payload
-            success = _executeBaseMessage(
-                originAndNonce, proofMaturity, execAtt.notary, gasLimit, message.body().castToBaseMessage()
-            );
+            success = _executeBaseMessage(originAndNonce, proofMaturity, gasLimit, message.body().castToBaseMessage());
         }
         if (execStatus.status == MessageStatus.None) {
             // This is the first valid attempt to execute the message, save the attestation nonce
@@ -140,30 +138,20 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         );
     }
 
-    // ═══════════════════════════════════════════ INTERNAL LOGIC: TIPS ════════════════════════════════════════════════
-
-    function _storeTips(address notary, Tips tips) internal {
-        // TODO: implement tips logic
-        emit TipsStored(notary, tips.unwrap().clone());
-    }
-
     // ═════════════════════════════════════ INTERNAL LOGIC: MESSAGE EXECUTION ═════════════════════════════════════════
 
     /// @dev Passes message content to recipient that conforms to IMessageRecipient interface.
-    function _executeBaseMessage(
-        uint64 originAndNonce,
-        uint256 proofMaturity,
-        address notary,
-        uint64 gasLimit,
-        BaseMessage baseMessage
-    ) internal returns (bool) {
+    function _executeBaseMessage(uint64 originAndNonce, uint256 proofMaturity, uint64 gasLimit, BaseMessage baseMessage)
+        internal
+        returns (bool)
+    {
         // Check that gas limit covers the one requested by the sender.
         // We let the executor specify gas limit higher than requested to guarantee the execution of
         // messages with gas limit set too low.
         require(gasLimit >= baseMessage.request().gasLimit(), "Gas limit too low");
         (uint32 origin, uint32 nonce) = Composite.splitUint32(originAndNonce);
-        // Store message tips
-        _storeTips(notary, baseMessage.tips());
+        // Emit event with the message tips
+        emit TipsRecorded(origin, nonce, baseMessage.tips().unwrap().clone());
         // TODO: check that the discarded bits are empty
         address recipient = baseMessage.recipient().bytes32ToAddress();
         // Forward message content to the recipient, and limit the amount of forwarded gas
