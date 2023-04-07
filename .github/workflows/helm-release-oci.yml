@@ -4,7 +4,7 @@ name: Release Charts (OCI)
 on:
   push:
     branches:
-      - deplot/agents_v2
+      - deploy/agents_v2
 
 jobs:
   release-pages:
