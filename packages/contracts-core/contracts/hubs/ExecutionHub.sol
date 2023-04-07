@@ -7,7 +7,7 @@ import {BaseMessage, BaseMessageLib} from "../libs/BaseMessage.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
-import {ExecutionStatus, MessageStatus} from "../libs/Structures.sol";
+import {MessageStatus} from "../libs/Structures.sol";
 import {SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
 import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
@@ -31,6 +31,15 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     using TypeCasts for bytes32;
     using TypedMemView for bytes29;
 
+    /// @notice Struct representing the status of Message in Execution Hub.
+    /// @param flag         Message execution status
+    /// @param executor     Executor who successfully executed the message
+    struct ExecutionStatus {
+        MessageStatus flag;
+        address executor;
+    }
+    // 88 bits available for tight packing
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     /// @notice (messageHash => status)
@@ -39,18 +48,16 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// Thus we can use hash as a key instead of an (origin, hash) tuple.
     mapping(bytes32 => ExecutionStatus) private _executionStatus;
 
+    /// @notice First executor who made a valid attempt of executing a message.
+    /// Note: stored only for messages that had Failed status at some point of time
+    mapping(bytes32 => address) private _failedExecutor;
+
     /// @dev Tracks all saved attestations
     // (root => attestation)
     mapping(bytes32 => ExecutionAttestation) private _rootAttestations;
 
-    /// @dev List of known executors
-    address[] private _executors;
-
-    /// @dev Executor position in `_executors` PLUS ONE. Zero is a sentinel value for "address no in the list".
-    mapping(address => uint256) private _executorPtr;
-
     /// @dev gap for upgrade safety
-    uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
     // ═════════════════════════════════════════════ EXECUTE MESSAGES ══════════════════════════════════════════════════
 
@@ -87,13 +94,13 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             success =
                 _executeBaseMessage(header, proofMaturity, execAtt.notary, gasLimit, message.body().castToBaseMessage());
         }
-        if (execStatus.flag == MessageStatus.None) {
-            // This is the first valid attempt to execute the message => save the executor
-            execStatus.firstExecutor = _saveExecutor();
+        if (execStatus.flag == MessageStatus.None && !success) {
+            // This is the first valid attempt to execute the message, which failed
+            _failedExecutor[msgLeaf] = msg.sender;
         }
         if (success) {
             // This is the successful attempt to execute the message => save the executor
-            execStatus.successExecutor = _saveExecutor();
+            execStatus.executor = msg.sender;
         }
         if (execStatus.flag == MessageStatus.None || success) {
             // Message execution status was updated
@@ -113,8 +120,12 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     {
         ExecutionStatus memory execStatus = _executionStatus[messageHash];
         flag = execStatus.flag;
-        firstExecutor = _getExecutor(execStatus.firstExecutor);
-        successExecutor = _getExecutor(execStatus.successExecutor);
+        firstExecutor = _failedExecutor[messageHash];
+        successExecutor = execStatus.executor;
+        // For messages that were successful from the first try we don't save `_failedExecutor`
+        if (firstExecutor == address(0)) {
+            firstExecutor = successExecutor;
+        }
     }
 
     // ═══════════════════════════════════════════ INTERNAL LOGIC: TIPS ════════════════════════════════════════════════
@@ -125,18 +136,6 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     }
 
     // ═════════════════════════════════════ INTERNAL LOGIC: MESSAGE EXECUTION ═════════════════════════════════════════
-
-    /// @dev Saves Executor in the list, if they are not present there yet.
-    /// Returns Executor position in `_executors` PLUS ONE.
-    function _saveExecutor() internal returns (uint64 executorPtr) {
-        executorPtr = uint64(_executorPtr[msg.sender]);
-        if (executorPtr == 0) {
-            _executors.push(msg.sender);
-            // Executor is stored at (length - 1), but we add 1 to make zero a sentinel value
-            executorPtr = uint64(_executors.length);
-            _executorPtr[msg.sender] = executorPtr;
-        }
-    }
 
     /// @dev Passes message content to recipient that conforms to IMessageRecipient interface.
     function _executeBaseMessage(
@@ -170,13 +169,6 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Forward system message to System Router
         systemRouter.receiveSystemMessage(header.origin(), header.nonce(), proofMaturity, body.clone());
         return true;
-    }
-
-    function _getExecutor(uint256 executorPtr) internal view returns (address executor) {
-        if (executorPtr != 0) {
-            executor = _executors[executorPtr - 1];
-        }
-        // Return address(0) otherwise
     }
 
     // ══════════════════════════════════════ INTERNAL LOGIC: MESSAGE PROVING ══════════════════════════════════════════

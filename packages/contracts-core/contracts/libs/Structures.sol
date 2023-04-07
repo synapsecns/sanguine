@@ -95,14 +95,3 @@ enum MessageStatus {
     Failed,
     Success
 }
-
-/// @notice Struct representing the status of Message in Execution Hub.
-/// @param flag             Message execution status
-/// @param firstExecutor    Index of first executor making a valid execution attempt
-/// @param successExecutor  Index of executor who successfully executed the message
-struct ExecutionStatus {
-    MessageStatus flag;
-    uint64 firstExecutor;
-    uint64 successExecutor;
-}
-// 120 bits available for tight packing

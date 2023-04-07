@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Snapshot.sol";
-import {ExecutionStatus, MessageStatus} from "../../../contracts/libs/Structures.sol";
+import {MessageStatus} from "../../../contracts/libs/Structures.sol";
 
 import {RevertingApp} from "../../harnesses/client/RevertingApp.t.sol";
 import {MessageRecipientMock} from "../../mocks/client/MessageRecipientMock.t.sol";
