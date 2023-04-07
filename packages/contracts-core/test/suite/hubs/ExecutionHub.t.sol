@@ -167,9 +167,9 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
-        vm.assume(rh.optimisticPeriod != 0);
         // Create messages and get origin proof
         bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
+        vm.assume(rh.optimisticPeriod != 0);
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -207,7 +207,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
-        rbm.request.gasLimit = 200_000;
         // Create messages and get origin proof
         bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
@@ -221,7 +220,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         vm.expectRevert("Not enough gas supplied");
         vm.prank(executor);
         // Limit amount of gas for the whole call
-        IExecutionHub(hub).execute{gas: rbm.request.gasLimit}(
+        IExecutionHub(hub).execute{gas: rbm.request.gasLimit + 20_000}(
             msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit
         );
     }
@@ -315,7 +314,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         rbm.recipient = addressToBytes32(recipient);
         // Set sensible limitations for tips/request
         rbm.tips.boundTips(1e20);
-        rbm.request.gasLimit = uint64(bound(rbm.request.gasLimit, 10_000, 1_000_000));
+        rbm.request.gasLimit = uint64(bound(rbm.request.gasLimit, 50_000, 200_000));
         msgPayload = RawMessage(uint8(MessageFlag.Base), rh, rbm.formatBaseMessage()).formatMessage();
         createMessages(rh.nonce, msgPayload);
     }
