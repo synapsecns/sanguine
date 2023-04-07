@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ExecutionStatus} from "../libs/Structures.sol";
+import {MessageStatus} from "../libs/Structures.sol";
 
 interface IExecutionHub {
     /**
@@ -36,7 +36,12 @@ interface IExecutionHub {
     /**
      * @notice Returns execution status of a message.
      * @param messageHash   Hash of the message payload
-     * @return status       Structure describing execution status (see Structures.sol)
+     * @return flag             Message execution status
+     * @return firstExecutor    First executor making a valid execution attempt
+     * @return successExecutor  Executor who successfully executed the message
      */
-    function executionStatus(bytes32 messageHash) external view returns (ExecutionStatus memory status);
+    function executionStatus(bytes32 messageHash)
+        external
+        view
+        returns (MessageStatus flag, address firstExecutor, address successExecutor);
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IExecutionHub, ExecutionStatus} from "../../../contracts/interfaces/IExecutionHub.sol";
+import {IExecutionHub, MessageStatus} from "../../../contracts/interfaces/IExecutionHub.sol";
 
 // solhint-disable no-empty-blocks
 contract ExecutionHubMock is IExecutionHub {
@@ -16,5 +16,9 @@ contract ExecutionHubMock is IExecutionHub {
         uint64 gasLimit
     ) external {}
 
-    function executionStatus(bytes32 messageHash) external view returns (ExecutionStatus memory status) {}
+    function executionStatus(bytes32 messageHash)
+        external
+        view
+        returns (MessageStatus flag, address firstExecutor, address successExecutor)
+    {}
 }
