@@ -43,10 +43,11 @@ interface IExecutionHub {
 
     /**
      * @notice Returns a formatted payload with message execution data.
-     * @dev Notaries could sign this statement and submit it to Summit in order to distribute message tips.
+     * @dev Notaries could append the tips payload to data returned by this function,
+     * sign the resulting statement and submit it to Summit in order to distribute message tips.
      * @param origin            Domain where message originated
      * @param nonce             Message nonce on the origin domain
-     * @return executionPayload Formatted Execution payload for the message.
+     * @return data             Data for Execution statement, without the tips payload.
      */
-    function executionStatus(uint32 origin, uint32 nonce) external view returns (bytes memory executionPayload);
+    function executionData(uint32 origin, uint32 nonce) external view returns (bytes memory data);
 }

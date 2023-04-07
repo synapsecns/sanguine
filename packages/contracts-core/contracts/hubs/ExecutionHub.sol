@@ -6,6 +6,7 @@ import {Attestation, ExecutionAttestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib} from "../libs/BaseMessage.sol";
 import {Composite} from "../libs/Composite.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
+import {Execution, ExecutionLib} from "../libs/Execution.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {MessageStatus} from "../libs/Structures.sol";
@@ -126,10 +127,17 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     }
 
     /// @inheritdoc IExecutionHub
-    function executionStatus(uint32 origin, uint32 nonce) external view returns (bytes memory executionPayload) {
+    function executionData(uint32 origin, uint32 nonce) external view returns (bytes memory data) {
         uint64 originAndNonce = Composite.mergeUint32(origin, nonce);
         ExecutionStatus memory execStatus = _executionStatus[originAndNonce];
-        // TODO: complete when Execution statement is established
+        // Return empty payload if there has been no attempt to execute the message
+        if (execStatus.status == MessageStatus.None) return "";
+        address firstExecutor = _firstExecutor[originAndNonce];
+        if (firstExecutor == address(0)) firstExecutor = execStatus.executor;
+        // ExecutionHub does not store the tips, the Notary will have to append the tips payload
+        return ExecutionLib.formatExecution(
+            execStatus.status, origin, nonce, localDomain, execStatus.attNonce, firstExecutor, execStatus.executor, ""
+        );
     }
 
     // ═══════════════════════════════════════════ INTERNAL LOGIC: TIPS ════════════════════════════════════════════════
