@@ -117,20 +117,15 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IExecutionHub
-    function executionStatus(uint32 origin, uint32 nonce)
-        external
-        view
-        returns (MessageStatus flag, address firstExecutor, address successExecutor)
-    {
+    function messageStatus(uint32 origin, uint32 nonce) external view returns (MessageStatus) {
+        return _executionStatus[Composite.mergeUint32(origin, nonce)].flag;
+    }
+
+    /// @inheritdoc IExecutionHub
+    function executionStatus(uint32 origin, uint32 nonce) external view returns (bytes memory executionPayload) {
         uint64 originAndNonce = Composite.mergeUint32(origin, nonce);
         ExecutionStatus memory execStatus = _executionStatus[originAndNonce];
-        flag = execStatus.flag;
-        firstExecutor = _failedExecutor[originAndNonce];
-        successExecutor = execStatus.executor;
-        // For messages that were successful from the first try we don't save `_failedExecutor`
-        if (firstExecutor == address(0)) {
-            firstExecutor = successExecutor;
-        }
+        // TODO: complete when Execution statement is established
     }
 
     // ═══════════════════════════════════════════ INTERNAL LOGIC: TIPS ════════════════════════════════════════════════

@@ -34,15 +34,19 @@ interface IExecutionHub {
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**
-     * @notice Returns execution status of a message.
+     * @notice Returns message execution status: None/Failed/Success.
      * @param origin            Domain where message originated
      * @param nonce             Message nonce on the origin domain
      * @return flag             Message execution status
-     * @return firstExecutor    First executor making a valid execution attempt
-     * @return successExecutor  Executor who successfully executed the message
      */
-    function executionStatus(uint32 origin, uint32 nonce)
-        external
-        view
-        returns (MessageStatus flag, address firstExecutor, address successExecutor);
+    function messageStatus(uint32 origin, uint32 nonce) external view returns (MessageStatus flag);
+
+    /**
+     * @notice Returns a formatted payload with message execution data.
+     * @dev Notaries could sign this statement and submit it to Summit in order to distribute message tips.
+     * @param origin            Domain where message originated
+     * @param nonce             Message nonce on the origin domain
+     * @return executionPayload Formatted Execution payload for the message.
+     */
+    function executionStatus(uint32 origin, uint32 nonce) external view returns (bytes memory executionPayload);
 }
