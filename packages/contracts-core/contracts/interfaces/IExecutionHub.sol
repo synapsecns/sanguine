@@ -35,12 +35,13 @@ interface IExecutionHub {
 
     /**
      * @notice Returns execution status of a message.
-     * @param messageHash   Hash of the message payload
+     * @param origin            Domain where message originated
+     * @param nonce             Message nonce on the origin domain
      * @return flag             Message execution status
      * @return firstExecutor    First executor making a valid execution attempt
      * @return successExecutor  Executor who successfully executed the message
      */
-    function executionStatus(bytes32 messageHash)
+    function executionStatus(uint32 origin, uint32 nonce)
         external
         view
         returns (MessageStatus flag, address firstExecutor, address successExecutor);

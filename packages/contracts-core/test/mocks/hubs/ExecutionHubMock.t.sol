@@ -16,7 +16,7 @@ contract ExecutionHubMock is IExecutionHub {
         uint64 gasLimit
     ) external {}
 
-    function executionStatus(bytes32 messageHash)
+    function executionStatus(uint32 origin, uint32 nonce)
         external
         view
         returns (MessageStatus flag, address firstExecutor, address successExecutor)

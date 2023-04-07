@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, ExecutionAttestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib} from "../libs/BaseMessage.sol";
+import {Composite} from "../libs/Composite.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
@@ -42,15 +43,15 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
-    /// @notice (messageHash => status)
+    /// @notice ((origin, nonce) => status)
     /// @dev Messages coming from different origins will always have a different hash
     /// as origin domain is encoded into the formatted message.
     /// Thus we can use hash as a key instead of an (origin, hash) tuple.
-    mapping(bytes32 => ExecutionStatus) private _executionStatus;
+    mapping(uint64 => ExecutionStatus) private _executionStatus;
 
     /// @notice First executor who made a valid attempt of executing a message.
     /// Note: stored only for messages that had Failed status at some point of time
-    mapping(bytes32 => address) private _failedExecutor;
+    mapping(uint64 => address) private _failedExecutor;
 
     /// @dev Tracks all saved attestations
     // (root => attestation)
@@ -77,7 +78,8 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Ensure message was meant for this domain
         require(header.destination() == localDomain, "!destination");
         // Check that message has not been executed before
-        ExecutionStatus memory execStatus = _executionStatus[msgLeaf];
+        uint64 originAndNonce = header.originAndNonce();
+        ExecutionStatus memory execStatus = _executionStatus[originAndNonce];
         require(execStatus.flag != MessageStatus.Success, "Already executed");
         // Check proofs validity
         ExecutionAttestation memory execAtt = _proveAttestation(header, msgLeaf, originProof, snapProof, stateIndex);
@@ -96,7 +98,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         }
         if (execStatus.flag == MessageStatus.None && !success) {
             // This is the first valid attempt to execute the message, which failed
-            _failedExecutor[msgLeaf] = msg.sender;
+            _failedExecutor[originAndNonce] = msg.sender;
         }
         if (success) {
             // This is the successful attempt to execute the message => save the executor
@@ -105,7 +107,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         if (execStatus.flag == MessageStatus.None || success) {
             // Message execution status was updated
             execStatus.flag = success ? MessageStatus.Success : MessageStatus.Failed;
-            _executionStatus[msgLeaf] = execStatus;
+            _executionStatus[originAndNonce] = execStatus;
         }
         emit Executed(header.origin(), msgLeaf);
     }
@@ -113,14 +115,15 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IExecutionHub
-    function executionStatus(bytes32 messageHash)
+    function executionStatus(uint32 origin, uint32 nonce)
         external
         view
         returns (MessageStatus flag, address firstExecutor, address successExecutor)
     {
-        ExecutionStatus memory execStatus = _executionStatus[messageHash];
+        uint64 originAndNonce = Composite.mergeUint32(origin, nonce);
+        ExecutionStatus memory execStatus = _executionStatus[originAndNonce];
         flag = execStatus.flag;
-        firstExecutor = _failedExecutor[messageHash];
+        firstExecutor = _failedExecutor[originAndNonce];
         successExecutor = execStatus.executor;
         // For messages that were successful from the first try we don't save `_failedExecutor`
         if (firstExecutor == address(0)) {
