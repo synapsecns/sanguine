@@ -11,6 +11,7 @@ import {SystemContractMock} from "../../mocks/system/SystemContractMock.t.sol";
 
 import {Random} from "../../utils/libs/Random.t.sol";
 import {
+    ExecutionLib,
     MessageFlag,
     RawAttestation,
     RawBaseMessage,
@@ -57,7 +58,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
-        bytes32[] memory snapProof = prepareExecution(sm);
+        (uint32 attNonce, bytes32[] memory snapProof) = prepareExecution(sm);
         // Make sure that optimistic period is over
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
@@ -72,7 +73,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
-        verify_executionStatus(hub, rh, MessageStatus.Success, executor, executor);
+        verify_executionStatus(hub, rh, MessageStatus.Success, attNonce, executor, executor);
     }
 
     function check_execute_base_recipientReverted(address hub, Random memory random) public {
@@ -85,7 +86,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
-        bytes32[] memory snapProof = prepareExecution(sm);
+        (uint32 attNonce, bytes32[] memory snapProof) = prepareExecution(sm);
         // Make sure that optimistic period is over
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
@@ -94,13 +95,13 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
-        verify_executionStatus(hub, rh, MessageStatus.Failed, executor, address(0));
+        verify_executionStatus(hub, rh, MessageStatus.Failed, attNonce, executor, address(0));
         // Retry the same failed message
         RevertingApp(recipient).toggleRevert(false);
         address executorNew = makeAddr("Executor New");
         vm.prank(executorNew);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
-        verify_executionStatus(hub, rh, MessageStatus.Success, executor, executorNew);
+        verify_executionStatus(hub, rh, MessageStatus.Success, attNonce, executor, executorNew);
     }
 
     function check_execute_base_revert_alreadyExecuted(address hub, Random memory random) public {
@@ -112,7 +113,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
-        bytes32[] memory snapProof = prepareExecution(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
         // Make sure that optimistic period is over
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
@@ -132,7 +133,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
-        bytes32[] memory snapProof = prepareExecution(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
         // initiate dispute
         check_submitStateReport(hub, localDomain(), sm.rs, sm.statesAmount, sm.stateIndex);
         // Make sure that optimistic period is over
@@ -173,7 +174,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
-        bytes32[] memory snapProof = prepareExecution(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
         // Make sure that optimistic period is NOT over
         uint32 timePassed = random.nextUint32() % rh.optimisticPeriod;
         skip(timePassed);
@@ -191,7 +192,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
-        bytes32[] memory snapProof = prepareExecution(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
         // Make sure that optimistic period is over
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
@@ -212,7 +213,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
-        bytes32[] memory snapProof = prepareExecution(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
         // Make sure that optimistic period is over
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
@@ -237,7 +238,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
-        bytes32[] memory snapProof = prepareExecution(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
         // Make sure that optimistic period is over
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
@@ -264,7 +265,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
-        bytes32[] memory snapProof = prepareExecution(sm);
+        (uint32 attNonce, bytes32[] memory snapProof) = prepareExecution(sm);
         // Make sure that optimistic period is over
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
@@ -279,7 +280,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
-        verify_executionStatus(hub, rh, MessageStatus.Success, executor, executor);
+        verify_executionStatus(hub, rh, MessageStatus.Success, attNonce, executor, executor);
     }
 
     // ═════════════════════════════════════════════════ VERIFIERS ═════════════════════════════════════════════════════
@@ -288,20 +289,32 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         address hub,
         RawHeader memory rh,
         MessageStatus flag,
+        uint32 attNonce,
         address firstExecutor,
-        address successExecutor
+        address finalExecutor
     ) public {
-        (MessageStatus flag_, address firstExecutor_, address successExecutor_) =
-            IExecutionHub(hub).executionStatus(rh.origin, rh.nonce);
+        MessageStatus flag_ = IExecutionHub(hub).messageStatus(rh.origin, rh.nonce);
         assertEq(uint8(flag_), uint8(flag), "!flag");
-        assertEq(firstExecutor_, firstExecutor, "!firstExecutor");
-        assertEq(successExecutor_, successExecutor, "!successExecutor");
+        bytes memory data = IExecutionHub(hub).executionData(rh.origin, rh.nonce);
+        if (flag == MessageStatus.None) {
+            assertEq(data.length, 0, "!executionData: empty");
+        } else {
+            assertEq(
+                data,
+                ExecutionLib.formatExecution(
+                    flag, rh.origin, rh.nonce, localDomain(), attNonce, firstExecutor, finalExecutor, ""
+                )
+            );
+        }
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Prepares execution of the created messages
-    function prepareExecution(SnapshotMock memory sm) public virtual returns (bytes32[] memory snapProof);
+    function prepareExecution(SnapshotMock memory sm)
+        public
+        virtual
+        returns (uint32 attNonce, bytes32[] memory snapProof);
 
     /// @notice Local domain for ExecutionHub tests
     function localDomain() public view virtual returns (uint32);
