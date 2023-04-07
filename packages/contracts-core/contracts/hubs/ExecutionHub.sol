@@ -33,11 +33,11 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     using TypedMemView for bytes29;
 
     /// @notice Struct representing the status of Message in Execution Hub.
-    /// @param flag         Message execution status
+    /// @param status       Message execution status
     /// @param attNonce     Nonce of the attestation used for proving the message
     /// @param executor     Executor who successfully executed the message
     struct ExecutionStatus {
-        MessageStatus flag;
+        MessageStatus status;
         uint32 attNonce;
         address executor;
     }
@@ -53,7 +53,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @notice First executor who made a valid attempt of executing a message.
     /// Note: stored only for messages that had Failed status at some point of time
-    mapping(uint64 => address) private _failedExecutor;
+    mapping(uint64 => address) private _firstExecutor;
 
     /// @dev Tracks all saved attestations
     // (root => attestation)
@@ -82,7 +82,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Check that message has not been executed before
         uint64 originAndNonce = header.originAndNonce();
         ExecutionStatus memory execStatus = _executionStatus[originAndNonce];
-        require(execStatus.flag != MessageStatus.Success, "Already executed");
+        require(execStatus.status != MessageStatus.Success, "Already executed");
         // Check proofs validity
         ExecutionAttestation memory execAtt =
             _proveAttestation(originAndNonce, msgLeaf, originProof, snapProof, stateIndex);
@@ -100,19 +100,19 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
                 originAndNonce, proofMaturity, execAtt.notary, gasLimit, message.body().castToBaseMessage()
             );
         }
-        if (execStatus.flag == MessageStatus.None) {
+        if (execStatus.status == MessageStatus.None) {
             // This is the first valid attempt to execute the message, save the attestation nonce
             execStatus.attNonce = execAtt.nonce;
             // Save the executor address, if execution failed
-            if (!success) _failedExecutor[originAndNonce] = msg.sender;
+            if (!success) _firstExecutor[originAndNonce] = msg.sender;
         }
         if (success) {
             // This is the successful attempt to execute the message => save the executor
             execStatus.executor = msg.sender;
         }
-        if (execStatus.flag == MessageStatus.None || success) {
+        if (execStatus.status == MessageStatus.None || success) {
             // Message execution status was updated
-            execStatus.flag = success ? MessageStatus.Success : MessageStatus.Failed;
+            execStatus.status = success ? MessageStatus.Success : MessageStatus.Failed;
             _executionStatus[originAndNonce] = execStatus;
         }
         emit Executed(header.origin(), msgLeaf);
@@ -122,7 +122,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @inheritdoc IExecutionHub
     function messageStatus(uint32 origin, uint32 nonce) external view returns (MessageStatus) {
-        return _executionStatus[Composite.mergeUint32(origin, nonce)].flag;
+        return _executionStatus[Composite.mergeUint32(origin, nonce)].status;
     }
 
     /// @inheritdoc IExecutionHub
