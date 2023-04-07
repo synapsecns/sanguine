@@ -72,9 +72,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
-        ExecutionStatus memory status = IExecutionHub(hub).executionStatus(keccak256(msgPayload));
-        assertEq(uint8(status.flag), uint8(MessageStatus.Success), "!flag");
-        assertEq(status.executor, executor, "!executor");
+        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Success, executor, executor);
     }
 
     function check_execute_base_recipientReverted(address hub, Random memory random) public {
@@ -96,18 +94,13 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
-        ExecutionStatus memory status = IExecutionHub(hub).executionStatus(keccak256(msgPayload));
-        assertEq(uint8(status.flag), uint8(MessageStatus.Failed), "!flag");
-        assertEq(status.executor, executor, "!executor");
+        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Failed, executor, address(0));
         // Retry the same failed message
         RevertingApp(recipient).toggleRevert(false);
         address executorNew = makeAddr("Executor New");
         vm.prank(executorNew);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
-        status = IExecutionHub(hub).executionStatus(keccak256(msgPayload));
-        assertEq(uint8(status.flag), uint8(MessageStatus.Success), "!flag");
-        // Should be equal to the first executor
-        assertEq(status.executor, executor, "!executor");
+        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Success, executor, executorNew);
     }
 
     function check_execute_base_revert_alreadyExecuted(address hub, Random memory random) public {
@@ -287,9 +280,23 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
-        ExecutionStatus memory status = IExecutionHub(hub).executionStatus(keccak256(msgPayload));
-        assertEq(uint8(status.flag), uint8(MessageStatus.Success), "!flag");
-        assertEq(status.executor, executor, "!executor");
+        verify_executionStatus(hub, keccak256(msgPayload), MessageStatus.Success, executor, executor);
+    }
+
+    // ═════════════════════════════════════════════════ VERIFIERS ═════════════════════════════════════════════════════
+
+    function verify_executionStatus(
+        address hub,
+        bytes32 messageHash,
+        MessageStatus flag,
+        address firstExecutor,
+        address successExecutor
+    ) public {
+        (MessageStatus flag_, address firstExecutor_, address successExecutor_) =
+            IExecutionHub(hub).executionStatus(messageHash);
+        assertEq(uint8(flag_), uint8(flag), "!flag");
+        assertEq(firstExecutor_, firstExecutor, "!firstExecutor");
+        assertEq(successExecutor_, successExecutor, "!successExecutor");
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
