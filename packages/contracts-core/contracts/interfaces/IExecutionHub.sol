@@ -31,7 +31,33 @@ interface IExecutionHub {
         uint64 gasLimit
     ) external;
 
+    /**
+     * @notice Verifies a message receipt signed by the Notary.
+     * Does nothing, if the receipt is valid (matches the saved receipt data for the referenced message).
+     * Slashes the receipt signer, if the receipt is invalid.
+     * @dev Will revert if any of these is true:
+     *  - Receipt payload is not properly formatted.
+     *  - Receipt signer is not an active Notary.
+     *  - Receipt destination chain does not refer to this chain.
+     * @param rcptPayload       Raw payload with Receipt data
+     * @param rcptSignature     Notary signature for the receipt
+     * @return isValid          Whether the requested receipt is valid.
+     *                          Notary is slashed, if return value is FALSE.
+     */
+    function verifyReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool isValid);
+
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /**
+     * @notice Checks the validity of the unsigned message receipt.
+     * @dev Will revert if any of these is true:
+     *  - Receipt payload is not properly formatted.
+     *  - Receipt signer is not an active Notary.
+     *  - Receipt destination chain does not refer to this chain.
+     * @param rcptPayload       Raw payload with Receipt data
+     * @return isValid          Whether the requested receipt is valid.
+     */
+    function isValidReceipt(bytes memory rcptPayload) external view returns (bool isValid);
 
     /**
      * @notice Returns message execution status: None/Failed/Success.
