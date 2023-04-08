@@ -365,9 +365,14 @@ contract DestinationTest is ExecutionHubTest {
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Prepares execution of the created messages
-    function prepareExecution(SnapshotMock memory sm) public override returns (bytes32[] memory snapProof) {
+    function prepareExecution(SnapshotMock memory sm)
+        public
+        override
+        returns (bytes32 snapRoot, bytes32[] memory snapProof)
+    {
         RawAttestation memory ra;
         (ra, snapProof) = createSnapshotProof(sm);
+        snapRoot = ra.snapRoot;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(domains[DOMAIN_LOCAL].agent, ra);
         InterfaceDestination(destination).submitAttestation(attPayload, attSig);
     }

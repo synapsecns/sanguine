@@ -13,6 +13,8 @@ uint256 constant SNAPSHOT_TREE_HEIGHT = 6;
 // ══════════════════════════════════ STRUCTS ══════════════════════════════════
 /// @dev See Attestation.sol: (bytes32,bytes32, uint32,uint40,uint40): 32+4+5+5
 uint256 constant ATTESTATION_LENGTH = 78;
+/// @dev See Execution.sol: (uint8,uint32,uint32,bytes32,bytes32,address,address,tips): 1+4+4+32+32+20+20+tips_length
+uint256 constant EXECUTION_LENGTH = 113 + TIPS_LENGTH;
 /// @dev See State.sol: (bytes32,uint32,uint32,uint40,uint40): 32+4+4+5+5
 uint256 constant STATE_LENGTH = 50;
 /// @dev Maximum amount of states in a single snapshot. Each state produces two leafs in the tree
@@ -28,6 +30,7 @@ uint256 constant TIPS_LENGTH = 48;
 /// @dev Salts for signing various statements
 bytes32 constant ATTESTATION_SALT = keccak256("ATTESTATION_SALT");
 bytes32 constant ATTESTATION_REPORT_SALT = keccak256("ATTESTATION_REPORT_SALT");
+bytes32 constant EXECUTION_SALT = keccak256("EXECUTION_SALT");
 bytes32 constant SNAPSHOT_SALT = keccak256("SNAPSHOT_SALT");
 bytes32 constant STATE_REPORT_SALT = keccak256("STATE_REPORT_SALT");
 // ════════════════════════════════ DESTINATION ════════════════════════════════

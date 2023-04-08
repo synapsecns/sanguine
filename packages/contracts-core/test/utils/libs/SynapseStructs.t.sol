@@ -6,6 +6,7 @@ import {ByteString, CallData, TypedMemView} from "../../../contracts/libs/ByteSt
 import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
 import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
 import {SystemEntity, SystemMessage, SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
+import {Execution, ExecutionLib, MessageStatus} from "../../../contracts/libs/Execution.sol";
 import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
 
 import {Snapshot, SnapshotLib, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
@@ -39,6 +40,19 @@ struct RawTips {
 }
 
 using CastLib for RawTips global;
+
+struct RawExecution {
+    uint8 status;
+    uint32 origin;
+    uint32 destination;
+    bytes32 messageHash;
+    bytes32 snapshotRoot;
+    address firstExecutor;
+    address finalExecutor;
+    RawTips tips;
+}
+
+using CastLib for RawExecution global;
 
 struct RawCallData {
     bytes4 selector;
@@ -129,6 +143,7 @@ library CastLib {
     using AttestationReportLib for bytes;
     using ByteString for bytes;
     using BaseMessageLib for bytes;
+    using ExecutionLib for bytes;
     using HeaderLib for bytes;
     using MessageLib for bytes;
     using RequestLib for bytes;
@@ -244,6 +259,31 @@ library CastLib {
         scPayload = rsc.systemMessage.callData.castToCallData().addPrefix(
             abi.encode(rsc.proofMaturity, rsc.origin, rsc.systemMessage.sender)
         );
+    }
+
+    // ═════════════════════════════════════════════════ EXECUTION ═════════════════════════════════════════════════════
+
+    function formatExecution(RawExecution memory re) internal pure returns (bytes memory) {
+        // Explicit revert when sender out of range
+        require(re.status <= uint8(type(MessageStatus).max), "Status out of range");
+        return ExecutionLib.formatExecution(
+            MessageStatus(re.status),
+            re.origin,
+            re.destination,
+            re.messageHash,
+            re.snapshotRoot,
+            re.firstExecutor,
+            re.finalExecutor,
+            re.tips.formatTips()
+        );
+    }
+
+    function castToExecution(RawExecution memory re) internal pure returns (Execution) {
+        return re.formatExecution().castToExecution();
+    }
+
+    function boundStatus(RawExecution memory re) internal pure {
+        re.status = re.status % (uint8(type(MessageStatus).max) + 1);
     }
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
