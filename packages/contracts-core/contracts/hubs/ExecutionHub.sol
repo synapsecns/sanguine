@@ -5,6 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib} from "../libs/BaseMessage.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
+import {Execution, ExecutionLib} from "../libs/Execution.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {MessageStatus} from "../libs/Structures.sol";
@@ -42,14 +43,18 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     }
     // 24 bits left for tight packing
 
-    /// @notice Struct representing the status of Message in Execution Hub.
-    /// @param flag         Message execution status
+    /// @notice Struct representing the execution data saved for the message in Execution Hub.
+    /// @param status       Message execution status
+    /// @param origin       Domain where message originated
+    /// @param rootIndex    Index of snapshot root used for proving the message
     /// @param executor     Executor who successfully executed the message
-    struct ExecutionStatus {
-        MessageStatus flag;
+    struct ExecutionData {
+        MessageStatus status;
+        uint32 origin;
+        uint32 rootIndex;
         address executor;
     }
-    // 88 bits available for tight packing
+    // 24 bits available for tight packing
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -57,11 +62,11 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// @dev Messages coming from different origins will always have a different hash
     /// as origin domain is encoded into the formatted message.
     /// Thus we can use hash as a key instead of an (origin, hash) tuple.
-    mapping(bytes32 => ExecutionStatus) private _executionStatus;
+    mapping(bytes32 => ExecutionData) private _executionData;
 
     /// @notice First executor who made a valid attempt of executing a message.
     /// Note: stored only for messages that had Failed status at some point of time
-    mapping(bytes32 => address) private _failedExecutor;
+    mapping(bytes32 => address) private _firstExecutor;
 
     /// @dev All saved snapshot roots
     bytes32[] internal _roots;
@@ -90,8 +95,8 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Ensure message was meant for this domain
         require(header.destination() == localDomain, "!destination");
         // Check that message has not been executed before
-        ExecutionStatus memory execStatus = _executionStatus[msgLeaf];
-        require(execStatus.flag != MessageStatus.Success, "Already executed");
+        ExecutionData memory execData = _executionData[msgLeaf];
+        require(execData.status != MessageStatus.Success, "Already executed");
         // Check proofs validity
         SnapRootData memory rootData = _proveAttestation(header, msgLeaf, originProof, snapProof, stateIndex);
         // Check if optimistic period has passed
@@ -104,22 +109,30 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             success = _executeSystemMessage(header, proofMaturity, message.body());
         } else {
             // This will revert if message body is not a formatted BaseMessage payload
-            success = _executeBaseMessage(
-                header, proofMaturity, rootData.notary, gasLimit, message.body().castToBaseMessage()
-            );
+            BaseMessage baseMessage = message.body().castToBaseMessage();
+            success = _executeBaseMessage(header, proofMaturity, gasLimit, baseMessage);
+            emit TipsRecorded(msgLeaf, baseMessage.tips().unwrap().clone());
         }
-        if (execStatus.flag == MessageStatus.None && !success) {
-            // This is the first valid attempt to execute the message, which failed
-            _failedExecutor[msgLeaf] = msg.sender;
-        }
-        if (success) {
+        if (execData.status == MessageStatus.None) {
+            // This is the first valid attempt to execute the message => save origin and snapshot root
+            execData.origin = header.origin();
+            execData.rootIndex = rootData.index;
+            if (success) {
+                // This is the successful attempt to execute the message => save the executor
+                execData.status = MessageStatus.Success;
+                execData.executor = msg.sender;
+            } else {
+                // Save as the "first executor", if execution failed
+                execData.status = MessageStatus.Failed;
+                _firstExecutor[msgLeaf] = msg.sender;
+            }
+            _executionData[msgLeaf] = execData;
+        } else if (success) {
+            // There has been a failed attempt to execute the message before => don't touch origin and snapshot root
             // This is the successful attempt to execute the message => save the executor
-            execStatus.executor = msg.sender;
-        }
-        if (execStatus.flag == MessageStatus.None || success) {
-            // Message execution status was updated
-            execStatus.flag = success ? MessageStatus.Success : MessageStatus.Failed;
-            _executionStatus[msgLeaf] = execStatus;
+            execData.status = MessageStatus.Success;
+            execData.executor = msg.sender;
+            _executionData[msgLeaf] = execData;
         }
         emit Executed(header.origin(), msgLeaf);
     }
@@ -127,44 +140,37 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IExecutionHub
-    function executionStatus(bytes32 messageHash)
-        external
-        view
-        returns (MessageStatus flag, address firstExecutor, address successExecutor)
-    {
-        ExecutionStatus memory execStatus = _executionStatus[messageHash];
-        flag = execStatus.flag;
-        firstExecutor = _failedExecutor[messageHash];
-        successExecutor = execStatus.executor;
-        // For messages that were successful from the first try we don't save `_failedExecutor`
-        if (firstExecutor == address(0)) {
-            firstExecutor = successExecutor;
-        }
+    function messageStatus(bytes32 messageHash) external view returns (MessageStatus status) {
+        return _executionData[messageHash].status;
     }
 
-    // ═══════════════════════════════════════════ INTERNAL LOGIC: TIPS ════════════════════════════════════════════════
-
-    function _storeTips(address notary, Tips tips) internal {
-        // TODO: implement tips logic
-        emit TipsStored(notary, tips.unwrap().clone());
+    /// @inheritdoc IExecutionHub
+    function executionData(bytes32 messageHash) external view returns (bytes memory data) {
+        ExecutionData memory execData = _executionData[messageHash];
+        // Return empty payload if there has been no attempt to execute the message
+        if (execData.status == MessageStatus.None) return "";
+        // Determine the first executor who tried to execute the message
+        address firstExecutor = _firstExecutor[messageHash];
+        if (firstExecutor == address(0)) firstExecutor = execData.executor;
+        // Determine the snapshot root that was used for proving the message
+        bytes32 snapRoot = _roots[execData.rootIndex];
+        // ExecutionHub does not store the tips, the Notary will have to append the tips payload
+        return ExecutionLib.formatExecution(
+            execData.status, execData.origin, localDomain, messageHash, snapRoot, firstExecutor, execData.executor, ""
+        );
     }
 
     // ═════════════════════════════════════ INTERNAL LOGIC: MESSAGE EXECUTION ═════════════════════════════════════════
 
     /// @dev Passes message content to recipient that conforms to IMessageRecipient interface.
-    function _executeBaseMessage(
-        Header header,
-        uint256 proofMaturity,
-        address notary,
-        uint64 gasLimit,
-        BaseMessage baseMessage
-    ) internal returns (bool) {
+    function _executeBaseMessage(Header header, uint256 proofMaturity, uint64 gasLimit, BaseMessage baseMessage)
+        internal
+        returns (bool)
+    {
         // Check that gas limit covers the one requested by the sender.
         // We let the executor specify gas limit higher than requested to guarantee the execution of
         // messages with gas limit set too low.
         require(gasLimit >= baseMessage.request().gasLimit(), "Gas limit too low");
-        // Store message tips
-        _storeTips(notary, baseMessage.tips());
         // TODO: check that the discarded bits are empty
         address recipient = baseMessage.recipient().bytes32ToAddress();
         // Forward message content to the recipient, and limit the amount of forwarded gas
