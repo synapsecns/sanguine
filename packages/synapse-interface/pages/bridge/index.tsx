@@ -230,6 +230,26 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   }
 
   /*
+   Helper Function: getCurrentTokenAllowance
+  - Gets quote data from the Synapse SDK (from the imported provider)
+  - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
+  TODO store this erc20 and signer retrieval in a state in a parent component? add to utils + use memo?
+  */
+  const getCurrentTokenAllowance = async (routerAddress: string) => {
+    const wallet = await fetchSigner({
+      chainId: fromChainId,
+    })
+
+    const erc20 = new Contract(
+      fromToken.addresses[fromChainId],
+      erc20ABI,
+      wallet
+    )
+    const allowance = await erc20.allowance(address, routerAddress)
+    return allowance
+  }
+
+  /*
   Function: handleNewFromToken
   - Handles all the changes that occur when selecting a new "from token", such as generating lists of potential chains/tokens
    to bridge to and handling if the current "to chain/token" are incompatible.
@@ -432,26 +452,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         destQuery,
       },
     })
-  }
-
-  /*
-   Helper Function: getCurrentTokenAllowance
-  - Gets quote data from the Synapse SDK (from the imported provider)
-  - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
-  TODO store this erc20 and signer retrieval in a state in a parent component? add to utils + use memo?
-  */
-  const getCurrentTokenAllowance = async (routerAddress: string) => {
-    const wallet = await fetchSigner({
-      chainId: fromChainId,
-    })
-
-    const erc20 = new Contract(
-      fromToken.addresses[fromChainId],
-      erc20ABI,
-      wallet
-    )
-    const allowance = await erc20.allowance(address, routerAddress)
-    return allowance
   }
 
   return (
