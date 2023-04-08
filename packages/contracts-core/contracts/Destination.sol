@@ -10,7 +10,7 @@ import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 import {DestinationEvents} from "./events/DestinationEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {ExecutionAttestation, InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
-import {ILightManager} from "./interfaces/ILightManager.sol";
+import {InterfaceLightManager} from "./interfaces/InterfaceLightManager.sol";
 import {DisputeHub, ExecutionHub} from "./hubs/ExecutionHub.sol";
 import {DomainContext, Versioned} from "./system/SystemContract.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
@@ -48,7 +48,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         __Ownable_init();
         // Set Agent Merkle Root in Light Manager
         nextAgentRoot = agentRoot;
-        ILightManager(address(agentManager)).setAgentRoot(agentRoot);
+        InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
         destStatus.agentRootTime = uint48(block.timestamp);
     }
 
@@ -131,7 +131,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         }
         // `newRoot` signer was not disputed, and the root optimistic period is over.
         // Finally, pass the Agent Merkle Root to LightManager
-        ILightManager(address(agentManager)).setAgentRoot(newRoot);
+        InterfaceLightManager(address(agentManager)).setAgentRoot(newRoot);
         return (true, false);
     }
 
