@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {AgentStatus} from "../libs/Structures.sol";
 
-interface ILightManager {
+interface InterfaceLightManager {
     /**
      * @notice Updates agent status, using a proof against the latest known Agent Merkle Root.
      * @dev Will revert if the provided proof doesn't match the latest merkle root.

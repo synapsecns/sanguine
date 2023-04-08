@@ -11,9 +11,9 @@ abstract contract ExecutionHubEvents {
     event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash);
 
     /**
-     * @notice Emitted when tips are stored.
-     * @param notary        Notary who signed the Snapshot Root used for proving the message
+     * @notice Emitted when message tips are recorded.
+     * @param messageHash   The keccak256 hash of the message that was executed
      * @param tipsPayload   Raw payload with tips paid for the off-chain agents
      */
-    event TipsStored(address indexed notary, bytes tipsPayload);
+    event TipsRecorded(bytes32 messageHash, bytes tipsPayload);
 }

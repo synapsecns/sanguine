@@ -9,8 +9,8 @@ import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {DestinationEvents} from "./events/DestinationEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
-import {ExecutionAttestation, InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
-import {ILightManager} from "./interfaces/ILightManager.sol";
+import {InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
+import {InterfaceLightManager} from "./interfaces/InterfaceLightManager.sol";
 import {DisputeHub, ExecutionHub} from "./hubs/ExecutionHub.sol";
 import {DomainContext, Versioned} from "./system/SystemContract.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
@@ -19,9 +19,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @dev All snapshot roots from the saved attestations
-    bytes32[] private _roots;
 
     /// @inheritdoc InterfaceDestination
     /// @dev Invariant: this is either current LightManager root,
@@ -48,7 +45,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         __Ownable_init();
         // Set Agent Merkle Root in Light Manager
         nextAgentRoot = agentRoot;
-        ILightManager(address(agentManager)).setAgentRoot(agentRoot);
+        InterfaceLightManager(address(agentManager)).setAgentRoot(agentRoot);
         destStatus.agentRootTime = uint48(block.timestamp);
     }
 
@@ -131,7 +128,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         }
         // `newRoot` signer was not disputed, and the root optimistic period is over.
         // Finally, pass the Agent Merkle Root to LightManager
-        ILightManager(address(agentManager)).setAgentRoot(newRoot);
+        InterfaceLightManager(address(agentManager)).setAgentRoot(newRoot);
         return (true, false);
     }
 
@@ -143,13 +140,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // solhint-disable-next-line ordering
     function attestationsAmount() external view returns (uint256) {
         return _roots.length;
-    }
-
-    /// @inheritdoc InterfaceDestination
-    function getAttestation(uint256 index) external view returns (bytes32 root, ExecutionAttestation memory execAtt) {
-        require(index < _roots.length, "Index out of range");
-        root = _roots[index];
-        execAtt = _getRootAttestation(root);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\

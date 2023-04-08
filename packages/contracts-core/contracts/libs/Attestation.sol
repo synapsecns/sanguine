@@ -7,19 +7,9 @@ import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev Attestation is a memory view over a formatted attestation payload.
 type Attestation is bytes29;
-/// @dev Attach library functions to Attestation
 
-using {
-    AttestationLib.unwrap,
-    AttestationLib.equalToSummit,
-    AttestationLib.toExecutionAttestation,
-    AttestationLib.hash,
-    AttestationLib.snapRoot,
-    AttestationLib.agentRoot,
-    AttestationLib.nonce,
-    AttestationLib.blockNumber,
-    AttestationLib.timestamp
-} for Attestation global;
+/// @dev Attach library functions to Attestation
+using AttestationLib for Attestation global;
 
 /// @dev Struct representing Attestation, as it is stored in the Summit contract.
 struct SummitAttestation {
@@ -28,21 +18,9 @@ struct SummitAttestation {
     uint40 blockNumber;
     uint40 timestamp;
 }
+
 /// @dev Attach library functions to SummitAttestation
-
-using {AttestationLib.formatSummitAttestation} for SummitAttestation global;
-
-/// @dev Struct representing Attestation, as it is stored in the ExecutionHub contract.
-/// mapping (bytes32 root => ExecutionAttestation) is supposed to be used
-struct ExecutionAttestation {
-    address notary;
-    uint32 nonce;
-    uint40 submittedAt;
-}
-// 24 bits left for tight packing
-/// @dev Attach library functions to ExecutionAttestation
-
-using {AttestationLib.isEmpty} for ExecutionAttestation global;
+using AttestationLib for SummitAttestation global;
 
 library AttestationLib {
     using ByteString for bytes;
@@ -94,9 +72,7 @@ library AttestationLib {
     uint256 private constant OFFSET_BLOCK_NUMBER = 68;
     uint256 private constant OFFSET_TIMESTAMP = 73;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             ATTESTATION                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ ATTESTATION ════════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted Attestation payload with provided fields.
@@ -144,9 +120,7 @@ library AttestationLib {
         return Attestation.unwrap(att);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SUMMIT ATTESTATION                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ SUMMIT ATTESTATION ═════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted Attestation payload with provided fields.
@@ -192,28 +166,7 @@ library AttestationLib {
             && att.blockNumber() == summitAtt.blockNumber && att.timestamp() == summitAtt.timestamp;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       DESTINATION ATTESTATION                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function toExecutionAttestation(Attestation att, address notary)
-        internal
-        view
-        returns (ExecutionAttestation memory attestation)
-    {
-        attestation.notary = notary;
-        attestation.nonce = att.nonce();
-        // We need to store the timestamp when attestation was submitted to Destination
-        attestation.submittedAt = uint40(block.timestamp);
-    }
-
-    function isEmpty(ExecutionAttestation memory execAtt) internal pure returns (bool) {
-        return execAtt.notary == address(0);
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         ATTESTATION HASHING                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ ATTESTATION HASHING ════════════════════════════════════════════════
 
     /// @notice Returns the hash of an Attestation, that could be later signed by a Notary.
     function hash(Attestation att) internal pure returns (bytes32) {
@@ -223,9 +176,7 @@ library AttestationLib {
         return keccak256(bytes.concat(ATTESTATION_SALT, view_.keccak()));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         ATTESTATION SLICING                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ ATTESTATION SLICING ════════════════════════════════════════════════
 
     /// @notice Returns root of the Snapshot merkle tree created in the Summit contract.
     function snapRoot(Attestation att) internal pure returns (bytes32) {

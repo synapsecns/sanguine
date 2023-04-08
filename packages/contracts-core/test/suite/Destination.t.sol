@@ -317,6 +317,10 @@ contract DestinationTest is ExecutionHubTest {
         check_execute_base(destination, rbm, rh, sm, timePassed, gasLimit);
     }
 
+    function test_execute_base_recipientReverted(Random memory random) public {
+        check_execute_base_recipientReverted(destination, random);
+    }
+
     function test_execute_system(
         RawSystemMessage memory rsm,
         RawHeader memory rh,
@@ -361,9 +365,14 @@ contract DestinationTest is ExecutionHubTest {
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Prepares execution of the created messages
-    function prepareExecution(SnapshotMock memory sm) public override returns (bytes32[] memory snapProof) {
+    function prepareExecution(SnapshotMock memory sm)
+        public
+        override
+        returns (bytes32 snapRoot, bytes32[] memory snapProof)
+    {
         RawAttestation memory ra;
         (ra, snapProof) = createSnapshotProof(sm);
+        snapRoot = ra.snapRoot;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(domains[DOMAIN_LOCAL].agent, ra);
         InterfaceDestination(destination).submitAttestation(attPayload, attSig);
     }

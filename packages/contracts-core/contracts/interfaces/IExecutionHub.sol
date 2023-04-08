@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {MessageStatus} from "../libs/Structures.sol";
+
 interface IExecutionHub {
     /**
      * @notice Attempts to prove inclusion of message into one of Snapshot Merkle Trees,
@@ -28,4 +30,22 @@ interface IExecutionHub {
         uint256 stateIndex,
         uint64 gasLimit
     ) external;
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /**
+     * @notice Returns message execution status: None/Failed/Success.
+     * @param messageHash       Hash of the message payload
+     * @return status           Message execution status
+     */
+    function messageStatus(bytes32 messageHash) external view returns (MessageStatus status);
+
+    /**
+     * @notice Returns a formatted payload with the message receipt data.
+     * @dev Notaries could append the tips payload to data returned by this function,
+     * sign the resulting statement and submit it to Summit in order to distribute message tips.
+     * @param messageHash       Hash of the message payload
+     * @return data             Data for Execution statement, without the tips payload.
+     */
+    function receiptData(bytes32 messageHash) external view returns (bytes memory data);
 }

@@ -4,12 +4,7 @@ pragma solidity 0.8.17;
 import {ATTESTATION_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
-import {
-    AttestationHarness,
-    ExecutionAttestation,
-    SummitAttestation,
-    TypedMemView
-} from "../../harnesses/libs/AttestationHarness.t.sol";
+import {AttestationHarness, SummitAttestation, TypedMemView} from "../../harnesses/libs/AttestationHarness.t.sol";
 
 import {RawAttestation} from "../../utils/libs/SynapseStructs.t.sol";
 
@@ -50,31 +45,6 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         checkCastToAttestation({payload: payload, isAttestation: length == ATTESTATION_LENGTH});
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       DESTINATION ATTESTATION                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function test_toExecutionAttestation(RawAttestation memory ra, address notary, uint40 submittedAt) public {
-        vm.warp(submittedAt);
-        bytes memory payload = ra.formatAttestation();
-        ExecutionAttestation memory execAtt = libHarness.toExecutionAttestation(payload, notary);
-        assertEq(execAtt.notary, notary, "!notary");
-        assertEq(execAtt.nonce, ra.nonce, "!nonce");
-        assertEq(execAtt.submittedAt, submittedAt, "!submittedAt");
-    }
-
-    function test_isEmpty(ExecutionAttestation memory execAtt) public {
-        if (execAtt.notary == address(0)) {
-            assertTrue(libHarness.isEmpty(execAtt), "!isEmpty: when Empty");
-        } else {
-            assertFalse(libHarness.isEmpty(execAtt), "!isEmpty: when non-Empty");
-        }
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SUMMIT ATTESTATION                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
     function test_formatSummitAttestation(RawAttestation memory ra) public {
         SummitAttestation memory att = SummitAttestation(ra.snapRoot, ra.agentRoot, ra.blockNumber, ra.timestamp);
         bytes memory payload = libHarness.formatSummitAttestation(att, ra.nonce);
@@ -85,9 +55,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         );
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPEra                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function checkCastToAttestation(bytes memory payload, bool isAttestation) public {
         if (isAttestation) {

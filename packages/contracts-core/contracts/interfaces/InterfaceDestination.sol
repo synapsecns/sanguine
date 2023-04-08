@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ExecutionAttestation} from "../libs/Attestation.sol";
-
 interface InterfaceDestination {
     /**
      * @notice Attempts to pass a quarantined Agent Merkle Root to a local Light Manager.
@@ -49,15 +47,6 @@ interface InterfaceDestination {
      * @notice Returns the total amount of Notaries attestations that have been accepted.
      */
     function attestationsAmount() external view returns (uint256);
-
-    /**
-     * @notice Returns an attestation from the list of all accepted Notary attestations.
-     * @dev Index refers to attestation's snapshot root position in `roots` array.
-     * @param index    Attestation index
-     * @return root    Snapshot root for the attestation
-     * @return execAtt Rest of attestation data that Destination keeps track of
-     */
-    function getAttestation(uint256 index) external view returns (bytes32 root, ExecutionAttestation memory execAtt);
 
     /**
      * Returns status of Destination contract as far as snapshot/agent roots are concerned

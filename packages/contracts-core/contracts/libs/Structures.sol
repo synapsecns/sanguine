@@ -82,3 +82,16 @@ struct DestinationStatus {
     uint48 agentRootTime;
     address notary;
 }
+
+// ═══════════════════════════════ EXECUTION HUB ═══════════════════════════════
+
+/// @notice Potential statuses of the message in Execution Hub.
+/// - None: there hasn't been a valid attempt to execute the message yet
+/// - Failed: there was a valid attempt to execute the message, but recipient reverted
+/// - Success: there was a valid attempt to execute the message, and recipient did not revert
+/// Note: message can be executed until its status is Success
+enum MessageStatus {
+    None,
+    Failed,
+    Success
+}
