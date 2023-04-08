@@ -44,12 +44,16 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @notice Struct representing the execution data saved for the message in Execution Hub.
     /// @param status       Message execution status
+    /// @param origin       Domain where message originated
+    /// @param rootIndex    Index of snapshot root used for proving the message
     /// @param executor     Executor who successfully executed the message
     struct ExecutionData {
         MessageStatus status;
+        uint32 origin;
+        uint32 rootIndex;
         address executor;
     }
-    // 88 bits available for tight packing
+    // 24 bits available for tight packing
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -109,7 +113,9 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             );
         }
         if (execData.status == MessageStatus.None) {
-            // This is the first valid attempt to execute the message
+            // This is the first valid attempt to execute the message => save origin and snapshot root
+            execData.origin = header.origin();
+            execData.rootIndex = rootData.index;
             if (success) {
                 // This is the successful attempt to execute the message => save the executor
                 execData.status = MessageStatus.Success;
@@ -121,7 +127,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             }
             _executionData[msgLeaf] = execData;
         } else if (success) {
-            // There has been a failed attempt to execute the message before
+            // There has been a failed attempt to execute the message before => don't touch origin and snapshot root
             // This is the successful attempt to execute the message => save the executor
             execData.status = MessageStatus.Success;
             execData.executor = msg.sender;
