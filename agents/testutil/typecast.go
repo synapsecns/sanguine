@@ -2,6 +2,8 @@ package testutil
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
@@ -39,6 +41,20 @@ func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.
 	d.T().Helper()
 
 	return manager.GetContract[*messageharness.MessageHarnessRef](ctx, d.T(), d, backend, MessageHarnessType)
+}
+
+// GetLightManagerHarness gets the light manager harness.
+func (d *DeployManager) GetLightManagerHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *lightmanagerharness.LightManagerHarnessRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*lightmanagerharness.LightManagerHarnessRef](ctx, d.T(), d, backend, LightManagerHarnessType)
+}
+
+// GetBondingManagerHarness gets the bonding manager harness.
+func (d *DeployManager) GetBondingManagerHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *bondingmanagerharness.BondingManagerHarnessRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*bondingmanagerharness.BondingManagerHarnessRef](ctx, d.T(), d, backend, BondingManagerHarnessType)
 }
 
 // GetOriginHarness gets the origin harness.

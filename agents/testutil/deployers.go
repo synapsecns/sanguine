@@ -16,6 +16,45 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 )
 
+// LightManagerDeployer deploys the light manager contract.
+type LightManagerDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewLightManagerDeployer deploys the light manager contract.
+func NewLightManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return LightManagerDeployer{deployer.NewSimpleDeployer(registry, backend, OriginType)}
+}
+
+// Deploy deploys the origin contract.
+func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
+		// deploy the origin contract
+		var rawHandle *origin.Origin
+		address, tx, rawHandle, err = origin.DeployOrigin(transactOps, backend, uint32(d.Backend().GetChainID()))
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
+		}
+		d.Backend().WaitForConfirmation(ctx, tx)
+
+		// initialize the origin contract
+		initializationTx, err := rawHandle.Initialize(transactOps)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize contract: %w", err)
+		}
+		d.Backend().WaitForConfirmation(ctx, initializationTx)
+
+		return address, tx, rawHandle, err
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return origin.NewOriginRef(address, backend)
+	})
+}
+
+// Dependencies gets a list of dependencies used to deploy the origin contract.
+func (d OriginDeployer) Dependencies() []contracts.ContractType {
+	return []contracts.ContractType{}
+}
+
 // OriginDeployer deploys the origin contract.
 type OriginDeployer struct {
 	*deployer.BaseDeployer
