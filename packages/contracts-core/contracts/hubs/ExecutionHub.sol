@@ -5,9 +5,9 @@ pragma solidity 0.8.17;
 import {Attestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib} from "../libs/BaseMessage.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
-import {Execution, ExecutionLib} from "../libs/Execution.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
+import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {MessageStatus} from "../libs/Structures.sol";
 import {SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
 import {Tips} from "../libs/Tips.sol";
@@ -44,17 +44,16 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     // 24 bits left for tight packing
 
     /// @notice Struct representing the execution data saved for the message in Execution Hub.
-    /// @param status       Message execution status
     /// @param origin       Domain where message originated
     /// @param rootIndex    Index of snapshot root used for proving the message
     /// @param executor     Executor who successfully executed the message
-    struct ExecutionData {
-        MessageStatus status;
+    struct ReceiptData {
         uint32 origin;
         uint32 rootIndex;
         address executor;
     }
-    // 24 bits available for tight packing
+    // TODO: include nonce?
+    // 32 bits available for tight packing
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -62,7 +61,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// @dev Messages coming from different origins will always have a different hash
     /// as origin domain is encoded into the formatted message.
     /// Thus we can use hash as a key instead of an (origin, hash) tuple.
-    mapping(bytes32 => ExecutionData) private _executionData;
+    mapping(bytes32 => ReceiptData) private _receiptData;
 
     /// @notice First executor who made a valid attempt of executing a message.
     /// Note: stored only for messages that had Failed status at some point of time
@@ -95,8 +94,8 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Ensure message was meant for this domain
         require(header.destination() == localDomain, "!destination");
         // Check that message has not been executed before
-        ExecutionData memory execData = _executionData[msgLeaf];
-        require(execData.status != MessageStatus.Success, "Already executed");
+        ReceiptData memory rcptData = _receiptData[msgLeaf];
+        require(rcptData.executor == address(0), "Already executed");
         // Check proofs validity
         SnapRootData memory rootData = _proveAttestation(header, msgLeaf, originProof, snapProof, stateIndex);
         // Check if optimistic period has passed
@@ -113,26 +112,23 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             success = _executeBaseMessage(header, proofMaturity, gasLimit, baseMessage);
             emit TipsRecorded(msgLeaf, baseMessage.tips().unwrap().clone());
         }
-        if (execData.status == MessageStatus.None) {
+        if (rcptData.origin == 0) {
             // This is the first valid attempt to execute the message => save origin and snapshot root
-            execData.origin = header.origin();
-            execData.rootIndex = rootData.index;
+            rcptData.origin = header.origin();
+            rcptData.rootIndex = rootData.index;
             if (success) {
                 // This is the successful attempt to execute the message => save the executor
-                execData.status = MessageStatus.Success;
-                execData.executor = msg.sender;
+                rcptData.executor = msg.sender;
             } else {
                 // Save as the "first executor", if execution failed
-                execData.status = MessageStatus.Failed;
                 _firstExecutor[msgLeaf] = msg.sender;
             }
-            _executionData[msgLeaf] = execData;
+            _receiptData[msgLeaf] = rcptData;
         } else if (success) {
             // There has been a failed attempt to execute the message before => don't touch origin and snapshot root
             // This is the successful attempt to execute the message => save the executor
-            execData.status = MessageStatus.Success;
-            execData.executor = msg.sender;
-            _executionData[msgLeaf] = execData;
+            rcptData.executor = msg.sender;
+            _receiptData[msgLeaf] = rcptData;
         }
         emit Executed(header.origin(), msgLeaf);
     }
@@ -141,22 +137,29 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @inheritdoc IExecutionHub
     function messageStatus(bytes32 messageHash) external view returns (MessageStatus status) {
-        return _executionData[messageHash].status;
+        ReceiptData memory rcptData = _receiptData[messageHash];
+        if (rcptData.executor != address(0)) {
+            return MessageStatus.Success;
+        } else if (_firstExecutor[messageHash] != address(0)) {
+            return MessageStatus.Failed;
+        } else {
+            return MessageStatus.None;
+        }
     }
 
     /// @inheritdoc IExecutionHub
-    function executionData(bytes32 messageHash) external view returns (bytes memory data) {
-        ExecutionData memory execData = _executionData[messageHash];
+    function receiptData(bytes32 messageHash) external view returns (bytes memory data) {
+        ReceiptData memory rcptData = _receiptData[messageHash];
         // Return empty payload if there has been no attempt to execute the message
-        if (execData.status == MessageStatus.None) return "";
+        if (rcptData.origin == 0) return "";
         // Determine the first executor who tried to execute the message
         address firstExecutor = _firstExecutor[messageHash];
-        if (firstExecutor == address(0)) firstExecutor = execData.executor;
+        if (firstExecutor == address(0)) firstExecutor = rcptData.executor;
         // Determine the snapshot root that was used for proving the message
-        bytes32 snapRoot = _roots[execData.rootIndex];
+        bytes32 snapRoot = _roots[rcptData.rootIndex];
         // ExecutionHub does not store the tips, the Notary will have to append the tips payload
-        return ExecutionLib.formatExecution(
-            execData.status, execData.origin, localDomain, messageHash, snapRoot, firstExecutor, execData.executor, ""
+        return ReceiptLib.formatReceipt(
+            rcptData.origin, localDomain, messageHash, snapRoot, firstExecutor, rcptData.executor, ""
         );
     }
 
