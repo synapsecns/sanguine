@@ -109,9 +109,9 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             success = _executeSystemMessage(header, proofMaturity, message.body());
         } else {
             // This will revert if message body is not a formatted BaseMessage payload
-            success = _executeBaseMessage(
-                header, proofMaturity, rootData.notary, gasLimit, message.body().castToBaseMessage()
-            );
+            BaseMessage baseMessage = message.body().castToBaseMessage();
+            success = _executeBaseMessage(header, proofMaturity, gasLimit, baseMessage);
+            emit TipsRecorded(msgLeaf, baseMessage.tips().unwrap().clone());
         }
         if (execData.status == MessageStatus.None) {
             // This is the first valid attempt to execute the message => save origin and snapshot root
@@ -160,29 +160,17 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         );
     }
 
-    // ═══════════════════════════════════════════ INTERNAL LOGIC: TIPS ════════════════════════════════════════════════
-
-    function _storeTips(address notary, Tips tips) internal {
-        // TODO: implement tips logic
-        emit TipsStored(notary, tips.unwrap().clone());
-    }
-
     // ═════════════════════════════════════ INTERNAL LOGIC: MESSAGE EXECUTION ═════════════════════════════════════════
 
     /// @dev Passes message content to recipient that conforms to IMessageRecipient interface.
-    function _executeBaseMessage(
-        Header header,
-        uint256 proofMaturity,
-        address notary,
-        uint64 gasLimit,
-        BaseMessage baseMessage
-    ) internal returns (bool) {
+    function _executeBaseMessage(Header header, uint256 proofMaturity, uint64 gasLimit, BaseMessage baseMessage)
+        internal
+        returns (bool)
+    {
         // Check that gas limit covers the one requested by the sender.
         // We let the executor specify gas limit higher than requested to guarantee the execution of
         // messages with gas limit set too low.
         require(gasLimit >= baseMessage.request().gasLimit(), "Gas limit too low");
-        // Store message tips
-        _storeTips(notary, baseMessage.tips());
         // TODO: check that the discarded bits are empty
         address recipient = baseMessage.recipient().bytes32ToAddress();
         // Forward message content to the recipient, and limit the amount of forwarded gas
