@@ -312,7 +312,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
             assertEq(
                 data,
                 ExecutionLib.formatExecution(
-                    flag, DOMAIN_REMOTE, localDomain(), messageHash, snapRoot, firstExecutor, finalExecutor, ""
+                    DOMAIN_REMOTE, localDomain(), messageHash, snapRoot, firstExecutor, finalExecutor, ""
                 )
             );
         }
