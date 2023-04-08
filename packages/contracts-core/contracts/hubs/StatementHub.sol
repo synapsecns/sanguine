@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT, State, StateLib} from "../libs/Snapshot.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
@@ -204,9 +204,7 @@ abstract contract StatementHub is SystemRegistry {
         return MerkleLib.proofRoot(leftLeafIndex, leftLeaf, snapProof, SNAPSHOT_TREE_HEIGHT);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            FLAG CHECKERS                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ FLAG CHECKS ════════════════════════════════════════════════════
 
     /// @dev Checks that Agent is Active
     function _verifyActive(AgentStatus memory status) internal pure {
@@ -221,9 +219,7 @@ abstract contract StatementHub is SystemRegistry {
         );
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          STATEMENT WRAPPERS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ STATEMENT WRAPPERS ═════════════════════════════════════════════════
 
     // These functions are implemented to reduce the amount of imports in the child contracts.
 
