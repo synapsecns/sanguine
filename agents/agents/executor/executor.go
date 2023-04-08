@@ -609,11 +609,11 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 		return fmt.Errorf("could not get last stored block: %w", err)
 	}
 
-	fromBlock := strconv.FormatUint(lastStoredBlock, 10)
+	fromBlock := strconv.FormatUint(lastStoredBlock, 16)
 
 	toBlock := "latest"
 	if toBlockNumber != nil {
-		toBlock = strconv.FormatUint(*toBlockNumber, 10)
+		toBlock = strconv.FormatUint(*toBlockNumber, 16)
 	}
 
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
