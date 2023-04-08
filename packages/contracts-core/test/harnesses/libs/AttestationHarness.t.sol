@@ -2,13 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {
-    Attestation,
-    AttestationLib,
-    ExecutionAttestation,
-    SummitAttestation,
-    TypedMemView
-} from "../../../contracts/libs/Attestation.sol";
+import {Attestation, AttestationLib, SummitAttestation, TypedMemView} from "../../../contracts/libs/Attestation.sol";
 
 // solhint-disable ordering
 /// @notice Exposes Attestation methods for testing against golang.
@@ -52,20 +46,6 @@ contract AttestationHarness {
 
     function hash(bytes memory payload) public pure returns (bytes32) {
         return payload.castToAttestation().hash();
-    }
-
-    // ══════════════════════════════════════════ DESTINATION ATTESTATION ══════════════════════════════════════════════
-
-    function toExecutionAttestation(bytes memory payload, address notary)
-        public
-        view
-        returns (ExecutionAttestation memory)
-    {
-        return payload.castToAttestation().toExecutionAttestation(notary);
-    }
-
-    function isEmpty(ExecutionAttestation memory execAtt) public pure returns (bool) {
-        return execAtt.isEmpty();
     }
 
     // ════════════════════════════════════════════ SUMMIT ATTESTATION ═════════════════════════════════════════════════

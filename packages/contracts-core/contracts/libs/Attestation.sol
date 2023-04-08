@@ -22,18 +22,6 @@ struct SummitAttestation {
 /// @dev Attach library functions to SummitAttestation
 using AttestationLib for SummitAttestation global;
 
-/// @dev Struct representing Attestation, as it is stored in the ExecutionHub contract.
-/// mapping (bytes32 root => ExecutionAttestation) is supposed to be used
-struct ExecutionAttestation {
-    address notary;
-    uint32 nonce;
-    uint40 submittedAt;
-}
-// 24 bits left for tight packing
-
-/// @dev Attach library functions to ExecutionAttestation
-using AttestationLib for ExecutionAttestation global;
-
 library AttestationLib {
     using ByteString for bytes;
     using TypedMemView for bytes29;
@@ -176,23 +164,6 @@ library AttestationLib {
     function equalToSummit(Attestation att, SummitAttestation memory summitAtt) internal pure returns (bool) {
         return att.snapRoot() == summitAtt.snapRoot && att.agentRoot() == summitAtt.agentRoot
             && att.blockNumber() == summitAtt.blockNumber && att.timestamp() == summitAtt.timestamp;
-    }
-
-    // ══════════════════════════════════════════ DESTINATION ATTESTATION ══════════════════════════════════════════════
-
-    function toExecutionAttestation(Attestation att, address notary)
-        internal
-        view
-        returns (ExecutionAttestation memory attestation)
-    {
-        attestation.notary = notary;
-        attestation.nonce = att.nonce();
-        // We need to store the timestamp when attestation was submitted to Destination
-        attestation.submittedAt = uint40(block.timestamp);
-    }
-
-    function isEmpty(ExecutionAttestation memory execAtt) internal pure returns (bool) {
-        return execAtt.notary == address(0);
     }
 
     // ════════════════════════════════════════════ ATTESTATION HASHING ════════════════════════════════════════════════
