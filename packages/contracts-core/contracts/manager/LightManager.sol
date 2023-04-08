@@ -9,12 +9,12 @@ import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 import {AgentManager, IAgentManager, ISystemRegistry} from "./AgentManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
-import {ILightManager} from "../interfaces/ILightManager.sol";
+import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {Versioned} from "../Version.sol";
 
 /// @notice LightManager keeps track of all agents, staying in sync with the BondingManager.
 /// Used on chains other than Synapse Chain, serves as "light client" for BondingManager.
-contract LightManager is Versioned, AgentManager, ILightManager {
+contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
     // Latest known Agent Merkle Root
     bytes32 private _latestAgentRoot;
@@ -35,7 +35,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
 
     // ═══════════════════════════════════════════════ AGENTS LOGIC ════════════════════════════════════════════════════
 
-    /// @inheritdoc ILightManager
+    /// @inheritdoc InterfaceLightManager
     function updateAgentStatus(address agent, AgentStatus memory status, bytes32[] memory proof) external {
         // Reconstruct the agent leaf: flag should be Active
         bytes32 leaf = _agentLeaf(status.flag, status.domain, agent);
@@ -52,7 +52,7 @@ contract LightManager is Versioned, AgentManager, ILightManager {
         }
     }
 
-    /// @inheritdoc ILightManager
+    /// @inheritdoc InterfaceLightManager
     function setAgentRoot(bytes32 agentRoot_) external {
         require(msg.sender == address(destination), "Only Destination sets agent root");
         _setAgentRoot(agentRoot_);
