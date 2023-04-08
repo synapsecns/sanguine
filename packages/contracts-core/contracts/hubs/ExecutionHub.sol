@@ -241,11 +241,19 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         if (rcptData.origin == 0) return false;
         // Check that origin and snapshot root fields match
         if (rcpt.origin() != rcptData.origin || rcpt.snapshotRoot() != _roots[rcptData.rootIndex]) return false;
-        // Determine the first executor who tried to execute the message
+        // Check if message was executed from the first attempt
         address firstExecutor = _firstExecutor[messageHash];
-        if (firstExecutor == address(0)) firstExecutor = rcptData.executor;
-        // Check that executors addresses match
-        return rcpt.firstExecutor() == firstExecutor && rcpt.finalExecutor() == rcptData.executor;
+        if (firstExecutor == address(0)) {
+            // Both first and final executors are saved in receipt data
+            return rcpt.firstExecutor() == rcptData.executor && rcpt.finalExecutor() == rcptData.executor;
+        } else {
+            // Message was Failed at some point of time, so both receipts are valid:
+            // "Failed": finalExecutor is ZERO
+            // "Success": finalExecutor matches executor from saved receipt data
+            address finalExecutor = rcpt.finalExecutor();
+            return rcpt.firstExecutor() == firstExecutor
+                && (finalExecutor == address(0) || finalExecutor == rcptData.executor);
+        }
     }
 
     /**
