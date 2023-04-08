@@ -20,9 +20,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @dev All snapshot roots from the saved attestations
-    bytes32[] private _roots;
-
     /// @inheritdoc InterfaceDestination
     /// @dev Invariant: this is either current LightManager root,
     /// or the pending root to be passed to LightManager once its optimistic period is over.

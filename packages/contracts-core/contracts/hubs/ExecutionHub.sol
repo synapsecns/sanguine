@@ -52,12 +52,15 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// Note: stored only for messages that had Failed status at some point of time
     mapping(bytes32 => address) private _failedExecutor;
 
+    /// @dev All snapshot roots from the saved attestations
+    bytes32[] internal _roots;
+
     /// @dev Tracks all saved attestations
     // (root => attestation)
     mapping(bytes32 => ExecutionAttestation) private _rootAttestations;
 
     /// @dev gap for upgrade safety
-    uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
 
     // ═════════════════════════════════════════════ EXECUTE MESSAGES ══════════════════════════════════════════════════
 
