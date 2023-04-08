@@ -50,10 +50,6 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         checkCastToAttestation({payload: payload, isAttestation: length == ATTESTATION_LENGTH});
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       DESTINATION ATTESTATION                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
     function test_toExecutionAttestation(RawAttestation memory ra, address notary, uint40 submittedAt) public {
         vm.warp(submittedAt);
         bytes memory payload = ra.formatAttestation();
@@ -71,10 +67,6 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SUMMIT ATTESTATION                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
     function test_formatSummitAttestation(RawAttestation memory ra) public {
         SummitAttestation memory att = SummitAttestation(ra.snapRoot, ra.agentRoot, ra.blockNumber, ra.timestamp);
         bytes memory payload = libHarness.formatSummitAttestation(att, ra.nonce);
@@ -85,9 +77,7 @@ contract AttestationLibraryTest is SynapseLibraryTest {
         );
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPEra                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function checkCastToAttestation(bytes memory payload, bool isAttestation) public {
         if (isAttestation) {
