@@ -5,6 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib} from "../libs/BaseMessage.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
+import {Execution, ExecutionLib} from "../libs/Execution.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {MessageStatus} from "../libs/Structures.sol";
@@ -145,7 +146,18 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @inheritdoc IExecutionHub
     function executionData(bytes32 messageHash) external view returns (bytes memory data) {
-        // TODO: compete
+        ExecutionData memory execData = _executionData[messageHash];
+        // Return empty payload if there has been no attempt to execute the message
+        if (execData.status == MessageStatus.None) return "";
+        // Determine the first executor who tried to execute the message
+        address firstExecutor = _firstExecutor[messageHash];
+        if (firstExecutor == address(0)) firstExecutor = execData.executor;
+        // Determine the snapshot root that was used for proving the message
+        bytes32 snapRoot = _roots[execData.rootIndex];
+        // ExecutionHub does not store the tips, the Notary will have to append the tips payload
+        return ExecutionLib.formatExecution(
+            execData.status, execData.origin, localDomain, messageHash, snapRoot, firstExecutor, execData.executor, ""
+        );
     }
 
     // ═══════════════════════════════════════════ INTERNAL LOGIC: TIPS ════════════════════════════════════════════════
