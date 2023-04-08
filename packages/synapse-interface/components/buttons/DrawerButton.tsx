@@ -1,12 +1,12 @@
 import { ChevronUpIcon } from '@heroicons/react/outline'
 
-export function DrawerButton({
+export const DrawerButton = ({
   className,
   onClick,
 }: {
   className?: string
   onClick: () => void
-}) {
+}) => {
   return (
     <div
       className={`

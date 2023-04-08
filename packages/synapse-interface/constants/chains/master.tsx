@@ -50,6 +50,7 @@ export const ETH: Chain = {
     symbol: 'ETH',
     decimals: 18,
   },
+  color: 'eth',
 }
 export const ARBITRUM: Chain = {
   visibilityRank: 90,
@@ -64,6 +65,7 @@ export const ARBITRUM: Chain = {
   rpc: 'https://arb1.arbitrum.io/rpc',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://arbiscan.io',
+  color: 'gray',
 }
 export const BNB: Chain = {
   visibilityRank: 90,
@@ -79,6 +81,7 @@ export const BNB: Chain = {
   rpc: 'https://bsc-dataseed1.ninicoin.io/',
   nativeCurrency: { name: 'Binance Coin', symbol: 'BNB', decimals: 18 },
   explorerUrl: 'https://bscscan.com',
+  color: 'yellow',
 }
 export const AVALANCHE: Chain = {
   visibilityRank: 90,
@@ -93,6 +96,7 @@ export const AVALANCHE: Chain = {
   rpc: 'https://api.avax.Chain/ext/bc/C/rpc',
   nativeCurrency: { name: 'Avax', symbol: 'AVAX', decimals: 18 },
   explorerUrl: 'https://snowtrace.io',
+  color: 'red',
 }
 export const CANTO: Chain = {
   visibilityRank: 95,
@@ -106,6 +110,7 @@ export const CANTO: Chain = {
   rpc: 'https://mainnode.plexnode.org:8545',
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
   explorerUrl: 'https://evm.explorer.canto.io/',
+  color: 'teal',
 }
 
 export const OPTIMISM: Chain = {
@@ -121,6 +126,7 @@ export const OPTIMISM: Chain = {
   rpc: 'https://rpc.ankr.com/optimism',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://optimistic.etherscan.io',
+  color: 'red',
 }
 
 export const POLYGON: Chain = {
@@ -136,6 +142,7 @@ export const POLYGON: Chain = {
   rpc: 'https://rpc-mainnet.matic.quiknode.pro',
   nativeCurrency: { name: 'Matic', symbol: 'MATIC', decimals: 18 },
   explorerUrl: 'https://polygonscan.com',
+  color: 'purple',
 }
 
 export const DFK: Chain = {
@@ -149,6 +156,7 @@ export const DFK: Chain = {
   rpc: 'https://subnets.avax.Chain/defi-kingdoms/dfk-chain/rpc',
   nativeCurrency: { name: 'Jewel', symbol: 'JEWEL', decimals: 18 },
   explorerUrl: 'https://subnets.avax.Chain/defi-kingdoms/',
+  color: 'lime',
 }
 
 export const KLAYTN: Chain = {
@@ -163,6 +171,7 @@ export const KLAYTN: Chain = {
   rpc: 'https://klaytn.blockpi.Chain/v1/rpc/public',
   nativeCurrency: { name: 'Klaytn', symbol: 'KLAY', decimals: 18 },
   explorerUrl: 'https://scope.klaytn.com',
+  color: 'orange',
 }
 export const FANTOM: Chain = {
   visibilityRank: 80,
@@ -177,6 +186,7 @@ export const FANTOM: Chain = {
   rpc: 'https://rpc.ftm.tools',
   nativeCurrency: { name: 'Fantom', symbol: 'FTM', decimals: 18 },
   explorerUrl: 'https://ftmscan.com',
+  color: 'blue',
 }
 export const CRONOS: Chain = {
   visibilityRank: 10,
@@ -191,6 +201,7 @@ export const CRONOS: Chain = {
   rpc: 'https://evm-cronos.crypto.org',
   nativeCurrency: { name: 'Cronos', symbol: 'CRO', decimals: 18 },
   explorerUrl: 'https://cronoscan.com/',
+  color: 'blue',
 }
 export const BOBA: Chain = {
   visibilityRank: 10,
@@ -206,6 +217,7 @@ export const BOBA: Chain = {
   writeRpc: 'https://mainnet.boba.Chain/',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://blockexplorer.boba.Chain',
+  color: 'lime',
 }
 export const METIS: Chain = {
   visibilityRank: 10,
@@ -220,6 +232,7 @@ export const METIS: Chain = {
   rpc: 'https://andromeda.metis.io/?owner=1088',
   nativeCurrency: { name: 'Metis', symbol: 'METIS', decimals: 18 },
   explorerUrl: 'https://andromeda-explorer.metis.io/',
+  color: 'teal',
 }
 
 export const AURORA: Chain = {
@@ -235,6 +248,7 @@ export const AURORA: Chain = {
   rpc: 'https://mainnet.aurora.dev',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://explorer.mainnet.aurora.dev',
+  color: 'lime',
 }
 export const HARMONY: Chain = {
   visibilityRank: 10,
@@ -249,6 +263,7 @@ export const HARMONY: Chain = {
   rpc: 'https://harmony-mainnet.chainstacklabs.com',
   nativeCurrency: { name: 'Harmony One', symbol: 'ONE', decimals: 18 },
   explorerUrl: 'https://explorer.harmony.one',
+  color: 'cyan',
 }
 
 export const MOONBEAM: Chain = {
@@ -263,6 +278,7 @@ export const MOONBEAM: Chain = {
   rpc: 'https://rpc.api.moonbeam.Chain',
   nativeCurrency: { name: 'Glimmer', symbol: 'GLMR', decimals: 18 },
   explorerUrl: 'https://moonbeam.moonscan.io',
+  color: 'teal',
 }
 export const MOONRIVER: Chain = {
   visibilityRank: 0,
@@ -276,6 +292,7 @@ export const MOONRIVER: Chain = {
   rpc: 'https://rpc.api.moonriver.moonbeam.Chain',
   nativeCurrency: { name: 'Moonriver', symbol: 'MOVR', decimals: 18 },
   explorerUrl: 'https://moonriver.moonscan.io',
+  color: 'purple',
 }
 export const DOGE: Chain = {
   visibilityRank: 0,
@@ -289,4 +306,5 @@ export const DOGE: Chain = {
   rpc: 'https://rpc-us.dogechain.dog',
   nativeCurrency: { name: 'DOGE', symbol: 'DOGE', decimals: 18 },
   explorerUrl: 'https://explorer.dogechain.dog',
+  color: 'purple',
 }

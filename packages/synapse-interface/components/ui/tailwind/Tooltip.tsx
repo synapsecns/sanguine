@@ -1,7 +1,7 @@
 import { createRef, useState } from 'react'
 import { createPopper } from '@popperjs/core'
 
-export default function Tooltip({
+const Tooltip = ({
   children,
   title,
   content,
@@ -11,7 +11,7 @@ export default function Tooltip({
   title?: string
   content: string
   className?: string
-}) {
+}) => {
   const [tooltipShow, setTooltipShow] = useState(false)
   const btnRef = createRef<HTMLDivElement>()
   const tooltipRef = createRef<HTMLDivElement>()
@@ -65,3 +65,5 @@ export default function Tooltip({
     </>
   )
 }
+
+export default Tooltip

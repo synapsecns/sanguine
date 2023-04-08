@@ -17,7 +17,7 @@ export const NetworkSlideOver = ({
   isOrigin: boolean
   chains: string[]
   chainId: number
-  onChangeChain: (v: number) => void
+  onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
   setDisplayType: (v: string) => void
 }) => {
   const { chain } = useNetwork()
@@ -84,7 +84,7 @@ export const NetworkSlideOver = ({
   const enterPressedFunc = () => {
     if (enterPressed && currentIdx > -1) {
       const currentChain = networks[currentIdx]
-      onChangeChain(currentChain.chainId)
+      onChangeChain(currentChain.chainId, false, isOrigin ? 'from' : 'to')
       onClose()
     }
   }
@@ -118,7 +118,7 @@ export const NetworkSlideOver = ({
             onClickSpecificNetwork = () => console.log('INCEPTION')
           } else {
             onClickSpecificNetwork = () => {
-              onChangeChain(mapChainId)
+              onChangeChain(mapChainId, false, isOrigin ? 'from' : 'to')
               onClose()
             }
           }

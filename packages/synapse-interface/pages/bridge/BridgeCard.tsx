@@ -41,11 +41,9 @@ const BridgeCard = ({
   toChainId,
   toOptions,
   destinationAddress,
-  handleChainFlip,
+  handleChainChange,
   handleTokenChange,
   onChangeFromAmount,
-  onSelectFromChain,
-  onSelectToChain,
   setDestinationAddress,
 }: {
   error
@@ -59,11 +57,13 @@ const BridgeCard = ({
   toChainId: number
   toOptions: { tokens: Token[]; chains: string[] }
   destinationAddress: string
-  handleChainFlip: () => void
+  handleChainChange: (
+    chainId: number,
+    flip: boolean,
+    type: 'from' | 'to'
+  ) => void
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
   onChangeFromAmount: (amount: string) => void
-  onSelectFromChain: (chainId: number) => void
-  onSelectToChain: (chainId: number) => void
   setDestinationAddress: (address: string) => void
 }) => {
   const SynapseSDK = useSynapseContext()
@@ -72,6 +72,11 @@ const BridgeCard = ({
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
 
+  /*
+  useEffect Trigger: fromToken, fromTokens
+  - When either the from token or list of from tokens are mutated, the selected token's balance is set in state
+  this is for checking max bridge possible as well as for producing the option to select max bridge
+  */
   useEffect(() => {
     if (fromTokens && fromToken) {
       setFromTokenBalance(
@@ -82,6 +87,10 @@ const BridgeCard = ({
     }
   }, [fromToken, fromTokens])
 
+  /*
+  Constant: fromArgs, toArgs
+  - Define various arguments to numerous bridge ui components. Defined here to prevent messy code.
+   */
   const fromArgs = {
     address,
     fromTokenBalance,
@@ -94,7 +103,7 @@ const BridgeCard = ({
     connectedChainId: fromChainId,
     setDisplayType,
     handleTokenChange,
-    onChangeChain: onSelectFromChain,
+    onChangeChain: handleChainChange,
     onChangeAmount: onChangeFromAmount,
   }
 
@@ -108,11 +117,11 @@ const BridgeCard = ({
     selectedToken: toToken,
     connectedChainId: fromChainId,
     setDisplayType,
-    handleChainFlip,
     handleTokenChange,
-    onChangeChain: onSelectToChain,
+    onChangeChain: handleChainChange,
   }
 
+  // TODO move this away and into the actual componet
   const settingsArgs = {
     settings,
     setSettings,
@@ -122,6 +131,10 @@ const BridgeCard = ({
     setDeadlineMinutes,
   }
 
+  /*
+  Function: approveToken
+  - Triggers token allowance approval.
+   */
   const approveToken = async () => {
     // TODO store this erc20 and signer retrieval in a state in a parent component
     const wallet = await fetchSigner({
@@ -148,6 +161,12 @@ const BridgeCard = ({
       console.log(`Transaction failed with error: ${error}`)
     }
   }
+
+  /*
+  Function: approveToken
+  - Gets raw unsigned tx data from sdk and then execute it with ethers.
+  - Only executes if token has already been approved.
+   */
   const executeBridge = async () => {
     const wallet = await fetchSigner({
       chainId: fromChainId,
@@ -178,8 +197,9 @@ const BridgeCard = ({
 
     console.log('data', data)
   }
-  const isFromBalanceEnough = fromTokenBalance?.gt(fromInput.bigNum)
 
+  // some messy button gen stuff (will re-write)
+  const isFromBalanceEnough = fromTokenBalance?.gt(fromInput.bigNum)
   let destAddrNotValid
   let btnLabel
   let btnClassName = ''
@@ -304,6 +324,7 @@ const BridgeCard = ({
     <SettingsSlideOver key="settings" {...settingsArgs} />
   )
 
+  // TODO mve this to style
   const transitionProps = {
     ...COIN_SLIDE_OVER_PROPS,
     className: `
@@ -399,63 +420,4 @@ const BridgeCard = ({
     </>
   )
 }
-
-// // TODO: Fix the transition post ftm addition
-// // TODO: Need to coordnate transition from approval => other action
-
-// function NetworkPausedButton({ networkName }) {
-//   return (
-//     <Button disabled={true} type="button" className={ACTION_BTN_CLASSNAME}>
-//       {networkName} Undergoing Chain Downtime
-//     </Button>
-//   )
-// }
-// // Undergoing Network Upgrades
-
-// const PAUSED_BASE_PROPERTIES = `
-//     w-full rounded-lg my-2 px-4 py-3
-//     text-white text-opacity-100 transition-all
-//     hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C]
-//     disabled:from-bgLight disabled:to-bgLight
-//     bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
-//   `
-
-// function PausedButton({ networkName }) {
-//   return (
-//     <Button
-//       disabled={true}
-//       fancy={true}
-//       type="button"
-//       className={`${PAUSED_BASE_PROPERTIES}`}
-//     >
-//      Temporarily paused due to chain connectivity issues
-//     </Button>
-//   )
-// }
-
-// function HeavyLoadButton() {
-//   return (
-//     <Button
-//       disabled={true}
-//       fancy={true}
-//       type="button"
-//       className={ACTION_BTN_CLASSNAME}
-//     >
-//       Synapse is experiencing heavy load
-//     </Button>
-//   )
-// }
-
-// function AdvancedOptionsButton({ className, onClick }) {
-//   return (
-//     <div
-//       className={`
-//         group rounded-lg hover:bg-gray-900 ${className} p-1`}
-//       onClick={onClick}
-//     >
-//       <CogIcon className="w-6 h-6 text-gray-500 group-hover:text-gray-300" />
-//     </div>
-//   )
-// }
-
 export default BridgeCard

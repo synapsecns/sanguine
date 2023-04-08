@@ -15,6 +15,7 @@ export type Chain = {
   blockTime: number
   nativeCurrency: { name: string; symbol: string; decimals: number }
   visibilityRank?: number
+  color?: string
 }
 
 export type BridgeQuote = {
@@ -82,6 +83,18 @@ export class Token {
   display = true // display token
   legacy = false // legacy token
   priorityPool?: boolean = false // priority pool
+  color?:
+    | 'gray'
+    | 'yellow'
+    | 'green'
+    | 'lime'
+    | 'sky'
+    | 'blue'
+    | 'orange'
+    | 'purple'
+    | 'indigo'
+    | 'cyan'
+    | 'red'
 
   constructor({
     addresses,
@@ -115,6 +128,7 @@ export class Token {
     display,
     legacy,
     priorityPool,
+    color,
   }: {
     addresses: { [x: number]: string }
     wrapperAddresses?: Record<number, string>
@@ -147,6 +161,18 @@ export class Token {
     display?: boolean
     legacy?: boolean
     priorityPool?: boolean
+    color?:
+      | 'gray'
+      | 'yellow'
+      | 'green'
+      | 'lime'
+      | 'sky'
+      | 'blue'
+      | 'orange'
+      | 'purple'
+      | 'indigo'
+      | 'cyan'
+      | 'red'
   }) {
     const isMetaVar = Boolean(swapDepositAddresses || forceMeta)
     this.addresses = addresses
@@ -182,6 +208,7 @@ export class Token {
     this.display = display ?? true
     this.legacy = legacy ?? false
     this.priorityPool = priorityPool ?? false
+    this.color = color ?? 'gray'
   }
 }
 

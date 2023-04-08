@@ -5,17 +5,18 @@ import Image from 'next/image'
 import {
   getBorderStyleForCoinHover,
   getMenuItemHoverBgForCoin,
-} from '@styles/coins'
+} from '@styles/tokens'
+import { Token } from '@/utils/types'
 
-export default function SelectTokenDropdown({
+const SelectTokenDropdown = ({
   chainId,
   selectedToken,
   onClick,
 }: {
   chainId: number
-  selectedToken: any
+  selectedToken: Token
   onClick: () => void
-}) {
+}) => {
   const symbol = displaySymbol(chainId, selectedToken)
 
   return (
@@ -35,9 +36,9 @@ export default function SelectTokenDropdown({
             flex justify-center md:justify-start
             bg-[#49444c] bg-opacity-100
             transform-gpu transition-all duration-100
-            ${getMenuItemHoverBgForCoin(selectedToken)}
+            ${getMenuItemHoverBgForCoin(selectedToken.color)}
             border border-transparent
-            ${getBorderStyleForCoinHover(selectedToken)}
+            ${getBorderStyleForCoinHover(selectedToken.color)}
             items-center
             rounded-lg
             py-1.5 pl-2 h-14
@@ -63,3 +64,4 @@ export default function SelectTokenDropdown({
     </button>
   )
 }
+export default SelectTokenDropdown

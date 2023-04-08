@@ -1,5 +1,3 @@
-import { SettingsContext } from '@store/SettingsStore'
-
 import createPersistedState from 'use-persisted-state'
 
 const usePassthroughSettings = createPersistedState('settingsObjStuff')

@@ -8,7 +8,7 @@ import Button from '@tw/Button'
 
 import { DeadlineInput } from './DeadlineInput'
 
-export default function SettingsSlideOver({
+const SettingsSlideOver = ({
   settings,
   setSettings,
   setDisplayType,
@@ -22,7 +22,7 @@ export default function SettingsSlideOver({
   setDestinationAddress: (v: string) => void
   deadlineMinutes: string
   setDeadlineMinutes: (v: string) => void
-}) {
+}) => {
   const escPressed = useKeyPress('Escape')
 
   function onClose() {
@@ -103,7 +103,7 @@ export default function SettingsSlideOver({
   )
 }
 
-function WithdrawalWarning({ onClose }: { onClose: any }) {
+const WithdrawalWarning = ({ onClose }: { onClose: any }) => {
   return (
     <div className="w-full p-4 bg-bgLight rounded-xl">
       <div className="flex items-center justify-between space-x-1">
@@ -127,3 +127,5 @@ function WithdrawalWarning({ onClose }: { onClose: any }) {
     </div>
   )
 }
+
+export default SettingsSlideOver

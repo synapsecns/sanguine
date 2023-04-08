@@ -12,8 +12,6 @@ import movrLogo from '@assets/icons/moonriver.jpeg'
 import jewelLogo from '@assets/icons/jewel.png'
 import wbtcLogo from '@assets/icons/wbtc.svg'
 import noteLogo from '@assets/icons/note.svg'
-import * as CHAINS from '@/constants/chains/master'
-import { Token } from '@/utils/types'
 import ohmLogo from '@assets/icons/ohm.svg'
 import highstreetLogo from '@assets/icons/highstreet.svg'
 import hyperjumpLogo from '@assets/icons/hyperjump.png'
@@ -36,6 +34,9 @@ import gmxLogo from '@assets/icons/gmx.png'
 import ageurLogo from '@assets/icons/ageur.svg'
 import mimLogo from '@assets/icons/mim.svg'
 import { AddressZero } from '@ethersproject/constants'
+
+import { Token } from '@/utils/types'
+import * as CHAINS from '@/constants/chains/master'
 
 // MINTABLE TOKENS
 export const GOHM = new Token({
@@ -60,6 +61,7 @@ export const GOHM = new Token({
   logo: ohmLogo,
   description: 'OHM',
   swapableType: 'OHM',
+  color: 'gray',
 })
 
 export const LINK = new Token({
@@ -73,6 +75,7 @@ export const LINK = new Token({
   logo: chainlinkLogo,
   description: 'LINK',
   swapableType: 'LINK',
+  color: 'blue',
 })
 
 export const HIGHSTREET = new Token({
@@ -86,6 +89,7 @@ export const HIGHSTREET = new Token({
   logo: highstreetLogo,
   description: 'HIGH is the token behind Highstreet',
   swapableType: 'HIGHSTREET',
+  color: 'cyan',
 })
 
 export const JUMP = new Token({
@@ -101,6 +105,7 @@ export const JUMP = new Token({
   description: 'JUMP is the token behind Hyperjump',
   docUrl: '',
   swapableType: 'JUMP',
+  color: 'cyan',
 })
 
 export const SFI = new Token({
@@ -115,6 +120,7 @@ export const SFI = new Token({
   description: '',
   docUrl: '',
   swapableType: 'SFI',
+  color: 'red',
 })
 
 export const DOG = new Token({
@@ -131,6 +137,7 @@ export const DOG = new Token({
   description: 'DOG is the token behind the Doge NFT',
   docUrl: '',
   swapableType: 'DOG',
+  color: 'yellow',
 })
 
 export const NFD = new Token({
@@ -147,6 +154,7 @@ export const NFD = new Token({
   description: 'Feisty Doge NFT',
   docUrl: '',
   swapableType: 'NFD',
+  color: 'yellow',
 })
 
 export const SOLAR = new Token({
@@ -161,6 +169,7 @@ export const SOLAR = new Token({
   description: 'Vested SolarBeam',
   docUrl: '',
   swapableType: 'SOLAR',
+  color: 'orange',
 })
 
 export const GMX = new Token({
@@ -195,6 +204,7 @@ export const SDT = new Token({
   description: 'Stake DAO',
   docUrl: '',
   swapableType: 'SDT',
+  color: 'gray',
 })
 
 export const NEWO = new Token({
@@ -210,6 +220,7 @@ export const NEWO = new Token({
   description: 'New Order',
   docUrl: '',
   swapableType: 'NEWO',
+  color: 'yellow',
 })
 
 export const USDB = new Token({
@@ -242,6 +253,7 @@ export const VSTA = new Token({
   description: 'Vesta Finance',
   docUrl: '',
   swapableType: 'VSTA',
+  color: 'gray',
 })
 
 export const H2O = new Token({
@@ -262,6 +274,7 @@ export const H2O = new Token({
   description: 'H2O',
   docUrl: '',
   swapableType: 'H2O',
+  color: 'cyan',
 })
 
 export const L2DAO = new Token({
@@ -276,6 +289,7 @@ export const L2DAO = new Token({
   description: 'Layer2DAO',
   docUrl: '',
   swapableType: 'L2DAO',
+  color: 'cyan',
 })
 
 export const PLS = new Token({
@@ -290,6 +304,7 @@ export const PLS = new Token({
   description: 'PlutusDao',
   docUrl: '',
   swapableType: 'PLS',
+  color: 'green',
 })
 
 export const AGEUR = new Token({
@@ -305,6 +320,7 @@ export const AGEUR = new Token({
   description: 'Angle Euro',
   docUrl: '',
   swapableType: 'AGEUR',
+  color: 'yellow',
 })
 
 export const UNIDX = new Token({
@@ -319,6 +335,7 @@ export const UNIDX = new Token({
   description: 'Unidex',
   docUrl: '',
   swapableType: 'UNIDX',
+  color: 'gray',
 })
 
 // BASIC TOKENS
@@ -337,6 +354,7 @@ export const BUSD = new Token({
   `,
   swapableType: 'BUSD',
   swapableOn: [CHAINS.BNB.id],
+  color: 'yellow',
 })
 
 export const USDC = new Token({
@@ -402,6 +420,7 @@ export const USDC = new Token({
     CHAINS.CRONOS.id,
     CHAINS.CANTO.id,
   ],
+  color: 'blue',
 })
 
 // export const KLAYTN_USDC = new Token({
@@ -575,6 +594,7 @@ export const DAI = new Token({
     CHAINS.HARMONY.id,
     CHAINS.BOBA.id,
   ],
+  color: 'orange',
 })
 
 export const WBTC = new Token({
@@ -592,6 +612,7 @@ export const WBTC = new Token({
   name: 'Wrapped BTC',
   logo: wbtcLogo,
   swapableType: 'WBTC',
+  color: 'yellow',
 })
 
 // export const UST = new Token({
@@ -651,6 +672,7 @@ export const WETH = new Token({
   description: 'ERC-20 Wrapped form of ETH',
   swapableType: 'ETH',
   swapableOn: [CHAINS.ARBITRUM.id, CHAINS.BOBA.id, CHAINS.OPTIMISM.id],
+  color: 'sky',
 })
 
 export const WETHE = new Token({
@@ -664,6 +686,7 @@ export const WETHE = new Token({
   description: 'ERC-20 Wrapped form of ETH',
   swapableType: 'ETH',
   swapableOn: [CHAINS.AVALANCHE.id],
+  color: 'sky',
 })
 
 /**
@@ -680,6 +703,7 @@ export const WETHBEAM = new Token({
   logo: wethLogo,
   description: 'ERC-20 Wrapped form of ETH on Moonbeam',
   swapableType: 'ETH',
+  color: 'sky',
 })
 
 export const AVWETH = new Token({
@@ -692,6 +716,7 @@ export const AVWETH = new Token({
   logo: avwethLogo,
   description: 'Aave Wrapped form of ETH',
   swapableType: 'ETH',
+  color: 'cyan',
 })
 
 export const ONEETH = new Token({
@@ -705,6 +730,7 @@ export const ONEETH = new Token({
   description: 'Harmony ERC-20 Wrapped form of ETH',
   swapableType: 'ETH',
   swapableOn: [CHAINS.HARMONY.id],
+  color: 'sky',
 })
 
 export const FTMETH = new Token({
@@ -718,6 +744,7 @@ export const FTMETH = new Token({
   description: 'Fantom Wrapped form of ETH',
   swapableType: 'ETH',
   swapableOn: [CHAINS.FANTOM.id],
+  color: 'sky',
 })
 
 export const CANTOETH = new Token({
@@ -731,6 +758,7 @@ export const CANTOETH = new Token({
   description: 'Canto Wrapped form of ETH',
   swapableType: 'ETH',
   swapableOn: [CHAINS.CANTO.id],
+  color: 'sky',
 })
 
 export const METISETH = new Token({
@@ -744,6 +772,7 @@ export const METISETH = new Token({
   description: 'Metis Wrapped form of ETH',
   swapableType: 'ETH',
   swapableOn: [CHAINS.METIS.id],
+  color: 'sky',
 })
 
 export const SYN = new Token({
@@ -771,6 +800,7 @@ export const SYN = new Token({
   logo: synapseLogo,
   description: 'SYN is the base token behind synapse',
   swapableType: 'SYN',
+  color: 'purple',
 })
 
 export const FRAX = new Token({
@@ -788,6 +818,7 @@ export const FRAX = new Token({
   description: 'Frax',
   swapableType: 'FRAX',
   swapableOn: [CHAINS.MOONRIVER.id, CHAINS.MOONBEAM.id],
+  color: 'gray',
 })
 
 export const SYN_FRAX = new Token({
@@ -845,6 +876,7 @@ export const NUSD = new Token({
     CHAINS.CRONOS.id,
     CHAINS.CANTO.id,
   ],
+  color: 'purple',
 })
 
 export const NOTE = new Token({
@@ -858,6 +890,7 @@ export const NOTE = new Token({
   description: 'NOTE',
   swapableType: 'USD',
   swapableOn: [CHAINS.CANTO.id],
+  color: 'green',
 })
 
 export const DFK_USDC = new Token({
@@ -872,6 +905,7 @@ export const DFK_USDC = new Token({
   logo: usdcLogo,
   description: '',
   swapableType: 'USD',
+  color: 'blue',
 })
 
 /**
@@ -906,6 +940,7 @@ export const NETH = new Token({
     CHAINS.METIS.id,
     CHAINS.CANTO.id,
   ],
+  color: 'purple',
 })
 
 export const KLAYTN_WETH = new Token({
@@ -938,6 +973,7 @@ export const ETH = new Token({
   description: 'ETH',
   isNative: true,
   swapableType: 'ETH',
+  color: 'sky',
 })
 
 export const MOVR = new Token({
@@ -951,6 +987,7 @@ export const MOVR = new Token({
   description: 'Moonriver',
   isNative: true,
   swapableType: 'MOVR',
+  color: 'purple',
 })
 
 export const AVAX = new Token({
@@ -964,6 +1001,7 @@ export const AVAX = new Token({
   description: 'AVAX',
   isNative: true,
   swapableType: 'AVAX',
+  color: 'red',
 })
 
 export const WMOVR = new Token({
@@ -977,6 +1015,7 @@ export const WMOVR = new Token({
   logo: movrLogo,
   description: 'ERC-20 Wrapped form of MOVR',
   swapableType: 'MOVR',
+  color: 'purple',
 })
 
 export const WAVAX = new Token({
@@ -992,6 +1031,7 @@ export const WAVAX = new Token({
   logo: avaxLogo,
   description: 'ERC-20 Wrapped form of AVAX',
   swapableType: 'AVAX',
+  color: 'red',
 })
 
 export const SYNAVAX = new Token({
@@ -1005,6 +1045,7 @@ export const SYNAVAX = new Token({
   description: 'ERC-20 Wrapped form of AVAX',
   swapableType: 'AVAX',
   swapableOn: [CHAINS.HARMONY.id],
+  color: 'red',
 })
 
 export const MULTIAVAX = new Token({
@@ -1018,6 +1059,7 @@ export const MULTIAVAX = new Token({
   description: 'ERC-20 Wrapped form of AVAX',
   swapableType: 'AVAX',
   swapableOn: [CHAINS.HARMONY.id],
+  color: 'red',
 })
 
 // export const JEWEL = new Token({
@@ -1045,6 +1087,7 @@ export const WJEWEL = new Token({
   description: 'JEWEL',
   swapableType: 'JEWEL',
   swapableOn: [CHAINS.HARMONY.id],
+  color: 'lime',
 })
 
 export const SYNJEWEL = new Token({
@@ -1059,6 +1102,7 @@ export const SYNJEWEL = new Token({
   description: 'ERC-20 Wrapped form of JEWEL',
   swapableType: 'JEWEL',
   swapableOn: [CHAINS.HARMONY.id],
+  color: 'lime',
 })
 
 export const XJEWEL = new Token({
@@ -1072,6 +1116,7 @@ export const XJEWEL = new Token({
   logo: jewelLogo,
   description: 'ERC-20 Wrapped form of xJEWEL',
   swapableType: 'XJEWEL',
+  color: 'lime',
 })
 
 export const WMATIC = new Token({
@@ -1118,4 +1163,5 @@ export const MIM = new Token({
   name: 'Magic Internet Money',
   logo: mimLogo,
   swapableType: 'USD',
+  color: 'indigo',
 })

@@ -1,7 +1,7 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { CHAINS_BY_ID, ORDERED_CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
-import { getNetworkButtonBorder } from '@styles/networks'
+import { getNetworkButtonBorder } from '@/styles/chains'
 import { getOrderedChains } from '@utils/getOrderedChains'
 import Image from 'next/image'
 import Tooltip from '@tw/Tooltip'
@@ -23,7 +23,7 @@ export const ChainLabel = ({
   titleText?: string
   connectedChainId: number
   labelClassNameOverride?: string
-  onChangeChain: (v: number) => void
+  onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
   setDisplayType: (v: string) => void
 }) => {
   const labelClassName = 'text-sm'
@@ -51,6 +51,7 @@ export const ChainLabel = ({
             <PossibleChain
               chainId={Number(id)}
               onChangeChain={onChangeChain}
+              isOrigin={isOrigin}
               key={id}
             />
           )
@@ -72,9 +73,11 @@ export const ChainLabel = ({
 const PossibleChain = ({
   chainId,
   onChangeChain,
+  isOrigin,
 }: {
   chainId: number
-  onChangeChain: (v: number) => void
+  onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
+  isOrigin: boolean
 }) => {
   const chain = CHAINS_BY_ID[chainId]
 
@@ -87,7 +90,7 @@ const PossibleChain = ({
         border border-gray-500 rounded-full
       "
       tabIndex={0}
-      onClick={() => onChangeChain(chainId)}
+      onClick={() => onChangeChain(chainId, false, isOrigin ? 'from' : 'to')}
     >
       <Tooltip content={chain.chainName}>
         <Image
@@ -109,7 +112,7 @@ const SelectedChain = ({ chainId }: { chainId: number }) => {
         flex items-center
         bg-bgLight
         text-white
-        border ${getNetworkButtonBorder(chainId)}
+        border ${getNetworkButtonBorder(chain.color)}
         rounded-full
       `}
     >

@@ -35,7 +35,11 @@ import {
   EMPTY_BRIDGE_QUOTE_ZERO,
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
-// import BridgeWatcher from './BridgeWatcher'
+import { addSyntheticLeadingComment } from 'typescript'
+
+/* TODO
+  - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
+*/
 
 const BridgePage = ({ address }: { address: `0x${string}` }) => {
   const router = useRouter()
@@ -48,7 +52,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toChainId, setToChainId] = useState(DEFAULT_TO_CHAIN)
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
-  const [needsApproval, setNeedsApproval] = useState(false)
   const [error, setError] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
   const [toOptions, setToOptions] = useState({
@@ -60,6 +63,11 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   const [bridgeQuote, setBridgeQuote] =
     useState<BridgeQuote>(EMPTY_BRIDGE_QUOTE)
 
+  /*
+  useEffect Trigger: onMount
+  - Gets current network connected and sets it as the state.
+  - Initializes polling (setInterval) func to re-retrieve quotes.
+  */
   useEffect(() => {
     const { chain: fromChainIdRaw } = getNetwork()
     setFromChainId(fromChainIdRaw ? fromChainIdRaw?.id : DEFAULT_FROM_CHAIN)
@@ -71,11 +79,22 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       clearInterval(interval)
     }
   }, [])
+
+  /*
+  useEffect Trigger: connectedChain
+  - when the connected chain changes (wagmi hook), update the state
+  */
   useEffect(() => {
     if (connectedChain?.id && connectedChain?.id !== fromChainId) {
       setFromChainId(connectedChain?.id)
     }
   }, [connectedChain])
+
+  /*
+  useEffect Trigger: fromChainId
+  - when the from chainId changes, the token balances for each supported token on that chain
+  are calculated. This creates the list of tokens that is displayed when opening the token scroll dialog.
+  */
   useEffect(() => {
     if (fromChainId === undefined || address === undefined) {
       return
@@ -88,6 +107,11 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       setFromTokens(tokens)
     })
   }, [fromChainId])
+
+  /*
+  useEffect Triggers: fromToken, toToken, fromInput, fromChainId, toChainId, time
+  - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
+  */
   useEffect(() => {
     if (
       fromChainId &&
@@ -103,6 +127,11 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     }
   }, [fromToken, toToken, fromInput, fromChainId, toChainId, time])
 
+  /*
+  Helper Function: resetTokenPermutation
+  - Handles when theres a new from token/chain and all other parts of the bridge arrangement needs to be updated
+  - Updates url params.
+  */
   const resetTokenPermutation = (
     newFromToken: Token,
     newToChain: number,
@@ -124,11 +153,20 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     })
   }
 
+  /*
+  Helper Function: resetRates
+  - Called when switching from chain/token so that the from input isn't populated with stale data.
+  */
   const resetRates = () => {
     setBridgeQuote(EMPTY_BRIDGE_QUOTE)
     setFromInput({ string: '', bigNum: Zero })
   }
 
+  /*
+  Helper Function: onChangeFromAmount
+  - Ensures inputted data isn't too long and then sets state with the input.
+  - Calculates BigNum from the input and stores in state as well (for quotes)
+  */
   const onChangeFromAmount = (value: string) => {
     if (
       !(
@@ -142,6 +180,11 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       })
     }
   }
+
+  /*
+  Helper Function: getMostCommonSwapableType
+  - Returns the default token to display when switching chains. Usually returns stables or eth/wrapped eth.
+  */
   const getMostCommonSwapableType = (chainId: number) => {
     const fromChainTokensByType = Object.values(
       BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
@@ -157,6 +200,12 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
 
     return sortByVisibilityRank(mostCommonSwapableType)[0]
   }
+
+  /*
+  Helper Function: updateUrlParams
+  - Pushes chain and token changes to url
+  NOTE: did not alter any variable names in case previous users have saved links of different bridging permutations.
+  */
   const updateUrlParams = ({
     outputChain,
     inputCurrency,
@@ -180,6 +229,11 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     )
   }
 
+  /*
+  Function: handleNewFromToken
+  - Handles all the changes that occur when selecting a new "from token", such as generating lists of potential chains/tokens
+   to bridge to and handling if the current "to chain/token" are incompatible.
+  */
   const handleNewFromToken = (
     token: Token,
     positedToChain: number | undefined,
@@ -228,142 +282,115 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     }
   }
 
-  // Handles when chains are flipped or user creates toChainId == fromChainId condition
-  const handleChainFlip = async () => {
+  /*
+   Function: handleChainChange
+  - Produces and alert if chain not connected (upgrade to toaster)
+  - Handles flipping to and from chains if flag is set to true
+  - Handles altering the chain state for origin or destination depending on the type specified.
+  */
+  const handleChainChange = async (
+    chainId: number,
+    flip: boolean,
+    type: 'from' | 'to'
+  ) => {
     if (address === undefined) {
-      alert('Please connect your wallet')
-    } else {
-      const oldFromChain = fromChainId
-      const res = switchNetwork({ chainId: Number(toChainId) })
-        .then((res) => {
-          return res
-        })
-        .catch((err) => {
-          console.log("can't switch network ser", err)
-          return undefined
-        })
-      if (res === undefined) {
-        return
-      }
-      const bridgeableFromTokens: Token[] = sortByVisibilityRank(
-        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[fromChainId][
-          String(fromToken.swapableType)
-        ]
-      )
-      let tempFromToken: Token = fromToken
+      return alert('Please connect your wallet')
+    }
+    switch (type) {
+      case 'from':
+        const positedToChain = flip ? fromChainId : undefined
+        const desiredChainId = flip ? Number(toChainId) : Number(chainId)
+        const res = switchNetwork({ chainId: desiredChainId })
+          .then((res) => {
+            return res
+          })
+          .catch((err) => {
+            console.log("can't switch network ser", err, chainId)
+            return undefined
+          })
+        if (res === undefined) {
+          console.log("can't switch network, chainId: ", chainId)
+          return
+        }
 
-      if (bridgeableFromTokens?.length > 0) {
-        tempFromToken = getMostCommonSwapableType(fromChainId)
-      }
-      const {
-        bridgeableToken,
-        newToChain,
-        bridgeableTokens,
-        bridgeableChains,
-      } = handleNewFromToken(
-        tempFromToken,
-        oldFromChain,
-        toToken.symbol,
-        toChainId
-      )
-      resetTokenPermutation(
-        tempFromToken,
-        newToChain,
-        bridgeableToken,
-        bridgeableChains,
-        bridgeableTokens,
-        tempFromToken.symbol,
-        bridgeableToken.symbol
-      )
+        const bridgeableFromTokens: Token[] = sortByVisibilityRank(
+          BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][
+            String(fromToken.swapableType)
+          ]
+        )
+        let tempFromToken: Token = fromToken
+
+        if (bridgeableFromTokens?.length > 0) {
+          tempFromToken = getMostCommonSwapableType(chainId)
+        }
+        const {
+          bridgeableToken,
+          newToChain,
+          bridgeableTokens,
+          bridgeableChains,
+        } = handleNewFromToken(
+          tempFromToken,
+          positedToChain,
+          toToken.symbol,
+          desiredChainId
+        )
+        resetTokenPermutation(
+          tempFromToken,
+          newToChain,
+          bridgeableToken,
+          bridgeableChains,
+          bridgeableTokens,
+          tempFromToken.symbol,
+          bridgeableToken.symbol
+        )
+      case 'to':
+        setToChainId(chainId)
+        updateUrlParams({
+          outputChain: chainId,
+          inputCurrency: fromToken.symbol,
+          outputCurrency: toToken.symbol,
+        })
     }
   }
 
-  // Changes destination change when the user changes the toChainId
-  const handleFromChainChange = async (chainId: number) => {
-    if (address === undefined) {
-      alert('Please connect your wallet')
-    } else {
-      const res = switchNetwork({ chainId: Number(chainId) })
-        .then((res) => {
-          if (res === undefined) {
-            console.log("can't switch network", chainId)
-            return
-          }
-          return res
-        })
-        .catch((err) => {
-          console.log("can't switch network sir", err)
-          return undefined
-        })
-      if (res === undefined) {
-        console.log("can't switch network chainId", chainId)
-        return
-      }
-
-      const bridgeableFromTokens: Token[] = sortByVisibilityRank(
-        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][String(fromToken.swapableType)]
-      )
-      let tempFromToken: Token = fromToken
-
-      if (bridgeableFromTokens?.length > 0) {
-        tempFromToken = getMostCommonSwapableType(chainId)
-      }
-      const {
-        bridgeableToken,
-        newToChain,
-        bridgeableTokens,
-        bridgeableChains,
-      } = handleNewFromToken(tempFromToken, chainId, toToken.symbol, chainId)
-      resetTokenPermutation(
-        tempFromToken,
-        newToChain,
-        bridgeableToken,
-        bridgeableChains,
-        bridgeableTokens,
-        tempFromToken.symbol,
-        bridgeableToken.symbol
-      )
-    }
-  }
-
-  const handleToChainChange = (chainId: number) => {
-    setToChainId(chainId)
-    updateUrlParams({
-      outputChain: chainId,
-      inputCurrency: fromToken.symbol,
-      outputCurrency: toToken.symbol,
-    })
-  }
-
+  /*
+    Function:handleTokenChange
+  - Handles when the user selects a new token from either the origin or destination
+  */
   const handleTokenChange = (token: Token, type: 'from' | 'to') => {
-    if (type === 'from') {
-      const {
-        bridgeableToken,
-        newToChain,
-        bridgeableTokens,
-        bridgeableChains,
-      } = handleNewFromToken(token, toChainId, toToken.symbol, fromChainId)
-      resetTokenPermutation(
-        token,
-        newToChain,
-        bridgeableToken,
-        bridgeableChains,
-        bridgeableTokens,
-        token.symbol,
-        bridgeableToken.symbol
-      )
-    } else {
-      setToToken(token)
-      updateUrlParams({
-        outputChain: toChainId,
-        inputCurrency: fromToken.symbol,
-        outputCurrency: token.symbol,
-      })
+    switch (type) {
+      case 'from':
+        const {
+          bridgeableToken,
+          newToChain,
+          bridgeableTokens,
+          bridgeableChains,
+        } = handleNewFromToken(token, toChainId, toToken.symbol, fromChainId)
+        resetTokenPermutation(
+          token,
+          newToChain,
+          bridgeableToken,
+          bridgeableChains,
+          bridgeableTokens,
+          token.symbol,
+          bridgeableToken.symbol
+        )
+      case 'to':
+        setToToken(token)
+        updateUrlParams({
+          outputChain: toChainId,
+          inputCurrency: fromToken.symbol,
+          outputCurrency: token.symbol,
+        })
     }
   }
 
+  /*
+   Function: getQuote
+  - Gets quote data from the Synapse SDK (from the imported provider)
+  - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
+  */
   const getQuote = async () => {
-    console.log('repoll', fromInput)
     const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
       await SynapseSDK.bridgeQuote(
         fromChainId,
@@ -380,6 +407,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
       ? feeAmount
       : feeAmount.div(BigNumber.from(10).pow(18 - toToken.decimals[toChainId]))
+
     const allowance =
       fromToken.addresses[fromChainId] === AddressZero
         ? -1
@@ -406,8 +434,13 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     })
   }
 
+  /*
+   Helper Function: getCurrentTokenAllowance
+  - Gets quote data from the Synapse SDK (from the imported provider)
+  - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
+  TODO store this erc20 and signer retrieval in a state in a parent component? add to utils + use memo?
+  */
   const getCurrentTokenAllowance = async (routerAddress: string) => {
-    // TODO store this erc20 and signer retrieval in a state in a parent component
     const wallet = await fetchSigner({
       chainId: fromChainId,
     })
@@ -420,6 +453,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     const allowance = await erc20.allowance(address, routerAddress)
     return allowance
   }
+
   return (
     <LandingPageWrapper>
       <main className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none">
@@ -444,11 +478,9 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
                     toChainId={toChainId}
                     toOptions={toOptions}
                     destinationAddress={destinationAddress}
-                    handleChainFlip={handleChainFlip}
+                    handleChainChange={handleChainChange}
                     handleTokenChange={handleTokenChange}
                     onChangeFromAmount={onChangeFromAmount}
-                    onSelectFromChain={handleFromChainChange}
-                    onSelectToChain={handleToChainChange}
                     setDestinationAddress={setDestinationAddress}
                   />
                   <ActionCardFooter link={HOW_TO_BRIDGE_URL} />

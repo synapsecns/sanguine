@@ -3,7 +3,6 @@ import Link from 'next/link'
 
 import {
   BRIDGE_PATH,
-  CAREERS_URL,
   DISCORD_URL,
   DOCS_URL,
   FORUM_URL,

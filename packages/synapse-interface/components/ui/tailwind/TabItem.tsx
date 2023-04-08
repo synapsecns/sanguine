@@ -1,4 +1,4 @@
-export default function TabItem({
+const TabItem = ({
   onClick,
   children,
   isActive,
@@ -6,7 +6,7 @@ export default function TabItem({
   onClick: any
   children: any
   isActive: any
-}) {
+}) => {
   let statusClassname
   if (isActive) {
     statusClassname = `
@@ -37,3 +37,4 @@ export default function TabItem({
     </div>
   )
 }
+export default TabItem

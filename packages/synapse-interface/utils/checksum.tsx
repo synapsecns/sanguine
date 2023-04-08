@@ -33,7 +33,7 @@ export function checkAddressChecksum(address) {
     .digest('hex')
 
   for (let i = 0; i < stripAddress.length; i++) {
-    let output =
+    const output =
       parseInt(keccakHash[i], 16) >= 8
         ? stripAddress[i].toUpperCase()
         : stripAddress[i]

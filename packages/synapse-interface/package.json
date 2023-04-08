@@ -12,11 +12,14 @@
     "lint": "next lint",
     "test:coverage": "echo 'No tests defined.'",
     "lint:fix": "npm run lint -- --fix",
-    "lint:check": "eslint . --max-warnings=0 --ext ts --ext tsx --ext js --ext jsx",
+    "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^0.11.0",
+    "@ethersproject/constants": "5.7.0",
+    "@ethersproject/bignumber": "5.7.0",
+    "@ethersproject/abi": "5.7.0",
     "@synapsecns/sdk-router": "file:../sdk-router",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
@@ -25,6 +28,7 @@
     "@types/node": "18.14.2",
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
+    "ethers": "5.7.2",
     "bignumber": "^1.1.0",
     "eslint": "^8.37.0",
     "fuse.js": "^6.6.2",

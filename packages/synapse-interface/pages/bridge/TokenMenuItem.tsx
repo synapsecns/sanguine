@@ -4,16 +4,14 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
-// import { useGenericTokenBalance } from '@hooks/tokens/useTokenBalances'
 import { displaySymbol } from '@utils/displaySymbol'
 import {
   getBorderStyleForCoinHover,
   getMenuItemStyleForCoinCombined,
-} from '@styles/coins'
-
+} from '@styles/tokens'
 import { Token } from '@/utils/types'
 
-export default function TokenMenuItem({
+const TokenMenuItem = ({
   token,
   active,
   chainId,
@@ -27,9 +25,8 @@ export default function TokenMenuItem({
   selectedToken: Token
   tokenBalance: BigNumber | undefined
   onClick: () => void
-}) {
+}) => {
   const isCurrentlySelected = selectedToken.symbol === token.symbol
-
   // useEffect(() => {
   //   if (active) {
   //     ref?.current?.focus()
@@ -54,8 +51,8 @@ export default function TokenMenuItem({
         px-2 py-3
         cursor-pointer
         border border-transparent
-        ${getBorderStyleForCoinHover(token)}
-        ${getMenuItemStyleForCoinCombined(token)}
+        ${getBorderStyleForCoinHover(token.color)}
+        ${getMenuItemStyleForCoinCombined(token.color)}
         ${bgClassName}
       `}
     >
@@ -68,7 +65,7 @@ export default function TokenMenuItem({
   )
 }
 
-function ButtonContent({
+const ButtonContent = ({
   token,
   chainId,
   tokenBalance,
@@ -76,7 +73,7 @@ function ButtonContent({
   token: Token
   chainId: number
   tokenBalance: BigNumber
-}) {
+}) => {
   return (
     <div className="flex items-center w-full">
       <Image
@@ -94,7 +91,7 @@ function ButtonContent({
   )
 }
 
-function CoinOnChain({ token, chainId }: { token: Token; chainId: number }) {
+const CoinOnChain = ({ token, chainId }: { token: Token; chainId: number }) => {
   const { chainImg, chainName } = CHAINS_BY_ID[chainId]
 
   return (
@@ -116,7 +113,7 @@ function CoinOnChain({ token, chainId }: { token: Token; chainId: number }) {
   )
 }
 
-function TokenBalance({
+const TokenBalance = ({
   token,
   chainId,
   tokenBalance,
@@ -124,7 +121,7 @@ function TokenBalance({
   token: Token
   chainId: number
   tokenBalance: BigNumber
-}) {
+}) => {
   const formattedBalance = commify(
     formatBNToString(
       tokenBalance,
@@ -146,3 +143,4 @@ function TokenBalance({
     </div>
   )
 }
+export default TokenMenuItem

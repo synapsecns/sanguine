@@ -34,9 +34,7 @@ export const DeadlineInput = ({
              text-white text-opacity-80
             `}
           placeholder="Custom deadline..."
-          onChange={(e) => {
-            setDeadlineMinutes(e.target.value)
-          }}
+          onChange={(e) => setDeadlineMinutes(e.target.value)}
           value={deadlineMinutes}
         />
         <span className="hidden text-lg text-white md:block opacity-30">

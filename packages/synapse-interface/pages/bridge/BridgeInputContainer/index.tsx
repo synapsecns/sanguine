@@ -20,7 +20,6 @@ const BridgeInputContainer = ({
   onChangeChain,
   onChangeAmount,
   setDisplayType,
-  handleChainFlip,
   fromTokenBalance,
 }: {
   address: `0x${string}`
@@ -31,9 +30,8 @@ const BridgeInputContainer = ({
   selectedToken: Token
   connectedChainId: number
   setDisplayType: (v: string) => void
-  handleChainFlip?: () => void
   onChangeAmount?: (v: string) => void
-  onChangeChain: (v: number) => void
+  onChangeChain: (chainId: number, flip: boolean, type: 'from' | 'to') => void
   fromTokenBalance?: BigNumber
 }) => {
   let formattedBalance = ''
@@ -68,7 +66,11 @@ const BridgeInputContainer = ({
           {!isOrigin && (
             <div className="absolute">
               <div className="-mt-12">
-                <SwitchButton onClick={handleChainFlip ?? (() => null)} />
+                <SwitchButton
+                  onClick={() =>
+                    onChangeChain(chainId, true, isOrigin ? 'from' : 'to')
+                  }
+                />
               </div>
             </div>
           )}

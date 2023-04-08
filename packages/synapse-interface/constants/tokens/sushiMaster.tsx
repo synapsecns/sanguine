@@ -1,6 +1,7 @@
-import { Token } from '@/utils/types'
 import sushiLogo from '@assets/icons/sushi.svg'
 import * as CHAINS from '@constants/chains/master'
+
+import { Token } from '@/utils/types'
 
 export const SYN_ETH_SUSHI_TOKEN = new Token({
   addresses: {

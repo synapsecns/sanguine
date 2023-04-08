@@ -1,6 +1,5 @@
 import * as CHAINS from '@constants/chains/master'
 import synapseLogo from '@assets/icons/synapse.svg'
-import { Token } from '@/utils/types'
 import {
   BUSD,
   USDC,
@@ -24,6 +23,8 @@ import {
 } from '@constants/tokens/master'
 import { SYNAVAX, MULTIAVAX } from '@constants/tokens/master'
 
+import { Token } from '@/utils/types'
+
 /**
  * Eth Stablecoin Swap
  */
@@ -46,6 +47,7 @@ export const ETH_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 3pool stableswap LP token on ETH",
   display: true,
   priorityPool: true,
+  color: 'gray',
 })
 
 // Stablecoin Swap
@@ -68,6 +70,7 @@ export const BSC_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 4pool stableswap LP token",
   display: true,
   priorityPool: true,
+  color: 'purple',
 })
 
 /**
@@ -140,6 +143,7 @@ export const POLYGON_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 4pool stableswap LP token on Polygon/Matic",
   display: true,
   priorityPool: true,
+  color: 'purple',
 })
 
 /**
@@ -164,6 +168,7 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 4pool stableswap LP token on Avalanche",
   display: true,
   priorityPool: true,
+  color: 'purple',
 })
 
 /**
@@ -188,6 +193,7 @@ export const ARBITRUM_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 4pool stableswap LP token on Arbitrum",
   display: true,
   legacy: true,
+  color: 'purple',
 })
 
 /**
@@ -212,6 +218,7 @@ export const FANTOM_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 4pool stableswap LP token on Fantom",
   display: true,
   legacy: true,
+  color: 'blue',
 })
 
 /**
@@ -236,6 +243,7 @@ export const HARMONY_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 4pool stableswap LP token on Harmony",
   display: true,
   priorityPool: true,
+  color: 'purple',
 })
 
 /**
@@ -260,6 +268,7 @@ export const BOBA_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 4pool stableswap LP token on Boba",
   display: true,
   priorityPool: true,
+  color: 'green',
 })
 
 /**
@@ -492,6 +501,7 @@ export const HARMONY_AVAX_SWAP_TOKEN = new Token({
   description: "Synapse's 2pool AVAX LP token on Harmony",
   display: true,
   priorityPool: true,
+  color: 'red',
 })
 
 export const ARBITRUM_ETH_SWAP_TOKEN = new Token({
@@ -517,6 +527,7 @@ export const ARBITRUM_ETH_SWAP_TOKEN = new Token({
   description: "Synapse's eth swap LP token on Arbitrum",
   display: true,
   priorityPool: true,
+  color: 'sky',
 })
 
 /**
@@ -545,6 +556,7 @@ export const OPTIMISM_ETH_SWAP_TOKEN = new Token({
   description: "Synapse's eth swap LP token on Optimism",
   display: true,
   priorityPool: true,
+  color: 'sky',
 })
 
 /**
@@ -573,6 +585,7 @@ export const BOBA_ETH_SWAP_TOKEN = new Token({
   description: "Synapse's eth swap LP token on Boba",
   display: true,
   priorityPool: true,
+  color: 'sky',
 })
 
 /**
@@ -605,6 +618,7 @@ export const AVALANCHE_AVETH_SWAP_TOKEN = new Token({
   description: "Synapse's ETH swap LP token on Avalanche",
   display: true,
   priorityPool: true,
+  color: 'sky',
 })
 
 /**

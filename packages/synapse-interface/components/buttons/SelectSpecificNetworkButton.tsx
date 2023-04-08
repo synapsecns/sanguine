@@ -6,9 +6,10 @@ import {
   getNetworkButtonBorder,
   getNetworkButtonBorderHover,
   getNetworkHover,
-} from '@styles/networks'
+} from '@/styles/chains'
 
-export function SelectSpecificNetworkButton({
+// TODO could probably use a re-write
+export const SelectSpecificNetworkButton = ({
   itemChainId,
   isCurrentChain,
   active,
@@ -18,8 +19,9 @@ export function SelectSpecificNetworkButton({
   isCurrentChain: boolean
   active: boolean
   onClick: () => void
-}) {
+}) => {
   const ref = useRef<any>(null)
+  const chain = CHAINS_BY_ID[itemChainId]
 
   useEffect(() => {
     if (active) {
@@ -31,8 +33,8 @@ export function SelectSpecificNetworkButton({
 
   if (isCurrentChain) {
     bgClassName = `
-      ${getNetworkButtonBgClassName(itemChainId)}
-      ${getNetworkButtonBorder(itemChainId)}
+      ${getNetworkButtonBgClassName(chain.color)}
+      ${getNetworkButtonBorder(chain.color)}
       bg-opacity-50
     `
   } else {
@@ -50,8 +52,8 @@ export function SelectSpecificNetworkButton({
         px-2 py-3
         cursor-pointer
         border border-transparent
-        ${getNetworkHover(itemChainId)}
-        ${getNetworkButtonBorderHover(itemChainId)}
+        ${getNetworkHover(chain.color)}
+        ${getNetworkButtonBorderHover(chain.color)}
         ${bgClassName}
       `}
       onClick={onClick}
