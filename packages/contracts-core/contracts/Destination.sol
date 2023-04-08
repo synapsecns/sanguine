@@ -9,7 +9,7 @@ import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {DestinationEvents} from "./events/DestinationEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
-import {ExecutionAttestation, InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
+import {InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
 import {InterfaceLightManager} from "./interfaces/InterfaceLightManager.sol";
 import {DisputeHub, ExecutionHub} from "./hubs/ExecutionHub.sol";
 import {DomainContext, Versioned} from "./system/SystemContract.sol";
@@ -143,13 +143,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // solhint-disable-next-line ordering
     function attestationsAmount() external view returns (uint256) {
         return _roots.length;
-    }
-
-    /// @inheritdoc InterfaceDestination
-    function getAttestation(uint256 index) external view returns (bytes32 root, ExecutionAttestation memory execAtt) {
-        require(index < _roots.length, "Index out of range");
-        root = _roots[index];
-        execAtt = _getRootAttestation(root);
     }
 
     /*╔══════════════════════════════════════════════════════════════════════╗*\
