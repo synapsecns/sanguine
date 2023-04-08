@@ -108,17 +108,23 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
                 header, proofMaturity, rootData.notary, gasLimit, message.body().castToBaseMessage()
             );
         }
-        if (execStatus.status == MessageStatus.None && !success) {
-            // This is the first valid attempt to execute the message, which failed
-            _firstExecutor[msgLeaf] = msg.sender;
-        }
-        if (success) {
+        if (execStatus.status == MessageStatus.None) {
+            // This is the first valid attempt to execute the message
+            if (success) {
+                // This is the successful attempt to execute the message => save the executor
+                execStatus.status = MessageStatus.Success;
+                execStatus.executor = msg.sender;
+            } else {
+                // Save as the "first executor", if execution failed
+                execStatus.status = MessageStatus.Failed;
+                _firstExecutor[msgLeaf] = msg.sender;
+            }
+            _executionStatus[msgLeaf] = execStatus;
+        } else if (success) {
+            // There has been a failed attempt to execute the message before
             // This is the successful attempt to execute the message => save the executor
+            execStatus.status = MessageStatus.Success;
             execStatus.executor = msg.sender;
-        }
-        if (execStatus.status == MessageStatus.None || success) {
-            // Message execution status was updated
-            execStatus.status = success ? MessageStatus.Success : MessageStatus.Failed;
             _executionStatus[msgLeaf] = execStatus;
         }
         emit Executed(header.origin(), msgLeaf);
