@@ -143,6 +143,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         vm.expectRevert("Notary is in dispute");
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
+        verify_executionStatusNone(hub, keccak256(msgPayload));
     }
 
     function check_execute_base_revert_snapRootUnknown(address hub, Random memory random) public {
@@ -162,6 +163,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         vm.expectRevert("Invalid snapshot root");
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
+        verify_executionStatusNone(hub, keccak256(msgPayload));
     }
 
     function check_execute_base_revert_optimisticPeriodNotOver(address hub, Random memory random) public {
@@ -181,6 +183,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         vm.expectRevert("!optimisticPeriod");
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
+        verify_executionStatusNone(hub, keccak256(msgPayload));
     }
 
     function check_execute_base_revert_gasLimitTooLow(address hub, Random memory random) public {
@@ -202,6 +205,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         vm.expectRevert("Gas limit too low");
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
+        verify_executionStatusNone(hub, keccak256(msgPayload));
     }
 
     function check_execute_base_revert_gasSuppliedTooLow(address hub, Random memory random) public {
@@ -224,6 +228,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         IExecutionHub(hub).execute{gas: rbm.request.gasLimit + 20_000}(
             msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit
         );
+        verify_executionStatusNone(hub, keccak256(msgPayload));
     }
 
     function check_execute_base_revert_wrongDestination(address hub, Random memory random, uint32 destination_)
@@ -246,6 +251,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         vm.expectRevert("!destination");
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
+        verify_executionStatusNone(hub, keccak256(msgPayload));
     }
 
     // ══════════════════════════════════════ TESTS: EXECUTE SYSTEM MESSAGES ═══════════════════════════════════════════
@@ -284,6 +290,10 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     }
 
     // ═════════════════════════════════════════════════ VERIFIERS ═════════════════════════════════════════════════════
+
+    function verify_executionStatusNone(address hub, bytes32 messageHash) public {
+        verify_executionStatus(hub, messageHash, bytes32(0), MessageStatus.None, address(0), address(0));
+    }
 
     function verify_executionStatus(
         address hub,
