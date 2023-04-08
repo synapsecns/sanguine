@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {AgentFlag, SystemEntity} from "../libs/Structures.sol";
 
-interface IBondingManager {
+interface InterfaceBondingManager {
     /**
      * @notice Adds a new agent for the domain. This is either a fresh address (Inactive),
      * or an agent who used to be active on the same domain before (Resting).

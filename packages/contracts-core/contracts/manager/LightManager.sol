@@ -8,7 +8,7 @@ import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager, ISystemRegistry} from "./AgentManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
-import {IBondingManager} from "../interfaces/IBondingManager.sol";
+import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {ILightManager} from "../interfaces/ILightManager.sol";
 import {Versioned} from "../Version.sol";
 
@@ -104,6 +104,6 @@ contract LightManager is Versioned, AgentManager, ILightManager {
     /// @dev Returns data for a system call: remoteRegistrySlash()
     function _remoteSlashPayload(uint32 domain, address agent, address prover) internal pure returns (bytes memory) {
         // (proofMaturity, callOrigin, systemCaller) are omitted; (domain, agent, prover)
-        return abi.encodeWithSelector(IBondingManager.remoteRegistrySlash.selector, domain, agent, prover);
+        return abi.encodeWithSelector(InterfaceBondingManager.remoteRegistrySlash.selector, domain, agent, prover);
     }
 }

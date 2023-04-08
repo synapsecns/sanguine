@@ -8,12 +8,12 @@ import {MerkleList} from "../libs/MerkleList.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager, ISystemRegistry} from "./AgentManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
-import {IBondingManager} from "../interfaces/IBondingManager.sol";
+import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {Versioned} from "../Version.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
-contract BondingManager is Versioned, AgentManager, IBondingManager {
+contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                               STORAGE                                ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
@@ -51,7 +51,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
 
     // TODO: remove these MVP functions once token staking is implemented
 
-    /// @inheritdoc IBondingManager
+    /// @inheritdoc InterfaceBondingManager
     function addAgent(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
         // Check current status of the added agent
         AgentStatus memory status = _agentStatus(agent);
@@ -83,7 +83,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         _updateLeaf(oldValue, proof, AgentStatus(AgentFlag.Active, domain, index), agent);
     }
 
-    /// @inheritdoc IBondingManager
+    /// @inheritdoc InterfaceBondingManager
     function initiateUnstaking(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
         // Check current status of the unstaking agent
         AgentStatus memory status = _agentStatus(agent);
@@ -98,7 +98,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         _updateLeaf(oldValue, proof, AgentStatus(AgentFlag.Unstaking, domain, status.index), agent);
     }
 
-    /// @inheritdoc IBondingManager
+    /// @inheritdoc InterfaceBondingManager
     function completeUnstaking(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
         // Check current status of the unstaking agent
         AgentStatus memory status = _agentStatus(agent);
@@ -118,7 +118,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
     ▏*║                            SLASHING LOGIC                            ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    /// @inheritdoc IBondingManager
+    /// @inheritdoc InterfaceBondingManager
     function completeSlashing(uint32 domain, address agent, bytes32[] memory proof) external {
         // Check that slashing was initiated by one of the System Registries
         require(slashStatus[agent].isSlashed, "Slashing not initiated");
@@ -151,7 +151,7 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         }
     }
 
-    /// @inheritdoc IBondingManager
+    /// @inheritdoc InterfaceBondingManager
     function remoteRegistrySlash(
         uint256 proofMaturity,
         uint32 callOrigin,
@@ -178,17 +178,17 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         return _agentTree.root;
     }
 
-    /// @inheritdoc IBondingManager
+    /// @inheritdoc InterfaceBondingManager
     function agentLeaf(address agent) external view returns (bytes32 leaf) {
         return _getLeaf(agent);
     }
 
-    /// @inheritdoc IBondingManager
+    /// @inheritdoc InterfaceBondingManager
     function leafsAmount() external view returns (uint256 amount) {
         return _agents.length;
     }
 
-    /// @inheritdoc IBondingManager
+    /// @inheritdoc InterfaceBondingManager
     function getProof(address agent) external view returns (bytes32[] memory proof) {
         bytes32[] memory leafs = allLeafs();
         AgentStatus memory status = _agentStatus(agent);
@@ -197,12 +197,12 @@ contract BondingManager is Versioned, AgentManager, IBondingManager {
         return MerkleList.calculateProof(leafs, index);
     }
 
-    /// @inheritdoc IBondingManager
+    /// @inheritdoc InterfaceBondingManager
     function allLeafs() public view returns (bytes32[] memory leafs) {
         return getLeafs(0, _agents.length);
     }
 
-    /// @inheritdoc IBondingManager
+    /// @inheritdoc InterfaceBondingManager
     function getLeafs(uint256 indexFrom, uint256 amount) public view returns (bytes32[] memory leafs) {
         uint256 amountTotal = _agents.length;
         require(indexFrom < amountTotal, "Out of range");
