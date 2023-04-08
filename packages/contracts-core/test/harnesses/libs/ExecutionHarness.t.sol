@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Execution, ExecutionLib, MessageStatus, TypedMemView} from "../../../contracts/libs/Execution.sol";
+import {Execution, ExecutionLib, TypedMemView} from "../../../contracts/libs/Execution.sol";
 
 // solhint-disable ordering
 contract ExecutionHarness {
@@ -20,11 +20,6 @@ contract ExecutionHarness {
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
         Execution execution = ExecutionLib.castToExecution(payload);
         return execution.unwrap().clone();
-    }
-
-    /// @notice Returns execution's status.
-    function status(bytes memory payload) public pure returns (MessageStatus) {
-        return payload.castToExecution().status();
     }
 
     /// @notice Returns execution's origin field
@@ -69,7 +64,6 @@ contract ExecutionHarness {
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
     function formatExecution(
-        MessageStatus status_,
         uint32 origin_,
         uint32 destination_,
         bytes32 messageHash_,
@@ -79,7 +73,7 @@ contract ExecutionHarness {
         bytes memory tipsPayload
     ) public pure returns (bytes memory) {
         return ExecutionLib.formatExecution(
-            status_, origin_, destination_, messageHash_, snapshotRoot_, firstExecutor_, finalExecutor_, tipsPayload
+            origin_, destination_, messageHash_, snapshotRoot_, firstExecutor_, finalExecutor_, tipsPayload
         );
     }
 }

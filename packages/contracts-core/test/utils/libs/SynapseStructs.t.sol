@@ -6,7 +6,7 @@ import {ByteString, CallData, TypedMemView} from "../../../contracts/libs/ByteSt
 import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
 import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
 import {SystemEntity, SystemMessage, SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
-import {Execution, ExecutionLib, MessageStatus} from "../../../contracts/libs/Execution.sol";
+import {Execution, ExecutionLib} from "../../../contracts/libs/Execution.sol";
 import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
 
 import {Snapshot, SnapshotLib, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
@@ -42,7 +42,6 @@ struct RawTips {
 using CastLib for RawTips global;
 
 struct RawExecution {
-    uint8 status;
     uint32 origin;
     uint32 destination;
     bytes32 messageHash;
@@ -264,10 +263,7 @@ library CastLib {
     // ═════════════════════════════════════════════════ EXECUTION ═════════════════════════════════════════════════════
 
     function formatExecution(RawExecution memory re) internal pure returns (bytes memory) {
-        // Explicit revert when sender out of range
-        require(re.status <= uint8(type(MessageStatus).max), "Status out of range");
         return ExecutionLib.formatExecution(
-            MessageStatus(re.status),
             re.origin,
             re.destination,
             re.messageHash,
@@ -280,10 +276,6 @@ library CastLib {
 
     function castToExecution(RawExecution memory re) internal pure returns (Execution) {
         return re.formatExecution().castToExecution();
-    }
-
-    function boundStatus(RawExecution memory re) internal pure {
-        re.status = re.status % (uint8(type(MessageStatus).max) + 1);
     }
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
