@@ -6,7 +6,7 @@ import {ByteString, CallData, TypedMemView} from "../../../contracts/libs/ByteSt
 import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
 import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
 import {SystemEntity, SystemMessage, SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
-import {Execution, ExecutionLib, MessageStatus} from "../../../contracts/libs/Execution.sol";
+import {Receipt, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
 import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
 
 import {Snapshot, SnapshotLib, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
@@ -41,8 +41,8 @@ struct RawTips {
 
 using CastLib for RawTips global;
 
-struct RawExecution {
-    uint8 status;
+// RawReceipt name is already taken in forge-std
+struct RawExecReceipt {
     uint32 origin;
     uint32 destination;
     bytes32 messageHash;
@@ -52,7 +52,7 @@ struct RawExecution {
     RawTips tips;
 }
 
-using CastLib for RawExecution global;
+using CastLib for RawExecReceipt global;
 
 struct RawCallData {
     bytes4 selector;
@@ -143,7 +143,7 @@ library CastLib {
     using AttestationReportLib for bytes;
     using ByteString for bytes;
     using BaseMessageLib for bytes;
-    using ExecutionLib for bytes;
+    using ReceiptLib for bytes;
     using HeaderLib for bytes;
     using MessageLib for bytes;
     using RequestLib for bytes;
@@ -261,13 +261,10 @@ library CastLib {
         );
     }
 
-    // ═════════════════════════════════════════════════ EXECUTION ═════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════ RECEIPT ═════════════════════════════════════════════════════
 
-    function formatExecution(RawExecution memory re) internal pure returns (bytes memory) {
-        // Explicit revert when sender out of range
-        require(re.status <= uint8(type(MessageStatus).max), "Status out of range");
-        return ExecutionLib.formatExecution(
-            MessageStatus(re.status),
+    function formatReceipt(RawExecReceipt memory re) internal pure returns (bytes memory) {
+        return ReceiptLib.formatReceipt(
             re.origin,
             re.destination,
             re.messageHash,
@@ -278,12 +275,8 @@ library CastLib {
         );
     }
 
-    function castToExecution(RawExecution memory re) internal pure returns (Execution) {
-        return re.formatExecution().castToExecution();
-    }
-
-    function boundStatus(RawExecution memory re) internal pure {
-        re.status = re.status % (uint8(type(MessageStatus).max) + 1);
+    function castToReceipt(RawExecReceipt memory re) internal pure returns (Receipt) {
+        return re.formatReceipt().castToReceipt();
     }
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════

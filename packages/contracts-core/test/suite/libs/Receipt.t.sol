@@ -1,44 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {EXECUTION_LENGTH} from "../../../contracts/libs/Constants.sol";
+import {RECEIPT_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
-import {ExecutionHarness} from "../../harnesses/libs/ExecutionHarness.t.sol";
+import {ReceiptHarness} from "../../harnesses/libs/ReceiptHarness.t.sol";
 
-import {MessageStatus, RawExecution} from "../../utils/libs/SynapseStructs.t.sol";
+import {RawExecReceipt} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
-contract ExecutionLibraryTest is SynapseLibraryTest {
+contract ReceiptLibraryTest is SynapseLibraryTest {
     using TypedMemView for bytes;
 
-    ExecutionHarness internal libHarness;
+    ReceiptHarness internal libHarness;
 
     function setUp() public {
-        libHarness = new ExecutionHarness();
+        libHarness = new ReceiptHarness();
     }
 
     // ═════════════════════════════════════════════ TESTS: FORMATTING ═════════════════════════════════════════════════
 
-    function test_formatExecution(RawExecution memory re) public {
-        // Make sure status fits into MessageStatus
-        re.boundStatus();
+    function test_formatReceipt(RawExecReceipt memory re) public {
         bytes memory tipsPayload = re.tips.formatTips();
         // Test formatting
-        bytes memory payload = libHarness.formatExecution(
-            MessageStatus(re.status),
-            re.origin,
-            re.destination,
-            re.messageHash,
-            re.snapshotRoot,
-            re.firstExecutor,
-            re.finalExecutor,
-            tipsPayload
+        bytes memory payload = libHarness.formatReceipt(
+            re.origin, re.destination, re.messageHash, re.snapshotRoot, re.firstExecutor, re.finalExecutor, tipsPayload
         );
         assertEq(
             payload,
             abi.encodePacked(
-                re.status,
                 re.origin,
                 re.destination,
                 re.messageHash,
@@ -47,10 +37,10 @@ contract ExecutionLibraryTest is SynapseLibraryTest {
                 re.finalExecutor,
                 tipsPayload
             ),
-            "!formatExecution"
+            "!formatReceipt"
         );
         // Test formatting checker
-        checkCastToExecution({payload: payload, isExecution: true});
+        checkCastToReceipt({payload: payload, isReceipt: true});
         // Test getters
         assertEq(libHarness.origin(payload), re.origin, "!origin");
         assertEq(libHarness.destination(payload), re.destination, "!destination");
@@ -61,30 +51,21 @@ contract ExecutionLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.tips(payload), tipsPayload, "!tipsPayload");
     }
 
-    function test_isExecution(uint8 length) public {
+    function test_isReceipt(uint8 length) public {
         bytes memory payload = new bytes(length);
-        checkCastToExecution({payload: payload, isExecution: length == EXECUTION_LENGTH});
-    }
-
-    function test_isExecution_statusOutOfRange(uint8 status) public {
-        // Make sure status does NOT fit into MessageStatus enum
-        status = uint8(bound(status, uint8(type(MessageStatus).max) + 1, type(uint8).max));
-        bytes memory payload = abi.encodePacked(status, new bytes(EXECUTION_LENGTH - 1));
-        // Sanity check
-        assert(payload.length == EXECUTION_LENGTH);
-        checkCastToExecution({payload: payload, isExecution: false});
+        checkCastToReceipt({payload: payload, isReceipt: length == RECEIPT_LENGTH});
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    function checkCastToExecution(bytes memory payload, bool isExecution) public {
-        if (isExecution) {
-            assertTrue(libHarness.isExecution(payload), "!isExecution: when valid");
-            assertEq(libHarness.castToExecution(payload), payload, "!castToExecution: when valid");
+    function checkCastToReceipt(bytes memory payload, bool isReceipt) public {
+        if (isReceipt) {
+            assertTrue(libHarness.isReceipt(payload), "!isReceipt: when valid");
+            assertEq(libHarness.castToReceipt(payload), payload, "!castToReceipt: when valid");
         } else {
-            assertFalse(libHarness.isExecution(payload), "!isExecution: when valid");
-            vm.expectRevert("Not a execution");
-            libHarness.castToExecution(payload);
+            assertFalse(libHarness.isReceipt(payload), "!isReceipt: when valid");
+            vm.expectRevert("Not a receipt");
+            libHarness.castToReceipt(payload);
         }
     }
 }
