@@ -42,10 +42,10 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     }
     // 24 bits left for tight packing
 
-    /// @notice Struct representing the status of Message in Execution Hub.
+    /// @notice Struct representing the execution data saved for the message in Execution Hub.
     /// @param status       Message execution status
     /// @param executor     Executor who successfully executed the message
-    struct ExecutionStatus {
+    struct ExecutionData {
         MessageStatus status;
         address executor;
     }
@@ -57,7 +57,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// @dev Messages coming from different origins will always have a different hash
     /// as origin domain is encoded into the formatted message.
     /// Thus we can use hash as a key instead of an (origin, hash) tuple.
-    mapping(bytes32 => ExecutionStatus) private _executionStatus;
+    mapping(bytes32 => ExecutionData) private _executionData;
 
     /// @notice First executor who made a valid attempt of executing a message.
     /// Note: stored only for messages that had Failed status at some point of time
@@ -90,8 +90,8 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Ensure message was meant for this domain
         require(header.destination() == localDomain, "!destination");
         // Check that message has not been executed before
-        ExecutionStatus memory execStatus = _executionStatus[msgLeaf];
-        require(execStatus.status != MessageStatus.Success, "Already executed");
+        ExecutionData memory execData = _executionData[msgLeaf];
+        require(execData.status != MessageStatus.Success, "Already executed");
         // Check proofs validity
         SnapRootData memory rootData = _proveAttestation(header, msgLeaf, originProof, snapProof, stateIndex);
         // Check if optimistic period has passed
@@ -108,24 +108,24 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
                 header, proofMaturity, rootData.notary, gasLimit, message.body().castToBaseMessage()
             );
         }
-        if (execStatus.status == MessageStatus.None) {
+        if (execData.status == MessageStatus.None) {
             // This is the first valid attempt to execute the message
             if (success) {
                 // This is the successful attempt to execute the message => save the executor
-                execStatus.status = MessageStatus.Success;
-                execStatus.executor = msg.sender;
+                execData.status = MessageStatus.Success;
+                execData.executor = msg.sender;
             } else {
                 // Save as the "first executor", if execution failed
-                execStatus.status = MessageStatus.Failed;
+                execData.status = MessageStatus.Failed;
                 _firstExecutor[msgLeaf] = msg.sender;
             }
-            _executionStatus[msgLeaf] = execStatus;
+            _executionData[msgLeaf] = execData;
         } else if (success) {
             // There has been a failed attempt to execute the message before
             // This is the successful attempt to execute the message => save the executor
-            execStatus.status = MessageStatus.Success;
-            execStatus.executor = msg.sender;
-            _executionStatus[msgLeaf] = execStatus;
+            execData.status = MessageStatus.Success;
+            execData.executor = msg.sender;
+            _executionData[msgLeaf] = execData;
         }
         emit Executed(header.origin(), msgLeaf);
     }
@@ -134,7 +134,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @inheritdoc IExecutionHub
     function messageStatus(bytes32 messageHash) external view returns (MessageStatus status) {
-        return _executionStatus[messageHash].status;
+        return _executionData[messageHash].status;
     }
 
     /// @inheritdoc IExecutionHub
