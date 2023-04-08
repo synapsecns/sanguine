@@ -61,7 +61,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @notice First executor who made a valid attempt of executing a message.
     /// Note: stored only for messages that had Failed status at some point of time
-    mapping(bytes32 => address) private _failedExecutor;
+    mapping(bytes32 => address) private _firstExecutor;
 
     /// @dev All saved snapshot roots
     bytes32[] internal _roots;
@@ -110,7 +110,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         }
         if (execStatus.status == MessageStatus.None && !success) {
             // This is the first valid attempt to execute the message, which failed
-            _failedExecutor[msgLeaf] = msg.sender;
+            _firstExecutor[msgLeaf] = msg.sender;
         }
         if (success) {
             // This is the successful attempt to execute the message => save the executor
