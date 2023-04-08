@@ -2,24 +2,24 @@
 pragma solidity 0.8.17;
 
 import {ByteString} from "./ByteString.sol";
-import {EXECUTION_SALT, EXECUTION_LENGTH, TIPS_LENGTH} from "./Constants.sol";
+import {RECEIPT_SALT, RECEIPT_LENGTH, TIPS_LENGTH} from "./Constants.sol";
 import {Tips, TipsLib} from "./Tips.sol";
 import {TypedMemView} from "./TypedMemView.sol";
 
-/// @dev Execution is a memory view over a formatted execution payload.
-type Execution is bytes29;
+/// @dev Receipt is a memory view over a formatted receipt payload.
+type Receipt is bytes29;
 
-/// @dev Attach library functions to Execution
-using ExecutionLib for Execution global;
+/// @dev Attach library functions to Receipt
+using ReceiptLib for Receipt global;
 
-library ExecutionLib {
+library ReceiptLib {
     using ByteString for bytes;
     using TipsLib for bytes29;
     using TypedMemView for bytes29;
 
     /**
      *
-     * @dev Memory layout of Execution fields
+     * @dev Memory layout of Receipt fields
      * [000 .. 004): origin             uint32   4 bytes    Domain where message originated
      * [004 .. 008): destination        uint32   4 bytes    Domain where message was executed
      * [008 .. 040): messageHash        bytes32 32 bytes    Hash of the message
@@ -38,10 +38,10 @@ library ExecutionLib {
     uint256 private constant OFFSET_FINAL_EXECUTOR = 92;
     uint256 private constant OFFSET_TIPS = 112;
 
-    // ═════════════════════════════════════════════════ EXECUTION ═════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════ RECEIPT ═════════════════════════════════════════════════════
 
     /**
-     * @notice Returns a formatted Execution payload with provided fields
+     * @notice Returns a formatted Receipt payload with provided fields
      * @param origin_           Domain where message originated
      * @param destination_      Domain where message was executed
      * @param messageHash_      Hash of the message
@@ -49,9 +49,9 @@ library ExecutionLib {
      * @param firstExecutor_    Executor who performed first valid execution attempt
      * @param finalExecutor_    Executor who successfully executed the message
      * @param tipsPayload       Formatted payload with tips information
-     * @return Formatted execution
+     * @return Formatted receipt
      */
-    function formatExecution(
+    function formatReceipt(
         uint32 origin_,
         uint32 destination_,
         bytes32 messageHash_,
@@ -66,88 +66,88 @@ library ExecutionLib {
     }
 
     /**
-     * @notice Returns a Execution view over the given payload.
-     * @dev Will revert if the payload is not a execution.
+     * @notice Returns a Receipt view over the given payload.
+     * @dev Will revert if the payload is not a receipt.
      */
-    function castToExecution(bytes memory payload) internal pure returns (Execution) {
-        return castToExecution(payload.castToRawBytes());
+    function castToReceipt(bytes memory payload) internal pure returns (Receipt) {
+        return castToReceipt(payload.castToRawBytes());
     }
 
     /**
-     * @notice Casts a memory view to a Execution view.
-     * @dev Will revert if the memory view is not over a execution.
+     * @notice Casts a memory view to a Receipt view.
+     * @dev Will revert if the memory view is not over a receipt.
      */
-    function castToExecution(bytes29 view_) internal pure returns (Execution) {
-        require(isExecution(view_), "Not a execution");
-        return Execution.wrap(view_);
+    function castToReceipt(bytes29 view_) internal pure returns (Receipt) {
+        require(isReceipt(view_), "Not a receipt");
+        return Receipt.wrap(view_);
     }
 
-    /// @notice Checks that a payload is a formatted Execution.
-    function isExecution(bytes29 view_) internal pure returns (bool) {
+    /// @notice Checks that a payload is a formatted Receipt.
+    function isReceipt(bytes29 view_) internal pure returns (bool) {
         // Check payload length
-        if (view_.len() != EXECUTION_LENGTH) return false;
+        if (view_.len() != RECEIPT_LENGTH) return false;
         // Check that tips payload is formatted
         return _tips(view_).isTips();
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Execution execution) internal pure returns (bytes29) {
-        return Execution.unwrap(execution);
+    function unwrap(Receipt receipt) internal pure returns (bytes29) {
+        return Receipt.unwrap(receipt);
     }
 
-    // ═════════════════════════════════════════════ EXECUTION HASHING ═════════════════════════════════════════════════
+    // ═════════════════════════════════════════════ RECEIPT HASHING ═════════════════════════════════════════════════
 
-    /// @notice Returns the hash of an Execution, that could be later signed by a Notary.
-    function hash(Execution execution) internal pure returns (bytes32) {
+    /// @notice Returns the hash of an Receipt, that could be later signed by a Notary.
+    function hash(Receipt receipt) internal pure returns (bytes32) {
         // Get the underlying memory view
-        bytes29 view_ = execution.unwrap();
-        // The final hash to sign is keccak(executionSalt, keccak(execution))
-        return keccak256(bytes.concat(EXECUTION_SALT, view_.keccak()));
+        bytes29 view_ = receipt.unwrap();
+        // The final hash to sign is keccak(receiptSalt, keccak(receipt))
+        return keccak256(bytes.concat(RECEIPT_SALT, view_.keccak()));
     }
 
-    // ═════════════════════════════════════════════ EXECUTION SLICING ═════════════════════════════════════════════════
+    // ═════════════════════════════════════════════ RECEIPT SLICING ═════════════════════════════════════════════════
 
-    /// @notice Returns execution's origin field
-    function origin(Execution execution) internal pure returns (uint32) {
-        bytes29 view_ = unwrap(execution);
+    /// @notice Returns receipt's origin field
+    function origin(Receipt receipt) internal pure returns (uint32) {
+        bytes29 view_ = unwrap(receipt);
         return uint32(view_.indexUint({index_: OFFSET_ORIGIN, bytes_: 4}));
     }
 
-    /// @notice Returns execution's destination field
-    function destination(Execution execution) internal pure returns (uint32) {
-        bytes29 view_ = unwrap(execution);
+    /// @notice Returns receipt's destination field
+    function destination(Receipt receipt) internal pure returns (uint32) {
+        bytes29 view_ = unwrap(receipt);
         return uint32(view_.indexUint({index_: OFFSET_DESTINATION, bytes_: 4}));
     }
 
-    /// @notice Returns execution's "message hash" field
-    function messageHash(Execution execution) internal pure returns (bytes32) {
-        bytes29 view_ = unwrap(execution);
+    /// @notice Returns receipt's "message hash" field
+    function messageHash(Receipt receipt) internal pure returns (bytes32) {
+        bytes29 view_ = unwrap(receipt);
         return view_.index({index_: OFFSET_MESSAGE_HASH, bytes_: 32});
     }
 
-    /// @notice Returns execution's "snapshot root" field
-    function snapshotRoot(Execution execution) internal pure returns (bytes32) {
-        bytes29 view_ = unwrap(execution);
+    /// @notice Returns receipt's "snapshot root" field
+    function snapshotRoot(Receipt receipt) internal pure returns (bytes32) {
+        bytes29 view_ = unwrap(receipt);
         return view_.index({index_: OFFSET_SNAPSHOT_ROOT, bytes_: 32});
     }
 
-    /// @notice Returns execution's "first executor" field
-    function firstExecutor(Execution execution) internal pure returns (address) {
-        bytes29 view_ = unwrap(execution);
+    /// @notice Returns receipt's "first executor" field
+    function firstExecutor(Receipt receipt) internal pure returns (address) {
+        bytes29 view_ = unwrap(receipt);
         return view_.indexAddress({index_: OFFSET_FIRST_EXECUTOR});
     }
 
-    /// @notice Returns execution's "final executor" field
-    function finalExecutor(Execution execution) internal pure returns (address) {
-        bytes29 view_ = unwrap(execution);
+    /// @notice Returns receipt's "final executor" field
+    function finalExecutor(Receipt receipt) internal pure returns (address) {
+        bytes29 view_ = unwrap(receipt);
         return view_.indexAddress({index_: OFFSET_FINAL_EXECUTOR});
     }
 
     /// @notice Returns a typed memory view over the payload with tips paid on origin chain.
-    function tips(Execution execution) internal pure returns (Tips) {
-        bytes29 view_ = execution.unwrap();
+    function tips(Receipt receipt) internal pure returns (Tips) {
+        bytes29 view_ = receipt.unwrap();
         // We check that tips payload is properly formatted, when the whole payload is wrapped
-        // into Execution, so this never reverts.
+        // into Receipt, so this never reverts.
         return _tips(view_).castToTips();
     }
 
