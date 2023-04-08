@@ -2,13 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {
-    Attestation,
-    AttestationLib,
-    ExecutionAttestation,
-    SummitAttestation,
-    TypedMemView
-} from "../../../contracts/libs/Attestation.sol";
+import {Attestation, AttestationLib, SummitAttestation, TypedMemView} from "../../../contracts/libs/Attestation.sol";
 
 // solhint-disable ordering
 /// @notice Exposes Attestation methods for testing against golang.
@@ -21,9 +15,7 @@ contract AttestationHarness {
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               GETTERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
     function castToAttestation(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
@@ -56,25 +48,7 @@ contract AttestationHarness {
         return payload.castToAttestation().hash();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       DESTINATION ATTESTATION                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function toExecutionAttestation(bytes memory payload, address notary)
-        public
-        view
-        returns (ExecutionAttestation memory)
-    {
-        return payload.castToAttestation().toExecutionAttestation(notary);
-    }
-
-    function isEmpty(ExecutionAttestation memory execAtt) public pure returns (bool) {
-        return execAtt.isEmpty();
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SUMMIT ATTESTATION                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ SUMMIT ATTESTATION ═════════════════════════════════════════════════
 
     function formatSummitAttestation(SummitAttestation memory summitAtt, uint32 nonce_)
         public
@@ -84,9 +58,7 @@ contract AttestationHarness {
         return summitAtt.formatSummitAttestation(nonce_);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                        ATTESTATION FORMATTERS                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════ ATTESTATION FORMATTERS ═══════════════════════════════════════════════
 
     function formatAttestation(
         bytes32 snapRoot_,
