@@ -586,13 +586,25 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 }
 
 // markAsExecuted marks a message as executed via the `executed` mapping.
-func (e Executor) markAsExecuted(ctx context.Context, chain config.ChainConfig) error {
+func (e Executor) markAsExecuted(parentCtx context.Context, chain config.ChainConfig) (err error) {
+	ctx, span := e.handler.Tracer().Start(parentCtx, "markAsExecuted", trace.WithAttributes(
+		attribute.Int("chainID", int(chain.ChainID)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	latestHeader, err := e.chainExecutors[chain.ChainID].rpcClient.HeaderByNumber(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("could not get latest header: %w", err)
 	}
 
 	blockNumber := latestHeader.Number.Uint64()
+
+	span.AddEvent("latestBlockNumber", trace.WithAttributes(
+		attribute.Int("blockNumber", int(blockNumber)),
+	))
 
 	return e.streamLogs(ctx, e.grpcClient, e.grpcConn, chain.ChainID, chain.DestinationAddress, &blockNumber, contractEventType{
 		contractType: destinationContract,
