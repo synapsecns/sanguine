@@ -68,7 +68,8 @@ contract DestinationTest is ExecutionHubTest {
     }
 
     function test_submitAttestation_updatesAgentRoot(RawAttestation memory ra, uint32 rootSubmittedAt) public {
-        vm.assume(ra.agentRoot != InterfaceDestination(destination).nextAgentRoot());
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(ra.agentRoot != agentRootLM);
         address notary = domains[DOMAIN_LOCAL].agent;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         vm.warp(rootSubmittedAt);
@@ -88,6 +89,8 @@ contract DestinationTest is ExecutionHubTest {
         uint32 firstRootSubmittedAt,
         uint32 timePassed
     ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(firstRA.agentRoot != agentRootLM);
         vm.assume(firstRA.snapRoot != secondRA.snapRoot);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
@@ -109,6 +112,8 @@ contract DestinationTest is ExecutionHubTest {
         RawAttestation memory firstRA,
         uint32 firstRootSubmittedAt
     ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(firstRA.agentRoot != agentRootLM);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Should not accept the attestation before doing any checks,
@@ -126,6 +131,8 @@ contract DestinationTest is ExecutionHubTest {
         RawAttestation memory firstRA,
         uint32 firstRootSubmittedAt
     ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(firstRA.agentRoot != agentRootLM);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Should not accept the attestation before doing any checks,
@@ -143,6 +150,8 @@ contract DestinationTest is ExecutionHubTest {
         RawAttestation memory firstRA,
         uint32 firstRootSubmittedAt
     ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(firstRA.agentRoot != agentRootLM);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Should not accept the attestation before doing any checks,
@@ -162,6 +171,7 @@ contract DestinationTest is ExecutionHubTest {
         uint32 timePassed
     ) public {
         bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(ra.agentRoot != agentRootLM);
         // Submit attestation that updates `nextAgentRoot`
         test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
         timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
