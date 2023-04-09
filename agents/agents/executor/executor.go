@@ -207,6 +207,7 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 func (e Executor) Run(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
+	time.Sleep(10 * time.Minute)
 	// Backfill executed messages.
 	for _, chain := range e.config.Chains {
 		chain := chain
