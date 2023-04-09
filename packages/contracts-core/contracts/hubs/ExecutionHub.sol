@@ -14,7 +14,7 @@ import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 import {TypedMemView} from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {DisputeHub} from "./DisputeHub.sol";
+import {AgentStatus, DisputeHub} from "./DisputeHub.sol";
 import {ExecutionHubEvents} from "../events/ExecutionHubEvents.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
@@ -43,7 +43,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     }
     // 24 bits left for tight packing
 
-    /// @notice Struct representing the execution data saved for the message in Execution Hub.
+    /// @notice Struct representing stored receipt data for the message in Execution Hub.
     /// @param origin       Domain where message originated
     /// @param rootIndex    Index of snapshot root used for proving the message
     /// @param executor     Executor who successfully executed the message
@@ -76,7 +76,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// @dev gap for upgrade safety
     uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase
 
-    // ═════════════════════════════════════════════ EXECUTE MESSAGES ══════════════════════════════════════════════════
+    // ═════════════════════════════════════════════ MESSAGE EXECUTION ═════════════════════════════════════════════════
 
     /// @inheritdoc IExecutionHub
     function execute(
@@ -133,7 +133,32 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         emit Executed(header.origin(), msgLeaf);
     }
 
+    /// @inheritdoc IExecutionHub
+    function verifyReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool isValid) {
+        // This will revert if payload is not an receipt
+        Receipt rcpt = _wrapReceipt(rcptPayload);
+        // This will revert if the attestation signer is not a known Notary
+        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
+        // Notary needs to be Active/Unstaking
+        _verifyActiveUnstaking(status);
+        // This will revert if receipt refers to another domain
+        isValid = _isValidReceipt(rcpt);
+        if (!isValid) {
+            emit InvalidReceipt(rcptPayload, rcptSignature);
+            // Slash Notary and notify local AgentManager
+            _slashAgent(status.domain, notary);
+        }
+    }
+
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc IExecutionHub
+    function isValidReceipt(bytes memory rcptPayload) external view returns (bool isValid) {
+        // This will revert if payload is not an receipt
+        Receipt rcpt = _wrapReceipt(rcptPayload);
+        // This will revert if receipt refers to another domain
+        return _isValidReceipt(rcpt);
+    }
 
     /// @inheritdoc IExecutionHub
     function messageStatus(bytes32 messageHash) external view returns (MessageStatus status) {
@@ -163,7 +188,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         );
     }
 
-    // ═════════════════════════════════════ INTERNAL LOGIC: MESSAGE EXECUTION ═════════════════════════════════════════
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Passes message content to recipient that conforms to IMessageRecipient interface.
     function _executeBaseMessage(Header header, uint256 proofMaturity, uint64 gasLimit, BaseMessage baseMessage)
@@ -194,8 +219,6 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         return true;
     }
 
-    // ══════════════════════════════════════ INTERNAL LOGIC: MESSAGE PROVING ══════════════════════════════════════════
-
     /// @dev Saves a snapshot root with the attestation data provided by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
     function _saveAttestation(Attestation att, address notary) internal {
@@ -203,6 +226,34 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         require(_rootData[root].submittedAt == 0, "Root already exists");
         _rootData[root] = SnapRootData(notary, uint32(_roots.length), uint40(block.timestamp));
         _roots.push(root);
+    }
+
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
+
+    /// @dev Checks if receipt matches the saved data for the referenced message.
+    /// Reverts if destination domain doesn't match the local domain.
+    function _isValidReceipt(Receipt rcpt) internal view returns (bool) {
+        // Check if receipt refers to this contract
+        require(rcpt.destination() == localDomain, "Wrong destination");
+        bytes32 messageHash = rcpt.messageHash();
+        ReceiptData memory rcptData = _receiptData[messageHash];
+        // Check if there has been a single attempt to execute the message
+        if (rcptData.origin == 0) return false;
+        // Check that origin and snapshot root fields match
+        if (rcpt.origin() != rcptData.origin || rcpt.snapshotRoot() != _roots[rcptData.rootIndex]) return false;
+        // Check if message was executed from the first attempt
+        address firstExecutor = _firstExecutor[messageHash];
+        if (firstExecutor == address(0)) {
+            // Both first and final executors are saved in receipt data
+            return rcpt.firstExecutor() == rcptData.executor && rcpt.finalExecutor() == rcptData.executor;
+        } else {
+            // Message was Failed at some point of time, so both receipts are valid:
+            // "Failed": finalExecutor is ZERO
+            // "Success": finalExecutor matches executor from saved receipt data
+            address finalExecutor = rcpt.finalExecutor();
+            return rcpt.firstExecutor() == firstExecutor
+                && (finalExecutor == address(0) || finalExecutor == rcptData.executor);
+        }
     }
 
     /**

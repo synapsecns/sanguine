@@ -58,26 +58,6 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
         _setAgentRoot(agentRoot_);
     }
 
-    // ══════════════════════════════════════════════ SLASHING LOGIC ═══════════════════════════════════════════════════
-
-    /// @inheritdoc IAgentManager
-    function registrySlash(uint32 domain, address agent, address prover) external {
-        // Check that Agent hasn't been already slashed and initiate the slashing
-        _initiateSlashing(domain, agent, prover);
-        // On chains other than Synapse Chain only Origin could slash Agents
-        if (msg.sender == address(origin)) {
-            _notifySlashing(DESTINATION, domain, agent, prover);
-            // Issue a system call to BondingManager on SynChain
-            _callAgentManager({
-                domain: SYNAPSE_DOMAIN,
-                optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
-                payload: _remoteSlashPayload(domain, agent, prover)
-            });
-        } else {
-            revert("Unauthorized caller");
-        }
-    }
-
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
@@ -87,6 +67,15 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
+    function _afterRegistrySlash(uint32 domain, address agent, address prover) internal override {
+        // Issue a system call to BondingManager on SynChain
+        _callAgentManager({
+            domain: SYNAPSE_DOMAIN,
+            optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
+            payload: _remoteSlashPayload(domain, agent, prover)
+        });
+    }
+
     /// @dev Updates the Agent Merkle Root that Light Manager is tracking.
     function _setAgentRoot(bytes32 _agentRoot) internal {
         if (_latestAgentRoot != _agentRoot) {
@@ -94,6 +83,8 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
             emit RootUpdated(_agentRoot);
         }
     }
+
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Returns the status for the agent: whether or not they have been added
     /// using latest Agent merkle Root.

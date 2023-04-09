@@ -49,6 +49,10 @@ abstract contract SynapseProofs {
         return originGen.getProof(index, count);
     }
 
+    function getLeaf(uint256 index) public view returns (bytes32) {
+        return originGen.getLeaf(index);
+    }
+
     function getRoot(uint256 count) public view returns (bytes32) {
         return originGen.getRoot(count);
     }

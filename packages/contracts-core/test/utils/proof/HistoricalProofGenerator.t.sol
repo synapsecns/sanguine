@@ -77,6 +77,11 @@ contract HistoricalProofGenerator is ProofCutter {
         ++treeCount;
     }
 
+    /// @notice Returns leaf with a given index.
+    function getLeaf(uint256 index) external view returns (bytes32) {
+        return merkleTree[0][index][index + 1];
+    }
+
     /**
      * @notice Calculate root of merkle tree at the time when
      * `count` leafs have been inserted. O(1)

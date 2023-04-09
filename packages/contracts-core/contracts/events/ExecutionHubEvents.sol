@@ -11,6 +11,13 @@ abstract contract ExecutionHubEvents {
     event Executed(uint32 indexed remoteDomain, bytes32 indexed messageHash);
 
     /**
+     * @notice Emitted when a proof of invalid receipt statement is submitted.
+     * @param rcptPayload   Raw payload with the receipt statement
+     * @param rcptSignature Notary signature for the receipt statement
+     */
+    event InvalidReceipt(bytes rcptPayload, bytes rcptSignature);
+
+    /**
      * @notice Emitted when message tips are recorded.
      * @param messageHash   The keccak256 hash of the message that was executed
      * @param tipsPayload   Raw payload with tips paid for the off-chain agents

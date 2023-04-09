@@ -206,6 +206,13 @@ library CastLib {
         rt.executorTip = rt.executorTip % maxTipValue;
     }
 
+    function cloneTips(RawTips memory rt) internal pure returns (RawTips memory crt) {
+        crt.notaryTip = rt.notaryTip;
+        crt.broadcasterTip = rt.broadcasterTip;
+        crt.proverTip = rt.proverTip;
+        crt.executorTip = rt.executorTip;
+    }
+
     function castToTips(RawTips memory rt) internal pure returns (Tips ptr) {
         ptr = rt.formatTips().castToTips();
     }
@@ -277,6 +284,19 @@ library CastLib {
 
     function castToReceipt(RawExecReceipt memory re) internal pure returns (Receipt) {
         return re.formatReceipt().castToReceipt();
+    }
+
+    function modifyReceipt(RawExecReceipt memory re, uint256 mask) internal pure returns (RawExecReceipt memory mre) {
+        // Don't modify the destination, message hash and tips
+        mre.destination = re.destination;
+        mre.messageHash = re.messageHash;
+        mre.tips = re.tips.cloneTips();
+        // Make sure at least one value is modified, valid mask values are [1 .. 15]
+        mask = 1 + (mask % 15);
+        mre.origin = re.origin ^ uint32(mask & 1);
+        mre.snapshotRoot = re.snapshotRoot ^ bytes32(mask & 2);
+        mre.firstExecutor = address(uint160(re.firstExecutor) ^ uint160(mask & 4));
+        mre.finalExecutor = address(uint160(re.finalExecutor) ^ uint160(mask & 8));
     }
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
