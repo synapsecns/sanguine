@@ -2,7 +2,9 @@ package testutil
 
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
+	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"

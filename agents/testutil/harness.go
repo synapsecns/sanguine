@@ -3,14 +3,15 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
-
-	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
-	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
-
+	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
+
+	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,10 +19,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
-	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
 	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
-	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -60,10 +59,10 @@ func NewLightManagerHarnessDeployer(registry deployer.GetOnlyContractRegistry, b
 // Deploy deploys the light manager harness.
 // nolint:dupl
 func (o LightManagerHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	originHarnessContract := o.Registry().Get(ctx, OriginHarnessType)
+	/*originHarnessContract := o.Registry().Get(ctx, OriginHarnessType)
 	destinationHarnessContract := o.Registry().Get(ctx, DestinationHarnessType)
 	originAddress := originHarnessContract.Address()
-	destinationAddress := destinationHarnessContract.Address()
+	destinationAddress := destinationHarnessContract.Address()*/
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		address, tx, rawHandle, err := lightmanagerharness.DeployLightManagerHarness(transactOps, backend, uint32(o.Backend().GetChainID()))
 		if err != nil {
@@ -71,12 +70,12 @@ func (o LightManagerHarnessDeployer) Deploy(ctx context.Context) (contracts.Depl
 		}
 		o.Backend().WaitForConfirmation(ctx, tx)
 
-		initializeOpts := o.Backend().GetTxContext(ctx, &transactOps.From)
+		/*initializeOpts := o.Backend().GetTxContext(ctx, &transactOps.From)
 		initializeTx, err := rawHandle.Initialize(initializeOpts.TransactOpts, originAddress, destinationAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not initialize origin (%s) on %s: %w", transactOps.From, o.ContractType().ContractName(), err)
 		}
-		o.Backend().WaitForConfirmation(ctx, initializeTx)
+		o.Backend().WaitForConfirmation(ctx, initializeTx)*/
 
 		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -102,10 +101,10 @@ func NewBondingManagerHarnessDeployer(registry deployer.GetOnlyContractRegistry,
 // Deploy deploys the light manager harness.
 // nolint:dupl
 func (o BondingManagerHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	originHarnessContract := o.Registry().Get(ctx, OriginHarnessType)
+	/*originHarnessContract := o.Registry().Get(ctx, OriginHarnessType)
 	destinationHarnessContract := o.Registry().Get(ctx, DestinationHarnessType)
 	originAddress := originHarnessContract.Address()
-	destinationAddress := destinationHarnessContract.Address()
+	destinationAddress := destinationHarnessContract.Address()*/
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		address, tx, rawHandle, err := bondingmanagerharness.DeployBondingManagerHarness(transactOps, backend, uint32(o.Backend().GetChainID()))
 		if err != nil {
@@ -113,12 +112,12 @@ func (o BondingManagerHarnessDeployer) Deploy(ctx context.Context) (contracts.De
 		}
 		o.Backend().WaitForConfirmation(ctx, tx)
 
-		initializeOpts := o.Backend().GetTxContext(ctx, &transactOps.From)
+		/*initializeOpts := o.Backend().GetTxContext(ctx, &transactOps.From)
 		initializeTx, err := rawHandle.Initialize(initializeOpts.TransactOpts, originAddress, destinationAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not initialize origin (%s) on %s: %w", transactOps.From, o.ContractType().ContractName(), err)
 		}
-		o.Backend().WaitForConfirmation(ctx, initializeTx)
+		o.Backend().WaitForConfirmation(ctx, initializeTx)*/
 
 		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {

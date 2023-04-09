@@ -3,6 +3,8 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
@@ -23,22 +25,26 @@ type LightManagerDeployer struct {
 
 // NewLightManagerDeployer deploys the light manager contract.
 func NewLightManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return LightManagerDeployer{deployer.NewSimpleDeployer(registry, backend, OriginType)}
+	return LightManagerDeployer{deployer.NewSimpleDeployer(registry, backend, LightManagerType)}
 }
 
-// Deploy deploys the origin contract.
-func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+// Deploy deploys the light manager contract.
+func (d LightManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	originContract := d.Registry().Get(ctx, OriginType)
+	destinationContract := d.Registry().Get(ctx, DestinationType)
+	originAddress := originContract.Address()
+	destinationAddress := destinationContract.Address()
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
-		// deploy the origin contract
-		var rawHandle *origin.Origin
-		address, tx, rawHandle, err = origin.DeployOrigin(transactOps, backend, uint32(d.Backend().GetChainID()))
+		// deploy the light manager contract
+		var rawHandle *lightmanager.LightManager
+		address, tx, rawHandle, err = lightmanager.DeployLightManager(transactOps, backend, uint32(d.Backend().GetChainID()))
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
 		d.Backend().WaitForConfirmation(ctx, tx)
 
 		// initialize the origin contract
-		initializationTx, err := rawHandle.Initialize(transactOps)
+		initializationTx, err := rawHandle.Initialize(transactOps, originAddress, destinationAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not initialize contract: %w", err)
 		}
@@ -46,12 +52,55 @@ func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract,
 
 		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return origin.NewOriginRef(address, backend)
+		return lightmanager.NewLightManagerRef(address, backend)
 	})
 }
 
-// Dependencies gets a list of dependencies used to deploy the origin contract.
-func (d OriginDeployer) Dependencies() []contracts.ContractType {
+// Dependencies gets a list of dependencies used to deploy the light manager contract.
+func (d LightManagerDeployer) Dependencies() []contracts.ContractType {
+	return []contracts.ContractType{}
+}
+
+// BondingManagerDeployer deploys the bonding manager contract.
+type BondingManagerDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewBondingManagerDeployer deploys the bonding manager contract.
+func NewBondingManagerDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return BondingManagerDeployer{deployer.NewSimpleDeployer(registry, backend, BondingManagerType)}
+}
+
+// Deploy deploys the bonding manager contract.
+func (d BondingManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	originContract := d.Registry().Get(ctx, OriginType)
+	destinationContract := d.Registry().Get(ctx, DestinationType)
+	originAddress := originContract.Address()
+	destinationAddress := destinationContract.Address()
+	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
+		// deploy the bonding manager contract
+		var rawHandle *bondingmanager.BondingManager
+		address, tx, rawHandle, err = bondingmanager.DeployBondingManager(transactOps, backend, uint32(d.Backend().GetChainID()))
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
+		}
+		d.Backend().WaitForConfirmation(ctx, tx)
+
+		// initialize the origin contract
+		initializationTx, err := rawHandle.Initialize(transactOps, originAddress, destinationAddress)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize contract: %w", err)
+		}
+		d.Backend().WaitForConfirmation(ctx, initializationTx)
+
+		return address, tx, rawHandle, err
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return bondingmanager.NewBondingManagerRef(address, backend)
+	})
+}
+
+// Dependencies gets a list of dependencies used to deploy the bonding manager contract.
+func (d BondingManagerDeployer) Dependencies() []contracts.ContractType {
 	return []contracts.ContractType{}
 }
 
@@ -67,10 +116,12 @@ func NewOriginDeployer(registry deployer.GetOnlyContractRegistry, backend backen
 
 // Deploy deploys the origin contract.
 func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	lightManagerContract := d.Registry().Get(ctx, LightManagerType)
+	lightManagerAddress := lightManagerContract.Address()
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// deploy the origin contract
 		var rawHandle *origin.Origin
-		address, tx, rawHandle, err = origin.DeployOrigin(transactOps, backend, uint32(d.Backend().GetChainID()))
+		address, tx, rawHandle, err = origin.DeployOrigin(transactOps, backend, uint32(d.Backend().GetChainID()), lightManagerAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
@@ -108,8 +159,10 @@ func NewSummitDeployer(registry deployer.GetOnlyContractRegistry, backend backen
 //
 //nolint:dupword,dupl
 func (a SummitDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	bondingManagerContract := a.Registry().Get(ctx, BondingManagerType)
+	bondingManagerAddress := bondingManagerContract.Address()
 	return a.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		summitAddress, summitTx, summit, err := summit.DeploySummit(transactOps, backend, uint32(a.Backend().GetChainID()))
+		summitAddress, summitTx, summit, err := summit.DeploySummit(transactOps, backend, uint32(a.Backend().GetChainID()), bondingManagerAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy summit: %w", err)
 		}
@@ -141,25 +194,20 @@ func NewDestinationDeployer(registry deployer.GetOnlyContractRegistry, backend b
 //
 //nolint:dupl
 func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	lightManagerHarnessContract := d.Registry().Get(ctx, LightManagerHarnessType)
+	lightManagerAddress := lightManagerHarnessContract.Address()
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		destinationAddress, destinationTx, destination, err := destination.DeployDestination(transactOps, backend, uint32(d.Backend().GetChainID()))
+		destinationAddress, destinationTx, destination, err := destination.DeployDestination(transactOps, backend, uint32(d.Backend().GetChainID()), lightManagerAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy destination: %w", err)
 		}
 
-		auth := d.Backend().GetTxContext(ctx, &transactOps.From)
+		/*auth := d.Backend().GetTxContext(ctx, &transactOps.From)
 		initTx, err := destination.Initialize(auth.TransactOpts)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not initialize destination: %w", err)
 		}
-		d.Backend().WaitForConfirmation(ctx, initTx)
-
-		// nolint:dupword
-		/*setTx, err := destination.AddNotary(auth.TransactOpts, uint32(d.Registry().Get(ctx, OriginType).ChainID().Uint64()), common.Address{})
-		if err != nil {
-			return common.Address{}, nil, nil, fmt.Errorf("could not set notary: %w", err)
-		}
-		d.Backend().WaitForConfirmation(ctx, setTx)*/
+		d.Backend().WaitForConfirmation(ctx, initTx)*/
 
 		return destinationAddress, destinationTx, destination, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {

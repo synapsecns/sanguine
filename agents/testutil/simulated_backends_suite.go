@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
 	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"
@@ -16,7 +17,6 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
@@ -99,7 +99,6 @@ type SimulatedBackendsTestSuite struct {
 	ExecutorMetrics                     metrics.Handler
 	NotaryMetrics                       metrics.Handler
 	GuardMetrics                        metrics.Handler
-	BondingManagerAgentRoot             [32]byte
 }
 
 // NewSimulatedBackendsTestSuite creates an end-to-end test suite with simulated
@@ -188,29 +187,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.BondingManagerMetadataOnSummit, a.BondingManagerOnSummit = deployManager.GetBondingManagerHarness(a.GetTestContext(), a.TestBackendSummit)
 
-	bondingManagerOwnerPtr, err := a.BondingManagerOnSummit.BondingManagerHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	bondingManagerOwnerAuth := a.TestBackendSummit.GetTxContext(a.GetTestContext(), &bondingManagerOwnerPtr)
-
-	var proof [][32]byte
-	txAddNotary, err := a.BondingManagerOnSummit.AddAgent(bondingManagerOwnerAuth.TransactOpts, uint32(a.TestBackendDestination.GetChainID()), a.NotaryBondedSigner.Address(), proof)
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.TestBackendSummit.WaitForConfirmation(a.GetTestContext(), txAddNotary)
-	txAddNotaryOnOrigin, err := a.BondingManagerOnSummit.AddAgent(bondingManagerOwnerAuth.TransactOpts, uint32(a.TestBackendOrigin.GetChainID()), a.NotaryOnOriginBondedSigner.Address(), proof)
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.TestBackendSummit.WaitForConfirmation(a.GetTestContext(), txAddNotaryOnOrigin)
-	txAddGuard, err := a.BondingManagerOnSummit.AddAgent(bondingManagerOwnerAuth.TransactOpts, uint32(0), a.GuardBondedSigner.Address(), proof)
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.TestBackendSummit.WaitForConfirmation(a.GetTestContext(), txAddGuard)
-
+	var err error
 	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
 		DomainID:      uint32(a.TestBackendSummit.GetBigChainID().Uint64()),
 		Type:          types.EVM.String(),
@@ -225,11 +202,6 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
-
-	a.BondingManagerAgentRoot, err = a.BondingManagerOnSummit.AgentRoot(&bind.CallOpts{Context: a.GetTestContext()})
-	if err != nil {
-		a.T().Fatal(err)
-	}
 }
 
 // SetupGuard sets up the Guard agent.
@@ -310,6 +282,13 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.SetupOrigin(a.TestDeployManager)
 	a.SetupSummit(a.TestDeployManager)
 
+	a.TestDeployManager.LoadHarnessContractsOnChains(
+		a.GetTestContext(),
+		a.TestBackendSummit,
+		[]backends.SimulatedTestBackend{a.TestBackendOrigin, a.TestBackendDestination},
+		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address(), a.NotaryOnOriginBondedSigner.Address()},
+		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendOrigin.GetChainID())})
+
 	a.DBPath = filet.TmpDir(a.T(), "")
 	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ScribeMetrics)
 	if err != nil {
@@ -321,30 +300,6 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		a.T().Fatal(err)
 	}
 	a.ExecutorTestDB = sqliteStore
-
-	destinationOwnerPtr, err := a.DestinationContract.DestinationHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	destinationOwnerAuth := a.TestBackendDestination.GetTxContext(a.GetTestContext(), &destinationOwnerPtr)
-
-	initializeOnDestTx, err := a.DestinationContract.Initialize(destinationOwnerAuth.TransactOpts, a.BondingManagerAgentRoot)
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.TestBackendDestination.WaitForConfirmation(a.GetTestContext(), initializeOnDestTx)
-
-	destinationOnOriginOwnerPtr, err := a.DestinationContractOnOrigin.DestinationHarnessCaller.Owner(&bind.CallOpts{Context: a.GetTestContext()})
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	destinationOnOriginOwnerAuth := a.TestBackendOrigin.GetTxContext(a.GetTestContext(), &destinationOnOriginOwnerPtr)
-
-	initializeOnOriginTx, err := a.DestinationContractOnOrigin.Initialize(destinationOnOriginOwnerAuth.TransactOpts, a.BondingManagerAgentRoot)
-	if err != nil {
-		a.T().Fatal(err)
-	}
-	a.TestBackendOrigin.WaitForConfirmation(a.GetTestContext(), initializeOnOriginTx)
 }
 
 // cleanAfterTestSuite does cleanup after test suite is finished.

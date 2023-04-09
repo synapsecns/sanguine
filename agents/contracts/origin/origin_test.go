@@ -23,14 +23,14 @@ func (h OriginSuite) TestDispatchTopic() {
 	// init the dispatch event
 	txContext := h.testBackend.GetTxContext(h.GetTestContext(), nil)
 
-	dispatchSink := make(chan *originharness.OriginHarnessDispatch)
-	sub, err := h.originContract.WatchDispatch(&bind.WatchOpts{Context: h.GetTestContext()}, dispatchSink, [][32]byte{}, []uint32{}, []uint32{})
+	dispatchSink := make(chan *originharness.OriginHarnessDispatched)
+	sub, err := h.originContract.WatchDispatched(&bind.WatchOpts{Context: h.GetTestContext()}, dispatchSink, [][32]byte{}, []uint32{}, []uint32{})
 	Nil(h.T(), err)
 
 	enodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(h.T(), err)
 
-	tx, err := h.originContract.Dispatch(txContext.TransactOpts, h.destinationID, [32]byte{}, 1, enodedTips, nil)
+	tx, err := h.originContract.SendBaseMessage(txContext.TransactOpts, h.destinationID, [32]byte{}, 1, enodedTips, nil, []byte{})
 	Nil(h.T(), err)
 
 	h.testBackend.WaitForConfirmation(h.GetTestContext(), tx)

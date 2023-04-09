@@ -38,7 +38,7 @@ type AgentStatus struct {
 // AddressUpgradeableMetaData contains all meta data concerning the AddressUpgradeable contract.
 var AddressUpgradeableMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220b899222c18ef014d4d9c8cc65ebcb2429c825188725ea8328f0a6ac00ed2565f64736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205303b5ccfd4669a3e351a7dc5cd957cfb0f37393856782caa7daeffbb341370464736f6c63430008110033",
 }
 
 // AddressUpgradeableABI is the input ABI used to generate the binding from.
@@ -2564,634 +2564,6 @@ func (_IAgentManager *IAgentManagerTransactorSession) RegistrySlash(domain uint3
 	return _IAgentManager.Contract.RegistrySlash(&_IAgentManager.TransactOpts, domain, agent, prover)
 }
 
-// IBondingManagerMetaData contains all meta data concerning the IBondingManager contract.
-var IBondingManagerMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"addAgent\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"}],\"name\":\"agentLeaf\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"leaf\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"allLeafs\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"leafs\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"completeSlashing\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"completeUnstaking\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"indexFrom\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"getLeafs\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"leafs\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"}],\"name\":\"getProof\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"initiateUnstaking\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"leafsAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proofMaturity\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"callOrigin\",\"type\":\"uint32\"},{\"internalType\":\"enumSystemEntity\",\"name\":\"systemCaller\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"prover\",\"type\":\"address\"}],\"name\":\"remoteRegistrySlash\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
-	Sigs: map[string]string{
-		"237a85a5": "addAgent(uint32,address,bytes32[])",
-		"c99dcb9e": "agentLeaf(address)",
-		"12db2ef6": "allLeafs()",
-		"fbc5265e": "completeSlashing(uint32,address,bytes32[])",
-		"4c3e1c1f": "completeUnstaking(uint32,address,bytes32[])",
-		"33d1b2e8": "getLeafs(uint256,uint256)",
-		"3eea79d1": "getProof(address)",
-		"130c5673": "initiateUnstaking(uint32,address,bytes32[])",
-		"33c3a8f3": "leafsAmount()",
-		"d49063d0": "remoteRegistrySlash(uint256,uint32,uint8,uint32,address,address)",
-	},
-}
-
-// IBondingManagerABI is the input ABI used to generate the binding from.
-// Deprecated: Use IBondingManagerMetaData.ABI instead.
-var IBondingManagerABI = IBondingManagerMetaData.ABI
-
-// Deprecated: Use IBondingManagerMetaData.Sigs instead.
-// IBondingManagerFuncSigs maps the 4-byte function signature to its string representation.
-var IBondingManagerFuncSigs = IBondingManagerMetaData.Sigs
-
-// IBondingManager is an auto generated Go binding around an Ethereum contract.
-type IBondingManager struct {
-	IBondingManagerCaller     // Read-only binding to the contract
-	IBondingManagerTransactor // Write-only binding to the contract
-	IBondingManagerFilterer   // Log filterer for contract events
-}
-
-// IBondingManagerCaller is an auto generated read-only Go binding around an Ethereum contract.
-type IBondingManagerCaller struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// IBondingManagerTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type IBondingManagerTransactor struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// IBondingManagerFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type IBondingManagerFilterer struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// IBondingManagerSession is an auto generated Go binding around an Ethereum contract,
-// with pre-set call and transact options.
-type IBondingManagerSession struct {
-	Contract     *IBondingManager  // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts     // Call options to use throughout this session
-	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
-}
-
-// IBondingManagerCallerSession is an auto generated read-only Go binding around an Ethereum contract,
-// with pre-set call options.
-type IBondingManagerCallerSession struct {
-	Contract *IBondingManagerCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts          // Call options to use throughout this session
-}
-
-// IBondingManagerTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
-// with pre-set transact options.
-type IBondingManagerTransactorSession struct {
-	Contract     *IBondingManagerTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts          // Transaction auth options to use throughout this session
-}
-
-// IBondingManagerRaw is an auto generated low-level Go binding around an Ethereum contract.
-type IBondingManagerRaw struct {
-	Contract *IBondingManager // Generic contract binding to access the raw methods on
-}
-
-// IBondingManagerCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type IBondingManagerCallerRaw struct {
-	Contract *IBondingManagerCaller // Generic read-only contract binding to access the raw methods on
-}
-
-// IBondingManagerTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type IBondingManagerTransactorRaw struct {
-	Contract *IBondingManagerTransactor // Generic write-only contract binding to access the raw methods on
-}
-
-// NewIBondingManager creates a new instance of IBondingManager, bound to a specific deployed contract.
-func NewIBondingManager(address common.Address, backend bind.ContractBackend) (*IBondingManager, error) {
-	contract, err := bindIBondingManager(address, backend, backend, backend)
-	if err != nil {
-		return nil, err
-	}
-	return &IBondingManager{IBondingManagerCaller: IBondingManagerCaller{contract: contract}, IBondingManagerTransactor: IBondingManagerTransactor{contract: contract}, IBondingManagerFilterer: IBondingManagerFilterer{contract: contract}}, nil
-}
-
-// NewIBondingManagerCaller creates a new read-only instance of IBondingManager, bound to a specific deployed contract.
-func NewIBondingManagerCaller(address common.Address, caller bind.ContractCaller) (*IBondingManagerCaller, error) {
-	contract, err := bindIBondingManager(address, caller, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &IBondingManagerCaller{contract: contract}, nil
-}
-
-// NewIBondingManagerTransactor creates a new write-only instance of IBondingManager, bound to a specific deployed contract.
-func NewIBondingManagerTransactor(address common.Address, transactor bind.ContractTransactor) (*IBondingManagerTransactor, error) {
-	contract, err := bindIBondingManager(address, nil, transactor, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &IBondingManagerTransactor{contract: contract}, nil
-}
-
-// NewIBondingManagerFilterer creates a new log filterer instance of IBondingManager, bound to a specific deployed contract.
-func NewIBondingManagerFilterer(address common.Address, filterer bind.ContractFilterer) (*IBondingManagerFilterer, error) {
-	contract, err := bindIBondingManager(address, nil, nil, filterer)
-	if err != nil {
-		return nil, err
-	}
-	return &IBondingManagerFilterer{contract: contract}, nil
-}
-
-// bindIBondingManager binds a generic wrapper to an already deployed contract.
-func bindIBondingManager(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(IBondingManagerABI))
-	if err != nil {
-		return nil, err
-	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_IBondingManager *IBondingManagerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _IBondingManager.Contract.IBondingManagerCaller.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_IBondingManager *IBondingManagerRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IBondingManager.Contract.IBondingManagerTransactor.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_IBondingManager *IBondingManagerRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _IBondingManager.Contract.IBondingManagerTransactor.contract.Transact(opts, method, params...)
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_IBondingManager *IBondingManagerCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _IBondingManager.Contract.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_IBondingManager *IBondingManagerTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IBondingManager.Contract.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_IBondingManager *IBondingManagerTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _IBondingManager.Contract.contract.Transact(opts, method, params...)
-}
-
-// AgentLeaf is a free data retrieval call binding the contract method 0xc99dcb9e.
-//
-// Solidity: function agentLeaf(address agent) view returns(bytes32 leaf)
-func (_IBondingManager *IBondingManagerCaller) AgentLeaf(opts *bind.CallOpts, agent common.Address) ([32]byte, error) {
-	var out []interface{}
-	err := _IBondingManager.contract.Call(opts, &out, "agentLeaf", agent)
-
-	if err != nil {
-		return *new([32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
-
-	return out0, err
-
-}
-
-// AgentLeaf is a free data retrieval call binding the contract method 0xc99dcb9e.
-//
-// Solidity: function agentLeaf(address agent) view returns(bytes32 leaf)
-func (_IBondingManager *IBondingManagerSession) AgentLeaf(agent common.Address) ([32]byte, error) {
-	return _IBondingManager.Contract.AgentLeaf(&_IBondingManager.CallOpts, agent)
-}
-
-// AgentLeaf is a free data retrieval call binding the contract method 0xc99dcb9e.
-//
-// Solidity: function agentLeaf(address agent) view returns(bytes32 leaf)
-func (_IBondingManager *IBondingManagerCallerSession) AgentLeaf(agent common.Address) ([32]byte, error) {
-	return _IBondingManager.Contract.AgentLeaf(&_IBondingManager.CallOpts, agent)
-}
-
-// AllLeafs is a free data retrieval call binding the contract method 0x12db2ef6.
-//
-// Solidity: function allLeafs() view returns(bytes32[] leafs)
-func (_IBondingManager *IBondingManagerCaller) AllLeafs(opts *bind.CallOpts) ([][32]byte, error) {
-	var out []interface{}
-	err := _IBondingManager.contract.Call(opts, &out, "allLeafs")
-
-	if err != nil {
-		return *new([][32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([][32]byte)).(*[][32]byte)
-
-	return out0, err
-
-}
-
-// AllLeafs is a free data retrieval call binding the contract method 0x12db2ef6.
-//
-// Solidity: function allLeafs() view returns(bytes32[] leafs)
-func (_IBondingManager *IBondingManagerSession) AllLeafs() ([][32]byte, error) {
-	return _IBondingManager.Contract.AllLeafs(&_IBondingManager.CallOpts)
-}
-
-// AllLeafs is a free data retrieval call binding the contract method 0x12db2ef6.
-//
-// Solidity: function allLeafs() view returns(bytes32[] leafs)
-func (_IBondingManager *IBondingManagerCallerSession) AllLeafs() ([][32]byte, error) {
-	return _IBondingManager.Contract.AllLeafs(&_IBondingManager.CallOpts)
-}
-
-// GetLeafs is a free data retrieval call binding the contract method 0x33d1b2e8.
-//
-// Solidity: function getLeafs(uint256 indexFrom, uint256 amount) view returns(bytes32[] leafs)
-func (_IBondingManager *IBondingManagerCaller) GetLeafs(opts *bind.CallOpts, indexFrom *big.Int, amount *big.Int) ([][32]byte, error) {
-	var out []interface{}
-	err := _IBondingManager.contract.Call(opts, &out, "getLeafs", indexFrom, amount)
-
-	if err != nil {
-		return *new([][32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([][32]byte)).(*[][32]byte)
-
-	return out0, err
-
-}
-
-// GetLeafs is a free data retrieval call binding the contract method 0x33d1b2e8.
-//
-// Solidity: function getLeafs(uint256 indexFrom, uint256 amount) view returns(bytes32[] leafs)
-func (_IBondingManager *IBondingManagerSession) GetLeafs(indexFrom *big.Int, amount *big.Int) ([][32]byte, error) {
-	return _IBondingManager.Contract.GetLeafs(&_IBondingManager.CallOpts, indexFrom, amount)
-}
-
-// GetLeafs is a free data retrieval call binding the contract method 0x33d1b2e8.
-//
-// Solidity: function getLeafs(uint256 indexFrom, uint256 amount) view returns(bytes32[] leafs)
-func (_IBondingManager *IBondingManagerCallerSession) GetLeafs(indexFrom *big.Int, amount *big.Int) ([][32]byte, error) {
-	return _IBondingManager.Contract.GetLeafs(&_IBondingManager.CallOpts, indexFrom, amount)
-}
-
-// GetProof is a free data retrieval call binding the contract method 0x3eea79d1.
-//
-// Solidity: function getProof(address agent) view returns(bytes32[] proof)
-func (_IBondingManager *IBondingManagerCaller) GetProof(opts *bind.CallOpts, agent common.Address) ([][32]byte, error) {
-	var out []interface{}
-	err := _IBondingManager.contract.Call(opts, &out, "getProof", agent)
-
-	if err != nil {
-		return *new([][32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([][32]byte)).(*[][32]byte)
-
-	return out0, err
-
-}
-
-// GetProof is a free data retrieval call binding the contract method 0x3eea79d1.
-//
-// Solidity: function getProof(address agent) view returns(bytes32[] proof)
-func (_IBondingManager *IBondingManagerSession) GetProof(agent common.Address) ([][32]byte, error) {
-	return _IBondingManager.Contract.GetProof(&_IBondingManager.CallOpts, agent)
-}
-
-// GetProof is a free data retrieval call binding the contract method 0x3eea79d1.
-//
-// Solidity: function getProof(address agent) view returns(bytes32[] proof)
-func (_IBondingManager *IBondingManagerCallerSession) GetProof(agent common.Address) ([][32]byte, error) {
-	return _IBondingManager.Contract.GetProof(&_IBondingManager.CallOpts, agent)
-}
-
-// LeafsAmount is a free data retrieval call binding the contract method 0x33c3a8f3.
-//
-// Solidity: function leafsAmount() view returns(uint256 amount)
-func (_IBondingManager *IBondingManagerCaller) LeafsAmount(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _IBondingManager.contract.Call(opts, &out, "leafsAmount")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// LeafsAmount is a free data retrieval call binding the contract method 0x33c3a8f3.
-//
-// Solidity: function leafsAmount() view returns(uint256 amount)
-func (_IBondingManager *IBondingManagerSession) LeafsAmount() (*big.Int, error) {
-	return _IBondingManager.Contract.LeafsAmount(&_IBondingManager.CallOpts)
-}
-
-// LeafsAmount is a free data retrieval call binding the contract method 0x33c3a8f3.
-//
-// Solidity: function leafsAmount() view returns(uint256 amount)
-func (_IBondingManager *IBondingManagerCallerSession) LeafsAmount() (*big.Int, error) {
-	return _IBondingManager.Contract.LeafsAmount(&_IBondingManager.CallOpts)
-}
-
-// AddAgent is a paid mutator transaction binding the contract method 0x237a85a5.
-//
-// Solidity: function addAgent(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerTransactor) AddAgent(opts *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.contract.Transact(opts, "addAgent", domain, agent, proof)
-}
-
-// AddAgent is a paid mutator transaction binding the contract method 0x237a85a5.
-//
-// Solidity: function addAgent(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerSession) AddAgent(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.Contract.AddAgent(&_IBondingManager.TransactOpts, domain, agent, proof)
-}
-
-// AddAgent is a paid mutator transaction binding the contract method 0x237a85a5.
-//
-// Solidity: function addAgent(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerTransactorSession) AddAgent(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.Contract.AddAgent(&_IBondingManager.TransactOpts, domain, agent, proof)
-}
-
-// CompleteSlashing is a paid mutator transaction binding the contract method 0xfbc5265e.
-//
-// Solidity: function completeSlashing(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerTransactor) CompleteSlashing(opts *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.contract.Transact(opts, "completeSlashing", domain, agent, proof)
-}
-
-// CompleteSlashing is a paid mutator transaction binding the contract method 0xfbc5265e.
-//
-// Solidity: function completeSlashing(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerSession) CompleteSlashing(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.Contract.CompleteSlashing(&_IBondingManager.TransactOpts, domain, agent, proof)
-}
-
-// CompleteSlashing is a paid mutator transaction binding the contract method 0xfbc5265e.
-//
-// Solidity: function completeSlashing(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerTransactorSession) CompleteSlashing(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.Contract.CompleteSlashing(&_IBondingManager.TransactOpts, domain, agent, proof)
-}
-
-// CompleteUnstaking is a paid mutator transaction binding the contract method 0x4c3e1c1f.
-//
-// Solidity: function completeUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerTransactor) CompleteUnstaking(opts *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.contract.Transact(opts, "completeUnstaking", domain, agent, proof)
-}
-
-// CompleteUnstaking is a paid mutator transaction binding the contract method 0x4c3e1c1f.
-//
-// Solidity: function completeUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerSession) CompleteUnstaking(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.Contract.CompleteUnstaking(&_IBondingManager.TransactOpts, domain, agent, proof)
-}
-
-// CompleteUnstaking is a paid mutator transaction binding the contract method 0x4c3e1c1f.
-//
-// Solidity: function completeUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerTransactorSession) CompleteUnstaking(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.Contract.CompleteUnstaking(&_IBondingManager.TransactOpts, domain, agent, proof)
-}
-
-// InitiateUnstaking is a paid mutator transaction binding the contract method 0x130c5673.
-//
-// Solidity: function initiateUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerTransactor) InitiateUnstaking(opts *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.contract.Transact(opts, "initiateUnstaking", domain, agent, proof)
-}
-
-// InitiateUnstaking is a paid mutator transaction binding the contract method 0x130c5673.
-//
-// Solidity: function initiateUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerSession) InitiateUnstaking(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.Contract.InitiateUnstaking(&_IBondingManager.TransactOpts, domain, agent, proof)
-}
-
-// InitiateUnstaking is a paid mutator transaction binding the contract method 0x130c5673.
-//
-// Solidity: function initiateUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
-func (_IBondingManager *IBondingManagerTransactorSession) InitiateUnstaking(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
-	return _IBondingManager.Contract.InitiateUnstaking(&_IBondingManager.TransactOpts, domain, agent, proof)
-}
-
-// RemoteRegistrySlash is a paid mutator transaction binding the contract method 0xd49063d0.
-//
-// Solidity: function remoteRegistrySlash(uint256 proofMaturity, uint32 callOrigin, uint8 systemCaller, uint32 domain, address agent, address prover) returns()
-func (_IBondingManager *IBondingManagerTransactor) RemoteRegistrySlash(opts *bind.TransactOpts, proofMaturity *big.Int, callOrigin uint32, systemCaller uint8, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
-	return _IBondingManager.contract.Transact(opts, "remoteRegistrySlash", proofMaturity, callOrigin, systemCaller, domain, agent, prover)
-}
-
-// RemoteRegistrySlash is a paid mutator transaction binding the contract method 0xd49063d0.
-//
-// Solidity: function remoteRegistrySlash(uint256 proofMaturity, uint32 callOrigin, uint8 systemCaller, uint32 domain, address agent, address prover) returns()
-func (_IBondingManager *IBondingManagerSession) RemoteRegistrySlash(proofMaturity *big.Int, callOrigin uint32, systemCaller uint8, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
-	return _IBondingManager.Contract.RemoteRegistrySlash(&_IBondingManager.TransactOpts, proofMaturity, callOrigin, systemCaller, domain, agent, prover)
-}
-
-// RemoteRegistrySlash is a paid mutator transaction binding the contract method 0xd49063d0.
-//
-// Solidity: function remoteRegistrySlash(uint256 proofMaturity, uint32 callOrigin, uint8 systemCaller, uint32 domain, address agent, address prover) returns()
-func (_IBondingManager *IBondingManagerTransactorSession) RemoteRegistrySlash(proofMaturity *big.Int, callOrigin uint32, systemCaller uint8, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
-	return _IBondingManager.Contract.RemoteRegistrySlash(&_IBondingManager.TransactOpts, proofMaturity, callOrigin, systemCaller, domain, agent, prover)
-}
-
-// ILightManagerMetaData contains all meta data concerning the ILightManager contract.
-var ILightManagerMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"agentRoot\",\"type\":\"bytes32\"}],\"name\":\"setAgentRoot\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumAgentFlag\",\"name\":\"flag\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"index\",\"type\":\"uint32\"}],\"internalType\":\"structAgentStatus\",\"name\":\"status\",\"type\":\"tuple\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"updateAgentStatus\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
-	Sigs: map[string]string{
-		"58668176": "setAgentRoot(bytes32)",
-		"cbd05965": "updateAgentStatus(address,(uint8,uint32,uint32),bytes32[])",
-	},
-}
-
-// ILightManagerABI is the input ABI used to generate the binding from.
-// Deprecated: Use ILightManagerMetaData.ABI instead.
-var ILightManagerABI = ILightManagerMetaData.ABI
-
-// Deprecated: Use ILightManagerMetaData.Sigs instead.
-// ILightManagerFuncSigs maps the 4-byte function signature to its string representation.
-var ILightManagerFuncSigs = ILightManagerMetaData.Sigs
-
-// ILightManager is an auto generated Go binding around an Ethereum contract.
-type ILightManager struct {
-	ILightManagerCaller     // Read-only binding to the contract
-	ILightManagerTransactor // Write-only binding to the contract
-	ILightManagerFilterer   // Log filterer for contract events
-}
-
-// ILightManagerCaller is an auto generated read-only Go binding around an Ethereum contract.
-type ILightManagerCaller struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// ILightManagerTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type ILightManagerTransactor struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// ILightManagerFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type ILightManagerFilterer struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// ILightManagerSession is an auto generated Go binding around an Ethereum contract,
-// with pre-set call and transact options.
-type ILightManagerSession struct {
-	Contract     *ILightManager    // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts     // Call options to use throughout this session
-	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
-}
-
-// ILightManagerCallerSession is an auto generated read-only Go binding around an Ethereum contract,
-// with pre-set call options.
-type ILightManagerCallerSession struct {
-	Contract *ILightManagerCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts        // Call options to use throughout this session
-}
-
-// ILightManagerTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
-// with pre-set transact options.
-type ILightManagerTransactorSession struct {
-	Contract     *ILightManagerTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts        // Transaction auth options to use throughout this session
-}
-
-// ILightManagerRaw is an auto generated low-level Go binding around an Ethereum contract.
-type ILightManagerRaw struct {
-	Contract *ILightManager // Generic contract binding to access the raw methods on
-}
-
-// ILightManagerCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type ILightManagerCallerRaw struct {
-	Contract *ILightManagerCaller // Generic read-only contract binding to access the raw methods on
-}
-
-// ILightManagerTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type ILightManagerTransactorRaw struct {
-	Contract *ILightManagerTransactor // Generic write-only contract binding to access the raw methods on
-}
-
-// NewILightManager creates a new instance of ILightManager, bound to a specific deployed contract.
-func NewILightManager(address common.Address, backend bind.ContractBackend) (*ILightManager, error) {
-	contract, err := bindILightManager(address, backend, backend, backend)
-	if err != nil {
-		return nil, err
-	}
-	return &ILightManager{ILightManagerCaller: ILightManagerCaller{contract: contract}, ILightManagerTransactor: ILightManagerTransactor{contract: contract}, ILightManagerFilterer: ILightManagerFilterer{contract: contract}}, nil
-}
-
-// NewILightManagerCaller creates a new read-only instance of ILightManager, bound to a specific deployed contract.
-func NewILightManagerCaller(address common.Address, caller bind.ContractCaller) (*ILightManagerCaller, error) {
-	contract, err := bindILightManager(address, caller, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &ILightManagerCaller{contract: contract}, nil
-}
-
-// NewILightManagerTransactor creates a new write-only instance of ILightManager, bound to a specific deployed contract.
-func NewILightManagerTransactor(address common.Address, transactor bind.ContractTransactor) (*ILightManagerTransactor, error) {
-	contract, err := bindILightManager(address, nil, transactor, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &ILightManagerTransactor{contract: contract}, nil
-}
-
-// NewILightManagerFilterer creates a new log filterer instance of ILightManager, bound to a specific deployed contract.
-func NewILightManagerFilterer(address common.Address, filterer bind.ContractFilterer) (*ILightManagerFilterer, error) {
-	contract, err := bindILightManager(address, nil, nil, filterer)
-	if err != nil {
-		return nil, err
-	}
-	return &ILightManagerFilterer{contract: contract}, nil
-}
-
-// bindILightManager binds a generic wrapper to an already deployed contract.
-func bindILightManager(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(ILightManagerABI))
-	if err != nil {
-		return nil, err
-	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_ILightManager *ILightManagerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _ILightManager.Contract.ILightManagerCaller.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_ILightManager *ILightManagerRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _ILightManager.Contract.ILightManagerTransactor.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_ILightManager *ILightManagerRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _ILightManager.Contract.ILightManagerTransactor.contract.Transact(opts, method, params...)
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_ILightManager *ILightManagerCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _ILightManager.Contract.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_ILightManager *ILightManagerTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _ILightManager.Contract.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_ILightManager *ILightManagerTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _ILightManager.Contract.contract.Transact(opts, method, params...)
-}
-
-// SetAgentRoot is a paid mutator transaction binding the contract method 0x58668176.
-//
-// Solidity: function setAgentRoot(bytes32 agentRoot) returns()
-func (_ILightManager *ILightManagerTransactor) SetAgentRoot(opts *bind.TransactOpts, agentRoot [32]byte) (*types.Transaction, error) {
-	return _ILightManager.contract.Transact(opts, "setAgentRoot", agentRoot)
-}
-
-// SetAgentRoot is a paid mutator transaction binding the contract method 0x58668176.
-//
-// Solidity: function setAgentRoot(bytes32 agentRoot) returns()
-func (_ILightManager *ILightManagerSession) SetAgentRoot(agentRoot [32]byte) (*types.Transaction, error) {
-	return _ILightManager.Contract.SetAgentRoot(&_ILightManager.TransactOpts, agentRoot)
-}
-
-// SetAgentRoot is a paid mutator transaction binding the contract method 0x58668176.
-//
-// Solidity: function setAgentRoot(bytes32 agentRoot) returns()
-func (_ILightManager *ILightManagerTransactorSession) SetAgentRoot(agentRoot [32]byte) (*types.Transaction, error) {
-	return _ILightManager.Contract.SetAgentRoot(&_ILightManager.TransactOpts, agentRoot)
-}
-
-// UpdateAgentStatus is a paid mutator transaction binding the contract method 0xcbd05965.
-//
-// Solidity: function updateAgentStatus(address agent, (uint8,uint32,uint32) status, bytes32[] proof) returns()
-func (_ILightManager *ILightManagerTransactor) UpdateAgentStatus(opts *bind.TransactOpts, agent common.Address, status AgentStatus, proof [][32]byte) (*types.Transaction, error) {
-	return _ILightManager.contract.Transact(opts, "updateAgentStatus", agent, status, proof)
-}
-
-// UpdateAgentStatus is a paid mutator transaction binding the contract method 0xcbd05965.
-//
-// Solidity: function updateAgentStatus(address agent, (uint8,uint32,uint32) status, bytes32[] proof) returns()
-func (_ILightManager *ILightManagerSession) UpdateAgentStatus(agent common.Address, status AgentStatus, proof [][32]byte) (*types.Transaction, error) {
-	return _ILightManager.Contract.UpdateAgentStatus(&_ILightManager.TransactOpts, agent, status, proof)
-}
-
-// UpdateAgentStatus is a paid mutator transaction binding the contract method 0xcbd05965.
-//
-// Solidity: function updateAgentStatus(address agent, (uint8,uint32,uint32) status, bytes32[] proof) returns()
-func (_ILightManager *ILightManagerTransactorSession) UpdateAgentStatus(agent common.Address, status AgentStatus, proof [][32]byte) (*types.Transaction, error) {
-	return _ILightManager.Contract.UpdateAgentStatus(&_ILightManager.TransactOpts, agent, status, proof)
-}
-
 // ISystemContractMetaData contains all meta data concerning the ISystemContract contract.
 var ISystemContractMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"contractInterfaceSystemRouter\",\"name\":\"systemRouter_\",\"type\":\"address\"}],\"name\":\"setSystemRouter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"systemRouter\",\"outputs\":[{\"internalType\":\"contractInterfaceSystemRouter\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
@@ -3899,6 +3271,634 @@ func (_Initializable *InitializableFilterer) ParseInitialized(log types.Log) (*I
 	return event, nil
 }
 
+// InterfaceBondingManagerMetaData contains all meta data concerning the InterfaceBondingManager contract.
+var InterfaceBondingManagerMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"addAgent\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"}],\"name\":\"agentLeaf\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"leaf\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"allLeafs\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"leafs\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"completeSlashing\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"completeUnstaking\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"indexFrom\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"getLeafs\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"leafs\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"}],\"name\":\"getProof\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"initiateUnstaking\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"leafsAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proofMaturity\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"callOrigin\",\"type\":\"uint32\"},{\"internalType\":\"enumSystemEntity\",\"name\":\"systemCaller\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"prover\",\"type\":\"address\"}],\"name\":\"remoteRegistrySlash\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"237a85a5": "addAgent(uint32,address,bytes32[])",
+		"c99dcb9e": "agentLeaf(address)",
+		"12db2ef6": "allLeafs()",
+		"fbc5265e": "completeSlashing(uint32,address,bytes32[])",
+		"4c3e1c1f": "completeUnstaking(uint32,address,bytes32[])",
+		"33d1b2e8": "getLeafs(uint256,uint256)",
+		"3eea79d1": "getProof(address)",
+		"130c5673": "initiateUnstaking(uint32,address,bytes32[])",
+		"33c3a8f3": "leafsAmount()",
+		"d49063d0": "remoteRegistrySlash(uint256,uint32,uint8,uint32,address,address)",
+	},
+}
+
+// InterfaceBondingManagerABI is the input ABI used to generate the binding from.
+// Deprecated: Use InterfaceBondingManagerMetaData.ABI instead.
+var InterfaceBondingManagerABI = InterfaceBondingManagerMetaData.ABI
+
+// Deprecated: Use InterfaceBondingManagerMetaData.Sigs instead.
+// InterfaceBondingManagerFuncSigs maps the 4-byte function signature to its string representation.
+var InterfaceBondingManagerFuncSigs = InterfaceBondingManagerMetaData.Sigs
+
+// InterfaceBondingManager is an auto generated Go binding around an Ethereum contract.
+type InterfaceBondingManager struct {
+	InterfaceBondingManagerCaller     // Read-only binding to the contract
+	InterfaceBondingManagerTransactor // Write-only binding to the contract
+	InterfaceBondingManagerFilterer   // Log filterer for contract events
+}
+
+// InterfaceBondingManagerCaller is an auto generated read-only Go binding around an Ethereum contract.
+type InterfaceBondingManagerCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InterfaceBondingManagerTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type InterfaceBondingManagerTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InterfaceBondingManagerFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type InterfaceBondingManagerFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InterfaceBondingManagerSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type InterfaceBondingManagerSession struct {
+	Contract     *InterfaceBondingManager // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts            // Call options to use throughout this session
+	TransactOpts bind.TransactOpts        // Transaction auth options to use throughout this session
+}
+
+// InterfaceBondingManagerCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type InterfaceBondingManagerCallerSession struct {
+	Contract *InterfaceBondingManagerCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts                  // Call options to use throughout this session
+}
+
+// InterfaceBondingManagerTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type InterfaceBondingManagerTransactorSession struct {
+	Contract     *InterfaceBondingManagerTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts                  // Transaction auth options to use throughout this session
+}
+
+// InterfaceBondingManagerRaw is an auto generated low-level Go binding around an Ethereum contract.
+type InterfaceBondingManagerRaw struct {
+	Contract *InterfaceBondingManager // Generic contract binding to access the raw methods on
+}
+
+// InterfaceBondingManagerCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type InterfaceBondingManagerCallerRaw struct {
+	Contract *InterfaceBondingManagerCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// InterfaceBondingManagerTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type InterfaceBondingManagerTransactorRaw struct {
+	Contract *InterfaceBondingManagerTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewInterfaceBondingManager creates a new instance of InterfaceBondingManager, bound to a specific deployed contract.
+func NewInterfaceBondingManager(address common.Address, backend bind.ContractBackend) (*InterfaceBondingManager, error) {
+	contract, err := bindInterfaceBondingManager(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceBondingManager{InterfaceBondingManagerCaller: InterfaceBondingManagerCaller{contract: contract}, InterfaceBondingManagerTransactor: InterfaceBondingManagerTransactor{contract: contract}, InterfaceBondingManagerFilterer: InterfaceBondingManagerFilterer{contract: contract}}, nil
+}
+
+// NewInterfaceBondingManagerCaller creates a new read-only instance of InterfaceBondingManager, bound to a specific deployed contract.
+func NewInterfaceBondingManagerCaller(address common.Address, caller bind.ContractCaller) (*InterfaceBondingManagerCaller, error) {
+	contract, err := bindInterfaceBondingManager(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceBondingManagerCaller{contract: contract}, nil
+}
+
+// NewInterfaceBondingManagerTransactor creates a new write-only instance of InterfaceBondingManager, bound to a specific deployed contract.
+func NewInterfaceBondingManagerTransactor(address common.Address, transactor bind.ContractTransactor) (*InterfaceBondingManagerTransactor, error) {
+	contract, err := bindInterfaceBondingManager(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceBondingManagerTransactor{contract: contract}, nil
+}
+
+// NewInterfaceBondingManagerFilterer creates a new log filterer instance of InterfaceBondingManager, bound to a specific deployed contract.
+func NewInterfaceBondingManagerFilterer(address common.Address, filterer bind.ContractFilterer) (*InterfaceBondingManagerFilterer, error) {
+	contract, err := bindInterfaceBondingManager(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceBondingManagerFilterer{contract: contract}, nil
+}
+
+// bindInterfaceBondingManager binds a generic wrapper to an already deployed contract.
+func bindInterfaceBondingManager(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(InterfaceBondingManagerABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_InterfaceBondingManager *InterfaceBondingManagerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _InterfaceBondingManager.Contract.InterfaceBondingManagerCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_InterfaceBondingManager *InterfaceBondingManagerRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.InterfaceBondingManagerTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_InterfaceBondingManager *InterfaceBondingManagerRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.InterfaceBondingManagerTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_InterfaceBondingManager *InterfaceBondingManagerCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _InterfaceBondingManager.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.contract.Transact(opts, method, params...)
+}
+
+// AgentLeaf is a free data retrieval call binding the contract method 0xc99dcb9e.
+//
+// Solidity: function agentLeaf(address agent) view returns(bytes32 leaf)
+func (_InterfaceBondingManager *InterfaceBondingManagerCaller) AgentLeaf(opts *bind.CallOpts, agent common.Address) ([32]byte, error) {
+	var out []interface{}
+	err := _InterfaceBondingManager.contract.Call(opts, &out, "agentLeaf", agent)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// AgentLeaf is a free data retrieval call binding the contract method 0xc99dcb9e.
+//
+// Solidity: function agentLeaf(address agent) view returns(bytes32 leaf)
+func (_InterfaceBondingManager *InterfaceBondingManagerSession) AgentLeaf(agent common.Address) ([32]byte, error) {
+	return _InterfaceBondingManager.Contract.AgentLeaf(&_InterfaceBondingManager.CallOpts, agent)
+}
+
+// AgentLeaf is a free data retrieval call binding the contract method 0xc99dcb9e.
+//
+// Solidity: function agentLeaf(address agent) view returns(bytes32 leaf)
+func (_InterfaceBondingManager *InterfaceBondingManagerCallerSession) AgentLeaf(agent common.Address) ([32]byte, error) {
+	return _InterfaceBondingManager.Contract.AgentLeaf(&_InterfaceBondingManager.CallOpts, agent)
+}
+
+// AllLeafs is a free data retrieval call binding the contract method 0x12db2ef6.
+//
+// Solidity: function allLeafs() view returns(bytes32[] leafs)
+func (_InterfaceBondingManager *InterfaceBondingManagerCaller) AllLeafs(opts *bind.CallOpts) ([][32]byte, error) {
+	var out []interface{}
+	err := _InterfaceBondingManager.contract.Call(opts, &out, "allLeafs")
+
+	if err != nil {
+		return *new([][32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([][32]byte)).(*[][32]byte)
+
+	return out0, err
+
+}
+
+// AllLeafs is a free data retrieval call binding the contract method 0x12db2ef6.
+//
+// Solidity: function allLeafs() view returns(bytes32[] leafs)
+func (_InterfaceBondingManager *InterfaceBondingManagerSession) AllLeafs() ([][32]byte, error) {
+	return _InterfaceBondingManager.Contract.AllLeafs(&_InterfaceBondingManager.CallOpts)
+}
+
+// AllLeafs is a free data retrieval call binding the contract method 0x12db2ef6.
+//
+// Solidity: function allLeafs() view returns(bytes32[] leafs)
+func (_InterfaceBondingManager *InterfaceBondingManagerCallerSession) AllLeafs() ([][32]byte, error) {
+	return _InterfaceBondingManager.Contract.AllLeafs(&_InterfaceBondingManager.CallOpts)
+}
+
+// GetLeafs is a free data retrieval call binding the contract method 0x33d1b2e8.
+//
+// Solidity: function getLeafs(uint256 indexFrom, uint256 amount) view returns(bytes32[] leafs)
+func (_InterfaceBondingManager *InterfaceBondingManagerCaller) GetLeafs(opts *bind.CallOpts, indexFrom *big.Int, amount *big.Int) ([][32]byte, error) {
+	var out []interface{}
+	err := _InterfaceBondingManager.contract.Call(opts, &out, "getLeafs", indexFrom, amount)
+
+	if err != nil {
+		return *new([][32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([][32]byte)).(*[][32]byte)
+
+	return out0, err
+
+}
+
+// GetLeafs is a free data retrieval call binding the contract method 0x33d1b2e8.
+//
+// Solidity: function getLeafs(uint256 indexFrom, uint256 amount) view returns(bytes32[] leafs)
+func (_InterfaceBondingManager *InterfaceBondingManagerSession) GetLeafs(indexFrom *big.Int, amount *big.Int) ([][32]byte, error) {
+	return _InterfaceBondingManager.Contract.GetLeafs(&_InterfaceBondingManager.CallOpts, indexFrom, amount)
+}
+
+// GetLeafs is a free data retrieval call binding the contract method 0x33d1b2e8.
+//
+// Solidity: function getLeafs(uint256 indexFrom, uint256 amount) view returns(bytes32[] leafs)
+func (_InterfaceBondingManager *InterfaceBondingManagerCallerSession) GetLeafs(indexFrom *big.Int, amount *big.Int) ([][32]byte, error) {
+	return _InterfaceBondingManager.Contract.GetLeafs(&_InterfaceBondingManager.CallOpts, indexFrom, amount)
+}
+
+// GetProof is a free data retrieval call binding the contract method 0x3eea79d1.
+//
+// Solidity: function getProof(address agent) view returns(bytes32[] proof)
+func (_InterfaceBondingManager *InterfaceBondingManagerCaller) GetProof(opts *bind.CallOpts, agent common.Address) ([][32]byte, error) {
+	var out []interface{}
+	err := _InterfaceBondingManager.contract.Call(opts, &out, "getProof", agent)
+
+	if err != nil {
+		return *new([][32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([][32]byte)).(*[][32]byte)
+
+	return out0, err
+
+}
+
+// GetProof is a free data retrieval call binding the contract method 0x3eea79d1.
+//
+// Solidity: function getProof(address agent) view returns(bytes32[] proof)
+func (_InterfaceBondingManager *InterfaceBondingManagerSession) GetProof(agent common.Address) ([][32]byte, error) {
+	return _InterfaceBondingManager.Contract.GetProof(&_InterfaceBondingManager.CallOpts, agent)
+}
+
+// GetProof is a free data retrieval call binding the contract method 0x3eea79d1.
+//
+// Solidity: function getProof(address agent) view returns(bytes32[] proof)
+func (_InterfaceBondingManager *InterfaceBondingManagerCallerSession) GetProof(agent common.Address) ([][32]byte, error) {
+	return _InterfaceBondingManager.Contract.GetProof(&_InterfaceBondingManager.CallOpts, agent)
+}
+
+// LeafsAmount is a free data retrieval call binding the contract method 0x33c3a8f3.
+//
+// Solidity: function leafsAmount() view returns(uint256 amount)
+func (_InterfaceBondingManager *InterfaceBondingManagerCaller) LeafsAmount(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _InterfaceBondingManager.contract.Call(opts, &out, "leafsAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// LeafsAmount is a free data retrieval call binding the contract method 0x33c3a8f3.
+//
+// Solidity: function leafsAmount() view returns(uint256 amount)
+func (_InterfaceBondingManager *InterfaceBondingManagerSession) LeafsAmount() (*big.Int, error) {
+	return _InterfaceBondingManager.Contract.LeafsAmount(&_InterfaceBondingManager.CallOpts)
+}
+
+// LeafsAmount is a free data retrieval call binding the contract method 0x33c3a8f3.
+//
+// Solidity: function leafsAmount() view returns(uint256 amount)
+func (_InterfaceBondingManager *InterfaceBondingManagerCallerSession) LeafsAmount() (*big.Int, error) {
+	return _InterfaceBondingManager.Contract.LeafsAmount(&_InterfaceBondingManager.CallOpts)
+}
+
+// AddAgent is a paid mutator transaction binding the contract method 0x237a85a5.
+//
+// Solidity: function addAgent(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactor) AddAgent(opts *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.contract.Transact(opts, "addAgent", domain, agent, proof)
+}
+
+// AddAgent is a paid mutator transaction binding the contract method 0x237a85a5.
+//
+// Solidity: function addAgent(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerSession) AddAgent(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.AddAgent(&_InterfaceBondingManager.TransactOpts, domain, agent, proof)
+}
+
+// AddAgent is a paid mutator transaction binding the contract method 0x237a85a5.
+//
+// Solidity: function addAgent(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactorSession) AddAgent(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.AddAgent(&_InterfaceBondingManager.TransactOpts, domain, agent, proof)
+}
+
+// CompleteSlashing is a paid mutator transaction binding the contract method 0xfbc5265e.
+//
+// Solidity: function completeSlashing(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactor) CompleteSlashing(opts *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.contract.Transact(opts, "completeSlashing", domain, agent, proof)
+}
+
+// CompleteSlashing is a paid mutator transaction binding the contract method 0xfbc5265e.
+//
+// Solidity: function completeSlashing(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerSession) CompleteSlashing(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.CompleteSlashing(&_InterfaceBondingManager.TransactOpts, domain, agent, proof)
+}
+
+// CompleteSlashing is a paid mutator transaction binding the contract method 0xfbc5265e.
+//
+// Solidity: function completeSlashing(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactorSession) CompleteSlashing(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.CompleteSlashing(&_InterfaceBondingManager.TransactOpts, domain, agent, proof)
+}
+
+// CompleteUnstaking is a paid mutator transaction binding the contract method 0x4c3e1c1f.
+//
+// Solidity: function completeUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactor) CompleteUnstaking(opts *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.contract.Transact(opts, "completeUnstaking", domain, agent, proof)
+}
+
+// CompleteUnstaking is a paid mutator transaction binding the contract method 0x4c3e1c1f.
+//
+// Solidity: function completeUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerSession) CompleteUnstaking(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.CompleteUnstaking(&_InterfaceBondingManager.TransactOpts, domain, agent, proof)
+}
+
+// CompleteUnstaking is a paid mutator transaction binding the contract method 0x4c3e1c1f.
+//
+// Solidity: function completeUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactorSession) CompleteUnstaking(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.CompleteUnstaking(&_InterfaceBondingManager.TransactOpts, domain, agent, proof)
+}
+
+// InitiateUnstaking is a paid mutator transaction binding the contract method 0x130c5673.
+//
+// Solidity: function initiateUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactor) InitiateUnstaking(opts *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.contract.Transact(opts, "initiateUnstaking", domain, agent, proof)
+}
+
+// InitiateUnstaking is a paid mutator transaction binding the contract method 0x130c5673.
+//
+// Solidity: function initiateUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerSession) InitiateUnstaking(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.InitiateUnstaking(&_InterfaceBondingManager.TransactOpts, domain, agent, proof)
+}
+
+// InitiateUnstaking is a paid mutator transaction binding the contract method 0x130c5673.
+//
+// Solidity: function initiateUnstaking(uint32 domain, address agent, bytes32[] proof) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactorSession) InitiateUnstaking(domain uint32, agent common.Address, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.InitiateUnstaking(&_InterfaceBondingManager.TransactOpts, domain, agent, proof)
+}
+
+// RemoteRegistrySlash is a paid mutator transaction binding the contract method 0xd49063d0.
+//
+// Solidity: function remoteRegistrySlash(uint256 proofMaturity, uint32 callOrigin, uint8 systemCaller, uint32 domain, address agent, address prover) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactor) RemoteRegistrySlash(opts *bind.TransactOpts, proofMaturity *big.Int, callOrigin uint32, systemCaller uint8, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
+	return _InterfaceBondingManager.contract.Transact(opts, "remoteRegistrySlash", proofMaturity, callOrigin, systemCaller, domain, agent, prover)
+}
+
+// RemoteRegistrySlash is a paid mutator transaction binding the contract method 0xd49063d0.
+//
+// Solidity: function remoteRegistrySlash(uint256 proofMaturity, uint32 callOrigin, uint8 systemCaller, uint32 domain, address agent, address prover) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerSession) RemoteRegistrySlash(proofMaturity *big.Int, callOrigin uint32, systemCaller uint8, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.RemoteRegistrySlash(&_InterfaceBondingManager.TransactOpts, proofMaturity, callOrigin, systemCaller, domain, agent, prover)
+}
+
+// RemoteRegistrySlash is a paid mutator transaction binding the contract method 0xd49063d0.
+//
+// Solidity: function remoteRegistrySlash(uint256 proofMaturity, uint32 callOrigin, uint8 systemCaller, uint32 domain, address agent, address prover) returns()
+func (_InterfaceBondingManager *InterfaceBondingManagerTransactorSession) RemoteRegistrySlash(proofMaturity *big.Int, callOrigin uint32, systemCaller uint8, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
+	return _InterfaceBondingManager.Contract.RemoteRegistrySlash(&_InterfaceBondingManager.TransactOpts, proofMaturity, callOrigin, systemCaller, domain, agent, prover)
+}
+
+// InterfaceLightManagerMetaData contains all meta data concerning the InterfaceLightManager contract.
+var InterfaceLightManagerMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"agentRoot\",\"type\":\"bytes32\"}],\"name\":\"setAgentRoot\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"agent\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"enumAgentFlag\",\"name\":\"flag\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"domain\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"index\",\"type\":\"uint32\"}],\"internalType\":\"structAgentStatus\",\"name\":\"status\",\"type\":\"tuple\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"updateAgentStatus\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"58668176": "setAgentRoot(bytes32)",
+		"cbd05965": "updateAgentStatus(address,(uint8,uint32,uint32),bytes32[])",
+	},
+}
+
+// InterfaceLightManagerABI is the input ABI used to generate the binding from.
+// Deprecated: Use InterfaceLightManagerMetaData.ABI instead.
+var InterfaceLightManagerABI = InterfaceLightManagerMetaData.ABI
+
+// Deprecated: Use InterfaceLightManagerMetaData.Sigs instead.
+// InterfaceLightManagerFuncSigs maps the 4-byte function signature to its string representation.
+var InterfaceLightManagerFuncSigs = InterfaceLightManagerMetaData.Sigs
+
+// InterfaceLightManager is an auto generated Go binding around an Ethereum contract.
+type InterfaceLightManager struct {
+	InterfaceLightManagerCaller     // Read-only binding to the contract
+	InterfaceLightManagerTransactor // Write-only binding to the contract
+	InterfaceLightManagerFilterer   // Log filterer for contract events
+}
+
+// InterfaceLightManagerCaller is an auto generated read-only Go binding around an Ethereum contract.
+type InterfaceLightManagerCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InterfaceLightManagerTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type InterfaceLightManagerTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InterfaceLightManagerFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type InterfaceLightManagerFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InterfaceLightManagerSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type InterfaceLightManagerSession struct {
+	Contract     *InterfaceLightManager // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts          // Call options to use throughout this session
+	TransactOpts bind.TransactOpts      // Transaction auth options to use throughout this session
+}
+
+// InterfaceLightManagerCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type InterfaceLightManagerCallerSession struct {
+	Contract *InterfaceLightManagerCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts                // Call options to use throughout this session
+}
+
+// InterfaceLightManagerTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type InterfaceLightManagerTransactorSession struct {
+	Contract     *InterfaceLightManagerTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts                // Transaction auth options to use throughout this session
+}
+
+// InterfaceLightManagerRaw is an auto generated low-level Go binding around an Ethereum contract.
+type InterfaceLightManagerRaw struct {
+	Contract *InterfaceLightManager // Generic contract binding to access the raw methods on
+}
+
+// InterfaceLightManagerCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type InterfaceLightManagerCallerRaw struct {
+	Contract *InterfaceLightManagerCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// InterfaceLightManagerTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type InterfaceLightManagerTransactorRaw struct {
+	Contract *InterfaceLightManagerTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewInterfaceLightManager creates a new instance of InterfaceLightManager, bound to a specific deployed contract.
+func NewInterfaceLightManager(address common.Address, backend bind.ContractBackend) (*InterfaceLightManager, error) {
+	contract, err := bindInterfaceLightManager(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceLightManager{InterfaceLightManagerCaller: InterfaceLightManagerCaller{contract: contract}, InterfaceLightManagerTransactor: InterfaceLightManagerTransactor{contract: contract}, InterfaceLightManagerFilterer: InterfaceLightManagerFilterer{contract: contract}}, nil
+}
+
+// NewInterfaceLightManagerCaller creates a new read-only instance of InterfaceLightManager, bound to a specific deployed contract.
+func NewInterfaceLightManagerCaller(address common.Address, caller bind.ContractCaller) (*InterfaceLightManagerCaller, error) {
+	contract, err := bindInterfaceLightManager(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceLightManagerCaller{contract: contract}, nil
+}
+
+// NewInterfaceLightManagerTransactor creates a new write-only instance of InterfaceLightManager, bound to a specific deployed contract.
+func NewInterfaceLightManagerTransactor(address common.Address, transactor bind.ContractTransactor) (*InterfaceLightManagerTransactor, error) {
+	contract, err := bindInterfaceLightManager(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceLightManagerTransactor{contract: contract}, nil
+}
+
+// NewInterfaceLightManagerFilterer creates a new log filterer instance of InterfaceLightManager, bound to a specific deployed contract.
+func NewInterfaceLightManagerFilterer(address common.Address, filterer bind.ContractFilterer) (*InterfaceLightManagerFilterer, error) {
+	contract, err := bindInterfaceLightManager(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &InterfaceLightManagerFilterer{contract: contract}, nil
+}
+
+// bindInterfaceLightManager binds a generic wrapper to an already deployed contract.
+func bindInterfaceLightManager(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(InterfaceLightManagerABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_InterfaceLightManager *InterfaceLightManagerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _InterfaceLightManager.Contract.InterfaceLightManagerCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_InterfaceLightManager *InterfaceLightManagerRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _InterfaceLightManager.Contract.InterfaceLightManagerTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_InterfaceLightManager *InterfaceLightManagerRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _InterfaceLightManager.Contract.InterfaceLightManagerTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_InterfaceLightManager *InterfaceLightManagerCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _InterfaceLightManager.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_InterfaceLightManager *InterfaceLightManagerTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _InterfaceLightManager.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_InterfaceLightManager *InterfaceLightManagerTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _InterfaceLightManager.Contract.contract.Transact(opts, method, params...)
+}
+
+// SetAgentRoot is a paid mutator transaction binding the contract method 0x58668176.
+//
+// Solidity: function setAgentRoot(bytes32 agentRoot) returns()
+func (_InterfaceLightManager *InterfaceLightManagerTransactor) SetAgentRoot(opts *bind.TransactOpts, agentRoot [32]byte) (*types.Transaction, error) {
+	return _InterfaceLightManager.contract.Transact(opts, "setAgentRoot", agentRoot)
+}
+
+// SetAgentRoot is a paid mutator transaction binding the contract method 0x58668176.
+//
+// Solidity: function setAgentRoot(bytes32 agentRoot) returns()
+func (_InterfaceLightManager *InterfaceLightManagerSession) SetAgentRoot(agentRoot [32]byte) (*types.Transaction, error) {
+	return _InterfaceLightManager.Contract.SetAgentRoot(&_InterfaceLightManager.TransactOpts, agentRoot)
+}
+
+// SetAgentRoot is a paid mutator transaction binding the contract method 0x58668176.
+//
+// Solidity: function setAgentRoot(bytes32 agentRoot) returns()
+func (_InterfaceLightManager *InterfaceLightManagerTransactorSession) SetAgentRoot(agentRoot [32]byte) (*types.Transaction, error) {
+	return _InterfaceLightManager.Contract.SetAgentRoot(&_InterfaceLightManager.TransactOpts, agentRoot)
+}
+
+// UpdateAgentStatus is a paid mutator transaction binding the contract method 0xcbd05965.
+//
+// Solidity: function updateAgentStatus(address agent, (uint8,uint32,uint32) status, bytes32[] proof) returns()
+func (_InterfaceLightManager *InterfaceLightManagerTransactor) UpdateAgentStatus(opts *bind.TransactOpts, agent common.Address, status AgentStatus, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceLightManager.contract.Transact(opts, "updateAgentStatus", agent, status, proof)
+}
+
+// UpdateAgentStatus is a paid mutator transaction binding the contract method 0xcbd05965.
+//
+// Solidity: function updateAgentStatus(address agent, (uint8,uint32,uint32) status, bytes32[] proof) returns()
+func (_InterfaceLightManager *InterfaceLightManagerSession) UpdateAgentStatus(agent common.Address, status AgentStatus, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceLightManager.Contract.UpdateAgentStatus(&_InterfaceLightManager.TransactOpts, agent, status, proof)
+}
+
+// UpdateAgentStatus is a paid mutator transaction binding the contract method 0xcbd05965.
+//
+// Solidity: function updateAgentStatus(address agent, (uint8,uint32,uint32) status, bytes32[] proof) returns()
+func (_InterfaceLightManager *InterfaceLightManagerTransactorSession) UpdateAgentStatus(agent common.Address, status AgentStatus, proof [][32]byte) (*types.Transaction, error) {
+	return _InterfaceLightManager.Contract.UpdateAgentStatus(&_InterfaceLightManager.TransactOpts, agent, status, proof)
+}
+
 // InterfaceSystemRouterMetaData contains all meta data concerning the InterfaceSystemRouter contract.
 var InterfaceSystemRouterMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"origin\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"nonce\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"proofMaturity\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"body\",\"type\":\"bytes\"}],\"name\":\"receiveSystemMessage\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"destination\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"optimisticPeriod\",\"type\":\"uint32\"},{\"internalType\":\"enumSystemEntity\",\"name\":\"recipient\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"systemCall\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
@@ -4122,7 +4122,7 @@ var LightManagerMetaData = &bind.MetaData{
 		"cbd05965": "updateAgentStatus(address,(uint8,uint32,uint32),bytes32[])",
 		"54fd4d50": "version()",
 	},
-	Bin: "0x60e06040523480156200001157600080fd5b5060405162001b5b38038062001b5b833981016040819052620000349162000131565b604080518082019091526005815264302e302e3360d81b60208083019190915263ffffffff8316608052815160a08190521115620000b95760405162461bcd60e51b815260206004820152601560248201527f537472696e67206c656e677468206f766572203332000000000000000000000060448201526064015b60405180910390fd5b620000c48162000160565b60c05250620000db60805163ffffffff16600a1490565b156200012a5760405162461bcd60e51b815260206004820152601d60248201527f43616e2774206265206465706c6f796564206f6e2053796e436861696e0000006044820152606401620000b0565b5062000188565b6000602082840312156200014457600080fd5b815163ffffffff811681146200015957600080fd5b9392505050565b8051602080830151919081101562000182576000198160200360031b1b821691505b50919050565b60805160a05160c0516119a3620001b860003960006101e2015260006101bf0152600061023201526119a36000f3fe608060405234801561001057600080fd5b506004361061011b5760003560e01c80638da5cb5b116100b2578063c02b89ff11610081578063f2fde38b11610066578063f2fde38b1461034e578063f750faa314610361578063fbde22f71461037457600080fd5b8063c02b89ff146102cf578063cbd059651461033b57600080fd5b80638da5cb5b14610269578063938b5f3214610287578063b269681d146102a7578063bf61e67e146102c757600080fd5b806354fd4d50116100ee57806354fd4d50146101b45780635866817614610212578063715018a6146102255780638d3638f41461022d57600080fd5b806328f3fac91461012057806336cba43c14610149578063485cc9551461015a578063529d15491461016f575b600080fd5b61013361012e366004611481565b610387565b60405161014091906114e8565b60405180910390f35b60c954604051908152602001610140565b61016d610168366004611521565b610407565b005b60655461018f9073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff9091168152602001610140565b6040805180820182527f000000000000000000000000000000000000000000000000000000000000000081527f00000000000000000000000000000000000000000000000000000000000000006020820152905161014091906115be565b61016d6102203660046115d1565b6104c2565b61016d61053a565b6102547f000000000000000000000000000000000000000000000000000000000000000081565b60405163ffffffff9091168152602001610140565b60335473ffffffffffffffffffffffffffffffffffffffff1661018f565b60975461018f9073ffffffffffffffffffffffffffffffffffffffff1681565b60985461018f9073ffffffffffffffffffffffffffffffffffffffff1681565b610254600a81565b61030f6102dd366004611481565b60996020526000908152604090205460ff811690610100900473ffffffffffffffffffffffffffffffffffffffff1682565b60408051921515835273ffffffffffffffffffffffffffffffffffffffff909116602083015201610140565b61016d6103493660046116e6565b6105a3565b61016d61035c366004611481565b610798565b61016d61036f3660046117c9565b610891565b61016d610382366004611481565b6109ba565b60408051606081018252600080825260208201819052918101919091526103ad82610a68565b73ffffffffffffffffffffffffffffffffffffffff831660009081526099602052604090205490915060ff1680156103f857506005815160058111156103f5576103f56114a5565b14155b1561040257600481525b919050565b60006104136001610b11565b9050801561044857600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00ff166101001790555b6104528383610c63565b61045a610d33565b80156104bd57600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00ff169055604051600181527f7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb38474024989060200160405180910390a15b505050565b60985473ffffffffffffffffffffffffffffffffffffffff16331461052e5760405162461bcd60e51b815260206004820181905260248201527f4f6e6c792044657374696e6174696f6e2073657473206167656e7420726f6f7460448201526064015b60405180910390fd5b61053781610db8565b50565b60335473ffffffffffffffffffffffffffffffffffffffff1633146105a15760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152606401610525565b565b60006105b88360000151846020015186610dfc565b9050600060c9549050806105d9856040015163ffffffff1684866020610e32565b146106265760405162461bcd60e51b815260206004820152600d60248201527f496e76616c69642070726f6f66000000000000000000000000000000000000006044820152606401610525565b600081815260ca6020908152604080832073ffffffffffffffffffffffffffffffffffffffff891684529091529020845181548692919082907fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00166001836005811115610695576106956114a5565b021790555060208281015182546040948501517fffffffffffffffffffffffffffffffffffffffffffffff0000000000000000ff90911661010063ffffffff938416027fffffffffffffffffffffffffffffffffffffffffffffff00000000ffffffffff16176501000000000091831691909102179092558601518651925173ffffffffffffffffffffffffffffffffffffffff89169391909216917f8f9b8b0f4f062833bec85ea9a8465e4a1207b4be6eb565bbd0ae8b913588d04e9161075c91611812565b60405180910390a3600584516005811115610779576107796114a5565b03610791576020840151610791906003908733610f00565b5050505050565b60335473ffffffffffffffffffffffffffffffffffffffff1633146107ff5760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152606401610525565b73ffffffffffffffffffffffffffffffffffffffff81166108885760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f64647265737300000000000000000000000000000000000000000000000000006064820152608401610525565b6105378161104c565b61089c8383836110c3565b60975473ffffffffffffffffffffffffffffffffffffffff163303610972576108c86002848484610f00565b6104bd600a6201518061096d8686866040805163ffffffff94909416602485015273ffffffffffffffffffffffffffffffffffffffff9283166044850152911660648084019190915281518084039091018152608490920190526020810180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff167fd49063d00000000000000000000000000000000000000000000000000000000017905290565b6112c6565b60405162461bcd60e51b815260206004820152601360248201527f556e617574686f72697a65642063616c6c6572000000000000000000000000006044820152606401610525565b60335473ffffffffffffffffffffffffffffffffffffffff163314610a215760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152606401610525565b606580547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff92909216919091179055565b60408051606080820183526000808352602080840182905283850182905260c954825260ca815284822073ffffffffffffffffffffffffffffffffffffffff8716835290528390208351918201909352825491929091829060ff166005811115610ad457610ad46114a5565b6005811115610ae557610ae56114a5565b8152905463ffffffff610100820481166020840152650100000000009091041660409091015292915050565b60008054610100900460ff1615610bae578160ff166001148015610b345750303b155b610ba65760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201527f647920696e697469616c697a65640000000000000000000000000000000000006064820152608401610525565b506000919050565b60005460ff808416911610610c2b5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201527f647920696e697469616c697a65640000000000000000000000000000000000006064820152608401610525565b50600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff001660ff92909216919091179055600190565b600054610100900460ff16610ce05760405162461bcd60e51b815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201527f6e697469616c697a696e670000000000000000000000000000000000000000006064820152608401610525565b6097805473ffffffffffffffffffffffffffffffffffffffff9384167fffffffffffffffffffffffff00000000000000000000000000000000000000009182161790915560988054929093169116179055565b600054610100900460ff16610db05760405162461bcd60e51b815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201527f6e697469616c697a696e670000000000000000000000000000000000000000006064820152608401610525565b6105a161135a565b8060c954146105375760c98190556040518181527f2cbc14f49c068133583f7cb530018af451c87c1cf1327cf2a4ff4698c4730aa49060200160405180910390a150565b6000838383604051602001610e1393929190611820565b6040516020818303038152906040528051906020012090509392505050565b815160009082811115610e875760405162461bcd60e51b815260206004820152600e60248201527f50726f6f6620746f6f206c6f6e670000000000000000000000000000000000006044820152606401610525565b84915060005b81811015610ecc57610eba83868381518110610eab57610eab611898565b602002602001015189846113e0565b9250610ec5816118c7565b9050610e8d565b50805b83811015610ef657610ee483600089846113e0565b9250610eef816118c7565b9050610ecf565b5050949350505050565b6002841615610fa3576098546040517f5f7bd14400000000000000000000000000000000000000000000000000000000815263ffffffff8516600482015273ffffffffffffffffffffffffffffffffffffffff8481166024830152838116604483015290911690635f7bd14490606401600060405180830381600087803b158015610f8a57600080fd5b505af1158015610f9e573d6000803e3d6000fd5b505050505b6001841615611046576097546040517f5f7bd14400000000000000000000000000000000000000000000000000000000815263ffffffff8516600482015273ffffffffffffffffffffffffffffffffffffffff8481166024830152838116604483015290911690635f7bd14490606401600060405180830381600087803b15801561102d57600080fd5b505af1158015611041573d6000803e3d6000fd5b505050505b50505050565b6033805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681179093556040519116919082907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a35050565b73ffffffffffffffffffffffffffffffffffffffff821660009081526099602052604090205460ff16156111395760405162461bcd60e51b815260206004820152600f60248201527f416c726561647920736c617368656400000000000000000000000000000000006044820152606401610525565b600061114483610a68565b905060018151600581111561115b5761115b6114a5565b14806111795750600281516005811115611177576111776114a5565b145b801561119457508363ffffffff16816020015163ffffffff16145b6111e05760405162461bcd60e51b815260206004820152601f60248201527f536c617368696e6720636f756c64206e6f7420626520696e69746961746564006044820152606401610525565b6040805180820182526001815273ffffffffffffffffffffffffffffffffffffffff848116602080840191825287831660008181526099909252908590209351845492517fffffffffffffffffffffff0000000000000000000000000000000000000000009093169015157fffffffffffffffffffffff0000000000000000000000000000000000000000ff1617610100929093169190910291909117909155905163ffffffff8616907f8f9b8b0f4f062833bec85ea9a8465e4a1207b4be6eb565bbd0ae8b913588d04e906112b890600490611812565b60405180910390a350505050565b6065546040517fbf65bc4600000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff9091169063bf65bc469061132390869086906002908790600401611926565b600060405180830381600087803b15801561133d57600080fd5b505af1158015611351573d6000803e3d6000fd5b50505050505050565b600054610100900460ff166113d75760405162461bcd60e51b815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201527f6e697469616c697a696e670000000000000000000000000000000000000000006064820152608401610525565b6105a13361104c565b6000600183831c1681036113ff576113f88585611411565b9050611409565b6113f88486611411565b949350505050565b60008215801561141f575081155b1561142c57506000611459565b60408051602081018590529081018390526060016040516020818303038152906040528051906020012090505b92915050565b73ffffffffffffffffffffffffffffffffffffffff8116811461053757600080fd5b60006020828403121561149357600080fd5b813561149e8161145f565b9392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602160045260246000fd5b600681106114e4576114e46114a5565b9052565b60006060820190506114fb8284516114d4565b602083015163ffffffff8082166020850152806040860151166040850152505092915050565b6000806040838503121561153457600080fd5b823561153f8161145f565b9150602083013561154f8161145f565b809150509250929050565b6000815180845260005b8181101561158057602081850181015186830182015201611564565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b60208152600061149e602083018461155a565b6000602082840312156115e357600080fd5b5035919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b803563ffffffff8116811461040257600080fd5b600082601f83011261163e57600080fd5b8135602067ffffffffffffffff8083111561165b5761165b6115ea565b8260051b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0603f8301168101818110848211171561169e5761169e6115ea565b6040529384528581018301938381019250878511156116bc57600080fd5b83870191505b848210156116db578135835291830191908301906116c2565b979650505050505050565b600080600083850360a08112156116fc57600080fd5b84356117078161145f565b935060607fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe08201121561173957600080fd5b506040516060810167ffffffffffffffff828210818311171561175e5761175e6115ea565b81604052602087013591506006821061177657600080fd5b81835261178560408801611619565b602084015261179660608801611619565b6040840152919350608086013591808311156117b157600080fd5b50506117bf8682870161162d565b9150509250925092565b6000806000606084860312156117de57600080fd5b6117e784611619565b925060208401356117f78161145f565b915060408401356118078161145f565b809150509250925092565b6020810161145982846114d4565b600060068510611832576118326114a5565b5060f89390931b835260e09190911b7fffffffff0000000000000000000000000000000000000000000000000000000016600183015260601b7fffffffffffffffffffffffffffffffffffffffff00000000000000000000000016600582015260190190565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff820361191f577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b5060010190565b63ffffffff858116825284166020820152600060038410611949576119496114a5565b83604083015260806060830152611963608083018461155a565b969550505050505056fea2646970667358221220de55780599216f82d013efa0605bef2503a630373835e523c878f7e4aa950d8f64736f6c63430008110033",
+	Bin: "0x60e06040523480156200001157600080fd5b5060405162001b5b38038062001b5b833981016040819052620000349162000131565b604080518082019091526005815264302e302e3360d81b60208083019190915263ffffffff8316608052815160a08190521115620000b95760405162461bcd60e51b815260206004820152601560248201527f537472696e67206c656e677468206f766572203332000000000000000000000060448201526064015b60405180910390fd5b620000c48162000160565b60c05250620000db60805163ffffffff16600a1490565b156200012a5760405162461bcd60e51b815260206004820152601d60248201527f43616e2774206265206465706c6f796564206f6e2053796e436861696e0000006044820152606401620000b0565b5062000188565b6000602082840312156200014457600080fd5b815163ffffffff811681146200015957600080fd5b9392505050565b8051602080830151919081101562000182576000198160200360031b1b821691505b50919050565b60805160a05160c0516119a3620001b860003960006101e2015260006101bf0152600061023201526119a36000f3fe608060405234801561001057600080fd5b506004361061011b5760003560e01c80638da5cb5b116100b2578063c02b89ff11610081578063f2fde38b11610066578063f2fde38b1461034e578063f750faa314610361578063fbde22f71461037457600080fd5b8063c02b89ff146102cf578063cbd059651461033b57600080fd5b80638da5cb5b14610269578063938b5f3214610287578063b269681d146102a7578063bf61e67e146102c757600080fd5b806354fd4d50116100ee57806354fd4d50146101b45780635866817614610212578063715018a6146102255780638d3638f41461022d57600080fd5b806328f3fac91461012057806336cba43c14610149578063485cc9551461015a578063529d15491461016f575b600080fd5b61013361012e366004611481565b610387565b60405161014091906114e8565b60405180910390f35b60c954604051908152602001610140565b61016d610168366004611521565b610407565b005b60655461018f9073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff9091168152602001610140565b6040805180820182527f000000000000000000000000000000000000000000000000000000000000000081527f00000000000000000000000000000000000000000000000000000000000000006020820152905161014091906115be565b61016d6102203660046115d1565b6104c2565b61016d61053a565b6102547f000000000000000000000000000000000000000000000000000000000000000081565b60405163ffffffff9091168152602001610140565b60335473ffffffffffffffffffffffffffffffffffffffff1661018f565b60975461018f9073ffffffffffffffffffffffffffffffffffffffff1681565b60985461018f9073ffffffffffffffffffffffffffffffffffffffff1681565b610254600a81565b61030f6102dd366004611481565b60996020526000908152604090205460ff811690610100900473ffffffffffffffffffffffffffffffffffffffff1682565b60408051921515835273ffffffffffffffffffffffffffffffffffffffff909116602083015201610140565b61016d6103493660046116e6565b6105a3565b61016d61035c366004611481565b610798565b61016d61036f3660046117c9565b610891565b61016d610382366004611481565b6109ba565b60408051606081018252600080825260208201819052918101919091526103ad82610a68565b73ffffffffffffffffffffffffffffffffffffffff831660009081526099602052604090205490915060ff1680156103f857506005815160058111156103f5576103f56114a5565b14155b1561040257600481525b919050565b60006104136001610b11565b9050801561044857600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00ff166101001790555b6104528383610c63565b61045a610d33565b80156104bd57600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00ff169055604051600181527f7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb38474024989060200160405180910390a15b505050565b60985473ffffffffffffffffffffffffffffffffffffffff16331461052e5760405162461bcd60e51b815260206004820181905260248201527f4f6e6c792044657374696e6174696f6e2073657473206167656e7420726f6f7460448201526064015b60405180910390fd5b61053781610db8565b50565b60335473ffffffffffffffffffffffffffffffffffffffff1633146105a15760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152606401610525565b565b60006105b88360000151846020015186610dfc565b9050600060c9549050806105d9856040015163ffffffff1684866020610e32565b146106265760405162461bcd60e51b815260206004820152600d60248201527f496e76616c69642070726f6f66000000000000000000000000000000000000006044820152606401610525565b600081815260ca6020908152604080832073ffffffffffffffffffffffffffffffffffffffff891684529091529020845181548692919082907fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00166001836005811115610695576106956114a5565b021790555060208281015182546040948501517fffffffffffffffffffffffffffffffffffffffffffffff0000000000000000ff90911661010063ffffffff938416027fffffffffffffffffffffffffffffffffffffffffffffff00000000ffffffffff16176501000000000091831691909102179092558601518651925173ffffffffffffffffffffffffffffffffffffffff89169391909216917f8f9b8b0f4f062833bec85ea9a8465e4a1207b4be6eb565bbd0ae8b913588d04e9161075c91611812565b60405180910390a3600584516005811115610779576107796114a5565b03610791576020840151610791906003908733610f00565b5050505050565b60335473ffffffffffffffffffffffffffffffffffffffff1633146107ff5760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152606401610525565b73ffffffffffffffffffffffffffffffffffffffff81166108885760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f64647265737300000000000000000000000000000000000000000000000000006064820152608401610525565b6105378161104c565b61089c8383836110c3565b60975473ffffffffffffffffffffffffffffffffffffffff163303610972576108c86002848484610f00565b6104bd600a6201518061096d8686866040805163ffffffff94909416602485015273ffffffffffffffffffffffffffffffffffffffff9283166044850152911660648084019190915281518084039091018152608490920190526020810180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff167fd49063d00000000000000000000000000000000000000000000000000000000017905290565b6112c6565b60405162461bcd60e51b815260206004820152601360248201527f556e617574686f72697a65642063616c6c6572000000000000000000000000006044820152606401610525565b60335473ffffffffffffffffffffffffffffffffffffffff163314610a215760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152606401610525565b606580547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff92909216919091179055565b60408051606080820183526000808352602080840182905283850182905260c954825260ca815284822073ffffffffffffffffffffffffffffffffffffffff8716835290528390208351918201909352825491929091829060ff166005811115610ad457610ad46114a5565b6005811115610ae557610ae56114a5565b8152905463ffffffff610100820481166020840152650100000000009091041660409091015292915050565b60008054610100900460ff1615610bae578160ff166001148015610b345750303b155b610ba65760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201527f647920696e697469616c697a65640000000000000000000000000000000000006064820152608401610525565b506000919050565b60005460ff808416911610610c2b5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201527f647920696e697469616c697a65640000000000000000000000000000000000006064820152608401610525565b50600080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff001660ff92909216919091179055600190565b600054610100900460ff16610ce05760405162461bcd60e51b815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201527f6e697469616c697a696e670000000000000000000000000000000000000000006064820152608401610525565b6097805473ffffffffffffffffffffffffffffffffffffffff9384167fffffffffffffffffffffffff00000000000000000000000000000000000000009182161790915560988054929093169116179055565b600054610100900460ff16610db05760405162461bcd60e51b815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201527f6e697469616c697a696e670000000000000000000000000000000000000000006064820152608401610525565b6105a161135a565b8060c954146105375760c98190556040518181527f2cbc14f49c068133583f7cb530018af451c87c1cf1327cf2a4ff4698c4730aa49060200160405180910390a150565b6000838383604051602001610e1393929190611820565b6040516020818303038152906040528051906020012090509392505050565b815160009082811115610e875760405162461bcd60e51b815260206004820152600e60248201527f50726f6f6620746f6f206c6f6e670000000000000000000000000000000000006044820152606401610525565b84915060005b81811015610ecc57610eba83868381518110610eab57610eab611898565b602002602001015189846113e0565b9250610ec5816118c7565b9050610e8d565b50805b83811015610ef657610ee483600089846113e0565b9250610eef816118c7565b9050610ecf565b5050949350505050565b6002841615610fa3576098546040517f5f7bd14400000000000000000000000000000000000000000000000000000000815263ffffffff8516600482015273ffffffffffffffffffffffffffffffffffffffff8481166024830152838116604483015290911690635f7bd14490606401600060405180830381600087803b158015610f8a57600080fd5b505af1158015610f9e573d6000803e3d6000fd5b505050505b6001841615611046576097546040517f5f7bd14400000000000000000000000000000000000000000000000000000000815263ffffffff8516600482015273ffffffffffffffffffffffffffffffffffffffff8481166024830152838116604483015290911690635f7bd14490606401600060405180830381600087803b15801561102d57600080fd5b505af1158015611041573d6000803e3d6000fd5b505050505b50505050565b6033805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681179093556040519116919082907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a35050565b73ffffffffffffffffffffffffffffffffffffffff821660009081526099602052604090205460ff16156111395760405162461bcd60e51b815260206004820152600f60248201527f416c726561647920736c617368656400000000000000000000000000000000006044820152606401610525565b600061114483610a68565b905060018151600581111561115b5761115b6114a5565b14806111795750600281516005811115611177576111776114a5565b145b801561119457508363ffffffff16816020015163ffffffff16145b6111e05760405162461bcd60e51b815260206004820152601f60248201527f536c617368696e6720636f756c64206e6f7420626520696e69746961746564006044820152606401610525565b6040805180820182526001815273ffffffffffffffffffffffffffffffffffffffff848116602080840191825287831660008181526099909252908590209351845492517fffffffffffffffffffffff0000000000000000000000000000000000000000009093169015157fffffffffffffffffffffff0000000000000000000000000000000000000000ff1617610100929093169190910291909117909155905163ffffffff8616907f8f9b8b0f4f062833bec85ea9a8465e4a1207b4be6eb565bbd0ae8b913588d04e906112b890600490611812565b60405180910390a350505050565b6065546040517fbf65bc4600000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff9091169063bf65bc469061132390869086906002908790600401611926565b600060405180830381600087803b15801561133d57600080fd5b505af1158015611351573d6000803e3d6000fd5b50505050505050565b600054610100900460ff166113d75760405162461bcd60e51b815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201527f6e697469616c697a696e670000000000000000000000000000000000000000006064820152608401610525565b6105a13361104c565b6000600183831c1681036113ff576113f88585611411565b9050611409565b6113f88486611411565b949350505050565b60008215801561141f575081155b1561142c57506000611459565b60408051602081018590529081018390526060016040516020818303038152906040528051906020012090505b92915050565b73ffffffffffffffffffffffffffffffffffffffff8116811461053757600080fd5b60006020828403121561149357600080fd5b813561149e8161145f565b9392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602160045260246000fd5b600681106114e4576114e46114a5565b9052565b60006060820190506114fb8284516114d4565b602083015163ffffffff8082166020850152806040860151166040850152505092915050565b6000806040838503121561153457600080fd5b823561153f8161145f565b9150602083013561154f8161145f565b809150509250929050565b6000815180845260005b8181101561158057602081850181015186830182015201611564565b5060006020828601015260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f83011685010191505092915050565b60208152600061149e602083018461155a565b6000602082840312156115e357600080fd5b5035919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b803563ffffffff8116811461040257600080fd5b600082601f83011261163e57600080fd5b8135602067ffffffffffffffff8083111561165b5761165b6115ea565b8260051b6040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0603f8301168101818110848211171561169e5761169e6115ea565b6040529384528581018301938381019250878511156116bc57600080fd5b83870191505b848210156116db578135835291830191908301906116c2565b979650505050505050565b600080600083850360a08112156116fc57600080fd5b84356117078161145f565b935060607fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe08201121561173957600080fd5b506040516060810167ffffffffffffffff828210818311171561175e5761175e6115ea565b81604052602087013591506006821061177657600080fd5b81835261178560408801611619565b602084015261179660608801611619565b6040840152919350608086013591808311156117b157600080fd5b50506117bf8682870161162d565b9150509250925092565b6000806000606084860312156117de57600080fd5b6117e784611619565b925060208401356117f78161145f565b915060408401356118078161145f565b809150509250925092565b6020810161145982846114d4565b600060068510611832576118326114a5565b5060f89390931b835260e09190911b7fffffffff0000000000000000000000000000000000000000000000000000000016600183015260601b7fffffffffffffffffffffffffffffffffffffffff00000000000000000000000016600582015260190190565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff820361191f577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b5060010190565b63ffffffff858116825284166020820152600060038410611949576119496114a5565b83604083015260806060830152611963608083018461155a565b969550505050505056fea264697066735822122082ef58ff77577d76b82aafcbc6d7b0b1e5ad64232117d5ceef09a81f4784df8a64736f6c63430008110033",
 }
 
 // LightManagerABI is the input ABI used to generate the binding from.
@@ -5345,7 +5345,7 @@ func (_LightManager *LightManagerFilterer) ParseStatusUpdated(log types.Log) (*L
 // MerkleLibMetaData contains all meta data concerning the MerkleLib contract.
 var MerkleLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205431c194cc6e867c3f5736d2428ac8be3e16fbd502ad65c0bede4fac984cb11764736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220bf069e3005b4884332845624ab28cd2e4f121481b3c99386c5445f23f533932e64736f6c63430008110033",
 }
 
 // MerkleLibABI is the input ABI used to generate the binding from.
