@@ -292,6 +292,15 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         verify_messageStatus(hub, keccak256(msgPayload), snapRoot, MessageStatus.Success, executor, executor);
     }
 
+    // ══════════════════════════════════════════ TESTS: INVALID RECEIPTS ══════════════════════════════════════════════
+
+    function check_verifyReceipt_invalid_msgStatusNone(address hub, RawExecReceipt memory re) public {
+        vm.assume(IExecutionHub(hub).messageStatus(re.messageHash) == MessageStatus.None);
+        vm.assume(re.origin != localDomain());
+        re.destination = localDomain();
+        verify_receipt_invalid(hub, re);
+    }
+
     // ═════════════════════════════════════════════════ VERIFIERS ═════════════════════════════════════════════════════
 
     function verify_messageStatusNone(address hub, bytes32 messageHash) public {

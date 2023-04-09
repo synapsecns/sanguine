@@ -18,6 +18,7 @@ import {
     RawAttestation,
     RawBaseMessage,
     RawCallData,
+    RawExecReceipt,
     RawHeader,
     RawMessage,
     RawRequest,
@@ -361,6 +362,12 @@ contract DestinationTest is ExecutionHubTest {
 
     function test_execute_revert_wrongDestination(Random memory random, uint32 destination_) public {
         check_execute_base_revert_wrongDestination(destination, random, destination_);
+    }
+
+    // ══════════════════════════════════════════ TESTS: INVALID RECEIPTS ══════════════════════════════════════════════
+
+    function test_verifyReceipt_invalid_msgStatusNone(RawExecReceipt memory re) public {
+        check_verifyReceipt_invalid_msgStatusNone(destination, re);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
