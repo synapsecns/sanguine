@@ -9,23 +9,8 @@ import {IDisputeHub} from "../../contracts/interfaces/IDisputeHub.sol";
 import {InterfaceDestination} from "../../contracts/Destination.sol";
 import {Versioned} from "../../contracts/Version.sol";
 
-import {SystemRouterHarness} from "../harnesses/system/SystemRouterHarness.t.sol";
-import {SystemRouterMock} from "../mocks/system/SystemRouterMock.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
-import {
-    MessageFlag,
-    SystemEntity,
-    RawAttestation,
-    RawBaseMessage,
-    RawCallData,
-    RawExecReceipt,
-    RawHeader,
-    RawMessage,
-    RawRequest,
-    RawState,
-    RawSystemMessage,
-    RawTips
-} from "../utils/libs/SynapseStructs.t.sol";
+import {RawAttestation, RawState} from "../utils/libs/SynapseStructs.t.sol";
 import {AgentFlag, ISystemContract, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 
@@ -315,73 +300,6 @@ contract DestinationTest is ExecutionHubTest {
         (, bytes memory attSig) = signAttestation(notary, secondRA);
         vm.expectRevert("Notary already in dispute");
         InterfaceDestination(destination).submitAttestationReport(arPayload, arSig, attSig);
-    }
-
-    // ═════════════════════════════════════════════ TESTS: EXECUTION ══════════════════════════════════════════════════
-
-    function test_execute_base(
-        RawBaseMessage memory rbm,
-        RawHeader memory rh,
-        SnapshotMock memory sm,
-        uint32 timePassed,
-        uint64 gasLimit
-    ) public {
-        check_execute_base(destination, rbm, rh, sm, timePassed, gasLimit);
-    }
-
-    function test_execute_base_recipientReverted(Random memory random) public {
-        check_execute_base_recipientReverted(destination, random);
-    }
-
-    function test_execute_system(
-        RawSystemMessage memory rsm,
-        RawHeader memory rh,
-        SnapshotMock memory sm,
-        uint32 timePassed,
-        uint64 gasLimit
-    ) public {
-        // Use System Router Mock for this test
-        SystemRouterMock router = (new SystemRouterMock());
-        ISystemContract(destination).setSystemRouter(router);
-        check_execute_system(destination, address(router), rsm, rh, sm, timePassed, gasLimit);
-    }
-
-    function test_execute_base_revert_alreadyExecuted(Random memory random) public {
-        check_execute_base_revert_alreadyExecuted(destination, random);
-    }
-
-    function test_execute_revert_notaryInDispute(Random memory random) public {
-        check_execute_base_revert_notaryInDispute(destination, random);
-    }
-
-    function test_execute_revert_optimisticPeriodNotOver(Random memory random) public {
-        check_execute_base_revert_optimisticPeriodNotOver(destination, random);
-    }
-
-    function test_execute_revert_snapRootUnknown(Random memory random) public {
-        check_execute_base_revert_snapRootUnknown(destination, random);
-    }
-
-    function test_execute_revert_gasLimitTooLow(Random memory random) public {
-        check_execute_base_revert_gasLimitTooLow(destination, random);
-    }
-
-    function test_execute_base_revert_gasSuppliedTooLow(Random memory random) public {
-        check_execute_base_revert_gasSuppliedTooLow(destination, random);
-    }
-
-    function test_execute_revert_wrongDestination(Random memory random, uint32 destination_) public {
-        check_execute_base_revert_wrongDestination(destination, random, destination_);
-    }
-
-    // ══════════════════════════════════════════ TESTS: INVALID RECEIPTS ══════════════════════════════════════════════
-
-    function test_verifyReceipt_invalid_msgStatusNone(RawExecReceipt memory re) public {
-        check_verifyReceipt_invalid_msgStatusNone(destination, re);
-    }
-
-    function test_verifyReceipt_invalid_msgStatusSuccess(uint256 mask) public {
-        check_verifyReceipt_invalid_msgStatusSuccess(destination, mask);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
