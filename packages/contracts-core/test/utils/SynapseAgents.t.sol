@@ -83,13 +83,26 @@ abstract contract SynapseAgents is SynapseUtilities {
         return signMessage(privKey, hashedMsg);
     }
 
+    /// @notice Signs a salted hash of a message
+    function signMessage(address agent, bytes32 salt, bytes32 hashedMsg) public view returns (bytes memory signature) {
+        return signMessage(agent, keccak256(bytes.concat(salt, hashedMsg)));
+    }
+
+    /// @notice Signs hashed message, by using a requested salt.
+    function signMessage(address agent, bytes32 salt, bytes memory message)
+        public
+        view
+        returns (bytes memory signature)
+    {
+        return signMessage(agent, salt, keccak256(message));
+    }
+
     /*╔══════════════════════════════════════════════════════════════════════╗*\
     ▏*║                          SIGNING STATEMENTS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function signAttestation(address agent, bytes memory attestation) public view returns (bytes memory signature) {
-        bytes32 hashedAtt = keccak256(attestation);
-        return signMessage(agent, keccak256(bytes.concat(ATTESTATION_SALT, hashedAtt)));
+        return signMessage(agent, ATTESTATION_SALT, attestation);
     }
 
     function signAttestation(address agent, RawAttestation memory ra)
@@ -106,8 +119,7 @@ abstract contract SynapseAgents is SynapseUtilities {
         view
         returns (bytes memory signature)
     {
-        bytes32 hashedAR = keccak256(arPayload);
-        return signMessage(agent, keccak256(bytes.concat(ATTESTATION_REPORT_SALT, hashedAR)));
+        return signMessage(agent, ATTESTATION_REPORT_SALT, arPayload);
     }
 
     function signAttestationReport(address agent, RawAttestationReport memory rawAR)
@@ -120,8 +132,7 @@ abstract contract SynapseAgents is SynapseUtilities {
     }
 
     function signSnapshot(address agent, bytes memory snapshot) public view returns (bytes memory signature) {
-        bytes32 hashedSnap = keccak256(snapshot);
-        return signMessage(agent, keccak256(bytes.concat(SNAPSHOT_SALT, hashedSnap)));
+        return signMessage(agent, SNAPSHOT_SALT, snapshot);
     }
 
     function signSnapshot(address agent, RawSnapshot memory rawSnap)
@@ -143,8 +154,7 @@ abstract contract SynapseAgents is SynapseUtilities {
     }
 
     function signStateReport(address agent, bytes memory srPayload) public view returns (bytes memory signature) {
-        bytes32 hashedAR = keccak256(srPayload);
-        return signMessage(agent, keccak256(bytes.concat(STATE_REPORT_SALT, hashedAR)));
+        return signMessage(agent, STATE_REPORT_SALT, srPayload);
     }
 
     function signStateReport(address agent, RawStateReport memory rawSR)
