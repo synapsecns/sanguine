@@ -64,18 +64,20 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     function registrySlash(uint32 domain, address agent, address prover) external {
         // Check that Agent hasn't been already slashed and initiate the slashing
         _initiateSlashing(domain, agent, prover);
-        // On chains other than Synapse Chain only Origin could slash Agents
+        // On chains other than Synapse Chain Origin and Destination could slash Agents
         if (msg.sender == address(origin)) {
             _notifySlashing(DESTINATION, domain, agent, prover);
-            // Issue a system call to BondingManager on SynChain
-            _callAgentManager({
-                domain: SYNAPSE_DOMAIN,
-                optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
-                payload: _remoteSlashPayload(domain, agent, prover)
-            });
+        } else if (msg.sender == address(destination)) {
+            _notifySlashing(ORIGIN, domain, agent, prover);
         } else {
             revert("Unauthorized caller");
         }
+        // Issue a system call to BondingManager on SynChain
+        _callAgentManager({
+            domain: SYNAPSE_DOMAIN,
+            optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
+            payload: _remoteSlashPayload(domain, agent, prover)
+        });
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════

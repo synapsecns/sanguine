@@ -157,8 +157,33 @@ contract LightManagerTest is AgentManagerTest {
         assertEq(prover_, prover);
     }
 
+    function test_registrySlash_destination(uint32 domain, address agent, address prover) public {
+        test_addAgent_new(address(this), domain, agent);
+        bytes memory data = _remoteSlashPayload(domain, agent, prover);
+        vm.expectEmit();
+        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
+        vm.expectCall(origin, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
+        // (destination, optimisticSeconds, recipient, data)
+        vm.expectCall(
+            address(systemRouter),
+            abi.encodeWithSelector(
+                systemRouter.systemCall.selector,
+                DOMAIN_SYNAPSE,
+                BONDING_OPTIMISTIC_PERIOD,
+                SystemEntity.AgentManager,
+                data
+            )
+        );
+        vm.prank(destination);
+        lightManager.registrySlash(domain, agent, prover);
+        assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
+        (bool isSlashed, address prover_) = lightManager.slashStatus(agent);
+        assertTrue(isSlashed);
+        assertEq(prover_, prover);
+    }
+
     function test_registrySlash_revertUnauthorized(address caller) public {
-        vm.assume(caller != origin);
+        vm.assume(caller != origin && caller != destination);
         vm.expectRevert("Unauthorized caller");
         vm.prank(caller);
         // Try to slash an existing agent
