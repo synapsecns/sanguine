@@ -30,9 +30,7 @@ contract BondingManagerTest is AgentManagerTest {
         assertEq(bondingManager.leafsAmount(), 1);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                TESTS: UNAUTHORIZED ACCESS (NOT OWNER)                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════ TESTS: UNAUTHORIZED ACCESS (NOT OWNER) ═══════════════════════════════════════
 
     function test_addAgent_revert_notOwner(address caller) public {
         vm.assume(caller != address(this));
@@ -55,9 +53,7 @@ contract BondingManagerTest is AgentManagerTest {
         bondingManager.completeUnstaking(1, address(1), new bytes32[](0));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       TESTS: ADD/REMOVE AGENTS                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════ TESTS: ADD/REMOVE AGENTS ══════════════════════════════════════════════
 
     function test_addAgent_new(uint32 domain, address agent) public {
         // Should not be an already added agent
@@ -122,9 +118,7 @@ contract BondingManagerTest is AgentManagerTest {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                    TEST: UPDATE AGENTS (REVERTS)                     ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════ TEST: UPDATE AGENTS (REVERTS) ═══════════════════════════════════════════
 
     function test_addAgent_revert_active(uint256 domainId, uint256 agentId) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
@@ -168,9 +162,7 @@ contract BondingManagerTest is AgentManagerTest {
         updateStatusWithProof(flag, domain, agent, proof);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                        TEST: SLASHING AGENTS                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════ TEST: SLASHING AGENTS ═══════════════════════════════════════════════
 
     function test_registrySlash_origin(uint256 domainId, uint256 agentId, address prover) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
@@ -246,9 +238,7 @@ contract BondingManagerTest is AgentManagerTest {
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             TEST: VIEWS                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ TEST: VIEWS ════════════════════════════════════════════════════
 
     function test_agentLeaf_knownAgent(uint256 domainId, uint256 agentId) public {
         (, address agent) = getAgent(domainId, agentId);
@@ -304,6 +294,8 @@ contract BondingManagerTest is AgentManagerTest {
             assertEq(leafs[i], getAgentLeaf(indexFrom + i));
         }
     }
+
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Returns local domain for the tested system contract
     function localDomain() public pure override returns (uint32) {

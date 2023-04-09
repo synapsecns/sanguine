@@ -31,9 +31,7 @@ contract LightManagerTest is AgentManagerTest {
         assertEq(address(lightManager.destination()), destination_);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             TESTS: SETUP                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
 
     function test_constructor_revert_onSynapseChain() public {
         // Should not be able to deploy on Synapse Chain
@@ -46,9 +44,7 @@ contract LightManagerTest is AgentManagerTest {
         assertEq(lightManager.version(), LATEST_VERSION, "!version");
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                TESTS: UNAUTHORIZED ACCESS (NOT OWNER)                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════ TESTS: UNAUTHORIZED ACCESS (NOT OWNER) ═══════════════════════════════════════
 
     function test_setAgentRoot_revert_notDestination(address caller) public {
         vm.assume(caller != destination);
@@ -57,9 +53,7 @@ contract LightManagerTest is AgentManagerTest {
         lightManager.setAgentRoot(bytes32(uint256(1)));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       TESTS: ADD/REMOVE AGENTS                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════ TESTS: ADD/REMOVE AGENTS ══════════════════════════════════════════════
 
     function test_addAgent_new(address caller, uint32 domain, address agent) public {
         // Should not be an already added agent
@@ -111,9 +105,7 @@ contract LightManagerTest is AgentManagerTest {
         test_setAgentRoot(lightManager.agentRoot());
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                    TEST: UPDATE AGENTS (REVERTS)                     ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════ TEST: UPDATE AGENTS (REVERTS) ═══════════════════════════════════════════
 
     function test_addAgent_revert_invalidProof(uint256 domainId, uint256 agentId) public {
         (, address agent) = getAgent(domainId, agentId);
@@ -128,9 +120,7 @@ contract LightManagerTest is AgentManagerTest {
         lightManager.updateAgentStatus(agent, status, proof);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         TEST: REGISTRY SLASH                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════ TEST: REGISTRY SLASH ════════════════════════════════════════════════
 
     function test_registrySlash_origin(uint32 domain, address agent, address prover) public {
         test_addAgent_new(address(this), domain, agent);
@@ -189,6 +179,8 @@ contract LightManagerTest is AgentManagerTest {
         // Try to slash an existing agent
         lightManager.registrySlash(0, domains[0].agent, address(0));
     }
+
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Returns local domain for the tested system contract
     function localDomain() public pure override returns (uint32) {
