@@ -15,6 +15,7 @@ import {
     MessageFlag,
     RawAttestation,
     RawBaseMessage,
+    RawExecReceipt,
     RawHeader,
     RawMessage,
     RawState,
@@ -79,7 +80,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
         bytes memory receiptData =
             verify_messageStatus(hub, keccak256(msgPayload), snapRoot, MessageStatus.Success, executor, executor);
-        verify_receipt(hub, receiptData, rbm.tips);
+        verify_receipt_valid(hub, receiptData, rbm.tips);
     }
 
     function check_execute_base_recipientReverted(address hub, Random memory random) public {
@@ -102,7 +103,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
         bytes memory receiptDataFirst =
             verify_messageStatus(hub, keccak256(msgPayload), snapRoot, MessageStatus.Failed, executor, address(0));
-        verify_receipt(hub, receiptDataFirst, rbm.tips);
+        verify_receipt_valid(hub, receiptDataFirst, rbm.tips);
         // Retry the same failed message
         RevertingApp(recipient).toggleRevert(false);
         vm.prank(executorNew);
@@ -110,8 +111,8 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         bytes memory receiptDataSecond =
             verify_messageStatus(hub, keccak256(msgPayload), snapRoot, MessageStatus.Success, executor, executorNew);
         // Both receipts (historical and current) should be valid
-        verify_receipt(hub, receiptDataFirst, rbm.tips);
-        verify_receipt(hub, receiptDataSecond, rbm.tips);
+        verify_receipt_valid(hub, receiptDataFirst, rbm.tips);
+        verify_receipt_valid(hub, receiptDataSecond, rbm.tips);
     }
 
     function check_execute_base_revert_alreadyExecuted(address hub, Random memory random) public {
@@ -320,9 +321,19 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         }
     }
 
-    function verify_receipt(address hub, bytes memory receiptData, RawTips memory rt) public {
+    function verify_receipt_valid(address hub, bytes memory receiptData, RawTips memory rt) public {
         bytes memory rcptPayload = abi.encodePacked(receiptData, rt.formatTips());
         assertTrue(IExecutionHub(hub).isValidReceipt(rcptPayload));
+    }
+
+    function verify_receipt_invalid(address hub, RawExecReceipt memory re) public {
+        bytes memory rcptPayload = re.formatReceipt();
+        assertFalse(IExecutionHub(hub).isValidReceipt(rcptPayload));
+        address notary = domains[localDomain()].agent;
+        bytes memory rcptSignature = signReceipt(notary, rcptPayload);
+        // TODO: check that anyone could make the call
+        expectAgentSlashed(localDomain(), notary, address(this));
+        IExecutionHub(hub).verifyReceipt(rcptPayload, rcptSignature);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

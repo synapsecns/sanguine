@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {
     ATTESTATION_SALT,
     ATTESTATION_REPORT_SALT,
+    RECEIPT_SALT,
     SNAPSHOT_SALT,
     STATE_REPORT_SALT
 } from "../../contracts/libs/Constants.sol";
@@ -13,6 +14,7 @@ import {
     State,
     RawAttestation,
     RawAttestationReport,
+    RawExecReceipt,
     RawSnapshot,
     RawStateReport
 } from "./libs/SynapseStructs.t.sol";
@@ -129,6 +131,19 @@ abstract contract SynapseAgents is SynapseUtilities {
     {
         attestationReport = rawAR.formatAttestationReport();
         signature = signAttestationReport(agent, attestationReport);
+    }
+
+    function signReceipt(address agent, bytes memory receipt) public view returns (bytes memory signature) {
+        return signMessage(agent, RECEIPT_SALT, receipt);
+    }
+
+    function signReceipt(address agent, RawExecReceipt memory re)
+        public
+        view
+        returns (bytes memory receipt, bytes memory signature)
+    {
+        receipt = re.formatReceipt();
+        signature = signReceipt(agent, receipt);
     }
 
     function signSnapshot(address agent, bytes memory snapshot) public view returns (bytes memory signature) {
