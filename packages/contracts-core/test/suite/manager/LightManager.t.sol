@@ -39,8 +39,8 @@ contract LightManagerTest is AgentManagerTest {
         new LightManager(DOMAIN_SYNAPSE);
     }
 
-    function test_version() public {
-        // Check version
+    function test_setup() public override {
+        super.test_setup();
         assertEq(lightManager.version(), LATEST_VERSION, "!version");
     }
 
@@ -118,66 +118,6 @@ contract LightManagerTest is AgentManagerTest {
         assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Unknown));
         vm.expectRevert("Invalid proof");
         lightManager.updateAgentStatus(agent, status, proof);
-    }
-
-    // ═══════════════════════════════════════════ TEST: REGISTRY SLASH ════════════════════════════════════════════════
-
-    function test_registrySlash_origin(uint32 domain, address agent, address prover) public {
-        test_addAgent_new(address(this), domain, agent);
-        bytes memory data = remoteSlashPayload(domain, agent, prover);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        vm.expectCall(destination, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
-        // (destination, optimisticSeconds, recipient, data)
-        vm.expectCall(
-            address(systemRouter),
-            abi.encodeWithSelector(
-                systemRouter.systemCall.selector,
-                DOMAIN_SYNAPSE,
-                BONDING_OPTIMISTIC_PERIOD,
-                SystemEntity.AgentManager,
-                data
-            )
-        );
-        vm.prank(origin);
-        lightManager.registrySlash(domain, agent, prover);
-        assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address prover_) = lightManager.slashStatus(agent);
-        assertTrue(isSlashed);
-        assertEq(prover_, prover);
-    }
-
-    function test_registrySlash_destination(uint32 domain, address agent, address prover) public {
-        test_addAgent_new(address(this), domain, agent);
-        bytes memory data = remoteSlashPayload(domain, agent, prover);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        vm.expectCall(origin, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
-        // (destination, optimisticSeconds, recipient, data)
-        vm.expectCall(
-            address(systemRouter),
-            abi.encodeWithSelector(
-                systemRouter.systemCall.selector,
-                DOMAIN_SYNAPSE,
-                BONDING_OPTIMISTIC_PERIOD,
-                SystemEntity.AgentManager,
-                data
-            )
-        );
-        vm.prank(destination);
-        lightManager.registrySlash(domain, agent, prover);
-        assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address prover_) = lightManager.slashStatus(agent);
-        assertTrue(isSlashed);
-        assertEq(prover_, prover);
-    }
-
-    function test_registrySlash_revertUnauthorized(address caller) public {
-        vm.assume(caller != origin && caller != destination);
-        vm.expectRevert("Unauthorized caller");
-        vm.prank(caller);
-        // Try to slash an existing agent
-        lightManager.registrySlash(0, domains[0].agent, address(0));
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

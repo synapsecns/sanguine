@@ -20,6 +20,8 @@ contract BondingManagerTest is AgentManagerTest {
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
 
+    // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
+
     function test_initializer(address caller, address origin_, address destination_) public {
         bondingManager = new BondingManager(DOMAIN_SYNAPSE);
         vm.prank(caller);
@@ -28,6 +30,11 @@ contract BondingManagerTest is AgentManagerTest {
         assertEq(address(bondingManager.origin()), origin_);
         assertEq(address(bondingManager.destination()), destination_);
         assertEq(bondingManager.leafsAmount(), 1);
+    }
+
+    function test_setup() public override {
+        super.test_setup();
+        assertEq(bondingManager.version(), LATEST_VERSION, "!version");
     }
 
     // ══════════════════════════════════ TESTS: UNAUTHORIZED ACCESS (NOT OWNER) ═══════════════════════════════════════
@@ -164,40 +171,6 @@ contract BondingManagerTest is AgentManagerTest {
 
     // ═══════════════════════════════════════════ TEST: SLASHING AGENTS ═══════════════════════════════════════════════
 
-    function test_registrySlash_origin(uint256 domainId, uint256 agentId, address prover) public {
-        (uint32 domain, address agent) = getAgent(domainId, agentId);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        vm.expectCall(summit, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
-        vm.prank(originSynapse);
-        bondingManager.registrySlash(domain, agent, prover);
-        assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
-        assertTrue(isSlashed);
-        assertEq(prover_, prover);
-    }
-
-    function test_registrySlash_summit(uint256 domainId, uint256 agentId, address prover) public {
-        (uint32 domain, address agent) = getAgent(domainId, agentId);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        vm.expectCall(originSynapse, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
-        vm.prank(summit);
-        bondingManager.registrySlash(domain, agent, prover);
-        assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
-        assertTrue(isSlashed);
-        assertEq(prover_, prover);
-    }
-
-    function test_registrySlash_revertUnauthorized(address caller) public {
-        vm.assume(caller != originSynapse && caller != summit);
-        vm.expectRevert("Unauthorized caller");
-        vm.prank(caller);
-        // Try to slash an existing agent
-        bondingManager.registrySlash(0, domains[0].agent, address(0));
-    }
-
     function test_remoteRegistrySlash(uint32 callOrigin, uint256 domainId, uint256 agentId, address prover) public {
         // Needs to be a REMOTE call
         vm.assume(callOrigin != DOMAIN_SYNAPSE);
@@ -222,7 +195,7 @@ contract BondingManagerTest is AgentManagerTest {
     {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         // Initiate slashing by one of the Registries
-        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_summit)(domainId, agentId, address(1));
+        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_destination)(domainId, agentId, address(1));
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
     }
@@ -233,7 +206,7 @@ contract BondingManagerTest is AgentManagerTest {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
         // Initiate slashing by one of the Registries
-        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_summit)(domainId, agentId, address(1));
+        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_destination)(domainId, agentId, address(1));
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
     }
