@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManagerEvents} from "../events/AgentManagerEvents.sol";
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {ISystemRegistry} from "../interfaces/ISystemRegistry.sol";
-import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 import {SystemContract} from "../system/SystemContract.sol";
 
 abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentManager {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     ISystemRegistry public origin;
 
@@ -22,9 +22,7 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
     /// @dev gap for upgrade safety
     uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             INITIALIZER                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ INITIALIZER ════════════════════════════════════════════════════
 
     // solhint-disable-next-line func-name-mixedcase
     function __AgentManager_init(ISystemRegistry origin_, ISystemRegistry destination_) internal onlyInitializing {
@@ -32,9 +30,7 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
         destination = destination_;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            EXTERNAL VIEWS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
     // solhint-disable-next-line ordering
@@ -50,9 +46,7 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Checks and initiates the slashing of an agent.
     /// Should be called, after one of registries confirmed fraud committed by the agent.
@@ -78,9 +72,7 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
         if (registryMask & ORIGIN != 0) origin.managerSlash(domain, agent, prover);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL VIEWS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Generates leaf to be saved in the Agent Merkle Tree
     function _agentLeaf(AgentFlag flag, uint32 domain, address agent) internal pure returns (bytes32) {
