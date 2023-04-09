@@ -669,7 +669,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			if log == nil {
 				return fmt.Errorf("could not convert log")
 			}
-			logger.Errorf("KOBE RULES!!! stream got me a log: %v", *log)
+			logger.Errorf("KOBE RULES!!! block number: %d, tx hash: %s", log.BlockNumber, log.TxHash.String())
 
 			// If we are filtering for `executed` events, we do not need to `verifyAfter`
 			// since we are backfilling.
