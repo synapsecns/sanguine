@@ -207,7 +207,6 @@ func NewExecutor(ctx context.Context, config config.Config, executorDB db.Execut
 func (e Executor) Run(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
-	time.Sleep(10 * time.Minute)
 	// Backfill executed messages.
 	for _, chain := range e.config.Chains {
 		chain := chain
@@ -658,9 +657,11 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 		default:
 			response, err := stream.Recv()
 			if errors.Is(err, io.EOF) {
+				logger.Errorf("EOF***** stream closed: %v", err)
 				return nil
 			}
 			if err != nil {
+				logger.Errorf("AHHHHH! could not receive: %v", err)
 				return fmt.Errorf("could not receive: %w", err)
 			}
 
@@ -668,6 +669,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			if log == nil {
 				return fmt.Errorf("could not convert log")
 			}
+			logger.Errorf("KOBE RULES!!! stream got me a log: %v", *log)
 
 			// If we are filtering for `executed` events, we do not need to `verifyAfter`
 			// since we are backfilling.
