@@ -669,7 +669,7 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 			if log == nil {
 				return fmt.Errorf("could not convert log")
 			}
-			logger.Errorf("KOBE RULES!!! block number: %d, tx hash: %s", log.BlockNumber, log.TxHash.String())
+			logger.Errorf("KOBE RULES!!! block number: %d, tx hash: %s, chain id: %d. event: %d", log.BlockNumber, log.TxHash.String(), chainID, contractEvent.eventType)
 
 			// If we are filtering for `executed` events, we do not need to `verifyAfter`
 			// since we are backfilling.
@@ -679,10 +679,11 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 				continue
 			}
 			if !e.chainExecutors[chainID].lastLog.verifyAfter(*log) {
-				logger.Warnf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chainID].lastLog.blockNumber, e.chainExecutors[chainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
+				logger.Errorf("log is not in chronological order. last log blockNumber: %d, blockIndex: %d. this log blockNumber: %d, blockIndex: %d, txHash: %s", e.chainExecutors[chainID].lastLog.blockNumber, e.chainExecutors[chainID].lastLog.blockIndex, log.BlockNumber, log.Index, log.TxHash.String())
 
 				continue
 			}
+			logger.Errorf("<><><><><><><>KOBE RULES !!! block number: %d, tx hash: %s, chain id: %d. event: %d", log.BlockNumber, log.TxHash.String(), chainID, contractEvent.eventType)
 
 			e.chainExecutors[chainID].logChan <- log
 			e.chainExecutors[chainID].lastLog.blockNumber = log.BlockNumber
