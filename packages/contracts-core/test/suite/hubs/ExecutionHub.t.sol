@@ -301,6 +301,23 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         verify_receipt_invalid(hub, re);
     }
 
+    function check_verifyReceipt_invalid_msgStatusSuccess(address hub, uint256 mask) public {
+        check_execute_base_recipientReverted(hub, Random(bytes32(mask)));
+        RawExecReceipt memory re = RawExecReceipt({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            messageHash: getLeaf(0),
+            snapshotRoot: getSnapshotRoot(),
+            firstExecutor: executor,
+            finalExecutor: executorNew,
+            tips: RawTips(0, 0, 0, 0)
+        });
+        // Check that data we start with is valid. Use require() to break the test execution early.
+        require(IExecutionHub(hub).isValidReceipt(re.formatReceipt()), "Incorrect initial receipt data");
+        RawExecReceipt memory mre = re.modifyReceipt(mask);
+        verify_receipt_invalid(hub, mre);
+    }
+
     // ═════════════════════════════════════════════════ VERIFIERS ═════════════════════════════════════════════════════
 
     function verify_messageStatusNone(address hub, bytes32 messageHash) public {
@@ -399,7 +416,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     {
         rbm.sender = random.next();
         rbm.content = "Test content";
-        rh.nonce = random.nextUint32();
+        rh.nonce = 1;
         rh.optimisticPeriod = random.nextUint32();
         sm = SnapshotMock(random.nextState(), random.nextUint256(), random.nextUint256());
     }

@@ -370,6 +370,10 @@ contract DestinationTest is ExecutionHubTest {
         check_verifyReceipt_invalid_msgStatusNone(destination, re);
     }
 
+    function test_verifyReceipt_invalid_msgStatusSuccess(uint256 mask) public {
+        check_verifyReceipt_invalid_msgStatusSuccess(destination, mask);
+    }
+
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Prepares execution of the created messages
