@@ -12,6 +12,8 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/base"
 	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"strconv"
 	"time"
@@ -24,7 +26,8 @@ func SetupGRPCServer(ctx context.Context, engine *gin.Engine, eventDB db.EventDB
 		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
 	)
 	sImpl := server{
-		db: eventDB,
+		db:      eventDB,
+		handler: handler,
 	}
 
 	mux := runtime.NewServeMux()
@@ -44,7 +47,8 @@ func SetupGRPCServer(ctx context.Context, engine *gin.Engine, eventDB db.EventDB
 
 type server struct {
 	// db is the db to use for the server
-	db db.EventDB
+	db      db.EventDB
+	handler metrics.Handler
 	pbscribe.UnimplementedScribeServiceServer
 }
 
@@ -164,7 +168,16 @@ func (s *server) Watch(a *pbscribe.HealthCheckRequest, res pbscribe.ScribeServic
 	}
 }
 
-func (s *server) setBlocks(ctx context.Context, req *pbscribe.StreamLogsRequest) (uint64, uint64, error) {
+func (s *server) setBlocks(parentCtx context.Context, req *pbscribe.StreamLogsRequest) (_ uint64, _ uint64, err error) {
+	ctx, span := s.handler.Tracer().Start(parentCtx, "setBlocks", trace.WithAttributes(
+		attribute.String("fromBlock", req.FromBlock),
+		attribute.String("toBlock", req.ToBlock),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	blocks := []string{req.FromBlock, req.ToBlock}
 	resBlocks := make([]uint64, 2)
 
@@ -188,6 +201,11 @@ func (s *server) setBlocks(ctx context.Context, req *pbscribe.StreamLogsRequest)
 			resBlocks[i] = blockNum
 		}
 	}
+
+	span.AddEvent("blocks", trace.WithAttributes(
+		attribute.String("fromBlock", strconv.FormatUint(resBlocks[0], 10)),
+		attribute.String("toBlock", strconv.FormatUint(resBlocks[1], 10)),
+	))
 
 	return resBlocks[0], resBlocks[1], nil
 }
