@@ -290,9 +290,4 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 		return attestationsAmount != nil && attestationsAmount.Uint64() >= uint64(1)
 	})
-
-	destAtt, err := u.DestinationContract.GetAttestation(&bind.CallOpts{Context: u.GetTestContext()}, big.NewInt(0))
-	Nil(u.T(), err)
-	Greater(u.T(), len(destAtt.Root), 0)
-	Equal(u.T(), destAtt.DestAtt.Nonce, uint32(0))
 }

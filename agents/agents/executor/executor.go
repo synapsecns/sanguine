@@ -388,7 +388,8 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 				return false, fmt.Errorf("could not execute message after %f attempts", b.Attempt())
 			}
 
-			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)))
+			// TODO (joe and lex): Figure out gas limit
+			err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(ctx, e.signer, message, originProof, snapshotProofB32, big.NewInt(int64(*stateIndex)), uint64(0))
 			if err != nil {
 				timeout = b.Duration()
 				span.AddEvent("error when executing", trace.WithAttributes(

@@ -43,15 +43,6 @@ type summitContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a summitContract) AddAgent(transactOpts *bind.TransactOpts, domainID uint32, signer signer.Signer) error {
-	_, err := a.contract.AddAgent(transactOpts, domainID, signer.Address())
-	if err != nil {
-		return fmt.Errorf("could not add notary: %w", err)
-	}
-
-	return nil
-}
-
 func (a summitContract) SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error {
 	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
 	if err != nil {

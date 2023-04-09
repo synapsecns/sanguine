@@ -5,7 +5,6 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/synapsecns/sanguine/agents/config"
@@ -46,8 +45,6 @@ type OriginContract interface {
 
 // SummitContract contains the interface for the summit.
 type SummitContract interface {
-	// AddAgent adds an agent (guard or notary) to the summit
-	AddAgent(transactOpts *bind.TransactOpts, domain uint32, signer signer.Signer) error
 	// SubmitSnapshot submits a snapshot to the summit.
 	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
 	// GetLatestState gets the latest state signed by any guard for the given origin
@@ -60,10 +57,8 @@ type SummitContract interface {
 
 // DestinationContract contains the interface for the destination.
 type DestinationContract interface {
-	//// SubmitAttestation submits an attestation to the destination.
-	// SubmitAttestation(ctx context.Context, signer signer.Signer, attestation types.SignedAttestation) error
 	// Execute executes a message on the destination.
-	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int) error
+	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.
 	AttestationsAmount(ctx context.Context) (uint64, error)
 	// SubmitAttestation submits an attestation to the destination

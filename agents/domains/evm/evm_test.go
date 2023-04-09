@@ -117,7 +117,8 @@ func (e *RPCSuite) TestFilterer() {
 		enodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 		Nil(e.T(), err)
 
-		addedDispatch, err := e.OriginContract.Dispatch(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, enodedTips, dispatch.messageBody)
+		// TODO (joe): Figure out what to set for content
+		addedDispatch, err := e.OriginContract.SendBaseMessage(auth.TransactOpts, dispatch.destinationDomain, dispatch.recipientAddress, dispatch.optimisticSeconds, enodedTips, dispatch.messageBody, []byte{})
 		Nil(e.T(), err)
 
 		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), addedDispatch)
