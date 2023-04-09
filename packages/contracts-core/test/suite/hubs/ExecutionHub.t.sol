@@ -15,10 +15,12 @@ import {
     MessageFlag,
     RawAttestation,
     RawBaseMessage,
+    RawExecReceipt,
     RawHeader,
     RawMessage,
     RawState,
-    RawSystemMessage
+    RawSystemMessage,
+    RawTips
 } from "../../utils/libs/SynapseStructs.t.sol";
 import {DisputeHubTest, IDisputeHub} from "./DisputeHub.t.sol";
 
@@ -33,10 +35,14 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     }
 
     address internal recipient;
+    address internal executor;
+    address internal executorNew;
 
     function setUp() public virtual override {
         super.setUp();
         recipient = address(new MessageRecipientMock());
+        executor = makeAddr("Executor");
+        executorNew = makeAddr("Executor New");
     }
 
     /// @notice Prevents this contract from being included in the coverage report
@@ -52,7 +58,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         uint32 timePassed,
         uint64 gasLimit
     ) public {
-        address executor = makeAddr("Executor");
         // Create messages and get origin proof
         bytes memory msgPayload = createBaseMessages(rbm, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
@@ -73,12 +78,13 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, gasLimit);
-        verify_messageStatus(hub, keccak256(msgPayload), snapRoot, MessageStatus.Success, executor, executor);
+        bytes memory receiptData =
+            verify_messageStatus(hub, keccak256(msgPayload), snapRoot, MessageStatus.Success, executor, executor);
+        verify_receipt_valid(hub, receiptData, rbm.tips);
     }
 
     function check_execute_base_recipientReverted(address hub, Random memory random) public {
         recipient = address(new RevertingApp());
-        address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
@@ -95,17 +101,21 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
-        verify_messageStatus(hub, keccak256(msgPayload), snapRoot, MessageStatus.Failed, executor, address(0));
+        bytes memory receiptDataFirst =
+            verify_messageStatus(hub, keccak256(msgPayload), snapRoot, MessageStatus.Failed, executor, address(0));
+        verify_receipt_valid(hub, receiptDataFirst, rbm.tips);
         // Retry the same failed message
         RevertingApp(recipient).toggleRevert(false);
-        address executorNew = makeAddr("Executor New");
         vm.prank(executorNew);
         IExecutionHub(hub).execute(msgPayload, originProof, snapProof, sm.stateIndex, rbm.request.gasLimit);
-        verify_messageStatus(hub, keccak256(msgPayload), snapRoot, MessageStatus.Success, executor, executorNew);
+        bytes memory receiptDataSecond =
+            verify_messageStatus(hub, keccak256(msgPayload), snapRoot, MessageStatus.Success, executor, executorNew);
+        // Both receipts (historical and current) should be valid
+        verify_receipt_valid(hub, receiptDataFirst, rbm.tips);
+        verify_receipt_valid(hub, receiptDataSecond, rbm.tips);
     }
 
     function check_execute_base_revert_alreadyExecuted(address hub, Random memory random) public {
-        address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
@@ -125,7 +135,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     }
 
     function check_execute_base_revert_notaryInDispute(address hub, Random memory random) public {
-        address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
@@ -147,7 +156,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     }
 
     function check_execute_base_revert_snapRootUnknown(address hub, Random memory random) public {
-        address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
@@ -167,7 +175,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     }
 
     function check_execute_base_revert_optimisticPeriodNotOver(address hub, Random memory random) public {
-        address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
@@ -187,7 +194,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     }
 
     function check_execute_base_revert_gasLimitTooLow(address hub, Random memory random) public {
-        address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
@@ -209,7 +215,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     }
 
     function check_execute_base_revert_gasSuppliedTooLow(address hub, Random memory random) public {
-        address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
@@ -235,7 +240,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         public
     {
         vm.assume(destination_ != localDomain());
-        address executor = makeAddr("Executor");
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
         // Create messages and get origin proof
@@ -265,7 +269,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         uint32 timePassed,
         uint64 gasLimit
     ) public {
-        address executor = makeAddr("Executor");
         // Create messages and get origin proof
         bytes memory msgPayload = createSystemMessages(rsm, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
@@ -289,6 +292,32 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         verify_messageStatus(hub, keccak256(msgPayload), snapRoot, MessageStatus.Success, executor, executor);
     }
 
+    // ══════════════════════════════════════════ TESTS: INVALID RECEIPTS ══════════════════════════════════════════════
+
+    function check_verifyReceipt_invalid_msgStatusNone(address hub, RawExecReceipt memory re) public {
+        vm.assume(IExecutionHub(hub).messageStatus(re.messageHash) == MessageStatus.None);
+        vm.assume(re.origin != localDomain());
+        re.destination = localDomain();
+        verify_receipt_invalid(hub, re);
+    }
+
+    function check_verifyReceipt_invalid_msgStatusSuccess(address hub, uint256 mask) public {
+        check_execute_base_recipientReverted(hub, Random(bytes32(mask)));
+        RawExecReceipt memory re = RawExecReceipt({
+            origin: DOMAIN_REMOTE,
+            destination: DOMAIN_LOCAL,
+            messageHash: getLeaf(0),
+            snapshotRoot: getSnapshotRoot(),
+            firstExecutor: executor,
+            finalExecutor: executorNew,
+            tips: RawTips(0, 0, 0, 0)
+        });
+        // Check that data we start with is valid. Use require() to break the test execution early.
+        require(IExecutionHub(hub).isValidReceipt(re.formatReceipt()), "Incorrect initial receipt data");
+        RawExecReceipt memory mre = re.modifyReceipt(mask);
+        verify_receipt_invalid(hub, mre);
+    }
+
     // ═════════════════════════════════════════════════ VERIFIERS ═════════════════════════════════════════════════════
 
     function verify_messageStatusNone(address hub, bytes32 messageHash) public {
@@ -302,20 +331,35 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         MessageStatus flag,
         address firstExecutor,
         address finalExecutor
-    ) public {
+    ) public returns (bytes memory receiptData) {
         MessageStatus flag_ = IExecutionHub(hub).messageStatus(messageHash);
         assertEq(uint8(flag_), uint8(flag), "!flag");
-        bytes memory data = IExecutionHub(hub).receiptData(messageHash);
+        receiptData = IExecutionHub(hub).receiptData(messageHash);
         if (flag == MessageStatus.None) {
-            assertEq(data.length, 0, "!receiptData: empty");
+            assertEq(receiptData.length, 0, "!receiptData: empty");
         } else {
             assertEq(
-                data,
+                receiptData,
                 ReceiptLib.formatReceipt(
                     DOMAIN_REMOTE, localDomain(), messageHash, snapRoot, firstExecutor, finalExecutor, ""
                 )
             );
         }
+    }
+
+    function verify_receipt_valid(address hub, bytes memory receiptData, RawTips memory rt) public {
+        bytes memory rcptPayload = abi.encodePacked(receiptData, rt.formatTips());
+        assertTrue(IExecutionHub(hub).isValidReceipt(rcptPayload));
+    }
+
+    function verify_receipt_invalid(address hub, RawExecReceipt memory re) public {
+        bytes memory rcptPayload = re.formatReceipt();
+        assertFalse(IExecutionHub(hub).isValidReceipt(rcptPayload));
+        address notary = domains[localDomain()].agent;
+        bytes memory rcptSignature = signReceipt(notary, rcptPayload);
+        // TODO: check that anyone could make the call
+        expectAgentSlashed(localDomain(), notary, address(this));
+        IExecutionHub(hub).verifyReceipt(rcptPayload, rcptSignature);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
@@ -372,7 +416,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     {
         rbm.sender = random.next();
         rbm.content = "Test content";
-        rh.nonce = random.nextUint32();
+        rh.nonce = 1;
         rh.optimisticPeriod = random.nextUint32();
         sm = SnapshotMock(random.nextState(), random.nextUint256(), random.nextUint256());
     }

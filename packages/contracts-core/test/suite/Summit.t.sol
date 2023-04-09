@@ -123,14 +123,6 @@ contract SummitTest is DisputeHubTest {
         }
     }
 
-    function expectAgentSlashed(uint32 domain, address agent, address prover) public {
-        vm.expectEmit(true, true, true, true);
-        emit AgentSlashed(domain, agent, prover);
-        vm.expectCall(
-            address(bondingManager), abi.encodeWithSelector(bondingManager.registrySlash.selector, domain, agent)
-        );
-    }
-
     function test_guardSnapshots(Random memory random) public {
         // Every Guard submits a snapshot with a random state for domains in [1 .. DOMAINS] range
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
@@ -433,5 +425,11 @@ contract SummitTest is DisputeHubTest {
         vm.expectEmit();
         emit SnapshotAccepted(0, guard, snapPayload, guardSig);
         InterfaceSummit(summit).submitSnapshot(snapPayload, guardSig);
+    }
+
+    // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
+
+    function localAgentManager() public view override returns (address) {
+        return address(bondingManager);
     }
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AgentFlag, AgentStatus, SlashStatus, SystemEntity} from "../libs/Structures.sol";
 import {DynamicTree, MerkleLib} from "../libs/Merkle.sol";
 import {MerkleList} from "../libs/MerkleList.sol";
@@ -14,9 +14,7 @@ import {Versioned} from "../Version.sol";
 /// @notice BondingManager keeps track of all existing _agents.
 /// Used on the Synapse Chain, serves as the "source of truth" for LightManagers on remote chains.
 contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // (agent => their status)
     mapping(address => AgentStatus) private _agentMap;
@@ -29,9 +27,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     // leafs[index > 0] = keccak(agentFlag, domain, _agents[index])
     DynamicTree private _agentTree;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain) DomainContext(domain) Versioned("0.0.3") {
         require(_onSynapseChain(), "Only deployed on SynChain");
@@ -45,9 +41,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         _agents.push(address(0));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          AGENTS LOGIC (MVP)                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ AGENTS LOGIC (MVP) ═════════════════════════════════════════════════
 
     // TODO: remove these MVP functions once token staking is implemented
 
@@ -114,9 +108,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         _updateLeaf(oldValue, proof, AgentStatus(AgentFlag.Resting, domain, status.index), agent);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            SLASHING LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ SLASHING LOGIC ═══════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceBondingManager
     function completeSlashing(uint32 domain, address agent, bytes32[] memory proof) external {
@@ -137,20 +129,6 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         _updateLeaf(oldValue, proof, AgentStatus(AgentFlag.Slashed, domain, status.index), agent);
     }
 
-    /// @inheritdoc IAgentManager
-    function registrySlash(uint32 domain, address agent, address prover) external {
-        // Check that Agent hasn't been already slashed and initiate the slashing
-        _initiateSlashing(domain, agent, prover);
-        // On SynChain both Origin and Destination (Summit) could slash agents
-        if (msg.sender == address(origin)) {
-            _notifySlashing(DESTINATION, domain, agent, prover);
-        } else if (msg.sender == address(destination)) {
-            _notifySlashing(ORIGIN, domain, agent, prover);
-        } else {
-            revert("Unauthorized caller");
-        }
-    }
-
     /// @inheritdoc InterfaceBondingManager
     function remoteRegistrySlash(
         uint256 proofMaturity,
@@ -169,9 +147,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         _notifySlashing(DESTINATION | ORIGIN, domain, agent, prover);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                VIEWS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
     function agentRoot() external view override returns (bytes32) {
@@ -215,9 +191,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Updates value in the Agent Merkle Tree to reflect the `newStatus`.
     /// Will revert, if supplied proof for the old value is incorrect.
@@ -232,6 +206,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         emit StatusUpdated(newStatus.flag, newStatus.domain, agent);
         emit RootUpdated(newRoot);
     }
+
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Returns the status of the agent.
     function _agentStatus(address agent) internal view override returns (AgentStatus memory) {
