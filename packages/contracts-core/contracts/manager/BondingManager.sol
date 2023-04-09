@@ -129,20 +129,6 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         _updateLeaf(oldValue, proof, AgentStatus(AgentFlag.Slashed, domain, status.index), agent);
     }
 
-    /// @inheritdoc IAgentManager
-    function registrySlash(uint32 domain, address agent, address prover) external {
-        // Check that Agent hasn't been already slashed and initiate the slashing
-        _initiateSlashing(domain, agent, prover);
-        // On SynChain both Origin and Destination (Summit) could slash agents
-        if (msg.sender == address(origin)) {
-            _notifySlashing(DESTINATION, domain, agent, prover);
-        } else if (msg.sender == address(destination)) {
-            _notifySlashing(ORIGIN, domain, agent, prover);
-        } else {
-            revert("Unauthorized caller");
-        }
-    }
-
     /// @inheritdoc InterfaceBondingManager
     function remoteRegistrySlash(
         uint256 proofMaturity,

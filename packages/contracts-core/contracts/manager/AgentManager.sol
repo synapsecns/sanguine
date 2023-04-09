@@ -30,10 +30,28 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
         destination = destination_;
     }
 
-    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════ SLASHING LOGIC ═══════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
     // solhint-disable-next-line ordering
+    function registrySlash(uint32 domain, address agent, address prover) external {
+        // Check that Agent hasn't been already slashed and initiate the slashing
+        _initiateSlashing(domain, agent, prover);
+        // On all chains both Origin and Destination/Summit could slash agents
+        if (msg.sender == address(origin)) {
+            _notifySlashing(DESTINATION, domain, agent, prover);
+        } else if (msg.sender == address(destination)) {
+            _notifySlashing(ORIGIN, domain, agent, prover);
+        } else {
+            revert("Unauthorized caller");
+        }
+        // Call "after slash" hook
+        _afterRegistrySlash(domain, agent, prover);
+    }
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc IAgentManager
     function agentRoot() external view virtual returns (bytes32);
 
     /// @inheritdoc IAgentManager
@@ -47,6 +65,11 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+
+    /// @dev Hook that is called after agent was slashed on one of the Registries,
+    /// and the remaining Registries were notified.
+    // solhint-disable-next-line no-empty-blocks
+    function _afterRegistrySlash(uint32 domain, address agent, address prover) internal virtual {}
 
     /// @dev Checks and initiates the slashing of an agent.
     /// Should be called, after one of registries confirmed fraud committed by the agent.
