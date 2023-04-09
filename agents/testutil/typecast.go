@@ -174,7 +174,7 @@ func (d *DeployManager) InitializeBondingManagerHarnessContract(
 	d.T().Helper()
 
 	deployedOriginHarness, _ := d.GetOriginHarness(ctx, synChainBackend)
-	deployedDestinationHarness, _ := d.GetDestinationHarness(ctx, synChainBackend)
+	deployedDSummitHarness, _ := d.GetSummitHarness(ctx, synChainBackend)
 
 	_, bondingManagerHarnessContract := d.GetBondingManagerHarness(ctx, synChainBackend)
 	bondingManagerHarnessOwnerPtr, err := bondingManagerHarnessContract.BondingManagerHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
@@ -186,7 +186,7 @@ func (d *DeployManager) InitializeBondingManagerHarnessContract(
 	initializeBondingManagerHarnessTx, err := bondingManagerHarnessContract.Initialize(
 		bondingManagerHarnessOwnerAuth.TransactOpts,
 		deployedOriginHarness.Address(),
-		deployedDestinationHarness.Address())
+		deployedDSummitHarness.Address())
 	if err != nil {
 		return fmt.Errorf("could not initialize bonding manager harness: %w", err)
 	}
@@ -255,7 +255,7 @@ func (d *DeployManager) InitializeBondingManagerContract(
 	d.T().Helper()
 
 	deployedOrigin, _ := d.GetOrigin(ctx, synChainBackend)
-	deployedDestination, _ := d.GetDestination(ctx, synChainBackend)
+	deployedSummit, _ := d.GetSummit(ctx, synChainBackend)
 
 	_, bondingManagerContract := d.GetBondingManager(ctx, synChainBackend)
 	bondingManagerOwnerPtr, err := bondingManagerContract.BondingManagerCaller.Owner(&bind.CallOpts{Context: ctx})
@@ -267,7 +267,7 @@ func (d *DeployManager) InitializeBondingManagerContract(
 	initializeBondingManagerTx, err := bondingManagerContract.Initialize(
 		bondingManagerOwnerAuth.TransactOpts,
 		deployedOrigin.Address(),
-		deployedDestination.Address())
+		deployedSummit.Address())
 	if err != nil {
 		return fmt.Errorf("could not initialize bonding manager: %w", err)
 	}
