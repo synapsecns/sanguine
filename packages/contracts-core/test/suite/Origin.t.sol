@@ -324,7 +324,13 @@ contract OriginTest is SystemRegistryTest {
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
 
-    function localAgentManager() public view override returns (address) {
-        return address(lightManager);
+    /// @notice Returns local domain for the tested system contract
+    function localDomain() public pure override returns (uint32) {
+        return DOMAIN_LOCAL;
+    }
+
+    /// @notice Returns address of the tested system contract
+    function systemContract() public view override returns (address) {
+        return localOrigin();
     }
 }

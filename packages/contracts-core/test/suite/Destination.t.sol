@@ -399,12 +399,8 @@ contract DestinationTest is ExecutionHubTest {
         InterfaceDestination(destination).submitAttestation(attPayload, attSig);
     }
 
-    /// @notice Local domain for ExecutionHub tests
+    /// @notice Returns local domain for the tested system contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
-    }
-
-    function localAgentManager() public view override returns (address) {
-        return address(lightManager);
     }
 }

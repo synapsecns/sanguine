@@ -370,9 +370,6 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         virtual
         returns (bytes32 snapRoot, bytes32[] memory snapProof);
 
-    /// @notice Local domain for ExecutionHub tests
-    function localDomain() public view virtual returns (uint32);
-
     function createBaseMessages(RawBaseMessage memory rbm, RawHeader memory rh, uint32 destination_)
         public
         returns (bytes memory msgPayload)

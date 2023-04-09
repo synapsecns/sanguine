@@ -138,4 +138,11 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         assertEq(uint8(slashedStatus.flag), uint8(DisputeFlag.Slashed), "!honest flag");
         assertEq(slashedStatus.counterpart, honest, "!honest counterpart");
     }
+
+    // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
+
+    /// @notice Returns address of the tested system contract
+    function systemContract() public view override returns (address) {
+        return localDestination();
+    }
 }

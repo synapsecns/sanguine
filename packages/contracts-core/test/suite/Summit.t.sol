@@ -429,7 +429,8 @@ contract SummitTest is DisputeHubTest {
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
 
-    function localAgentManager() public view override returns (address) {
-        return address(bondingManager);
+    /// @notice Returns local domain for the tested system contract
+    function localDomain() public pure override returns (uint32) {
+        return DOMAIN_SYNAPSE;
     }
 }
