@@ -134,7 +134,7 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_registrySlash_origin(uint32 domain, address agent, address prover) public {
         test_addAgent_new(address(this), domain, agent);
-        bytes memory data = _remoteSlashPayload(domain, agent, prover);
+        bytes memory data = remoteSlashPayload(domain, agent, prover);
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         vm.expectCall(destination, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
@@ -159,7 +159,7 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_registrySlash_destination(uint32 domain, address agent, address prover) public {
         test_addAgent_new(address(this), domain, agent);
-        bytes memory data = _remoteSlashPayload(domain, agent, prover);
+        bytes memory data = remoteSlashPayload(domain, agent, prover);
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         vm.expectCall(origin, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
@@ -190,7 +190,8 @@ contract LightManagerTest is AgentManagerTest {
         lightManager.registrySlash(0, domains[0].agent, address(0));
     }
 
-    function _localDomain() internal pure override returns (uint32) {
+    /// @notice Returns local domain for the tested system contract
+    function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }
 }

@@ -211,13 +211,13 @@ contract BondingManagerTest is AgentManagerTest {
         vm.assume(callOrigin != DOMAIN_SYNAPSE);
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         bytes memory localCall = abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent);
-        _skipBondingOptimisticPeriod();
+        skipBondingOptimisticPeriod();
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
         vm.expectCall(summit, localCall);
         vm.expectCall(originSynapse, localCall);
-        _systemPrank(
-            systemRouterSynapse, callOrigin, SystemEntity.AgentManager, _remoteSlashPayload(domain, agent, prover)
+        systemPrank(
+            systemRouterSynapse, callOrigin, SystemEntity.AgentManager, remoteSlashPayload(domain, agent, prover)
         );
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
@@ -305,7 +305,8 @@ contract BondingManagerTest is AgentManagerTest {
         }
     }
 
-    function _localDomain() internal pure override returns (uint32) {
+    /// @notice Returns local domain for the tested system contract
+    function localDomain() public pure override returns (uint32) {
         return DOMAIN_SYNAPSE;
     }
 }
