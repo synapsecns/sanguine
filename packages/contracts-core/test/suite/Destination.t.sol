@@ -30,6 +30,7 @@ import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
+// solhint-disable ordering
 contract DestinationTest is ExecutionHubTest {
     // Deploy Production version of Destination and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_DESTINATION) {}
@@ -380,5 +381,9 @@ contract DestinationTest is ExecutionHubTest {
     /// @notice Local domain for ExecutionHub tests
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
+    }
+
+    function localAgentManager() public view override returns (address) {
+        return address(lightManager);
     }
 }

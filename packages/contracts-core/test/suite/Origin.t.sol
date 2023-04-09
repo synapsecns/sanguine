@@ -26,10 +26,12 @@ import {
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
 import {AgentFlag, ISystemContract, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {SystemRegistryTest} from "./system/SystemRegistry.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
-contract OriginTest is SynapseTest {
+// solhint-disable ordering
+contract OriginTest is SystemRegistryTest {
     // Deploy Production version of Origin and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_ORIGIN) {}
 
@@ -241,7 +243,7 @@ contract OriginTest is SynapseTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
-            _expectAgentSlashed(domain, notary, address(this));
+            expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -263,7 +265,7 @@ contract OriginTest is SynapseTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
-            _expectAgentSlashed(domain, notary, address(this));
+            expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
         assertEq(
@@ -291,7 +293,7 @@ contract OriginTest is SynapseTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidSnapshotState(stateIndex, snapPayload, snapSig);
             // TODO: check that anyone could make the call
-            _expectAgentSlashed(DOMAIN_REMOTE, notary, address(this));
+            expectAgentSlashed(DOMAIN_REMOTE, notary, address(this));
         }
         assertEq(InterfaceOrigin(origin).verifySnapshot(stateIndex, snapPayload, snapSig), isValid, "!returnValue");
         if (isValid) {
@@ -311,7 +313,7 @@ contract OriginTest is SynapseTest {
             vm.expectEmit(true, true, true, true);
             emit InvalidStateReport(srPayload, srSig);
             // TODO: check that anyone could make the call
-            _expectAgentSlashed(0, guard, address(this));
+            expectAgentSlashed(0, guard, address(this));
         }
         vm.recordLogs();
         assertEq(InterfaceOrigin(origin).verifyStateReport(srPayload, srSig), isValid, "!returnValue");
@@ -320,9 +322,9 @@ contract OriginTest is SynapseTest {
         }
     }
 
-    function _expectAgentSlashed(uint32 domain, address agent, address prover) internal {
-        vm.expectEmit(true, true, true, true);
-        emit AgentSlashed(domain, agent, prover);
-        vm.expectCall(address(lightManager), abi.encodeWithSelector(lightManager.registrySlash.selector, domain, agent));
+    // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
+
+    function localAgentManager() public view override returns (address) {
+        return address(lightManager);
     }
 }
