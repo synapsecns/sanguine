@@ -1,4 +1,3 @@
-
 // function NetworkPausedButton({ networkName }) {
 //   return (
 //     <Button disabled={true} type="button" className={ACTION_BTN_CLASSNAME}>
