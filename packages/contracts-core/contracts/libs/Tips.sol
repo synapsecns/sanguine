@@ -2,21 +2,14 @@
 pragma solidity 0.8.17;
 
 import {ByteString} from "./ByteString.sol";
-import {TIPS_LENGTH} from "./Constants.sol";
+import {TIPS_GRANULARITY, TIPS_LENGTH} from "./Constants.sol";
 import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev Tips is a memory over over a formatted message tips payload.
 type Tips is bytes29;
 
 /// @dev Attach library functions to Tips
-using {
-    TipsLib.unwrap,
-    TipsLib.notaryTip,
-    TipsLib.broadcasterTip,
-    TipsLib.proverTip,
-    TipsLib.executorTip,
-    TipsLib.totalTips
-} for Tips global;
+using TipsLib for Tips global;
 
 /**
  * @notice Library for versioned formatting [the tips part]
@@ -121,10 +114,10 @@ library TipsLib {
         return uint96(view_.indexUint(OFFSET_EXECUTOR, 12));
     }
 
-    /// @notice Returns total tip amount.
-    function totalTips(Tips tips) internal pure returns (uint96) {
-        // In practice there's no chance that the total tips value would not fit into uint96.
-        // TODO: determine if we want to use uint256 here instead anyway.
-        return notaryTip(tips) + broadcasterTip(tips) + proverTip(tips) + executorTip(tips);
+    /// @notice Returns total value of the tips payload.
+    /// This is the sum of the encoded values, scaled up by TIPS_MULTIPLIER
+    function value(Tips tips) internal pure returns (uint256 value_) {
+        value_ = notaryTip(tips) + broadcasterTip(tips) + proverTip(tips) + executorTip(tips);
+        value_ <<= TIPS_GRANULARITY;
     }
 }

@@ -45,8 +45,8 @@ contract TipsHarness {
     }
 
     /// @notice Returns total tip amount.
-    function totalTips(bytes memory payload) public pure returns (uint96) {
-        return payload.castToTips().totalTips();
+    function value(bytes memory payload) public pure returns (uint256) {
+        return payload.castToTips().value();
     }
 
     function isTips(bytes memory payload) public pure returns (bool) {

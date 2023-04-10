@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
 import {TipsHarness} from "../../harnesses/libs/TipsHarness.t.sol";
 
-import {TIPS_LENGTH} from "../../../contracts/libs/Tips.sol";
+import {TIPS_MULTIPLIER, TIPS_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 // solhint-disable func-name-mixedcase
 contract TipsLibraryTest is SynapseLibraryTest {
@@ -32,7 +32,7 @@ contract TipsLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.broadcasterTip(payload), broadcasterTip, "!broadcasterTip");
         assertEq(libHarness.proverTip(payload), proverTip, "!proverTip");
         assertEq(libHarness.executorTip(payload), executorTip, "!executorTip");
-        assertEq(libHarness.totalTips(payload), totalTips, "!totalTips");
+        assertEq(libHarness.value(payload), totalTips * TIPS_MULTIPLIER, "!totalTips");
     }
 
     function test_constants() public {
