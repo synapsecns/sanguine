@@ -18,33 +18,21 @@ contract TipsLibraryTest is SynapseLibraryTest {
 
     // ═════════════════════════════════════════════ TESTS: FORMATTING ═════════════════════════════════════════════════
 
-    function test_formatTips(uint96 notaryTip, uint96 broadcasterTip, uint96 proverTip, uint96 executorTip) public {
+    function test_formatTips(uint96 summitTip, uint96 attestationTip, uint96 executionTip, uint96 deliveryTip) public {
         // TODO: Determine if we actually need uint96 for storing tips / totalTips
-        uint256 totalTips = uint256(notaryTip) + broadcasterTip + proverTip + executorTip;
+        uint256 totalTips = uint256(summitTip) + attestationTip + executionTip + deliveryTip;
         vm.assume(totalTips <= type(uint96).max);
         // Test formatting
-        bytes memory payload = libHarness.formatTips(notaryTip, broadcasterTip, proverTip, executorTip);
-        assertEq(payload, abi.encodePacked(notaryTip, broadcasterTip, proverTip, executorTip), "!formatTips");
+        bytes memory payload = libHarness.formatTips(summitTip, attestationTip, executionTip, deliveryTip);
+        assertEq(payload, abi.encodePacked(summitTip, attestationTip, executionTip, deliveryTip), "!formatTips");
         // Test formatting checker
         checkCastToTips({payload: payload, isTips: true});
         // Test getters
-        assertEq(libHarness.notaryTip(payload), notaryTip, "!notaryTip");
-        assertEq(libHarness.broadcasterTip(payload), broadcasterTip, "!broadcasterTip");
-        assertEq(libHarness.proverTip(payload), proverTip, "!proverTip");
-        assertEq(libHarness.executorTip(payload), executorTip, "!executorTip");
+        assertEq(libHarness.summitTip(payload), summitTip, "!summitTip");
+        assertEq(libHarness.attestationTip(payload), attestationTip, "!attestationTip");
+        assertEq(libHarness.executionTip(payload), executionTip, "!executionTip");
+        assertEq(libHarness.deliveryTip(payload), deliveryTip, "!deliveryTip");
         assertEq(libHarness.value(payload), totalTips * TIPS_MULTIPLIER, "!totalTips");
-    }
-
-    function test_constants() public {
-        // TODO: figure out why this doesn't mark offsetNotary as covered
-        assertEq(libHarness.offsetNotary(), 0);
-        assertEq(libHarness.offsetBroadcaster(), 12);
-        // 12 + 12
-        assertEq(libHarness.offsetProver(), 24);
-        // 12 + 12 + 12
-        assertEq(libHarness.offsetExecutor(), 36);
-        // 12 + 12 + 12 + 12
-        assertEq(libHarness.tipsLength(), 48);
     }
 
     function test_isTips(uint8 length) public {

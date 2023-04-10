@@ -23,34 +23,49 @@ library TipsLib {
     // or if using uint256 instead will suffice.
 
     /**
+     * @dev Tips are paid for sending a base message, and are split across all the agents that
+     * made the message execution on destination chain possible.
+     *  1. Summit tips. Split between:
+     *      a. Guard posting a snapshot with state ST_G for the origin chain.
+     *      b. Notary posting a snapshot SN_N using ST_G. This creates attestation A.
+     *      c. Notary posting a message receipt after it is executed on destination chain.
+     *  2. Attestation tips. Paid to:
+     *      a. Notary posting attestation A to destination chain.
+     *  3. Execution tips. Paid to:
+     *      a. First executor performing a valid execution attempt (correct proofs, optimistic period over),
+     *      using attestation A to prove message inclusion on origin chain, whether the recipient reverted or not.
+     *  4. Delivery tips. Paid to:
+     *      a. Executor who successfully executed the message on destination chain.
      * @dev Tips memory layout
-     * [000 .. 012): notaryTip          uint96	12 bytes
-     * [012 .. 024): broadcasterTip     uint96	12 bytes
-     * [024 .. 036): proverTip          uint96	12 bytes
-     * [036 .. 048): executorTip        uint96	12 bytes
+     * [000 .. 012): summitTip          uint96	12 bytes    Tip for agents interacting with Summit contract
+     * [012 .. 024): attestationTip     uint96	12 bytes    Tip for Notary posting attestation to Destination contract
+     * [024 .. 036): executionTip       uint96	12 bytes    Tip for valid execution attempt on destination chain
+     * [036 .. 048): deliveryTip        uint96	12 bytes    Tip for successful message delivery on destination chain
+     *
+     * The variables below are not supposed to be used outside of the library directly.
      */
 
-    uint256 internal constant OFFSET_NOTARY = 0;
-    uint256 internal constant OFFSET_BROADCASTER = 12;
-    uint256 internal constant OFFSET_PROVER = 24;
-    uint256 internal constant OFFSET_EXECUTOR = 36;
+    uint256 private constant OFFSET_SUMMIT_TIP = 0;
+    uint256 private constant OFFSET_ATTESTATION_TIP = 12;
+    uint256 private constant OFFSET_EXECUTION_TIP = 24;
+    uint256 private constant OFFSET_DELIVERY_TIP = 36;
 
     // ═══════════════════════════════════════════════════ TIPS ════════════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted Tips payload with provided fields
-     * @param notaryTip_        Tip for the Notary
-     * @param broadcasterTip_   Tip for the Broadcaster
-     * @param proverTip_        Tip for the Prover
-     * @param executorTip_      Tip for the Executor
+     * @param summitTip_        Tip for agents interacting with Summit contract
+     * @param attestationTip_   Tip for Notary posting attestation to Destination contract
+     * @param executionTip_     Tip for valid execution attempt on destination chain
+     * @param deliveryTip_      Tip for successful message delivery on destination chain
      * @return Formatted tips
      */
-    function formatTips(uint96 notaryTip_, uint96 broadcasterTip_, uint96 proverTip_, uint96 executorTip_)
+    function formatTips(uint96 summitTip_, uint96 attestationTip_, uint96 executionTip_, uint96 deliveryTip_)
         internal
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(notaryTip_, broadcasterTip_, proverTip_, executorTip_);
+        return abi.encodePacked(summitTip_, attestationTip_, executionTip_, deliveryTip_);
     }
 
     /**
@@ -90,34 +105,34 @@ library TipsLib {
 
     // ═══════════════════════════════════════════════ TIPS SLICING ════════════════════════════════════════════════════
 
-    /// @notice Returns notaryTip field
-    function notaryTip(Tips tips) internal pure returns (uint96) {
+    /// @notice Returns summitTip field
+    function summitTip(Tips tips) internal pure returns (uint96) {
         bytes29 view_ = tips.unwrap();
-        return uint96(view_.indexUint(OFFSET_NOTARY, 12));
+        return uint96(view_.indexUint(OFFSET_SUMMIT_TIP, 12));
     }
 
-    /// @notice Returns broadcasterTip field
-    function broadcasterTip(Tips tips) internal pure returns (uint96) {
+    /// @notice Returns attestationTip field
+    function attestationTip(Tips tips) internal pure returns (uint96) {
         bytes29 view_ = tips.unwrap();
-        return uint96(view_.indexUint(OFFSET_BROADCASTER, 12));
+        return uint96(view_.indexUint(OFFSET_ATTESTATION_TIP, 12));
     }
 
-    /// @notice Returns proverTip field
-    function proverTip(Tips tips) internal pure returns (uint96) {
+    /// @notice Returns executionTip field
+    function executionTip(Tips tips) internal pure returns (uint96) {
         bytes29 view_ = tips.unwrap();
-        return uint96(view_.indexUint(OFFSET_PROVER, 12));
+        return uint96(view_.indexUint(OFFSET_EXECUTION_TIP, 12));
     }
 
-    /// @notice Returns executorTip field
-    function executorTip(Tips tips) internal pure returns (uint96) {
+    /// @notice Returns deliveryTip field
+    function deliveryTip(Tips tips) internal pure returns (uint96) {
         bytes29 view_ = tips.unwrap();
-        return uint96(view_.indexUint(OFFSET_EXECUTOR, 12));
+        return uint96(view_.indexUint(OFFSET_DELIVERY_TIP, 12));
     }
 
     /// @notice Returns total value of the tips payload.
     /// This is the sum of the encoded values, scaled up by TIPS_MULTIPLIER
     function value(Tips tips) internal pure returns (uint256 value_) {
-        value_ = notaryTip(tips) + broadcasterTip(tips) + proverTip(tips) + executorTip(tips);
+        value_ = summitTip(tips) + attestationTip(tips) + executionTip(tips) + deliveryTip(tips);
         value_ <<= TIPS_GRANULARITY;
     }
 }
