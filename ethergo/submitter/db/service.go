@@ -20,6 +20,8 @@ type Service interface {
 	GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error)
 	// PutTX stores a tx in the database.
 	PutTX(ctx context.Context, tx *types.Transaction, status Status) error
+	// GetTXS gets all txs for a given address and chain id.
+	GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, statuses ...Status) (txs []*types.Transaction, err error)
 }
 
 // Status is the status of a tx.

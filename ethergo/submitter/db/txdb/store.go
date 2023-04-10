@@ -24,6 +24,36 @@ type Store struct {
 	db *gorm.DB
 }
 
+func (s Store) GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, matchStatuses ...db.Status) (txs []*types.Transaction, err error) {
+	var dbTXs []ETHTX
+
+	inArgs := make([]int, len(matchStatuses))
+	for i := range matchStatuses {
+		inArgs[i] = int(matchStatuses[i].Int())
+	}
+
+	tx := s.DB().WithContext(ctx).Model(&ETHTX{}).Where(ETHTX{
+		From:    fromAddress.String(),
+		ChainID: chainID.Uint64(),
+	}).Where("%s IN ?", inArgs).Order(fmt.Sprintf("%s desc", statusFieldName)).Find(&dbTXs)
+
+	if tx.Error != nil {
+		return nil, fmt.Errorf("could not get txs: %w", tx.Error)
+	}
+
+	var res []*types.Transaction
+	for _, dbTX := range dbTXs {
+		var marshalledTx types.Transaction
+		err = marshalledTx.UnmarshalBinary(dbTX.RawTx)
+		if err != nil {
+			return nil, fmt.Errorf("could not unmarshal tx: %w", err)
+		}
+
+		res = append(txs, &marshalledTx)
+	}
+	return res, nil
+}
+
 // GetNonceForChainID gets the nonce for the given chain id.
 func (s Store) GetNonceForChainID(ctx context.Context, fromAddress common.Address, chainID *big.Int) (nonce uint64, err error) {
 	var newNonce sql.NullInt64

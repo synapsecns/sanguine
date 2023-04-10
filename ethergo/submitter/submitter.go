@@ -20,6 +20,8 @@ import (
 	"math/big"
 	"reflect"
 	"runtime"
+	"sync"
+	"time"
 )
 
 // TransactionSubmitter is the interface for submitting transactions to the chain.
@@ -45,6 +47,8 @@ type txSubmitterImpl struct {
 	fetcher ClientFetcher
 	// db is the database for storing transactions.
 	db db.Service
+	// retryOnce is used to return 0 on the first call to GetRetryInterval.
+	retryOnce sync.Once
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -58,6 +62,15 @@ func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetc
 		signer:  signer,
 		fetcher: fetcher,
 	}
+}
+
+// GetRetryInterval returns the retry interval for the transaction submitter.
+func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
+	retryInterval := time.Second * 10
+	t.retryOnce.Do(func() {
+		retryInterval = time.Duration(0)
+	})
+	return retryInterval
 }
 
 func (t *txSubmitterImpl) Start(ctx context.Context) error {
@@ -146,12 +159,10 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	}()
 
 	// make sure we have a client for this chain.
-	txClient, err := t.fetcher.GetClient(ctx, chainID)
+	_, err = t.fetcher.GetClient(ctx, chainID)
 	if err != nil {
 		return 0, fmt.Errorf("could not get client: %w", err)
 	}
-
-	_ = txClient
 
 	// get the underlying transactor
 	parentTransactor, err := t.signer.GetTransactor(ctx, core.CopyBigInt(chainID))
@@ -205,6 +216,10 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	if err != nil {
 		return 0, fmt.Errorf("could not store transaction: %w", err)
 	}
+
+	go func() {
+		t.submitter.SubmitTransaction(ctx, tx)
+	}()
 
 	return tx.Nonce(), nil
 }
