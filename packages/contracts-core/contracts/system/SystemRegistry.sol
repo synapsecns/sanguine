@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 
+// ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {SystemContract} from "./SystemContract.sol";
 import {SystemRegistryEvents} from "../events/SystemRegistryEvents.sol";
 import {AgentStatus, IAgentManager} from "../interfaces/IAgentManager.sol";
@@ -11,15 +11,11 @@ import {ISystemRegistry} from "../interfaces/ISystemRegistry.sol";
 /// This abstract contract is responsible for all interactions with the local AgentManager,
 /// where all agent are being tracked.
 abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISystemRegistry {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              IMMUTABLES                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
 
     IAgentManager public immutable agentManager;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     /// @dev gap for upgrade safety
     uint256[50] private __GAP; // solhint-disable-line var-name-mixedcase
@@ -29,35 +25,27 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
         _;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             CONSTRUCTOR                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ CONSTRUCTOR ════════════════════════════════════════════════════
 
     constructor(IAgentManager agentManager_) {
         agentManager = agentManager_;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          ONLY AGENT MANAGER                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ ONLY AGENT MANAGER ═════════════════════════════════════════════════
 
     /// @inheritdoc ISystemRegistry
     function managerSlash(uint32 domain, address agent, address prover) external onlyAgentManager {
         _processSlashed(domain, agent, prover);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            EXTERNAL VIEWS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc ISystemRegistry
     function agentStatus(address agent) external view returns (AgentStatus memory) {
         return _agentStatus(agent);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Child contract could define custom logic for processing the slashed Agent.
     /// This will be called when the slashing was initiated in this contract or elsewhere.
@@ -72,9 +60,7 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
         agentManager.registrySlash(domain, agent, msg.sender);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL VIEWS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Returns status of the given agent: (flag, domain, index).
     function _agentStatus(address agent) internal view returns (AgentStatus memory) {
