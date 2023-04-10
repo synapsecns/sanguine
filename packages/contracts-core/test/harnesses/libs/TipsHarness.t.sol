@@ -24,29 +24,29 @@ contract TipsHarness {
         return tips.unwrap().clone();
     }
 
-    /// @notice Returns notaryTip field
-    function notaryTip(bytes memory payload) public pure returns (uint96) {
-        return payload.castToTips().notaryTip();
+    /// @notice Returns summitTip field
+    function summitTip(bytes memory payload) public pure returns (uint64) {
+        return payload.castToTips().summitTip();
     }
 
-    /// @notice Returns broadcasterTip field
-    function broadcasterTip(bytes memory payload) public pure returns (uint96) {
-        return payload.castToTips().broadcasterTip();
+    /// @notice Returns attestationTip field
+    function attestationTip(bytes memory payload) public pure returns (uint64) {
+        return payload.castToTips().attestationTip();
     }
 
-    /// @notice Returns proverTip field
-    function proverTip(bytes memory payload) public pure returns (uint96) {
-        return payload.castToTips().proverTip();
+    /// @notice Returns executionTip field
+    function executionTip(bytes memory payload) public pure returns (uint64) {
+        return payload.castToTips().executionTip();
     }
 
-    /// @notice Returns executorTip field
-    function executorTip(bytes memory payload) public pure returns (uint96) {
-        return payload.castToTips().executorTip();
+    /// @notice Returns deliveryTip field
+    function deliveryTip(bytes memory payload) public pure returns (uint64) {
+        return payload.castToTips().deliveryTip();
     }
 
     /// @notice Returns total tip amount.
-    function totalTips(bytes memory payload) public pure returns (uint96) {
-        return payload.castToTips().totalTips();
+    function value(bytes memory payload) public pure returns (uint256) {
+        return payload.castToTips().value();
     }
 
     function isTips(bytes memory payload) public pure returns (bool) {
@@ -55,37 +55,15 @@ contract TipsHarness {
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
-    function formatTips(uint96 notaryTip_, uint96 broadcasterTip_, uint96 proverTip_, uint96 executorTip_)
+    function formatTips(uint64 summitTip_, uint64 attestationTip_, uint64 executionTip_, uint64 deliveryTip_)
         public
         pure
         returns (bytes memory)
     {
-        return TipsLib.formatTips(notaryTip_, broadcasterTip_, proverTip_, executorTip_);
+        return TipsLib.formatTips(summitTip_, attestationTip_, executionTip_, deliveryTip_);
     }
 
     function emptyTips() public pure returns (bytes memory) {
         return TipsLib.emptyTips();
-    }
-
-    // ═════════════════════════════════════════════ CONSTANT GETTERS ══════════════════════════════════════════════════
-
-    function tipsLength() public pure returns (uint256) {
-        return TIPS_LENGTH;
-    }
-
-    function offsetNotary() public pure returns (uint256) {
-        return TipsLib.OFFSET_NOTARY;
-    }
-
-    function offsetBroadcaster() public pure returns (uint256) {
-        return TipsLib.OFFSET_BROADCASTER;
-    }
-
-    function offsetProver() public pure returns (uint256) {
-        return TipsLib.OFFSET_PROVER;
-    }
-
-    function offsetExecutor() public pure returns (uint256) {
-        return TipsLib.OFFSET_EXECUTOR;
     }
 }

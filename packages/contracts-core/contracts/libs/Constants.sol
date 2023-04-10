@@ -24,8 +24,12 @@ uint256 constant SNAPSHOT_MAX_STATES = 1 << (SNAPSHOT_TREE_HEIGHT - 1);
 uint256 constant HEADER_LENGTH = 16;
 /// @dev See Request.sol: (uint64): 8
 uint256 constant REQUEST_LENGTH = 8;
-/// @dev See Tips.sol: (uint96,uint96,uint96,uint96): 12+12+12+12
-uint256 constant TIPS_LENGTH = 48;
+/// @dev See Tips.sol: (uint64,uint64,uint64,uint64): 8+8+8+8
+uint256 constant TIPS_LENGTH = 32;
+/// @dev The amount of discarded last bits when encoding tip values
+uint256 constant TIPS_GRANULARITY = 32;
+/// @dev Tip values could be only the multiples of TIPS_MULTIPLIER
+uint256 constant TIPS_MULTIPLIER = 1 << TIPS_GRANULARITY;
 // ══════════════════════════════ STATEMENT SALTS ══════════════════════════════
 /// @dev Salts for signing various statements
 bytes32 constant ATTESTATION_SALT = keccak256("ATTESTATION_SALT");

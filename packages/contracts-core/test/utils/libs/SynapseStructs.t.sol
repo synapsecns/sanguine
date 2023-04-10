@@ -33,10 +33,10 @@ struct RawRequest {
 using CastLib for RawRequest global;
 
 struct RawTips {
-    uint96 notaryTip;
-    uint96 broadcasterTip;
-    uint96 proverTip;
-    uint96 executorTip;
+    uint64 summitTip;
+    uint64 attestationTip;
+    uint64 executionTip;
+    uint64 deliveryTip;
 }
 
 using CastLib for RawTips global;
@@ -199,25 +199,25 @@ library CastLib {
 
     function formatTips(RawTips memory rt) internal pure returns (bytes memory tipsPayload) {
         tipsPayload = TipsLib.formatTips({
-            notaryTip_: rt.notaryTip,
-            broadcasterTip_: rt.broadcasterTip,
-            proverTip_: rt.proverTip,
-            executorTip_: rt.executorTip
+            summitTip_: rt.summitTip,
+            attestationTip_: rt.attestationTip,
+            executionTip_: rt.executionTip,
+            deliveryTip_: rt.deliveryTip
         });
     }
 
-    function boundTips(RawTips memory rt, uint96 maxTipValue) internal pure {
-        rt.notaryTip = rt.notaryTip % maxTipValue;
-        rt.broadcasterTip = rt.broadcasterTip % maxTipValue;
-        rt.proverTip = rt.proverTip % maxTipValue;
-        rt.executorTip = rt.executorTip % maxTipValue;
+    function boundTips(RawTips memory rt, uint64 maxTipValue) internal pure {
+        rt.summitTip = rt.summitTip % maxTipValue;
+        rt.attestationTip = rt.attestationTip % maxTipValue;
+        rt.executionTip = rt.executionTip % maxTipValue;
+        rt.deliveryTip = rt.deliveryTip % maxTipValue;
     }
 
     function cloneTips(RawTips memory rt) internal pure returns (RawTips memory crt) {
-        crt.notaryTip = rt.notaryTip;
-        crt.broadcasterTip = rt.broadcasterTip;
-        crt.proverTip = rt.proverTip;
-        crt.executorTip = rt.executorTip;
+        crt.summitTip = rt.summitTip;
+        crt.attestationTip = rt.attestationTip;
+        crt.executionTip = rt.executionTip;
+        crt.deliveryTip = rt.deliveryTip;
     }
 
     function castToTips(RawTips memory rt) internal pure returns (Tips ptr) {

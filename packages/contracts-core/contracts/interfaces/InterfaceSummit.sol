@@ -3,6 +3,19 @@ pragma solidity 0.8.17;
 
 interface InterfaceSummit {
     /**
+     * @notice Submit a message execution receipt. This will distribute the message tips
+     * across the off-chain actors once the receipt optimistic period is over.
+     * @dev Will revert if any of these is true:
+     *  - Receipt payload is not properly formatted.
+     *  - Receipt signer is not an active Notary.
+     *  - Receipt's snapshot root is unknown.
+     * @param rcptPayload       Raw payload with receipt data
+     * @param rcptSignature     Notary signature for the receipt
+     * @return wasAccepted      Whether the receipt was accepted
+     */
+    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted);
+
+    /**
      * @notice Submit a snapshot (list of states) signed by a Guard or a Notary.
      * Guard-signed snapshots: all the states in the snapshot become available for Notary signing.
      * Notary-signed snapshots: Snapshot Merkle Root is saved for valid snapshots, i.e.
