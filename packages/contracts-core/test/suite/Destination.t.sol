@@ -10,7 +10,7 @@ import {InterfaceDestination} from "../../contracts/Destination.sol";
 import {Versioned} from "../../contracts/Version.sol";
 
 import {Random} from "../utils/libs/Random.t.sol";
-import {RawAttestation, RawState} from "../utils/libs/SynapseStructs.t.sol";
+import {RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
 import {AgentFlag, ISystemContract, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 
@@ -192,23 +192,15 @@ contract DestinationTest is ExecutionHubTest {
         checkDisputeOpened(destination, guard, notary);
     }
 
-    function test_submitStateReport(RawState memory rs, uint256 statesAmount, uint256 stateIndex) public {
-        // Make sure statesAmount, stateIndex are valid entires
-        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
-        stateIndex = bound(stateIndex, 0, statesAmount - 1);
-        check_submitStateReport(destination, DOMAIN_LOCAL, rs, statesAmount, stateIndex);
+    function test_submitStateReport(RawState memory rs, RawStateIndex memory rsi) public boundIndex(rsi) {
+        check_submitStateReport(destination, DOMAIN_LOCAL, rs, rsi);
     }
 
-    function test_submitStateReportWithProof(
-        RawState memory rs,
-        RawAttestation memory ra,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public {
-        // Make sure statesAmount, stateIndex are valid entires
-        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
-        stateIndex = bound(stateIndex, 0, statesAmount - 1);
-        check_submitStateReportWithProof(destination, DOMAIN_LOCAL, rs, ra, statesAmount, stateIndex);
+    function test_submitStateReportWithProof(RawState memory rs, RawAttestation memory ra, RawStateIndex memory rsi)
+        public
+        boundIndex(rsi)
+    {
+        check_submitStateReportWithProof(destination, DOMAIN_LOCAL, rs, ra, rsi);
     }
 
     // ════════════════════════════════════════════ DISPUTE RESOLUTION ═════════════════════════════════════════════════

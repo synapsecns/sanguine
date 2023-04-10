@@ -2,9 +2,14 @@
 pragma solidity 0.8.17;
 
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
-import {SystemEntity} from "../../utils/libs/SynapseStructs.t.sol";
+import {RawStateIndex, SystemEntity} from "../../utils/libs/SynapseStructs.t.sol";
 
 abstract contract SystemContractTest is SynapseTest {
+    modifier boundIndex(RawStateIndex memory rsi) {
+        rsi.boundStateIndex();
+        _;
+    }
+
     modifier onlySupportedDomain() virtual {
         require(localDomain() == DOMAIN_LOCAL || localDomain() == DOMAIN_SYNAPSE, "Unsupported local domain");
         _;

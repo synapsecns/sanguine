@@ -22,6 +22,7 @@ import {
     RawRequest,
     RawSnapshot,
     RawState,
+    RawStateIndex,
     RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
@@ -137,24 +138,25 @@ contract OriginTest is SystemRegistryTest {
         assertEq(hub.suggestLatestState(), state, "!suggestLatestState");
     }
 
-    function test_verifySnapshot_valid(uint32 nonce, uint256 statesAmount, uint256 stateIndex) public {
+    function test_verifySnapshot_valid(uint32 nonce, RawStateIndex memory rsi) public {
         // Use empty mutation mask
-        test_verifySnapshot_existingNonce(nonce, 0, statesAmount, stateIndex);
+        test_verifySnapshot_existingNonce(nonce, 0, rsi);
     }
 
-    function test_verifySnapshot_existingNonce(uint32 nonce, uint256 mask, uint256 statesAmount, uint256 stateIndex)
+    function test_verifySnapshot_existingNonce(uint32 nonce, uint256 mask, RawStateIndex memory rsi)
         public
+        boundIndex(rsi)
     {
         (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
-        _verifySnapshot(rs, isValid, statesAmount, stateIndex);
+        _verifySnapshot(rs, isValid, rsi);
     }
 
-    function test_verifySnapshot_unknownNonce(RawState memory rs, uint256 statesAmount, uint256 stateIndex) public {
+    function test_verifySnapshot_unknownNonce(RawState memory rs, RawStateIndex memory rsi) public boundIndex(rsi) {
         // Restrict nonce to non-existing ones
         rs.nonce = uint32(bound(rs.nonce, MESSAGES + 1, type(uint32).max));
         rs.origin = DOMAIN_LOCAL;
         // Remaining fields are fuzzed
-        _verifySnapshot(rs, false, statesAmount, stateIndex);
+        _verifySnapshot(rs, false, rsi);
     }
 
     function test_verifyAttestation_valid(Random memory random, uint32 nonce) public {
@@ -278,24 +280,19 @@ contract OriginTest is SystemRegistryTest {
         }
     }
 
-    function _verifySnapshot(RawState memory rawState, bool isValid, uint256 statesAmount, uint256 stateIndex)
-        internal
-    {
-        // Fuzz the position of invalid state in the snapshot
-        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
-        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+    function _verifySnapshot(RawState memory rawState, bool isValid, RawStateIndex memory rsi) internal {
         address notary = domains[DOMAIN_REMOTE].agent;
-        RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi.statesAmount, rsi.stateIndex);
         (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(notary, rawSnap);
         vm.recordLogs();
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidSnapshotState(stateIndex, snapPayload, snapSig);
+            emit InvalidSnapshotState(rsi.stateIndex, snapPayload, snapSig);
             // TODO: check that anyone could make the call
             expectAgentSlashed(DOMAIN_REMOTE, notary, address(this));
         }
-        assertEq(InterfaceOrigin(origin).verifySnapshot(stateIndex, snapPayload, snapSig), isValid, "!returnValue");
+        assertEq(InterfaceOrigin(origin).verifySnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
