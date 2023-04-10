@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AgentStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager} from "./manager/AgentManager.sol";
@@ -18,6 +18,8 @@ import {SystemRegistry} from "./system/SystemRegistry.sol";
 contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
 
+    // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
+
     constructor(uint32 domain, IAgentManager agentManager_)
         DomainContext(domain)
         SystemRegistry(agentManager_)
@@ -26,19 +28,13 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             INITIALIZER                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
     function initialize() external initializer {
         // Initialize Ownable: msg.sender is set as "owner"
         __Ownable_init();
         _initializeAttestations();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          ACCEPT STATEMENTS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
     function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
@@ -76,9 +72,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          VERIFY STATEMENTS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ VERIFY STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
     function verifyAttestation(bytes memory attPayload, bytes memory attSignature) external returns (bool isValid) {
@@ -116,18 +110,14 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                VIEWS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
     function getLatestState(uint32 origin) external view returns (bytes memory statePayload) {
         // TODO: implement once Agent Merkle Tree is done
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @inheritdoc DisputeHub
     function _beforeStatement() internal pure override returns (bool acceptNext) {
