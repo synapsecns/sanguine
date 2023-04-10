@@ -9,6 +9,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
+	"github.com/synapsecns/sanguine/ethergo/backends/preset"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
 	"math/big"
 	"testing"
@@ -30,9 +32,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	scribesqlite "github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
@@ -184,8 +184,9 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 
 // SetupSummit sets up the backend that will have the summit contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
-	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.BondingManagerMetadataOnSummit, a.BondingManagerOnSummit = deployManager.GetBondingManagerHarness(a.GetTestContext(), a.TestBackendSummit)
+	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
+	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 
 	var err error
 	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
@@ -278,9 +279,9 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
 	a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
 
+	a.SetupSummit(a.TestDeployManager)
 	a.SetupDestination(a.TestDeployManager)
 	a.SetupOrigin(a.TestDeployManager)
-	a.SetupSummit(a.TestDeployManager)
 
 	a.TestDeployManager.LoadHarnessContractsOnChains(
 		a.GetTestContext(),
