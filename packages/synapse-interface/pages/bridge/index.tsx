@@ -134,7 +134,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     newFromTokenSymbol: string,
     newBridgeableTokenSymbol: string
   ) => {
-    console.log('newFromToken', newFromToken)
     setFromToken(newFromToken)
     setToChainId(newToChain)
     setToToken(newToToken)
