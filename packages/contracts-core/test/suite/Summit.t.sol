@@ -263,9 +263,9 @@ contract SummitTest is DisputeHubTest {
         states[0] = rs.formatState();
         acceptSnapshot(states);
         (address guard, address notary) = (domains[0].agent, domains[DOMAIN_LOCAL].agent);
-        (bytes memory snapPayload, bytes memory snapSigGuard) = createSignedSnapshot(guard, rs, rsi);      
+        (bytes memory snapPayload, bytes memory snapSigGuard) = createSignedSnapshot(guard, rs, rsi);
         InterfaceSummit(summit).submitSnapshot(snapPayload, snapSigGuard);
-        (, bytes memory snapSigNotary) = createSignedSnapshot(notary, rs, rsi);      
+        (, bytes memory snapSigNotary) = createSignedSnapshot(notary, rs, rsi);
         InterfaceSummit(summit).submitSnapshot(snapPayload, snapSigNotary);
     }
 
