@@ -18,6 +18,7 @@ contract SystemRouterTest is SynapseTest {
     // ════════════════════════════════════════ TESTS: SENDING SYSTEM CALLS ════════════════════════════════════════════
 
     function test_sendSystemMessage(RawSystemMessage memory rsm, RawHeader memory rh, uint256 words) public {
+        vm.assume(rh.destination != DOMAIN_LOCAL);
         words = words % MAX_SYSTEM_CALL_WORDS;
         rsm.callData.args = Random("sendSystemMessage").nextBytesWords(words);
         // Make sure sender/recipient are valid SystemEntity values
