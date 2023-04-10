@@ -12,7 +12,7 @@ on:
       - master
   paths:
     - 'packages/explorer-ui/**'
-    - '.github/workflows/ui-preview.yaml'
+    - '.github/workflows/explorer-ui-preview.yaml'
 jobs:
   Deploy-Preview:
     runs-on: ubuntu-latest
