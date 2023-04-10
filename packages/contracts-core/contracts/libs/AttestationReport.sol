@@ -8,20 +8,15 @@ import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev AttestationReport is a memory view over a formatted Guard report for invalid Attestation
 type AttestationReport is bytes29;
+
 /// @dev Possible flags for the AttestationReport
 /// Currently has only one possible value, but enables different types of reports in the future
-
 enum AttestationFlag {Invalid}
-/// @dev Attach library functions to AttestationFlag
 
-using {AttestationReportLib.formatAttestationReport} for AttestationFlag global;
+/// @dev Attach library functions to AttestationFlag
+using AttestationReportLib for AttestationFlag global;
 /// @dev Attach library functions to AttestationReport
-using {
-    AttestationReportLib.hash,
-    AttestationReportLib.unwrap,
-    AttestationReportLib.flag,
-    AttestationReportLib.attestation
-} for AttestationReport global;
+using AttestationReportLib for AttestationReport global;
 
 library AttestationReportLib {
     using AttestationLib for bytes29;
@@ -46,9 +41,7 @@ library AttestationReportLib {
     uint256 private constant OFFSET_FLAG = 0;
     uint256 private constant OFFSET_ATTESTATION = 1;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          ATTESTATION REPORT                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ ATTESTATION REPORT ═════════════════════════════════════════════════
 
     /// @notice Returns a formatted AttestationReport payload with provided fields.
     /// @param flag_        Flag signalling type of Attestation Report
@@ -97,9 +90,7 @@ library AttestationReportLib {
         return AttestationReport.unwrap(attReport);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      ATTESTATION REPORT SLICING                      ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════ ATTESTATION REPORT SLICING ═════════════════════════════════════════════
 
     /// @notice Returns AttestationFlag used in the report.
     function flag(AttestationReport attReport) internal pure returns (AttestationFlag) {
@@ -116,6 +107,8 @@ library AttestationReportLib {
         // into AttestationReport, so this never reverts.
         return _arAttestation(view_).castToAttestation();
     }
+
+    // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
 
     /// @dev Returns AttestationReport without checking that it fits into AttestationFlag enum.
     function _arFlag(bytes29 view_) internal pure returns (uint8) {

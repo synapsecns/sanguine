@@ -5,18 +5,18 @@ import {ByteString} from "./ByteString.sol";
 import {STATE_REPORT_SALT} from "./Constants.sol";
 import {State, StateLib} from "./State.sol";
 import {TypedMemView} from "./TypedMemView.sol";
-/// @dev StateReport is a memory view over a formatted Guard report for invalid State
 
+/// @dev StateReport is a memory view over a formatted Guard report for invalid State
 type StateReport is bytes29;
+
 /// @dev Possible flags for the StateReport
 /// Currently has only one possible value, but enables different types of reports in the future
-
 enum StateFlag {Invalid}
-/// @dev Attach library functions to StateFlag
 
-using {StateReportLib.formatStateReport} for StateFlag global;
+/// @dev Attach library functions to StateFlag
+using StateReportLib for StateFlag global;
 /// @dev Attach library functions to StateReport
-using {StateReportLib.hash, StateReportLib.unwrap, StateReportLib.flag, StateReportLib.state} for StateReport global;
+using StateReportLib for StateReport global;
 
 library StateReportLib {
     using ByteString for bytes;
@@ -41,9 +41,7 @@ library StateReportLib {
     uint256 private constant OFFSET_FLAG = 0;
     uint256 private constant OFFSET_STATE = 1;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             STATE REPORT                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ STATE REPORT ════════════════════════════════════════════════════
 
     /// @notice Returns a formatted StateReport payload with provided fields.
     /// @param flag_            Flag signalling type of State Report
@@ -88,9 +86,7 @@ library StateReportLib {
         return StateReport.unwrap(stateReport);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         STATE REPORT SLICING                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════ STATE REPORT SLICING ════════════════════════════════════════════════
 
     /// @notice Returns StateFlag used in the report.
     function flag(StateReport stateReport) internal pure returns (StateFlag) {
@@ -107,6 +103,8 @@ library StateReportLib {
         // into StateReport, so this never reverts.
         return _srState(view_).castToState();
     }
+
+    // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
 
     /// @dev Returns StateReport flag without checking that it fits into StateFlag enum.
     function _srFlag(bytes29 view_) internal pure returns (uint8) {
