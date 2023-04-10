@@ -12,6 +12,7 @@ import {
     RawAttestationReport,
     RawSnapshot,
     RawState,
+    RawStateIndex,
     RawStateReport
 } from "../../utils/libs/SynapseStructs.t.sol";
 import {SystemRegistryTest} from "../system/SystemRegistry.t.sol";
@@ -27,24 +28,20 @@ abstract contract DisputeHubTest is SystemRegistryTest {
     ▏*║                         SUBMIT DATA HELPERS                          ║*▕
     \*╚══════════════════════════════════════════════════════════════════════╝*/
 
-    function check_submitStateReport(
-        address hub,
-        uint32 notaryDomain,
-        RawState memory rs,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public {
+    function check_submitStateReport(address hub, uint32 notaryDomain, RawState memory rs, RawStateIndex memory rsi)
+        public
+    {
         address prover = makeAddr("Prover");
         // Create Notary signature for the snapshot
         address notary = domains[notaryDomain].agent;
-        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, statesAmount, stateIndex);
+        (bytes memory snapPayload, bytes memory snapSig) = createSignedSnapshot(notary, rs, rsi);
         // Create Guard signature for the report
         address guard = domains[0].agent;
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
         vm.expectEmit();
         emit Dispute(guard, notaryDomain, notary);
         vm.prank(prover);
-        IDisputeHub(hub).submitStateReport(stateIndex, srPayload, srSig, snapPayload, snapSig);
+        IDisputeHub(hub).submitStateReport(rsi.stateIndex, srPayload, srSig, snapPayload, snapSig);
         checkDisputeOpened(hub, guard, notary);
     }
 
@@ -53,11 +50,10 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         uint32 notaryDomain,
         RawState memory rs,
         RawAttestation memory ra,
-        uint256 statesAmount,
-        uint256 stateIndex
+        RawStateIndex memory rsi
     ) public {
         address prover = makeAddr("Prover");
-        ra = createAttestation(rs, ra, statesAmount, stateIndex);
+        ra = createAttestation(rs, ra, rsi);
         // Create Notary signature for the attestation
         address notary = domains[notaryDomain].agent;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
@@ -65,11 +61,11 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         address guard = domains[0].agent;
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, rs);
         // Generate Snapshot Proof
-        bytes32[] memory snapProof = genSnapshotProof(stateIndex);
+        bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         vm.expectEmit();
         emit Dispute(guard, notaryDomain, notary);
         vm.prank(prover);
-        IDisputeHub(hub).submitStateReportWithProof(stateIndex, srPayload, srSig, snapProof, attPayload, attSig);
+        IDisputeHub(hub).submitStateReportWithProof(rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig);
         checkDisputeOpened(hub, guard, notary);
     }
 
@@ -79,25 +75,23 @@ abstract contract DisputeHubTest is SystemRegistryTest {
 
     /// @notice Creates attestation for snapshot having given rawState at given index,
     /// with some fake data for other states in the snapshots.
-    function createAttestation(
-        RawState memory rawState,
-        RawAttestation memory ra,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public returns (RawAttestation memory) {
-        RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
+    function createAttestation(RawState memory rawState, RawAttestation memory ra, RawStateIndex memory rsi)
+        public
+        returns (RawAttestation memory)
+    {
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi);
         bytes[] memory states = rawSnap.formatStates();
         acceptSnapshot(states);
         // Reuse existing metadata in RawAttestation
         return rawSnap.castToRawAttestation(ra.agentRoot, ra.nonce, ra.blockNumber, ra.timestamp);
     }
 
-    function createSignedSnapshot(address notary, RawState memory rs, uint256 statesAmount, uint256 stateIndex)
+    function createSignedSnapshot(address notary, RawState memory rs, RawStateIndex memory rsi)
         public
         view
         returns (bytes memory snapPayload, bytes memory snapSig)
     {
-        RawSnapshot memory rawSnap = fakeSnapshot(rs, statesAmount, stateIndex);
+        RawSnapshot memory rawSnap = fakeSnapshot(rs, rsi);
         return signSnapshot(notary, rawSnap);
     }
 
@@ -137,5 +131,12 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         DisputeStatus memory slashedStatus = IDisputeHub(hub).disputeStatus(slashed);
         assertEq(uint8(slashedStatus.flag), uint8(DisputeFlag.Slashed), "!honest flag");
         assertEq(slashedStatus.counterpart, honest, "!honest counterpart");
+    }
+
+    // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
+
+    /// @notice Returns address of the tested system contract
+    function systemContract() public view override returns (address) {
+        return localDestination();
     }
 }

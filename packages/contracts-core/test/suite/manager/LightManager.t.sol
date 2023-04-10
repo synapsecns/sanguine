@@ -31,9 +31,7 @@ contract LightManagerTest is AgentManagerTest {
         assertEq(address(lightManager.destination()), destination_);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             TESTS: SETUP                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
 
     function test_constructor_revert_onSynapseChain() public {
         // Should not be able to deploy on Synapse Chain
@@ -41,14 +39,12 @@ contract LightManagerTest is AgentManagerTest {
         new LightManager(DOMAIN_SYNAPSE);
     }
 
-    function test_version() public {
-        // Check version
+    function test_setup() public override {
+        super.test_setup();
         assertEq(lightManager.version(), LATEST_VERSION, "!version");
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                TESTS: UNAUTHORIZED ACCESS (NOT OWNER)                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════ TESTS: UNAUTHORIZED ACCESS (NOT OWNER) ═══════════════════════════════════════
 
     function test_setAgentRoot_revert_notDestination(address caller) public {
         vm.assume(caller != destination);
@@ -57,9 +53,7 @@ contract LightManagerTest is AgentManagerTest {
         lightManager.setAgentRoot(bytes32(uint256(1)));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       TESTS: ADD/REMOVE AGENTS                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════ TESTS: ADD/REMOVE AGENTS ══════════════════════════════════════════════
 
     function test_addAgent_new(address caller, uint32 domain, address agent) public {
         // Should not be an already added agent
@@ -111,9 +105,7 @@ contract LightManagerTest is AgentManagerTest {
         test_setAgentRoot(lightManager.agentRoot());
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                    TEST: UPDATE AGENTS (REVERTS)                     ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════ TEST: UPDATE AGENTS (REVERTS) ═══════════════════════════════════════════
 
     function test_addAgent_revert_invalidProof(uint256 domainId, uint256 agentId) public {
         (, address agent) = getAgent(domainId, agentId);
@@ -128,69 +120,10 @@ contract LightManagerTest is AgentManagerTest {
         lightManager.updateAgentStatus(agent, status, proof);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         TEST: REGISTRY SLASH                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    function test_registrySlash_origin(uint32 domain, address agent, address prover) public {
-        test_addAgent_new(address(this), domain, agent);
-        bytes memory data = _remoteSlashPayload(domain, agent, prover);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        vm.expectCall(destination, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
-        // (destination, optimisticSeconds, recipient, data)
-        vm.expectCall(
-            address(systemRouter),
-            abi.encodeWithSelector(
-                systemRouter.systemCall.selector,
-                DOMAIN_SYNAPSE,
-                BONDING_OPTIMISTIC_PERIOD,
-                SystemEntity.AgentManager,
-                data
-            )
-        );
-        vm.prank(origin);
-        lightManager.registrySlash(domain, agent, prover);
-        assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address prover_) = lightManager.slashStatus(agent);
-        assertTrue(isSlashed);
-        assertEq(prover_, prover);
-    }
-
-    function test_registrySlash_destination(uint32 domain, address agent, address prover) public {
-        test_addAgent_new(address(this), domain, agent);
-        bytes memory data = _remoteSlashPayload(domain, agent, prover);
-        vm.expectEmit();
-        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        vm.expectCall(origin, abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent));
-        // (destination, optimisticSeconds, recipient, data)
-        vm.expectCall(
-            address(systemRouter),
-            abi.encodeWithSelector(
-                systemRouter.systemCall.selector,
-                DOMAIN_SYNAPSE,
-                BONDING_OPTIMISTIC_PERIOD,
-                SystemEntity.AgentManager,
-                data
-            )
-        );
-        vm.prank(destination);
-        lightManager.registrySlash(domain, agent, prover);
-        assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
-        (bool isSlashed, address prover_) = lightManager.slashStatus(agent);
-        assertTrue(isSlashed);
-        assertEq(prover_, prover);
-    }
-
-    function test_registrySlash_revertUnauthorized(address caller) public {
-        vm.assume(caller != origin && caller != destination);
-        vm.expectRevert("Unauthorized caller");
-        vm.prank(caller);
-        // Try to slash an existing agent
-        lightManager.registrySlash(0, domains[0].agent, address(0));
-    }
-
-    function _localDomain() internal pure override returns (uint32) {
+    /// @notice Returns local domain for the tested system contract
+    function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }
 }
