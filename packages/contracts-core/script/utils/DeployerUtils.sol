@@ -36,9 +36,7 @@ contract DeployerUtils is Script {
     /// @notice Prevents this contract from being included in the coverage report
     function testDeployerUtils() external {}
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                SETUP                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ SETUP ═══════════════════════════════════════════════════════
 
     function stopBroadcast() public {
         vm.stopBroadcast();
@@ -74,9 +72,7 @@ contract DeployerUtils is Script {
         return getChain(block.chainid).chainAlias;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             DEPLOYMENTS                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ DEPLOYMENTS ════════════════════════════════════════════════════
 
     /// @notice Deploys the contract using Create3Factory. Does not save anything.
     function factoryDeploy(string memory contractName, bytes memory creationCode, bytes memory constructorArgs)
@@ -169,9 +165,7 @@ contract DeployerUtils is Script {
         string(full).write(deploymentPath(saveAsName));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            DEPLOY CONFIG                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ DEPLOY CONFIG ═══════════════════════════════════════════════════
 
     /// @notice Checks if deploy config exists for a given contract on the current chain.
     function deployConfigExists(string memory contractName) public returns (bool) {
@@ -203,9 +197,7 @@ contract DeployerUtils is Script {
         return vm.readFile(globalDeployConfigPath(contractName));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Returns path to the contract artifact.
     function artifactPath(string memory contractName) public pure returns (string memory path) {
@@ -265,9 +257,7 @@ contract DeployerUtils is Script {
         string(sorted).write(path);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           INTERNAL HELPERS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ INTERNAL HELPERS ══════════════════════════════════════════════════
 
     function _fromWei(uint256 amount) internal pure returns (string memory s) {
         string memory a = Strings.toString(amount / 10 ** 18);

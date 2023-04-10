@@ -8,7 +8,7 @@ import {TypedMemView} from "./TypedMemView.sol";
 /// @dev Request is a memory view over a formatted "message execution request" payload.
 type Request is bytes29;
 
-/// @dev Attach library functions to Snapshot
+/// @dev Attach library functions to Request
 using RequestLib for Request global;
 
 library RequestLib {

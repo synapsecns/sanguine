@@ -19,9 +19,7 @@ contract SnapshotHarness {
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               GETTERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
     function castToSnapshot(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
@@ -46,9 +44,7 @@ contract SnapshotHarness {
         return payload.castToSnapshot().root();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         SNAPSHOT FORMATTERS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
     function formatSnapshot(bytes[] memory statePayloads) public view returns (bytes memory) {
         uint256 length = statePayloads.length;

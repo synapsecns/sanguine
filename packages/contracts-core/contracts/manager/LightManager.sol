@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AGENT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";

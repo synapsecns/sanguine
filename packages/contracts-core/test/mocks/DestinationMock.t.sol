@@ -30,9 +30,6 @@ contract DestinationMock is
         returns (bool wasAccepted)
     {}
 
-    /**
-     * @notice Returns the total amount of Notaries attestations that have been accepted.
-     */
     function attestationsAmount() external view returns (uint256) {}
 
     function destStatus() external view returns (uint48 snapRootTime, uint48 agentRootTime, address notary) {}

@@ -41,7 +41,7 @@ interface InterfaceDestination {
         external
         returns (bool wasAccepted);
 
-    // ═════════════════════════════════ VIEWS ═════════════════════════════════
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**
      * @notice Returns the total amount of Notaries attestations that have been accepted.

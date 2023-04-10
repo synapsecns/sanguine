@@ -90,19 +90,17 @@ library ReceiptLib {
         return _tips(view_).isTips();
     }
 
-    /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Receipt receipt) internal pure returns (bytes29) {
-        return Receipt.unwrap(receipt);
-    }
-
-    // ═════════════════════════════════════════════ RECEIPT HASHING ═════════════════════════════════════════════════
-
     /// @notice Returns the hash of an Receipt, that could be later signed by a Notary.
     function hash(Receipt receipt) internal pure returns (bytes32) {
         // Get the underlying memory view
         bytes29 view_ = receipt.unwrap();
         // The final hash to sign is keccak(receiptSalt, keccak(receipt))
         return keccak256(bytes.concat(RECEIPT_SALT, view_.keccak()));
+    }
+
+    /// @notice Convenience shortcut for unwrapping a view.
+    function unwrap(Receipt receipt) internal pure returns (bytes29) {
+        return Receipt.unwrap(receipt);
     }
 
     // ═════════════════════════════════════════════ RECEIPT SLICING ═════════════════════════════════════════════════

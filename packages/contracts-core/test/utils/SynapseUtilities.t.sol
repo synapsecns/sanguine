@@ -8,19 +8,11 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 // solhint-disable no-empty-blocks
 contract SynapseUtilities is SynapseTestConstants, Test {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              CONSTANTS                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
     bytes internal constant REVERT_ALREADY_INITIALIZED = "Initializable: contract is already initialized";
     bytes internal constant REVERT_NOT_OWNER = "Ownable: caller is not the owner";
 
     /// @notice Prevents this contract from being included in the coverage report
     function testSynapseUtilities() external {}
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                UTILS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     function expectRevertAlreadyInitialized() public {
         vm.expectRevert(REVERT_ALREADY_INITIALIZED);

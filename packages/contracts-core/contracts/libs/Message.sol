@@ -11,7 +11,7 @@ import {TypedMemView} from "./TypedMemView.sol";
 type Message is bytes29;
 
 /// @dev Attach library functions to Message
-using {MessageLib.unwrap, MessageLib.leaf, MessageLib.flag, MessageLib.header, MessageLib.body} for Message global;
+using MessageLib for Message global;
 
 /// @dev Types of messages supported by Origin-Destination
 /// - System: message sent between system contracts located on different chains
@@ -22,7 +22,7 @@ enum MessageFlag {
 }
 
 /// @dev Attach library functions to MessageFlag
-using {MessageLib.formatMessage} for MessageFlag global;
+using MessageLib for MessageFlag global;
 
 /**
  * @notice Library for formatting the various messages supported by Origin and Destination.

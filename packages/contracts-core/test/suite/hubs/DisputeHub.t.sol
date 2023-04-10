@@ -24,9 +24,7 @@ abstract contract DisputeHubTest is SystemRegistryTest {
     /// @notice Prevents this contract from being included in the coverage report
     function testDisputeHub() external {}
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         SUBMIT DATA HELPERS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ SUBMIT DATA HELPERS ════════════════════════════════════════════════
 
     function check_submitStateReport(address hub, uint32 notaryDomain, RawState memory rs, RawStateIndex memory rsi)
         public
@@ -69,9 +67,7 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         checkDisputeOpened(hub, guard, notary);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         CREATE DATA HELPERS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ CREATE DATA HELPERS ════════════════════════════════════════════════
 
     /// @notice Creates attestation for snapshot having given rawState at given index,
     /// with some fake data for other states in the snapshots.

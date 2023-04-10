@@ -43,7 +43,7 @@ struct BaseTree {
     bytes32[ORIGIN_TREE_HEIGHT] branch;
 }
 
-using {MerkleLib.insertBase, MerkleLib.rootBase} for BaseTree global;
+using MerkleLib for BaseTree global;
 
 /// @notice Incremental merkle tree keeping track of its historical merkle roots.
 /// @dev roots[N] is the root of the tree after N leafs were inserted
@@ -54,7 +54,7 @@ struct HistoricalTree {
     bytes32[] roots;
 }
 
-using {MerkleLib.initializeRoots, MerkleLib.insert, MerkleLib.root} for HistoricalTree global;
+using MerkleLib for HistoricalTree global;
 
 /// @notice Struct representing a Dynamic Merkle Tree with 2**AGENT_TREE_HEIGHT leaves
 /// A single operation is available: update value for existing leaf (which might be ZERO).
@@ -65,14 +65,12 @@ struct DynamicTree {
     bytes32 root;
 }
 
-using {MerkleLib.update} for DynamicTree global;
+using MerkleLib for DynamicTree global;
 
 library MerkleLib {
     uint256 internal constant MAX_LEAVES = 2 ** ORIGIN_TREE_HEIGHT - 1;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                              BASE TREE                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════════ BASE TREE ═════════════════════════════════════════════════════
 
     /**
      * @notice Inserts `node` into merkle tree
@@ -139,9 +137,7 @@ library MerkleLib {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           HISTORICAL TREE                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ HISTORICAL TREE ══════════════════════════════════════════════════
 
     /// @notice Initializes the historical roots for the tree by inserting
     /// a precomputed root of an empty Merkle Tree.
@@ -175,9 +171,7 @@ library MerkleLib {
         return tree.roots[count];
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             DYNAMIC TREE                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ DYNAMIC TREE ════════════════════════════════════════════════════
 
     /**
      * @notice Updates the value for the leaf with the given index in the Dynamic Merkle Tree.
@@ -204,9 +198,7 @@ library MerkleLib {
         tree.root = newRoot;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /**
      * @notice Calculates the merkle root for the given leaf and merkle proof.
