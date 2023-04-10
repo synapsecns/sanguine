@@ -19,10 +19,7 @@ function fakeState(uint256 fakeValue) pure returns (RawState memory state) {
 
 /// @notice Returns RawSnapshot struct with given state on given position,
 /// and with fake states for everything else.
-function fakeSnapshot(RawState memory state, RawStateIndex memory rsi)
-    pure
-    returns (RawSnapshot memory rawSnap)
-{
+function fakeSnapshot(RawState memory state, RawStateIndex memory rsi) pure returns (RawSnapshot memory rawSnap) {
     rawSnap.states = new RawState[](rsi.statesAmount);
     for (uint256 i = 0; i < rsi.statesAmount; ++i) {
         // Create different non-zero garbage values
