@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib, SummitAttestation} from "../libs/Attestation.sol";
 import {MerkleList} from "../libs/MerkleList.sol";
 import {Snapshot, SnapshotLib, SummitSnapshot} from "../libs/Snapshot.sol";
@@ -20,9 +20,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     using StateLib for bytes;
     using TypedMemView for bytes29;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     /// @dev All States submitted by any of the Guards
     SummitState[] private _guardStates;
@@ -50,9 +48,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// @dev gap for upgrade safety
     uint256[44] private __GAP; // solhint-disable-line var-name-mixedcase
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                VIEWS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc ISnapshotHub
     function isValidAttestation(bytes memory attPayload) external view returns (bool isValid) {
@@ -117,9 +113,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         return MerkleList.calculateProof(hashes, 2 * stateIndex);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             ACCEPT DATA                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════ INTERNAL LOGIC: ACCEPT DATA ════════════════════════════════════════════
 
     /// @dev Accepts a Snapshot signed by a Guard.
     /// It is assumed that the Guard signature has been checked outside of this contract.
@@ -165,9 +159,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         return _saveNotarySnapshot(snapshot, statePtrs, agentRoot);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         SAVE STATEMENT DATA                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════ INTERNAL LOGIC: SAVE STATEMENT DATA ════════════════════════════════════════
 
     /// @dev Initializes the saved _attestations list by inserting empty values.
     function _initializeAttestations() internal {
@@ -223,9 +215,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         _latestStatePtr[origin][guard] = statePtr;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         CHECK STATEMENT DATA                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Returns the amount of saved _attestations (created from Notary snapshots) so far.
     function _attestationsAmount() internal view returns (uint256) {
@@ -261,10 +251,6 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     function _statePtr(State state) internal view returns (uint256) {
         return _leafPtr[state.origin()][state.leaf()];
     }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          LATEST STATE VIEWS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @dev Returns the latest state submitted by the Agent for the origin.
     /// Will return an empty struct, if the Agent hasn't submitted a single origin State yet.
