@@ -16,6 +16,7 @@ import {
     State,
     RawAttestation,
     RawAttestationReport,
+    RawExecReceipt,
     RawState,
     RawStateIndex
 } from "../utils/libs/SynapseStructs.t.sol";
@@ -251,6 +252,75 @@ contract SummitTest is DisputeHubTest {
         //         "!getLatestState"
         //     );
         // }
+    }
+
+    // ═══════════════════════════════════════════ TESTS: TIPS RECEIPTS ════════════════════════════════════════════════
+
+    function submitSingleSnapshot(RawState memory rs) public {
+        RawStateIndex memory rsi = RawStateIndex(0, 1);
+        rs.nonce = 1;
+        bytes[] memory states = new bytes[](1);
+        states[0] = rs.formatState();
+        acceptSnapshot(states);
+        (address guard, address notary) = (domains[0].agent, domains[DOMAIN_LOCAL].agent);
+        (bytes memory snapPayload, bytes memory snapSigGuard) = createSignedSnapshot(guard, rs, rsi);      
+        InterfaceSummit(summit).submitSnapshot(snapPayload, snapSigGuard);
+        (, bytes memory snapSigNotary) = createSignedSnapshot(notary, rs, rsi);      
+        InterfaceSummit(summit).submitSnapshot(snapPayload, snapSigNotary);
+    }
+
+    function test_submitReceipt(RawState memory rs, RawExecReceipt memory re) public {
+        submitSingleSnapshot(rs);
+        re.origin = rs.origin;
+        re.destination = DOMAIN_REMOTE;
+        re.snapshotRoot = getSnapshotRoot();
+        address notary = domains[DOMAIN_REMOTE].agent;
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
+        vm.expectEmit();
+        emit ReceiptAccepted(DOMAIN_REMOTE, notary, rcptPayload, rcptSignature);
+        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+    }
+
+    function test_submitReceipt_revert_signedByGuard(RawState memory rs, RawExecReceipt memory re) public {
+        submitSingleSnapshot(rs);
+        re.origin = rs.origin;
+        re.destination = DOMAIN_REMOTE;
+        re.snapshotRoot = getSnapshotRoot();
+        address guard = domains[0].agent;
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard, re);
+        vm.expectRevert("Signer is not a Notary");
+        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+    }
+
+    function test_submitReceipt_revert_wrongNotaryDomain(RawState memory rs, RawExecReceipt memory re) public {
+        submitSingleSnapshot(rs);
+        re.origin = rs.origin;
+        re.destination = DOMAIN_REMOTE;
+        re.snapshotRoot = getSnapshotRoot();
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
+        vm.expectRevert("Wrong Notary domain");
+        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+    }
+
+    function test_submitReceipt_revert_notaryInDispute(RawState memory rs, RawExecReceipt memory re) public {
+        submitSingleSnapshot(rs);
+        check_submitStateReport(summit, DOMAIN_REMOTE, rs, RawStateIndex(0, 1));
+        re.origin = rs.origin;
+        re.destination = DOMAIN_REMOTE;
+        re.snapshotRoot = getSnapshotRoot();
+        address notary = domains[DOMAIN_REMOTE].agent;
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
+        vm.expectRevert("Notary is in dispute");
+        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+    }
+
+    function test_submitReceipt_revert_unknownSnapRoot(RawExecReceipt memory re) public {
+        re.destination = DOMAIN_REMOTE;
+        address notary = domains[DOMAIN_REMOTE].agent;
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
+        vm.expectRevert("Unknown snapshot root");
+        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
     }
 
     // ══════════════════════════════════════════════ DISPUTE OPENING ══════════════════════════════════════════════════
