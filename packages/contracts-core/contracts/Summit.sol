@@ -9,7 +9,7 @@ import {DomainContext} from "./context/DomainContext.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
-import {DisputeHub, ExecutionHub} from "./hubs/ExecutionHub.sol";
+import {DisputeHub, ExecutionHub, Receipt} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub, SummitAttestation, SummitState} from "./hubs/SnapshotHub.sol";
 import {Attestation, AttestationLib, AttestationReport, Snapshot} from "./hubs/StatementHub.sol";
 import {DomainContext, Versioned} from "./system/SystemContract.sol";
@@ -35,6 +35,23 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceSummit
+    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
+        // Call the hook and check if we can accept the statement
+        if (!_beforeStatement()) return false;
+        // This will revert if payload is not an receipt
+        Receipt rcpt = _wrapReceipt(rcptPayload);
+        // This will revert if the attestation signer is not a known Notary
+        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
+        // Notary needs to be Active and not in Dispute
+        _verifyActive(status);
+        require(!_inDispute(notary), "Notary is in dispute");
+        // Receipt needs to be signed by a destination chain Notary
+        require(rcpt.destination() == status.domain, "Wrong Notary domain");
+        _saveReceipt(rcpt);
+        emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
+    }
 
     /// @inheritdoc InterfaceSummit
     function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
@@ -118,6 +135,15 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+
+    /// @dev Saves the message from the receipt into the "quarantine queue". Once message leaves the queue,
+    /// tips associated with the message are distributed across off-chain actors.
+    function _saveReceipt(Receipt receipt) internal {
+        bytes32 snapRoot = receipt.snapshotRoot();
+        SnapRootData memory rootData = _rootData[snapRoot];
+        require(rootData.submittedAt != 0, "Unknown snapshot root");
+        // TODO: implement the quarantine queue
+    }
 
     /// @inheritdoc DisputeHub
     function _beforeStatement() internal pure override returns (bool acceptNext) {

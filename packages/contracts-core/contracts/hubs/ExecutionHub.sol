@@ -71,7 +71,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     bytes32[] internal _roots;
 
     /// @dev Tracks data for all saved snapshot roots
-    mapping(bytes32 => SnapRootData) private _rootData;
+    mapping(bytes32 => SnapRootData) internal _rootData;
 
     /// @dev gap for upgrade safety
     uint256[46] private __GAP; // solhint-disable-line var-name-mixedcase

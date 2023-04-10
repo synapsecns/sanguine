@@ -11,6 +11,8 @@ contract SummitMock is SnapshotHubMock, SystemContractMock, SystemRegistryMock, 
     /// @notice Prevents this contract from being included in the coverage report
     function testSummitMock() external {}
 
+    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {}
+
     function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
         external
         returns (bytes memory attPayload)
