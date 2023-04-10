@@ -16,7 +16,6 @@ func init() {
 	RootFieldName = namer.GetConsistentName("Root")
 	BlockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	DestinationBlockNumberFieldName = namer.GetConsistentName("DestinationBlockNumber")
-	DestinationTimestampFieldName = namer.GetConsistentName("DestinationTimestamp")
 	ExecutedFieldName = namer.GetConsistentName("Executed")
 	MinimumTimeSetFieldName = namer.GetConsistentName("MinimumTimeSet")
 	MinimumTimeFieldName = namer.GetConsistentName("MinimumTime")
@@ -39,8 +38,6 @@ var (
 	BlockNumberFieldName string
 	// DestinationBlockNumberFieldName is the index field name.
 	DestinationBlockNumberFieldName string
-	// DestinationTimestampFieldName is the destination timestamp field name.
-	DestinationTimestampFieldName string
 	// ExecutedFieldName is the executed field name.
 	ExecutedFieldName string
 	// MinimumTimeSetFieldName is the minimum time set field name.

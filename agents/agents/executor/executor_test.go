@@ -38,7 +38,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 		},
 	}
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -54,7 +54,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	roots := [][32]byte{
@@ -131,16 +131,16 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{chainConfig},
 	}
-	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
 	e.Nil(err)
 	clients := map[uint32][]backfill.ScribeBackend{
 		chainID: {simulatedClient, simulatedClient},
 	}
 
-	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
 	e.Nil(err)
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -178,7 +178,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	_, err = exec.GetMerkleTree(chainID).Root(1)
@@ -348,7 +348,7 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 		},
 	}
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -364,7 +364,7 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 		destination: e.TestBackendDestination.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	nonces := []uint32{1, 2, 3, 4}
@@ -461,6 +461,10 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	e.True(inTree3)
 }
 
+func (e *ExecutorSuite) TestVerifyStateMerkleProof() {
+
+}
+
 func (e *ExecutorSuite) TestExecutor() {
 	testDone := false
 	defer func() {
@@ -473,11 +477,11 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	testContractDest, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
 
-	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress())
 	e.Nil(err)
-	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
+	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress())
 	e.Nil(err)
-	summitClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
+	summitClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress())
 	e.Nil(err)
 
 	originConfig := config.ContractConfig{
@@ -522,10 +526,10 @@ func (e *ExecutorSuite) TestExecutor() {
 		summit:      {summitClient, summitClient},
 	}
 
-	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig)
 	e.Nil(err)
 
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath)
 	go func() {
 		scribeErr := scribeClient.Start(e.GetTestContext())
 		e.Nil(scribeErr)
@@ -574,7 +578,7 @@ func (e *ExecutorSuite) TestExecutor() {
 		summit:      e.TestBackendSummit.RPCAddress(),
 	}
 
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls)
 	e.Nil(err)
 
 	go func() {
@@ -652,145 +656,4 @@ func (e *ExecutorSuite) TestExecutor() {
 		e.Nil(err)
 		return len(executableMessages) == 1
 	})
-}
-
-func (e *ExecutorSuite) TestSetMinimumTime() {
-	testDone := false
-	defer func() {
-		testDone = true
-	}()
-	chainID := uint32(e.TestBackendOrigin.GetChainID())
-	destination := uint32(e.TestBackendDestination.GetChainID())
-
-	// Store 5 messages in the database.
-	for i := 1; i <= 5; i++ {
-		sender := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-		nonce := uint32(i)
-		recipient := common.BigToAddress(big.NewInt(gofakeit.Int64()))
-		optimisticSeconds := i
-		tips := types.NewTips(big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
-		body := []byte{byte(gofakeit.Uint32())}
-
-		message := types.NewMessage(types.NewHeader(chainID, sender.Hash(), nonce, destination, recipient.Hash(), uint32(optimisticSeconds)), tips, body)
-
-		err := e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message, uint64(i), false, 0)
-		e.Nil(err)
-	}
-
-	// Ensure that there are 5 unset messages in the database.
-	mask := execTypes.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-	}
-	messages, err := e.ExecutorTestDB.GetUnsetMinimumTimeMessages(e.GetTestContext(), mask, 0)
-	e.Nil(err)
-	e.Len(messages, 5)
-
-	// Store some states (as snapshots with length 1) in the database.
-	state0 := types.NewState(common.BigToHash(big.NewInt(gofakeit.Int64())), chainID, 1, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	state1 := types.NewState(common.BigToHash(big.NewInt(gofakeit.Int64())), chainID, 2, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	state2 := types.NewState(common.BigToHash(big.NewInt(gofakeit.Int64())), chainID, 5, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-
-	snapshot0 := types.NewSnapshot([]types.State{state0})
-	snapshot1 := types.NewSnapshot([]types.State{state1})
-	snapshot2 := types.NewSnapshot([]types.State{state2})
-
-	snapshotRoot0, proofs0, err := snapshot0.SnapshotRootAndProofs()
-	e.Nil(err)
-	snapshotRoot1, proofs1, err := snapshot1.SnapshotRootAndProofs()
-	e.Nil(err)
-	snapshotRoot2, proofs2, err := snapshot2.SnapshotRootAndProofs()
-	e.Nil(err)
-
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot0.States(), snapshotRoot0, proofs0, snapshot0.TreeHeight())
-	e.Nil(err)
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot1.States(), snapshotRoot1, proofs1, snapshot1.TreeHeight())
-	e.Nil(err)
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot2.States(), snapshotRoot2, proofs2, snapshot2.TreeHeight())
-	e.Nil(err)
-
-	potentialSnapshotRoots, err := e.ExecutorTestDB.GetPotentialSnapshotRoots(e.GetTestContext(), chainID, 1)
-	e.Nil(err)
-	e.Len(potentialSnapshotRoots, 3)
-	potentialSnapshotRoots, err = e.ExecutorTestDB.GetPotentialSnapshotRoots(e.GetTestContext(), chainID, 2)
-	e.Nil(err)
-	e.Len(potentialSnapshotRoots, 2)
-	potentialSnapshotRoots, err = e.ExecutorTestDB.GetPotentialSnapshotRoots(e.GetTestContext(), chainID, 3)
-	e.Nil(err)
-	e.Len(potentialSnapshotRoots, 1)
-
-	// Store an attestation for the first and last state's snapshot root.
-	attestation0 := types.NewAttestation(snapshotRoot0, uint8(snapshot0.TreeHeight()), 1, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	attestation2 := types.NewAttestation(snapshotRoot2, uint8(snapshot2.TreeHeight()), 2, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-
-	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation0, destination, 10, 10)
-	e.Nil(err)
-	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation2, destination, 20, 20)
-	e.Nil(err)
-
-	excCfg := executorCfg.Config{
-		Chains: []executorCfg.ChainConfig{
-			{
-				ChainID: chainID,
-			},
-			{
-				ChainID: destination,
-			},
-		},
-		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
-		UnbondedSigner: agentsConfig.SignerConfig{
-			Type: agentsConfig.FileType.String(),
-			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
-		},
-	}
-
-	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
-	go func() {
-		scribeErr := scribeClient.Start(e.GetTestContext())
-		e.Nil(scribeErr)
-	}()
-
-	executorClients := map[uint32]executor.Backend{
-		chainID:     nil,
-		destination: nil,
-	}
-
-	urls := map[uint32]string{
-		chainID:     e.TestBackendOrigin.RPCAddress(),
-		destination: e.TestBackendDestination.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
-	e.Nil(err)
-
-	go func() {
-		setMinErr := exec.SetMinimumTime(e.GetTestContext())
-		if !testDone {
-			e.Nil(setMinErr)
-		}
-	}()
-
-	e.Eventually(func() bool {
-		messages, err := e.ExecutorTestDB.GetUnsetMinimumTimeMessages(e.GetTestContext(), mask, 1)
-		e.Nil(err)
-		return len(messages) == 0
-	})
-
-	// Ensure that the correct attestation was used for the messages.
-	for i := uint32(1); i <= 5; i++ {
-		nonce := i
-		messageMask := execTypes.DBMessage{
-			ChainID:     &chainID,
-			Destination: &destination,
-			Nonce:       &nonce,
-		}
-		minTime, err := e.ExecutorTestDB.GetMessageMinimumTime(e.GetTestContext(), messageMask)
-		e.Nil(err)
-		// TODO: Check this using attestation nonce, as this is added in messaging-0.0.3.
-		if i == 1 {
-			e.Equal(*minTime, uint64(10+(i)))
-		} else {
-			e.Equal(*minTime, uint64(20+(i)))
-		}
-	}
 }

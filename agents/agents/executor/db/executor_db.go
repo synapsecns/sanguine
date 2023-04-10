@@ -50,6 +50,8 @@ type ExecutorDBReader interface {
 	GetAttestationBlockNumber(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
 	// GetAttestationTimestamp gets the timestamp of an attestation.
 	GetAttestationTimestamp(ctx context.Context, attestationMask types.DBAttestation) (*uint64, error)
+	// GetAttestationMinimumTimestamp takes a list of snapshot roots and returns the timestamp of the attestation with the lowest block number.
+	GetAttestationMinimumTimestamp(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*uint64, error)
 	// GetEarliestSnapshotFromAttestation takes a list of snapshot roots, checks which one has the lowest block number, and returns that snapshot root back.
 	GetEarliestSnapshotFromAttestation(ctx context.Context, attestationMask types.DBAttestation, snapshotRoots []string) (*[32]byte, error)
 
@@ -62,17 +64,6 @@ type ExecutorDBReader interface {
 	GetPotentialSnapshotRoots(ctx context.Context, chainID uint32, nonce uint32) ([]string, error)
 	// GetSnapshotRootsInNonceRange gets all snapshot roots for all states in a specified nonce range.
 	GetSnapshotRootsInNonceRange(ctx context.Context, chainID uint32, startNonce uint32, endNonce uint32) ([]string, error)
-
-	// GetTimestampForMessage gets the timestamp for a message. This is done in multiple logical steps:
-	// 1. Get all potential snapshot roots for the message (all snapshot roots that are associated to states with
-	// the same chain ID and a nonce greater than or equal to the message nonce).
-	// 2. Get the minimum destination block number for all attestations that are associated to the potential snapshot roots.
-	// 3. Return the timestamp of the attestation with the minimum destination block number.
-	GetTimestampForMessage(ctx context.Context, chainID, destination, nonce uint32, tablePrefix string) (*uint64, error)
-	// GetEarliestStateInRange gets the earliest state with the same snapshot root as an attestation within a nonce range.
-	// 1. Get all states that are within a nonce range.
-	// 2. Get the state with the earliest attestation associated to it.
-	GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32, tablePrefix string) (*agentsTypes.State, error)
 }
 
 // ExecutorDB is the interface for the executor database.

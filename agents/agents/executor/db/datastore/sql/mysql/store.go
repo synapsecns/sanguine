@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/core/metrics"
 	"gorm.io/gorm/schema"
 	"time"
 
@@ -25,7 +24,7 @@ var MaxIdleConns = 10
 var NamingStrategy = schema.NamingStrategy{}
 
 // NewMysqlStore creates a new mysql store for a given data store.
-func NewMysqlStore(ctx context.Context, dbURL string, handler metrics.Handler) (*Store, error) {
+func NewMysqlStore(ctx context.Context, dbURL string) (*Store, error) {
 	logger.Debug("creating mysql store")
 
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
@@ -47,8 +46,6 @@ func NewMysqlStore(ctx context.Context, dbURL string, handler metrics.Handler) (
 	// fixes a timeout issue https://stackoverflow.com/a/42146536
 	sqlDB.SetMaxIdleConns(MaxIdleConns)
 	sqlDB.SetConnMaxLifetime(time.Hour)
-
-	handler.AddGormCallbacks(gdb)
 
 	err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
 

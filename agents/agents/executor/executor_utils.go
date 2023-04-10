@@ -1,8 +1,11 @@
 package executor
 
 import (
+	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
@@ -75,6 +78,47 @@ func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
 	}
 
 	return contractEvent
+}
+
+// getEarliestStateInRange returns the earliest state with the same snapshot root as an attestation within a nonce range.
+func (e Executor) getEarliestStateInRange(ctx context.Context, origin, destination uint32, startNonce, endNonce uint32) (*types.State, error) {
+	snapshotRoots, err := e.executorDB.GetSnapshotRootsInNonceRange(ctx, origin, startNonce, endNonce)
+	if err != nil {
+		return nil, fmt.Errorf("could not get snapshot roots: %w", err)
+	}
+
+	if len(snapshotRoots) == 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	attestationMask := execTypes.DBAttestation{
+		Destination: &destination,
+	}
+
+	earliestSnapshotRoot, err := e.executorDB.GetEarliestSnapshotFromAttestation(ctx, attestationMask, snapshotRoots)
+	if err != nil {
+		return nil, fmt.Errorf("could not get earliest snapshot root: %w", err)
+	}
+
+	if earliestSnapshotRoot == nil {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	earliestSnapshotRootString := common.BytesToHash((*earliestSnapshotRoot)[:]).String()
+
+	stateMask := execTypes.DBState{
+		SnapshotRoot: &earliestSnapshotRootString,
+		ChainID:      &origin,
+	}
+
+	stateWithEarliestAttestation, err := e.executorDB.GetState(ctx, stateMask)
+	if err != nil {
+		return nil, fmt.Errorf("could not get state with earliest attestation: %w", err)
+	}
+
+	return stateWithEarliestAttestation, nil
 }
 
 // verifyAfter guarantees the chronological ordering of logs.

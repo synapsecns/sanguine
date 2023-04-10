@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/base"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/core/metrics"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"os"
@@ -17,7 +16,7 @@ type Store struct {
 }
 
 // NewSqliteStore creates a new sqlite data store.
-func NewSqliteStore(ctx context.Context, dbPath string, handler metrics.Handler) (*Store, error) {
+func NewSqliteStore(ctx context.Context, dbPath string) (*Store, error) {
 	logger.Debugf("creating sqlite store at %s", dbPath)
 
 	// create the directory to the store if it doesn't exist
@@ -36,8 +35,6 @@ func NewSqliteStore(ctx context.Context, dbPath string, handler metrics.Handler)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to db %s: %w", dbPath, err)
 	}
-
-	handler.AddGormCallbacks(gdb)
 
 	err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
 	if err != nil {

@@ -66,6 +66,62 @@ func (t *DBSuite) TestStoreRetrieveAttestation() {
 	})
 }
 
+func (t *DBSuite) TestGetAttestationMinimumTimestamp() {
+	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
+		destination := gofakeit.Uint32()
+
+		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		heightA := gofakeit.Uint8()
+		nonceA := gofakeit.Uint32()
+		blockNumberA := big.NewInt(int64(gofakeit.Uint32()))
+		timestampA := big.NewInt(int64(gofakeit.Uint32()))
+		attestationA := agentsTypes.NewAttestation(snapshotRootA, heightA, nonceA, blockNumberA, timestampA)
+
+		destinationBlockNumberA := gofakeit.Uint64()
+		destinationTimestampA := gofakeit.Uint64()
+
+		err := testDB.StoreAttestation(t.GetTestContext(), attestationA, destination, destinationBlockNumberA, destinationTimestampA)
+		Nil(t.T(), err)
+
+		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		heightB := gofakeit.Uint8()
+		nonceB := gofakeit.Uint32()
+		blockNumberB := big.NewInt(int64(gofakeit.Uint32()))
+		timestampB := big.NewInt(int64(gofakeit.Uint32()))
+		attestationB := agentsTypes.NewAttestation(snapshotRootB, heightB, nonceB, blockNumberB, timestampB)
+
+		destinationBlockNumberB := destinationBlockNumberA + 1
+		destinationTimestampB := destinationTimestampA + 1
+
+		err = testDB.StoreAttestation(t.GetTestContext(), attestationB, destination, destinationBlockNumberB, destinationTimestampB)
+		Nil(t.T(), err)
+
+		snapshotRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
+		heightC := gofakeit.Uint8()
+		nonceC := gofakeit.Uint32()
+		blockNumberC := big.NewInt(int64(gofakeit.Uint32()))
+		timestampC := big.NewInt(int64(gofakeit.Uint32()))
+		attestationC := agentsTypes.NewAttestation(snapshotRootC, heightC, nonceC, blockNumberC, timestampC)
+
+		destinationBlockNumberC := uint64(0)
+		destinationTimestampC := uint64(0)
+
+		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, destination, destinationBlockNumberC, destinationTimestampC)
+		Nil(t.T(), err)
+
+		mask := types.DBAttestation{
+			Destination: &destination,
+		}
+
+		roots := []string{snapshotRootA.String(), snapshotRootB.String()}
+
+		minimumTimestamp, err := testDB.GetAttestationMinimumTimestamp(t.GetTestContext(), mask, roots)
+		Nil(t.T(), err)
+
+		Equal(t.T(), destinationTimestampA, *minimumTimestamp)
+	})
+}
+
 func (t *DBSuite) TestGetEarliestSnapshotFromAttestation() {
 	t.RunOnAllDBs(func(testDB db.ExecutorDB) {
 		destination := gofakeit.Uint32()
