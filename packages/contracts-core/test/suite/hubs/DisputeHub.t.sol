@@ -79,7 +79,7 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         public
         returns (RawAttestation memory)
     {
-        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi.statesAmount, rsi.stateIndex);
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi);
         bytes[] memory states = rawSnap.formatStates();
         acceptSnapshot(states);
         // Reuse existing metadata in RawAttestation
@@ -91,7 +91,7 @@ abstract contract DisputeHubTest is SystemRegistryTest {
         view
         returns (bytes memory snapPayload, bytes memory snapSig)
     {
-        RawSnapshot memory rawSnap = fakeSnapshot(rs, rsi.statesAmount, rsi.stateIndex);
+        RawSnapshot memory rawSnap = fakeSnapshot(rs, rsi);
         return signSnapshot(notary, rawSnap);
     }
 

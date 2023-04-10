@@ -216,7 +216,13 @@ contract OriginTest is SystemRegistryTest {
 
     function _prepareAttestation(Random memory random, RawState memory rawState)
         internal
-        returns (uint32 domain, address notary, uint256 stateIndex, bytes memory snapshot, RawAttestation memory ra)
+        returns (
+            uint32 domain,
+            address notary,
+            RawStateIndex memory rsi,
+            bytes memory snapshot,
+            RawAttestation memory ra
+        )
     {
         // Pick random domain expect for 0
         uint256 domainIndex = bound(random.nextUint256(), 1, allDomains.length - 1);
@@ -225,9 +231,8 @@ contract OriginTest is SystemRegistryTest {
         uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
         notary = domains[domain].agents[notaryIndex];
         // Fuzz the position of invalid state in the snapshot
-        uint256 statesAmount = bound(random.nextUint256(), 1, SNAPSHOT_MAX_STATES);
-        stateIndex = bound(random.nextUint256(), 0, statesAmount - 1);
-        RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
+        rsi = random.nextStateIndex();
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi);
         snapshot = rawSnap.formatSnapshot();
         // Use random metadata
         ra = random.nextAttestation(rawSnap, random.nextUint32());
@@ -236,20 +241,22 @@ contract OriginTest is SystemRegistryTest {
     }
 
     function _verifyAttestation(Random memory random, RawState memory rawState, bool isValid) internal {
-        (uint32 domain, address notary, uint256 stateIndex, bytes memory snapshot, RawAttestation memory ra) =
+        (uint32 domain, address notary, RawStateIndex memory rsi, bytes memory snapshot, RawAttestation memory ra) =
             _prepareAttestation(random, rawState);
         bytes memory state = rawState.formatState();
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
+            emit InvalidAttestationState(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
             expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyAttestation(stateIndex, snapshot, attPayload, attSig), isValid, "!returnValue"
+            InterfaceOrigin(origin).verifyAttestation(rsi.stateIndex, snapshot, attPayload, attSig),
+            isValid,
+            "!returnValue"
         );
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
@@ -257,21 +264,21 @@ contract OriginTest is SystemRegistryTest {
     }
 
     function _verifyAttestationWithProof(Random memory random, RawState memory rawState, bool isValid) internal {
-        (uint32 domain, address notary, uint256 stateIndex,, RawAttestation memory ra) =
+        (uint32 domain, address notary, RawStateIndex memory rsi,, RawAttestation memory ra) =
             _prepareAttestation(random, rawState);
-        bytes32[] memory snapProof = genSnapshotProof(stateIndex);
+        bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         bytes memory state = rawState.formatState();
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
+            emit InvalidAttestationState(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
             expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyAttestationWithProof(stateIndex, state, snapProof, attPayload, attSig),
+            InterfaceOrigin(origin).verifyAttestationWithProof(rsi.stateIndex, state, snapProof, attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -282,7 +289,7 @@ contract OriginTest is SystemRegistryTest {
 
     function _verifySnapshot(RawState memory rawState, bool isValid, RawStateIndex memory rsi) internal {
         address notary = domains[DOMAIN_REMOTE].agent;
-        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi.statesAmount, rsi.stateIndex);
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi);
         (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(notary, rawSnap);
         vm.recordLogs();
         if (!isValid) {
