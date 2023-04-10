@@ -87,6 +87,14 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   useEffect(() => {
     if (connectedChain?.id && connectedChain?.id !== fromChainId) {
       setFromChainId(connectedChain?.id)
+      handleChainChange(connectedChain?.id, false, 'from')
+      sortByTokenBalance(
+        BRIDGABLE_TOKENS[connectedChain?.id],
+        connectedChain?.id,
+        address
+      ).then((tokens) => {
+        setFromTokens(tokens)
+      })
     }
   }, [connectedChain])
 
@@ -95,18 +103,19 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   - when the from chainId changes, the token balances for each supported token on that chain
   are calculated. This creates the list of tokens that is displayed when opening the token scroll dialog.
   */
-  useEffect(() => {
-    if (fromChainId === undefined || address === undefined) {
-      return
-    }
-    sortByTokenBalance(
-      BRIDGABLE_TOKENS[fromChainId],
-      fromChainId,
-      address
-    ).then((tokens) => {
-      setFromTokens(tokens)
-    })
-  }, [fromChainId])
+  // useEffect(() => {
+  //   if (fromChainId === undefined || address === undefined) {
+  //     return
+  //   }
+  //   handleChainChange(connectedChain?.id, false, 'from')
+  //   sortByTokenBalance(
+  //     BRIDGABLE_TOKENS[fromChainId],
+  //     fromChainId,
+  //     address
+  //   ).then((tokens) => {
+  //     setFromTokens(tokens)
+  //   })
+  // }, [fromChainId])
 
   /*
   useEffect Triggers: fromToken, toToken, fromInput, fromChainId, toChainId, time
@@ -419,6 +428,14 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         toToken.addresses[toChainId].toLowerCase(),
         fromInput.bigNum
       )
+    console.log(
+      'quote',
+      feeAmount,
+      routerAddress,
+      maxAmountOut,
+      originQuery,
+      destQuery
+    )
     if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
       setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
       return

@@ -1,4 +1,4 @@
-import { getCoinTextColor } from '@styles/tokens'
+import { getCoinTextColor } from '@styles/coins'
 import { formatAmount } from '@utils/formatAmount'
 import { AssetImage } from '@components/misc/AssetImage'
 import { addressToSymbol } from '@utils/addressToSymbol'

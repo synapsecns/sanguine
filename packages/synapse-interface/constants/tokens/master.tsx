@@ -567,7 +567,7 @@ export const USDT = new Token({
 
 export const DAI = new Token({
   addresses: {
-    [CHAINS.BNB.id]: '0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3',
+    //[CHAINS.BNB.id]: '0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3',
     [CHAINS.ETH.id]: '0x6b175474e89094c44da98b954eedeac495271d0f',
     [CHAINS.CRONOS.id]: '0xf2001b145b43032aaf5ee2884e456ccd805f677d',
     [CHAINS.POLYGON.id]: '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063',
@@ -1130,17 +1130,17 @@ export const WMATIC = new Token({
   swapableType: 'MATIC',
 })
 
-export const WBNB = new Token({
-  addresses: {
-    [CHAINS.BNB.id]: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
-    [CHAINS.DOGE.id]: '0x1fC532187B4848d2F9c564531b776A4F8e11201d',
-  },
-  decimals: 18,
-  symbol: 'BNB', // SHOULD BE WETH
-  name: 'Wrapped BNB',
-  description: 'ERC-20 Wrapped form of BNB',
-  swapableType: 'BNB',
-})
+// export const WBNB = new Token({
+//   addresses: {
+//     [CHAINS.BNB.id]: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+//     [CHAINS.DOGE.id]: '0x1fC532187B4848d2F9c564531b776A4F8e11201d',
+//   },
+//   decimals: 18,
+//   symbol: 'BNB', // SHOULD BE WETH
+//   name: 'Wrapped BNB',
+//   description: 'ERC-20 Wrapped form of BNB',
+//   swapableType: 'BNB',
+// })
 
 export const DEPRECATED_WKLAY = new Token({
   addresses: {
