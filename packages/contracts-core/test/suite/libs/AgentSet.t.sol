@@ -32,9 +32,7 @@ contract AgentSetTest is EnumerableSetTools, Test {
         createExpectedStates();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         TESTS: SINGLE AGENT                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ TESTS: SINGLE AGENT ════════════════════════════════════════════════
 
     function test_addAgent(uint32 domain, address account) public {
         // Check if agent was active on this domain
@@ -64,9 +62,7 @@ contract AgentSetTest is EnumerableSetTools, Test {
         assertEq(domain_, agents[account].domain, "!remove: contains(account), domain");
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                        TESTS: MULTIPLE AGENTS                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════ TESTS: MULTIPLE AGENTS ═══════════════════════════════════════════════
 
     function test_addAgent_suiteAgents() public {
         for (uint256 d = 0; d < domains.length; ++d) {
@@ -126,9 +122,7 @@ contract AgentSetTest is EnumerableSetTools, Test {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      TESTS: REMOVAL & ORDERING                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════ TESTS: REMOVAL & ORDERING ═════════════════════════════════════════════
 
     // solhint-disable-next-line code-complexity
     function test_removalOrdering() public {
@@ -167,9 +161,7 @@ contract AgentSetTest is EnumerableSetTools, Test {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           INTERNAL HELPERS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ INTERNAL HELPERS ══════════════════════════════════════════════════
 
     function _addAgent(uint32 domain, address account) internal {
         if (!_isActive(account)) {

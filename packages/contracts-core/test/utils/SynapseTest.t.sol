@@ -98,9 +98,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           DEPLOY CONTRACTS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ DEPLOY CONTRACTS ══════════════════════════════════════════════════
 
     function deployLightManager() public virtual {
         lightManager = new LightManagerHarness(DOMAIN_LOCAL);
@@ -197,9 +195,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         vm.label(address(systemRouterSynapse), "SystemRouter Synapse");
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            ADDING AGENTS                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ ADDING AGENTS ═══════════════════════════════════════════════════
 
     function addAgentBM(uint32 domain, address agent) public {
         bytes32[] memory proof = getZeroProof();

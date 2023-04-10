@@ -48,7 +48,7 @@ contract AttestationHarness {
         return payload.castToAttestation().hash();
     }
 
-    // ════════════════════════════════════════════ SUMMIT ATTESTATION ═════════════════════════════════════════════════
+    // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
     function formatSummitAttestation(SummitAttestation memory summitAtt, uint32 nonce_)
         public
@@ -57,8 +57,6 @@ contract AttestationHarness {
     {
         return summitAtt.formatSummitAttestation(nonce_);
     }
-
-    // ══════════════════════════════════════════ ATTESTATION FORMATTERS ═══════════════════════════════════════════════
 
     function formatAttestation(
         bytes32 snapRoot_,

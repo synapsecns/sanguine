@@ -48,9 +48,7 @@ abstract contract SynapseAgents is SynapseUtilities {
         setupDomain(DOMAIN_SYNAPSE, "Synapse");
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            SETUP DOMAINS                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ SETUP ═══════════════════════════════════════════════════════
 
     function setupDomain(uint32 domain, string memory name) public virtual {
         allDomains.push(domain);
@@ -63,9 +61,7 @@ abstract contract SynapseAgents is SynapseUtilities {
         domains[domain].agent = domains[domain].agents[0];
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                AGENTS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ AGENTS ═══════════════════════════════════════════════════════
 
     function createAgent(string memory name) public returns (address agent) {
         uint256 privKey;
@@ -99,9 +95,7 @@ abstract contract SynapseAgents is SynapseUtilities {
         return signMessage(agent, salt, keccak256(message));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SIGNING STATEMENTS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ SIGNING STATEMENTS ═════════════════════════════════════════════════
 
     function signAttestation(address agent, bytes memory attestation) public view returns (bytes memory signature) {
         return signMessage(agent, ATTESTATION_SALT, attestation);
