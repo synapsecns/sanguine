@@ -25,22 +25,22 @@ contract TipsHarness {
     }
 
     /// @notice Returns summitTip field
-    function summitTip(bytes memory payload) public pure returns (uint96) {
+    function summitTip(bytes memory payload) public pure returns (uint64) {
         return payload.castToTips().summitTip();
     }
 
     /// @notice Returns attestationTip field
-    function attestationTip(bytes memory payload) public pure returns (uint96) {
+    function attestationTip(bytes memory payload) public pure returns (uint64) {
         return payload.castToTips().attestationTip();
     }
 
     /// @notice Returns executionTip field
-    function executionTip(bytes memory payload) public pure returns (uint96) {
+    function executionTip(bytes memory payload) public pure returns (uint64) {
         return payload.castToTips().executionTip();
     }
 
     /// @notice Returns deliveryTip field
-    function deliveryTip(bytes memory payload) public pure returns (uint96) {
+    function deliveryTip(bytes memory payload) public pure returns (uint64) {
         return payload.castToTips().deliveryTip();
     }
 
@@ -55,7 +55,7 @@ contract TipsHarness {
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
-    function formatTips(uint96 summitTip_, uint96 attestationTip_, uint96 executionTip_, uint96 deliveryTip_)
+    function formatTips(uint64 summitTip_, uint64 attestationTip_, uint64 executionTip_, uint64 deliveryTip_)
         public
         pure
         returns (bytes memory)

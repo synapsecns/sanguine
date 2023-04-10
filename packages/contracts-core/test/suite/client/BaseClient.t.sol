@@ -30,7 +30,7 @@ contract BaseClientTest is SynapseTest {
         vm.assume(destination_ != 0 && destination_ != DOMAIN_LOCAL);
         vm.label(user, "User");
         // Set some sensible limit for fuzzed tips values
-        rt.boundTips(1e20);
+        rt.boundTips(2 ** 32);
         uint256 tipsValue = rt.castToTips().value();
         bytes memory tipsPayload = rt.formatTips();
         bytes memory requestPayload = rr.formatRequest();
@@ -59,7 +59,7 @@ contract BaseClientTest is SynapseTest {
         uint32 destination_ = 0;
         vm.label(user, "User");
         // Set some sensible limit for fuzzed tips values
-        rt.boundTips(1e20);
+        rt.boundTips(2 ** 32);
         uint256 tipsValue = rt.castToTips().value();
         bytes memory requestPayload = rr.formatRequest();
         bytes memory tipsPayload = rt.formatTips();

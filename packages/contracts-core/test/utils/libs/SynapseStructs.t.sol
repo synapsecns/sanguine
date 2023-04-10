@@ -33,10 +33,10 @@ struct RawRequest {
 using CastLib for RawRequest global;
 
 struct RawTips {
-    uint96 summitTip;
-    uint96 attestationTip;
-    uint96 executionTip;
-    uint96 deliveryTip;
+    uint64 summitTip;
+    uint64 attestationTip;
+    uint64 executionTip;
+    uint64 deliveryTip;
 }
 
 using CastLib for RawTips global;
@@ -206,7 +206,7 @@ library CastLib {
         });
     }
 
-    function boundTips(RawTips memory rt, uint96 maxTipValue) internal pure {
+    function boundTips(RawTips memory rt, uint64 maxTipValue) internal pure {
         rt.summitTip = rt.summitTip % maxTipValue;
         rt.attestationTip = rt.attestationTip % maxTipValue;
         rt.executionTip = rt.executionTip % maxTipValue;

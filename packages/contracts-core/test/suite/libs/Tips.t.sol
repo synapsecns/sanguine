@@ -18,10 +18,9 @@ contract TipsLibraryTest is SynapseLibraryTest {
 
     // ═════════════════════════════════════════════ TESTS: FORMATTING ═════════════════════════════════════════════════
 
-    function test_formatTips(uint96 summitTip, uint96 attestationTip, uint96 executionTip, uint96 deliveryTip) public {
-        // TODO: Determine if we actually need uint96 for storing tips / totalTips
+    function test_formatTips(uint64 summitTip, uint64 attestationTip, uint64 executionTip, uint64 deliveryTip) public {
         uint256 totalTips = uint256(summitTip) + attestationTip + executionTip + deliveryTip;
-        vm.assume(totalTips <= type(uint96).max);
+        vm.assume(totalTips <= type(uint64).max);
         // Test formatting
         bytes memory payload = libHarness.formatTips(summitTip, attestationTip, executionTip, deliveryTip);
         assertEq(payload, abi.encodePacked(summitTip, attestationTip, executionTip, deliveryTip), "!formatTips");
