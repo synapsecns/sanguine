@@ -13,7 +13,8 @@
     "test:coverage": "echo 'No tests defined.'",
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "eslint . --max-warnings=0",
-    "ci:lint": "npm run lint:check"
+    "ci:lint": "npm run lint:check",
+    "build:go": " "
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^0.11.0",

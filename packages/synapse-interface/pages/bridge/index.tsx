@@ -269,7 +269,10 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     positedToSymbol: string | undefined,
     fromChainId: number
   ) => {
-    let newToChain = positedToChain ? Number(positedToChain) : DEFAULT_TO_CHAIN
+    let newToChain =
+      positedToChain && positedToChain !== fromChainId
+        ? Number(positedToChain)
+        : DEFAULT_TO_CHAIN
     let bridgeableChains = BRIDGE_CHAINS_BY_TYPE[
       String(token.swapableType)
     ].filter((chainId) => Number(chainId) !== fromChainId)
@@ -303,6 +306,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     if (!bridgeableTokens.includes(positedToToken)) {
       bridgeableToken = bridgeableTokens[0]
     }
+
     return {
       bridgeableToken,
       newToChain,
@@ -372,6 +376,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
           tempFromToken.symbol,
           bridgeableToken.symbol
         )
+        return
       case 'to':
         setToChainId(chainId)
         updateUrlParams({
@@ -379,6 +384,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
           inputCurrency: fromToken.symbol,
           outputCurrency: toToken.symbol,
         })
+        return
     }
   }
 
@@ -404,6 +410,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
           token.symbol,
           bridgeableToken.symbol
         )
+        return
       case 'to':
         setToToken(token)
         updateUrlParams({
@@ -411,6 +418,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
           inputCurrency: fromToken.symbol,
           outputCurrency: token.symbol,
         })
+        return
     }
   }
 
@@ -428,14 +436,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         toToken.addresses[toChainId].toLowerCase(),
         fromInput.bigNum
       )
-    console.log(
-      'quote',
-      feeAmount,
-      routerAddress,
-      maxAmountOut,
-      originQuery,
-      destQuery
-    )
     if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
       setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
       return
