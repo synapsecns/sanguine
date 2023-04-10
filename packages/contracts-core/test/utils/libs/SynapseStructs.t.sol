@@ -9,7 +9,7 @@ import {SystemEntity, SystemMessage, SystemMessageLib} from "../../../contracts/
 import {Receipt, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
 import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
 
-import {Snapshot, SnapshotLib, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
+import {Snapshot, SnapshotLib, SNAPSHOT_MAX_STATES, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
 
 import {Attestation, AttestationLib} from "../../../contracts/libs/Attestation.sol";
 
@@ -105,6 +105,13 @@ struct RawState {
 }
 
 using CastLib for RawState global;
+
+struct RawStateIndex {
+    uint256 stateIndex;
+    uint256 statesAmount;
+}
+
+using CastLib for RawStateIndex global;
 
 struct RawSnapshot {
     RawState[] states;
@@ -324,6 +331,13 @@ library CastLib {
 
     function castToStateReport(RawStateReport memory rawSR) internal pure returns (StateReport ptr) {
         ptr = rawSR.formatStateReport().castToStateReport();
+    }
+
+    function boundStateIndex(RawStateIndex memory rsi) internal pure {
+        // [1 .. SNAPSHOT_MAX_STATES] range
+        rsi.statesAmount = 1 + rsi.statesAmount % SNAPSHOT_MAX_STATES;
+        // [0 .. statesAmount) range
+        rsi.stateIndex = rsi.stateIndex % rsi.statesAmount;
     }
 
     // ═════════════════════════════════════════════════ SNAPSHOT ══════════════════════════════════════════════════════

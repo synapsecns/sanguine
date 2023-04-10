@@ -22,6 +22,7 @@ import {
     RawRequest,
     RawSnapshot,
     RawState,
+    RawStateIndex,
     RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
@@ -137,24 +138,25 @@ contract OriginTest is SystemRegistryTest {
         assertEq(hub.suggestLatestState(), state, "!suggestLatestState");
     }
 
-    function test_verifySnapshot_valid(uint32 nonce, uint256 statesAmount, uint256 stateIndex) public {
+    function test_verifySnapshot_valid(uint32 nonce, RawStateIndex memory rsi) public {
         // Use empty mutation mask
-        test_verifySnapshot_existingNonce(nonce, 0, statesAmount, stateIndex);
+        test_verifySnapshot_existingNonce(nonce, 0, rsi);
     }
 
-    function test_verifySnapshot_existingNonce(uint32 nonce, uint256 mask, uint256 statesAmount, uint256 stateIndex)
+    function test_verifySnapshot_existingNonce(uint32 nonce, uint256 mask, RawStateIndex memory rsi)
         public
+        boundIndex(rsi)
     {
         (bool isValid, RawState memory rs) = _prepareExistingState(nonce, mask);
-        _verifySnapshot(rs, isValid, statesAmount, stateIndex);
+        _verifySnapshot(rs, isValid, rsi);
     }
 
-    function test_verifySnapshot_unknownNonce(RawState memory rs, uint256 statesAmount, uint256 stateIndex) public {
+    function test_verifySnapshot_unknownNonce(RawState memory rs, RawStateIndex memory rsi) public boundIndex(rsi) {
         // Restrict nonce to non-existing ones
         rs.nonce = uint32(bound(rs.nonce, MESSAGES + 1, type(uint32).max));
         rs.origin = DOMAIN_LOCAL;
         // Remaining fields are fuzzed
-        _verifySnapshot(rs, false, statesAmount, stateIndex);
+        _verifySnapshot(rs, false, rsi);
     }
 
     function test_verifyAttestation_valid(Random memory random, uint32 nonce) public {
@@ -214,7 +216,13 @@ contract OriginTest is SystemRegistryTest {
 
     function _prepareAttestation(Random memory random, RawState memory rawState)
         internal
-        returns (uint32 domain, address notary, uint256 stateIndex, bytes memory snapshot, RawAttestation memory ra)
+        returns (
+            uint32 domain,
+            address notary,
+            RawStateIndex memory rsi,
+            bytes memory snapshot,
+            RawAttestation memory ra
+        )
     {
         // Pick random domain expect for 0
         uint256 domainIndex = bound(random.nextUint256(), 1, allDomains.length - 1);
@@ -223,9 +231,8 @@ contract OriginTest is SystemRegistryTest {
         uint256 notaryIndex = bound(random.nextUint256(), 0, DOMAIN_AGENTS - 1);
         notary = domains[domain].agents[notaryIndex];
         // Fuzz the position of invalid state in the snapshot
-        uint256 statesAmount = bound(random.nextUint256(), 1, SNAPSHOT_MAX_STATES);
-        stateIndex = bound(random.nextUint256(), 0, statesAmount - 1);
-        RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
+        rsi = random.nextStateIndex();
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi);
         snapshot = rawSnap.formatSnapshot();
         // Use random metadata
         ra = random.nextAttestation(rawSnap, random.nextUint32());
@@ -234,42 +241,20 @@ contract OriginTest is SystemRegistryTest {
     }
 
     function _verifyAttestation(Random memory random, RawState memory rawState, bool isValid) internal {
-        (uint32 domain, address notary, uint256 stateIndex, bytes memory snapshot, RawAttestation memory ra) =
+        (uint32 domain, address notary, RawStateIndex memory rsi, bytes memory snapshot, RawAttestation memory ra) =
             _prepareAttestation(random, rawState);
         bytes memory state = rawState.formatState();
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
+            emit InvalidAttestationState(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
             expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
         assertEq(
-            InterfaceOrigin(origin).verifyAttestation(stateIndex, snapshot, attPayload, attSig), isValid, "!returnValue"
-        );
-        if (isValid) {
-            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
-        }
-    }
-
-    function _verifyAttestationWithProof(Random memory random, RawState memory rawState, bool isValid) internal {
-        (uint32 domain, address notary, uint256 stateIndex,, RawAttestation memory ra) =
-            _prepareAttestation(random, rawState);
-        bytes32[] memory snapProof = genSnapshotProof(stateIndex);
-        bytes memory state = rawState.formatState();
-        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
-        if (!isValid) {
-            // Expect Events to be emitted
-            vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(stateIndex, state, attPayload, attSig);
-            // TODO: check that anyone could make the call
-            expectAgentSlashed(domain, notary, address(this));
-        }
-        vm.recordLogs();
-        assertEq(
-            InterfaceOrigin(origin).verifyAttestationWithProof(stateIndex, state, snapProof, attPayload, attSig),
+            InterfaceOrigin(origin).verifyAttestation(rsi.stateIndex, snapshot, attPayload, attSig),
             isValid,
             "!returnValue"
         );
@@ -278,24 +263,43 @@ contract OriginTest is SystemRegistryTest {
         }
     }
 
-    function _verifySnapshot(RawState memory rawState, bool isValid, uint256 statesAmount, uint256 stateIndex)
-        internal
-    {
-        // Fuzz the position of invalid state in the snapshot
-        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
-        stateIndex = bound(stateIndex, 0, statesAmount - 1);
+    function _verifyAttestationWithProof(Random memory random, RawState memory rawState, bool isValid) internal {
+        (uint32 domain, address notary, RawStateIndex memory rsi,, RawAttestation memory ra) =
+            _prepareAttestation(random, rawState);
+        bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
+        bytes memory state = rawState.formatState();
+        (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
+        if (!isValid) {
+            // Expect Events to be emitted
+            vm.expectEmit(true, true, true, true);
+            emit InvalidAttestationState(rsi.stateIndex, state, attPayload, attSig);
+            // TODO: check that anyone could make the call
+            expectAgentSlashed(domain, notary, address(this));
+        }
+        vm.recordLogs();
+        assertEq(
+            InterfaceOrigin(origin).verifyAttestationWithProof(rsi.stateIndex, state, snapProof, attPayload, attSig),
+            isValid,
+            "!returnValue"
+        );
+        if (isValid) {
+            assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
+        }
+    }
+
+    function _verifySnapshot(RawState memory rawState, bool isValid, RawStateIndex memory rsi) internal {
         address notary = domains[DOMAIN_REMOTE].agent;
-        RawSnapshot memory rawSnap = fakeSnapshot(rawState, statesAmount, stateIndex);
+        RawSnapshot memory rawSnap = fakeSnapshot(rawState, rsi);
         (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(notary, rawSnap);
         vm.recordLogs();
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidSnapshotState(stateIndex, snapPayload, snapSig);
+            emit InvalidSnapshotState(rsi.stateIndex, snapPayload, snapSig);
             // TODO: check that anyone could make the call
             expectAgentSlashed(DOMAIN_REMOTE, notary, address(this));
         }
-        assertEq(InterfaceOrigin(origin).verifySnapshot(stateIndex, snapPayload, snapSig), isValid, "!returnValue");
+        assertEq(InterfaceOrigin(origin).verifySnapshot(rsi.stateIndex, snapPayload, snapSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -324,7 +328,13 @@ contract OriginTest is SystemRegistryTest {
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════
 
-    function localAgentManager() public view override returns (address) {
-        return address(lightManager);
+    /// @notice Returns local domain for the tested system contract
+    function localDomain() public pure override returns (uint32) {
+        return DOMAIN_LOCAL;
+    }
+
+    /// @notice Returns address of the tested system contract
+    function systemContract() public view override returns (address) {
+        return localOrigin();
     }
 }

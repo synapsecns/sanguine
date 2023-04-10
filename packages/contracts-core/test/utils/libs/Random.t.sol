@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {RawAttestation, RawState, RawSnapshot} from "./SynapseStructs.t.sol";
+import {RawAttestation, RawState, RawStateIndex, RawSnapshot} from "./SynapseStructs.t.sol";
 
 struct Random {
     bytes32 seed;
@@ -99,6 +99,12 @@ library RandomLib {
         state.nonce = r.nextUint32();
         state.blockNumber = r.nextUint40();
         state.timestamp = r.nextUint40();
+    }
+
+    function nextStateIndex(Random memory r) internal pure returns (RawStateIndex memory rsi) {
+        rsi.stateIndex = r.nextUint256();
+        rsi.statesAmount = r.nextUint256();
+        rsi.boundStateIndex();
     }
 
     function nextAttestation(Random memory r, uint32 nonce) internal pure returns (RawAttestation memory ra) {
