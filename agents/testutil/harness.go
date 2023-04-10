@@ -143,10 +143,17 @@ func NewOriginHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend
 // Deploy deploys the origin harness.
 // nolint:dupl
 func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	lightManagerHarnessContract := o.Registry().Get(ctx, LightManagerHarnessType)
-	lightManagerAddress := lightManagerHarnessContract.Address()
+	var agentAddress common.Address
+	if o.Backend().GetChainID() == 10 {
+		bondingManagerHarnessContract := o.Registry().Get(ctx, BondingManagerHarnessType)
+		agentAddress = bondingManagerHarnessContract.Address()
+	} else {
+		lightManagerHarnessContract := o.Registry().Get(ctx, LightManagerHarnessType)
+		agentAddress = lightManagerHarnessContract.Address()
+	}
+
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(o.Backend().GetChainID()), lightManagerAddress)
+		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(o.Backend().GetChainID()), agentAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", o.ContractType().ContractName(), err)
 		}

@@ -116,12 +116,18 @@ func NewOriginDeployer(registry deployer.GetOnlyContractRegistry, backend backen
 
 // Deploy deploys the origin contract.
 func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	lightManagerContract := d.Registry().Get(ctx, LightManagerType)
-	lightManagerAddress := lightManagerContract.Address()
+	var agentAddress common.Address
+	if d.Backend().GetChainID() == 10 {
+		bondingManagerHarnessContract := d.Registry().Get(ctx, BondingManagerType)
+		agentAddress = bondingManagerHarnessContract.Address()
+	} else {
+		lightManagerHarnessContract := d.Registry().Get(ctx, LightManagerType)
+		agentAddress = lightManagerHarnessContract.Address()
+	}
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// deploy the origin contract
 		var rawHandle *origin.Origin
-		address, tx, rawHandle, err = origin.DeployOrigin(transactOps, backend, uint32(d.Backend().GetChainID()), lightManagerAddress)
+		address, tx, rawHandle, err = origin.DeployOrigin(transactOps, backend, uint32(d.Backend().GetChainID()), agentAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}
