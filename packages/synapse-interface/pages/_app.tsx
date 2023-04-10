@@ -71,7 +71,7 @@ const App = ({ Component, pageProps }: AppProps) => {
     })
   }
   const { chains, provider } = configureChains(chainsWithIcons, [
-    alchemyProvider({ apiKey: '_UFN4P3jhI9zYma6APzoKX5aqKKadp2V' }),
+    alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY }),
     publicProvider(),
   ])
 

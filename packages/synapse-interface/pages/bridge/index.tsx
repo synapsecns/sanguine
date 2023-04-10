@@ -86,6 +86,9 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   */
   useEffect(() => {
     if (connectedChain?.id && connectedChain?.id !== fromChainId) {
+      if (fromChainId === undefined || address === undefined) {
+        return
+      }
       setFromChainId(connectedChain?.id)
       handleChainChange(connectedChain?.id, false, 'from')
       sortByTokenBalance(
@@ -97,25 +100,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       })
     }
   }, [connectedChain])
-
-  /*
-  useEffect Trigger: fromChainId
-  - when the from chainId changes, the token balances for each supported token on that chain
-  are calculated. This creates the list of tokens that is displayed when opening the token scroll dialog.
-  */
-  // useEffect(() => {
-  //   if (fromChainId === undefined || address === undefined) {
-  //     return
-  //   }
-  //   handleChainChange(connectedChain?.id, false, 'from')
-  //   sortByTokenBalance(
-  //     BRIDGABLE_TOKENS[fromChainId],
-  //     fromChainId,
-  //     address
-  //   ).then((tokens) => {
-  //     setFromTokens(tokens)
-  //   })
-  // }, [fromChainId])
 
   /*
   useEffect Triggers: fromToken, toToken, fromInput, fromChainId, toChainId, time
@@ -150,6 +134,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     newFromTokenSymbol: string,
     newBridgeableTokenSymbol: string
   ) => {
+    console.log('newFromToken', newFromToken)
     setFromToken(newFromToken)
     setToChainId(newToChain)
     setToToken(newToToken)
