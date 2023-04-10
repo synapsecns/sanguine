@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AgentStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager} from "./manager/AgentManager.sol";
@@ -9,7 +9,7 @@ import {DomainContext} from "./context/DomainContext.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
-import {DisputeHub, ExecutionHub} from "./hubs/ExecutionHub.sol";
+import {DisputeHub, ExecutionHub, Receipt} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub, SummitAttestation, SummitState} from "./hubs/SnapshotHub.sol";
 import {Attestation, AttestationLib, AttestationReport, Snapshot} from "./hubs/StatementHub.sol";
 import {DomainContext, Versioned} from "./system/SystemContract.sol";
@@ -17,6 +17,8 @@ import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
+
+    // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, IAgentManager agentManager_)
         DomainContext(domain)
@@ -26,19 +28,30 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             INITIALIZER                              ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
     function initialize() external initializer {
         // Initialize Ownable: msg.sender is set as "owner"
         __Ownable_init();
         _initializeAttestations();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          ACCEPT STATEMENTS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceSummit
+    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
+        // Call the hook and check if we can accept the statement
+        if (!_beforeStatement()) return false;
+        // This will revert if payload is not an receipt
+        Receipt rcpt = _wrapReceipt(rcptPayload);
+        // This will revert if the attestation signer is not a known Notary
+        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
+        // Notary needs to be Active and not in Dispute
+        _verifyActive(status);
+        require(!_inDispute(notary), "Notary is in dispute");
+        // Receipt needs to be signed by a destination chain Notary
+        require(rcpt.destination() == status.domain, "Wrong Notary domain");
+        _saveReceipt(rcpt);
+        emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
+    }
 
     /// @inheritdoc InterfaceSummit
     function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
@@ -76,9 +89,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          VERIFY STATEMENTS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ VERIFY STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
     function verifyAttestation(bytes memory attPayload, bytes memory attSignature) external returns (bool isValid) {
@@ -116,18 +127,23 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                VIEWS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
     function getLatestState(uint32 origin) external view returns (bytes memory statePayload) {
         // TODO: implement once Agent Merkle Tree is done
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+
+    /// @dev Saves the message from the receipt into the "quarantine queue". Once message leaves the queue,
+    /// tips associated with the message are distributed across off-chain actors.
+    function _saveReceipt(Receipt receipt) internal {
+        bytes32 snapRoot = receipt.snapshotRoot();
+        SnapRootData memory rootData = _rootData[snapRoot];
+        require(rootData.submittedAt != 0, "Unknown snapshot root");
+        // TODO: implement the quarantine queue
+    }
 
     /// @inheritdoc DisputeHub
     function _beforeStatement() internal pure override returns (bool acceptNext) {

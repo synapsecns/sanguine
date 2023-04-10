@@ -375,7 +375,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         adjustHeader(rh, destination_);
         rbm.recipient = addressToBytes32(recipient);
         // Set sensible limitations for tips/request
-        rbm.tips.boundTips(1e20);
+        rbm.tips.boundTips(2 ** 32);
         rbm.request.gasLimit = uint64(bound(rbm.request.gasLimit, 50_000, 200_000));
         msgPayload = RawMessage(uint8(MessageFlag.Base), rh, rbm.formatBaseMessage()).formatMessage();
         createMessages(rh.nonce, msgPayload);

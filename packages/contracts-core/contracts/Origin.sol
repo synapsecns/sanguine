@@ -158,8 +158,8 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         require(content.length <= MAX_CONTENT_BYTES, "content too long");
         // This will revert if payload is not a formatted tips payload
         Tips tips = tipsPayload.castToTips();
-        // Total tips must exactly match msg.value
-        require(tips.totalTips() == msg.value, "!tips: totalTips");
+        // Tips value must exactly match msg.value
+        require(tips.value() == msg.value, "!tips: value");
         // Format the BaseMessage body
         bytes memory body = BaseMessageLib.formatBaseMessage({
             sender_: msg.sender.addressToBytes32(),
