@@ -55,7 +55,6 @@ export const BRIDGE_REQUIRED_CONFIRMATIONS = {
   [CHAINS.AURORA.id]: 5,
   [CHAINS.CRONOS.id]: 6,
   [CHAINS.METIS.id]: 6,
-  // [ChainId.TERRA]: 1,
   [CHAINS.DOGE.id]: 20,
   [CHAINS.CANTO.id]: 20,
 }

@@ -615,36 +615,6 @@ export const WBTC = new Token({
   color: 'yellow',
 })
 
-// export const UST = new Token({
-//   addresses: {
-//     // [CHAINS.BNB.id]:       '0x23396cf899ca06c4472205fc903bdb4de249d6fc',
-//     // [CHAINS.POLYGON.id]:   '0xed7a89e2d580bdda005ba4cdd64cf0da3c15a5eb',
-//     // [CHAINS.AVALANCHE.id]: '0x195150ab664795128ac542f26b14c1a12e061ecf',
-//     // [CHAINS.TERRA.id]:     'uusd',
-//     [CHAINS.ETH.id]: '0x0261018Aa50E28133C1aE7a29ebdf9Bd21b878Cb',
-//     [CHAINS.BNB.id]: '0xb7A6c5f0cc98d24Cf4B2011842e64316Ff6d042c',
-//     [CHAINS.POLYGON.id]: '0x565098CBa693b3325f9fe01D41b7A1cd792Abab1',
-//     [CHAINS.FANTOM.id]: '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22',
-//     [CHAINS.ARBITRUM.id]: '0x13780E6d5696DD91454F6d3BbC2616687fEa43d0',
-//     [CHAINS.AVALANCHE.id]: '0xE97097dE8d6A17Be3c39d53AE63347706dCf8f43',
-//     [CHAINS.HARMONY.id]: '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22',
-//     [CHAINS.BOBA.id]: '0x61A269a9506272D128d79ABfE8E8276570967f00',
-//     [CHAINS.MOONRIVER.id]: '0xa9D0C0E124F53f4bE1439EBc35A9C73c0e8275fB',
-//     [CHAINS.MOONBEAM.id]: '0x5CF84397944B9554A278870B510e86667681ff8D',
-//     [CHAINS.OPTIMISM.id]: '0xFB21B70922B9f6e3C6274BcD6CB1aa8A0fe20B80',
-//     [CHAINS.AURORA.id]: '0xb1Da21B0531257a7E5aEfa0cd3CbF23AfC674cE1',
-//     [CHAINS.CRONOS.id]: '0x7Bb5c7e3bF0B2a28fA26359667110bB974fF9359',
-//     [CHAINS.METIS.id]: '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB',
-//     [CHAINS.DFK.id]: '0x360d6DD540E3448371876662FBE7F1aCaf08c5Ab',
-//   },
-//   decimals: 6,
-//   symbol: 'UST',
-//   name: 'TerraUSD',
-//   logo: ustLogo,
-//   description: 'ERC-20 Wrapped form of UST',
-//   swapableType: 'UST',
-// })
-
 // export const MIM = new Token({
 //   addresses: {
 //     [CHAINS.FANTOM.id]: '0x82f0b8b456c1a451378467398982d4834b6829c1',

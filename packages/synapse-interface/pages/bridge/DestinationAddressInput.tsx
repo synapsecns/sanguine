@@ -1,11 +1,6 @@
 import { CHAINS_BY_ID } from '@constants/chains'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 
-// import { useNetworkController } from '@hooks/wallet/useNetworkController'
-
-import Button from '@tw/Button'
-
-export function DestinationAddressInput({
+export const DestinationAddressInput = ({
   toChainId,
   destinationAddress,
   setDestinationAddress,
@@ -13,7 +8,7 @@ export function DestinationAddressInput({
   toChainId: number
   destinationAddress: string
   setDestinationAddress: (val: string) => void
-}) {
+}) => {
   const chain = CHAINS_BY_ID[toChainId]
   const chainName = chain?.chainName || 'nulls'
   let placeholder
@@ -56,58 +51,5 @@ export function DestinationAddressInput({
         </div>
       </div>
     </div>
-  )
-}
-
-function ConnectChainButton({ toChainId }: { toChainId: number }) {
-  // const { terraAddress, account, connectToChain, disconnectChain } =
-  //   useNetworkController()
-  const { address } = useAccount()
-
-  const { chain } = useNetwork()
-  const { chains, error, isLoading, pendingChainId, switchNetwork } =
-    useSwitchNetwork()
-  let label
-  let onClick
-  let isConnected
-
-  if (address) {
-    isConnected = true
-    label = 'Disconnect'
-    onClick = () => {
-      switchNetwork?.(toChainId)
-    }
-  } else {
-    isConnected = false
-    label = 'Connect'
-    onClick = () => {
-      switchNetwork?.(toChainId)
-    }
-  }
-
-  let btnClassName
-  if (isConnected) {
-    btnClassName = `
-        hover:text-slate-300
-        `
-  } else {
-    btnClassName = ''
-  }
-
-  return (
-    <Button
-      className={`
-        flex-shrink
-        rounded-lg
-        !py-0.5
-        my-1
-        -mr-2
-        text-xs
-        ${btnClassName}
-      `}
-      onClick={onClick}
-    >
-      {label}
-    </Button>
   )
 }
