@@ -59,7 +59,7 @@ interface IDisputeHub {
         bytes memory attSignature
     ) external returns (bool wasAccepted);
 
-    // ═════════════════════════════════ VIEWS ═════════════════════════════════
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**
      * @notice Returns the Dispute status of the given agent.

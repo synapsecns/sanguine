@@ -61,6 +61,8 @@ abstract contract StatementHub is SystemRegistry {
         require(status.flag != AgentFlag.Unknown, "Unknown agent");
     }
 
+    // ════════════════════════════════════════ ATTESTATION RELATED CHECKS ═════════════════════════════════════════════
+
     /**
      * @dev Internal function to verify the signed attestation payload.
      * Reverts if any of these is true:
@@ -101,6 +103,8 @@ abstract contract StatementHub is SystemRegistry {
         require(status.domain == 0, "Signer is not a Guard");
     }
 
+    // ══════════════════════════════════════════ RECEIPT RELATED CHECKS ═══════════════════════════════════════════════
+
     /**
      * @dev Internal function to verify the signed receipt payload.
      * Reverts if any of these is true:
@@ -120,6 +124,8 @@ abstract contract StatementHub is SystemRegistry {
         // Receipt signer needs to be a Notary, not a Guard
         require(status.domain != 0, "Signer is not a Notary");
     }
+
+    // ═════════════════════════════════════ STATE OR SNAPSHOT RELATED CHECKS ══════════════════════════════════════════
 
     /**
      * @dev Internal function to verify the signed snapshot report payload.

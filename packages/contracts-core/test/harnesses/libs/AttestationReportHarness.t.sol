@@ -17,9 +17,7 @@ contract AttestationReportHarness {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      ATTESTATION REPORT GETTERS                      ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
     function castToAttestationReport(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
@@ -40,9 +38,7 @@ contract AttestationReportHarness {
         return payload.castToAttestationReport().attestation().unwrap().clone();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                    ATTESTATION REPORT FORMATTERS                     ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
     function formatAttestationReport(AttestationFlag flag_, bytes memory attPayload)
         public

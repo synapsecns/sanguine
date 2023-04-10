@@ -7,21 +7,9 @@ import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev State is a memory view over a formatted state payload.
 type State is bytes29;
-/// @dev Attach library functions to State
 
-using {
-    StateLib.unwrap,
-    StateLib.equals,
-    StateLib.equalToOrigin,
-    StateLib.leaf,
-    StateLib.subLeafs,
-    StateLib.toSummitState,
-    StateLib.root,
-    StateLib.origin,
-    StateLib.nonce,
-    StateLib.blockNumber,
-    StateLib.timestamp
-} for State global;
+/// @dev Attach library functions to State
+using StateLib for State global;
 
 /// @dev Struct representing State, as it is stored in the Origin contract.
 struct OriginState {
@@ -29,9 +17,9 @@ struct OriginState {
     uint40 timestamp;
 }
 // 176 bits left for tight packing
-/// @dev Attach library functions to OriginState
 
-using {StateLib.formatOriginState} for OriginState global;
+/// @dev Attach library functions to OriginState
+using StateLib for OriginState global;
 
 /// @dev Struct representing State, as it is stored in the Summit contract.
 struct SummitState {
@@ -42,9 +30,9 @@ struct SummitState {
     uint40 timestamp;
 }
 // 112 bits left for tight packing
-/// @dev Attach library functions to SummitState
 
-using {StateLib.formatSummitState} for SummitState global;
+/// @dev Attach library functions to SummitState
+using StateLib for SummitState global;
 
 library StateLib {
     using ByteString for bytes;
@@ -79,9 +67,7 @@ library StateLib {
     uint256 private constant OFFSET_BLOCK_NUMBER = 40;
     uint256 private constant OFFSET_TIMESTAMP = 45;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                STATE                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted State payload with provided fields
@@ -133,9 +119,7 @@ library StateLib {
         return a.unwrap().keccak() == b.unwrap().keccak();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             ORIGIN STATE                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ ORIGIN STATE ════════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted State payload with provided fields.
@@ -171,9 +155,7 @@ library StateLib {
         return state.blockNumber() == originState_.blockNumber && state.timestamp() == originState_.timestamp;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             SUMMIT STATE                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ SUMMIT STATE ════════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted State payload with provided fields.
@@ -199,9 +181,7 @@ library StateLib {
         state_.timestamp = state.timestamp();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            STATE HASHING                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ STATE HASHING ═══════════════════════════════════════════════════
 
     /// @notice Returns the hash of the State.
     /// @dev We are using the Merkle Root of a tree with two leafs (see below) as state hash.
@@ -235,9 +215,7 @@ library StateLib {
         return keccak256(abi.encodePacked(nonce_, blockNumber_, timestamp_));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            STATE SLICING                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ STATE SLICING ═══════════════════════════════════════════════════
 
     /// @notice Returns a historical Merkle root from the Origin contract.
     function root(State state) internal pure returns (bytes32) {

@@ -31,9 +31,9 @@ library ByteString {
      * [064 .. 065) v   uint8    1 byte
      */
     uint256 internal constant SIGNATURE_LENGTH = 65;
-    uint256 internal constant OFFSET_R = 0;
-    uint256 internal constant OFFSET_S = 32;
-    uint256 internal constant OFFSET_V = 64;
+    uint256 private constant OFFSET_R = 0;
+    uint256 private constant OFFSET_S = 32;
+    uint256 private constant OFFSET_V = 64;
 
     /**
      * @dev Calldata memory layout
@@ -44,8 +44,8 @@ library ByteString {
      * [AAA .. END) argN        bytes32 32 bytes
      */
     uint256 internal constant SELECTOR_LENGTH = 4;
-    uint256 internal constant OFFSET_SELECTOR = 0;
-    uint256 internal constant OFFSET_ARGUMENTS = SELECTOR_LENGTH;
+    uint256 private constant OFFSET_SELECTOR = 0;
+    uint256 private constant OFFSET_ARGUMENTS = SELECTOR_LENGTH;
 
     /**
      * @notice Returns a memory view over the given payload, treating it as raw bytes.

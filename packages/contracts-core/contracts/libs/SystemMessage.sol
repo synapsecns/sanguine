@@ -111,7 +111,7 @@ library SystemMessageLib {
         return _callData(view_).castToCallData();
     }
 
-    // ═════════════════════════════════════════════ PRIVATE FUNCTIONS ═════════════════════════════════════════════════
+    // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
 
     /// @dev Returns message's sender without checking that it fits into SystemEntity enum.
     function _sender(bytes29 view_) private pure returns (uint8) {

@@ -1,5 +1,7 @@
 # Testing suite for the messaging contracts
 
+TODO: This is an outdated README for a previous version of testing suite. Update this.
+
 The suite contains a series of reusable tools. They are designed to be as composable as the tested contracts.
 
 The testing suite is powered by <a href="https://github.com/foundry-rs/foundry">Foundry</a>.

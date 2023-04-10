@@ -10,13 +10,7 @@ import {TypedMemView} from "./TypedMemView.sol";
 type Header is bytes29;
 
 /// @dev Attach library functions to Header
-using {
-    HeaderLib.unwrap,
-    HeaderLib.origin,
-    HeaderLib.nonce,
-    HeaderLib.destination,
-    HeaderLib.optimisticPeriod
-} for Header global;
+using HeaderLib for Header global;
 
 /**
  * @notice Library for versioned formatting [the header part]

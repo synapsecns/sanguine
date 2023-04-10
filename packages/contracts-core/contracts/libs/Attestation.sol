@@ -115,6 +115,14 @@ library AttestationLib {
         return view_.len() == ATTESTATION_LENGTH;
     }
 
+    /// @notice Returns the hash of an Attestation, that could be later signed by a Notary.
+    function hash(Attestation att) internal pure returns (bytes32) {
+        // Get the underlying memory view
+        bytes29 view_ = att.unwrap();
+        // The final hash to sign is keccak(attestationSalt, keccak(attestation))
+        return keccak256(bytes.concat(ATTESTATION_SALT, view_.keccak()));
+    }
+
     /// @notice Convenience shortcut for unwrapping a view.
     function unwrap(Attestation att) internal pure returns (bytes29) {
         return Attestation.unwrap(att);
@@ -164,16 +172,6 @@ library AttestationLib {
     function equalToSummit(Attestation att, SummitAttestation memory summitAtt) internal pure returns (bool) {
         return att.snapRoot() == summitAtt.snapRoot && att.agentRoot() == summitAtt.agentRoot
             && att.blockNumber() == summitAtt.blockNumber && att.timestamp() == summitAtt.timestamp;
-    }
-
-    // ════════════════════════════════════════════ ATTESTATION HASHING ════════════════════════════════════════════════
-
-    /// @notice Returns the hash of an Attestation, that could be later signed by a Notary.
-    function hash(Attestation att) internal pure returns (bytes32) {
-        // Get the underlying memory view
-        bytes29 view_ = att.unwrap();
-        // The final hash to sign is keccak(attestationSalt, keccak(attestation))
-        return keccak256(bytes.concat(ATTESTATION_SALT, view_.keccak()));
     }
 
     // ════════════════════════════════════════════ ATTESTATION SLICING ════════════════════════════════════════════════

@@ -12,9 +12,7 @@ contract StateReportHarness {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                         STATE REPORT GETTERS                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
     function castToStateReport(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
@@ -35,9 +33,7 @@ contract StateReportHarness {
         return payload.castToStateReport().state().unwrap().clone();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       STATE REPORT FORMATTERS                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
     function formatStateReport(StateFlag flag_, bytes memory statePayload) public pure returns (bytes memory) {
         return StateReportLib.formatStateReport(flag_, statePayload);

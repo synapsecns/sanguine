@@ -103,9 +103,7 @@ contract StateLibraryTest is SynapseLibraryTest {
         checkCastToState({payload: payload, isState: length == STATE_LENGTH});
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               HELPERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function checkCastToState(bytes memory payload, bool isState) public {
         if (isState) {

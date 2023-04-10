@@ -15,9 +15,7 @@ contract StateHarness {
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               GETTERS                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
     function castToState(bytes memory payload) public view returns (bytes memory) {
         // Walkaround to get the forge coverage working on libraries, see
@@ -66,9 +64,21 @@ contract StateHarness {
         return payload.castToState().timestamp();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             ORIGIN STATE                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
+
+    function formatState(bytes32 root_, uint32 origin_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_)
+        public
+        pure
+        returns (bytes memory)
+    {
+        return StateLib.formatState(root_, origin_, nonce_, blockNumber_, timestamp_);
+    }
+
+    function isState(bytes memory payload) public pure returns (bool) {
+        return payload.ref(0).isState();
+    }
+
+    // ═══════════════════════════════════════════════ ORIGIN STATE ════════════════════════════════════════════════════
 
     function formatOriginState(OriginState memory originState_, bytes32 root_, uint32 origin_, uint32 nonce_)
         public
@@ -86,9 +96,7 @@ contract StateHarness {
         return payload.castToState().equalToOrigin(originState_);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             SUMMIT STATE                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ SUMMIT STATE ════════════════════════════════════════════════════
 
     function formatSummitState(SummitState memory summitState) public pure returns (bytes memory) {
         return summitState.formatSummitState();
@@ -96,21 +104,5 @@ contract StateHarness {
 
     function toSummitState(bytes memory payload) public pure returns (SummitState memory state) {
         return payload.castToState().toSummitState();
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           STATE FORMATTERS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    function formatState(bytes32 root_, uint32 origin_, uint32 nonce_, uint40 blockNumber_, uint40 timestamp_)
-        public
-        pure
-        returns (bytes memory)
-    {
-        return StateLib.formatState(root_, origin_, nonce_, blockNumber_, timestamp_);
-    }
-
-    function isState(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isState();
     }
 }
