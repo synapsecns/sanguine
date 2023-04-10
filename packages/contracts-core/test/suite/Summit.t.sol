@@ -253,9 +253,7 @@ contract SummitTest is DisputeHubTest {
         // }
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           DISPUTE OPENING                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ DISPUTE OPENING ══════════════════════════════════════════════════
 
     function test_submitStateReport(uint256 domainId, RawState memory rs, RawStateIndex memory rsi)
         public
@@ -277,9 +275,7 @@ contract SummitTest is DisputeHubTest {
         check_submitStateReportWithProof(summit, allDomains[domainId], rs, ra, rsi);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          DISPUTE RESOLUTION                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ DISPUTE RESOLUTION ═════════════════════════════════════════════════
 
     function test_managerSlash(uint256 domainId, uint256 agentId, address prover) public {
         // no counterpart in this test
@@ -319,9 +315,7 @@ contract SummitTest is DisputeHubTest {
         checkDisputeResolved({hub: summit, honest: notary, slashed: guard});
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                       TESTS: WHILE IN DISPUTE                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════ TESTS: WHILE IN DISPUTE ══════════════════════════════════════════════
 
     function test_submitStateReport_revert_notaryInDispute(RawState memory firstRS, RawState memory secondRS) public {
         (uint256 domainId, RawStateIndex memory rsi) = (1, RawStateIndex(0, 0));
