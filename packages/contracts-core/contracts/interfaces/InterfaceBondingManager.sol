@@ -70,7 +70,7 @@ interface InterfaceBondingManager {
         address prover
     ) external;
 
-    // ═════════════════════════════════ VIEWS ═════════════════════════════════
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**
      * @notice Returns a leaf representing the current status of agent in the Agent Merkle Tree.
