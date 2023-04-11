@@ -5,7 +5,7 @@ go 1.19
 require (
 	cloud.google.com/go/kms v1.6.0
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
-	github.com/ImVexed/fasturl v0.0.0-20200730185836-b0c0fbead04e
+	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3
 	github.com/aws/aws-sdk-go-v2 v1.16.5
 	github.com/aws/aws-sdk-go-v2/config v1.1.1
 	github.com/aws/aws-sdk-go-v2/service/kms v1.17.3
