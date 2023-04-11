@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {AgentManager} from "../../../contracts/manager/AgentManager.sol";
 import {ISystemRegistry} from "../../../contracts/interfaces/ISystemRegistry.sol";
-import {AgentFlag, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
+import {AgentFlag, AgentStatus, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 
 import {SystemEntity, SystemRouterHarness} from "../../harnesses/system/SystemRouterHarness.t.sol";
 import {SystemContractTest} from "../system/SystemContract.t.sol";
@@ -55,6 +55,13 @@ abstract contract AgentManagerTest is SystemContractTest {
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
+
+    function checkAgentStatus(address agent, AgentStatus memory status, AgentFlag flag) public virtual override {
+        super.checkAgentStatus(agent, status, flag);
+        (address agent_, AgentStatus memory status_) = testedAM().getAgent(status.index);
+        assertEq(agent_, agent, "!agent");
+        super.checkAgentStatus(agent, status_, flag);
+    }
 
     function skipBondingOptimisticPeriod() public {
         skipPeriod(BONDING_OPTIMISTIC_PERIOD);

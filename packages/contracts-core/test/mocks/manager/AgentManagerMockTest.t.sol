@@ -27,6 +27,12 @@ contract AgentManagerMockTest is Test {
         (bool isSlashed, address prover) = agentManager.slashStatus(agent);
         assertFalse(isSlashed);
         assertEq(prover, address(0));
+        address agent_;
+        (agent_, status) = agentManager.getAgent(1);
+        assertEq(agent_, agent);
+        assertEq(uint8(status.flag), uint8(AgentFlag.Active));
+        assertEq(status.domain, domain);
+        assertEq(status.index, 1);
     }
 
     function test_addAgent_revert_alreadyActive(uint32 domain, address agent, uint32 otherDomain) public {
