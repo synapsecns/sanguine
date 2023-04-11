@@ -1,6 +1,6 @@
 name: UI Deployment
 on:
-  pull_request:
+  push:
     branches-ignore:
       - master
     # note: as of right now this will not cover changes in dependent packages
