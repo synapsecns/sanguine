@@ -7,7 +7,7 @@ env:
 #  WORKING_DIRECTORY: 'packages/explorer-ui'
   NODE_ENV: 'production'
 on:
-  push:
+  pull_request:
     branches-ignore:
       - master
     paths:
