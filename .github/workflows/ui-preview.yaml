@@ -34,10 +34,10 @@ jobs:
       - id: length
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
-          echo $FILTER_LENGTH
-          echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_ENV"
+          echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_OUTPUT"
         env:
           FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
+
 
   deploy:
     name: Deploy to Vercel
@@ -56,7 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Read .nvmrc
-        run: echo "NVRMC=$(cat packages/${{matrix.package}}/.nvmrc)" >> $GITHUB_ENV
+        run: echo "NVRMC=$(cat packages/${{matrix.package}}/.nvmrc)" >> $GITHUB_OUTPUT
         id: nvm
 
       # make sure new project ids are added here
