@@ -17,7 +17,7 @@ describe('SynapseSDK', () => {
     'https://api.avax.network/ext/bc/C/rpc'
   )
   const optimisimProvider: Provider = new etherProvider.JsonRpcProvider(
-    'https://mainnet.optimism.io'
+    'https://1rpc.io/op'
   )
   const bscProvider: Provider = new etherProvider.JsonRpcProvider(
     'https://endpoints.omniatech.io/v1/bsc/mainnet/public'
@@ -162,12 +162,28 @@ describe('SynapseSDK', () => {
       const { query } = await Synapse.swapQuote(
         42161,
         '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
-        '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
-        BigNumber.from('10000000000000')
+        '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
+        BigNumber.from('1000000')
       )
-
       expect(query?.length).toBeGreaterThan(0)
-      console.log('QUERYR', query)
+      const { data, to } = await Synapse.swap(
+        42161,
+        '0x0AF91FA049A7e1894F480bFE5bBa20142C6c29a9',
+        '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+        BigNumber.from('1000000'),
+        query!
+      )
+      expect(data?.length).toBeGreaterThan(0)
+      expect(to?.length).toBeGreaterThan(0)
+    })
+  })
+  describe('bridge gas', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const gas = await Synapse.getBridgeGas(42161)
+      expect(Number(gas.toString())).toBeGreaterThan(-1)
     })
   })
 })

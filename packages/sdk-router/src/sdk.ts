@@ -4,6 +4,8 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { BytesLike } from '@ethersproject/bytes'
 import { PopulatedTransaction } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
+import { Interface } from '@ethersproject/abi'
+import { Contract } from '@ethersproject/contracts'
 
 import {
   handleNativeToken,
@@ -11,7 +13,10 @@ import {
 } from './utils/handleNativeToken'
 import { BigintIsh } from './constants'
 import { SynapseRouter } from './synapseRouter'
-import { SynapseSwapQuoter, LimitedTokenStructType } from './synapseSwapQuoter'
+import bridgeAbi from './abi/SynapseBridge.json'
+
+// import SynapseBridge
+// import { SynapseSwapQuoter, LimitedTokenStructType } from './synapseSwapQuoter'
 
 type SynapseRouters = {
   [key: number]: SynapseRouter
@@ -34,6 +39,7 @@ type FeeConfig = [number, BigNumber, BigNumber] & {
 class SynapseSDK {
   public synapseRouters: SynapseRouters
   public providers: { [x: number]: Provider }
+  public bridgeAbi: Interface = new Interface(bridgeAbi)
 
   constructor(chainIds: number[], providers: Provider[]) {
     invariant(
@@ -177,6 +183,7 @@ class SynapseSDK {
       destQuery
     )
   }
+
   // TODO: add gas from bridge
   public async swapQuote(
     chainId: number,
@@ -191,41 +198,46 @@ class SynapseSDK {
 
     const router: SynapseRouter = this.synapseRouters[chainId]
 
-    // Step 0: get the swap quoter address and initialize it
-    const swapQuoterAddress = await router.routerContract.swapQuoter()
-
-    if (swapQuoterAddress.length === 0) {
-      throw Error('No swap quoter found on this chain')
-    }
-
-    const synapseSwapQuoter = new SynapseSwapQuoter(
-      chainId,
-      this.providers[chainId],
-      swapQuoterAddress
-    )
-
-    // Step 1: check pools
-    const swapPools = await synapseSwapQuoter.swapQuoterContract.allPools()
-
-    if (swapPools.length === 0) {
-      throw Error('No pools found for this swap quoter')
-    }
-
-    // TODO check if token exists, check liquidity?
-
-    // Step 2: perform a quote call to swapQuoterAddress
-    const tokenInObj: LimitedTokenStructType = {
-      actionMask: 1,
-      token: tokenIn,
-    }
-
-    const query = await synapseSwapQuoter.swapQuoterContract.getAmountOut(
-      tokenInObj,
+    // Step 0: get the swap quote
+    const query = await router.routerContract.getAmountOut(
+      tokenIn,
       tokenOut,
       amountIn
     )
-
     return { query }
+  }
+
+  public async swap(
+    chainId: number,
+    to: string,
+    token: string,
+    amount: BigintIsh,
+    query: {
+      swapAdapter: string
+      tokenOut: string
+      minAmountOut: BigintIsh
+      deadline: BigintIsh
+      rawParams: BytesLike
+    }
+  ): Promise<PopulatedTransaction> {
+    token = handleNativeToken(token)
+    const originRouter: SynapseRouter = this.synapseRouters[chainId]
+    return originRouter.routerContract.populateTransaction.swap(
+      to,
+      token,
+      amount,
+      query
+    )
+  }
+  public async getBridgeGas(chainId: number): Promise<BigintIsh> {
+    const router: SynapseRouter = this.synapseRouters[chainId]
+    const bridgeAddress = await router.routerContract.synapseBridge()
+    const bridgeContract = new Contract(
+      bridgeAddress,
+      this.bridgeAbi,
+      this.providers[chainId]
+    )
+    return bridgeContract.chainGasAmount()
   }
 }
 
