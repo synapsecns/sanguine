@@ -9,14 +9,55 @@ import {DomainContext} from "./context/DomainContext.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
-import {DisputeHub, ExecutionHub, Receipt} from "./hubs/ExecutionHub.sol";
+import {DisputeHub, ExecutionHub, MessageStatus, Receipt, Tips} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub, SummitAttestation, SummitState} from "./hubs/SnapshotHub.sol";
 import {Attestation, AttestationLib, AttestationReport, Snapshot} from "./hubs/StatementHub.sol";
 import {DomainContext, Versioned} from "./system/SystemContract.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
+import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
 contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
+    using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
+
+    // TODO: write docs, pack values
+    struct ReceiptInfo {
+        uint32 origin;
+        uint32 destination;
+        uint32 snapRootIndex;
+        uint32 attNotaryIndex;
+        address firstExecutor;
+        address finalExecutor;
+    }
+
+    struct ReceiptStatus {
+        MessageStatus status;
+        bool pending;
+        uint32 receiptNotaryIndex;
+        uint40 submittedAt;
+    }
+
+    struct ReceiptTips {
+        uint64 summitTip;
+        uint64 attestationTip;
+        uint64 executionTip;
+        uint64 deliveryTip;
+    }
+
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
+
+    // (message hash => receipt data)
+    mapping(bytes32 => ReceiptInfo) private _receiptInfo;
+
+    // (message hash => receipt status)
+    mapping(bytes32 => ReceiptStatus) private _receiptStatus;
+
+    // (message hash => receipt tips)
+    mapping(bytes32 => ReceiptTips) private _receiptTips;
+
+    // Quarantine queue for message hashes
+    DoubleEndedQueue.Bytes32Deque private _receiptQueue;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
@@ -49,8 +90,10 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         require(!_inDispute(notary), "Notary is in dispute");
         // Receipt needs to be signed by a destination chain Notary
         require(rcpt.destination() == status.domain, "Wrong Notary domain");
-        _saveReceipt(rcpt);
-        emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
+        wasAccepted = _saveReceipt(rcpt);
+        if (wasAccepted) {
+            emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
+        }
     }
 
     /// @inheritdoc InterfaceSummit
@@ -138,11 +181,47 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @dev Saves the message from the receipt into the "quarantine queue". Once message leaves the queue,
     /// tips associated with the message are distributed across off-chain actors.
-    function _saveReceipt(Receipt receipt) internal {
+    function _saveReceipt(Receipt receipt) internal returns (bool) {
         bytes32 snapRoot = receipt.snapshotRoot();
         SnapRootData memory rootData = _rootData[snapRoot];
         require(rootData.submittedAt != 0, "Unknown snapshot root");
-        // TODO: implement the quarantine queue
+        bytes32 messageHash = receipt.messageHash();
+        ReceiptStatus memory savedRcpt = _receiptStatus[messageHash];
+        // Don't save if receipt is already in the queue
+        if (savedRcpt.pending) return false;
+        // Get the status from the provided receipt
+        MessageStatus msgStatus = receipt.finalExecutor() == address(0) ? MessageStatus.Failed : MessageStatus.Success;
+        // Don't save if we already have the receipt with at least this status
+        if (savedRcpt.status >= msgStatus) return false;
+        // Save information from the receipt
+        // TODO: attNotaryIndex
+        _receiptInfo[messageHash] = ReceiptInfo({
+            origin: receipt.origin(),
+            destination: receipt.destination(),
+            snapRootIndex: rootData.index,
+            attNotaryIndex: 0,
+            firstExecutor: receipt.firstExecutor(),
+            finalExecutor: receipt.finalExecutor()
+        });
+        // Save receipt status
+        // TODO: receiptNotaryIndex
+        _receiptStatus[messageHash] = ReceiptStatus({
+            status: msgStatus,
+            pending: true,
+            receiptNotaryIndex: 0,
+            submittedAt: uint40(block.timestamp)
+        });
+        // Save receipt tips
+        Tips tips = receipt.tips();
+        _receiptTips[messageHash] = ReceiptTips({
+            summitTip: tips.summitTip(),
+            attestationTip: tips.attestationTip(),
+            executionTip: tips.executionTip(),
+            deliveryTip: tips.deliveryTip()
+        });
+        // Add message hash to the quarantine queue
+        _receiptQueue.pushBack(messageHash);
+        return true;
     }
 
     /// @inheritdoc DisputeHub
