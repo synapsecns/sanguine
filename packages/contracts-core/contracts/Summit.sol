@@ -185,6 +185,12 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         bytes32 snapRoot = receipt.snapshotRoot();
         SnapRootData memory rootData = _rootData[snapRoot];
         require(rootData.submittedAt != 0, "Unknown snapshot root");
+        // Attestation Notary needs to be known and not slashed
+        address attNotary = receipt.attNotary();
+        AgentStatus memory attNotaryStatus = _agentStatus(attNotary);
+        _verifyKnown(attNotaryStatus);
+        _verifyNotSlashed(attNotaryStatus);
+        // Check if there already exists receipt for the message
         bytes32 messageHash = receipt.messageHash();
         ReceiptStatus memory savedRcpt = _receiptStatus[messageHash];
         // Don't save if receipt is already in the queue
@@ -194,12 +200,11 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // Don't save if we already have the receipt with at least this status
         if (savedRcpt.status >= msgStatus) return false;
         // Save information from the receipt
-        // TODO: attNotaryIndex
         _receiptInfo[messageHash] = ReceiptInfo({
             origin: receipt.origin(),
             destination: receipt.destination(),
             snapRootIndex: rootData.index,
-            attNotaryIndex: 0,
+            attNotaryIndex: attNotaryStatus.index,
             firstExecutor: receipt.firstExecutor(),
             finalExecutor: receipt.finalExecutor()
         });
