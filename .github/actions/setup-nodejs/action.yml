@@ -2,7 +2,7 @@ name: Setup NodeJS
 inputs:
   nvmrc_path:
     default: ".nvmrc"
-    description: Set to a relative path to use a different .nvmrc file
+    description: Set to a relative path (from WORKING_DIRECTORY) to use a different .nvmrc file
   cache:
     default: "yarn"
     description: Set to "npm" to use npm instead of yarn
@@ -12,7 +12,7 @@ inputs:
     description: Set to "false" to skip installing dependencies
   cache-path:
     default: "yarn.lock"
-    description: Set to a relative path to use a different cache path
+    description: Set to a relative path (from WORKING_DIRECTORY) to use a different cache path
 
 description: Setup nodejs using .nvmrc
 runs:
@@ -32,4 +32,4 @@ runs:
     - if: ${{ inputs.install_dependencies == 'true' }}
       name: Install dependencies
       shell: bash
-      run: yarn
+      run: yarn install --immutable
