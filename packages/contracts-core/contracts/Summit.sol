@@ -90,7 +90,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         require(!_inDispute(notary), "Notary is in dispute");
         // Receipt needs to be signed by a destination chain Notary
         require(rcpt.destination() == status.domain, "Wrong Notary domain");
-        wasAccepted = _saveReceipt(rcpt);
+        wasAccepted = _saveReceipt(rcpt, status.index);
         if (wasAccepted) {
             emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
         }
@@ -181,7 +181,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @dev Saves the message from the receipt into the "quarantine queue". Once message leaves the queue,
     /// tips associated with the message are distributed across off-chain actors.
-    function _saveReceipt(Receipt receipt) internal returns (bool) {
+    function _saveReceipt(Receipt receipt, uint32 rcptNotaryIndex) internal returns (bool) {
         bytes32 snapRoot = receipt.snapshotRoot();
         SnapRootData memory rootData = _rootData[snapRoot];
         require(rootData.submittedAt != 0, "Unknown snapshot root");
@@ -204,11 +204,10 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             finalExecutor: receipt.finalExecutor()
         });
         // Save receipt status
-        // TODO: receiptNotaryIndex
         _receiptStatus[messageHash] = ReceiptStatus({
             status: msgStatus,
             pending: true,
-            receiptNotaryIndex: 0,
+            receiptNotaryIndex: rcptNotaryIndex,
             submittedAt: uint40(block.timestamp)
         });
         // Save receipt tips
