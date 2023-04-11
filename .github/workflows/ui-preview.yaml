@@ -10,11 +10,11 @@ on:
   push:
     branches-ignore:
       - master
-  paths:
-    - 'packages/explorer-ui/**'
-    - 'packages/synapse-interface/**'
-    - '.github/workflows/ui-preview.yaml'
-    - 'packages/docs/**'
+    paths:
+      - 'packages/explorer-ui/**'
+      - 'packages/synapse-interface/**'
+      - '.github/workflows/ui-preview.yaml'
+      - 'packages/docs/**'
 jobs:
   changes:
     runs-on: ubuntu-latest
