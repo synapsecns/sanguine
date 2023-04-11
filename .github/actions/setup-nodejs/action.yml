@@ -3,24 +3,33 @@ inputs:
   nvmrc_path:
     default: ".nvmrc"
     description: Set to a relative path to use a different .nvmrc file
-description: Setup pnpm for contracts
+  cache:
+    default: "yarn"
+    description: Set to "npm" to use npm instead of yarn
+  # TODO: https://github.com/actions/runner/issues/2238
+  install_dependencies:
+    default: "true"
+    description: Set to "false" to skip installing dependencies
+  cache-path:
+    default: "yarn.lock"
+    description: Set to a relative path to use a different cache path
+
+description: Setup nodejs using .nvmrc
 runs:
   using: composite
   steps:
+    - name: Read .nvmrc
+      run: echo "NVRMC=$(cat ${{inputs.nvmrc_path}})" >> $GITHUB_OUTPUT
+      shell: bash
+      id: nvm
+
     - uses: actions/setup-node@v3
       with:
-        node-version: "16"
-        cache: "pnpm"
-        cache-dependency-path: "contracts/pnpm-lock.yaml"
+        node-version: '${{ steps.nvm.outputs.NVMRC }}'
+        cache: ${{ inputs.cache }}
+        cache-path: ${{ inputs.cache-path }}
 
-    - if: ${{ inputs.prod == 'false' }}
+    - if: ${{ inputs.install_dependencies == 'true' }}
       name: Install dependencies
       shell: bash
-      run: pnpm i
-      working-directory: contracts
-
-    - if: ${{ inputs.prod == 'true' }}
-      name: Install prod dependencies
-      shell: bash
-      run: pnpm i --prod
-      working-directory: contracts
+      run: yarn

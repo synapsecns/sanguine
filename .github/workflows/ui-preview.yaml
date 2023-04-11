@@ -55,9 +55,14 @@ jobs:
       NODE_ENV: 'production'
     steps:
       - uses: actions/checkout@v2
-      - name: Read .nvmrc
-        run: echo "NVRMC=$(cat packages/${{matrix.package}}/.nvmrc)" >> $GITHUB_OUTPUT
-        id: nvm
+
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
+        with:
+          nvmrc_path: '${{ env.WORKING_DIRECTORY }}/.nvmrc'
+          cache: 'npm'
+          install_dependencies: 'false'
+          cache-path: ""
 
       # make sure new project ids are added here
       - name: Get Project ID
@@ -73,15 +78,8 @@ jobs:
           END
           )
           TARGET_ID=$(echo $PROJECT_IDS | jq -r 'to_entries[] | select(.key=="${{ matrix.package }}") | .value')
-          # set the vercel project id
+          # set the vercel project id`
           echo "VERCEL_PROJECT_ID=$TARGET_ID" >> $GITHUB_ENV
-
-
-      - name: Use Node.js (.nvmrc)
-        uses: actions/setup-node@v2
-        with:
-          node-version: '${{ steps.nvm.outputs.NVMRC }}'
-          cache: 'npm'
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
