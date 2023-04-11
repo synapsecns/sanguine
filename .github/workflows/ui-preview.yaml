@@ -67,9 +67,9 @@ jobs:
         run: |
           PROJECT_IDS=$(cat <<END
           {
-            explorer-ui: "${{ secrets.VERCEL_PROJECT_ID}}",
-            docs: "${{ secrets.DOCS_VERCEL_PROJECT_ID }}",
-            synapse-interface: "${{ secrets.SYNAPSE_INTERFACE_PROJECT_ID }}"
+            "explorer-ui": "${{ secrets.VERCEL_PROJECT_ID}}",
+            "docs": "${{ secrets.DOCS_VERCEL_PROJECT_ID }}",
+            "synapse-interface": "${{ secrets.SYNAPSE_INTERFACE_PROJECT_ID }}"
           }
           END
           )
