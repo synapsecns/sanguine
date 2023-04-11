@@ -34,7 +34,7 @@ jobs:
       - id: length
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
-          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
+          echo "FILTER_LENGTH=$FILTER_LENGTH" >> $GITHUB_ENV
         env:
           FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
 
@@ -55,9 +55,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Read .nvmrc
-        run: echo "##[set-output name=NVMRC;]$(cat packages/${{matrix.package}}/.nvmrc)"
+        run: echo "NVRMC=$(cat packages/${{matrix.package}}/.nvmrc)" >> $GITHUB_ENV
         id: nvm
-
 
       # make sure new project ids are added here
       - name: Get Project ID
