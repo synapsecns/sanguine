@@ -6,6 +6,9 @@ import {AgentFlag, AgentStatus, IAgentManager, SlashStatus} from "../../../contr
 contract AgentManagerMock is IAgentManager {
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
+    // (index => agent)
+    mapping(uint256 => address) private _agents;
+
     // (agent => their status)
     mapping(address => AgentStatus) private _agentMap;
 
@@ -30,6 +33,7 @@ contract AgentManagerMock is IAgentManager {
         // index starts from 1
         status.index = uint32(++totalAgents);
         _agentMap[agent] = status;
+        _agents[status.index] = agent;
     }
 
     function removeAgent(uint32 domain, address agent) external {
@@ -59,5 +63,11 @@ contract AgentManagerMock is IAgentManager {
     /// @inheritdoc IAgentManager
     function agentStatus(address agent) external view returns (AgentStatus memory) {
         return _agentMap[agent];
+    }
+
+    /// @inheritdoc IAgentManager
+    function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status) {
+        agent = _agents[index];
+        status = _agentMap[agent];
     }
 }

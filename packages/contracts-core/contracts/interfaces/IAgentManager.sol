@@ -33,6 +33,15 @@ interface IAgentManager {
     function agentStatus(address agent) external view returns (AgentStatus memory);
 
     /**
+     * @notice Returns agent address and their current status for a given agent index.
+     * @dev Will return empty values if agent with given index doesn't exist.
+     * @param index     Agent index in the Agent Merkle Tree
+     * @return agent    Agent address
+     * @return status   Status for the given agent: (flag, domain, index)
+     */
+    function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status);
+
+    /**
      * @notice Returns whether the agent has been slashed.
      * @param agent         Agent address
      * @return isSlashed    Whether the agent has been slashed

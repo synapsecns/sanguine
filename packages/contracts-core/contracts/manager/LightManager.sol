@@ -22,6 +22,9 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     // (agentRoot => (agent => status))
     mapping(bytes32 => mapping(address => AgentStatus)) private _agentMap;
 
+    // (index => agent)
+    mapping(uint256 => address) private _agents;
+
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain) DomainContext(domain) Versioned("0.0.3") {
@@ -37,11 +40,15 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
 
     /// @inheritdoc InterfaceLightManager
     function updateAgentStatus(address agent, AgentStatus memory status, bytes32[] memory proof) external {
+        address storedAgent = _agents[status.index];
+        require(storedAgent == address(0) || storedAgent == agent, "Invalid agent index");
         // Reconstruct the agent leaf: flag should be Active
         bytes32 leaf = _agentLeaf(status.flag, status.domain, agent);
         bytes32 root = agentRoot;
         // Check that proof matches the latest merkle root
         require(MerkleLib.proofRoot(status.index, leaf, proof, AGENT_TREE_HEIGHT) == root, "Invalid proof");
+        // Save index => agent in the map
+        if (storedAgent == address(0)) _agents[status.index] = agent;
         // Update the agent status against this root
         _agentMap[root][agent] = status;
         emit StatusUpdated(status.flag, status.domain, agent);
@@ -56,6 +63,16 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     function setAgentRoot(bytes32 agentRoot_) external {
         require(msg.sender == address(destination), "Only Destination sets agent root");
         _setAgentRoot(agentRoot_);
+    }
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc IAgentManager
+    function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status) {
+        // This will return zero if agent hasn't been registered
+        agent = _agents[index];
+        // This will return empty struct if agent hasn't been registered against current agent root
+        status = _agentStatus(agent);
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
