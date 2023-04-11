@@ -62,6 +62,22 @@ contract BondingManagerTest is AgentManagerTest {
 
     // ═════════════════════════════════════════ TESTS: ADD/REMOVE AGENTS ══════════════════════════════════════════════
 
+    function test_addAgent_fromScratch() public {
+        // Deploy fresh instance of BondingManager
+        bondingManager = new BondingManager(DOMAIN_SYNAPSE);
+        bondingManager.initialize(ISystemRegistry(originSynapse), ISystemRegistry(summit));
+        // Try to add all agents one by one
+        for (uint256 d = 0; d < allDomains.length; ++d) {
+            uint32 domain = allDomains[d];
+            for (uint256 i = 0; i < DOMAIN_AGENTS; ++i) {
+                address agent = domains[domain].agents[i];
+                bytes32[] memory proof = bondingManager.getProof(agent);
+                bondingManager.addAgent(domain, agent, proof);
+                checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Active);
+            }
+        }
+    }
+
     function test_addAgent_new(uint32 domain, address agent) public {
         // Should not be an already added agent
         vm.assume(bondingManager.agentStatus(agent).flag == AgentFlag.Unknown);
