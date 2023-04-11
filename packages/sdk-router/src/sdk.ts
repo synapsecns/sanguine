@@ -11,6 +11,7 @@ import {
 } from './utils/handleNativeToken'
 import { BigintIsh } from './constants'
 import { SynapseRouter } from './synapseRouter'
+import { SynapseSwapQuoter, LimitedTokenStructType } from './synapseSwapQuoter'
 
 type SynapseRouters = {
   [key: number]: SynapseRouter
@@ -32,6 +33,7 @@ type FeeConfig = [number, BigNumber, BigNumber] & {
 
 class SynapseSDK {
   public synapseRouters: SynapseRouters
+  public providers: { [x: number]: Provider }
 
   constructor(chainIds: number[], providers: Provider[]) {
     invariant(
@@ -39,11 +41,13 @@ class SynapseSDK {
       `Amount of chains and providers does not equal`
     )
     this.synapseRouters = {}
+    this.providers = {}
     for (let i = 0; i < chainIds.length; i++) {
       this.synapseRouters[chainIds[i]] = new SynapseRouter(
         chainIds[i],
         providers[i]
       )
+      this.providers[chainIds[i]] = providers[i]
     }
   }
 
@@ -174,6 +178,55 @@ class SynapseSDK {
     )
   }
   // TODO: add gas from bridge
+  public async swapQuote(
+    chainId: number,
+    tokenIn: string,
+    tokenOut: string,
+    amountIn: BigintIsh
+  ): Promise<{
+    query?: Query | undefined
+  }> {
+    tokenOut = handleNativeToken(tokenOut)
+    tokenIn = handleNativeToken(tokenIn)
+
+    const router: SynapseRouter = this.synapseRouters[chainId]
+
+    // Step 0: get the swap quoter address and initialize it
+    const swapQuoterAddress = await router.routerContract.swapQuoter()
+
+    if (swapQuoterAddress.length === 0) {
+      throw Error('No swap quoter found on this chain')
+    }
+
+    const synapseSwapQuoter = new SynapseSwapQuoter(
+      chainId,
+      this.providers[chainId],
+      swapQuoterAddress
+    )
+
+    // Step 1: check pools
+    const swapPools = await synapseSwapQuoter.swapQuoterContract.allPools()
+
+    if (swapPools.length === 0) {
+      throw Error('No pools found for this swap quoter')
+    }
+
+    // TODO check if token exists, check liquidity?
+
+    // Step 2: perform a quote call to swapQuoterAddress
+    const tokenInObj: LimitedTokenStructType = {
+      actionMask: 1,
+      token: tokenIn,
+    }
+
+    const query = await synapseSwapQuoter.swapQuoterContract.getAmountOut(
+      tokenInObj,
+      tokenOut,
+      amountIn
+    )
+
+    return { query }
+  }
 }
 
 export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS }

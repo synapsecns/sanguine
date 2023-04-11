@@ -47,7 +47,7 @@ describe('SynapseSwapQuoter', () => {
       console.log(
         await synapseSwapQuoter.swapQuoterContract.getAmountOut(
           tokenIn,
-          '0x2913e812cf0dcca30fb28e6cac3d2dcff4497688',
+          '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
           BigNumber.from(10000)
         )
       )

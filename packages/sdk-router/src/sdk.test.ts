@@ -154,4 +154,20 @@ describe('SynapseSDK', () => {
       expect(to?.length).toBeGreaterThan(0)
     })
   })
+  describe('swap quote', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const { query } = await Synapse.swapQuote(
+        42161,
+        '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+        '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
+        BigNumber.from('10000000000000')
+      )
+
+      expect(query?.length).toBeGreaterThan(0)
+      console.log('QUERYR', query)
+    })
+  })
 })
