@@ -18,6 +18,7 @@ contract SystemRouterTest is SynapseTest {
     // ════════════════════════════════════════ TESTS: SENDING SYSTEM CALLS ════════════════════════════════════════════
 
     function test_sendSystemMessage(RawSystemMessage memory rsm, RawHeader memory rh, uint256 words) public {
+        vm.assume(rh.destination != DOMAIN_LOCAL);
         words = words % MAX_SYSTEM_CALL_WORDS;
         rsm.callData.args = Random("sendSystemMessage").nextBytesWords(words);
         // Make sure sender/recipient are valid SystemEntity values
@@ -67,6 +68,7 @@ contract SystemRouterTest is SynapseTest {
     // ═══════════════════════════════════════ TESTS: RECEIVING SYSTEM CALLS ═══════════════════════════════════════════
 
     function test_receiveSystemMessage(RawSystemCall memory rsc, bytes32 data) public {
+        vm.assume(rsc.origin != DOMAIN_LOCAL);
         rsc.systemMessage.callData.selector = SystemContractMock.remoteMockFunc.selector;
         rsc.systemMessage.callData.args = bytes.concat(data);
         // Make sure sender/recipient are valid SystemEntity values
@@ -81,6 +83,7 @@ contract SystemRouterTest is SynapseTest {
     }
 
     function test_receiveSystemMessage_revert_notDestination(RawSystemCall memory rsc, address caller) public {
+        vm.assume(rsc.origin != DOMAIN_LOCAL);
         rsc.systemMessage.callData.args = "";
         vm.assume(caller != destination);
         // Make sure sender/recipient are valid SystemEntity values
@@ -89,6 +92,18 @@ contract SystemRouterTest is SynapseTest {
         vm.prank(caller);
         systemRouter.receiveSystemMessage(
             rsc.origin, rsc.nonce, rsc.proofMaturity, rsc.systemMessage.formatSystemMessage()
+        );
+    }
+
+    function test_receiveSystemMessage_revert_notRemoteOrigin(RawSystemCall memory rsc, bytes32 data) public {
+        rsc.systemMessage.callData.selector = SystemContractMock.remoteMockFunc.selector;
+        rsc.systemMessage.callData.args = bytes.concat(data);
+        // Make sure sender/recipient are valid SystemEntity values
+        rsc.systemMessage.boundEntities();
+        vm.expectRevert("Must be a remote origin");
+        vm.prank(destination);
+        systemRouter.receiveSystemMessage(
+            DOMAIN_LOCAL, rsc.nonce, rsc.proofMaturity, rsc.systemMessage.formatSystemMessage()
         );
     }
 

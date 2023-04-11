@@ -9,27 +9,14 @@ import {IDisputeHub} from "../../contracts/interfaces/IDisputeHub.sol";
 import {InterfaceDestination} from "../../contracts/Destination.sol";
 import {Versioned} from "../../contracts/Version.sol";
 
-import {SystemRouterHarness} from "../harnesses/system/SystemRouterHarness.t.sol";
-import {SystemRouterMock} from "../mocks/system/SystemRouterMock.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
-import {
-    MessageFlag,
-    SystemEntity,
-    RawAttestation,
-    RawBaseMessage,
-    RawCallData,
-    RawHeader,
-    RawMessage,
-    RawRequest,
-    RawState,
-    RawSystemMessage,
-    RawTips
-} from "../utils/libs/SynapseStructs.t.sol";
+import {RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
 import {AgentFlag, ISystemContract, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
+// solhint-disable ordering
 contract DestinationTest is ExecutionHubTest {
     // Deploy Production version of Destination and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_DESTINATION) {}
@@ -66,7 +53,8 @@ contract DestinationTest is ExecutionHubTest {
     }
 
     function test_submitAttestation_updatesAgentRoot(RawAttestation memory ra, uint32 rootSubmittedAt) public {
-        vm.assume(ra.agentRoot != InterfaceDestination(destination).nextAgentRoot());
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(ra.agentRoot != agentRootLM);
         address notary = domains[DOMAIN_LOCAL].agent;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);
         vm.warp(rootSubmittedAt);
@@ -86,6 +74,8 @@ contract DestinationTest is ExecutionHubTest {
         uint32 firstRootSubmittedAt,
         uint32 timePassed
     ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(firstRA.agentRoot != agentRootLM);
         vm.assume(firstRA.snapRoot != secondRA.snapRoot);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
@@ -107,6 +97,8 @@ contract DestinationTest is ExecutionHubTest {
         RawAttestation memory firstRA,
         uint32 firstRootSubmittedAt
     ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(firstRA.agentRoot != agentRootLM);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Should not accept the attestation before doing any checks,
@@ -124,6 +116,8 @@ contract DestinationTest is ExecutionHubTest {
         RawAttestation memory firstRA,
         uint32 firstRootSubmittedAt
     ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(firstRA.agentRoot != agentRootLM);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Should not accept the attestation before doing any checks,
@@ -141,6 +135,8 @@ contract DestinationTest is ExecutionHubTest {
         RawAttestation memory firstRA,
         uint32 firstRootSubmittedAt
     ) public {
+        bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(firstRA.agentRoot != agentRootLM);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
         // Should not accept the attestation before doing any checks,
@@ -160,6 +156,7 @@ contract DestinationTest is ExecutionHubTest {
         uint32 timePassed
     ) public {
         bytes32 agentRootLM = lightManager.agentRoot();
+        vm.assume(ra.agentRoot != agentRootLM);
         // Submit attestation that updates `nextAgentRoot`
         test_submitAttestation_updatesAgentRoot(ra, rootSubmittedAt);
         timePassed = timePassed % AGENT_ROOT_OPTIMISTIC_PERIOD;
@@ -195,23 +192,15 @@ contract DestinationTest is ExecutionHubTest {
         checkDisputeOpened(destination, guard, notary);
     }
 
-    function test_submitStateReport(RawState memory rs, uint256 statesAmount, uint256 stateIndex) public {
-        // Make sure statesAmount, stateIndex are valid entires
-        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
-        stateIndex = bound(stateIndex, 0, statesAmount - 1);
-        check_submitStateReport(destination, DOMAIN_LOCAL, rs, statesAmount, stateIndex);
+    function test_submitStateReport(RawState memory rs, RawStateIndex memory rsi) public boundIndex(rsi) {
+        check_submitStateReport(destination, DOMAIN_LOCAL, rs, rsi);
     }
 
-    function test_submitStateReportWithProof(
-        RawState memory rs,
-        RawAttestation memory ra,
-        uint256 statesAmount,
-        uint256 stateIndex
-    ) public {
-        // Make sure statesAmount, stateIndex are valid entires
-        statesAmount = bound(statesAmount, 1, SNAPSHOT_MAX_STATES);
-        stateIndex = bound(stateIndex, 0, statesAmount - 1);
-        check_submitStateReportWithProof(destination, DOMAIN_LOCAL, rs, ra, statesAmount, stateIndex);
+    function test_submitStateReportWithProof(RawState memory rs, RawAttestation memory ra, RawStateIndex memory rsi)
+        public
+        boundIndex(rsi)
+    {
+        check_submitStateReportWithProof(destination, DOMAIN_LOCAL, rs, ra, rsi);
     }
 
     // ════════════════════════════════════════════ DISPUTE RESOLUTION ═════════════════════════════════════════════════
@@ -305,63 +294,6 @@ contract DestinationTest is ExecutionHubTest {
         InterfaceDestination(destination).submitAttestationReport(arPayload, arSig, attSig);
     }
 
-    // ═════════════════════════════════════════════ TESTS: EXECUTION ══════════════════════════════════════════════════
-
-    function test_execute_base(
-        RawBaseMessage memory rbm,
-        RawHeader memory rh,
-        SnapshotMock memory sm,
-        uint32 timePassed,
-        uint64 gasLimit
-    ) public {
-        check_execute_base(destination, rbm, rh, sm, timePassed, gasLimit);
-    }
-
-    function test_execute_base_recipientReverted(Random memory random) public {
-        check_execute_base_recipientReverted(destination, random);
-    }
-
-    function test_execute_system(
-        RawSystemMessage memory rsm,
-        RawHeader memory rh,
-        SnapshotMock memory sm,
-        uint32 timePassed,
-        uint64 gasLimit
-    ) public {
-        // Use System Router Mock for this test
-        SystemRouterMock router = (new SystemRouterMock());
-        ISystemContract(destination).setSystemRouter(router);
-        check_execute_system(destination, address(router), rsm, rh, sm, timePassed, gasLimit);
-    }
-
-    function test_execute_base_revert_alreadyExecuted(Random memory random) public {
-        check_execute_base_revert_alreadyExecuted(destination, random);
-    }
-
-    function test_execute_revert_notaryInDispute(Random memory random) public {
-        check_execute_base_revert_notaryInDispute(destination, random);
-    }
-
-    function test_execute_revert_optimisticPeriodNotOver(Random memory random) public {
-        check_execute_base_revert_optimisticPeriodNotOver(destination, random);
-    }
-
-    function test_execute_revert_snapRootUnknown(Random memory random) public {
-        check_execute_base_revert_snapRootUnknown(destination, random);
-    }
-
-    function test_execute_revert_gasLimitTooLow(Random memory random) public {
-        check_execute_base_revert_gasLimitTooLow(destination, random);
-    }
-
-    function test_execute_base_revert_gasSuppliedTooLow(Random memory random) public {
-        check_execute_base_revert_gasSuppliedTooLow(destination, random);
-    }
-
-    function test_execute_revert_wrongDestination(Random memory random, uint32 destination_) public {
-        check_execute_base_revert_wrongDestination(destination, random, destination_);
-    }
-
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     /// @notice Prepares execution of the created messages
@@ -377,7 +309,7 @@ contract DestinationTest is ExecutionHubTest {
         InterfaceDestination(destination).submitAttestation(attPayload, attSig);
     }
 
-    /// @notice Local domain for ExecutionHub tests
+    /// @notice Returns local domain for the tested system contract
     function localDomain() public pure override returns (uint32) {
         return DOMAIN_LOCAL;
     }

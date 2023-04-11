@@ -24,7 +24,14 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
         bytes memory tipsPayload = re.tips.formatTips();
         // Test formatting
         bytes memory payload = libHarness.formatReceipt(
-            re.origin, re.destination, re.messageHash, re.snapshotRoot, re.firstExecutor, re.finalExecutor, tipsPayload
+            re.origin,
+            re.destination,
+            re.messageHash,
+            re.snapshotRoot,
+            re.notary,
+            re.firstExecutor,
+            re.finalExecutor,
+            tipsPayload
         );
         assertEq(
             payload,
@@ -33,6 +40,7 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
                 re.destination,
                 re.messageHash,
                 re.snapshotRoot,
+                re.notary,
                 re.firstExecutor,
                 re.finalExecutor,
                 tipsPayload
@@ -46,6 +54,7 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.destination(payload), re.destination, "!destination");
         assertEq(libHarness.messageHash(payload), re.messageHash, "!messageHash");
         assertEq(libHarness.snapshotRoot(payload), re.snapshotRoot, "!snapshotRoot");
+        assertEq(libHarness.notary(payload), re.notary, "!firstExecutor");
         assertEq(libHarness.firstExecutor(payload), re.firstExecutor, "!firstExecutor");
         assertEq(libHarness.finalExecutor(payload), re.finalExecutor, "!finalExecutor");
         assertEq(libHarness.tips(payload), tipsPayload, "!tipsPayload");

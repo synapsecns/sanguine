@@ -13,8 +13,8 @@ uint256 constant SNAPSHOT_TREE_HEIGHT = 6;
 // ══════════════════════════════════ STRUCTS ══════════════════════════════════
 /// @dev See Attestation.sol: (bytes32,bytes32, uint32,uint40,uint40): 32+4+5+5
 uint256 constant ATTESTATION_LENGTH = 78;
-/// @dev See Receipt.sol: (uint32,uint32,bytes32,bytes32,address,address,tips): 4+4+32+32+20+20+tips_length
-uint256 constant RECEIPT_LENGTH = 112 + TIPS_LENGTH;
+/// @dev See Receipt.sol: (uint32,uint32,bytes32,bytes32,address,address,address,tips): 4+4+32+32+20+20+20+tips_length
+uint256 constant RECEIPT_LENGTH = 132 + TIPS_LENGTH;
 /// @dev See State.sol: (bytes32,uint32,uint32,uint40,uint40): 32+4+4+5+5
 uint256 constant STATE_LENGTH = 50;
 /// @dev Maximum amount of states in a single snapshot. Each state produces two leafs in the tree
@@ -24,8 +24,12 @@ uint256 constant SNAPSHOT_MAX_STATES = 1 << (SNAPSHOT_TREE_HEIGHT - 1);
 uint256 constant HEADER_LENGTH = 16;
 /// @dev See Request.sol: (uint64): 8
 uint256 constant REQUEST_LENGTH = 8;
-/// @dev See Tips.sol: (uint96,uint96,uint96,uint96): 12+12+12+12
-uint256 constant TIPS_LENGTH = 48;
+/// @dev See Tips.sol: (uint64,uint64,uint64,uint64): 8+8+8+8
+uint256 constant TIPS_LENGTH = 32;
+/// @dev The amount of discarded last bits when encoding tip values
+uint256 constant TIPS_GRANULARITY = 32;
+/// @dev Tip values could be only the multiples of TIPS_MULTIPLIER
+uint256 constant TIPS_MULTIPLIER = 1 << TIPS_GRANULARITY;
 // ══════════════════════════════ STATEMENT SALTS ══════════════════════════════
 /// @dev Salts for signing various statements
 bytes32 constant ATTESTATION_SALT = keccak256("ATTESTATION_SALT");

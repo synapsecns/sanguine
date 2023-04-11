@@ -2,21 +2,14 @@
 pragma solidity 0.8.17;
 
 import {ByteString} from "./ByteString.sol";
-import {TIPS_LENGTH} from "./Constants.sol";
+import {TIPS_GRANULARITY, TIPS_LENGTH} from "./Constants.sol";
 import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev Tips is a memory over over a formatted message tips payload.
 type Tips is bytes29;
 
 /// @dev Attach library functions to Tips
-using {
-    TipsLib.unwrap,
-    TipsLib.notaryTip,
-    TipsLib.broadcasterTip,
-    TipsLib.proverTip,
-    TipsLib.executorTip,
-    TipsLib.totalTips
-} for Tips global;
+using TipsLib for Tips global;
 
 /**
  * @notice Library for versioned formatting [the tips part]
@@ -26,38 +19,54 @@ library TipsLib {
     using ByteString for bytes;
     using TypedMemView for bytes29;
 
-    // TODO: determine if we need to pack the tips values,
-    // or if using uint256 instead will suffice.
-
     /**
+     * @dev Tips are paid for sending a base message, and are split across all the agents that
+     * made the message execution on destination chain possible.
+     *  1. Summit tips. Split between:
+     *      a. Guard posting a snapshot with state ST_G for the origin chain.
+     *      b. Notary posting a snapshot SN_N using ST_G. This creates attestation A.
+     *      c. Notary posting a message receipt after it is executed on destination chain.
+     *  2. Attestation tips. Paid to:
+     *      a. Notary posting attestation A to destination chain.
+     *  3. Execution tips. Paid to:
+     *      a. First executor performing a valid execution attempt (correct proofs, optimistic period over),
+     *      using attestation A to prove message inclusion on origin chain, whether the recipient reverted or not.
+     *  4. Delivery tips. Paid to:
+     *      a. Executor who successfully executed the message on destination chain.
+     * @dev The actual tip values should be determined by multiplying stored values by divided by TIPS_MULTIPLIER=2**32.
+     * Tips are packed into a single word of storage, while allowing real values up to ~8*10**28 for every tip category.
+     * The only downside is that the "real tip values" are now multiplies of ~4*10**9, which should be fine even for
+     * the chains with the most expensive gas currency.
      * @dev Tips memory layout
-     * [000 .. 012): notaryTip          uint96	12 bytes
-     * [012 .. 024): broadcasterTip     uint96	12 bytes
-     * [024 .. 036): proverTip          uint96	12 bytes
-     * [036 .. 048): executorTip        uint96	12 bytes
+     * [000 .. 008): summitTip          uint64	 8 bytes    Tip for agents interacting with Summit contract
+     * [008 .. 016): attestationTip     uint64	 8 bytes    Tip for Notary posting attestation to Destination contract
+     * [016 .. 024): executionTip       uint64	 8 bytes    Tip for valid execution attempt on destination chain
+     * [024 .. 032): deliveryTip        uint64	 8 bytes    Tip for successful message delivery on destination chain
+     *
+     * The variables below are not supposed to be used outside of the library directly.
      */
 
-    uint256 internal constant OFFSET_NOTARY = 0;
-    uint256 internal constant OFFSET_BROADCASTER = 12;
-    uint256 internal constant OFFSET_PROVER = 24;
-    uint256 internal constant OFFSET_EXECUTOR = 36;
+    uint256 private constant OFFSET_SUMMIT_TIP = 0;
+    uint256 private constant OFFSET_ATTESTATION_TIP = 8;
+    uint256 private constant OFFSET_EXECUTION_TIP = 16;
+    uint256 private constant OFFSET_DELIVERY_TIP = 24;
 
     // ═══════════════════════════════════════════════════ TIPS ════════════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted Tips payload with provided fields
-     * @param notaryTip_        Tip for the Notary
-     * @param broadcasterTip_   Tip for the Broadcaster
-     * @param proverTip_        Tip for the Prover
-     * @param executorTip_      Tip for the Executor
+     * @param summitTip_        Tip for agents interacting with Summit contract, divided by TIPS_MULTIPLIER
+     * @param attestationTip_   Tip for Notary posting attestation to Destination contract, divided by TIPS_MULTIPLIER
+     * @param executionTip_     Tip for valid execution attempt on destination chain, divided by TIPS_MULTIPLIER
+     * @param deliveryTip_      Tip for successful message delivery on destination chain, divided by TIPS_MULTIPLIER
      * @return Formatted tips
      */
-    function formatTips(uint96 notaryTip_, uint96 broadcasterTip_, uint96 proverTip_, uint96 executorTip_)
+    function formatTips(uint64 summitTip_, uint64 attestationTip_, uint64 executionTip_, uint64 deliveryTip_)
         internal
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(notaryTip_, broadcasterTip_, proverTip_, executorTip_);
+        return abi.encodePacked(summitTip_, attestationTip_, executionTip_, deliveryTip_);
     }
 
     /**
@@ -97,34 +106,57 @@ library TipsLib {
 
     // ═══════════════════════════════════════════════ TIPS SLICING ════════════════════════════════════════════════════
 
-    /// @notice Returns notaryTip field
-    function notaryTip(Tips tips) internal pure returns (uint96) {
+    /// @notice Returns summitTip field
+    function summitTip(Tips tips) internal pure returns (uint64) {
         bytes29 view_ = tips.unwrap();
-        return uint96(view_.indexUint(OFFSET_NOTARY, 12));
+        return uint64(_summitTip(view_));
     }
 
-    /// @notice Returns broadcasterTip field
-    function broadcasterTip(Tips tips) internal pure returns (uint96) {
+    /// @notice Returns attestationTip field
+    function attestationTip(Tips tips) internal pure returns (uint64) {
         bytes29 view_ = tips.unwrap();
-        return uint96(view_.indexUint(OFFSET_BROADCASTER, 12));
+        return uint64(_attestationTip(view_));
     }
 
-    /// @notice Returns proverTip field
-    function proverTip(Tips tips) internal pure returns (uint96) {
+    /// @notice Returns executionTip field
+    function executionTip(Tips tips) internal pure returns (uint64) {
         bytes29 view_ = tips.unwrap();
-        return uint96(view_.indexUint(OFFSET_PROVER, 12));
+        return uint64(_executionTip(view_));
     }
 
-    /// @notice Returns executorTip field
-    function executorTip(Tips tips) internal pure returns (uint96) {
+    /// @notice Returns deliveryTip field
+    function deliveryTip(Tips tips) internal pure returns (uint64) {
         bytes29 view_ = tips.unwrap();
-        return uint96(view_.indexUint(OFFSET_EXECUTOR, 12));
+        return uint64(_deliveryTip(view_));
     }
 
-    /// @notice Returns total tip amount.
-    function totalTips(Tips tips) internal pure returns (uint96) {
-        // In practice there's no chance that the total tips value would not fit into uint96.
-        // TODO: determine if we want to use uint256 here instead anyway.
-        return notaryTip(tips) + broadcasterTip(tips) + proverTip(tips) + executorTip(tips);
+    /// @notice Returns total value of the tips payload.
+    /// This is the sum of the encoded values, scaled up by TIPS_MULTIPLIER
+    function value(Tips tips) internal pure returns (uint256 value_) {
+        bytes29 view_ = tips.unwrap();
+        value_ = _summitTip(view_) + _attestationTip(view_) + _executionTip(view_) + _deliveryTip(view_);
+        value_ <<= TIPS_GRANULARITY;
+    }
+
+    // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
+
+    /// @notice Returns summitTip field as uint256
+    function _summitTip(bytes29 view_) internal pure returns (uint256) {
+        return view_.indexUint({index_: OFFSET_SUMMIT_TIP, bytes_: 8});
+    }
+
+    /// @notice Returns attestationTip field as uint256
+    function _attestationTip(bytes29 view_) internal pure returns (uint256) {
+        return view_.indexUint({index_: OFFSET_ATTESTATION_TIP, bytes_: 8});
+    }
+
+    /// @notice Returns executionTip field as uint256
+    function _executionTip(bytes29 view_) internal pure returns (uint256) {
+        return view_.indexUint({index_: OFFSET_EXECUTION_TIP, bytes_: 8});
+    }
+
+    /// @notice Returns deliveryTip field as uint256
+    function _deliveryTip(bytes29 view_) internal pure returns (uint256) {
+        return view_.indexUint({index_: OFFSET_DELIVERY_TIP, bytes_: 8});
     }
 }

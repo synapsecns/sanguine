@@ -16,7 +16,7 @@ interface IAgentManager {
      */
     function registrySlash(uint32 domain, address agent, address prover) external;
 
-    // ═════════════════════════════════ VIEWS ═════════════════════════════════
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**
      * @notice Returns the latest known root of the Agent Merkle Tree.

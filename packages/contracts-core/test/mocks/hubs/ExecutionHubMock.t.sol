@@ -16,6 +16,10 @@ contract ExecutionHubMock is IExecutionHub {
         uint64 gasLimit
     ) external {}
 
+    function verifyReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool isValid) {}
+
+    function isValidReceipt(bytes memory rcptPayload) external view returns (bool isValid) {}
+
     function messageStatus(bytes32 messageHash) external view returns (MessageStatus status) {}
 
     function receiptData(bytes32 messageHash) external view returns (bytes memory data) {}

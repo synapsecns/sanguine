@@ -9,7 +9,7 @@ import {SystemEntity, SystemMessage, SystemMessageLib} from "../../../contracts/
 import {Receipt, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
 import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
 
-import {Snapshot, SnapshotLib, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
+import {Snapshot, SnapshotLib, SNAPSHOT_MAX_STATES, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
 
 import {Attestation, AttestationLib} from "../../../contracts/libs/Attestation.sol";
 
@@ -33,10 +33,10 @@ struct RawRequest {
 using CastLib for RawRequest global;
 
 struct RawTips {
-    uint96 notaryTip;
-    uint96 broadcasterTip;
-    uint96 proverTip;
-    uint96 executorTip;
+    uint64 summitTip;
+    uint64 attestationTip;
+    uint64 executionTip;
+    uint64 deliveryTip;
 }
 
 using CastLib for RawTips global;
@@ -47,6 +47,7 @@ struct RawExecReceipt {
     uint32 destination;
     bytes32 messageHash;
     bytes32 snapshotRoot;
+    address notary;
     address firstExecutor;
     address finalExecutor;
     RawTips tips;
@@ -105,6 +106,13 @@ struct RawState {
 }
 
 using CastLib for RawState global;
+
+struct RawStateIndex {
+    uint256 stateIndex;
+    uint256 statesAmount;
+}
+
+using CastLib for RawStateIndex global;
 
 struct RawSnapshot {
     RawState[] states;
@@ -192,18 +200,25 @@ library CastLib {
 
     function formatTips(RawTips memory rt) internal pure returns (bytes memory tipsPayload) {
         tipsPayload = TipsLib.formatTips({
-            notaryTip_: rt.notaryTip,
-            broadcasterTip_: rt.broadcasterTip,
-            proverTip_: rt.proverTip,
-            executorTip_: rt.executorTip
+            summitTip_: rt.summitTip,
+            attestationTip_: rt.attestationTip,
+            executionTip_: rt.executionTip,
+            deliveryTip_: rt.deliveryTip
         });
     }
 
-    function boundTips(RawTips memory rt, uint96 maxTipValue) internal pure {
-        rt.notaryTip = rt.notaryTip % maxTipValue;
-        rt.broadcasterTip = rt.broadcasterTip % maxTipValue;
-        rt.proverTip = rt.proverTip % maxTipValue;
-        rt.executorTip = rt.executorTip % maxTipValue;
+    function boundTips(RawTips memory rt, uint64 maxTipValue) internal pure {
+        rt.summitTip = rt.summitTip % maxTipValue;
+        rt.attestationTip = rt.attestationTip % maxTipValue;
+        rt.executionTip = rt.executionTip % maxTipValue;
+        rt.deliveryTip = rt.deliveryTip % maxTipValue;
+    }
+
+    function cloneTips(RawTips memory rt) internal pure returns (RawTips memory crt) {
+        crt.summitTip = rt.summitTip;
+        crt.attestationTip = rt.attestationTip;
+        crt.executionTip = rt.executionTip;
+        crt.deliveryTip = rt.deliveryTip;
     }
 
     function castToTips(RawTips memory rt) internal pure returns (Tips ptr) {
@@ -269,6 +284,7 @@ library CastLib {
             re.destination,
             re.messageHash,
             re.snapshotRoot,
+            re.notary,
             re.firstExecutor,
             re.finalExecutor,
             re.tips.formatTips()
@@ -277,6 +293,20 @@ library CastLib {
 
     function castToReceipt(RawExecReceipt memory re) internal pure returns (Receipt) {
         return re.formatReceipt().castToReceipt();
+    }
+
+    function modifyReceipt(RawExecReceipt memory re, uint256 mask) internal pure returns (RawExecReceipt memory mre) {
+        // Don't modify the destination, message hash and tips
+        mre.destination = re.destination;
+        mre.messageHash = re.messageHash;
+        mre.tips = re.tips.cloneTips();
+        // Make sure at least one value is modified, valid mask values are [1 .. 31]
+        mask = 1 + (mask % 31);
+        mre.origin = re.origin ^ uint32(mask & 1);
+        mre.snapshotRoot = re.snapshotRoot ^ bytes32(mask & 2);
+        mre.notary = address(uint160(re.notary) ^ uint160(mask & 4));
+        mre.firstExecutor = address(uint160(re.firstExecutor) ^ uint160(mask & 8));
+        mre.finalExecutor = address(uint160(re.finalExecutor) ^ uint160(mask & 16));
     }
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════
@@ -304,6 +334,13 @@ library CastLib {
 
     function castToStateReport(RawStateReport memory rawSR) internal pure returns (StateReport ptr) {
         ptr = rawSR.formatStateReport().castToStateReport();
+    }
+
+    function boundStateIndex(RawStateIndex memory rsi) internal pure {
+        // [1 .. SNAPSHOT_MAX_STATES] range
+        rsi.statesAmount = 1 + rsi.statesAmount % SNAPSHOT_MAX_STATES;
+        // [0 .. statesAmount) range
+        rsi.stateIndex = rsi.stateIndex % rsi.statesAmount;
     }
 
     // ═════════════════════════════════════════════════ SNAPSHOT ══════════════════════════════════════════════════════

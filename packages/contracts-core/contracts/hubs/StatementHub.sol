@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT, State, StateLib} from "../libs/Snapshot.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
+import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {StateReport, StateReportLib} from "../libs/StateReport.sol";
 import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
@@ -27,6 +28,7 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 abstract contract StatementHub is SystemRegistry {
     using AttestationLib for bytes;
     using AttestationReportLib for bytes;
+    using ReceiptLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
     using StateReportLib for bytes;
@@ -58,6 +60,8 @@ abstract contract StatementHub is SystemRegistry {
         // Further flag checks are supposed to be performed in a caller function.
         require(status.flag != AgentFlag.Unknown, "Unknown agent");
     }
+
+    // ════════════════════════════════════════ ATTESTATION RELATED CHECKS ═════════════════════════════════════════════
 
     /**
      * @dev Internal function to verify the signed attestation payload.
@@ -98,6 +102,30 @@ abstract contract StatementHub is SystemRegistry {
         // Report signer needs to be a Guard, not a Notary
         require(status.domain == 0, "Signer is not a Guard");
     }
+
+    // ══════════════════════════════════════════ RECEIPT RELATED CHECKS ═══════════════════════════════════════════════
+
+    /**
+     * @dev Internal function to verify the signed receipt payload.
+     * Reverts if any of these is true:
+     *  - Receipt signer is not a known Notary.
+     * @param rcpt              Typed memory view over receipt payload
+     * @param rcptSignature     Notary signature for the receipt
+     * @return status           Struct representing agent status, see {_recoverAgent}
+     * @return notary           Notary that signed the snapshot
+     */
+    function _verifyReceipt(Receipt rcpt, bytes memory rcptSignature)
+        internal
+        view
+        returns (AgentStatus memory status, address notary)
+    {
+        // This will revert if signer is not a known agent
+        (status, notary) = _recoverAgent(rcpt.hash(), rcptSignature);
+        // Receipt signer needs to be a Notary, not a Guard
+        require(status.domain != 0, "Signer is not a Notary");
+    }
+
+    // ═════════════════════════════════════ STATE OR SNAPSHOT RELATED CHECKS ══════════════════════════════════════════
 
     /**
      * @dev Internal function to verify the signed snapshot report payload.
@@ -204,9 +232,7 @@ abstract contract StatementHub is SystemRegistry {
         return MerkleLib.proofRoot(leftLeafIndex, leftLeaf, snapProof, SNAPSHOT_TREE_HEIGHT);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            FLAG CHECKERS                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════════ FLAG CHECKS ════════════════════════════════════════════════════
 
     /// @dev Checks that Agent is Active
     function _verifyActive(AgentStatus memory status) internal pure {
@@ -221,9 +247,7 @@ abstract contract StatementHub is SystemRegistry {
         );
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          STATEMENT WRAPPERS                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ STATEMENT WRAPPERS ═════════════════════════════════════════════════
 
     // These functions are implemented to reduce the amount of imports in the child contracts.
 
@@ -235,6 +259,11 @@ abstract contract StatementHub is SystemRegistry {
     /// @dev Wraps AttestationReport payload into a typed memory view. Reverts if not properly formatted.
     function _wrapAttestationReport(bytes memory arPayload) internal pure returns (AttestationReport) {
         return arPayload.castToAttestationReport();
+    }
+
+    /// @dev Wraps Receipt payload into a typed memory view. Reverts if not properly formatted.
+    function _wrapReceipt(bytes memory rcptPayload) internal pure returns (Receipt) {
+        return rcptPayload.castToReceipt();
     }
 
     /// @dev Wraps Snapshot payload into a typed memory view. Reverts if not properly formatted.

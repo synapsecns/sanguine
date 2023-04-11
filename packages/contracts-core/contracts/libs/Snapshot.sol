@@ -10,16 +10,9 @@ import {TypedMemView} from "./TypedMemView.sol";
 
 /// @dev Snapshot is a memory view over a formatted snapshot payload: a list of states.
 type Snapshot is bytes29;
-/// @dev Attach library functions to Snapshot
 
-using {
-    SnapshotLib.unwrap,
-    SnapshotLib.hash,
-    SnapshotLib.state,
-    SnapshotLib.statesAmount,
-    SnapshotLib.root,
-    SnapshotLib.toSummitAttestation
-} for Snapshot global;
+/// @dev Attach library functions to Snapshot
+using SnapshotLib for Snapshot global;
 
 /// @dev Struct representing Snapshot, as it is stored in the Summit contract.
 /// Summit contract is supposed to store states. Snapshot is a list of states,
@@ -28,9 +21,9 @@ struct SummitSnapshot {
     // TODO: compress this - indexes might as well be uint32/uint64
     uint256[] statePtrs;
 }
-/// @dev Attach library functions to SummitSnapshot
 
-using {SnapshotLib.getStatesAmount, SnapshotLib.getStatePtr} for SummitSnapshot global;
+/// @dev Attach library functions to SummitSnapshot
+using SnapshotLib for SummitSnapshot global;
 
 library SnapshotLib {
     using ByteString for bytes;
@@ -64,9 +57,7 @@ library SnapshotLib {
      * [AAA .. BBB) states[N-1] bytes   50 bytes
      */
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               SNAPSHOT                               ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════════ SNAPSHOT ══════════════════════════════════════════════════════
 
     /**
      * @notice Returns a formatted Snapshot payload using a list of States.
@@ -113,14 +104,20 @@ library SnapshotLib {
         return statesAmount_ * STATE_LENGTH == length && _isValidAmount(statesAmount_);
     }
 
+    /// @notice Returns the hash of a Snapshot, that could be later signed by an Agent.
+    function hash(Snapshot snapshot) internal pure returns (bytes32 hashedSnapshot) {
+        // Get the underlying memory view
+        bytes29 view_ = snapshot.unwrap();
+        // The final hash to sign is keccak(attestationSalt, keccak(attestation))
+        return keccak256(bytes.concat(SNAPSHOT_SALT, view_.keccak()));
+    }
+
     /// @notice Convenience shortcut for unwrapping a view.
     function unwrap(Snapshot snapshot) internal pure returns (bytes29) {
         return Snapshot.unwrap(snapshot);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           SUMMIT SNAPSHOT                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ SUMMIT SNAPSHOT ══════════════════════════════════════════════════
 
     function toSummitSnapshot(uint256[] memory statePtrs) internal pure returns (SummitSnapshot memory snapshot) {
         snapshot.statePtrs = statePtrs;
@@ -139,21 +136,7 @@ library SnapshotLib {
         return snapshot.statePtrs[index];
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           SNAPSHOT HASHING                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
-
-    /// @notice Returns the hash of a Snapshot, that could be later signed by an Agent.
-    function hash(Snapshot snapshot) internal pure returns (bytes32 hashedSnapshot) {
-        // Get the underlying memory view
-        bytes29 view_ = snapshot.unwrap();
-        // The final hash to sign is keccak(attestationSalt, keccak(attestation))
-        return keccak256(bytes.concat(SNAPSHOT_SALT, view_.keccak()));
-    }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           SNAPSHOT SLICING                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ SNAPSHOT SLICING ══════════════════════════════════════════════════
 
     /// @notice Returns a state with a given index from the snapshot.
     function state(Snapshot snapshot, uint256 stateIndex) internal pure returns (State) {
@@ -168,10 +151,6 @@ library SnapshotLib {
         bytes29 view_ = snapshot.unwrap();
         return view_.len() / STATE_LENGTH;
     }
-
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            SNAPSHOT ROOT                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
 
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
     function root(Snapshot snapshot) internal pure returns (bytes32) {
@@ -189,9 +168,7 @@ library SnapshotLib {
         return hashes[0];
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          SUMMIT ATTESTATION                          ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ════════════════════════════════════════════ SUMMIT ATTESTATION ═════════════════════════════════════════════════
 
     /// @notice Returns an Attestation struct to save in the Summit contract.
     /// Current block number and timestamp are used.
@@ -204,9 +181,7 @@ library SnapshotLib {
         return AttestationLib.summitAttestation(snapshot.root(), agentRoot);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          PRIVATE FUNCTIONS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
 
     /// @dev Checks if snapshot's states amount is valid.
     function _isValidAmount(uint256 statesAmount_) internal pure returns (bool) {

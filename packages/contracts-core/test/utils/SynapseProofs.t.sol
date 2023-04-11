@@ -33,9 +33,7 @@ abstract contract SynapseProofs {
         agentGen = new DynamicProofGenerator();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            MESSAGE PROOFS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ MESSAGE PROOFS ═══════════════════════════════════════════════════
 
     function insertMessage(bytes memory msgPayload) public {
         originGen.insert(keccak256(msgPayload));
@@ -49,13 +47,15 @@ abstract contract SynapseProofs {
         return originGen.getProof(index, count);
     }
 
+    function getLeaf(uint256 index) public view returns (bytes32) {
+        return originGen.getLeaf(index);
+    }
+
     function getRoot(uint256 count) public view returns (bytes32) {
         return originGen.getRoot(count);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           SNAPSHOT PROOFS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ SNAPSHOT PROOFS ══════════════════════════════════════════════════
 
     function acceptSnapshot(bytes[] memory snapshotStates) public {
         summitGen.acceptSnapshot(snapshotStates);
@@ -69,9 +69,7 @@ abstract contract SynapseProofs {
         return summitGen.root();
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                             AGENT PROOFS                             ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════ AGENT PROOFS ════════════════════════════════════════════════════
 
     function addNewAgent(uint32 domain, address agent) public returns (bytes32 newRoot) {
         require(agentIndex[agent] == 0, "Already added");

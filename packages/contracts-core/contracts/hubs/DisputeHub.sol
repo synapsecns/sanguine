@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {DisputeFlag, DisputeStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentStatus, Attestation, Snapshot, StatementHub, StateReport} from "./StatementHub.sol";
@@ -9,9 +9,7 @@ import {DisputeHubEvents} from "../events/DisputeHubEvents.sol";
 import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
 
 abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // (agent => their dispute status)
     mapping(address => DisputeStatus) internal _disputes;
@@ -19,9 +17,7 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     /// @dev gap for upgrade safety
     uint256[49] private __GAP; // solhint-disable-line var-name-mixedcase
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                        INITIATE DISPUTE LOGIC                        ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════ INITIATE DISPUTE LOGIC ═══════════════════════════════════════════════
 
     /// @inheritdoc IDisputeHub
     function submitStateReport(
@@ -89,18 +85,14 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         return true;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                VIEWS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IDisputeHub
     function disputeStatus(address agent) external view returns (DisputeStatus memory status) {
         return _disputes[agent];
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Hook that is called before every statement is handled.
     /// @return acceptNext  Whether to accept the next statement
@@ -138,9 +130,7 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
         emit DisputeResolved(status.counterpart, domain, slashedAgent);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL VIEWS                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Checks if an agent is currently in Dispute.
     function _inDispute(address agent) internal view returns (bool) {

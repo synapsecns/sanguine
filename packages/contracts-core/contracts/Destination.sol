@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation} from "./libs/Attestation.sol";
 import {AttestationReport} from "./libs/AttestationReport.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
@@ -16,9 +16,7 @@ import {DomainContext, Versioned} from "./system/SystemContract.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
     /// @dev Invariant: this is either current LightManager root,
@@ -28,9 +26,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     /// @inheritdoc InterfaceDestination
     DestinationStatus public destStatus;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                      CONSTRUCTOR & INITIALIZER                       ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, IAgentManager agentManager_)
         DomainContext(domain)
@@ -49,9 +45,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         destStatus.agentRootTime = uint48(block.timestamp);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          ACCEPT STATEMENTS                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
     function submitAttestation(bytes memory attPayload, bytes memory attSignature)
@@ -103,9 +97,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         return true;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                        AGENT ROOT QUARANTINE                         ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════ AGENT ROOT QUARANTINE ═══════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
     function passAgentRoot() public returns (bool rootPassed, bool rootPending) {
@@ -132,9 +124,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         return (true, false);
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                VIEWS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
     // solhint-disable-next-line ordering
@@ -142,9 +132,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         return _roots.length;
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                            INTERNAL LOGIC                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @inheritdoc DisputeHub
     function _beforeStatement() internal override returns (bool acceptNext) {

@@ -30,11 +30,11 @@ contract BaseClientTest is SynapseTest {
         vm.assume(destination_ != 0 && destination_ != DOMAIN_LOCAL);
         vm.label(user, "User");
         // Set some sensible limit for fuzzed tips values
-        rt.boundTips(1e20);
-        uint256 totalTips = rt.castToTips().totalTips();
+        rt.boundTips(2 ** 32);
+        uint256 tipsValue = rt.castToTips().value();
         bytes memory tipsPayload = rt.formatTips();
         bytes memory requestPayload = rr.formatRequest();
-        vm.deal(user, totalTips);
+        vm.deal(user, tipsValue);
         // Get expected values for sending a message
         bytes32 recipient = client.trustedSender(destination_);
         uint32 optimisticPeriod = client.optimisticPeriod();
@@ -47,9 +47,9 @@ contract BaseClientTest is SynapseTest {
             requestPayload,
             content
         );
-        vm.expectCall(origin, totalTips, expectedCall);
+        vm.expectCall(origin, tipsValue, expectedCall);
         vm.prank(user);
-        client.sendBaseMessage{value: totalTips}(destination_, tipsPayload, requestPayload, content);
+        client.sendBaseMessage{value: tipsValue}(destination_, tipsPayload, requestPayload, content);
     }
 
     function test_sendBaseMessage_revert_recipientNotSet(address user, RawTips memory rt, RawRequest memory rr)
@@ -59,14 +59,14 @@ contract BaseClientTest is SynapseTest {
         uint32 destination_ = 0;
         vm.label(user, "User");
         // Set some sensible limit for fuzzed tips values
-        rt.boundTips(1e20);
-        uint256 totalTips = rt.castToTips().totalTips();
+        rt.boundTips(2 ** 32);
+        uint256 tipsValue = rt.castToTips().value();
         bytes memory requestPayload = rr.formatRequest();
         bytes memory tipsPayload = rt.formatTips();
-        vm.deal(user, totalTips);
+        vm.deal(user, tipsValue);
         vm.expectRevert("BaseClient: !recipient");
         vm.prank(user);
-        client.sendBaseMessage{value: totalTips}(destination_, tipsPayload, requestPayload, "");
+        client.sendBaseMessage{value: tipsValue}(destination_, tipsPayload, requestPayload, "");
     }
 
     function test_receiveBaseMessage(

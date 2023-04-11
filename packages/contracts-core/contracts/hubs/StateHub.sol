@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {HistoricalTree} from "../libs/Merkle.sol";
 import {OriginState, State, StateLib} from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -19,9 +19,7 @@ import {IStateHub} from "../interfaces/IStateHub.sol";
 abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     using StateLib for bytes;
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                               STORAGE                                ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     /// @dev Historical Merkle Tree
     /// Note: Takes two storage slots
@@ -33,9 +31,7 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     /// @dev gap for upgrade safety
     uint256[47] private __GAP; // solhint-disable-line var-name-mixedcase
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                                VIEWS                                 ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IStateHub
     function isValidState(bytes memory statePayload) external view returns (bool isValid) {
@@ -63,9 +59,7 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         return state.formatOriginState({root_: root, origin_: localDomain, nonce_: nonce});
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                           SAVE STATE DATA                            ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Initializes the saved states list by inserting a state for an empty Merkle Tree.
     function _initializeStates() internal {
@@ -91,9 +85,7 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         emit StateSaved(state.formatOriginState({root_: root, origin_: localDomain, nonce_: stateNonce}));
     }
 
-    /*╔══════════════════════════════════════════════════════════════════════╗*\
-    ▏*║                          VERIFY STATE DATA                           ║*▕
-    \*╚══════════════════════════════════════════════════════════════════════╝*/
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Returns nonce of the next sent message: the amount of saved States so far.
     /// This always equals to "total amount of sent messages" plus 1.
