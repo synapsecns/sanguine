@@ -1,10 +1,10 @@
-name: Vercel Preview Deployment
+name: UI Deployment
 env:
   GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
   VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}'
   VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
   VERCEL_PROJECT_ID: '${{ secrets.VERCEL_PROJECT_ID }}'
-  WORKING_DIRECTORY: 'packages/explorer-ui'
+#  WORKING_DIRECTORY: 'packages/explorer-ui'
   NODE_ENV: 'production'
 on:
   push:
@@ -12,14 +12,50 @@ on:
       - master
   paths:
     - 'packages/explorer-ui/**'
+    - 'packages/synapse-interface/**'
     - '.github/workflows/ui-preview.yaml'
+    - 'packages/docs/**'
 jobs:
-  Deploy-Preview:
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      # Expose matched filters as job 'packages' output variable
+      packages: ${{ steps.filter_ui.outputs.changes }}
+      package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          # if any of these packages use submodules in the future, please uncomment this line
+          # submodules: 'recursive'
+      - uses: dorny/paths-filter@v2
+        id: filter_ui
+        with:
+          #  make sure to update run-goreleaser when adding a new package here
+          filters: |
+            explorer-ui: 'packages/explorer-ui/**'
+            synapse-interface: 'packages/synapse-interface/**'
+            docs: 'packages/docs/**'
+      - id: length
+        run: |
+          export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
+          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
+        env:
+          FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
+
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    if: ${{ needs.changes.outputs.package_count > 0 }}
+    strategy:
+        matrix:
+            package: ${{ fromJson(needs.changes.outputs.packages) }}
+    env:
+      WORKING_DIRECTORY: 'packages/${{matrix.package}}'
     steps:
       - uses: actions/checkout@v2
       - name: Read .nvmrc
-        run: echo "##[set-output name=NVMRC;]$(cat packages/explorer-ui/.nvmrc)"
+        run: echo "##[set-output name=NVMRC;]$(cat packages/${{matrix.package}}/.nvmrc)"
         id: nvm
 
       - name: Use Node.js (.nvmrc)
