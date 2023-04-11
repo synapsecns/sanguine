@@ -16,8 +16,8 @@ import {Versioned} from "../Version.sol";
 /// Used on chains other than Synapse Chain, serves as "light client" for BondingManager.
 contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
-    // Latest known Agent Merkle Root
-    bytes32 private _latestAgentRoot;
+    /// @inheritdoc IAgentManager
+    bytes32 public agentRoot;
 
     // (agentRoot => (agent => status))
     mapping(bytes32 => mapping(address => AgentStatus)) private _agentMap;
@@ -39,7 +39,7 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     function updateAgentStatus(address agent, AgentStatus memory status, bytes32[] memory proof) external {
         // Reconstruct the agent leaf: flag should be Active
         bytes32 leaf = _agentLeaf(status.flag, status.domain, agent);
-        bytes32 root = _latestAgentRoot;
+        bytes32 root = agentRoot;
         // Check that proof matches the latest merkle root
         require(MerkleLib.proofRoot(status.index, leaf, proof, AGENT_TREE_HEIGHT) == root, "Invalid proof");
         // Update the agent status against this root
@@ -58,13 +58,6 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
         _setAgentRoot(agentRoot_);
     }
 
-    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
-
-    /// @inheritdoc IAgentManager
-    function agentRoot() public view override returns (bytes32) {
-        return _latestAgentRoot;
-    }
-
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     function _afterRegistrySlash(uint32 domain, address agent, address prover) internal override {
@@ -78,8 +71,8 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
 
     /// @dev Updates the Agent Merkle Root that Light Manager is tracking.
     function _setAgentRoot(bytes32 _agentRoot) internal {
-        if (_latestAgentRoot != _agentRoot) {
-            _latestAgentRoot = _agentRoot;
+        if (agentRoot != _agentRoot) {
+            agentRoot = _agentRoot;
             emit RootUpdated(_agentRoot);
         }
     }
@@ -89,7 +82,7 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     /// @dev Returns the status for the agent: whether or not they have been added
     /// using latest Agent merkle Root.
     function _agentStatus(address agent) internal view override returns (AgentStatus memory) {
-        return _agentMap[_latestAgentRoot][agent];
+        return _agentMap[agentRoot][agent];
     }
 
     /// @dev Returns data for a system call: remoteRegistrySlash()
