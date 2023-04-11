@@ -8,8 +8,8 @@ contract MerkleListHarness {
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
 
-    function calculateRoot(bytes32[] memory hashes) public pure returns (bytes32) {
-        MerkleList.calculateRoot(hashes, MerkleList.getHeight(hashes.length));
+    function calculateRoot(bytes32[] memory hashes, uint256 height) public pure returns (bytes32) {
+        MerkleList.calculateRoot(hashes, height);
         return hashes[0];
     }
 
