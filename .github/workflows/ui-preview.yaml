@@ -1,8 +1,8 @@
 name: UI Deployment
 on:
   pull_request:
-    branches-ignore:
-      - master
+#    branches-ignore:
+#      - master
     # note: as of right now this will not cover changes in dependent packages
 #    paths:
 #      - 'packages/explorer-ui/**'
