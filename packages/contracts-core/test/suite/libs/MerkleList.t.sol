@@ -8,7 +8,8 @@ import {MerkleListHarness} from "../../harnesses/libs/MerkleListHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract MerkleListLibraryTest is SynapseLibraryTest {
-    uint256 public constant MAX_LENGTH = 32;
+    uint256 public constant HEIGHT = 8;
+    uint256 public constant MAX_LENGTH = 1 << HEIGHT;
 
     MerkleListHarness internal libHarness;
 
@@ -22,20 +23,21 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
         bytes32[] memory hashes = _generateHashes(length);
         bytes32[] memory extended = _extendHashes(hashes);
         bytes32 expectedRoot = _calculateRoot(extended);
-        bytes32 root = libHarness.calculateRoot(hashes);
+        bytes32 root = libHarness.calculateRoot(hashes, HEIGHT);
         assertEq(root, expectedRoot, "Merkle Root incorrect");
     }
 
     function test_calculateProof(uint256 length, uint256 index) public {
         // length should be in [1 .. MAX_LENGTH] range
         length = bound(length, 1, MAX_LENGTH);
-        // index should be in [0 .. length) range
-        index = bound(index, 0, length - 1);
         bytes32[] memory hashes = _generateHashes(length);
-        bytes32[] memory extended = _extendHashes(hashes);
-        bytes32 expectedRoot = _calculateRoot(extended);
+        // index should be in [0 .. MAX_LENGTH) range
+        index = bound(index, 0, MAX_LENGTH - 1);
+        // Check proofs for zero leafs outside of the list as well
+        bytes32 node = index < length ? leaf(index) : bytes32(0);
+        bytes32 expectedRoot = _calculateRoot(_extendHashes(hashes));
         bytes32[] memory proof = libHarness.calculateProof(hashes, index);
-        bytes32 root = MerkleLib.proofRoot(index, leaf(index), proof, _getHeight(length));
+        bytes32 root = MerkleLib.proofRoot(index, node, proof, HEIGHT);
         assertEq(root, expectedRoot, "!calculateProof");
     }
 
@@ -67,24 +69,10 @@ contract MerkleListLibraryTest is SynapseLibraryTest {
         return keccak256(bytes.concat(leftLeaf, rightLeaf));
     }
 
-    function _getHeight(uint256 leafs) internal pure returns (uint256 height) {
-        uint256 amount = 1;
-        while (amount < leafs) {
-            amount *= 2;
-            ++height;
-        }
-    }
-
-    /// @dev Extend `hashes` with `zeroHash` values until list length is a power of two.
+    /// @dev Extend `hashes` with `zeroHash` values until list length is MAX_LENGTH
     function _extendHashes(bytes32[] memory hashes) internal pure returns (bytes32[] memory extended) {
-        uint256 length = hashes.length;
-        // Find the lowest power of two that is greater or equal than length
-        uint256 lengthExtended = 1;
-        while (lengthExtended < length) {
-            lengthExtended *= 2;
-        }
-        extended = new bytes32[](lengthExtended);
-        for (uint256 i = 0; i < length; ++i) {
+        extended = new bytes32[](MAX_LENGTH);
+        for (uint256 i = 0; i < hashes.length; ++i) {
             extended[i] = hashes[i];
         }
         // The remaining items are bytes32(0)
