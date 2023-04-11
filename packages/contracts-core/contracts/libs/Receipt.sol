@@ -24,9 +24,10 @@ library ReceiptLib {
      * [004 .. 008): destination        uint32   4 bytes    Domain where message was executed
      * [008 .. 040): messageHash        bytes32 32 bytes    Hash of the message
      * [040 .. 072): snapshotRoot       bytes32 32 bytes    Snapshot root used for proving the message
-     * [072 .. 092): firstExecutor      address 20 bytes    Executor who performed first valid execution attempt
-     * [092 .. 112): finalExecutor      address 20 bytes    Executor who successfully executed the message
-     * [112 .. 160): tips               bytes   48 bytes    Tips paid on origin chain
+     * [072 .. 092): notary             address 20 bytes    Notary who posted attestation with snapshot root
+     * [092 .. 112): firstExecutor      address 20 bytes    Executor who performed first valid execution attempt
+     * [112 .. 132): finalExecutor      address 20 bytes    Executor who successfully executed the message
+     * [132 .. 180): tips               bytes   48 bytes    Tips paid on origin chain
      * The variables below are not supposed to be used outside of the library directly.
      */
 
@@ -34,9 +35,10 @@ library ReceiptLib {
     uint256 private constant OFFSET_DESTINATION = 4;
     uint256 private constant OFFSET_MESSAGE_HASH = 8;
     uint256 private constant OFFSET_SNAPSHOT_ROOT = 40;
-    uint256 private constant OFFSET_FIRST_EXECUTOR = 72;
-    uint256 private constant OFFSET_FINAL_EXECUTOR = 92;
-    uint256 private constant OFFSET_TIPS = 112;
+    uint256 private constant OFFSET_NOTARY = 72;
+    uint256 private constant OFFSET_FIRST_EXECUTOR = 92;
+    uint256 private constant OFFSET_FINAL_EXECUTOR = 112;
+    uint256 private constant OFFSET_TIPS = 132;
 
     // ═════════════════════════════════════════════════ RECEIPT ═════════════════════════════════════════════════════
 
@@ -46,6 +48,7 @@ library ReceiptLib {
      * @param destination_      Domain where message was executed
      * @param messageHash_      Hash of the message
      * @param snapshotRoot_     Snapshot root used for proving the message
+     * @param notary_           Notary who posted attestation with snapshot root
      * @param firstExecutor_    Executor who performed first valid execution attempt
      * @param finalExecutor_    Executor who successfully executed the message
      * @param tipsPayload       Formatted payload with tips information
@@ -56,12 +59,13 @@ library ReceiptLib {
         uint32 destination_,
         bytes32 messageHash_,
         bytes32 snapshotRoot_,
+        address notary_,
         address firstExecutor_,
         address finalExecutor_,
         bytes memory tipsPayload
     ) internal pure returns (bytes memory) {
         return abi.encodePacked(
-            origin_, destination_, messageHash_, snapshotRoot_, firstExecutor_, finalExecutor_, tipsPayload
+            origin_, destination_, messageHash_, snapshotRoot_, notary_, firstExecutor_, finalExecutor_, tipsPayload
         );
     }
 
@@ -127,6 +131,12 @@ library ReceiptLib {
     function snapshotRoot(Receipt receipt) internal pure returns (bytes32) {
         bytes29 view_ = unwrap(receipt);
         return view_.index({index_: OFFSET_SNAPSHOT_ROOT, bytes_: 32});
+    }
+
+    /// @notice Returns receipt's notary field
+    function notary(Receipt receipt) internal pure returns (address) {
+        bytes29 view_ = unwrap(receipt);
+        return view_.indexAddress({index_: OFFSET_NOTARY});
     }
 
     /// @notice Returns receipt's "first executor" field
