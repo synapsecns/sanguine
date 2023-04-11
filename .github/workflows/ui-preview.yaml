@@ -1,15 +1,19 @@
 name: UI Deployment
-env:
-  GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-  VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}'
-  VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
-  VERCEL_PROJECT_ID: '${{ secrets.VERCEL_PROJECT_ID }}'
-#  WORKING_DIRECTORY: 'packages/explorer-ui'
-  NODE_ENV: 'production'
 on:
   pull_request:
     paths:
       - 'packages/explorer-ui/**'
+#env:
+#  GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+#  VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}'
+#  VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
+#  VERCEL_PROJECT_ID: '${{ secrets.VERCEL_PROJECT_ID }}'
+##  WORKING_DIRECTORY: 'packages/explorer-ui'
+#  NODE_ENV: 'production'
+#on:
+#  pull_request:
+#    paths:
+#      - 'packages/explorer-ui/**'
 #      - 'packages/synapse-interface/**'
 #      - '.github/workflows/ui-preview.yaml'
 #      - 'packages/docs/**'
