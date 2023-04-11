@@ -1,10 +1,11 @@
 name: Changeset integrity checker
 on:
-  paths:
-    - 'packages/**'
   pull_request_target:
     branches:
       - master
+    paths:
+      - 'packages/**'
+      - '.github/workflows/changesets.yml'
 
 jobs:
   changesets-integrity-checker:
