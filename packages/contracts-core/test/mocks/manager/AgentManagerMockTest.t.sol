@@ -101,4 +101,14 @@ contract AgentManagerMockTest is Test {
         agentManager.setAgentRoot(root);
         assertEq(agentManager.agentRoot(), root);
     }
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    function test_getAgent_notExistingIndex(uint256 index) public {
+        (address agent, AgentStatus memory status) = agentManager.getAgent(index);
+        assertEq(agent, address(0));
+        assertEq(uint8(status.flag), 0);
+        assertEq(status.domain, 0);
+        assertEq(status.index, 0);
+    }
 }

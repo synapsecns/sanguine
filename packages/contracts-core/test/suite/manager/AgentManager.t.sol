@@ -54,6 +54,22 @@ abstract contract AgentManagerTest is SystemContractTest {
         assertEq(prover_, prover);
     }
 
+    // ═══════════════════════════════════════════════ TESTS: VIEWS ════════════════════════════════════════════════════
+
+    function test_getAgent_notExistingIndex() public {
+        (address agent, AgentStatus memory status) = testedAM().getAgent(0);
+        assertEq(agent, address(0));
+        assertEq(uint8(status.flag), 0);
+        assertEq(status.domain, 0);
+        assertEq(status.index, 0);
+        // Last agent has index DOMAIN_AGENTS * allDomains.length
+        (agent, status) = testedAM().getAgent(DOMAIN_AGENTS * allDomains.length + 1);
+        assertEq(agent, address(0));
+        assertEq(uint8(status.flag), 0);
+        assertEq(status.domain, 0);
+        assertEq(status.index, 0);
+    }
+
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function checkAgentStatus(address agent, AgentStatus memory status, AgentFlag flag) public virtual override {
