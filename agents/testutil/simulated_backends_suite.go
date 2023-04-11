@@ -283,12 +283,15 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.SetupDestination(a.TestDeployManager)
 	a.SetupOrigin(a.TestDeployManager)
 
-	a.TestDeployManager.LoadHarnessContractsOnChains(
+	err := a.TestDeployManager.LoadHarnessContractsOnChains(
 		a.GetTestContext(),
 		a.TestBackendSummit,
 		[]backends.SimulatedTestBackend{a.TestBackendOrigin, a.TestBackendDestination},
-		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address(), a.NotaryOnOriginBondedSigner.Address()},
-		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendOrigin.GetChainID())})
+		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address() /*, a.NotaryOnOriginBondedSigner.Address()*/},
+		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()) /*, uint32(a.TestBackendOrigin.GetChainID())*/})
+	if err != nil {
+		a.T().Fatal(err)
+	}
 
 	a.DBPath = filet.TmpDir(a.T(), "")
 	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ScribeMetrics)

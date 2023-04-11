@@ -177,14 +177,15 @@ func (d *DeployManager) InitializeBondingManagerHarnessContract(
 	deployedDSummitHarness, _ := d.GetSummitHarness(ctx, synChainBackend)
 
 	_, bondingManagerHarnessContract := d.GetBondingManagerHarness(ctx, synChainBackend)
-	bondingManagerHarnessOwnerPtr, err := bondingManagerHarnessContract.BondingManagerHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
+	_, summitHarnessContract := d.GetSummitHarness(ctx, synChainBackend)
+	summitHarnessOwnerPtr, err := summitHarnessContract.SummitHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get bonding manager harness: %w", err)
 	}
-	bondingManagerHarnessOwnerAuth := synChainBackend.GetTxContext(ctx, &bondingManagerHarnessOwnerPtr)
+	summitHarnessOwnerAuth := synChainBackend.GetTxContext(ctx, &summitHarnessOwnerPtr)
 
 	initializeBondingManagerHarnessTx, err := bondingManagerHarnessContract.Initialize(
-		bondingManagerHarnessOwnerAuth.TransactOpts,
+		summitHarnessOwnerAuth.TransactOpts,
 		deployedOriginHarness.Address(),
 		deployedDSummitHarness.Address())
 	if err != nil {
@@ -208,22 +209,43 @@ func (d *DeployManager) AddAgentsToBondingManagerHarnessContract(
 	}
 
 	_, bondingManagerHarnessContract := d.GetBondingManagerHarness(ctx, synChainBackend)
+	leavesBefore, err := bondingManagerHarnessContract.AllLeafs(&bind.CallOpts{Context: ctx})
+	if len(leavesBefore) == 0 {
+		return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get agent leaves before from bonding manager harness, it is empty: %v", leavesBefore)
+	}
+
+	agentsCount, err := bondingManagerHarnessContract.LeafsAmount(&bind.CallOpts{Context: ctx})
+	if agentsCount == nil || agentsCount.Uint64() == uint64(0) {
+		return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("agents count cannot be 0: %v", agentsCount)
+	}
+
 	bondingManagerHarnessOwnerPtr, err := bondingManagerHarnessContract.BondingManagerHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get bonding manager harness: %w", err)
 	}
 	bondingManagerHarnessOwnerAuth := synChainBackend.GetTxContext(ctx, &bondingManagerHarnessOwnerPtr)
 
-	var proof [][32]byte
 	for i := range agents {
 		agent := agents[i]
 		domain := domains[i]
 
-		txAddAgent, err := bondingManagerHarnessContract.AddAgent(bondingManagerHarnessOwnerAuth.TransactOpts, domain, agent, proof)
+		agentProof, err := bondingManagerHarnessContract.GetProof(&bind.CallOpts{Context: ctx}, agent)
+		if err != nil {
+			return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get agent proof from bonding manager harness: %w", err)
+		}
+		txAddAgent, err := bondingManagerHarnessContract.AddAgent(bondingManagerHarnessOwnerAuth.TransactOpts, domain, agent, agentProof)
 		if err != nil {
 			return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not add agent to bonding manager harness: %w", err)
 		}
 		synChainBackend.WaitForConfirmation(ctx, txAddAgent)
+		leavesInLoop, err := bondingManagerHarnessContract.AllLeafs(&bind.CallOpts{Context: ctx})
+		if len(leavesInLoop) == 0 {
+			return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get agent leaves in loop from bonding manager harness, it is empty: %v", leavesInLoop)
+		}
+		agentProofAfter, err := bondingManagerHarnessContract.GetProof(&bind.CallOpts{Context: ctx}, agent)
+		if len(agentProofAfter) == 0 {
+			return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("agent proof after was 0")
+		}
 	}
 
 	bondingManagerHarnessAgentRoot, err := bondingManagerHarnessContract.AgentRoot(&bind.CallOpts{Context: ctx})
@@ -238,11 +260,24 @@ func (d *DeployManager) AddAgentsToBondingManagerHarnessContract(
 		}
 		agentStatuses[i] = agentStatus
 
+		agentLeaf, err := bondingManagerHarnessContract.AgentLeaf(&bind.CallOpts{Context: ctx}, agent)
+		if err != nil {
+			return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get agent leaf from bonding manager harness: %w", err)
+		}
+		if len(agentLeaf) == 0 {
+			return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get agent leaf from bonding manager harness, it is empty: %v", agentLeaf)
+		}
+
 		agentProof, err := bondingManagerHarnessContract.GetProof(&bind.CallOpts{Context: ctx}, agent)
 		if err != nil {
 			return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get agent proof from bonding manager harness: %w", err)
 		}
 		agentProofs[i] = agentProof
+	}
+
+	leaves, err := bondingManagerHarnessContract.AllLeafs(&bind.CallOpts{Context: ctx})
+	if len(leaves) == 0 {
+		return [32]byte{}, [][][32]byte{}, []bondingmanagerharness.AgentStatus{}, fmt.Errorf("could not get agent leaves from bonding manager harness, it is empty: %v", leaves)
 	}
 
 	return bondingManagerHarnessAgentRoot, agentProofs, agentStatuses, nil
@@ -340,14 +375,15 @@ func (d *DeployManager) InitializeRemoteDeployedHarnessContracts(
 	deployedDestinationHarness, destinationHarnessContract := d.GetDestinationHarness(ctx, backend)
 
 	_, lightManagerHarnessContract := d.GetLightManagerHarness(ctx, backend)
-	lightManagerHarnessOwnerPtr, err := lightManagerHarnessContract.LightManagerHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
+	_, originHarnessContract := d.GetOriginHarness(ctx, backend)
+	originHarnessOwnerPtr, err := originHarnessContract.OriginHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
-		return fmt.Errorf("could not get light manager harness: %w", err)
+		return fmt.Errorf("could not get origin harness: %w", err)
 	}
-	lightManagerHarnessOwnerAuth := backend.GetTxContext(ctx, &lightManagerHarnessOwnerPtr)
+	originHarnessOwnerAuth := backend.GetTxContext(ctx, &originHarnessOwnerPtr)
 
 	initializeLightManagerHarnessTx, err := lightManagerHarnessContract.Initialize(
-		lightManagerHarnessOwnerAuth.TransactOpts,
+		originHarnessOwnerAuth.TransactOpts,
 		deployedOriginHarness.Address(),
 		deployedDestinationHarness.Address())
 	if err != nil {
@@ -355,13 +391,13 @@ func (d *DeployManager) InitializeRemoteDeployedHarnessContracts(
 	}
 	backend.WaitForConfirmation(ctx, initializeLightManagerHarnessTx)
 
-	destinationHarnessOwnerPtr, err := destinationHarnessContract.DestinationHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
+	/*destinationHarnessOwnerPtr, err := destinationHarnessContract.DestinationHarnessCaller.Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get destination harness: %w", err)
 	}
-	destinationHarnessOwnerAuth := backend.GetTxContext(ctx, &destinationHarnessOwnerPtr)
+	destinationHarnessOwnerAuth := backend.GetTxContext(ctx, &destinationHarnessOwnerPtr)*/
 
-	initializeDestinationHarnessTx, err := destinationHarnessContract.Initialize(destinationHarnessOwnerAuth.TransactOpts, bondingManagerHarnessAgentRoot)
+	initializeDestinationHarnessTx, err := destinationHarnessContract.Initialize(originHarnessOwnerAuth.TransactOpts, bondingManagerHarnessAgentRoot)
 	if err != nil {
 		return fmt.Errorf("could not initialize destination harness: %w", err)
 	}
@@ -515,7 +551,7 @@ func (d *DeployManager) LoadHarnessContractsOnChains(
 		return fmt.Errorf("could not initialize bonding manager harness on syn chain: %w", err)
 	}
 
-	bondingManagerHarnessAgentRoot, agentProofs, agentStatuses, err := d.AddAgentsToBondingManagerHarnessContract(
+	bondingManagerHarnessAgentRoot, _, _, err := d.AddAgentsToBondingManagerHarnessContract(
 		ctx,
 		synChainBackend,
 		agents,
@@ -534,7 +570,7 @@ func (d *DeployManager) LoadHarnessContractsOnChains(
 			return fmt.Errorf("could not initialize remote deplyed harness contracts: %w", err)
 		}
 
-		err = d.AddAgentsToLightManagerHarnessContract(
+		/*err = d.AddAgentsToLightManagerHarnessContract(
 			ctx,
 			backend,
 			agents,
@@ -542,7 +578,7 @@ func (d *DeployManager) LoadHarnessContractsOnChains(
 			agentStatuses)
 		if err != nil {
 			return fmt.Errorf("could not add agents to remote light manager harness contract: %w", err)
-		}
+		}*/
 	}
 
 	return nil
