@@ -183,9 +183,16 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Determine the snapshot root that was used for proving the message
         bytes32 snapRoot = _roots[rcptData.rootIndex];
         // ExecutionHub does not store the tips, the Notary will have to append the tips payload
-        return ReceiptLib.formatReceipt(
-            rcptData.origin, localDomain, messageHash, snapRoot, firstExecutor, rcptData.executor, ""
-        );
+        return ReceiptLib.formatReceipt({
+            origin_: rcptData.origin,
+            destination_: localDomain,
+            messageHash_: messageHash,
+            snapshotRoot_: snapRoot,
+            notary_: _rootData[snapRoot].notary,
+            firstExecutor_: firstExecutor,
+            finalExecutor_: rcptData.executor,
+            tipsPayload: ""
+        });
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -239,8 +246,11 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         ReceiptData memory rcptData = _receiptData[messageHash];
         // Check if there has been a single attempt to execute the message
         if (rcptData.origin == 0) return false;
-        // Check that origin and snapshot root fields match
-        if (rcpt.origin() != rcptData.origin || rcpt.snapshotRoot() != _roots[rcptData.rootIndex]) return false;
+        // Check that origin field matches
+        if (rcpt.origin() != rcptData.origin) return false;
+        // Check that snapshot root and notary who submitted it match in the Receipt
+        bytes32 snapRoot = rcpt.snapshotRoot();
+        if (snapRoot != _roots[rcptData.rootIndex] || rcpt.notary() != _rootData[snapRoot].notary) return false;
         // Check if message was executed from the first attempt
         address firstExecutor = _firstExecutor[messageHash];
         if (firstExecutor == address(0)) {

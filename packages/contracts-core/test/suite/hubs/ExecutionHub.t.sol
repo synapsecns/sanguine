@@ -304,9 +304,10 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         test_execute_base_recipientReverted(Random(bytes32(mask)));
         RawExecReceipt memory re = RawExecReceipt({
             origin: DOMAIN_REMOTE,
-            destination: DOMAIN_LOCAL,
+            destination: localDomain(),
             messageHash: getLeaf(0),
             snapshotRoot: getSnapshotRoot(),
+            notary: domains[localDomain()].agent,
             firstExecutor: executor,
             finalExecutor: executorNew,
             tips: RawTips(0, 0, 0, 0)
@@ -336,10 +337,11 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         if (flag == MessageStatus.None) {
             assertEq(receiptData.length, 0, "!receiptData: empty");
         } else {
+            address notary = domains[localDomain()].agent;
             assertEq(
                 receiptData,
                 ReceiptLib.formatReceipt(
-                    DOMAIN_REMOTE, localDomain(), messageHash, snapRoot, firstExecutor, finalExecutor, ""
+                    DOMAIN_REMOTE, localDomain(), messageHash, snapRoot, notary, firstExecutor, finalExecutor, ""
                 )
             );
         }
