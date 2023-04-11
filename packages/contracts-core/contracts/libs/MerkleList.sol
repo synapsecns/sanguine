@@ -53,7 +53,8 @@ library MerkleList {
      */
     function calculateProof(bytes32[] memory hashes, uint256 index) internal pure returns (bytes32[] memory proof) {
         // Use only meaningful values for the shortened proof
-        uint256 height = getHeight(hashes.length);
+        // Check if index is within the list range (we want to generates proofs for outside leafs as well)
+        uint256 height = getHeight(index < hashes.length ? hashes.length : (index + 1));
         proof = new bytes32[](height);
         uint256 levelLength = hashes.length;
         // Iterate `height` levels up from the leaf level
