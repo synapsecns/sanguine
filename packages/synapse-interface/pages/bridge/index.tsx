@@ -37,9 +37,6 @@ import {
 } from '@/constants/bridge'
 import { addSyntheticLeadingComment } from 'typescript'
 
-// console.log('BRIDGABLE_TOKENS', BRIDGABLE_TOKENS)
-// console.log('BRIDGE_CHAINS_BY_TYPE', BRIDGE_CHAINS_BY_TYPE)
-// console.log('BRIDGE_SWAPABLE_TOKENS_BY_TYPE', BRIDGE_SWAPABLE_TOKENS_BY_TYPE)
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
 */
@@ -284,7 +281,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       wallet
     )
     const allowance = await erc20.allowance(address, routerAddress)
-    console.log('allowance', allowance, erc20, routerAddress)
     return allowance
   }
 
@@ -489,7 +485,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       fromToken.addresses[fromChainId] === AddressZero
         ? Zero
         : await getCurrentTokenAllowance(routerAddress)
-    console.log('allowance:3 ', allowance)
     setBridgeQuote({
       outputAmount: toValueBigNum,
       outputAmountString: commify(
