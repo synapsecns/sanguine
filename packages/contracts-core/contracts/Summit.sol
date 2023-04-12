@@ -65,7 +65,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     // Quarantine queue for message hashes
     DoubleEndedQueue.Bytes32Deque private _receiptQueue;
 
-    // (actor => their tips)
+    /// @inheritdoc InterfaceSummit
     mapping(address => ActorTips) public actorTips;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════

@@ -83,6 +83,12 @@ interface InterfaceSummit {
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**
+     * @notice Returns earned and claimed tips for the actor.
+     * Note: Tips for address(0) belong to the Treasury.
+     */
+    function actorTips(address actor) external view returns (uint128 earned, uint128 claimed);
+
+    /**
      * @notice Returns the state with the highest known nonce
      * submitted by any of the currently active Guards.
      * @param origin        Domain of origin chain
