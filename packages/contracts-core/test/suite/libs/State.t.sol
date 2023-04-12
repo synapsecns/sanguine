@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {STATE_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
-import {OriginState, StateHarness, SummitState} from "../../harnesses/libs/StateHarness.t.sol";
+import {StateHarness} from "../../harnesses/libs/StateHarness.t.sol";
 
 struct RawState {
     bytes32 root;
@@ -56,46 +56,6 @@ contract StateLibraryTest is SynapseLibraryTest {
         bytes memory aa = abi.encodePacked(a.root, a.origin, a.nonce, a.blockNumber, a.timestamp);
         bytes memory bb = abi.encodePacked(b.root, b.origin, b.nonce, b.blockNumber, b.timestamp);
         assertEq(libHarness.equals(aa, bb), keccak256(aa) == keccak256(bb));
-    }
-
-    function test_originState_parity(RawState memory rs) public {
-        vm.roll(rs.blockNumber);
-        vm.warp(rs.timestamp);
-        OriginState memory originState = libHarness.originState();
-        assertEq(originState.blockNumber, rs.blockNumber, "!blockNumber");
-        assertEq(originState.timestamp, rs.timestamp, "!timestamp");
-        bytes memory payload = libHarness.formatOriginState(originState, rs.root, rs.origin, rs.nonce);
-        assertEq(
-            payload,
-            libHarness.formatState(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp),
-            "!formatState(originState)"
-        );
-        assertTrue(libHarness.equalToOrigin(payload, originState), "!equalToOrigin");
-    }
-
-    function test_equalToOrigin(RawState memory a, uint256 mask) public {
-        // OriginState is equal if and only if both fields are unchanged
-        bool isEqual = mask & 3 == 0;
-        RawState memory b;
-        // Set some of the OriginState fields to different values depending on the mask
-        b.blockNumber = a.blockNumber ^ uint40(mask & 1);
-        b.timestamp = a.timestamp ^ uint40(mask & 2);
-        assertEq(
-            libHarness.equalToOrigin(
-                libHarness.formatState(a.root, a.origin, a.nonce, a.blockNumber, a.timestamp),
-                OriginState(b.blockNumber, b.timestamp)
-            ),
-            isEqual
-        );
-    }
-
-    function test_summitState_parity(RawState memory rs) public {
-        // State -> SummitState -> State trip test
-        vm.roll(rs.blockNumber);
-        vm.warp(rs.timestamp);
-        bytes memory payload = libHarness.formatState(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp);
-        SummitState memory state = libHarness.toSummitState(payload);
-        assertEq(libHarness.formatSummitState(state), payload, "!summitState");
     }
 
     function test_isState(uint8 length) public {

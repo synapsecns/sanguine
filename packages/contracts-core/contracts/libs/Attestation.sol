@@ -11,17 +11,6 @@ type Attestation is bytes29;
 /// @dev Attach library functions to Attestation
 using AttestationLib for Attestation global;
 
-/// @dev Struct representing Attestation, as it is stored in the Summit contract.
-struct SummitAttestation {
-    bytes32 snapRoot;
-    bytes32 agentRoot;
-    uint40 blockNumber;
-    uint40 timestamp;
-}
-
-/// @dev Attach library functions to SummitAttestation
-using AttestationLib for SummitAttestation global;
-
 library AttestationLib {
     using ByteString for bytes;
     using TypedMemView for bytes29;
@@ -126,52 +115,6 @@ library AttestationLib {
     /// @notice Convenience shortcut for unwrapping a view.
     function unwrap(Attestation att) internal pure returns (bytes29) {
         return Attestation.unwrap(att);
-    }
-
-    // ════════════════════════════════════════════ SUMMIT ATTESTATION ═════════════════════════════════════════════════
-
-    /**
-     * @notice Returns a formatted Attestation payload with provided fields.
-     * @param summitAtt     Attestation struct as it stored in Summit contract
-     * @param nonce_        Attestation nonce
-     * @return Formatted attestation
-     */
-    function formatSummitAttestation(SummitAttestation memory summitAtt, uint32 nonce_)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return formatAttestation({
-            snapRoot_: summitAtt.snapRoot,
-            agentRoot_: summitAtt.agentRoot,
-            nonce_: nonce_,
-            blockNumber_: summitAtt.blockNumber,
-            timestamp_: summitAtt.timestamp
-        });
-    }
-
-    /// @notice Returns an empty struct to save in Summit contract upon initialization.
-    // solhint-disable-next-line ordering
-    function emptySummitAttestation() internal view returns (SummitAttestation memory) {
-        return summitAttestation(bytes32(0), bytes32(0));
-    }
-
-    /// @notice Returns a struct to save in the Summit contract for the given root and height.
-    function summitAttestation(bytes32 snapRoot_, bytes32 agentRoot_)
-        internal
-        view
-        returns (SummitAttestation memory summitAtt)
-    {
-        summitAtt.snapRoot = snapRoot_;
-        summitAtt.agentRoot = agentRoot_;
-        summitAtt.blockNumber = uint40(block.number);
-        summitAtt.timestamp = uint40(block.timestamp);
-    }
-
-    /// @notice Checks that an Attestation and its Summit representation are equal.
-    function equalToSummit(Attestation att, SummitAttestation memory summitAtt) internal pure returns (bool) {
-        return att.snapRoot() == summitAtt.snapRoot && att.agentRoot() == summitAtt.agentRoot
-            && att.blockNumber() == summitAtt.blockNumber && att.timestamp() == summitAtt.timestamp;
     }
 
     // ════════════════════════════════════════════ ATTESTATION SLICING ════════════════════════════════════════════════

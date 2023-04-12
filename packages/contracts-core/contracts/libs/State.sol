@@ -11,29 +11,6 @@ type State is bytes29;
 /// @dev Attach library functions to State
 using StateLib for State global;
 
-/// @dev Struct representing State, as it is stored in the Origin contract.
-struct OriginState {
-    uint40 blockNumber;
-    uint40 timestamp;
-}
-// 176 bits left for tight packing
-
-/// @dev Attach library functions to OriginState
-using StateLib for OriginState global;
-
-/// @dev Struct representing State, as it is stored in the Summit contract.
-struct SummitState {
-    bytes32 root;
-    uint32 origin;
-    uint32 nonce;
-    uint40 blockNumber;
-    uint40 timestamp;
-}
-// 112 bits left for tight packing
-
-/// @dev Attach library functions to SummitState
-using StateLib for SummitState global;
-
 library StateLib {
     using ByteString for bytes;
     using TypedMemView for bytes29;
@@ -117,68 +94,6 @@ library StateLib {
     function equals(State a, State b) internal pure returns (bool) {
         // Length of a State payload is fixed, so we just need to compare the hashes
         return a.unwrap().keccak() == b.unwrap().keccak();
-    }
-
-    // ═══════════════════════════════════════════════ ORIGIN STATE ════════════════════════════════════════════════════
-
-    /**
-     * @notice Returns a formatted State payload with provided fields.
-     * @param origin_       Domain of Origin's chain
-     * @param nonce_        Nonce of the merkle root
-     * @param originState_  State struct as it is stored in Origin contract
-     * @return Formatted state
-     */
-    function formatOriginState(OriginState memory originState_, bytes32 root_, uint32 origin_, uint32 nonce_)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return formatState({
-            root_: root_,
-            origin_: origin_,
-            nonce_: nonce_,
-            blockNumber_: originState_.blockNumber,
-            timestamp_: originState_.timestamp
-        });
-    }
-
-    /// @notice Returns a struct to save in the Origin contract.
-    /// Current block number and timestamp are used.
-    // solhint-disable-next-line ordering
-    function originState() internal view returns (OriginState memory state) {
-        state.blockNumber = uint40(block.number);
-        state.timestamp = uint40(block.timestamp);
-    }
-
-    /// @notice Checks that a state and its Origin representation are equal.
-    function equalToOrigin(State state, OriginState memory originState_) internal pure returns (bool) {
-        return state.blockNumber() == originState_.blockNumber && state.timestamp() == originState_.timestamp;
-    }
-
-    // ═══════════════════════════════════════════════ SUMMIT STATE ════════════════════════════════════════════════════
-
-    /**
-     * @notice Returns a formatted State payload with provided fields.
-     * @param summitState   State struct as it is stored in Summit contract
-     * @return Formatted state
-     */
-    function formatSummitState(SummitState memory summitState) internal pure returns (bytes memory) {
-        return formatState({
-            root_: summitState.root,
-            origin_: summitState.origin,
-            nonce_: summitState.nonce,
-            blockNumber_: summitState.blockNumber,
-            timestamp_: summitState.timestamp
-        });
-    }
-
-    /// @notice Returns a struct to save in the Summit contract.
-    function toSummitState(State state) internal pure returns (SummitState memory state_) {
-        state_.root = state.root();
-        state_.origin = state.origin();
-        state_.nonce = state.nonce();
-        state_.blockNumber = state.blockNumber();
-        state_.timestamp = state.timestamp();
     }
 
     // ═══════════════════════════════════════════════ STATE HASHING ═══════════════════════════════════════════════════

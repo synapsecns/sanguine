@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {Attestation, AttestationLib, SummitAttestation, TypedMemView} from "../../../contracts/libs/Attestation.sol";
+import {Attestation, AttestationLib, TypedMemView} from "../../../contracts/libs/Attestation.sol";
 
 // solhint-disable ordering
 /// @notice Exposes Attestation methods for testing against golang.
@@ -49,14 +49,6 @@ contract AttestationHarness {
     }
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
-
-    function formatSummitAttestation(SummitAttestation memory summitAtt, uint32 nonce_)
-        public
-        pure
-        returns (bytes memory)
-    {
-        return summitAtt.formatSummitAttestation(nonce_);
-    }
 
     function formatAttestation(
         bytes32 snapRoot_,
