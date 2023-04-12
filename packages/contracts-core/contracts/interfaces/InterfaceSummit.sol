@@ -3,6 +3,19 @@ pragma solidity 0.8.17;
 
 interface InterfaceSummit {
     /**
+     * @notice Distributes tips using the first Receipt from the "receipt quarantine queue".
+     * Possible scenarios:
+     *  - Receipt queue is empty => does nothing
+     *  - Receipt optimistic period is not over => does nothing
+     *  - Either of Notaries present in Receipt was slashed => receipt is deleted from the queue
+     *  - Either of Notaries present in Receipt in Dispute => receipt is moved to the end of queue
+     *  - None of the above => receipt tips are distributed
+     * @dev Returned value makes it possible to do the following: `while (distributeTips()) {}`
+     * @return queuePopped      Whether the first element was popped from the queue
+     */
+    function distributeTips() external returns (bool queuePopped);
+
+    /**
      * @notice Submit a message execution receipt. This will distribute the message tips
      * across the off-chain actors once the receipt optimistic period is over.
      * @dev Will revert if any of these is true:
@@ -66,6 +79,19 @@ interface InterfaceSummit {
     function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
         external
         returns (bool isValid);
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /**
+     * @notice Returns earned and claimed tips for the actor.
+     * Note: Tips for address(0) belong to the Treasury.
+     */
+    function actorTips(address actor) external view returns (uint128 earned, uint128 claimed);
+
+    /**
+     * @notice Returns the amount of receipts in the "Receipt Quarantine Queue".
+     */
+    function receiptQueueLength() external view returns (uint256);
 
     /**
      * @notice Returns the state with the highest known nonce

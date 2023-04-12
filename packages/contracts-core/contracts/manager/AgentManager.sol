@@ -52,7 +52,13 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
-    function agentStatus(address agent) external view returns (AgentStatus memory status) {
+    function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status) {
+        agent = _getAgent(index);
+        if (agent != address(0)) status = agentStatus(agent);
+    }
+
+    /// @inheritdoc IAgentManager
+    function agentStatus(address agent) public view returns (AgentStatus memory status) {
         status = _agentStatus(agent);
         // If agent was proven to commit fraud, but their slashing wasn't completed,
         // return the Fraudulent flag instead
@@ -101,4 +107,7 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
 
     /// @dev Returns the last known status for the agent from the Agent Merkle Tree.
     function _agentStatus(address agent) internal view virtual returns (AgentStatus memory);
+
+    /// @dev Returns agent address for the given index. Returns zero for non existing indexes.
+    function _getAgent(uint256 index) internal view virtual returns (address);
 }

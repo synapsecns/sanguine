@@ -11,6 +11,8 @@ contract SummitMock is SnapshotHubMock, SystemContractMock, SystemRegistryMock, 
     /// @notice Prevents this contract from being included in the coverage report
     function testSummitMock() external {}
 
+    function distributeTips() external returns (bool queuePopped) {}
+
     function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {}
 
     function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
@@ -24,6 +26,10 @@ contract SummitMock is SnapshotHubMock, SystemContractMock, SystemRegistryMock, 
         external
         returns (bool isValid)
     {}
+
+    function actorTips(address actor) external view returns (uint128 earned, uint128 claimed) {}
+
+    function receiptQueueLength() external view returns (uint256) {}
 
     function getLatestState(uint32 origin) external view returns (bytes memory statePayload) {}
 }

@@ -24,7 +24,7 @@ library ReceiptLib {
      * [004 .. 008): destination        uint32   4 bytes    Domain where message was executed
      * [008 .. 040): messageHash        bytes32 32 bytes    Hash of the message
      * [040 .. 072): snapshotRoot       bytes32 32 bytes    Snapshot root used for proving the message
-     * [072 .. 092): notary             address 20 bytes    Notary who posted attestation with snapshot root
+     * [072 .. 092): attNotary          address 20 bytes    Notary who posted attestation with snapshot root
      * [092 .. 112): firstExecutor      address 20 bytes    Executor who performed first valid execution attempt
      * [112 .. 132): finalExecutor      address 20 bytes    Executor who successfully executed the message
      * [132 .. 180): tips               bytes   48 bytes    Tips paid on origin chain
@@ -35,7 +35,7 @@ library ReceiptLib {
     uint256 private constant OFFSET_DESTINATION = 4;
     uint256 private constant OFFSET_MESSAGE_HASH = 8;
     uint256 private constant OFFSET_SNAPSHOT_ROOT = 40;
-    uint256 private constant OFFSET_NOTARY = 72;
+    uint256 private constant OFFSET_ATT_NOTARY = 72;
     uint256 private constant OFFSET_FIRST_EXECUTOR = 92;
     uint256 private constant OFFSET_FINAL_EXECUTOR = 112;
     uint256 private constant OFFSET_TIPS = 132;
@@ -48,7 +48,7 @@ library ReceiptLib {
      * @param destination_      Domain where message was executed
      * @param messageHash_      Hash of the message
      * @param snapshotRoot_     Snapshot root used for proving the message
-     * @param notary_           Notary who posted attestation with snapshot root
+     * @param attNotary_        Notary who posted attestation with snapshot root
      * @param firstExecutor_    Executor who performed first valid execution attempt
      * @param finalExecutor_    Executor who successfully executed the message
      * @param tipsPayload       Formatted payload with tips information
@@ -59,13 +59,13 @@ library ReceiptLib {
         uint32 destination_,
         bytes32 messageHash_,
         bytes32 snapshotRoot_,
-        address notary_,
+        address attNotary_,
         address firstExecutor_,
         address finalExecutor_,
         bytes memory tipsPayload
     ) internal pure returns (bytes memory) {
         return abi.encodePacked(
-            origin_, destination_, messageHash_, snapshotRoot_, notary_, firstExecutor_, finalExecutor_, tipsPayload
+            origin_, destination_, messageHash_, snapshotRoot_, attNotary_, firstExecutor_, finalExecutor_, tipsPayload
         );
     }
 
@@ -133,10 +133,10 @@ library ReceiptLib {
         return view_.index({index_: OFFSET_SNAPSHOT_ROOT, bytes_: 32});
     }
 
-    /// @notice Returns receipt's notary field
-    function notary(Receipt receipt) internal pure returns (address) {
+    /// @notice Returns receipt's "attestation notary" field
+    function attNotary(Receipt receipt) internal pure returns (address) {
         bytes29 view_ = unwrap(receipt);
-        return view_.indexAddress({index_: OFFSET_NOTARY});
+        return view_.indexAddress({index_: OFFSET_ATT_NOTARY});
     }
 
     /// @notice Returns receipt's "first executor" field

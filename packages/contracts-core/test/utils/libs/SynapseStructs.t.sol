@@ -47,7 +47,7 @@ struct RawExecReceipt {
     uint32 destination;
     bytes32 messageHash;
     bytes32 snapshotRoot;
-    address notary;
+    address attNotary;
     address firstExecutor;
     address finalExecutor;
     RawTips tips;
@@ -214,6 +214,13 @@ library CastLib {
         rt.deliveryTip = rt.deliveryTip % maxTipValue;
     }
 
+    function floorTips(RawTips memory rt, uint64 minTipValue) internal pure {
+        rt.summitTip = minTipValue + uint64(rt.summitTip % (2 ** 64 - minTipValue));
+        rt.attestationTip = minTipValue + uint64(rt.attestationTip % (2 ** 64 - minTipValue));
+        rt.executionTip = minTipValue + uint64(rt.executionTip % (2 ** 64 - minTipValue));
+        rt.deliveryTip = minTipValue + uint64(rt.deliveryTip % (2 ** 64 - minTipValue));
+    }
+
     function cloneTips(RawTips memory rt) internal pure returns (RawTips memory crt) {
         crt.summitTip = rt.summitTip;
         crt.attestationTip = rt.attestationTip;
@@ -284,7 +291,7 @@ library CastLib {
             re.destination,
             re.messageHash,
             re.snapshotRoot,
-            re.notary,
+            re.attNotary,
             re.firstExecutor,
             re.finalExecutor,
             re.tips.formatTips()
@@ -304,7 +311,7 @@ library CastLib {
         mask = 1 + (mask % 31);
         mre.origin = re.origin ^ uint32(mask & 1);
         mre.snapshotRoot = re.snapshotRoot ^ bytes32(mask & 2);
-        mre.notary = address(uint160(re.notary) ^ uint160(mask & 4));
+        mre.attNotary = address(uint160(re.attNotary) ^ uint160(mask & 4));
         mre.firstExecutor = address(uint160(re.firstExecutor) ^ uint160(mask & 8));
         mre.finalExecutor = address(uint160(re.finalExecutor) ^ uint160(mask & 16));
     }

@@ -66,4 +66,9 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
     function _agentStatus(address agent) internal view returns (AgentStatus memory) {
         return agentManager.agentStatus(agent);
     }
+
+    /// @dev Returns agent and their status for a given agent index.
+    function _getAgent(uint256 index) internal view returns (address agent, AgentStatus memory status) {
+        return agentManager.getAgent(index);
+    }
 }
