@@ -22,6 +22,7 @@ runs:
       run: |
         export NVMRC=$(cat ${{inputs.nvmrc_path}})
         echo "NVRMC=$NVRMC" >> "$GITHUB_OUTPUT"
+        echo $GITHUB_OUTPUT
         echo "##[set-output name=NVRMC;]$(echo $NVMRC)"
       shell: bash
       id: nvm
