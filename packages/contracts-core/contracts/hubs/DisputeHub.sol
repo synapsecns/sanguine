@@ -136,4 +136,9 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     function _inDispute(address agent) internal view returns (bool) {
         return _disputes[agent].flag != DisputeFlag.None;
     }
+
+    /// @dev Checks if an agent has been slashed.
+    function _isSlashed(address agent) internal view returns (bool) {
+        return _disputes[agent].flag == DisputeFlag.Slashed;
+    }
 }

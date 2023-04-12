@@ -65,16 +65,6 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
         _setAgentRoot(agentRoot_);
     }
 
-    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
-
-    /// @inheritdoc IAgentManager
-    function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status) {
-        // This will return zero if agent hasn't been registered
-        agent = _agents[index];
-        // This will return empty struct if agent hasn't been registered against current agent root
-        status = _agentStatus(agent);
-    }
-
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     function _afterRegistrySlash(uint32 domain, address agent, address prover) internal override {
@@ -100,6 +90,11 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     /// using latest Agent merkle Root.
     function _agentStatus(address agent) internal view override returns (AgentStatus memory) {
         return _agentMap[agentRoot][agent];
+    }
+
+    /// @dev Returns agent address for the given index. Returns zero for non existing indexes.
+    function _getAgent(uint256 index) internal view override returns (address agent) {
+        return _agents[index];
     }
 
     /// @dev Returns data for a system call: remoteRegistrySlash()

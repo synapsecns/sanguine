@@ -34,4 +34,11 @@ abstract contract SummitEvents {
      * @param snapSignature Agent signature for the snapshot
      */
     event SnapshotAccepted(uint32 indexed domain, address indexed agent, bytes snapshot, bytes snapSignature);
+
+    /**
+     * @notice Emitted when a tip is awarded to the actor, whether they are bonded or unbonded actor.
+     * @param actor     Actor address
+     * @param tip       Tip value, scaled down by TIPS_MULTIPLIER
+     */
+    event TipAwarded(address actor, uint256 tip);
 }

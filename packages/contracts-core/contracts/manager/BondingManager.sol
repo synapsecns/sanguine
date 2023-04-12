@@ -164,14 +164,6 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         return _agents.length;
     }
 
-    /// @inheritdoc IAgentManager
-    function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status) {
-        if (index < _agents.length) {
-            agent = _agents[index];
-            status = _agentMap[agent];
-        }
-    }
-
     /// @inheritdoc InterfaceBondingManager
     function getProof(address agent) external view returns (bytes32[] memory proof) {
         bytes32[] memory leafs = allLeafs();
@@ -220,6 +212,13 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     /// @dev Returns the status of the agent.
     function _agentStatus(address agent) internal view override returns (AgentStatus memory) {
         return _agentMap[agent];
+    }
+
+    /// @dev Returns agent address for the given index. Returns zero for non existing indexes.
+    function _getAgent(uint256 index) internal view override returns (address agent) {
+        if (index < _agents.length) {
+            agent = _agents[index];
+        }
     }
 
     /// @dev Returns the current leaf representing agent in the Agent Merkle Tree.

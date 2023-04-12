@@ -247,6 +247,19 @@ abstract contract StatementHub is SystemRegistry {
         );
     }
 
+    /// @dev Checks that Agent is not Unknown
+    function _verifyKnown(AgentStatus memory status) internal pure {
+        require(status.flag != AgentFlag.Unknown, status.domain == 0 ? "Not a known guard" : "Not a known notary");
+    }
+
+    /// @dev Checks that Agent is not Fraudulent/Slashed
+    function _verifyNotSlashed(AgentStatus memory status) internal pure {
+        require(
+            status.flag != AgentFlag.Fraudulent && status.flag != AgentFlag.Slashed,
+            status.domain == 0 ? "Slashed guard" : "Slashed notary"
+        );
+    }
+
     // ════════════════════════════════════════════ STATEMENT WRAPPERS ═════════════════════════════════════════════════
 
     // These functions are implemented to reduce the amount of imports in the child contracts.

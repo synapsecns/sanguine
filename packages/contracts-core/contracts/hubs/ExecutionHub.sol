@@ -188,7 +188,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             destination_: localDomain,
             messageHash_: messageHash,
             snapshotRoot_: snapRoot,
-            notary_: _rootData[snapRoot].notary,
+            attNotary_: _rootData[snapRoot].notary,
             firstExecutor_: firstExecutor,
             finalExecutor_: rcptData.executor,
             tipsPayload: ""
@@ -250,7 +250,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         if (rcpt.origin() != rcptData.origin) return false;
         // Check that snapshot root and notary who submitted it match in the Receipt
         bytes32 snapRoot = rcpt.snapshotRoot();
-        if (snapRoot != _roots[rcptData.rootIndex] || rcpt.notary() != _rootData[snapRoot].notary) return false;
+        if (snapRoot != _roots[rcptData.rootIndex] || rcpt.attNotary() != _rootData[snapRoot].notary) return false;
         // Check if message was executed from the first attempt
         address firstExecutor = _firstExecutor[messageHash];
         if (firstExecutor == address(0)) {
