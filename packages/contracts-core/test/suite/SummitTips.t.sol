@@ -139,6 +139,26 @@ contract SummitTipsTest is DisputeHubTest {
         checkAwardedTips(re, false);
     }
 
+    function test_distributeTips_failedThenSuccess(
+        RawExecReceipt memory re,
+        bool originZero,
+        uint256 rcptNotaryIndex,
+        uint256 attNotaryIndex,
+        uint256 rcptNotaryIndexFinal,
+        address finalExecutor
+    ) public {
+        test_distributeTips_failed(re, originZero, rcptNotaryIndex, attNotaryIndex);
+        re.finalExecutor = createExecutorEOA(finalExecutor, "Final Executor");
+        rcptNotaryFinal = domains[DOMAIN_REMOTE].agents[rcptNotaryIndexFinal % DOMAIN_AGENTS];
+        emit log_named_address("Receipt Notary", rcptNotaryFinal);
+        emit log_named_address("Attestation Notary", re.attNotary);
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotaryFinal, re);
+        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        assertTrue(InterfaceSummit(summit).distributeTips());
+        checkAwardedTips(re, true);
+    }
+
     function checkAwardedTips(RawExecReceipt memory re, bool isFinal) public {
         logTips(re.tips);
         checkSnapshotTips(re);
