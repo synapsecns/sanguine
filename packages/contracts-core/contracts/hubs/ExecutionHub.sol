@@ -46,14 +46,16 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// @notice Struct representing stored receipt data for the message in Execution Hub.
     /// @param origin       Domain where message originated
     /// @param rootIndex    Index of snapshot root used for proving the message
+    /// @param stateIndex   Index of state used for the snapshot proof
     /// @param executor     Executor who successfully executed the message
     struct ReceiptData {
         uint32 origin;
         uint32 rootIndex;
+        uint8 stateIndex;
         address executor;
     }
     // TODO: include nonce?
-    // 32 bits available for tight packing
+    // 24 bits available for tight packing
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -113,9 +115,10 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             emit TipsRecorded(msgLeaf, baseMessage.tips().unwrap().clone());
         }
         if (rcptData.origin == 0) {
-            // This is the first valid attempt to execute the message => save origin and snapshot root
+            // This is the first valid attempt to execute the message => save origin and snapshot proof
             rcptData.origin = header.origin();
             rcptData.rootIndex = rootData.index;
+            rcptData.stateIndex = uint8(stateIndex);
             if (success) {
                 // This is the successful attempt to execute the message => save the executor
                 rcptData.executor = msg.sender;
@@ -188,6 +191,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             destination_: localDomain,
             messageHash_: messageHash,
             snapshotRoot_: snapRoot,
+            stateIndex_: rcptData.stateIndex,
             attNotary_: _rootData[snapRoot].notary,
             firstExecutor_: firstExecutor,
             finalExecutor_: rcptData.executor,
@@ -246,8 +250,8 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         ReceiptData memory rcptData = _receiptData[messageHash];
         // Check if there has been a single attempt to execute the message
         if (rcptData.origin == 0) return false;
-        // Check that origin field matches
-        if (rcpt.origin() != rcptData.origin) return false;
+        // Check that origin and state index fields match
+        if (rcpt.origin() != rcptData.origin || rcpt.stateIndex() != rcptData.stateIndex) return false;
         // Check that snapshot root and notary who submitted it match in the Receipt
         bytes32 snapRoot = rcpt.snapshotRoot();
         if (snapRoot != _roots[rcptData.rootIndex] || rcpt.attNotary() != _rootData[snapRoot].notary) return false;

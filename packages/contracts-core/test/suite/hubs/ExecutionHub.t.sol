@@ -39,6 +39,8 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     address internal executor;
     address internal executorNew;
 
+    uint8 internal cachedStateIndex;
+
     function setUp() public virtual override {
         super.setUp();
         recipient = address(new MessageRecipientMock());
@@ -78,8 +80,9 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
-        bytes memory receiptData =
-            verify_messageStatus(keccak256(msgPayload), snapRoot, MessageStatus.Success, executor, executor);
+        bytes memory receiptData = verify_messageStatus(
+            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executor
+        );
         verify_receipt_valid(receiptData, rbm.tips);
     }
 
@@ -101,18 +104,21 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        bytes memory receiptDataFirst =
-            verify_messageStatus(keccak256(msgPayload), snapRoot, MessageStatus.Failed, executor, address(0));
+        bytes memory receiptDataFirst = verify_messageStatus(
+            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0)
+        );
         verify_receipt_valid(receiptDataFirst, rbm.tips);
         // Retry the same failed message
         RevertingApp(recipient).toggleRevert(false);
         vm.prank(executorNew);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        bytes memory receiptDataSecond =
-            verify_messageStatus(keccak256(msgPayload), snapRoot, MessageStatus.Success, executor, executorNew);
+        bytes memory receiptDataSecond = verify_messageStatus(
+            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executorNew
+        );
         // Both receipts (historical and current) should be valid
         verify_receipt_valid(receiptDataFirst, rbm.tips);
         verify_receipt_valid(receiptDataSecond, rbm.tips);
+        cachedStateIndex = uint8(sm.rsi.stateIndex);
     }
 
     function test_execute_base_revert_alreadyExecuted(Random memory random) public {
@@ -288,7 +294,9 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
-        verify_messageStatus(keccak256(msgPayload), snapRoot, MessageStatus.Success, executor, executor);
+        verify_messageStatus(
+            keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executor
+        );
     }
 
     // ══════════════════════════════════════════ TESTS: INVALID RECEIPTS ══════════════════════════════════════════════
@@ -307,6 +315,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
             destination: localDomain(),
             messageHash: getLeaf(0),
             snapshotRoot: getSnapshotRoot(),
+            stateIndex: cachedStateIndex,
             attNotary: domains[localDomain()].agent,
             firstExecutor: executor,
             finalExecutor: executorNew,
@@ -321,12 +330,13 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     // ═════════════════════════════════════════════════ VERIFIERS ═════════════════════════════════════════════════════
 
     function verify_messageStatusNone(bytes32 messageHash) public {
-        verify_messageStatus(messageHash, bytes32(0), MessageStatus.None, address(0), address(0));
+        verify_messageStatus(messageHash, bytes32(0), 0, MessageStatus.None, address(0), address(0));
     }
 
     function verify_messageStatus(
         bytes32 messageHash,
         bytes32 snapRoot,
+        uint256 stateIndex,
         MessageStatus flag,
         address firstExecutor,
         address finalExecutor
@@ -341,7 +351,15 @@ abstract contract ExecutionHubTest is DisputeHubTest {
             assertEq(
                 receiptData,
                 ReceiptLib.formatReceipt(
-                    DOMAIN_REMOTE, localDomain(), messageHash, snapRoot, notary, firstExecutor, finalExecutor, ""
+                    DOMAIN_REMOTE,
+                    localDomain(),
+                    messageHash,
+                    snapRoot,
+                    uint8(stateIndex),
+                    notary,
+                    firstExecutor,
+                    finalExecutor,
+                    ""
                 )
             );
         }
