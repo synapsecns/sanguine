@@ -15,6 +15,7 @@ import (
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	"net/http"
+	"testing"
 )
 
 func makeConfig(backends []backends.SimulatedTestBackend, clientType omniHTTP.ClientType) config.Config {
@@ -40,11 +41,13 @@ func makeConfig(backends []backends.SimulatedTestBackend, clientType omniHTTP.Cl
 // a string is returned with the base url for the omnirpc server.
 //
 // context is respected and the server will be killed when the context is done.
-func NewOmnirpcServer(ctx context.Context, ts localmetrics.TestSuite, backends ...backends.SimulatedTestBackend) string {
-	localmetrics.SetupTestJaeger(ctx, ts)
+func NewOmnirpcServer(ctx context.Context, tb testing.TB, backends ...backends.SimulatedTestBackend) string {
+	tb.Helper()
+
+	localmetrics.SetupTestJaeger(ctx, tb)
 
 	handler, err := metrics.NewByType(ctx, cmd.BuildInfo(), metrics.Jaeger)
-	assert.Nil(ts.T(), err)
+	assert.Nil(tb, err)
 
 	server := proxy.NewProxy(makeConfig(backends, omniHTTP.FastHTTP), handler)
 
@@ -56,16 +59,16 @@ func NewOmnirpcServer(ctx context.Context, ts localmetrics.TestSuite, backends .
 	healthCheck := fmt.Sprintf("%s%s", baseHost, ginhelper.HealthCheck)
 
 	// wait for server to start
-	testsuite.Eventually(ctx, ts.T(), func() bool {
+	testsuite.Eventually(ctx, tb, func() bool {
 		select {
 		case <-ctx.Done():
-			ts.T().Error(ctx.Err())
+			tb.Error(ctx.Err())
 		default:
 			// see below
 		}
 
 		request, err := http.NewRequestWithContext(ctx, http.MethodGet, healthCheck, nil)
-		assert.Nil(ts.T(), err)
+		assert.Nil(tb, err)
 
 		res, err := http.DefaultClient.Do(request)
 		if err == nil {

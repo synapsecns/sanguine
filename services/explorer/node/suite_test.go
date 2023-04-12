@@ -84,7 +84,7 @@ func (c *NodeSuite) SetupTest() {
 func (c *NodeSuite) SetupSuite() {
 	c.TestSuite.SetupSuite()
 
-	localmetrics.SetupTestJaeger(c.GetSuiteContext(), c)
+	localmetrics.SetupTestJaeger(c.GetSuiteContext(), c.T())
 	var err error
 	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
 	c.Require().Nil(err)

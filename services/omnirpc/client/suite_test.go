@@ -61,12 +61,12 @@ func (s *TestClientSuite) SetupSuite() {
 func (s *TestClientSuite) SetupTest() {
 	s.TestSuite.SetupTest()
 
-	s.endpoint = s.getHostURL(testhelper.NewOmnirpcServer(s.GetTestContext(), s, s.testBackends...))
+	s.endpoint = s.getHostURL(testhelper.NewOmnirpcServer(s.GetTestContext(), s.T(), s.testBackends...))
 	s.client = client.NewOmnirpcClient(s.endpoint, s.metrics)
 }
 
 func (s *TestClientSuite) SetupJaeger() {
-	localmetrics.SetupTestJaeger(s.GetSuiteContext(), s)
+	localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
 
 	var err error
 	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), cmd.BuildInfo(), metrics.Jaeger)

@@ -17,7 +17,7 @@ import (
 // startOmnirpcServer boots an omnirpc server for an rpc address.
 // the url for this rpc is returned.
 func (b *BackfillSuite) startOmnirpcServer(ctx context.Context, backend backends.SimulatedTestBackend) string {
-	baseHost := testhelper.NewOmnirpcServer(ctx, b, backend)
+	baseHost := testhelper.NewOmnirpcServer(ctx, b.T(), backend)
 	return testhelper.GetURL(baseHost, backend)
 }
 

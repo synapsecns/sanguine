@@ -9,7 +9,7 @@ import (
 )
 
 // MockTester is a mock tester. This is used for making sure a test fails
-// using the testing.T interface and is useful for testing error cases in other test helpers.
+// using the testing.TB interface and is useful for testing error cases in other test helpers.
 type MockTester struct {
 	name            string
 	mu              sync.RWMutex
@@ -21,7 +21,7 @@ type MockTester struct {
 	printLogs bool
 	// outputHandler specifies how to tread output
 	outputHandler func(...interface{})
-	// The testing.T interface has an unexported method "to prevent users implementing the
+	// The testing.TB interface has an unexported method "to prevent users implementing the
 	// interface and so future additions to it will not violate Go 1 compatibility."
 	//
 	// This may cause problems across Go versions, but let's ignore them and

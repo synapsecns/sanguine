@@ -35,8 +35,10 @@ type TestJaeger interface {
 
 // StartTestServer starts a local jaeger server for testing.
 // this will return a TestJaeger that can be used to start other servers.
-func StartTestServer(ctx context.Context, ts TestSuite) TestJaeger {
-	tj := startServer(ctx, ts, WithPyroscopeJaeger(true))
+func StartTestServer(ctx context.Context, tb testing.TB) TestJaeger {
+	tb.Helper()
+
+	tj := startServer(ctx, tb, WithPyroscopeJaeger(true))
 	return &exportedJaeger{
 		tj: tj,
 	}

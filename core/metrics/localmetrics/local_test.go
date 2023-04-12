@@ -7,7 +7,7 @@ import (
 )
 
 func (l *LocalServerSuite) TestFullJaeger() {
-	ts := localmetrics.StartTestServer(l.GetTestContext(), l)
+	ts := localmetrics.StartTestServer(l.GetTestContext(), l.T())
 
 	containers := l.ContainersWithLabel(localmetrics.RunIDLabel, ts.GetRunID())
 	l.Require().Len(containers, 3)
@@ -19,7 +19,7 @@ func (l *LocalServerSuite) TestStartServerJaegerPreset() {
 	l.T().Setenv(internal.JaegerEndpoint, gofakeit.URL())
 	l.T().Setenv(internal.JaegerUIEndpoint, gofakeit.URL())
 
-	ts := localmetrics.StartTestServer(l.GetTestContext(), l)
+	ts := localmetrics.StartTestServer(l.GetTestContext(), l.T())
 
 	containers := l.ContainersWithLabel(localmetrics.RunIDLabel, ts.GetRunID())
 	l.Require().Len(containers, 1)
@@ -30,7 +30,7 @@ func (l *LocalServerSuite) TestStartServerJaegerPreset() {
 func (l *LocalServerSuite) TestStartServerPyroscopePreset() {
 	l.T().Setenv(internal.PyroscopeEndpoint, gofakeit.URL())
 	l.T().Setenv(internal.JaegerUIEndpoint, gofakeit.URL())
-	ts := localmetrics.StartTestServer(l.GetTestContext(), l)
+	ts := localmetrics.StartTestServer(l.GetTestContext(), l.T())
 
 	containers := l.ContainersWithLabel(localmetrics.RunIDLabel, ts.GetRunID())
 	l.Require().Len(containers, 1)

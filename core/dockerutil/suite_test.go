@@ -11,14 +11,15 @@ type DockerSuite struct {
 	*testsuite.TestSuite
 }
 
-// NewTestDockerSuite creates a new DockerSuite.
-func NewTestDockerSuite(tb testing.TB) *DockerSuite {
+// NewTestSuite creates a new test suite and performs some basic checks afterward.
+// Every test suite in the synapse library should inherit from this suite and override where necessary.
+func NewTestSuite(tb testing.TB) *DockerSuite {
 	tb.Helper()
 	return &DockerSuite{
 		testsuite.NewTestSuite(tb),
 	}
 }
 
-func TestDockerSuite(t *testing.T) {
-	suite.Run(t, NewTestDockerSuite(t))
+func TestCommonSuite(t *testing.T) {
+	suite.Run(t, NewTestSuite(t))
 }

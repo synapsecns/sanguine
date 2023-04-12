@@ -36,7 +36,7 @@ func NewLiveSuite(tb testing.TB) *LiveSuite {
 
 func (l *LiveSuite) SetupSuite() {
 	l.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(l.GetSuiteContext(), l)
+	localmetrics.SetupTestJaeger(l.GetSuiteContext(), l.T())
 	var err error
 
 	l.metrics, err = metrics.NewByType(l.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
