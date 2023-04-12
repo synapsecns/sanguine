@@ -19,4 +19,12 @@ describe('Landing Page', () => {
         .and('contain.text', fixture.defaultOriginToken)
     })
   })
+
+  it('loads default destination token', () => {
+    cy.fixture('bridge.json').then((fixture) => {
+      cy.get('[data-test-id="bridge-destination-token"]')
+        .should('be.visible')
+        .and('contain.text', fixture.defaultOriginToken)
+    })
+  })
 })
