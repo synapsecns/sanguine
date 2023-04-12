@@ -215,10 +215,10 @@ library CastLib {
     }
 
     function floorTips(RawTips memory rt, uint64 minTipValue) internal pure {
-        rt.summitTip = minTipValue + uint64(rt.summitTip % (2**64 - minTipValue));
-        rt.attestationTip = minTipValue + uint64(rt.attestationTip % (2**64 - minTipValue));
-        rt.executionTip = minTipValue + uint64(rt.executionTip % (2**64 - minTipValue));
-        rt.deliveryTip = minTipValue + uint64(rt.deliveryTip % (2**64 - minTipValue));
+        rt.summitTip = minTipValue + uint64(rt.summitTip % (2 ** 64 - minTipValue));
+        rt.attestationTip = minTipValue + uint64(rt.attestationTip % (2 ** 64 - minTipValue));
+        rt.executionTip = minTipValue + uint64(rt.executionTip % (2 ** 64 - minTipValue));
+        rt.deliveryTip = minTipValue + uint64(rt.deliveryTip % (2 ** 64 - minTipValue));
     }
 
     function cloneTips(RawTips memory rt) internal pure returns (RawTips memory crt) {
