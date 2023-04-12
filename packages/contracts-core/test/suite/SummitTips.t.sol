@@ -9,6 +9,7 @@ import {IDisputeHub, DisputeHubTest} from "./hubs/DisputeHub.t.sol";
 import {fakeState} from "../utils/libs/FakeIt.t.sol";
 import {RawExecReceipt, RawState, RawStateIndex, RawSnapshot, RawTips} from "../utils/libs/SynapseStructs.t.sol";
 
+// solhint-disable code-complexity
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
@@ -121,6 +122,18 @@ contract SummitTipsTest is DisputeHubTest {
         checkAwardedTips(re, true, true);
     }
 
+    function test_distributeTips_failed(
+        RawExecReceipt memory re,
+        bool originZero,
+        uint256 rcptNotaryIndex,
+        uint256 attNotaryIndex
+    ) public {
+        test_submitReceipt(re, originZero, rcptNotaryIndex, attNotaryIndex, false);
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        assertTrue(InterfaceSummit(summit).distributeTips());
+        checkAwardedTips(re, true, false);
+    }
+
     function checkAwardedTips(RawExecReceipt memory re, bool isFirst, bool isFinal) public {
         logTips(re.tips);
         checkSnapshotTips(re);
@@ -143,7 +156,7 @@ contract SummitTipsTest is DisputeHubTest {
             checkActorTips(re.firstExecutor, re.tips.executionTip + (isFinal ? re.tips.deliveryTip : 0), 0);
         } else {
             checkActorTips(re.firstExecutor, re.tips.executionTip, 0);
-            checkActorTips(re.finalExecutor, (isFinal ? re.tips.deliveryTip : 0), 0);
+            if (isFinal) checkActorTips(re.finalExecutor, re.tips.deliveryTip, 0);
         }
     }
 
