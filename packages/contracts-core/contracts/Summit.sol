@@ -45,6 +45,11 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         uint64 deliveryTip;
     }
 
+    struct ActorTips {
+        uint128 earned;
+        uint128 claimed;
+    }
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // (message hash => receipt data)
@@ -58,6 +63,9 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     // Quarantine queue for message hashes
     DoubleEndedQueue.Bytes32Deque private _receiptQueue;
+
+    // (actor => their tips)
+    mapping(address => ActorTips) public actorTips;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
@@ -186,7 +194,12 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         if (_checkNotaryDisputed(messageHash, attNotary, attNotaryStatus)) return true;
         // At this point Receipt is optimistically verified to be correct, as well as the receipt's attestation
         // Meaning we can go ahead and distribute the tip values among the tipped actors.
-        // TODO: finish the distribution
+        ReceiptTips memory tips = _receiptTips[messageHash];
+        // TODO: take into account the receipt message status
+        _distributeSummitTip(rcptNotary, _roots[rcptInfo.snapRootIndex], tips.summitTip);
+        _awardAgentTip(attNotary, tips.attestationTip);
+        _awardActorTip(rcptInfo.firstExecutor, tips.executionTip);
+        _awardActorTip(rcptInfo.finalExecutor, tips.deliveryTip);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -280,6 +293,31 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // Add message hash to the quarantine queue
         _receiptQueue.pushBack(messageHash);
         return true;
+    }
+
+    // ══════════════════════════════════════ INTERNAL LOGIC: TIPS ACCOUNTING ══════════════════════════════════════════
+
+    /// @dev Award tip to the bonded agent
+    function _awardAgentTip(address agent, uint64 tip) internal {
+        // If agent has been slashed, their earned tips go to treasury
+        _awardActorTip(_isSlashed(agent) ? address(0) : agent, tip);
+    }
+
+    /// @dev Award tip to any actor whether bonded or unbonded
+    function _awardActorTip(address actor, uint64 tip) internal {
+        actorTips[actor].earned += tip;
+        emit TipAwarded(actor, tip);
+    }
+
+    function _distributeSummitTip(address rcptNotary, bytes32 snapRoot, uint64 summitTip) internal {
+        uint64 agentTip = summitTip / 3;
+        // TODO: get the addresses
+        snapRoot;
+        address snapGuard;
+        address snapNotary;
+        _awardAgentTip(snapGuard, agentTip);
+        _awardAgentTip(snapNotary, agentTip);
+        _awardAgentTip(rcptNotary, summitTip - 2 * agentTip);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
