@@ -72,8 +72,6 @@ contract SummitTipsTest is DisputeHubTest {
     ) public checkQueueLength(1) {
         prepareReceipt(re, originZero, attNotaryIndex, isSuccess);
         rcptNotary = domains[DOMAIN_REMOTE].agents[rcptNotaryIndex % DOMAIN_AGENTS];
-        emit log_named_address("Receipt Notary", rcptNotary);
-        emit log_named_address("Attestation Notary", re.attNotary);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.expectEmit();
         emit ReceiptAccepted(DOMAIN_REMOTE, rcptNotary, rcptPayload, rcptSignature);
@@ -81,8 +79,7 @@ contract SummitTipsTest is DisputeHubTest {
     }
 
     function test_submitReceipt_notAccepted_pending() public checkQueueLength(1) {
-        RawExecReceipt memory re;
-        re.messageHash = keccak256("First");
+        RawExecReceipt memory re = mockReceipt("First");
         test_submitReceipt(re, false, 0, 0, false);
         re.finalExecutor = createExecutorEOA(re.finalExecutor, "Final Executor");
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
@@ -92,8 +89,7 @@ contract SummitTipsTest is DisputeHubTest {
     }
 
     function test_submitReceipt_notAccepted_outdatedStatus() public checkQueueLength(0) {
-        RawExecReceipt memory re;
-        re.messageHash = keccak256("First");
+        RawExecReceipt memory re = mockReceipt("First");
         test_distributeTips_success(re, false, 0, 0);
         re.finalExecutor = address(0);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
@@ -102,15 +98,17 @@ contract SummitTipsTest is DisputeHubTest {
         assertEq(vm.getRecordedLogs().length, 0);
     }
 
-    function test_submitReceipt_revert_signedByGuard(RawExecReceipt memory re) public {
+    function test_submitReceipt_revert_signedByGuard() public {
+        RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard0, re);
         vm.expectRevert("Signer is not a Notary");
         InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
     }
 
-    function test_submitReceipt_revert_wrongNotaryDomain(RawExecReceipt memory re) public {
+    function test_submitReceipt_revert_wrongNotaryDomain() public {
         // TODO: remove when Notary restrictions are revisited
+        RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         address notary = domains[DOMAIN_LOCAL].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
@@ -118,7 +116,8 @@ contract SummitTipsTest is DisputeHubTest {
         InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
     }
 
-    function test_submitReceipt_revert_notaryInDispute(RawExecReceipt memory re) public {
+    function test_submitReceipt_revert_notaryInDispute() public {
+        RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         // Put DOMAIN_REMOTE notary in Dispute
         check_submitStateReport(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
@@ -128,11 +127,10 @@ contract SummitTipsTest is DisputeHubTest {
         InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
     }
 
-    function test_submitReceipt_revert_unknownSnapRoot(RawExecReceipt memory re) public {
-        vm.assume(re.snapshotRoot != snapRoot);
-        bytes32 oldValue = re.snapshotRoot;
+    function test_submitReceipt_revert_unknownSnapRoot() public {
+        RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
-        re.snapshotRoot = oldValue;
+        re.snapshotRoot = "Some fake snapshot root";
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert("Unknown snapshot root");
@@ -188,13 +186,13 @@ contract SummitTipsTest is DisputeHubTest {
     }
 
     function test_distributeTips_emptyQueue() public checkQueueLength(0) {
-        RawExecReceipt memory re;
+        RawExecReceipt memory re = mockReceipt("First");
         test_distributeTips_success(re, true, 0, 0);
         assertFalse(InterfaceSummit(summit).distributeTips());
     }
 
     function test_distributeTips_optimisticPeriodNotOver(uint256 timePassed) public checkQueueLength(1) {
-        RawExecReceipt memory re;
+        RawExecReceipt memory re = mockReceipt("First");
         test_submitReceipt(re, false, 0, 0, false);
         timePassed = timePassed % BONDING_OPTIMISTIC_PERIOD;
         skip(timePassed);
@@ -265,8 +263,7 @@ contract SummitTipsTest is DisputeHubTest {
         public
         returns (address attNotary)
     {
-        RawExecReceipt memory re;
-        re.messageHash = keccak256("First");
+        RawExecReceipt memory re = mockReceipt("First");
         test_submitReceipt(re, false, rcptNotaryIndex, attNotaryIndex, false);
         re.messageHash = keccak256("Second");
         test_submitReceipt(re, false, rcptNotaryIndex, attNotaryIndex, false);
@@ -351,6 +348,11 @@ contract SummitTipsTest is DisputeHubTest {
         // Make every tip component non-zero and not too big
         re.tips.boundTips(type(uint32).max);
         re.tips.floorTips(1);
+    }
+
+    function mockReceipt(bytes memory salt) public pure returns (RawExecReceipt memory re) {
+        re.messageHash = keccak256(salt);
+        // Leave everything else as zero, prepareReceipt() takes care of that
     }
 
     /// @notice Creates an EOA address that should not collide with existing agents
