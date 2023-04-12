@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {AgentStatus} from "./libs/Structures.sol";
+import {AgentFlag, AgentStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager} from "./manager/AgentManager.sol";
 import {DomainContext} from "./context/DomainContext.sol";
@@ -170,6 +170,25 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         }
     }
 
+    function distributeTips() public returns (bool queuePopped) {
+        // Check message that is first in the "quarantine queue"
+        if (_receiptQueue.empty()) return false;
+        bytes32 messageHash = _receiptQueue.front();
+        ReceiptStatus memory rcptStatus = _receiptStatus[messageHash];
+        // Check if optimistic period for the receipt is over
+        if (block.timestamp < uint256(rcptStatus.submittedAt) + BONDING_OPTIMISTIC_PERIOD) return false;
+        // Fetch Notary who signed the receipt. If they are Slashed or in Dispute, exit early.
+        (address rcptNotary, AgentStatus memory rcptNotaryStatus) = _getAgent(rcptStatus.receiptNotaryIndex);
+        if (_checkNotaryDisputed(messageHash, rcptNotary, rcptNotaryStatus)) return true;
+        ReceiptInfo memory rcptInfo = _receiptInfo[messageHash];
+        // Fetch Notary who signed the statement with snapshot root. If they are Slashed or in Dispute, exit early.
+        (address attNotary, AgentStatus memory attNotaryStatus) = _getAgent(rcptInfo.attNotaryIndex);
+        if (_checkNotaryDisputed(messageHash, attNotary, attNotaryStatus)) return true;
+        // At this point Receipt is optimistically verified to be correct, as well as the receipt's attestation
+        // Meaning we can go ahead and distribute the tip values among the tipped actors.
+        // TODO: finish the distribution
+    }
+
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
@@ -177,7 +196,42 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // TODO: implement once Agent Merkle Tree is done
     }
 
-    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+    // ═══════════════════════════════════════════ INTERNAL LOGIC: QUEUE ═══════════════════════════════════════════════
+
+    /// @dev Checks if the given Notary has been disputed.
+    /// - Notary was slashed => receipt is invalided and deleted
+    /// - Notary is in Dispute => receipt handling is postponed
+    function _checkNotaryDisputed(bytes32 messageHash, address notary, AgentStatus memory status)
+        internal
+        returns (bool queuePopped)
+    {
+        if (status.flag == AgentFlag.Fraudulent || status.flag == AgentFlag.Slashed) {
+            // Notary has been slashed, so we can't trust their statement.
+            // Honest Notaries are incentivized to resubmit the Receipt or Attestation if it was in fact valid.
+            _deleteFromQueue(messageHash);
+            return true;
+        }
+        if (_inDispute(notary)) {
+            // Notary is not slashed, but is in Dispute. To keep the tips flow going we add the receipt to the back of
+            // the queue, hoping that by the next interaction the dispute will have been resolved.
+            _moveToBack();
+            return true;
+        }
+    }
+
+    /// @dev Deletes all stored receipt data and removes it from the queue.
+    function _deleteFromQueue(bytes32 messageHash) internal {
+        delete _receiptInfo[messageHash];
+        delete _receiptStatus[messageHash];
+        delete _receiptTips[messageHash];
+        _receiptQueue.popFront();
+    }
+
+    /// @dev Moves the front element of the queue to its back.
+    function _moveToBack() internal {
+        bytes32 popped = _receiptQueue.popFront();
+        _receiptQueue.pushBack(popped);
+    }
 
     /// @dev Saves the message from the receipt into the "quarantine queue". Once message leaves the queue,
     /// tips associated with the message are distributed across off-chain actors.
@@ -227,6 +281,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         _receiptQueue.pushBack(messageHash);
         return true;
     }
+
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @inheritdoc DisputeHub
     function _beforeStatement() internal pure override returns (bool acceptNext) {
