@@ -5,6 +5,9 @@ on:
     types:
       - closed
   workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/cleanup-caches.yml
 
 jobs:
   cleanup:
