@@ -11,4 +11,12 @@ describe('Landing Page', () => {
 
     cy.screenshot(`landing/${fileName}`)
   })
+
+  it('loads default origin token', () => {
+    cy.fixture('bridge.json').then((fixture) => {
+      cy.get('[data-test-id="bridge-origin-token"]')
+        .should('be.visible')
+        .and('contain.text', fixture.defaultOriginToken)
+    })
+  })
 })

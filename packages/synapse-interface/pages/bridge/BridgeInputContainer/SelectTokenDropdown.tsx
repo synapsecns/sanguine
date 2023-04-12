@@ -55,7 +55,7 @@ const SelectTokenDropdown = ({
           </div>
           <div className="text-left cursor-pointer">
             <h4 className="text-lg font-medium text-white">
-              <span>{symbol}</span>
+              <span data-test-id="bridge-origin-token">{symbol}</span>
               <ChevronDownIcon className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180" />
             </h4>
           </div>
