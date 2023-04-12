@@ -12,7 +12,7 @@ const SelectTokenDropdown = ({
   chainId,
   selectedToken,
   onClick,
-}: {
+}:  {
   chainId: number
   selectedToken: Token
   onClick: () => void

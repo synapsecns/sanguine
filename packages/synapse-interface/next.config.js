@@ -1,8 +1,17 @@
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+  eslint: {
+    // TODO: enable
+    ignoreDuringBuilds: true,
+  },
+  webpack: (config, { isServer }) => {
+    config.resolve.plugins = [
+      new TsconfigPathsPlugin({ configFileName: './tsconfig.json' }),
+    ]
+    return config
   },
 }
 
