@@ -208,6 +208,12 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
+    // solhint-disable-next-line ordering
+    function receiptQueueLength() external view returns (uint256) {
+        return _receiptQueue.length();
+    }
+
+    /// @inheritdoc InterfaceSummit
     function getLatestState(uint32 origin) external view returns (bytes memory statePayload) {
         // TODO: implement once Agent Merkle Tree is done
     }

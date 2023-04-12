@@ -89,6 +89,11 @@ interface InterfaceSummit {
     function actorTips(address actor) external view returns (uint128 earned, uint128 claimed);
 
     /**
+     * @notice Returns the amount of receipts in the "Receipt Quarantine Queue".
+     */
+    function receiptQueueLength() external view returns (uint256);
+
+    /**
      * @notice Returns the state with the highest known nonce
      * submitted by any of the currently active Guards.
      * @param origin        Domain of origin chain
