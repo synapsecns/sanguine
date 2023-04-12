@@ -80,13 +80,54 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     }
   }, [])
 
+  useEffect(() => {
+    if (!router.isReady) {
+      return
+    }
+    const {
+      outputChain: toChainIdUrl,
+      inputCurrency: fromTokenSymbolUrl,
+      outputCurrency: toTokenSymbolUrl,
+    } = router.query
+
+    let tempFromToken: Token = getMostCommonSwapableType(fromChainId)
+
+    if (fromTokenSymbolUrl) {
+      let token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
+      if (token) {
+        tempFromToken = token
+      }
+    }
+    const { bridgeableToken, newToChain, bridgeableTokens, bridgeableChains } =
+      handleNewFromToken(
+        tempFromToken,
+        toChainIdUrl ? Number(toChainIdUrl) : undefined,
+        toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
+        fromChainId
+      )
+    resetTokenPermutation(
+      tempFromToken,
+      newToChain,
+      bridgeableToken,
+      bridgeableChains,
+      bridgeableTokens,
+      tempFromToken.symbol,
+      bridgeableToken.symbol
+    )
+    updateUrlParams({
+      outputChain: newToChain,
+      inputCurrency: fromToken.symbol,
+      outputCurrency: bridgeableToken.symbol,
+    })
+  }, [router.isReady])
+
   /*
   useEffect Trigger: connectedChain
   - when the connected chain changes (wagmi hook), update the state
   */
   useEffect(() => {
-    if (connectedChain?.id && connectedChain?.id !== fromChainId) {
-      if (fromChainId === undefined || address === undefined) {
+    if (connectedChain?.id) {
+      if (address === undefined) {
         return
       }
       setFromChainId(connectedChain?.id)
@@ -98,8 +139,9 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       ).then((tokens) => {
         setFromTokens(tokens)
       })
+      return
     }
-  }, [connectedChain])
+  }, [connectedChain?.id])
 
   /*
   useEffect Triggers: fromToken, toToken, fromInput, fromChainId, toChainId, time
@@ -134,7 +176,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     newFromTokenSymbol: string,
     newBridgeableTokenSymbol: string
   ) => {
-    console.log('newFromToken', newFromToken)
     setFromToken(newFromToken)
     setToChainId(newToChain)
     setToToken(newToToken)
@@ -240,6 +281,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       wallet
     )
     const allowance = await erc20.allowance(address, routerAddress)
+    console.log('allowance', allowance, erc20, routerAddress)
     return allowance
   }
 
@@ -363,12 +405,22 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         )
         return
       case 'to':
-        setToChainId(chainId)
-        updateUrlParams({
-          outputChain: chainId,
-          inputCurrency: fromToken.symbol,
-          outputCurrency: toToken.symbol,
-        })
+        const {
+          bridgeableToken: toBridgeableToken,
+          newToChain: toNewToChain,
+          bridgeableTokens: toBridgeableTokens,
+          bridgeableChains: toBridgeableChains,
+        } = handleNewFromToken(fromToken, chainId, toToken.symbol, fromChainId)
+        resetTokenPermutation(
+          fromToken,
+          toNewToChain,
+          toBridgeableToken,
+          toBridgeableChains,
+          toBridgeableTokens,
+          fromToken.symbol,
+          toBridgeableToken.symbol
+        )
+
         return
     }
   }
@@ -398,6 +450,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         return
       case 'to':
         setToToken(token)
+        resetRates()
         updateUrlParams({
           outputChain: toChainId,
           inputCurrency: fromToken.symbol,
@@ -417,8 +470,8 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       await SynapseSDK.bridgeQuote(
         fromChainId,
         toChainId,
-        fromToken.addresses[fromChainId].toLowerCase(),
-        toToken.addresses[toChainId].toLowerCase(),
+        fromToken.addresses[fromChainId],
+        toToken.addresses[toChainId],
         fromInput.bigNum
       )
     if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
@@ -432,8 +485,9 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
 
     const allowance =
       fromToken.addresses[fromChainId] === AddressZero
-        ? -1
+        ? Zero
         : await getCurrentTokenAllowance(routerAddress)
+    console.log('allowance:3 ', allowance)
     setBridgeQuote({
       outputAmount: toValueBigNum,
       outputAmountString: commify(

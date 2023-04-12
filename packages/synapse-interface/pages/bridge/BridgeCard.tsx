@@ -16,7 +16,7 @@ import { PageHeader } from '@components/PageHeader'
 import { CoinSlideOver } from '@components/misc/CoinSlideOver'
 import { NetworkSlideOver } from '@components/misc/NetworkSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
-import { Zero } from '@ethersproject/constants'
+import { Zero, MaxInt256 } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
 import { fetchSigner } from '@wagmi/core'
 import { SECTION_TRANSITION_PROPS } from '@styles/transitions'
@@ -146,17 +146,11 @@ const BridgeCard = ({
       erc20ABI,
       wallet
     )
-    const approveTx = await erc20.approve(
-      bridgeQuote.routerAddress,
-      fromInput.bigNum,
-      {
-        gasPrice: await wallet.provider.getGasPrice(),
-      }
-    )
+    const approveTx = await erc20.approve(bridgeQuote.routerAddress, MaxInt256)
 
     try {
       await approveTx.wait()
-      console.log(`Transaction mined succesfully: ${approveTx.hash}`)
+      console.log(`Transaction mined successfully: ${approveTx.hash}`)
     } catch (error) {
       console.log(`Transaction failed with error: ${error}`)
     }
@@ -198,6 +192,11 @@ const BridgeCard = ({
     console.log('data', data)
   }
 
+  // console.log(
+  //   bridgeQuote?.allowance,
+  //   bridgeQuote?.allowance,
+  //   bridgeQuote?.allowance?.lt(fromInput.bigNum)
+  // )
   // some messy button gen stuff (will re-write)
   const isFromBalanceEnough = fromTokenBalance?.gt(fromInput.bigNum)
   let destAddrNotValid
@@ -213,7 +212,6 @@ const BridgeCard = ({
     btnLabel = `Amount must be greater than fee`
   } else if (
     bridgeQuote?.allowance &&
-    bridgeQuote?.allowance?.gt(Zero) &&
     bridgeQuote?.allowance?.lt(fromInput.bigNum)
   ) {
     buttonAction = approveToken
@@ -243,16 +241,17 @@ const BridgeCard = ({
       btnLabel = 'Slippage High - Bridge Anyway?'
     }
   }
-  const disabled =
-    fromChainId === toChainId ||
-    bridgeQuote.outputAmount.eq(0) ||
-    !isFromBalanceEnough ||
-    error != null ||
-    destAddrNotValid
+
   const actionButton = (
     <TransactionButton
       className={btnClassName}
-      disabled={disabled}
+      disabled={
+        fromChainId === toChainId ||
+        bridgeQuote.outputAmount.eq(0) ||
+        !isFromBalanceEnough ||
+        error != null ||
+        destAddrNotValid
+      }
       onClick={() => buttonAction()}
       onSuccess={() => {
         onChangeFromAmount('')
@@ -261,20 +260,20 @@ const BridgeCard = ({
       pendingLabel={pendingLabel}
     />
   )
-  const swapBtn = (
-    <TransactionButton
-      className={btnClassName}
-      disabled={disabled}
-      onClick={() => executeBridge()}
-      onSuccess={() => {
-        onChangeFromAmount('')
-      }}
-      label={btnLabel}
-      pendingLabel={`Bridging funds...`}
-    />
-  )
+  // const swapBtn = (
+  //   <TransactionButton
+  //     className={btnClassName}
+  //     disabled={disabled}
+  //     onClick={() => executeBridge()}
+  //     onSuccess={() => {
+  //       onChangeFromAmount('')
+  //     }}
+  //     label={btnLabel}
+  //     pendingLabel={`Bridging funds...`}
+  //   />
+  // )
 
-  const actionBtn = swapBtn
+  // const actionBtn = swapBtn
   const bridgeCardMainContent = (
     <>
       <Grid cols={{ xs: 1 }} gap={10} className="py-1 place-content-center">
@@ -308,7 +307,7 @@ const BridgeCard = ({
           setDestinationAddress={setDestinationAddress}
         />
       </Transition>
-      <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">{actionBtn}</div>
+      <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">{actionButton}</div>
     </>
   )
 
