@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+  webpack: (config, { isServer }) => {
+    config.resolve.extensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
+    return config
   },
 }
 
