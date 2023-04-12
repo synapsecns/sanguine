@@ -34,7 +34,7 @@ import (
 	"testing"
 )
 
-const gasLimit = 5000000
+const gasLimit = 10000000
 
 // Backend contains the anvil test backend.
 type Backend struct {
