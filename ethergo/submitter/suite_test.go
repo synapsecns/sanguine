@@ -81,7 +81,7 @@ func (s *SubmitterSuite) SetupSuite() {
 	go func() {
 		defer wg.Done()
 		var err error
-		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s)
+		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
 		s.metrics, err = metrics.NewByType(s.GetSuiteContext(), buildInfo, metrics.Jaeger)
 		s.Require().NoError(err)
 	}()
@@ -161,7 +161,7 @@ func TestTXSubmitterDBSuite(t *testing.T) {
 
 func (t *TXSubmitterDBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t)
+	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
 	var err error
 	t.metrics, err = metrics.NewByType(t.GetTestContext(), buildInfo, metrics.Jaeger)
 	t.Require().NoError(err)
@@ -169,6 +169,8 @@ func (t *TXSubmitterDBSuite) SetupSuite() {
 
 func (t *TXSubmitterDBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
+
+	t.dbs = []db.Service{}
 
 	t.setupMysqlDB()
 
