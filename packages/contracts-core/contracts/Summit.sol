@@ -126,7 +126,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
             // This will revert if Guard has previously submitted
             // a fresher state than one in the snapshot.
-            _acceptGuardSnapshot(snapshot, agent);
+            _acceptGuardSnapshot(snapshot, agent, status.index);
         } else {
             // Check that Notary who submitted the snapshot is not in dispute
             require(!_inDispute(agent), "Notary is in dispute");

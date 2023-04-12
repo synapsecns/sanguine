@@ -20,12 +20,17 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     using StateLib for bytes;
     using TypedMemView for bytes29;
 
+    /// @notice Struct that represents stored State of Origin contract
+    /// @param guardIndex   Index of Guard who submitted this State to Summit
+    /// @param notaryIndex  Index of Notary who submitted this State to Summit
     struct SummitState {
         bytes32 root;
         uint32 origin;
         uint32 nonce;
         uint40 blockNumber;
         uint40 timestamp;
+        uint32 guardIndex;
+        uint32 notaryIndex;
     }
     // 112 bits left for tight packing
 
@@ -137,12 +142,12 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Accepts a Snapshot signed by a Guard.
     /// It is assumed that the Guard signature has been checked outside of this contract.
-    function _acceptGuardSnapshot(Snapshot snapshot, address guard) internal {
+    function _acceptGuardSnapshot(Snapshot snapshot, address guard, uint32 guardIndex) internal {
         // Snapshot Signer is a Guard: save the states for later use.
         uint256 statesAmount = snapshot.statesAmount();
         uint256[] memory statePtrs = new uint256[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
-            statePtrs[i] = _saveState(snapshot.state(i), guard);
+            statePtrs[i] = _saveState(snapshot.state(i), guard, guardIndex);
             // Guard either submitted a fresh state, or reused state submitted by another Guard
             // In any case, the "state pointer" would never be zero
             assert(statePtrs[i] != 0);
@@ -214,7 +219,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @dev Saves the state signed by a Guard.
-    function _saveState(State state, address guard) internal returns (uint256 statePtr) {
+    function _saveState(State state, address guard, uint32 guardIndex) internal returns (uint256 statePtr) {
         uint32 origin = state.origin();
         // Check that Guard hasn't submitted a fresher State before
         require(state.nonce() > _latestState(origin, guard).nonce, "Outdated nonce");
@@ -223,7 +228,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         // Save state only if it wasn't previously submitted
         if (statePtr == 0) {
             // Extract data that needs to be saved
-            SummitState memory summitState = _toSummitState(state);
+            SummitState memory summitState = _toSummitState(state, guardIndex);
             _states.push(summitState);
             // State is stored at (length - 1), but we are tracking "index PLUS 1" as "pointer"
             statePtr = _states.length;
@@ -297,12 +302,14 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @dev Returns a SummitState struct to save in the contract.
-    function _toSummitState(State state) internal pure returns (SummitState memory summitState) {
+    function _toSummitState(State state, uint32 guardIndex) internal pure returns (SummitState memory summitState) {
         summitState.root = state.root();
         summitState.origin = state.origin();
         summitState.nonce = state.nonce();
         summitState.blockNumber = state.blockNumber();
         summitState.timestamp = state.timestamp();
+        summitState.guardIndex = guardIndex;
+        // summitState.notaryIndex is left as ZERO
     }
 
     /// @dev Returns a formatted payload for a stored SummitAttestation.
