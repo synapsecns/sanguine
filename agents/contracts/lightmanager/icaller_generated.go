@@ -3,6 +3,8 @@
 package lightmanager
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -25,6 +27,13 @@ type ILightManagerCaller interface {
 	//
 	// Solidity: function destination() view returns(address)
 	Destination(opts *bind.CallOpts) (common.Address, error)
+	// GetAgent is a free data retrieval call binding the contract method 0x2de5aaf7.
+	//
+	// Solidity: function getAgent(uint256 index) view returns(address agent, (uint8,uint32,uint32) status)
+	GetAgent(opts *bind.CallOpts, index *big.Int) (struct {
+		Agent  common.Address
+		Status AgentStatus
+	}, error)
 	// LocalDomain is a free data retrieval call binding the contract method 0x8d3638f4.
 	//
 	// Solidity: function localDomain() view returns(uint32)

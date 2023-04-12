@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/common"
 	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
 	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"
@@ -23,6 +24,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
+	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
@@ -36,6 +38,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
+	scribesqlite "github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
 )
 
 // SimulatedBackendsTestSuite can be used as the base for any test needing simulated backends
@@ -295,7 +298,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	wg.Wait()
 
 	a.SetupSummit(a.TestDeployManager)
-	/*a.SetupDestination(a.TestDeployManager)
+	a.SetupDestination(a.TestDeployManager)
 	a.SetupOrigin(a.TestDeployManager)
 
 	err := a.TestDeployManager.LoadHarnessContractsOnChains(
@@ -318,7 +321,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	if err != nil {
 		a.T().Fatal(err)
 	}
-	a.ExecutorTestDB = sqliteStore*/
+	a.ExecutorTestDB = sqliteStore
 }
 
 // makeBackend creates a new backend. These backends are modified to accept the higher gas limit required by the summit harness.

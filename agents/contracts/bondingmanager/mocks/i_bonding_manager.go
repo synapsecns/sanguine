@@ -312,6 +312,39 @@ func (_m *IBondingManager) FilterStatusUpdated(opts *bind.FilterOpts, domain []u
 	return r0, r1
 }
 
+// GetAgent provides a mock function with given fields: opts, index
+func (_m *IBondingManager) GetAgent(opts *bind.CallOpts, index *big.Int) (struct {
+	Agent  common.Address
+	Status bondingmanager.AgentStatus
+}, error) {
+	ret := _m.Called(opts, index)
+
+	var r0 struct {
+		Agent  common.Address
+		Status bondingmanager.AgentStatus
+	}
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, *big.Int) struct {
+		Agent  common.Address
+		Status bondingmanager.AgentStatus
+	}); ok {
+		r0 = rf(opts, index)
+	} else {
+		r0 = ret.Get(0).(struct {
+			Agent  common.Address
+			Status bondingmanager.AgentStatus
+		})
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, *big.Int) error); ok {
+		r1 = rf(opts, index)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetLeafs provides a mock function with given fields: opts, indexFrom, amount
 func (_m *IBondingManager) GetLeafs(opts *bind.CallOpts, indexFrom *big.Int, amount *big.Int) ([][32]byte, error) {
 	ret := _m.Called(opts, indexFrom, amount)

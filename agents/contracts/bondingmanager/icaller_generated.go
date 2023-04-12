@@ -35,6 +35,13 @@ type IBondingManagerCaller interface {
 	//
 	// Solidity: function destination() view returns(address)
 	Destination(opts *bind.CallOpts) (common.Address, error)
+	// GetAgent is a free data retrieval call binding the contract method 0x2de5aaf7.
+	//
+	// Solidity: function getAgent(uint256 index) view returns(address agent, (uint8,uint32,uint32) status)
+	GetAgent(opts *bind.CallOpts, index *big.Int) (struct {
+		Agent  common.Address
+		Status AgentStatus
+	}, error)
 	// GetLeafs is a free data retrieval call binding the contract method 0x33d1b2e8.
 	//
 	// Solidity: function getLeafs(uint256 indexFrom, uint256 amount) view returns(bytes32[] leafs)

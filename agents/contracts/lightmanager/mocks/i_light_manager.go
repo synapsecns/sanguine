@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	big "math/big"
+
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 	common "github.com/ethereum/go-ethereum/common"
 
@@ -188,6 +190,39 @@ func (_m *ILightManager) FilterStatusUpdated(opts *bind.FilterOpts, domain []uin
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []uint32, []common.Address) error); ok {
 		r1 = rf(opts, domain, agent)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAgent provides a mock function with given fields: opts, index
+func (_m *ILightManager) GetAgent(opts *bind.CallOpts, index *big.Int) (struct {
+	Agent  common.Address
+	Status lightmanager.AgentStatus
+}, error) {
+	ret := _m.Called(opts, index)
+
+	var r0 struct {
+		Agent  common.Address
+		Status lightmanager.AgentStatus
+	}
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, *big.Int) struct {
+		Agent  common.Address
+		Status lightmanager.AgentStatus
+	}); ok {
+		r0 = rf(opts, index)
+	} else {
+		r0 = ret.Get(0).(struct {
+			Agent  common.Address
+			Status lightmanager.AgentStatus
+		})
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, *big.Int) error); ok {
+		r1 = rf(opts, index)
 	} else {
 		r1 = ret.Error(1)
 	}
