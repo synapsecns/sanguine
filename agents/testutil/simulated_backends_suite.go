@@ -117,7 +117,7 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	a.TestSuite.SetupSuite()
 	a.logDir = filet.TmpDir(a.T(), "")
-	localmetrics.SetupTestJaeger(a.GetSuiteContext(), a.T(), localmetrics.WithKeepContainers(true))
+	localmetrics.SetupTestJaeger(a.GetSuiteContext(), a.T())
 
 	var err error
 	a.ScribeMetrics, err = metrics.NewByType(a.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
