@@ -39,7 +39,7 @@ runs:
 
     - uses: actions/setup-node@v3
       with:
-        node-version: '${{ steps.nvm.outputs.NVMRC }}'
+        node-version: '${{ steps.nvmrc.outputs.NVMRC }}'
         cache: ${{ inputs.cache }}
         cache-dependency-path: ${{ inputs.cache-path }}
 
