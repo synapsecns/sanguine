@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {HistoricalTree} from "../libs/Merkle.sol";
-import {OriginState, State, StateLib} from "../libs/State.sol";
+import {State, StateLib} from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {DomainContext} from "../context/DomainContext.sol";
 import {StateHubEvents} from "../events/StateHubEvents.sol";
@@ -18,6 +18,12 @@ import {IStateHub} from "../interfaces/IStateHub.sol";
  */
 abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     using StateLib for bytes;
+
+    struct OriginState {
+        uint40 blockNumber;
+        uint40 timestamp;
+    }
+    // 176 bits left for tight packing
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -55,8 +61,7 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
     function suggestState(uint32 nonce) public view returns (bytes memory stateData) {
         // This will revert if nonce is out of range
         bytes32 root = _tree.root(nonce);
-        OriginState memory state = _originStates[nonce];
-        return state.formatOriginState({root_: root, origin_: localDomain, nonce_: nonce});
+        return _formatOriginState(_originStates[nonce], root, localDomain, nonce);
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -67,22 +72,21 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         // This will revert if _tree.roots is non-empty
         bytes32 savedRoot = _tree.initializeRoots();
         // Save root for empty merkle _tree with block number and timestamp of initialization
-        _saveState(savedRoot, StateLib.originState());
+        _saveState(savedRoot, _toOriginState());
     }
 
     /// @dev Inserts leaf into the Merkle Tree and saves the updated origin State.
     function _insertAndSave(bytes32 leaf) internal {
         bytes32 newRoot = _tree.insert(leaf);
-        _saveState(newRoot, StateLib.originState());
+        _saveState(newRoot, _toOriginState());
     }
 
     /// @dev Saves an updated state of the Origin contract
     function _saveState(bytes32 root, OriginState memory state) internal {
-        // State nonce is its index in `_originStates` array
-        uint32 stateNonce = uint32(_originStates.length);
+        uint32 nonce = _nextNonce();
         _originStates.push(state);
         // Emit event with raw state data
-        emit StateSaved(state.formatOriginState({root_: root, origin_: localDomain, nonce_: stateNonce}));
+        emit StateSaved(_formatOriginState(state, root, localDomain, nonce));
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
@@ -104,6 +108,35 @@ abstract contract StateHub is DomainContext, StateHubEvents, IStateHub {
         // Check if state root matches the historical one
         if (state.root() != _tree.root(nonce)) return false;
         // Check if state metadata matches the historical one
-        return state.equalToOrigin(_originStates[nonce]);
+        return _areEqual(state, _originStates[nonce]);
+    }
+
+    // ═════════════════════════════════════════════ STRUCT FORMATTING ═════════════════════════════════════════════════
+
+    /// @dev Returns a formatted payload for a stored OriginState.
+    function _formatOriginState(OriginState memory originState, bytes32 root, uint32 origin, uint32 nonce)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return StateLib.formatState({
+            root_: root,
+            origin_: origin,
+            nonce_: nonce,
+            blockNumber_: originState.blockNumber,
+            timestamp_: originState.timestamp
+        });
+    }
+
+    /// @dev Returns a OriginState struct to save in the contract.
+    // solhint-disable-next-line ordering
+    function _toOriginState() internal view returns (OriginState memory originState) {
+        originState.blockNumber = uint40(block.number);
+        originState.timestamp = uint40(block.timestamp);
+    }
+
+    /// @dev Checks that a state and its Origin representation are equal.
+    function _areEqual(State state, OriginState memory originState) internal pure returns (bool) {
+        return state.blockNumber() == originState.blockNumber && state.timestamp() == originState.timestamp;
     }
 }
