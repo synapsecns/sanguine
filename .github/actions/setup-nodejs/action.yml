@@ -25,12 +25,17 @@ runs:
         echo $GITHUB_OUTPUT
         echo "##[set-output name=NVRMC;]$(echo $NVMRC)"
       shell: bash
-      id: nvm
+      id: nvm2
 
-    - name: Setup upterm session
-      uses: lhotari/action-upterm@v1
-      env:
-        node-version: '${{ steps.nvm.outputs.NVMRC }}'
+    - name: Read .nvmrc
+      run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+      shell: bash
+      id: nvmrc
+
+#    - name: Setup upterm session
+#      uses: lhotari/action-upterm@v1
+#      env:
+#        node-version: '${{ steps.nvm.outputs.NVMRC }}'
 
     - uses: actions/setup-node@v3
       with:
