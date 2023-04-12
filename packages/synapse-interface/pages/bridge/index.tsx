@@ -343,7 +343,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   }
 
   /*
-   Function: handleChainChange
+  Function: handleChainChange
   - Produces and alert if chain not connected (upgrade to toaster)
   - Handles flipping to and from chains if flag is set to true
   - Handles altering the chain state for origin or destination depending on the type specified.
@@ -364,8 +364,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
           .then((res) => {
             return res
           })
-          .catch((err) => {
-            console.log("can't switch network ser", err, chainId)
+          .catch(() => {
             return undefined
           })
         if (res === undefined) {
@@ -510,6 +509,42 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     })
   }
 
+  /*
+  Function: approveToken
+  - Gets raw unsigned tx data from sdk and then execute it with ethers.
+  - Only executes if token has already been approved.
+   */
+  const executeBridge = async () => {
+    const wallet = await fetchSigner({
+      chainId: fromChainId,
+    })
+
+    // if ()
+    const data = await SynapseSDK.bridge(
+      address, //To Address
+      fromChainId,
+      toChainId,
+      fromToken.addresses[fromChainId as keyof Token['addresses']], // To token Address **
+      fromInput.bigNum,
+      bridgeQuote.quotes.originQuery,
+      bridgeQuote.quotes.destQuery
+    )
+      .then((res) => {
+        const tx = res
+        wallet
+          .sendTransaction(tx)
+          .then((res) => {
+            console.log('sendTransaction', res)
+          })
+          .catch((err) => console.log('sendTransaction', err))
+      })
+      .catch((err) => {
+        console.log('bridge', err)
+      })
+
+    console.log('data', data)
+  }
+
   return (
     <LandingPageWrapper>
       <main className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none">
@@ -538,6 +573,9 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
                     handleTokenChange={handleTokenChange}
                     onChangeFromAmount={onChangeFromAmount}
                     setDestinationAddress={setDestinationAddress}
+                    executeBridge={executeBridge}
+                    resetRates={resetRates}
+                    setTime={setTime}
                   />
                   <ActionCardFooter link={HOW_TO_BRIDGE_URL} />
                 </div>
@@ -550,4 +588,5 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     </LandingPageWrapper>
   )
 }
+
 export default BridgePage
