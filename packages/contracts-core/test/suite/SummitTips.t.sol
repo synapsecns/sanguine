@@ -34,6 +34,12 @@ contract SummitTipsTest is DisputeHubTest {
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
 
+    modifier checkQueueLength(int256 diff) {
+        uint256 len = InterfaceSummit(summit).receiptQueueLength();
+        _;
+        assertEq(InterfaceSummit(summit).receiptQueueLength(), uint256(int256(len) + diff), "!queueLength");
+    }
+
     function setUp() public override {
         super.setUp();
         guard0 = domains[0].agents[0];
@@ -63,7 +69,7 @@ contract SummitTipsTest is DisputeHubTest {
         uint256 rcptNotaryIndex,
         uint256 attNotaryIndex,
         bool isSuccess
-    ) public {
+    ) public checkQueueLength(1) {
         prepareReceipt(re, originZero, attNotaryIndex, isSuccess);
         rcptNotary = domains[DOMAIN_REMOTE].agents[rcptNotaryIndex % DOMAIN_AGENTS];
         emit log_named_address("Receipt Notary", rcptNotary);
@@ -118,7 +124,7 @@ contract SummitTipsTest is DisputeHubTest {
         bool originZero,
         uint256 rcptNotaryIndex,
         uint256 attNotaryIndex
-    ) public {
+    ) public checkQueueLength(0) {
         test_submitReceipt(re, originZero, rcptNotaryIndex, attNotaryIndex, true);
         skip(BONDING_OPTIMISTIC_PERIOD);
         assertTrue(InterfaceSummit(summit).distributeTips());
@@ -131,7 +137,7 @@ contract SummitTipsTest is DisputeHubTest {
         bool originZero,
         uint256 rcptNotaryIndex,
         uint256 attNotaryIndex
-    ) public {
+    ) public checkQueueLength(0) {
         test_submitReceipt(re, originZero, rcptNotaryIndex, attNotaryIndex, false);
         skip(BONDING_OPTIMISTIC_PERIOD);
         assertTrue(InterfaceSummit(summit).distributeTips());
@@ -146,7 +152,7 @@ contract SummitTipsTest is DisputeHubTest {
         uint256 attNotaryIndex,
         uint256 rcptNotaryIndexFinal,
         address finalExecutor
-    ) public {
+    ) public checkQueueLength(0) {
         test_distributeTips_failed(re, originZero, rcptNotaryIndex, attNotaryIndex);
         re.finalExecutor = createExecutorEOA(finalExecutor, "Final Executor");
         rcptNotaryFinal = domains[DOMAIN_REMOTE].agents[rcptNotaryIndexFinal % DOMAIN_AGENTS];
@@ -157,6 +163,20 @@ contract SummitTipsTest is DisputeHubTest {
         skip(BONDING_OPTIMISTIC_PERIOD);
         assertTrue(InterfaceSummit(summit).distributeTips());
         checkAwardedTips(re, true);
+    }
+
+    function test_distributeTips_emptyQueue() public checkQueueLength(0) {
+        RawExecReceipt memory re;
+        test_distributeTips_success(re, true, 0, 0);
+        assertFalse(InterfaceSummit(summit).distributeTips());
+    }
+
+    function test_distributeTips_optimisticPeriodNotOver(uint256 timePassed) public checkQueueLength(1) {
+        RawExecReceipt memory re;
+        test_submitReceipt(re, false, 0, 0, false);
+        timePassed = timePassed % BONDING_OPTIMISTIC_PERIOD;
+        skip(timePassed);
+        assertFalse(InterfaceSummit(summit).distributeTips());
     }
 
     function checkAwardedTips(RawExecReceipt memory re, bool isFinal) public {
