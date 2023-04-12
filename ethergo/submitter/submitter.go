@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -23,6 +24,8 @@ import (
 	"sync"
 	"time"
 )
+
+var logger = log.Logger("ethergo-submitter")
 
 // TransactionSubmitter is the interface for submitting transactions to the chain.
 type TransactionSubmitter interface {
@@ -49,6 +52,11 @@ type txSubmitterImpl struct {
 	db db.Service
 	// retryOnce is used to return 0 on the first call to GetRetryInterval.
 	retryOnce sync.Once
+	// retryNow is used to trigger a retry immediately.
+	// it circumvents the retry interval.
+	// to prevent memory leaks, this has a buffer of 1.
+	// callers adding to this channel should not block.
+	retryNow chan bool
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -58,9 +66,10 @@ type ClientFetcher interface {
 
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher) TransactionSubmitter {
 	return &txSubmitterImpl{
-		metrics: metrics,
-		signer:  signer,
-		fetcher: fetcher,
+		metrics:  metrics,
+		signer:   signer,
+		fetcher:  fetcher,
+		retryNow: make(chan bool, 1),
 	}
 }
 
@@ -74,8 +83,63 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 }
 
 func (t *txSubmitterImpl) Start(ctx context.Context) error {
-	// TODO implement me
-	panic("implement me")
+	i := 0
+	for {
+		i++
+		shouldExit, err := t.runSelector(ctx, i)
+		if err != nil {
+			logger.Warn(err)
+		}
+		if shouldExit {
+			return nil
+		}
+	}
+}
+
+// runSelector runs the selector start loop
+func (t *txSubmitterImpl) runSelector(parentCtx context.Context, i int) (shouldExit bool, err error) {
+	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.Start", trace.WithAttributes(attribute.Int("i", i)))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	select {
+	case <-ctx.Done():
+		return true, fmt.Errorf("context done: %w", ctx.Err())
+	case <-time.After(t.GetRetryInterval()):
+		err = t.processQueue(ctx)
+	case <-t.retryNow:
+		err = t.processQueue(ctx)
+	}
+	return false, err
+}
+
+// processQueue processes the queue of transactions.
+func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
+	// TODO: this might be too short of a deadline depending on the number of transactions in the queue
+	deadlineCtx, cancel := context.WithDeadline(parentCtx, time.Now().Add(time.Second*60))
+	defer cancel()
+
+	ctx, span := t.metrics.Tracer().Start(deadlineCtx, "submitter.ProcessQueue")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	// get all the transactions in the queue
+	transactions, err := t.db.GetTXS(ctx, t.signer.Address(), nil, db.Pending, db.Replaced)
+	if err != nil {
+		return fmt.Errorf("could not get transactions: %w", err)
+	}
+
+	sortedTXes := sortTxes(transactions)
+
+	g, ctx := errgroup.WithContext(ctx)
+	_ = g
+	for chainID := range sortedTXes {
+		_ = chainID
+	}
+
+	return nil
 }
 
 func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (_ uint64, err error) {
@@ -148,6 +212,17 @@ func (t *txSubmitterImpl) storeTX(ctx context.Context, tx *types.Transaction, st
 // ContractCallType is a contract call that can be called safely.
 type ContractCallType func(transactor *bind.TransactOpts) (tx *types.Transaction, err error)
 
+// triggerProcessQueue triggers the process queue.
+// will not block if the channel is full (the tx will be processed on the next retry).
+func (t *txSubmitterImpl) triggerProcessQueue(ctx context.Context) {
+	select {
+	case <-ctx.Done():
+		return
+	case t.retryNow <- true:
+	default:
+	}
+}
+
 func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error) {
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.SubmitTransaction", trace.WithAttributes(
 		attribute.Stringer("chainID", chainID),
@@ -196,7 +271,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 			return nil, fmt.Errorf("could not sign tx: %w", err)
 		}
 
-		transaction, err = util.CopyTXWithNonce(transaction, newNonce)
+		transaction, err = util.CopyTX(transaction, util.WithNonce(newNonce))
 		if err != nil {
 			return nil, fmt.Errorf("could not copy tx: %w", err)
 		}
@@ -217,9 +292,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		return 0, fmt.Errorf("could not store transaction: %w", err)
 	}
 
-	go func() {
-		t.submitter.SubmitTransaction(ctx, tx)
-	}()
+	t.triggerProcessQueue(ctx)
 
 	return tx.Nonce(), nil
 }

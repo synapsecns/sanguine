@@ -81,7 +81,7 @@ func (s *SubmitterSuite) SetupSuite() {
 	go func() {
 		defer wg.Done()
 		var err error
-		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
+		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s)
 		s.metrics, err = metrics.NewByType(s.GetSuiteContext(), buildInfo, metrics.Jaeger)
 		s.Require().NoError(err)
 	}()
@@ -161,7 +161,7 @@ func TestTXSubmitterDBSuite(t *testing.T) {
 
 func (t *TXSubmitterDBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t)
 	var err error
 	t.metrics, err = metrics.NewByType(t.GetTestContext(), buildInfo, metrics.Jaeger)
 	t.Require().NoError(err)
@@ -188,6 +188,8 @@ func (t *TXSubmitterDBSuite) SetupTest() {
 	}
 
 	chainIDs := []uint{1, 3, 4}
+	var backendMux sync.Mutex
+
 	var wg sync.WaitGroup
 	wg.Add(len(chainIDs))
 
@@ -196,7 +198,11 @@ func (t *TXSubmitterDBSuite) SetupTest() {
 			defer wg.Done()
 
 			backend := simulated.NewSimulatedBackendWithChainID(t.GetTestContext(), t.T(), big.NewInt(int64(chainID)))
+
+			backendMux.Lock()
+			t.testBackends = append(t.testBackends, backend)
 			t.managers[chainID] = nonce.NewNonceManager(t.GetTestContext(), backend, backend.GetBigChainID())
+			backendMux.Unlock()
 
 			for _, account := range t.mockAccounts {
 				backend.FundAccount(t.GetTestContext(), account.Address, *fundAmount)

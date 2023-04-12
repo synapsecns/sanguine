@@ -31,6 +31,11 @@ func TxToAttributes(transaction *types.Transaction) []attribute.KeyValue {
 	return txToAttributes(transaction)
 }
 
+// SortTxes exports sortTxes for testing.
+func SortTxes(txs []*types.Transaction) map[uint64][]*types.Transaction {
+	return sortTxes(txs)
+}
+
 const (
 	// HashAttr exports hashAttr for testing.
 	HashAttr = hashAttr

@@ -6,9 +6,11 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/ethergo/chain/gas"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
 	"math/big"
+	"sort"
 )
 
 // copyTransactOpts creates a deep copy of the given TransactOpts struct
@@ -94,4 +96,33 @@ func bigPtrToString(num *big.Int) string {
 		return nullFieldAttribute
 	}
 	return num.String()
+}
+
+// sortTxes sorts a slice of transactions by nonce.
+func sortTxes(txs []*types.Transaction) map[uint64][]*types.Transaction {
+	txesByChainID := make(map[uint64][]*types.Transaction)
+	// put the transactions in a map by chain id
+	for _, t := range txs {
+		txesByChainID[t.ChainId().Uint64()] = append(txesByChainID[t.ChainId().Uint64()], t)
+	}
+
+	for key := range txesByChainID {
+		// sort the transactions by nonce
+		sort.Slice(txesByChainID[key], func(i, j int) bool {
+			iNonce := txesByChainID[key][i].Nonce()
+			jNonce := txesByChainID[key][j].Nonce()
+
+			if iNonce == jNonce {
+				gasCmp := gas.CompareGas(txesByChainID[key][i], txesByChainID[key][j], nil)
+				if gasCmp == 0 || gasCmp == 1 {
+					return false
+				}
+				return true
+			} else {
+				return iNonce < jNonce
+			}
+		})
+	}
+
+	return txesByChainID
 }

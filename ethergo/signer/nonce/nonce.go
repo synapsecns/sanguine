@@ -148,7 +148,7 @@ func (n *nonceManagerImp) NewKeyedTransactor(realSigner *bind.TransactOpts) (*bi
 				return nil, fmt.Errorf("could not get next nonce: %w", err)
 			}
 
-			copiedTx, err := util.CopyTXWithNonce(transaction, nonce.Uint64())
+			copiedTx, err := util.CopyTX(transaction, util.WithNonce(nonce.Uint64()))
 			if err != nil {
 				return nil, fmt.Errorf("could not copy tx: %w", err)
 			}
@@ -179,7 +179,7 @@ func (n *nonceManagerImp) SignTx(ogTx *types.Transaction, signer types.Signer, p
 		return nil, fmt.Errorf("could not get nonce: %w", err)
 	}
 
-	tx, err := util.CopyTXWithNonce(ogTx, nonce.Uint64())
+	tx, err := util.CopyTX(ogTx, util.WithNonce(nonce.Uint64()))
 	if err != nil {
 		return nil, fmt.Errorf("could not copy tx: %w", err)
 	}

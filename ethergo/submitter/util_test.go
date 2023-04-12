@@ -3,15 +3,20 @@ package submitter_test
 import (
 	"context"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
 	"gotest.tools/assert"
 	"math/big"
+	"math/rand"
+	"sync"
 	"testing"
 )
 
@@ -180,6 +185,55 @@ func (s *SubmitterSuite) TestTxToAttributesDynamicTX() {
 	_, hasGasPrice := mapAttr[submitter.GasPriceAttr]
 	s.Require().False(hasGasPrice)
 	s.Require().NotNil(mapAttr[submitter.FromAttr])
+}
+
+func (s *SubmitterSuite) TestSortTxes() {
+	expected := make(map[uint64][]*types.Transaction)
+	var allTxes []*types.Transaction
+	var mapMux sync.Mutex
+	var sliceMux sync.Mutex
+
+	chainIDS := []int64{1, 2, 3, 4, 5}
+	var wg sync.WaitGroup
+	wg.Add(len(chainIDS))
+
+	for i := range chainIDS {
+		chainID := big.NewInt(chainIDS[i])
+		go func() {
+			defer wg.Done()
+			backend := simulated.NewSimulatedBackendWithChainID(s.GetTestContext(), s.T(), chainID)
+
+			testAddress := backend.GetTxContext(s.GetTestContext(), nil)
+			testKey := &keystore.Key{PrivateKey: testAddress.PrivateKey, Address: testAddress.From}
+			for i := 0; i < 50; i++ {
+				mockTX := mocks.MockTx(s.GetTestContext(), s.T(), backend, testKey, types.DynamicFeeTxType)
+				util.CopyTX(mockTX)
+
+				// add to map in order
+				mapMux.Lock()
+				expected[chainID.Uint64()] = append(expected[chainID.Uint64()], mockTX)
+				mapMux.Unlock()
+
+				sliceMux.Lock()
+				allTxes = append(allTxes, mockTX)
+				// shuffle the slice each time
+				rand.Shuffle(len(allTxes), func(i, j int) {
+					allTxes[i], allTxes[j] = allTxes[j], allTxes[i]
+				})
+				sliceMux.Unlock()
+			}
+		}()
+	}
+	wg.Wait()
+
+	sorted := submitter.SortTxes(allTxes)
+	assert.Equal(s.T(), len(sorted), len(expected))
+	for chainID, txes := range expected {
+		for i := range txes {
+			assert.Equal(s.T(), sorted[chainID][i].Hash(), txes[i].Hash())
+		}
+	}
+
 }
 
 func makeAttrMap(tx *types.Transaction) map[string]attribute.Value {

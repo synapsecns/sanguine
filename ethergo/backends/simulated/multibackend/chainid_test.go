@@ -29,15 +29,15 @@ func (s MultiBackendSuite) TestNewConfigWithChainID() {
 	// now use the right chain id and make sure everything is the same
 	newConfig.ChainID = util.CopyBigInt(params.AllEthashProtocolChanges.ChainID)
 	assert.DeepEqual(s.T(), newConfig, params.AllEthashProtocolChanges, testsuite.BigIntComparer())
-	checkBigIntsAreCopied(s.T(), *newConfig, *params.AllEthashProtocolChanges)
+	CheckBigIntsAreCopied(s.T(), *newConfig, *params.AllEthashProtocolChanges)
 
 	// make sure we didn't mutate the chain id, which is always 1337
 	Equal(s.T(), params.AllEthashProtocolChanges.ChainID.Int64(), int64(1337))
 }
 
-// checkBigIntsAreCopied checks if two structs are equal by comparing all of their fields
+// CheckBigIntsAreCopied checks if two structs are equal by comparing all of their fields
 // including big.Int values using reflect.DeepEqual, except for those that are *big.Int.
-func checkBigIntsAreCopied(tb testing.TB, a, b interface{}) {
+func CheckBigIntsAreCopied(tb testing.TB, a, b interface{}) {
 	tb.Helper()
 
 	aValue := reflect.ValueOf(a)

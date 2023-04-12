@@ -32,10 +32,22 @@ func (s Store) GetTXS(ctx context.Context, fromAddress common.Address, chainID *
 		inArgs[i] = int(matchStatuses[i].Int())
 	}
 
-	tx := s.DB().WithContext(ctx).Model(&ETHTX{}).Where(ETHTX{
-		From:    fromAddress.String(),
-		ChainID: chainID.Uint64(),
-	}).Where("%s IN ?", inArgs).Order(fmt.Sprintf("%s desc", statusFieldName)).Find(&dbTXs)
+	query := ETHTX{
+		From: fromAddress.String(),
+	}
+
+	if chainID != nil {
+		query.ChainID = chainID.Uint64()
+	}
+
+	tx := s.DB().WithContext(ctx).
+		Model(&ETHTX{}).
+		Where(query).
+		Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).
+		Order(fmt.Sprintf("%s asc, %s desc", nonceFieldName, statusFieldName)).
+		Group(chainIDFieldName).
+		Limit(50).
+		Find(&dbTXs)
 
 	if tx.Error != nil {
 		return nil, fmt.Errorf("could not get txs: %w", tx.Error)
@@ -88,7 +100,7 @@ func (s Store) GetNonceForChainID(ctx context.Context, fromAddress common.Addres
 
 // PutTX puts a transaction in the database.
 func (s Store) PutTX(ctx context.Context, tx *types.Transaction, status db.Status) error {
-	marshalledTX, err := tx.MarshalJSON()
+	marshalledTX, err := tx.MarshalBinary()
 	if err != nil {
 		return fmt.Errorf("could not marshall tx to json: %w", err)
 	}
@@ -111,6 +123,7 @@ func (s Store) PutTX(ctx context.Context, tx *types.Transaction, status db.Statu
 		ChainID: tx.ChainId().Uint64(),
 		Nonce:   tx.Nonce(),
 		RawTx:   marshalledTX,
+		TXHash:  tx.Hash().String(),
 		Status:  status,
 	}).Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: txHashFieldName}},
