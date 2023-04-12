@@ -80,6 +80,28 @@ contract SummitTipsTest is DisputeHubTest {
         InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
     }
 
+    function test_submitReceipt_notAccepted_pending() public checkQueueLength(1) {
+        RawExecReceipt memory re;
+        re.messageHash = keccak256("First");
+        test_submitReceipt(re, false, 0, 0, false);
+        re.finalExecutor = createExecutorEOA(re.finalExecutor, "Final Executor");
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
+        vm.recordLogs();
+        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        assertEq(vm.getRecordedLogs().length, 0);
+    }
+
+    function test_submitReceipt_notAccepted_outdatedStatus() public checkQueueLength(0) {
+        RawExecReceipt memory re;
+        re.messageHash = keccak256("First");
+        test_distributeTips_success(re, false, 0, 0);
+        re.finalExecutor = address(0);
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
+        vm.recordLogs();
+        InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
+        assertEq(vm.getRecordedLogs().length, 0);
+    }
+
     function test_submitReceipt_revert_signedByGuard(RawExecReceipt memory re) public {
         prepareReceipt(re, false, 0, false);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(guard0, re);
