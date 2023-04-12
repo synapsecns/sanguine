@@ -10,7 +10,7 @@ import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
 import {DisputeHub, ExecutionHub, MessageStatus, Receipt, Tips} from "./hubs/ExecutionHub.sol";
-import {SnapshotHub, SummitAttestation, SummitState} from "./hubs/SnapshotHub.sol";
+import {SnapshotHub} from "./hubs/SnapshotHub.sol";
 import {Attestation, AttestationLib, AttestationReport, Snapshot} from "./hubs/StatementHub.sol";
 import {DomainContext, Versioned} from "./system/SystemContract.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
@@ -22,7 +22,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
 
     // TODO: write docs, pack values
-    struct ReceiptInfo {
+    struct SummitReceipt {
         uint32 origin;
         uint32 destination;
         uint32 snapRootIndex;
@@ -54,7 +54,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // (message hash => receipt data)
-    mapping(bytes32 => ReceiptInfo) private _receiptInfo;
+    mapping(bytes32 => SummitReceipt) private _receipts;
 
     // (message hash => receipt status)
     mapping(bytes32 => ReceiptStatus) private _receiptStatus;
@@ -189,13 +189,13 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // Fetch Notary who signed the receipt. If they are Slashed or in Dispute, exit early.
         (address rcptNotary, AgentStatus memory rcptNotaryStatus) = _getAgent(rcptStatus.receiptNotaryIndex);
         if (_checkNotaryDisputed(messageHash, rcptNotary, rcptNotaryStatus)) return true;
-        ReceiptInfo memory rcptInfo = _receiptInfo[messageHash];
+        SummitReceipt memory summitRcpt = _receipts[messageHash];
         // Fetch Notary who signed the statement with snapshot root. If they are Slashed or in Dispute, exit early.
-        (address attNotary, AgentStatus memory attNotaryStatus) = _getAgent(rcptInfo.attNotaryIndex);
+        (address attNotary, AgentStatus memory attNotaryStatus) = _getAgent(summitRcpt.attNotaryIndex);
         if (_checkNotaryDisputed(messageHash, attNotary, attNotaryStatus)) return true;
         // At this point Receipt is optimistically verified to be correct, as well as the receipt's attestation
         // Meaning we can go ahead and distribute the tip values among the tipped actors.
-        _awardTips(rcptNotary, attNotary, messageHash, rcptInfo, rcptStatus);
+        _awardTips(rcptNotary, attNotary, messageHash, summitRcpt, rcptStatus);
         // Save new receipt status
         rcptStatus.pending = false;
         rcptStatus.tipsAwarded = true;
@@ -243,7 +243,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @dev Deletes all stored receipt data and removes it from the queue.
     function _deleteFromQueue(bytes32 messageHash) internal {
-        delete _receiptInfo[messageHash];
+        delete _receipts[messageHash];
         delete _receiptStatus[messageHash];
         delete _receiptTips[messageHash];
         _receiptQueue.popFront();
@@ -279,7 +279,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // Don't save if we already have the receipt with at least this status
         if (savedRcpt.status >= msgStatus) return false;
         // Save information from the receipt
-        _receiptInfo[messageHash] = ReceiptInfo({
+        _receipts[messageHash] = SummitReceipt({
             origin: receipt.origin(),
             destination: receipt.destination(),
             snapRootIndex: rootData.index,
@@ -314,7 +314,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         address rcptNotary,
         address attNotary,
         bytes32 messageHash,
-        ReceiptInfo memory rcptInfo,
+        SummitReceipt memory summitRcpt,
         ReceiptStatus memory rcptStatus
     ) internal {
         ReceiptTips memory tips = _receiptTips[messageHash];
@@ -324,14 +324,14 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         bool awardFinal = rcptStatus.status == MessageStatus.Success;
         if (awardFirst) {
             // There has been a valid attempt to execute the message
-            _awardSnapshotTip(_roots[rcptInfo.snapRootIndex], tips.summitTip);
+            _awardSnapshotTip(_roots[summitRcpt.snapRootIndex], tips.summitTip);
             _awardAgentTip(attNotary, tips.attestationTip);
-            _awardActorTip(rcptInfo.firstExecutor, tips.executionTip);
+            _awardActorTip(summitRcpt.firstExecutor, tips.executionTip);
         }
         _awardReceiptTip(rcptNotary, awardFirst, awardFinal, tips.summitTip);
         if (awardFinal) {
             // Message has been executed successfully
-            _awardActorTip(rcptInfo.finalExecutor, tips.deliveryTip);
+            _awardActorTip(summitRcpt.finalExecutor, tips.deliveryTip);
         }
     }
 

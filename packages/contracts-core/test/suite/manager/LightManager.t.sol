@@ -57,6 +57,7 @@ contract LightManagerTest is AgentManagerTest {
 
     function test_addAgent_new(address caller, uint32 domain, address agent) public {
         // Should not be an already added agent
+        vm.assume(agent != address(0));
         vm.assume(lightManager.agentStatus(agent).flag == AgentFlag.Unknown);
         bytes32 root = addNewAgent(domain, agent);
         test_setAgentRoot(root);

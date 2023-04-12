@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {OriginState, State, StateLib, SummitState, TypedMemView} from "../../../contracts/libs/State.sol";
+import {State, StateLib, TypedMemView} from "../../../contracts/libs/State.sol";
 
 // solhint-disable ordering
 /// @notice Exposes State methods for testing against golang.
@@ -76,33 +76,5 @@ contract StateHarness {
 
     function isState(bytes memory payload) public pure returns (bool) {
         return payload.ref(0).isState();
-    }
-
-    // ═══════════════════════════════════════════════ ORIGIN STATE ════════════════════════════════════════════════════
-
-    function formatOriginState(OriginState memory originState_, bytes32 root_, uint32 origin_, uint32 nonce_)
-        public
-        pure
-        returns (bytes memory)
-    {
-        return originState_.formatOriginState(root_, origin_, nonce_);
-    }
-
-    function originState() public view returns (OriginState memory state) {
-        return StateLib.originState();
-    }
-
-    function equalToOrigin(bytes memory payload, OriginState memory originState_) public pure returns (bool) {
-        return payload.castToState().equalToOrigin(originState_);
-    }
-
-    // ═══════════════════════════════════════════════ SUMMIT STATE ════════════════════════════════════════════════════
-
-    function formatSummitState(SummitState memory summitState) public pure returns (bytes memory) {
-        return summitState.formatSummitState();
-    }
-
-    function toSummitState(bytes memory payload) public pure returns (SummitState memory state) {
-        return payload.castToState().toSummitState();
     }
 }

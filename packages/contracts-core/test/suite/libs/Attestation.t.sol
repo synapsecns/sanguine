@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {ATTESTATION_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
-import {AttestationHarness, SummitAttestation, TypedMemView} from "../../harnesses/libs/AttestationHarness.t.sol";
+import {AttestationHarness, TypedMemView} from "../../harnesses/libs/AttestationHarness.t.sol";
 
 import {RawAttestation} from "../../utils/libs/SynapseStructs.t.sol";
 
@@ -43,16 +43,6 @@ contract AttestationLibraryTest is SynapseLibraryTest {
     function test_isAttestation(uint8 length) public {
         bytes memory payload = new bytes(length);
         checkCastToAttestation({payload: payload, isAttestation: length == ATTESTATION_LENGTH});
-    }
-
-    function test_formatSummitAttestation(RawAttestation memory ra) public {
-        SummitAttestation memory att = SummitAttestation(ra.snapRoot, ra.agentRoot, ra.blockNumber, ra.timestamp);
-        bytes memory payload = libHarness.formatSummitAttestation(att, ra.nonce);
-        assertEq(
-            payload,
-            libHarness.formatAttestation(ra.snapRoot, ra.agentRoot, ra.nonce, ra.blockNumber, ra.timestamp),
-            "!formatSummitAttestation"
-        );
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
