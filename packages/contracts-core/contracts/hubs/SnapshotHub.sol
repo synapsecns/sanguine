@@ -23,7 +23,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     /// @dev All States submitted by any of the Guards
-    SummitState[] private _guardStates;
+    SummitState[] private _states;
 
     /// @dev All Snapshots submitted by any of the Guards
     SummitSnapshot[] private _guardSnapshots;
@@ -37,12 +37,12 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Pointer for the given State Leaf of the origin
     /// with ZERO as a sentinel value for "state not submitted yet".
-    // (origin => (stateLeaf => {state index in _guardStates PLUS 1}))
+    // (origin => (stateLeaf => {state index in _states PLUS 1}))
     mapping(uint32 => mapping(bytes32 => uint256)) private _leafPtr;
 
     /// @dev Pointer for the latest Agent State of a given origin
     /// with ZERO as a sentinel value for "no states submitted yet".
-    // (origin => (agent => {latest state index in _guardStates PLUS 1}))
+    // (origin => (agent => {latest state index in _states PLUS 1}))
     mapping(uint32 => mapping(address => uint256)) private _latestStatePtr;
 
     /// @dev gap for upgrade safety
@@ -101,11 +101,11 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         // Reconstruct the leafs of Snapshot Merkle Tree: two for each state
         bytes32[] memory hashes = new bytes32[](2 * statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
-            // Get value for "index in _guardStates PLUS 1"
+            // Get value for "index in _states PLUS 1"
             uint256 statePtr = snap.getStatePtr(i);
             // We are never saving zero values when accepting Guard/Notary snapshots, so this holds
             assert(statePtr != 0);
-            SummitState memory guardState = _guardStates[statePtr - 1];
+            SummitState memory guardState = _states[statePtr - 1];
             State state = guardState.formatSummitState().castToState();
             (hashes[2 * i], hashes[2 * i + 1]) = state.subLeafs();
         }
@@ -204,9 +204,9 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         if (statePtr == 0) {
             // Extract data that needs to be saved
             SummitState memory summitState = state.toSummitState();
-            _guardStates.push(summitState);
+            _states.push(summitState);
             // State is stored at (length - 1), but we are tracking "index PLUS 1" as "pointer"
-            statePtr = _guardStates.length;
+            statePtr = _states.length;
             _leafPtr[origin][stateHash] = statePtr;
             // Emit event with raw state data
             emit StateSaved(state.unwrap().clone());
@@ -236,11 +236,11 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         uint256 statesAmount = snapshot.getStatesAmount();
         State[] memory states = new State[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
-            // Get value for "index in _guardStates PLUS 1"
+            // Get value for "index in _states PLUS 1"
             uint256 statePtr = snapshot.getStatePtr(i);
             // We are never saving zero values when accepting Guard/Notary snapshots, so this holds
             assert(statePtr != 0);
-            SummitState memory state = _guardStates[statePtr - 1];
+            SummitState memory state = _states[statePtr - 1];
             // Get the state that Agent used for the snapshot
             states[i] = state.formatSummitState().castToState();
         }
@@ -255,11 +255,11 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// @dev Returns the latest state submitted by the Agent for the origin.
     /// Will return an empty struct, if the Agent hasn't submitted a single origin State yet.
     function _latestState(uint32 origin, address agent) internal view returns (SummitState memory state) {
-        // Get value for "index in _guardStates PLUS 1"
+        // Get value for "index in _states PLUS 1"
         uint256 latestPtr = _latestStatePtr[origin][agent];
         // Check if the Agent has submitted at least one State for origin
         if (latestPtr != 0) {
-            state = _guardStates[latestPtr - 1];
+            state = _states[latestPtr - 1];
         }
         // An empty struct is returned if the Agent hasn't submitted a single State for origin yet.
     }
