@@ -38,7 +38,7 @@ func NewDBSuite(tb testing.TB) *DBSuite {
 
 func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
-	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t)
 
 	var err error
 	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)

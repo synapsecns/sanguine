@@ -51,7 +51,7 @@ func NewTestSuite(tb testing.TB) *APISuite {
 func (g *APISuite) SetupSuite() {
 	g.TestSuite.SetupSuite()
 
-	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g)
 
 	var err error
 	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)

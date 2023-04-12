@@ -12,7 +12,7 @@ import (
 )
 
 func (s *TestHelperSuite) TestEmbeddedScribe() {
-	testScribe := testhelper.NewTestScribe(s.GetTestContext(), s.T(), s.deployManager.GetDeployedContracts(), s.testBackends...)
+	testScribe := testhelper.NewTestScribe(s.GetTestContext(), s, s.deployManager.GetDeployedContracts(), s.testBackends...)
 
 	// let's send some messages on each domain
 	g, gctx := errgroup.WithContext(s.GetTestContext())

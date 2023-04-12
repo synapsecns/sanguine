@@ -8,7 +8,7 @@ import (
 )
 
 func (s *TestHelperSuite) TestOminrpcServer() {
-	omnirpcServer := testhelper.NewOmnirpcServer(s.GetTestContext(), s.T(), s.testBackends...)
+	omnirpcServer := testhelper.NewOmnirpcServer(s.GetTestContext(), s, s.testBackends...)
 
 	for _, testBackend := range s.testBackends {
 		ogBlock, err := testBackend.BlockByNumber(s.GetTestContext(), big.NewInt(1))

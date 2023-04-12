@@ -17,27 +17,24 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"github.com/synapsecns/sanguine/services/scribe/node"
-	"testing"
 )
 
 var logger = log.Logger("scribe-testhelper")
 
 // NewTestScribe creates a new scribe server with all the test backends passed in.
 // all contracts in the registry will be tracked.
-func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uint32][]contracts.DeployedContract, backends ...backends.SimulatedTestBackend) string {
-	tb.Helper()
-
+func NewTestScribe(ctx context.Context, ts localmetrics.TestSuite, deployedContracts map[uint32][]contracts.DeployedContract, backends ...backends.SimulatedTestBackend) string {
 	const db = "sqlite"
-	dbPath := filet.TmpDir(tb, "")
+	dbPath := filet.TmpDir(ts.T(), "")
 
-	omnirpcURL := testhelper.NewOmnirpcServer(ctx, tb, backends...)
+	omnirpcURL := testhelper.NewOmnirpcServer(ctx, ts, backends...)
 
-	localmetrics.SetupTestJaeger(ctx, tb)
+	localmetrics.SetupTestJaeger(ctx, ts)
 	metricsProvider, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Jaeger)
-	assert.Nil(tb, err)
+	assert.Nil(ts.T(), err)
 
 	eventDB, err := scribeAPI.InitDB(ctx, "sqlite", dbPath, metricsProvider)
-	assert.Nil(tb, err)
+	assert.Nil(ts.T(), err)
 
 	scribeClients := make(map[uint32][]backfill.ScribeBackend)
 
@@ -49,7 +46,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 
 		// create the scribe backend client
 		backendClient, err := backfill.DialBackend(ctx, testhelper.GetURL(omnirpcURL, backend), metricsProvider)
-		assert.Nil(tb, err)
+		assert.Nil(ts.T(), err)
 
 		// creat ethe scribe client for this chain
 		scribeClients[chainID] = []backfill.ScribeBackend{backendClient}
@@ -71,7 +68,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 	}
 
 	scribe, err := node.NewScribe(eventDB, scribeClients, scribeConfig, metricsProvider)
-	assert.Nil(tb, err)
+	assert.Nil(ts.T(), err)
 
 	go func() {
 		err = scribe.Start(ctx)

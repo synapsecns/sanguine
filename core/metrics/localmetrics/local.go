@@ -42,17 +42,14 @@ type testJaeger struct {
 
 // startServer starts a local jaeger server for testing.
 // this is a separate function so we can export testJaeger for testing.
-func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *testJaeger {
-	tb.Helper()
-
+func startServer(parentCtx context.Context, ts TestSuite, options ...Option) *testJaeger {
 	// create the test jaegar instance
 	tj := testJaeger{
-		tb:    tb,
+		tb:    ts.T(),
 		runID: gofakeit.UUID(),
 		cfg:   makeConfig(options),
 	}
 
-	tb.Helper()
 	// make sure we don't setup two
 	testMux.Lock()
 	defer testMux.Unlock()
@@ -63,9 +60,9 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 	// create the pool
 	var err error
 	tj.pool, err = dockertest.NewPool("")
-	assert.Nil(tb, err)
+	assert.Nil(ts.T(), err)
 
-	tj.logDir = filet.TmpDir(tb, "")
+	tj.logDir = filet.TmpDir(ts.T(), "")
 
 	var wg sync.WaitGroup
 	wg.Add(3)
@@ -75,7 +72,7 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 		// if pyroscope jaeger is enabled, we'll use that ui otherwise we'll use this one
 		if !tj.cfg.enablePyroscopeJaeger {
 			err = os.Setenv(internal.JaegerUIEndpoint, tj.jaegerResource.uiURL)
-			assert.Nil(tb, err)
+			assert.Nil(ts.T(), err)
 		}
 	}()
 
@@ -91,12 +88,13 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 
 	logger.Warnf(tj.buildLogMessage(true))
 
-	tb.Cleanup(func() {
+	ts.DeferAfterSuite(func() {
+		// we'll hit the wrong test if we don't wait for the context to finish
 		defer cancel()
-		// TODO: move me
-		if tb.Failed() {
+
+		if ts.HasFailures() {
 			logger.Warn("Test failed, will temporarily continue serving \n" + tj.buildLogMessage(false))
-		} else if !tj.cfg.keepContainers {
+		} else {
 			tj.purgeResources()
 			if tj.network != nil {
 				_ = tj.network.Close()

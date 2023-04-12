@@ -51,7 +51,7 @@ func NewBackfillSuite(tb testing.TB) *BackfillSuite {
 
 func (b *BackfillSuite) SetupSuite() {
 	b.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
+	localmetrics.SetupTestJaeger(b.GetSuiteContext(), b)
 
 	var err error
 	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)

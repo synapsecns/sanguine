@@ -64,6 +64,8 @@ type TestSuite struct {
 	setupTestCalled atomic.Bool
 	// beforeTestCalled is wether or not before test was called
 	beforeTestCalled atomic.Bool
+	// hasFailures is wether or not any test has failures
+	hasFailures atomic.Bool
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -113,6 +115,11 @@ func (s *TestSuite) BeforeTest(_, _ string) {
 	})
 }
 
+// HasFailures returns wether or not the test suite has failures.
+func (s *TestSuite) HasFailures() bool {
+	return s.hasFailures.Load()
+}
+
 // runDefferedFunctions runs deferred functions.
 func runDeferredFunctions(deferredFuncs []func()) {
 	for _, deferredFunc := range deferredFuncs {
@@ -122,6 +129,10 @@ func runDeferredFunctions(deferredFuncs []func()) {
 
 // TearDownSuite tears down the test suite.
 func (s *TestSuite) TearDownSuite() {
+	if s.T().Failed() {
+		s.hasFailures.Store(true)
+	}
+
 	runDeferredFunctions(s.runAfterSuite)
 	s.suiteContext.cancelFunc()
 
@@ -159,6 +170,10 @@ func (s *TestSuite) GetTestID() int {
 
 // TearDownTest runs checks at the end of the test suite.
 func (s *TestSuite) TearDownTest() {
+	if s.T().Failed() {
+		s.hasFailures.Store(true)
+	}
+
 	s.testID++
 	runDeferredFunctions(s.runAfterTest)
 	// this will panic if you failed to call SetupTest() from an inheriting suite
