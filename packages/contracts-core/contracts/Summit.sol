@@ -200,6 +200,9 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         rcptStatus.pending = false;
         rcptStatus.tipsAwarded = true;
         _receiptStatus[messageHash] = rcptStatus;
+        // Remove the receipt from the queue
+        _receiptQueue.popFront();
+        return true;
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
