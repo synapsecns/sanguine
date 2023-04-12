@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AttestationLib, SummitAttestation} from "./Attestation.sol";
 import {ByteString} from "./ByteString.sol";
 import {SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
 import {MerkleList} from "./MerkleList.sol";
@@ -136,19 +135,6 @@ library SnapshotLib {
         MerkleList.calculateRoot(hashes, SNAPSHOT_TREE_HEIGHT - 1);
         // hashes[0] now stores the value for the Merkle Root of the list
         return hashes[0];
-    }
-
-    // ════════════════════════════════════════════ SUMMIT ATTESTATION ═════════════════════════════════════════════════
-
-    /// @notice Returns an Attestation struct to save in the Summit contract.
-    /// Current block number and timestamp are used.
-    // solhint-disable-next-line ordering
-    function toSummitAttestation(Snapshot snapshot, bytes32 agentRoot)
-        internal
-        view
-        returns (SummitAttestation memory attestation)
-    {
-        return AttestationLib.summitAttestation(snapshot.root(), agentRoot);
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════

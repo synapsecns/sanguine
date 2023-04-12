@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation, AttestationLib, SummitAttestation} from "../libs/Attestation.sol";
+import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {MerkleList} from "../libs/MerkleList.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
@@ -32,6 +32,13 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     struct SummitSnapshot {
         // TODO: compress this - indexes might as well be uint32/uint64
         uint256[] statePtrs;
+    }
+
+    struct SummitAttestation {
+        bytes32 snapRoot;
+        bytes32 agentRoot;
+        uint40 blockNumber;
+        uint40 timestamp;
     }
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
@@ -74,7 +81,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// @inheritdoc ISnapshotHub
     function getAttestation(uint32 nonce) external view returns (bytes memory attPayload) {
         require(nonce < _attestations.length, "Nonce out of range");
-        return _attestations[nonce].formatSummitAttestation(nonce);
+        return _formatSummitAttestation(_attestations[nonce], nonce);
     }
 
     /// @inheritdoc ISnapshotHub
@@ -179,7 +186,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         // This should only be called once, when the contract is initialized
         assert(_attestations.length == 0);
         // Insert empty non-meaningful values, that can't be used to prove anything
-        _attestations.push(AttestationLib.emptySummitAttestation());
+        _attestations.push(_toSummitAttestation(bytes32(0), bytes32(0)));
         _notarySnapshots.push(SummitSnapshot(new uint256[](0)));
     }
 
@@ -196,8 +203,8 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     {
         // Attestation nonce is its index in `_attestations` array
         uint32 attNonce = uint32(_attestations.length);
-        SummitAttestation memory summitAtt = snapshot.toSummitAttestation(agentRoot);
-        attPayload = summitAtt.formatSummitAttestation(attNonce);
+        SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.root(), agentRoot);
+        attPayload = _formatSummitAttestation(summitAtt, attNonce);
         /// @dev Add a single element to both `_attestations` and `_notarySnapshots`,
         /// enforcing the (_attestations.length == _notarySnapshots.length) invariant.
         _attestations.push(summitAtt);
@@ -241,7 +248,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         uint32 nonce = att.nonce();
         if (nonce >= _attestations.length) return false;
         // Check if Attestation matches the historical one
-        return att.equalToSummit(_attestations[nonce]);
+        return _areEqual(att, _attestations[nonce]);
     }
 
     /// @dev Restores Snapshot payload from a list of state pointers used for the snapshot.
@@ -296,5 +303,40 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         summitState.nonce = state.nonce();
         summitState.blockNumber = state.blockNumber();
         summitState.timestamp = state.timestamp();
+    }
+
+    /// @dev Returns a formatted payload for a stored SummitAttestation.
+    function _formatSummitAttestation(SummitAttestation memory summitAtt, uint32 nonce)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return AttestationLib.formatAttestation({
+            snapRoot_: summitAtt.snapRoot,
+            agentRoot_: summitAtt.agentRoot,
+            nonce_: nonce,
+            blockNumber_: summitAtt.blockNumber,
+            timestamp_: summitAtt.timestamp
+        });
+    }
+
+    /// @dev Returns an Attestation struct to save in the Summit contract.
+    /// Current block number and timestamp are used.
+    // solhint-disable-next-line ordering
+    function _toSummitAttestation(bytes32 snapRoot, bytes32 agentRoot)
+        internal
+        view
+        returns (SummitAttestation memory summitAtt)
+    {
+        summitAtt.snapRoot = snapRoot;
+        summitAtt.agentRoot = agentRoot;
+        summitAtt.blockNumber = uint40(block.number);
+        summitAtt.timestamp = uint40(block.timestamp);
+    }
+
+    /// @dev Checks that an Attestation and its Summit representation are equal.
+    function _areEqual(Attestation att, SummitAttestation memory summitAtt) internal pure returns (bool) {
+        return att.snapRoot() == summitAtt.snapRoot && att.agentRoot() == summitAtt.agentRoot
+            && att.blockNumber() == summitAtt.blockNumber && att.timestamp() == summitAtt.timestamp;
     }
 }

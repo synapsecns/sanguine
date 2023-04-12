@@ -10,7 +10,7 @@ import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
 import {DisputeHub, ExecutionHub, MessageStatus, Receipt, Tips} from "./hubs/ExecutionHub.sol";
-import {SnapshotHub, SummitAttestation} from "./hubs/SnapshotHub.sol";
+import {SnapshotHub} from "./hubs/SnapshotHub.sol";
 import {Attestation, AttestationLib, AttestationReport, Snapshot} from "./hubs/StatementHub.sol";
 import {DomainContext, Versioned} from "./system/SystemContract.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
