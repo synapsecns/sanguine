@@ -57,7 +57,7 @@ func NewLightManagerHarnessDeployer(registry deployer.GetOnlyContractRegistry, b
 }
 
 // Deploy deploys the light manager harness.
-// nolint:dupl
+// nolint:dupl,dupword
 func (o LightManagerHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	/*originHarnessContract := o.Registry().Get(ctx, OriginHarnessType)
 	destinationHarnessContract := o.Registry().Get(ctx, DestinationHarnessType)
@@ -99,7 +99,7 @@ func NewBondingManagerHarnessDeployer(registry deployer.GetOnlyContractRegistry,
 }
 
 // Deploy deploys the light manager harness.
-// nolint:dupl
+// nolint:dupl,dupword
 func (o BondingManagerHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	/*originHarnessContract := o.Registry().Get(ctx, OriginHarnessType)
 	destinationHarnessContract := o.Registry().Get(ctx, DestinationHarnessType)
@@ -264,7 +264,7 @@ func NewDestinationHarnessDeployer(registry deployer.GetOnlyContractRegistry, ba
 }
 
 // Deploy deploys the destination harness.
-// nolint:dupl
+// nolint:dupl,dupword
 func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	lightManagerHarnessContract := d.Registry().Get(ctx, LightManagerHarnessType)
 	lightManagerAddress := lightManagerHarnessContract.Address()

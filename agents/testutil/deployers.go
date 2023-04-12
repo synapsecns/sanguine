@@ -29,6 +29,8 @@ func NewLightManagerDeployer(registry deployer.GetOnlyContractRegistry, backend 
 }
 
 // Deploy deploys the light manager contract.
+//
+//nolint:dupword,dupl,cyclop
 func (d LightManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	/*originContract := d.Registry().Get(ctx, OriginType)
 	destinationContract := d.Registry().Get(ctx, DestinationType)
@@ -72,6 +74,7 @@ func NewBondingManagerDeployer(registry deployer.GetOnlyContractRegistry, backen
 }
 
 // Deploy deploys the bonding manager contract.
+// nolint:dupl,cyclop,dupword
 func (d BondingManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	/*originContract := d.Registry().Get(ctx, OriginType)
 	destinationContract := d.Registry().Get(ctx, DestinationType)
@@ -115,6 +118,7 @@ func NewOriginDeployer(registry deployer.GetOnlyContractRegistry, backend backen
 }
 
 // Deploy deploys the origin contract.
+// nolint:dupl,cyclop
 func (d OriginDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	var agentAddress common.Address
 	if d.Backend().GetChainID() == 10 {
@@ -163,7 +167,7 @@ func NewSummitDeployer(registry deployer.GetOnlyContractRegistry, backend backen
 
 // Deploy deploys the summit.
 //
-//nolint:dupword,dupl
+//nolint:dupword,dupl,cyclop
 func (a SummitDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	bondingManagerContract := a.Registry().Get(ctx, BondingManagerType)
 	bondingManagerAddress := bondingManagerContract.Address()
@@ -198,7 +202,7 @@ func NewDestinationDeployer(registry deployer.GetOnlyContractRegistry, backend b
 
 // Deploy deploys the destination.
 //
-//nolint:dupl
+//nolint:dupl,dupword
 func (d DestinationDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	lightManagerHarnessContract := d.Registry().Get(ctx, LightManagerHarnessType)
 	lightManagerAddress := lightManagerHarnessContract.Address()
