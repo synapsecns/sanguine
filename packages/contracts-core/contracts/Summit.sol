@@ -257,6 +257,9 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         AgentStatus memory attNotaryStatus = _agentStatus(attNotary);
         _verifyKnown(attNotaryStatus);
         _verifyNotSlashed(attNotaryStatus);
+        // Check if tip values are non-zero
+        Tips tips = receipt.tips();
+        if (tips.value() == 0) return false;
         // Check if there already exists receipt for the message
         bytes32 messageHash = receipt.messageHash();
         ReceiptStatus memory savedRcpt = _receiptStatus[messageHash];
@@ -284,7 +287,6 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             submittedAt: uint40(block.timestamp)
         });
         // Save receipt tips
-        Tips tips = receipt.tips();
         _receiptTips[messageHash] = ReceiptTips({
             summitTip: tips.summitTip(),
             attestationTip: tips.attestationTip(),
