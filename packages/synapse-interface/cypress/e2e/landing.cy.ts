@@ -24,7 +24,7 @@ describe('Landing Page', () => {
     cy.fixture('bridge.json').then((fixture) => {
       cy.get('[data-test-id="bridge-destination-token"]')
         .should('be.visible')
-        .and('contain.text', fixture.defaultOriginToken)
+        .and('contain.text', fixture.defaultDestinationToken)
     })
   })
 })
