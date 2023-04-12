@@ -27,6 +27,12 @@ contract AgentManagerMockTest is Test {
         (bool isSlashed, address prover) = agentManager.slashStatus(agent);
         assertFalse(isSlashed);
         assertEq(prover, address(0));
+        address agent_;
+        (agent_, status) = agentManager.getAgent(1);
+        assertEq(agent_, agent);
+        assertEq(uint8(status.flag), uint8(AgentFlag.Active));
+        assertEq(status.domain, domain);
+        assertEq(status.index, 1);
     }
 
     function test_addAgent_revert_alreadyActive(uint32 domain, address agent, uint32 otherDomain) public {
@@ -94,5 +100,15 @@ contract AgentManagerMockTest is Test {
     function test_setAgentRoot(bytes32 root) public {
         agentManager.setAgentRoot(root);
         assertEq(agentManager.agentRoot(), root);
+    }
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    function test_getAgent_notExistingIndex(uint256 index) public {
+        (address agent, AgentStatus memory status) = agentManager.getAgent(index);
+        assertEq(agent, address(0));
+        assertEq(uint8(status.flag), 0);
+        assertEq(status.domain, 0);
+        assertEq(status.index, 0);
     }
 }

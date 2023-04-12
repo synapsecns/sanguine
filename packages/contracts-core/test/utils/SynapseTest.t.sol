@@ -208,7 +208,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         lightManager.updateAgentStatus(agent, getAgentStatus(agent), proof);
     }
 
-    function checkAgentStatus(address agent, AgentStatus memory status, AgentFlag flag) public {
+    function checkAgentStatus(address agent, AgentStatus memory status, AgentFlag flag) public virtual {
         assertEq(uint8(status.flag), uint8(flag), "!flag");
         assertEq(status.domain, agentDomain[agent], "!domain");
         assertEq(status.index, agentIndex[agent], "!index");
