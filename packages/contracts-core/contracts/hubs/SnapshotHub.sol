@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib, SummitAttestation} from "../libs/Attestation.sol";
 import {MerkleList} from "../libs/MerkleList.sol";
-import {Snapshot, SnapshotLib, SummitSnapshot} from "../libs/Snapshot.sol";
+import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
 import {TypedMemView} from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -28,6 +28,11 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         uint40 timestamp;
     }
     // 112 bits left for tight packing
+
+    struct SummitSnapshot {
+        // TODO: compress this - indexes might as well be uint32/uint64
+        uint256[] statePtrs;
+    }
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -105,13 +110,13 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     function getSnapshotProof(uint256 nonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof) {
         require(nonce < _notarySnapshots.length, "Nonce out of range");
         SummitSnapshot memory snap = _notarySnapshots[nonce];
-        uint256 statesAmount = snap.getStatesAmount();
+        uint256 statesAmount = snap.statePtrs.length;
         require(stateIndex < statesAmount, "Index out of range");
         // Reconstruct the leafs of Snapshot Merkle Tree: two for each state
         bytes32[] memory hashes = new bytes32[](2 * statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
             // Get value for "index in _states PLUS 1"
-            uint256 statePtr = snap.getStatePtr(i);
+            uint256 statePtr = snap.statePtrs[i];
             // We are never saving zero values when accepting Guard/Notary snapshots, so this holds
             assert(statePtr != 0);
             State state = _formatSummitState(_states[statePtr - 1]).castToState();
@@ -175,12 +180,12 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         assert(_attestations.length == 0);
         // Insert empty non-meaningful values, that can't be used to prove anything
         _attestations.push(AttestationLib.emptySummitAttestation());
-        _notarySnapshots.push(SnapshotLib.emptySummitSnapshot());
+        _notarySnapshots.push(SummitSnapshot(new uint256[](0)));
     }
 
     /// @dev Saves the Guard snapshot.
     function _saveGuardSnapshot(uint256[] memory statePtrs) internal {
-        _guardSnapshots.push(statePtrs.toSummitSnapshot());
+        _guardSnapshots.push(SummitSnapshot(statePtrs));
     }
 
     /// @dev Saves the Notary snapshot and the attestation created from it.
@@ -196,7 +201,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         /// @dev Add a single element to both `_attestations` and `_notarySnapshots`,
         /// enforcing the (_attestations.length == _notarySnapshots.length) invariant.
         _attestations.push(summitAtt);
-        _notarySnapshots.push(statePtrs.toSummitSnapshot());
+        _notarySnapshots.push(SummitSnapshot(statePtrs));
         // Emit event with raw attestation data
         emit AttestationSaved(attPayload);
     }
@@ -241,11 +246,11 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Restores Snapshot payload from a list of state pointers used for the snapshot.
     function _restoreSnapshot(SummitSnapshot memory snapshot) internal view returns (bytes memory) {
-        uint256 statesAmount = snapshot.getStatesAmount();
+        uint256 statesAmount = snapshot.statePtrs.length;
         State[] memory states = new State[](statesAmount);
         for (uint256 i = 0; i < statesAmount; ++i) {
             // Get value for "index in _states PLUS 1"
-            uint256 statePtr = snapshot.getStatePtr(i);
+            uint256 statePtr = snapshot.statePtrs[i];
             // We are never saving zero values when accepting Guard/Notary snapshots, so this holds
             assert(statePtr != 0);
             // Get the state that Agent used for the snapshot
