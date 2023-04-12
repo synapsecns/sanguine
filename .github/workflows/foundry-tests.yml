@@ -18,7 +18,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup NodeJS
+      - name: Setup Node JS
         uses: ./.github/actions/setup-nodejs
 
       - name: Installing dependencies

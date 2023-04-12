@@ -1,17 +1,17 @@
 name: Setup NodeJS
 inputs:
   nvmrc_path:
-    default: ".nvmrc"
+    default: '.nvmrc'
     description: Set to a relative path (from WORKING_DIRECTORY) to use a different .nvmrc file
   cache:
-    default: "yarn"
-    description: Set to "npm" to use npm instead of yarn
+    default: 'yarn'
+    description: Set to 'npm' to use npm instead of yarn
   # TODO: https://github.com/actions/runner/issues/2238
   install_dependencies:
-    default: "true"
-    description: Set to "false" to skip installing dependencies
+    default: 'true'
+    description: Set to 'false' to skip installing dependencies
   cache-path:
-    default: "yarn.lock"
+    default: 'yarn.lock'
     description: Set to a relative path (from WORKING_DIRECTORY) to use a different cache path
 
 description: Setup nodejs using .nvmrc

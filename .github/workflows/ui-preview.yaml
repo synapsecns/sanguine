@@ -61,7 +61,7 @@ jobs:
         with:
           cache: 'npm'
           install_dependencies: 'false'
-          cache-path: ""
+          cache-path: ''
 
       # make sure new project ids are added here
       - name: Get Project ID
