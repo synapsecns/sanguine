@@ -28,14 +28,9 @@ runs:
       id: nvm2
 
     - name: Read .nvmrc
-      run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+      run: echo "##[set-output name=NVMRC;]$(cat ${{inputs.nvmrc_path}})"
       shell: bash
       id: nvmrc
-
-#    - name: Setup upterm session
-#      uses: lhotari/action-upterm@v1
-#      env:
-#        node-version: '${{ steps.nvm.outputs.NVMRC }}'
 
     - uses: actions/setup-node@v3
       with:
