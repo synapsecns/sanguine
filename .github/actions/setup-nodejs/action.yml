@@ -19,7 +19,10 @@ runs:
   using: composite
   steps:
     - name: Read .nvmrc
-      run: echo "NVRMC=$(cat ${{inputs.nvmrc_path}})" >> $GITHUB_OUTPUT
+      run: |
+        export NVMRC=$(cat ${{inputs.nvmrc_path}})
+        echo $NVMRC
+        echo "NVRMC=$NVMRC" >> $GITHUB_OUTPUT
       shell: bash
       id: nvm
 
