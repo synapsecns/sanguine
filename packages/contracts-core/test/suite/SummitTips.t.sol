@@ -179,6 +179,78 @@ contract SummitTipsTest is DisputeHubTest {
         assertFalse(InterfaceSummit(summit).distributeTips());
     }
 
+    function test_distributeTips_attestationNotaryDispute() public checkQueueLength(2) {
+        // rcptNotary: agents[1], attNotary: agents[0]
+        prepareTwoReceiptTest(1, 0);
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        // Put DOMAIN_REMOTE agents[0] in Dispute
+        check_submitStateReport(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    function test_distributeTips_attestationNotaryFraudulent() public checkQueueLength(1) {
+        // rcptNotary: agents[1], attNotary: agents[0]
+        address attNotary = prepareTwoReceiptTest(1, 0);
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        // Set attNotary status to Fraudulent
+        vm.prank(originSynapse);
+        bondingManager.registrySlash(DOMAIN_REMOTE, attNotary, address(0));
+        assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    function test_distributeTips_attestationNotarySlashed() public checkQueueLength(1) {
+        // rcptNotary: agents[1], attNotary: agents[0]
+        address attNotary = prepareTwoReceiptTest(1, 0);
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        // Set attNotary status to Slashed
+        vm.prank(originSynapse);
+        bondingManager.registrySlash(DOMAIN_REMOTE, attNotary, address(0));
+        bondingManager.completeSlashing(DOMAIN_REMOTE, attNotary, bondingManager.getProof(attNotary));
+        assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    function test_distributeTips_receiptNotaryDispute() public checkQueueLength(2) {
+        // rcptNotary: agents[0], attNotary: agents[1]
+        prepareTwoReceiptTest(0, 1);
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        // Put DOMAIN_REMOTE agents[0] in Dispute
+        check_submitStateReport(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    function test_distributeTips_receiptNotaryFraudulent() public checkQueueLength(1) {
+        // rcptNotary: agents[0], attNotary: agents[1]
+        prepareTwoReceiptTest(0, 1);
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        // Set rcptNotary status to Fraudulent
+        vm.prank(originSynapse);
+        bondingManager.registrySlash(DOMAIN_REMOTE, rcptNotary, address(0));
+        assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    function test_distributeTips_receiptNotarySlashed() public checkQueueLength(1) {
+        // rcptNotary: agents[0], attNotary: agents[1]
+        prepareTwoReceiptTest(0, 1);
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        // Set rcptNotary status to Slashed
+        vm.prank(originSynapse);
+        bondingManager.registrySlash(DOMAIN_REMOTE, rcptNotary, address(0));
+        bondingManager.completeSlashing(DOMAIN_REMOTE, rcptNotary, bondingManager.getProof(rcptNotary));
+        assertTrue(InterfaceSummit(summit).distributeTips());
+    }
+
+    function prepareTwoReceiptTest(uint256 rcptNotaryIndex, uint256 attNotaryIndex)
+        public
+        returns (address attNotary)
+    {
+        RawExecReceipt memory re;
+        re.messageHash = keccak256("First");
+        test_submitReceipt(re, false, rcptNotaryIndex, attNotaryIndex, false);
+        re.messageHash = keccak256("Second");
+        test_submitReceipt(re, false, rcptNotaryIndex, attNotaryIndex, false);
+        attNotary = re.attNotary;
+    }
+
     function checkAwardedTips(RawExecReceipt memory re, bool isFinal) public {
         logTips(re.tips);
         checkSnapshotTips(re);
