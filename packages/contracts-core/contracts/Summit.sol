@@ -34,6 +34,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     struct ReceiptStatus {
         MessageStatus status;
         bool pending;
+        bool tipsAwarded;
         uint32 receiptNotaryIndex;
         uint40 submittedAt;
     }
@@ -194,12 +195,11 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         if (_checkNotaryDisputed(messageHash, attNotary, attNotaryStatus)) return true;
         // At this point Receipt is optimistically verified to be correct, as well as the receipt's attestation
         // Meaning we can go ahead and distribute the tip values among the tipped actors.
-        ReceiptTips memory tips = _receiptTips[messageHash];
-        // TODO: take into account the receipt message status
-        _distributeSummitTip(rcptNotary, _roots[rcptInfo.snapRootIndex], tips.summitTip);
-        _awardAgentTip(attNotary, tips.attestationTip);
-        _awardActorTip(rcptInfo.firstExecutor, tips.executionTip);
-        _awardActorTip(rcptInfo.finalExecutor, tips.deliveryTip);
+        _awardTips(rcptNotary, attNotary, messageHash, rcptInfo, rcptStatus);
+        // Save new receipt status
+        rcptStatus.pending = false;
+        rcptStatus.tipsAwarded = true;
+        _receiptStatus[messageHash] = rcptStatus;
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -275,10 +275,11 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             firstExecutor: receipt.firstExecutor(),
             finalExecutor: receipt.finalExecutor()
         });
-        // Save receipt status
+        // Save receipt status: transfer tipsAwarded field (whether we paid tips for Failed Receipt before)
         _receiptStatus[messageHash] = ReceiptStatus({
             status: msgStatus,
             pending: true,
+            tipsAwarded: savedRcpt.tipsAwarded,
             receiptNotaryIndex: rcptNotaryIndex,
             submittedAt: uint40(block.timestamp)
         });
@@ -297,6 +298,32 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     // ══════════════════════════════════════ INTERNAL LOGIC: TIPS ACCOUNTING ══════════════════════════════════════════
 
+    /// @dev Awards tips to the agent/actors that participated in message lifecycle
+    function _awardTips(
+        address rcptNotary,
+        address attNotary,
+        bytes32 messageHash,
+        ReceiptInfo memory rcptInfo,
+        ReceiptStatus memory rcptStatus
+    ) internal {
+        ReceiptTips memory tips = _receiptTips[messageHash];
+        // Check if we awarded tips for this message earlier
+        bool awardFirst = !rcptStatus.tipsAwarded;
+        // Check if this is the final tips distribution
+        bool awardFinal = rcptStatus.status == MessageStatus.Success;
+        if (awardFirst) {
+            // There has been a valid attempt to execute the message
+            _awardSnapshotTip(_roots[rcptInfo.snapRootIndex], tips.summitTip);
+            _awardAgentTip(attNotary, tips.attestationTip);
+            _awardActorTip(rcptInfo.firstExecutor, tips.executionTip);
+        }
+        _awardReceiptTip(rcptNotary, awardFirst, awardFinal, tips.summitTip);
+        if (awardFinal) {
+            // Message has been executed successfully
+            _awardActorTip(rcptInfo.finalExecutor, tips.deliveryTip);
+        }
+    }
+
     /// @dev Award tip to the bonded agent
     function _awardAgentTip(address agent, uint64 tip) internal {
         // If agent has been slashed, their earned tips go to treasury
@@ -309,15 +336,25 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         emit TipAwarded(actor, tip);
     }
 
-    function _distributeSummitTip(address rcptNotary, bytes32 snapRoot, uint64 summitTip) internal {
-        uint64 agentTip = summitTip / 3;
+    /// @dev Award tip for posting Receipt to Summit contract.
+    function _awardReceiptTip(address rcptNotary, bool awardFirst, bool awardFinal, uint64 summitTip) internal {
+        uint64 receiptTip = _receiptTip(summitTip);
+        // Tip for posting Receipt with status >= MessageStatus.Failed
+        uint64 receiptTipFirst = receiptTip / 2;
+        // Tip for posting Receipt with status == MessageStatus.Success
+        uint64 receiptTipFinal = receiptTip - receiptTipFirst;
+        _awardAgentTip(rcptNotary, (awardFirst ? receiptTipFirst : 0) + (awardFinal ? receiptTipFinal : 0));
+    }
+
+    /// @dev Award tip for posting Snapshot to Summit contract.
+    function _awardSnapshotTip(bytes32 snapRoot, uint64 summitTip) internal {
+        uint64 snapshotTip = _snapshotTip(summitTip);
         // TODO: get the addresses
         snapRoot;
         address snapGuard;
         address snapNotary;
-        _awardAgentTip(snapGuard, agentTip);
-        _awardAgentTip(snapNotary, agentTip);
-        _awardAgentTip(rcptNotary, summitTip - 2 * agentTip);
+        _awardAgentTip(snapGuard, snapshotTip);
+        _awardAgentTip(snapNotary, snapshotTip);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
@@ -326,5 +363,15 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     function _beforeStatement() internal pure override returns (bool acceptNext) {
         // Summit is always open for new Guard/Notary statements
         return true;
+    }
+
+    /// @dev Returns "snapshot part" of the summit tip.
+    function _snapshotTip(uint64 summitTip) internal pure returns (uint64) {
+        return summitTip / 3;
+    }
+
+    /// @dev Returns "receipt part" of the summit tip.
+    function _receiptTip(uint64 summitTip) internal pure returns (uint64) {
+        return summitTip - 2 * _snapshotTip(summitTip);
     }
 }
