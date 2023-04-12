@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {AgentManager} from "../../../contracts/manager/AgentManager.sol";
 import {ISystemRegistry} from "../../../contracts/interfaces/ISystemRegistry.sol";
-import {AgentFlag, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
+import {AgentFlag, AgentStatus, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 
 import {SystemEntity, SystemRouterHarness} from "../../harnesses/system/SystemRouterHarness.t.sol";
 import {SystemContractTest} from "../system/SystemContract.t.sol";
@@ -54,7 +54,30 @@ abstract contract AgentManagerTest is SystemContractTest {
         assertEq(prover_, prover);
     }
 
+    // ═══════════════════════════════════════════════ TESTS: VIEWS ════════════════════════════════════════════════════
+
+    function test_getAgent_notExistingIndex() public {
+        (address agent, AgentStatus memory status) = testedAM().getAgent(0);
+        assertEq(agent, address(0));
+        assertEq(uint8(status.flag), 0);
+        assertEq(status.domain, 0);
+        assertEq(status.index, 0);
+        // Last agent has index DOMAIN_AGENTS * allDomains.length
+        (agent, status) = testedAM().getAgent(DOMAIN_AGENTS * allDomains.length + 1);
+        assertEq(agent, address(0));
+        assertEq(uint8(status.flag), 0);
+        assertEq(status.domain, 0);
+        assertEq(status.index, 0);
+    }
+
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
+
+    function checkAgentStatus(address agent, AgentStatus memory status, AgentFlag flag) public virtual override {
+        super.checkAgentStatus(agent, status, flag);
+        (address agent_, AgentStatus memory status_) = testedAM().getAgent(status.index);
+        assertEq(agent_, agent, "!agent");
+        super.checkAgentStatus(agent, status_, flag);
+    }
 
     function skipBondingOptimisticPeriod() public {
         skipPeriod(BONDING_OPTIMISTIC_PERIOD);

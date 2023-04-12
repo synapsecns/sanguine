@@ -52,9 +52,6 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
-    function agentRoot() external view virtual returns (bytes32);
-
-    /// @inheritdoc IAgentManager
     function agentStatus(address agent) external view returns (AgentStatus memory status) {
         status = _agentStatus(agent);
         // If agent was proven to commit fraud, but their slashing wasn't completed,
