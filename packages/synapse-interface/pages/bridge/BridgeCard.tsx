@@ -123,7 +123,7 @@ const BridgeCard = ({
     onChangeChain: handleChainChange,
   }
 
-  // TODO move this away and into the actual componet
+  // TODO move this away and into the actual component
   const settingsArgs = {
     settings,
     setSettings,
@@ -141,7 +141,7 @@ const BridgeCard = ({
   let btnClassName = ''
   let pendingLabel = 'Bridging funds...'
   let buttonAction = () => executeBridge()
-  let postButtonAction = resetRates
+  let postButtonAction = () => resetRates()
   if (error) {
     btnLabel = error
   } else if (!isFromBalanceEnough) {

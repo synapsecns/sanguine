@@ -37,6 +37,9 @@ import {
 } from '@/constants/bridge'
 import { addSyntheticLeadingComment } from 'typescript'
 
+// console.log('BRIDGABLE_TOKENS', BRIDGABLE_TOKENS)
+// console.log('BRIDGE_CHAINS_BY_TYPE', BRIDGE_CHAINS_BY_TYPE)
+// console.log('BRIDGE_SWAPABLE_TOKENS_BY_TYPE', BRIDGE_SWAPABLE_TOKENS_BY_TYPE)
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
 */
@@ -519,30 +522,23 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       chainId: fromChainId,
     })
 
-    // if ()
     const data = await SynapseSDK.bridge(
-      address, //To Address
+      address,
       fromChainId,
       toChainId,
-      fromToken.addresses[fromChainId as keyof Token['addresses']], // To token Address **
+      fromToken.addresses[fromChainId as keyof Token['addresses']],
       fromInput.bigNum,
       bridgeQuote.quotes.originQuery,
       bridgeQuote.quotes.destQuery
     )
-      .then((res) => {
-        const tx = res
-        wallet
-          .sendTransaction(tx)
-          .then((res) => {
-            console.log('sendTransaction', res)
-          })
-          .catch((err) => console.log('sendTransaction', err))
-      })
-      .catch((err) => {
-        console.log('bridge', err)
-      })
-
-    console.log('data', data)
+    const tx = await wallet.sendTransaction(data)
+    try {
+      await tx.wait()
+      console.log(`Transaction mined successfully: ${tx.hash}`)
+      return tx
+    } catch (error) {
+      console.log(`Transaction failed with error: ${error}`)
+    }
   }
 
   return (

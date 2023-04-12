@@ -27,6 +27,7 @@ export const TransactionButton = ({
   disabled?: boolean
 }) => {
   const { isPending, pendingTxWrapFunc } = usePendingTxWrapper()
+  console.log('TransactionButton', className, pendingLabel, disabled, isPending)
 
   return (
     <Button
@@ -37,7 +38,8 @@ export const TransactionButton = ({
       }`}
       onClick={async () => {
         const tx = await pendingTxWrapFunc(onClick())
-        if (tx?.status === 1) {
+        console.log('TransactionButton tx', tx)
+        if (tx?.hash) {
           onSuccess?.()
         }
       }}

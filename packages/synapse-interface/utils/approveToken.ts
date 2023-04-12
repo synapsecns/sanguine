@@ -15,6 +15,7 @@ export const approveToken = async (address, chainId, fromTokenAddress) => {
   try {
     await approveTx.wait()
     console.log(`Transaction mined successfully: ${approveTx.hash}`)
+    return approveTx
   } catch (error) {
     console.log(`Transaction failed with error: ${error}`)
   }
