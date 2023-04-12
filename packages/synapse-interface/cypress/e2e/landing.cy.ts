@@ -1,9 +1,9 @@
 import dayjs from 'dayjs'
 
-describe('Landing Page', () => {
+describe('Landing', () => {
   beforeEach(() => cy.visit('/'))
 
-  it('loads bridge page', () => {
+  it('initially loads bridge page', () => {
     cy.get('[data-test-id="bridge-page"]').should('be.visible')
 
     const nowTime = dayjs().format('MM-DD-YYYY@hh-mm-a')
@@ -12,7 +12,7 @@ describe('Landing Page', () => {
     cy.screenshot(`landing/${fileName}`)
   })
 
-  it('loads default origin token', () => {
+  it('initially loads default origin token', () => {
     cy.fixture('bridge.json').then((fixture) => {
       cy.get('[data-test-id="bridge-origin-token"]')
         .should('be.visible')
@@ -20,7 +20,7 @@ describe('Landing Page', () => {
     })
   })
 
-  it('loads default destination token', () => {
+  it('initially loads default destination token', () => {
     cy.fixture('bridge.json').then((fixture) => {
       cy.get('[data-test-id="bridge-destination-token"]')
         .should('be.visible')
