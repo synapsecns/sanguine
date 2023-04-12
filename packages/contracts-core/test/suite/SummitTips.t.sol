@@ -7,7 +7,7 @@ import {AgentFlag, ISystemContract, SynapseTest} from "../utils/SynapseTest.t.so
 import {IDisputeHub, DisputeHubTest} from "./hubs/DisputeHub.t.sol";
 
 import {fakeState} from "../utils/libs/FakeIt.t.sol";
-import {RawExecReceipt, RawState, RawStateIndex, RawSnapshot} from "../utils/libs/SynapseStructs.t.sol";
+import {RawExecReceipt, RawState, RawStateIndex, RawSnapshot, RawTips} from "../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -22,8 +22,12 @@ contract SummitTipsTest is DisputeHubTest {
     uint32 internal origin1;
 
     RawSnapshot internal snapshot;
+    // Notary who posted Snapshot to Summit
     address internal snapNotary;
     bytes32 internal snapRoot;
+
+    // Notary who posted Receipt to Summit
+    address internal rcptNotary;
 
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
@@ -51,14 +55,18 @@ contract SummitTipsTest is DisputeHubTest {
 
     // ══════════════════════════════════════════ TESTS: SUBMIT RECEIPTS ═══════════════════════════════════════════════
 
-    function test_submitReceipt(RawExecReceipt memory re, bool originZero, uint256 attNotaryIndex, bool isSuccess)
-        public
-    {
+    function test_submitReceipt(
+        RawExecReceipt memory re,
+        bool originZero,
+        uint256 rcptNotaryIndex,
+        uint256 attNotaryIndex,
+        bool isSuccess
+    ) public {
         prepareReceipt(re, originZero, attNotaryIndex, isSuccess);
-        address notary = domains[DOMAIN_REMOTE].agent;
-        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
+        rcptNotary = domains[DOMAIN_REMOTE].agents[rcptNotaryIndex % DOMAIN_AGENTS];
+        (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.expectEmit();
-        emit ReceiptAccepted(DOMAIN_REMOTE, notary, rcptPayload, rcptSignature);
+        emit ReceiptAccepted(DOMAIN_REMOTE, rcptNotary, rcptPayload, rcptSignature);
         InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
     }
 
@@ -99,24 +107,92 @@ contract SummitTipsTest is DisputeHubTest {
         InterfaceSummit(summit).submitReceipt(rcptPayload, rcptSignature);
     }
 
+    // ═══════════════════════════════════════════ TESTS: TIPS AWARDING ════════════════════════════════════════════════
+
+    function test_distributeTips_success(
+        RawExecReceipt memory re,
+        bool originZero,
+        uint256 rcptNotaryIndex,
+        uint256 attNotaryIndex
+    ) public {
+        test_submitReceipt(re, originZero, rcptNotaryIndex, attNotaryIndex, true);
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        assertTrue(InterfaceSummit(summit).distributeTips());
+        checkAwardedTips(re, true, true);
+    }
+
+    function checkAwardedTips(RawExecReceipt memory re, bool isFirst, bool isFinal) public {
+        logTips(re.tips);
+        checkSnapshotTips(re);
+        uint64 receiptTipFull = splitTip({tip: re.tips.summitTip, parts: 3, roundUp: true});
+        uint64 receiptTipEarned = 0;
+        if (isFirst) {
+            receiptTipEarned += splitTip({tip: receiptTipFull, parts: 2, roundUp: false});
+        }
+        if (isFinal) {
+            receiptTipEarned += splitTip({tip: receiptTipFull, parts: 2, roundUp: true});
+        }
+        if (rcptNotary == re.attNotary) {
+            checkActorTips(rcptNotary, receiptTipEarned + re.tips.attestationTip, 0);
+        } else {
+            checkActorTips(rcptNotary, receiptTipEarned, 0);
+            checkActorTips(re.attNotary, re.tips.attestationTip, 0);
+        }
+        // Check non-bonded actors
+        if (re.firstExecutor == re.finalExecutor) {
+            checkActorTips(re.firstExecutor, re.tips.executionTip + (isFinal ? re.tips.deliveryTip : 0), 0);
+        } else {
+            checkActorTips(re.firstExecutor, re.tips.executionTip, 0);
+            checkActorTips(re.finalExecutor, (isFinal ? re.tips.deliveryTip : 0), 0);
+        }
+    }
+
+    function checkSnapshotTips(RawExecReceipt memory re) public {
+        uint64 snapshotTip = splitTip({tip: re.tips.summitTip, parts: 3, roundUp: false});
+        // TODO: Check Summit Guard and Notary when implemented
+        checkActorTips(address(0), 2 * snapshotTip, 0);
+    }
+
+    function checkActorTips(address actor, uint128 earned, uint128 claimed) public {
+        (uint128 earned_, uint128 claimed_) = InterfaceSummit(summit).actorTips(actor);
+        assertEq(earned_, earned, "!earned");
+        assertEq(claimed_, claimed, "!claimed");
+    }
+
+    function logTips(RawTips memory tips) public {
+        emit log_named_uint("Summit tip", tips.summitTip);
+        emit log_named_uint("Attestation tip", tips.attestationTip);
+        emit log_named_uint("Execution tip", tips.executionTip);
+        emit log_named_uint("Delivery tip", tips.deliveryTip);
+    }
+
+    function splitTip(uint64 tip, uint64 parts, bool roundUp) public pure returns (uint64) {
+        return tip / parts + (roundUp ? tip % parts : 0);
+    }
+
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
-    function prepareReceipt(RawExecReceipt memory re, bool originZero, uint256 attNotaryIndex, bool isSuccess)
-        public
-        view
-    {
+    function prepareReceipt(RawExecReceipt memory re, bool originZero, uint256 attNotaryIndex, bool isSuccess) public {
         re.origin = originZero ? origin0 : origin1;
         re.destination = DOMAIN_REMOTE;
         re.snapshotRoot = snapRoot;
         re.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryIndex % DOMAIN_AGENTS];
-        vm.assume(re.firstExecutor != address(0));
+        re.firstExecutor = createExecutorEOA(re.firstExecutor, "First Executor");
         if (isSuccess) {
-            vm.assume(re.finalExecutor != address(0));
+            re.finalExecutor = createExecutorEOA(re.finalExecutor, "Final Executor");
         } else {
             re.finalExecutor = address(0);
         }
-        // Make every tip component non-zero
+        // Make every tip component non-zero and not too big
+        re.tips.boundTips(type(uint32).max);
         re.tips.floorTips(1);
+    }
+
+    /// @notice Creates an EOA address that should not collide with existing agents
+    function createExecutorEOA(address addr, string memory label) public returns (address eoa) {
+        bytes32 addrHash = keccak256(abi.encode(addr));
+        eoa = address(uint160(uint256(addrHash)));
+        vm.label(eoa, label);
     }
 
     function submitGuardSnapshot(address guard, RawState memory rs) public {
