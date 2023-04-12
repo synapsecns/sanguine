@@ -29,6 +29,7 @@ contract SummitTipsTest is DisputeHubTest {
 
     // Notary who posted Receipt to Summit
     address internal rcptNotary;
+    address internal rcptNotaryFinal;
 
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
@@ -65,6 +66,8 @@ contract SummitTipsTest is DisputeHubTest {
     ) public {
         prepareReceipt(re, originZero, attNotaryIndex, isSuccess);
         rcptNotary = domains[DOMAIN_REMOTE].agents[rcptNotaryIndex % DOMAIN_AGENTS];
+        emit log_named_address("Receipt Notary", rcptNotary);
+        emit log_named_address("Attestation Notary", re.attNotary);
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(rcptNotary, re);
         vm.expectEmit();
         emit ReceiptAccepted(DOMAIN_REMOTE, rcptNotary, rcptPayload, rcptSignature);
@@ -119,7 +122,8 @@ contract SummitTipsTest is DisputeHubTest {
         test_submitReceipt(re, originZero, rcptNotaryIndex, attNotaryIndex, true);
         skip(BONDING_OPTIMISTIC_PERIOD);
         assertTrue(InterfaceSummit(summit).distributeTips());
-        checkAwardedTips(re, true, true);
+        rcptNotaryFinal = rcptNotary;
+        checkAwardedTips(re, true);
     }
 
     function test_distributeTips_failed(
@@ -131,25 +135,39 @@ contract SummitTipsTest is DisputeHubTest {
         test_submitReceipt(re, originZero, rcptNotaryIndex, attNotaryIndex, false);
         skip(BONDING_OPTIMISTIC_PERIOD);
         assertTrue(InterfaceSummit(summit).distributeTips());
-        checkAwardedTips(re, true, false);
+        rcptNotaryFinal = address(0);
+        checkAwardedTips(re, false);
     }
 
-    function checkAwardedTips(RawExecReceipt memory re, bool isFirst, bool isFinal) public {
+    function checkAwardedTips(RawExecReceipt memory re, bool isFinal) public {
         logTips(re.tips);
         checkSnapshotTips(re);
         uint64 receiptTipFull = splitTip({tip: re.tips.summitTip, parts: 3, roundUp: true});
-        uint64 receiptTipEarned = 0;
-        if (isFirst) {
-            receiptTipEarned += splitTip({tip: receiptTipFull, parts: 2, roundUp: false});
-        }
-        if (isFinal) {
-            receiptTipEarned += splitTip({tip: receiptTipFull, parts: 2, roundUp: true});
-        }
-        if (rcptNotary == re.attNotary) {
-            checkActorTips(rcptNotary, receiptTipEarned + re.tips.attestationTip, 0);
+        uint64 receiptTipFirst = splitTip({tip: receiptTipFull, parts: 2, roundUp: false});
+        uint64 receiptTipFinal = splitTip({tip: receiptTipFull, parts: 2, roundUp: true});
+        if (rcptNotary == rcptNotaryFinal) {
+            if (rcptNotary == re.attNotary) {
+                // rcptNotary == rcptNotaryFinal == attNotary
+                checkActorTips(rcptNotary, receiptTipFirst + receiptTipFinal + re.tips.attestationTip, 0);
+            } else {
+                // rcptNotary == rcptNotaryFinal != attNotary
+                checkActorTips(rcptNotary, receiptTipFirst + receiptTipFinal, 0);
+                checkActorTips(re.attNotary, re.tips.attestationTip, 0);
+            }
+        } else if (re.attNotary == rcptNotaryFinal) {
+            // rcptNotaryFinal == attNotary != rcptNotary
+            checkActorTips(rcptNotary, receiptTipFirst, 0);
+            checkActorTips(re.attNotary, receiptTipFinal + re.tips.attestationTip, 0);
         } else {
-            checkActorTips(rcptNotary, receiptTipEarned, 0);
-            checkActorTips(re.attNotary, re.tips.attestationTip, 0);
+            if (rcptNotary == re.attNotary) {
+                // rcptNotary == attNotary != rcptNotaryFinal
+                checkActorTips(rcptNotary, receiptTipFirst + re.tips.attestationTip, 0);
+            } else {
+                // rcptNotary != attNotary != rcptNotaryFinal
+                checkActorTips(rcptNotary, receiptTipFirst, 0);
+                checkActorTips(re.attNotary, re.tips.attestationTip, 0);
+            }
+            if (isFinal) checkActorTips(rcptNotaryFinal, receiptTipFinal, 0);
         }
         // Check non-bonded actors
         if (re.firstExecutor == re.finalExecutor) {
