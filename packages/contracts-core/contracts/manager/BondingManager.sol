@@ -164,6 +164,14 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         return _agents.length;
     }
 
+    /// @inheritdoc IAgentManager
+    function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status) {
+        if (index < _agents.length) {
+            agent = _agents[index];
+            status = _agentMap[agent];
+        }
+    }
+
     /// @inheritdoc InterfaceBondingManager
     function getProof(address agent) external view returns (bytes32[] memory proof) {
         bytes32[] memory leafs = allLeafs();
