@@ -41,6 +41,11 @@ import { addSyntheticLeadingComment } from 'typescript'
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
 */
 
+console.log('BRIDGABLE_TOKENS: ', BRIDGABLE_TOKENS)
+// console.log('BRIDGE_CHAINS_BY_TYPE: ', BRIDGE_CHAINS_BY_TYPE)
+// console.log('BRIDGE_SWAPABLE_TOKENS_BY_TYPE: ', BRIDGE_SWAPABLE_TOKENS_BY_TYPE)
+// console.log('tokenSymbolToToken: ', tokenSymbolToToken)
+
 const BridgePage = ({ address }: { address: `0x${string}` }) => {
   const router = useRouter()
   const SynapseSDK = useSynapseContext()
