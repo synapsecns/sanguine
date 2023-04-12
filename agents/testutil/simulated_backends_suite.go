@@ -1,7 +1,6 @@
 package testutil
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
 	notaryMetadata "github.com/synapsecns/sanguine/agents/agents/notary/metadata"
@@ -21,7 +20,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	executorsqllite "github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
@@ -35,7 +33,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
-	scribesqlite "github.com/synapsecns/sanguine/services/scribe/db/datastore/sql/sqlite"
 )
 
 // SimulatedBackendsTestSuite can be used as the base for any test needing simulated backends
@@ -186,9 +183,8 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.BondingManagerMetadataOnSummit, a.BondingManagerOnSummit = deployManager.GetBondingManagerHarness(a.GetTestContext(), a.TestBackendSummit)
 	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
-	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 
-	var err error
+	/*var err error
 	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
 		DomainID:      uint32(a.TestBackendSummit.GetBigChainID().Uint64()),
 		Type:          types.EVM.String(),
@@ -202,7 +198,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
-	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))*/
 }
 
 // SetupGuard sets up the Guard agent.
@@ -280,15 +276,15 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
 
 	a.SetupSummit(a.TestDeployManager)
-	a.SetupDestination(a.TestDeployManager)
+	/*a.SetupDestination(a.TestDeployManager)
 	a.SetupOrigin(a.TestDeployManager)
 
 	err := a.TestDeployManager.LoadHarnessContractsOnChains(
 		a.GetTestContext(),
 		a.TestBackendSummit,
 		[]backends.SimulatedTestBackend{a.TestBackendOrigin, a.TestBackendDestination},
-		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address() /*, a.NotaryOnOriginBondedSigner.Address()*/},
-		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()) /*, uint32(a.TestBackendOrigin.GetChainID())*/})
+		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address(), a.NotaryOnOriginBondedSigner.Address()},
+		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendOrigin.GetChainID())})
 	if err != nil {
 		a.T().Fatal(err)
 	}
@@ -303,7 +299,7 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	if err != nil {
 		a.T().Fatal(err)
 	}
-	a.ExecutorTestDB = sqliteStore
+	a.ExecutorTestDB = sqliteStore*/
 }
 
 // cleanAfterTestSuite does cleanup after test suite is finished.

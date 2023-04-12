@@ -30,10 +30,10 @@ func NewLightManagerDeployer(registry deployer.GetOnlyContractRegistry, backend 
 
 // Deploy deploys the light manager contract.
 func (d LightManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	originContract := d.Registry().Get(ctx, OriginType)
+	/*originContract := d.Registry().Get(ctx, OriginType)
 	destinationContract := d.Registry().Get(ctx, DestinationType)
 	originAddress := originContract.Address()
-	destinationAddress := destinationContract.Address()
+	destinationAddress := destinationContract.Address()*/
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// deploy the light manager contract
 		var rawHandle *lightmanager.LightManager
@@ -44,11 +44,11 @@ func (d LightManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedCon
 		d.Backend().WaitForConfirmation(ctx, tx)
 
 		// initialize the origin contract
-		initializationTx, err := rawHandle.Initialize(transactOps, originAddress, destinationAddress)
+		/*initializationTx, err := rawHandle.Initialize(transactOps, originAddress, destinationAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not initialize contract: %w", err)
 		}
-		d.Backend().WaitForConfirmation(ctx, initializationTx)
+		d.Backend().WaitForConfirmation(ctx, initializationTx)*/
 
 		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -73,10 +73,10 @@ func NewBondingManagerDeployer(registry deployer.GetOnlyContractRegistry, backen
 
 // Deploy deploys the bonding manager contract.
 func (d BondingManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	originContract := d.Registry().Get(ctx, OriginType)
+	/*originContract := d.Registry().Get(ctx, OriginType)
 	destinationContract := d.Registry().Get(ctx, DestinationType)
 	originAddress := originContract.Address()
-	destinationAddress := destinationContract.Address()
+	destinationAddress := destinationContract.Address()*/
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (address common.Address, tx *types.Transaction, data interface{}, err error) {
 		// deploy the bonding manager contract
 		var rawHandle *bondingmanager.BondingManager
@@ -87,11 +87,11 @@ func (d BondingManagerDeployer) Deploy(ctx context.Context) (contracts.DeployedC
 		d.Backend().WaitForConfirmation(ctx, tx)
 
 		// initialize the origin contract
-		initializationTx, err := rawHandle.Initialize(transactOps, originAddress, destinationAddress)
+		/*initializationTx, err := rawHandle.Initialize(transactOps, originAddress, destinationAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not initialize contract: %w", err)
 		}
-		d.Backend().WaitForConfirmation(ctx, initializationTx)
+		d.Backend().WaitForConfirmation(ctx, initializationTx)*/
 
 		return address, tx, rawHandle, err
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
