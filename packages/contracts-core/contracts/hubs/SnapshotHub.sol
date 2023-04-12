@@ -159,7 +159,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     /// @dev Accepts a Snapshot signed by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
     /// Returns the attestation created from the Notary snapshot.
-    function _acceptNotarySnapshot(Snapshot snapshot, bytes32 agentRoot, address notary)
+    function _acceptNotarySnapshot(Snapshot snapshot, bytes32 agentRoot, address notary, uint32 notaryIndex)
         internal
         returns (bytes memory attPayload)
     {
@@ -176,6 +176,8 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             // Check that Notary hasn't used a fresher state for this origin before
             uint32 origin = state.origin();
             require(state.nonce() > _latestState(origin, notary).nonce, "Outdated nonce");
+            // Save Notary if they are the first to use this state
+            if (_states[statePtr - 1].notaryIndex == 0) _states[statePtr - 1].notaryIndex = notaryIndex;
             // Update Notary latest state for origin
             _latestStatePtr[origin][notary] = statePtrs[i];
         }
