@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 
 describe('Landing Page', () => {
-  beforeEach(() => cy.visit('http://localhost:3000/')) // hardcode local for now, update later to include env
+  beforeEach(() => cy.visit('/'))
 
   it('loads bridge page', () => {
     cy.get('[data-test-id="bridge-page"]').should('be.visible')
