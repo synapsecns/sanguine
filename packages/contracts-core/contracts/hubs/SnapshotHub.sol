@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {Attestation, AttestationLib, SummitAttestation} from "../libs/Attestation.sol";
 import {MerkleList} from "../libs/MerkleList.sol";
 import {Snapshot, SnapshotLib, SummitSnapshot} from "../libs/Snapshot.sol";
-import {State, StateLib, SummitState} from "../libs/State.sol";
+import {State, StateLib} from "../libs/State.sol";
 import {TypedMemView} from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {SnapshotHubEvents} from "../events/SnapshotHubEvents.sol";
@@ -19,6 +19,15 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     using SnapshotLib for uint256[];
     using StateLib for bytes;
     using TypedMemView for bytes29;
+
+    struct SummitState {
+        bytes32 root;
+        uint32 origin;
+        uint32 nonce;
+        uint40 blockNumber;
+        uint40 timestamp;
+    }
+    // 112 bits left for tight packing
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -67,7 +76,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     function getLatestAgentState(uint32 origin, address agent) external view returns (bytes memory stateData) {
         SummitState memory latestState = _latestState(origin, agent);
         if (latestState.nonce == 0) return bytes("");
-        return latestState.formatSummitState();
+        return _formatSummitState(latestState);
     }
 
     /// @inheritdoc ISnapshotHub
@@ -105,8 +114,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             uint256 statePtr = snap.getStatePtr(i);
             // We are never saving zero values when accepting Guard/Notary snapshots, so this holds
             assert(statePtr != 0);
-            SummitState memory guardState = _states[statePtr - 1];
-            State state = guardState.formatSummitState().castToState();
+            State state = _formatSummitState(_states[statePtr - 1]).castToState();
             (hashes[2 * i], hashes[2 * i + 1]) = state.subLeafs();
         }
         // Index of State's left leaf is twice the state index
@@ -203,7 +211,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         // Save state only if it wasn't previously submitted
         if (statePtr == 0) {
             // Extract data that needs to be saved
-            SummitState memory summitState = state.toSummitState();
+            SummitState memory summitState = _toSummitState(state);
             _states.push(summitState);
             // State is stored at (length - 1), but we are tracking "index PLUS 1" as "pointer"
             statePtr = _states.length;
@@ -240,9 +248,8 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             uint256 statePtr = snapshot.getStatePtr(i);
             // We are never saving zero values when accepting Guard/Notary snapshots, so this holds
             assert(statePtr != 0);
-            SummitState memory state = _states[statePtr - 1];
             // Get the state that Agent used for the snapshot
-            states[i] = state.formatSummitState().castToState();
+            states[i] = _formatSummitState(_states[statePtr - 1]).castToState();
         }
         return SnapshotLib.formatSnapshot(states);
     }
@@ -262,5 +269,27 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             state = _states[latestPtr - 1];
         }
         // An empty struct is returned if the Agent hasn't submitted a single State for origin yet.
+    }
+
+    // ═════════════════════════════════════════════ STRUCT FORMATTING ═════════════════════════════════════════════════
+
+    /// @dev Returns a formatted payload for a stored SummitState.
+    function _formatSummitState(SummitState memory summitState) internal pure returns (bytes memory) {
+        return StateLib.formatState({
+            root_: summitState.root,
+            origin_: summitState.origin,
+            nonce_: summitState.nonce,
+            blockNumber_: summitState.blockNumber,
+            timestamp_: summitState.timestamp
+        });
+    }
+
+    /// @dev Returns a SummitState struct to save in the contract.
+    function _toSummitState(State state) internal pure returns (SummitState memory summitState) {
+        summitState.root = state.root();
+        summitState.origin = state.origin();
+        summitState.nonce = state.nonce();
+        summitState.blockNumber = state.blockNumber();
+        summitState.timestamp = state.timestamp();
     }
 }

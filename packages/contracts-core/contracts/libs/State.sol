@@ -21,19 +21,6 @@ struct OriginState {
 /// @dev Attach library functions to OriginState
 using StateLib for OriginState global;
 
-/// @dev Struct representing State, as it is stored in the Summit contract.
-struct SummitState {
-    bytes32 root;
-    uint32 origin;
-    uint32 nonce;
-    uint40 blockNumber;
-    uint40 timestamp;
-}
-// 112 bits left for tight packing
-
-/// @dev Attach library functions to SummitState
-using StateLib for SummitState global;
-
 library StateLib {
     using ByteString for bytes;
     using TypedMemView for bytes29;
@@ -153,32 +140,6 @@ library StateLib {
     /// @notice Checks that a state and its Origin representation are equal.
     function equalToOrigin(State state, OriginState memory originState_) internal pure returns (bool) {
         return state.blockNumber() == originState_.blockNumber && state.timestamp() == originState_.timestamp;
-    }
-
-    // ═══════════════════════════════════════════════ SUMMIT STATE ════════════════════════════════════════════════════
-
-    /**
-     * @notice Returns a formatted State payload with provided fields.
-     * @param summitState   State struct as it is stored in Summit contract
-     * @return Formatted state
-     */
-    function formatSummitState(SummitState memory summitState) internal pure returns (bytes memory) {
-        return formatState({
-            root_: summitState.root,
-            origin_: summitState.origin,
-            nonce_: summitState.nonce,
-            blockNumber_: summitState.blockNumber,
-            timestamp_: summitState.timestamp
-        });
-    }
-
-    /// @notice Returns a struct to save in the Summit contract.
-    function toSummitState(State state) internal pure returns (SummitState memory state_) {
-        state_.root = state.root();
-        state_.origin = state.origin();
-        state_.nonce = state.nonce();
-        state_.blockNumber = state.blockNumber();
-        state_.timestamp = state.timestamp();
     }
 
     // ═══════════════════════════════════════════════ STATE HASHING ═══════════════════════════════════════════════════

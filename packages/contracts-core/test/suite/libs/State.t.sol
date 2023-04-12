@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {STATE_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
-import {OriginState, StateHarness, SummitState} from "../../harnesses/libs/StateHarness.t.sol";
+import {OriginState, StateHarness} from "../../harnesses/libs/StateHarness.t.sol";
 
 struct RawState {
     bytes32 root;
@@ -87,15 +87,6 @@ contract StateLibraryTest is SynapseLibraryTest {
             ),
             isEqual
         );
-    }
-
-    function test_summitState_parity(RawState memory rs) public {
-        // State -> SummitState -> State trip test
-        vm.roll(rs.blockNumber);
-        vm.warp(rs.timestamp);
-        bytes memory payload = libHarness.formatState(rs.root, rs.origin, rs.nonce, rs.blockNumber, rs.timestamp);
-        SummitState memory state = libHarness.toSummitState(payload);
-        assertEq(libHarness.formatSummitState(state), payload, "!summitState");
     }
 
     function test_isState(uint8 length) public {

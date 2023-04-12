@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {State, StateLib, STATE_LENGTH, SummitState} from "../../../contracts/libs/State.sol";
+import {State, StateLib, STATE_LENGTH} from "../../../contracts/libs/State.sol";
 
 import {RawSnapshot, RawState, RawStateIndex} from "./SynapseStructs.t.sol";
 

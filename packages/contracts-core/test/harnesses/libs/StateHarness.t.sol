@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {OriginState, State, StateLib, SummitState, TypedMemView} from "../../../contracts/libs/State.sol";
+import {OriginState, State, StateLib, TypedMemView} from "../../../contracts/libs/State.sol";
 
 // solhint-disable ordering
 /// @notice Exposes State methods for testing against golang.
@@ -94,15 +94,5 @@ contract StateHarness {
 
     function equalToOrigin(bytes memory payload, OriginState memory originState_) public pure returns (bool) {
         return payload.castToState().equalToOrigin(originState_);
-    }
-
-    // ═══════════════════════════════════════════════ SUMMIT STATE ════════════════════════════════════════════════════
-
-    function formatSummitState(SummitState memory summitState) public pure returns (bytes memory) {
-        return summitState.formatSummitState();
-    }
-
-    function toSummitState(bytes memory payload) public pure returns (SummitState memory state) {
-        return payload.castToState().toSummitState();
     }
 }
