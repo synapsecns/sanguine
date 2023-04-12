@@ -22,10 +22,15 @@ contract SummitTipsTest is DisputeHubTest {
     address internal guard1;
     uint32 internal origin1;
 
-    RawSnapshot internal snapshot;
-    // Notary who posted Snapshot to Summit
-    address internal snapNotary;
-    bytes32 internal snapRoot;
+    // Notary[0] snapshot: (state0)
+    RawSnapshot internal snapshot0;
+    address internal snapNotary0;
+    bytes32 internal snapRoot0;
+
+    // Notary[1] snapshot: (state0, state1)
+    RawSnapshot internal snapshot1;
+    address internal snapNotary1;
+    bytes32 internal snapRoot1;
 
     // Notary who posted Receipt to Summit
     address internal rcptNotary;
@@ -44,21 +49,26 @@ contract SummitTipsTest is DisputeHubTest {
         super.setUp();
         guard0 = domains[0].agents[0];
         guard1 = domains[0].agents[1];
-        snapNotary = domains[DOMAIN_LOCAL].agent;
+        snapNotary0 = domains[DOMAIN_LOCAL].agents[0];
+        snapNotary1 = domains[DOMAIN_LOCAL].agents[1];
         // Prepare test snapshot data
         origin0 = 1;
         state0 = fakeState(origin0);
         origin1 = 2;
         state1 = fakeState(origin1);
-        snapshot.states.push(state0);
-        snapshot.states.push(state1);
+        snapshot0.states.push(state0);
+        snapshot1.states.push(state0);
+        snapshot1.states.push(state1);
         // Submit snapshots to Summit
         submitGuardSnapshot(guard0, state0);
         submitGuardSnapshot(guard1, state1);
-        submitSnapshot(snapNotary, snapshot);
-        // Extract snapshot root
-        acceptSnapshot(snapshot.formatStates());
-        snapRoot = getSnapshotRoot();
+        submitSnapshot(snapNotary0, snapshot0);
+        submitSnapshot(snapNotary1, snapshot1);
+        // Extract snapshot roots
+        acceptSnapshot(snapshot0.formatStates());
+        snapRoot0 = getSnapshotRoot();
+        acceptSnapshot(snapshot1.formatStates());
+        snapRoot1 = getSnapshotRoot();
     }
 
     // ══════════════════════════════════════════ TESTS: SUBMIT RECEIPTS ═══════════════════════════════════════════════
@@ -337,7 +347,7 @@ contract SummitTipsTest is DisputeHubTest {
     function prepareReceipt(RawExecReceipt memory re, bool originZero, uint256 attNotaryIndex, bool isSuccess) public {
         re.origin = originZero ? origin0 : origin1;
         re.destination = DOMAIN_REMOTE;
-        re.snapshotRoot = snapRoot;
+        re.snapshotRoot = originZero ? snapRoot0 : snapRoot1;
         re.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryIndex % DOMAIN_AGENTS];
         re.firstExecutor = createExecutorEOA(re.firstExecutor, "First Executor");
         if (isSuccess) {
