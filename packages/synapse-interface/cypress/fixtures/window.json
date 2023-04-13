@@ -1,8 +1,8 @@
 {
   "breakpoints": {
     "large": {
-      "height": "800px",
-      "width": "1024px"
+      "height": 800,
+      "width": 1024
     }
   }
 }
