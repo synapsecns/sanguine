@@ -83,9 +83,11 @@ func (s *Status) Scan(src interface{}) error {
 
 // Value implements the gorm Valuer interface.
 func (s *Status) Value() (driver.Value, error) {
+	//nolint: wrapcheck
 	return dbcommon.EnumValue(s)
 }
 
 var _ dbcommon.EnumInter = (*Status)(nil)
 
+// ErrNoNonceForChain is the error returned when there is no nonce for a given chain id.
 var ErrNoNonceForChain = errors.New("no nonce exists for this chain")

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/imkira/go-interpol"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"gorm.io/gorm"
@@ -24,6 +26,13 @@ type Store struct {
 	db *gorm.DB
 }
 
+// MaxResultsPerChain is the maximum number of transactions to return per chain id.
+// it is exported for testing.
+// TODO: this should be an option.
+const MaxResultsPerChain = 50
+
+// GetTXS returns all transactions for a given address on a given (or any) chain id that match a given status.
+// there is a limit of 50 transactions per chain id. The limit does not make any guarantees about the number of nonces per transaction.
 func (s Store) GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, matchStatuses ...db.Status) (txs []*types.Transaction, err error) {
 	var dbTXs []ETHTX
 
@@ -40,13 +49,33 @@ func (s Store) GetTXS(ctx context.Context, fromAddress common.Address, chainID *
 		query.ChainID = chainID.Uint64()
 	}
 
-	tx := s.DB().WithContext(ctx).
-		Model(&ETHTX{}).
+	tableName, err := dbcommon.GetModelName(s.db, &ETHTX{})
+	if err != nil {
+		return nil, fmt.Errorf("could not get table name: %w", err)
+	}
+
+	subQuery := s.DB().Model(&ETHTX{}).
+		Select(fmt.Sprintf("DISTINCT %s, %s", txHashFieldName, chainIDFieldName)).
 		Where(query).
 		Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).
 		Order(fmt.Sprintf("%s asc, %s desc", nonceFieldName, statusFieldName)).
-		Group(chainIDFieldName).
-		Limit(50).
+		Limit(MaxResultsPerChain)
+
+	joinQuery, err := interpol.WithMap(
+		"INNER JOIN (?) as subquery on {table}.{txHash} = subquery.{txHash} AND {table}.{chainID} = subquery.{chainID}", map[string]string{
+			"table":   tableName,
+			"txHash":  txHashFieldName,
+			"chainID": chainIDFieldName,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("could not build join query: %w", err)
+	}
+
+	tx := s.DB().WithContext(ctx).
+		Model(&ETHTX{}).
+		Joins(joinQuery, subQuery).
+		Order(fmt.Sprintf("subquery.%s, %s", chainIDFieldName, nonceFieldName)).
 		Find(&dbTXs)
 
 	if tx.Error != nil {
@@ -61,7 +90,7 @@ func (s Store) GetTXS(ctx context.Context, fromAddress common.Address, chainID *
 			return nil, fmt.Errorf("could not unmarshal tx: %w", err)
 		}
 
-		res = append(txs, &marshalledTx)
+		res = append(res, &marshalledTx)
 	}
 	return res, nil
 }

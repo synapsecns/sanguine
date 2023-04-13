@@ -11,7 +11,6 @@ import (
 func init() {
 	namer := dbcommon.NewNamer(GetAllModels())
 	txHashFieldName = namer.GetConsistentName("TXHash")
-	fromFieldName = namer.GetConsistentName("From")
 	chainIDFieldName = namer.GetConsistentName("ChainID")
 	nonceFieldName = namer.GetConsistentName("Nonce")
 	statusFieldName = namer.GetConsistentName("Status")
@@ -20,8 +19,6 @@ func init() {
 var (
 	// txHashFieldName is the field name of the tx hash.
 	txHashFieldName string
-	// fromFieldName is the field name of the from address.
-	fromFieldName string
 	// chainIDFieldName is the field name of the to address.
 	chainIDFieldName string
 	// nonceFieldName is the field name of the nonce.

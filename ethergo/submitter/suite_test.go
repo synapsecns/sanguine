@@ -58,6 +58,7 @@ type SubmitterSuite struct {
 func (s *SubmitterSuite) GetClient(ctx context.Context, chainID *big.Int) (client.EVM, error) {
 	for _, backend := range s.testBackends {
 		if backend.GetBigChainID().Cmp(chainID) == 0 {
+			//nolint: wrapcheck
 			return client.DialBackend(ctx, backend.RPCAddress(), s.metrics)
 		}
 	}

@@ -22,6 +22,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.7.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d
+	github.com/imkira/go-interpol v1.1.0
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/invopop/jsonschema v0.7.0
 	github.com/ipfs/go-log v1.0.5

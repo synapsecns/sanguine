@@ -58,6 +58,7 @@ func CheckBigIntsAreCopied(tb testing.TB, a, b interface{}) {
 
 		// If the field is a *big.Int, use PointersAreEqual to compare it
 		if fieldValueA.Type() == reflect.TypeOf((*big.Int)(nil)) {
+			//nolint: forcetypeassert
 			if util.ArePointersEqual(fieldValueA.Interface().(*big.Int), fieldValueB.Interface().(*big.Int)) {
 				tb.Errorf("pointers are  equal for %s: %v != %v", fieldName, fieldValueA.Pointer(), fieldValueB.Pointer())
 			}

@@ -6,6 +6,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
+	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 )
 
@@ -70,18 +72,23 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 				t.Require().NoError(err)
 
 				// check that the result has the correct length
-				t.Require().Equal(3, len(result))
+				t.Require().Equal(txdb.MaxResultsPerChain, len(result))
+
+				// check that the result is limited per ChainID and address
+				for _, tx := range result {
+					t.Require().Equal(backend.GetBigChainID(), tx.ChainId(), testsuite.BigIntComparer())
+					msg, err := util.TxToCall(tx)
+					t.Require().NoError(err)
+
+					t.Require().Equal(mockAccount.Address, msg.From)
+				}
 
 				// check that the result is ordered by nonce
 				for i := 0; i < len(result)-1; i++ {
 					t.Require().Less(result[i].Nonce(), result[i+1].Nonce())
 				}
-
-				// check that the result is limited per ChainID
-				for _, tx := range result {
-					t.Require().Equal(backend.GetChainID(), tx.ChainId(), testsuite.BigIntComparer())
-				}
 			}
+			// TODO: test that the result is limited per ChainID
 		}
 	})
 }

@@ -107,6 +107,7 @@ func sortTxes(txs []*types.Transaction) map[uint64][]*types.Transaction {
 	}
 
 	for key := range txesByChainID {
+		key := key // capture range variable
 		// sort the transactions by nonce
 		sort.Slice(txesByChainID[key], func(i, j int) bool {
 			iNonce := txesByChainID[key][i].Nonce()
@@ -118,9 +119,8 @@ func sortTxes(txs []*types.Transaction) map[uint64][]*types.Transaction {
 					return false
 				}
 				return true
-			} else {
-				return iNonce < jNonce
 			}
+			return iNonce < jNonce
 		})
 	}
 

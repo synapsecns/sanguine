@@ -67,7 +67,7 @@ func CopyTX(unsignedTx *types.Transaction, options ...CopyOption) (*types.Transa
 	return nil, errors.New("an unexpected error occurred")
 }
 
-// copyOptions is a struct that holds the options for copying a transaction
+// copyOptions is a struct that holds the options for copying a transaction.
 type copyOptions struct {
 	nonce     *uint64
 	gasPrice  *big.Int
@@ -77,31 +77,31 @@ type copyOptions struct {
 
 // CopyOption is a function that sets a copy option
 // Certain options are not supported for certain transaction types on purpose
-// please exercise caution before adding new options
+// please exercise caution before adding new options.
 type CopyOption func(*copyOptions)
 
-// WithNonce sets the nonce for the copy
+// WithNonce sets the nonce for the copy.
 func WithNonce(nonce uint64) CopyOption {
 	return func(options *copyOptions) {
 		options.nonce = &nonce
 	}
 }
 
-// WithGasPrice sets the gas price for the copy
+// WithGasPrice sets the gas price for the copy.
 func WithGasPrice(gasPrice *big.Int) CopyOption {
 	return func(options *copyOptions) {
 		options.gasPrice = gasPrice
 	}
 }
 
-// WithGasFeeCap sets the gas fee cap for the copy
+// WithGasFeeCap sets the gas fee cap for the copy.
 func WithGasFeeCap(gasFeeCap *big.Int) CopyOption {
 	return func(options *copyOptions) {
 		options.gasFeeCap = gasFeeCap
 	}
 }
 
-// WithGasTipCap sets the gas tip cap for the copy
+// WithGasTipCap sets the gas tip cap for the copy.
 func WithGasTipCap(gasTipCap *big.Int) CopyOption {
 	return func(options *copyOptions) {
 		options.gasTipCap = gasTipCap

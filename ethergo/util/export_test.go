@@ -7,7 +7,7 @@ func MakeOptions(options ...CopyOption) TestCopyOptions {
 }
 
 // TestCopyOptions exports the TestCopyOptions interface for testing.
-// this is used to export unexported fields from copyOptions
+// this is used to export unexported fields from copyOptions.
 type TestCopyOptions interface {
 	Nonce() *uint64
 	GasPrice() *big.Int

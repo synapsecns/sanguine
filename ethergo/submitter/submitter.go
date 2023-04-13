@@ -64,6 +64,7 @@ type ClientFetcher interface {
 	GetClient(ctx context.Context, chainID *big.Int) (client.EVM, error)
 }
 
+// NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher) TransactionSubmitter {
 	return &txSubmitterImpl{
 		metrics:  metrics,
@@ -96,7 +97,7 @@ func (t *txSubmitterImpl) Start(ctx context.Context) error {
 	}
 }
 
-// runSelector runs the selector start loop
+// runSelector runs the selector start loop.
 func (t *txSubmitterImpl) runSelector(parentCtx context.Context, i int) (shouldExit bool, err error) {
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.Start", trace.WithAttributes(attribute.Int("i", i)))
 	defer func() {
@@ -133,6 +134,7 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 
 	sortedTXes := sortTxes(transactions)
 
+	// TODO: parallelize resubmisoisn by chainid, maybe w/ a locker per chain
 	g, ctx := errgroup.WithContext(ctx)
 	_ = g
 	for chainID := range sortedTXes {
@@ -278,6 +280,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 
 		// TODO: gas pricing
 
+		//nolint: wrapcheck
 		return parentTransactor.Signer(address, transaction)
 	}
 	tx, err := call(transactor)

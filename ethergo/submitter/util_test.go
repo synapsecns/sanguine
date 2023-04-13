@@ -11,7 +11,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
 	"gotest.tools/assert"
 	"math/big"
@@ -72,6 +71,7 @@ func TestCopyTransactOpts(t *testing.T) {
 }
 
 func assertTransactOptsEquality(tb testing.TB, toA, toB *bind.TransactOpts) {
+	tb.Helper()
 	// Check that the pointer values of the big integer fields are different
 	assertBigIntsCopiedEqual(tb, toA.Nonce, toB.Nonce, "Nonce")
 	assertBigIntsCopiedEqual(tb, toA.Value, toB.Value, "Value")
@@ -83,17 +83,17 @@ func assertTransactOptsEquality(tb testing.TB, toA, toB *bind.TransactOpts) {
 
 // assertBigIntsCopiedEqual checks that the given big.Ints are equal and that
 // they have different pointers.
-func assertBigIntsCopiedEqual(tb testing.TB, original *big.Int, new *big.Int, fieldName string) {
+func assertBigIntsCopiedEqual(tb testing.TB, original *big.Int, newVal *big.Int, fieldName string) {
 	tb.Helper()
-	if original == nil && new == nil {
+	if original == nil && newVal == nil {
 		return
 	}
 
-	if core.ArePointersEqual(original, new) {
+	if core.ArePointersEqual(original, newVal) {
 		tb.Errorf("%s has same pointer as original", fieldName)
 	}
 
-	if original.Cmp(new) != 0 {
+	if original.Cmp(newVal) != 0 {
 		tb.Errorf("%s is not equal", fieldName)
 	}
 }
@@ -207,7 +207,6 @@ func (s *SubmitterSuite) TestSortTxes() {
 			testKey := &keystore.Key{PrivateKey: testAddress.PrivateKey, Address: testAddress.From}
 			for i := 0; i < 50; i++ {
 				mockTX := mocks.MockTx(s.GetTestContext(), s.T(), backend, testKey, types.DynamicFeeTxType)
-				util.CopyTX(mockTX)
 
 				// add to map in order
 				mapMux.Lock()
@@ -233,7 +232,6 @@ func (s *SubmitterSuite) TestSortTxes() {
 			assert.Equal(s.T(), sorted[chainID][i].Hash(), txes[i].Hash())
 		}
 	}
-
 }
 
 func makeAttrMap(tx *types.Transaction) map[string]attribute.Value {
