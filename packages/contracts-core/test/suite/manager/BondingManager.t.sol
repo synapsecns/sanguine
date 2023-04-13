@@ -81,6 +81,7 @@ contract BondingManagerTest is AgentManagerTest {
     function test_addAgent_new(uint32 domain, address agent) public {
         // Should not be an already added agent
         vm.assume(bondingManager.agentStatus(agent).flag == AgentFlag.Unknown);
+        vm.assume(agent != address(0));
         bytes32[] memory proof = getZeroProof();
         bytes32 newRoot = addNewAgent(domain, agent);
         vm.expectEmit();

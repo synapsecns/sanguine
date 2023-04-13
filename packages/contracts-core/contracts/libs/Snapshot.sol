@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AttestationLib, SummitAttestation} from "./Attestation.sol";
 import {ByteString} from "./ByteString.sol";
 import {SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
 import {MerkleList} from "./MerkleList.sol";
@@ -13,17 +12,6 @@ type Snapshot is bytes29;
 
 /// @dev Attach library functions to Snapshot
 using SnapshotLib for Snapshot global;
-
-/// @dev Struct representing Snapshot, as it is stored in the Summit contract.
-/// Summit contract is supposed to store states. Snapshot is a list of states,
-/// so we are storing a list of references to already stored states.
-struct SummitSnapshot {
-    // TODO: compress this - indexes might as well be uint32/uint64
-    uint256[] statePtrs;
-}
-
-/// @dev Attach library functions to SummitSnapshot
-using SnapshotLib for SummitSnapshot global;
 
 library SnapshotLib {
     using ByteString for bytes;
@@ -117,25 +105,6 @@ library SnapshotLib {
         return Snapshot.unwrap(snapshot);
     }
 
-    // ══════════════════════════════════════════════ SUMMIT SNAPSHOT ══════════════════════════════════════════════════
-
-    function toSummitSnapshot(uint256[] memory statePtrs) internal pure returns (SummitSnapshot memory snapshot) {
-        snapshot.statePtrs = statePtrs;
-    }
-
-    function emptySummitSnapshot() internal pure returns (SummitSnapshot memory snapshot) {
-        snapshot.statePtrs = new uint256[](0);
-    }
-
-    function getStatesAmount(SummitSnapshot memory snapshot) internal pure returns (uint256) {
-        return snapshot.statePtrs.length;
-    }
-
-    function getStatePtr(SummitSnapshot memory snapshot, uint256 index) internal pure returns (uint256) {
-        require(index < getStatesAmount(snapshot), "State index out of range");
-        return snapshot.statePtrs[index];
-    }
-
     // ═════════════════════════════════════════════ SNAPSHOT SLICING ══════════════════════════════════════════════════
 
     /// @notice Returns a state with a given index from the snapshot.
@@ -166,19 +135,6 @@ library SnapshotLib {
         MerkleList.calculateRoot(hashes, SNAPSHOT_TREE_HEIGHT - 1);
         // hashes[0] now stores the value for the Merkle Root of the list
         return hashes[0];
-    }
-
-    // ════════════════════════════════════════════ SUMMIT ATTESTATION ═════════════════════════════════════════════════
-
-    /// @notice Returns an Attestation struct to save in the Summit contract.
-    /// Current block number and timestamp are used.
-    // solhint-disable-next-line ordering
-    function toSummitAttestation(Snapshot snapshot, bytes32 agentRoot)
-        internal
-        view
-        returns (SummitAttestation memory attestation)
-    {
-        return AttestationLib.summitAttestation(snapshot.root(), agentRoot);
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════

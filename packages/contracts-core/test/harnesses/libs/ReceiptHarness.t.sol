@@ -42,9 +42,9 @@ contract ReceiptHarness {
         return payload.castToReceipt().snapshotRoot();
     }
 
-    /// @notice Returns receipt's notary field
-    function notary(bytes memory payload) public pure returns (address) {
-        return payload.castToReceipt().notary();
+    /// @notice Returns receipt's "attestation notary" field
+    function attNotary(bytes memory payload) public pure returns (address) {
+        return payload.castToReceipt().attNotary();
     }
 
     /// @notice Returns receipt's "first executor" field
@@ -73,13 +73,13 @@ contract ReceiptHarness {
         uint32 destination_,
         bytes32 messageHash_,
         bytes32 snapshotRoot_,
-        address notary_,
+        address attNotary_,
         address firstExecutor_,
         address finalExecutor_,
         bytes memory tipsPayload
     ) public pure returns (bytes memory) {
         return ReceiptLib.formatReceipt(
-            origin_, destination_, messageHash_, snapshotRoot_, notary_, firstExecutor_, finalExecutor_, tipsPayload
+            origin_, destination_, messageHash_, snapshotRoot_, attNotary_, firstExecutor_, finalExecutor_, tipsPayload
         );
     }
 }

@@ -307,7 +307,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
             destination: localDomain(),
             messageHash: getLeaf(0),
             snapshotRoot: getSnapshotRoot(),
-            notary: domains[localDomain()].agent,
+            attNotary: domains[localDomain()].agent,
             firstExecutor: executor,
             finalExecutor: executorNew,
             tips: RawTips(0, 0, 0, 0)
