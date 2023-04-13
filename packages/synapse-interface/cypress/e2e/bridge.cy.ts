@@ -1,3 +1,4 @@
+import { network } from 'hardhat'
 import { mock } from '@depay/web3-mock'
 
 const BRIDGE_CONSTANTS = 'bridge.json'
@@ -39,8 +40,39 @@ describe('Bridge without wallet connected', () => {
   })
 })
 
-describe('Bridge with wallet connected', () => {
-  beforeEach(() => mock('ethereum'))
+describe('Bridge with metamask wallet connected to ethereum network', () => {
+  const network = 'ethereum'
+  const wallet = 'metamask'
+  const account = ['0xF080B794AbF6BB905F2330d25DF545914e6027F8']
+
+  beforeEach(() =>
+    mock({
+      blockchain: network,
+      wallet,
+      accounts: {
+        return: account,
+      },
+    })
+  )
+
+  it('should be connected to metamask', () => {
+    cy.window().then(() => {
+      expect(global.ethereum).to.exist
+      expect(global.ethereum.isMetaMask).to.be.true
+      expect(global.ethereum.isCoinbaseWallet).to.be.undefined
+      expect(global.ethereum.isBraveWallet).to.be.undefined
+    })
+  })
+
+  it('should connect to ethereum network', () => {
+    cy.window().then(async () => {
+      expect(global.ethereum).to.exist
+      const currentChainId = await global.ethereum.request({
+        method: 'eth_chainId',
+      })
+      expect(currentChainId).to.equal('0x1')
+    })
+  })
 
   it('should load possible origin tokens, given a specific chainId', () => {})
 
