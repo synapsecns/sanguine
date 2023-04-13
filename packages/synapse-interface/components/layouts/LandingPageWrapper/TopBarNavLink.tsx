@@ -14,7 +14,7 @@ export function TopBarNavLink({
   const isInternal = to[0] === '/' || to[0] === '#'
   const linkContent = (
     <div className={`py-2 px-2 ${className}`}>
-      <span className="transform-gpu transition-all duration-75">
+      <span className="transition-all duration-75 transform-gpu">
         {labelText}
       </span>
     </div>
@@ -33,6 +33,7 @@ export function TopBarNavLink({
         href={to}
         className={linkClassName}
         // activeClassName="!text-opacity-100"
+        data-test-id="nav-link"
       >
         {linkContent}
       </Link>

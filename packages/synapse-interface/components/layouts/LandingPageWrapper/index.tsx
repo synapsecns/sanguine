@@ -79,6 +79,7 @@ export function LandingNav() {
           <Popover.Group
             as="nav"
             className="hidden lg:flex md:justify-space-evenly"
+            data-test-id="desktop-nav"
           >
             <TopBarButtons />
           </Popover.Group>
