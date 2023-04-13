@@ -127,7 +127,7 @@ export function LandingNav() {
         >
           <div
             className="h-full min-h-full divide-y divide-gray-600 bg-bgLight"
-            data-test-id="mobile-nav"
+            // data-test-id="mobile-nav"
           >
             <div className="px-4 pt-1 pb-6">
               <div className="flex items-center justify-between mt-5 ml-3">
@@ -146,7 +146,12 @@ export function LandingNav() {
                 </div>
               </div>
               <div className="mt-6">
-                <Grid cols={{ xs: 1 }} gap={2} className="py-6">
+                <Grid
+                  cols={{ xs: 1 }}
+                  gap={2}
+                  className="py-6"
+                  data-test-id="mobile-nav"
+                >
                   <MobileBarButtons />
                 </Grid>
               </div>

@@ -77,5 +77,22 @@ describe('Navbar', () => {
     })
   })
 
-  it('[mobile] shows all routes', () => {})
+  it('[mobile] shows all routes, in the correct order', () => {
+    cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
+      const medium_screen = fixture.screenWidth.medium
+      cy.viewport(medium_screen.width, medium_screen.height)
+    })
+
+    cy.get('button[data-test-id="mobile-navbar-button"]').click()
+
+    cy.fixture(NAVIGATION_CONSTANTS).then((fixture) => {
+      const routes = fixture.routes
+      cy.get('div[data-test-id="mobile-nav"]')
+        .children('a')
+        .should('have.length', 6)
+        .each(($a, index) => {
+          expect($a.text()).to.equal(routes[index])
+        })
+    })
+  })
 })
