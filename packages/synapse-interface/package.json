@@ -50,6 +50,9 @@
     "wagmi": "^0.11.7"
   },
   "devDependencies": {
+    "@depay/web3-mock": "^14.0.0",
+    "@testing-library/cypress": "^9.0.0",
+    "@types/web3": "^1.2.2",
     "autoprefixer": "^10.4.13",
     "cypress": "^12.9.0",
     "postcss": "^8.4.21",

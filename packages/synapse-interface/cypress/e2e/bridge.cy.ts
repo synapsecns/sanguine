@@ -1,6 +1,8 @@
+import { mock } from '@depay/web3-mock'
+
 const BRIDGE_CONSTANTS = 'bridge.json'
 
-describe('Bridge', () => {
+describe('Bridge without wallet connected', () => {
   beforeEach(() => cy.visit('/'))
 
   it('should initially load total # of origin networks', () => {
@@ -35,6 +37,10 @@ describe('Bridge', () => {
       })
     })
   })
+})
+
+describe('Bridge with wallet connected', () => {
+  beforeEach(() => mock('ethereum'))
 
   it('should load possible origin tokens, given a specific chainId', () => {})
 
