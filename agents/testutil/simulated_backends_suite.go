@@ -192,9 +192,9 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 // SetupSummit sets up the backend that will have the summit contract deployed on it.
 func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.BondingManagerMetadataOnSummit, a.BondingManagerOnSummit = deployManager.GetBondingManagerHarness(a.GetTestContext(), a.TestBackendSummit)
-	_, _ = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
+	a.SummitMetadata, a.SummitContract = deployManager.GetSummitHarness(a.GetTestContext(), a.TestBackendSummit)
 
-	/*var err error
+	var err error
 	a.SummitDomainClient, err = evm.NewEVM(a.GetTestContext(), "summit_client", config.DomainConfig{
 		DomainID:      uint32(a.TestBackendSummit.GetBigChainID().Uint64()),
 		Type:          types.EVM.String(),
@@ -208,7 +208,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
-	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))*/
+	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
 
 // SetupGuard sets up the Guard agent.

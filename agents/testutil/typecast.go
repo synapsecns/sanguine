@@ -554,7 +554,7 @@ func (d *DeployManager) LoadHarnessContractsOnChains(
 		return fmt.Errorf("could not initialize bonding manager harness on syn chain: %w", err)
 	}
 
-	bondingManagerHarnessAgentRoot, _, _, err := d.AddAgentsToBondingManagerHarnessContract(
+	bondingManagerHarnessAgentRoot, agentProofs, agentStatuses, err := d.AddAgentsToBondingManagerHarnessContract(
 		ctx,
 		synChainBackend,
 		agents,
@@ -573,7 +573,7 @@ func (d *DeployManager) LoadHarnessContractsOnChains(
 			return fmt.Errorf("could not initialize remote deplyed harness contracts: %w", err)
 		}
 
-		/*err = d.AddAgentsToLightManagerHarnessContract(
+		err = d.AddAgentsToLightManagerHarnessContract(
 			ctx,
 			backend,
 			agents,
@@ -581,7 +581,7 @@ func (d *DeployManager) LoadHarnessContractsOnChains(
 			agentStatuses)
 		if err != nil {
 			return fmt.Errorf("could not add agents to remote light manager harness contract: %w", err)
-		}*/
+		}
 	}
 
 	return nil
