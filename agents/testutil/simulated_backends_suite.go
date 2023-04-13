@@ -1,7 +1,6 @@
 package testutil
 
 import (
-	"context"
 	"github.com/ethereum/go-ethereum/common"
 	executorMetadata "github.com/synapsecns/sanguine/agents/agents/executor/metadata"
 	guardMetadata "github.com/synapsecns/sanguine/agents/agents/guard/metadata"
@@ -10,7 +9,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
-	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
@@ -50,9 +48,6 @@ import (
 // others might want just a destination, etc.
 type SimulatedBackendsTestSuite struct {
 	*testsuite.TestSuite
-	// logDir is the directory where logs will be written for the docker containers that host the anvil nodes
-	// this allows you to do tai -f /path/to/logs/*.combined.log to see all logs
-	logDir                              string
 	LightManagerOnOrigin                *lightmanagerharness.LightManagerHarnessRef
 	LightManagerMetadataOnOrigin        contracts.DeployedContract
 	OriginContract                      *originharness.OriginHarnessRef
@@ -119,7 +114,7 @@ func NewSimulatedBackendsTestSuite(tb testing.TB) *SimulatedBackendsTestSuite {
 // SetupSuite sets up the test suite.
 func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	a.TestSuite.SetupSuite()
-	a.logDir = filet.TmpDir(a.T(), "")
+	a.TestSuite.LogDir = filet.TmpDir(a.T(), "")
 	localmetrics.SetupTestJaeger(a.GetSuiteContext(), a.T())
 
 	var err error
@@ -285,15 +280,15 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		a.TestBackendOrigin = a.makeBackend(a.GetSuiteContext(), preset.GetRinkeby().GetBigChainID())
+		a.TestBackendOrigin = a.MakeBackend(a.GetSuiteContext(), preset.GetRinkeby().GetBigChainID())
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendDestination = a.makeBackend(a.GetSuiteContext(), preset.GetBSCTestnet().GetBigChainID())
+		a.TestBackendDestination = a.MakeBackend(a.GetSuiteContext(), preset.GetBSCTestnet().GetBigChainID())
 	}()
 	go func() {
 		defer wg.Done()
-		a.TestBackendSummit = a.makeBackend(a.GetSuiteContext(), preset.GetMaticMumbaiFakeSynDomain().GetBigChainID())
+		a.TestBackendSummit = a.MakeBackend(a.GetSuiteContext(), preset.GetMaticMumbaiFakeSynDomain().GetBigChainID())
 	}()
 	wg.Wait()
 
@@ -322,18 +317,6 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 		a.T().Fatal(err)
 	}
 	a.ExecutorTestDB = sqliteStore
-}
-
-// makeBackend creates a new backend. These backends are modified to accept the higher gas limit required by the summit harness.
-func (a *SimulatedBackendsTestSuite) makeBackend(ctx context.Context, chainID *big.Int) backends.SimulatedTestBackend {
-	options := anvil.NewAnvilOptionBuilder()
-	options.SetChainID(chainID.Uint64())
-	options.SetCodeSizeLimit(params.MaxCodeSize * 3)
-	options.SetGasLimit(50000000)
-	// TODO: set all log dirs to the same temp dir and change name based on chain
-	// master needs to be merged first
-
-	return anvil.NewAnvilBackend(ctx, a.T(), options)
 }
 
 // cleanAfterTestSuite does cleanup after test suite is finished.

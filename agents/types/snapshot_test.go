@@ -15,6 +15,7 @@ import (
 )
 
 func TestSnapshotRootAndProofs(t *testing.T) {
+	// TODO (Max Planck): Fix me
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
