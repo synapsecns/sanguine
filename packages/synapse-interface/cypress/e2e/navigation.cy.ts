@@ -1,4 +1,5 @@
 const WINDOW_CONSTANTS = 'window.json'
+const NAVIGATION_CONSTANTS = 'navigation.json'
 
 describe('Navbar', () => {
   beforeEach(() => cy.visit('/'))
@@ -31,7 +32,22 @@ describe('Navbar', () => {
     })
   })
 
-  it('[desktop] shows all routes', () => {})
+  it('[desktop] shows all routes, in the correct order', () => {
+    cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
+      const medium_screen = fixture.screenWidth.medium
+      cy.viewport(medium_screen.width, medium_screen.height)
+    })
+
+    cy.fixture(NAVIGATION_CONSTANTS).then((fixture) => {
+      const routes = fixture.routes
+      cy.get('nav[data-test-id="desktop-nav"]')
+        .children('a')
+        .should('have.length', 6)
+        .each(($a, index) => {
+          expect($a.text()).to.equal(routes[index])
+        })
+    })
+  })
 
   it('[mobile] button will be visible when screen with is <1024px', () => {
     cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
