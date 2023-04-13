@@ -280,7 +280,7 @@ function MobileBarButtons() {
       <MobileBarItem to={SWAP_PATH} labelText="Swap" />
       <MobileBarItem to={POOLS_PATH} labelText="Pools" />
       <MobileBarItem to={STAKE_PATH} labelText="Stake" />
-      <MobileBarItem to={ANALYTICS_PATH} labelText="Analytics" />
+      <MobileBarItem to={ANALYTICS_PATH} labelText="Explorer" />
     </>
   )
 }
