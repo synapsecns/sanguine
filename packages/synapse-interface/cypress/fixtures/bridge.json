@@ -1,4 +1,5 @@
 {
   "defaultOriginToken": "USDC",
-  "defaultDestinationToken": "USDC"
+  "defaultDestinationToken": "USDC",
+  "totalAvailableNetworks": 18
 }

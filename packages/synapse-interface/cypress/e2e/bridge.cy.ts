@@ -8,10 +8,12 @@ describe('Bridge', () => {
 
     cy.get('[data-test-id="bridge-origin-chain-list"]').should('be.visible')
 
-    cy.get('button[data-test-id="bridge-origin-chain-list-item"]').should(
-      'have.length',
-      18
-    )
+    cy.fixture('bridge.json').then((fixture) => {
+      cy.get('button[data-test-id="bridge-origin-chain-list-item"]').should(
+        'have.length',
+        fixture.totalAvailableNetworks
+      )
+    })
   })
 
   it('should load possible origin tokens, given a specific chainId', () => {})
