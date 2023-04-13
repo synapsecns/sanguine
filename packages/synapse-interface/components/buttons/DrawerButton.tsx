@@ -3,12 +3,17 @@ import { ChevronUpIcon } from '@heroicons/react/outline'
 export const DrawerButton = ({
   className,
   onClick,
+  isOrigin,
 }: {
   className?: string
   onClick: () => void
+  isOrigin: boolean
 }) => {
+  const dataId = isOrigin ? 'bridge-origin-list-button' : 'bridge-destination-list-button'
+
   return (
     <div
+      data-test-id={dataId}
       className={`
         flex items-center justify-center
         w-8 h-8
