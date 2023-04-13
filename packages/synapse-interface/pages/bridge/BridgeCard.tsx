@@ -22,7 +22,7 @@ import { approveToken } from '@/utils/approveToken'
 import SettingsSlideOver from './SettingsSlideOver'
 import { DestinationAddressInput } from './DestinationAddressInput'
 import BridgeInputContainer from './BridgeInputContainer'
-import { useSynapseContext } from '@/utils/SynapseProvider'
+import { TransactionResponse } from '@ethersproject/providers'
 
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
@@ -65,7 +65,7 @@ const BridgeCard = ({
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
   onChangeFromAmount: (amount: string) => void
   setDestinationAddress: (address: string) => void
-  executeBridge: () => Promise<void>
+  executeBridge: () => Promise<TransactionResponse>
   resetRates: () => void
   setTime: (time: number) => void
 }) => {

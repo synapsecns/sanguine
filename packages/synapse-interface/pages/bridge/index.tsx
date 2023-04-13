@@ -209,9 +209,13 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         fromToken[fromChainId as keyof Token['decimals']]
       )
     ) {
+      let bigNum =
+        stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero
+      console.log(value, bigNum)
+
       setFromInput({
         string: value,
-        bigNum: stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero,
+        bigNum: bigNum,
       })
     }
   }
