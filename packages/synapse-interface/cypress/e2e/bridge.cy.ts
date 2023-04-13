@@ -1,4 +1,3 @@
-import { network } from 'hardhat'
 import { mock } from '@depay/web3-mock'
 
 const BRIDGE_CONSTANTS = 'bridge.json'
@@ -45,6 +44,7 @@ describe('Bridge with metamask wallet connected to ethereum network', () => {
   const wallet = 'metamask'
   const account = ['0xF080B794AbF6BB905F2330d25DF545914e6027F8']
 
+  beforeEach(() => cy.visit('/'))
   beforeEach(() =>
     mock({
       blockchain: network,
