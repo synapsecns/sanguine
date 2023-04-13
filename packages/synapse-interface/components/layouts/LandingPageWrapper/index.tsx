@@ -12,21 +12,17 @@ import { Wallet } from '@components/Wallet'
 import { SynapseLogoSvg, SynapseLogoWithTitleSvg } from './SynapseLogoSvg'
 import { TopBarNavLink } from './TopBarNavLink'
 import {
-  ANALYTICS_PATH,
-  BRIDGE_PATH,
   CONTRACTS_PATH,
   DISCORD_URL,
   DOCS_URL,
   FORUM_URL,
   LANDING_PATH,
-  POOLS_PATH,
   PORTFOLIO_PATH,
-  STAKE_PATH,
-  SWAP_PATH,
   TELEGRAM_URL,
   TWITTER_URL,
   getBuySynUrl,
 } from '@/constants/urls'
+import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 
@@ -203,15 +199,30 @@ function PopoverPanelContainer({
 function TopBarButtons() {
   return (
     <>
-      <TopBarNavLink to={LANDING_PATH} labelText="About" />
-      <TopBarNavLink to={BRIDGE_PATH} labelText="Bridge" />
-      <TopBarNavLink to={SWAP_PATH} labelText="Swap" />
-      <TopBarNavLink to={POOLS_PATH} labelText="Pools" />
-      <TopBarNavLink to={STAKE_PATH} labelText="Stake" />
+      <TopBarNavLink
+        to={NAVIGATION.About.path}
+        labelText={NAVIGATION.About.text}
+      />
+      <TopBarNavLink
+        to={NAVIGATION.Bridge.path}
+        labelText={NAVIGATION.Bridge.text}
+      />
+      <TopBarNavLink
+        to={NAVIGATION.Swap.path}
+        labelText={NAVIGATION.Swap.text}
+      />
+      <TopBarNavLink
+        to={NAVIGATION.Pools.path}
+        labelText={NAVIGATION.Pools.text}
+      />
+      <TopBarNavLink
+        to={NAVIGATION.Stake.path}
+        labelText={NAVIGATION.Stake.text}
+      />
       <TopBarNavLink
         className="hidden mdl:block"
-        to={ANALYTICS_PATH}
-        labelText="Explorer"
+        to={NAVIGATION.Analytics.path}
+        labelText={NAVIGATION.Analytics.text}
       />
     </>
   )
@@ -222,18 +233,18 @@ function MoreInfoButtons() {
     <>
       <MoreInfoItem
         className="mdl:hidden"
-        to={ANALYTICS_PATH}
-        labelText="Analytics"
+        to={NAVIGATION.Analytics.path}
+        labelText={NAVIGATION.Analytics.text}
         description="See preliminary analytics of the bridge"
       />
       <MoreInfoItem
-        to={CONTRACTS_PATH}
-        labelText="Contracts"
+        to={NAVIGATION.Contracts.path}
+        labelText={NAVIGATION.Contracts.text}
         description="View contract related information such as contract addresses"
       />
       <MoreInfoItem
-        to={PORTFOLIO_PATH}
-        labelText="Portfolio"
+        to={NAVIGATION.Portoflio.path}
+        labelText={NAVIGATION.Portfolio.text}
         description="View your portfolio of related assets on this chain"
       />
     </>
@@ -275,12 +286,30 @@ function SocialButtons() {
 function MobileBarButtons() {
   return (
     <>
-      <MobileBarItem to={LANDING_PATH} labelText="About" />
-      <MobileBarItem to={BRIDGE_PATH} labelText="Bridge" />
-      <MobileBarItem to={SWAP_PATH} labelText="Swap" />
-      <MobileBarItem to={POOLS_PATH} labelText="Pools" />
-      <MobileBarItem to={STAKE_PATH} labelText="Stake" />
-      <MobileBarItem to={ANALYTICS_PATH} labelText="Explorer" />
+      <MobileBarItem
+        to={NAVIGATION.About.path}
+        labelText={NAVIGATION.About.text}
+      />
+      <MobileBarItem
+        to={NAVIGATION.Bridge.path}
+        labelText={NAVIGATION.Bridge.text}
+      />
+      <MobileBarItem
+        to={NAVIGATION.Swap.path}
+        labelText={NAVIGATION.Swap.text}
+      />
+      <MobileBarItem
+        to={NAVIGATION.Pools.path}
+        labelText={NAVIGATION.Pools.text}
+      />
+      <MobileBarItem
+        to={NAVIGATION.Stake.path}
+        labelText={NAVIGATION.Stake.text}
+      />
+      <MobileBarItem
+        to={NAVIGATION.Analytics.path}
+        labelText={NAVIGATION.Analytics.text}
+      />
     </>
   )
 }
