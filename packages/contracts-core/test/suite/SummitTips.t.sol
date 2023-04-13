@@ -1,15 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {InterfaceSummit} from "../../contracts/Summit.sol";
+import {IAgentManager, InterfaceSummit} from "../../contracts/Summit.sol";
 
-import {AgentFlag, ISystemContract, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, ISystemContract, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {IDisputeHub, DisputeHubTest} from "./hubs/DisputeHub.t.sol";
 
 import {fakeState} from "../utils/libs/FakeIt.t.sol";
 import {RawExecReceipt, RawState, RawStateIndex, RawSnapshot, RawTips} from "../utils/libs/SynapseStructs.t.sol";
 
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
+
+contract SummitCheats is Summit {
+    constructor(uint32 domain, IAgentManager agentManager_) Summit(domain, agentManager_) {}
+
+    function setActorTips(address actor, uint32 origin, uint128 earned, uint128 claimed) external {
+        actorTips[actor][origin].earned = earned;
+        actorTips[actor][origin].claimed = claimed;
+    }
+}
 
 // solhint-disable code-complexity
 // solhint-disable func-name-mixedcase
@@ -39,6 +48,8 @@ contract SummitTipsTest is DisputeHubTest {
     // Notary who posted Receipt to Summit
     address internal rcptNotary;
     address internal rcptNotaryFinal;
+
+    address internal summitCheats;
 
     // Deploy Production version of Summit and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_SUMMIT) {}
@@ -73,6 +84,8 @@ contract SummitTipsTest is DisputeHubTest {
         snapRoot0 = getSnapshotRoot();
         acceptSnapshot(snapshot1.formatStates());
         snapRoot1 = getSnapshotRoot();
+        // Deploy Summit implementation with Cheats
+        summitCheats = address(new SummitCheats(DOMAIN_SYNAPSE, bondingManager));
     }
 
     // ══════════════════════════════════════════ TESTS: SUBMIT RECEIPTS ═══════════════════════════════════════════════
@@ -359,10 +372,12 @@ contract SummitTipsTest is DisputeHubTest {
     // ═══════════════════════════════════════════ TESTS: WITHDRAW TIPS ════════════════════════════════════════════════
 
     function test_withdrawTips(address actor, uint32 domain, uint128 earned, uint128 claimed, uint128 amount) public {
+        // Etch the contract with cheat codes to set actor tips
+        vm.etch(summit, summitCheats.code);
         earned = uint128(bound(earned, 1, type(uint128).max));
         claimed = claimed % earned;
         amount = uint128(bound(amount, 1, earned - claimed));
-        setActorTips(actor, domain, earned, claimed);
+        SummitCheats(summit).setActorTips(actor, domain, earned, claimed);
         bytes memory expectedCall = abi.encodeWithSelector(bondingManager.withdrawTips.selector, actor, domain, amount);
         vm.expectCall(address(bondingManager), expectedCall);
         vm.prank(actor);
@@ -392,15 +407,6 @@ contract SummitTipsTest is DisputeHubTest {
         vm.expectRevert("Tips balance too low");
         vm.prank(actor);
         InterfaceSummit(summit).withdrawTips(domain, amount);
-    }
-
-    function setActorTips(address actor, uint32 domain, uint128 earned, uint128 claimed) public {
-        uint256 packedValue = earned | (uint256(claimed) << 128);
-        stdstore.target(summit).sig(InterfaceSummit.actorTips.selector).with_key(actor).with_key(domain).depth(0)
-            .checked_write(packedValue);
-        (uint128 earned_, uint128 claimed_) = InterfaceSummit(summit).actorTips(actor, domain);
-        require(earned_ == earned, "Failed to set earned");
-        require(claimed_ == claimed, "Failed to set claimed");
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
