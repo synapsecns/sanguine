@@ -34,15 +34,16 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @notice Struct representing stored data for the snapshot root
     /// @param notaryIndex  Index of Notary who submitted the statement with the snapshot root
+    /// @param attNonce     Nonce of the attestation for this snapshot root
     /// @param index        Index of snapshot root in `_roots`
     /// @param submittedAt  Timestamp when the statement with the snapshot root was submitted
     struct SnapRootData {
         uint32 notaryIndex;
-        // TODO: add attestation nonce
+        uint32 attNonce;
         uint32 index;
         uint40 submittedAt;
     }
-    // 152 bits left for tight packing
+    // 120 bits left for tight packing
 
     /// @notice Struct representing stored receipt data for the message in Execution Hub.
     /// @param origin       Domain where message originated
@@ -237,7 +238,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     function _saveAttestation(Attestation att, uint32 notaryIndex) internal {
         bytes32 root = att.snapRoot();
         require(_rootData[root].submittedAt == 0, "Root already exists");
-        _rootData[root] = SnapRootData(notaryIndex, uint32(_roots.length), uint40(block.timestamp));
+        _rootData[root] = SnapRootData(notaryIndex, att.nonce(), uint32(_roots.length), uint40(block.timestamp));
         _roots.push(root);
     }
 
