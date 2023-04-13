@@ -10,6 +10,8 @@ import {TipsLib} from "../../contracts/libs/Tips.sol";
 import {InterfaceOrigin} from "../../contracts/Origin.sol";
 import {Versioned} from "../../contracts/Version.sol";
 
+import {RevertingApp} from "../harnesses/client/RevertingApp.t.sol";
+
 import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
 import {
@@ -194,6 +196,8 @@ contract OriginTest is SystemRegistryTest {
         _verifyAttestationWithProof(random, rs, false);
     }
 
+    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
+
     function _prepareExistingState(uint32 nonce, uint256 mask) internal returns (bool isValid, RawState memory rs) {
         uint40 initialBN = uint40(block.number - 1);
         uint40 initialTS = uint40(block.timestamp - BLOCK_TIME);
@@ -324,6 +328,34 @@ contract OriginTest is SystemRegistryTest {
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
+    }
+
+    // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════
+
+    function test_withdrawTips(uint256 amount) public {
+        address recipient = makeAddr("Tip recipient");
+        vm.deal(origin, amount);
+        vm.prank(address(lightManager));
+        InterfaceOrigin(origin).withdrawTips(recipient, amount);
+        assertEq(recipient.balance, amount);
+    }
+
+    function test_remoteWithdrawTips_revert_insufficientBalance(uint256 balance, uint256 amount) public {
+        amount = bound(amount, 1, type(uint256).max);
+        balance = balance % amount;
+        address recipient = makeAddr("Tip recipient");
+        vm.deal(origin, balance);
+        vm.expectRevert("Insufficient balance");
+        vm.prank(address(lightManager));
+        InterfaceOrigin(origin).withdrawTips(recipient, amount);
+    }
+
+    function test_withdrawTips_revert_recipientReverted(uint256 amount) public {
+        address recipient = address(new RevertingApp());
+        vm.deal(origin, amount);
+        vm.expectRevert("Recipient reverted");
+        vm.prank(address(lightManager));
+        InterfaceOrigin(origin).withdrawTips(recipient, amount);
     }
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════

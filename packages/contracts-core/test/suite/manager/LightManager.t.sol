@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {SystemEntity} from "../../../contracts/libs/Structures.sol";
-import {ISystemRegistry} from "../../../contracts/interfaces/ISystemRegistry.sol";
+import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
 
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
@@ -119,6 +119,75 @@ contract LightManagerTest is AgentManagerTest {
         assertEq(uint8(lightManager.agentStatus(agent).flag), uint8(AgentFlag.Unknown));
         vm.expectRevert("Invalid proof");
         lightManager.updateAgentStatus(agent, status, proof);
+    }
+
+    // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════
+
+    function test_remoteWithdrawTips(address actor, uint256 amount, uint32 proofMaturity) public {
+        proofMaturity = uint32(bound(proofMaturity, BONDING_OPTIMISTIC_PERIOD, type(uint32).max));
+        skip(proofMaturity);
+        bytes memory expectedCall = abi.encodeWithSelector(InterfaceOrigin.withdrawTips.selector, actor, amount);
+        vm.expectCall(origin, expectedCall);
+        systemRouter.systemPrank(
+            SystemEntity.AgentManager,
+            proofMaturity,
+            DOMAIN_SYNAPSE,
+            SystemEntity.AgentManager,
+            abi.encodeWithSelector(lightManager.remoteWithdrawTips.selector, actor, amount)
+        );
+    }
+
+    function test_remoteWithdrawTips_revert_notSystemRouter(address caller) public {
+        vm.assume(caller != address(systemRouter));
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        vm.expectRevert("!systemRouter");
+        vm.prank(caller);
+        lightManager.remoteWithdrawTips(
+            BONDING_OPTIMISTIC_PERIOD, DOMAIN_SYNAPSE, SystemEntity.Destination, address(0), 0
+        );
+    }
+
+    function test_remoteWithdrawTips_revert_notSynapseChain(uint32 callOrigin) public {
+        vm.assume(callOrigin != DOMAIN_SYNAPSE);
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        vm.expectRevert("!synapseDomain");
+        systemRouter.systemPrank(
+            SystemEntity.AgentManager,
+            BONDING_OPTIMISTIC_PERIOD,
+            callOrigin,
+            SystemEntity.AgentManager,
+            abi.encodeWithSelector(lightManager.remoteWithdrawTips.selector, address(0), 0)
+        );
+    }
+
+    function test_remoteWithdrawTips_revert_notBondingManager() public {
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        for (uint8 sender = 0; sender <= uint8(type(SystemEntity).max); ++sender) {
+            SystemEntity systemSender = SystemEntity(sender);
+            if (systemSender != SystemEntity.AgentManager) {
+                vm.expectRevert("!allowedCaller");
+                systemRouter.systemPrank(
+                    SystemEntity.AgentManager,
+                    BONDING_OPTIMISTIC_PERIOD,
+                    DOMAIN_SYNAPSE,
+                    systemSender,
+                    abi.encodeWithSelector(lightManager.remoteWithdrawTips.selector, address(0), 0)
+                );
+            }
+        }
+    }
+
+    function test_remoteWithdrawTips_revert_optimisticPeriodNotOver(uint32 proofMaturity) public {
+        proofMaturity = proofMaturity % BONDING_OPTIMISTIC_PERIOD;
+        skip(BONDING_OPTIMISTIC_PERIOD);
+        vm.expectRevert("!optimisticPeriod");
+        systemRouter.systemPrank(
+            SystemEntity.AgentManager,
+            proofMaturity,
+            DOMAIN_SYNAPSE,
+            SystemEntity.AgentManager,
+            abi.encodeWithSelector(lightManager.remoteWithdrawTips.selector, address(0), 0)
+        );
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

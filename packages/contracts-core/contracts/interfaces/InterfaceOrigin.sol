@@ -38,6 +38,14 @@ interface InterfaceOrigin {
         external
         returns (uint32 messageNonce, bytes32 messageHash);
 
+    /**
+     * @notice Withdraws locked base message tips to the recipient.
+     * @dev Could only be called by a local AgentManager.
+     * @param recipient     Address to withdraw tips to
+     * @param amount        Tips value to withdraw
+     */
+    function withdrawTips(address recipient, uint256 amount) external;
+
     // ═════════════════════════════════════════════ VERIFY STATEMENTS ═════════════════════════════════════════════════
 
     /**
