@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
 import {ISystemRegistry} from "../../../contracts/interfaces/ISystemRegistry.sol";
 import {AGENT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
 import {MerkleLib} from "../../../contracts/libs/Merkle.sol";
@@ -226,6 +227,35 @@ contract BondingManagerTest is AgentManagerTest {
         (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_destination)(domainId, agentId, address(1));
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
+    }
+
+    // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════
+
+    function test_withdrawTips_local(address recipient, uint256 amount) public {
+        bytes memory expectedCall = abi.encodeWithSelector(InterfaceOrigin.withdrawTips.selector, recipient, amount);
+        vm.expectCall(originSynapse, expectedCall);
+        vm.prank(summit);
+        bondingManager.withdrawTips(recipient, DOMAIN_SYNAPSE, amount);
+    }
+
+    function test_withdrawTips_remote(address recipient, uint32 domain, uint256 amount) public {
+        vm.assume(domain != DOMAIN_SYNAPSE);
+        // remoteWithdrawTips(proofMaturity, callOrigin, systemCaller, recipient, amount), but first three are omitted
+        bytes memory payload = abi.encodeWithSelector(lightManager.remoteWithdrawTips.selector, recipient, amount);
+        // systemCall(destination_, optimisticPeriod, recipient, payload)
+        bytes memory expectedCall = abi.encodeWithSelector(
+            systemRouter.systemCall.selector, domain, BONDING_OPTIMISTIC_PERIOD, SystemEntity.AgentManager, payload
+        );
+        vm.expectCall(address(systemRouterSynapse), expectedCall);
+        vm.prank(summit);
+        bondingManager.withdrawTips(recipient, domain, amount);
+    }
+
+    function test_withdrawTips_revert_notSummit(address caller) public {
+        vm.assume(caller != summit);
+        vm.expectRevert("Only Summit withdraws tips");
+        vm.prank(caller);
+        bondingManager.withdrawTips(address(0), 0, 0);
     }
 
     // ════════════════════════════════════════════════ TEST: VIEWS ════════════════════════════════════════════════════
