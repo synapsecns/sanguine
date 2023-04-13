@@ -16,7 +16,23 @@ describe('Bridge', () => {
     })
   })
 
-  it('network dropdown should correct list all origin network names', () => {})
+  it('network dropdown should correct list all origin network names', () => {
+    cy.get('[data-test-id="bridge-origin-chain-list-button"]')
+      .should('be.visible')
+      .click()
+
+    cy.get('[data-test-id="bridge-origin-chain-list"]').should('be.visible')
+
+    cy.fixture('bridge.json').then((fixture) => {
+      const networksArray = fixture.availableNetworks
+      networksArray.forEach((network) => {
+        cy.get('button[data-test-id="bridge-origin-chain-list-item"]').should(
+          'contain',
+          network
+        )
+      })
+    })
+  })
 
   it('should load possible origin tokens, given a specific chainId', () => {})
 
