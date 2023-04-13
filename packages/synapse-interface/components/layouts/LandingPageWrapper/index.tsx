@@ -66,6 +66,7 @@ export function LandingNav() {
           </div>
           <div className="items-center justify-center -mr-2 sm:flex lg:hidden">
             <Popover.Button
+              data-test-id="mobile-navbar-button"
               className={`
                   rounded-lg p-2 inline-flex items-center justify-center
                   text-gray-400 hover:text-gray-400 hover:bg-gray-800
@@ -141,7 +142,7 @@ export function LandingNav() {
                   </Popover.Button>
                 </div>
               </div>
-              <div className="mt-6">
+              <div className="mt-6" data-test-id="mobile-navbar">
                 <Grid cols={{ xs: 1 }} gap={2} className="py-6">
                   <MobileBarButtons />
                 </Grid>
