@@ -31,6 +31,8 @@ describe('Navbar', () => {
     })
   })
 
+  it('[desktop] shows all routes', () => {})
+
   it('[mobile] button will be visible when screen with is <1024px', () => {
     cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
       const medium_screen = fixture.screenWidth.medium
@@ -55,13 +57,9 @@ describe('Navbar', () => {
         .should('be.visible')
         .click()
 
-      cy.wait(2500)
-
       cy.get('div[data-test-id="mobile-nav"]').should('be.visible')
     })
   })
-
-  it('[desktop] shows all routes', () => {})
 
   it('[mobile] shows all routes', () => {})
 })
