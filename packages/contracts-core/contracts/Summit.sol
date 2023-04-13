@@ -136,7 +136,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             // haven't been submitted by any of the Guards before.
             attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent, status.index);
             // Save attestation derived from Notary snapshot
-            _saveAttestation(attPayload.castToAttestation(), agent);
+            _saveAttestation(attPayload.castToAttestation(), status.index);
         }
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }

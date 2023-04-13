@@ -33,15 +33,16 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     using TypedMemView for bytes29;
 
     /// @notice Struct representing stored data for the snapshot root
-    /// @param notary       Notary who submitted the statement with the snapshot root
+    /// @param notaryIndex  Index of Notary who submitted the statement with the snapshot root
     /// @param index        Index of snapshot root in `_roots`
     /// @param submittedAt  Timestamp when the statement with the snapshot root was submitted
     struct SnapRootData {
-        address notary;
+        uint32 notaryIndex;
+        // TODO: add attestation nonce
         uint32 index;
         uint40 submittedAt;
     }
-    // 24 bits left for tight packing
+    // 152 bits left for tight packing
 
     /// @notice Struct representing stored receipt data for the message in Execution Hub.
     /// @param origin       Domain where message originated
@@ -185,6 +186,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         if (firstExecutor == address(0)) firstExecutor = rcptData.executor;
         // Determine the snapshot root that was used for proving the message
         bytes32 snapRoot = _roots[rcptData.rootIndex];
+        (address attNotary,) = _getAgent(_rootData[snapRoot].notaryIndex);
         // ExecutionHub does not store the tips, the Notary will have to append the tips payload
         return ReceiptLib.formatReceipt({
             origin_: rcptData.origin,
@@ -192,7 +194,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             messageHash_: messageHash,
             snapshotRoot_: snapRoot,
             stateIndex_: rcptData.stateIndex,
-            attNotary_: _rootData[snapRoot].notary,
+            attNotary_: attNotary,
             firstExecutor_: firstExecutor,
             finalExecutor_: rcptData.executor,
             tipsPayload: ""
@@ -232,10 +234,10 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @dev Saves a snapshot root with the attestation data provided by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
-    function _saveAttestation(Attestation att, address notary) internal {
+    function _saveAttestation(Attestation att, uint32 notaryIndex) internal {
         bytes32 root = att.snapRoot();
         require(_rootData[root].submittedAt == 0, "Root already exists");
-        _rootData[root] = SnapRootData(notary, uint32(_roots.length), uint40(block.timestamp));
+        _rootData[root] = SnapRootData(notaryIndex, uint32(_roots.length), uint40(block.timestamp));
         _roots.push(root);
     }
 
@@ -254,7 +256,8 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         if (rcpt.origin() != rcptData.origin || rcpt.stateIndex() != rcptData.stateIndex) return false;
         // Check that snapshot root and notary who submitted it match in the Receipt
         bytes32 snapRoot = rcpt.snapshotRoot();
-        if (snapRoot != _roots[rcptData.rootIndex] || rcpt.attNotary() != _rootData[snapRoot].notary) return false;
+        (address attNotary,) = _getAgent(_rootData[snapRoot].notaryIndex);
+        if (snapRoot != _roots[rcptData.rootIndex] || rcpt.attNotary() != attNotary) return false;
         // Check if message was executed from the first attempt
         address firstExecutor = _firstExecutor[messageHash];
         if (firstExecutor == address(0)) {
@@ -305,8 +308,9 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Check if snapshot root has been submitted
         require(rootData.submittedAt != 0, "Invalid snapshot root");
         // Check if Notary who submitted the attestation is still active
-        _verifyActive(_agentStatus(rootData.notary));
+        (address attNotary, AgentStatus memory attNotaryStatus) = _getAgent(rootData.notaryIndex);
+        _verifyActive(attNotaryStatus);
         // Check that Notary who submitted the attestation is not in dispute
-        require(!_inDispute(rootData.notary), "Notary is in dispute");
+        require(!_inDispute(attNotary), "Notary is in dispute");
     }
 }
