@@ -19,9 +19,13 @@ describe('Navbar', () => {
 
   it('[desktop] will be hidden when screen width <1024px', () => {
     cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
-      const mediumBreakpoint = fixture.screenWidth.medium
-      const { width, height } = mediumBreakpoint
-      cy.viewport(width, height)
+      const medium_screen = fixture.screenWidth.medium
+      cy.viewport(medium_screen.width, medium_screen.height)
+
+      cy.get('nav[data-test-id="desktop-nav"]').should('be.hidden')
+
+      const small_screen = fixture.screenWidth.small
+      cy.viewport(small_screen.width, small_screen.height)
 
       cy.get('nav[data-test-id="desktop-nav"]').should('be.hidden')
     })
@@ -29,9 +33,13 @@ describe('Navbar', () => {
 
   it('[mobile] button will be visible when screen with is <1024px', () => {
     cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
-      const mediumBreakpoint = fixture.screenWidth.medium
-      const { width, height } = mediumBreakpoint
-      cy.viewport(width, height)
+      const medium_screen = fixture.screenWidth.medium
+      cy.viewport(medium_screen.width, medium_screen.height)
+
+      cy.get('button[data-test-id="mobile-navbar-button"]').should('be.visible')
+
+      const small_screen = fixture.screenWidth.small
+      cy.viewport(small_screen.width, small_screen.height)
 
       cy.get('button[data-test-id="mobile-navbar-button"]').should('be.visible')
     })
