@@ -367,6 +367,9 @@ contract SummitTipsTest is DisputeHubTest {
         vm.expectCall(address(bondingManager), expectedCall);
         vm.prank(actor);
         InterfaceSummit(summit).withdrawTips(domain, amount);
+        (uint128 earned_, uint128 claimed_) = InterfaceSummit(summit).actorTips(actor, domain);
+        assertEq(earned_, earned, "!earned");
+        assertEq(claimed_, claimed + amount, "!claimed");
     }
 
     function test_withdrawTips_revert_zeroAmount(address actor, uint32 domain) public {
