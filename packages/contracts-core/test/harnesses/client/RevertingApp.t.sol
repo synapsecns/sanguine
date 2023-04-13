@@ -6,6 +6,12 @@ import {IMessageRecipient} from "../../../contracts/interfaces/IMessageRecipient
 contract RevertingApp is IMessageRecipient {
     bool private willRevert = true;
 
+    receive() external payable {
+        if (willRevert) {
+            revert("GM");
+        }
+    }
+
     function toggleRevert(bool willRevert_) external {
         willRevert = willRevert_;
     }

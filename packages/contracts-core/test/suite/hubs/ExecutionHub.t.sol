@@ -109,7 +109,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         );
         verify_receipt_valid(receiptDataFirst, rbm.tips);
         // Retry the same failed message
-        RevertingApp(recipient).toggleRevert(false);
+        RevertingApp(payable(recipient)).toggleRevert(false);
         vm.prank(executorNew);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         bytes memory receiptDataSecond = verify_messageStatus(
