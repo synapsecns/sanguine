@@ -1,3 +1,5 @@
+const BRIDGE_CONSTANTS = 'bridge.json'
+
 describe('Bridge', () => {
   beforeEach(() => cy.visit('/'))
 
@@ -8,7 +10,7 @@ describe('Bridge', () => {
 
     cy.get('[data-test-id="bridge-origin-chain-list"]').should('be.visible')
 
-    cy.fixture('bridge.json').then((fixture) => {
+    cy.fixture(BRIDGE_CONSTANTS).then((fixture) => {
       cy.get('button[data-test-id="bridge-origin-chain-list-item"]').should(
         'have.length',
         fixture.totalAvailableNetworks
@@ -23,7 +25,7 @@ describe('Bridge', () => {
 
     cy.get('[data-test-id="bridge-origin-chain-list"]').should('be.visible')
 
-    cy.fixture('bridge.json').then((fixture) => {
+    cy.fixture(BRIDGE_CONSTANTS).then((fixture) => {
       const networksArray = fixture.availableNetworks
       networksArray.forEach((network) => {
         cy.get('button[data-test-id="bridge-origin-chain-list-item"]').should(
