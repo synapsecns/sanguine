@@ -28,6 +28,7 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
             re.destination,
             re.messageHash,
             re.snapshotRoot,
+            re.stateIndex,
             re.attNotary,
             re.firstExecutor,
             re.finalExecutor,
@@ -40,6 +41,7 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
                 re.destination,
                 re.messageHash,
                 re.snapshotRoot,
+                re.stateIndex,
                 re.attNotary,
                 re.firstExecutor,
                 re.finalExecutor,
@@ -54,6 +56,7 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.destination(payload), re.destination, "!destination");
         assertEq(libHarness.messageHash(payload), re.messageHash, "!messageHash");
         assertEq(libHarness.snapshotRoot(payload), re.snapshotRoot, "!snapshotRoot");
+        assertEq(libHarness.stateIndex(payload), re.stateIndex, "!stateIndex");
         assertEq(libHarness.attNotary(payload), re.attNotary, "!attNotary");
         assertEq(libHarness.firstExecutor(payload), re.firstExecutor, "!firstExecutor");
         assertEq(libHarness.finalExecutor(payload), re.finalExecutor, "!finalExecutor");
