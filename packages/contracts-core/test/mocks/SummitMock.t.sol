@@ -13,6 +13,8 @@ contract SummitMock is SnapshotHubMock, SystemContractMock, SystemRegistryMock, 
 
     function distributeTips() external returns (bool queuePopped) {}
 
+    function withdrawTips(uint32 origin, uint256 amount) external {}
+
     function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {}
 
     function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)

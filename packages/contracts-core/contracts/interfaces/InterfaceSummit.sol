@@ -16,6 +16,15 @@ interface InterfaceSummit {
     function distributeTips() external returns (bool queuePopped);
 
     /**
+     * @notice Withdraws locked base message tips from requested domain Origin to the recipient.
+     * This is done by a call to a local Origin contract, or by a system message to the remote chain.
+     * @dev This will revert, if the pending balance of origin tips (earned-claimed) is lower than requested.
+     * @param origin    Domain of chain to withdraw tips on
+     * @param amount    Amount of tips to withdraw
+     */
+    function withdrawTips(uint32 origin, uint256 amount) external;
+
+    /**
      * @notice Submit a message execution receipt. This will distribute the message tips
      * across the off-chain actors once the receipt optimistic period is over.
      * @dev Will revert if any of these is true:

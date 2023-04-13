@@ -8,6 +8,7 @@ import {AgentManager} from "./manager/AgentManager.sol";
 import {DomainContext} from "./context/DomainContext.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
+import {InterfaceBondingManager} from "./interfaces/InterfaceBondingManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
 import {DisputeHub, ExecutionHub, MessageStatus, Receipt, Tips} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub} from "./hubs/SnapshotHub.sol";
@@ -180,6 +181,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         }
     }
 
+    /// @inheritdoc InterfaceSummit
     function distributeTips() public returns (bool queuePopped) {
         // Check message that is first in the "quarantine queue"
         if (_receiptQueue.empty()) return false;
@@ -204,6 +206,17 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // Remove the receipt from the queue
         _receiptQueue.popFront();
         return true;
+    }
+
+    /// @inheritdoc InterfaceSummit
+    // solhint-disable-next-line ordering
+    function withdrawTips(uint32 origin, uint256 amount) external {
+        require(amount != 0, "Amount is zero");
+        ActorTips memory tips = actorTips[msg.sender][origin];
+        require(tips.earned >= amount + tips.claimed, "Tips balance too low");
+        // Guaranteed to fit into uint128, as the sum is lower than `earned`
+        actorTips[msg.sender][origin].claimed = uint128(tips.claimed + amount);
+        InterfaceBondingManager(address(agentManager)).withdrawTips(msg.sender, origin, amount);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════

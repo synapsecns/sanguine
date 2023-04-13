@@ -9,11 +9,15 @@ import {IDisputeHub, DisputeHubTest} from "./hubs/DisputeHub.t.sol";
 import {fakeState} from "../utils/libs/FakeIt.t.sol";
 import {RawExecReceipt, RawState, RawStateIndex, RawSnapshot, RawTips} from "../utils/libs/SynapseStructs.t.sol";
 
+import {stdStorage, StdStorage} from "forge-std/Test.sol";
+
 // solhint-disable code-complexity
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 contract SummitTipsTest is DisputeHubTest {
+    using stdStorage for StdStorage;
+
     RawState internal state0;
     address internal guard0;
     uint32 internal origin0;
@@ -350,6 +354,50 @@ contract SummitTipsTest is DisputeHubTest {
 
     function splitTip(uint64 tip, uint64 parts, bool roundUp) public pure returns (uint64) {
         return tip / parts + (roundUp ? tip % parts : 0);
+    }
+
+    // ═══════════════════════════════════════════ TESTS: WITHDRAW TIPS ════════════════════════════════════════════════
+
+    function test_withdrawTips(address actor, uint32 domain, uint128 earned, uint128 claimed, uint128 amount) public {
+        earned = uint128(bound(earned, 1, type(uint128).max));
+        claimed = claimed % earned;
+        amount = uint128(bound(amount, 1, earned - claimed));
+        setActorTips(actor, domain, earned, claimed);
+        bytes memory expectedCall = abi.encodeWithSelector(bondingManager.withdrawTips.selector, actor, domain, amount);
+        vm.expectCall(address(bondingManager), expectedCall);
+        vm.prank(actor);
+        InterfaceSummit(summit).withdrawTips(domain, amount);
+    }
+
+    function test_withdrawTips_revert_zeroAmount(address actor, uint32 domain) public {
+        vm.expectRevert("Amount is zero");
+        vm.prank(actor);
+        InterfaceSummit(summit).withdrawTips(domain, 0);
+    }
+
+    function test_withdrawTips_revert_tipsBalanceTooLow(
+        address actor,
+        uint32 domain,
+        uint128 earned,
+        uint128 claimed,
+        uint128 amount
+    ) public {
+        earned = uint128(bound(earned, 1, type(uint64).max));
+        claimed = claimed % earned;
+        amount = uint128(bound(amount, 1, earned - claimed));
+        amount = uint128(bound(amount, earned - claimed + 1, type(uint128).max));
+        vm.expectRevert("Tips balance too low");
+        vm.prank(actor);
+        InterfaceSummit(summit).withdrawTips(domain, amount);
+    }
+
+    function setActorTips(address actor, uint32 domain, uint128 earned, uint128 claimed) public {
+        uint256 packedValue = earned | (uint256(claimed) << 128);
+        stdstore.target(summit).sig(InterfaceSummit.actorTips.selector).with_key(actor).with_key(domain).depth(0)
+            .checked_write(packedValue);
+        (uint128 earned_, uint128 claimed_) = InterfaceSummit(summit).actorTips(actor, domain);
+        require(earned_ == earned, "Failed to set earned");
+        require(claimed_ == claimed, "Failed to set claimed");
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
