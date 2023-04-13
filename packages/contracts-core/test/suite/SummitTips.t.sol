@@ -321,8 +321,18 @@ contract SummitTipsTest is DisputeHubTest {
 
     function checkSnapshotTips(RawExecReceipt memory re) public {
         uint64 snapshotTip = splitTip({tip: re.tips.summitTip, parts: 3, roundUp: false});
-        // TODO: Check Summit Guard and Notary when implemented
-        checkActorTips(address(0), 2 * snapshotTip, 0);
+        if (re.origin == origin0) {
+            // Tips for origin0 go to guard0 and notary0 (they were first to use it),
+            // regardless of what attestation was used
+            checkActorTips(guard0, snapshotTip, 0);
+            checkActorTips(snapNotary0, snapshotTip, 0);
+        } else if (re.origin == origin1) {
+            // Tips for origin1 go to guard1 and notary1 (they were first to use it)
+            checkActorTips(guard1, snapshotTip, 0);
+            checkActorTips(snapNotary1, snapshotTip, 0);
+        } else {
+            revert("Incorrect origin value");
+        }
     }
 
     function checkActorTips(address actor, uint128 earned, uint128 claimed) public {
@@ -345,9 +355,18 @@ contract SummitTipsTest is DisputeHubTest {
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function prepareReceipt(RawExecReceipt memory re, bool originZero, uint256 attNotaryIndex, bool isSuccess) public {
-        re.origin = originZero ? origin0 : origin1;
+        if (originZero) {
+            // For Origin0's state0 we could use (state0) or (state0, state1) attestations
+            re.origin = origin0;
+            re.snapshotRoot = attNotaryIndex % 2 == 0 ? snapRoot0 : snapRoot1;
+            re.stateIndex = 0;
+        } else {
+            // For Origin1's state1 we could only use (state0, state1) attestation
+            re.origin = origin1;
+            re.snapshotRoot = snapRoot1;
+            re.stateIndex = 1;
+        }
         re.destination = DOMAIN_REMOTE;
-        re.snapshotRoot = originZero ? snapRoot0 : snapRoot1;
         re.attNotary = domains[DOMAIN_REMOTE].agents[attNotaryIndex % DOMAIN_AGENTS];
         re.firstExecutor = createExecutorEOA(re.firstExecutor, "First Executor");
         if (isSuccess) {
