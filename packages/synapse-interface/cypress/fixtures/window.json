@@ -3,6 +3,10 @@
     "large": {
       "height": 800,
       "width": 1024
+    },
+    "lessThanLarge": {
+      "height": 500,
+      "width": 999
     }
   }
 }
