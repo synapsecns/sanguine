@@ -26,7 +26,7 @@ export function BridgeTransactionTable({ queryResult }) {
     'Destination',
     'From',
     'To',
-    'Time',
+    'Age',
     'TXID'
   ]
 
