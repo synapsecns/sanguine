@@ -1,7 +1,7 @@
 describe('Bridge', () => {
   beforeEach(() => cy.visit('/'))
 
-  it('should initially load all available origin networks', () => {
+  it('should initially load total # of origin networks', () => {
     cy.get('[data-test-id="bridge-origin-chain-list-button"]')
       .should('be.visible')
       .click()
@@ -15,6 +15,8 @@ describe('Bridge', () => {
       )
     })
   })
+
+  it('network dropdown should correct list all origin network names', () => {})
 
   it('should load possible origin tokens, given a specific chainId', () => {})
 

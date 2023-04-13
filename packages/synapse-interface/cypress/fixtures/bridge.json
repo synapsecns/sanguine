@@ -1,5 +1,25 @@
 {
   "defaultOriginToken": "USDC",
   "defaultDestinationToken": "USDC",
-  "totalAvailableNetworks": 18
+  "totalAvailableNetworks": 18,
+  "availableNetworks": [
+    "Arbitrum",
+    "Aurora",
+    "Avalanche",
+    "BNB Chain",
+    "Boba Chain",
+    "Canto",
+    "Cronos",
+    "DFK Chain",
+    "Dogechain",
+    "Ethereum",
+    "Fantom",
+    "Harmony",
+    "Klaytn",
+    "Metis",
+    "Moonbeam",
+    "Moonriver",
+    "Optimism",
+    "Polygon"
+  ]
 }
