@@ -24,10 +24,11 @@ library ReceiptLib {
      * [004 .. 008): destination        uint32   4 bytes    Domain where message was executed
      * [008 .. 040): messageHash        bytes32 32 bytes    Hash of the message
      * [040 .. 072): snapshotRoot       bytes32 32 bytes    Snapshot root used for proving the message
-     * [072 .. 092): attNotary          address 20 bytes    Notary who posted attestation with snapshot root
-     * [092 .. 112): firstExecutor      address 20 bytes    Executor who performed first valid execution attempt
-     * [112 .. 132): finalExecutor      address 20 bytes    Executor who successfully executed the message
-     * [132 .. 180): tips               bytes   48 bytes    Tips paid on origin chain
+     * [072 .. 073): stateIndex         uint8    1 byte     Index of state used for the snapshot proof
+     * [073 .. 093): attNotary          address 20 bytes    Notary who posted attestation with snapshot root
+     * [093 .. 113): firstExecutor      address 20 bytes    Executor who performed first valid execution attempt
+     * [113 .. 133): finalExecutor      address 20 bytes    Executor who successfully executed the message
+     * [133 .. 181): tips               bytes   48 bytes    Tips paid on origin chain
      * The variables below are not supposed to be used outside of the library directly.
      */
 
@@ -35,10 +36,11 @@ library ReceiptLib {
     uint256 private constant OFFSET_DESTINATION = 4;
     uint256 private constant OFFSET_MESSAGE_HASH = 8;
     uint256 private constant OFFSET_SNAPSHOT_ROOT = 40;
-    uint256 private constant OFFSET_ATT_NOTARY = 72;
-    uint256 private constant OFFSET_FIRST_EXECUTOR = 92;
-    uint256 private constant OFFSET_FINAL_EXECUTOR = 112;
-    uint256 private constant OFFSET_TIPS = 132;
+    uint256 private constant OFFSET_STATE_INDEX = 72;
+    uint256 private constant OFFSET_ATT_NOTARY = 73;
+    uint256 private constant OFFSET_FIRST_EXECUTOR = 93;
+    uint256 private constant OFFSET_FINAL_EXECUTOR = 113;
+    uint256 private constant OFFSET_TIPS = 133;
 
     // ═════════════════════════════════════════════════ RECEIPT ═════════════════════════════════════════════════════
 
@@ -48,6 +50,7 @@ library ReceiptLib {
      * @param destination_      Domain where message was executed
      * @param messageHash_      Hash of the message
      * @param snapshotRoot_     Snapshot root used for proving the message
+     * @param stateIndex_       Index of state used for the snapshot proof
      * @param attNotary_        Notary who posted attestation with snapshot root
      * @param firstExecutor_    Executor who performed first valid execution attempt
      * @param finalExecutor_    Executor who successfully executed the message
@@ -59,13 +62,22 @@ library ReceiptLib {
         uint32 destination_,
         bytes32 messageHash_,
         bytes32 snapshotRoot_,
+        uint8 stateIndex_,
         address attNotary_,
         address firstExecutor_,
         address finalExecutor_,
         bytes memory tipsPayload
     ) internal pure returns (bytes memory) {
         return abi.encodePacked(
-            origin_, destination_, messageHash_, snapshotRoot_, attNotary_, firstExecutor_, finalExecutor_, tipsPayload
+            origin_,
+            destination_,
+            messageHash_,
+            snapshotRoot_,
+            stateIndex_,
+            attNotary_,
+            firstExecutor_,
+            finalExecutor_,
+            tipsPayload
         );
     }
 
@@ -131,6 +143,12 @@ library ReceiptLib {
     function snapshotRoot(Receipt receipt) internal pure returns (bytes32) {
         bytes29 view_ = unwrap(receipt);
         return view_.index({index_: OFFSET_SNAPSHOT_ROOT, bytes_: 32});
+    }
+
+    /// @notice Returns receipt's "state index" field
+    function stateIndex(Receipt receipt) internal pure returns (uint8) {
+        bytes29 view_ = unwrap(receipt);
+        return uint8(view_.indexUint({index_: OFFSET_STATE_INDEX, bytes_: 1}));
     }
 
     /// @notice Returns receipt's "attestation notary" field

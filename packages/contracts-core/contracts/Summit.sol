@@ -26,6 +26,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         uint32 origin;
         uint32 destination;
         uint32 snapRootIndex;
+        uint8 stateIndex;
         uint32 attNotaryIndex;
         address firstExecutor;
         address finalExecutor;
@@ -126,7 +127,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
             // This will revert if Guard has previously submitted
             // a fresher state than one in the snapshot.
-            _acceptGuardSnapshot(snapshot, agent);
+            _acceptGuardSnapshot(snapshot, agent, status.index);
         } else {
             // Check that Notary who submitted the snapshot is not in dispute
             require(!_inDispute(agent), "Notary is in dispute");
@@ -134,9 +135,9 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             bytes32 agentRoot = agentManager.agentRoot();
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
-            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent);
+            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent, status.index);
             // Save attestation derived from Notary snapshot
-            _saveAttestation(attPayload.castToAttestation(), agent);
+            _saveAttestation(attPayload.castToAttestation(), status.index);
         }
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
@@ -283,6 +284,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             origin: receipt.origin(),
             destination: receipt.destination(),
             snapRootIndex: rootData.index,
+            stateIndex: receipt.stateIndex(),
             attNotaryIndex: attNotaryStatus.index,
             firstExecutor: receipt.firstExecutor(),
             finalExecutor: receipt.finalExecutor()
@@ -324,7 +326,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         bool awardFinal = rcptStatus.status == MessageStatus.Success;
         if (awardFirst) {
             // There has been a valid attempt to execute the message
-            _awardSnapshotTip(_roots[summitRcpt.snapRootIndex], tips.summitTip);
+            _awardSnapshotTip(_roots[summitRcpt.snapRootIndex], summitRcpt.stateIndex, tips.summitTip);
             _awardAgentTip(attNotary, tips.attestationTip);
             _awardActorTip(summitRcpt.firstExecutor, tips.executionTip);
         }
@@ -358,12 +360,14 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     /// @dev Award tip for posting Snapshot to Summit contract.
-    function _awardSnapshotTip(bytes32 snapRoot, uint64 summitTip) internal {
+    function _awardSnapshotTip(bytes32 snapRoot, uint8 stateIndex, uint64 summitTip) internal {
         uint64 snapshotTip = _snapshotTip(summitTip);
-        // TODO: get the addresses
-        snapRoot;
-        address snapGuard;
-        address snapNotary;
+        // Get the attestation nonce for the snapshot root
+        uint32 attNonce = _rootData[snapRoot].attNonce;
+        // Get the agents who submitted the given state for the attestation's snapshot
+        (uint32 guardIndex, uint32 notaryIndex) = _stateAgents(attNonce, stateIndex);
+        (address snapGuard,) = _getAgent(guardIndex);
+        (address snapNotary,) = _getAgent(notaryIndex);
         _awardAgentTip(snapGuard, snapshotTip);
         _awardAgentTip(snapNotary, snapshotTip);
     }

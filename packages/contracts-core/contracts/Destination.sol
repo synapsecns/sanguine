@@ -68,7 +68,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         // Check that Notary who submitted the attestation is not in dispute
         require(!_inDispute(notary), "Notary is in dispute");
         // This will revert if snapshot root has been previously submitted
-        _saveAttestation(att, notary);
+        _saveAttestation(att, status.index);
         // Save Agent Root if required, and update the Destination's Status
         destStatus = _saveAgentRoot(rootPending, att.agentRoot(), notary);
         emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
