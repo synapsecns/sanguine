@@ -27,7 +27,7 @@ contract SummitMock is SnapshotHubMock, SystemContractMock, SystemRegistryMock, 
         returns (bool isValid)
     {}
 
-    function actorTips(address actor) external view returns (uint128 earned, uint128 claimed) {}
+    function actorTips(address actor, uint32 origin) external view returns (uint128 earned, uint128 claimed) {}
 
     function receiptQueueLength() external view returns (uint256) {}
 

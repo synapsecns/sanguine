@@ -85,8 +85,12 @@ interface InterfaceSummit {
     /**
      * @notice Returns earned and claimed tips for the actor.
      * Note: Tips for address(0) belong to the Treasury.
+     * @param actor     Address of the actor
+     * @param origin    Domain where the tips were initially paid
+     * @return earned   Total amount of origin tips the actor has earned so far
+     * @return claimed  Total amount of origin tips the actor has claimed so far
      */
-    function actorTips(address actor) external view returns (uint128 earned, uint128 claimed);
+    function actorTips(address actor, uint32 origin) external view returns (uint128 earned, uint128 claimed);
 
     /**
      * @notice Returns the amount of receipts in the "Receipt Quarantine Queue".

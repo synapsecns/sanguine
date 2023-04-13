@@ -289,33 +289,33 @@ contract SummitTipsTest is DisputeHubTest {
         if (rcptNotary == rcptNotaryFinal) {
             if (rcptNotary == re.attNotary) {
                 // rcptNotary == rcptNotaryFinal == attNotary
-                checkActorTips(rcptNotary, receiptTipFirst + receiptTipFinal + re.tips.attestationTip, 0);
+                checkActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal + re.tips.attestationTip, 0);
             } else {
                 // rcptNotary == rcptNotaryFinal != attNotary
-                checkActorTips(rcptNotary, receiptTipFirst + receiptTipFinal, 0);
-                checkActorTips(re.attNotary, re.tips.attestationTip, 0);
+                checkActorTips(rcptNotary, re.origin, receiptTipFirst + receiptTipFinal, 0);
+                checkActorTips(re.attNotary, re.origin, re.tips.attestationTip, 0);
             }
         } else if (re.attNotary == rcptNotaryFinal) {
             // rcptNotaryFinal == attNotary != rcptNotary
-            checkActorTips(rcptNotary, receiptTipFirst, 0);
-            checkActorTips(re.attNotary, receiptTipFinal + re.tips.attestationTip, 0);
+            checkActorTips(rcptNotary, re.origin, receiptTipFirst, 0);
+            checkActorTips(re.attNotary, re.origin, receiptTipFinal + re.tips.attestationTip, 0);
         } else {
             if (rcptNotary == re.attNotary) {
                 // rcptNotary == attNotary != rcptNotaryFinal
-                checkActorTips(rcptNotary, receiptTipFirst + re.tips.attestationTip, 0);
+                checkActorTips(rcptNotary, re.origin, receiptTipFirst + re.tips.attestationTip, 0);
             } else {
                 // rcptNotary != attNotary != rcptNotaryFinal
-                checkActorTips(rcptNotary, receiptTipFirst, 0);
-                checkActorTips(re.attNotary, re.tips.attestationTip, 0);
+                checkActorTips(rcptNotary, re.origin, receiptTipFirst, 0);
+                checkActorTips(re.attNotary, re.origin, re.tips.attestationTip, 0);
             }
-            if (isFinal) checkActorTips(rcptNotaryFinal, receiptTipFinal, 0);
+            if (isFinal) checkActorTips(rcptNotaryFinal, re.origin, receiptTipFinal, 0);
         }
         // Check non-bonded actors
         if (re.firstExecutor == re.finalExecutor) {
-            checkActorTips(re.firstExecutor, re.tips.executionTip + (isFinal ? re.tips.deliveryTip : 0), 0);
+            checkActorTips(re.firstExecutor, re.origin, re.tips.executionTip + (isFinal ? re.tips.deliveryTip : 0), 0);
         } else {
-            checkActorTips(re.firstExecutor, re.tips.executionTip, 0);
-            if (isFinal) checkActorTips(re.finalExecutor, re.tips.deliveryTip, 0);
+            checkActorTips(re.firstExecutor, re.origin, re.tips.executionTip, 0);
+            if (isFinal) checkActorTips(re.finalExecutor, re.origin, re.tips.deliveryTip, 0);
         }
     }
 
@@ -324,19 +324,19 @@ contract SummitTipsTest is DisputeHubTest {
         if (re.origin == origin0) {
             // Tips for origin0 go to guard0 and notary0 (they were first to use it),
             // regardless of what attestation was used
-            checkActorTips(guard0, snapshotTip, 0);
-            checkActorTips(snapNotary0, snapshotTip, 0);
+            checkActorTips(guard0, re.origin, snapshotTip, 0);
+            checkActorTips(snapNotary0, re.origin, snapshotTip, 0);
         } else if (re.origin == origin1) {
             // Tips for origin1 go to guard1 and notary1 (they were first to use it)
-            checkActorTips(guard1, snapshotTip, 0);
-            checkActorTips(snapNotary1, snapshotTip, 0);
+            checkActorTips(guard1, re.origin, snapshotTip, 0);
+            checkActorTips(snapNotary1, re.origin, snapshotTip, 0);
         } else {
             revert("Incorrect origin value");
         }
     }
 
-    function checkActorTips(address actor, uint128 earned, uint128 claimed) public {
-        (uint128 earned_, uint128 claimed_) = InterfaceSummit(summit).actorTips(actor);
+    function checkActorTips(address actor, uint32 origin_, uint128 earned, uint128 claimed) public {
+        (uint128 earned_, uint128 claimed_) = InterfaceSummit(summit).actorTips(actor, origin_);
         assertEq(earned_, earned, "!earned");
         assertEq(claimed_, claimed, "!claimed");
     }
