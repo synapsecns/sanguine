@@ -273,6 +273,16 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         return SnapshotLib.formatSnapshot(states);
     }
 
+    /// @dev Returns indexes of agents who provided state data for the Notary snapshot with the given nonce.
+    function _stateAgents(uint32 nonce, uint256 stateIndex)
+        internal
+        view
+        returns (uint32 guardIndex, uint32 notaryIndex)
+    {
+        uint256 statePtr = _notarySnapshots[nonce].statePtrs[stateIndex];
+        return (_states[statePtr - 1].guardIndex, _states[statePtr - 1].notaryIndex);
+    }
+
     /// @dev Returns the pointer for a matching Guard State, if it exists.
     function _statePtr(State state) internal view returns (uint256) {
         return _leafPtr[state.origin()][state.leaf()];
