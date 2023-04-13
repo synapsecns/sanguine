@@ -1,12 +1,20 @@
 {
-  "breakpoints": {
+  "screenWidth": {
+    "small": {
+      "height": 360,
+      "width": 640
+    },
+    "medium": {
+      "height": 500,
+      "width": 768
+    },
     "large": {
       "height": 800,
       "width": 1024
     },
-    "lessThanLarge": {
-      "height": 500,
-      "width": 999
+    "xlarge": {
+      "height": 900,
+      "width": 1600
     }
   }
 }

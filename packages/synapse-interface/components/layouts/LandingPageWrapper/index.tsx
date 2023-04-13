@@ -125,7 +125,10 @@ export function LandingNav() {
           focus
           className="absolute inset-x-0 top-0 z-10 transition origin-top-right transform"
         >
-          <div className="h-full min-h-full divide-y divide-gray-600 bg-bgLight">
+          <div
+            className="h-full min-h-full divide-y divide-gray-600 bg-bgLight"
+            data-test-id="mobile-nav"
+          >
             <div className="px-4 pt-1 pb-6">
               <div className="flex items-center justify-between mt-5 ml-3">
                 <SynapseTitleLogo showText={false} />
@@ -142,7 +145,7 @@ export function LandingNav() {
                   </Popover.Button>
                 </div>
               </div>
-              <div className="mt-6" data-test-id="mobile-navbar">
+              <div className="mt-6">
                 <Grid cols={{ xs: 1 }} gap={2} className="py-6">
                   <MobileBarButtons />
                 </Grid>

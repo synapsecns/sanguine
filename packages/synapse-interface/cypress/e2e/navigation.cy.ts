@@ -1,21 +1,26 @@
 const WINDOW_CONSTANTS = 'window.json'
 
-describe('Navbar ', () => {
+describe('Navbar', () => {
   beforeEach(() => cy.visit('/'))
 
-  it('[desktop] will be visible when screen width is >=1024px', () => {
+  it('[desktop] will be visible when screen width >=1024px', () => {
     cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
-      const largeBreakpoint = fixture.breakpoints.large
+      const largeBreakpoint = fixture.screenWidth.large
       cy.viewport(largeBreakpoint.width, largeBreakpoint.height)
+
+      cy.get('nav[data-test-id="desktop-nav"]').should('be.visible')
+
+      const xlargeBreakpoint = fixture.screenWidth.xlarge
+      cy.viewport(xlargeBreakpoint.width, xlargeBreakpoint.height)
 
       cy.get('nav[data-test-id="desktop-nav"]').should('be.visible')
     })
   })
 
-  it('[desktop] will be hidden when screen with is <1024px', () => {
+  it('[desktop] will be hidden when screen width <1024px', () => {
     cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
-      const lessThanLargeBreakpoint = fixture.breakpoints.lessThanLarge
-      const { width, height } = lessThanLargeBreakpoint
+      const mediumBreakpoint = fixture.screenWidth.medium
+      const { width, height } = mediumBreakpoint
       cy.viewport(width, height)
 
       cy.get('nav[data-test-id="desktop-nav"]').should('be.hidden')
@@ -24,8 +29,8 @@ describe('Navbar ', () => {
 
   it('[mobile] button will be visible when screen with is <1024px', () => {
     cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
-      const lessThanLargeBreakpoint = fixture.breakpoints.lessThanLarge
-      const { width, height } = lessThanLargeBreakpoint
+      const mediumBreakpoint = fixture.screenWidth.medium
+      const { width, height } = mediumBreakpoint
       cy.viewport(width, height)
 
       cy.get('button[data-test-id="mobile-navbar-button"]').should('be.visible')
@@ -34,13 +39,15 @@ describe('Navbar ', () => {
 
   it('[mobile] button shows routes when clicked', () => {
     cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
-      const lessThanLargeBreakpoint = fixture.breakpoints.lessThanLarge
-      const { width, height } = lessThanLargeBreakpoint
+      const smallBreakpoint = fixture.screenWidth.small
+      const { width, height } = smallBreakpoint
       cy.viewport(width, height)
 
       cy.get('button[data-test-id="mobile-navbar-button"]')
         .should('be.visible')
         .click()
+
+      cy.wait(2500)
 
       cy.get('div[data-test-id="mobile-nav"]').should('be.visible')
     })
