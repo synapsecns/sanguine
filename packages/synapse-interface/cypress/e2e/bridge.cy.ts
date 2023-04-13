@@ -6,7 +6,12 @@ describe('Bridge', () => {
       .should('be.visible')
       .click()
 
-    cy.get('')
+    cy.get('[data-test-id="bridge-origin-chain-list"]').should('be.visible')
+
+    cy.get('button[data-test-id="bridge-origin-chain-list-item"]').should(
+      'have.length',
+      18
+    )
   })
 
   it('should load possible origin tokens, given a specific chainId', () => {})

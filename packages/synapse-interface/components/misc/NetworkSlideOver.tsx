@@ -39,6 +39,10 @@ export const NetworkSlideOver = ({
   })
   // let networks: ChainInfo[] = []
 
+  const dataId = isOrigin
+    ? 'bridge-origin-chain-list'
+    : 'bridge-destination-chain-list'
+
   useEffect(() => {
     let tempNetworks = []
     Object.values(CHAINS).map((chain) => {
@@ -108,10 +112,13 @@ export const NetworkSlideOver = ({
             searchStr={searchStr}
             onSearch={onSearch}
           />
-          <DrawerButton onClick={onClose} />
+          <DrawerButton onClick={onClose} isOrigin={isOrigin} />
         </div>
       </div>
-      <div className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6 rounded-xl">
+      <div
+        data-test-id={dataId}
+        className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6 rounded-xl"
+      >
         {networks.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork
           if (chainId === mapChainId) {
@@ -129,6 +136,7 @@ export const NetworkSlideOver = ({
               isCurrentChain={chainId === mapChainId}
               active={idx === currentIdx}
               onClick={onClickSpecificNetwork}
+              dataId={dataId}
             />
           )
         })}

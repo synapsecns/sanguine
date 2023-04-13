@@ -9,7 +9,9 @@ export const DrawerButton = ({
   onClick: () => void
   isOrigin: boolean
 }) => {
-  const dataId = isOrigin ? 'bridge-origin-list-button' : 'bridge-destination-list-button'
+  const dataId = isOrigin
+    ? 'bridge-origin-list-close-button'
+    : 'bridge-destination-list-close-button'
 
   return (
     <div
