@@ -76,6 +76,6 @@ describe('Bridge with metamask wallet connected to ethereum network', () => {
 
   //@dev TO-DO: write tests once logic has been implemented in frontend
   // require origin tokens to load when wallet connected initially
-  it('should load possible origin tokens, given a specific chainId', () => {})
-  it('should load possible destination tokens, given a specific chainId and origin token', () => {})
+  // it('should load possible origin tokens, given a specific chainId', () => {})
+  // it('should load possible destination tokens, given a specific chainId and origin token', () => {})
 })

@@ -13,13 +13,25 @@ describe('Landing', () => {
       const nowTime = dayjs().format('MM-DD-YYYY@hh-mm-a')
       const fileName = `${nowTime}`
 
-      const largeBreakpoint = fixture.screenWidth.large
-      cy.viewport(largeBreakpoint.width, largeBreakpoint.height)
-      cy.screenshot(`landing/Desktop-${fileName}`)
+      const mobileBreakpoint = fixture.screenWidth.mobile
+      cy.viewport(mobileBreakpoint.width, mobileBreakpoint.height)
+      cy.screenshot(`landing/mobile_breakpoint-${fileName}`)
 
       const smallBreakpoint = fixture.screenWidth.small
       cy.viewport(smallBreakpoint.width, smallBreakpoint.height)
-      cy.screenshot(`landing/Mobile-${fileName}`)
+      cy.screenshot(`landing/small_breakpoint-${fileName}`)
+
+      const mediumBreakpoint = fixture.screenWidth.medium
+      cy.viewport(mediumBreakpoint.width, mediumBreakpoint.height)
+      cy.screenshot(`landing/medium_breakpoint-${fileName}`)
+
+      const largeBreakpoint = fixture.screenWidth.large
+      cy.viewport(largeBreakpoint.width, largeBreakpoint.height)
+      cy.screenshot(`landing/large_breakpoint-${fileName}`)
+
+      const xlargeBreakpoint = fixture.screenWidth.xlarge
+      cy.viewport(xlargeBreakpoint.width, xlargeBreakpoint.height)
+      cy.screenshot(`landing/xlarge_breakpoint-${fileName}`)
     })
   })
 

@@ -1,5 +1,9 @@
 {
   "screenWidth": {
+    "mobile": {
+      "height": 844,
+      "width": 390
+    },
     "small": {
       "height": 360,
       "width": 640
@@ -14,7 +18,7 @@
     },
     "xlarge": {
       "height": 900,
-      "width": 1600
+      "width": 1300
     }
   }
 }
