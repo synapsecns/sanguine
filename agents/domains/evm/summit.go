@@ -3,8 +3,6 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/core"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -119,27 +117,4 @@ func (a summitContract) GetAgentStatus(ctx context.Context, bondedAgentSigner si
 	agentStatus := types.NewAgentStatus(rawStatus.Flag, rawStatus.Domain, rawStatus.Index)
 
 	return agentStatus, nil
-}
-
-func (a summitContract) GetAgentStatusFromSignedPayload(ctx context.Context, bondedAgentSigner signer.Signer) (types.AgentStatus, common.Address, error) {
-	unhashedPayload := []byte("TEST")
-	hashedPayload := crypto.Keccak256Hash(unhashedPayload)
-
-	signature, err := bondedAgentSigner.SignMessage(ctx, core.BytesToSlice(hashedPayload), false)
-	if err != nil {
-		return nil, common.Address{}, fmt.Errorf("could not sign hashed payload: %w", err)
-	}
-
-	rawSig, err := types.EncodeSignature(signature)
-	if err != nil {
-		return nil, common.Address{}, fmt.Errorf("could not encode signature: %w", err)
-	}
-	agentStatusAndAddress, err := a.contract.GetAgentStatusFromSignedPayload(&bind.CallOpts{Context: ctx}, hashedPayload, rawSig)
-	if err != nil {
-		return nil, common.Address{}, fmt.Errorf("could not retrieve agent status: %w", err)
-	}
-
-	agentStatus := types.NewAgentStatus(agentStatusAndAddress.StatusToReturn.Flag, agentStatusAndAddress.StatusToReturn.Domain, agentStatusAndAddress.StatusToReturn.Index)
-
-	return agentStatus, agentStatusAndAddress.AddressToReturn, nil
 }
