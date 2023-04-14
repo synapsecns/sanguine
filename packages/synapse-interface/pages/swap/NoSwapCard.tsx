@@ -1,11 +1,9 @@
-import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 import Card from '@tw/Card'
-import { CHAIN_INFO_MAP } from '@constants/networks'
-import { getNetworkTextColor } from '@utils/styles/networks'
+import { CHAINS_BY_ID } from '@constants/chains'
+import { getNetworkTextColor } from '@styles/chains'
 
-export default function NoSwapCard() {
-  const { chainId } = useActiveWeb3React()
-
+const NoSwapCard = ({ chainId }: { chainId: number }) => {
+  const chain = CHAINS_BY_ID[chainId]
   return (
     <Card
       title="Swap"
@@ -16,10 +14,12 @@ export default function NoSwapCard() {
     >
       <div className="w-full pt-4 text-center text-gray-400">
         No swaps available on{' '}
-        <span className={`${getNetworkTextColor(chainId)} font-medium`}>
-          {CHAIN_INFO_MAP[chainId].chainName}
+        <span className={`${getNetworkTextColor(chain?.color)} font-medium`}>
+          {chain?.chainName}
         </span>
       </div>
     </Card>
   )
 }
+
+export default NoSwapCard

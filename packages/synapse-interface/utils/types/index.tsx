@@ -39,6 +39,17 @@ export interface IconProps {
   className?: string
 }
 
+export type SwapQuote = {
+  outputAmount: BigNumber
+  outputAmountString: string
+  routerAddress: string
+  allowance: BigNumber
+  exchangeRate: BigNumber
+  feeAmount: BigNumber
+  delta: BigNumber
+  quotes: { originQuery: any; destQuery: any }
+}
+
 // TODO
 // Clean up this file as swap and pools get implemented in the sdk and more clarity on the types needed are defined
 // also could just be a type.

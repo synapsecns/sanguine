@@ -1,8 +1,9 @@
+import debounce from 'lodash.debounce'
 import Grid from '@tw/Grid'
 import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
 import { useNetwork } from 'wagmi'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { ActionCardFooter } from '@components/ActionCardFooter'
@@ -35,7 +36,6 @@ import {
   EMPTY_BRIDGE_QUOTE_ZERO,
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
-import { addSyntheticLeadingComment } from 'typescript'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -144,7 +144,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   }, [connectedChain?.id])
 
   /*
-  useEffect Triggers: fromToken, toToken, fromInput, fromChainId, toChainId, time
+  useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
   */
   useEffect(() => {
@@ -156,11 +156,12 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       fromInput &&
       fromInput.bigNum.gt(Zero)
     ) {
+      // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
       getQuote()
     } else {
       setBridgeQuote(EMPTY_BRIDGE_QUOTE)
     }
-  }, [fromToken, toToken, fromInput, fromChainId, toChainId, time])
+  }, [toToken, fromInput, toChainId, time])
 
   /*
   Helper Function: resetTokenPermutation
@@ -211,8 +212,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     ) {
       let bigNum =
         stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero
-      console.log(value, bigNum)
-
       setFromInput({
         string: value,
         bigNum: bigNum,
@@ -509,6 +508,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         destQuery,
       },
     })
+    return
   }
 
   /*
