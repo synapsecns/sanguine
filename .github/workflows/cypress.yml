@@ -1,0 +1,21 @@
+name: Synapse Interface Cypress Integration Tests
+
+on:
+  push:
+  pull_request:
+  paths:
+    - 'packages/synapse-interface/**'
+    - '.github/workflows/cypress.yml'
+
+jobs:
+  Cypress-Integration-Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run Cypress Test
+        uses: cypress-io/github-action@v4
+        with:
+          command: yarn cypress:run
+          browser: chrome
