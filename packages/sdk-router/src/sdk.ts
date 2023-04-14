@@ -191,6 +191,8 @@ class SynapseSDK {
     tokenOut: string,
     amountIn: BigintIsh
   ): Promise<{
+    routerAddress?: string | undefined
+    maxAmountOut?: BigNumber | undefined
     query?: Query | undefined
   }> {
     tokenOut = handleNativeToken(tokenOut)
@@ -204,7 +206,15 @@ class SynapseSDK {
       tokenOut,
       amountIn
     )
-    return { query }
+
+    // Router address so allowance handling be set by client
+    const routerAddress = router.routerContract.address
+    const maxAmountOut = query.minAmountOut
+    return {
+      routerAddress,
+      maxAmountOut,
+      query,
+    }
   }
 
   public async swap(
