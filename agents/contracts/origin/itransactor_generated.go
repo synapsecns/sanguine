@@ -56,4 +56,8 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function verifyStateReport(bytes srPayload, bytes srSignature) returns(bool isValid)
 	VerifyStateReport(opts *bind.TransactOpts, srPayload []byte, srSignature []byte) (*types.Transaction, error)
+	// WithdrawTips is a paid mutator transaction binding the contract method 0x4e04e7a7.
+	//
+	// Solidity: function withdrawTips(address recipient, uint256 amount) returns()
+	WithdrawTips(opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*types.Transaction, error)
 }

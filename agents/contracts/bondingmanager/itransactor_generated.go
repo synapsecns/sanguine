@@ -52,4 +52,8 @@ type IBondingManagerTransactor interface {
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()
 	TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error)
+	// WithdrawTips is a paid mutator transaction binding the contract method 0xcc875501.
+	//
+	// Solidity: function withdrawTips(address recipient, uint32 origin_, uint256 amount) returns()
+	WithdrawTips(opts *bind.TransactOpts, recipient common.Address, origin_ uint32, amount *big.Int) (*types.Transaction, error)
 }

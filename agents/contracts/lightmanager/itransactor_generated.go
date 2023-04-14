@@ -3,6 +3,8 @@
 package lightmanager
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -18,6 +20,10 @@ type ILightManagerTransactor interface {
 	//
 	// Solidity: function registrySlash(uint32 domain, address agent, address prover) returns()
 	RegistrySlash(opts *bind.TransactOpts, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error)
+	// RemoteWithdrawTips is a paid mutator transaction binding the contract method 0xcc4c8466.
+	//
+	// Solidity: function remoteWithdrawTips(uint256 proofMaturity, uint32 callOrigin, uint8 systemCaller, address recipient, uint256 amount) returns()
+	RemoteWithdrawTips(opts *bind.TransactOpts, proofMaturity *big.Int, callOrigin uint32, systemCaller uint8, recipient common.Address, amount *big.Int) (*types.Transaction, error)
 	// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 	//
 	// Solidity: function renounceOwnership() returns()

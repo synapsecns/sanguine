@@ -924,6 +924,29 @@ func (_m *IBondingManager) WatchStatusUpdated(opts *bind.WatchOpts, sink chan<- 
 	return r0, r1
 }
 
+// WithdrawTips provides a mock function with given fields: opts, recipient, origin_, amount
+func (_m *IBondingManager) WithdrawTips(opts *bind.TransactOpts, recipient common.Address, origin_ uint32, amount *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(opts, recipient, origin_, amount)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address, uint32, *big.Int) *types.Transaction); ok {
+		r0 = rf(opts, recipient, origin_, amount)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address, uint32, *big.Int) error); ok {
+		r1 = rf(opts, recipient, origin_, amount)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type mockConstructorTestingTNewIBondingManager interface {
 	mock.TestingT
 	Cleanup(func())

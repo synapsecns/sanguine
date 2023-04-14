@@ -435,6 +435,29 @@ func (_m *ILightManager) RegistrySlash(opts *bind.TransactOpts, domain uint32, a
 	return r0, r1
 }
 
+// RemoteWithdrawTips provides a mock function with given fields: opts, proofMaturity, callOrigin, systemCaller, recipient, amount
+func (_m *ILightManager) RemoteWithdrawTips(opts *bind.TransactOpts, proofMaturity *big.Int, callOrigin uint32, systemCaller uint8, recipient common.Address, amount *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(opts, proofMaturity, callOrigin, systemCaller, recipient, amount)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, uint32, uint8, common.Address, *big.Int) *types.Transaction); ok {
+		r0 = rf(opts, proofMaturity, callOrigin, systemCaller, recipient, amount)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, uint32, uint8, common.Address, *big.Int) error); ok {
+		r1 = rf(opts, proofMaturity, callOrigin, systemCaller, recipient, amount)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // RenounceOwnership provides a mock function with given fields: opts
 func (_m *ILightManager) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
 	ret := _m.Called(opts)

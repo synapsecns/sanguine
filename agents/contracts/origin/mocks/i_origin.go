@@ -1171,6 +1171,29 @@ func (_m *IOrigin) WatchStateSaved(opts *bind.WatchOpts, sink chan<- *origin.Ori
 	return r0, r1
 }
 
+// WithdrawTips provides a mock function with given fields: opts, recipient, amount
+func (_m *IOrigin) WithdrawTips(opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(opts, recipient, amount)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address, *big.Int) *types.Transaction); ok {
+		r0 = rf(opts, recipient, amount)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address, *big.Int) error); ok {
+		r1 = rf(opts, recipient, amount)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type mockConstructorTestingTNewIOrigin interface {
 	mock.TestingT
 	Cleanup(func())
