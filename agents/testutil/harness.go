@@ -304,8 +304,6 @@ func (d SummitHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 	bondingManagerHarnessContract := d.Registry().Get(ctx, BondingManagerHarnessType)
 	bondingManagerAddress := bondingManagerHarnessContract.Address()
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		fmt.Printf("CRONIN gas limit: %d\n", transactOps.GasLimit)
-		transactOps.GasLimit = 10000000
 		address, tx, rawHandle, err := summitharness.DeploySummitHarness(transactOps, backend, bondingManagerAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)

@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	uint8Len  = 1
 	uint32Len = 4
 	uint40Len = 5
 )
@@ -273,4 +274,37 @@ func EncodeMessage(m Message) ([]byte, error) {
 	buf.Write(m.Body())
 
 	return buf.Bytes(), nil
+}
+
+// EncodeAgentStatus encodes a agent status.
+func EncodeAgentStatus(agentStatus AgentStatus) ([]byte, error) {
+	b := make([]byte, 0)
+	domainBytes := make([]byte, uint32Len)
+	indexBytes := make([]byte, uint32Len)
+
+	binary.BigEndian.PutUint32(domainBytes, agentStatus.Domain())
+	binary.BigEndian.PutUint32(indexBytes, agentStatus.Index())
+
+	b = append(b, agentStatus.Flag())
+	b = append(b, domainBytes...)
+	b = append(b, indexBytes...)
+
+	return b, nil
+}
+
+// DecodeAgentStatus decodes an agent status.
+func DecodeAgentStatus(toDecode []byte) (AgentStatus, error) {
+	if len(toDecode) != agentStatusSize {
+		return nil, fmt.Errorf("invalid agent status length, expected %d, got %d", agentStatusSize, len(toDecode))
+	}
+
+	flagBytes := toDecode[agentStatusOffsetFlag:agentStatusOffsetDomain]
+	domain := binary.BigEndian.Uint32(toDecode[agentStatusOffsetDomain:agentStatusOffsetIndex])
+	index := binary.BigEndian.Uint32(toDecode[agentStatusOffsetDomain:agentStatusSize])
+
+	return agentStatus{
+		flag:   flagBytes[0],
+		domain: domain,
+		index:  index,
+	}, nil
 }

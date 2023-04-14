@@ -3,6 +3,7 @@ package types
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"math"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -82,10 +83,16 @@ func (s snapshot) SignSnapshot(ctx context.Context, signer signer.Signer) (signe
 		return nil, nil, common.Hash{}, fmt.Errorf("could not encode snapshot: %w", err)
 	}
 
-	hashedSnapshot, err := HashRawBytes(encodedSnapshot)
+	snapshotSalt := crypto.Keccak256Hash([]byte("SNAPSHOT_SALT"))
+
+	hashedEncodedSnapshot := crypto.Keccak256Hash(encodedSnapshot).Bytes()
+	toSign := append(snapshotSalt.Bytes(), hashedEncodedSnapshot...)
+
+	hashedSnapshot, err := HashRawBytes(toSign)
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("could not hash snapshot: %w", err)
 	}
+
 	signature, err := signer.SignMessage(ctx, core.BytesToSlice(hashedSnapshot), false)
 	if err != nil {
 		return nil, nil, common.Hash{}, fmt.Errorf("could not sign snapshot: %w", err)

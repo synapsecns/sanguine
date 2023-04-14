@@ -53,6 +53,10 @@ type SummitContract interface {
 	GetLatestAgentState(ctx context.Context, origin uint32, bondedAgentSigner signer.Signer) (types.State, error)
 	// WatchAttestationSaved looks for attesation saved events
 	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
+	// GetAgentStatus returns the current agent status for the given agent.
+	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
+	// GetAgentStatusFromSignedPayload returns the agent status and address associated with signed payload.
+	GetAgentStatusFromSignedPayload(ctx context.Context, bondedAgentSigner signer.Signer) (types.AgentStatus, common.Address, error)
 }
 
 // DestinationContract contains the interface for the destination.
