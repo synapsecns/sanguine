@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	uint8Len  = 1
 	uint32Len = 4
 	uint40Len = 5
 )
