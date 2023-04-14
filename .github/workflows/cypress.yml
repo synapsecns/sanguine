@@ -4,8 +4,8 @@ on:
   push:
   pull_request:
     paths:
-      - 'packages/explorer-ui/**'
-      - '.github/workflows/ui-preview.yaml'
+      - 'packages/synapse-interface/**'
+      - '.github/workflows/cypress.yaml'
 
 jobs:
   build:
