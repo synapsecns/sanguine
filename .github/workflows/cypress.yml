@@ -8,7 +8,7 @@ on:
       - '.github/workflows/cypress.yaml'
 
 jobs:
-  Cypress Integration Tests:
+  cypress-integration-tests:
     runs-on: ubuntu-latest
 
     steps:
