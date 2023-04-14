@@ -4,6 +4,8 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { BytesLike } from '@ethersproject/bytes'
 import { PopulatedTransaction } from 'ethers'
 import { AddressZero } from '@ethersproject/constants'
+import { Interface } from '@ethersproject/abi'
+import { Contract } from '@ethersproject/contracts'
 
 import {
   handleNativeToken,
@@ -11,6 +13,10 @@ import {
 } from './utils/handleNativeToken'
 import { BigintIsh } from './constants'
 import { SynapseRouter } from './synapseRouter'
+import bridgeAbi from './abi/SynapseBridge.json'
+
+// import SynapseBridge
+// import { SynapseSwapQuoter, LimitedTokenStructType } from './synapseSwapQuoter'
 
 type SynapseRouters = {
   [key: number]: SynapseRouter
@@ -32,6 +38,8 @@ type FeeConfig = [number, BigNumber, BigNumber] & {
 
 class SynapseSDK {
   public synapseRouters: SynapseRouters
+  public providers: { [x: number]: Provider }
+  public bridgeAbi: Interface = new Interface(bridgeAbi)
 
   constructor(chainIds: number[], providers: Provider[]) {
     invariant(
@@ -39,11 +47,13 @@ class SynapseSDK {
       `Amount of chains and providers does not equal`
     )
     this.synapseRouters = {}
+    this.providers = {}
     for (let i = 0; i < chainIds.length; i++) {
       this.synapseRouters[chainIds[i]] = new SynapseRouter(
         chainIds[i],
         providers[i]
       )
+      this.providers[chainIds[i]] = providers[i]
     }
   }
 
@@ -173,7 +183,72 @@ class SynapseSDK {
       destQuery
     )
   }
+
   // TODO: add gas from bridge
+  public async swapQuote(
+    chainId: number,
+    tokenIn: string,
+    tokenOut: string,
+    amountIn: BigintIsh
+  ): Promise<{
+    routerAddress?: string | undefined
+    maxAmountOut?: BigNumber | undefined
+    query?: Query | undefined
+  }> {
+    tokenOut = handleNativeToken(tokenOut)
+    tokenIn = handleNativeToken(tokenIn)
+
+    const router: SynapseRouter = this.synapseRouters[chainId]
+
+    // Step 0: get the swap quote
+    const query = await router.routerContract.getAmountOut(
+      tokenIn,
+      tokenOut,
+      amountIn
+    )
+
+    // Router address so allowance handling be set by client
+    const routerAddress = router.routerContract.address
+    const maxAmountOut = query.minAmountOut
+    return {
+      routerAddress,
+      maxAmountOut,
+      query,
+    }
+  }
+
+  public async swap(
+    chainId: number,
+    to: string,
+    token: string,
+    amount: BigintIsh,
+    query: {
+      swapAdapter: string
+      tokenOut: string
+      minAmountOut: BigintIsh
+      deadline: BigintIsh
+      rawParams: BytesLike
+    }
+  ): Promise<PopulatedTransaction> {
+    token = handleNativeToken(token)
+    const originRouter: SynapseRouter = this.synapseRouters[chainId]
+    return originRouter.routerContract.populateTransaction.swap(
+      to,
+      token,
+      amount,
+      query
+    )
+  }
+  public async getBridgeGas(chainId: number): Promise<BigintIsh> {
+    const router: SynapseRouter = this.synapseRouters[chainId]
+    const bridgeAddress = await router.routerContract.synapseBridge()
+    const bridgeContract = new Contract(
+      bridgeAddress,
+      this.bridgeAbi,
+      this.providers[chainId]
+    )
+    return bridgeContract.chainGasAmount()
+  }
 }
 
 export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS }
