@@ -358,71 +358,72 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     if (address === undefined) {
       return alert('Please connect your wallet')
     }
-    switch (type) {
-      case 'from':
-        const positedToChain = flip ? fromChainId : undefined
-        const desiredChainId = flip ? Number(toChainId) : Number(chainId)
-        const res = switchNetwork({ chainId: desiredChainId })
-          .then((res) => {
-            return res
-          })
-          .catch(() => {
-            return undefined
-          })
-        if (res === undefined) {
-          console.log("can't switch network, chainId: ", chainId)
-          return
-        }
+    console.log(flip, type, chainId)
+    if (flip || type === 'from') {
+      const positedToChain = flip ? fromChainId : undefined
+      const desiredChainId = flip ? Number(toChainId) : Number(chainId)
+      console.log('desiredChainId: ', desiredChainId)
+      console.log('positedToChain: ', positedToChain)
 
-        const bridgeableFromTokens: Token[] = sortByVisibilityRank(
-          BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][
-            String(fromToken.swapableType)
-          ]
-        )
-        let tempFromToken: Token = fromToken
-
-        if (bridgeableFromTokens?.length > 0) {
-          tempFromToken = getMostCommonSwapableType(chainId)
-        }
-        const {
-          bridgeableToken,
-          newToChain,
-          bridgeableTokens,
-          bridgeableChains,
-        } = handleNewFromToken(
-          tempFromToken,
-          positedToChain,
-          toToken.symbol,
-          desiredChainId
-        )
-        resetTokenPermutation(
-          tempFromToken,
-          newToChain,
-          bridgeableToken,
-          bridgeableChains,
-          bridgeableTokens,
-          tempFromToken.symbol,
-          bridgeableToken.symbol
-        )
+      const res = switchNetwork({ chainId: desiredChainId })
+        .then((res) => {
+          return res
+        })
+        .catch(() => {
+          return undefined
+        })
+      if (res === undefined) {
+        console.log("can't switch network, chainId: ", chainId)
         return
-      case 'to':
-        const {
-          bridgeableToken: toBridgeableToken,
-          newToChain: toNewToChain,
-          bridgeableTokens: toBridgeableTokens,
-          bridgeableChains: toBridgeableChains,
-        } = handleNewFromToken(fromToken, chainId, toToken.symbol, fromChainId)
-        resetTokenPermutation(
-          fromToken,
-          toNewToChain,
-          toBridgeableToken,
-          toBridgeableChains,
-          toBridgeableTokens,
-          fromToken.symbol,
-          toBridgeableToken.symbol
-        )
+      }
 
-        return
+      const bridgeableFromTokens: Token[] = sortByVisibilityRank(
+        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][String(fromToken.swapableType)]
+      )
+      let tempFromToken: Token = fromToken
+
+      if (bridgeableFromTokens?.length > 0) {
+        tempFromToken = getMostCommonSwapableType(chainId)
+      }
+      const {
+        bridgeableToken,
+        newToChain,
+        bridgeableTokens,
+        bridgeableChains,
+      } = handleNewFromToken(
+        tempFromToken,
+        positedToChain,
+        toToken.symbol,
+        desiredChainId
+      )
+      resetTokenPermutation(
+        tempFromToken,
+        newToChain,
+        bridgeableToken,
+        bridgeableChains,
+        bridgeableTokens,
+        tempFromToken.symbol,
+        bridgeableToken.symbol
+      )
+      return
+    } else if (type === 'to') {
+      const {
+        bridgeableToken: toBridgeableToken,
+        newToChain: toNewToChain,
+        bridgeableTokens: toBridgeableTokens,
+        bridgeableChains: toBridgeableChains,
+      } = handleNewFromToken(fromToken, chainId, toToken.symbol, fromChainId)
+      resetTokenPermutation(
+        fromToken,
+        toNewToChain,
+        toBridgeableToken,
+        toBridgeableChains,
+        toBridgeableTokens,
+        fromToken.symbol,
+        toBridgeableToken.symbol
+      )
+
+      return
     }
   }
 

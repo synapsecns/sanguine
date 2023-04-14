@@ -10,16 +10,23 @@ import { ActionCardFooter } from '@components/ActionCardFooter'
 import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
+import ExchangeRateInfo from '@components/ExchangeRateInfo'
+import CoreSwapContainer from './CoreSwapContainer'
+import { ChainLabel } from '@components/ChainLabel'
+import BridgeInputContainer from '../bridge/BridgeInputContainer/index'
 import {
-  BRIDGABLE_TOKENS,
-  BRIDGE_CHAINS_BY_TYPE,
+  SWAPABLE_TOKENS,
+  POOL_PRIORITY_RANKING,
   BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
+  SWAPABLE_TOKENS_BY_TYPE,
   tokenSymbolToToken,
 } from '@constants/tokens'
 import { formatBNToString } from '@utils/bignumber/format'
 import { commify } from '@ethersproject/units'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
+import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
+import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
 
 import { Token } from '@/utils/types'
 import { SWAP_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
@@ -41,38 +48,45 @@ import {
   DEFAULT_TO_TOKEN,
   EMPTY_SWAP_QUOTE,
   QUOTE_POLLING_INTERVAL,
+  EMPTY_SWAP_QUOTE_ZERO,
 } from '@/constants/swap'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 
-import { POOL_PRIORITY_RANKING } from '@constants/tokens'
-import NoSwapCard from './NoSwapCard'
-
-const SwapCard = ({ address }: { address: string }) => {
+console.log(
+  SWAPABLE_TOKENS,
+  '\n',
+  POOL_PRIORITY_RANKING,
+  SWAPABLE_TOKENS_BY_TYPE
+)
+const SwapCard = ({
+  address,
+  connectedChainId,
+}: {
+  address: `0x${string}` | undefined
+  connectedChainId: number
+}) => {
   const router = useRouter()
   const SynapseSDK = useSynapseContext()
-  const { chain: connectedChain } = useNetwork()
   const [time, setTime] = useState(Date.now())
-  const [fromChainId, setFromChainId] = useState(DEFAULT_FROM_CHAIN)
   const [fromToken, setFromToken] = useState(DEFAULT_FROM_TOKEN)
   const [fromTokens, setFromTokens] = useState([])
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
-  const [toTokens, setToTokens] = useState([]) //add default
+  const [toTokens, setToTokens] = useState<Token[]>() //add default
 
   const [error, setError] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
 
   const [swapQuote, setSwapQuote] = useState<SwapQuote>(EMPTY_SWAP_QUOTE)
   const [displayType, setDisplayType] = useState(undefined)
-
+  const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
+  const [validChainId, setValidChainId] = useState(true)
   /*
   useEffect Trigger: onMount
   - Gets current network connected and sets it as the state.
   - Initializes polling (setInterval) func to re-retrieve quotes.
   */
   useEffect(() => {
-    const { chain: fromChainIdRaw } = getNetwork()
-    setFromChainId(fromChainIdRaw ? fromChainIdRaw?.id : DEFAULT_FROM_CHAIN)
     const interval = setInterval(
       () => setTime(Date.now()),
       QUOTE_POLLING_INTERVAL
@@ -82,8 +96,23 @@ const SwapCard = ({ address }: { address: string }) => {
     }
   }, [])
 
+  /*
+  useEffect Trigger: fromToken, fromTokens
+  - When either the from token or list of from tokens are mutated, the selected token's balance is set in state
+  this is for checking max bridge possible as well as for producing the option to select max bridge
+  */
   useEffect(() => {
-    if (!router.isReady) {
+    if (fromTokens && fromToken) {
+      setFromTokenBalance(
+        fromTokens.filter((token) => token.token === fromToken)[0]?.balance
+          ? fromTokens.filter((token) => token.token === fromToken)[0]?.balance
+          : Zero
+      )
+    }
+  }, [fromToken, fromTokens])
+
+  useEffect(() => {
+    if (!router.isReady || !SWAPABLE_TOKENS[connectedChainId]) {
       return
     }
     const {
@@ -91,10 +120,13 @@ const SwapCard = ({ address }: { address: string }) => {
       outputCurrency: toTokenSymbolUrl,
     } = router.query
 
-    let tempFromToken: Token = getMostCommonSwapableType(fromChainId)
+    let tempFromToken: Token = getMostCommonSwapableType(connectedChainId)
 
     if (fromTokenSymbolUrl) {
-      let token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
+      let token = tokenSymbolToToken(
+        connectedChainId,
+        String(fromTokenSymbolUrl)
+      )
       if (token) {
         tempFromToken = token
       }
@@ -102,7 +134,7 @@ const SwapCard = ({ address }: { address: string }) => {
     const { swapableToken, swapableTokens } = handleNewFromToken(
       tempFromToken,
       toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
-      fromChainId
+      connectedChainId
     )
     resetTokenPermutation(
       tempFromToken,
@@ -122,22 +154,21 @@ const SwapCard = ({ address }: { address: string }) => {
   - when the connected chain changes (wagmi hook), update the state
   */
   useEffect(() => {
-    if (connectedChain?.id) {
-      if (address === undefined) {
-        return
-      }
-      setFromChainId(connectedChain?.id)
-      handleChainChange(connectedChain?.id, false, 'from')
-      sortByTokenBalance(
-        BRIDGABLE_TOKENS[connectedChain?.id],
-        connectedChain?.id,
-        address
-      ).then((tokens) => {
-        setFromTokens(tokens)
-      })
+    if (address === undefined) {
       return
     }
-  }, [connectedChain?.id])
+    handleChainChange(connectedChainId, undefined, undefined)
+
+    console.log('connectedChain', connectedChainId)
+    sortByTokenBalance(
+      SWAPABLE_TOKENS[connectedChainId],
+      connectedChainId,
+      address
+    ).then((tokens) => {
+      setFromTokens(tokens)
+    })
+    return
+  }, [connectedChainId])
 
   /*
   useEffect Triggers: toToken, fromInput, toChainId, time
@@ -145,8 +176,8 @@ const SwapCard = ({ address }: { address: string }) => {
   */
   useEffect(() => {
     if (
-      fromChainId &&
-      String(fromToken.addresses[fromChainId]) &&
+      connectedChainId &&
+      String(fromToken.addresses[connectedChainId]) &&
       fromInput &&
       fromInput.bigNum.gt(Zero)
     ) {
@@ -165,17 +196,17 @@ const SwapCard = ({ address }: { address: string }) => {
   const resetTokenPermutation = (
     newFromToken: Token,
     newToToken: Token,
-    newBridgeableTokens: Token[],
+    newSwapableTokens: Token[],
     newFromTokenSymbol: string,
-    newBridgeableTokenSymbol: string
+    newSwapableTokenSymbol: string
   ) => {
     setFromToken(newFromToken)
     setToToken(newToToken)
-    setToTokens(newBridgeableTokens)
+    setToTokens(newSwapableTokens)
     resetRates()
     updateUrlParams({
       inputCurrency: newFromTokenSymbol,
-      outputCurrency: newBridgeableTokenSymbol,
+      outputCurrency: newSwapableTokenSymbol,
     })
   }
 
@@ -197,11 +228,11 @@ const SwapCard = ({ address }: { address: string }) => {
     if (
       !(
         value.split('.')[1]?.length >
-        fromToken[fromChainId as keyof Token['decimals']]
+        fromToken[connectedChainId as keyof Token['decimals']]
       )
     ) {
       let bigNum =
-        stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero
+        stringToBigNum(value, fromToken.decimals[connectedChainId]) ?? Zero
       setFromInput({
         string: value,
         bigNum: bigNum,
@@ -215,7 +246,7 @@ const SwapCard = ({ address }: { address: string }) => {
   */
   const getMostCommonSwapableType = (chainId: number) => {
     const fromChainTokensByType = Object.values(
-      BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId]
+      SWAPABLE_TOKENS_BY_TYPE[chainId]
     )
     let maxTokenLength = 0
     let mostCommonSwapableType: Token[] = fromChainTokensByType[0]
@@ -262,11 +293,11 @@ const SwapCard = ({ address }: { address: string }) => {
   */
   const getCurrentTokenAllowance = async (routerAddress: string) => {
     const wallet = await fetchSigner({
-      chainId: fromChainId,
+      chainId: connectedChainId,
     })
 
     const erc20 = new Contract(
-      fromToken.addresses[fromChainId],
+      fromToken.addresses[connectedChainId],
       erc20ABI,
       wallet
     )
@@ -293,8 +324,8 @@ const SwapCard = ({ address }: { address: string }) => {
 
     let swapableTokens: Token[] = sortByVisibilityRank(
       BRIDGE_SWAPABLE_TOKENS_BY_TYPE[fromChainId][String(token.swapableType)]
-    )
-
+    ).filter((toToken) => toToken !== token)
+    console.log('filter', token, swapableTokens)
     if (swapExceptionsArr?.length > 0) {
       swapableTokens = swapableTokens.filter(
         (toToken) => toToken.symbol === token.symbol
@@ -310,7 +341,61 @@ const SwapCard = ({ address }: { address: string }) => {
       swapableTokens,
     }
   }
+  /*
+  Function: handleChainChange
+  - Produces and alert if chain not connected (upgrade to toaster)
+  - Handles flipping to and from chains if flag is set to true
+  - Handles altering the chain state for origin or destination depending on the type specified.
+  */
+  const handleChainChange = async (
+    chainId: number,
+    flip: boolean,
+    type: 'from' | 'to'
+  ) => {
+    if (address === undefined) {
+      return alert('Please connect your wallet')
+    }
+    const desiredChainId = Number(chainId)
+    const res = switchNetwork({ chainId: desiredChainId })
+      .then((res) => {
+        return res
+      })
+      .catch(() => {
+        return undefined
+      })
+    if (res === undefined) {
+      console.log("can't switch network, chainId: ", chainId)
+      return
+    }
+    if (!SWAPABLE_TOKENS[desiredChainId]) {
+      console.log('sadhkasjhdkjas', desiredChainId)
+      return
+    }
+    setValidChainId(true)
 
+    const swapableFromTokens: Token[] = sortByVisibilityRank(
+      BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][String(fromToken.swapableType)]
+    )
+    let tempFromToken: Token = fromToken
+
+    if (swapableFromTokens?.length > 0) {
+      tempFromToken = getMostCommonSwapableType(chainId)
+    }
+    console.log('tempFromToken', tempFromToken, swapableFromTokens)
+    const { swapableToken, swapableTokens } = handleNewFromToken(
+      tempFromToken,
+      toToken.symbol,
+      desiredChainId
+    )
+    resetTokenPermutation(
+      tempFromToken,
+      swapableToken,
+      swapableTokens,
+      tempFromToken.symbol,
+      swapableToken.symbol
+    )
+    return
+  }
   /*
     Function:handleTokenChange
   - Handles when the user selects a new token from either the origin or destination
@@ -321,7 +406,7 @@ const SwapCard = ({ address }: { address: string }) => {
         const { swapableToken, swapableTokens } = handleNewFromToken(
           token,
           toToken.symbol,
-          fromChainId
+          connectedChainId
         )
         resetTokenPermutation(
           token,
@@ -348,46 +433,38 @@ const SwapCard = ({ address }: { address: string }) => {
   - Calculates slippage by subtracting fee from input amount (checks to ensure proper num of decimals are in use - ask someone about stable swaps if you want to learn more)
   */
   const getQuote = async () => {
-    const { feeAmount, routerAddress, maxAmountOut, originQuery, destQuery } =
-      await SynapseSDK.bridgeQuote(
-        fromChainId,
-        toChainId,
-        fromToken.addresses[fromChainId],
-        toToken.addresses[toChainId],
-        fromInput.bigNum
-      )
-    if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
-      setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO)
+    const { routerAddress, maxAmountOut, query } = await SynapseSDK.swapQuote(
+      connectedChainId,
+      fromToken.addresses[connectedChainId],
+      toToken.addresses[connectedChainId],
+      fromInput.bigNum
+    )
+    if (!(query && maxAmountOut)) {
+      setSwapQuote(EMPTY_SWAP_QUOTE_ZERO)
       return
     }
     const toValueBigNum = maxAmountOut ?? Zero
-    const adjustedFeeAmount = feeAmount.lt(fromInput.bigNum)
-      ? feeAmount
-      : feeAmount.div(BigNumber.from(10).pow(18 - toToken.decimals[toChainId]))
 
     const allowance =
-      fromToken.addresses[fromChainId] === AddressZero
+      fromToken.addresses[connectedChainId] === AddressZero
         ? Zero
         : await getCurrentTokenAllowance(routerAddress)
-    setBridgeQuote({
+
+    setSwapQuote({
       outputAmount: toValueBigNum,
       outputAmountString: commify(
-        formatBNToString(toValueBigNum, toToken.decimals[toChainId], 8)
+        formatBNToString(toValueBigNum, toToken.decimals[connectedChainId], 8)
       ),
       routerAddress,
       allowance,
       exchangeRate: calculateExchangeRate(
-        fromInput.bigNum.sub(adjustedFeeAmount),
-        fromToken.decimals[fromChainId],
+        fromInput.bigNum.sub(Zero), // this needs to be changed once we can get fee data from router.
+        fromToken.decimals[connectedChainId],
         toValueBigNum,
-        toToken.decimals[toChainId]
+        toToken.decimals[connectedChainId]
       ),
-      feeAmount,
       delta: maxAmountOut,
-      quotes: {
-        originQuery,
-        destQuery,
-      },
+      quote: query,
     })
     return
   }
@@ -397,19 +474,17 @@ const SwapCard = ({ address }: { address: string }) => {
   - Gets raw unsigned tx data from sdk and then execute it with ethers.
   - Only executes if token has already been approved.
    */
-  const executeBridge = async () => {
+  const executeSwap = async () => {
     const wallet = await fetchSigner({
-      chainId: fromChainId,
+      chainId: connectedChainId,
     })
 
-    const data = await SynapseSDK.bridge(
+    const data = await SynapseSDK.swap(
+      connectedChainId,
       address,
-      fromChainId,
-      toChainId,
-      fromToken.addresses[fromChainId as keyof Token['addresses']],
+      fromToken.addresses[connectedChainId as keyof Token['addresses']],
       fromInput.bigNum,
-      bridgeQuote.quotes.originQuery,
-      bridgeQuote.quotes.destQuery
+      swapQuote.quote
     )
     const tx = await wallet.sendTransaction(data)
     try {
@@ -449,51 +524,6 @@ const SwapCard = ({ address }: { address: string }) => {
   //   onChangeChain,
   // }
 
-  const approvalBtn = (
-    <TransactionButton
-      onClick={approveToken}
-      label={`Approve ${displaySymbol(chainId, fromCoin)}`}
-      pendingLabel={`Approving ${displaySymbol(chainId, fromCoin)}  `}
-    />
-  )
-
-  let swapButtonLabel
-  if (error) {
-    swapButtonLabel = error
-  } else {
-    swapButtonLabel = fromAmount.eq(0)
-      ? 'Enter amount to swap'
-      : 'Swap your funds'
-  }
-  const swapBtn = (
-    <TransactionButton
-      disabled={toAmount.eq(0) || error}
-      onClick={() => {
-        return approveAndSwap({
-          fromAmount: fromAmount,
-          fromCoin,
-          toAmount: toAmount,
-          toCoin,
-        })
-      }}
-      onSuccess={() => {
-        onChangeFromAmount('')
-      }}
-      label={swapButtonLabel}
-      pendingLabel={`Swapping...`}
-    />
-  )
-
-  let actionBtn
-  if (
-    approvalState === APPROVAL_STATE.NOT_APPROVED &&
-    fromCoin.symbol != WETH.symbol
-  ) {
-    actionBtn = approvalBtn
-  } else {
-    actionBtn = swapBtn
-  }
-
   const transitionProps = {
     ...COIN_SLIDE_OVER_PROPS,
     className: `
@@ -506,7 +536,6 @@ const SwapCard = ({ address }: { address: string }) => {
       z-20 rounded-3xl
     `,
   }
-
   return (
     <Card
       divider={false}
@@ -514,37 +543,77 @@ const SwapCard = ({ address }: { address: string }) => {
     >
       <div className="mb-8">
         <Transition show={displayType === 'from'} {...transitionProps}>
-          <CoinSlideOver key="fromBlock" {...fromArgs} />
+          <TokenSlideOver
+            key="fromBlock"
+            isOrigin={true}
+            tokens={fromTokens}
+            chainId={connectedChainId}
+            selectedToken={fromToken}
+            setDisplayType={setDisplayType}
+            handleTokenChange={handleTokenChange}
+          />
         </Transition>
         <Transition show={displayType === 'to'} {...transitionProps}>
-          <CoinSlideOver key="toBlock" {...toArgs} />{' '}
+          <TokenSlideOver
+            key="toBlock"
+            isOrigin={false}
+            tokens={toTokens}
+            chainId={connectedChainId}
+            selectedToken={toToken}
+            setDisplayType={setDisplayType}
+            handleTokenChange={handleTokenChange}
+          />
         </Transition>
         <Transition show={displayType === 'fromChain'} {...transitionProps}>
-          <NetworkSlideOver key="fromChainBlock" {...fromArgs} />{' '}
+          <ChainSlideOver
+            key="fromChainBlock"
+            isOrigin={true}
+            chains={Object.keys(SWAPABLE_TOKENS)}
+            chainId={connectedChainId}
+            onChangeChain={handleChainChange}
+            setDisplayType={setDisplayType}
+          />
         </Transition>
         <Grid cols={{ xs: 1 }} gap={4} className="place-content-center">
-          <div className="pt-3 pb-3 pl-4 pr-4 mt-2 border-none bg-bgLight rounded-xl">
-            <ChainLabel
-              isOrigin={true}
-              chainId={chainId}
-              setDisplayType={setDisplayType}
-              onChangeChain={onChangeChain}
-              titleText="Chain"
-            />
-          </div>
-          <CoreSwapContainer {...fromArgs} />
-          <CoreSwapContainer {...toArgs} />
+          <div className="pt-3 "></div>
+          <BridgeInputContainer
+            address={address}
+            isOrigin={true}
+            isSwap={true}
+            chains={Object.keys(SWAPABLE_TOKENS)}
+            chainId={connectedChainId}
+            inputString={fromInput.string}
+            selectedToken={fromToken}
+            connectedChainId={connectedChainId}
+            onChangeChain={handleChainChange}
+            onChangeAmount={onChangeFromAmount}
+            setDisplayType={setDisplayType}
+            fromTokenBalance={fromTokenBalance}
+          />
+          <BridgeInputContainer
+            address={address}
+            isOrigin={false}
+            isSwap={true}
+            chains={Object.keys(SWAPABLE_TOKENS)}
+            chainId={connectedChainId}
+            inputString={swapQuote.outputAmountString}
+            selectedToken={toToken}
+            connectedChainId={connectedChainId}
+            onChangeChain={handleChainChange}
+            onChangeAmount={onChangeFromAmount}
+            setDisplayType={setDisplayType}
+          />
         </Grid>
 
         <ExchangeRateInfo
-          fromAmount={fromAmount}
-          fromToken={fromCoin}
-          toCoin={toCoin}
-          exchangeRate={exchangeRate}
-          priceImpact={priceImpact}
-          toChainId={chainId}
+          fromAmount={fromInput.bigNum}
+          toToken={toToken}
+          exchangeRate={swapQuote.exchangeRate}
+          toChainId={connectedChainId}
         />
-        <div className="px-2 py-2 md:px-0 md:py-4">{actionBtn}</div>
+        <div className="px-2 py-2 md:px-0 md:py-4">
+          {<p> BUTton GOES HERE</p>}
+        </div>
       </div>
     </Card>
   )

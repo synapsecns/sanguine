@@ -6,12 +6,13 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 
 import { Token } from '@/utils/types'
-import { ChainLabel } from './ChainLabel'
+import { ChainLabel } from '@components/ChainLabel'
 import SelectTokenDropdown from './SelectTokenDropdown'
 
 const BridgeInputContainer = ({
   address,
   isOrigin,
+  isSwap,
   chains,
   chainId,
   inputString,
@@ -24,6 +25,7 @@ const BridgeInputContainer = ({
 }: {
   address: `0x${string}`
   isOrigin: boolean
+  isSwap: boolean
   chains: string[]
   chainId: number
   inputString: string
@@ -63,7 +65,7 @@ const BridgeInputContainer = ({
     >
       <div>
         <div className="pt-1 pb-3">
-          {!isOrigin && (
+          {!isOrigin && !isSwap && (
             <div className="absolute">
               <div className="-mt-12">
                 <SwitchButton
@@ -74,14 +76,16 @@ const BridgeInputContainer = ({
               </div>
             </div>
           )}
-          <ChainLabel
-            isOrigin={isOrigin}
-            chainId={chainId}
-            setDisplayType={setDisplayType}
-            onChangeChain={onChangeChain}
-            chains={chains}
-            connectedChainId={connectedChainId}
-          />
+          {!(isSwap && !isOrigin) && (
+            <ChainLabel
+              isOrigin={isOrigin}
+              chainId={chainId}
+              setDisplayType={setDisplayType}
+              onChangeChain={onChangeChain}
+              chains={chains}
+              connectedChainId={connectedChainId}
+            />
+          )}
         </div>
       </div>
       <div className="flex h-16 mb-4 space-x-2">

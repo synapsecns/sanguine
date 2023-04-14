@@ -12,8 +12,8 @@ import Button from '@tw/Button'
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
 import { TransactionButton } from '@components/buttons/SubmitTxButton'
 import { PageHeader } from '@components/PageHeader'
-import { CoinSlideOver } from '@components/misc/CoinSlideOver'
-import { NetworkSlideOver } from '@components/misc/NetworkSlideOver'
+import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
+import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero, MaxInt256 } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
@@ -97,6 +97,7 @@ const BridgeCard = ({
     address,
     fromTokenBalance,
     isOrigin: true,
+    isSwap: false,
     chains: ORDERED_CHAINS_BY_ID.filter((id) => id !== String(fromChainId)),
     tokens: fromTokens,
     chainId: fromChainId,
@@ -112,6 +113,7 @@ const BridgeCard = ({
   const toArgs = {
     address,
     isOrigin: false,
+    isSwap: false,
     chains: toOptions.chains,
     tokens: toOptions.tokens,
     chainId: toChainId,
@@ -256,13 +258,13 @@ const BridgeCard = ({
       >
         <div>
           <Transition show={displayType === 'from'} {...TRANSITION_PROPS}>
-            <CoinSlideOver key="fromBlock" {...fromArgs} />{' '}
+            <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
           </Transition>
           <Transition show={displayType === 'to'} {...TRANSITION_PROPS}>
-            <CoinSlideOver key="toBlock" {...toArgs} />
+            <TokenSlideOver key="toBlock" {...toArgs} />
           </Transition>
           <Transition show={displayType === 'fromChain'} {...TRANSITION_PROPS}>
-            <NetworkSlideOver key="fromChainBlock" {...fromArgs} />
+            <ChainSlideOver key="fromChainBlock" {...fromArgs} />
           </Transition>
           <Transition show={displayType === 'toChain'} {...TRANSITION_PROPS}>
             <SettingsSlideOver key="settings" {...settingsArgs} />

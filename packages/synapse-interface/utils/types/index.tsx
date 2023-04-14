@@ -45,9 +45,8 @@ export type SwapQuote = {
   routerAddress: string
   allowance: BigNumber
   exchangeRate: BigNumber
-  feeAmount: BigNumber
   delta: BigNumber
-  quotes: { originQuery: any; destQuery: any }
+  quote: any
 }
 
 // TODO

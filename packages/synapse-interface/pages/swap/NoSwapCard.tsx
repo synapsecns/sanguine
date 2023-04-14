@@ -1,9 +1,10 @@
 import Card from '@tw/Card'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { getNetworkTextColor } from '@styles/chains'
+import { useMemo } from 'react'
 
 const NoSwapCard = ({ chainId }: { chainId: number }) => {
-  const chain = CHAINS_BY_ID[chainId]
+  const chain = useMemo(() => CHAINS_BY_ID[chainId], [chainId])
   return (
     <Card
       title="Swap"
