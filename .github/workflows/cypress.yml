@@ -25,8 +25,8 @@ jobs:
         working-directory: './packages/synapse-interface'
 
       - name: Install sdk-router
-        run: yarn add ../sdk-router
-        working-directory: './packages/synapse-interface'
+        run: yarn install
+        working-directory: './packages/sdk-router'
 
       - name: Run Cypress tests
         run: yarn cypress:run
