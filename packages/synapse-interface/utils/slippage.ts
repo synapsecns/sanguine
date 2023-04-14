@@ -12,6 +12,7 @@ export const Slippages = {
 
 /**
  * Given an input value and slippage redux state values, do the math.
+ *
  * @param {BigNumber} inputValue
  * @param {Slippages} slippageSelected
  * @param {NumberInputState} slippageCustom

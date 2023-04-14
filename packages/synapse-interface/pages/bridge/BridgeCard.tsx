@@ -20,8 +20,8 @@ import { formatBNToString } from '@bignumber/format'
 import { SECTION_TRANSITION_PROPS } from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
 import SettingsSlideOver from './SettingsSlideOver'
-import { DestinationAddressInput } from './DestinationAddressInput'
-import BridgeInputContainer from '../../components/input'
+import { DestinationAddressInput } from '../../components/input/DestinationAddressInput'
+import BridgeInputContainer from '../../components/input/TokenAmountInput'
 import { TransactionResponse } from '@ethersproject/providers'
 
 import { Token } from '@/utils/types'
@@ -101,7 +101,7 @@ const BridgeCard = ({
     chains: ORDERED_CHAINS_BY_ID.filter((id) => id !== String(fromChainId)),
     tokens: fromTokens,
     chainId: fromChainId,
-    inputString: fromInput.string,
+    inputString: fromInput?.string,
     selectedToken: fromToken,
     connectedChainId: fromChainId,
     setDisplayType,
@@ -114,10 +114,10 @@ const BridgeCard = ({
     address,
     isOrigin: false,
     isSwap: false,
-    chains: toOptions.chains,
-    tokens: toOptions.tokens,
+    chains: toOptions?.chains,
+    tokens: toOptions?.tokens,
     chainId: toChainId,
-    inputString: bridgeQuote.outputAmountString,
+    inputString: bridgeQuote?.outputAmountString,
     selectedToken: toToken,
     connectedChainId: fromChainId,
     setDisplayType,
@@ -137,7 +137,7 @@ const BridgeCard = ({
 
   // some messy button gen stuff (will re-write)
   // maybe just put everything in index without the card
-  const isFromBalanceEnough = fromTokenBalance?.gt(fromInput.bigNum)
+  const isFromBalanceEnough = fromTokenBalance.gt(fromInput?.bigNum ?? Zero)
   let destAddrNotValid
   let btnLabel
   let btnClassName = ''
@@ -147,21 +147,21 @@ const BridgeCard = ({
   if (error) {
     btnLabel = error
   } else if (!isFromBalanceEnough) {
-    btnLabel = `Insufficient ${fromToken.symbol} Balance`
-  } else if (bridgeQuote.feeAmount.eq(0) && !fromInput.bigNum.eq(0)) {
+    btnLabel = `Insufficient ${fromToken?.symbol} Balance`
+  } else if (bridgeQuote.feeAmount.eq(0) && !fromInput?.bigNum?.eq(0)) {
     btnLabel = `Amount must be greater than fee`
   } else if (
     bridgeQuote?.allowance &&
-    bridgeQuote?.allowance?.lt(fromInput.bigNum)
+    bridgeQuote?.allowance?.lt(fromInput?.bigNum)
   ) {
     buttonAction = () =>
       approveToken(
-        bridgeQuote.routerAddress,
+        bridgeQuote?.routerAddress,
         fromChainId,
         fromToken.addresses[fromChainId]
       )
-    btnLabel = `Approve ${fromToken.symbol}`
-    pendingLabel = `Approving ${fromToken.symbol}`
+    btnLabel = `Approve ${fromToken?.symbol}`
+    pendingLabel = `Approving ${fromToken?.symbol}`
     btnClassName = 'from-[#feba06] to-[#FEC737]'
     postButtonAction = () => setTime(0)
   } else if (
@@ -176,11 +176,11 @@ const BridgeCard = ({
       : 'Bridge your funds'
 
     const numExchangeRate = Number(
-      formatBNToString(bridgeQuote.exchangeRate, 18, 4)
+      formatBNToString(bridgeQuote?.exchangeRate, 18, 4)
     )
 
     if (
-      !fromInput.bigNum.eq(0) &&
+      !fromInput?.bigNum?.eq(0) &&
       (numExchangeRate < 0.95 || numExchangeRate > 1.05)
     ) {
       btnClassName = 'from-[#fe064a] to-[#fe5281]'
@@ -281,13 +281,13 @@ const BridgeCard = ({
           <Transition
             appear={true}
             unmount={false}
-            show={!fromInput.bigNum.eq(0)}
+            show={!fromInput?.bigNum?.eq(0)}
             {...SECTION_TRANSITION_PROPS}
           >
             <ExchangeRateInfo
-              fromAmount={fromInput.bigNum}
+              fromAmount={fromInput?.bigNum}
               toToken={toToken}
-              exchangeRate={bridgeQuote.exchangeRate}
+              exchangeRate={bridgeQuote?.exchangeRate}
               toChainId={toChainId}
             />
           </Transition>

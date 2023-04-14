@@ -17,7 +17,7 @@ const SelectTokenDropdown = ({
   selectedToken: Token
   onClick: () => void
 }) => {
-  const symbol = displaySymbol(chainId, selectedToken)
+  const symbol = selectedToken ? displaySymbol(chainId, selectedToken) : ''
 
   return (
     <button
@@ -36,9 +36,9 @@ const SelectTokenDropdown = ({
             flex justify-center md:justify-start
             bg-[#49444c] bg-opacity-100
             transform-gpu transition-all duration-100
-            ${getMenuItemHoverBgForCoin(selectedToken.color)}
+            ${getMenuItemHoverBgForCoin(selectedToken?.color)}
             border border-transparent
-            ${getBorderStyleForCoinHover(selectedToken.color)}
+            ${getBorderStyleForCoinHover(selectedToken?.color)}
             items-center
             rounded-lg
             py-1.5 pl-2 h-14
@@ -49,7 +49,7 @@ const SelectTokenDropdown = ({
               <Image
                 alt="token image"
                 className="rounded-md w-7 h-7"
-                src={selectedToken.icon}
+                src={selectedToken?.icon}
               />
             </div>
           </div>

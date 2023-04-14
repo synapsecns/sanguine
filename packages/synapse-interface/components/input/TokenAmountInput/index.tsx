@@ -40,7 +40,7 @@ const BridgeInputContainer = ({
   if (fromTokenBalance) {
     formattedBalance = formatBNToString(
       fromTokenBalance,
-      selectedToken.decimals[chainId as keyof Token['decimals']],
+      selectedToken?.decimals[chainId as keyof Token['decimals']],
       3
     )
   }
@@ -50,7 +50,7 @@ const BridgeInputContainer = ({
     onChangeAmount(
       formatBNToString(
         fromTokenBalance,
-        selectedToken.decimals[chainId as keyof Token['decimals']],
+        selectedToken?.decimals[chainId as keyof Token['decimals']],
         4
       )
     )

@@ -1,6 +1,7 @@
 import { fetchBalance } from '@wagmi/core'
-import { Token } from '@/utils/types'
 import { Zero, AddressZero } from '@ethersproject/constants'
+
+import { Token } from '@/utils/types'
 
 export const sortByVisibilityRank = (tokens: Token[]) => {
   if (tokens === undefined) {
@@ -18,8 +19,8 @@ export const sortByTokenBalance = async (
   address: any
 ) => {
   let i = 0
-  let tokensWithBalances: any[] = []
-  let zeroTokensWithBalances: any[] = []
+  const tokensWithBalances: any[] = []
+  const zeroTokensWithBalances: any[] = []
   // go through all tokens and retrieve token balances
   while (i < tokens.length) {
     if (chainId === undefined || address === undefined) {

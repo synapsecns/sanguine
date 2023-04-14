@@ -1,5 +1,6 @@
 import { SYNJEWEL } from '@constants/tokens/master'
 import * as CHAINS from '@constants/chains/master'
+
 import { Token } from '@/utils/types'
 /**
  * In our `constants/tokens/master.tsx` file, we combine multiple stablecoin

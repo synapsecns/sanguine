@@ -44,8 +44,6 @@ export const boba = {
   },
 } as const satisfies Chain
 
-
-
 export const cronos = {
   id: 25,
   name: 'Cronos',
@@ -71,7 +69,6 @@ export const cronos = {
   },
 } as const satisfies Chain
 
-
 export const dfk = {
   id: 53935,
   name: 'DFK Chain',
@@ -82,12 +79,22 @@ export const dfk = {
     symbol: 'JEWEL',
   },
   rpcUrls: {
-    default: { http: ['https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc'] },
-    public: { http: ['https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc'] },
+    default: {
+      http: ['https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc'],
+    },
+    public: {
+      http: ['https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc'],
+    },
   },
   blockExplorers: {
-    etherscan: { name: 'DFKSubnetScan', url: 'https://subnets.avax.network/defi-kingdoms' },
-    default: { name: 'DFKSubnetScan', url: 'https://subnets.avax.network/defi-kingdoms' },
+    etherscan: {
+      name: 'DFKSubnetScan',
+      url: 'https://subnets.avax.network/defi-kingdoms',
+    },
+    default: {
+      name: 'DFKSubnetScan',
+      url: 'https://subnets.avax.network/defi-kingdoms',
+    },
   },
 } as const satisfies Chain
 
@@ -155,8 +162,13 @@ export const dogechain = {
     public: { http: ['https://rpc.dogechain.dog'] },
   },
   blockExplorers: {
-    etherscan: { name: 'DogeChainExplorer', url: 'https://explorer.dogechain.dog' },
-    default: { name: 'DogeChainExplorer', url: 'https://explorer.dogechain.dog' },
+    etherscan: {
+      name: 'DogeChainExplorer',
+      url: 'https://explorer.dogechain.dog',
+    },
+    default: {
+      name: 'DogeChainExplorer',
+      url: 'https://explorer.dogechain.dog',
+    },
   },
-
 } as const satisfies Chain

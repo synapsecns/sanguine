@@ -1107,15 +1107,15 @@ export const DEPRECATED_WKLAY = new Token({
   swapableType: 'KLAY',
 })
 
-// export const MIM = new Token({
-//   addresses: {
-//     [CHAINS.FANTOM.id]: '0x82f0b8b456c1a451378467398982d4834b6829c1',
-//     [CHAINS.ARBITRUM.id]: '0xfea7a6a0b346362bf88a9e4a88416b77a57d6c2a',
-//   },
-//   decimals: 18,
-//   symbol: 'MIM',
-//   name: 'Magic Internet Money',
-//   logo: mimLogo,
-//   swapableType: 'USD',
-//   color: 'indigo',
-// })
+export const MIM = new Token({
+  addresses: {
+    [CHAINS.FANTOM.id]: '0x82f0b8b456c1a451378467398982d4834b6829c1',
+    [CHAINS.ARBITRUM.id]: '0xfea7a6a0b346362bf88a9e4a88416b77a57d6c2a',
+  },
+  decimals: 18,
+  symbol: 'MIM',
+  name: 'Magic Internet Money',
+  logo: mimLogo,
+  swapableType: 'USD',
+  color: 'indigo',
+})
