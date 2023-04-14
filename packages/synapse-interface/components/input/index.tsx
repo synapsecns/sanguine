@@ -41,7 +41,7 @@ const BridgeInputContainer = ({
     formattedBalance = formatBNToString(
       fromTokenBalance,
       selectedToken.decimals[chainId as keyof Token['decimals']],
-      4
+      3
     )
   }
   const isConnected = address !== null

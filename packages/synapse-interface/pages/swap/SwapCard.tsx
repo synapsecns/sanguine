@@ -1,13 +1,9 @@
-import debounce from 'lodash.debounce'
 import Grid from '@tw/Grid'
-import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
-import { useNetwork } from 'wagmi'
 import { useEffect, useState, useMemo } from 'react'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
-import { ActionCardFooter } from '@components/ActionCardFooter'
-import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
+import { fetchSigner, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
@@ -15,51 +11,34 @@ import { TransactionButton } from '@components/buttons/SubmitTxButton'
 import BridgeInputContainer from '../../components/input/index'
 import { approveToken } from '@/utils/approveToken'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
-
-import {
-  SWAPABLE_TOKENS,
-  POOL_PRIORITY_RANKING,
-  BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
-  SWAPABLE_TOKENS_BY_TYPE,
-  tokenSymbolToToken,
-} from '@constants/tokens'
 import { formatBNToString } from '@utils/bignumber/format'
 import { commify } from '@ethersproject/units'
 import { erc20ABI } from 'wagmi'
 import { Contract } from 'ethers'
 import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
-
 import { Token } from '@/utils/types'
-import { SWAP_PATH, HOW_TO_BRIDGE_URL } from '@/constants/urls'
+import { SWAP_PATH } from '@/constants/urls'
 import { stringToBigNum } from '@/utils/stringToBigNum'
 import { useSynapseContext } from '@/utils/SynapseProvider'
-
-import { parseUnits } from '@ethersproject/units'
-
 import { Transition } from '@headlessui/react'
-
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
-
 import Card from '@tw/Card'
-
 import { SwapQuote } from '@types'
 import {
-  DEFAULT_FROM_CHAIN,
   DEFAULT_FROM_TOKEN,
   DEFAULT_TO_TOKEN,
   EMPTY_SWAP_QUOTE,
   QUOTE_POLLING_INTERVAL,
   EMPTY_SWAP_QUOTE_ZERO,
 } from '@/constants/swap'
-import { cleanNumberInput } from '@utils/cleanNumberInput'
-
-console.log(
+import {
   SWAPABLE_TOKENS,
-  '\n',
-  POOL_PRIORITY_RANKING,
-  SWAPABLE_TOKENS_BY_TYPE
-)
+  BRIDGE_SWAPABLE_TOKENS_BY_TYPE,
+  SWAPABLE_TOKENS_BY_TYPE,
+  tokenSymbolToToken,
+} from '@constants/tokens'
+
 const SwapCard = ({
   address,
   connectedChainId,
@@ -75,10 +54,8 @@ const SwapCard = ({
   const [fromInput, setFromInput] = useState({ string: '', bigNum: Zero })
   const [toToken, setToToken] = useState(DEFAULT_TO_TOKEN)
   const [toTokens, setToTokens] = useState<Token[]>() //add default
-
   const [error, setError] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
-
   const [swapQuote, setSwapQuote] = useState<SwapQuote>(EMPTY_SWAP_QUOTE)
   const [displayType, setDisplayType] = useState(undefined)
   const [fromTokenBalance, setFromTokenBalance] = useState<BigNumber>(Zero)
@@ -485,7 +462,7 @@ const SwapCard = ({
       connectedChainId,
       address,
       fromToken.addresses[connectedChainId as keyof Token['addresses']],
-      fromInput.bigNum,
+      fromInput.bigNum.mul(1000).div(999), // TODO Get rid of harcoded slippage
       swapQuote.quote
     )
     const tx = await wallet.sendTransaction(data)
@@ -518,7 +495,7 @@ const SwapCard = ({
     let pendingLabel = 'Swapping funds...'
     let buttonAction = () => executeSwap()
     let postButtonAction = () => resetRates()
-    const isFromBalanceEnough = fromTokenBalance?.gt(fromInput.bigNum)
+    const isFromBalanceEnough = fromTokenBalance?.gte(fromInput.bigNum)
 
     if (error) {
       btnLabel = error
