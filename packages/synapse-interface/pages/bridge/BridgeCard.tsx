@@ -21,7 +21,7 @@ import { SECTION_TRANSITION_PROPS } from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
 import SettingsSlideOver from './SettingsSlideOver'
 import { DestinationAddressInput } from './DestinationAddressInput'
-import BridgeInputContainer from './BridgeInputContainer'
+import BridgeInputContainer from '../../components/input'
 import { TransactionResponse } from '@ethersproject/providers'
 
 import { Token } from '@/utils/types'

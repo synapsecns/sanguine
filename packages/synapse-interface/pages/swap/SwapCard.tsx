@@ -11,9 +11,11 @@ import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
 import { sortByTokenBalance, sortByVisibilityRank } from '@utils/sortTokens'
 import { calculateExchangeRate } from '@utils/calculateExchangeRate'
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
-import CoreSwapContainer from './CoreSwapContainer'
-import { ChainLabel } from '@components/ChainLabel'
-import BridgeInputContainer from '../bridge/BridgeInputContainer/index'
+import { TransactionButton } from '@components/buttons/SubmitTxButton'
+import BridgeInputContainer from '../../components/input/index'
+import { approveToken } from '@/utils/approveToken'
+import { validateAndParseAddress } from '@utils/validateAndParseAddress'
+
 import {
   SWAPABLE_TOKENS,
   POOL_PRIORITY_RANKING,
@@ -496,34 +498,6 @@ const SwapCard = ({
     }
   }
 
-  // const fromArgs = {
-  //   isSwapFrom: true,
-  //   selected: fromCoin,
-  //   onChangeSelected: onSelectFromCoin,
-  //   onChangeAmount: onChangeFromAmount,
-  //   inputValue: fromValue,
-  //   inputRef: fromRef,
-  //   tokens: swapableTokens,
-  //   chainId,
-  //   setDisplayType,
-  //   onChangeChain,
-  //   selectedChainId: chainId,
-  // }
-
-  // const toArgs = {
-  //   isSwapFrom: false,
-  //   selected: toCoin,
-  //   onChangeSelected: onSelectToCoin,
-  //   onChangeAmount: onChangeToAmount,
-  //   inputValue: toValue,
-  //   swapFromToCoins: swapFromToCoins,
-  //   inputRef: toRef,
-  //   tokens: swapableTokens,
-  //   chainId,
-  //   setDisplayType,
-  //   onChangeChain,
-  // }
-
   const transitionProps = {
     ...COIN_SLIDE_OVER_PROPS,
     className: `
@@ -536,6 +510,85 @@ const SwapCard = ({
       z-20 rounded-3xl
     `,
   }
+  // TODO make this a function
+  const ActionButton = useMemo(() => {
+    let destAddrNotValid
+    let btnLabel
+    let btnClassName = ''
+    let pendingLabel = 'Swapping funds...'
+    let buttonAction = () => executeSwap()
+    let postButtonAction = () => resetRates()
+    const isFromBalanceEnough = fromTokenBalance?.gt(fromInput.bigNum)
+
+    if (error) {
+      btnLabel = error
+    } else if (!isFromBalanceEnough) {
+      btnLabel = `Insufficient ${fromToken.symbol} Balance`
+    } else if (fromInput.bigNum.eq(0)) {
+      btnLabel = `Amount must be greater than fee`
+    } else if (
+      swapQuote?.allowance &&
+      swapQuote?.allowance?.lt(fromInput.bigNum)
+    ) {
+      buttonAction = () =>
+        approveToken(
+          swapQuote.routerAddress,
+          connectedChainId,
+          fromToken.addresses[connectedChainId]
+        )
+      btnLabel = `Approve ${fromToken.symbol}`
+      pendingLabel = `Approving ${fromToken.symbol}`
+      btnClassName = 'from-[#feba06] to-[#FEC737]'
+      postButtonAction = () => setTime(0)
+    } else if (
+      destinationAddress &&
+      !validateAndParseAddress(destinationAddress)
+    ) {
+      destAddrNotValid = true
+      btnLabel = 'Invalid Destination Address'
+    } else {
+      btnLabel = swapQuote.outputAmount.eq(0)
+        ? 'Enter amount to swap'
+        : 'Swap your funds'
+
+      const numExchangeRate = Number(
+        formatBNToString(swapQuote.exchangeRate, 18, 4)
+      )
+
+      if (
+        !fromInput.bigNum.eq(0) &&
+        (numExchangeRate < 0.95 || numExchangeRate > 1.05)
+      ) {
+        btnClassName = 'from-[#fe064a] to-[#fe5281]'
+        btnLabel = 'Slippage High - Swap Anyway?'
+      }
+    }
+
+    return (
+      <TransactionButton
+        className={btnClassName}
+        disabled={
+          swapQuote.outputAmount.eq(0) ||
+          !isFromBalanceEnough ||
+          error != null ||
+          destAddrNotValid
+        }
+        onClick={() => buttonAction()}
+        onSuccess={() => {
+          postButtonAction()
+        }}
+        label={btnLabel}
+        pendingLabel={pendingLabel}
+      />
+    )
+
+    //   <TransactionButton
+    //   onClick={approveToken}
+    //   label={`Approve ${displaySymbol(chainId, fromCoin)}`}
+    //   pendingLabel={`Approving ${displaySymbol(chainId, fromCoin)}  `}
+    // />
+  }, [fromInput, time, swapQuote, error])
+
   return (
     <Card
       divider={false}
@@ -611,9 +664,7 @@ const SwapCard = ({
           exchangeRate={swapQuote.exchangeRate}
           toChainId={connectedChainId}
         />
-        <div className="px-2 py-2 md:px-0 md:py-4">
-          {<p> BUTton GOES HERE</p>}
-        </div>
+        <div className="px-2 py-2 md:px-0 md:py-4">{ActionButton}</div>
       </div>
     </Card>
   )
