@@ -70,6 +70,16 @@ interface InterfaceBondingManager {
         address prover
     ) external;
 
+    /**
+     * @notice Withdraws locked base message tips from requested domain Origin to the recipient.
+     * Issues a call to a local Origin contract, or sends a system message to the remote chain.
+     * @dev Could only be called by the Summit contract.
+     * @param recipient     Address to withdraw tips to
+     * @param origin        Domain where tips need to be withdrawn
+     * @param amount        Tips value to withdraw
+     */
+    function withdrawTips(address recipient, uint32 origin, uint256 amount) external;
+
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**

@@ -4,12 +4,13 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AGENT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
-import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
+import {AgentFlag, AgentStatus, SlashStatus, SystemEntity} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager, ISystemRegistry} from "./AgentManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
+import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 import {Versioned} from "../Version.sol";
 
 /// @notice LightManager keeps track of all agents, staying in sync with the BondingManager.
@@ -63,6 +64,20 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     function setAgentRoot(bytes32 agentRoot_) external {
         require(msg.sender == address(destination), "Only Destination sets agent root");
         _setAgentRoot(agentRoot_);
+    }
+
+    // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceLightManager
+    function remoteWithdrawTips(
+        uint256 proofMaturity,
+        uint32 callOrigin,
+        SystemEntity systemCaller,
+        address recipient,
+        uint256 amount
+    ) external onlySystemRouter onlySynapseChain(callOrigin) onlyCallers(AGENT_MANAGER, systemCaller) {
+        require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
+        InterfaceOrigin(address(origin)).withdrawTips(recipient, amount);
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════

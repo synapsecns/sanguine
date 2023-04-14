@@ -33,27 +33,31 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     using TypedMemView for bytes29;
 
     /// @notice Struct representing stored data for the snapshot root
-    /// @param notary       Notary who submitted the statement with the snapshot root
+    /// @param notaryIndex  Index of Notary who submitted the statement with the snapshot root
+    /// @param attNonce     Nonce of the attestation for this snapshot root
     /// @param index        Index of snapshot root in `_roots`
     /// @param submittedAt  Timestamp when the statement with the snapshot root was submitted
     struct SnapRootData {
-        address notary;
+        uint32 notaryIndex;
+        uint32 attNonce;
         uint32 index;
         uint40 submittedAt;
     }
-    // 24 bits left for tight packing
+    // 120 bits left for tight packing
 
     /// @notice Struct representing stored receipt data for the message in Execution Hub.
     /// @param origin       Domain where message originated
     /// @param rootIndex    Index of snapshot root used for proving the message
+    /// @param stateIndex   Index of state used for the snapshot proof
     /// @param executor     Executor who successfully executed the message
     struct ReceiptData {
         uint32 origin;
         uint32 rootIndex;
+        uint8 stateIndex;
         address executor;
     }
     // TODO: include nonce?
-    // 32 bits available for tight packing
+    // 24 bits available for tight packing
 
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
@@ -113,9 +117,10 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             emit TipsRecorded(msgLeaf, baseMessage.tips().unwrap().clone());
         }
         if (rcptData.origin == 0) {
-            // This is the first valid attempt to execute the message => save origin and snapshot root
+            // This is the first valid attempt to execute the message => save origin and snapshot proof
             rcptData.origin = header.origin();
             rcptData.rootIndex = rootData.index;
+            rcptData.stateIndex = uint8(stateIndex);
             if (success) {
                 // This is the successful attempt to execute the message => save the executor
                 rcptData.executor = msg.sender;
@@ -182,13 +187,15 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         if (firstExecutor == address(0)) firstExecutor = rcptData.executor;
         // Determine the snapshot root that was used for proving the message
         bytes32 snapRoot = _roots[rcptData.rootIndex];
+        (address attNotary,) = _getAgent(_rootData[snapRoot].notaryIndex);
         // ExecutionHub does not store the tips, the Notary will have to append the tips payload
         return ReceiptLib.formatReceipt({
             origin_: rcptData.origin,
             destination_: localDomain,
             messageHash_: messageHash,
             snapshotRoot_: snapRoot,
-            attNotary_: _rootData[snapRoot].notary,
+            stateIndex_: rcptData.stateIndex,
+            attNotary_: attNotary,
             firstExecutor_: firstExecutor,
             finalExecutor_: rcptData.executor,
             tipsPayload: ""
@@ -228,10 +235,10 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     /// @dev Saves a snapshot root with the attestation data provided by a Notary.
     /// It is assumed that the Notary signature has been checked outside of this contract.
-    function _saveAttestation(Attestation att, address notary) internal {
+    function _saveAttestation(Attestation att, uint32 notaryIndex) internal {
         bytes32 root = att.snapRoot();
         require(_rootData[root].submittedAt == 0, "Root already exists");
-        _rootData[root] = SnapRootData(notary, uint32(_roots.length), uint40(block.timestamp));
+        _rootData[root] = SnapRootData(notaryIndex, att.nonce(), uint32(_roots.length), uint40(block.timestamp));
         _roots.push(root);
     }
 
@@ -246,11 +253,12 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         ReceiptData memory rcptData = _receiptData[messageHash];
         // Check if there has been a single attempt to execute the message
         if (rcptData.origin == 0) return false;
-        // Check that origin field matches
-        if (rcpt.origin() != rcptData.origin) return false;
+        // Check that origin and state index fields match
+        if (rcpt.origin() != rcptData.origin || rcpt.stateIndex() != rcptData.stateIndex) return false;
         // Check that snapshot root and notary who submitted it match in the Receipt
         bytes32 snapRoot = rcpt.snapshotRoot();
-        if (snapRoot != _roots[rcptData.rootIndex] || rcpt.attNotary() != _rootData[snapRoot].notary) return false;
+        (address attNotary,) = _getAgent(_rootData[snapRoot].notaryIndex);
+        if (snapRoot != _roots[rcptData.rootIndex] || rcpt.attNotary() != attNotary) return false;
         // Check if message was executed from the first attempt
         address firstExecutor = _firstExecutor[messageHash];
         if (firstExecutor == address(0)) {
@@ -301,8 +309,9 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Check if snapshot root has been submitted
         require(rootData.submittedAt != 0, "Invalid snapshot root");
         // Check if Notary who submitted the attestation is still active
-        _verifyActive(_agentStatus(rootData.notary));
+        (address attNotary, AgentStatus memory attNotaryStatus) = _getAgent(rootData.notaryIndex);
+        _verifyActive(attNotaryStatus);
         // Check that Notary who submitted the attestation is not in dispute
-        require(!_inDispute(rootData.notary), "Notary is in dispute");
+        require(!_inDispute(attNotary), "Notary is in dispute");
     }
 }

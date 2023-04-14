@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentStatus} from "../libs/Structures.sol";
+import {AgentStatus, SystemEntity} from "../libs/Structures.sol";
 
 interface InterfaceLightManager {
     /**
@@ -20,4 +20,18 @@ interface InterfaceLightManager {
      * @param agentRoot     New Agent Merkle Root
      */
     function setAgentRoot(bytes32 agentRoot) external;
+
+    /**
+     * @notice Withdraws locked base message tips from local Origin to the recipient.
+     * @dev Could only be remote-called by BondingManager contract on Synapse Chain.
+     * @param recipient     Address to withdraw tips to
+     * @param amount        Tips value to withdraw
+     */
+    function remoteWithdrawTips(
+        uint256 proofMaturity,
+        uint32 callOrigin,
+        SystemEntity systemCaller,
+        address recipient,
+        uint256 amount
+    ) external;
 }

@@ -47,6 +47,7 @@ struct RawExecReceipt {
     uint32 destination;
     bytes32 messageHash;
     bytes32 snapshotRoot;
+    uint8 stateIndex;
     address attNotary;
     address firstExecutor;
     address finalExecutor;
@@ -291,6 +292,7 @@ library CastLib {
             re.destination,
             re.messageHash,
             re.snapshotRoot,
+            re.stateIndex,
             re.attNotary,
             re.firstExecutor,
             re.finalExecutor,
@@ -307,13 +309,14 @@ library CastLib {
         mre.destination = re.destination;
         mre.messageHash = re.messageHash;
         mre.tips = re.tips.cloneTips();
-        // Make sure at least one value is modified, valid mask values are [1 .. 31]
-        mask = 1 + (mask % 31);
+        // Make sure at least one value is modified, valid mask values are [1 .. 63]
+        mask = 1 + (mask % 63);
         mre.origin = re.origin ^ uint32(mask & 1);
         mre.snapshotRoot = re.snapshotRoot ^ bytes32(mask & 2);
-        mre.attNotary = address(uint160(re.attNotary) ^ uint160(mask & 4));
-        mre.firstExecutor = address(uint160(re.firstExecutor) ^ uint160(mask & 8));
-        mre.finalExecutor = address(uint160(re.finalExecutor) ^ uint160(mask & 16));
+        mre.stateIndex = re.stateIndex ^ uint8(mask & 4);
+        mre.attNotary = address(uint160(re.attNotary) ^ uint160(mask & 8));
+        mre.firstExecutor = address(uint160(re.firstExecutor) ^ uint160(mask & 16));
+        mre.finalExecutor = address(uint160(re.finalExecutor) ^ uint160(mask & 32));
     }
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════

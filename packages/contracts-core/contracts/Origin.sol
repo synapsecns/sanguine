@@ -182,6 +182,13 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         return _sendMessage(destination, optimisticPeriod, MessageFlag.System, body);
     }
 
+    /// @inheritdoc InterfaceOrigin
+    function withdrawTips(address recipient, uint256 amount) external onlyAgentManager {
+        require(address(this).balance >= amount, "Insufficient balance");
+        (bool success,) = recipient.call{value: amount}("");
+        require(success, "Recipient reverted");
+    }
+
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Sends the given message to the specified destination. Message hash is inserted

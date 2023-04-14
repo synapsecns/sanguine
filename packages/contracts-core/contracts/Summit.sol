@@ -8,6 +8,7 @@ import {AgentManager} from "./manager/AgentManager.sol";
 import {DomainContext} from "./context/DomainContext.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
+import {InterfaceBondingManager} from "./interfaces/InterfaceBondingManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
 import {DisputeHub, ExecutionHub, MessageStatus, Receipt, Tips} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub} from "./hubs/SnapshotHub.sol";
@@ -26,6 +27,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         uint32 origin;
         uint32 destination;
         uint32 snapRootIndex;
+        uint8 stateIndex;
         uint32 attNotaryIndex;
         address firstExecutor;
         address finalExecutor;
@@ -66,7 +68,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     DoubleEndedQueue.Bytes32Deque private _receiptQueue;
 
     /// @inheritdoc InterfaceSummit
-    mapping(address => ActorTips) public actorTips;
+    mapping(address => mapping(uint32 => ActorTips)) public actorTips;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
@@ -126,7 +128,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
             // This will revert if Guard has previously submitted
             // a fresher state than one in the snapshot.
-            _acceptGuardSnapshot(snapshot, agent);
+            _acceptGuardSnapshot(snapshot, agent, status.index);
         } else {
             // Check that Notary who submitted the snapshot is not in dispute
             require(!_inDispute(agent), "Notary is in dispute");
@@ -134,9 +136,9 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             bytes32 agentRoot = agentManager.agentRoot();
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
-            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent);
+            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent, status.index);
             // Save attestation derived from Notary snapshot
-            _saveAttestation(attPayload.castToAttestation(), agent);
+            _saveAttestation(attPayload.castToAttestation(), status.index);
         }
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
@@ -179,6 +181,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         }
     }
 
+    /// @inheritdoc InterfaceSummit
     function distributeTips() public returns (bool queuePopped) {
         // Check message that is first in the "quarantine queue"
         if (_receiptQueue.empty()) return false;
@@ -203,6 +206,17 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // Remove the receipt from the queue
         _receiptQueue.popFront();
         return true;
+    }
+
+    /// @inheritdoc InterfaceSummit
+    // solhint-disable-next-line ordering
+    function withdrawTips(uint32 origin, uint256 amount) external {
+        require(amount != 0, "Amount is zero");
+        ActorTips memory tips = actorTips[msg.sender][origin];
+        require(tips.earned >= amount + tips.claimed, "Tips balance too low");
+        // Guaranteed to fit into uint128, as the sum is lower than `earned`
+        actorTips[msg.sender][origin].claimed = uint128(tips.claimed + amount);
+        InterfaceBondingManager(address(agentManager)).withdrawTips(msg.sender, origin, amount);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -283,6 +297,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             origin: receipt.origin(),
             destination: receipt.destination(),
             snapRootIndex: rootData.index,
+            stateIndex: receipt.stateIndex(),
             attNotaryIndex: attNotaryStatus.index,
             firstExecutor: receipt.firstExecutor(),
             finalExecutor: receipt.finalExecutor()
@@ -324,48 +339,54 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         bool awardFinal = rcptStatus.status == MessageStatus.Success;
         if (awardFirst) {
             // There has been a valid attempt to execute the message
-            _awardSnapshotTip(_roots[summitRcpt.snapRootIndex], tips.summitTip);
-            _awardAgentTip(attNotary, tips.attestationTip);
-            _awardActorTip(summitRcpt.firstExecutor, tips.executionTip);
+            _awardSnapshotTip(
+                _roots[summitRcpt.snapRootIndex], summitRcpt.stateIndex, summitRcpt.origin, tips.summitTip
+            );
+            _awardAgentTip(attNotary, summitRcpt.origin, tips.attestationTip);
+            _awardActorTip(summitRcpt.firstExecutor, summitRcpt.origin, tips.executionTip);
         }
-        _awardReceiptTip(rcptNotary, awardFirst, awardFinal, tips.summitTip);
+        _awardReceiptTip(rcptNotary, awardFirst, awardFinal, summitRcpt.origin, tips.summitTip);
         if (awardFinal) {
             // Message has been executed successfully
-            _awardActorTip(summitRcpt.finalExecutor, tips.deliveryTip);
+            _awardActorTip(summitRcpt.finalExecutor, summitRcpt.origin, tips.deliveryTip);
         }
     }
 
     /// @dev Award tip to the bonded agent
-    function _awardAgentTip(address agent, uint64 tip) internal {
+    function _awardAgentTip(address agent, uint32 origin, uint64 tip) internal {
         // If agent has been slashed, their earned tips go to treasury
-        _awardActorTip(_isSlashed(agent) ? address(0) : agent, tip);
+        _awardActorTip(_isSlashed(agent) ? address(0) : agent, origin, tip);
     }
 
     /// @dev Award tip to any actor whether bonded or unbonded
-    function _awardActorTip(address actor, uint64 tip) internal {
-        actorTips[actor].earned += tip;
-        emit TipAwarded(actor, tip);
+    function _awardActorTip(address actor, uint32 origin, uint64 tip) internal {
+        actorTips[actor][origin].earned += tip;
+        emit TipAwarded(actor, origin, tip);
     }
 
     /// @dev Award tip for posting Receipt to Summit contract.
-    function _awardReceiptTip(address rcptNotary, bool awardFirst, bool awardFinal, uint64 summitTip) internal {
+    function _awardReceiptTip(address rcptNotary, bool awardFirst, bool awardFinal, uint32 origin, uint64 summitTip)
+        internal
+    {
         uint64 receiptTip = _receiptTip(summitTip);
         // Tip for posting Receipt with status >= MessageStatus.Failed
         uint64 receiptTipFirst = receiptTip / 2;
         // Tip for posting Receipt with status == MessageStatus.Success
         uint64 receiptTipFinal = receiptTip - receiptTipFirst;
-        _awardAgentTip(rcptNotary, (awardFirst ? receiptTipFirst : 0) + (awardFinal ? receiptTipFinal : 0));
+        _awardAgentTip(rcptNotary, origin, (awardFirst ? receiptTipFirst : 0) + (awardFinal ? receiptTipFinal : 0));
     }
 
     /// @dev Award tip for posting Snapshot to Summit contract.
-    function _awardSnapshotTip(bytes32 snapRoot, uint64 summitTip) internal {
+    function _awardSnapshotTip(bytes32 snapRoot, uint8 stateIndex, uint32 origin, uint64 summitTip) internal {
         uint64 snapshotTip = _snapshotTip(summitTip);
-        // TODO: get the addresses
-        snapRoot;
-        address snapGuard;
-        address snapNotary;
-        _awardAgentTip(snapGuard, snapshotTip);
-        _awardAgentTip(snapNotary, snapshotTip);
+        // Get the attestation nonce for the snapshot root
+        uint32 attNonce = _rootData[snapRoot].attNonce;
+        // Get the agents who submitted the given state for the attestation's snapshot
+        (uint32 guardIndex, uint32 notaryIndex) = _stateAgents(attNonce, stateIndex);
+        (address snapGuard,) = _getAgent(guardIndex);
+        (address snapNotary,) = _getAgent(notaryIndex);
+        _awardAgentTip(snapGuard, origin, snapshotTip);
+        _awardAgentTip(snapNotary, origin, snapshotTip);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════

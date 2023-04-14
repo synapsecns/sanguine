@@ -25,6 +25,8 @@ contract OriginMock is StateHubMock, SystemRegistryMock, SystemContractMock, Int
         returns (uint32 messageNonce, bytes32 messageHash)
     {}
 
+    function withdrawTips(address recipient, uint256 amount) external {}
+
     function verifyAttestation(
         uint256 stateIndex,
         bytes memory snapPayload,

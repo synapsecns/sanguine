@@ -13,8 +13,8 @@ uint256 constant SNAPSHOT_TREE_HEIGHT = 6;
 // ══════════════════════════════════ STRUCTS ══════════════════════════════════
 /// @dev See Attestation.sol: (bytes32,bytes32, uint32,uint40,uint40): 32+4+5+5
 uint256 constant ATTESTATION_LENGTH = 78;
-/// @dev See Receipt.sol: (uint32,uint32,bytes32,bytes32,address,address,address,tips): 4+4+32+32+20+20+20+tips_length
-uint256 constant RECEIPT_LENGTH = 132 + TIPS_LENGTH;
+/// @dev See Receipt.sol: (uint32,uint32,bytes32,bytes32,uint8,address,address,address,tips): 4+4+32+32+1+20+20+20+tips
+uint256 constant RECEIPT_LENGTH = 133 + TIPS_LENGTH;
 /// @dev See State.sol: (bytes32,uint32,uint32,uint40,uint40): 32+4+4+5+5
 uint256 constant STATE_LENGTH = 50;
 /// @dev Maximum amount of states in a single snapshot. Each state produces two leafs in the tree

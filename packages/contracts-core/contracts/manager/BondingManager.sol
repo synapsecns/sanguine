@@ -9,6 +9,8 @@ import {MerkleList} from "../libs/MerkleList.sol";
 import {AgentManager, IAgentManager, ISystemRegistry} from "./AgentManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
+import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
+import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 import {Versioned} from "../Version.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
@@ -145,6 +147,25 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         _initiateSlashing(domain, agent, prover);
         // Notify local registries about the slashing
         _notifySlashing(DESTINATION | ORIGIN, domain, agent, prover);
+    }
+
+    // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceBondingManager
+    function withdrawTips(address recipient, uint32 origin_, uint256 amount) external {
+        require(msg.sender == address(destination), "Only Summit withdraws tips");
+        if (origin_ == localDomain) {
+            // Call local Origin to withdraw tips
+            InterfaceOrigin(address(origin)).withdrawTips(recipient, amount);
+        } else {
+            // For remote chains: issue a system message to remote LightManager to handle the withdrawal
+            // (proofMaturity, callOrigin, systemCaller, recipient, amount), the first three security args are omitted
+            _callAgentManager(
+                origin_,
+                BONDING_OPTIMISTIC_PERIOD,
+                abi.encodeWithSelector(InterfaceLightManager.remoteWithdrawTips.selector, recipient, amount)
+            );
+        }
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
