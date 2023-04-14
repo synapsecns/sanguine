@@ -1,4 +1,4 @@
-name: Synapse Interface Cypress Integration Tests
+name: UI Cypress Integration Tests
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       - '.github/workflows/cypress.yaml'
 
 jobs:
-  build:
+  Cypress Integration Tests:
     runs-on: ubuntu-latest
 
     steps:
