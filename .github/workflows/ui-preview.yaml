@@ -3,7 +3,7 @@ on:
   pull_request:
 #    branches-ignore:
 #      - master
-    # note: as of right now this will not cover changes in dependent packages
+# note: as of right now this will not cover changes in dependent packages
 #    paths:
 #      - 'packages/explorer-ui/**'
 #      - 'packages/synapse-interface/**'
@@ -38,15 +38,14 @@ jobs:
         env:
           FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
 
-
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
     needs: changes
     if: ${{ needs.changes.outputs.package_count > 0 }}
     strategy:
-        matrix:
-            package: ${{ fromJson(needs.changes.outputs.packages) }}
+      matrix:
+        package: ${{ fromJson(needs.changes.outputs.packages) }}
     env:
       WORKING_DIRECTORY: 'packages/${{matrix.package}}'
       GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
@@ -62,6 +61,10 @@ jobs:
           cache: 'npm'
           install_dependencies: 'false'
           cache-path: ''
+
+      - name: Install local sdk-router
+        run: yarn install
+        working-directory: './packages/sdk-router'
 
       # make sure new project ids are added here
       - name: Get Project ID
