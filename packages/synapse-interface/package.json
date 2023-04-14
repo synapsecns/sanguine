@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -17,10 +17,10 @@
     "build:go": " "
   },
   "dependencies": {
-    "@rainbow-me/rainbowkit": "^0.11.0",
-    "@ethersproject/constants": "5.7.0",
-    "@ethersproject/bignumber": "5.7.0",
     "@ethersproject/abi": "5.7.0",
+    "@ethersproject/bignumber": "5.7.0",
+    "@ethersproject/constants": "5.7.0",
+    "@rainbow-me/rainbowkit": "^0.11.0",
     "@synapsecns/sdk-router": "file:../sdk-router",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
@@ -29,9 +29,9 @@
     "@types/node": "18.14.2",
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
-    "ethers": "5.7.2",
     "bignumber": "^1.1.0",
     "eslint": "^8.37.0",
+    "ethers": "5.7.2",
     "fuse.js": "^6.6.2",
     "keccak": "^3.0.3",
     "next": "13.2.2",
