@@ -12,6 +12,9 @@ on:
       - master
     # note: as of right now this will not cover changes in dependent packages
     paths:
+      - 'packages/explorer-ui/**'
+      - 'packages/synapse-interface/**'
+      - '.github/workflows/ui-preview.yaml'
       - 'packages/docs/**'
 jobs:
   Deploy-Preview:
