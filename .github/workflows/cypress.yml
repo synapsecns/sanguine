@@ -1,6 +1,9 @@
 name: Synapse Interface Cypress Integration Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - none
   paths:
     - 'packages/synapse-interface/**'
     - '.github/workflows/cypress.yml'
