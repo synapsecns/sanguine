@@ -22,6 +22,8 @@ jobs:
 
       - name: Install dependencies
         run: yarn install
+        working-directory: './packages/synapse-interface'
 
       - name: Run Cypress tests
         run: yarn cypress:run
+        working-directory: './packages/synapse-interface'
