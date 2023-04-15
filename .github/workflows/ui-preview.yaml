@@ -62,8 +62,8 @@ jobs:
           install_dependencies: 'false'
           cache-path: ''
 
-      - name: Install local sdk-router
-        run: yarn install && tsdx build
+      - name: Install sdk-router
+        run: yarn install && yarn build
         working-directory: './packages/sdk-router'
 
       # make sure new project ids are added here
