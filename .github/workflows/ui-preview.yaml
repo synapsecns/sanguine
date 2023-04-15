@@ -63,7 +63,7 @@ jobs:
           cache-path: ''
 
       - name: Install local sdk-router
-        run: echo pwd && yarn install
+        run: pwd && yarn install
         working-directory: './packages/sdk-router'
 
       # make sure new project ids are added here
