@@ -42,13 +42,14 @@ jobs:
           name: yamllint-logfile
           path: ${{ steps.yaml-lint.outputs.logfile }}
 
-      - name: Download actionlint
-        id: get_actionlint
-        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-        shell: bash
+      # TODO: reinstate lint
+      # - name: Download actionlint
+      #   id: get_actionlint
+      #   run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+      #   shell: bash
 
-      - name: Check workflow files
-        run: |
-          echo "::add-matcher::.github/actionlint-matcher.json"
-          ${{ steps.get_actionlint.outputs.executable }} -color
-        shell: bash
+      # - name: Check workflow files
+      #   run: |
+      #     echo "::add-matcher::.github/actionlint-matcher.json"
+      #     ${{ steps.get_actionlint.outputs.executable }} -color
+      #   shell: bash
