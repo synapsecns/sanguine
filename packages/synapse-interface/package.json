@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "yarn add ./packages/sdk-router && next build",
+    "build": "yarn install && next build",
     "start": "next start",
     "lint": "next lint",
     "test:coverage": "echo 'No tests defined.'",
