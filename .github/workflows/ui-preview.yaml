@@ -63,8 +63,12 @@ jobs:
           cache-path: ''
 
       - name: Install local sdk-router
-        run: pwd && yarn install
+        run: yarn install
         working-directory: './packages/sdk-router'
+
+      - name: Yarn add sdk-router
+        run: yarn add ../sdk-router
+        working-directory: './packages/synapse-interface'
 
       # make sure new project ids are added here
       - name: Get Project ID
