@@ -450,7 +450,7 @@ func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) 
 		return false, fmt.Errorf("could not convert message to leaf: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof(root, leaf[:], message.Nonce()-1, proof, merkle.MessageTreeDepth)
+	inTree := merkle.VerifyMerkleProof(root, leaf[:], message.Nonce()-1, proof, merkle.MessageTreeHeight)
 
 	return inTree, nil
 }
@@ -581,7 +581,7 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 		rawMessages[i] = rawMessage[:]
 	}
 
-	merkleTree := merkle.NewTreeFromItems(rawMessages, merkle.MessageTreeDepth)
+	merkleTree := merkle.NewTreeFromItems(rawMessages, merkle.MessageTreeHeight)
 
 	return merkleTree, nil
 }

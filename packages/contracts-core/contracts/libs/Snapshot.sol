@@ -96,7 +96,7 @@ library SnapshotLib {
     function hash(Snapshot snapshot) internal pure returns (bytes32 hashedSnapshot) {
         // Get the underlying memory view
         bytes29 view_ = snapshot.unwrap();
-        // The final hash to sign is keccak(attestationSalt, keccak(attestation))
+        // The final hash to sign is keccak(snapshotSalt, keccak(snapshot))
         return keccak256(bytes.concat(SNAPSHOT_SALT, view_.keccak()));
     }
 

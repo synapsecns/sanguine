@@ -23,6 +23,7 @@ func TestSnapshotRootAndProofs(t *testing.T) {
 	deployManager := testutil.NewDeployManager(t)
 
 	_, snapshotContract := deployManager.GetSnapshotHarness(ctx, testBackend)
+	_, stateContract := deployManager.GetStateHarness(ctx, testBackend)
 
 	rootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 	rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
@@ -44,6 +45,43 @@ func TestSnapshotRootAndProofs(t *testing.T) {
 
 	encodedSnapshot, err := types.EncodeSnapshot(snapshot)
 	Nil(t, err)
+
+	snapshotContractStatesAmount, err := snapshotContract.StatesAmount(&bind.CallOpts{Context: ctx}, encodedSnapshot)
+	Nil(t, err)
+
+	Equal(t, big.NewInt(2), snapshotContractStatesAmount)
+
+	snapshotContractStateA, err := snapshotContract.State(&bind.CallOpts{Context: ctx}, encodedSnapshot, big.NewInt(0))
+	Nil(t, err)
+
+	stateABytes, err := types.EncodeState(stateA)
+	Nil(t, err)
+
+	Equal(t, stateABytes, snapshotContractStateA)
+
+	snapshotContractStateB, err := snapshotContract.State(&bind.CallOpts{Context: ctx}, encodedSnapshot, big.NewInt(1))
+	Nil(t, err)
+
+	stateBBytes, err := types.EncodeState(stateB)
+	Nil(t, err)
+
+	Equal(t, stateBBytes, snapshotContractStateB)
+
+	stateALeaf, err := stateA.Hash()
+	Nil(t, err)
+
+	stateContractStateALeaf, err := stateContract.Leaf(&bind.CallOpts{Context: ctx}, stateABytes[:])
+	Nil(t, err)
+
+	Equal(t, stateALeaf, stateContractStateALeaf)
+
+	stateBLeaf, err := stateB.Hash()
+	Nil(t, err)
+
+	stateContractStateBLeaf, err := stateContract.Leaf(&bind.CallOpts{Context: ctx}, stateBBytes[:])
+	Nil(t, err)
+
+	Equal(t, stateBLeaf, stateContractStateBLeaf)
 
 	snapshotContractRoot, err := snapshotContract.Root(&bind.CallOpts{Context: ctx}, encodedSnapshot)
 	Nil(t, err)

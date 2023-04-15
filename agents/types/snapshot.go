@@ -41,7 +41,7 @@ func (s snapshot) States() []State {
 }
 
 func (s snapshot) SnapshotRootAndProofs() ([32]byte, [][][]byte, error) {
-	tree := merkle.NewTree(s.TreeHeight())
+	tree := merkle.NewTree(merkle.SnapshotTreeHeight)
 
 	for _, state := range s.states {
 		leftLeaf, rightLeaf, err := state.SubLeaves()

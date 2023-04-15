@@ -184,7 +184,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	_, err = exec.GetMerkleTree(chainID).Root(1)
 	e.NotNil(err)
 
-	testTree := merkle.NewTree(merkle.MessageTreeDepth)
+	testTree := merkle.NewTree(merkle.MessageTreeHeight)
 
 	recipients := [][32]byte{{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())}}
 	optimisticSeconds := []uint32{gofakeit.Uint32(), gofakeit.Uint32()}
@@ -604,7 +604,7 @@ func (e *ExecutorSuite) TestExecutor() {
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
-	tree := merkle.NewTree(merkle.MessageTreeDepth)
+	tree := merkle.NewTree(merkle.MessageTreeHeight)
 
 	sender, err := e.TestBackendOrigin.Signer().Sender(tx)
 	e.Nil(err)
