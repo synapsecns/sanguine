@@ -67,7 +67,7 @@ jobs:
         working-directory: './packages/sdk-router'
 
       - name: Yarn add sdk-router
-        run: yarn add ../sdk-router
+        run: yarn add sdk-router
         working-directory: './packages/synapse-interface'
 
       # make sure new project ids are added here
