@@ -62,9 +62,9 @@ jobs:
           install_dependencies: 'false'
           cache-path: ''
 
-      - name: Install local sdk-router
-        run: yarn install
-        working-directory: './packages/sdk-router'
+      # - name: Install local sdk-router
+      #   run: yarn install
+      #   working-directory: './packages/sdk-router'
 
       # make sure new project ids are added here
       - name: Get Project ID
