@@ -284,7 +284,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       wallet
     )
     const allowance = await erc20.allowance(address, routerAddress)
-    console.log('allowance', allowance, erc20, routerAddress)
     return allowance
   }
 
@@ -490,7 +489,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       fromToken.addresses[fromChainId] === AddressZero
         ? Zero
         : await getCurrentTokenAllowance(routerAddress)
-    console.log('allowance:3 ', allowance)
     setBridgeQuote({
       outputAmount: toValueBigNum,
       outputAmountString: commify(
@@ -541,42 +539,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     } catch (error) {
       console.log(`Transaction failed with error: ${error}`)
     }
-  }
-
-  /*
-  Function: approveToken
-  - Gets raw unsigned tx data from sdk and then execute it with ethers.
-  - Only executes if token has already been approved.
-   */
-  const executeBridge = async () => {
-    const wallet = await fetchSigner({
-      chainId: fromChainId,
-    })
-
-    // if ()
-    const data = await SynapseSDK.bridge(
-      address, //To Address
-      fromChainId,
-      toChainId,
-      fromToken.addresses[fromChainId as keyof Token['addresses']], // To token Address **
-      fromInput.bigNum,
-      bridgeQuote.quotes.originQuery,
-      bridgeQuote.quotes.destQuery
-    )
-      .then((res) => {
-        const tx = res
-        wallet
-          .sendTransaction(tx)
-          .then((res) => {
-            console.log('sendTransaction', res)
-          })
-          .catch((err) => console.log('sendTransaction', err))
-      })
-      .catch((err) => {
-        console.log('bridge', err)
-      })
-
-    console.log('data', data)
   }
 
   return (
