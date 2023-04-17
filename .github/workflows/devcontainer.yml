@@ -1,0 +1,37 @@
+name: 'Pre-build dev container image'
+on:
+  schedule:
+    - cron: '30 1 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - feat/devcontainer
+    paths:
+      - '.devcontainer/**'
+      - '.github/workflows/devcontainer.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v3
+
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
+
+
+      - name: Push dev container image
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: ghcr.io/synapsecns/sanguine-devcontainer
+          # important: enabling caching will cause foundry not to be rebuild
+          push: always
+      - name: Tag daily image
+        run:
+          docker tag ghcr.io/synapsecns/sanguine-devcontainer:latest ghcr.io/synapsecns/sanguine-devcontainer:$(date +%Y-%m-%d)
+          docker push ghcr.io/synapsecns/sanguine-devcontainer:$(date +%Y-%m-%d)
