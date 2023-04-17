@@ -9,12 +9,19 @@ export const approveToken = async (address, chainId, fromTokenAddress) => {
     chainId,
   })
 
+  console.log(
+    'address, chainId, fromTokenAddress',
+    address,
+    chainId,
+    fromTokenAddress
+  )
   const erc20 = new Contract(fromTokenAddress, erc20ABI, wallet)
   const approveTx = await erc20.approve(address, MaxInt256)
 
   try {
     await approveTx.wait()
     console.log(`Transaction mined successfully: ${approveTx.hash}`)
+    return approveTx
   } catch (error) {
     console.log(`Transaction failed with error: ${error}`)
   }

@@ -12,17 +12,17 @@ import Button from '@tw/Button'
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
 import { TransactionButton } from '@components/buttons/SubmitTxButton'
 import { PageHeader } from '@components/PageHeader'
-import { CoinSlideOver } from '@components/misc/CoinSlideOver'
-import { NetworkSlideOver } from '@components/misc/NetworkSlideOver'
+import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
+import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero, MaxInt256 } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
 import { SECTION_TRANSITION_PROPS } from '@styles/transitions'
 import { approveToken } from '@/utils/approveToken'
 import SettingsSlideOver from './SettingsSlideOver'
-import { DestinationAddressInput } from './DestinationAddressInput'
-import BridgeInputContainer from './BridgeInputContainer'
-import { useSynapseContext } from '@/utils/SynapseProvider'
+import { DestinationAddressInput } from '../../components/input/DestinationAddressInput'
+import BridgeInputContainer from '../../components/input/TokenAmountInput'
+import { TransactionResponse } from '@ethersproject/providers'
 
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
@@ -65,7 +65,7 @@ const BridgeCard = ({
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
   onChangeFromAmount: (amount: string) => void
   setDestinationAddress: (address: string) => void
-  executeBridge: () => Promise<void>
+  executeBridge: () => Promise<TransactionResponse>
   resetRates: () => void
   setTime: (time: number) => void
 }) => {
@@ -97,10 +97,11 @@ const BridgeCard = ({
     address,
     fromTokenBalance,
     isOrigin: true,
+    isSwap: false,
     chains: ORDERED_CHAINS_BY_ID.filter((id) => id !== String(fromChainId)),
     tokens: fromTokens,
     chainId: fromChainId,
-    inputString: fromInput.string,
+    inputString: fromInput?.string,
     selectedToken: fromToken,
     connectedChainId: fromChainId,
     setDisplayType,
@@ -112,10 +113,11 @@ const BridgeCard = ({
   const toArgs = {
     address,
     isOrigin: false,
-    chains: toOptions.chains,
-    tokens: toOptions.tokens,
+    isSwap: false,
+    chains: toOptions?.chains,
+    tokens: toOptions?.tokens,
     chainId: toChainId,
-    inputString: bridgeQuote.outputAmountString,
+    inputString: bridgeQuote?.outputAmountString,
     selectedToken: toToken,
     connectedChainId: fromChainId,
     setDisplayType,
@@ -123,7 +125,7 @@ const BridgeCard = ({
     onChangeChain: handleChainChange,
   }
 
-  // TODO move this away and into the actual componet
+  // TODO move this away and into the actual component
   const settingsArgs = {
     settings,
     setSettings,
@@ -135,31 +137,31 @@ const BridgeCard = ({
 
   // some messy button gen stuff (will re-write)
   // maybe just put everything in index without the card
-  const isFromBalanceEnough = fromTokenBalance?.gt(fromInput.bigNum)
+  const isFromBalanceEnough = fromTokenBalance.gt(fromInput?.bigNum ?? Zero)
   let destAddrNotValid
   let btnLabel
   let btnClassName = ''
   let pendingLabel = 'Bridging funds...'
   let buttonAction = () => executeBridge()
-  let postButtonAction = resetRates
+  let postButtonAction = () => resetRates()
   if (error) {
     btnLabel = error
   } else if (!isFromBalanceEnough) {
-    btnLabel = `Insufficient ${fromToken.symbol} Balance`
-  } else if (bridgeQuote.feeAmount.eq(0) && !fromInput.bigNum.eq(0)) {
+    btnLabel = `Insufficient ${fromToken?.symbol} Balance`
+  } else if (bridgeQuote.feeAmount.eq(0) && !fromInput?.bigNum?.eq(0)) {
     btnLabel = `Amount must be greater than fee`
   } else if (
     bridgeQuote?.allowance &&
-    bridgeQuote?.allowance?.lt(fromInput.bigNum)
+    bridgeQuote?.allowance?.lt(fromInput?.bigNum)
   ) {
     buttonAction = () =>
       approveToken(
-        bridgeQuote.routerAddress,
+        bridgeQuote?.routerAddress,
         fromChainId,
         fromToken.addresses[fromChainId]
       )
-    btnLabel = `Approve ${fromToken.symbol}`
-    pendingLabel = `Approving ${fromToken.symbol}`
+    btnLabel = `Approve ${fromToken?.symbol}`
+    pendingLabel = `Approving ${fromToken?.symbol}`
     btnClassName = 'from-[#feba06] to-[#FEC737]'
     postButtonAction = () => setTime(0)
   } else if (
@@ -174,11 +176,11 @@ const BridgeCard = ({
       : 'Bridge your funds'
 
     const numExchangeRate = Number(
-      formatBNToString(bridgeQuote.exchangeRate, 18, 4)
+      formatBNToString(bridgeQuote?.exchangeRate, 18, 4)
     )
 
     if (
-      !fromInput.bigNum.eq(0) &&
+      !fromInput?.bigNum?.eq(0) &&
       (numExchangeRate < 0.95 || numExchangeRate > 1.05)
     ) {
       btnClassName = 'from-[#fe064a] to-[#fe5281]'
@@ -256,16 +258,16 @@ const BridgeCard = ({
       >
         <div>
           <Transition show={displayType === 'from'} {...TRANSITION_PROPS}>
-            <CoinSlideOver key="fromBlock" {...fromArgs} />{' '}
+            <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
           </Transition>
           <Transition show={displayType === 'to'} {...TRANSITION_PROPS}>
-            <CoinSlideOver key="toBlock" {...toArgs} />
+            <TokenSlideOver key="toBlock" {...toArgs} />
           </Transition>
           <Transition show={displayType === 'fromChain'} {...TRANSITION_PROPS}>
-            <NetworkSlideOver key="fromChainBlock" {...fromArgs} />
+            <ChainSlideOver key="fromChainBlock" {...fromArgs} />
           </Transition>
           <Transition show={displayType === 'toChain'} {...TRANSITION_PROPS}>
-            <SettingsSlideOver key="settings" {...settingsArgs} />
+            <ChainSlideOver key="fromChainBlock" {...toArgs} />
           </Transition>
           <Transition show={displayType === 'settings'} {...TRANSITION_PROPS}>
             <SettingsSlideOver key="settings" {...settingsArgs} />
@@ -279,13 +281,13 @@ const BridgeCard = ({
           <Transition
             appear={true}
             unmount={false}
-            show={!fromInput.bigNum.eq(0)}
+            show={!fromInput?.bigNum?.eq(0)}
             {...SECTION_TRANSITION_PROPS}
           >
             <ExchangeRateInfo
-              fromAmount={fromInput.bigNum}
+              fromAmount={fromInput?.bigNum}
               toToken={toToken}
-              exchangeRate={bridgeQuote.exchangeRate}
+              exchangeRate={bridgeQuote?.exchangeRate}
               toChainId={toChainId}
             />
           </Transition>

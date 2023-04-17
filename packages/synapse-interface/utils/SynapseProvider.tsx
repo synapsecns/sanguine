@@ -1,6 +1,7 @@
-import { createContext, useContext } from 'react'
+//@ts-ignore
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { Provider } from '@ethersproject/abstract-provider'
+import { createContext, useContext } from 'react'
 
 export const SynapseContext = createContext<SynapseSDK>(null)
 

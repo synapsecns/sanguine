@@ -771,7 +771,7 @@ export const FRAX = new Token({
   logo: fraxLogo,
   description: 'Frax',
   swapableType: 'FRAX',
-  swapableOn: [CHAINS.MOONRIVER.id, CHAINS.MOONBEAM.id],
+  // swapableOn: [CHAINS.MOONRIVER.id, CHAINS.MOONBEAM.id],
   color: 'gray',
 })
 
