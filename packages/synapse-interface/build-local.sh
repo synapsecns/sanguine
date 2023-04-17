@@ -4,6 +4,6 @@ cd ../sdk-router || exit
 yarn install
 cd ../synapse-interface || exit
 pwd
-yarn add file:../sdk-router
-echo "Added ./packages/sdk-router, building..."
+yarn add file:./packages/sdk-router
+echo "Added sdk-router, building..."
 
