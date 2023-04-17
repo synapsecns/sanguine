@@ -12,5 +12,4 @@ LABEL org.opencontainers.image.source="https://github.com/synapsecns/sanguine"
 RUN curl -L https://foundry.paradigm.xyz | bash
 # see: https://stackoverflow.com/a/25423366
 SHELL ["/bin/bash", "-c"]
-RUN source /root/.bashrc && foundryup
-
+RUN ~/.foundry/bin/foundryup
