@@ -373,7 +373,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
           return undefined
         })
       if (res === undefined) {
-        console.log("can't switch network, chainId: ", chainId)
+        console.log("can't switch chain, chainId: ", chainId)
         return
       }
 
