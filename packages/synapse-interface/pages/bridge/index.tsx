@@ -362,7 +362,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     if (flip || type === 'from') {
       const positedToChain = flip ? fromChainId : undefined
       const desiredChainId = flip ? Number(toChainId) : Number(chainId)
-      console.log('desired ChainId: ', desiredChainId)
+      console.log('desired  ChainId: ', desiredChainId)
       console.log('positedToChain: ', positedToChain)
 
       const res = switchNetwork({ chainId: desiredChainId })
