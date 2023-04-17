@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "pwd && cd ../sdk-router && yarn install && cd ../synapse-router && pwd && next build",
+    "build": "pwd && cd .. && pwd && ls && cd sdk-router && yarn install && cd ../synapse-router && pwd && next build",
     "start": "next start",
     "lint": "next lint",
     "test:coverage": "echo 'No tests defined.'",
