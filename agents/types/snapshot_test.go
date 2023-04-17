@@ -70,7 +70,7 @@ func TestSnapshotRootAndProofs(t *testing.T) {
 	stateALeaf, err := stateA.Hash()
 	Nil(t, err)
 
-	stateContractStateALeaf, err := stateContract.Leaf(&bind.CallOpts{Context: ctx}, stateABytes[:])
+	stateContractStateALeaf, err := stateContract.Leaf(&bind.CallOpts{Context: ctx}, stateABytes)
 	Nil(t, err)
 
 	Equal(t, stateALeaf, stateContractStateALeaf)
@@ -78,7 +78,7 @@ func TestSnapshotRootAndProofs(t *testing.T) {
 	stateBLeaf, err := stateB.Hash()
 	Nil(t, err)
 
-	stateContractStateBLeaf, err := stateContract.Leaf(&bind.CallOpts{Context: ctx}, stateBBytes[:])
+	stateContractStateBLeaf, err := stateContract.Leaf(&bind.CallOpts{Context: ctx}, stateBBytes)
 	Nil(t, err)
 
 	Equal(t, stateBLeaf, stateContractStateBLeaf)
