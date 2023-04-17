@@ -17,7 +17,7 @@
     "build:go": " "
   },
   "dependencies": {
-    "@synapsecns/sdk-router": "0.1.15",
+    "@synapsecns/sdk-router": "file:../sdk-router",
     "@ethersproject/abi": "5.7.0",
     "@ethersproject/bignumber": "5.7.0",
     "@ethersproject/address": "5.7.0",
