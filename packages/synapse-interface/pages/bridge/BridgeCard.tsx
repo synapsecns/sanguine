@@ -267,7 +267,7 @@ const BridgeCard = ({
             <ChainSlideOver key="fromChainBlock" {...fromArgs} />
           </Transition>
           <Transition show={displayType === 'toChain'} {...TRANSITION_PROPS}>
-            <SettingsSlideOver key="settings" {...settingsArgs} />
+            <ChainSlideOver key="fromChainBlock" {...toArgs} />
           </Transition>
           <Transition show={displayType === 'settings'} {...TRANSITION_PROPS}>
             <SettingsSlideOver key="settings" {...settingsArgs} />
