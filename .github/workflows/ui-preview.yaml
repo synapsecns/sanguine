@@ -67,13 +67,13 @@ jobs:
       #   with:
       #     node-version: '16.14.0'
 
-      - name: Install dependencies
-        run: yarn install && yarn build
-        working-directory: './packages/synapse-interface'
+      # - name: Install dependencies
+      #   run: yarn install && yarn build
+      #   working-directory: './packages/synapse-interface'
 
-      - name: Install sdk-router
-        run: yarn install && yarn build
-        working-directory: './packages/sdk-router'
+      # - name: Install sdk-router
+      #   run: yarn install && yarn build
+      #   working-directory: './packages/sdk-router'
 
       # make sure new project ids are added here
       - name: Get Project ID
