@@ -26,7 +26,7 @@ const TokenMenuItem = ({
   tokenBalance: BigNumber | undefined
   onClick: () => void
 }) => {
-  const isCurrentlySelected = selectedToken.symbol === token.symbol
+  const isCurrentlySelected = selectedToken?.symbol === token?.symbol
   // useEffect(() => {
   //   if (active) {
   //     ref?.current?.focus()
@@ -51,8 +51,8 @@ const TokenMenuItem = ({
         px-2 py-3
         cursor-pointer
         border border-transparent
-        ${getBorderStyleForCoinHover(token.color)}
-        ${getMenuItemStyleForCoinCombined(token.color)}
+        ${getBorderStyleForCoinHover(token?.color)}
+        ${getMenuItemStyleForCoinCombined(token?.color)}
         ${bgClassName}
       `}
     >
@@ -79,7 +79,7 @@ const ButtonContent = ({
       <Image
         alt="token image"
         className="w-10 h-10 ml-2 mr-4 rounded-full"
-        src={token.icon}
+        src={token?.icon}
       />
       <CoinOnChain token={token} chainId={chainId} />
       <TokenBalance
@@ -92,25 +92,27 @@ const ButtonContent = ({
 }
 
 const CoinOnChain = ({ token, chainId }: { token: Token; chainId: number }) => {
-  const { chainImg, chainName } = CHAINS_BY_ID[chainId]
+  const chain = CHAINS_BY_ID?.[chainId]
 
-  return (
+  return chain ? (
     <div className="flex-col text-left">
       <div className="text-lg font-medium text-white">
-        {displaySymbol(chainId, token)}
+        {token ? displaySymbol(chainId, token) : ''}
       </div>
       <div className="flex items-center text-sm text-white">
         <div className="mr-1 opacity-70">{token.name}</div>
         <div className="opacity-60">on</div>
         <Image
-          src={chainImg}
-          alt={chainName}
+          src={chain.chainImg}
+          alt={chain.chainName}
           className="w-4 h-4 ml-2 mr-2 rounded-full"
         />
-        <div className="hidden md:inline-block opacity-70">{chainName}</div>
+        <div className="hidden md:inline-block opacity-70">
+          {chain.chainName}
+        </div>
       </div>
     </div>
-  )
+  ) : null
 }
 
 const TokenBalance = ({
@@ -136,7 +138,7 @@ const TokenBalance = ({
           {formattedBalance}
           <span className="text-sm opacity-80">
             {' '}
-            {displaySymbol(chainId, token)}
+            {token ? displaySymbol(chainId, token) : ''}
           </span>
         </p>
       )}
