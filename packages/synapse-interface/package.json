@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "yarn add ../sdk-router && next build",
+    "build": "yarn add @synapsecns/sdk-router@0.1.15 && next build",
     "start": "next start",
     "lint": "next lint",
     "test:coverage": "echo 'No tests defined.'",
@@ -17,7 +17,7 @@
     "build:go": " "
   },
   "dependencies": {
-    "@synapsecns/sdk-router": "file:../sdk-router",
+    "@synapsecns/sdk-router": "0.1.15",
     "@ethersproject/abi": "5.7.0",
     "@ethersproject/bignumber": "5.7.0",
     "@ethersproject/address": "5.7.0",
