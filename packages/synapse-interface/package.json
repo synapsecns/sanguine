@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "./build-local.sh && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "test:coverage": "echo 'No tests defined.'",
@@ -25,7 +25,7 @@
     "@headlessui/react": "1.6.2",
     "@heroicons/react": "1.0.6",
     "@rainbow-me/rainbowkit": "^0.11.0",
-    "@synapsecns/sdk-router": "file:./packages/sdk-router",
+    "@synapsecns/sdk-router": "file:../sdk-router",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/line-clamp": "^0.4.2",
