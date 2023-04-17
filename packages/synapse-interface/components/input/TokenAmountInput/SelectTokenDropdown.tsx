@@ -19,12 +19,8 @@ const SelectTokenDropdown = ({
   onClick: () => void
   isOrigin: boolean
 }) => {
-<<<<<<< HEAD:packages/synapse-interface/pages/bridge/BridgeInputContainer/SelectTokenDropdown.tsx
-  const symbol = displaySymbol(chainId, selectedToken)
-  const dataId = isOrigin ? 'bridge-origin-token' : 'bridge-destination-token'
-=======
   const symbol = selectedToken ? displaySymbol(chainId, selectedToken) : ''
->>>>>>> master:packages/synapse-interface/components/input/TokenAmountInput/SelectTokenDropdown.tsx
+  const dataId = isOrigin ? 'bridge-origin-token' : 'bridge-destination-token'
 
   return (
     <button
