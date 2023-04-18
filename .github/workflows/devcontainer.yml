@@ -25,12 +25,22 @@ jobs:
           driver-opts: network=host
 
 
+      -
+        name: Login to GitHub Container Registry
+        if: steps.changes.outputs.src == 'true'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_DOCKER }}
+
       - name: Push dev container image
         uses: devcontainers/ci@v0.3
         with:
           imageName: ghcr.io/synapsecns/sanguine-devcontainer
           # important: enabling caching will cause foundry not to be rebuild
           push: always
+          noCache: true
       - name: Tag daily image
         run: |
           docker tag ghcr.io/synapsecns/sanguine-devcontainer:latest ghcr.io/synapsecns/sanguine-devcontainer:$(date +%Y-%m-%d)
