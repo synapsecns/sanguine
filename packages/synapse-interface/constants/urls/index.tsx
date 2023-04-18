@@ -3,7 +3,6 @@ import { ETH, SYN } from '@constants/tokens/master'
 import * as CHAINS from '@constants/chains/master'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 // Hardcoding this shit for now until actual plan around routing
-console.log(process?.env?.NODE_ENV)
 let SYNAPSE_BASE_URL = ''
 if (process?.env?.NODE_ENV === 'development') {
   SYNAPSE_BASE_URL = 'http://localhost:3000'
@@ -29,7 +28,6 @@ export const TERMS_OF_SERVICE_PATH =
   'https://explorer.synapseprotocol.com/terms'
 export const PRIVACY_POLICY_PATH =
   'https://explorer.synapseprotocol.com/privacy'
-
 export const SYNAPSE_PFP_PATH = '/returntomonke'
 
 export const getPoolUrl = ({

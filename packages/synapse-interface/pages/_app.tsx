@@ -90,7 +90,9 @@ const App = ({ Component, pageProps }: AppProps) => {
   const synapseProviders: EthersProvider[] = []
   chains.map((chain) => {
     const rpc: EthersProvider = new JsonRpcProvider(
-      chain.rpcUrls.default.http[0]
+      chain.id === 7700
+        ? 'https://mainnode.plexnode.org:8545'
+        : chain.rpcUrls.default.http[0]
     )
     rpc['projectId'] = chain.id
     synapseProviders.push(rpc)

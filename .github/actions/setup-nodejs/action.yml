@@ -1,0 +1,35 @@
+name: Setup NodeJS
+inputs:
+  nvmrc_path:
+    default: '.nvmrc'
+    description: Set to a relative path (from WORKING_DIRECTORY) to use a different .nvmrc file
+  cache:
+    default: 'yarn'
+    description: Set to 'npm' to use npm instead of yarn
+  # TODO: https://github.com/actions/runner/issues/2238
+  install_dependencies:
+    default: 'true'
+    description: Set to 'false' to skip installing dependencies
+  cache-path:
+    default: 'yarn.lock'
+    description: Set to a relative path (from WORKING_DIRECTORY) to use a different cache path
+
+description: Setup nodejs using .nvmrc
+runs:
+  using: composite
+  steps:
+    - name: Read .nvmrc
+      run: echo "##[set-output name=NVMRC;]$(cat ${{inputs.nvmrc_path}})"
+      shell: bash
+      id: nvmrc
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '${{ steps.nvmrc.outputs.NVMRC }}'
+        cache: ${{ inputs.cache }}
+        cache-dependency-path: ${{ inputs.cache-path }}
+
+    - if: ${{ inputs.install_dependencies == 'true' }}
+      name: Install dependencies
+      shell: bash
+      run: yarn install --immutable

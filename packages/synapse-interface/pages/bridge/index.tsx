@@ -1,8 +1,9 @@
+import debounce from 'lodash.debounce'
 import Grid from '@tw/Grid'
 import { LandingPageWrapper } from '@components/layouts/LandingPageWrapper'
 import { useRouter } from 'next/router'
 import { useNetwork } from 'wagmi'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { ActionCardFooter } from '@components/ActionCardFooter'
@@ -35,7 +36,6 @@ import {
   EMPTY_BRIDGE_QUOTE_ZERO,
   QUOTE_POLLING_INTERVAL,
 } from '@/constants/bridge'
-import { addSyntheticLeadingComment } from 'typescript'
 
 /* TODO
   - look into getting rid of fromChainId state and just using wagmi hook (ran into problems when trying this but forgot why)
@@ -80,13 +80,54 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     }
   }, [])
 
+  useEffect(() => {
+    if (!router.isReady) {
+      return
+    }
+    const {
+      outputChain: toChainIdUrl,
+      inputCurrency: fromTokenSymbolUrl,
+      outputCurrency: toTokenSymbolUrl,
+    } = router.query
+
+    let tempFromToken: Token = getMostCommonSwapableType(fromChainId)
+
+    if (fromTokenSymbolUrl) {
+      let token = tokenSymbolToToken(fromChainId, String(fromTokenSymbolUrl))
+      if (token) {
+        tempFromToken = token
+      }
+    }
+    const { bridgeableToken, newToChain, bridgeableTokens, bridgeableChains } =
+      handleNewFromToken(
+        tempFromToken,
+        toChainIdUrl ? Number(toChainIdUrl) : undefined,
+        toTokenSymbolUrl ? String(toTokenSymbolUrl) : undefined,
+        fromChainId
+      )
+    resetTokenPermutation(
+      tempFromToken,
+      newToChain,
+      bridgeableToken,
+      bridgeableChains,
+      bridgeableTokens,
+      tempFromToken.symbol,
+      bridgeableToken.symbol
+    )
+    updateUrlParams({
+      outputChain: newToChain,
+      inputCurrency: fromToken.symbol,
+      outputCurrency: bridgeableToken.symbol,
+    })
+  }, [router.isReady])
+
   /*
   useEffect Trigger: connectedChain
   - when the connected chain changes (wagmi hook), update the state
   */
   useEffect(() => {
-    if (connectedChain?.id && connectedChain?.id !== fromChainId) {
-      if (fromChainId === undefined || address === undefined) {
+    if (connectedChain?.id) {
+      if (address === undefined) {
         return
       }
       setFromChainId(connectedChain?.id)
@@ -98,11 +139,12 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       ).then((tokens) => {
         setFromTokens(tokens)
       })
+      return
     }
-  }, [connectedChain])
+  }, [connectedChain?.id])
 
   /*
-  useEffect Triggers: fromToken, toToken, fromInput, fromChainId, toChainId, time
+  useEffect Triggers: toToken, fromInput, toChainId, time
   - Gets a quote when the polling function is executed or any of the bridge attributes are altered.
   */
   useEffect(() => {
@@ -114,11 +156,12 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       fromInput &&
       fromInput.bigNum.gt(Zero)
     ) {
+      // TODO this needs to be debounced or throttled somehow to prevent spam and lag in the ui
       getQuote()
     } else {
       setBridgeQuote(EMPTY_BRIDGE_QUOTE)
     }
-  }, [fromToken, toToken, fromInput, fromChainId, toChainId, time])
+  }, [toToken, fromInput, toChainId, time])
 
   /*
   Helper Function: resetTokenPermutation
@@ -134,7 +177,6 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     newFromTokenSymbol: string,
     newBridgeableTokenSymbol: string
   ) => {
-    console.log('newFromToken', newFromToken)
     setFromToken(newFromToken)
     setToChainId(newToChain)
     setToToken(newToToken)
@@ -168,9 +210,11 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         fromToken[fromChainId as keyof Token['decimals']]
       )
     ) {
+      let bigNum =
+        stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero
       setFromInput({
         string: value,
-        bigNum: stringToBigNum(value, fromToken.decimals[fromChainId]) ?? Zero,
+        bigNum: bigNum,
       })
     }
   }
@@ -301,7 +345,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
   }
 
   /*
-   Function: handleChainChange
+  Function: handleChainChange
   - Produces and alert if chain not connected (upgrade to toaster)
   - Handles flipping to and from chains if flag is set to true
   - Handles altering the chain state for origin or destination depending on the type specified.
@@ -314,62 +358,72 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     if (address === undefined) {
       return alert('Please connect your wallet')
     }
-    switch (type) {
-      case 'from':
-        const positedToChain = flip ? fromChainId : undefined
-        const desiredChainId = flip ? Number(toChainId) : Number(chainId)
-        const res = switchNetwork({ chainId: desiredChainId })
-          .then((res) => {
-            return res
-          })
-          .catch((err) => {
-            console.log("can't switch network ser", err, chainId)
-            return undefined
-          })
-        if (res === undefined) {
-          console.log("can't switch network, chainId: ", chainId)
-          return
-        }
+    console.log(flip, type, chainId)
+    if (flip || type === 'from') {
+      const positedToChain = flip ? fromChainId : undefined
+      const desiredChainId = flip ? Number(toChainId) : Number(chainId)
+      console.log('desired  ChainId: ', desiredChainId)
+      console.log('positedToChain: ', positedToChain)
 
-        const bridgeableFromTokens: Token[] = sortByVisibilityRank(
-          BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][
-            String(fromToken.swapableType)
-          ]
-        )
-        let tempFromToken: Token = fromToken
-
-        if (bridgeableFromTokens?.length > 0) {
-          tempFromToken = getMostCommonSwapableType(chainId)
-        }
-        const {
-          bridgeableToken,
-          newToChain,
-          bridgeableTokens,
-          bridgeableChains,
-        } = handleNewFromToken(
-          tempFromToken,
-          positedToChain,
-          toToken.symbol,
-          desiredChainId
-        )
-        resetTokenPermutation(
-          tempFromToken,
-          newToChain,
-          bridgeableToken,
-          bridgeableChains,
-          bridgeableTokens,
-          tempFromToken.symbol,
-          bridgeableToken.symbol
-        )
-        return
-      case 'to':
-        setToChainId(chainId)
-        updateUrlParams({
-          outputChain: chainId,
-          inputCurrency: fromToken.symbol,
-          outputCurrency: toToken.symbol,
+      const res = switchNetwork({ chainId: desiredChainId })
+        .then((res) => {
+          return res
         })
+        .catch(() => {
+          return undefined
+        })
+      if (res === undefined) {
+        console.log("can't switch chain, chainId: ", chainId)
         return
+      }
+
+      const bridgeableFromTokens: Token[] = sortByVisibilityRank(
+        BRIDGE_SWAPABLE_TOKENS_BY_TYPE[chainId][String(fromToken.swapableType)]
+      )
+      let tempFromToken: Token = fromToken
+
+      if (bridgeableFromTokens?.length > 0) {
+        tempFromToken = getMostCommonSwapableType(chainId)
+      }
+      const {
+        bridgeableToken,
+        newToChain,
+        bridgeableTokens,
+        bridgeableChains,
+      } = handleNewFromToken(
+        tempFromToken,
+        positedToChain,
+        toToken.symbol,
+        desiredChainId
+      )
+      resetTokenPermutation(
+        tempFromToken,
+        newToChain,
+        bridgeableToken,
+        bridgeableChains,
+        bridgeableTokens,
+        tempFromToken.symbol,
+        bridgeableToken.symbol
+      )
+      return
+    } else if (type === 'to') {
+      const {
+        bridgeableToken: toBridgeableToken,
+        newToChain: toNewToChain,
+        bridgeableTokens: toBridgeableTokens,
+        bridgeableChains: toBridgeableChains,
+      } = handleNewFromToken(fromToken, chainId, toToken.symbol, fromChainId)
+      resetTokenPermutation(
+        fromToken,
+        toNewToChain,
+        toBridgeableToken,
+        toBridgeableChains,
+        toBridgeableTokens,
+        fromToken.symbol,
+        toBridgeableToken.symbol
+      )
+
+      return
     }
   }
 
@@ -398,6 +452,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         return
       case 'to':
         setToToken(token)
+        resetRates()
         updateUrlParams({
           outputChain: toChainId,
           inputCurrency: fromToken.symbol,
@@ -417,8 +472,8 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
       await SynapseSDK.bridgeQuote(
         fromChainId,
         toChainId,
-        fromToken.addresses[fromChainId].toLowerCase(),
-        toToken.addresses[toChainId].toLowerCase(),
+        fromToken.addresses[fromChainId],
+        toToken.addresses[toChainId],
         fromInput.bigNum
       )
     if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
@@ -432,7 +487,7 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
 
     const allowance =
       fromToken.addresses[fromChainId] === AddressZero
-        ? -1
+        ? Zero
         : await getCurrentTokenAllowance(routerAddress)
     setBridgeQuote({
       outputAmount: toValueBigNum,
@@ -454,11 +509,44 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
         destQuery,
       },
     })
+    return
+  }
+
+  /*
+  Function: approveToken
+  - Gets raw unsigned tx data from sdk and then execute it with ethers.
+  - Only executes if token has already been approved.
+   */
+  const executeBridge = async () => {
+    const wallet = await fetchSigner({
+      chainId: fromChainId,
+    })
+
+    const data = await SynapseSDK.bridge(
+      address,
+      fromChainId,
+      toChainId,
+      fromToken.addresses[fromChainId as keyof Token['addresses']],
+      fromInput.bigNum,
+      bridgeQuote.quotes.originQuery,
+      bridgeQuote.quotes.destQuery
+    )
+    const tx = await wallet.sendTransaction(data)
+    try {
+      await tx.wait()
+      console.log(`Transaction mined successfully: ${tx.hash}`)
+      return tx
+    } catch (error) {
+      console.log(`Transaction failed with error: ${error}`)
+    }
   }
 
   return (
     <LandingPageWrapper>
-      <main className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none">
+      <main
+        data-test-id="bridge-page"
+        className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
+      >
         <div className="items-center px-4 py-8 mx-auto mt-4 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
           <div>
             <Grid
@@ -484,6 +572,9 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
                     handleTokenChange={handleTokenChange}
                     onChangeFromAmount={onChangeFromAmount}
                     setDestinationAddress={setDestinationAddress}
+                    executeBridge={executeBridge}
+                    resetRates={resetRates}
+                    setTime={setTime}
                   />
                   <ActionCardFooter link={HOW_TO_BRIDGE_URL} />
                 </div>
@@ -496,4 +587,5 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
     </LandingPageWrapper>
   )
 }
+
 export default BridgePage
