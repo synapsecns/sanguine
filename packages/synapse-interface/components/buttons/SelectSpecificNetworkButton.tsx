@@ -14,11 +14,13 @@ export const SelectSpecificNetworkButton = ({
   isCurrentChain,
   active,
   onClick,
+  dataId,
 }: {
   itemChainId: number
   isCurrentChain: boolean
   active: boolean
   onClick: () => void
+  dataId: string
 }) => {
   const ref = useRef<any>(null)
   const chain = CHAINS_BY_ID[itemChainId]
@@ -57,6 +59,7 @@ export const SelectSpecificNetworkButton = ({
         ${bgClassName}
       `}
       onClick={onClick}
+      data-test-id={`${dataId}-item`}
     >
       <ButtonContent chainId={itemChainId} />
     </button>

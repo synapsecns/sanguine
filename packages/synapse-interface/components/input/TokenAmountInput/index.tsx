@@ -105,6 +105,7 @@ const BridgeInputContainer = ({
           <SelectTokenDropdown
             chainId={chainId}
             selectedToken={selectedToken}
+            isOrigin={isOrigin}
             onClick={() => {
               setDisplayType(isOrigin ? 'from' : 'to')
             }}

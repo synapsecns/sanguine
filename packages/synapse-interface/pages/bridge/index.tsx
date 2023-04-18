@@ -543,7 +543,10 @@ const BridgePage = ({ address }: { address: `0x${string}` }) => {
 
   return (
     <LandingPageWrapper>
-      <main className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none">
+      <main
+        data-test-id="bridge-page"
+        className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
+      >
         <div className="items-center px-4 py-8 mx-auto mt-4 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
           <div>
             <Grid

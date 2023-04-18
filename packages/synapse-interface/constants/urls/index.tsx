@@ -28,7 +28,6 @@ export const TERMS_OF_SERVICE_PATH =
   'https://explorer.synapseprotocol.com/terms'
 export const PRIVACY_POLICY_PATH =
   'https://explorer.synapseprotocol.com/privacy'
-
 export const SYNAPSE_PFP_PATH = '/returntomonke'
 
 export const getPoolUrl = ({

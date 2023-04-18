@@ -1,0 +1,33 @@
+name: UI Cypress Integration Tests
+
+on:
+  push:
+  pull_request:
+    paths:
+      - 'packages/synapse-interface/**'
+      - '.github/workflows/cypress.yaml'
+
+jobs:
+  cypress-integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js 16.14.0
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.14.0'
+
+      - name: Install dependencies
+        run: yarn install
+        working-directory: './packages/synapse-interface'
+
+      - name: Install sdk-router
+        run: yarn install
+        working-directory: './packages/sdk-router'
+
+      - name: Run Cypress tests
+        run: yarn cypress:run
+        working-directory: './packages/synapse-interface'
