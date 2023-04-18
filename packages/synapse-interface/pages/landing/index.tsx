@@ -278,7 +278,11 @@ function ExplorerSection() {
         cols={{ sm: 1, md: 2, lg: 3 }}
         gap={4}
         className="max-w-4xl pb-12 mx-auto space-x-0 "
-      ></Grid>
+      >
+        <StatisticsCard title="Total Value Locked" value={totalValueLocked} />
+        <StatisticsCard title="Total Bridge Volume" value={totalBridgeVolume} />
+        <StatisticsCard title="Total Pool Volume" value={totalPoolVolume} />
+      </Grid>
     </SectionContainer>
   )
 }
@@ -313,7 +317,7 @@ function StatisticsCard({
     <Card
       title={title}
       titleClassName="text-white opacity-75"
-      className="flex justify-center px-2 py-12 bg-transparent"
+      className="justify-center px-2 py-12 bg-transparent"
       divider={false}
     >
       {value ? (
@@ -321,7 +325,10 @@ function StatisticsCard({
           {value}
         </div>
       ) : (
-        <div className="w-full h-8 bg-slate-700 animate-pulse" />
+        <div
+          className="w-full h-8 bg-slate-700 animate-pulse"
+          style={{ maxWidth: '200px' }}
+        />
       )}
     </Card>
   )
