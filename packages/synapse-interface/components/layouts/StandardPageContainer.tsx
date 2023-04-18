@@ -1,0 +1,68 @@
+import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
+import { CHAINS_BY_ID } from '@constants/chains'
+import { getNetworkTextColor } from '@styles/chains'
+import { Chain } from '@/utils/types/index'
+const StandardPageContainer = ({
+  title,
+  subtitle,
+  children,
+  rightContent,
+  address,
+  connectedChainId,
+}: {
+  title?: string
+  subtitle?: string
+  children: any
+  rightContent?: any
+  address: string
+  connectedChainId: number
+}) => {
+  // useEffect(() => {
+  //   if (!address) return
+
+  //   toast(
+  //     <div>
+  //       <div>Switched account to</div>
+  //       <div className="break-all">{address}</div>
+  //     </div>
+  //   )
+  // }, [address])
+
+  useEffect(() => {
+    if (!connectedChainId) return
+    const chain = CHAINS_BY_ID[connectedChainId]
+    toast(
+      <>
+        Connected to the{' '}
+        <p className={getNetworkTextColor(chain?.color) + ' mx-1'}>
+          {' '}
+          {chain?.altName ?? chain?.chainName}{' '}
+        </p>
+        chain
+      </>
+    )
+  }, [connectedChainId])
+
+  return (
+    <main className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none">
+      <div className="items-center px-4 py-8 mx-auto mt-4 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
+        <span
+          className={`
+            text-3xl font-medium text-default
+            bg-clip-text text-transparent bg-gradient-to-r
+            from-purple-600 to-blue-600
+          `}
+        >
+          {title}
+        </span>
+        {rightContent}
+        <div className="mt-1 text-sm font-medium text-gray-600">
+          {subtitle ?? ''}
+        </div>
+        {children}
+      </div>
+    </main>
+  )
+}
+export default StandardPageContainer

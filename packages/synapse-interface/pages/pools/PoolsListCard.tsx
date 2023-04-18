@@ -1,13 +1,14 @@
-import { Link, useHistory } from 'react-router-dom'
-
+// import { Link, useHistory } from 'react-router-dom'
+import Link from 'next/link'
 import { getPoolUrl } from '@urls'
 import { POOL_INVERTED_ROUTER_INDEX } from '@constants/poolRouter'
+import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
 
-import { POOLS_MAP } from '@hooks/pools/usePools'
+// import { POOLS_MAP } from '@hooks/pools/usePools'
 
-import { useGenericPoolData } from '@hooks/pools/useGenericPoolData'
-import { useChainSwitcher } from '@hooks/wallet/useChainSwitcher'
-import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
+// import { useGenericPoolData } from '@hooks/pools/useGenericPoolData'
+// import { useChainSwitcher } from '@hooks/wallet/useChainSwitcher'
+// import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
@@ -16,16 +17,12 @@ import ApyTooltip from '@components/ApyTooltip'
 
 import { getPoolStats } from './getPoolStats'
 
-import { CHAIN_INFO_MAP } from '@constants/networks'
-
-export default function PoolsListCard({ poolName, chainId }) {
-  const history = useHistory()
-  const { chainId: activeChainId } = useActiveWeb3React()
+import { CHAIN_INFO_MAP } from '@constants/chains'
+import { POOLS_BY_CHAIN } from '@constants/tokens'
+const PoolsListCard = ({ poolName, chainId, connectedChainId }) => {
   const [poolData] = useGenericPoolData(chainId, poolName)
 
-  const triggerChainSwitch = useChainSwitcher()
-
-  const poolTokens = POOLS_MAP[chainId][poolName]
+  const poolTokens = POOLS_BY_CHAIN[chainId][poolName]
   const poolRouterIndex = POOL_INVERTED_ROUTER_INDEX[chainId][poolName]
 
   const { apy, fullCompoundedApyStr, totalLockedUSDStr } =
@@ -37,12 +34,25 @@ export default function PoolsListCard({ poolName, chainId }) {
     <div>
       <Link
         onClick={() => {
-          if (chainId != activeChainId) {
-            triggerChainSwitch(chainId)
-            history.push(getPoolUrl({ poolRouterIndex }))
+          if (address === undefined) {
+            return alert('Please connect your wallet')
+          }
+          if (chainId != connectedChainId) {
+            const res = switchNetwork({ chainId: chainId })
+              .then((res) => {
+                return res
+              })
+              .catch(() => {
+                return undefined
+              })
+            if (res === undefined) {
+              console.log("can't switch chain, chainId: ", chainId)
+              return
+            }
+            // history.push(getPoolUrl({ poolRouterIndex }))
           }
         }}
-        to={getPoolUrl({ poolRouterIndex })}
+        href={getPoolUrl({ poolRouterIndex })}
       >
         <Card
           title={
@@ -96,7 +106,7 @@ export default function PoolsListCard({ poolName, chainId }) {
   )
 }
 
-function PoolsCardTitle({ chainName, poolName, chainImg }) {
+const PoolsCardTitle = ({ chainName, poolName, chainImg }) => {
   let displayPoolName = poolName.replace(chainName, `<b>${chainName}</b>`)
 
   return (
@@ -107,7 +117,7 @@ function PoolsCardTitle({ chainName, poolName, chainImg }) {
   )
 }
 
-function CoinLabels({ coins }) {
+const CoinLabels = ({ coins }) => {
   return (
     <div className="flex mt-3">
       {coins.map((coin, i) => (
@@ -116,3 +126,4 @@ function CoinLabels({ coins }) {
     </div>
   )
 }
+export default PoolsListCard

@@ -36,7 +36,7 @@ import { publicProvider } from 'wagmi/providers/public'
 import * as CHAINS from '@constants/chains/master'
 
 import { SynapseProvider } from '@/utils/SynapseProvider'
-
+import CustomToaster from '@/components/toast'
 const App = ({ Component, pageProps }: AppProps) => {
   const rawChains = [
     mainnet,
@@ -105,6 +105,7 @@ const App = ({ Component, pageProps }: AppProps) => {
           providers={synapseProviders}
         >
           <Component {...pageProps} />
+          <CustomToaster />
         </SynapseProvider>
       </RainbowKitProvider>
     </WagmiConfig>

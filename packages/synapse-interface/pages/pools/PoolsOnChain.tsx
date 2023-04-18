@@ -1,11 +1,15 @@
-import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
-
 import PoolsListCard from './PoolsListCard'
 
-export default function PoolsOnChain({ chainId, poolsArr }) {
-  const { chainId: currentChainId } = useActiveWeb3React()
-
-  if (poolsArr.length == 0 && currentChainId != chainId) {
+const PoolsOnChain = ({
+  chainId,
+  poolsArr,
+  connectedChainId,
+}: {
+  chainId: number
+  poolsArr: any
+  connectedChainId: number
+}) => {
+  if (poolsArr.length == 0 && connectedChainId != chainId) {
     return <></>
   } else {
     return (
@@ -23,3 +27,4 @@ export default function PoolsOnChain({ chainId, poolsArr }) {
     )
   }
 }
+export default PoolsOnChain

@@ -17,7 +17,7 @@ export default function Card({
   divider = true,
   ...props
 }: {
-  title?: string
+  title?: any
   className?: string
   children: any
   titleClassName?: string

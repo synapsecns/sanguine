@@ -1,14 +1,17 @@
-import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
-
 import Grid from '@tw/Grid'
 import { Tab } from '@headlessui/react'
-
+import _ from 'lodash'
 import PoolsOnChain from './PoolsOnChain'
 
 import { PageHeader } from '@components/PageHeader'
 
-export default function PoolTabs({ arr }) {
-  const { chainId } = useActiveWeb3React()
+const PoolTabs = ({
+  arr,
+  connectedChainId,
+}: {
+  arr: any
+  connectedChainId: number
+}) => {
   return (
     <Tab.Group>
       <div className="flex-wrap justify-between mb-8 px-36 md:flex">
@@ -25,7 +28,7 @@ export default function PoolTabs({ arr }) {
                   className={({ selected }) => {
                     return `
                     bg-bgLight
-                    px-4 py-2 rounded-lg 
+                    px-4 py-2 rounded-lg
                     text-sm text-white
                     transform-gpu transition-all duration-75
                     hover:bg-bgLighter
@@ -51,18 +54,23 @@ export default function PoolTabs({ arr }) {
             <Tab.Panel key={index}>
               <Grid cols={{ xs: 1, sm: 1, md: 2, lg: 3 }} gap={4}>
                 <PoolsOnChain
-                  chainId={chainId}
-                  poolsArr={poolsByChain[chainId]}
-                  textLabel={textLabel ?? label}
+                  chainId={poolsByChain}
+                  poolsArr={poolsByChain[connectedChainId]}
+                  connectedChainId={connectedChainId}
+                  // textLabel={textLabel ?? label}
                 />
                 {_.entries(poolsByChain)
-                  .filter(([otherChainId, poolsArr]) => otherChainId != chainId)
+                  .filter(
+                    ([otherChainId, poolsArr]) =>
+                      Number(otherChainId) != connectedChainId
+                  )
                   .map(([otherChainId, poolsArr], index) => (
                     <PoolsOnChain
                       key={index}
-                      chainId={otherChainId}
+                      chainId={Number(otherChainId)}
+                      connectedChainId={connectedChainId}
                       poolsArr={poolsArr}
-                      textLabel={textLabel ?? label}
+                      // textLabel={textLabel ?? label}
                     />
                   ))}
               </Grid>
@@ -73,3 +81,5 @@ export default function PoolTabs({ arr }) {
     </Tab.Group>
   )
 }
+
+export default PoolTabs
