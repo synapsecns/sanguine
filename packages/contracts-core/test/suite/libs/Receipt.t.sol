@@ -82,6 +82,15 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
         checkCastToReceipt({payload: payload, isReceipt: length == RECEIPT_LENGTH});
     }
 
+    function rest_equals_same(RawReceiptBody memory rrb) public {
+        assertTrue(libHarness.equals(rrb.formatReceiptBody(), rrb.formatReceiptBody()));
+    }
+
+    function test_equals_different(RawReceiptBody memory rrb, uint256 mask) public {
+        RawReceiptBody memory mrb = rrb.modifyReceiptBody(mask);
+        assertFalse(libHarness.equals(rrb.formatReceiptBody(), mrb.formatReceiptBody()));
+    }
+
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function checkCastToReceiptBody(bytes memory payload, bool isReceiptBody) public {

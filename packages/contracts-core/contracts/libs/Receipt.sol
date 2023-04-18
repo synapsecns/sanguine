@@ -108,6 +108,12 @@ library ReceiptLib {
         return MemView.wrap(ReceiptBody.unwrap(receiptBody));
     }
 
+    /// @notice Compares two ReceiptBody structures.
+    function equals(ReceiptBody a, ReceiptBody b) internal pure returns (bool) {
+        // Length of a ReceiptBody payload is fixed, so we just need to compare the hashes
+        return a.unwrap().keccak() == b.unwrap().keccak();
+    }
+
     // ═════════════════════════════════════════════════ RECEIPT ═════════════════════════════════════════════════════
 
     /**

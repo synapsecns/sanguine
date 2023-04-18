@@ -65,6 +65,10 @@ contract ReceiptHarness {
         return payload.ref().isReceiptBody();
     }
 
+    function equals(bytes memory a, bytes memory b) public pure returns (bool) {
+        return a.ref().castToReceiptBody().equals(b.ref().castToReceiptBody());
+    }
+
     // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
     function castToReceipt(bytes memory payload) public view returns (bytes memory) {
