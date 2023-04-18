@@ -2,13 +2,12 @@
 pragma solidity 0.8.17;
 
 import {BaseMessageLib} from "./BaseMessage.sol";
-import {ByteString} from "./ByteString.sol";
 import {Header, HEADER_LENGTH, HeaderLib} from "./Header.sol";
 import {SystemMessageLib} from "./SystemMessage.sol";
-import {TypedMemView} from "./TypedMemView.sol";
+import {MemView, MemViewLib} from "./MemView.sol";
 
 /// @dev Message is a memory over over a formatted message payload.
-type Message is bytes29;
+type Message is uint256;
 
 /// @dev Attach library functions to Message
 using MessageLib for Message global;
@@ -28,11 +27,10 @@ using MessageLib for MessageFlag global;
  * @notice Library for formatting the various messages supported by Origin and Destination.
  */
 library MessageLib {
-    using BaseMessageLib for bytes29;
-    using ByteString for bytes;
-    using HeaderLib for bytes29;
-    using SystemMessageLib for bytes29;
-    using TypedMemView for bytes29;
+    using BaseMessageLib for MemView;
+    using MemViewLib for bytes;
+    using HeaderLib for MemView;
+    using SystemMessageLib for MemView;
 
     /**
      * @dev Message memory layout
@@ -69,92 +67,92 @@ library MessageLib {
      * @dev Will revert if the payload is not a message payload.
      */
     function castToMessage(bytes memory payload) internal pure returns (Message) {
-        return castToMessage(payload.castToRawBytes());
+        return castToMessage(payload.ref());
     }
 
     /**
      * @notice Casts a memory view to a Message view.
      * @dev Will revert if the memory view is not over a message payload.
      */
-    function castToMessage(bytes29 view_) internal pure returns (Message) {
-        require(isMessage(view_), "Not a message payload");
-        return Message.wrap(view_);
+    function castToMessage(MemView memView) internal pure returns (Message) {
+        require(isMessage(memView), "Not a message payload");
+        return Message.wrap(MemView.unwrap(memView));
     }
 
     /**
      * @notice Checks that a payload is a formatted Message.
      */
-    function isMessage(bytes29 view_) internal pure returns (bool) {
-        uint256 length = view_.len();
+    function isMessage(MemView memView) internal pure returns (bool) {
+        uint256 length = memView.len();
         // Check if flag and header exist in the payload
         if (length < OFFSET_BODY) return false;
-        uint8 flag_ = _flag(view_);
+        uint8 flag_ = _flag(memView);
         // Check that Flag fits into MessageFlag enum
         if (flag_ > uint8(type(MessageFlag).max)) return false;
         // Check that Header is formatted
-        if (!_header(view_).isHeader()) return false;
+        if (!_header(memView).isHeader()) return false;
         // Check that body is formatted according to the flag
         // Only System/Base message flags exist
         if (flag_ == uint8(MessageFlag.System)) {
             // Check if body is a formatted system message
-            return _body(view_).isSystemMessage();
+            return _body(memView).isSystemMessage();
         } else {
             // Check if body is a formatted base message
-            return _body(view_).isBaseMessage();
+            return _body(memView).isBaseMessage();
         }
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Message message) internal pure returns (bytes29) {
-        return Message.unwrap(message);
+    function unwrap(Message message) internal pure returns (MemView) {
+        return MemView.wrap(Message.unwrap(message));
     }
 
     /// @notice Returns message's hash: a leaf to be inserted in the Merkle tree.
     function leaf(Message message) internal pure returns (bytes32) {
-        bytes29 view_ = message.unwrap();
-        return view_.keccak();
+        MemView memView = message.unwrap();
+        return memView.keccak();
     }
 
     // ══════════════════════════════════════════════ MESSAGE SLICING ══════════════════════════════════════════════════
 
     /// @notice Returns message's flag.
     function flag(Message message) internal pure returns (MessageFlag) {
-        bytes29 view_ = message.unwrap();
+        MemView memView = message.unwrap();
         // We check that flag fits into enum, when payload is wrapped
         // into Message, so this never reverts
-        return MessageFlag(_flag(view_));
+        return MessageFlag(_flag(memView));
     }
 
     /// @notice Returns message's header field as a Header view.
     function header(Message message) internal pure returns (Header) {
-        bytes29 view_ = message.unwrap();
+        MemView memView = message.unwrap();
         // We check that header is properly formatted, when payload is wrapped
         // into Message, so this never reverts.
-        return _header(view_).castToHeader();
+        return _header(memView).castToHeader();
     }
 
     /// @notice Returns message's body field as an untyped memory view.
-    function body(Message message) internal pure returns (bytes29) {
-        bytes29 view_ = message.unwrap();
-        return _body(view_);
+    function body(Message message) internal pure returns (MemView) {
+        MemView memView = message.unwrap();
+        return _body(memView);
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
 
     /// @dev Returns message's flag without checking that it fits into MessageFlag enum.
-    function _flag(bytes29 view_) private pure returns (uint8) {
-        return uint8(view_.indexUint({index_: OFFSET_FLAG, bytes_: 1}));
+    function _flag(MemView memView) private pure returns (uint8) {
+        return uint8(memView.indexUint({index_: OFFSET_FLAG, bytes_: 1}));
     }
 
     /// @dev Returns an untyped memory view over the header field without checking
     /// if the whole payload or the header are properly formatted.
-    function _header(bytes29 view_) private pure returns (bytes29) {
-        return view_.slice({index_: OFFSET_HEADER, len_: HEADER_LENGTH, newType: 0});
+    function _header(MemView memView) private pure returns (MemView) {
+        return memView.slice({index_: OFFSET_HEADER, len_: HEADER_LENGTH});
     }
 
     /// @dev Returns an untyped memory view over the body field without checking
     /// if the whole payload or the body are properly formatted.
-    function _body(bytes29 view_) private pure returns (bytes29) {
-        return view_.sliceFrom({index_: OFFSET_BODY, newType: 0});
+    function _body(MemView memView) private pure returns (MemView) {
+        return memView.sliceFrom({index_: OFFSET_BODY});
     }
 }

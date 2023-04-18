@@ -2,9 +2,9 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {ByteString, CallData} from "../libs/ByteString.sol";
+import {CallData} from "../libs/ByteString.sol";
 import {SYSTEM_ROUTER} from "../libs/Constants.sol";
-import {SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
+import {MemViewLib, SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
 import {SystemEntity} from "../libs/Structures.sol";
 import {TipsLib} from "../libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -39,7 +39,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
  */
 contract SystemRouter is DomainContext, InterfaceSystemRouter, Versioned {
     using Address for address;
-    using ByteString for bytes;
+    using MemViewLib for bytes;
     using SystemMessageLib for bytes;
 
     address public immutable agentManager;

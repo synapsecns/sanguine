@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ByteString} from "./ByteString.sol";
 import {HEADER_LENGTH} from "./Constants.sol";
 import {TypeCasts} from "./TypeCasts.sol";
-import {TypedMemView} from "./TypedMemView.sol";
+import {MemView, MemViewLib} from "./MemView.sol";
 
 /// @dev Header is a memory over over a formatted message header payload.
-type Header is bytes29;
+type Header is uint256;
 
 /// @dev Attach library functions to Header
 using HeaderLib for Header global;
@@ -17,8 +16,7 @@ using HeaderLib for Header global;
  * of [the messages used by Origin and Destination].
  */
 library HeaderLib {
-    using ByteString for bytes;
-    using TypedMemView for bytes29;
+    using MemViewLib for bytes;
 
     /**
      * @dev Header memory layout
@@ -58,53 +56,53 @@ library HeaderLib {
      * @dev Will revert if the payload is not a header payload.
      */
     function castToHeader(bytes memory payload) internal pure returns (Header) {
-        return castToHeader(payload.castToRawBytes());
+        return castToHeader(payload.ref());
     }
 
     /**
      * @notice Casts a memory view to a Header view.
      * @dev Will revert if the memory view is not over a header payload.
      */
-    function castToHeader(bytes29 view_) internal pure returns (Header) {
-        require(isHeader(view_), "Not a header payload");
-        return Header.wrap(view_);
+    function castToHeader(MemView memView) internal pure returns (Header) {
+        require(isHeader(memView), "Not a header payload");
+        return Header.wrap(MemView.unwrap(memView));
     }
 
     /**
      * @notice Checks that a payload is a formatted Header.
      */
-    function isHeader(bytes29 view_) internal pure returns (bool) {
-        return view_.len() == HEADER_LENGTH;
+    function isHeader(MemView memView) internal pure returns (bool) {
+        return memView.len() == HEADER_LENGTH;
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Header header) internal pure returns (bytes29) {
-        return Header.unwrap(header);
+    function unwrap(Header header) internal pure returns (MemView) {
+        return MemView.wrap(Header.unwrap(header));
     }
 
     // ══════════════════════════════════════════════ HEADER SLICING ═══════════════════════════════════════════════════
 
     /// @notice Returns header's origin field
     function origin(Header header) internal pure returns (uint32) {
-        bytes29 view_ = unwrap(header);
-        return uint32(view_.indexUint(OFFSET_ORIGIN, 4));
+        MemView memView = unwrap(header);
+        return uint32(memView.indexUint(OFFSET_ORIGIN, 4));
     }
 
     /// @notice Returns header's nonce field
     function nonce(Header header) internal pure returns (uint32) {
-        bytes29 view_ = unwrap(header);
-        return uint32(view_.indexUint(OFFSET_NONCE, 4));
+        MemView memView = unwrap(header);
+        return uint32(memView.indexUint(OFFSET_NONCE, 4));
     }
 
     /// @notice Returns header's destination field
     function destination(Header header) internal pure returns (uint32) {
-        bytes29 view_ = unwrap(header);
-        return uint32(view_.indexUint(OFFSET_DESTINATION, 4));
+        MemView memView = unwrap(header);
+        return uint32(memView.indexUint(OFFSET_DESTINATION, 4));
     }
 
     /// @notice Returns header's optimistic seconds field
     function optimisticPeriod(Header header) internal pure returns (uint32) {
-        bytes29 view_ = unwrap(header);
-        return uint32(view_.indexUint(OFFSET_OPTIMISTIC_SECONDS, 4));
+        MemView memView = unwrap(header);
+        return uint32(memView.indexUint(OFFSET_OPTIMISTIC_SECONDS, 4));
     }
 }

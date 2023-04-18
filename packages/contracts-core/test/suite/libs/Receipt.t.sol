@@ -3,14 +3,14 @@ pragma solidity 0.8.17;
 
 import {RECEIPT_LENGTH} from "../../../contracts/libs/Constants.sol";
 
-import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {ReceiptHarness} from "../../harnesses/libs/ReceiptHarness.t.sol";
 
 import {RawExecReceipt} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract ReceiptLibraryTest is SynapseLibraryTest {
-    using TypedMemView for bytes;
+    using MemViewLib for bytes;
 
     ReceiptHarness internal libHarness;
 

@@ -6,7 +6,6 @@ import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {MerkleList} from "../libs/MerkleList.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
-import {TypedMemView} from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {SnapshotHubEvents} from "../events/SnapshotHubEvents.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
@@ -16,9 +15,7 @@ import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
  */
 abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     using AttestationLib for bytes;
-    using SnapshotLib for uint256[];
     using StateLib for bytes;
-    using TypedMemView for bytes29;
 
     /// @notice Struct that represents stored State of Origin contract
     /// @param guardIndex   Index of Guard who submitted this State to Summit
