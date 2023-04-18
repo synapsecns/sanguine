@@ -67,4 +67,48 @@ contract MemViewHarness {
         bytes32 result = memView.keccak();
         return (dirtyBefore, result, dirtyAfter);
     }
+
+    // ═══════════════════════════════════════════ INDEXING MEMORY VIEW ════════════════════════════════════════════════
+
+    function index(bytes memory arr, uint256 index_, uint256 bytes_)
+        external
+        pure
+        returns (bytes memory, bytes32, bytes memory)
+    {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
+        bytes32 result = memView.index(index_, bytes_);
+        return (dirtyBefore, result, dirtyAfter);
+    }
+
+    function indexUint(bytes memory arr, uint256 index_, uint256 bytes_)
+        external
+        pure
+        returns (bytes memory, uint256, bytes memory)
+    {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
+        uint256 result = memView.indexUint(index_, bytes_);
+        return (dirtyBefore, result, dirtyAfter);
+    }
+
+    function indexAddress(bytes memory arr, uint256 index_)
+        external
+        pure
+        returns (bytes memory, address, bytes memory)
+    {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
+        address result = memView.indexAddress(index_);
+        return (dirtyBefore, result, dirtyAfter);
+    }
 }

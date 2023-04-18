@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
 
-import {MemView, MemViewHarness} from "../../harnesses/libs/MemViewHarness.t.sol";
+import {MemView, MemViewLib, MemViewHarness} from "../../harnesses/libs/MemViewHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract MemViewLibraryTest is SynapseLibraryTest {
@@ -55,5 +55,41 @@ contract MemViewLibraryTest is SynapseLibraryTest {
     function test_keccak(bytes memory arr) public {
         (, bytes32 hash,) = libHarness.keccak(arr);
         assertEq(hash, keccak256(arr));
+    }
+
+    // ═══════════════════════════════════════════ INDEXING MEMORY VIEW ════════════════════════════════════════════════
+
+    function test_index(bytes memory prefix, bytes32 data, bytes memory postfix, uint256 bytes_) public {
+        bytes_ = bound(bytes_, 0, 32);
+        bytes memory arr = abi.encodePacked(prefix, data, postfix);
+        bytes32 expected = bytes32(0);
+        for (uint256 i = 0; i < bytes_; ++i) {
+            // When casting bytes1 to bytes32 it will populate the highest bits, so shift right here
+            expected |= bytes32(data[i]) >> (i * 8);
+        }
+        (, bytes32 result,) = libHarness.index(arr, prefix.length, bytes_);
+        assertEq(result, expected);
+    }
+
+    function test_indexUint(bytes memory prefix, uint256 data, bytes memory postfix, uint256 bytes_) public {
+        bytes_ = bound(bytes_, 0, 32);
+        bytes memory encodedUint = new bytes(bytes_);
+        for (uint256 i = 0; i < bytes_; ++i) {
+            uint256 shiftBytes = i * 8;
+            // Copy bytes from lowest to highest
+            uint256 byte_ = (data & (0xFF << shiftBytes)) >> shiftBytes;
+            encodedUint[bytes_ - 1 - i] = bytes1(uint8(byte_));
+        }
+        bytes memory arr = abi.encodePacked(prefix, encodedUint, postfix);
+        uint256 mask = bytes_ == 32 ? type(uint256).max : ((1 << (bytes_ * 8)) - 1);
+        uint256 expected = data & mask;
+        (, uint256 result,) = libHarness.indexUint(arr, prefix.length, bytes_);
+        assertEq(result, expected);
+    }
+
+    function test_indexAddress(bytes memory prefix, address data, bytes memory postfix) public {
+        bytes memory arr = abi.encodePacked(prefix, data, postfix);
+        (, address result,) = libHarness.indexAddress(arr, prefix.length);
+        assertEq(result, data);
     }
 }
