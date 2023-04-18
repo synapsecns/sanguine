@@ -1,6 +1,7 @@
 name: 'Pull Request Labeler'
 on:
-  - pull_request_target
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
   pr-labeler:
@@ -12,16 +13,12 @@ jobs:
           configuration-path: .github/labeler.yml
           sync-labels: true
 
-      - uses: codelytv/pr-size-labeler@v1
+  add-pr-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: victorx64/pr-label@v0
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          xs_label: 'size/xs'
-          xs_max_size: '10'
-          s_label: 'size/s'
-          s_max_size: '100'
-          m_label: 'size/m'
-          m_max_size: '500'
-          l_label: 'size/l'
-          l_max_size: '1000'
-          xl_label: 'size/xl'
-          fail_if_xl: 'false'
+          # Optional pattern used to limit paths.
+          # Example: "'*.js' ':!*.spec.js' .".
+          # See https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
+          git-pathspec: ":!*gen.go :!*generated.go"
