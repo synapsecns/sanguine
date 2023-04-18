@@ -26,3 +26,8 @@ jobs:
           # this is functionally disabled to avoid comments
           xl_label: 'size/xl'
           fail_if_xl: 'false'
+
+      - uses: ppremk/lfs-warning@v3.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # Optional
+          filesizelimit: 15MB
