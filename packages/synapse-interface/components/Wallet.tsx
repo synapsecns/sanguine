@@ -91,7 +91,7 @@ export const Wallet = () => {
                     {chain.hasIcon && (
                       <div
                         style={{
-                          background: chain.iconBackground,
+                          backgroundImage: chain.iconBackground,
                           width: 20,
                           height: 20,
                           borderRadius: 999,
