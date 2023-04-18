@@ -8,6 +8,16 @@ on:
       - '.github/workflows/cypress.yaml'
 
 jobs:
+  cancel-outdated:
+    name: Cancel Outdated Jobs
+    runs-on: ubuntu-latest
+    steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
   cypress-integration-tests:
     runs-on: ubuntu-latest
 
@@ -15,10 +25,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Node.js 16.14.0
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16.14.0'
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
 
       - name: Install dependencies
         run: yarn install
