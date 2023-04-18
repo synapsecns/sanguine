@@ -86,7 +86,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 	e.Nil(err)
 
 	// Insert the states into the database.
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot.States(), root, proofs, snapshot.TreeHeight())
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot.States(), root, proofs)
 	e.Nil(err)
 
 	inTree0, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state0)
@@ -629,10 +629,10 @@ func (e *ExecutorSuite) TestExecutor() {
 	snapshotRoot, proofs, err := originSnapshot.SnapshotRootAndProofs()
 	e.Nil(err)
 
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), []types.State{originState, randomState}, snapshotRoot, proofs, originSnapshot.TreeHeight())
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), []types.State{originState, randomState}, snapshotRoot, proofs)
 	e.Nil(err)
 
-	destinationAttestation := types.NewAttestation(snapshotRoot, uint8(originSnapshot.TreeHeight()), uint32(1), big.NewInt(1), big.NewInt(1))
+	destinationAttestation := types.NewAttestation(snapshotRoot, [32]byte{}, uint32(1), big.NewInt(1), big.NewInt(1))
 
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), destinationAttestation, destination, 1, 1)
 	e.Nil(err)
@@ -705,11 +705,11 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	snapshotRoot2, proofs2, err := snapshot2.SnapshotRootAndProofs()
 	e.Nil(err)
 
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot0.States(), snapshotRoot0, proofs0, snapshot0.TreeHeight())
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot0.States(), snapshotRoot0, proofs0)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot1.States(), snapshotRoot1, proofs1, snapshot1.TreeHeight())
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot1.States(), snapshotRoot1, proofs1)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot2.States(), snapshotRoot2, proofs2, snapshot2.TreeHeight())
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot2.States(), snapshotRoot2, proofs2)
 	e.Nil(err)
 
 	potentialSnapshotRoots, err := e.ExecutorTestDB.GetPotentialSnapshotRoots(e.GetTestContext(), chainID, 1)
@@ -723,8 +723,8 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	e.Len(potentialSnapshotRoots, 1)
 
 	// Store an attestation for the first and last state's snapshot root.
-	attestation0 := types.NewAttestation(snapshotRoot0, uint8(snapshot0.TreeHeight()), 1, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
-	attestation2 := types.NewAttestation(snapshotRoot2, uint8(snapshot2.TreeHeight()), 2, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	attestation0 := types.NewAttestation(snapshotRoot0, [32]byte{}, 1, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	attestation2 := types.NewAttestation(snapshotRoot2, [32]byte{}, 2, big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
 
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation0, destination, 10, 10)
 	e.Nil(err)

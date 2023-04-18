@@ -107,14 +107,14 @@ func DecodeSnapshot(toDecode []byte) (Snapshot, error) {
 // EncodeAttestation encodes an attestation.
 func EncodeAttestation(attestation Attestation) ([]byte, error) {
 	b := make([]byte, 0)
-	height := []byte{attestation.Height()}
 	nonceBytes := make([]byte, uint32Len)
 
 	binary.BigEndian.PutUint32(nonceBytes, attestation.Nonce())
 	snapshotRoot := attestation.SnapshotRoot()
+	agentRoot := attestation.AgentRoot()
 
 	b = append(b, snapshotRoot[:]...)
-	b = append(b, height...)
+	b = append(b, agentRoot[:]...)
 	b = append(b, nonceBytes...)
 	b = append(b, math.PaddedBigBytes(attestation.BlockNumber(), uint40Len)...)
 	b = append(b, math.PaddedBigBytes(attestation.Timestamp(), uint40Len)...)
@@ -128,18 +128,19 @@ func DecodeAttestation(toDecode []byte) (Attestation, error) {
 		return nil, fmt.Errorf("invalid attestation length, expected %d, got %d", attestationSize, len(toDecode))
 	}
 
-	snapshotRoot := toDecode[attestationOffsetRoot:attestationOffsetDepth]
-	height := toDecode[attestationOffsetDepth:attestationOffsetNonce][0]
+	snapshotRoot := toDecode[attestationOffsetRoot:attestationOffsetAgentRoot]
+	agentRoot := toDecode[attestationOffsetAgentRoot:attestationOffsetNonce]
 	nonce := binary.BigEndian.Uint32(toDecode[attestationOffsetNonce:attestationOffsetBlockNumber])
 	blockNumber := new(big.Int).SetBytes(toDecode[attestationOffsetBlockNumber:attestationOffsetTimestamp])
 	timestamp := new(big.Int).SetBytes(toDecode[attestationOffsetTimestamp:attestationSize])
 
-	var snapshotRootB32 [32]byte
+	var snapshotRootB32, agentRootB32 [32]byte
 	copy(snapshotRootB32[:], snapshotRoot)
+	copy(agentRootB32[:], agentRoot)
 
 	return attestation{
 		snapshotRoot: snapshotRootB32,
-		height:       height,
+		agentRoot:    agentRootB32,
 		nonce:        nonce,
 		blockNumber:  blockNumber,
 		timestamp:    timestamp,

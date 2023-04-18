@@ -19,8 +19,6 @@ type Snapshot interface {
 
 	// SnapshotRootAndProofs returns the snapshot root, calculated from the states, as well as each state's proof.
 	SnapshotRootAndProofs() ([32]byte, [][][]byte, error)
-	// TreeHeight returns the height of the merkle tree given `len(states)*2` leafs.
-	TreeHeight() uint32
 	// SignSnapshot returns the signature of the snapshot payload signed by the signer
 	SignSnapshot(ctx context.Context, signer signer.Signer) (signer.Signature, []byte, common.Hash, error)
 }

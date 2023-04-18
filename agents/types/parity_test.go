@@ -214,41 +214,40 @@ func TestEncodeSnapshotParity(t *testing.T) {
 */
 
 func TestEncodeAttestationParity(t *testing.T) {
-	/*
-		TODO (joe): re-enabled this
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 
-		testBackend := simulated.NewSimulatedBackend(ctx, t)
-		deployManager := testutil.NewDeployManager(t)
+	testBackend := simulated.NewSimulatedBackend(ctx, t)
+	deployManager := testutil.NewDeployManager(t)
 
-		_, attestationContract := deployManager.GetAttestationHarness(ctx, testBackend)
+	_, attestationContract := deployManager.GetAttestationHarness(ctx, testBackend)
 
-		root := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	snapRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
+	agentRoot := common.BigToHash(big.NewInt(gofakeit.Int64()))
 
-		var rootB32 [32]byte
-		copy(rootB32[:], root[:])
+	var rootB32, agentRootB32 [32]byte
+	copy(rootB32[:], snapRoot[:])
+	copy(agentRootB32[:], agentRoot[:])
 
-		height := gofakeit.Uint8()
-		nonce := gofakeit.Uint32()
-		blockNumber := randomUint40BigInt(t)
-		timestamp := randomUint40BigInt(t)
+	nonce := gofakeit.Uint32()
+	blockNumber := randomUint40BigInt(t)
+	timestamp := randomUint40BigInt(t)
 
-		contractData, err := attestationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, rootB32, height, nonce, blockNumber, timestamp)
-		Nil(t, err)
+	contractData, err := attestationContract.FormatAttestation(&bind.CallOpts{Context: ctx}, rootB32, agentRootB32, nonce, blockNumber, timestamp)
+	Nil(t, err)
 
-		goFormattedData, err := types.EncodeAttestation(types.NewAttestation(rootB32, height, nonce, blockNumber, timestamp))
-		Nil(t, err)
+	goFormattedData, err := types.EncodeAttestation(types.NewAttestation(rootB32, agentRootB32, nonce, blockNumber, timestamp))
+	Nil(t, err)
 
-		Equal(t, contractData, goFormattedData)
+	Equal(t, contractData, goFormattedData)
 
-		attestationFromBytes, err := types.DecodeAttestation(goFormattedData)
-		Nil(t, err)
-		Equal(t, rootB32, attestationFromBytes.SnapshotRoot())
-		Equal(t, height, attestationFromBytes.Height())
-		Equal(t, nonce, attestationFromBytes.Nonce())
-		Equal(t, blockNumber, attestationFromBytes.BlockNumber())
-		Equal(t, timestamp, attestationFromBytes.Timestamp())*/
+	attestationFromBytes, err := types.DecodeAttestation(goFormattedData)
+	Nil(t, err)
+	Equal(t, rootB32, attestationFromBytes.SnapshotRoot())
+	Equal(t, agentRootB32, attestationFromBytes.AgentRoot())
+	Equal(t, nonce, attestationFromBytes.Nonce())
+	Equal(t, blockNumber, attestationFromBytes.BlockNumber())
+	Equal(t, timestamp, attestationFromBytes.Timestamp())
 }
 
 func TestMessageEncodeParity(t *testing.T) {

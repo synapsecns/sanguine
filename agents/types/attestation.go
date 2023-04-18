@@ -4,19 +4,19 @@ import "math/big"
 
 const (
 	attestationOffsetRoot        = 0
-	attestationOffsetDepth       = 32
-	attestationOffsetNonce       = 33
-	attestationOffsetBlockNumber = 37
-	attestationOffsetTimestamp   = 42
-	attestationSize              = 47
+	attestationOffsetAgentRoot   = 32
+	attestationOffsetNonce       = 64
+	attestationOffsetBlockNumber = 68
+	attestationOffsetTimestamp   = 73
+	attestationSize              = 78
 )
 
 // Attestation is the attestation interface.
 type Attestation interface {
 	// SnapshotRoot is the root of the Snapshot Merkle Tree.
 	SnapshotRoot() [32]byte
-	// Height is the height of the Snapshot Merkle Tree.
-	Height() uint8
+	// AgentRoot is the root of the Agent Merkle Tree.
+	AgentRoot() [32]byte
 	// Nonce is the attestation nonce.
 	Nonce() uint32
 	// BlockNumber is the block number when the attestation was created in Summit.
@@ -27,17 +27,17 @@ type Attestation interface {
 
 type attestation struct {
 	snapshotRoot [32]byte
-	height       uint8
+	agentRoot    [32]byte
 	nonce        uint32
 	blockNumber  *big.Int
 	timestamp    *big.Int
 }
 
 // NewAttestation creates a new attestation.
-func NewAttestation(snapshotRoot [32]byte, height uint8, nonce uint32, blockNumber *big.Int, timestamp *big.Int) Attestation {
+func NewAttestation(snapshotRoot [32]byte, agentRoot [32]byte, nonce uint32, blockNumber *big.Int, timestamp *big.Int) Attestation {
 	return &attestation{
 		snapshotRoot: snapshotRoot,
-		height:       height,
+		agentRoot:    agentRoot,
 		nonce:        nonce,
 		blockNumber:  blockNumber,
 		timestamp:    timestamp,
@@ -48,8 +48,8 @@ func (a attestation) SnapshotRoot() [32]byte {
 	return a.snapshotRoot
 }
 
-func (a attestation) Height() uint8 {
-	return a.height
+func (a attestation) AgentRoot() [32]byte {
+	return a.agentRoot
 }
 
 func (a attestation) Nonce() uint32 {
