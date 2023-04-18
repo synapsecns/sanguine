@@ -121,6 +121,20 @@ library MemViewLib {
         return memView.words() * 32;
     }
 
+    /**
+     * @notice Returns the keccak256 hash of the underlying memory
+     * @param memView       The memory view
+     * @return digest       The keccak256 hash of the underlying memory
+     */
+    function keccak(MemView memView) internal pure returns (bytes32 digest) {
+        uint256 loc_ = memView.loc();
+        uint256 len_ = memView.len();
+        assembly {
+            // solhint-disable-previous-line no-inline-assembly
+            digest := keccak256(loc_, len_)
+        }
+    }
+
     // ════════════════════════════════════════════ SLICING MEMORY VIEW ════════════════════════════════════════════════
 
     /**
