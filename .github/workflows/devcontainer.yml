@@ -44,5 +44,3 @@ jobs:
         run: |
           docker tag ghcr.io/synapsecns/sanguine-devcontainer:latest ghcr.io/synapsecns/sanguine-devcontainer:$(date +%Y-%m-%d)
           docker push ghcr.io/synapsecns/sanguine-devcontainer:$(date +%Y-%m-%d)
-          # push above may fail softly
-          docker push ghcr.io/synapsecns/sanguine-devcontainer:latest
