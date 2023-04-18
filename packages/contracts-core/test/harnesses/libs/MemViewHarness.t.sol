@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {MemView, MemViewLib} from "../../../contracts/libs/MemView.sol";
 
+// solhint-disable ordering
 contract MemViewHarness {
     using MemViewLib for bytes;
 
@@ -109,6 +110,70 @@ contract MemViewHarness {
         // Add some dirty data to where the current free memory pointer is pointing
         bytes memory dirtyAfter = hex"FedFed";
         address result = memView.indexAddress(index_);
+        return (dirtyBefore, result, dirtyAfter);
+    }
+
+    // ════════════════════════════════════════════ SLICING MEMORY VIEW ════════════════════════════════════════════════
+
+    function slice(bytes memory arr, uint256 index_, uint256 len_)
+        external
+        view
+        returns (bytes memory, bytes memory, bytes memory)
+    {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        bytes memory result = memView.slice(index_, len_).clone();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
+        return (dirtyBefore, result, dirtyAfter);
+    }
+
+    function sliceTwice(bytes memory arr, uint256 indexFirst, uint256 lenFirst, uint256 indexSecond, uint256 lenSecond)
+        external
+        view
+        returns (bytes memory, bytes memory, bytes memory)
+    {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        bytes memory result = memView.slice(indexFirst, lenFirst).slice(indexSecond, lenSecond).clone();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
+        return (dirtyBefore, result, dirtyAfter);
+    }
+
+    function sliceFrom(bytes memory arr, uint256 index_)
+        external
+        view
+        returns (bytes memory, bytes memory, bytes memory)
+    {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        bytes memory result = memView.sliceFrom(index_).clone();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
+        return (dirtyBefore, result, dirtyAfter);
+    }
+
+    function prefix(bytes memory arr, uint256 len_) external view returns (bytes memory, bytes memory, bytes memory) {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        bytes memory result = memView.prefix(len_).clone();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
+        return (dirtyBefore, result, dirtyAfter);
+    }
+
+    function postfix(bytes memory arr, uint256 len_) external view returns (bytes memory, bytes memory, bytes memory) {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        bytes memory result = memView.postfix(len_).clone();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
         return (dirtyBefore, result, dirtyAfter);
     }
 }

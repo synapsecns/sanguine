@@ -92,4 +92,44 @@ contract MemViewLibraryTest is SynapseLibraryTest {
         (, address result,) = libHarness.indexAddress(arr, prefix.length);
         assertEq(result, data);
     }
+
+    // ════════════════════════════════════════════ SLICING MEMORY VIEW ════════════════════════════════════════════════
+
+    function test_slice(bytes memory prefix, bytes memory data, bytes memory postfix) public {
+        bytes memory arr = abi.encodePacked(prefix, data, postfix);
+        (, bytes memory result,) = libHarness.slice(arr, prefix.length, data.length);
+        checkEqual(result, data);
+    }
+
+    function test_sliceTwice(
+        bytes memory prefixF,
+        bytes memory prefixS,
+        bytes memory data,
+        bytes memory postfixF,
+        bytes memory postfixS
+    ) public {
+        bytes memory arr = abi.encodePacked(prefixF, prefixS, data, postfixF, postfixS);
+        // First slice (prefixS, data, postfixS) out of the full payload
+        uint256 lenFirst = prefixS.length + data.length + postfixF.length;
+        (, bytes memory result,) = libHarness.sliceTwice(arr, prefixF.length, lenFirst, prefixS.length, data.length);
+        checkEqual(result, data);
+    }
+
+    function test_sliceFrom(bytes memory prefix, bytes memory data) public {
+        bytes memory arr = abi.encodePacked(prefix, data);
+        (, bytes memory result,) = libHarness.sliceFrom(arr, prefix.length);
+        checkEqual(result, data);
+    }
+
+    function test_prefix(bytes memory prefix, bytes memory data) public {
+        bytes memory arr = abi.encodePacked(prefix, data);
+        (, bytes memory result,) = libHarness.prefix(arr, prefix.length);
+        checkEqual(result, prefix);
+    }
+
+    function test_postfix(bytes memory data, bytes memory postfix) public {
+        bytes memory arr = abi.encodePacked(data, postfix);
+        (, bytes memory result,) = libHarness.postfix(arr, postfix.length);
+        checkEqual(result, postfix);
+    }
 }
