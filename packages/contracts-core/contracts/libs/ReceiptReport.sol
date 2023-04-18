@@ -5,7 +5,7 @@ import {RECEIPT_REPORT_SALT} from "./Constants.sol";
 import {ReceiptBody, ReceiptLib} from "./Receipt.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev ReceiptReport is a memory view over a formatted Guard report for invalid Receipt
+/// @dev ReceiptReport is a memory view over a formatted Guard report for invalid ReceiptBody
 type ReceiptReport is uint256;
 
 /// @dev Possible flags for the ReceiptReport
@@ -76,7 +76,7 @@ library ReceiptReportLib {
         return _rrReceiptBody(memView).isReceiptBody();
     }
 
-    /// @notice Returns the hash of a Receipt Report, that could be later signed by a Guard.
+    /// @notice Returns the hash of a ReceiptReport, that could be later signed by a Guard.
     function hash(ReceiptReport receiptReport) internal pure returns (bytes32) {
         // Get the underlying memory view
         MemView memView = receiptReport.unwrap();
@@ -99,10 +99,10 @@ library ReceiptReportLib {
         return ReceiptFlag(_rrFlag(memView));
     }
 
-    /// @notice Returns typed memory view over receipt used in the report.
+    /// @notice Returns typed memory view over the receipt body used in the report.
     function receiptBody(ReceiptReport receiptReport) internal pure returns (ReceiptBody) {
         MemView memView = receiptReport.unwrap();
-        // We check that receipt is properly formatted, when payload is wrapped
+        // We check that receipt body is properly formatted, when payload is wrapped
         // into ReceiptReport, so this never reverts.
         return _rrReceiptBody(memView).castToReceiptBody();
     }
@@ -114,7 +114,7 @@ library ReceiptReportLib {
         return uint8(memView.indexUint({index_: OFFSET_FLAG, bytes_: 1}));
     }
 
-    /// @dev Returns an untyped memory view over Report's receipt without checking if it is properly formatted.
+    /// @dev Returns an untyped memory view over Report's receipt body without checking if it is properly formatted.
     function _rrReceiptBody(MemView memView) internal pure returns (MemView) {
         return memView.sliceFrom({index_: OFFSET_RECEIPT_BODY});
     }

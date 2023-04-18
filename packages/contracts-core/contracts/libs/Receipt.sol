@@ -82,7 +82,7 @@ library ReceiptLib {
 
     /**
      * @notice Returns a ReceiptBody view over the given payload.
-     * @dev Will revert if the payload is not a receipt.
+     * @dev Will revert if the payload is not a receipt body.
      */
     function castToReceiptBody(bytes memory payload) internal pure returns (ReceiptBody) {
         return castToReceiptBody(payload.ref());
@@ -97,7 +97,7 @@ library ReceiptLib {
         return ReceiptBody.wrap(MemView.unwrap(memView));
     }
 
-    /// @notice Checks that a payload is a formatted Receipt.
+    /// @notice Checks that a payload is a formatted ReceiptBody.
     function isReceiptBody(MemView memView) internal pure returns (bool) {
         // Check payload length
         return memView.len() == RECEIPT_BODY_LENGTH;
