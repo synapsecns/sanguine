@@ -16,6 +16,7 @@ using MemViewLib for MemView global;
 /// - The documentation is expanded
 //  - Very pretty code separators are added :)
 library MemViewLib {
+    error ViewOverrun();
     error UnallocatedMemory();
 
     /// @notice Stack layout for uint256 (from highest bits to lowest)
@@ -117,6 +118,76 @@ library MemViewLib {
      */
     function footprint(MemView memView) internal pure returns (uint256 footprint_) {
         return memView.words() * 32;
+    }
+
+    // ════════════════════════════════════════════ SLICING MEMORY VIEW ════════════════════════════════════════════════
+
+    /**
+     * @notice Safe slicing without memory modification.
+     * @param memView       The memory view
+     * @param index_        The start index
+     * @param len_          The length
+     * @return The new view for the slice of the given length starting from the given index
+     */
+    function slice(MemView memView, uint256 index_, uint256 len_) internal pure returns (MemView) {
+        uint256 loc_ = memView.loc();
+        // Ensure it doesn't overrun the view
+        if (loc_ + index_ + len_ > memView.end()) {
+            revert ViewOverrun();
+        }
+        // Build a view starting from index with the given length
+        return build({loc_: loc_ + index_, len_: len_});
+    }
+
+    /**
+     * @notice Shortcut to `slice`. Gets a view representing bytes from `index` to end(memView).
+     * @param memView       The memory view
+     * @param index_        The start index
+     * @return The new view for the slice starting from the given index until the initial view endpoint
+     */
+    function sliceFrom(MemView memView, uint256 index_) internal pure returns (MemView) {
+        uint256 len_ = memView.len();
+        // Ensure it doesn't overrun the view
+        if (index_ > len_) {
+            revert ViewOverrun();
+        }
+        // Could do the unchecked math due to the check above
+        unchecked {
+            len_ = len_ - index_;
+        }
+        // Build a view starting from index with the given length
+        return build({loc_: memView.loc() + index_, len_: len_});
+    }
+
+    /**
+     * @notice Shortcut to `slice`. Gets a view representing the first `len` bytes.
+     * @param memView       The memory view
+     * @param len_          The length
+     * @return The new view for the slice of the given length starting from the initial view beginning
+     */
+    function prefix(MemView memView, uint256 len_) internal pure returns (MemView) {
+        return memView.slice({index_: 0, len_: len_});
+    }
+
+    /**
+     * @notice Shortcut to `slice`. Gets a view representing the last `len` byte.
+     * @param memView       The memory view
+     * @param len_          The length
+     * @return The new view for the slice of the given length until the initial view endpoint
+     */
+    function postfix(MemView memView, uint256 len_) internal pure returns (MemView) {
+        uint256 viewLen = memView.len();
+        // Ensure it doesn't overrun the view
+        if (len_ > viewLen) {
+            revert ViewOverrun();
+        }
+        // Could do the unchecked math due to the check above
+        uint256 index_;
+        unchecked {
+            index_ = viewLen - len_;
+        }
+        // Build a view starting from index with the given length
+        return build({loc_: memView.loc() + index_, len_: len_});
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
