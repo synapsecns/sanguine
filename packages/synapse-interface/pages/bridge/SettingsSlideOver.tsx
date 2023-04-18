@@ -6,7 +6,7 @@ import { useKeyPress } from '@hooks/useKeyPress'
 import Tooltip from '@tw/Tooltip'
 import Button from '@tw/Button'
 
-import { DeadlineInput } from './DeadlineInput'
+import { DeadlineInput } from '@components/input/DeadlineInput'
 
 const SettingsSlideOver = ({
   settings,
@@ -68,7 +68,7 @@ const SettingsSlideOver = ({
               </Tooltip>
             </Switch.Label>
             <Switch
-              checked={settings.expertMode}
+              checked={settings?.expertMode}
               onChange={(updatedExpertMode: any) => {
                 if (!updatedExpertMode) {
                   setDestinationAddress('')
@@ -81,7 +81,7 @@ const SettingsSlideOver = ({
               className={`
                 bg-gradient-to-r
                 ${
-                  settings.expertMode
+                  settings?.expertMode
                     ? ' from-[#FF00FF] to-[#AC8FFF]'
                     : 'from-gray-900 to-gray-900'
                 }
@@ -90,14 +90,14 @@ const SettingsSlideOver = ({
             >
               <span
                 className={`
-                  ${settings.expertMode ? 'translate-x-6' : 'translate-x-1'}
+                  ${settings?.expertMode ? 'translate-x-6' : 'translate-x-1'}
                   inline-block w-6 h-6 transform bg-white rounded-full transition-transform
                 `}
               />
             </Switch>
           </div>
         </Switch.Group>
-        {settings.expertMode && <WithdrawalWarning onClose={onClose} />}
+        {settings?.expertMode && <WithdrawalWarning onClose={onClose} />}
       </div>
     </div>
   )
