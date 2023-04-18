@@ -7,6 +7,24 @@ import {MemView, MemViewLib} from "../../../contracts/libs/MemView.sol";
 contract MemViewHarness {
     using MemViewLib for bytes;
 
+    /// @notice Tries to build a memory view that touches the unallocated memory
+    function buildUnallocated(uint256 offset, uint256 words_)
+        external
+        view
+        returns (bytes memory, bytes memory, bytes memory)
+    {
+        uint256 loc_;
+        assembly {
+            // solhint-disable-previous-line no-inline-assembly
+            loc_ := mload(0x40)
+        }
+        bytes memory allocated = new bytes(32 * words_);
+        bytes memory result = MemViewLib.build(loc_ + offset, 32 * (words_ + 1)).clone();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirty = hex"FedFed";
+        return (allocated, result, dirty);
+    }
+
     // ════════════════════════════════════════════ CLONING MEMORY VIEW ════════════════════════════════════════════════
 
     function clone(bytes memory arr) external view returns (bytes memory, bytes memory, bytes memory) {

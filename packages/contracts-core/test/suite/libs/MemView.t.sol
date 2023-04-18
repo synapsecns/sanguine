@@ -158,4 +158,93 @@ contract MemViewLibraryTest is SynapseLibraryTest {
         (, bytes32 result,) = libHarness.postfixKeccak(arr, postfix.length);
         assertEq(result, keccak256(postfix));
     }
+
+    // ═══════════════════════════════════════════════ EXPECT ERRORS ═══════════════════════════════════════════════════
+
+    function test_buildUnallocated(uint256 offset, uint256 words) public {
+        words = bound(words, 1, 100);
+        offset = bound(offset, 1, 10_000);
+        // Should pass with zero offset
+        libHarness.buildUnallocated(0, words);
+        // Non-zero offset will point to unallocated memory
+        vm.expectRevert(MemViewLib.UnallocatedMemory.selector);
+        libHarness.buildUnallocated(offset, words);
+    }
+
+    function test_index_revert_indexOutOfRange(bytes memory arr, uint256 index, uint256 bytes_) public {
+        index = bound(index, arr.length, type(uint128).max);
+        bytes_ = bound(bytes_, 1, 32);
+        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        libHarness.index(arr, index, bytes_);
+    }
+
+    function test_index_revert_endOutOfRange(bytes memory arr, uint256 index, uint256 bytes_) public {
+        vm.assume(arr.length != 0);
+        index = bound(index, arr.length >= 31 ? arr.length - 31 : 0, arr.length - 1);
+        bytes_ = bound(bytes_, arr.length - index + 1, 32);
+        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        libHarness.index(arr, index, bytes_);
+    }
+
+    function test_index_revert_moreThan32Bytes(bytes memory arr, uint256 index, uint256 bytes_) public {
+        vm.assume(arr.length != 0);
+        index = bound(index, 0, arr.length - 1);
+        bytes_ = bound(bytes_, 33, type(uint256).max);
+        vm.expectRevert(MemViewLib.IndexedTooMuch.selector);
+        libHarness.index(arr, index, bytes_);
+    }
+
+    function test_indexUint_indexOutOfRange(bytes memory arr, uint256 index, uint256 bytes_) public {
+        index = bound(index, arr.length, type(uint128).max);
+        bytes_ = bound(bytes_, 1, 32);
+        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        libHarness.indexUint(arr, index, bytes_);
+    }
+
+    function test_indexUint_revert_endOutOfRange(bytes memory arr, uint256 index, uint256 bytes_) public {
+        vm.assume(arr.length != 0);
+        index = bound(index, arr.length >= 31 ? arr.length - 31 : 0, arr.length - 1);
+        bytes_ = bound(bytes_, arr.length - index + 1, 32);
+        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        libHarness.indexUint(arr, index, bytes_);
+    }
+
+    function test_indexAddress_indexOutOfRange(bytes memory arr, uint256 index) public {
+        index = bound(index, arr.length, type(uint128).max);
+        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        libHarness.indexAddress(arr, index);
+    }
+
+    function test_slice_revert_indexOutOfRange(bytes memory arr, uint256 index, uint256 len) public {
+        index = bound(index, arr.length, type(uint128).max);
+        len = bound(len, 1, type(uint128).max);
+        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        libHarness.slice(arr, index, len);
+    }
+
+    function test_slice_revert_endOutOfRange(bytes memory arr, uint256 index, uint256 len) public {
+        vm.assume(arr.length != 0);
+        index = bound(index, 0, arr.length - 1);
+        len = bound(len, arr.length - index + 1, type(uint128).max);
+        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        libHarness.slice(arr, index, len);
+    }
+
+    function test_sliceFrom_revert_indexOutOfRange(bytes memory arr, uint256 index) public {
+        index = bound(index, arr.length + 1, type(uint128).max);
+        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        libHarness.sliceFrom(arr, index);
+    }
+
+    function test_prefix_revert_lengthOutOfRange(bytes memory arr, uint256 len) public {
+        len = bound(len, arr.length + 1, type(uint128).max);
+        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        libHarness.prefix(arr, len);
+    }
+
+    function test_postfix_revert_lengthOutOfRange(bytes memory arr, uint256 len) public {
+        len = bound(len, arr.length + 1, type(uint128).max);
+        vm.expectRevert(MemViewLib.ViewOverrun.selector);
+        libHarness.postfix(arr, len);
+    }
 }
