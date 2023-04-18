@@ -627,24 +627,6 @@ export const WBTC = new Token({
 //   swapableType: 'USD',
 // })
 
-export const WETH = new Token({
-  addresses: {
-    [CHAINS.ETH.id]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [CHAINS.ARBITRUM.id]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
-    [CHAINS.BOBA.id]: '0xd203De32170130082896b4111eDF825a4774c18E',
-    [CHAINS.OPTIMISM.id]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
-    // [CHAINS.AVALANCHE.id]: '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab'
-  },
-  decimals: 18,
-  symbol: 'WETH', // SHOULD BE WETH
-  name: 'Wrapped ETH',
-  logo: wethLogo,
-  description: 'ERC-20 Wrapped form of ETH',
-  swapableType: 'ETH',
-  swapableOn: [CHAINS.ARBITRUM.id, CHAINS.BOBA.id, CHAINS.OPTIMISM.id],
-  color: 'sky',
-})
-
 export const WETHE = new Token({
   addresses: {
     [CHAINS.AVALANCHE.id]: '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
@@ -776,9 +758,11 @@ export const SYN = new Token({
 export const FRAX = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0x853d955acef822db058eb8505911ed77f175b99e',
-    [CHAINS.MOONRIVER.id]: '0x1a93b23281cc1cde4c4741353f3064709a16197d',
-    [CHAINS.MOONBEAM.id]: '',
-    [CHAINS.HARMONY.id]: '0xFa7191D292d5633f702B0bd7E3E3BcCC0e633200',
+    // [CHAINS.MOONRIVER.id]: '0x1a93b23281cc1cde4c4741353f3064709a16197d',
+    // [CHAINS.MOONRIVER.id]: '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d',
+
+    // [CHAINS.MOONBEAM.id]: '',
+    // [CHAINS.HARMONY.id]: '0xFa7191D292d5633f702B0bd7E3E3BcCC0e633200',
     [CHAINS.DOGE.id]: '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6',
   },
   decimals: 18,
@@ -787,7 +771,7 @@ export const FRAX = new Token({
   logo: fraxLogo,
   description: 'Frax',
   swapableType: 'FRAX',
-  swapableOn: [CHAINS.MOONRIVER.id, CHAINS.MOONBEAM.id],
+  // swapableOn: [CHAINS.MOONRIVER.id, CHAINS.MOONBEAM.id],
   color: 'gray',
 })
 
@@ -795,7 +779,7 @@ export const SYN_FRAX = new Token({
   addresses: {
     // [CHAINS.FANTOM.id]:    '0x1852F70512298d56e9c8FDd905e02581E04ddb2a',
     [CHAINS.MOONRIVER.id]: '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d',
-    [CHAINS.MOONBEAM.id]: '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F',
+    // [CHAINS.MOONBEAM.id]: '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F',
     [CHAINS.HARMONY.id]: '0x1852F70512298d56e9c8FDd905e02581E04ddb2a',
   },
   decimals: 18,
@@ -803,7 +787,7 @@ export const SYN_FRAX = new Token({
   name: 'Synapse Frax',
   logo: synapseLogo,
   description: 'Frax',
-  swapableType: 'SYN_FRAX',
+  swapableType: 'FRAX',
 })
 
 /**

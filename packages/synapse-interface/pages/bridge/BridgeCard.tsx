@@ -3,29 +3,26 @@ import { useSettings } from '@hooks/useSettings'
 import { SettingsIcon } from '@icons/SettingsIcon'
 import { Transition } from '@headlessui/react'
 import { validateAndParseAddress } from '@utils/validateAndParseAddress'
-import { TRANSITIONS_PROPS } from '@constants/bridge'
+// import { TRANSITIONS_PROPS } from '@constants/bridge'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import { ORDERED_CHAINS_BY_ID } from '@constants/chains'
-import { erc20ABI } from 'wagmi'
 import Grid from '@tw/Grid'
 import Card from '@tw/Card'
 import Button from '@tw/Button'
 import ExchangeRateInfo from '@components/ExchangeRateInfo'
 import { TransactionButton } from '@components/buttons/SubmitTxButton'
 import { PageHeader } from '@components/PageHeader'
-import { CoinSlideOver } from '@components/misc/CoinSlideOver'
-import { NetworkSlideOver } from '@components/misc/NetworkSlideOver'
+import { TokenSlideOver } from '@/components/misc/TokenSlideOver'
+import { ChainSlideOver } from '@/components/misc/ChainSlideOver'
 import { BigNumber } from '@ethersproject/bignumber'
-import { Zero } from '@ethersproject/constants'
+import { Zero, MaxInt256 } from '@ethersproject/constants'
 import { formatBNToString } from '@bignumber/format'
-import { fetchSigner } from '@wagmi/core'
 import { SECTION_TRANSITION_PROPS } from '@styles/transitions'
-import { Contract } from 'ethers'
-
+import { approveToken } from '@/utils/approveToken'
 import SettingsSlideOver from './SettingsSlideOver'
-import { DestinationAddressInput } from './DestinationAddressInput'
-import BridgeInputContainer from './BridgeInputContainer'
-import { useSynapseContext } from '@/utils/SynapseProvider'
+import { DestinationAddressInput } from '../../components/input/DestinationAddressInput'
+import BridgeInputContainer from '../../components/input/TokenAmountInput'
+import { TransactionResponse } from '@ethersproject/providers'
 
 import { Token } from '@/utils/types'
 import { BridgeQuote } from '@/utils/types'
@@ -45,6 +42,9 @@ const BridgeCard = ({
   handleTokenChange,
   onChangeFromAmount,
   setDestinationAddress,
+  executeBridge,
+  resetRates,
+  setTime,
 }: {
   error
   address: `0x${string}` | undefined
@@ -65,8 +65,10 @@ const BridgeCard = ({
   handleTokenChange: (token: Token, type: 'from' | 'to') => void
   onChangeFromAmount: (amount: string) => void
   setDestinationAddress: (address: string) => void
+  executeBridge: () => Promise<TransactionResponse>
+  resetRates: () => void
+  setTime: (time: number) => void
 }) => {
-  const SynapseSDK = useSynapseContext()
   const [settings, setSettings] = useSettings()
   const [displayType, setDisplayType] = useState('')
   const [deadlineMinutes, setDeadlineMinutes] = useState('')
@@ -95,10 +97,11 @@ const BridgeCard = ({
     address,
     fromTokenBalance,
     isOrigin: true,
+    isSwap: false,
     chains: ORDERED_CHAINS_BY_ID.filter((id) => id !== String(fromChainId)),
     tokens: fromTokens,
     chainId: fromChainId,
-    inputString: fromInput.string,
+    inputString: fromInput?.string,
     selectedToken: fromToken,
     connectedChainId: fromChainId,
     setDisplayType,
@@ -110,10 +113,11 @@ const BridgeCard = ({
   const toArgs = {
     address,
     isOrigin: false,
-    chains: toOptions.chains,
-    tokens: toOptions.tokens,
+    isSwap: false,
+    chains: toOptions?.chains,
+    tokens: toOptions?.tokens,
     chainId: toChainId,
-    inputString: bridgeQuote.outputAmountString,
+    inputString: bridgeQuote?.outputAmountString,
     selectedToken: toToken,
     connectedChainId: fromChainId,
     setDisplayType,
@@ -121,7 +125,7 @@ const BridgeCard = ({
     onChangeChain: handleChainChange,
   }
 
-  // TODO move this away and into the actual componet
+  // TODO move this away and into the actual component
   const settingsArgs = {
     settings,
     setSettings,
@@ -131,95 +135,35 @@ const BridgeCard = ({
     setDeadlineMinutes,
   }
 
-  /*
-  Function: approveToken
-  - Triggers token allowance approval.
-   */
-  const approveToken = async () => {
-    // TODO store this erc20 and signer retrieval in a state in a parent component
-    const wallet = await fetchSigner({
-      chainId: fromChainId,
-    })
-
-    const erc20 = new Contract(
-      fromToken.addresses[fromChainId],
-      erc20ABI,
-      wallet
-    )
-    const approveTx = await erc20.approve(
-      bridgeQuote.routerAddress,
-      fromInput.bigNum,
-      {
-        gasPrice: await wallet.provider.getGasPrice(),
-      }
-    )
-
-    try {
-      await approveTx.wait()
-      console.log(`Transaction mined succesfully: ${approveTx.hash}`)
-    } catch (error) {
-      console.log(`Transaction failed with error: ${error}`)
-    }
-  }
-
-  /*
-  Function: approveToken
-  - Gets raw unsigned tx data from sdk and then execute it with ethers.
-  - Only executes if token has already been approved.
-   */
-  const executeBridge = async () => {
-    const wallet = await fetchSigner({
-      chainId: fromChainId,
-    })
-
-    // if ()
-    const data = await SynapseSDK.bridge(
-      address, //To Address
-      fromChainId,
-      toChainId,
-      fromToken.addresses[fromChainId as keyof Token['addresses']], // To token Address **
-      fromInput.bigNum,
-      bridgeQuote.quotes.originQuery,
-      bridgeQuote.quotes.destQuery
-    )
-      .then((res) => {
-        const tx = res
-        wallet
-          .sendTransaction(tx)
-          .then((res) => {
-            console.log('sendTransaction', res)
-          })
-          .catch((err) => console.log('sendTransaction', err))
-      })
-      .catch((err) => {
-        console.log('bridge', err)
-      })
-
-    console.log('data', data)
-  }
-
   // some messy button gen stuff (will re-write)
-  const isFromBalanceEnough = fromTokenBalance?.gt(fromInput.bigNum)
+  // maybe just put everything in index without the card
+  const isFromBalanceEnough = fromTokenBalance.gt(fromInput?.bigNum ?? Zero)
   let destAddrNotValid
   let btnLabel
   let btnClassName = ''
   let pendingLabel = 'Bridging funds...'
-  let buttonAction = executeBridge
+  let buttonAction = () => executeBridge()
+  let postButtonAction = () => resetRates()
   if (error) {
     btnLabel = error
   } else if (!isFromBalanceEnough) {
-    btnLabel = `Insufficient ${fromToken.symbol} Balance`
-  } else if (bridgeQuote.feeAmount.eq(0) && !fromInput.bigNum.eq(0)) {
+    btnLabel = `Insufficient ${fromToken?.symbol} Balance`
+  } else if (bridgeQuote.feeAmount.eq(0) && !fromInput?.bigNum?.eq(0)) {
     btnLabel = `Amount must be greater than fee`
   } else if (
     bridgeQuote?.allowance &&
-    bridgeQuote?.allowance?.gt(Zero) &&
-    bridgeQuote?.allowance?.lt(fromInput.bigNum)
+    bridgeQuote?.allowance?.lt(fromInput?.bigNum)
   ) {
-    buttonAction = approveToken
-    btnLabel = `Approve ${fromToken.symbol}`
-    pendingLabel = `Approving ${fromToken.symbol}`
+    buttonAction = () =>
+      approveToken(
+        bridgeQuote?.routerAddress,
+        fromChainId,
+        fromToken.addresses[fromChainId]
+      )
+    btnLabel = `Approve ${fromToken?.symbol}`
+    pendingLabel = `Approving ${fromToken?.symbol}`
     btnClassName = 'from-[#feba06] to-[#FEC737]'
+    postButtonAction = () => setTime(0)
   } else if (
     destinationAddress &&
     !validateAndParseAddress(destinationAddress)
@@ -232,100 +176,37 @@ const BridgeCard = ({
       : 'Bridge your funds'
 
     const numExchangeRate = Number(
-      formatBNToString(bridgeQuote.exchangeRate, 18, 4)
+      formatBNToString(bridgeQuote?.exchangeRate, 18, 4)
     )
 
     if (
-      !fromInput.bigNum.eq(0) &&
+      !fromInput?.bigNum?.eq(0) &&
       (numExchangeRate < 0.95 || numExchangeRate > 1.05)
     ) {
       btnClassName = 'from-[#fe064a] to-[#fe5281]'
       btnLabel = 'Slippage High - Bridge Anyway?'
     }
   }
-  const disabled =
-    fromChainId === toChainId ||
-    bridgeQuote.outputAmount.eq(0) ||
-    !isFromBalanceEnough ||
-    error != null ||
-    destAddrNotValid
-  const actionButton = (
+
+  const actionBtn = (
     <TransactionButton
       className={btnClassName}
-      disabled={disabled}
+      disabled={
+        fromChainId === toChainId ||
+        bridgeQuote.outputAmount.eq(0) ||
+        !isFromBalanceEnough ||
+        error != null ||
+        destAddrNotValid
+      }
       onClick={() => buttonAction()}
       onSuccess={() => {
-        onChangeFromAmount('')
+        postButtonAction()
       }}
       label={btnLabel}
       pendingLabel={pendingLabel}
     />
   )
-  const swapBtn = (
-    <TransactionButton
-      className={btnClassName}
-      disabled={disabled}
-      onClick={() => executeBridge()}
-      onSuccess={() => {
-        onChangeFromAmount('')
-      }}
-      label={btnLabel}
-      pendingLabel={`Bridging funds...`}
-    />
-  )
-
-  const actionBtn = swapBtn
-  const bridgeCardMainContent = (
-    <>
-      <Grid cols={{ xs: 1 }} gap={10} className="py-1 place-content-center">
-        <div className="mt-2">
-          <BridgeInputContainer {...fromArgs} />
-        </div>
-        <BridgeInputContainer {...toArgs} />
-      </Grid>
-      <Transition
-        appear={true}
-        unmount={false}
-        show={!fromInput.bigNum.eq(0)}
-        {...SECTION_TRANSITION_PROPS}
-      >
-        <ExchangeRateInfo
-          fromAmount={fromInput.bigNum}
-          toToken={toToken}
-          exchangeRate={bridgeQuote.exchangeRate}
-          toChainId={toChainId}
-        />
-      </Transition>
-      <Transition
-        appear={false}
-        unmount={false}
-        show={settings.expertMode}
-        {...SECTION_TRANSITION_PROPS}
-      >
-        <DestinationAddressInput
-          toChainId={toChainId}
-          destinationAddress={destinationAddress}
-          setDestinationAddress={setDestinationAddress}
-        />
-      </Transition>
-      <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">{actionBtn}</div>
-    </>
-  )
-
-  const fromCardContent = <CoinSlideOver key="fromBlock" {...fromArgs} />
-  const toCardContent = <CoinSlideOver key="toBlock" {...toArgs} />
-
-  const fromChainCardContent = (
-    <NetworkSlideOver key="fromChainBlock" {...fromArgs} />
-  )
-  const toChainCardContent = <NetworkSlideOver key="toChainBlock" {...toArgs} />
-
-  const settingsCardContent = (
-    <SettingsSlideOver key="settings" {...settingsArgs} />
-  )
-
-  // TODO mve this to style
-  const transitionProps = {
+  const TRANSITION_PROPS = {
     ...COIN_SLIDE_OVER_PROPS,
     className: `
       origin-bottom absolute
@@ -333,19 +214,6 @@ const BridgeCard = ({
       md:w-[95%] md:h-[95%]
       -ml-0 md:-ml-3
       md:mt-3
-      bg-bgBase
-      z-20 rounded-3xl
-    `,
-  }
-
-  const settingsTransitionProps = {
-    ...COIN_SLIDE_OVER_PROPS,
-    className: `
-      origin-bottom absolute
-      w-full h-full
-      md:w-[95%]
-      -ml-0 md:-ml-3
-      md:-mt-3
       bg-bgBase
       z-20 rounded-3xl
     `,
@@ -389,25 +257,53 @@ const BridgeCard = ({
         className="max-w-lg px-1 pb-0 mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6"
       >
         <div>
-          <Transition show={displayType === 'from'} {...transitionProps}>
-            {fromCardContent}
+          <Transition show={displayType === 'from'} {...TRANSITION_PROPS}>
+            <TokenSlideOver key="fromBlock" {...fromArgs} />{' '}
           </Transition>
-          <Transition show={displayType === 'to'} {...transitionProps}>
-            {toCardContent}
+          <Transition show={displayType === 'to'} {...TRANSITION_PROPS}>
+            <TokenSlideOver key="toBlock" {...toArgs} />
           </Transition>
-          <Transition show={displayType === 'fromChain'} {...transitionProps}>
-            {fromChainCardContent}
+          <Transition show={displayType === 'fromChain'} {...TRANSITION_PROPS}>
+            <ChainSlideOver key="fromChainBlock" {...fromArgs} />
           </Transition>
-          <Transition show={displayType === 'toChain'} {...transitionProps}>
-            {toChainCardContent}
+          <Transition show={displayType === 'toChain'} {...TRANSITION_PROPS}>
+            <ChainSlideOver key="fromChainBlock" {...toArgs} />
+          </Transition>
+          <Transition show={displayType === 'settings'} {...TRANSITION_PROPS}>
+            <SettingsSlideOver key="settings" {...settingsArgs} />
+          </Transition>
+          <Grid cols={{ xs: 1 }} gap={10} className="py-1 place-content-center">
+            <div className="mt-2">
+              <BridgeInputContainer {...fromArgs} />
+            </div>
+            <BridgeInputContainer {...toArgs} />
+          </Grid>
+          <Transition
+            appear={true}
+            unmount={false}
+            show={!fromInput?.bigNum?.eq(0)}
+            {...SECTION_TRANSITION_PROPS}
+          >
+            <ExchangeRateInfo
+              fromAmount={fromInput?.bigNum}
+              toToken={toToken}
+              exchangeRate={bridgeQuote?.exchangeRate}
+              toChainId={toChainId}
+            />
           </Transition>
           <Transition
-            show={displayType === 'settings'}
-            {...settingsTransitionProps}
+            appear={false}
+            unmount={false}
+            show={settings.expertMode}
+            {...SECTION_TRANSITION_PROPS}
           >
-            {settingsCardContent}
+            <DestinationAddressInput
+              toChainId={toChainId}
+              destinationAddress={destinationAddress}
+              setDestinationAddress={setDestinationAddress}
+            />
           </Transition>
-          {bridgeCardMainContent}
+          <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">{actionBtn}</div>
           <Transition
             show={
               ['fromChain', 'toChain'].includes(displayType)

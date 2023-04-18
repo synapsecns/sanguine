@@ -17,7 +17,7 @@ interface BridgeTypeByChain {
   [cID: string]: string[]
 }
 
-interface BridgeSwapableTokensByType {
+interface SwapableTokensByType {
   [cID: string]: {
     [swapableType: string]: Token[]
   }
@@ -83,7 +83,7 @@ const convertArrayToObject = (array: any) => {
   }, {})
 }
 
-const getBridgeSwapableTokensByType = (): BridgeSwapableTokensByType => {
+const getBridgeableTokensByType = (): SwapableTokensByType => {
   const bridgeTypeByChain = getBridgeTypeByChain()
   const bridgeSwapableTokensByType = Object.fromEntries(
     Object.entries(bridgeTypeByChain).map(([k, v]) => [
@@ -120,7 +120,7 @@ export const TOKENS_SORTED_BY_SYMBOL = Array.from(
 export const BRIDGABLE_TOKENS = getBridgeableTokens()
 export const BRIDGE_CHAINS_BY_TYPE = getBridgeChainsByType()
 export const BRIDGE_TYPES_BY_CHAIN = getBridgeTypeByChain()
-export const BRIDGE_SWAPABLE_TOKENS_BY_TYPE = getBridgeSwapableTokensByType()
+export const BRIDGE_SWAPABLE_TOKENS_BY_TYPE = getBridgeableTokensByType()
 export const tokenSymbolToToken = (chainId: number, symbol: string) => {
   const token = BRIDGABLE_TOKENS[chainId].find((token) => {
     return token.symbol === symbol
@@ -143,6 +143,25 @@ const getSwapableTokens = (): TokensByChain => {
   })
   return swapTokens
 }
+const getSwapableTokensByType = (): SwapableTokensByType => {
+  const swapTokens: SwapableTokensByType = {}
+  Object.values(all).map((token) => {
+    if (!(token?.swapableOn?.length > 0)) return
+    for (const cID of token.swapableOn) {
+      if (!swapTokens[cID]) {
+        swapTokens[cID] = { [token.swapableType]: [token] }
+      } else if (!swapTokens[cID][token.swapableType]) {
+        swapTokens[cID][token.swapableType] = [token]
+      } else if (!swapTokens[cID][token.swapableType].includes(token)) {
+        swapTokens[cID][token.swapableType] = [
+          ...swapTokens[cID][token.swapableType],
+          token,
+        ]
+      }
+    }
+  })
+  return swapTokens
+}
 const getSwapPriorityRanking = () => {
   const swapPriorityRanking = {}
   Object.values(allPool).map((token) => {
@@ -159,6 +178,7 @@ const getSwapPriorityRanking = () => {
   return swapPriorityRanking
 }
 export const SWAPABLE_TOKENS = getSwapableTokens()
+export const SWAPABLE_TOKENS_BY_TYPE = getSwapableTokensByType()
 export const POOL_PRIORITY_RANKING = getSwapPriorityRanking()
 
 // POOLS
