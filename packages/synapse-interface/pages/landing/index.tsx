@@ -238,10 +238,6 @@ function ExplorerSection() {
   const totalPoolVolume = getTotalPoolVolume()
   const totalValueLocked = getTotalValueLocked()
 
-  // console.log('totalBridgeVolume: ', totalBridgeVolume)
-  // console.log('totalPoolVolume: ', totalPoolVolume)
-  // console.log('totalValueLocked: ', totalValueLocked)
-
   return (
     <SectionContainer>
       <Grid
@@ -287,6 +283,29 @@ function ExplorerSection() {
   )
 }
 
+function IntegrationSection() {
+  return (
+    <SectionContainer>
+      <div
+        className={`
+        flex flex-col md:flex-row
+        items-center justify-center
+        py-6 md:mt-6 lg:mt-6
+        lg:flex lg:justify-center
+        `}
+      >
+        <div
+          className={`
+          mr-6 text-3xl text-white
+          border-r-0 md:border-r md:border-b-1 md:border-white
+          `}
+        >
+          Widely integrated
+        </div>
+      </div>
+    </SectionContainer>
+  )
+}
 function SupportCard({
   header,
   children,
