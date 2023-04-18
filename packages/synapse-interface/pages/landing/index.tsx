@@ -42,8 +42,8 @@ function HeroSection() {
       </div>
       <div
         className={`
-        text-left text-secondaryTextColor md:text-center
-        lg:text-center xs:block sm:block md:hidden lg:hidden
+          text-left text-secondaryTextColor md:text-center
+          lg:text-center xs:block sm:block md:hidden lg:hidden
         `}
       >
         <p>
