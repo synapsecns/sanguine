@@ -580,6 +580,10 @@ function UseCaseCard({ image, title, description }) {
   )
 }
 
+function ResourcesSection() {
+  return <SectionContainer>Resources</SectionContainer>
+}
+
 const LandingPage = () => {
   return (
     <LandingPageWrapper>
@@ -591,6 +595,7 @@ const LandingPage = () => {
         <IntegrationSection />
         <HowItWorksSection />
         <UseCasesSection />
+        <ResourcesSection />
       </LandingPageContainer>
     </LandingPageWrapper>
   )
