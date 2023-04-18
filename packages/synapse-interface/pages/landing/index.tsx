@@ -418,16 +418,28 @@ function generateNetworkCardHref(chainId) {
   return `/?inputCurrency=${inputCurrency}&outputCurrency=${outputCurrency}&outputChain=${chainId}`
 }
 
-function ChainImage({ chainImg }) {
+function ChainLogo({ src }: { src: string }) {
   return (
     <div className="overflow-visible sm:px-1 md:px-2 lg:px-4">
-      <img src={chainImg} className="w-12 overflow-visible rounded-full" />
+      <img src={src} className="w-12 overflow-visible rounded-full" />
     </div>
   )
 }
 
-function NetworkCard({ network }) {
-  const href = generateNetworkCardHref(network.chainId)
+interface NetworkCardProps {
+  chainId: number
+  chainName: string
+  layer: number
+  chainImg: any
+}
+
+function NetworkCard({
+  chainId,
+  chainName,
+  layer,
+  chainImg,
+}: NetworkCardProps) {
+  const href = generateNetworkCardHref(chainId)
   return (
     <Link href={href}>
       <Card
@@ -438,19 +450,17 @@ function NetworkCard({ network }) {
           px-0
           py-3 md:py-5
           transform-gpu hover:transition-all duration-75
-          ${getNetworkButtonBorderHover(network.chainId)}
+          ${getNetworkButtonBorderHover(chainId)}
         `}
         divider={false}
       >
         <div className="flex justify-center mt-2 mb-2">
-          <ChainImage {...network} />
+          <ChainLogo src={chainImg} />
         </div>
         <div className="inline-block ">
-          <div className="text-lg font-medium text-white">
-            {network.chainName}
-          </div>
+          <div className="text-lg font-medium text-white">{chainName}</div>
           <div className="mt-1 text-sm text-opacity-75 text-secondaryTextColor">
-            Layer {network.layer}
+            Layer {layer}
           </div>
         </div>
       </Card>
