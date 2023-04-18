@@ -377,6 +377,10 @@ function HowItWorksSection() {
   )
 }
 
+function UseCasesSection() {
+  return <SectionContainer>Use Cases</SectionContainer>
+}
+
 function SupportCard({
   header,
   children,
@@ -509,6 +513,7 @@ const LandingPage = () => {
         <ExplorerSection />
         <IntegrationSection />
         <HowItWorksSection />
+        <UseCasesSection />
       </LandingPageContainer>
     </LandingPageWrapper>
   )
