@@ -27,7 +27,6 @@ jobs:
 
       -
         name: Login to GitHub Container Registry
-        if: steps.changes.outputs.src == 'true'
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
