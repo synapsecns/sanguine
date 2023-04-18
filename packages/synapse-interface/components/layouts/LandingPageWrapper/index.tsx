@@ -12,21 +12,17 @@ import { Wallet } from '@components/Wallet'
 import { SynapseLogoSvg, SynapseLogoWithTitleSvg } from './SynapseLogoSvg'
 import { TopBarNavLink } from './TopBarNavLink'
 import {
-  ANALYTICS_PATH,
-  BRIDGE_PATH,
   CONTRACTS_PATH,
   DISCORD_URL,
   DOCS_URL,
   FORUM_URL,
   LANDING_PATH,
-  POOLS_PATH,
   PORTFOLIO_PATH,
-  STAKE_PATH,
-  SWAP_PATH,
   TELEGRAM_URL,
   TWITTER_URL,
   getBuySynUrl,
 } from '@/constants/urls'
+import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 
@@ -66,6 +62,7 @@ export function LandingNav() {
           </div>
           <div className="items-center justify-center -mr-2 sm:flex lg:hidden">
             <Popover.Button
+              data-test-id="mobile-navbar-button"
               className={`
                   rounded-lg p-2 inline-flex items-center justify-center
                   text-gray-400 hover:text-gray-400 hover:bg-gray-800
@@ -79,6 +76,7 @@ export function LandingNav() {
           <Popover.Group
             as="nav"
             className="hidden lg:flex md:justify-space-evenly"
+            data-test-id="desktop-nav"
           >
             <TopBarButtons />
           </Popover.Group>
@@ -123,7 +121,10 @@ export function LandingNav() {
           focus
           className="absolute inset-x-0 top-0 z-10 transition origin-top-right transform"
         >
-          <div className="h-full min-h-full divide-y divide-gray-600 bg-bgLight">
+          <div
+            className="h-full min-h-full divide-y divide-gray-600 bg-bgLight"
+            // data-test-id="mobile-nav"
+          >
             <div className="px-4 pt-1 pb-6">
               <div className="flex items-center justify-between mt-5 ml-3">
                 <SynapseTitleLogo showText={false} />
@@ -141,7 +142,12 @@ export function LandingNav() {
                 </div>
               </div>
               <div className="mt-6">
-                <Grid cols={{ xs: 1 }} gap={2} className="py-6">
+                <Grid
+                  cols={{ xs: 1 }}
+                  gap={2}
+                  className="py-6"
+                  data-test-id="mobile-nav"
+                >
                   <MobileBarButtons />
                 </Grid>
               </div>
@@ -193,15 +199,30 @@ function PopoverPanelContainer({
 function TopBarButtons() {
   return (
     <>
-      <TopBarNavLink to={LANDING_PATH} labelText="About" />
-      <TopBarNavLink to={BRIDGE_PATH} labelText="Bridge" />
-      <TopBarNavLink to={SWAP_PATH} labelText="Swap" />
-      <TopBarNavLink to={POOLS_PATH} labelText="Pools" />
-      <TopBarNavLink to={STAKE_PATH} labelText="Stake" />
+      <TopBarNavLink
+        to={NAVIGATION.About.path}
+        labelText={NAVIGATION.About.text}
+      />
+      <TopBarNavLink
+        to={NAVIGATION.Bridge.path}
+        labelText={NAVIGATION.Bridge.text}
+      />
+      <TopBarNavLink
+        to={NAVIGATION.Swap.path}
+        labelText={NAVIGATION.Swap.text}
+      />
+      <TopBarNavLink
+        to={NAVIGATION.Pools.path}
+        labelText={NAVIGATION.Pools.text}
+      />
+      <TopBarNavLink
+        to={NAVIGATION.Stake.path}
+        labelText={NAVIGATION.Stake.text}
+      />
       <TopBarNavLink
         className="hidden mdl:block"
-        to={ANALYTICS_PATH}
-        labelText="Explorer"
+        to={NAVIGATION.Analytics.path}
+        labelText={NAVIGATION.Analytics.text}
       />
     </>
   )
@@ -212,18 +233,18 @@ function MoreInfoButtons() {
     <>
       <MoreInfoItem
         className="mdl:hidden"
-        to={ANALYTICS_PATH}
-        labelText="Analytics"
+        to={NAVIGATION.Analytics.path}
+        labelText={NAVIGATION.Analytics.text}
         description="See preliminary analytics of the bridge"
       />
       <MoreInfoItem
-        to={CONTRACTS_PATH}
-        labelText="Contracts"
+        to={NAVIGATION.Contracts.path}
+        labelText={NAVIGATION.Contracts.text}
         description="View contract related information such as contract addresses"
       />
       <MoreInfoItem
-        to={PORTFOLIO_PATH}
-        labelText="Portfolio"
+        to={NAVIGATION.Portoflio.path}
+        labelText={NAVIGATION.Portfolio.text}
         description="View your portfolio of related assets on this chain"
       />
     </>
@@ -265,12 +286,30 @@ function SocialButtons() {
 function MobileBarButtons() {
   return (
     <>
-      <MobileBarItem to={LANDING_PATH} labelText="About" />
-      <MobileBarItem to={BRIDGE_PATH} labelText="Bridge" />
-      <MobileBarItem to={SWAP_PATH} labelText="Swap" />
-      <MobileBarItem to={POOLS_PATH} labelText="Pools" />
-      <MobileBarItem to={STAKE_PATH} labelText="Stake" />
-      <MobileBarItem to={ANALYTICS_PATH} labelText="Analytics" />
+      <MobileBarItem
+        to={NAVIGATION.About.path}
+        labelText={NAVIGATION.About.text}
+      />
+      <MobileBarItem
+        to={NAVIGATION.Bridge.path}
+        labelText={NAVIGATION.Bridge.text}
+      />
+      <MobileBarItem
+        to={NAVIGATION.Swap.path}
+        labelText={NAVIGATION.Swap.text}
+      />
+      <MobileBarItem
+        to={NAVIGATION.Pools.path}
+        labelText={NAVIGATION.Pools.text}
+      />
+      <MobileBarItem
+        to={NAVIGATION.Stake.path}
+        labelText={NAVIGATION.Stake.text}
+      />
+      <MobileBarItem
+        to={NAVIGATION.Analytics.path}
+        labelText={NAVIGATION.Analytics.text}
+      />
     </>
   )
 }

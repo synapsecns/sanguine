@@ -116,7 +116,7 @@ export const TokenSlideOver = ({
             searchStr={searchStr}
             onSearch={onSearch}
           />
-          <DrawerButton onClick={onClose} />
+          <DrawerButton onClick={onClose} isOrigin={isOrigin} />
         </div>
       </div>
       <div
