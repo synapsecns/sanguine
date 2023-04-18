@@ -18,3 +18,16 @@ export const SECTION_TRANSITION_PROPS = {
   leaveTo: 'transform-gpu scale-y-0 ',
   className: 'origin-top -mx-0 md:-mx-6',
 }
+
+export const TRANSITION_PROPS = {
+  ...COIN_SLIDE_OVER_PROPS,
+  className: `
+    origin-bottom absolute
+    w-full h-full
+    md:w-[95%] md:h-[95%]
+    -ml-0 md:-ml-3
+    md:mt-3
+    bg-bgBase
+    z-20 rounded-3xl
+  `,
+}

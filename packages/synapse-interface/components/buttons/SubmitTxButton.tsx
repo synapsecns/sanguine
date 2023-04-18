@@ -1,7 +1,7 @@
 import Button from '@tw/Button'
 import ButtonLoadingSpinner from '@components/buttons/ButtonLoadingSpinner'
 import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
-
+import { TransactionResponse } from '@ethersproject/providers'
 const BASE_PROPERTIES = `
     w-full rounded-lg my-2 px-4 py-3
     text-white text-opacity-100 transition-all
@@ -20,7 +20,7 @@ export const TransactionButton = ({
   ...props
 }: {
   className?: string
-  onClick: () => Promise<void>
+  onClick: () => Promise<TransactionResponse>
   pendingLabel: string
   label: string
   onSuccess?: () => void
@@ -37,7 +37,7 @@ export const TransactionButton = ({
       }`}
       onClick={async () => {
         const tx = await pendingTxWrapFunc(onClick())
-        if (tx?.status === 1) {
+        if (tx?.hash) {
           onSuccess?.()
         }
       }}
