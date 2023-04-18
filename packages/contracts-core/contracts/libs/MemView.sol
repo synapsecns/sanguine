@@ -18,6 +18,7 @@ using MemViewLib for MemView global;
 library MemViewLib {
     error IndexedTooMuch();
     error ViewOverrun();
+    error OccupiedMemory();
     error UnallocatedMemory();
 
     /// @notice Stack layout for uint256 (from highest bits to lowest)
@@ -66,6 +67,68 @@ library MemViewLib {
             loc_ := add(arr, 0x20)
         }
         return build(loc_, len_);
+    }
+
+    // ════════════════════════════════════════════ CLONING MEMORY VIEW ════════════════════════════════════════════════
+
+    /**
+     * @notice Copies the referenced memory to a new loc in memory, returning a `bytes` pointing to the new memory.
+     * @param memView       The memory view
+     * @return arr          The cloned byte array
+     */
+    function clone(MemView memView) internal view returns (bytes memory arr) {
+        uint256 ptr;
+        assembly {
+            // solhint-disable-previous-line no-inline-assembly
+            // Load unused memory pointer
+            ptr := mload(0x40)
+            // This is where the byte array will be stored
+            arr := ptr
+        }
+        unchecked {
+            _unsafeCopyTo(memView, ptr + 0x20);
+        }
+        // `bytes arr` is stored in memory in the following way
+        // 1. First, uint256 arr.length is stored. That requires 32 bytes (0x20).
+        // 2. Then, the array data is stored.
+        uint256 len_ = memView.len();
+        uint256 footprint_ = memView.footprint();
+        assembly {
+            // solhint-disable-previous-line no-inline-assembly
+            // Write new unused pointer: the old value + array footprint + 32 bytes to store the length
+            mstore(0x40, add(add(ptr, footprint_), 0x20))
+            // Write len of new array (in bytes)
+            mstore(ptr, len_)
+        }
+    }
+
+    /**
+     * @notice Copies all views, joins them into a new bytearray.
+     * @param memViews      The memory views
+     * @return arr          The new byte array with joined data behind the given views
+     */
+    function join(MemView[] memory memViews) internal view returns (bytes memory arr) {
+        uint256 ptr;
+        assembly {
+            // solhint-disable-previous-line no-inline-assembly
+            // Load unused memory pointer
+            ptr := mload(0x40)
+            // This is where the byte array will be stored
+            arr := ptr
+        }
+        MemView newView;
+        unchecked {
+            newView = _unsafeJoin(memViews, ptr + 0x20);
+        }
+        uint256 len_ = newView.len();
+        uint256 footprint_ = newView.footprint();
+        assembly {
+            // solhint-disable-previous-line no-inline-assembly
+            // Write new unused pointer: the old value + array footprint + 32 bytes to store the length
+            mstore(0x40, add(add(ptr, footprint_), 0x20))
+            // Write len of new array (in bytes)
+            mstore(ptr, len_)
+        }
     }
 
     // ══════════════════════════════════════════ INSPECTING MEMORY VIEW ═══════════════════════════════════════════════
@@ -280,5 +343,71 @@ library MemViewLib {
         // There is no scenario where loc or len would overflow uint128, so we omit this check.
         // We use the highest 128 bits to encode the location and the lowest 128 bits to encode the length.
         return MemView.wrap((loc_ << 128) | len_);
+    }
+
+    /**
+     * @notice Copy the view to a location, return an unsafe memory reference
+     * @dev Super Dangerous direct memory access.
+     * This reference can be overwritten if anything else modifies memory (!!!).
+     * As such it MUST be consumed IMMEDIATELY. Update the free memory pointer to ensure the copied data
+     * is not overwritten. This function is private to prevent unsafe usage by callers.
+     * @param memView       The memory view
+     * @param newLoc        The new location to copy the underlying view data
+     * @return The memory view over the unsafe memory with the copied underlying data
+     */
+    function _unsafeCopyTo(MemView memView, uint256 newLoc) private view returns (MemView) {
+        uint256 len_ = memView.len();
+        uint256 oldLoc = memView.loc();
+
+        uint256 ptr;
+        assembly {
+            // solhint-disable-previous-line no-inline-assembly
+            // Load unused memory pointer
+            ptr := mload(0x40)
+        }
+        // Revert if we're writing in occupied memory
+        if (newLoc < ptr) {
+            revert OccupiedMemory();
+        }
+        bool res;
+        assembly {
+            // solhint-disable-previous-line no-inline-assembly
+            // use the identity precompile (0x04) to copy
+            res := staticcall(gas(), 0x04, oldLoc, len_, newLoc, len_)
+        }
+        require(res, "identity: out of gas");
+        return _unsafeBuildUnchecked({loc_: newLoc, len_: len_});
+    }
+
+    /**
+     * @notice Join the views in memory, return an unsafe reference to the memory.
+     * @dev Super Dangerous direct memory access.
+     * This reference can be overwritten if anything else modifies memory (!!!).
+     * As such it MUST be consumed IMMEDIATELY. This function is private to prevent unsafe usage by callers.
+     * @param memViews      The memory views
+     * @return The conjoined view pointing to the new memory
+     */
+    function _unsafeJoin(MemView[] memory memViews, uint256 location) private view returns (MemView) {
+        uint256 ptr;
+        assembly {
+            // solhint-disable-previous-line no-inline-assembly
+            // Load unused memory pointer
+            ptr := mload(0x40)
+        }
+        // Revert if we're writing in occupied memory
+        if (location < ptr) {
+            revert OccupiedMemory();
+        }
+        // Copy the views to the specified location one by one, by tracking the amount of copied bytes so far
+        uint256 offset = 0;
+        for (uint256 i = 0; i < memViews.length; i++) {
+            MemView memView = memViews[i];
+            // We can use the unchecked math here as location + sum(view.length) will never overflow uint256
+            unchecked {
+                _unsafeCopyTo(memView, location + offset);
+                offset += memView.len();
+            }
+        }
+        return _unsafeBuildUnchecked({loc_: location, len_: offset});
     }
 }
