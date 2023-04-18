@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {BaseMessage, BaseMessageLib, TypedMemView} from "../../../contracts/libs/BaseMessage.sol";
+import {BaseMessage, BaseMessageLib, MemView, MemViewLib} from "../../../contracts/libs/BaseMessage.sol";
 
 // solhint-disable ordering
 /**
@@ -10,9 +10,8 @@ import {BaseMessage, BaseMessageLib, TypedMemView} from "../../../contracts/libs
  */
 contract BaseMessageHarness {
     using BaseMessageLib for bytes;
-    using BaseMessageLib for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using BaseMessageLib for MemView;
+    using MemViewLib for bytes;
 
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
@@ -52,7 +51,7 @@ contract BaseMessageHarness {
     }
 
     function isBaseMessage(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isBaseMessage();
+        return payload.ref().isBaseMessage();
     }
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════

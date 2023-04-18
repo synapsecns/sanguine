@@ -2,11 +2,13 @@
 
 pragma solidity 0.8.17;
 
-import {ByteString, SystemEntity, SystemRouter} from "../../../contracts/system/SystemRouter.sol";
+import {ByteString} from "../../../contracts/libs/ByteString.sol";
+import {MemViewLib, SystemEntity, SystemRouter} from "../../../contracts/system/SystemRouter.sol";
 
 // solhint-disable no-empty-blocks
 contract SystemRouterHarness is SystemRouter {
     using ByteString for bytes;
+    using MemViewLib for bytes;
 
     constructor(uint32 domain, address origin_, address destination_, address agentManager_)
         SystemRouter(domain, origin_, destination_, agentManager_)

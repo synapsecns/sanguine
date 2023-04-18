@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ByteString, CallData, TypedMemView} from "../../../contracts/libs/ByteString.sol";
+import {ByteString, CallData, MemView, MemViewLib} from "../../../contracts/libs/ByteString.sol";
 
 import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
 import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
@@ -161,7 +161,6 @@ library CastLib {
     using StateReportLib for bytes;
     using SystemMessageLib for bytes;
     using TipsLib for bytes;
-    using TypedMemView for bytes29;
 
     /// @notice Prevents this contract from being included in the coverage report
     function testCastLib() external {}

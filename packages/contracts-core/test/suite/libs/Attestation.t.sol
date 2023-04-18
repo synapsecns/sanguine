@@ -3,14 +3,14 @@ pragma solidity 0.8.17;
 
 import {ATTESTATION_LENGTH} from "../../../contracts/libs/Constants.sol";
 
-import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
-import {AttestationHarness, TypedMemView} from "../../harnesses/libs/AttestationHarness.t.sol";
+import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
+import {AttestationHarness, MemViewLib} from "../../harnesses/libs/AttestationHarness.t.sol";
 
 import {RawAttestation} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract AttestationLibraryTest is SynapseLibraryTest {
-    using TypedMemView for bytes;
+    using MemViewLib for bytes;
 
     AttestationHarness internal libHarness;
 

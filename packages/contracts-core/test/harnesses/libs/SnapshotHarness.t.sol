@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {Snapshot, SnapshotLib, State, StateLib, TypedMemView} from "../../../contracts/libs/Snapshot.sol";
+import {Snapshot, SnapshotLib, State, StateLib, MemView, MemViewLib} from "../../../contracts/libs/Snapshot.sol";
 
 // solhint-disable ordering
 
@@ -12,9 +12,8 @@ import {Snapshot, SnapshotLib, State, StateLib, TypedMemView} from "../../../con
 contract SnapshotHarness {
     using StateLib for bytes;
     using SnapshotLib for bytes;
-    using SnapshotLib for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using SnapshotLib for MemView;
+    using MemViewLib for bytes;
 
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
@@ -56,6 +55,6 @@ contract SnapshotHarness {
     }
 
     function isSnapshot(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isSnapshot();
+        return payload.ref().isSnapshot();
     }
 }

@@ -3,11 +3,11 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {BaseMessageLib} from "./libs/BaseMessage.sol";
-import {ByteString} from "./libs/ByteString.sol";
 import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
+import {MemView, MemViewLib} from "./libs/MemView.sol";
 import {HeaderLib, MessageFlag} from "./libs/Message.sol";
 import {StateReport} from "./libs/StateReport.sol";
-import {State, TypedMemView} from "./libs/State.sol";
+import {State} from "./libs/State.sol";
 import {SystemMessageLib} from "./libs/SystemMessage.sol";
 import {Tips, TipsLib} from "./libs/Tips.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
@@ -21,11 +21,10 @@ import {DomainContext, Versioned} from "./system/SystemContract.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
-    using ByteString for bytes;
-    using SystemMessageLib for bytes29;
+    using MemViewLib for bytes;
+    using SystemMessageLib for MemView;
     using TipsLib for bytes;
     using TypeCasts for address;
-    using TypedMemView for bytes29;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 

@@ -2,15 +2,14 @@
 
 pragma solidity 0.8.17;
 
-import {Attestation, AttestationLib, TypedMemView} from "../../../contracts/libs/Attestation.sol";
+import {Attestation, AttestationLib, MemView, MemViewLib} from "../../../contracts/libs/Attestation.sol";
 
 // solhint-disable ordering
 /// @notice Exposes Attestation methods for testing against golang.
 contract AttestationHarness {
     using AttestationLib for bytes;
-    using AttestationLib for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using AttestationLib for MemView;
+    using MemViewLib for bytes;
 
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
@@ -61,6 +60,6 @@ contract AttestationHarness {
     }
 
     function isAttestation(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isAttestation();
+        return payload.ref().isAttestation();
     }
 }

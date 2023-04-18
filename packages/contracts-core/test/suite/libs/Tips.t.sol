@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {TipsHarness} from "../../harnesses/libs/TipsHarness.t.sol";
 
 import {TIPS_MULTIPLIER, TIPS_LENGTH} from "../../../contracts/libs/Constants.sol";
 
 // solhint-disable func-name-mixedcase
 contract TipsLibraryTest is SynapseLibraryTest {
-    using TypedMemView for bytes;
+    using MemViewLib for bytes;
 
     TipsHarness internal libHarness;
 

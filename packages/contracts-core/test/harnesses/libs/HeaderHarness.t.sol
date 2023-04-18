@@ -2,16 +2,15 @@
 
 pragma solidity 0.8.17;
 
-import {Header, HeaderLib, TypedMemView} from "../../../contracts/libs/Header.sol";
+import {Header, HeaderLib, MemView, MemViewLib} from "../../../contracts/libs/Header.sol";
 
 /**
  * @notice Exposes Header methods for testing against golang.
  */
 contract HeaderHarness {
     using HeaderLib for bytes;
-    using HeaderLib for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using HeaderLib for MemView;
+    using MemViewLib for bytes;
 
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
@@ -46,7 +45,7 @@ contract HeaderHarness {
     }
 
     function isHeader(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isHeader();
+        return payload.ref().isHeader();
     }
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
