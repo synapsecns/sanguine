@@ -15,6 +15,11 @@ import {
 import Link from 'next/link'
 
 import { DOCS_URL, BRIDGE_PATH, ANALYTICS_PATH } from '@/constants/urls'
+import {
+  getTotalBridgeVolume,
+  getTotalPoolVolume,
+  getTotalValueLocked,
+} from '@/utils/hooks/useExplorerStats'
 
 function LandingPageContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -228,6 +233,14 @@ function BridgeSection() {
 }
 
 function ExplorerSection() {
+  const totalBridgeVolume = getTotalBridgeVolume()
+  const totalPoolVolume = getTotalPoolVolume()
+  const totalValueLocked = getTotalValueLocked()
+
+  // console.log('totalBridgeVolume: ', totalBridgeVolume)
+  // console.log('totalPoolVolume: ', totalPoolVolume)
+  // console.log('totalValueLocked: ', totalValueLocked)
+
   return (
     <SectionContainer>
       <Grid
@@ -282,6 +295,25 @@ function SupportCard({ header, children }: SupportCardProps) {
       divider={false}
     >
       {children}
+    </Card>
+  )
+}
+
+function StatisticsCard({ title, value }) {
+  return (
+    <Card
+      title={title}
+      titleClassName="text-white opacity-75"
+      className="flex justify-center px-2 py-12 bg-transparent"
+      divider={false}
+    >
+      {value ? (
+        <div className="flex text-3xl font-medium text-white justify-left">
+          {value}
+        </div>
+      ) : (
+        <div className="w-full h-8 bg-slate-700 animate-pulse" />
+      )}
     </Card>
   )
 }
