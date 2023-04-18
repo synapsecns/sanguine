@@ -20,23 +20,8 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - name: Read .nvmrc
-        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
-        id: nvmrc
-
-      - name: 'Use NodeJS by nvmrc'
-        uses: actions/setup-node@v3
-        with:
-          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-          cache: 'yarn'
-
-      - uses: actions/cache@v3
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-
-      - name: Install Node Dependencies
-        run: yarn install --immutable --immutable-cache --check-cache
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
 
       - name: Authenticate with private NPM package
         run: |
