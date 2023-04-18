@@ -246,7 +246,7 @@ function SupportCard({ header, children, icon }: SupportCardProps) {
     <Card
       title={header}
       titleClassName="text-[1.69rem] font-medium text-white"
-      className="bg-transparent text-secondaryTextColor"
+      className="px-0 bg-transparent text-secondaryTextColor"
       divider={false}
     >
       {children}
