@@ -12,7 +12,8 @@ import {
   BridgeImage,
   BridgeImageSmall,
 } from '@/components/icons/LandingIcons/BridgeImage'
-import { ChainId } from '@/constants/chains'
+import { ChainId, ORDERED_CHAINS_BY_ID, CHAINS_BY_ID } from '@/constants/chains'
+import { Chain } from '@/utils/types'
 import { DOCS_URL, BRIDGE_PATH, ANALYTICS_PATH } from '@/constants/urls'
 import {
   getTotalBridgeVolume,
@@ -297,6 +298,12 @@ function ExplorerSection() {
 }
 
 function IntegrationSection() {
+  const OrderedSupportedNetworks: Chain[] = ORDERED_CHAINS_BY_ID.filter(
+    (chainId) => Number(chainId) !== ChainId.TERRA
+  ).map((chainId) => {
+    return CHAINS_BY_ID[chainId]
+  })
+
   return (
     <SectionContainer>
       <div
@@ -326,6 +333,14 @@ function IntegrationSection() {
           <br className="hidden md:block" />
           Layer 2 networks for a seamless cross-chain experience.
         </div>
+
+        <Grid
+          cols={{ xs: 2, sm: 2, md: 3, lg: 5 }}
+          gap={4}
+          className="py-6 mx-auto md:py-12 lg:py-12 2xl:w-3/4"
+        >
+          {/* {OrderedSupportedNetworks.map((network) => (<NetworkCard /> ))} */}
+        </Grid>
       </div>
     </SectionContainer>
   )
