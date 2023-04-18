@@ -174,13 +174,13 @@ function SecuritySection() {
 function BridgeSection() {
   return (
     <SectionContainer>
-      <Grid
-        cols={{ sm: 1, md: 2 }}
-        gap={10}
-        className="py-6 mx-auto md:py-12 2xl:w-3/4"
-      >
+      <Grid cols={{ sm: 1, md: 2 }} gap={10} className="py-6 mx-auto 2xl:w-3/4">
         <div
-          className="absolute hidden w-screen -mt-12 bg-black lg:block bg-opacity-20 -left-12 -z-10"
+          className={`
+            absolute hidden w-screen -mt-12
+            bg-black lg:block bg-opacity-20
+            -left-12 -z-10
+          `}
           style={{ height: '50rem' }}
         />
         <div className="flex items-center max-w-md">
@@ -233,7 +233,7 @@ function ExplorerSection() {
       <Grid
         cols={{ sm: 1, md: 2 }}
         gap={4}
-        className="flex items-center px-8 py-6 mx-auto md:py-12 md:px-12"
+        className="flex items-center px-8 py-6 mx-auto md:px-12"
       >
         <div className="max-w-sm mx-auto mt-12 text-left">
           <div className="mb-3 text-3xl font-medium text-white">
@@ -259,6 +259,12 @@ function ExplorerSection() {
           </Link>
         </div>
       </Grid>
+
+      <Grid
+        cols={{ sm: 1, md: 2, lg: 3 }}
+        gap={4}
+        className="max-w-4xl pb-12 mx-auto space-x-0 "
+      ></Grid>
     </SectionContainer>
   )
 }
