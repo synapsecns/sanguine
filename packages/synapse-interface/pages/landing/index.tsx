@@ -304,6 +304,7 @@ function IntegrationSection() {
     return CHAINS_BY_ID[chainId]
   })
 
+  console.log('OrderedSupportedNetworks:', OrderedSupportedNetworks)
   return (
     <SectionContainer>
       <div
@@ -333,15 +334,22 @@ function IntegrationSection() {
           <br className="hidden md:block" />
           Layer 2 networks for a seamless cross-chain experience.
         </div>
-
-        <Grid
-          cols={{ xs: 2, sm: 2, md: 3, lg: 5 }}
-          gap={4}
-          className="py-6 mx-auto md:py-12 lg:py-12 2xl:w-3/4"
-        >
-          {/* {OrderedSupportedNetworks.map((network) => (<NetworkCard /> ))} */}
-        </Grid>
       </div>
+
+      <Grid
+        cols={{ xs: 2, sm: 2, md: 3, lg: 5 }}
+        gap={4}
+        className="py-6 mx-auto md:py-12 lg:py-12 2xl:w-3/4"
+      >
+        {OrderedSupportedNetworks.map((network: Chain) => (
+          <NetworkCard
+            chainId={network.id}
+            chainName={network.chainName}
+            chainImg={network.chainImg.src}
+            layer={network.layer}
+          />
+        ))}
+      </Grid>
     </SectionContainer>
   )
 }
