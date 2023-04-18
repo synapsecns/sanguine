@@ -14,7 +14,7 @@ import {
 
 import Link from 'next/link'
 
-import { DOCS_URL, BRIDGE_PATH } from '@/constants/urls'
+import { DOCS_URL, BRIDGE_PATH, ANALYTICS_PATH } from '@/constants/urls'
 
 function LandingPageContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -226,22 +226,48 @@ function BridgeSection() {
     </SectionContainer>
   )
 }
+
+function ExplorerSection() {
+  return (
+    <SectionContainer>
+      <Grid
+        cols={{ sm: 1, md: 2 }}
+        gap={4}
+        className="flex items-center px-8 py-6 mx-auto md:py-12 md:px-12"
+      >
+        <div className="max-w-sm mx-auto mt-12 text-left">
+          <div className="mb-3 text-3xl font-medium text-white">
+            Battle-tested infrastructure
+          </div>
+          <div className="text-secondaryTextColor ">
+            Synapse has processed millions of transactions and tens of billions
+            in bridged assets.
+          </div>
+        </div>
+        <div className="hidden col-span-1 text-center md:block">
+          <Link href={ANALYTICS_PATH} target="_blank">
+            <Button
+              className="border-[#AC8FFF] border text-sm px-4 py-3 hover:opacity-75"
+              style={{
+                background:
+                  'linear-gradient(310.65deg, rgba(255, 0, 255, 0.2) -17.9%, rgba(172, 143, 255, 0.2) 86.48%)',
+                borderRadius: '10px',
+              }}
+            >
+              Go to Explorer
+            </Button>
+          </Link>
+        </div>
+      </Grid>
+    </SectionContainer>
+  )
+}
 interface SupportCardProps {
   header: string
   children: React.ReactNode
-  icon?: string
 }
 
-function SupportCard({ header, children, icon }: SupportCardProps) {
-  //   return (
-  //     <div className="space-y-4">
-  //       <div className="flex flex-row no-wrap">
-  //         {icon && <div className="pr-2">{icon}</div>}
-  //         <div className="text-[1.69rem] font-medium text-white">{header}</div>
-  //       </div>
-  //       <div className="text-secondaryTextColor">{children}</div>
-  //     </div>
-  //   )
+function SupportCard({ header, children }: SupportCardProps) {
   return (
     <Card
       title={header}
@@ -261,6 +287,7 @@ const LandingPage = () => {
         <HeroSection />
         <SecuritySection />
         <BridgeSection />
+        <ExplorerSection />
       </LandingPageContainer>
     </LandingPageWrapper>
   )
