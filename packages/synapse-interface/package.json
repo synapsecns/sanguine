@@ -10,6 +10,8 @@
     "build": "./build-local.sh && next build",
     "start": "next start",
     "lint": "next lint",
+    "cypress:run": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
+    "cypress:open": "start-server-and-test dev http://localhost:3000 \"cypress open --e2e --browser chrome\"",
     "test:coverage": "echo 'No tests defined.'",
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "eslint . --max-warnings=0",
@@ -35,6 +37,7 @@
     "@types/react-dom": "18.0.11",
     "@wagmi/core": "0.9.7",
     "bignumber": "^1.1.0",
+    "dayjs": "^1.11.7",
     "eslint": "^8.37.0",
     "ethers": "5.7.2",
     "fuse.js": "^6.6.2",
@@ -54,8 +57,13 @@
     "wagmi": "^0.11.7"
   },
   "devDependencies": {
+    "@depay/web3-mock": "^14.0.0",
+    "@testing-library/cypress": "^9.0.0",
+    "@types/web3": "^1.2.2",
     "autoprefixer": "^10.4.13",
+    "cypress": "^12.9.0",
     "postcss": "^8.4.21",
+    "start-server-and-test": "^2.0.0",
     "tailwindcss": "^3.2.7"
   },
   "browserslist": {

@@ -12,12 +12,15 @@ const SelectTokenDropdown = ({
   chainId,
   selectedToken,
   onClick,
+  isOrigin,
 }: {
   chainId: number
   selectedToken: Token
   onClick: () => void
+  isOrigin: boolean
 }) => {
   const symbol = selectedToken ? displaySymbol(chainId, selectedToken) : ''
+  const dataId = isOrigin ? 'bridge-origin-token' : 'bridge-destination-token'
 
   return (
     <button
@@ -55,7 +58,7 @@ const SelectTokenDropdown = ({
           </div>
           <div className="text-left cursor-pointer">
             <h4 className="text-lg font-medium text-white">
-              <span>{symbol}</span>
+              <span data-test-id={dataId}>{symbol}</span>
               <ChevronDownIcon className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180" />
             </h4>
           </div>

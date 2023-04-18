@@ -5,8 +5,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
-      - feat/devcontainer
+      - master
     paths:
       - '.devcontainer/**'
       - '.github/workflows/devcontainer.yml'

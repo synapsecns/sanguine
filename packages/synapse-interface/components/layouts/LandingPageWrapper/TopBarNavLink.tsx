@@ -33,6 +33,7 @@ export function TopBarNavLink({
         href={to}
         className={linkClassName}
         // activeClassName="!text-opacity-100"
+        data-test-id="nav-link"
       >
         {linkContent}
       </Link>
