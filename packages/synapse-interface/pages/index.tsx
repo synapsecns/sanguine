@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { useAccount } from 'wagmi'
 
 import BridgePage from './bridge'
+import LandingPage from './landing'
 
 const Home = () => {
   const { address } = useAccount()
@@ -14,6 +15,7 @@ const Home = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <BridgePage address={address} />
+      <LandingPage />
     </>
   )
 }
