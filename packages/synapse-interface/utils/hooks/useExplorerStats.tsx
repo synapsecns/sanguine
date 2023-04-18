@@ -5,7 +5,9 @@ import _ from 'lodash'
 import { useSwr } from '@hooks/useSwr'
 import { BRIDGESYN_ANALYTICS_API, LLAMA_API_URL } from '@/constants/urls'
 
-export function getTotalBridgeVolume(): number | undefined {
+export type ExplorerQueryStatsResponse = number | undefined
+
+export function getTotalBridgeVolume(): ExplorerQueryStatsResponse {
   const { data } = useSwr(`${BRIDGESYN_ANALYTICS_API}/volume/total/in`)
 
   let totalAmt
@@ -17,7 +19,7 @@ export function getTotalBridgeVolume(): number | undefined {
   }
 }
 
-export function getTotalPoolVolume(): number | undefined {
+export function getTotalPoolVolume(): ExplorerQueryStatsResponse {
   const { data } = useSwr(`${BRIDGESYN_ANALYTICS_API}/pools/volume/total`)
 
   let totalAmt
@@ -29,7 +31,7 @@ export function getTotalPoolVolume(): number | undefined {
   }
 }
 
-export function getTotalValueLocked(): number | undefined {
+export function getTotalValueLocked(): ExplorerQueryStatsResponse {
   const { data: tvlData } = useSwr(LLAMA_API_URL)
 
   if (tvlData?.currentChainTvls) {
