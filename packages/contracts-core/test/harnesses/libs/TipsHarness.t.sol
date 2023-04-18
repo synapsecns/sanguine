@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Tips, TipsLib, TIPS_LENGTH, TypedMemView} from "../../../contracts/libs/Tips.sol";
+import {Tips, TipsLib, TIPS_LENGTH, MemView, MemViewLib} from "../../../contracts/libs/Tips.sol";
 
 /**
  * @notice Exposes TipsLib methods for testing against golang.
  */
 contract TipsHarness {
     using TipsLib for bytes;
-    using TipsLib for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using TipsLib for MemView;
+    using MemViewLib for bytes;
 
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
@@ -50,7 +49,7 @@ contract TipsHarness {
     }
 
     function isTips(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isTips();
+        return payload.ref().isTips();
     }
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════

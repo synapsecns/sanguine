@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ByteString} from "./ByteString.sol";
 import {TIPS_GRANULARITY, TIPS_LENGTH} from "./Constants.sol";
-import {TypedMemView} from "./TypedMemView.sol";
+import {MemView, MemViewLib} from "./MemView.sol";
 
 /// @dev Tips is a memory over over a formatted message tips payload.
-type Tips is bytes29;
+type Tips is uint256;
 
 /// @dev Attach library functions to Tips
 using TipsLib for Tips global;
@@ -16,8 +15,7 @@ using TipsLib for Tips global;
  * of [the messages used by Origin and Destination].
  */
 library TipsLib {
-    using ByteString for bytes;
-    using TypedMemView for bytes29;
+    using MemViewLib for bytes;
 
     /**
      * @dev Tips are paid for sending a base message, and are split across all the agents that
@@ -82,81 +80,81 @@ library TipsLib {
      * @dev Will revert if the payload is not a tips payload.
      */
     function castToTips(bytes memory payload) internal pure returns (Tips) {
-        return castToTips(payload.castToRawBytes());
+        return castToTips(payload.ref());
     }
 
     /**
      * @notice Casts a memory view to a Tips view.
      * @dev Will revert if the memory view is not over a tips payload.
      */
-    function castToTips(bytes29 view_) internal pure returns (Tips) {
-        require(isTips(view_), "Not a tips payload");
-        return Tips.wrap(view_);
+    function castToTips(MemView memView) internal pure returns (Tips) {
+        require(isTips(memView), "Not a tips payload");
+        return Tips.wrap(MemView.unwrap(memView));
     }
 
     /// @notice Checks that a payload is a formatted Tips payload.
-    function isTips(bytes29 view_) internal pure returns (bool) {
-        return view_.len() == TIPS_LENGTH;
+    function isTips(MemView memView) internal pure returns (bool) {
+        return memView.len() == TIPS_LENGTH;
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Tips tips) internal pure returns (bytes29) {
-        return Tips.unwrap(tips);
+    function unwrap(Tips tips) internal pure returns (MemView) {
+        return MemView.wrap(Tips.unwrap(tips));
     }
 
     // ═══════════════════════════════════════════════ TIPS SLICING ════════════════════════════════════════════════════
 
     /// @notice Returns summitTip field
     function summitTip(Tips tips) internal pure returns (uint64) {
-        bytes29 view_ = tips.unwrap();
-        return uint64(_summitTip(view_));
+        MemView memView = tips.unwrap();
+        return uint64(_summitTip(memView));
     }
 
     /// @notice Returns attestationTip field
     function attestationTip(Tips tips) internal pure returns (uint64) {
-        bytes29 view_ = tips.unwrap();
-        return uint64(_attestationTip(view_));
+        MemView memView = tips.unwrap();
+        return uint64(_attestationTip(memView));
     }
 
     /// @notice Returns executionTip field
     function executionTip(Tips tips) internal pure returns (uint64) {
-        bytes29 view_ = tips.unwrap();
-        return uint64(_executionTip(view_));
+        MemView memView = tips.unwrap();
+        return uint64(_executionTip(memView));
     }
 
     /// @notice Returns deliveryTip field
     function deliveryTip(Tips tips) internal pure returns (uint64) {
-        bytes29 view_ = tips.unwrap();
-        return uint64(_deliveryTip(view_));
+        MemView memView = tips.unwrap();
+        return uint64(_deliveryTip(memView));
     }
 
     /// @notice Returns total value of the tips payload.
     /// This is the sum of the encoded values, scaled up by TIPS_MULTIPLIER
     function value(Tips tips) internal pure returns (uint256 value_) {
-        bytes29 view_ = tips.unwrap();
-        value_ = _summitTip(view_) + _attestationTip(view_) + _executionTip(view_) + _deliveryTip(view_);
+        MemView memView = tips.unwrap();
+        value_ = _summitTip(memView) + _attestationTip(memView) + _executionTip(memView) + _deliveryTip(memView);
         value_ <<= TIPS_GRANULARITY;
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
 
     /// @notice Returns summitTip field as uint256
-    function _summitTip(bytes29 view_) internal pure returns (uint256) {
-        return view_.indexUint({index_: OFFSET_SUMMIT_TIP, bytes_: 8});
+    function _summitTip(MemView memView) internal pure returns (uint256) {
+        return memView.indexUint({index_: OFFSET_SUMMIT_TIP, bytes_: 8});
     }
 
     /// @notice Returns attestationTip field as uint256
-    function _attestationTip(bytes29 view_) internal pure returns (uint256) {
-        return view_.indexUint({index_: OFFSET_ATTESTATION_TIP, bytes_: 8});
+    function _attestationTip(MemView memView) internal pure returns (uint256) {
+        return memView.indexUint({index_: OFFSET_ATTESTATION_TIP, bytes_: 8});
     }
 
     /// @notice Returns executionTip field as uint256
-    function _executionTip(bytes29 view_) internal pure returns (uint256) {
-        return view_.indexUint({index_: OFFSET_EXECUTION_TIP, bytes_: 8});
+    function _executionTip(MemView memView) internal pure returns (uint256) {
+        return memView.indexUint({index_: OFFSET_EXECUTION_TIP, bytes_: 8});
     }
 
     /// @notice Returns deliveryTip field as uint256
-    function _deliveryTip(bytes29 view_) internal pure returns (uint256) {
-        return view_.indexUint({index_: OFFSET_DELIVERY_TIP, bytes_: 8});
+    function _deliveryTip(MemView memView) internal pure returns (uint256) {
+        return memView.indexUint({index_: OFFSET_DELIVERY_TIP, bytes_: 8});
     }
 }

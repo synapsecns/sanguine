@@ -3,14 +3,14 @@ pragma solidity 0.8.17;
 
 import {HEADER_LENGTH} from "../../../contracts/libs/Constants.sol";
 
-import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {HeaderHarness} from "../../harnesses/libs/HeaderHarness.t.sol";
 
 import {RawHeader} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract HeaderLibraryTest is SynapseLibraryTest {
-    using TypedMemView for bytes;
+    using MemViewLib for bytes;
 
     HeaderHarness internal libHarness;
 

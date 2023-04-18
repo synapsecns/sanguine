@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Receipt, ReceiptLib, TypedMemView} from "../../../contracts/libs/Receipt.sol";
+import {Receipt, ReceiptLib, MemView, MemViewLib} from "../../../contracts/libs/Receipt.sol";
 
 // solhint-disable ordering
 contract ReceiptHarness {
     using ReceiptLib for bytes;
-    using ReceiptLib for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using ReceiptLib for MemView;
+    using MemViewLib for bytes;
 
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
@@ -68,7 +67,7 @@ contract ReceiptHarness {
     }
 
     function isReceipt(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isReceipt();
+        return payload.ref().isReceipt();
     }
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════

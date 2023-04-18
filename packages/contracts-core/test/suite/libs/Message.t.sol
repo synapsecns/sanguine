@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {MessageHarness} from "../../harnesses/libs/MessageHarness.t.sol";
 
 import {HeaderLib, HEADER_LENGTH} from "../../../contracts/libs/Header.sol";

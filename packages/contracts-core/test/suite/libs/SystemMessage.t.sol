@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {SystemMessageHarness} from "../../harnesses/libs/SystemMessageHarness.t.sol";
 
 import {Random} from "../../utils/libs/Random.t.sol";
@@ -9,7 +9,7 @@ import {SystemEntity, RawSystemMessage} from "../../utils/libs/SynapseStructs.t.
 
 // solhint-disable func-name-mixedcase
 contract SystemMessageLibraryTest is SynapseLibraryTest {
-    using TypedMemView for bytes;
+    using MemViewLib for bytes;
 
     uint256 internal constant OFFSET_ARGUMENTS = 6;
 

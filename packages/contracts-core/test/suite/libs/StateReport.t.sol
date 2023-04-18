@@ -3,14 +3,14 @@ pragma solidity 0.8.17;
 
 import {STATE_LENGTH} from "../../../contracts/libs/Constants.sol";
 
-import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {RawStateReport} from "../../utils/libs/SynapseStructs.t.sol";
 
 import {StateFlag, StateReportHarness} from "../../harnesses/libs/StateReportHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract StateReportLibraryTest is SynapseLibraryTest {
-    using TypedMemView for bytes;
+    using MemViewLib for bytes;
 
     StateReportHarness internal libHarness;
 

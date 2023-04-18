@@ -1,19 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ByteString} from "./ByteString.sol";
 import {REQUEST_LENGTH} from "./Constants.sol";
-import {TypedMemView} from "./TypedMemView.sol";
+import {MemView, MemViewLib} from "./MemView.sol";
 
 /// @dev Request is a memory view over a formatted "message execution request" payload.
-type Request is bytes29;
+type Request is uint256;
 
 /// @dev Attach library functions to Request
 using RequestLib for Request global;
 
 library RequestLib {
-    using ByteString for bytes;
-    using TypedMemView for bytes29;
+    using MemViewLib for bytes;
 
     /**
      * @dev Request structure represents a message sender requirements for
@@ -39,32 +37,32 @@ library RequestLib {
      * @dev Will revert if the payload is not a request.
      */
     function castToRequest(bytes memory payload) internal pure returns (Request) {
-        return castToRequest(payload.castToRawBytes());
+        return castToRequest(payload.ref());
     }
 
     /**
      * @notice Casts a memory view to a Request view.
      * @dev Will revert if the memory view is not over a request.
      */
-    function castToRequest(bytes29 view_) internal pure returns (Request) {
-        require(isRequest(view_), "Not a request");
-        return Request.wrap(view_);
+    function castToRequest(MemView memView) internal pure returns (Request) {
+        require(isRequest(memView), "Not a request");
+        return Request.wrap(MemView.unwrap(memView));
     }
 
     /// @notice Checks that a payload is a formatted Request.
-    function isRequest(bytes29 view_) internal pure returns (bool) {
-        return view_.len() == REQUEST_LENGTH;
+    function isRequest(MemView memView) internal pure returns (bool) {
+        return memView.len() == REQUEST_LENGTH;
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Request request) internal pure returns (bytes29) {
-        return Request.unwrap(request);
+    function unwrap(Request request) internal pure returns (MemView) {
+        return MemView.wrap(Request.unwrap(request));
     }
 
     // ══════════════════════════════════════════════ REQUEST SLICING ══════════════════════════════════════════════════
 
     function gasLimit(Request request) internal pure returns (uint64) {
-        bytes29 view_ = unwrap(request);
-        return uint64(view_.indexUint({index_: OFFSET_GAS_LIMIT, bytes_: 8}));
+        MemView memView = unwrap(request);
+        return uint64(memView.indexUint({index_: OFFSET_GAS_LIMIT, bytes_: 8}));
     }
 }

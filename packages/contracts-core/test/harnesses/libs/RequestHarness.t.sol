@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Request, RequestLib, TypedMemView} from "../../../contracts/libs/Request.sol";
+import {Request, RequestLib, MemView, MemViewLib} from "../../../contracts/libs/Request.sol";
 
 // solhint-disable ordering
 contract RequestHarness {
     using RequestLib for bytes;
-    using RequestLib for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using RequestLib for MemView;
+    using MemViewLib for bytes;
 
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
@@ -23,7 +22,7 @@ contract RequestHarness {
     }
 
     function isRequest(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isRequest();
+        return payload.ref().isRequest();
     }
 
     function gasLimit(bytes memory payload) public pure returns (uint64) {

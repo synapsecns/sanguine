@@ -71,11 +71,6 @@ contract ByteStringLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.formatSignature(r, s, v), signature, "!formatSignature");
     }
 
-    function test_formattedCorrectly_rawBytes() public {
-        bytes memory payload = "test payload";
-        assertEq(libHarness.castToRawBytes(payload), payload, "!castToRawBytes");
-    }
-
     function test_castToSignature_incorrectLength(uint16 length) public {
         vm.assume(length != libHarness.signatureLength());
         bytes memory payload = new bytes(length);

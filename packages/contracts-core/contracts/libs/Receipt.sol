@@ -1,21 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ByteString} from "./ByteString.sol";
 import {RECEIPT_SALT, RECEIPT_LENGTH, TIPS_LENGTH} from "./Constants.sol";
 import {Tips, TipsLib} from "./Tips.sol";
-import {TypedMemView} from "./TypedMemView.sol";
+import {MemView, MemViewLib} from "./MemView.sol";
 
 /// @dev Receipt is a memory view over a formatted receipt payload.
-type Receipt is bytes29;
+type Receipt is uint256;
 
 /// @dev Attach library functions to Receipt
 using ReceiptLib for Receipt global;
 
 library ReceiptLib {
-    using ByteString for bytes;
-    using TipsLib for bytes29;
-    using TypedMemView for bytes29;
+    using MemViewLib for bytes;
+    using TipsLib for MemView;
 
     /**
      *
@@ -86,102 +84,102 @@ library ReceiptLib {
      * @dev Will revert if the payload is not a receipt.
      */
     function castToReceipt(bytes memory payload) internal pure returns (Receipt) {
-        return castToReceipt(payload.castToRawBytes());
+        return castToReceipt(payload.ref());
     }
 
     /**
      * @notice Casts a memory view to a Receipt view.
      * @dev Will revert if the memory view is not over a receipt.
      */
-    function castToReceipt(bytes29 view_) internal pure returns (Receipt) {
-        require(isReceipt(view_), "Not a receipt");
-        return Receipt.wrap(view_);
+    function castToReceipt(MemView memView) internal pure returns (Receipt) {
+        require(isReceipt(memView), "Not a receipt");
+        return Receipt.wrap(MemView.unwrap(memView));
     }
 
     /// @notice Checks that a payload is a formatted Receipt.
-    function isReceipt(bytes29 view_) internal pure returns (bool) {
+    function isReceipt(MemView memView) internal pure returns (bool) {
         // Check payload length
-        if (view_.len() != RECEIPT_LENGTH) return false;
+        if (memView.len() != RECEIPT_LENGTH) return false;
         // Check that tips payload is formatted
-        return _tips(view_).isTips();
+        return _tips(memView).isTips();
     }
 
     /// @notice Returns the hash of an Receipt, that could be later signed by a Notary.
     function hash(Receipt receipt) internal pure returns (bytes32) {
         // Get the underlying memory view
-        bytes29 view_ = receipt.unwrap();
+        MemView memView = receipt.unwrap();
         // The final hash to sign is keccak(receiptSalt, keccak(receipt))
-        return keccak256(bytes.concat(RECEIPT_SALT, view_.keccak()));
+        return keccak256(bytes.concat(RECEIPT_SALT, memView.keccak()));
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Receipt receipt) internal pure returns (bytes29) {
-        return Receipt.unwrap(receipt);
+    function unwrap(Receipt receipt) internal pure returns (MemView) {
+        return MemView.wrap(Receipt.unwrap(receipt));
     }
 
     // ═════════════════════════════════════════════ RECEIPT SLICING ═════════════════════════════════════════════════
 
     /// @notice Returns receipt's origin field
     function origin(Receipt receipt) internal pure returns (uint32) {
-        bytes29 view_ = unwrap(receipt);
-        return uint32(view_.indexUint({index_: OFFSET_ORIGIN, bytes_: 4}));
+        MemView memView = unwrap(receipt);
+        return uint32(memView.indexUint({index_: OFFSET_ORIGIN, bytes_: 4}));
     }
 
     /// @notice Returns receipt's destination field
     function destination(Receipt receipt) internal pure returns (uint32) {
-        bytes29 view_ = unwrap(receipt);
-        return uint32(view_.indexUint({index_: OFFSET_DESTINATION, bytes_: 4}));
+        MemView memView = unwrap(receipt);
+        return uint32(memView.indexUint({index_: OFFSET_DESTINATION, bytes_: 4}));
     }
 
     /// @notice Returns receipt's "message hash" field
     function messageHash(Receipt receipt) internal pure returns (bytes32) {
-        bytes29 view_ = unwrap(receipt);
-        return view_.index({index_: OFFSET_MESSAGE_HASH, bytes_: 32});
+        MemView memView = unwrap(receipt);
+        return memView.index({index_: OFFSET_MESSAGE_HASH, bytes_: 32});
     }
 
     /// @notice Returns receipt's "snapshot root" field
     function snapshotRoot(Receipt receipt) internal pure returns (bytes32) {
-        bytes29 view_ = unwrap(receipt);
-        return view_.index({index_: OFFSET_SNAPSHOT_ROOT, bytes_: 32});
+        MemView memView = unwrap(receipt);
+        return memView.index({index_: OFFSET_SNAPSHOT_ROOT, bytes_: 32});
     }
 
     /// @notice Returns receipt's "state index" field
     function stateIndex(Receipt receipt) internal pure returns (uint8) {
-        bytes29 view_ = unwrap(receipt);
-        return uint8(view_.indexUint({index_: OFFSET_STATE_INDEX, bytes_: 1}));
+        MemView memView = unwrap(receipt);
+        return uint8(memView.indexUint({index_: OFFSET_STATE_INDEX, bytes_: 1}));
     }
 
     /// @notice Returns receipt's "attestation notary" field
     function attNotary(Receipt receipt) internal pure returns (address) {
-        bytes29 view_ = unwrap(receipt);
-        return view_.indexAddress({index_: OFFSET_ATT_NOTARY});
+        MemView memView = unwrap(receipt);
+        return memView.indexAddress({index_: OFFSET_ATT_NOTARY});
     }
 
     /// @notice Returns receipt's "first executor" field
     function firstExecutor(Receipt receipt) internal pure returns (address) {
-        bytes29 view_ = unwrap(receipt);
-        return view_.indexAddress({index_: OFFSET_FIRST_EXECUTOR});
+        MemView memView = unwrap(receipt);
+        return memView.indexAddress({index_: OFFSET_FIRST_EXECUTOR});
     }
 
     /// @notice Returns receipt's "final executor" field
     function finalExecutor(Receipt receipt) internal pure returns (address) {
-        bytes29 view_ = unwrap(receipt);
-        return view_.indexAddress({index_: OFFSET_FINAL_EXECUTOR});
+        MemView memView = unwrap(receipt);
+        return memView.indexAddress({index_: OFFSET_FINAL_EXECUTOR});
     }
 
     /// @notice Returns a typed memory view over the payload with tips paid on origin chain.
     function tips(Receipt receipt) internal pure returns (Tips) {
-        bytes29 view_ = receipt.unwrap();
+        MemView memView = receipt.unwrap();
         // We check that tips payload is properly formatted, when the whole payload is wrapped
         // into Receipt, so this never reverts.
-        return _tips(view_).castToTips();
+        return _tips(memView).castToTips();
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
 
     /// @dev Returns an untyped memory view over the tips field without checking
     /// if the whole payload or the tips are properly formatted.
-    function _tips(bytes29 view_) private pure returns (bytes29) {
-        return view_.slice({index_: OFFSET_TIPS, len_: TIPS_LENGTH, newType: 0});
+    function _tips(MemView memView) private pure returns (MemView) {
+        return memView.slice({index_: OFFSET_TIPS, len_: TIPS_LENGTH});
     }
 }

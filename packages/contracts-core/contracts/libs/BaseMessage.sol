@@ -1,23 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ByteString} from "./ByteString.sol";
 import {REQUEST_LENGTH, TIPS_LENGTH} from "./Constants.sol";
 import {Request, RequestLib} from "./Request.sol";
 import {Tips, TipsLib} from "./Tips.sol";
-import {TypedMemView} from "./TypedMemView.sol";
+import {MemView, MemViewLib} from "./MemView.sol";
 
 /// @dev BaseMessage is a memory view over the base message supported by Origin-Destination
-type BaseMessage is bytes29;
+type BaseMessage is uint256;
 
 /// @dev Attach library functions to BaseMessage
 using BaseMessageLib for BaseMessage global;
 
 library BaseMessageLib {
-    using ByteString for bytes;
-    using RequestLib for bytes29;
-    using TipsLib for bytes29;
-    using TypedMemView for bytes29;
+    using MemViewLib for bytes;
+    using RequestLib for MemView;
+    using TipsLib for MemView;
 
     /**
      * @dev Memory layout of BaseMessage fields
@@ -61,32 +59,32 @@ library BaseMessageLib {
      * @dev Will revert if the payload is not a base message.
      */
     function castToBaseMessage(bytes memory payload) internal pure returns (BaseMessage) {
-        return castToBaseMessage(payload.castToRawBytes());
+        return castToBaseMessage(payload.ref());
     }
 
     /**
      * @notice Casts a memory view to a BaseMessage view.
      * @dev Will revert if the memory view is not over a base message payload.
      */
-    function castToBaseMessage(bytes29 view_) internal pure returns (BaseMessage) {
-        require(isBaseMessage(view_), "Not a base message");
-        return BaseMessage.wrap(view_);
+    function castToBaseMessage(MemView memView) internal pure returns (BaseMessage) {
+        require(isBaseMessage(memView), "Not a base message");
+        return BaseMessage.wrap(MemView.unwrap(memView));
     }
 
     /// @notice Checks that a payload is a formatted BaseMessage.
-    function isBaseMessage(bytes29 view_) internal pure returns (bool) {
+    function isBaseMessage(MemView memView) internal pure returns (bool) {
         // Check if sender, recipient, tips fields exist
-        if (view_.len() < OFFSET_CONTENT) return false;
+        if (memView.len() < OFFSET_CONTENT) return false;
         // Check if tips payload is formatted
-        if (!_tips(view_).isTips()) return false;
+        if (!_tips(memView).isTips()) return false;
         // Check if tips payload is formatted
-        return _request(view_).isRequest();
+        return _request(memView).isRequest();
         // Content could be empty, so we don't check that
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(BaseMessage baseMessage) internal pure returns (bytes29) {
-        return BaseMessage.unwrap(baseMessage);
+    function unwrap(BaseMessage baseMessage) internal pure returns (MemView) {
+        return MemView.wrap(BaseMessage.unwrap(baseMessage));
     }
 
     // ═══════════════════════════════════════════ BASE MESSAGE SLICING ════════════════════════════════════════════════
@@ -94,49 +92,49 @@ library BaseMessageLib {
     /// @notice Returns sender address on origin chain.
     function sender(BaseMessage baseMessage) internal pure returns (bytes32) {
         // Get the underlying memory view
-        bytes29 view_ = baseMessage.unwrap();
-        return view_.index({index_: OFFSET_SENDER, bytes_: 32});
+        MemView memView = baseMessage.unwrap();
+        return memView.index({index_: OFFSET_SENDER, bytes_: 32});
     }
 
     /// @notice Returns recipient address on destination chain.
     function recipient(BaseMessage baseMessage) internal pure returns (bytes32) {
-        bytes29 view_ = baseMessage.unwrap();
-        return view_.index({index_: OFFSET_RECIPIENT, bytes_: 32});
+        MemView memView = baseMessage.unwrap();
+        return memView.index({index_: OFFSET_RECIPIENT, bytes_: 32});
     }
 
     /// @notice Returns a typed memory view over the payload with tips paid on origin chain.
     function tips(BaseMessage baseMessage) internal pure returns (Tips) {
-        bytes29 view_ = baseMessage.unwrap();
+        MemView memView = baseMessage.unwrap();
         // We check that tips payload is properly formatted, when the whole payload is wrapped
         // into BaseMessage, so this never reverts.
-        return _tips(view_).castToTips();
+        return _tips(memView).castToTips();
     }
 
     /// @notice Returns a typed memory view over the payload with request for message execution on destination chain.
     function request(BaseMessage baseMessage) internal pure returns (Request) {
-        bytes29 view_ = baseMessage.unwrap();
+        MemView memView = baseMessage.unwrap();
         // We check that request payload is properly formatted, when the whole payload is wrapped
         // into BaseMessage, so this never reverts.
-        return _request(view_).castToRequest();
+        return _request(memView).castToRequest();
     }
 
     /// @notice Returns an untyped memory view over the content to be passed to recipient.
-    function content(BaseMessage baseMessage) internal pure returns (bytes29) {
-        bytes29 view_ = baseMessage.unwrap();
-        return view_.sliceFrom({index_: OFFSET_CONTENT, newType: 0});
+    function content(BaseMessage baseMessage) internal pure returns (MemView) {
+        MemView memView = baseMessage.unwrap();
+        return memView.sliceFrom({index_: OFFSET_CONTENT});
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
 
     /// @dev Returns an untyped memory view over the tips field without checking
     /// if the whole payload or the tips are properly formatted.
-    function _tips(bytes29 view_) private pure returns (bytes29) {
-        return view_.slice({index_: OFFSET_TIPS, len_: TIPS_LENGTH, newType: 0});
+    function _tips(MemView memView) private pure returns (MemView) {
+        return memView.slice({index_: OFFSET_TIPS, len_: TIPS_LENGTH});
     }
 
     /// @dev Returns an untyped memory view over the request field without checking
     /// if the whole payload or the request are properly formatted.
-    function _request(bytes29 view_) private pure returns (bytes29) {
-        return view_.slice({index_: OFFSET_REQUEST, len_: REQUEST_LENGTH, newType: 0});
+    function _request(MemView memView) private pure returns (MemView) {
+        return memView.slice({index_: OFFSET_REQUEST, len_: REQUEST_LENGTH});
     }
 }

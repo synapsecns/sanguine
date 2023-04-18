@@ -1,19 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ByteString} from "./ByteString.sol";
 import {STATE_LENGTH} from "./Constants.sol";
-import {TypedMemView} from "./TypedMemView.sol";
+import {MemView, MemViewLib} from "./MemView.sol";
 
 /// @dev State is a memory view over a formatted state payload.
-type State is bytes29;
+type State is uint256;
 
 /// @dev Attach library functions to State
 using StateLib for State global;
 
 library StateLib {
-    using ByteString for bytes;
-    using TypedMemView for bytes29;
+    using MemViewLib for bytes;
 
     /**
      * @dev State structure represents the state of Origin contract at some point of time.
@@ -68,26 +66,26 @@ library StateLib {
      * @dev Will revert if the payload is not a state.
      */
     function castToState(bytes memory payload) internal pure returns (State) {
-        return castToState(payload.castToRawBytes());
+        return castToState(payload.ref());
     }
 
     /**
      * @notice Casts a memory view to a State view.
      * @dev Will revert if the memory view is not over a state.
      */
-    function castToState(bytes29 view_) internal pure returns (State) {
-        require(isState(view_), "Not a state");
-        return State.wrap(view_);
+    function castToState(MemView memView) internal pure returns (State) {
+        require(isState(memView), "Not a state");
+        return State.wrap(MemView.unwrap(memView));
     }
 
     /// @notice Checks that a payload is a formatted State.
-    function isState(bytes29 view_) internal pure returns (bool) {
-        return view_.len() == STATE_LENGTH;
+    function isState(MemView memView) internal pure returns (bool) {
+        return memView.len() == STATE_LENGTH;
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(State state) internal pure returns (bytes29) {
-        return State.unwrap(state);
+    function unwrap(State state) internal pure returns (MemView) {
+        return MemView.wrap(State.unwrap(state));
     }
 
     /// @notice Compares two State structures.
@@ -111,11 +109,11 @@ library StateLib {
     /// This enables proving that leftLeaf = (root, origin) was a part of the "Snapshot Merkle Tree",
     /// by combining `rightLeaf` with the remainder of the "Snapshot Merkle Proof".
     function subLeafs(State state) internal pure returns (bytes32 leftLeaf_, bytes32 rightLeaf_) {
-        bytes29 view_ = state.unwrap();
+        MemView memView = state.unwrap();
         // Left leaf is (root, origin)
-        leftLeaf_ = view_.prefix({len_: OFFSET_NONCE, newType: 0}).keccak();
+        leftLeaf_ = memView.prefix({len_: OFFSET_NONCE}).keccak();
         // Right leaf is (metadata), or (nonce, blockNumber, timestamp)
-        rightLeaf_ = view_.sliceFrom({index_: OFFSET_NONCE, newType: 0}).keccak();
+        rightLeaf_ = memView.sliceFrom({index_: OFFSET_NONCE}).keccak();
     }
 
     /// @notice Returns the left "sub-leaf" of the State.
@@ -134,32 +132,32 @@ library StateLib {
 
     /// @notice Returns a historical Merkle root from the Origin contract.
     function root(State state) internal pure returns (bytes32) {
-        bytes29 view_ = state.unwrap();
-        return view_.index({index_: OFFSET_ROOT, bytes_: 32});
+        MemView memView = state.unwrap();
+        return memView.index({index_: OFFSET_ROOT, bytes_: 32});
     }
 
     /// @notice Returns domain of chain where the Origin contract is deployed.
     function origin(State state) internal pure returns (uint32) {
-        bytes29 view_ = state.unwrap();
-        return uint32(view_.indexUint({index_: OFFSET_ORIGIN, bytes_: 4}));
+        MemView memView = state.unwrap();
+        return uint32(memView.indexUint({index_: OFFSET_ORIGIN, bytes_: 4}));
     }
 
     /// @notice Returns nonce of Origin contract at the time, when `root` was the Merkle root.
     function nonce(State state) internal pure returns (uint32) {
-        bytes29 view_ = state.unwrap();
-        return uint32(view_.indexUint({index_: OFFSET_NONCE, bytes_: 4}));
+        MemView memView = state.unwrap();
+        return uint32(memView.indexUint({index_: OFFSET_NONCE, bytes_: 4}));
     }
 
     /// @notice Returns a block number when `root` was saved in Origin.
     function blockNumber(State state) internal pure returns (uint40) {
-        bytes29 view_ = state.unwrap();
-        return uint40(view_.indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
+        MemView memView = state.unwrap();
+        return uint40(memView.indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
     }
 
     /// @notice Returns a block timestamp when `root` was saved in Origin.
     /// @dev This is the timestamp according to the origin chain.
     function timestamp(State state) internal pure returns (uint40) {
-        bytes29 view_ = state.unwrap();
-        return uint40(view_.indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
+        MemView memView = state.unwrap();
+        return uint40(memView.indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
     }
 }
