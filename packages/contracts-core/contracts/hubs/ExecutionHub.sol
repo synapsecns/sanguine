@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation} from "../libs/Attestation.sol";
-import {BaseMessage, BaseMessageLib} from "../libs/BaseMessage.sol";
+import {BaseMessage, BaseMessageLib, MemView} from "../libs/BaseMessage.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
@@ -12,7 +12,6 @@ import {MessageStatus} from "../libs/Structures.sol";
 import {SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
 import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
-import {TypedMemView} from "../libs/TypedMemView.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentStatus, DisputeHub} from "./DisputeHub.sol";
 import {ExecutionHubEvents} from "../events/ExecutionHubEvents.sol";
@@ -27,10 +26,9 @@ import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
  * On the other chains Notaries are submitting the attestations that are later used for proving.
  */
 abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub {
-    using BaseMessageLib for bytes29;
+    using BaseMessageLib for MemView;
     using MessageLib for bytes;
     using TypeCasts for bytes32;
-    using TypedMemView for bytes29;
 
     /// @notice Struct representing stored data for the snapshot root
     /// @param notaryIndex  Index of Notary who submitted the statement with the snapshot root
@@ -226,7 +224,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         }
     }
 
-    function _executeSystemMessage(Header header, uint256 proofMaturity, bytes29 body) internal returns (bool) {
+    function _executeSystemMessage(Header header, uint256 proofMaturity, MemView body) internal returns (bool) {
         // TODO: introduce incentives for executing System Messages?
         // Forward system message to System Router
         systemRouter.receiveSystemMessage(header.origin(), header.nonce(), proofMaturity, body.clone());
