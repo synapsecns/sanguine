@@ -1,26 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {TypedMemView} from "./TypedMemView.sol";
+import {MemView, MemViewLib} from "./MemView.sol";
 
 /// @dev CallData is a memory view over the payload to be used for an external call, i.e.
 /// recipient.call(callData). Its length is always (4 + 32 * N) bytes:
 /// - First 4 bytes represent the function selector.
 /// - 32 * N bytes represent N words that function arguments occupy.
-type CallData is bytes29;
+type CallData is uint256;
 
 /// @dev Attach library functions to CallData
 using ByteString for CallData global;
 
 /// @dev Signature is a memory view over a "65 bytes" array representing a ECDSA signature.
-type Signature is bytes29;
+type Signature is uint256;
 
 /// @dev Attach library functions to Signature
 using ByteString for Signature global;
 
 library ByteString {
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using MemViewLib for bytes;
 
     /**
      * @dev non-compact ECDSA signatures are enforced as of OZ 4.7.3
@@ -47,14 +46,6 @@ library ByteString {
     uint256 private constant OFFSET_SELECTOR = 0;
     uint256 private constant OFFSET_ARGUMENTS = SELECTOR_LENGTH;
 
-    /**
-     * @notice Returns a memory view over the given payload, treating it as raw bytes.
-     * @dev Shortcut for .ref(0) - to be deprecated once "uint40 type" is removed from bytes29.
-     */
-    function castToRawBytes(bytes memory payload) internal pure returns (bytes29) {
-        return payload.ref({newType: 0});
-    }
-
     // ═════════════════════════════════════════════════ SIGNATURE ═════════════════════════════════════════════════════
 
     /**
@@ -71,28 +62,28 @@ library ByteString {
      * @dev Will revert if the payload is not a signature.
      */
     function castToSignature(bytes memory payload) internal pure returns (Signature) {
-        return castToSignature(castToRawBytes(payload));
+        return castToSignature(payload.ref());
     }
 
     /**
      * @notice Casts a memory view to a Signature view.
      * @dev Will revert if the memory view is not over a signature.
      */
-    function castToSignature(bytes29 view_) internal pure returns (Signature) {
-        require(isSignature(view_), "Not a signature");
-        return Signature.wrap(view_);
+    function castToSignature(MemView memView) internal pure returns (Signature) {
+        require(isSignature(memView), "Not a signature");
+        return Signature.wrap(MemView.unwrap(memView));
     }
 
     /**
      * @notice Checks that a byte string is a signature
      */
-    function isSignature(bytes29 view_) internal pure returns (bool) {
-        return view_.len() == SIGNATURE_LENGTH;
+    function isSignature(MemView memView) internal pure returns (bool) {
+        return memView.len() == SIGNATURE_LENGTH;
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Signature signature) internal pure returns (bytes29) {
-        return Signature.unwrap(signature);
+    function unwrap(Signature signature) internal pure returns (MemView) {
+        return MemView.wrap(Signature.unwrap(signature));
     }
 
     // ═════════════════════════════════════════════ SIGNATURE SLICING ═════════════════════════════════════════════════
@@ -101,10 +92,10 @@ library ByteString {
     /// @dev Make sure to verify signature length with isSignature() beforehand.
     function toRSV(Signature signature) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
         // Get the underlying memory view
-        bytes29 view_ = unwrap(signature);
-        r = view_.index({index_: OFFSET_R, bytes_: 32});
-        s = view_.index({index_: OFFSET_S, bytes_: 32});
-        v = uint8(view_.indexUint({index_: OFFSET_V, bytes_: 1}));
+        MemView memView = unwrap(signature);
+        r = memView.index({index_: OFFSET_R, bytes_: 32});
+        s = memView.index({index_: OFFSET_S, bytes_: 32});
+        v = uint8(memView.indexUint({index_: OFFSET_V, bytes_: 1}));
     }
 
     // ═════════════════════════════════════════════════ CALLDATA ══════════════════════════════════════════════════════
@@ -128,14 +119,14 @@ library ByteString {
     function addPrefix(CallData callData, bytes memory prefix) internal view returns (bytes memory) {
         // Prefix should occupy a whole amount of words in memory
         require(_fullWords(prefix.length), "Incorrect prefix");
-        bytes29[] memory views = new bytes29[](3);
+        MemView[] memory views = new MemView[](3);
         // Use payload's function selector
         views[0] = callData.callSelector();
         // Use prefix as the first arguments
-        views[1] = castToRawBytes(prefix);
+        views[1] = prefix.ref();
         // Use payload's remaining arguments
         views[2] = callData.arguments();
-        return TypedMemView.join(views);
+        return MemViewLib.join(views);
     }
 
     /**
@@ -143,24 +134,24 @@ library ByteString {
      * @dev Will revert if the memory view is not over a calldata.
      */
     function castToCallData(bytes memory payload) internal pure returns (CallData) {
-        return castToCallData(castToRawBytes(payload));
+        return castToCallData(payload.ref());
     }
 
     /**
      * @notice Casts a memory view to a CallData view.
      * @dev Will revert if the memory view is not over a calldata.
      */
-    function castToCallData(bytes29 view_) internal pure returns (CallData) {
-        require(isCallData(view_), "Not a calldata");
-        return CallData.wrap(view_);
+    function castToCallData(MemView memView) internal pure returns (CallData) {
+        require(isCallData(memView), "Not a calldata");
+        return CallData.wrap(MemView.unwrap(memView));
     }
 
     /**
      * @notice Checks that a byte string is a valid calldata, i.e.
      * a function selector, followed by arbitrary amount of arguments.
      */
-    function isCallData(bytes29 view_) internal pure returns (bool) {
-        uint256 length = view_.len();
+    function isCallData(MemView memView) internal pure returns (bool) {
+        uint256 length = memView.len();
         // Calldata should at least have a function selector
         if (length < SELECTOR_LENGTH) return false;
         // The remainder of the calldata should be exactly N memory words (N >= 0)
@@ -168,8 +159,8 @@ library ByteString {
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(CallData callData) internal pure returns (bytes29) {
-        return CallData.unwrap(callData);
+    function unwrap(CallData callData) internal pure returns (MemView) {
+        return MemView.wrap(CallData.unwrap(callData));
     }
 
     // ═════════════════════════════════════════════ CALLDATA SLICING ══════════════════════════════════════════════════
@@ -183,23 +174,23 @@ library ByteString {
      */
     function argumentWords(CallData callData) internal pure returns (uint256) {
         // Get the underlying memory view
-        bytes29 view_ = unwrap(callData);
+        MemView memView = unwrap(callData);
         // Equivalent of (length - SELECTOR_LENGTH) / 32
-        return (view_.len() - SELECTOR_LENGTH) >> 5;
+        return (memView.len() - SELECTOR_LENGTH) >> 5;
     }
 
     /// @notice Returns selector for the provided calldata.
-    function callSelector(CallData callData) internal pure returns (bytes29) {
+    function callSelector(CallData callData) internal pure returns (MemView) {
         // Get the underlying memory view
-        bytes29 view_ = unwrap(callData);
-        return view_.slice({index_: OFFSET_SELECTOR, len_: SELECTOR_LENGTH, newType: 0});
+        MemView memView = unwrap(callData);
+        return memView.slice({index_: OFFSET_SELECTOR, len_: SELECTOR_LENGTH});
     }
 
     /// @notice Returns abi encoded arguments for the provided calldata.
-    function arguments(CallData callData) internal pure returns (bytes29) {
+    function arguments(CallData callData) internal pure returns (MemView) {
         // Get the underlying memory view
-        bytes29 view_ = unwrap(callData);
-        return view_.sliceFrom({index_: OFFSET_ARGUMENTS, newType: 0});
+        MemView memView = unwrap(callData);
+        return memView.sliceFrom({index_: OFFSET_ARGUMENTS});
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════

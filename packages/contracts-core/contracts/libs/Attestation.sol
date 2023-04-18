@@ -1,19 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ByteString} from "./ByteString.sol";
 import {ATTESTATION_LENGTH, ATTESTATION_SALT} from "./Constants.sol";
-import {TypedMemView} from "./TypedMemView.sol";
+import {MemView, MemViewLib} from "./MemView.sol";
 
 /// @dev Attestation is a memory view over a formatted attestation payload.
-type Attestation is bytes29;
+type Attestation is uint256;
 
 /// @dev Attach library functions to Attestation
 using AttestationLib for Attestation global;
 
 library AttestationLib {
-    using ByteString for bytes;
-    using TypedMemView for bytes29;
+    using MemViewLib for bytes;
 
     /**
      * @dev Attestation structure represents the "Snapshot Merkle Tree" created from
@@ -87,66 +85,66 @@ library AttestationLib {
      * @dev Will revert if the payload is not an attestation.
      */
     function castToAttestation(bytes memory payload) internal pure returns (Attestation) {
-        return castToAttestation(payload.castToRawBytes());
+        return castToAttestation(payload.ref());
     }
 
     /**
      * @notice Casts a memory view to an Attestation view.
      * @dev Will revert if the memory view is not over an attestation.
      */
-    function castToAttestation(bytes29 view_) internal pure returns (Attestation) {
-        require(isAttestation(view_), "Not an attestation");
-        return Attestation.wrap(view_);
+    function castToAttestation(MemView memView) internal pure returns (Attestation) {
+        require(isAttestation(memView), "Not an attestation");
+        return Attestation.wrap(MemView.unwrap(memView));
     }
 
     /// @notice Checks that a payload is a formatted Attestation.
-    function isAttestation(bytes29 view_) internal pure returns (bool) {
-        return view_.len() == ATTESTATION_LENGTH;
+    function isAttestation(MemView memView) internal pure returns (bool) {
+        return memView.len() == ATTESTATION_LENGTH;
     }
 
     /// @notice Returns the hash of an Attestation, that could be later signed by a Notary.
     function hash(Attestation att) internal pure returns (bytes32) {
         // Get the underlying memory view
-        bytes29 view_ = att.unwrap();
+        MemView memView = att.unwrap();
         // The final hash to sign is keccak(attestationSalt, keccak(attestation))
-        return keccak256(bytes.concat(ATTESTATION_SALT, view_.keccak()));
+        return keccak256(bytes.concat(ATTESTATION_SALT, memView.keccak()));
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Attestation att) internal pure returns (bytes29) {
-        return Attestation.unwrap(att);
+    function unwrap(Attestation att) internal pure returns (MemView) {
+        return MemView.wrap(Attestation.unwrap(att));
     }
 
     // ════════════════════════════════════════════ ATTESTATION SLICING ════════════════════════════════════════════════
 
     /// @notice Returns root of the Snapshot merkle tree created in the Summit contract.
     function snapRoot(Attestation att) internal pure returns (bytes32) {
-        bytes29 view_ = att.unwrap();
-        return view_.index({index_: OFFSET_SNAP_ROOT, bytes_: 32});
+        MemView memView = att.unwrap();
+        return memView.index({index_: OFFSET_SNAP_ROOT, bytes_: 32});
     }
 
     /// @notice Returns root of the Agent merkle tree tracked by BondingManager.
     function agentRoot(Attestation att) internal pure returns (bytes32) {
-        bytes29 view_ = att.unwrap();
-        return view_.index({index_: OFFSET_AGENT_ROOT, bytes_: 32});
+        MemView memView = att.unwrap();
+        return memView.index({index_: OFFSET_AGENT_ROOT, bytes_: 32});
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.
     function nonce(Attestation att) internal pure returns (uint32) {
-        bytes29 view_ = att.unwrap();
-        return uint32(view_.indexUint({index_: OFFSET_NONCE, bytes_: 4}));
+        MemView memView = att.unwrap();
+        return uint32(memView.indexUint({index_: OFFSET_NONCE, bytes_: 4}));
     }
 
     /// @notice Returns a block number when attestation was created in Summit.
     function blockNumber(Attestation att) internal pure returns (uint40) {
-        bytes29 view_ = att.unwrap();
-        return uint40(view_.indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
+        MemView memView = att.unwrap();
+        return uint40(memView.indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
     }
 
     /// @notice Returns a block timestamp when attestation was created in Summit.
     /// @dev This is the timestamp according to the Synapse Chain.
     function timestamp(Attestation att) internal pure returns (uint40) {
-        bytes29 view_ = att.unwrap();
-        return uint40(view_.indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
+        MemView memView = att.unwrap();
+        return uint40(memView.indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
     }
 }
