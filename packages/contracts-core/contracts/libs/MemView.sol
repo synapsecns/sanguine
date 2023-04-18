@@ -177,7 +177,9 @@ library MemViewLib {
      */
     function words(MemView memView) internal pure returns (uint256 words_) {
         // returning ceil(length / 32.0)
-        return (memView.len() + 31) / 32;
+        unchecked {
+            return (memView.len() + 31) >> 5;
+        }
     }
 
     /**
@@ -186,7 +188,8 @@ library MemViewLib {
      * @return footprint_   The in-memory footprint of a fresh copy of the view.
      */
     function footprint(MemView memView) internal pure returns (uint256 footprint_) {
-        return memView.words() * 32;
+        // words() * 32
+        return memView.words() << 5;
     }
 
     /**
@@ -219,7 +222,10 @@ library MemViewLib {
             revert ViewOverrun();
         }
         // Build a view starting from index with the given length
-        return build({loc_: loc_ + index_, len_: len_});
+        unchecked {
+            // loc_ + index_ <= memView.end()
+            return build({loc_: loc_ + index_, len_: len_});
+        }
     }
 
     /**
@@ -234,12 +240,11 @@ library MemViewLib {
         if (index_ > len_) {
             revert ViewOverrun();
         }
-        // Could do the unchecked math due to the check above
-        unchecked {
-            len_ = len_ - index_;
-        }
         // Build a view starting from index with the given length
-        return build({loc_: memView.loc() + index_, len_: len_});
+        unchecked {
+            // index_ <= len_ => memView.loc() + index_ <= memView.loc() + memView.len() == memView.end()
+            return build({loc_: memView.loc() + index_, len_: len_ - index_});
+        }
     }
 
     /**
@@ -270,7 +275,10 @@ library MemViewLib {
             index_ = viewLen - len_;
         }
         // Build a view starting from index with the given length
-        return build({loc_: memView.loc() + index_, len_: len_});
+        unchecked {
+            // len_ <= memView.len() => memView.loc() <= loc_ <= memView.end()
+            return build({loc_: memView.loc() + viewLen - len_, len_: len_});
+        }
     }
 
     // ═══════════════════════════════════════════ INDEXING MEMORY VIEW ════════════════════════════════════════════════
@@ -327,7 +335,10 @@ library MemViewLib {
         bytes32 indexedBytes = memView.index(index_, bytes_);
         // `index()` returns left-aligned `bytes_`, while integers are right-aligned
         // Shifting here to right-align with the full 32 bytes word: need to shift right `(32 - bytes_)` bytes
-        return uint256(indexedBytes) >> ((32 - bytes_) << 3);
+        unchecked {
+            // memView.index() reverts when bytes_ > 32, thus unchecked math
+            return uint256(indexedBytes) >> ((32 - bytes_) << 3);
+        }
     }
 
     /**
@@ -408,12 +419,13 @@ library MemViewLib {
         }
         // Copy the views to the specified location one by one, by tracking the amount of copied bytes so far
         uint256 offset = 0;
-        for (uint256 i = 0; i < memViews.length; i++) {
+        for (uint256 i = 0; i < memViews.length;) {
             MemView memView = memViews[i];
             // We can use the unchecked math here as location + sum(view.length) will never overflow uint256
             unchecked {
                 _unsafeCopyTo(memView, location + offset);
                 offset += memView.len();
+                ++i;
             }
         }
         return _unsafeBuildUnchecked({loc_: location, len_: offset});
