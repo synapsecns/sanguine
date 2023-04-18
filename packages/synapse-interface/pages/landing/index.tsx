@@ -12,6 +12,7 @@ import {
   BridgeImage,
   BridgeImageSmall,
 } from '@/components/icons/LandingIcons/BridgeImage'
+import { HowSynapseWorks } from '@/components/icons/LandingIcons/HowSynapseWorks'
 import { ChainId, ORDERED_CHAINS_BY_ID, CHAINS_BY_ID } from '@/constants/chains'
 import { Chain } from '@/utils/types'
 import { DOCS_URL, BRIDGE_PATH, ANALYTICS_PATH } from '@/constants/urls'
@@ -304,7 +305,6 @@ function IntegrationSection() {
     return CHAINS_BY_ID[chainId]
   })
 
-  console.log('OrderedSupportedNetworks:', OrderedSupportedNetworks)
   return (
     <SectionContainer>
       <div
@@ -350,6 +350,29 @@ function IntegrationSection() {
           />
         ))}
       </Grid>
+    </SectionContainer>
+  )
+}
+
+function HowItWorksSection() {
+  return (
+    <SectionContainer>
+      <div className="flex justify-center">
+        <div className="w-2/3">
+          <div className="mt-12 mb-3 text-4xl text-center text-white">
+            How it all works
+          </div>
+          <div className="mt-6 -mb-12 text-center text-secondaryTextColor">
+            Smart contracts from one chain use the Synapse Messaging Router to
+            send the message to the destination chain, where a corresponding
+            Messaging Router sends it to the destination contract. Messages are
+            optimistically verified to ensure security and trustlessness.
+          </div>
+        </div>
+      </div>
+      <div className="flex justify-center mx-50">
+        <HowSynapseWorks />
+      </div>
     </SectionContainer>
   )
 }
@@ -485,6 +508,7 @@ const LandingPage = () => {
         <BridgeSection />
         <ExplorerSection />
         <IntegrationSection />
+        <HowItWorksSection />
       </LandingPageContainer>
     </LandingPageWrapper>
   )
