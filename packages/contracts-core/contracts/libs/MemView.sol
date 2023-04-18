@@ -16,6 +16,7 @@ using MemViewLib for MemView global;
 /// - The documentation is expanded
 //  - Very pretty code separators are added :)
 library MemViewLib {
+    error IndexedTooMuch();
     error ViewOverrun();
     error UnallocatedMemory();
 
@@ -188,6 +189,73 @@ library MemViewLib {
         }
         // Build a view starting from index with the given length
         return build({loc_: memView.loc() + index_, len_: len_});
+    }
+
+    // ═══════════════════════════════════════════ INDEXING MEMORY VIEW ════════════════════════════════════════════════
+
+    /**
+     * @notice Load up to 32 bytes from the view onto the stack.
+     * @dev Returns a bytes32 with only the `bytes_` HIGHEST bytes set.
+     * This can be immediately cast to a smaller fixed-length byte array.
+     * To automatically cast to an integer, use `indexUint`.
+     * @param memView       The memory view
+     * @param index_        The index
+     * @param bytes_        The amount of bytes to load onto the stack
+     * @return result       The 32 byte result having only `bytes_` highest bytes set
+     */
+    function index(MemView memView, uint256 index_, uint256 bytes_) internal pure returns (bytes32 result) {
+        if (bytes_ == 0) {
+            return bytes32(0);
+        }
+        if (bytes_ > 32) {
+            revert IndexedTooMuch();
+        }
+        if (index_ + bytes_ > memView.len()) {
+            revert ViewOverrun();
+        }
+        uint256 bitLength = bytes_ << 3; // bytes_ * 8
+        uint256 loc_ = memView.loc();
+        // Get a mask with `bitLength` highest bits set
+        uint256 mask;
+        // 0x800...00 binary representation is 100...00
+        // sar stands for "signed arithmetic shift": https://en.wikipedia.org/wiki/Arithmetic_shift
+        // sar(N-1, 100...00) = 11...100..00, with exactly N highest bits set to 1
+        assembly {
+            // solhint-disable-previous-line no-inline-assembly
+            mask := sar(sub(bitLength, 1), 0x8000000000000000000000000000000000000000000000000000000000000000)
+        }
+        assembly {
+            // solhint-disable-previous-line no-inline-assembly
+            // Load a full word using index offset, and apply mask to ignore non-relevant bytes
+            result := and(mload(add(loc_, index_)), mask)
+        }
+    }
+
+    /**
+     * @notice Parse an unsigned integer from the view at `index`.
+     * @dev Requires that the view have >= `bytes_` bytes following that index.
+     * @param memView       The memory view
+     * @param index_        The index
+     * @param bytes_        The amount of bytes to load onto the stack
+     * @return The unsigned integer
+     */
+    function indexUint(MemView memView, uint256 index_, uint256 bytes_) internal pure returns (uint256) {
+        bytes32 indexedBytes = memView.index(index_, bytes_);
+        // `index()` returns left-aligned `bytes_`, while integers are right-aligned
+        // Shifting here to right-align with the full 32 bytes word: need to shift right `(32 - bytes_)` bytes
+        return uint256(indexedBytes) >> ((32 - bytes_) << 3);
+    }
+
+    /**
+     * @notice Parse an address from the view at `index`.
+     * @dev Requires that the view have >= 20 bytes following that index.
+     * @param memView       The memory view
+     * @param index_        The index
+     * @return The address
+     */
+    function indexAddress(MemView memView, uint256 index_) internal pure returns (address) {
+        // index 20 bytes as `uint160`, and then cast to `address`
+        return address(uint160(memView.indexUint(index_, 20)));
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
