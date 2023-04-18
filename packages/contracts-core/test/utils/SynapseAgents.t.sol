@@ -5,6 +5,7 @@ import {
     ATTESTATION_SALT,
     ATTESTATION_REPORT_SALT,
     RECEIPT_SALT,
+    RECEIPT_REPORT_SALT,
     SNAPSHOT_SALT,
     STATE_REPORT_SALT
 } from "../../contracts/libs/Constants.sol";
@@ -15,6 +16,7 @@ import {
     RawAttestation,
     RawAttestationReport,
     RawExecReceipt,
+    RawReceiptReport,
     RawSnapshot,
     RawStateReport
 } from "./libs/SynapseStructs.t.sol";
@@ -138,6 +140,19 @@ abstract contract SynapseAgents is SynapseUtilities {
     {
         receipt = re.formatReceipt();
         signature = signReceipt(agent, receipt);
+    }
+
+    function signReceiptReport(address agent, bytes memory rrPayload) public view returns (bytes memory signature) {
+        return signMessage(agent, RECEIPT_REPORT_SALT, rrPayload);
+    }
+
+    function signReceiptReport(address agent, RawReceiptReport memory rawRR)
+        public
+        view
+        returns (bytes memory rrPayload, bytes memory signature)
+    {
+        rrPayload = rawRR.formatReceiptReport();
+        signature = signReceiptReport(agent, rrPayload);
     }
 
     function signSnapshot(address agent, bytes memory snapshot) public view returns (bytes memory signature) {

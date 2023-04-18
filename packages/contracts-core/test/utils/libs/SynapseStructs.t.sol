@@ -7,6 +7,7 @@ import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/lib
 import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
 import {SystemEntity, SystemMessage, SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
+import {ReceiptFlag, ReceiptReport, ReceiptReportLib} from "../../../contracts/libs/ReceiptReport.sol";
 import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
 
 import {Snapshot, SnapshotLib, SNAPSHOT_MAX_STATES, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
@@ -61,6 +62,13 @@ struct RawExecReceipt {
 }
 
 using CastLib for RawExecReceipt global;
+
+struct RawReceiptReport {
+    uint8 flag;
+    RawReceiptBody body;
+}
+
+using CastLib for RawReceiptReport global;
 
 struct RawCallData {
     bytes4 selector;
@@ -158,9 +166,10 @@ library CastLib {
     using AttestationReportLib for bytes;
     using ByteString for bytes;
     using BaseMessageLib for bytes;
-    using ReceiptLib for bytes;
     using HeaderLib for bytes;
     using MessageLib for bytes;
+    using ReceiptLib for bytes;
+    using ReceiptReportLib for bytes;
     using RequestLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
@@ -332,6 +341,16 @@ library CastLib {
         mrb.attNotary = address(uint160(rrb.attNotary) ^ uint160(mask & 8));
         mrb.firstExecutor = address(uint160(rrb.firstExecutor) ^ uint160(mask & 16));
         mrb.finalExecutor = address(uint160(rrb.finalExecutor) ^ uint160(mask & 32));
+    }
+
+    function formatReceiptReport(RawReceiptReport memory rawRR) internal pure returns (bytes memory) {
+        // Explicit revert when flag out of range
+        require(rawRR.flag <= uint8(type(ReceiptFlag).max), "Flag out of range");
+        return ReceiptFlag(rawRR.flag).formatReceiptReport(rawRR.body.formatReceiptBody());
+    }
+
+    function castToReceiptReport(RawReceiptReport memory rawRR) internal pure returns (ReceiptReport) {
+        return rawRR.formatReceiptReport().castToReceiptReport();
     }
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════

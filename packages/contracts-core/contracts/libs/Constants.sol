@@ -37,6 +37,7 @@ uint256 constant TIPS_MULTIPLIER = 1 << TIPS_GRANULARITY;
 bytes32 constant ATTESTATION_SALT = keccak256("ATTESTATION_SALT");
 bytes32 constant ATTESTATION_REPORT_SALT = keccak256("ATTESTATION_REPORT_SALT");
 bytes32 constant RECEIPT_SALT = keccak256("RECEIPT_SALT");
+bytes32 constant RECEIPT_REPORT_SALT = keccak256("RECEIPT_REPORT_SALT");
 bytes32 constant SNAPSHOT_SALT = keccak256("SNAPSHOT_SALT");
 bytes32 constant STATE_REPORT_SALT = keccak256("STATE_REPORT_SALT");
 // ════════════════════════════════ DESTINATION ════════════════════════════════
