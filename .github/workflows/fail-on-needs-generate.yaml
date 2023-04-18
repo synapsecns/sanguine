@@ -5,7 +5,7 @@ on:
     types: [ labeled ]
 
 jobs:
-  build:
+  check-generate-go:
     if:  ${{ contains( github.event.label.name, 'needs-go-generate') }}
     runs-on: ubuntu-latest
 
@@ -13,3 +13,11 @@ jobs:
       - uses: actions/checkout@v2
       - name: Fail on needs-go-generate
         run: echo Failed, needs go generate. && exit 1
+  check-generate-yarn:
+    if: ${{ contains( github.event.label.name, 'needs-yarn-install') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fail on needs-go-yarn
+        run: echo Failed, needs yarn install. && exit 1

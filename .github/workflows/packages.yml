@@ -64,7 +64,34 @@ jobs:
             key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
         - name: Install Node Dependencies
-          run: yarn install --immutable
+          run: yarn install --immutable  --check-cache
+
+        - name: Verify Changed files
+          uses: tj-actions/verify-changed-files@v11.1
+          id: verify-yarn-lock
+          with:
+            files: |
+              yarn.lock
+
+        - name: Add Label
+          if: steps.verify-yarn-lock.outputs.files_changed == 'true'
+          uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+          with:
+            add-labels: 'needs-yarn-install'
+            repo-token: ${{ secrets.GITHUB_TOKEN }}
+            issue-number: ${{ needs.issue_number.outputs.issue_number }}
+
+        - name: Remove Label
+          if: steps.verify-yarn-lock.outputs.files_changed != 'true'
+          uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+          with:
+            remove-labels: 'needs-yarn-install'
+            repo-token: ${{ secrets.GITHUB_TOKEN }}
+            issue-number: ${{ needs.issue_number.outputs.issue_number }}
+
+
+          # TODO: yarn install --immutable should handle this, but it doesn't for some reason.
+        - name: Lock File Mutated
 
         - name: Run tests # Run tests of all packages
           run: yarn test:coverage
