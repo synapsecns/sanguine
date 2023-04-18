@@ -64,7 +64,12 @@ function HeroSection() {
         <p>Secure cross-chain</p>
         <p>communication</p>
       </div>
-      <div className="hidden text-left text-secondaryTextColor md:text-center lg:text-center md:block lg:block">
+      <div
+        className={`
+          hidden text-left text-secondaryTextColor
+          md:text-center lg:text-center md:block lg:block
+        `}
+      >
         <p>Synapse is the most widely used, extensible, secure cross-</p>
         <p>chain communications network. Build truly cross-chain</p>
         <p>applications using the Synapse Protocol.</p>
@@ -87,10 +92,10 @@ function HeroSection() {
           href={DOCS_URL}
           target="_blank"
           className={`
-            h-12 mr-2 px-4 py-3
-            flex items-center text-base
-            border border-white hover:opacity-75 bg-[#2f2f2f] hover:bg-[#2f2f2f]
-            rounded-lg text-center transform-gpu transition-all duration-75
+            h-12 mr-2 px-4 py-3 flex items-center
+            text-base border border-white hover:opacity-75
+            bg-[#2f2f2f] hover:bg-[#2f2f2f] rounded-lg
+            text-center transform-gpu transition-all duration-75
           `}
         >
           <Button
@@ -104,8 +109,8 @@ function HeroSection() {
           href={BRIDGE_PATH}
           className={`
             h-12 border-[#AC8FFF] flex items-center border
-            text-base px-4 py-3 hover:opacity-75 rounded-lg text-center
-            transform-gpu transition-all duration-75
+            text-base px-4 py-3 hover:opacity-75 rounded-lg
+            text-center transform-gpu transition-all duration-75
           `}
           style={{
             background:
@@ -138,7 +143,12 @@ function SecuritySection() {
       </div>
 
       <div className="max-w-sm md:ml-12">
-        <div className="mt-4 mb-4 text-4xl font-medium text-left text-white ">
+        <div
+          className={`
+            mt-4 mb-4 text-4xl
+            font-medium text-left text-white
+          `}
+        >
           Securely connect every blockchain
         </div>
         <div className="font-normal text-left text-secondaryTextColor">
@@ -257,7 +267,10 @@ function ExplorerSection() {
         <div className="hidden col-span-1 text-center md:block">
           <Link href={ANALYTICS_PATH} target="_blank">
             <Button
-              className="border-[#AC8FFF] border text-sm px-4 py-3 hover:opacity-75"
+              className={`
+                  border-[#AC8FFF] border text-sm
+                  px-4 py-3 hover:opacity-75
+                `}
               style={{
                 background:
                   'linear-gradient(310.65deg, rgba(255, 0, 255, 0.2) -17.9%, rgba(172, 143, 255, 0.2) 86.48%)',
@@ -305,7 +318,7 @@ function IntegrationSection() {
         <div
           className={`
             mt-2 text-left md:mt-0
-          text-secondaryTextColor
+            text-secondaryTextColor
             max-w-lg
           `}
         >
@@ -316,19 +329,6 @@ function IntegrationSection() {
       </div>
     </SectionContainer>
   )
-}
-
-{
-  /* <div className="hidden mt-2 text-left text-secondaryTextColor md:mt-0 lg:mt-0 md:block lg:block">
-Synapse is widely integrated across the most-used Layer 1 and
-<br />
-Layer 2 networks for a seamless cross-chain experience.
-</div>
-
-<div className="mt-2 text-left text-secondaryTextColor md:mt-0 lg:mt-0 lg:hidden md:hidden sm:block">
-Synapse is widely integrated across the most-used Layer 1 and
-Layer 2 networks for a seamless cross-chain experience.
-</div> */
 }
 
 function SupportCard({
