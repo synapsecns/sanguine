@@ -10,10 +10,14 @@ using MemViewLib for MemView global;
 /// @notice Library for operations with the memory views.
 /// Forked from https://github.com/summa-tx/memview-sol with several breaking changes:
 /// - The codebase is ported to Solidity 0.8
+/// - Custom errors are added
 /// - The runtime type checking is replaced with compile-time check provided by User-Defined Value Types
 ///   https://docs.soliditylang.org/en/latest/types.html#user-defined-value-types
+/// - uint256 is used as the underlying type for the "memory view" instead of bytes29.
+///   It is wrapped into MemView custom type in order not to be confused with actual integers.
 /// - Therefore the "type" field is discarded, allowing to allocate 16 bytes for both view location and length
 /// - The documentation is expanded
+/// - Library functions unused by the rest of the codebase are removed
 //  - Very pretty code separators are added :)
 library MemViewLib {
     error IndexedTooMuch();
@@ -284,9 +288,11 @@ library MemViewLib {
         if (bytes_ == 0) {
             return bytes32(0);
         }
+        // Can't load more than 32 bytes to the stack in one go
         if (bytes_ > 32) {
             revert IndexedTooMuch();
         }
+        // The last indexed byte should be within view boundaries
         if (index_ + bytes_ > memView.len()) {
             revert ViewOverrun();
         }
@@ -383,7 +389,8 @@ library MemViewLib {
      * @notice Join the views in memory, return an unsafe reference to the memory.
      * @dev Super Dangerous direct memory access.
      * This reference can be overwritten if anything else modifies memory (!!!).
-     * As such it MUST be consumed IMMEDIATELY. This function is private to prevent unsafe usage by callers.
+     * As such it MUST be consumed IMMEDIATELY. Update the free memory pointer to ensure the copied data
+     * is not overwritten. This function is private to prevent unsafe usage by callers.
      * @param memViews      The memory views
      * @return The conjoined view pointing to the new memory
      */
