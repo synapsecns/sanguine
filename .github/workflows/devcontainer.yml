@@ -32,6 +32,6 @@ jobs:
           # important: enabling caching will cause foundry not to be rebuild
           push: always
       - name: Tag daily image
-        run:
+        run: |
           docker tag ghcr.io/synapsecns/sanguine-devcontainer:latest ghcr.io/synapsecns/sanguine-devcontainer:$(date +%Y-%m-%d)
           docker push ghcr.io/synapsecns/sanguine-devcontainer:$(date +%Y-%m-%d)
