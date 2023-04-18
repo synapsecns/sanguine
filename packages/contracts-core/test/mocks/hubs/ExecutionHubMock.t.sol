@@ -22,5 +22,5 @@ contract ExecutionHubMock is IExecutionHub {
 
     function messageStatus(bytes32 messageHash) external view returns (MessageStatus status) {}
 
-    function receiptData(bytes32 messageHash) external view returns (bytes memory data) {}
+    function receiptBody(bytes32 messageHash) external view returns (bytes memory data) {}
 }
