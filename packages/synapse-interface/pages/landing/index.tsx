@@ -144,7 +144,54 @@ function SecuritySection() {
           enabling developers to build truly native cross-chain apps.
         </div>{' '}
       </div>
+
+      <Grid
+        cols={{ sm: 1, md: 3 }}
+        gap={12}
+        className="py-6 mx-auto mb-12 md:py-12 2xl:w-3/4"
+      >
+        <SupportCard header="Extensible">
+          Synapse’s cross-chain messaging contracts can be deployed across any
+          blockchain
+        </SupportCard>
+        <SupportCard header="Secure">
+          Synapse employs an Optimistic security model to ensure integrity of
+          cross-chain messages
+        </SupportCard>
+        <SupportCard header="Generalized">
+          Any arbitrary data can be sent across chains including contract calls,
+          NFTs, snapshots, and more
+        </SupportCard>
+      </Grid>
     </SectionContainer>
+  )
+}
+
+interface SupportCardProps {
+  header: string
+  children: React.ReactNode
+  icon?: string
+}
+
+function SupportCard({ header, children, icon }: SupportCardProps) {
+  //   return (
+  //     <div className="space-y-4">
+  //       <div className="flex flex-row no-wrap">
+  //         {icon && <div className="pr-2">{icon}</div>}
+  //         <div className="text-[1.69rem] font-medium text-white">{header}</div>
+  //       </div>
+  //       <div className="text-secondaryTextColor">{children}</div>
+  //     </div>
+  //   )
+  return (
+    <Card
+      title={header}
+      titleClassName="text-[1.69rem] font-medium text-white"
+      className="bg-transparent text-secondaryTextColor"
+      divider={false}
+    >
+      {children}
+    </Card>
   )
 }
 
