@@ -42,6 +42,11 @@ jobs:
           name: yamllint-logfile
           path: ${{ steps.yaml-lint.outputs.logfile }}
 
+      - uses: ppremk/lfs-warning@v3.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # Optional
+          filesizelimit: 15MB
+
       # TODO: reinstate lint
       # - name: Download actionlint
       #   id: get_actionlint
