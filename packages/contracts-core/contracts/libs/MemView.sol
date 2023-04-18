@@ -24,6 +24,7 @@ library MemViewLib {
     error ViewOverrun();
     error OccupiedMemory();
     error UnallocatedMemory();
+    error PrecompileOutOfGas();
 
     /// @notice Stack layout for uint256 (from highest bits to lowest)
     /// (32 .. 16]      loc     16 bytes    Memory address of underlying bytes
@@ -381,7 +382,7 @@ library MemViewLib {
             // use the identity precompile (0x04) to copy
             res := staticcall(gas(), 0x04, oldLoc, len_, newLoc, len_)
         }
-        require(res, "identity: out of gas");
+        if (!res) revert PrecompileOutOfGas();
         return _unsafeBuildUnchecked({loc_: newLoc, len_: len_});
     }
 
