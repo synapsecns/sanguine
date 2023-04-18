@@ -17,4 +17,4 @@ const ExplorerToastLink =({
     </a>
   )
 }
-export default
+export default ExplorerToastLink;

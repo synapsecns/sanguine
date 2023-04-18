@@ -5,6 +5,7 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import Image from 'next/image'
+import { Zero } from '@ethersproject/constants'
 
 import { Token } from '@/utils/types'
 
@@ -19,11 +20,13 @@ const ExchangeRateInfo = ({
   exchangeRate: BigNumber
   toChainId: number
 }) => {
-  const formattedExchangeRate = formatBNToString(exchangeRate, 18, 4)
+  const safeExchangeRate = exchangeRate ?? Zero // todo clean
+  const safeFromAmount = fromAmount ?? Zero // todo clean
+  const formattedExchangeRate = formatBNToString(safeExchangeRate, 18, 4)
   const numExchangeRate = Number(formattedExchangeRate)
-  const slippage = exchangeRate.sub(BigNumber.from(10).pow(18))
+  const slippage = safeExchangeRate.sub(BigNumber.from(10).pow(18))
   const formattedPercentSlippage = formatBNToPercentString(slippage, 18)
-  const underFee = exchangeRate.eq(0) && !fromAmount.eq(0)
+  const underFee = safeExchangeRate.eq(0) && !safeFromAmount.eq(0)
 
   let textColor
   if (numExchangeRate >= 1) {
@@ -34,7 +37,7 @@ const ExchangeRateInfo = ({
     textColor = 'text-red-500'
   }
 
-  const isGasDropped = exchangeRate.gt(0)
+  const isGasDropped = safeExchangeRate.gt(0)
 
   return (
     <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base">
@@ -57,7 +60,7 @@ const ExchangeRateInfo = ({
           {toChainId && <ChainInfoLabel chainId={toChainId} />}
         </div>
         <span className="text-[#88818C]">
-          {!fromAmount.eq(0) ? (
+          {!safeFromAmount.eq(0) ? (
             <>
               {formattedExchangeRate}{' '}
               <span className="text-white">{toToken.symbol}</span>
@@ -69,7 +72,7 @@ const ExchangeRateInfo = ({
       </div>
       <div className="flex justify-between">
         <p className="text-[#88818C] ">Slippage</p>
-        {!fromAmount.eq(0) && !underFee ? (
+        {!safeFromAmount.eq(0) && !underFee ? (
           <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
         ) : (
           <span className="text-[#88818C]">—</span>
