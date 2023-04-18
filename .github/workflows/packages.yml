@@ -60,9 +60,6 @@ jobs:
             issue-number: ${{ needs.issue_number.outputs.issue_number }}
 
 
-          # TODO: yarn install --immutable should handle this, but it doesn't for some reason.
-        - name: Lock File Mutated
-
         - name: Run tests # Run tests of all packages
           run: yarn test:coverage
 
