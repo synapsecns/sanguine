@@ -176,4 +176,58 @@ contract MemViewHarness {
         bytes memory dirtyAfter = hex"FedFed";
         return (dirtyBefore, result, dirtyAfter);
     }
+
+    // ═══════════════════════════════════════════════ SLICE & HASH ════════════════════════════════════════════════════
+
+    function sliceKeccak(bytes memory arr, uint256 index_, uint256 len_)
+        external
+        pure
+        returns (bytes memory, bytes32, bytes memory)
+    {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        bytes32 result = memView.slice(index_, len_).keccak();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
+        return (dirtyBefore, result, dirtyAfter);
+    }
+
+    function sliceFromKeccak(bytes memory arr, uint256 index_)
+        external
+        pure
+        returns (bytes memory, bytes32, bytes memory)
+    {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        bytes32 result = memView.sliceFrom(index_).keccak();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
+        return (dirtyBefore, result, dirtyAfter);
+    }
+
+    function prefixKeccak(bytes memory arr, uint256 len_) external pure returns (bytes memory, bytes32, bytes memory) {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        bytes32 result = memView.prefix(len_).keccak();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
+        return (dirtyBefore, result, dirtyAfter);
+    }
+
+    function postfixKeccak(bytes memory arr, uint256 len_)
+        external
+        pure
+        returns (bytes memory, bytes32, bytes memory)
+    {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        bytes32 result = memView.postfix(len_).keccak();
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
+        return (dirtyBefore, result, dirtyAfter);
+    }
 }

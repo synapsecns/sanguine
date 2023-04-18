@@ -132,4 +132,30 @@ contract MemViewLibraryTest is SynapseLibraryTest {
         (, bytes memory result,) = libHarness.postfix(arr, postfix.length);
         checkEqual(result, postfix);
     }
+
+    // ═══════════════════════════════════════════════ SLICE & HASH ════════════════════════════════════════════════════
+
+    function test_sliceKeccak(bytes memory prefix, bytes memory data, bytes memory postfix) public {
+        bytes memory arr = abi.encodePacked(prefix, data, postfix);
+        (, bytes32 result,) = libHarness.sliceKeccak(arr, prefix.length, data.length);
+        assertEq(result, keccak256(data));
+    }
+
+    function test_sliceFromKeccak(bytes memory prefix, bytes memory data) public {
+        bytes memory arr = abi.encodePacked(prefix, data);
+        (, bytes32 result,) = libHarness.sliceFromKeccak(arr, prefix.length);
+        assertEq(result, keccak256(data));
+    }
+
+    function test_prefixKeccak(bytes memory prefix, bytes memory data) public {
+        bytes memory arr = abi.encodePacked(prefix, data);
+        (, bytes32 result,) = libHarness.prefixKeccak(arr, prefix.length);
+        assertEq(result, keccak256(prefix));
+    }
+
+    function test_postfixKeccak(bytes memory data, bytes memory postfix) public {
+        bytes memory arr = abi.encodePacked(data, postfix);
+        (, bytes32 result,) = libHarness.postfixKeccak(arr, postfix.length);
+        assertEq(result, keccak256(postfix));
+    }
 }
