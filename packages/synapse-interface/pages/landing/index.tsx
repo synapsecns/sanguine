@@ -19,6 +19,7 @@ import {
   getTotalBridgeVolume,
   getTotalPoolVolume,
   getTotalValueLocked,
+  ExplorerQueryStatsResponse,
 } from '@/utils/hooks/useExplorerStats'
 
 function LandingPageContainer({ children }: { children: React.ReactNode }) {
@@ -281,12 +282,14 @@ function ExplorerSection() {
     </SectionContainer>
   )
 }
-interface SupportCardProps {
+
+function SupportCard({
+  header,
+  children,
+}: {
   header: string
   children: React.ReactNode
-}
-
-function SupportCard({ header, children }: SupportCardProps) {
+}) {
   return (
     <Card
       title={header}
@@ -299,7 +302,13 @@ function SupportCard({ header, children }: SupportCardProps) {
   )
 }
 
-function StatisticsCard({ title, value }) {
+function StatisticsCard({
+  title,
+  value,
+}: {
+  title: string
+  value: ExplorerQueryStatsResponse
+}) {
   return (
     <Card
       title={title}
