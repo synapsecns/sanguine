@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import Grid from '@/components/ui/tailwind/Grid'
 import Card from '@/components/ui/tailwind/Card'
 import Button from '@/components/ui/tailwind/Button'
@@ -11,9 +12,7 @@ import {
   BridgeImage,
   BridgeImageSmall,
 } from '@/components/icons/LandingIcons/BridgeImage'
-
-import Link from 'next/link'
-
+import { ChainId } from '@/constants/chains'
 import { DOCS_URL, BRIDGE_PATH, ANALYTICS_PATH } from '@/constants/urls'
 import {
   getTotalBridgeVolume,
@@ -21,6 +20,7 @@ import {
   getTotalValueLocked,
   ExplorerQueryStatsResponse,
 } from '@/utils/hooks/useExplorerStats'
+import { getNetworkButtonBorderHover } from '@/utils/styles/networks'
 
 function LandingPageContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -375,6 +375,71 @@ function StatisticsCard({
         />
       )}
     </Card>
+  )
+}
+
+function generateNetworkCardHref(chainId) {
+  let inputCurrency
+  let outputCurrency
+
+  switch (chainId) {
+    case ChainId.DOGECHAIN:
+      inputCurrency = 'ETH'
+      outputCurrency = 'WETH'
+      break
+    case ChainId.MOONBEAM:
+      inputCurrency = 'SYN'
+      outputCurrency = 'SYN'
+      break
+    case ChainId.MOONRIVER:
+      inputCurrency = 'SYN'
+      outputCurrency = 'SYN'
+      break
+    default:
+      inputCurrency = 'USDC'
+      outputCurrency = 'USDC'
+  }
+
+  return `/?inputCurrency=${inputCurrency}&outputCurrency=${outputCurrency}&outputChain=${chainId}`
+}
+
+function ChainImage({ chainImg }) {
+  return (
+    <div className="overflow-visible sm:px-1 md:px-2 lg:px-4">
+      <img src={chainImg} className="w-12 overflow-visible rounded-full" />
+    </div>
+  )
+}
+
+function NetworkCard({ network }) {
+  const href = generateNetworkCardHref(network.chainId)
+  return (
+    <Link href={href}>
+      <Card
+        className={`
+          text-center
+          border border-[#2F2F2F]
+          bg-opacity-0 bg-[#2F2F2F]
+          px-0
+          py-3 md:py-5
+          transform-gpu hover:transition-all duration-75
+          ${getNetworkButtonBorderHover(network.chainId)}
+        `}
+        divider={false}
+      >
+        <div className="flex justify-center mt-2 mb-2">
+          <ChainImage {...network} />
+        </div>
+        <div className="inline-block ">
+          <div className="text-lg font-medium text-white">
+            {network.chainName}
+          </div>
+          <div className="mt-1 text-sm text-opacity-75 text-secondaryTextColor">
+            Layer {network.layer}
+          </div>
+        </div>
+      </Card>
+    </Link>
   )
 }
 
