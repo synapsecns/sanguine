@@ -6,16 +6,16 @@ import {
     AttestationFlag,
     AttestationReport,
     AttestationReportLib,
-    TypedMemView
+    MemView,
+    MemViewLib
 } from "../../../contracts/libs/AttestationReport.sol";
 
 // solhint-disable ordering
 /// @notice Exposes Report methods for testing against golang.
 contract AttestationReportHarness {
     using AttestationReportLib for bytes;
-    using AttestationReportLib for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using AttestationReportLib for MemView;
+    using MemViewLib for bytes;
 
     // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
@@ -49,6 +49,6 @@ contract AttestationReportHarness {
     }
 
     function isAttestationReport(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isAttestationReport();
+        return payload.ref().isAttestationReport();
     }
 }

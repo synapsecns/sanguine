@@ -4,13 +4,13 @@ pragma solidity 0.8.17;
 import {State, StateLib, STATE_LENGTH} from "../../../contracts/libs/State.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
 import {MerkleList} from "../../../contracts/libs/MerkleList.sol";
-import {SynapseLibraryTest, TypedMemView} from "../../utils/SynapseLibraryTest.t.sol";
+import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {SnapshotHarness} from "../../harnesses/libs/SnapshotHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract SnapshotLibraryTest is SynapseLibraryTest {
     using StateLib for bytes;
-    using TypedMemView for bytes;
+    using MemViewLib for bytes;
 
     uint256 internal constant MAX_STATES = 32;
 

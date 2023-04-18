@@ -2,7 +2,13 @@
 
 pragma solidity 0.8.17;
 
-import {SystemEntity, SystemMessage, SystemMessageLib, TypedMemView} from "../../../contracts/libs/SystemMessage.sol";
+import {
+    SystemEntity,
+    SystemMessage,
+    SystemMessageLib,
+    MemView,
+    MemViewLib
+} from "../../../contracts/libs/SystemMessage.sol";
 
 // solhint-disable ordering
 /**
@@ -10,9 +16,8 @@ import {SystemEntity, SystemMessage, SystemMessageLib, TypedMemView} from "../..
  */
 contract SystemMessageHarness {
     using SystemMessageLib for bytes;
-    using SystemMessageLib for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using SystemMessageLib for MemView;
+    using MemViewLib for bytes;
 
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
@@ -49,6 +54,6 @@ contract SystemMessageHarness {
     }
 
     function isSystemMessage(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isSystemMessage();
+        return payload.ref().isSystemMessage();
     }
 }

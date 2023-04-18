@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {MemView, MemViewLib} from "../../../contracts/libs/MemView.sol";
+import {MemView, MemView, MemViewLib} from "../../../contracts/libs/MemView.sol";
 
 // solhint-disable ordering
 contract MemViewHarness {

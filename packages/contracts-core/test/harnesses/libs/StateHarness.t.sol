@@ -2,15 +2,14 @@
 
 pragma solidity 0.8.17;
 
-import {State, StateLib, TypedMemView} from "../../../contracts/libs/State.sol";
+import {State, StateLib, MemView, MemViewLib} from "../../../contracts/libs/State.sol";
 
 // solhint-disable ordering
 /// @notice Exposes State methods for testing against golang.
 contract StateHarness {
     using StateLib for bytes;
-    using StateLib for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using StateLib for MemView;
+    using MemViewLib for bytes;
 
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
@@ -75,6 +74,6 @@ contract StateHarness {
     }
 
     function isState(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isState();
+        return payload.ref().isState();
     }
 }

@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {ByteString, CallData, Signature, TypedMemView} from "../../../contracts/libs/ByteString.sol";
+import {ByteString, CallData, Signature, MemView, MemViewLib} from "../../../contracts/libs/ByteString.sol";
 
 // solhint-disable ordering
 /**
@@ -10,21 +10,11 @@ import {ByteString, CallData, Signature, TypedMemView} from "../../../contracts/
  */
 contract ByteStringHarness {
     using ByteString for bytes;
-    using ByteString for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using ByteString for MemView;
+    using MemViewLib for bytes;
 
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
-
-    // ═════════════════════════════════════════════════ RAW BYTES ═════════════════════════════════════════════════════
-
-    function castToRawBytes(bytes memory payload) public view returns (bytes memory) {
-        // Walkaround to get the forge coverage working on libraries, see
-        // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        bytes29 view_ = ByteString.castToRawBytes(payload);
-        return view_.clone();
-    }
 
     // ═════════════════════════════════════════════════ SIGNATURE ═════════════════════════════════════════════════════
 
@@ -38,7 +28,7 @@ contract ByteStringHarness {
     }
 
     function isSignature(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isSignature();
+        return payload.ref().isSignature();
     }
 
     function toRSV(bytes memory payload) public pure returns (bytes32, bytes32, uint8) {
@@ -57,7 +47,7 @@ contract ByteStringHarness {
     }
 
     function isCallData(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isCallData();
+        return payload.ref().isCallData();
     }
 
     function arguments(bytes memory payload) public view returns (bytes memory) {

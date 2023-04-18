@@ -2,15 +2,14 @@
 
 pragma solidity 0.8.17;
 
-import {StateFlag, StateReport, StateReportLib, TypedMemView} from "../../../contracts/libs/StateReport.sol";
+import {StateFlag, StateReport, StateReportLib, MemView, MemViewLib} from "../../../contracts/libs/StateReport.sol";
 
 // solhint-disable ordering
 /// @notice Exposes Report methods for testing against golang.
 contract StateReportHarness {
     using StateReportLib for bytes;
-    using StateReportLib for bytes29;
-    using TypedMemView for bytes;
-    using TypedMemView for bytes29;
+    using StateReportLib for MemView;
+    using MemViewLib for bytes;
 
     // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
@@ -40,6 +39,6 @@ contract StateReportHarness {
     }
 
     function isStateReport(bytes memory payload) public pure returns (bool) {
-        return payload.ref(0).isStateReport();
+        return payload.ref().isStateReport();
     }
 }
