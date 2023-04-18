@@ -288,24 +288,49 @@ function IntegrationSection() {
     <SectionContainer>
       <div
         className={`
-        flex flex-col md:flex-row
-        items-center justify-center
-        py-6 md:mt-6 lg:mt-6
-        lg:flex lg:justify-center
+          flex flex-col md:flex-row
+          items-center justify-center
+          py-6 md:mt-6 lg:mt-6
+          lg:flex lg:justify-center
         `}
       >
         <div
           className={`
-          mr-6 text-3xl text-white
-          border-r-0 md:border-r md:border-b-1 md:border-white
+            mr-6 pr-6 text-3xl text-white
+            border-r-0 md:border-r md:border-b-1 md:border-white
           `}
         >
           Widely integrated
+        </div>
+        <div
+          className={`
+            mt-2 text-left md:mt-0
+          text-secondaryTextColor
+            max-w-lg
+          `}
+        >
+          Synapse is widely integrated across the most-used Layer 1 and{' '}
+          <br className="hidden md:block" />
+          Layer 2 networks for a seamless cross-chain experience.
         </div>
       </div>
     </SectionContainer>
   )
 }
+
+{
+  /* <div className="hidden mt-2 text-left text-secondaryTextColor md:mt-0 lg:mt-0 md:block lg:block">
+Synapse is widely integrated across the most-used Layer 1 and
+<br />
+Layer 2 networks for a seamless cross-chain experience.
+</div>
+
+<div className="mt-2 text-left text-secondaryTextColor md:mt-0 lg:mt-0 lg:hidden md:hidden sm:block">
+Synapse is widely integrated across the most-used Layer 1 and
+Layer 2 networks for a seamless cross-chain experience.
+</div> */
+}
+
 function SupportCard({
   header,
   children,
@@ -361,6 +386,7 @@ const LandingPage = () => {
         <SecuritySection />
         <BridgeSection />
         <ExplorerSection />
+        <IntegrationSection />
       </LandingPageContainer>
     </LandingPageWrapper>
   )
