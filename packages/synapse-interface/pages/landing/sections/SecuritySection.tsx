@@ -24,11 +24,11 @@ export default function SecuritySection() {
         <SynapseCircuitSmall />
       </div>
 
-      <div className="max-w-sm md:ml-12">
+      <div className="max-w-sm mt-0 md:ml-12">
         <div
           className={`
-            mt-4 mb-4 text-4xl
-            font-medium text-left text-white
+            mb-4 text-4xl font-medium
+            text-left text-white
           `}
         >
           Securely connect every blockchain
@@ -50,7 +50,7 @@ export default function SecuritySection() {
       <Grid
         cols={{ sm: 1, md: 3 }}
         gap={12}
-        className="py-6 mx-auto mb-12 md:py-12 2xl:w-3/4"
+        className="mx-auto mb-4 sm:py-6 md:pt-12 md:pb-0 2xl:w-3/4"
       >
         <SupportCard header="Extensible" image={<ExtensibleIcon />}>
           Synapse’s cross-chain messaging contracts can be deployed across any
