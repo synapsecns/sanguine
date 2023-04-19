@@ -6,10 +6,7 @@ export function LandingPageContainer({
   children: React.ReactNode
 }) {
   return (
-    <div
-      data-test-id="landing-page-container"
-      className="relative px-4 md:px-24"
-    >
+    <div data-test-id="landing-page" className="relative px-4 md:px-24">
       {children}
     </div>
   )

@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 const BRIDGE_CONSTANTS = 'bridge.json'
 const WINDOW_CONSTANTS = 'window.json'
 
-describe('Landing', () => {
+describe('Landing (/)', () => {
   beforeEach(() => cy.visit('/'))
 
   it('initially loads bridge page', () => {
@@ -49,5 +49,24 @@ describe('Landing', () => {
         .should('be.visible')
         .and('contain.text', fixture.defaultDestinationToken)
     })
+  })
+})
+
+describe('Landing Page (/landing)', () => {
+  beforeEach(() => cy.visit('/landing'))
+
+  it('initially loads landing page', () => {
+    cy.get('[data-test-id="landing-page"]').should('be.visible')
+  })
+
+  it('displays all landing page sections', () => {
+    cy.get('[data-test-id="landing-hero-section"]').should('be.visible')
+    cy.get('[data-test-id="landing-security-section"]').should('be.visible')
+    cy.get('[data-test-id="landing-bridge-section"]').should('be.visible')
+    cy.get('[data-test-id="landing-explorer-section"]').should('be.visible')
+    cy.get('[data-test-id="landing-integration-section"]').should('be.visible')
+    cy.get('[data-test-id="landing-how-it-works-section"]').should('be.visible')
+    cy.get('[data-test-id="landing-use-cases-section"]').should('be.visible')
+    cy.get('[data-test-id="landing-resources-section"]').should('be.visible')
   })
 })
