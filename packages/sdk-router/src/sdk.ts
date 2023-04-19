@@ -252,7 +252,7 @@ class SynapseSDK {
   public async getPoolTokens(
     chainId: number,
     poolAddress: string
-  ): Promise<PoolToken[] | undefined> {
+  ): Promise<PoolToken[]> {
     const router: SynapseRouter = this.synapseRouters[chainId]
     const poolTokens = await router.routerContract.poolTokens(poolAddress)
     return poolTokens.map((token) => {
@@ -263,19 +263,18 @@ class SynapseSDK {
   public async getPoolInfo(
     chainId: number,
     poolAddress: string
-  ): Promise<{ tokens: BigNumber; lpToken: string }> {
+  ): Promise<{ tokens: BigNumber | undefined; lpToken: string | undefined }> {
     const router: SynapseRouter = this.synapseRouters[chainId]
     const poolInfo = await router.routerContract.poolInfo(poolAddress)
     return { tokens: poolInfo?.[0], lpToken: poolInfo?.[1] }
   }
 
   public async getAllPools(chainId: number): Promise<
-    | {
-        poolAddress: string | undefined
-        tokens: PoolToken[] | undefined
-        lpToken: string | undefined
-      }[]
-    | undefined
+    {
+      poolAddress: string | undefined
+      tokens: PoolToken[] | undefined
+      lpToken: string | undefined
+    }[]
   > {
     const router: SynapseRouter = this.synapseRouters[chainId]
     const pools = await router.routerContract.allPools()
@@ -288,8 +287,6 @@ class SynapseSDK {
         lpToken: pool?.lpToken,
       }
     })
-    console.log(res)
-
     return res
   }
 
