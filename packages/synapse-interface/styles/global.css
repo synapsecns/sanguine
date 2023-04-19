@@ -4,7 +4,6 @@
 
 body {
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
 }
 
 @font-face {
@@ -171,7 +170,7 @@ body {
   content:"";
   position: absolute;
   background: #1F1D22;
-  width: 100vw;
+  width: 4000px;
   left: -2000px;
   height: 100%;
   z-index: -69;
@@ -186,7 +185,7 @@ body {
   content:"";
   position: absolute;
   background: #121114;
-  width: 100vw;
+  width: 4000px;
   left: -2000px;
   height: 100%;
   z-index: 0;

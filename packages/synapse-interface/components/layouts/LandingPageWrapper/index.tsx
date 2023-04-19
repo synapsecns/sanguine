@@ -29,7 +29,7 @@ import { PageFooter } from './PageFooter'
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div
-      className="min-h-screen bg-no-repeat"
+      className="min-h-screen overflow-x-hidden bg-no-repeat"
       style={{
         background:
           'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',

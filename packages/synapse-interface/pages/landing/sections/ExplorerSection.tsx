@@ -62,6 +62,7 @@ export default function ExplorerSection() {
             max-w-4xl pb-12
             mx-auto space-x-0
             absolute-lightened-bg z-10 no-mt
+            lg:justify-center
         `}
       >
         <StatisticsCard title="Total Value Locked" value={totalValueLocked} />
@@ -87,7 +88,7 @@ function StatisticsCard({
       divider={false}
     >
       {value ? (
-        <div className="flex text-3xl font-medium text-white justify-left">
+        <div className={`flex text-3xl font-medium text-white justify-left`}>
           {value}
         </div>
       ) : (
