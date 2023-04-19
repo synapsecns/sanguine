@@ -24,7 +24,7 @@ export default function SecuritySection() {
         <SynapseCircuitSmall />
       </div>
 
-      <div className="max-w-sm mt-0 md:ml-12">
+      <div className="max-w-sm md:ml-12 no-mt">
         <div
           className={`
             mb-4 text-4xl font-medium
