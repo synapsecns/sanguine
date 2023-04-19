@@ -2,8 +2,8 @@ export function HowSynapseWorks() {
   return (
     <svg
       width="1590"
-      height="630"
-      viewBox="0 0 1590 630"
+      height="500"
+      viewBox="0 0 1590 500"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >

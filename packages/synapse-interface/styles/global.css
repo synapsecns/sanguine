@@ -188,7 +188,7 @@ body {
   width: 4000px;
   left: -2000px;
   height: 100%;
-  z-index: -69;
+  z-index: 0;
   overflow: hidden;
 }
 
