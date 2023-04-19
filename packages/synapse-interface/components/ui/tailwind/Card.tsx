@@ -42,7 +42,7 @@ export default function Card({
 
   return (
     <div className={mergedClassName} {...props}>
-      {image && <div className="flex justify-center mb-2">{image}</div>}
+      {image && <div className="flex justify-start mb-2">{image}</div>}
       {titleContent}
       {children}
     </div>

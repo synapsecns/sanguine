@@ -4,6 +4,7 @@ import {
   SynapseCircuit,
   SynapseCircuitSmall,
 } from '@/components/icons/LandingIcons/SynapseCircuit'
+import { SecureIcon } from '@/components/icons/LandingIcons/SecureIcon'
 
 export default function SecuritySection() {
   return (
