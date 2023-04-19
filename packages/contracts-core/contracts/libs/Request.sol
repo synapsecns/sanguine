@@ -4,26 +4,23 @@ pragma solidity 0.8.17;
 import {REQUEST_LENGTH} from "./Constants.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev Request is a memory view over a formatted "message execution request" payload.
+/// Request is a memory view over a formatted "message execution request" payload.
 type Request is uint256;
 
-/// @dev Attach library functions to Request
 using RequestLib for Request global;
 
+/// Library for formatting _the request part_ of _the base messages_.
+/// Request structure represents a message sender requirements for the message execution on the destination chain.
+///
+/// # Request memory layout
+///
+/// | Position   | Field    | Type   | Bytes | Description                                        |
+/// | ---------- | -------- | ------ | ----- | -------------------------------------------------- |
+/// | [000..008) | gasLimit | uint64 | 8     | Amount of gas units to supply on destination chain |
 library RequestLib {
     using MemViewLib for bytes;
 
-    /**
-     * @dev Request structure represents a message sender requirements for
-     * the message execution on the destination chain.
-     *
-     * @dev Memory layout of Request fields
-     * TODO: figure out the fields packing (uint64 is too much for gas limit)
-     * [000 .. 008): gasLimit       uint64   8 bytes    Amount of gas units to supply on destination chain
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
-
+    /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_GAS_LIMIT = 0;
 
     // ══════════════════════════════════════════════════ REQUEST ══════════════════════════════════════════════════════

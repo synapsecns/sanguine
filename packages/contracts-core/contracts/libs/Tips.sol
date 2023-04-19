@@ -4,46 +4,50 @@ pragma solidity 0.8.17;
 import {TIPS_GRANULARITY, TIPS_LENGTH} from "./Constants.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev Tips is a memory over over a formatted message tips payload.
+/// Tips is a memory over over a formatted message tips payload.
 type Tips is uint256;
 
-/// @dev Attach library functions to Tips
 using TipsLib for Tips global;
 
-/**
- * @notice Library for versioned formatting [the tips part]
- * of [the messages used by Origin and Destination].
- */
+/// # Tips
+/// Library for formatting _the tips part_ of _the base messages_.
+///
+/// ## How the tips are awarded
+/// Tips are paid for sending a base message, and are split across all the agents that
+/// made the message execution on destination chain possible.
+/// ### Summit tips
+/// Split between:
+///     - Guard posting a snapshot with state ST_G for the origin chain.
+///     - Notary posting a snapshot SN_N using ST_G. This creates attestation A.
+///     - Notary posting a message receipt after it is executed on destination chain.
+/// ### Attestation tips
+/// Paid to:
+///     - Notary posting attestation A to destination chain.
+/// ### Execution tips
+/// Paid to:
+///     - First executor performing a valid execution attempt (correct proofs, optimistic period over),
+///      using attestation A to prove message inclusion on origin chain, whether the recipient reverted or not.
+/// ### Delivery tips.
+/// Paid to:
+///     - Executor who successfully executed the message on destination chain.
+///
+/// ## Tips encoding
+/// - The actual tip values should be determined by multiplying stored values by divided by TIPS_MULTIPLIER=2**32.
+/// - Tips are packed into a single word of storage, while allowing real values up to ~8*10**28 for every tip category.
+/// > The only downside is that the "real tip values" are now multiplies of ~4*10**9, which should be fine even for
+/// the chains with the most expensive gas currency.
+/// # Tips memory layout
+///
+/// | Position   | Field          | Type   | Bytes | Description                                                |
+/// | ---------- | -------------- | ------ | ----- | ---------------------------------------------------------- |
+/// | [000..008) | summitTip      | uint64 | 8     | Tip for agents interacting with Summit contract            |
+/// | [008..016) | attestationTip | uint64 | 8     | Tip for Notary posting attestation to Destination contract |
+/// | [016..024) | executionTip   | uint64 | 8     | Tip for valid execution attempt on destination chain       |
+/// | [024..032) | deliveryTip    | uint64 | 8     | Tip for successful message delivery on destination chain   |
 library TipsLib {
     using MemViewLib for bytes;
 
-    /**
-     * @dev Tips are paid for sending a base message, and are split across all the agents that
-     * made the message execution on destination chain possible.
-     *  1. Summit tips. Split between:
-     *      a. Guard posting a snapshot with state ST_G for the origin chain.
-     *      b. Notary posting a snapshot SN_N using ST_G. This creates attestation A.
-     *      c. Notary posting a message receipt after it is executed on destination chain.
-     *  2. Attestation tips. Paid to:
-     *      a. Notary posting attestation A to destination chain.
-     *  3. Execution tips. Paid to:
-     *      a. First executor performing a valid execution attempt (correct proofs, optimistic period over),
-     *      using attestation A to prove message inclusion on origin chain, whether the recipient reverted or not.
-     *  4. Delivery tips. Paid to:
-     *      a. Executor who successfully executed the message on destination chain.
-     * @dev The actual tip values should be determined by multiplying stored values by divided by TIPS_MULTIPLIER=2**32.
-     * Tips are packed into a single word of storage, while allowing real values up to ~8*10**28 for every tip category.
-     * The only downside is that the "real tip values" are now multiplies of ~4*10**9, which should be fine even for
-     * the chains with the most expensive gas currency.
-     * @dev Tips memory layout
-     * [000 .. 008): summitTip          uint64	 8 bytes    Tip for agents interacting with Summit contract
-     * [008 .. 016): attestationTip     uint64	 8 bytes    Tip for Notary posting attestation to Destination contract
-     * [016 .. 024): executionTip       uint64	 8 bytes    Tip for valid execution attempt on destination chain
-     * [024 .. 032): deliveryTip        uint64	 8 bytes    Tip for successful message delivery on destination chain
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
-
+    /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_SUMMIT_TIP = 0;
     uint256 private constant OFFSET_ATTESTATION_TIP = 8;
     uint256 private constant OFFSET_EXECUTION_TIP = 16;

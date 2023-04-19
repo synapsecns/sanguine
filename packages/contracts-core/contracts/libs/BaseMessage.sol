@@ -6,28 +6,26 @@ import {Request, RequestLib} from "./Request.sol";
 import {Tips, TipsLib} from "./Tips.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev BaseMessage is a memory view over the base message supported by Origin-Destination
+/// BaseMessage is a memory view over the base message supported by Origin-Destination
 type BaseMessage is uint256;
 
-/// @dev Attach library functions to BaseMessage
 using BaseMessageLib for BaseMessage global;
 
+/// # Memory layout of BaseMessage fields
+///
+/// | Position   | Field     | Type    | Bytes | Description                                        |
+/// | ---------- | --------- | ------- | ----- | -------------------------------------------------- |
+/// | [000..032) | sender    | bytes32 | 32    | Sender address on origin chain                     |
+/// | [032..064) | recipient | bytes32 | 32    | Recipient address on destination chain             |
+/// | [064..112) | tips      | bytes   | 48    | Tips paid on origin chain                          |
+/// | [112..120) | request   | bytes   | 8     | Request for message execution on destination chain |
+/// | [120..AAA) | content   | bytes   | ??    | Content to be passed to recipient                  |
 library BaseMessageLib {
     using MemViewLib for bytes;
     using RequestLib for MemView;
     using TipsLib for MemView;
 
-    /**
-     * @dev Memory layout of BaseMessage fields
-     * [000 .. 032): sender         bytes32 32 bytes    Sender address on origin chain
-     * [032 .. 064): recipient      bytes32 32 bytes    Recipient address on destination chain
-     * [064 .. 112): tips           bytes   48 bytes    Tips paid on origin chain
-     * [112 .. 120): request        bytes    8 bytes    Request for message execution on destination chain
-     * [120 .. AAA): content        bytes   ?? bytes    Content to be passed to recipient
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
-
+    /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_SENDER = 0;
     uint256 private constant OFFSET_RECIPIENT = 32;
     uint256 private constant OFFSET_TIPS = 64;

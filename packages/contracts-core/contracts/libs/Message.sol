@@ -6,13 +6,12 @@ import {Header, HEADER_LENGTH, HeaderLib} from "./Header.sol";
 import {SystemMessageLib} from "./SystemMessage.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev Message is a memory over over a formatted message payload.
+/// Message is a memory over over a formatted message payload.
 type Message is uint256;
 
-/// @dev Attach library functions to Message
 using MessageLib for Message global;
 
-/// @dev Types of messages supported by Origin-Destination
+/// Types of messages supported by Origin-Destination
 /// - System: message sent between system contracts located on different chains
 /// - Base: message sent by protocol user, contains tips
 enum MessageFlag {
@@ -20,27 +19,24 @@ enum MessageFlag {
     Base
 }
 
-/// @dev Attach library functions to MessageFlag
 using MessageLib for MessageFlag global;
 
-/**
- * @notice Library for formatting the various messages supported by Origin and Destination.
- */
+/// Library for formatting the various messages supported by Origin and Destination.
+///
+/// # Message memory layout
+///
+/// | Position   | Field  | Type  | Bytes | Description                                             |
+/// | ---------- | ------ | ----- | ----- | ------------------------------------------------------- |
+/// | [000..001) | flag   | uint8 | 1     | Flag specifying the type of message                     |
+/// | [001..017) | header | bytes | 16    | Formatted payload with general routing information      |
+/// | [017..AAA) | body   | bytes | ??    | Formatted payload (according to flag) with message body |
 library MessageLib {
     using BaseMessageLib for MemView;
     using MemViewLib for bytes;
     using HeaderLib for MemView;
     using SystemMessageLib for MemView;
 
-    /**
-     * @dev Message memory layout
-     * [000 .. 001): flag       uint8    1 byte     Flag specifying the type of message
-     * [001 .. 017): header     bytes   16 bytes    Formatted payload with general routing information
-     * [017 .. AAA): body       bytes   ?? bytes    Formatted payload (according to flag) with message body
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
-
+    /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_FLAG = 0;
     uint256 private constant OFFSET_HEADER = 1;
     uint256 private constant OFFSET_BODY = OFFSET_HEADER + HEADER_LENGTH;

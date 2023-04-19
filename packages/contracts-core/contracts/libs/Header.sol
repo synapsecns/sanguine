@@ -5,29 +5,25 @@ import {HEADER_LENGTH} from "./Constants.sol";
 import {TypeCasts} from "./TypeCasts.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev Header is a memory over over a formatted message header payload.
+/// Header is a memory over over a formatted message header payload.
 type Header is uint256;
 
-/// @dev Attach library functions to Header
 using HeaderLib for Header global;
 
-/**
- * @notice Library for versioned formatting [the header part]
- * of [the messages used by Origin and Destination].
- */
+/// Library for formatting _the header part_ of _the messages used by Origin and Destination_.
+///
+/// # Memory layout of Header
+///
+/// | Position   | Field            | Type   | Bytes | Description                             |
+/// | ---------- | ---------------- | ------ | ----- | --------------------------------------- |
+/// | [000..004) | origin           | uint32 | 4     | Domain where message originated         |
+/// | [004..008) | nonce            | uint32 | 4     | Message nonce on the origin domain      |
+/// | [008..012) | destination      | uint32 | 4     | Domain where message will be executed   |
+/// | [012..016) | optimisticPeriod | uint32 | 4     | Optimistic period that will be enforced |
 library HeaderLib {
     using MemViewLib for bytes;
 
-    /**
-     * @dev Header memory layout
-     * [000 .. 004): origin             uint32   4 bytes    Domain where message originated
-     * [004 .. 008): nonce              uint32   4 bytes    Message nonce on the origin domain
-     * [008 .. 012): destination        uint32   4 bytes    Domain where message will be executed
-     * [012 .. 016): optimisticPeriod   uint32   4 bytes    Optimistic period that will be enforced
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
-
+    /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_ORIGIN = 0;
     uint256 private constant OFFSET_NONCE = 4;
     uint256 private constant OFFSET_DESTINATION = 8;
