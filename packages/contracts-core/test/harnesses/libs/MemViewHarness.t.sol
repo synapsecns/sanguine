@@ -81,9 +81,19 @@ contract MemViewHarness {
         // Add some dirty data to where the current free memory pointer is pointing
         bytes memory dirtyBefore = hex"DeadDead";
         MemView memView = arr.ref();
+        bytes32 result = memView.keccak();
         // Add some dirty data to where the current free memory pointer is pointing
         bytes memory dirtyAfter = hex"FedFed";
-        bytes32 result = memView.keccak();
+        return (dirtyBefore, result, dirtyAfter);
+    }
+
+    function keccakSalted(bytes memory arr, bytes32 salt) external pure returns (bytes memory, bytes32, bytes memory) {
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyBefore = hex"DeadDead";
+        MemView memView = arr.ref();
+        bytes32 result = memView.keccakSalted(salt);
+        // Add some dirty data to where the current free memory pointer is pointing
+        bytes memory dirtyAfter = hex"FedFed";
         return (dirtyBefore, result, dirtyAfter);
     }
 
