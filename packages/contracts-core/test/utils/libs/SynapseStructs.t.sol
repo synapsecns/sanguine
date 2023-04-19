@@ -6,7 +6,8 @@ import {ByteString, CallData, MemView, MemViewLib} from "../../../contracts/libs
 import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
 import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
 import {SystemEntity, SystemMessage, SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
-import {Receipt, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
+import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
+import {ReceiptFlag, ReceiptReport, ReceiptReportLib} from "../../../contracts/libs/ReceiptReport.sol";
 import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
 
 import {Snapshot, SnapshotLib, SNAPSHOT_MAX_STATES, State, StateLib} from "../../../contracts/libs/Snapshot.sol";
@@ -41,8 +42,7 @@ struct RawTips {
 
 using CastLib for RawTips global;
 
-// RawReceipt name is already taken in forge-std
-struct RawExecReceipt {
+struct RawReceiptBody {
     uint32 origin;
     uint32 destination;
     bytes32 messageHash;
@@ -51,10 +51,24 @@ struct RawExecReceipt {
     address attNotary;
     address firstExecutor;
     address finalExecutor;
+}
+
+using CastLib for RawReceiptBody global;
+
+// RawReceipt name is already taken in forge-std
+struct RawExecReceipt {
+    RawReceiptBody body;
     RawTips tips;
 }
 
 using CastLib for RawExecReceipt global;
+
+struct RawReceiptReport {
+    uint8 flag;
+    RawReceiptBody body;
+}
+
+using CastLib for RawReceiptReport global;
 
 struct RawCallData {
     bytes4 selector;
@@ -152,9 +166,10 @@ library CastLib {
     using AttestationReportLib for bytes;
     using ByteString for bytes;
     using BaseMessageLib for bytes;
-    using ReceiptLib for bytes;
     using HeaderLib for bytes;
     using MessageLib for bytes;
+    using ReceiptLib for bytes;
+    using ReceiptReportLib for bytes;
     using RequestLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
@@ -285,37 +300,57 @@ library CastLib {
 
     // ═════════════════════════════════════════════════ RECEIPT ═════════════════════════════════════════════════════
 
-    function formatReceipt(RawExecReceipt memory re) internal pure returns (bytes memory) {
-        return ReceiptLib.formatReceipt(
-            re.origin,
-            re.destination,
-            re.messageHash,
-            re.snapshotRoot,
-            re.stateIndex,
-            re.attNotary,
-            re.firstExecutor,
-            re.finalExecutor,
-            re.tips.formatTips()
+    function formatReceiptBody(RawReceiptBody memory rrb) internal pure returns (bytes memory) {
+        return ReceiptLib.formatReceiptBody(
+            rrb.origin,
+            rrb.destination,
+            rrb.messageHash,
+            rrb.snapshotRoot,
+            rrb.stateIndex,
+            rrb.attNotary,
+            rrb.firstExecutor,
+            rrb.finalExecutor
         );
+    }
+
+    function castToReceiptBody(RawReceiptBody memory rrb) internal pure returns (ReceiptBody) {
+        return rrb.formatReceiptBody().castToReceiptBody();
+    }
+
+    function formatReceipt(RawExecReceipt memory re) internal pure returns (bytes memory) {
+        return ReceiptLib.formatReceipt(re.body.formatReceiptBody(), re.tips.formatTips());
     }
 
     function castToReceipt(RawExecReceipt memory re) internal pure returns (Receipt) {
         return re.formatReceipt().castToReceipt();
     }
 
-    function modifyReceipt(RawExecReceipt memory re, uint256 mask) internal pure returns (RawExecReceipt memory mre) {
-        // Don't modify the destination, message hash and tips
-        mre.destination = re.destination;
-        mre.messageHash = re.messageHash;
-        mre.tips = re.tips.cloneTips();
+    function modifyReceiptBody(RawReceiptBody memory rrb, uint256 mask)
+        internal
+        pure
+        returns (RawReceiptBody memory mrb)
+    {
+        // Don't modify the destination, message hash
+        mrb.destination = rrb.destination;
+        mrb.messageHash = rrb.messageHash;
         // Make sure at least one value is modified, valid mask values are [1 .. 63]
         mask = 1 + (mask % 63);
-        mre.origin = re.origin ^ uint32(mask & 1);
-        mre.snapshotRoot = re.snapshotRoot ^ bytes32(mask & 2);
-        mre.stateIndex = re.stateIndex ^ uint8(mask & 4);
-        mre.attNotary = address(uint160(re.attNotary) ^ uint160(mask & 8));
-        mre.firstExecutor = address(uint160(re.firstExecutor) ^ uint160(mask & 16));
-        mre.finalExecutor = address(uint160(re.finalExecutor) ^ uint160(mask & 32));
+        mrb.origin = rrb.origin ^ uint32(mask & 1);
+        mrb.snapshotRoot = rrb.snapshotRoot ^ bytes32(mask & 2);
+        mrb.stateIndex = rrb.stateIndex ^ uint8(mask & 4);
+        mrb.attNotary = address(uint160(rrb.attNotary) ^ uint160(mask & 8));
+        mrb.firstExecutor = address(uint160(rrb.firstExecutor) ^ uint160(mask & 16));
+        mrb.finalExecutor = address(uint160(rrb.finalExecutor) ^ uint160(mask & 32));
+    }
+
+    function formatReceiptReport(RawReceiptReport memory rawRR) internal pure returns (bytes memory) {
+        // Explicit revert when flag out of range
+        require(rawRR.flag <= uint8(type(ReceiptFlag).max), "Flag out of range");
+        return ReceiptFlag(rawRR.flag).formatReceiptReport(rawRR.body.formatReceiptBody());
+    }
+
+    function castToReceiptReport(RawReceiptReport memory rawRR) internal pure returns (ReceiptReport) {
+        return rawRR.formatReceiptReport().castToReceiptReport();
     }
 
     // ═══════════════════════════════════════════════════ STATE ═══════════════════════════════════════════════════════

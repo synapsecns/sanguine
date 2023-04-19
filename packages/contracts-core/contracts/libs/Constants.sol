@@ -13,8 +13,10 @@ uint256 constant SNAPSHOT_TREE_HEIGHT = 6;
 // ══════════════════════════════════ STRUCTS ══════════════════════════════════
 /// @dev See Attestation.sol: (bytes32,bytes32, uint32,uint40,uint40): 32+4+5+5
 uint256 constant ATTESTATION_LENGTH = 78;
-/// @dev See Receipt.sol: (uint32,uint32,bytes32,bytes32,uint8,address,address,address,tips): 4+4+32+32+1+20+20+20+tips
-uint256 constant RECEIPT_LENGTH = 133 + TIPS_LENGTH;
+/// @dev See Receipt.sol: (uint32,uint32,bytes32,bytes32,uint8,address,address,address,tips): 4+4+32+32+1+20+20+20
+uint256 constant RECEIPT_BODY_LENGTH = 133;
+/// @dev See Receipt.sol: body + tips
+uint256 constant RECEIPT_LENGTH = RECEIPT_BODY_LENGTH + TIPS_LENGTH;
 /// @dev See State.sol: (bytes32,uint32,uint32,uint40,uint40): 32+4+4+5+5
 uint256 constant STATE_LENGTH = 50;
 /// @dev Maximum amount of states in a single snapshot. Each state produces two leafs in the tree
@@ -35,6 +37,7 @@ uint256 constant TIPS_MULTIPLIER = 1 << TIPS_GRANULARITY;
 bytes32 constant ATTESTATION_SALT = keccak256("ATTESTATION_SALT");
 bytes32 constant ATTESTATION_REPORT_SALT = keccak256("ATTESTATION_REPORT_SALT");
 bytes32 constant RECEIPT_SALT = keccak256("RECEIPT_SALT");
+bytes32 constant RECEIPT_REPORT_SALT = keccak256("RECEIPT_REPORT_SALT");
 bytes32 constant SNAPSHOT_SALT = keccak256("SNAPSHOT_SALT");
 bytes32 constant STATE_REPORT_SALT = keccak256("STATE_REPORT_SALT");
 // ════════════════════════════════ DESTINATION ════════════════════════════════

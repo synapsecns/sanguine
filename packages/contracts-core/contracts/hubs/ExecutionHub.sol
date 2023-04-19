@@ -7,7 +7,7 @@ import {BaseMessage, BaseMessageLib, MemView} from "../libs/BaseMessage.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
-import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
+import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
 import {MessageStatus} from "../libs/Structures.sol";
 import {SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
 import {Tips} from "../libs/Tips.sol";
@@ -145,7 +145,8 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Notary needs to be Active/Unstaking
         _verifyActiveUnstaking(status);
         // This will revert if receipt refers to another domain
-        isValid = _isValidReceipt(rcpt);
+        // Note: this doesn't check the validity of tips, this is done in Summit contract
+        isValid = _isValidReceipt(rcpt.body());
         if (!isValid) {
             emit InvalidReceipt(rcptPayload, rcptSignature);
             // Slash Notary and notify local AgentManager
@@ -160,7 +161,8 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // This will revert if payload is not an receipt
         Receipt rcpt = _wrapReceipt(rcptPayload);
         // This will revert if receipt refers to another domain
-        return _isValidReceipt(rcpt);
+        // Note: this doesn't check the validity of tips, this is done in Summit contract
+        return _isValidReceipt(rcpt.body());
     }
 
     /// @inheritdoc IExecutionHub
@@ -176,7 +178,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     }
 
     /// @inheritdoc IExecutionHub
-    function receiptData(bytes32 messageHash) external view returns (bytes memory data) {
+    function receiptBody(bytes32 messageHash) external view returns (bytes memory data) {
         ReceiptData memory rcptData = _receiptData[messageHash];
         // Return empty payload if there has been no attempt to execute the message
         if (rcptData.origin == 0) return "";
@@ -187,7 +189,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         bytes32 snapRoot = _roots[rcptData.rootIndex];
         (address attNotary,) = _getAgent(_rootData[snapRoot].notaryIndex);
         // ExecutionHub does not store the tips, the Notary will have to append the tips payload
-        return ReceiptLib.formatReceipt({
+        return ReceiptLib.formatReceiptBody({
             origin_: rcptData.origin,
             destination_: localDomain,
             messageHash_: messageHash,
@@ -195,8 +197,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             stateIndex_: rcptData.stateIndex,
             attNotary_: attNotary,
             firstExecutor_: firstExecutor,
-            finalExecutor_: rcptData.executor,
-            tipsPayload: ""
+            finalExecutor_: rcptData.executor
         });
     }
 
@@ -242,32 +243,32 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
-    /// @dev Checks if receipt matches the saved data for the referenced message.
+    /// @dev Checks if receipt body matches the saved data for the referenced message.
     /// Reverts if destination domain doesn't match the local domain.
-    function _isValidReceipt(Receipt rcpt) internal view returns (bool) {
+    function _isValidReceipt(ReceiptBody rcptBody) internal view returns (bool) {
         // Check if receipt refers to this contract
-        require(rcpt.destination() == localDomain, "Wrong destination");
-        bytes32 messageHash = rcpt.messageHash();
+        require(rcptBody.destination() == localDomain, "Wrong destination");
+        bytes32 messageHash = rcptBody.messageHash();
         ReceiptData memory rcptData = _receiptData[messageHash];
         // Check if there has been a single attempt to execute the message
         if (rcptData.origin == 0) return false;
         // Check that origin and state index fields match
-        if (rcpt.origin() != rcptData.origin || rcpt.stateIndex() != rcptData.stateIndex) return false;
+        if (rcptBody.origin() != rcptData.origin || rcptBody.stateIndex() != rcptData.stateIndex) return false;
         // Check that snapshot root and notary who submitted it match in the Receipt
-        bytes32 snapRoot = rcpt.snapshotRoot();
+        bytes32 snapRoot = rcptBody.snapshotRoot();
         (address attNotary,) = _getAgent(_rootData[snapRoot].notaryIndex);
-        if (snapRoot != _roots[rcptData.rootIndex] || rcpt.attNotary() != attNotary) return false;
+        if (snapRoot != _roots[rcptData.rootIndex] || rcptBody.attNotary() != attNotary) return false;
         // Check if message was executed from the first attempt
         address firstExecutor = _firstExecutor[messageHash];
         if (firstExecutor == address(0)) {
             // Both first and final executors are saved in receipt data
-            return rcpt.firstExecutor() == rcptData.executor && rcpt.finalExecutor() == rcptData.executor;
+            return rcptBody.firstExecutor() == rcptData.executor && rcptBody.finalExecutor() == rcptData.executor;
         } else {
             // Message was Failed at some point of time, so both receipts are valid:
             // "Failed": finalExecutor is ZERO
             // "Success": finalExecutor matches executor from saved receipt data
-            address finalExecutor = rcpt.finalExecutor();
-            return rcpt.firstExecutor() == firstExecutor
+            address finalExecutor = rcptBody.finalExecutor();
+            return rcptBody.firstExecutor() == firstExecutor
                 && (finalExecutor == address(0) || finalExecutor == rcptData.executor);
         }
     }

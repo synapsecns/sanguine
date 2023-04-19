@@ -10,7 +10,7 @@ import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "./interfaces/InterfaceBondingManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
-import {DisputeHub, ExecutionHub, MessageStatus, Receipt, Tips} from "./hubs/ExecutionHub.sol";
+import {DisputeHub, ExecutionHub, MessageStatus, Receipt, ReceiptBody, Tips} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub} from "./hubs/SnapshotHub.sol";
 import {Attestation, AttestationLib, AttestationReport, Snapshot} from "./hubs/StatementHub.sol";
 import {DomainContext, Versioned} from "./system/SystemContract.sol";
@@ -100,8 +100,9 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         _verifyActive(status);
         require(!_inDispute(notary), "Notary is in dispute");
         // Receipt needs to be signed by a destination chain Notary
-        require(rcpt.destination() == status.domain, "Wrong Notary domain");
-        wasAccepted = _saveReceipt(rcpt, status.index);
+        ReceiptBody rcptBody = rcpt.body();
+        require(rcptBody.destination() == status.domain, "Wrong Notary domain");
+        wasAccepted = _saveReceipt(rcptBody, rcpt.tips(), status.index);
         if (wasAccepted) {
             emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
         }
@@ -271,36 +272,35 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @dev Saves the message from the receipt into the "quarantine queue". Once message leaves the queue,
     /// tips associated with the message are distributed across off-chain actors.
-    function _saveReceipt(Receipt receipt, uint32 rcptNotaryIndex) internal returns (bool) {
-        bytes32 snapRoot = receipt.snapshotRoot();
+    function _saveReceipt(ReceiptBody rcptBody, Tips tips, uint32 rcptNotaryIndex) internal returns (bool) {
+        bytes32 snapRoot = rcptBody.snapshotRoot();
         SnapRootData memory rootData = _rootData[snapRoot];
         require(rootData.submittedAt != 0, "Unknown snapshot root");
         // Attestation Notary needs to be known and not slashed
-        address attNotary = receipt.attNotary();
+        address attNotary = rcptBody.attNotary();
         AgentStatus memory attNotaryStatus = _agentStatus(attNotary);
         _verifyKnown(attNotaryStatus);
         _verifyNotSlashed(attNotaryStatus);
         // Check if tip values are non-zero
-        Tips tips = receipt.tips();
         if (tips.value() == 0) return false;
         // Check if there already exists receipt for the message
-        bytes32 messageHash = receipt.messageHash();
+        bytes32 messageHash = rcptBody.messageHash();
         ReceiptStatus memory savedRcpt = _receiptStatus[messageHash];
         // Don't save if receipt is already in the queue
         if (savedRcpt.pending) return false;
         // Get the status from the provided receipt
-        MessageStatus msgStatus = receipt.finalExecutor() == address(0) ? MessageStatus.Failed : MessageStatus.Success;
+        MessageStatus msgStatus = rcptBody.finalExecutor() == address(0) ? MessageStatus.Failed : MessageStatus.Success;
         // Don't save if we already have the receipt with at least this status
         if (savedRcpt.status >= msgStatus) return false;
         // Save information from the receipt
         _receipts[messageHash] = SummitReceipt({
-            origin: receipt.origin(),
-            destination: receipt.destination(),
+            origin: rcptBody.origin(),
+            destination: rcptBody.destination(),
             snapRootIndex: rootData.index,
-            stateIndex: receipt.stateIndex(),
+            stateIndex: rcptBody.stateIndex(),
             attNotaryIndex: attNotaryStatus.index,
-            firstExecutor: receipt.firstExecutor(),
-            finalExecutor: receipt.finalExecutor()
+            firstExecutor: rcptBody.firstExecutor(),
+            finalExecutor: rcptBody.finalExecutor()
         });
         // Save receipt status: transfer tipsAwarded field (whether we paid tips for Failed Receipt before)
         _receiptStatus[messageHash] = ReceiptStatus({
