@@ -15,16 +15,10 @@ export const getPriceMultiplier = ({ poolType, prices }) => {
   }
 }
 
-/**
- * @param {BigNumber[]} arr
- */
 export const calcBnSum = (arr) => {
   return arr.reduce((sum, b) => sum.add(b), Zero)
 }
 
-/**
- * @param {BigNumber} lpb
- */
 export const calcIfZero = (lpb) => {
   if (lpb.isZero()) {
     return One

@@ -58,6 +58,7 @@ export default function PoolsPage() {
               poolsByChain: LEGACY_POOLS_BY_CHAIN,
             },
           ]}
+          connectedChainId={connectedChainId}
           tabIndex={tabIndex}
           setTabIndex={setTabIndex}
         />

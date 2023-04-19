@@ -9,7 +9,7 @@ import {
   useSingleContractMultipleMethods,
 } from '@hooks/multicall'
 
-export function useGenericPoolApyData(chainId, poolToken) {
+export const useGenericPoolApyData = (chainId, poolToken) => {
   const miniChefContract = useGenericMiniChefContract(chainId)
   const poolTokenContract = useGenericTokenContract(chainId, poolToken)
 

@@ -10,7 +10,7 @@ const ApyTooltip = ({ apyData, baseApyData = {}, className }) => {
   const dailyApr = weeklyApr / 7
   const yearlyApr = weeklyApr * 52
 
-  const baseCompoundedApy = baseApyData.yearlyCompoundedApy ?? 0
+  const baseCompoundedApy = baseApyData?.yearlyCompoundedApy ?? 0
   const baseWeeklyApr = (baseApyData.dailyApr ?? 0) * 7
   const baseDailyApr = baseApyData.dailyApr ?? 0
   const baseYearlyApr = baseApyData.yearlyApr ?? 0
