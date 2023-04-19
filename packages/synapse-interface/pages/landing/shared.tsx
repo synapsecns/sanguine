@@ -27,7 +27,7 @@ export function SectionContainer({
   return (
     <div
       className={`
-        py-6 md:py-8 space-y-[1rem]
+        py-6 md:my-8 space-y-[1rem]
         ${styles}
       `}
       data-test-id={dataTestId}

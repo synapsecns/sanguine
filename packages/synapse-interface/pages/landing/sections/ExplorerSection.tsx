@@ -23,7 +23,7 @@ export default function ExplorerSection() {
         gap={4}
         className={`
           flex items-center
-          px-8 py-6 mx-auto md:px-12
+          px-8 pt-6 mx-auto md:px-12
           absolute-lightened-bg z-10
         `}
       >
@@ -83,7 +83,7 @@ function StatisticsCard({
     <Card
       title={title}
       titleClassName="text-white opacity-75"
-      className="justify-center px-2 py-12 bg-transparent"
+      className="justify-center px-2 pt-16 pb-8 bg-transparent"
       divider={false}
     >
       {value ? (

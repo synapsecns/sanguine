@@ -187,6 +187,8 @@ body {
   background: #121114;
   width: 4000px;
   left: -2000px;
+  height: 100%;
+  z-index: -69;
   overflow: hidden;
 }
 

@@ -19,7 +19,6 @@ export default function IntegrationSection() {
         className={`
           flex flex-col md:flex-row
           items-center justify-center
-          py-6 md:mt-6 lg:mt-6
           lg:flex lg:justify-center
         `}
       >
