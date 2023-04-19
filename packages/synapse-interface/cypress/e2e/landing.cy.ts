@@ -60,13 +60,22 @@ describe('Landing Page (/landing)', () => {
   })
 
   it('displays all landing page sections', () => {
-    cy.get('[data-test-id="landing-hero-section"]').should('be.visible')
-    cy.get('[data-test-id="landing-security-section"]').should('be.visible')
-    cy.get('[data-test-id="landing-bridge-section"]').should('be.visible')
-    cy.get('[data-test-id="landing-explorer-section"]').should('be.visible')
-    cy.get('[data-test-id="landing-integration-section"]').should('be.visible')
-    cy.get('[data-test-id="landing-how-it-works-section"]').should('be.visible')
-    cy.get('[data-test-id="landing-use-cases-section"]').should('be.visible')
-    cy.get('[data-test-id="landing-resources-section"]').should('be.visible')
+    cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
+      const desktop = fixture.screenWidth.desktopBreakpoint
+      cy.viewport(desktop.width, desktop.height)
+
+      cy.get('[data-test-id="landing-hero-section"]').should('be.visible')
+      cy.get('[data-test-id="landing-security-section"]').should('be.visible')
+      cy.get('[data-test-id="landing-bridge-section"]').should('be.visible')
+      cy.get('[data-test-id="landing-explorer-section"]').should('be.visible')
+      cy.get('[data-test-id="landing-integration-section"]').should(
+        'be.visible'
+      )
+      cy.get('[data-test-id="landing-how-it-works-section"]').should(
+        'be.visible'
+      )
+      cy.get('[data-test-id="landing-use-cases-section"]').should('be.visible')
+      cy.get('[data-test-id="landing-resources-section"]').should('be.visible')
+    })
   })
 })
