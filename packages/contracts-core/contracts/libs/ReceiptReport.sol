@@ -23,7 +23,7 @@ using ReceiptReportLib for ReceiptReport global;
 /// | Position   | Field       | Type  | Bytes | Description                               |
 /// | ---------- | ----------- | ----- | ----- | ----------------------------------------- |
 /// | [000..001) | flag        | uint8 | 1     | ReceiptFlag for the report                |
-/// | [001..134) | receiptBody | uint8 | 133   | Raw payload for the reported Receipt Body |
+/// | [001..134) | receiptBody | bytes | 133   | Raw payload for the reported Receipt Body |
 ///
 /// @dev Signed ReceiptReport together with a proof that Notary used the reported Receipt Body for their signed statement,
 /// could be used on Destination and Summit to initiate a Dispute between the Guard and the Notary.
