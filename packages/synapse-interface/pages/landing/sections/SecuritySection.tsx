@@ -1,6 +1,5 @@
 import Grid from '@/components/ui/tailwind/Grid'
-import { SectionContainer } from '../shared'
-import { SupportCard } from '../shared'
+import { SectionContainer, SupportCard } from '../shared'
 import {
   SynapseCircuit,
   SynapseCircuitSmall,

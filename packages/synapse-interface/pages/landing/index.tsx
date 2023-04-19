@@ -37,6 +37,7 @@ import { getNetworkButtonBorderHover } from '@/utils/styles/networks'
 import { LandingPageContainer, SectionContainer, SupportCard } from './shared'
 import HeroSection from './sections/HeroSection'
 import SecuritySection from './sections/SecuritySection'
+import BridgeSection from './sections/BridgeSection'
 
 function BridgeSection() {
   return (
