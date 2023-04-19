@@ -97,7 +97,7 @@ library SnapshotLib {
     /// @notice Returns the hash of a Snapshot, that could be later signed by an Agent.
     function hash(Snapshot snapshot) internal pure returns (bytes32 hashedSnapshot) {
         // The final hash to sign is keccak(snapshotSalt, keccak(snapshot))
-        return keccak256(bytes.concat(SNAPSHOT_SALT, snapshot.unwrap().keccak()));
+        return snapshot.unwrap().keccakSalted(SNAPSHOT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.

@@ -163,7 +163,7 @@ library ReceiptLib {
     /// @notice Returns the hash of an Receipt, that could be later signed by a Notary.
     function hash(Receipt receipt) internal pure returns (bytes32) {
         // The final hash to sign is keccak(receiptSalt, keccak(receipt))
-        return keccak256(bytes.concat(RECEIPT_SALT, receipt.unwrap().keccak()));
+        return receipt.unwrap().keccakSalted(RECEIPT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.

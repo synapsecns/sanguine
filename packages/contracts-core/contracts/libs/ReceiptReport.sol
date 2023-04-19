@@ -75,7 +75,7 @@ library ReceiptReportLib {
     /// @notice Returns the hash of a ReceiptReport, that could be later signed by a Guard.
     function hash(ReceiptReport receiptReport) internal pure returns (bytes32) {
         // The final hash to sign is keccak(receiptReportSalt, keccak(receiptReport))
-        return keccak256(bytes.concat(RECEIPT_REPORT_SALT, receiptReport.unwrap().keccak()));
+        return receiptReport.unwrap().keccakSalted(RECEIPT_REPORT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.

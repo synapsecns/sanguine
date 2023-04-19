@@ -75,7 +75,7 @@ library AttestationReportLib {
 
     function hash(AttestationReport attReport) internal pure returns (bytes32) {
         // The final hash to sign is keccak(attestationReportSalt, keccak(attestationReport))
-        return keccak256(bytes.concat(ATTESTATION_REPORT_SALT, attReport.unwrap().keccak()));
+        return attReport.unwrap().keccakSalted(ATTESTATION_REPORT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.

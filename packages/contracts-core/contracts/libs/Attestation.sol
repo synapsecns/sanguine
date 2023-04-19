@@ -109,7 +109,7 @@ library AttestationLib {
     /// @notice Returns the hash of an Attestation, that could be later signed by a Notary.
     function hash(Attestation att) internal pure returns (bytes32) {
         // The final hash to sign is keccak(attestationSalt, keccak(attestation))
-        return keccak256(bytes.concat(ATTESTATION_SALT, att.unwrap().keccak()));
+        return att.unwrap().keccakSalted(ATTESTATION_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.

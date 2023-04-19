@@ -73,7 +73,7 @@ library StateReportLib {
 
     function hash(StateReport stateReport) internal pure returns (bytes32) {
         // The final hash to sign is keccak(stateReportSalt, keccak(stateReport))
-        return keccak256(bytes.concat(STATE_REPORT_SALT, stateReport.unwrap().keccak()));
+        return stateReport.unwrap().keccakSalted(STATE_REPORT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
