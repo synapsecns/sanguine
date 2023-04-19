@@ -48,7 +48,7 @@ export function SynapseCircuit() {
         height="276.5"
         rx="9.25"
         fill="white"
-        fill-opacity="0.1"
+        fillOpacity="0.1"
       />
       <rect
         x="0.75"
@@ -57,7 +57,7 @@ export function SynapseCircuit() {
         height="276.5"
         rx="9.25"
         fill="url(#paint0_linear_559_3001)"
-        fill-opacity="0.1"
+        fillOpacity="0.1"
       />
       <rect
         x="0.75"
@@ -66,8 +66,8 @@ export function SynapseCircuit() {
         height="276.5"
         rx="9.25"
         stroke="white"
-        stroke-opacity="0.2"
-        stroke-width="1.5"
+        strokeOpacity="0.2"
+        strokeWidth="1.5"
       />
       <rect
         x="0.75"
@@ -76,18 +76,18 @@ export function SynapseCircuit() {
         height="276.5"
         rx="9.25"
         stroke="url(#paint1_radial_559_3001)"
-        stroke-width="1.5"
+        strokeWidth="1.5"
       />
-      <path d="M82 133L82 122" stroke="white" stroke-opacity="0.4" />
-      <path d="M141 94H152" stroke="white" stroke-opacity="0.4" />
-      <path d="M141 182H152" stroke="white" stroke-opacity="0.4" />
-      <path d="M244 171H252" stroke="white" stroke-opacity="0.4" />
-      <path d="M141 45H152" stroke="white" stroke-opacity="0.4" />
-      <path d="M197 45H205" stroke="white" stroke-opacity="0.4" />
-      <path d="M175 64L175 73" stroke="white" stroke-opacity="0.4" />
-      <path d="M269 64L269 73" stroke="white" stroke-opacity="0.4" />
-      <path d="M175 116L175 126" stroke="white" stroke-opacity="0.4" />
-      <path d="M269 116L269 126" stroke="white" stroke-opacity="0.4" />
+      <path d="M82 133L82 122" stroke="white" strokeOpacity="0.4" />
+      <path d="M141 94H152" stroke="white" strokeOpacity="0.4" />
+      <path d="M141 182H152" stroke="white" strokeOpacity="0.4" />
+      <path d="M244 171H252" stroke="white" strokeOpacity="0.4" />
+      <path d="M141 45H152" stroke="white" strokeOpacity="0.4" />
+      <path d="M197 45H205" stroke="white" strokeOpacity="0.4" />
+      <path d="M175 64L175 73" stroke="white" strokeOpacity="0.4" />
+      <path d="M269 64L269 73" stroke="white" strokeOpacity="0.4" />
+      <path d="M175 116L175 126" stroke="white" strokeOpacity="0.4" />
+      <path d="M269 116L269 126" stroke="white" strokeOpacity="0.4" />
       <g filter="url(#filter0_d_559_3001)">
         <rect
           x="21"
@@ -96,8 +96,8 @@ export function SynapseCircuit() {
           height="95"
           rx="5"
           fill="white"
-          fill-opacity="0.05"
-          shape-rendering="crispEdges"
+          fillOpacity="0.05"
+          shapeRendering="crispEdges"
         />
         <rect
           x="21.5"
@@ -106,8 +106,8 @@ export function SynapseCircuit() {
           height="94"
           rx="4.5"
           stroke="white"
-          stroke-opacity="0.4"
-          shape-rendering="crispEdges"
+          strokeOpacity="0.4"
+          shapeRendering="crispEdges"
         />
       </g>
       <g filter="url(#filter1_d_559_3001)">
@@ -118,8 +118,8 @@ export function SynapseCircuit() {
           height="127"
           rx="5"
           fill="white"
-          fill-opacity="0.05"
-          shape-rendering="crispEdges"
+          fillOpacity="0.05"
+          shapeRendering="crispEdges"
         />
         <rect
           x="252.5"
@@ -128,8 +128,8 @@ export function SynapseCircuit() {
           height="126"
           rx="4.5"
           stroke="white"
-          stroke-opacity="0.4"
-          shape-rendering="crispEdges"
+          strokeOpacity="0.4"
+          shapeRendering="crispEdges"
         />
       </g>
       <g filter="url(#filter2_d_559_3001)">
@@ -139,8 +139,8 @@ export function SynapseCircuit() {
           rx="5"
           transform="matrix(1 0 0 -1 152 64)"
           fill="white"
-          fill-opacity="0.05"
-          shape-rendering="crispEdges"
+          fillOpacity="0.05"
+          shapeRendering="crispEdges"
         />
         <rect
           x="0.5"
@@ -150,8 +150,8 @@ export function SynapseCircuit() {
           rx="4.5"
           transform="matrix(1 0 0 -1 152 63)"
           stroke="white"
-          stroke-opacity="0.4"
-          shape-rendering="crispEdges"
+          strokeOpacity="0.4"
+          shapeRendering="crispEdges"
         />
       </g>
       <g filter="url(#filter3_d_559_3001)">
@@ -162,8 +162,8 @@ export function SynapseCircuit() {
           height="127"
           rx="5"
           fill="white"
-          fill-opacity="0.05"
-          shape-rendering="crispEdges"
+          fillOpacity="0.05"
+          shapeRendering="crispEdges"
         />
         <rect
           x="152.5"
@@ -172,8 +172,8 @@ export function SynapseCircuit() {
           height="126"
           rx="4.5"
           stroke="white"
-          stroke-opacity="0.4"
-          shape-rendering="crispEdges"
+          strokeOpacity="0.4"
+          shapeRendering="crispEdges"
         />
       </g>
       <g filter="url(#filter4_d_559_3001)">
@@ -184,8 +184,8 @@ export function SynapseCircuit() {
           height="43"
           rx="5"
           fill="white"
-          fill-opacity="0.05"
-          shape-rendering="crispEdges"
+          fillOpacity="0.05"
+          shapeRendering="crispEdges"
         />
         <rect
           x="152.5"
@@ -194,8 +194,8 @@ export function SynapseCircuit() {
           height="42"
           rx="4.5"
           stroke="white"
-          stroke-opacity="0.4"
-          shape-rendering="crispEdges"
+          strokeOpacity="0.4"
+          shapeRendering="crispEdges"
         />
       </g>
       <g filter="url(#filter5_d_559_3001)">
@@ -206,8 +206,8 @@ export function SynapseCircuit() {
           height="37"
           rx="5"
           fill="white"
-          fill-opacity="0.05"
-          shape-rendering="crispEdges"
+          fillOpacity="0.05"
+          shapeRendering="crispEdges"
         />
         <rect
           x="205.5"
@@ -216,8 +216,8 @@ export function SynapseCircuit() {
           height="36"
           rx="4.5"
           stroke="white"
-          stroke-opacity="0.4"
-          shape-rendering="crispEdges"
+          strokeOpacity="0.4"
+          shapeRendering="crispEdges"
         />
       </g>
       <g filter="url(#filter6_d_559_3001)">
@@ -228,8 +228,8 @@ export function SynapseCircuit() {
           height="120"
           rx="5"
           fill="white"
-          fill-opacity="0.05"
-          shape-rendering="crispEdges"
+          fillOpacity="0.05"
+          shapeRendering="crispEdges"
         />
         <rect
           x="21.5"
@@ -238,8 +238,8 @@ export function SynapseCircuit() {
           height="119"
           rx="4.5"
           stroke="white"
-          stroke-opacity="0.4"
-          shape-rendering="crispEdges"
+          strokeOpacity="0.4"
+          shapeRendering="crispEdges"
         />
       </g>
       <defs>
@@ -250,9 +250,9 @@ export function SynapseCircuit() {
           width="148"
           height="123"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -285,9 +285,9 @@ export function SynapseCircuit() {
           width="101"
           height="155"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -320,9 +320,9 @@ export function SynapseCircuit() {
           width="73"
           height="65"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -355,9 +355,9 @@ export function SynapseCircuit() {
           width="120"
           height="155"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -390,9 +390,9 @@ export function SynapseCircuit() {
           width="201"
           height="71"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -425,9 +425,9 @@ export function SynapseCircuit() {
           width="148"
           height="65"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -460,9 +460,9 @@ export function SynapseCircuit() {
           width="148"
           height="148"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -496,8 +496,8 @@ export function SynapseCircuit() {
           y2="82.8001"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#FF00FF" />
-          <stop offset="1" stop-color="#AC8FFF" />
+          <stop stopColor="#FF00FF" />
+          <stop offset="1" stopColor="#AC8FFF" />
         </linearGradient>
         <radialGradient
           id="paint1_radial_559_3001"
@@ -507,8 +507,8 @@ export function SynapseCircuit() {
           gradientUnits="userSpaceOnUse"
           gradientTransform="translate(177.361 133.1) rotate(32.5381) scale(98.4743 105.178)"
         >
-          <stop stop-color="#FF00FF" />
-          <stop offset="1" stop-color="#AC8FFF" />
+          <stop stopColor="#FF00FF" />
+          <stop offset="1" stopColor="#AC8FFF" />
         </radialGradient>
       </defs>
     </svg>

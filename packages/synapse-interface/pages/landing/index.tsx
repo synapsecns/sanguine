@@ -34,7 +34,7 @@ import {
 } from '@/utils/hooks/useExplorerStats'
 import { getNetworkButtonBorderHover } from '@/utils/styles/networks'
 
-function LandingPageContainer({ children }: { children: React.ReactNode }) {
+export function LandingPageContainer({ children }: { children: React.ReactNode }) {
   return (
     <div
       data-test-id="landing-page-container"
@@ -45,7 +45,7 @@ function LandingPageContainer({ children }: { children: React.ReactNode }) {
   )
 }
 
-function SectionContainer({
+export function SectionContainer({
   children,
   styles,
 }: {
