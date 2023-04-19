@@ -5,36 +5,34 @@ import {RECEIPT_REPORT_SALT} from "./Constants.sol";
 import {ReceiptBody, ReceiptLib} from "./Receipt.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev ReceiptReport is a memory view over a formatted Guard report for invalid ReceiptBody
+/// ReceiptReport is a memory view over a formatted Guard report for invalid ReceiptBody.
 type ReceiptReport is uint256;
 
-/// @dev Possible flags for the ReceiptReport
-/// Currently has only one possible value, but enables different types of reports in the future
+/// Possible flags for the ReceiptReport.
+/// - Currently has only one possible value, but enables different types of reports in the future.
 enum ReceiptFlag {Invalid}
 
-/// @dev Attach library functions to ReceiptFlag
 using ReceiptReportLib for ReceiptFlag global;
-/// @dev Attach library functions to ReceiptReport
 using ReceiptReportLib for ReceiptReport global;
 
+/// @notice ReceiptReport structure represents a Guard statement that a Receipt Body is invalid.
+/// Receipt Body is considered invalid, if it doesn't match the saved receipt body in ExecutionHub contract
+/// with the same message hash (or the message hash doesn't exist).
+///
+/// @dev Signed ReceiptReport together with a proof that Notary used the reported Receipt Body for their signed statement,
+/// could be used on Destination and Summit to initiate a Dispute between the Guard and the Notary.
 library ReceiptReportLib {
     using MemViewLib for bytes;
     using ReceiptLib for MemView;
 
-    /**
-     * @dev ReceiptReport structure represents a Guard statement that a Receipt Body is invalid.
-     * Receipt Body is considered invalid, if it doesn't match the saved receipt body in ExecutionHub contract
-     * with the same message hash (or the message hash doesn't exist).
-     *
-     * Signed ReceiptReport together with a proof that Notary used the reported Receipt Body for their signed statement,
-     * could be used on Destination and Summit to initiate a Dispute between the Guard and the Notary.
-     *
-     * @dev Memory layout of ReceiptReport fields:
-     * [000 .. 001): flag           uint8     1 byte        ReceiptFlag for the report
-     * [001 .. 134): receiptBody    uint8   133 bytes       Raw payload for the reported Receipt Body
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
+    /// # Memory layout of ReceiptReport
+    ///
+    /// | Position   | Field       | Type  | Bytes | Description                               |
+    /// | ---------- | ----------- | ----- | ----- | ----------------------------------------- |
+    /// | [000..001) | flag        | uint8 | 1     | ReceiptFlag for the report                |
+    /// | [001..134) | receiptBody | uint8 | 133   | Raw payload for the reported Receipt Body |
+
+    /// @dev The variables below are not supposed to be used outside of the library directly.
 
     uint256 private constant OFFSET_FLAG = 0;
     uint256 private constant OFFSET_RECEIPT_BODY = 1;

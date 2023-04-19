@@ -5,39 +5,48 @@ import {RECEIPT_SALT, RECEIPT_BODY_LENGTH, RECEIPT_LENGTH, TIPS_LENGTH} from "./
 import {Tips, TipsLib} from "./Tips.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev Receipt is a memory view over a formatted "full receipt" payload.
+/// Receipt is a memory view over a formatted "full receipt" payload.
 type Receipt is uint256;
 
-/// @dev Attach library functions to Receipt
 using ReceiptLib for Receipt global;
 
-/// @dev Receipt is a memory view over a formatted "receipt body" payload.
+/// ReceiptBody is a memory view over a formatted "receipt body" payload.
 type ReceiptBody is uint256;
 
-/// @dev Attach library functions to Receipt
 using ReceiptLib for ReceiptBody global;
 
+/// Receipt structure represents a Notary statement that a certain message has been executed in `ExecutionHub`.
+/// Receipt contains two fields:
+/// - Receipt body, which is stored in `ExecutionHub` for every executed message
+/// - Receipt tips, which are emitted whenever a message is executed.
+/// Note: It is possible to prove the correctness of the tips payload using the message hash.
+/// @dev Receipt could be signed by a Notary and submitted to `Summit` in order to initiate the tips
+/// distribution for an executed message.
 library ReceiptLib {
     using MemViewLib for bytes;
     using TipsLib for MemView;
 
-    /**
-     *
-     * @dev Memory layout of ReceiptBody fields
-     * [000 .. 004): origin             uint32   4 bytes    Domain where message originated
-     * [004 .. 008): destination        uint32   4 bytes    Domain where message was executed
-     * [008 .. 040): messageHash        bytes32 32 bytes    Hash of the message
-     * [040 .. 072): snapshotRoot       bytes32 32 bytes    Snapshot root used for proving the message
-     * [072 .. 073): stateIndex         uint8    1 byte     Index of state used for the snapshot proof
-     * [073 .. 093): attNotary          address 20 bytes    Notary who posted attestation with snapshot root
-     * [093 .. 113): firstExecutor      address 20 bytes    Executor who performed first valid execution attempt
-     * [113 .. 133): finalExecutor      address 20 bytes    Executor who successfully executed the message
-     *
-     * @dev Memory layout of Receipt fields
-     * [000 .. 133): body               bytes  133 bytes    Receipt body (see above)
-     * [133 .. 181): tips               bytes   48 bytes    Tips paid on origin chain
-     * The variables below are not supposed to be used outside of the library directly.
-     */
+    /// # Memory layout of ReceiptBody
+    ///
+    /// | Position   | Field         | Type    | Bytes | Description                                      |
+    /// | ---------- | ------------- | ------- | ----- | ------------------------------------------------ |
+    /// | [000..004) | origin        | uint32  | 4     | Domain where message originated                  |
+    /// | [004..008) | destination   | uint32  | 4     | Domain where message was executed                |
+    /// | [008..040) | messageHash   | bytes32 | 32    | Hash of the message                              |
+    /// | [040..072) | snapshotRoot  | bytes32 | 32    | Snapshot root used for proving the message       |
+    /// | [072..073) | stateIndex    | uint8   | 1     | Index of state used for the snapshot proof       |
+    /// | [073..093) | attNotary     | address | 20    | Notary who posted attestation with snapshot root |
+    /// | [093..113) | firstExecutor | address | 20    | Executor who performed first valid execution     |
+    /// | [113..133) | finalExecutor | address | 20    | Executor who successfully executed the message   |
+
+    /// # Memory layout of Receipt fields
+    ///
+    /// | Position   | Field | Type  | Bytes | Description               |
+    /// | ---------- | ----- | ----- | ----- | ------------------------- |
+    /// | [000..133) | body  | bytes | 133   | Receipt body (see above)  |
+    /// | [133..181) | tips  | bytes | 48    | Tips paid on origin chain |
+
+    /// @dev The variables below are not supposed to be used outside of the library directly.
 
     uint256 private constant OFFSET_ORIGIN = 0;
     uint256 private constant OFFSET_DESTINATION = 4;
