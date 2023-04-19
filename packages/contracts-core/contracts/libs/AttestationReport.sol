@@ -5,37 +5,34 @@ import {Attestation, AttestationLib} from "./Attestation.sol";
 import {ATTESTATION_REPORT_SALT} from "./Constants.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev AttestationReport is a memory view over a formatted Guard report for invalid Attestation
+/// AttestationReport is a memory view over a formatted Guard report for invalid Attestation
 type AttestationReport is uint256;
 
-/// @dev Possible flags for the AttestationReport
-/// Currently has only one possible value, but enables different types of reports in the future
+/// Possible flags for the AttestationReport
+/// - Currently has only one possible value, but enables different types of reports in the future
 enum AttestationFlag {Invalid}
 
-/// @dev Attach library functions to AttestationFlag
 using AttestationReportLib for AttestationFlag global;
-/// @dev Attach library functions to AttestationReport
 using AttestationReportLib for AttestationReport global;
 
+/// AttestationReport structure represents a Guard statement that a given Attestation is invalid.
+/// Attestation is considered invalid, if it doesn't match the saved attestation in Summit contract
+/// with the same nonce (or if nonce doesn't exist).
+///
+/// # Memory layout of AttestationReport fields:
+///
+/// | Position   | Field       | Type  | Bytes | Description                    |
+/// | ---------- | ----------- | ----- | ----- | ------------------------------ |
+/// | [000..001) | flag        | uint8 | 1     | AttestationFlag for the report |
+/// | [001..079) | attestation | bytes | 78    | Raw payload with attestation   |
+///
+/// @dev Signed AttestationReport together with Notary signature for the reported Attestation
+/// could be used on Destination to initiate a Dispute between the Guard and the Notary.
 library AttestationReportLib {
     using AttestationLib for MemView;
     using MemViewLib for bytes;
 
-    /**
-     * @dev AttestationReport structure represents a Guard statement
-     * that a given Attestation is invalid. Attestation is considered invalid, if it doesn't match
-     * the saved attestation in Summit contract with the same nonce (or if nonce doesn't exist).
-     *
-     * Signed AttestationReport together with Notary signature for the reported Attestation
-     * could be used on Destination to initiate a Dispute between the Guard and the Notary.
-     *
-     * @dev Memory layout of AttestationReport fields:
-     * [000 .. 001): flag           uint8    1 byte     AttestationFlag for the report
-     * [001 .. 048): attestation    bytes   47 bytes    Raw payload with attestation
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
-
+    /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_FLAG = 0;
     uint256 private constant OFFSET_ATTESTATION = 1;
 
@@ -77,10 +74,8 @@ library AttestationReportLib {
     }
 
     function hash(AttestationReport attReport) internal pure returns (bytes32) {
-        // Get the underlying memory view
-        MemView memView = attReport.unwrap();
         // The final hash to sign is keccak(attestationReportSalt, keccak(attestationReport))
-        return keccak256(bytes.concat(ATTESTATION_REPORT_SALT, memView.keccak()));
+        return attReport.unwrap().keccakSalted(ATTESTATION_REPORT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -92,18 +87,16 @@ library AttestationReportLib {
 
     /// @notice Returns AttestationFlag used in the report.
     function flag(AttestationReport attReport) internal pure returns (AttestationFlag) {
-        MemView memView = attReport.unwrap();
         // We check that flag fits into enum, when payload is wrapped
         // into AttestationReport, so this never reverts
-        return AttestationFlag(_arFlag(memView));
+        return AttestationFlag(_arFlag(attReport.unwrap()));
     }
 
     /// @notice Returns typed memory view over attestation used in the report.
     function attestation(AttestationReport attReport) internal pure returns (Attestation) {
-        MemView memView = attReport.unwrap();
         // We check that attestation is properly formatted, when payload is wrapped
         // into AttestationReport, so this never reverts.
-        return _arAttestation(memView).castToAttestation();
+        return _arAttestation(attReport.unwrap()).castToAttestation();
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════

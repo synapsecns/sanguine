@@ -74,10 +74,8 @@ library ReceiptReportLib {
 
     /// @notice Returns the hash of a ReceiptReport, that could be later signed by a Guard.
     function hash(ReceiptReport receiptReport) internal pure returns (bytes32) {
-        // Get the underlying memory view
-        MemView memView = receiptReport.unwrap();
         // The final hash to sign is keccak(receiptReportSalt, keccak(receiptReport))
-        return keccak256(bytes.concat(RECEIPT_REPORT_SALT, memView.keccak()));
+        return receiptReport.unwrap().keccakSalted(RECEIPT_REPORT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -89,18 +87,16 @@ library ReceiptReportLib {
 
     /// @notice Returns ReceiptFlag used in the report.
     function flag(ReceiptReport receiptReport) internal pure returns (ReceiptFlag) {
-        MemView memView = receiptReport.unwrap();
         // We check that flag fits into enum, when payload is wrapped
         // into ReceiptReport, so this never reverts
-        return ReceiptFlag(_rrFlag(memView));
+        return ReceiptFlag(_rrFlag(receiptReport.unwrap()));
     }
 
     /// @notice Returns typed memory view over the receipt body used in the report.
     function receiptBody(ReceiptReport receiptReport) internal pure returns (ReceiptBody) {
-        MemView memView = receiptReport.unwrap();
         // We check that receipt body is properly formatted, when payload is wrapped
         // into ReceiptReport, so this never reverts.
-        return _rrReceiptBody(memView).castToReceiptBody();
+        return _rrReceiptBody(receiptReport.unwrap()).castToReceiptBody();
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════

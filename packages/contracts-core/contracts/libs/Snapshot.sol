@@ -6,42 +6,46 @@ import {MerkleList} from "./MerkleList.sol";
 import {State, StateLib} from "./State.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev Snapshot is a memory view over a formatted snapshot payload: a list of states.
+/// Snapshot is a memory view over a formatted snapshot payload: a list of states.
 type Snapshot is uint256;
 
-/// @dev Attach library functions to Snapshot
 using SnapshotLib for Snapshot global;
 
+/// # Snapshot
+/// Snapshot structure represents the state of multiple Origin contracts deployed on multiple chains.
+/// In short, snapshot is a list of "State" structs. See State.sol for details about the "State" structs.
+///
+/// ## Snapshot usage
+/// - Both Guards and Notaries are supposed to form snapshots and sign `snapshot.hash()` to verify its validity.
+/// - Each Guard should be monitoring a set of Origin contracts chosen as they see fit.
+///   - They are expected to form snapshots with Origin states for this set of chains,
+///   sign and submit them to Summit contract.
+/// - Notaries are expected to monitor the Summit contract for new snapshots submitted by the Guards.
+///   - They should be forming their own snapshots using states from snapshots of any of the Guards.
+///   - The states for the Notary snapshots don't have to come from the same Guard snapshot,
+///   or don't even have to be submitted by the same Guard.
+/// - With their signature, Notary effectively "notarizes" the work that some Guards have done in Summit contract.
+///   - Notary signature on a snapshot doesn't only verify the validity of the Origins, but also serves as
+///   a proof of liveliness for Guards monitoring these Origins.
+///
+/// ## Snapshot validity
+/// - Snapshot is considered "valid" in Origin, if every state referring to that Origin is valid there.
+/// - Snapshot is considered "globally valid", if it is "valid" in every Origin contract.
+///
+/// # Snapshot memory layout
+///
+/// | Position   | Field       | Type  | Bytes | Description                  |
+/// | ---------- | ----------- | ----- | ----- | ---------------------------- |
+/// | [000..050) | states[0]   | bytes | 50    | Origin State with index==0   |
+/// | [050..100) | states[1]   | bytes | 50    | Origin State with index==1   |
+/// | ...        | ...         | ...   | 50    | ...                          |
+/// | [AAA..BBB) | states[N-1] | bytes | 50    | Origin State with index==N-1 |
+///
+/// @dev Snapshot could be signed by both Guards and Notaries and submitted to `Summit` in order to produce Attestations
+/// that could be used in ExecutionHub for proving the messages coming from origin chains that the snapshot refers to.
 library SnapshotLib {
     using MemViewLib for bytes;
     using StateLib for MemView;
-
-    /**
-     * @dev Snapshot structure represents the state of multiple Origin contracts deployed on multiple chains.
-     * In short, snapshot is a list of "State" structs. See State.sol for details about the "State" structs.
-     *
-     * Snapshot is considered "valid" in Origin, if every state referring to that Origin is valid there.
-     * Snapshot is considered "globally valid", if it is "valid" in every Origin contract.
-     *
-     * Both Guards and Notaries are supposed to form snapshots and sign snapshot.hash() to verify its validity.
-     * Each Guard should be monitoring a set of Origin contracts chosen as they see fit. They are expected
-     * to form snapshots with Origin states for this set of chains, sign and submit them to Summit contract.
-     *
-     * Notaries are expected to monitor the Summit contract for new snapshots submitted by the Guards.
-     * They should be forming their own snapshots using states from snapshots of any of the Guards.
-     * The states for the Notary snapshots don't have to come from the same Guard snapshot,
-     * or don't even have to be submitted by the same Guard.
-     *
-     * With their signature, Notary effectively "notarizes" the work that some Guards have done in Summit contract.
-     * Notary signature on a snapshot doesn't only verify the validity of the Origins, but also serves as
-     * a proof of liveliness for Guards monitoring these Origins.
-     *
-     * @dev Snapshot memory layout
-     * [000 .. 050) states[0]   bytes   50 bytes
-     * [050 .. 100) states[1]   bytes   50 bytes
-     *      ..
-     * [AAA .. BBB) states[N-1] bytes   50 bytes
-     */
 
     // ═════════════════════════════════════════════════ SNAPSHOT ══════════════════════════════════════════════════════
 
@@ -52,7 +56,7 @@ library SnapshotLib {
      */
     function formatSnapshot(State[] memory states) internal view returns (bytes memory) {
         require(_isValidAmount(states.length), "Invalid states amount");
-        // First we unwrap State-typed views into generic views
+        // First we unwrap State-typed views into untyped memory views
         uint256 length = states.length;
         MemView[] memory views = new MemView[](length);
         for (uint256 i = 0; i < length; ++i) {
@@ -92,10 +96,8 @@ library SnapshotLib {
 
     /// @notice Returns the hash of a Snapshot, that could be later signed by an Agent.
     function hash(Snapshot snapshot) internal pure returns (bytes32 hashedSnapshot) {
-        // Get the underlying memory view
-        MemView memView = snapshot.unwrap();
-        // The final hash to sign is keccak(attestationSalt, keccak(attestation))
-        return keccak256(bytes.concat(SNAPSHOT_SALT, memView.keccak()));
+        // The final hash to sign is keccak(snapshotSalt, keccak(snapshot))
+        return snapshot.unwrap().keccakSalted(SNAPSHOT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -115,8 +117,8 @@ library SnapshotLib {
 
     /// @notice Returns the amount of states in the snapshot.
     function statesAmount(Snapshot snapshot) internal pure returns (uint256) {
-        MemView memView = snapshot.unwrap();
-        return memView.len() / STATE_LENGTH;
+        // Each state occupies exactly `STATE_LENGTH` bytes
+        return snapshot.unwrap().len() / STATE_LENGTH;
     }
 
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
@@ -141,6 +143,6 @@ library SnapshotLib {
     function _isValidAmount(uint256 statesAmount_) internal pure returns (bool) {
         // Need to have at least one state in a snapshot.
         // Also need to have no more than `SNAPSHOT_MAX_STATES` states in a snapshot.
-        return statesAmount_ > 0 && statesAmount_ <= SNAPSHOT_MAX_STATES;
+        return statesAmount_ != 0 && statesAmount_ <= SNAPSHOT_MAX_STATES;
     }
 }
