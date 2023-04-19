@@ -18,6 +18,12 @@ using ReceiptReportLib for ReceiptReport global;
 /// @notice ReceiptReport structure represents a Guard statement that a Receipt Body is invalid.
 /// Receipt Body is considered invalid, if it doesn't match the saved receipt body in ExecutionHub contract
 /// with the same message hash (or the message hash doesn't exist).
+/// # Memory layout of ReceiptReport
+///
+/// | Position   | Field       | Type  | Bytes | Description                               |
+/// | ---------- | ----------- | ----- | ----- | ----------------------------------------- |
+/// | [000..001) | flag        | uint8 | 1     | ReceiptFlag for the report                |
+/// | [001..134) | receiptBody | uint8 | 133   | Raw payload for the reported Receipt Body |
 ///
 /// @dev Signed ReceiptReport together with a proof that Notary used the reported Receipt Body for their signed statement,
 /// could be used on Destination and Summit to initiate a Dispute between the Guard and the Notary.
@@ -25,15 +31,7 @@ library ReceiptReportLib {
     using MemViewLib for bytes;
     using ReceiptLib for MemView;
 
-    /// # Memory layout of ReceiptReport
-    ///
-    /// | Position   | Field       | Type  | Bytes | Description                               |
-    /// | ---------- | ----------- | ----- | ----- | ----------------------------------------- |
-    /// | [000..001) | flag        | uint8 | 1     | ReceiptFlag for the report                |
-    /// | [001..134) | receiptBody | uint8 | 133   | Raw payload for the reported Receipt Body |
-
     /// @dev The variables below are not supposed to be used outside of the library directly.
-
     uint256 private constant OFFSET_FLAG = 0;
     uint256 private constant OFFSET_RECEIPT_BODY = 1;
 
