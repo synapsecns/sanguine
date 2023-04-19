@@ -11,15 +11,22 @@ type BaseMessage is uint256;
 
 using BaseMessageLib for BaseMessage global;
 
+/// BaseMessage structure represents a base message sent via the Origin-Destination contracts.
+/// - It only contains data relevant to the base message, the rest of data is encoded in the message header.
+/// - `sender` and `recipient` for EVM chains are EVM addresses casted to bytes32, while preserving left-alignment.
+/// - `tips` and `request` parameters are specified by a message sender
+/// > Origin will calculate minimum tips for given request and content length, and will reject messages with tips
+/// lower than that.
+///
 /// # Memory layout of BaseMessage fields
 ///
 /// | Position   | Field     | Type    | Bytes | Description                                        |
 /// | ---------- | --------- | ------- | ----- | -------------------------------------------------- |
 /// | [000..032) | sender    | bytes32 | 32    | Sender address on origin chain                     |
 /// | [032..064) | recipient | bytes32 | 32    | Recipient address on destination chain             |
-/// | [064..112) | tips      | bytes   | 48    | Tips paid on origin chain                          |
-/// | [112..120) | request   | bytes   | 8     | Request for message execution on destination chain |
-/// | [120..AAA) | content   | bytes   | ??    | Content to be passed to recipient                  |
+/// | [064..096) | tips      | bytes   | 32    | Tips paid on origin chain                          |
+/// | [096..104) | request   | bytes   | 8     | Request for message execution on destination chain |
+/// | [104..AAA) | content   | bytes   | ??    | Content to be passed to recipient                  |
 library BaseMessageLib {
     using MemViewLib for bytes;
     using RequestLib for MemView;
@@ -89,37 +96,31 @@ library BaseMessageLib {
 
     /// @notice Returns sender address on origin chain.
     function sender(BaseMessage baseMessage) internal pure returns (bytes32) {
-        // Get the underlying memory view
-        MemView memView = baseMessage.unwrap();
-        return memView.index({index_: OFFSET_SENDER, bytes_: 32});
+        return baseMessage.unwrap().index({index_: OFFSET_SENDER, bytes_: 32});
     }
 
     /// @notice Returns recipient address on destination chain.
     function recipient(BaseMessage baseMessage) internal pure returns (bytes32) {
-        MemView memView = baseMessage.unwrap();
-        return memView.index({index_: OFFSET_RECIPIENT, bytes_: 32});
+        return baseMessage.unwrap().index({index_: OFFSET_RECIPIENT, bytes_: 32});
     }
 
     /// @notice Returns a typed memory view over the payload with tips paid on origin chain.
     function tips(BaseMessage baseMessage) internal pure returns (Tips) {
-        MemView memView = baseMessage.unwrap();
         // We check that tips payload is properly formatted, when the whole payload is wrapped
         // into BaseMessage, so this never reverts.
-        return _tips(memView).castToTips();
+        return _tips(baseMessage.unwrap()).castToTips();
     }
 
     /// @notice Returns a typed memory view over the payload with request for message execution on destination chain.
     function request(BaseMessage baseMessage) internal pure returns (Request) {
-        MemView memView = baseMessage.unwrap();
         // We check that request payload is properly formatted, when the whole payload is wrapped
         // into BaseMessage, so this never reverts.
-        return _request(memView).castToRequest();
+        return _request(baseMessage.unwrap()).castToRequest();
     }
 
     /// @notice Returns an untyped memory view over the content to be passed to recipient.
     function content(BaseMessage baseMessage) internal pure returns (MemView) {
-        MemView memView = baseMessage.unwrap();
-        return memView.sliceFrom({index_: OFFSET_CONTENT});
+        return baseMessage.unwrap().sliceFrom({index_: OFFSET_CONTENT});
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
