@@ -14,7 +14,7 @@ export default function IntegrationSection() {
   })
 
   return (
-    <SectionContainer>
+    <SectionContainer dataTestId="landing-integration-section">
       <div
         className={`
           flex flex-col md:flex-row

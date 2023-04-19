@@ -5,7 +5,7 @@ import { SectionContainer } from '../shared'
 
 export default function HeroSection() {
   return (
-    <SectionContainer>
+    <SectionContainer dataTestId="landing-hero-section">
       <div
         className={`
           text-left text-4xl font-medium text-white

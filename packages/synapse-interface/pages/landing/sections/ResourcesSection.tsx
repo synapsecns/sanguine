@@ -7,7 +7,7 @@ import { GITHUB_URL, DOCS_URL, MEDIUM_URL } from '@/constants/urls'
 
 export default function ResourcesSection() {
   return (
-    <SectionContainer>
+    <SectionContainer dataTestId="landing-resource-section">
       <div
         className={`
           mt-8 mb-4 text-4xl font-medium text-left

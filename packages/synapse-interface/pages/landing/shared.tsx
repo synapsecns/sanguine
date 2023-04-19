@@ -18,9 +18,11 @@ export function LandingPageContainer({
 export function SectionContainer({
   children,
   styles,
+  dataTestId,
 }: {
   children: React.ReactNode
   styles?: string
+  dataTestId?: string
 }) {
   return (
     <div
@@ -28,6 +30,7 @@ export function SectionContainer({
         py-6 md:py-12 space-y-[1rem]
         ${styles}
       `}
+      data-test-id={dataTestId}
     >
       {children}
     </div>

@@ -12,6 +12,7 @@ export default function SecuritySection() {
         flex-wrap items-center
         md:justify-center lg:flex
       `}
+      dataTestId="landing-security-section"
     >
       <div className="hidden lg:block">
         <SynapseCircuit />

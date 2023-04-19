@@ -7,7 +7,7 @@ import {
 
 export default function BridgeSection() {
   return (
-    <SectionContainer>
+    <SectionContainer dataTestId="landing-bridge-section">
       <Grid cols={{ sm: 1, md: 2 }} gap={10} className="py-6 mx-auto 2xl:w-3/4">
         <div
           className={`

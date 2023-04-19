@@ -17,7 +17,7 @@ export default function ExplorerSection() {
   const totalValueLocked = getTotalValueLocked()
 
   return (
-    <SectionContainer>
+    <SectionContainer dataTestId="landing-explorer-section">
       <Grid
         cols={{ sm: 1, md: 2 }}
         gap={4}

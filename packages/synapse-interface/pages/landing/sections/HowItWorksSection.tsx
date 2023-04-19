@@ -3,7 +3,7 @@ import { HowSynapseWorks } from '@/components/icons/LandingIcons/HowSynapseWorks
 
 export default function HowItWorksSection() {
   return (
-    <SectionContainer>
+    <SectionContainer dataTestId="landing-how-it-works-section">
       <div className="flex justify-center">
         <div className="w-2/3">
           <div className="mt-12 mb-3 text-4xl text-center text-white">

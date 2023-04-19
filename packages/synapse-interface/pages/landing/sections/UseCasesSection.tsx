@@ -31,7 +31,7 @@ const useCases: useCaseProp[] = [
 
 export default function UseCasesSection() {
   return (
-    <SectionContainer>
+    <SectionContainer dataTestId="landing-use-cases-section">
       <div className="flex-col items-center py-6 mt-0 justify-left md:mt-0 lg:mt-0 md:flex md:justify-center lg:flex lg:justify-center ">
         <div className="flex items-center mb-4">
           <span className="mr-6 text-4xl text-white">Use cases</span>
