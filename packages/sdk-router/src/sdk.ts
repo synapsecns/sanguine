@@ -33,7 +33,7 @@ type FeeConfig = [number, BigNumber, BigNumber] & {
   maxFee: BigNumber
 }
 
-type PoolToken =  { isWeth: boolean | undefined; token: string }
+type PoolToken = { isWeth: boolean | undefined; token: string }
 
 class SynapseSDK {
   public synapseRouters: SynapseRouters
@@ -256,32 +256,35 @@ class SynapseSDK {
     const router: SynapseRouter = this.synapseRouters[chainId]
     const poolTokens = await router.routerContract.poolTokens(poolAddress)
     return poolTokens.map((token) => {
-      return {token: token.token, isWeth: token?.isWeth}
+      return { token: token.token, isWeth: token?.isWeth }
     })
   }
 
   public async getPoolInfo(
     chainId: number,
     poolAddress: string
-  ): Promise<{tokens: BigNumber; lpToken: string}> {
+  ): Promise<{ tokens: BigNumber; lpToken: string }> {
     const router: SynapseRouter = this.synapseRouters[chainId]
     const poolInfo = await router.routerContract.poolInfo(poolAddress)
     return { tokens: poolInfo?.[0], lpToken: poolInfo?.[1] }
   }
 
-  public async getAllPools(
-    chainId: number
-  ): Promise<{
-      poolAddress: string | undefined
-      tokens: PoolToken[] | undefined
-      lpToken: string | undefined
-    }[] | undefined> {
+  public async getAllPools(chainId: number): Promise<
+    | {
+        poolAddress: string | undefined
+        tokens: PoolToken[] | undefined
+        lpToken: string | undefined
+      }[]
+    | undefined
+  > {
     const router: SynapseRouter = this.synapseRouters[chainId]
     const pools = await router.routerContract.allPools()
     const res = pools.map((pool) => {
       return {
         poolAddress: pool?.pool,
-        tokens: pool?.tokens.map((token) => { return { token: token.token, isWeth: token?.isWeth} }),
+        tokens: pool?.tokens.map((token) => {
+          return { token: token.token, isWeth: token?.isWeth }
+        }),
         lpToken: pool?.lpToken,
       }
     })
