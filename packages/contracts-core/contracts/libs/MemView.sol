@@ -192,6 +192,8 @@ library MemViewLib {
         return memView.words() << 5;
     }
 
+    // ════════════════════════════════════════════ HASHING MEMORY VIEW ════════════════════════════════════════════════
+
     /**
      * @notice Returns the keccak256 hash of the underlying memory
      * @param memView       The memory view
@@ -204,6 +206,16 @@ library MemViewLib {
             // solhint-disable-previous-line no-inline-assembly
             digest := keccak256(loc_, len_)
         }
+    }
+
+    /**
+     * @notice Adds a salt to the keccak256 hash of the underlying data and returns the keccak256 hash of the
+     * resulting data.
+     * @param memView       The memory view
+     * @return digestSalted keccak256(salt, keccak256(memView))
+     */
+    function keccakSalted(MemView memView, bytes32 salt) internal pure returns (bytes32 digestSalted) {
+        return keccak256(bytes.concat(salt, memView.keccak()));
     }
 
     // ════════════════════════════════════════════ SLICING MEMORY VIEW ════════════════════════════════════════════════

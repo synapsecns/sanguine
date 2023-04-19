@@ -57,6 +57,11 @@ contract MemViewLibraryTest is SynapseLibraryTest {
         assertEq(hash, keccak256(arr));
     }
 
+    function test_keccakSalted(bytes memory arr, bytes32 salt) public {
+        (, bytes32 hash,) = libHarness.keccakSalted(arr, salt);
+        assertEq(hash, keccak256(abi.encodePacked(salt, keccak256(arr))));
+    }
+
     // ═══════════════════════════════════════════ INDEXING MEMORY VIEW ════════════════════════════════════════════════
 
     function test_index(bytes memory prefix, bytes32 data, bytes memory postfix, uint256 bytes_) public {

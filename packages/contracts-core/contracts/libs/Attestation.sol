@@ -4,55 +4,59 @@ pragma solidity 0.8.17;
 import {ATTESTATION_LENGTH, ATTESTATION_SALT} from "./Constants.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev Attestation is a memory view over a formatted attestation payload.
+/// Attestation is a memory view over a formatted attestation payload.
 type Attestation is uint256;
 
-/// @dev Attach library functions to Attestation
 using AttestationLib for Attestation global;
 
+/// # Attestation
+/// Attestation structure represents the "Snapshot Merkle Tree" created from
+/// every Notary snapshot accepted by the Summit contract. Attestation includes"
+/// the root of the "Snapshot Merkle Tree", as well as additional metadata.
+///
+/// ## Steps for creation of "Snapshot Merkle Tree":
+/// 1. The list of hashes is composed for states in the Notary snapshot.
+/// 2. The list is padded with zero values until its length is 2**SNAPSHOT_TREE_HEIGHT.
+/// 3. Values from the list are used as leafs and the merkle tree is constructed.
+///
+/// ## Differences between a State and Attestation
+/// Similar to Origin, every derived Notary's "Snapshot Merkle Root" is saved in Summit contract.
+/// The main difference is that Origin contract itself is keeping track of an incremental merkle tree,
+/// by inserting the hash of the sent message and calculating the new "Origin Merkle Root".
+/// While Summit relies on Guards and Notaries to provide snapshot data, which is used to calculate the
+/// "Snapshot Merkle Root".
+///
+/// - Origin's State is "state of Origin Merkle Tree after N-th message was sent".
+/// - Summit's Attestation is "data for the N-th accepted Notary Snapshot" + "agent merkle root at the
+/// time snapshot was submitted" + "attestation metadata".
+///
+/// ## Attestation validity
+/// - Attestation is considered "valid" in Summit contract, if it matches the N-th (nonce)
+/// snapshot submitted by Notaries, as well as the historical agent merkle root.
+/// - Attestation is considered "valid" in Origin contract, if its underlying Snapshot is "valid".
+///
+/// - This means that a snapshot could be "valid" in Summit contract and "invalid" in Origin, if the underlying
+/// snapshot is invalid (i.e. one of the states in the list is invalid).
+/// - The opposite could also be true. If a perfectly valid snapshot was never submitted to Summit, its attestation
+/// would be valid in Origin, but invalid in Summit (it was never accepted, so the metadata would be incorrect).
+///
+/// - Attestation is considered "globally valid", if it is valid in the Summit and all the Origin contracts.
+/// # Memory layout of Attestation fields
+///
+/// | Position   | Field       | Type    | Bytes | Description                                                    |
+/// | ---------- | ----------- | ------- | ----- | -------------------------------------------------------------- |
+/// | [000..032) | snapRoot    | bytes32 | 32    | Root for "Snapshot Merkle Tree" created from a Notary snapshot |
+/// | [032..064) | agentRoot   | bytes32 | 32    | Root for "Agent Merkle Tree" tracked by BondingManager         |
+/// | [064..068) | nonce       | uint32  | 4     | Total amount of all accepted Notary snapshots                  |
+/// | [068..073) | blockNumber | uint40  | 5     | Block when this Notary snapshot was accepted in Summit         |
+/// | [073..078) | timestamp   | uint40  | 5     | Time when this Notary snapshot was accepted in Summit          |
+///
+/// @dev Attestation could be signed by a Notary and submitted to `Destination` in order to use if for proving
+/// messages coming from origin chains that the initial snapshot refers to.
 library AttestationLib {
     using MemViewLib for bytes;
 
-    /**
-     * @dev Attestation structure represents the "Snapshot Merkle Tree" created from
-     * every Notary snapshot accepted by the Summit contract. Attestation includes
-     * the root of the "Snapshot Merkle Tree", as well as additional metadata.
-     *
-     * Steps for creation of "Snapshot Merkle Tree":
-     * 1. The list of hashes is composed for states in the Notary snapshot.
-     * 2. The list is padded with zero values until its length is 2**SNAPSHOT_TREE_HEIGHT.
-     * 3. Values from the list are used as leafs and the merkle tree is constructed.
-     *
-     * Similar to Origin, every derived Notary's "Snapshot Merkle Root" is saved in Summit contract.
-     * The main difference is that Origin contract itself is keeping track of an incremental merkle tree,
-     * by inserting the hash of the sent message and calculating the new "Origin Merkle Root".
-     * While Summit relies on Guards and Notaries to provide snapshot data, which is used to calculate the
-     * "Snapshot Merkle Root".
-     *
-     * Origin's State is "state of Origin Merkle Tree after N-th message was sent".
-     * Summit's Attestation is "data for the N-th accepted Notary Snapshot".
-     *
-     * Attestation is considered "valid" in Summit contract, if it matches the N-th (nonce)
-     * snapshot submitted by Notaries.
-     * Attestation is considered "valid" in Origin contract, if its underlying Snapshot is "valid".
-     *
-     * This means that a snapshot could be "valid" in Summit contract and "invalid" in Origin, if the underlying
-     * snapshot is invalid (i.e. one of the states in the list is invalid).
-     * The opposite could also be true. If a perfectly valid snapshot was never submitted to Summit, its attestation
-     * would be valid in Origin, but invalid in Summit (it was never accepted, so the metadata would be incorrect).
-     *
-     * Attestation is considered "globally valid", if it is valid in the Summit and all the Origin contracts.
-     *
-     * @dev Memory layout of Attestation fields
-     * [000 .. 032): snapRoot       bytes32 32 bytes    Root for "Snapshot Merkle Tree" created from a Notary snapshot
-     * [032 .. 064): agentRoot      bytes32 32 bytes    Root for "Agent Merkle Tree" tracked by BondingManager
-     * [064 .. 068): nonce          uint32   4 bytes    Total amount of all accepted Notary snapshots
-     * [068 .. 073): blockNumber    uint40   5 bytes    Block when this Notary snapshot was accepted in Summit
-     * [073 .. 078): timestamp      uint40   5 bytes    Time when this Notary snapshot was accepted in Summit
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
-
+    /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_SNAP_ROOT = 0;
     uint256 private constant OFFSET_AGENT_ROOT = 32;
     uint256 private constant OFFSET_NONCE = 64;
@@ -104,10 +108,8 @@ library AttestationLib {
 
     /// @notice Returns the hash of an Attestation, that could be later signed by a Notary.
     function hash(Attestation att) internal pure returns (bytes32) {
-        // Get the underlying memory view
-        MemView memView = att.unwrap();
         // The final hash to sign is keccak(attestationSalt, keccak(attestation))
-        return keccak256(bytes.concat(ATTESTATION_SALT, memView.keccak()));
+        return att.unwrap().keccakSalted(ATTESTATION_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -119,32 +121,27 @@ library AttestationLib {
 
     /// @notice Returns root of the Snapshot merkle tree created in the Summit contract.
     function snapRoot(Attestation att) internal pure returns (bytes32) {
-        MemView memView = att.unwrap();
-        return memView.index({index_: OFFSET_SNAP_ROOT, bytes_: 32});
+        return att.unwrap().index({index_: OFFSET_SNAP_ROOT, bytes_: 32});
     }
 
     /// @notice Returns root of the Agent merkle tree tracked by BondingManager.
     function agentRoot(Attestation att) internal pure returns (bytes32) {
-        MemView memView = att.unwrap();
-        return memView.index({index_: OFFSET_AGENT_ROOT, bytes_: 32});
+        return att.unwrap().index({index_: OFFSET_AGENT_ROOT, bytes_: 32});
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.
     function nonce(Attestation att) internal pure returns (uint32) {
-        MemView memView = att.unwrap();
-        return uint32(memView.indexUint({index_: OFFSET_NONCE, bytes_: 4}));
+        return uint32(att.unwrap().indexUint({index_: OFFSET_NONCE, bytes_: 4}));
     }
 
     /// @notice Returns a block number when attestation was created in Summit.
     function blockNumber(Attestation att) internal pure returns (uint40) {
-        MemView memView = att.unwrap();
-        return uint40(memView.indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
+        return uint40(att.unwrap().indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
     }
 
     /// @notice Returns a block timestamp when attestation was created in Summit.
     /// @dev This is the timestamp according to the Synapse Chain.
     function timestamp(Attestation att) internal pure returns (uint40) {
-        MemView memView = att.unwrap();
-        return uint40(memView.indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
+        return uint40(att.unwrap().indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
     }
 }

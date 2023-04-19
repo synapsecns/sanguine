@@ -162,10 +162,8 @@ library ReceiptLib {
 
     /// @notice Returns the hash of an Receipt, that could be later signed by a Notary.
     function hash(Receipt receipt) internal pure returns (bytes32) {
-        // Get the underlying memory view
-        MemView memView = receipt.unwrap();
         // The final hash to sign is keccak(receiptSalt, keccak(receipt))
-        return keccak256(bytes.concat(RECEIPT_SALT, memView.keccak()));
+        return receipt.unwrap().keccakSalted(RECEIPT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -177,68 +175,58 @@ library ReceiptLib {
 
     /// @notice Returns receipt's origin field
     function origin(ReceiptBody receiptBody) internal pure returns (uint32) {
-        MemView memView = unwrap(receiptBody);
-        return uint32(memView.indexUint({index_: OFFSET_ORIGIN, bytes_: 4}));
+        return uint32(unwrap(receiptBody).indexUint({index_: OFFSET_ORIGIN, bytes_: 4}));
     }
 
     /// @notice Returns receipt's destination field
     function destination(ReceiptBody receiptBody) internal pure returns (uint32) {
-        MemView memView = unwrap(receiptBody);
-        return uint32(memView.indexUint({index_: OFFSET_DESTINATION, bytes_: 4}));
+        return uint32(unwrap(receiptBody).indexUint({index_: OFFSET_DESTINATION, bytes_: 4}));
     }
 
     /// @notice Returns receipt's "message hash" field
     function messageHash(ReceiptBody receiptBody) internal pure returns (bytes32) {
-        MemView memView = unwrap(receiptBody);
-        return memView.index({index_: OFFSET_MESSAGE_HASH, bytes_: 32});
+        return unwrap(receiptBody).index({index_: OFFSET_MESSAGE_HASH, bytes_: 32});
     }
 
     /// @notice Returns receipt's "snapshot root" field
     function snapshotRoot(ReceiptBody receiptBody) internal pure returns (bytes32) {
-        MemView memView = unwrap(receiptBody);
-        return memView.index({index_: OFFSET_SNAPSHOT_ROOT, bytes_: 32});
+        return unwrap(receiptBody).index({index_: OFFSET_SNAPSHOT_ROOT, bytes_: 32});
     }
 
     /// @notice Returns receipt's "state index" field
     function stateIndex(ReceiptBody receiptBody) internal pure returns (uint8) {
-        MemView memView = unwrap(receiptBody);
-        return uint8(memView.indexUint({index_: OFFSET_STATE_INDEX, bytes_: 1}));
+        return uint8(unwrap(receiptBody).indexUint({index_: OFFSET_STATE_INDEX, bytes_: 1}));
     }
 
     /// @notice Returns receipt's "attestation notary" field
     function attNotary(ReceiptBody receiptBody) internal pure returns (address) {
-        MemView memView = unwrap(receiptBody);
-        return memView.indexAddress({index_: OFFSET_ATT_NOTARY});
+        return unwrap(receiptBody).indexAddress({index_: OFFSET_ATT_NOTARY});
     }
 
     /// @notice Returns receipt's "first executor" field
     function firstExecutor(ReceiptBody receiptBody) internal pure returns (address) {
-        MemView memView = unwrap(receiptBody);
-        return memView.indexAddress({index_: OFFSET_FIRST_EXECUTOR});
+        return unwrap(receiptBody).indexAddress({index_: OFFSET_FIRST_EXECUTOR});
     }
 
     /// @notice Returns receipt's "final executor" field
     function finalExecutor(ReceiptBody receiptBody) internal pure returns (address) {
-        MemView memView = unwrap(receiptBody);
-        return memView.indexAddress({index_: OFFSET_FINAL_EXECUTOR});
+        return unwrap(receiptBody).indexAddress({index_: OFFSET_FINAL_EXECUTOR});
     }
 
     // ═════════════════════════════════════════════ RECEIPT SLICING ═════════════════════════════════════════════════
 
     /// @notice Returns a typed memory view over the payload with receipt body.
     function body(Receipt receipt) internal pure returns (ReceiptBody) {
-        MemView memView = receipt.unwrap();
         // We check that body payload is properly formatted, when the whole payload is wrapped
         // into Receipt, so this never reverts.
-        return castToReceiptBody(_body(memView));
+        return castToReceiptBody(_body(receipt.unwrap()));
     }
 
     /// @notice Returns a typed memory view over the payload with tips paid on origin chain.
     function tips(Receipt receipt) internal pure returns (Tips) {
-        MemView memView = receipt.unwrap();
         // We check that tips payload is properly formatted, when the whole payload is wrapped
         // into Receipt, so this never reverts.
-        return _tips(memView).castToTips();
+        return _tips(receipt.unwrap()).castToTips();
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
