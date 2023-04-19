@@ -5,37 +5,36 @@ import {STATE_REPORT_SALT} from "./Constants.sol";
 import {State, StateLib} from "./State.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev StateReport is a memory view over a formatted Guard report for invalid State
+/// StateReport is a memory view over a formatted Guard report for invalid State
 type StateReport is uint256;
 
-/// @dev Possible flags for the StateReport
-/// Currently has only one possible value, but enables different types of reports in the future
+/// Possible flags for the StateReport
+/// - Currently has only one possible value, but enables different types of reports in the future
 enum StateFlag {Invalid}
 
-/// @dev Attach library functions to StateFlag
 using StateReportLib for StateFlag global;
-/// @dev Attach library functions to StateReport
 using StateReportLib for StateReport global;
 
+/// StateReport structure represents a Guard statement that a State is invalid.
+/// State is considered invalid, if it doesn't match the saved state in Origin contract
+///  with the same nonce (or if nonce doesn't exist).
+///
+/// # Memory layout of StateReport fields
+///
+/// | Position   | Field | Type  | Bytes | Description                        |
+/// | ---------- | ----- | ----- | ----- | ---------------------------------- |
+/// | [000..001) | flag  | uint8 | 1     | StateFlag for the report           |
+/// | [001..051) | state | bytes | 50    | Raw payload for the reported State |
+///
+/// @dev Signed StateReport together with a proof that Notary used the reported State for their signed statement,
+/// could be used on Destination and Summit to initiate a Dispute between the Guard and the Notary.
+/// This could either a Notary-signed Snapshot including the reported state, or a Notary-signed Attestation,
+/// that was created using the Snapshot including the reported state.
 library StateReportLib {
     using MemViewLib for bytes;
     using StateLib for MemView;
 
-    /**
-     * @dev StateReport structure represents a Guard statement that a State is invalid.
-     * State is considered invalid, if it doesn't match the saved state in Origin contract
-     *  with the same nonce (or if nonce doesn't exist).
-     *
-     * Signed StateReport together with a proof that Notary used the reported State for their signed statement,
-     * could be used on Destination and Summit to initiate a Dispute between the Guard and the Notary.
-     *
-     * @dev Memory layout of StateReport fields:
-     * [000 .. 001): flag       uint8   1 byte      StateFlag for the report
-     * [001 .. 051): state      uint8   1 byte      Raw payload for the reported State
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
-
+    /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_FLAG = 0;
     uint256 private constant OFFSET_STATE = 1;
 
@@ -73,10 +72,8 @@ library StateReportLib {
     }
 
     function hash(StateReport stateReport) internal pure returns (bytes32) {
-        // Get the underlying memory view
-        MemView memView = stateReport.unwrap();
         // The final hash to sign is keccak(stateReportSalt, keccak(stateReport))
-        return keccak256(bytes.concat(STATE_REPORT_SALT, memView.keccak()));
+        return stateReport.unwrap().keccakSalted(STATE_REPORT_SALT);
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -88,18 +85,16 @@ library StateReportLib {
 
     /// @notice Returns StateFlag used in the report.
     function flag(StateReport stateReport) internal pure returns (StateFlag) {
-        MemView memView = stateReport.unwrap();
         // We check that flag fits into enum, when payload is wrapped
         // into StateReport, so this never reverts
-        return StateFlag(_srFlag(memView));
+        return StateFlag(_srFlag(stateReport.unwrap()));
     }
 
     /// @notice Returns typed memory view over state used in the report.
     function state(StateReport stateReport) internal pure returns (State) {
-        MemView memView = stateReport.unwrap();
         // We check that state is properly formatted, when payload is wrapped
         // into StateReport, so this never reverts.
-        return _srState(memView).castToState();
+        return _srState(stateReport.unwrap()).castToState();
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
