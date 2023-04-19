@@ -4,6 +4,9 @@ import {
   BridgeImage,
   BridgeImageSmall,
 } from '@/components/icons/LandingIcons/BridgeImage'
+import { DeepLiquidityIcon } from '@/components/icons/LandingIcons/DeepLiquidityIcon'
+import { WideSupportIcon } from '@/components/icons/LandingIcons/WideSupportIcon'
+import { DeveloperIcon } from '@/components/icons/LandingIcons/DeveloperIcon'
 
 export default function BridgeSection() {
   return (
@@ -45,14 +48,14 @@ export default function BridgeSection() {
         gap={12}
         className="py-6 mx-auto mb-6 md:py-12 2xl:w-3/4"
       >
-        <SupportCard header="Deep Liquidity">
+        <SupportCard header="Deep Liquidity" image={<DeepLiquidityIcon />}>
           Swap native assets using our cross-chain AMM liquidity pools
         </SupportCard>
-        <SupportCard header="Wide Support">
+        <SupportCard header="Wide Support" image={<WideSupportIcon />}>
           Access over 16 different EVM and non-EVM blockchains with more
           integrations coming soon
         </SupportCard>
-        <SupportCard header="Developer Friendly">
+        <SupportCard header="Developer Friendly" image={<DeveloperIcon />}>
           Easily integrate cross-chain token bridging natively into your
           decentralized application
         </SupportCard>
