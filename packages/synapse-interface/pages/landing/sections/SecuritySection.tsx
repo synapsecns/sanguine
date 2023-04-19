@@ -1,0 +1,67 @@
+import Grid from '@/components/ui/tailwind/Grid'
+import { SectionContainer } from '../shared'
+import { SupportCard } from '../shared'
+import {
+  SynapseCircuit,
+  SynapseCircuitSmall,
+} from '@/components/icons/LandingIcons/SynapseCircuit'
+
+export default function SecuritySection() {
+  return (
+    <SectionContainer
+      styles={`
+        flex-wrap items-center
+        md:justify-center lg:flex
+      `}
+    >
+      <div className="hidden lg:block">
+        <SynapseCircuit />
+      </div>
+      <div className="flex justify-center lg:hidden ">
+        <SynapseCircuitSmall />
+      </div>
+
+      <div className="max-w-sm md:ml-12">
+        <div
+          className={`
+            mt-4 mb-4 text-4xl
+            font-medium text-left text-white
+          `}
+        >
+          Securely connect every blockchain
+        </div>
+        <div className="font-normal text-left text-secondaryTextColor">
+          Synapse is comprised of a{' '}
+          <span className="font-medium text-white">
+            cross-chain messaging framework
+          </span>{' '}
+          and an{' '}
+          <span className="font-medium text-white">
+            economically secure method
+          </span>{' '}
+          to reach consensus on the validity of cross-chain transactions,
+          enabling developers to build truly native cross-chain apps.
+        </div>{' '}
+      </div>
+
+      <Grid
+        cols={{ sm: 1, md: 3 }}
+        gap={12}
+        className="py-6 mx-auto mb-12 md:py-12 2xl:w-3/4"
+      >
+        <SupportCard header="Extensible">
+          Synapse’s cross-chain messaging contracts can be deployed across any
+          blockchain
+        </SupportCard>
+        <SupportCard header="Secure">
+          Synapse employs an Optimistic security model to ensure integrity of
+          cross-chain messages
+        </SupportCard>
+        <SupportCard header="Generalized">
+          Any arbitrary data can be sent across chains including contract calls,
+          NFTs, snapshots, and more
+        </SupportCard>
+      </Grid>
+    </SectionContainer>
+  )
+}
