@@ -45,7 +45,7 @@ export default function BridgeSection() {
 
       <Grid
         cols={{ sm: 1, md: 3 }}
-        gap={12}
+        gap={6}
         className="mx-auto mb-4 sm:py-6 md:pt-12 md:pb-0 2xl:w-3/4"
       >
         <SupportCard header="Deep Liquidity" image={<DeepLiquidityIcon />}>

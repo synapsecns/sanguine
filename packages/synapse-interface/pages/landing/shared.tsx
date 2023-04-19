@@ -47,7 +47,7 @@ export function SupportCard({
     <Card
       title={header}
       titleClassName="text-[1.69rem] font-medium text-white"
-      className="px-0 bg-transparent text-secondaryTextColor"
+      className="px-0 bg-transparent text-secondaryTextColor sm:pb-0"
       divider={false}
       image={image}
     >

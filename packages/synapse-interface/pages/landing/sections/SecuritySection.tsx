@@ -20,7 +20,7 @@ export default function SecuritySection() {
       <div className="hidden lg:block">
         <SynapseCircuit />
       </div>
-      <div className="flex justify-center lg:hidden ">
+      <div className="flex justify-center pb-6 lg:hidden ">
         <SynapseCircuitSmall />
       </div>
 
@@ -49,7 +49,7 @@ export default function SecuritySection() {
 
       <Grid
         cols={{ sm: 1, md: 3 }}
-        gap={12}
+        gap={6}
         className="mx-auto mb-4 sm:py-6 md:pt-12 md:pb-0 2xl:w-3/4"
       >
         <SupportCard header="Extensible" image={<ExtensibleIcon />}>
