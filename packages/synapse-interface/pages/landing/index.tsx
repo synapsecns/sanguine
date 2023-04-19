@@ -34,35 +34,7 @@ import {
 } from '@/utils/hooks/useExplorerStats'
 import { getNetworkButtonBorderHover } from '@/utils/styles/networks'
 
-export function LandingPageContainer({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      data-test-id="landing-page-container"
-      className="relative px-4 md:px-24"
-    >
-      {children}
-    </div>
-  )
-}
-
-export function SectionContainer({
-  children,
-  styles,
-}: {
-  children: React.ReactNode
-  styles?: string
-}) {
-  return (
-    <div
-      className={`
-        py-6 md:py-12 space-y-[1rem]
-        ${styles}
-      `}
-    >
-      {children}
-    </div>
-  )
-}
+import { LandingPageContainer, SectionContainer, SupportCard } from './shared'
 
 function HeroSection() {
   return (
@@ -437,25 +409,6 @@ function UseCasesSection() {
         ))}
       </Grid>
     </SectionContainer>
-  )
-}
-
-function SupportCard({
-  header,
-  children,
-}: {
-  header: string
-  children: React.ReactNode
-}) {
-  return (
-    <Card
-      title={header}
-      titleClassName="text-[1.69rem] font-medium text-white"
-      className="px-0 bg-transparent text-secondaryTextColor"
-      divider={false}
-    >
-      {children}
-    </Card>
   )
 }
 
