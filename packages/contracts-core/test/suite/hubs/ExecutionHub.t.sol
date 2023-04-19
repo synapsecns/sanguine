@@ -16,6 +16,7 @@ import {
     MessageFlag,
     RawAttestation,
     RawBaseMessage,
+    RawReceiptBody,
     RawExecReceipt,
     RawHeader,
     RawMessage,
@@ -80,10 +81,10 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, gasLimit);
-        bytes memory receiptData = verify_messageStatus(
+        bytes memory receiptBody = verify_messageStatus(
             keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executor
         );
-        verify_receipt_valid(receiptData, rbm.tips);
+        verify_receipt_valid(receiptBody, rbm.tips);
     }
 
     function test_execute_base_recipientReverted(Random memory random) public {
@@ -104,20 +105,20 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         emit Executed(rh.origin, keccak256(msgPayload));
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        bytes memory receiptDataFirst = verify_messageStatus(
+        bytes memory receiptBodyFirst = verify_messageStatus(
             keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0)
         );
-        verify_receipt_valid(receiptDataFirst, rbm.tips);
+        verify_receipt_valid(receiptBodyFirst, rbm.tips);
         // Retry the same failed message
         RevertingApp(payable(recipient)).toggleRevert(false);
         vm.prank(executorNew);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
-        bytes memory receiptDataSecond = verify_messageStatus(
+        bytes memory receiptBodySecond = verify_messageStatus(
             keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executorNew
         );
         // Both receipts (historical and current) should be valid
-        verify_receipt_valid(receiptDataFirst, rbm.tips);
-        verify_receipt_valid(receiptDataSecond, rbm.tips);
+        verify_receipt_valid(receiptBodyFirst, rbm.tips);
+        verify_receipt_valid(receiptBodySecond, rbm.tips);
         cachedStateIndex = uint8(sm.rsi.stateIndex);
     }
 
@@ -302,15 +303,15 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     // ══════════════════════════════════════════ TESTS: INVALID RECEIPTS ══════════════════════════════════════════════
 
     function test_verifyReceipt_invalid_msgStatusNone(RawExecReceipt memory re) public {
-        vm.assume(testedEH().messageStatus(re.messageHash) == MessageStatus.None);
-        vm.assume(re.origin != localDomain());
-        re.destination = localDomain();
+        vm.assume(testedEH().messageStatus(re.body.messageHash) == MessageStatus.None);
+        vm.assume(re.body.origin != localDomain());
+        re.body.destination = localDomain();
         verify_receipt_invalid(re);
     }
 
     function test_verifyReceipt_invalid_msgStatusSuccess(uint256 mask) public {
         test_execute_base_recipientReverted(Random(bytes32(mask)));
-        RawExecReceipt memory re = RawExecReceipt({
+        RawReceiptBody memory rrb = RawReceiptBody({
             origin: DOMAIN_REMOTE,
             destination: localDomain(),
             messageHash: getLeaf(0),
@@ -318,12 +319,13 @@ abstract contract ExecutionHubTest is DisputeHubTest {
             stateIndex: cachedStateIndex,
             attNotary: domains[localDomain()].agent,
             firstExecutor: executor,
-            finalExecutor: executorNew,
-            tips: RawTips(0, 0, 0, 0)
+            finalExecutor: executorNew
         });
+        RawExecReceipt memory re = RawExecReceipt({body: rrb, tips: RawTips(0, 0, 0, 0)});
         // Check that data we start with is valid. Use require() to break the test execution early.
         require(testedEH().isValidReceipt(re.formatReceipt()), "Incorrect initial receipt data");
-        RawExecReceipt memory mre = re.modifyReceipt(mask);
+        RawReceiptBody memory mrb = rrb.modifyReceiptBody(mask);
+        RawExecReceipt memory mre = RawExecReceipt({body: mrb, tips: RawTips(0, 0, 0, 0)});
         verify_receipt_invalid(mre);
     }
 
@@ -340,17 +342,17 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         MessageStatus flag,
         address firstExecutor,
         address finalExecutor
-    ) public returns (bytes memory receiptData) {
+    ) public returns (bytes memory receiptBody) {
         MessageStatus flag_ = testedEH().messageStatus(messageHash);
         assertEq(uint8(flag_), uint8(flag), "!flag");
-        receiptData = testedEH().receiptData(messageHash);
+        receiptBody = testedEH().receiptBody(messageHash);
         if (flag == MessageStatus.None) {
-            assertEq(receiptData.length, 0, "!receiptData: empty");
+            assertEq(receiptBody.length, 0, "!receiptBody: empty");
         } else {
             address notary = domains[localDomain()].agent;
             assertEq(
-                receiptData,
-                ReceiptLib.formatReceipt(
+                receiptBody,
+                ReceiptLib.formatReceiptBody(
                     DOMAIN_REMOTE,
                     localDomain(),
                     messageHash,
@@ -358,15 +360,14 @@ abstract contract ExecutionHubTest is DisputeHubTest {
                     uint8(stateIndex),
                     notary,
                     firstExecutor,
-                    finalExecutor,
-                    ""
+                    finalExecutor
                 )
             );
         }
     }
 
-    function verify_receipt_valid(bytes memory receiptData, RawTips memory rt) public {
-        bytes memory rcptPayload = abi.encodePacked(receiptData, rt.formatTips());
+    function verify_receipt_valid(bytes memory receiptBody, RawTips memory rt) public {
+        bytes memory rcptPayload = abi.encodePacked(receiptBody, rt.formatTips());
         assertTrue(testedEH().isValidReceipt(rcptPayload));
     }
 
