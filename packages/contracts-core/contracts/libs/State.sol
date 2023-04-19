@@ -132,32 +132,27 @@ library StateLib {
 
     /// @notice Returns a historical Merkle root from the Origin contract.
     function root(State state) internal pure returns (bytes32) {
-        MemView memView = state.unwrap();
-        return memView.index({index_: OFFSET_ROOT, bytes_: 32});
+        return state.unwrap().index({index_: OFFSET_ROOT, bytes_: 32});
     }
 
     /// @notice Returns domain of chain where the Origin contract is deployed.
     function origin(State state) internal pure returns (uint32) {
-        MemView memView = state.unwrap();
-        return uint32(memView.indexUint({index_: OFFSET_ORIGIN, bytes_: 4}));
+        return uint32(state.unwrap().indexUint({index_: OFFSET_ORIGIN, bytes_: 4}));
     }
 
     /// @notice Returns nonce of Origin contract at the time, when `root` was the Merkle root.
     function nonce(State state) internal pure returns (uint32) {
-        MemView memView = state.unwrap();
-        return uint32(memView.indexUint({index_: OFFSET_NONCE, bytes_: 4}));
+        return uint32(state.unwrap().indexUint({index_: OFFSET_NONCE, bytes_: 4}));
     }
 
     /// @notice Returns a block number when `root` was saved in Origin.
     function blockNumber(State state) internal pure returns (uint40) {
-        MemView memView = state.unwrap();
-        return uint40(memView.indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
+        return uint40(state.unwrap().indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
     }
 
     /// @notice Returns a block timestamp when `root` was saved in Origin.
     /// @dev This is the timestamp according to the origin chain.
     function timestamp(State state) internal pure returns (uint40) {
-        MemView memView = state.unwrap();
-        return uint40(memView.indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
+        return uint40(state.unwrap().indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
     }
 }

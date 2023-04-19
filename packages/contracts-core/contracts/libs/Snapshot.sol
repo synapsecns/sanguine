@@ -56,7 +56,7 @@ library SnapshotLib {
      */
     function formatSnapshot(State[] memory states) internal view returns (bytes memory) {
         require(_isValidAmount(states.length), "Invalid states amount");
-        // First we unwrap State-typed views into generic views
+        // First we unwrap State-typed views into untyped memory views
         uint256 length = states.length;
         MemView[] memory views = new MemView[](length);
         for (uint256 i = 0; i < length; ++i) {
@@ -96,10 +96,8 @@ library SnapshotLib {
 
     /// @notice Returns the hash of a Snapshot, that could be later signed by an Agent.
     function hash(Snapshot snapshot) internal pure returns (bytes32 hashedSnapshot) {
-        // Get the underlying memory view
-        MemView memView = snapshot.unwrap();
-        // The final hash to sign is keccak(attestationSalt, keccak(attestation))
-        return keccak256(bytes.concat(SNAPSHOT_SALT, memView.keccak()));
+        // The final hash to sign is keccak(snapshotSalt, keccak(snapshot))
+        return keccak256(bytes.concat(SNAPSHOT_SALT, snapshot.unwrap().keccak()));
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -119,8 +117,8 @@ library SnapshotLib {
 
     /// @notice Returns the amount of states in the snapshot.
     function statesAmount(Snapshot snapshot) internal pure returns (uint256) {
-        MemView memView = snapshot.unwrap();
-        return memView.len() / STATE_LENGTH;
+        // Each state occupies exactly `STATE_LENGTH` bytes
+        return snapshot.unwrap().len() / STATE_LENGTH;
     }
 
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
@@ -145,6 +143,6 @@ library SnapshotLib {
     function _isValidAmount(uint256 statesAmount_) internal pure returns (bool) {
         // Need to have at least one state in a snapshot.
         // Also need to have no more than `SNAPSHOT_MAX_STATES` states in a snapshot.
-        return statesAmount_ > 0 && statesAmount_ <= SNAPSHOT_MAX_STATES;
+        return statesAmount_ != 0 && statesAmount_ <= SNAPSHOT_MAX_STATES;
     }
 }

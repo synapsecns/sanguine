@@ -74,10 +74,8 @@ library AttestationReportLib {
     }
 
     function hash(AttestationReport attReport) internal pure returns (bytes32) {
-        // Get the underlying memory view
-        MemView memView = attReport.unwrap();
         // The final hash to sign is keccak(attestationReportSalt, keccak(attestationReport))
-        return keccak256(bytes.concat(ATTESTATION_REPORT_SALT, memView.keccak()));
+        return keccak256(bytes.concat(ATTESTATION_REPORT_SALT, attReport.unwrap().keccak()));
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -89,18 +87,16 @@ library AttestationReportLib {
 
     /// @notice Returns AttestationFlag used in the report.
     function flag(AttestationReport attReport) internal pure returns (AttestationFlag) {
-        MemView memView = attReport.unwrap();
         // We check that flag fits into enum, when payload is wrapped
         // into AttestationReport, so this never reverts
-        return AttestationFlag(_arFlag(memView));
+        return AttestationFlag(_arFlag(attReport.unwrap()));
     }
 
     /// @notice Returns typed memory view over attestation used in the report.
     function attestation(AttestationReport attReport) internal pure returns (Attestation) {
-        MemView memView = attReport.unwrap();
         // We check that attestation is properly formatted, when payload is wrapped
         // into AttestationReport, so this never reverts.
-        return _arAttestation(memView).castToAttestation();
+        return _arAttestation(attReport.unwrap()).castToAttestation();
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════

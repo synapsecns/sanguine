@@ -72,10 +72,8 @@ library StateReportLib {
     }
 
     function hash(StateReport stateReport) internal pure returns (bytes32) {
-        // Get the underlying memory view
-        MemView memView = stateReport.unwrap();
         // The final hash to sign is keccak(stateReportSalt, keccak(stateReport))
-        return keccak256(bytes.concat(STATE_REPORT_SALT, memView.keccak()));
+        return keccak256(bytes.concat(STATE_REPORT_SALT, stateReport.unwrap().keccak()));
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -87,18 +85,16 @@ library StateReportLib {
 
     /// @notice Returns StateFlag used in the report.
     function flag(StateReport stateReport) internal pure returns (StateFlag) {
-        MemView memView = stateReport.unwrap();
         // We check that flag fits into enum, when payload is wrapped
         // into StateReport, so this never reverts
-        return StateFlag(_srFlag(memView));
+        return StateFlag(_srFlag(stateReport.unwrap()));
     }
 
     /// @notice Returns typed memory view over state used in the report.
     function state(StateReport stateReport) internal pure returns (State) {
-        MemView memView = stateReport.unwrap();
         // We check that state is properly formatted, when payload is wrapped
         // into StateReport, so this never reverts.
-        return _srState(memView).castToState();
+        return _srState(stateReport.unwrap()).castToState();
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════

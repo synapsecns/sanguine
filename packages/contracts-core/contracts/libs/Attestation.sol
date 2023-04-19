@@ -108,10 +108,8 @@ library AttestationLib {
 
     /// @notice Returns the hash of an Attestation, that could be later signed by a Notary.
     function hash(Attestation att) internal pure returns (bytes32) {
-        // Get the underlying memory view
-        MemView memView = att.unwrap();
         // The final hash to sign is keccak(attestationSalt, keccak(attestation))
-        return keccak256(bytes.concat(ATTESTATION_SALT, memView.keccak()));
+        return keccak256(bytes.concat(ATTESTATION_SALT, att.unwrap().keccak()));
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -123,32 +121,27 @@ library AttestationLib {
 
     /// @notice Returns root of the Snapshot merkle tree created in the Summit contract.
     function snapRoot(Attestation att) internal pure returns (bytes32) {
-        MemView memView = att.unwrap();
-        return memView.index({index_: OFFSET_SNAP_ROOT, bytes_: 32});
+        return att.unwrap().index({index_: OFFSET_SNAP_ROOT, bytes_: 32});
     }
 
     /// @notice Returns root of the Agent merkle tree tracked by BondingManager.
     function agentRoot(Attestation att) internal pure returns (bytes32) {
-        MemView memView = att.unwrap();
-        return memView.index({index_: OFFSET_AGENT_ROOT, bytes_: 32});
+        return att.unwrap().index({index_: OFFSET_AGENT_ROOT, bytes_: 32});
     }
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.
     function nonce(Attestation att) internal pure returns (uint32) {
-        MemView memView = att.unwrap();
-        return uint32(memView.indexUint({index_: OFFSET_NONCE, bytes_: 4}));
+        return uint32(att.unwrap().indexUint({index_: OFFSET_NONCE, bytes_: 4}));
     }
 
     /// @notice Returns a block number when attestation was created in Summit.
     function blockNumber(Attestation att) internal pure returns (uint40) {
-        MemView memView = att.unwrap();
-        return uint40(memView.indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
+        return uint40(att.unwrap().indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
     }
 
     /// @notice Returns a block timestamp when attestation was created in Summit.
     /// @dev This is the timestamp according to the Synapse Chain.
     function timestamp(Attestation att) internal pure returns (uint40) {
-        MemView memView = att.unwrap();
-        return uint40(memView.indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
+        return uint40(att.unwrap().indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
     }
 }
