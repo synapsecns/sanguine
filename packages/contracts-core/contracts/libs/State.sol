@@ -4,38 +4,38 @@ pragma solidity 0.8.17;
 import {STATE_LENGTH} from "./Constants.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev State is a memory view over a formatted state payload.
+/// State is a memory view over a formatted state payload.
 type State is uint256;
 
-/// @dev Attach library functions to State
 using StateLib for State global;
 
+/// # State
+/// State structure represents the state of Origin contract at some point of time.
+/// - State is structured in a way to track the updates of the Origin Merkle Tree.
+/// - State includes root of the Origin Merkle Tree, origin domain and some additional metadata.
+/// ## Origin Merkle Tree
+/// Hash of every sent message is inserted in the Origin Merkle Tree, which changes
+/// the value of Origin Merkle Root (which is the root for the mentioned tree).
+/// - Origin has a single Merkle Tree for all messages, regardless of their destination domain.
+/// - This leads to Origin state being updated if and only if a message was sent in a block.
+/// - Origin contract is a "source of truth" for states: a state is considered "valid" in its Origin,
+/// if it matches the state of the Origin contract after the N-th (nonce) message was sent.
+///
+/// # Memory layout of State fields
+///
+/// | Position   | Field       | Type    | Bytes | Description                    |
+/// | ---------- | ----------- | ------- | ----- | ------------------------------ |
+/// | [000..032) | root        | bytes32 | 32    | Root of the Origin Merkle Tree |
+/// | [032..036) | origin      | uint32  | 4     | Domain where Origin is located |
+/// | [036..040) | nonce       | uint32  | 4     | Amount of sent messages        |
+/// | [040..045) | blockNumber | uint40  | 5     | Block of last sent message     |
+/// | [045..050) | timestamp   | uint40  | 5     | Time of last sent message      |
+///
+/// @dev State could be used to form a Snapshot to be signed by a Guard or a Notary.
 library StateLib {
     using MemViewLib for bytes;
 
-    /**
-     * @dev State structure represents the state of Origin contract at some point of time.
-     * State is structured in a way to track the updates of the Origin Merkle Tree. State includes
-     * root of the Origin Merkle Tree, origin domain and some additional metadata.
-     *
-     * Hash of every sent message is inserted in the Origin Merkle Tree, which changes the
-     * value of Origin Merkle Root (which is the root for the mentioned tree).
-     * Origin has a single Merkle Tree for all messages, regardless of their destination domain.
-     * This leads to Origin state being updated if and only if a message was sent in a block.
-     *
-     * Origin contract is a "source of truth" for states: a state is considered "valid" in its Origin,
-     * if it matches the state of the Origin contract after the N-th (nonce) message was sent.
-     *
-     * @dev Memory layout of State fields
-     * [000 .. 032): root           bytes32 32 bytes    Root of the Origin Merkle Tree
-     * [032 .. 036): origin         uint32   4 bytes    Domain where Origin is located
-     * [036 .. 040): nonce          uint32   4 bytes    Amount of sent messages
-     * [040 .. 045): blockNumber    uint40   5 bytes    Block of last sent message
-     * [045 .. 050): timestamp      uint40   5 bytes    Time of last sent message
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
-
+    /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_ROOT = 0;
     uint256 private constant OFFSET_ORIGIN = 32;
     uint256 private constant OFFSET_NONCE = 36;
