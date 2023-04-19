@@ -10,7 +10,11 @@ type SystemMessage is uint256;
 
 using SystemMessageLib for SystemMessage global;
 
+/// SystemMessage structure represents a message sent by one of the messaging contracts
+/// with instructions for a system call.
+/// > See SystemRouter.sol for clarifications about the remote system calls.
 /// Note: calldata does not include the security arguments, these are added by SystemRouter on destination chain.
+///
 /// # SystemMessage memory layout
 ///
 /// | Position   | Field     | Type  | Bytes | Description                                              |
@@ -31,8 +35,8 @@ library SystemMessageLib {
 
     /**
      * @notice Returns a formatted SystemMessage payload with provided fields.
-     * @param sender_           System Contract that sent receive message
-     * @param recipient_        System Contract to receive message
+     * @param sender_           System Contract that sent a system message
+     * @param recipient_        System Contract to receive a system message
      * @param callData_         Raw bytes with calldata payload
      * @return Formatted SystemMessage payload.
      */
@@ -71,9 +75,8 @@ library SystemMessageLib {
         if (_sender(memView) > uint8(type(SystemEntity).max)) return false;
         // Check if recipient fits into SystemEntity enum
         if (_recipient(memView) > uint8(type(SystemEntity).max)) return false;
-        MemView callDataView = _callData(memView);
         // Check that "calldata" field is a proper calldata
-        return callDataView.isCallData();
+        return _callData(memView).isCallData();
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -85,27 +88,21 @@ library SystemMessageLib {
 
     /// @notice Returns system message's recipient.
     function sender(SystemMessage systemMessage) internal pure returns (SystemEntity) {
-        // Get the underlying memory view
-        MemView memView = systemMessage.unwrap();
         // We check that sender fits into enum, when payload is wrapped
         // into SystemMessage, so this never reverts
-        return SystemEntity(_sender(memView));
+        return SystemEntity(_sender(systemMessage.unwrap()));
     }
 
     /// @notice Returns system message's recipient.
     function recipient(SystemMessage systemMessage) internal pure returns (SystemEntity) {
-        // Get the underlying memory view
-        MemView memView = systemMessage.unwrap();
         // We check that recipient fits into enum, when payload is wrapped
         // into SystemMessage, so this never reverts
-        return SystemEntity(_recipient(memView));
+        return SystemEntity(_recipient(systemMessage.unwrap()));
     }
 
     /// @notice Returns typed memory view over the calldata used in the system message.
     function callData(SystemMessage systemMessage) internal pure returns (CallData) {
-        // Get the underlying memory view
-        MemView memView = systemMessage.unwrap();
-        return _callData(memView).castToCallData();
+        return _callData(systemMessage.unwrap()).castToCallData();
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
