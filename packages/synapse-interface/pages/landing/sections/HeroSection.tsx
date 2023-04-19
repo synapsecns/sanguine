@@ -8,8 +8,9 @@ export default function HeroSection() {
     <SectionContainer dataTestId="landing-hero-section">
       <div
         className={`
-          text-left text-4xl font-medium text-white
-          md:text-[46px] md:text-center pb-4
+          mt-6 pb-4 text-left text-4xl
+          font-medium text-white
+          md:text-[46px] md:text-center
         `}
       >
         <p>Secure cross-chain</p>

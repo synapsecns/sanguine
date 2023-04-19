@@ -4,6 +4,7 @@
 
 body {
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
 @font-face {
