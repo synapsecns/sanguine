@@ -5,6 +5,8 @@ import {
   SynapseCircuitSmall,
 } from '@/components/icons/LandingIcons/SynapseCircuit'
 import { SecureIcon } from '@/components/icons/LandingIcons/SecureIcon'
+import { ExtensibleIcon } from '@/components/icons/LandingIcons/ExtensibleIcon'
+import { GeneralizedIcon } from '@/components/icons/LandingIcons/GeneralizedIcon'
 
 export default function SecuritySection() {
   return (
@@ -50,15 +52,15 @@ export default function SecuritySection() {
         gap={12}
         className="py-6 mx-auto mb-12 md:py-12 2xl:w-3/4"
       >
-        <SupportCard header="Extensible">
+        <SupportCard header="Extensible" image={<ExtensibleIcon />}>
           Synapse’s cross-chain messaging contracts can be deployed across any
           blockchain
         </SupportCard>
-        <SupportCard header="Secure">
+        <SupportCard header="Secure" image={<SecureIcon />}>
           Synapse employs an Optimistic security model to ensure integrity of
           cross-chain messages
         </SupportCard>
-        <SupportCard header="Generalized">
+        <SupportCard header="Generalized" image={<GeneralizedIcon />}>
           Any arbitrary data can be sent across chains including contract calls,
           NFTs, snapshots, and more
         </SupportCard>
