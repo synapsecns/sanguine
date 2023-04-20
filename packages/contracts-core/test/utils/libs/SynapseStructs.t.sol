@@ -167,16 +167,13 @@ library CastLib {
     using AttestationReportLib for bytes;
     using ByteString for bytes;
     using BaseMessageLib for bytes;
-    using HeaderLib for bytes;
     using MessageLib for bytes;
     using ReceiptLib for bytes;
     using ReceiptReportLib for bytes;
-    using RequestLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
     using StateReportLib for bytes;
     using SystemMessageLib for bytes;
-    using TipsLib for bytes;
 
     /// @notice Prevents this contract from being included in the coverage report
     function testCastLib() external {}
@@ -186,24 +183,24 @@ library CastLib {
     function formatMessage(RawMessage memory rm) internal pure returns (bytes memory msgPayload) {
         // Explicit revert when out of range
         require(rm.flag <= uint8(type(MessageFlag).max), "Flag out of range");
-        return MessageLib.formatMessage(MessageFlag(rm.flag), rm.header.formatHeader(), rm.body);
+        return MessageLib.formatMessage(MessageFlag(rm.flag), rm.header.castToHeader(), rm.body);
     }
 
     function castToMessage(RawMessage memory rm) internal pure returns (Message ptr) {
         ptr = rm.formatMessage().castToMessage();
     }
 
-    function formatHeader(RawHeader memory rh) internal pure returns (bytes memory header) {
-        header = HeaderLib.formatHeader({
+    function encodeHeader(RawHeader memory rh) internal pure returns (uint128 encodedHeader) {
+        encodedHeader = Header.unwrap(rh.castToHeader());
+    }
+
+    function castToHeader(RawHeader memory rh) internal pure returns (Header header) {
+        header = HeaderLib.encodeHeader({
             origin_: rh.origin,
             nonce_: rh.nonce,
             destination_: rh.destination,
             optimisticPeriod_: rh.optimisticPeriod
         });
-    }
-
-    function castToHeader(RawHeader memory rh) internal pure returns (Header ptr) {
-        ptr = rh.formatHeader().castToHeader();
     }
 
     function encodeRequest(RawRequest memory rr) internal pure returns (uint160 encodedReq) {
