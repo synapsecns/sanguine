@@ -6,14 +6,14 @@ import { SectionContainer } from '../shared'
 import { ANALYTICS_PATH } from '@/constants/urls'
 import {
   getTotalBridgeVolume,
-  getTotalPoolVolume,
+  getTotalTxCount,
   getTotalValueLocked,
   ExplorerQueryStatsResponse,
 } from '@/utils/hooks/useExplorerStats'
 
 export default function ExplorerSection() {
   const totalBridgeVolume = getTotalBridgeVolume()
-  const totalPoolVolume = getTotalPoolVolume()
+  const totalTxCount = getTotalTxCount()
   const totalValueLocked = getTotalValueLocked()
 
   return (
@@ -67,7 +67,7 @@ export default function ExplorerSection() {
       >
         <StatisticsCard title="Total Value Locked" value={totalValueLocked} />
         <StatisticsCard title="Total Bridge Volume" value={totalBridgeVolume} />
-        <StatisticsCard title="Total Pool Volume" value={totalPoolVolume} />
+        <StatisticsCard title="Total TX Count" value={totalTxCount} />
       </Grid>
     </SectionContainer>
   )

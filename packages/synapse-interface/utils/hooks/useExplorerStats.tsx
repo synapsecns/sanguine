@@ -7,31 +7,23 @@ import { BRIDGESYN_ANALYTICS_API, LLAMA_API_URL } from '@/constants/urls'
 
 export type ExplorerQueryStatsResponse = number | undefined
 
-export function getTotalBridgeVolume(): ExplorerQueryStatsResponse {
-  const { data } = useSwr(`${BRIDGESYN_ANALYTICS_API}/volume/total/in`)
-
-  let totalAmt
-  if (data?.totals) {
-    totalAmt = _.sum(_.values(data?.totals))
-    return numeral(totalAmt).format(`$0,0`)
-  } else {
-    return undefined
-  }
+export const getTotalBridgeVolume = (): ExplorerQueryStatsResponse => {
+  const { data } = useSwr(
+    `${BRIDGESYN_ANALYTICS_API}?query=%7B%0A%20%20amountStatistic(type%3A%20TOTAL_VOLUME_USD%2C%20duration%3A%20ALL_TIME%2C%20useMv%3A%20true%2C%20platform%3AALL%2C%20useCache%3Atrue)%7Bvalue%7D%0A%7D%0A`
+  )
+  let value = data?.data?.amountStatistic?.value
+  return value ? numeral(value).format(`$0,0`) : undefined
 }
 
-export function getTotalPoolVolume(): ExplorerQueryStatsResponse {
-  const { data } = useSwr(`${BRIDGESYN_ANALYTICS_API}/pools/volume/total`)
-
-  let totalAmt
-  if (data?.totals) {
-    totalAmt = _.sum(_.values(data?.totals))
-    return numeral(totalAmt).format(`$0,0`)
-  } else {
-    return undefined
-  }
+export const getTotalTxCount = (): ExplorerQueryStatsResponse => {
+  const { data } = useSwr(
+    `${BRIDGESYN_ANALYTICS_API}?query=%7B%0A%20%20amountStatistic(type%3A%20COUNT_TRANSACTIONS%2C%20duration%3A%20ALL_TIME%2C%20useMv%3A%20true%2C%20platform%3AALL%2C%20useCache%3Atrue)%7Bvalue%7D%0A%7D%0A`
+  )
+  let value = data?.data?.amountStatistic?.value
+  return value ? numeral(value).format(`0,0`) : undefined
 }
 
-export function getTotalValueLocked(): ExplorerQueryStatsResponse {
+export const getTotalValueLocked = (): ExplorerQueryStatsResponse => {
   const { data: tvlData } = useSwr(LLAMA_API_URL)
 
   if (tvlData?.currentChainTvls) {
