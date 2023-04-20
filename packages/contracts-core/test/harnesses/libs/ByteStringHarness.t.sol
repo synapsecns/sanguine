@@ -54,8 +54,8 @@ contract ByteStringHarness {
         return payload.castToCallData().arguments().clone();
     }
 
-    function callSelector(bytes memory payload) public view returns (bytes memory) {
-        return payload.castToCallData().callSelector().clone();
+    function callSelector(bytes memory payload) public pure returns (bytes4) {
+        return payload.castToCallData().callSelector();
     }
 
     function argumentWords(bytes memory payload) public pure returns (uint256) {
