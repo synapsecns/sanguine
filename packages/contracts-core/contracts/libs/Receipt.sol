@@ -35,15 +35,15 @@ using ReceiptLib for ReceiptBody global;
 ///
 /// # Memory layout of Receipt fields
 ///
-/// | Position   | Field | Type  | Bytes | Description               |
-/// | ---------- | ----- | ----- | ----- | ------------------------- |
-/// | [000..133) | body  | bytes | 133   | Receipt body (see above)  |
-/// | [133..181) | tips  | bytes | 48    | Tips paid on origin chain |
+/// | Position   | Field | Type   | Bytes | Description                       |
+/// | ---------- | ----- | ------ | ----- | --------------------------------- |
+/// | [000..133) | body  | bytes  | 133   | Receipt body (see above)          |
+/// | [133..165) | tips  | uint32 | 32    | Encoded tips paid on origin chain |
+
 /// @dev Receipt could be signed by a Notary and submitted to `Summit` in order to initiate the tips
 /// distribution for an executed message.
 library ReceiptLib {
     using MemViewLib for bytes;
-    using TipsLib for MemView;
 
     /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_ORIGIN = 0;
@@ -126,11 +126,11 @@ library ReceiptLib {
     /**
      * @notice Returns a formatted Receipt payload with provided fields
      * @param bodyPayload       Formatted payload with receipt body
-     * @param tipsPayload       Formatted payload with tips information
+     * @param tips_             Encoded tips information
      * @return Formatted receipt
      */
-    function formatReceipt(bytes memory bodyPayload, bytes memory tipsPayload) internal pure returns (bytes memory) {
-        return abi.encodePacked(bodyPayload, tipsPayload);
+    function formatReceipt(bytes memory bodyPayload, Tips tips_) internal pure returns (bytes memory) {
+        return abi.encodePacked(bodyPayload, tips_);
     }
 
     /**
@@ -155,9 +155,7 @@ library ReceiptLib {
         // Check payload length
         if (memView.len() != RECEIPT_LENGTH) return false;
         // Check that body payload is formatted
-        if (!isReceiptBody(_body(memView))) return false;
-        // Check that tips payload is formatted
-        return _tips(memView).isTips();
+        return isReceiptBody(_body(memView));
     }
 
     /// @notice Returns the hash of an Receipt, that could be later signed by a Notary.
@@ -222,11 +220,11 @@ library ReceiptLib {
         return castToReceiptBody(_body(receipt.unwrap()));
     }
 
-    /// @notice Returns a typed memory view over the payload with tips paid on origin chain.
+    /// @notice Returns encoded tips paid on origin chain.
     function tips(Receipt receipt) internal pure returns (Tips) {
         // We check that tips payload is properly formatted, when the whole payload is wrapped
         // into Receipt, so this never reverts.
-        return _tips(receipt.unwrap()).castToTips();
+        return TipsLib.wrapPadded((receipt.unwrap().indexUint({index_: OFFSET_TIPS, bytes_: TIPS_LENGTH})));
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════
@@ -235,11 +233,5 @@ library ReceiptLib {
     /// if the whole payload or the body are properly formatted.
     function _body(MemView memView) private pure returns (MemView) {
         return memView.slice({index_: OFFSET_BODY, len_: RECEIPT_BODY_LENGTH});
-    }
-
-    /// @dev Returns an untyped memory view over the tips field without checking
-    /// if the whole payload or the tips are properly formatted.
-    function _tips(MemView memView) private pure returns (MemView) {
-        return memView.slice({index_: OFFSET_TIPS, len_: TIPS_LENGTH});
     }
 }

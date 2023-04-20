@@ -214,13 +214,8 @@ library CastLib {
         request = RequestLib.encodeRequest({gasDrop_: rr.gasDrop, gasLimit_: rr.gasLimit});
     }
 
-    function formatTips(RawTips memory rt) internal pure returns (bytes memory tipsPayload) {
-        tipsPayload = TipsLib.formatTips({
-            summitTip_: rt.summitTip,
-            attestationTip_: rt.attestationTip,
-            executionTip_: rt.executionTip,
-            deliveryTip_: rt.deliveryTip
-        });
+    function encodeTips(RawTips memory rt) internal pure returns (uint256 encodedTips) {
+        encodedTips = Tips.unwrap(rt.castToTips());
     }
 
     function boundTips(RawTips memory rt, uint64 maxTipValue) internal pure {
@@ -244,15 +239,20 @@ library CastLib {
         crt.deliveryTip = rt.deliveryTip;
     }
 
-    function castToTips(RawTips memory rt) internal pure returns (Tips ptr) {
-        ptr = rt.formatTips().castToTips();
+    function castToTips(RawTips memory rt) internal pure returns (Tips tips) {
+        tips = TipsLib.encodeTips({
+            summitTip_: rt.summitTip,
+            attestationTip_: rt.attestationTip,
+            executionTip_: rt.executionTip,
+            deliveryTip_: rt.deliveryTip
+        });
     }
 
     function formatBaseMessage(RawBaseMessage memory rbm) internal pure returns (bytes memory bmPayload) {
         bmPayload = BaseMessageLib.formatBaseMessage({
             sender_: rbm.sender,
             recipient_: rbm.recipient,
-            tipsPayload: rbm.tips.formatTips(),
+            tips_: rbm.tips.castToTips(),
             request_: rbm.request.castToRequest(),
             content_: rbm.content
         });
@@ -319,7 +319,7 @@ library CastLib {
     }
 
     function formatReceipt(RawExecReceipt memory re) internal pure returns (bytes memory) {
-        return ReceiptLib.formatReceipt(re.body.formatReceiptBody(), re.tips.formatTips());
+        return ReceiptLib.formatReceipt(re.body.formatReceiptBody(), re.tips.castToTips());
     }
 
     function castToReceipt(RawExecReceipt memory re) internal pure returns (Receipt) {

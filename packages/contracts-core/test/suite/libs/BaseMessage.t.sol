@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {BaseMessageHarness} from "../../harnesses/libs/BaseMessageHarness.t.sol";
 
-import {RawBaseMessage, Request} from "../../utils/libs/SynapseStructs.t.sol";
+import {RawBaseMessage, Request, Tips} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract BaseMessageLibraryTest is SynapseLibraryTest {
@@ -19,15 +19,15 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
     // ═════════════════════════════════════════════ TESTS: FORMATTING ═════════════════════════════════════════════════
 
     function test_formatBaseMessage(RawBaseMessage memory rbm) public {
-        bytes memory tipsPayload = rbm.tips.formatTips();
+        Tips tips = rbm.tips.castToTips();
+        uint256 encodedTips = rbm.tips.encodeTips();
         Request request = rbm.request.castToRequest();
         uint160 encodedRequest = rbm.request.encodeRequest();
         // Test formatting
-        bytes memory payload =
-            libHarness.formatBaseMessage(rbm.sender, rbm.recipient, tipsPayload, request, rbm.content);
+        bytes memory payload = libHarness.formatBaseMessage(rbm.sender, rbm.recipient, tips, request, rbm.content);
         assertEq(
             payload,
-            abi.encodePacked(rbm.sender, rbm.recipient, tipsPayload, encodedRequest, rbm.content),
+            abi.encodePacked(rbm.sender, rbm.recipient, encodedTips, encodedRequest, rbm.content),
             "!formatBaseMessage"
         );
         // Test formatting checker
@@ -35,7 +35,7 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
         // Test getters
         assertEq(libHarness.sender(payload), rbm.sender, "!sender");
         assertEq(libHarness.recipient(payload), rbm.recipient, "!recipient");
-        assertEq(libHarness.tips(payload), tipsPayload, "!tips");
+        assertEq(libHarness.tips(payload), encodedTips, "!tips");
         assertEq(libHarness.request(payload), encodedRequest, "!request");
         assertEq(libHarness.content(payload), rbm.content, "!content");
     }
