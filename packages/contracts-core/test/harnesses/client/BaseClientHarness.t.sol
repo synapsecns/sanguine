@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {BaseClient} from "../../../contracts/client/BaseClient.sol";
+import {RequestLib} from "../../../contracts/libs/Request.sol";
 import {BaseClientHarnessEvents} from "../events/BaseClientHarnessEvents.t.sol";
 
 // solhint-disable no-empty-blocks
@@ -11,13 +12,11 @@ contract BaseClientHarness is BaseClient, BaseClientHarnessEvents {
     constructor(address origin_, address destination_) BaseClient(origin_, destination_) {}
 
     /// @notice Exposes _sendBaseMessage for testing
-    function sendBaseMessage(
-        uint32 destination_,
-        bytes memory tipsPayload,
-        bytes memory requestPayload,
-        bytes memory content
-    ) external payable {
-        _sendBaseMessage(destination_, tipsPayload, requestPayload, content);
+    function sendBaseMessage(uint32 destination_, bytes memory tipsPayload, uint256 paddedRequest, bytes memory content)
+        external
+        payable
+    {
+        _sendBaseMessage(destination_, tipsPayload, RequestLib.wrapPadded(paddedRequest), content);
     }
 
     /// @inheritdoc BaseClient

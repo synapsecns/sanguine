@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {InterfaceOrigin, PingPongClient, RequestLib, TipsLib} from "../../../contracts/client/PingPongClient.sol";
+import {
+    InterfaceOrigin, PingPongClient, Request, RequestLib, TipsLib
+} from "../../../contracts/client/PingPongClient.sol";
 
 import {OriginMock} from "../../mocks/OriginMock.t.sol";
 
@@ -114,7 +116,7 @@ contract PingPongTest is Test {
         uint16 counter
     ) internal {
         bytes memory tipsPayload = TipsLib.emptyTips();
-        bytes memory requestPayload = RequestLib.formatRequest(0);
+        Request request = RequestLib.encodeRequest(0, 0);
         bytes memory content = _content(pingId, isPing, counter);
         vm.expectCall(
             originMock,
@@ -124,7 +126,7 @@ contract PingPongTest is Test {
                 recipient,
                 optimisticPeriod,
                 tipsPayload,
-                requestPayload,
+                request,
                 content
             )
         );

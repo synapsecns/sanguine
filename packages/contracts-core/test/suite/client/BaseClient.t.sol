@@ -33,7 +33,7 @@ contract BaseClientTest is SynapseTest {
         rt.boundTips(2 ** 32);
         uint256 tipsValue = rt.castToTips().value();
         bytes memory tipsPayload = rt.formatTips();
-        bytes memory requestPayload = rr.formatRequest();
+        uint160 encodedRequest = rr.encodeRequest();
         vm.deal(user, tipsValue);
         // Get expected values for sending a message
         bytes32 recipient = client.trustedSender(destination_);
@@ -44,12 +44,12 @@ contract BaseClientTest is SynapseTest {
             recipient,
             optimisticPeriod,
             tipsPayload,
-            requestPayload,
+            encodedRequest,
             content
         );
         vm.expectCall(origin, tipsValue, expectedCall);
         vm.prank(user);
-        client.sendBaseMessage{value: tipsValue}(destination_, tipsPayload, requestPayload, content);
+        client.sendBaseMessage{value: tipsValue}(destination_, tipsPayload, encodedRequest, content);
     }
 
     function test_sendBaseMessage_revert_recipientNotSet(address user, RawTips memory rt, RawRequest memory rr)
@@ -61,12 +61,12 @@ contract BaseClientTest is SynapseTest {
         // Set some sensible limit for fuzzed tips values
         rt.boundTips(2 ** 32);
         uint256 tipsValue = rt.castToTips().value();
-        bytes memory requestPayload = rr.formatRequest();
+        uint160 encodedRequest = rr.encodeRequest();
         bytes memory tipsPayload = rt.formatTips();
         vm.deal(user, tipsValue);
         vm.expectRevert("BaseClient: !recipient");
         vm.prank(user);
-        client.sendBaseMessage{value: tipsValue}(destination_, tipsPayload, requestPayload, "");
+        client.sendBaseMessage{value: tipsValue}(destination_, tipsPayload, encodedRequest, "");
     }
 
     function test_receiveBaseMessage(
