@@ -5,7 +5,6 @@ import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
 import {ByteStringHarness} from "../../harnesses/libs/ByteStringHarness.t.sol";
 
 import {ByteString} from "../../../contracts/libs/ByteString.sol";
-import {SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
 
 import {Random} from "../../utils/libs/Random.t.sol";
 
