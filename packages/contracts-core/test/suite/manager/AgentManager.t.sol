@@ -5,12 +5,16 @@ import {AgentManager} from "../../../contracts/manager/AgentManager.sol";
 import {ISystemRegistry} from "../../../contracts/interfaces/ISystemRegistry.sol";
 import {AgentFlag, AgentStatus, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 
-import {SystemEntity, SystemRouterHarness} from "../../harnesses/system/SystemRouterHarness.t.sol";
 import {SystemContractTest} from "../system/SystemContract.t.sol";
+import {RawCallData, RawManagerCall} from "../../utils/libs/SynapseStructs.t.sol";
+
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 abstract contract AgentManagerTest is SystemContractTest {
+    using Address for address;
+
     uint256 internal rootSubmittedAt;
 
     function test_setup() public virtual {
@@ -88,21 +92,32 @@ abstract contract AgentManagerTest is SystemContractTest {
         skip(period);
     }
 
-    function systemPrank(SystemRouterHarness router, uint32 callOrigin, SystemEntity systemCaller, bytes memory payload)
+    function managerMsgPrank(bytes memory payload) public {
+        vm.prank(localDestination());
+        systemContract().functionCall(payload);
+    }
+
+    function managerMsgPayload(uint32 msgOrigin, RawCallData memory rcd) public view returns (bytes memory) {
+        RawManagerCall memory rmc =
+            RawManagerCall({origin: msgOrigin, proofMaturity: block.timestamp - rootSubmittedAt, callData: rcd});
+        return rmc.callPayload();
+    }
+
+    function remoteRegistrySlashCalldata(uint32 domain, address agent, address prover)
         public
+        view
+        returns (RawCallData memory)
     {
-        router.systemPrank({
-            recipient: SystemEntity.AgentManager,
-            proofMaturity: block.timestamp - rootSubmittedAt,
-            callOrigin: callOrigin,
-            systemCaller: systemCaller,
-            payload: payload
+        // (msgOrigin, proofMaturity) are omitted => (domain, agent, prover)
+        return RawCallData({
+            selector: bondingManager.remoteRegistrySlash.selector,
+            args: abi.encode(domain, agent, prover)
         });
     }
 
-    function remoteSlashPayload(uint32 domain, address agent, address prover) public view returns (bytes memory) {
-        // (proofMaturity, callOrigin, systemCaller) are omitted; (domain, agent, prover)
-        return abi.encodeWithSelector(bondingManager.remoteRegistrySlash.selector, domain, agent, prover);
+    function remoteWithdrawTipsCalldata(address actor, uint256 amount) public view returns (RawCallData memory) {
+        // (msgOrigin, proofMaturity) are omitted => (actor, amount)
+        return RawCallData({selector: lightManager.remoteWithdrawTips.selector, args: abi.encode(actor, amount)});
     }
 
     /// @notice Returns address of the tested system contract

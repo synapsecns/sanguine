@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {IAgentManager, InterfaceSummit} from "../../contracts/Summit.sol";
 
-import {AgentFlag, ISystemContract, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, Summit, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {IDisputeHub, DisputeHubTest} from "./hubs/DisputeHub.t.sol";
 
 import {fakeState} from "../utils/libs/FakeIt.t.sol";

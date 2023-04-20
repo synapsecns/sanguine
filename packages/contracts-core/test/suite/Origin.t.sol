@@ -28,7 +28,7 @@ import {
     RawStateReport,
     RawTips
 } from "../utils/libs/SynapseStructs.t.sol";
-import {AgentFlag, ISystemContract, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {SystemRegistryTest} from "./system/SystemRegistry.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -45,9 +45,6 @@ contract OriginTest is SystemRegistryTest {
     constructor() SynapseTest(DEPLOY_PROD_ORIGIN) {}
 
     function test_setupCorrectly() public {
-        // Check Messaging addresses
-        assertEq(address(ISystemContract(origin).systemRouter()), address(systemRouter), "!systemRouter");
-        // TODO: adjust when Agent Merkle Tree is implemented
         // Check Agents: currently all Agents are known in LightManager
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
