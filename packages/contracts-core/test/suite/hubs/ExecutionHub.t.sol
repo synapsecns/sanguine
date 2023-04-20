@@ -261,13 +261,13 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         verify_messageStatusNone(keccak256(msgPayload));
     }
 
-    // ══════════════════════════════════════ TESTS: EXECUTE SYSTEM MESSAGES ═══════════════════════════════════════════
+    // ══════════════════════════════════════ TESTS: EXECUTE MANAGER MESSAGES ══════════════════════════════════════════
 
-    function test_execute_system(RawHeader memory rh, SnapshotMock memory sm, uint32 timePassed, uint64 gasLimit)
+    function test_execute_manager(RawHeader memory rh, SnapshotMock memory sm, uint32 timePassed, uint64 gasLimit)
         public
     {
         // Create messages and get origin proof
-        bytes memory msgPayload = createManagerMessages(rh, localDomain());
+        bytes memory msgPayload = createManagerMessages(lightManager.remoteMockFunc.selector, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -288,6 +288,49 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         verify_messageStatus(
             keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executor
         );
+    }
+
+    function test_execute_manager_revert_incorrectMagicValue() public {
+        // Use empty values - these would be filled later in test preparation
+        RawHeader memory rh;
+        SnapshotMock memory sm;
+        // Create messages and get origin proof
+        bytes memory msgPayload = createManagerMessages(lightManager.sensitiveMockFunc.selector, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
+        vm.expectRevert("!magicValue");
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
+    }
+
+    function test_execute_manager_revert_noMagicValue() public {
+        // Use empty values - these would be filled later in test preparation
+        RawHeader memory rh;
+        SnapshotMock memory sm;
+        // Create messages and get origin proof
+        bytes memory msgPayload = createManagerMessages(lightManager.sensitiveMockFuncVoid.selector, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
+        vm.expectRevert("!magicValue");
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
+    }
+
+    function test_execute_manager_revert_magicMoreThan32Bytes() public {
+        // Use empty values - these would be filled later in test preparation
+        RawHeader memory rh;
+        SnapshotMock memory sm;
+        // Create messages and get origin proof
+        bytes memory msgPayload =
+            createManagerMessages(lightManager.sensitiveMockFuncOver32Bytes.selector, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
+        vm.expectRevert("!magicValue");
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
     }
 
     // ══════════════════════════════════════════ TESTS: INVALID RECEIPTS ══════════════════════════════════════════════
@@ -392,10 +435,12 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         createMessages(rh.nonce, msgPayload);
     }
 
-    function createManagerMessages(RawHeader memory rh, uint32 destination_) public returns (bytes memory msgPayload) {
+    function createManagerMessages(bytes4 selector, RawHeader memory rh, uint32 destination_)
+        public
+        returns (bytes memory msgPayload)
+    {
         adjustHeader(rh, destination_);
-        RawCallData memory rcd =
-            RawCallData({selector: bondingManager.remoteMockFunc.selector, args: abi.encode(rh.nonce)});
+        RawCallData memory rcd = RawCallData({selector: selector, args: abi.encode(rh.nonce)});
         msgPayload = RawMessage(uint8(MessageFlag.Manager), rh, rcd.formatCallData()).formatMessage();
         createMessages(rh.nonce, msgPayload);
     }
