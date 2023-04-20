@@ -186,4 +186,71 @@ describe('SynapseSDK', () => {
       expect(Number(gas.toString())).toBeGreaterThan(-1)
     })
   })
+  describe('get all pools', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const pools = await Synapse.getAllPools(42161)
+      expect(pools?.length).toBeGreaterThan(0)
+      console.log(pools?.[0]?.tokens?.[0])
+      expect(pools?.[0]?.tokens?.[0]?.token?.length).toBeGreaterThan(0)
+    })
+  })
+  describe('get pool info', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const poolInfo = await Synapse.getPoolInfo(
+        42161,
+        '0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40'
+      )
+      expect(poolInfo?.tokens?.toString()?.length).toBeGreaterThan(0)
+      expect(poolInfo?.lpToken?.length).toBeGreaterThan(0)
+    })
+  })
+  describe('get pool tokens', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const poolTokens = await Synapse.getPoolTokens(
+        42161,
+        '0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40'
+      )
+      expect(poolTokens?.length).toBeGreaterThan(0)
+      expect(poolTokens?.[0]?.token?.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('calculate add liquidity', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const tokenAmount = BigNumber.from('1000000')
+      const amount = await Synapse.calculateAddLiquidity(
+        42161,
+        '0xa067668661C84476aFcDc6fA5D758C4c01C34352',
+        [tokenAmount, tokenAmount]
+      )
+      console.log(amount?.toString())
+      expect(amount?.toString()?.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('calculate remove liquidity', () => {
+    it('test', async () => {
+      const chainIds = [42161]
+      const providers = [arbitrumProvider]
+      const Synapse = new SynapseSDK(chainIds, providers)
+      const amounts = await Synapse.calculateRemoveLiquidity(
+        42161,
+        '0xa067668661C84476aFcDc6fA5D758C4c01C34352',
+        BigNumber.from('1000000')
+      )
+      expect(amounts?.length).toBeGreaterThan(0)
+    })
+  })
 })
