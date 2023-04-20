@@ -61,7 +61,7 @@ describe('Landing Page (/landing)', () => {
 
   it('displays all landing page sections', () => {
     cy.fixture(WINDOW_CONSTANTS).then((fixture) => {
-      const desktop = fixture.screenWidth.desktopBreakpoint
+      const desktop = fixture.screenWidth.large
       cy.viewport(desktop.width, desktop.height)
 
       cy.get('[data-test-id="landing-hero-section"]').should('be.visible')
