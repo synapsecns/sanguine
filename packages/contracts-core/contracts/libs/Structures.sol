@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ SYSTEM CONTRACT ══════════════════════════════
 
-/// @dev Potential senders/recipients of a system message
+/// @dev All types of system contracts
 enum SystemEntity {
     Origin,
     Destination,

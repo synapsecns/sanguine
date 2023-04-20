@@ -87,7 +87,7 @@ library MessageLib {
         // Check that Flag fits into MessageFlag enum
         if (flag_ > uint8(type(MessageFlag).max)) return false;
         // Check that body is formatted according to the flag
-        // Only System/Base message flags exist
+        // Only Base/Manager message flags exist
         if (flag_ == uint8(MessageFlag.Base)) {
             // Check if body is a formatted base message
             return _body(memView).isBaseMessage();
