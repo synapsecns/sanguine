@@ -6,6 +6,7 @@ import {BaseMessageLib} from "./libs/BaseMessage.sol";
 import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
 import {MemView, MemViewLib} from "./libs/MemView.sol";
 import {HeaderLib, MessageFlag} from "./libs/Message.sol";
+import {Request, RequestLib} from "./libs/Request.sol";
 import {StateReport} from "./libs/StateReport.sol";
 import {State} from "./libs/State.sol";
 import {SystemMessageLib} from "./libs/SystemMessage.sol";
@@ -150,7 +151,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         bytes32 recipient,
         uint32 optimisticPeriod,
         bytes memory tipsPayload,
-        bytes memory requestPayload,
+        uint256 paddedRequest,
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
         // Check that content is not too large
@@ -159,12 +160,13 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         Tips tips = tipsPayload.castToTips();
         // Tips value must exactly match msg.value
         require(tips.value() == msg.value, "!tips: value");
+        Request request = RequestLib.wrapPadded(paddedRequest);
         // Format the BaseMessage body
         bytes memory body = BaseMessageLib.formatBaseMessage({
             sender_: msg.sender.addressToBytes32(),
             recipient_: recipient,
             tipsPayload: tipsPayload,
-            requestPayload: requestPayload,
+            request_: request,
             content_: content
         });
         // Send the message
