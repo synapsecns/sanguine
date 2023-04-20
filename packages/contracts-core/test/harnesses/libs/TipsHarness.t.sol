@@ -1,68 +1,62 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Tips, TipsLib, TIPS_LENGTH, MemView, MemViewLib} from "../../../contracts/libs/Tips.sol";
+import {Tips, TipsLib} from "../../../contracts/libs/Tips.sol";
 
 /**
  * @notice Exposes TipsLib methods for testing against golang.
  */
 contract TipsHarness {
-    using TipsLib for bytes;
-    using TipsLib for MemView;
-    using MemViewLib for bytes;
-
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
 
     // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
-    function castToTips(bytes memory payload) public view returns (bytes memory) {
-        // Walkaround to get the forge coverage working on libraries, see
-        // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        Tips tips = TipsLib.castToTips(payload);
-        return tips.unwrap().clone();
-    }
-
     /// @notice Returns summitTip field
-    function summitTip(bytes memory payload) public pure returns (uint64) {
-        return payload.castToTips().summitTip();
+    function summitTip(uint256 paddedTips) public pure returns (uint64) {
+        return TipsLib.wrapPadded(paddedTips).summitTip();
     }
 
     /// @notice Returns attestationTip field
-    function attestationTip(bytes memory payload) public pure returns (uint64) {
-        return payload.castToTips().attestationTip();
+    function attestationTip(uint256 paddedTips) public pure returns (uint64) {
+        return TipsLib.wrapPadded(paddedTips).attestationTip();
     }
 
     /// @notice Returns executionTip field
-    function executionTip(bytes memory payload) public pure returns (uint64) {
-        return payload.castToTips().executionTip();
+    function executionTip(uint256 paddedTips) public pure returns (uint64) {
+        return TipsLib.wrapPadded(paddedTips).executionTip();
     }
 
     /// @notice Returns deliveryTip field
-    function deliveryTip(bytes memory payload) public pure returns (uint64) {
-        return payload.castToTips().deliveryTip();
+    function deliveryTip(uint256 paddedTips) public pure returns (uint64) {
+        return TipsLib.wrapPadded(paddedTips).deliveryTip();
     }
 
     /// @notice Returns total tip amount.
-    function value(bytes memory payload) public pure returns (uint256) {
-        return payload.castToTips().value();
-    }
-
-    function isTips(bytes memory payload) public pure returns (bool) {
-        return payload.ref().isTips();
+    function value(uint256 paddedTips) public pure returns (uint256) {
+        return TipsLib.wrapPadded(paddedTips).value();
     }
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
-    function formatTips(uint64 summitTip_, uint64 attestationTip_, uint64 executionTip_, uint64 deliveryTip_)
+    function encodeTips(uint64 summitTip_, uint64 attestationTip_, uint64 executionTip_, uint64 deliveryTip_)
         public
         pure
-        returns (bytes memory)
+        returns (uint256)
     {
-        return TipsLib.formatTips(summitTip_, attestationTip_, executionTip_, deliveryTip_);
+        // Walkaround to get the forge coverage working on libraries, see
+        // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
+        Tips tips = TipsLib.encodeTips(summitTip_, attestationTip_, executionTip_, deliveryTip_);
+        return Tips.unwrap(tips);
     }
 
-    function emptyTips() public pure returns (bytes memory) {
-        return TipsLib.emptyTips();
+    function wrapPadded(uint256 paddedTips) public pure returns (uint256) {
+        return Tips.unwrap(TipsLib.wrapPadded(paddedTips));
+    }
+
+    function emptyTips() public pure returns (uint256) {
+        // TODO: figure out why this leaves `TipsLib.emptyTips()` uncovered
+        Tips tips = TipsLib.emptyTips();
+        return Tips.unwrap(tips);
     }
 }

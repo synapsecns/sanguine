@@ -1,37 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Request, RequestLib, MemView, MemViewLib} from "../../../contracts/libs/Request.sol";
+import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
 
 // solhint-disable ordering
 contract RequestHarness {
-    using RequestLib for bytes;
-    using RequestLib for MemView;
-    using MemViewLib for bytes;
-
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
 
-    // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
-
-    function castToRequest(bytes memory payload) public view returns (bytes memory) {
+    function encodeRequest(uint96 gasDrop_, uint64 gasLimit_) public pure returns (uint160) {
         // Walkaround to get the forge coverage working on libraries, see
         // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        Request request = RequestLib.castToRequest(payload);
-        return request.unwrap().clone();
+        Request request = RequestLib.encodeRequest(gasDrop_, gasLimit_);
+        return Request.unwrap(request);
     }
 
-    function isRequest(bytes memory payload) public pure returns (bool) {
-        return payload.ref().isRequest();
+    function wrapPadded(uint256 paddedRequest) public pure returns (uint160) {
+        return Request.unwrap(RequestLib.wrapPadded(paddedRequest));
     }
 
-    function gasLimit(bytes memory payload) public pure returns (uint64) {
-        return payload.castToRequest().gasLimit();
+    function gasLimit(uint256 paddedRequest) public pure returns (uint64) {
+        return RequestLib.wrapPadded(paddedRequest).gasLimit();
     }
 
-    // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
-
-    function formatRequest(uint64 gasLimit_) public pure returns (bytes memory) {
-        return RequestLib.formatRequest(gasLimit_);
+    function gasDrop(uint256 paddedRequest) public pure returns (uint96) {
+        return RequestLib.wrapPadded(paddedRequest).gasDrop();
     }
 }

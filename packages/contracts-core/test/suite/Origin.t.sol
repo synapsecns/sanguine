@@ -35,6 +35,12 @@ import {SystemRegistryTest} from "./system/SystemRegistry.t.sol";
 // solhint-disable no-empty-blocks
 // solhint-disable ordering
 contract OriginTest is SystemRegistryTest {
+    address public sender = makeAddr("Sender");
+    address public recipient = makeAddr("Recipient");
+    uint32 public period = 1 minutes;
+    RawTips public tips = RawTips(0, 0, 0, 0);
+    RawRequest public request = RawRequest({gasLimit: 100_000, gasDrop: 0});
+
     // Deploy Production version of Origin and mocks for everything else
     constructor() SynapseTest(DEPLOY_PROD_ORIGIN) {}
 
@@ -55,17 +61,14 @@ contract OriginTest is SystemRegistryTest {
     }
 
     function test_sendMessages() public {
-        address sender = makeAddr("Sender");
-        address recipient = makeAddr("Recipient");
-        uint32 period = 1 minutes;
-        bytes memory tipsPayload = TipsLib.emptyTips();
-        bytes memory requestPayload = RawRequest(100_000).formatRequest();
+        uint256 encodedTips = tips.encodeTips();
+        uint160 encodedRequest = request.encodeRequest();
         bytes memory content = "test content";
         bytes memory body = RawBaseMessage({
             sender: addressToBytes32(sender),
             recipient: addressToBytes32(recipient),
-            tips: RawTips(0, 0, 0, 0),
-            request: RawRequest(100_000),
+            tips: tips,
+            request: request,
             content: content
         }).formatBaseMessage();
         bytes[] memory messages = new bytes[](MESSAGES);
@@ -100,7 +103,7 @@ contract OriginTest is SystemRegistryTest {
         for (uint32 i = 0; i < MESSAGES; ++i) {
             vm.prank(sender);
             (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).sendBaseMessage(
-                DOMAIN_REMOTE, addressToBytes32(recipient), period, tipsPayload, requestPayload, content
+                DOMAIN_REMOTE, addressToBytes32(recipient), period, encodedTips, encodedRequest, content
             );
             // Check return values
             assertEq(messageNonce, i + 1, "!messageNonce");
@@ -333,7 +336,6 @@ contract OriginTest is SystemRegistryTest {
     // ════════════════════════════════════════════ TEST: WITHDRAW TIPS ════════════════════════════════════════════════
 
     function test_withdrawTips(uint256 amount) public {
-        address recipient = makeAddr("Tip recipient");
         vm.deal(origin, amount);
         vm.prank(address(lightManager));
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
@@ -343,7 +345,6 @@ contract OriginTest is SystemRegistryTest {
     function test_remoteWithdrawTips_revert_insufficientBalance(uint256 balance, uint256 amount) public {
         amount = bound(amount, 1, type(uint256).max);
         balance = balance % amount;
-        address recipient = makeAddr("Tip recipient");
         vm.deal(origin, balance);
         vm.expectRevert("Insufficient balance");
         vm.prank(address(lightManager));
@@ -351,11 +352,11 @@ contract OriginTest is SystemRegistryTest {
     }
 
     function test_withdrawTips_revert_recipientReverted(uint256 amount) public {
-        address recipient = address(new RevertingApp());
+        address revertingRecipient = address(new RevertingApp());
         vm.deal(origin, amount);
         vm.expectRevert("Recipient reverted");
         vm.prank(address(lightManager));
-        InterfaceOrigin(origin).withdrawTips(recipient, amount);
+        InterfaceOrigin(origin).withdrawTips(revertingRecipient, amount);
     }
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════

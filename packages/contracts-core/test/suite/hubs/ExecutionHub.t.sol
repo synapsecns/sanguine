@@ -367,7 +367,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     }
 
     function verify_receipt_valid(bytes memory receiptBody, RawTips memory rt) public {
-        bytes memory rcptPayload = abi.encodePacked(receiptBody, rt.formatTips());
+        bytes memory rcptPayload = abi.encodePacked(receiptBody, rt.encodeTips());
         assertTrue(testedEH().isValidReceipt(rcptPayload));
     }
 

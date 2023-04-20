@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {Receipt, ReceiptBody, ReceiptLib, MemView, MemViewLib} from "../../../contracts/libs/Receipt.sol";
+import {Receipt, ReceiptBody, ReceiptLib, Tips, MemView, MemViewLib} from "../../../contracts/libs/Receipt.sol";
 
 // solhint-disable ordering
 contract ReceiptHarness {
@@ -84,8 +84,8 @@ contract ReceiptHarness {
     }
 
     /// @notice Returns Receipt's tips field
-    function tips(bytes memory payload) public view returns (bytes memory) {
-        return payload.castToReceipt().tips().unwrap().clone();
+    function tips(bytes memory payload) public pure returns (uint256) {
+        return Tips.unwrap(payload.castToReceipt().tips());
     }
 
     function isReceipt(bytes memory payload) public pure returns (bool) {
@@ -109,7 +109,7 @@ contract ReceiptHarness {
         );
     }
 
-    function formatReceipt(bytes memory bodyPayload, bytes memory tipsPayload) public pure returns (bytes memory) {
-        return ReceiptLib.formatReceipt(bodyPayload, tipsPayload);
+    function formatReceipt(bytes memory bodyPayload, Tips tips_) public pure returns (bytes memory) {
+        return ReceiptLib.formatReceipt(bodyPayload, tips_);
     }
 }

@@ -20,7 +20,7 @@ abstract contract ExecutionHubEvents {
     /**
      * @notice Emitted when message tips are recorded.
      * @param messageHash   The keccak256 hash of the message that was executed
-     * @param tipsPayload   Raw payload with tips paid for the off-chain agents
+     * @param paddedTips    Padded encoded paid tips information
      */
-    event TipsRecorded(bytes32 messageHash, bytes tipsPayload);
+    event TipsRecorded(bytes32 messageHash, uint256 paddedTips);
 }

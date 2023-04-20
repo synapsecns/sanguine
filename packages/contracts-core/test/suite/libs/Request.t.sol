@@ -18,30 +18,16 @@ contract RequestLibraryTest is SynapseLibraryTest {
         libHarness = new RequestHarness();
     }
 
-    function test_formatRequest(RawRequest memory rs) public {
-        bytes memory payload = libHarness.formatRequest(rs.gasLimit);
-        // Test formatting of request
-        assertEq(payload, abi.encodePacked(rs.gasLimit), "!formatRequest");
-        checkCastToRequest({payload: payload, isRequest: true});
-        // Test getters
-        assertEq(libHarness.gasLimit(payload), rs.gasLimit, "!gasLimit");
+    function test_encodeRequest(RawRequest memory rr) public {
+        uint160 encoded = libHarness.encodeRequest(rr.gasDrop, rr.gasLimit);
+        uint256 expected = rr.gasLimit + uint256(rr.gasDrop) * 2 ** 64;
+        assertEq(encoded, expected, "!encodeRequest");
+        assertEq(libHarness.wrapPadded(encoded), expected, "!wrapPadded");
+        assertEq(libHarness.gasLimit(encoded), rr.gasLimit, "!gasLimit");
+        assertEq(libHarness.gasDrop(encoded), rr.gasDrop, "!gasDrop");
     }
 
-    function test_isRequest(uint8 length) public {
-        bytes memory payload = new bytes(length);
-        checkCastToRequest({payload: payload, isRequest: length == REQUEST_LENGTH});
-    }
-
-    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
-
-    function checkCastToRequest(bytes memory payload, bool isRequest) public {
-        if (isRequest) {
-            assertTrue(libHarness.isRequest(payload), "!isRequest: when valid");
-            assertEq(libHarness.castToRequest(payload), payload, "!castToRequest: when valid");
-        } else {
-            assertFalse(libHarness.isRequest(payload), "!isRequest: when valid");
-            vm.expectRevert("Not a request");
-            libHarness.castToRequest(payload);
-        }
+    function test_requestLength(RawRequest memory rr) public {
+        assertEq(abi.encodePacked(libHarness.encodeRequest(rr.gasDrop, rr.gasLimit)).length, REQUEST_LENGTH);
     }
 }

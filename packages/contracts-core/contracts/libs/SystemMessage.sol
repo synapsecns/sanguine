@@ -5,26 +5,28 @@ import {ByteString, CallData} from "./ByteString.sol";
 import {SystemEntity} from "./Structures.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
-/// @dev SystemMessage is a memory view over the message with instructions for a system call.
+/// SystemMessage is a memory view over the message with instructions for a system call.
 type SystemMessage is uint256;
 
-/// @dev Attach library functions to SystemMessage
 using SystemMessageLib for SystemMessage global;
 
+/// SystemMessage structure represents a message sent by one of the messaging contracts
+/// with instructions for a system call.
+/// > See SystemRouter.sol for clarifications about the remote system calls.
+/// Note: calldata does not include the security arguments, these are added by SystemRouter on destination chain.
+///
+/// # SystemMessage memory layout
+///
+/// | Position   | Field     | Type  | Bytes | Description                                              |
+/// | ---------- | --------- | ----- | ----- | -------------------------------------------------------- |
+/// | [000..001) | sender    | uint8 | 1     | SystemEntity that sent the message on origin chain       |
+/// | [001..002) | recipient | uint8 | 1     | SystemEntity to receive the message on destination chain |
+/// | [002..END) | calldata  | bytes | ??    | Raw bytes of payload to call system recipient            |
 library SystemMessageLib {
     using MemViewLib for bytes;
     using ByteString for MemView;
 
-    /**
-     * @dev SystemMessage memory layout
-     * Note: calldata does not include the security arguments, these are added by SystemRouter on destination chain.
-     * [000 .. 001): sender         uint8   1 byte      SystemEntity that sent the message on origin chain
-     * [001 .. 002): recipient      uint8   1 byte      SystemEntity to receive the message on destination chain
-     * [002 .. END]: calldata       bytes   ? bytes     Raw bytes of payload to call system recipient
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
-
+    /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_SENDER = 0;
     uint256 private constant OFFSET_RECIPIENT = 1;
     uint256 private constant OFFSET_CALLDATA = 2;
@@ -33,8 +35,8 @@ library SystemMessageLib {
 
     /**
      * @notice Returns a formatted SystemMessage payload with provided fields.
-     * @param sender_           System Contract that sent receive message
-     * @param recipient_        System Contract to receive message
+     * @param sender_           System Contract that sent a system message
+     * @param recipient_        System Contract to receive a system message
      * @param callData_         Raw bytes with calldata payload
      * @return Formatted SystemMessage payload.
      */
@@ -73,9 +75,8 @@ library SystemMessageLib {
         if (_sender(memView) > uint8(type(SystemEntity).max)) return false;
         // Check if recipient fits into SystemEntity enum
         if (_recipient(memView) > uint8(type(SystemEntity).max)) return false;
-        MemView callDataView = _callData(memView);
         // Check that "calldata" field is a proper calldata
-        return callDataView.isCallData();
+        return _callData(memView).isCallData();
     }
 
     /// @notice Convenience shortcut for unwrapping a view.
@@ -87,27 +88,21 @@ library SystemMessageLib {
 
     /// @notice Returns system message's recipient.
     function sender(SystemMessage systemMessage) internal pure returns (SystemEntity) {
-        // Get the underlying memory view
-        MemView memView = systemMessage.unwrap();
         // We check that sender fits into enum, when payload is wrapped
         // into SystemMessage, so this never reverts
-        return SystemEntity(_sender(memView));
+        return SystemEntity(_sender(systemMessage.unwrap()));
     }
 
     /// @notice Returns system message's recipient.
     function recipient(SystemMessage systemMessage) internal pure returns (SystemEntity) {
-        // Get the underlying memory view
-        MemView memView = systemMessage.unwrap();
         // We check that recipient fits into enum, when payload is wrapped
         // into SystemMessage, so this never reverts
-        return SystemEntity(_recipient(memView));
+        return SystemEntity(_recipient(systemMessage.unwrap()));
     }
 
     /// @notice Returns typed memory view over the calldata used in the system message.
     function callData(SystemMessage systemMessage) internal pure returns (CallData) {
-        // Get the underlying memory view
-        MemView memView = systemMessage.unwrap();
-        return _callData(memView).castToCallData();
+        return _callData(systemMessage.unwrap()).castToCallData();
     }
 
     // ══════════════════════════════════════════════ PRIVATE HELPERS ══════════════════════════════════════════════════

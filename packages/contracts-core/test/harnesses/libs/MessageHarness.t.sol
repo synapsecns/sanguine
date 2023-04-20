@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {Message, MessageFlag, MessageLib, MemView, MemViewLib} from "../../../contracts/libs/Message.sol";
+import {Header, Message, MessageFlag, MessageLib, MemView, MemViewLib} from "../../../contracts/libs/Message.sol";
 
 // solhint-disable ordering
 /**
@@ -29,8 +29,8 @@ contract MessageHarness {
         return payload.castToMessage().flag();
     }
 
-    function header(bytes memory payload) public view returns (bytes memory) {
-        return payload.castToMessage().header().unwrap().clone();
+    function header(bytes memory payload) public pure returns (uint128) {
+        return Header.unwrap(payload.castToMessage().header());
     }
 
     function body(bytes memory payload) public view returns (bytes memory) {
@@ -47,11 +47,7 @@ contract MessageHarness {
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
-    function formatMessage(MessageFlag flag_, bytes memory header_, bytes memory body_)
-        public
-        pure
-        returns (bytes memory)
-    {
+    function formatMessage(MessageFlag flag_, Header header_, bytes memory body_) public pure returns (bytes memory) {
         return MessageLib.formatMessage(flag_, header_, body_);
     }
 }

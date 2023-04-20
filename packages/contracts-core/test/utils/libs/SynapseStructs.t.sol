@@ -28,6 +28,7 @@ struct RawHeader {
 using CastLib for RawHeader global;
 
 struct RawRequest {
+    uint96 gasDrop;
     uint64 gasLimit;
 }
 
@@ -166,16 +167,13 @@ library CastLib {
     using AttestationReportLib for bytes;
     using ByteString for bytes;
     using BaseMessageLib for bytes;
-    using HeaderLib for bytes;
     using MessageLib for bytes;
     using ReceiptLib for bytes;
     using ReceiptReportLib for bytes;
-    using RequestLib for bytes;
     using SnapshotLib for bytes;
     using StateLib for bytes;
     using StateReportLib for bytes;
     using SystemMessageLib for bytes;
-    using TipsLib for bytes;
 
     /// @notice Prevents this contract from being included in the coverage report
     function testCastLib() external {}
@@ -185,15 +183,19 @@ library CastLib {
     function formatMessage(RawMessage memory rm) internal pure returns (bytes memory msgPayload) {
         // Explicit revert when out of range
         require(rm.flag <= uint8(type(MessageFlag).max), "Flag out of range");
-        return MessageLib.formatMessage(MessageFlag(rm.flag), rm.header.formatHeader(), rm.body);
+        return MessageLib.formatMessage(MessageFlag(rm.flag), rm.header.castToHeader(), rm.body);
     }
 
     function castToMessage(RawMessage memory rm) internal pure returns (Message ptr) {
         ptr = rm.formatMessage().castToMessage();
     }
 
-    function formatHeader(RawHeader memory rh) internal pure returns (bytes memory header) {
-        header = HeaderLib.formatHeader({
+    function encodeHeader(RawHeader memory rh) internal pure returns (uint128 encodedHeader) {
+        encodedHeader = Header.unwrap(rh.castToHeader());
+    }
+
+    function castToHeader(RawHeader memory rh) internal pure returns (Header header) {
+        header = HeaderLib.encodeHeader({
             origin_: rh.origin,
             nonce_: rh.nonce,
             destination_: rh.destination,
@@ -201,25 +203,16 @@ library CastLib {
         });
     }
 
-    function castToHeader(RawHeader memory rh) internal pure returns (Header ptr) {
-        ptr = rh.formatHeader().castToHeader();
+    function encodeRequest(RawRequest memory rr) internal pure returns (uint160 encodedReq) {
+        encodedReq = Request.unwrap(rr.castToRequest());
     }
 
-    function formatRequest(RawRequest memory rr) internal pure returns (bytes memory request) {
-        request = RequestLib.formatRequest({gasLimit_: rr.gasLimit});
+    function castToRequest(RawRequest memory rr) internal pure returns (Request request) {
+        request = RequestLib.encodeRequest({gasDrop_: rr.gasDrop, gasLimit_: rr.gasLimit});
     }
 
-    function castToRequest(RawRequest memory rr) internal pure returns (Request ptr) {
-        ptr = rr.formatRequest().castToRequest();
-    }
-
-    function formatTips(RawTips memory rt) internal pure returns (bytes memory tipsPayload) {
-        tipsPayload = TipsLib.formatTips({
-            summitTip_: rt.summitTip,
-            attestationTip_: rt.attestationTip,
-            executionTip_: rt.executionTip,
-            deliveryTip_: rt.deliveryTip
-        });
+    function encodeTips(RawTips memory rt) internal pure returns (uint256 encodedTips) {
+        encodedTips = Tips.unwrap(rt.castToTips());
     }
 
     function boundTips(RawTips memory rt, uint64 maxTipValue) internal pure {
@@ -243,16 +236,21 @@ library CastLib {
         crt.deliveryTip = rt.deliveryTip;
     }
 
-    function castToTips(RawTips memory rt) internal pure returns (Tips ptr) {
-        ptr = rt.formatTips().castToTips();
+    function castToTips(RawTips memory rt) internal pure returns (Tips tips) {
+        tips = TipsLib.encodeTips({
+            summitTip_: rt.summitTip,
+            attestationTip_: rt.attestationTip,
+            executionTip_: rt.executionTip,
+            deliveryTip_: rt.deliveryTip
+        });
     }
 
     function formatBaseMessage(RawBaseMessage memory rbm) internal pure returns (bytes memory bmPayload) {
         bmPayload = BaseMessageLib.formatBaseMessage({
             sender_: rbm.sender,
             recipient_: rbm.recipient,
-            tipsPayload: rbm.tips.formatTips(),
-            requestPayload: rbm.request.formatRequest(),
+            tips_: rbm.tips.castToTips(),
+            request_: rbm.request.castToRequest(),
             content_: rbm.content
         });
     }
@@ -318,7 +316,7 @@ library CastLib {
     }
 
     function formatReceipt(RawExecReceipt memory re) internal pure returns (bytes memory) {
-        return ReceiptLib.formatReceipt(re.body.formatReceiptBody(), re.tips.formatTips());
+        return ReceiptLib.formatReceipt(re.body.formatReceiptBody(), re.tips.castToTips());
     }
 
     function castToReceipt(RawExecReceipt memory re) internal pure returns (Receipt) {

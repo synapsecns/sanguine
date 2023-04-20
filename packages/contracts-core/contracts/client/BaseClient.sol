@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+// ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
+import {Request} from "../libs/Request.sol";
+import {Tips} from "../libs/Tips.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
@@ -74,20 +77,15 @@ abstract contract BaseClient is IMessageRecipient {
     /**
      * @dev Sends a message to given destination chain.
      * @param destination_          Domain of the destination chain
-     * @param tipsPayload           Payload with information about paid tips
-     * @param requestPayload        Payload with message execution request on destination chain
+     * @param tips                  Encoded information about paid tips
+     * @param request               Encoded message execution request on destination chain
      * @param content               The message content
      */
-    function _sendBaseMessage(
-        uint32 destination_,
-        bytes memory tipsPayload,
-        bytes memory requestPayload,
-        bytes memory content
-    ) internal {
+    function _sendBaseMessage(uint32 destination_, Tips tips, Request request, bytes memory content) internal {
         bytes32 recipient = trustedSender(destination_);
         require(recipient != bytes32(0), "BaseClient: !recipient");
         InterfaceOrigin(origin).sendBaseMessage{value: msg.value}(
-            destination_, recipient, optimisticPeriod(), tipsPayload, requestPayload, content
+            destination_, recipient, optimisticPeriod(), Tips.unwrap(tips), Request.unwrap(request), content
         );
     }
 }

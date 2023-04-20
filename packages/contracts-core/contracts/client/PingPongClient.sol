@@ -2,8 +2,8 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {RequestLib} from "../libs/Request.sol";
-import {TipsLib} from "../libs/Tips.sol";
+import {Request, RequestLib} from "../libs/Request.sol";
+import {Tips, TipsLib} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
@@ -134,12 +134,12 @@ contract PingPongClient is IMessageRecipient {
      * @param message   Ping-pong message
      */
     function _sendMessage(uint32 destination_, bytes32 recipient, PingPongMessage memory message) internal {
-        bytes memory tipsPayload = TipsLib.emptyTips();
+        Tips tips = TipsLib.emptyTips();
         // TODO: figure out the logic for a ping-pong test
-        bytes memory requestPayload = RequestLib.formatRequest(0);
+        Request request = RequestLib.encodeRequest(0, 0);
         bytes memory content = abi.encode(message);
         InterfaceOrigin(origin).sendBaseMessage(
-            destination_, recipient, optimisticPeriod(), tipsPayload, requestPayload, content
+            destination_, recipient, optimisticPeriod(), Tips.unwrap(tips), Request.unwrap(request), content
         );
     }
 
