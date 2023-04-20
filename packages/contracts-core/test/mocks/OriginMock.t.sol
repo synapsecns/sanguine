@@ -15,7 +15,7 @@ contract OriginMock is StateHubMock, SystemRegistryMock, SystemContractMock, Int
         uint32 destination,
         bytes32 recipient,
         uint32 optimisticPeriod,
-        bytes memory tipsPayload,
+        uint256 paddedTips,
         uint256 paddedRequest,
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {}

@@ -150,14 +150,13 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         uint32 destination,
         bytes32 recipient,
         uint32 optimisticPeriod,
-        bytes memory tipsPayload,
+        uint256 paddedTips,
         uint256 paddedRequest,
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
         // Check that content is not too large
         require(content.length <= MAX_CONTENT_BYTES, "content too long");
-        // This will revert if payload is not a formatted tips payload
-        Tips tips = tipsPayload.castToTips();
+        Tips tips = TipsLib.wrapPadded(paddedTips);
         // Tips value must exactly match msg.value
         require(tips.value() == msg.value, "!tips: value");
         Request request = RequestLib.wrapPadded(paddedRequest);
@@ -165,7 +164,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         bytes memory body = BaseMessageLib.formatBaseMessage({
             sender_: msg.sender.addressToBytes32(),
             recipient_: recipient,
-            tipsPayload: tipsPayload,
+            tips_: tips,
             request_: request,
             content_: content
         });
