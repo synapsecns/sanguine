@@ -20,13 +20,13 @@ using BaseMessageLib for BaseMessage global;
 ///
 /// # Memory layout of BaseMessage fields
 ///
-/// | Position   | Field     | Type    | Bytes | Description                                        |
-/// | ---------- | --------- | ------- | ----- | -------------------------------------------------- |
-/// | [000..032) | sender    | bytes32 | 32    | Sender address on origin chain                     |
-/// | [032..064) | recipient | bytes32 | 32    | Recipient address on destination chain             |
-/// | [064..096) | tips      | bytes   | 32    | Tips paid on origin chain                          |
-/// | [096..104) | request   | bytes   | 8     | Request for message execution on destination chain |
-/// | [104..AAA) | content   | bytes   | ??    | Content to be passed to recipient                  |
+/// | Position   | Field     | Type    | Bytes | Description                            |
+/// | ---------- | --------- | ------- | ----- | -------------------------------------- |
+/// | [000..032) | sender    | bytes32 | 32    | Sender address on origin chain         |
+/// | [032..064) | recipient | bytes32 | 32    | Recipient address on destination chain |
+/// | [064..096) | tips      | bytes   | 32    | Tips paid on origin chain              |
+/// | [096..116) | request   | uint160 | 20    | Encoded request for message execution  |
+/// | [104..AAA) | content   | bytes   | ??    | Content to be passed to recipient      |
 library BaseMessageLib {
     using MemViewLib for bytes;
     using RequestLib for MemView;
@@ -46,6 +46,7 @@ library BaseMessageLib {
      * @param sender_       Sender address on origin chain
      * @param recipient_    Recipient address on destination chain
      * @param tipsPayload   Formatted payload with tips information
+     * @param request_      Encoded request for message execution
      * @param content_      Raw content to be passed to recipient on destination chain
      * @return Formatted base message
      */
@@ -53,10 +54,10 @@ library BaseMessageLib {
         bytes32 sender_,
         bytes32 recipient_,
         bytes memory tipsPayload,
-        bytes memory requestPayload,
+        Request request_,
         bytes memory content_
     ) internal pure returns (bytes memory) {
-        return abi.encodePacked(sender_, recipient_, tipsPayload, requestPayload, content_);
+        return abi.encodePacked(sender_, recipient_, tipsPayload, request_, content_);
     }
 
     /**
@@ -81,9 +82,7 @@ library BaseMessageLib {
         // Check if sender, recipient, tips fields exist
         if (memView.len() < OFFSET_CONTENT) return false;
         // Check if tips payload is formatted
-        if (!_tips(memView).isTips()) return false;
-        // Check if tips payload is formatted
-        return _request(memView).isRequest();
+        return _tips(memView).isTips();
         // Content could be empty, so we don't check that
     }
 
@@ -111,11 +110,9 @@ library BaseMessageLib {
         return _tips(baseMessage.unwrap()).castToTips();
     }
 
-    /// @notice Returns a typed memory view over the payload with request for message execution on destination chain.
+    /// @notice Returns an encoded request for message execution on destination chain.
     function request(BaseMessage baseMessage) internal pure returns (Request) {
-        // We check that request payload is properly formatted, when the whole payload is wrapped
-        // into BaseMessage, so this never reverts.
-        return _request(baseMessage.unwrap()).castToRequest();
+        return RequestLib.wrapPadded((baseMessage.unwrap().indexUint({index_: OFFSET_REQUEST, bytes_: 20})));
     }
 
     /// @notice Returns an untyped memory view over the content to be passed to recipient.
@@ -129,11 +126,5 @@ library BaseMessageLib {
     /// if the whole payload or the tips are properly formatted.
     function _tips(MemView memView) private pure returns (MemView) {
         return memView.slice({index_: OFFSET_TIPS, len_: TIPS_LENGTH});
-    }
-
-    /// @dev Returns an untyped memory view over the request field without checking
-    /// if the whole payload or the request are properly formatted.
-    function _request(MemView memView) private pure returns (MemView) {
-        return memView.slice({index_: OFFSET_REQUEST, len_: REQUEST_LENGTH});
     }
 }

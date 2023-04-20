@@ -28,6 +28,7 @@ struct RawHeader {
 using CastLib for RawHeader global;
 
 struct RawRequest {
+    uint96 gasDrop;
     uint64 gasLimit;
 }
 
@@ -205,12 +206,12 @@ library CastLib {
         ptr = rh.formatHeader().castToHeader();
     }
 
-    function formatRequest(RawRequest memory rr) internal pure returns (bytes memory request) {
-        request = RequestLib.formatRequest({gasLimit_: rr.gasLimit});
+    function encodeRequest(RawRequest memory rr) internal pure returns (uint160 encodedReq) {
+        encodedReq = Request.unwrap(rr.castToRequest());
     }
 
-    function castToRequest(RawRequest memory rr) internal pure returns (Request ptr) {
-        ptr = rr.formatRequest().castToRequest();
+    function castToRequest(RawRequest memory rr) internal pure returns (Request request) {
+        request = RequestLib.encodeRequest({gasDrop_: rr.gasDrop, gasLimit_: rr.gasLimit});
     }
 
     function formatTips(RawTips memory rt) internal pure returns (bytes memory tipsPayload) {
@@ -252,7 +253,7 @@ library CastLib {
             sender_: rbm.sender,
             recipient_: rbm.recipient,
             tipsPayload: rbm.tips.formatTips(),
-            requestPayload: rbm.request.formatRequest(),
+            request_: rbm.request.castToRequest(),
             content_: rbm.content
         });
     }

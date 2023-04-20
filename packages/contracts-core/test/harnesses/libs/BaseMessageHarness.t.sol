@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-import {BaseMessage, BaseMessageLib, MemView, MemViewLib} from "../../../contracts/libs/BaseMessage.sol";
+import {BaseMessage, BaseMessageLib, MemView, MemViewLib, Request} from "../../../contracts/libs/BaseMessage.sol";
 
 // solhint-disable ordering
 /**
@@ -41,8 +41,8 @@ contract BaseMessageHarness {
     }
 
     /// @notice Returns baseMessage's request field
-    function request(bytes memory payload) public view returns (bytes memory) {
-        return payload.castToBaseMessage().request().unwrap().clone();
+    function request(bytes memory payload) public pure returns (uint160) {
+        return Request.unwrap(payload.castToBaseMessage().request());
     }
 
     /// @notice Returns baseMessage's content field
@@ -60,9 +60,9 @@ contract BaseMessageHarness {
         bytes32 sender_,
         bytes32 recipient_,
         bytes memory tipsPayload,
-        bytes memory requestPayload,
+        Request request_,
         bytes memory content_
     ) public pure returns (bytes memory) {
-        return BaseMessageLib.formatBaseMessage(sender_, recipient_, tipsPayload, requestPayload, content_);
+        return BaseMessageLib.formatBaseMessage(sender_, recipient_, tipsPayload, request_, content_);
     }
 }

@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {BaseMessageHarness} from "../../harnesses/libs/BaseMessageHarness.t.sol";
 
-import {RawBaseMessage} from "../../utils/libs/SynapseStructs.t.sol";
+import {RawBaseMessage, Request} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract BaseMessageLibraryTest is SynapseLibraryTest {
@@ -20,13 +20,14 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
 
     function test_formatBaseMessage(RawBaseMessage memory rbm) public {
         bytes memory tipsPayload = rbm.tips.formatTips();
-        bytes memory requestPayload = rbm.request.formatRequest();
+        Request request = rbm.request.castToRequest();
+        uint160 encodedRequest = rbm.request.encodeRequest();
         // Test formatting
         bytes memory payload =
-            libHarness.formatBaseMessage(rbm.sender, rbm.recipient, tipsPayload, requestPayload, rbm.content);
+            libHarness.formatBaseMessage(rbm.sender, rbm.recipient, tipsPayload, request, rbm.content);
         assertEq(
             payload,
-            abi.encodePacked(rbm.sender, rbm.recipient, tipsPayload, requestPayload, rbm.content),
+            abi.encodePacked(rbm.sender, rbm.recipient, tipsPayload, encodedRequest, rbm.content),
             "!formatBaseMessage"
         );
         // Test formatting checker
@@ -35,7 +36,7 @@ contract BaseMessageLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.sender(payload), rbm.sender, "!sender");
         assertEq(libHarness.recipient(payload), rbm.recipient, "!recipient");
         assertEq(libHarness.tips(payload), tipsPayload, "!tips");
-        assertEq(libHarness.request(payload), requestPayload, "!request");
+        assertEq(libHarness.request(payload), encodedRequest, "!request");
         assertEq(libHarness.content(payload), rbm.content, "!content");
     }
 
