@@ -31,7 +31,7 @@ library RequestLib {
 
     /// @notice Wraps the padded encoded request into a Request-typed value.
     /// @dev The "padded" request is simply an encoded request casted to uint256 (highest bits are set to zero).
-    /// Casting to uint256 is done automatically y Solidity, so no extra actions from consumers are needed.
+    /// Casting to uint256 is done automatically in Solidity, so no extra actions from consumers are needed.
     /// The highest bits are discarded, so that the contracts dealing with encoded requests
     /// don't need to be updated, if a new field is added.
     function wrapPadded(uint256 paddedRequest) internal pure returns (Request) {
