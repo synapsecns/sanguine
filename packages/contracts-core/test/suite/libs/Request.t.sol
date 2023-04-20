@@ -18,12 +18,16 @@ contract RequestLibraryTest is SynapseLibraryTest {
         libHarness = new RequestHarness();
     }
 
-    function test_encodeRequest(RawRequest memory rs) public {
-        uint256 encoded = libHarness.encodeRequest(rs.gasDrop, rs.gasLimit);
-        uint256 expected = rs.gasLimit + uint256(rs.gasDrop) * 2 ** 64;
+    function test_encodeRequest(RawRequest memory rr) public {
+        uint160 encoded = libHarness.encodeRequest(rr.gasDrop, rr.gasLimit);
+        uint256 expected = rr.gasLimit + uint256(rr.gasDrop) * 2 ** 64;
         assertEq(encoded, expected, "!encodeRequest");
         assertEq(libHarness.wrapPadded(encoded), expected, "!wrapPadded");
-        assertEq(libHarness.gasLimit(encoded), rs.gasLimit, "!gasLimit");
-        assertEq(libHarness.gasDrop(encoded), rs.gasDrop, "!gasDrop");
+        assertEq(libHarness.gasLimit(encoded), rr.gasLimit, "!gasLimit");
+        assertEq(libHarness.gasDrop(encoded), rr.gasDrop, "!gasDrop");
+    }
+
+    function test_requestLength(RawRequest memory rr) public {
+        assertEq(abi.encodePacked(libHarness.encodeRequest(rr.gasDrop, rr.gasLimit)).length, REQUEST_LENGTH);
     }
 }

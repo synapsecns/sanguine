@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {HEADER_LENGTH} from "../../../contracts/libs/Constants.sol";
+
 import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
 import {HeaderHarness} from "../../harnesses/libs/HeaderHarness.t.sol";
 
@@ -14,9 +16,7 @@ contract HeaderLibraryTest is SynapseLibraryTest {
         libHarness = new HeaderHarness();
     }
 
-    // ═════════════════════════════════════════════ TESTS: FORMATTING ═════════════════════════════════════════════════
-
-    function test_formatHeader(RawHeader memory rh) public {
+    function test_encodeHeader(RawHeader memory rh) public {
         // Test encoding
         uint128 encoded = libHarness.encodeHeader(rh.origin, rh.nonce, rh.destination, rh.optimisticPeriod);
         uint256 expected = uint256(rh.origin) * 2 ** 96 + uint256(rh.nonce) * 2 ** 64
@@ -28,5 +28,12 @@ contract HeaderLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.nonce(encoded), rh.nonce, "!nonce");
         assertEq(libHarness.destination(encoded), rh.destination, "!destination");
         assertEq(libHarness.optimisticPeriod(encoded), rh.optimisticPeriod, "!optimisticPeriod");
+    }
+
+    function test_headerLength(RawHeader memory rh) public {
+        assertEq(
+            abi.encodePacked(libHarness.encodeHeader(rh.origin, rh.nonce, rh.destination, rh.optimisticPeriod)).length,
+            HEADER_LENGTH
+        );
     }
 }
