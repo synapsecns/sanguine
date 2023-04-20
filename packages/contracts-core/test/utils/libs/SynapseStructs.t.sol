@@ -248,7 +248,7 @@ library CastLib {
         ptr = rbm.formatBaseMessage().castToBaseMessage();
     }
 
-    // ══════════════════════════════════════════════ SYSTEM MESSAGE ═══════════════════════════════════════════════════
+    // ══════════════════════════════════════════════ MANAGER MESSAGE ══════════════════════════════════════════════════
 
     function formatCallData(RawCallData memory rcd) internal pure returns (bytes memory cdPayload) {
         // Explicit revert when args are not taking whole amount of words
