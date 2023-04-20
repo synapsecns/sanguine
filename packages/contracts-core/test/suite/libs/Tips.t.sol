@@ -6,6 +6,8 @@ import {TipsHarness} from "../../harnesses/libs/TipsHarness.t.sol";
 
 import {TIPS_MULTIPLIER, TIPS_LENGTH} from "../../../contracts/libs/Constants.sol";
 
+import {RawTips} from "../../utils/libs/SynapseStructs.t.sol";
+
 // solhint-disable func-name-mixedcase
 contract TipsLibraryTest is SynapseLibraryTest {
     using MemViewLib for bytes;
@@ -16,39 +18,33 @@ contract TipsLibraryTest is SynapseLibraryTest {
         libHarness = new TipsHarness();
     }
 
-    // ═════════════════════════════════════════════ TESTS: FORMATTING ═════════════════════════════════════════════════
-
-    function test_formatTips(uint64 summitTip, uint64 attestationTip, uint64 executionTip, uint64 deliveryTip) public {
-        uint256 totalTips = uint256(summitTip) + attestationTip + executionTip + deliveryTip;
+    function test_encodeTips(RawTips memory rt) public {
+        uint256 totalTips = uint256(rt.summitTip) + rt.attestationTip + rt.executionTip + rt.deliveryTip;
         vm.assume(totalTips <= type(uint64).max);
-        // Test formatting
-        bytes memory payload = libHarness.formatTips(summitTip, attestationTip, executionTip, deliveryTip);
-        assertEq(payload, abi.encodePacked(summitTip, attestationTip, executionTip, deliveryTip), "!formatTips");
-        // Test formatting checker
-        checkCastToTips({payload: payload, isTips: true});
+        // Test encoding
+        uint256 encodedTips = libHarness.encodeTips(rt.summitTip, rt.attestationTip, rt.executionTip, rt.deliveryTip);
+        uint256 expected = uint256(rt.summitTip) * 2 ** 192 + uint256(rt.attestationTip) * 2 ** 128
+            + uint256(rt.executionTip) * 2 ** 64 + uint256(rt.deliveryTip);
+        assertEq(encodedTips, expected, "!encodeTips");
+        assertEq(libHarness.wrapPadded(encodedTips), expected, "!wrapPadded");
         // Test getters
-        assertEq(libHarness.summitTip(payload), summitTip, "!summitTip");
-        assertEq(libHarness.attestationTip(payload), attestationTip, "!attestationTip");
-        assertEq(libHarness.executionTip(payload), executionTip, "!executionTip");
-        assertEq(libHarness.deliveryTip(payload), deliveryTip, "!deliveryTip");
-        assertEq(libHarness.value(payload), totalTips * TIPS_MULTIPLIER, "!totalTips");
+        assertEq(libHarness.summitTip(encodedTips), rt.summitTip, "!summitTip");
+        assertEq(libHarness.attestationTip(encodedTips), rt.attestationTip, "!attestationTip");
+        assertEq(libHarness.executionTip(encodedTips), rt.executionTip, "!executionTip");
+        assertEq(libHarness.deliveryTip(encodedTips), rt.deliveryTip, "!deliveryTip");
+        assertEq(libHarness.value(encodedTips), totalTips * TIPS_MULTIPLIER, "!totalTips");
     }
 
-    function test_isTips(uint8 length) public {
-        bytes memory payload = new bytes(length);
-        checkCastToTips({payload: payload, isTips: length == TIPS_LENGTH});
+    function test_emptyTips() public {
+        test_encodeTips(RawTips(0, 0, 0, 0));
+        assertEq(libHarness.emptyTips(), 0, "!emptyTips");
     }
 
-    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
-
-    function checkCastToTips(bytes memory payload, bool isTips) public {
-        if (isTips) {
-            assertTrue(libHarness.isTips(payload), "!isTips: when valid");
-            assertEq(libHarness.castToTips(payload), payload, "!castToTips: when valid");
-        } else {
-            assertFalse(libHarness.isTips(payload), "!isTips: when valid");
-            vm.expectRevert("Not a tips payload");
-            libHarness.castToTips(payload);
-        }
+    function test_tipsLength(RawTips memory rt) public {
+        assertEq(
+            abi.encodePacked(libHarness.encodeTips(rt.summitTip, rt.attestationTip, rt.executionTip, rt.deliveryTip))
+                .length,
+            TIPS_LENGTH
+        );
     }
 }

@@ -24,8 +24,8 @@ uint256 constant SNAPSHOT_MAX_STATES = 1 << (SNAPSHOT_TREE_HEIGHT - 1);
 // ══════════════════════════════════ MESSAGE ══════════════════════════════════
 /// @dev See Header.sol: (uint32,uint32,uint32,uint32): 4+4+4+4
 uint256 constant HEADER_LENGTH = 16;
-/// @dev See Request.sol: (uint64): 8
-uint256 constant REQUEST_LENGTH = 8;
+/// @dev See Request.sol: (uint64,uint96): 8+12
+uint256 constant REQUEST_LENGTH = 20;
 /// @dev See Tips.sol: (uint64,uint64,uint64,uint64): 8+8+8+8
 uint256 constant TIPS_LENGTH = 32;
 /// @dev The amount of discarded last bits when encoding tip values

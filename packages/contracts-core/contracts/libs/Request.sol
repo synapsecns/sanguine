@@ -1,68 +1,52 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {REQUEST_LENGTH} from "./Constants.sol";
-import {MemView, MemViewLib} from "./MemView.sol";
+/// Request is encoded data with "message execution request".
+type Request is uint160;
 
-/// @dev Request is a memory view over a formatted "message execution request" payload.
-type Request is uint256;
-
-/// @dev Attach library functions to Request
 using RequestLib for Request global;
 
+/// Library for formatting _the request part_ of _the base messages_.
+/// - Request represents a message sender requirements for the message execution on the destination chain.
+/// - Request occupies a single storage word, and thus is stored on stack instead of being stored in memory.
+/// > gasDrop field is included for future compatibility and is ignored at the moment.
+///
+/// # Request stack layout (from highest bits to lowest)
+///
+/// | Position   | Field    | Type   | Bytes | Description                                          |
+/// | ---------- | -------- | ------ | ----- | ---------------------------------------------------- |
+/// | (020..008] | gasDrop  | uint96 | 12    | Minimum amount of gas token to drop to the recipient |
+/// | (008..000] | gasLimit | uint64 | 8     | Minimum amount of gas units to supply for execution  |
+
 library RequestLib {
-    using MemViewLib for bytes;
+    /// @dev Amount of bits to shift to gasDrop field
+    uint160 private constant SHIFT_GAS_DROP = 8 * 8;
 
-    /**
-     * @dev Request structure represents a message sender requirements for
-     * the message execution on the destination chain.
-     *
-     * @dev Memory layout of Request fields
-     * TODO: figure out the fields packing (uint64 is too much for gas limit)
-     * [000 .. 008): gasLimit       uint64   8 bytes    Amount of gas units to supply on destination chain
-     *
-     * The variables below are not supposed to be used outside of the library directly.
-     */
-
-    uint256 private constant OFFSET_GAS_LIMIT = 0;
-
-    // ══════════════════════════════════════════════════ REQUEST ══════════════════════════════════════════════════════
-
-    function formatRequest(uint64 gasLimit_) internal pure returns (bytes memory) {
-        return abi.encodePacked(gasLimit_);
+    /// @notice Returns an encoded request with the given fields
+    /// @param gasDrop_     Minimum amount of gas token to drop to the recipient (ignored at the moment)
+    /// @param gasLimit_    Minimum amount of gas units to supply for execution
+    function encodeRequest(uint96 gasDrop_, uint64 gasLimit_) internal pure returns (Request) {
+        return Request.wrap(uint160(gasDrop_) << SHIFT_GAS_DROP | gasLimit_);
     }
 
-    /**
-     * @notice Returns a Request view over the given payload.
-     * @dev Will revert if the payload is not a request.
-     */
-    function castToRequest(bytes memory payload) internal pure returns (Request) {
-        return castToRequest(payload.ref());
+    /// @notice Wraps the padded encoded request into a Request-typed value.
+    /// @dev The "padded" request is simply an encoded request casted to uint256 (highest bits are set to zero).
+    /// Casting to uint256 is done automatically in Solidity, so no extra actions from consumers are needed.
+    /// The highest bits are discarded, so that the contracts dealing with encoded requests
+    /// don't need to be updated, if a new field is added.
+    function wrapPadded(uint256 paddedRequest) internal pure returns (Request) {
+        return Request.wrap(uint160(paddedRequest));
     }
 
-    /**
-     * @notice Casts a memory view to a Request view.
-     * @dev Will revert if the memory view is not over a request.
-     */
-    function castToRequest(MemView memView) internal pure returns (Request) {
-        require(isRequest(memView), "Not a request");
-        return Request.wrap(MemView.unwrap(memView));
-    }
-
-    /// @notice Checks that a payload is a formatted Request.
-    function isRequest(MemView memView) internal pure returns (bool) {
-        return memView.len() == REQUEST_LENGTH;
-    }
-
-    /// @notice Convenience shortcut for unwrapping a view.
-    function unwrap(Request request) internal pure returns (MemView) {
-        return MemView.wrap(Request.unwrap(request));
-    }
-
-    // ══════════════════════════════════════════════ REQUEST SLICING ══════════════════════════════════════════════════
-
+    /// @notice Returns the requested minimum amount of gas units to supply for execution.
     function gasLimit(Request request) internal pure returns (uint64) {
-        MemView memView = unwrap(request);
-        return uint64(memView.indexUint({index_: OFFSET_GAS_LIMIT, bytes_: 8}));
+        // Casting to uint64 will truncate the highest bits, which is the behavior we want
+        return uint64(Request.unwrap(request));
+    }
+
+    /// @notice Returns the requested of gas token to drop to the recipient.
+    function gasDrop(Request request) internal pure returns (uint96) {
+        // Casting to uint96 will truncate the highest bits, which is the behavior we want
+        return uint96(Request.unwrap(request) >> SHIFT_GAS_DROP);
     }
 }

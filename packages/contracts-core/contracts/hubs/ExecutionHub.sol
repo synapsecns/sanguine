@@ -112,7 +112,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
             // This will revert if message body is not a formatted BaseMessage payload
             BaseMessage baseMessage = message.body().castToBaseMessage();
             success = _executeBaseMessage(header, proofMaturity, gasLimit, baseMessage);
-            emit TipsRecorded(msgLeaf, baseMessage.tips().unwrap().clone());
+            emit TipsRecorded(msgLeaf, Tips.unwrap(baseMessage.tips()));
         }
         if (rcptData.origin == 0) {
             // This is the first valid attempt to execute the message => save origin and snapshot proof

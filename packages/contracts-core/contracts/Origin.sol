@@ -5,7 +5,8 @@ pragma solidity 0.8.17;
 import {BaseMessageLib} from "./libs/BaseMessage.sol";
 import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
 import {MemView, MemViewLib} from "./libs/MemView.sol";
-import {HeaderLib, MessageFlag} from "./libs/Message.sol";
+import {Header, HeaderLib, MessageFlag} from "./libs/Message.sol";
+import {Request, RequestLib} from "./libs/Request.sol";
 import {StateReport} from "./libs/StateReport.sol";
 import {State} from "./libs/State.sol";
 import {SystemMessageLib} from "./libs/SystemMessage.sol";
@@ -149,22 +150,22 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         uint32 destination,
         bytes32 recipient,
         uint32 optimisticPeriod,
-        bytes memory tipsPayload,
-        bytes memory requestPayload,
+        uint256 paddedTips,
+        uint256 paddedRequest,
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {
         // Check that content is not too large
         require(content.length <= MAX_CONTENT_BYTES, "content too long");
-        // This will revert if payload is not a formatted tips payload
-        Tips tips = tipsPayload.castToTips();
+        Tips tips = TipsLib.wrapPadded(paddedTips);
         // Tips value must exactly match msg.value
         require(tips.value() == msg.value, "!tips: value");
+        Request request = RequestLib.wrapPadded(paddedRequest);
         // Format the BaseMessage body
         bytes memory body = BaseMessageLib.formatBaseMessage({
             sender_: msg.sender.addressToBytes32(),
             recipient_: recipient,
-            tipsPayload: tipsPayload,
-            requestPayload: requestPayload,
+            tips_: tips,
+            request_: request,
             content_: content
         });
         // Send the message
@@ -198,14 +199,14 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     {
         // Format the message header
         messageNonce = _nextNonce();
-        bytes memory headerPayload = HeaderLib.formatHeader({
+        Header header = HeaderLib.encodeHeader({
             origin_: localDomain,
             nonce_: messageNonce,
             destination_: destination,
             optimisticPeriod_: optimisticPeriod
         });
         // Format the full message payload
-        bytes memory msgPayload = flag.formatMessage(headerPayload, body);
+        bytes memory msgPayload = flag.formatMessage(header, body);
         // Insert new leaf into the Origin Merkle Tree and save the updated state
         messageHash = keccak256(msgPayload);
         _insertAndSave(messageHash);

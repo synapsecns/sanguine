@@ -2,59 +2,50 @@
 
 pragma solidity 0.8.17;
 
-import {Header, HeaderLib, MemView, MemViewLib} from "../../../contracts/libs/Header.sol";
+import {Header, HeaderLib} from "../../../contracts/libs/Header.sol";
 
 /**
  * @notice Exposes Header methods for testing against golang.
  */
 contract HeaderHarness {
-    using HeaderLib for bytes;
-    using HeaderLib for MemView;
-    using MemViewLib for bytes;
-
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
 
     // ══════════════════════════════════════════════════ GETTERS ══════════════════════════════════════════════════════
 
-    function castToHeader(bytes memory payload) public view returns (bytes memory) {
-        // Walkaround to get the forge coverage working on libraries, see
-        // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
-        Header header = HeaderLib.castToHeader(payload);
-        return header.unwrap().clone();
-    }
-
     /// @notice Returns header's origin field
-    function origin(bytes memory payload) public pure returns (uint32) {
-        return payload.castToHeader().origin();
+    function origin(uint256 paddedHeader) public pure returns (uint32) {
+        return HeaderLib.wrapPadded(paddedHeader).origin();
     }
 
     /// @notice Returns header's nonce field
-    function nonce(bytes memory payload) public pure returns (uint32) {
-        return payload.castToHeader().nonce();
+    function nonce(uint256 paddedHeader) public pure returns (uint32) {
+        return HeaderLib.wrapPadded(paddedHeader).nonce();
     }
 
     /// @notice Returns header's destination field
-    function destination(bytes memory payload) public pure returns (uint32) {
-        return payload.castToHeader().destination();
+    function destination(uint256 paddedHeader) public pure returns (uint32) {
+        return HeaderLib.wrapPadded(paddedHeader).destination();
     }
 
     /// @notice Returns header's optimistic seconds field
-    function optimisticPeriod(bytes memory payload) public pure returns (uint32) {
-        return payload.castToHeader().optimisticPeriod();
-    }
-
-    function isHeader(bytes memory payload) public pure returns (bool) {
-        return payload.ref().isHeader();
+    function optimisticPeriod(uint256 paddedHeader) public pure returns (uint32) {
+        return HeaderLib.wrapPadded(paddedHeader).optimisticPeriod();
     }
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
-    function formatHeader(uint32 origin_, uint32 nonce_, uint32 destination_, uint32 optimisticPeriod_)
+    function encodeHeader(uint32 origin_, uint32 nonce_, uint32 destination_, uint32 optimisticPeriod_)
         public
         pure
-        returns (bytes memory)
+        returns (uint128)
     {
-        return HeaderLib.formatHeader(origin_, nonce_, destination_, optimisticPeriod_);
+        Header header = HeaderLib.encodeHeader(origin_, nonce_, destination_, optimisticPeriod_);
+        return Header.unwrap(header);
+    }
+
+    function wrapPadded(uint256 paddedHeader) public pure returns (uint128) {
+        Header header = HeaderLib.wrapPadded(paddedHeader);
+        return Header.unwrap(header);
     }
 }

@@ -4,7 +4,8 @@ pragma solidity 0.8.17;
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {MessageHarness} from "../../harnesses/libs/MessageHarness.t.sol";
 
-import {HeaderLib, HEADER_LENGTH} from "../../../contracts/libs/Header.sol";
+import {HEADER_LENGTH} from "../../../contracts/libs/Constants.sol";
+import {Header} from "../../../contracts/libs/Header.sol";
 import {MessageLib} from "../../../contracts/libs/Message.sol";
 import {TipsLib} from "../../../contracts/libs/Tips.sol";
 
@@ -24,12 +25,13 @@ contract MessageLibraryTest is SynapseLibraryTest {
     function test_formatMessage_base(RawHeader memory rh, RawBaseMessage memory rbm) public {
         // Construct message parts: this has been tested in the dedicated unit tests
         MessageFlag flag = MessageFlag.Base;
-        bytes memory header = rh.formatHeader();
         bytes memory body = rbm.formatBaseMessage();
-        check_formatMessage(flag, header, body);
+        check_formatMessage(flag, rh, body);
     }
 
-    function check_formatMessage(MessageFlag flag, bytes memory header, bytes memory body) public {
+    function check_formatMessage(MessageFlag flag, RawHeader memory rh, bytes memory body) public {
+        Header header = rh.castToHeader();
+        uint128 encodedHeader = rh.encodeHeader();
         // Prepare message
         bytes memory message = libHarness.formatMessage(flag, header, body);
         // Test formatter
@@ -38,7 +40,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
         checkCastToMessage({payload: message, isMessage: true});
         // Test getters
         assertEq(uint8(libHarness.flag(message)), uint8(flag), "!flag");
-        assertEq(libHarness.header(message), header, "!header");
+        assertEq(libHarness.header(message), encodedHeader, "!header");
         assertEq(libHarness.body(message), body, "!body");
         // Test hashing
         assertEq(libHarness.leaf(message), keccak256(message), "!leaf");
@@ -48,7 +50,7 @@ contract MessageLibraryTest is SynapseLibraryTest {
         // Make sure flag does NOT fit into MessageFlag enum
         flag = uint8(bound(flag, uint8(type(MessageFlag).max) + 1, type(uint8).max));
         // Use incorrect flag and empty body
-        bytes memory payload = abi.encodePacked(flag, rh.formatHeader());
+        bytes memory payload = abi.encodePacked(flag, rh.encodeHeader());
         checkCastToMessage({payload: payload, isMessage: false});
     }
 
