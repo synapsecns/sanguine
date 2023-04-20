@@ -7,12 +7,7 @@ import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
 import {
-    AgentFlag,
-    AgentStatus,
-    LightManager,
-    ISystemContract,
-    ISystemRegistry,
-    SynapseTest
+    AgentFlag, AgentStatus, LightManagerHarness, ISystemRegistry, SynapseTest
 } from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -23,9 +18,9 @@ contract LightManagerTest is AgentManagerTest {
     constructor() SynapseTest(0) {}
 
     function test_initializer(address caller, address origin_, address destination_) public {
-        lightManager = new LightManager(DOMAIN_LOCAL);
+        lightManager = new LightManagerHarness(DOMAIN_LOCAL);
         vm.prank(caller);
-        lightManager.initialize(ISystemRegistry(origin_), ISystemRegistry(destination_));
+        lightManager.initialize(origin_, destination_);
         assertEq(lightManager.owner(), caller);
         assertEq(address(lightManager.origin()), origin_);
         assertEq(address(lightManager.destination()), destination_);
@@ -36,7 +31,7 @@ contract LightManagerTest is AgentManagerTest {
     function test_constructor_revert_onSynapseChain() public {
         // Should not be able to deploy on Synapse Chain
         vm.expectRevert("Can't be deployed on SynChain");
-        new LightManager(DOMAIN_SYNAPSE);
+        new LightManagerHarness(DOMAIN_SYNAPSE);
     }
 
     function test_setup() public override {
@@ -126,68 +121,34 @@ contract LightManagerTest is AgentManagerTest {
     function test_remoteWithdrawTips(address actor, uint256 amount, uint32 proofMaturity) public {
         proofMaturity = uint32(bound(proofMaturity, BONDING_OPTIMISTIC_PERIOD, type(uint32).max));
         skip(proofMaturity);
+        bytes memory msgPayload = managerMsgPayload(DOMAIN_SYNAPSE, remoteWithdrawTipsCalldata(actor, amount));
         bytes memory expectedCall = abi.encodeWithSelector(InterfaceOrigin.withdrawTips.selector, actor, amount);
         vm.expectCall(origin, expectedCall);
-        systemRouter.systemPrank(
-            SystemEntity.AgentManager,
-            proofMaturity,
-            DOMAIN_SYNAPSE,
-            SystemEntity.AgentManager,
-            abi.encodeWithSelector(lightManager.remoteWithdrawTips.selector, actor, amount)
-        );
+        managerMsgPrank(msgPayload);
     }
 
-    function test_remoteWithdrawTips_revert_notSystemRouter(address caller) public {
-        vm.assume(caller != address(systemRouter));
+    function test_remoteWithdrawTips_revert_notDestination(address caller) public {
+        vm.assume(caller != destination);
         skip(BONDING_OPTIMISTIC_PERIOD);
-        vm.expectRevert("!systemRouter");
+        vm.expectRevert("!destination");
         vm.prank(caller);
-        lightManager.remoteWithdrawTips(
-            BONDING_OPTIMISTIC_PERIOD, DOMAIN_SYNAPSE, SystemEntity.Destination, address(0), 0
-        );
+        lightManager.remoteWithdrawTips(DOMAIN_SYNAPSE, BONDING_OPTIMISTIC_PERIOD, address(0), 0);
     }
 
-    function test_remoteWithdrawTips_revert_notSynapseChain(uint32 callOrigin) public {
-        vm.assume(callOrigin != DOMAIN_SYNAPSE);
+    function test_remoteWithdrawTips_revert_notSynapseChain(uint32 msgOrigin) public {
+        vm.assume(msgOrigin != DOMAIN_SYNAPSE);
         skip(BONDING_OPTIMISTIC_PERIOD);
+        bytes memory msgPayload = managerMsgPayload(msgOrigin, remoteWithdrawTipsCalldata(address(0), 0));
         vm.expectRevert("!synapseDomain");
-        systemRouter.systemPrank(
-            SystemEntity.AgentManager,
-            BONDING_OPTIMISTIC_PERIOD,
-            callOrigin,
-            SystemEntity.AgentManager,
-            abi.encodeWithSelector(lightManager.remoteWithdrawTips.selector, address(0), 0)
-        );
-    }
-
-    function test_remoteWithdrawTips_revert_notBondingManager() public {
-        skip(BONDING_OPTIMISTIC_PERIOD);
-        for (uint8 sender = 0; sender <= uint8(type(SystemEntity).max); ++sender) {
-            SystemEntity systemSender = SystemEntity(sender);
-            if (systemSender != SystemEntity.AgentManager) {
-                vm.expectRevert("!allowedCaller");
-                systemRouter.systemPrank(
-                    SystemEntity.AgentManager,
-                    BONDING_OPTIMISTIC_PERIOD,
-                    DOMAIN_SYNAPSE,
-                    systemSender,
-                    abi.encodeWithSelector(lightManager.remoteWithdrawTips.selector, address(0), 0)
-                );
-            }
-        }
+        managerMsgPrank(msgPayload);
     }
 
     function test_remoteWithdrawTips_revert_optimisticPeriodNotOver(uint32 proofMaturity) public {
         proofMaturity = proofMaturity % BONDING_OPTIMISTIC_PERIOD;
-        skip(BONDING_OPTIMISTIC_PERIOD);
+        skip(proofMaturity);
+        bytes memory msgPayload = managerMsgPayload(DOMAIN_SYNAPSE, remoteWithdrawTipsCalldata(address(0), 0));
         vm.expectRevert("!optimisticPeriod");
-        systemRouter.systemPrank(
-            SystemEntity.AgentManager,
-            proofMaturity,
-            DOMAIN_SYNAPSE,
-            SystemEntity.AgentManager,
-            abi.encodeWithSelector(lightManager.remoteWithdrawTips.selector, address(0), 0)
-        );
+        managerMsgPrank(msgPayload);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

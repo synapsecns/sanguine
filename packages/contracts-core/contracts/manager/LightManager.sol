@@ -4,9 +4,9 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AGENT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
-import {AgentFlag, AgentStatus, SlashStatus, SystemEntity} from "../libs/Structures.sol";
+import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentManager, IAgentManager, ISystemRegistry} from "./AgentManager.sol";
+import {AgentManager, IAgentManager} from "./AgentManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
@@ -32,7 +32,7 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
         require(!_onSynapseChain(), "Can't be deployed on SynChain");
     }
 
-    function initialize(ISystemRegistry origin_, ISystemRegistry destination_) external initializer {
+    function initialize(address origin_, address destination_) external initializer {
         __AgentManager_init(origin_, destination_);
         __Ownable_init();
     }
@@ -62,32 +62,37 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
 
     /// @inheritdoc InterfaceLightManager
     function setAgentRoot(bytes32 agentRoot_) external {
-        require(msg.sender == address(destination), "Only Destination sets agent root");
+        require(msg.sender == destination, "Only Destination sets agent root");
         _setAgentRoot(agentRoot_);
     }
 
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceLightManager
-    function remoteWithdrawTips(
-        uint256 proofMaturity,
-        uint32 callOrigin,
-        SystemEntity systemCaller,
-        address recipient,
-        uint256 amount
-    ) external onlySystemRouter onlySynapseChain(callOrigin) onlyCallers(AGENT_MANAGER, systemCaller) {
+    function remoteWithdrawTips(uint32 msgOrigin, uint256 proofMaturity, address recipient, uint256 amount)
+        external
+        returns (bytes4 magicValue)
+    {
+        // Only destination can pass Manager Messages
+        require(msg.sender == destination, "!destination");
+        // Only AgentManager on Synapse Chain can give instructions to withdraw tips
+        require(msgOrigin == SYNAPSE_DOMAIN, "!synapseDomain");
+        // Check that merkle proof is mature enough
         require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
-        InterfaceOrigin(address(origin)).withdrawTips(recipient, amount);
+        InterfaceOrigin(origin).withdrawTips(recipient, amount);
+        // Magic value to return is selector of the called function
+        return this.remoteWithdrawTips.selector;
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     function _afterRegistrySlash(uint32 domain, address agent, address prover) internal override {
-        // Issue a system call to BondingManager on SynChain
-        _callAgentManager({
-            domain: SYNAPSE_DOMAIN,
+        // Send a manager message to BondingManager on SynChain
+        // remoteRegistrySlash(msgOrigin, proofMaturity, domain, agent, prover) with the first two security args omitted
+        InterfaceOrigin(origin).sendManagerMessage({
+            destination: SYNAPSE_DOMAIN,
             optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
-            payload: _remoteSlashPayload(domain, agent, prover)
+            payload: abi.encodeWithSelector(InterfaceBondingManager.remoteRegistrySlash.selector, domain, agent, prover)
         });
     }
 
@@ -110,11 +115,5 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     /// @dev Returns agent address for the given index. Returns zero for non existing indexes.
     function _getAgent(uint256 index) internal view override returns (address agent) {
         return _agents[index];
-    }
-
-    /// @dev Returns data for a system call: remoteRegistrySlash()
-    function _remoteSlashPayload(uint32 domain, address agent, address prover) internal pure returns (bytes memory) {
-        // (proofMaturity, callOrigin, systemCaller) are omitted; (domain, agent, prover)
-        return abi.encodeWithSelector(InterfaceBondingManager.remoteRegistrySlash.selector, domain, agent, prover);
     }
 }

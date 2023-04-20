@@ -7,8 +7,6 @@ import {MessageStatus} from "../../../contracts/libs/Structures.sol";
 
 import {RevertingApp} from "../../harnesses/client/RevertingApp.t.sol";
 import {MessageRecipientMock} from "../../mocks/client/MessageRecipientMock.t.sol";
-import {ISystemContract, SystemContractMock} from "../../mocks/system/SystemContractMock.t.sol";
-import {SystemRouterMock} from "../../mocks/system/SystemRouterMock.t.sol";
 
 import {Random} from "../../utils/libs/Random.t.sol";
 import {
@@ -16,13 +14,13 @@ import {
     MessageFlag,
     RawAttestation,
     RawBaseMessage,
+    RawCallData,
     RawReceiptBody,
     RawExecReceipt,
     RawHeader,
     RawMessage,
     RawState,
     RawStateIndex,
-    RawSystemMessage,
     RawTips
 } from "../../utils/libs/SynapseStructs.t.sol";
 import {DisputeHubTest, IDisputeHub} from "./DisputeHub.t.sol";
@@ -263,20 +261,13 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         verify_messageStatusNone(keccak256(msgPayload));
     }
 
-    // ══════════════════════════════════════ TESTS: EXECUTE SYSTEM MESSAGES ═══════════════════════════════════════════
+    // ══════════════════════════════════════ TESTS: EXECUTE MANAGER MESSAGES ══════════════════════════════════════════
 
-    function test_execute_system(
-        RawSystemMessage memory rsm,
-        RawHeader memory rh,
-        SnapshotMock memory sm,
-        uint32 timePassed,
-        uint64 gasLimit
-    ) public {
-        // Use System Router Mock for this test
-        SystemRouterMock router = (new SystemRouterMock());
-        ISystemContract(systemContract()).setSystemRouter(router);
+    function test_execute_manager(RawHeader memory rh, SnapshotMock memory sm, uint32 timePassed, uint64 gasLimit)
+        public
+    {
         // Create messages and get origin proof
-        bytes memory msgPayload = createSystemMessages(rsm, rh, localDomain());
+        bytes memory msgPayload = createManagerMessages(lightManager.remoteMockFunc.selector, rh, localDomain());
         bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
         // Create snapshot proof
         adjustSnapshot(sm);
@@ -284,12 +275,11 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         // Make sure that optimistic period is over
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
         skip(timePassed);
-        bytes memory body = rsm.formatSystemMessage();
         // expectCall(address callee, bytes calldata data)
-        // receiveSystemMessage(origin, nonce, proofMaturity, body)
+        // remoteMockFunc(msgOrigin, proofMaturity, data); data = rh.nonce
         vm.expectCall(
-            address(router),
-            abi.encodeWithSelector(systemRouter.receiveSystemMessage.selector, rh.origin, rh.nonce, timePassed, body)
+            localAgentManager(),
+            abi.encodeWithSelector(bondingManager.remoteMockFunc.selector, rh.origin, timePassed, rh.nonce)
         );
         vm.expectEmit();
         emit Executed(rh.origin, keccak256(msgPayload));
@@ -298,6 +288,49 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         verify_messageStatus(
             keccak256(msgPayload), snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executor
         );
+    }
+
+    function test_execute_manager_revert_incorrectMagicValue() public {
+        // Use empty values - these would be filled later in test preparation
+        RawHeader memory rh;
+        SnapshotMock memory sm;
+        // Create messages and get origin proof
+        bytes memory msgPayload = createManagerMessages(lightManager.sensitiveMockFunc.selector, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
+        vm.expectRevert("!magicValue");
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
+    }
+
+    function test_execute_manager_revert_noMagicValue() public {
+        // Use empty values - these would be filled later in test preparation
+        RawHeader memory rh;
+        SnapshotMock memory sm;
+        // Create messages and get origin proof
+        bytes memory msgPayload = createManagerMessages(lightManager.sensitiveMockFuncVoid.selector, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
+        vm.expectRevert("!magicValue");
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
+    }
+
+    function test_execute_manager_revert_magicMoreThan32Bytes() public {
+        // Use empty values - these would be filled later in test preparation
+        RawHeader memory rh;
+        SnapshotMock memory sm;
+        // Create messages and get origin proof
+        bytes memory msgPayload =
+            createManagerMessages(lightManager.sensitiveMockFuncOver32Bytes.selector, rh, localDomain());
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
+        vm.expectRevert("!magicValue");
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, 0);
     }
 
     // ══════════════════════════════════════════ TESTS: INVALID RECEIPTS ══════════════════════════════════════════════
@@ -402,15 +435,13 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         createMessages(rh.nonce, msgPayload);
     }
 
-    function createSystemMessages(RawSystemMessage memory rsm, RawHeader memory rh, uint32 destination_)
+    function createManagerMessages(bytes4 selector, RawHeader memory rh, uint32 destination_)
         public
         returns (bytes memory msgPayload)
     {
         adjustHeader(rh, destination_);
-        rsm.boundEntities();
-        rsm.callData.selector = SystemContractMock.remoteMockFunc.selector;
-        rsm.callData.args = abi.encode(rh.nonce);
-        msgPayload = RawMessage(uint8(MessageFlag.System), rh, rsm.formatSystemMessage()).formatMessage();
+        RawCallData memory rcd = RawCallData({selector: selector, args: abi.encode(rh.nonce)});
+        msgPayload = RawMessage(uint8(MessageFlag.Manager), rh, rcd.formatCallData()).formatMessage();
         createMessages(rh.nonce, msgPayload);
     }
 

@@ -2,11 +2,11 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {AgentFlag, AgentStatus, SlashStatus, SystemEntity} from "../libs/Structures.sol";
+import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 import {DynamicTree, MerkleLib} from "../libs/Merkle.sol";
 import {MerkleList} from "../libs/MerkleList.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentManager, IAgentManager, ISystemRegistry} from "./AgentManager.sol";
+import {AgentManager, IAgentManager} from "./AgentManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
@@ -35,7 +35,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         require(_onSynapseChain(), "Only deployed on SynChain");
     }
 
-    function initialize(ISystemRegistry origin_, ISystemRegistry destination_) external initializer {
+    function initialize(address origin_, address destination_) external initializer {
         __AgentManager_init(origin_, destination_);
         __Ownable_init();
         // Insert a zero address to make indexes for Agents start from 1.
@@ -132,39 +132,40 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     }
 
     /// @inheritdoc InterfaceBondingManager
-    function remoteRegistrySlash(
-        uint256 proofMaturity,
-        uint32 callOrigin,
-        SystemEntity systemCaller,
-        uint32 domain,
-        address agent,
-        address prover
-    ) external onlySystemRouter onlyCallers(AGENT_MANAGER, systemCaller) {
+    function remoteRegistrySlash(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
+        external
+        returns (bytes4 magicValue)
+    {
+        // Only destination can pass Manager Messages
+        require(msg.sender == destination, "!destination");
+        // Check that merkle proof is mature enough
         require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
         // TODO: do we need to save this?
-        callOrigin;
+        msgOrigin;
         // Check that Agent hasn't been already slashed and initiate the slashing
         _initiateSlashing(domain, agent, prover);
         // Notify local registries about the slashing
         _notifySlashing(DESTINATION | ORIGIN, domain, agent, prover);
+        // Magic value to return is selector of the called function
+        return this.remoteRegistrySlash.selector;
     }
 
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceBondingManager
     function withdrawTips(address recipient, uint32 origin_, uint256 amount) external {
-        require(msg.sender == address(destination), "Only Summit withdraws tips");
+        require(msg.sender == destination, "Only Summit withdraws tips");
         if (origin_ == localDomain) {
             // Call local Origin to withdraw tips
             InterfaceOrigin(address(origin)).withdrawTips(recipient, amount);
         } else {
-            // For remote chains: issue a system message to remote LightManager to handle the withdrawal
-            // (proofMaturity, callOrigin, systemCaller, recipient, amount), the first three security args are omitted
-            _callAgentManager(
-                origin_,
-                BONDING_OPTIMISTIC_PERIOD,
-                abi.encodeWithSelector(InterfaceLightManager.remoteWithdrawTips.selector, recipient, amount)
-            );
+            // For remote chains: send a manager message to remote LightManager to handle the withdrawal
+            // remoteWithdrawTips(msgOrigin, proofMaturity, recipient, amount) with the first two security args omitted
+            InterfaceOrigin(origin).sendManagerMessage({
+                destination: origin_,
+                optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
+                payload: abi.encodeWithSelector(InterfaceLightManager.remoteWithdrawTips.selector, recipient, amount)
+            });
         }
     }
 

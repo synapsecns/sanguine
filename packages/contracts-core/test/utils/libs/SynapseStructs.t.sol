@@ -5,7 +5,6 @@ import {ByteString, CallData, MemView, MemViewLib} from "../../../contracts/libs
 
 import {BaseMessage, BaseMessageLib, Tips, TipsLib} from "../../../contracts/libs/BaseMessage.sol";
 import {Header, HeaderLib, Message, MessageFlag, MessageLib} from "../../../contracts/libs/Message.sol";
-import {SystemEntity, SystemMessage, SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../../../contracts/libs/Receipt.sol";
 import {ReceiptFlag, ReceiptReport, ReceiptReportLib} from "../../../contracts/libs/ReceiptReport.sol";
 import {Request, RequestLib} from "../../../contracts/libs/Request.sol";
@@ -78,22 +77,13 @@ struct RawCallData {
 
 using CastLib for RawCallData global;
 
-struct RawSystemMessage {
-    uint8 sender;
-    uint8 recipient;
+struct RawManagerCall {
+    uint32 origin;
+    uint256 proofMaturity;
     RawCallData callData;
 }
 
-using CastLib for RawSystemMessage global;
-
-struct RawSystemCall {
-    uint32 origin;
-    uint32 nonce;
-    uint256 proofMaturity;
-    RawSystemMessage systemMessage;
-}
-
-using CastLib for RawSystemCall global;
+using CastLib for RawManagerCall global;
 
 struct RawBaseMessage {
     bytes32 sender;
@@ -173,7 +163,6 @@ library CastLib {
     using SnapshotLib for bytes;
     using StateLib for bytes;
     using StateReportLib for bytes;
-    using SystemMessageLib for bytes;
 
     /// @notice Prevents this contract from being included in the coverage report
     function testCastLib() external {}
@@ -259,7 +248,7 @@ library CastLib {
         ptr = rbm.formatBaseMessage().castToBaseMessage();
     }
 
-    // ══════════════════════════════════════════════ SYSTEM MESSAGE ═══════════════════════════════════════════════════
+    // ══════════════════════════════════════════════ MANAGER MESSAGE ══════════════════════════════════════════════════
 
     function formatCallData(RawCallData memory rcd) internal pure returns (bytes memory cdPayload) {
         // Explicit revert when args are not taking whole amount of words
@@ -271,29 +260,9 @@ library CastLib {
         ptr = rcd.formatCallData().castToCallData();
     }
 
-    function formatSystemMessage(RawSystemMessage memory rsm) internal pure returns (bytes memory smPayload) {
-        // Explicit revert when sender out of range
-        require(rsm.sender <= uint8(type(SystemEntity).max), "Sender out of range");
-        // Explicit revert when recipient out of range
-        require(rsm.recipient <= uint8(type(SystemEntity).max), "Recipient out of range");
-        smPayload = SystemMessageLib.formatSystemMessage(
-            SystemEntity(rsm.sender), SystemEntity(rsm.recipient), rsm.callData.formatCallData()
-        );
-    }
-
-    function castToSystemMessage(RawSystemMessage memory rsm) internal pure returns (SystemMessage ptr) {
-        ptr = rsm.formatSystemMessage().castToSystemMessage();
-    }
-
-    function boundEntities(RawSystemMessage memory rsm) internal pure {
-        rsm.sender = rsm.sender % (uint8(type(SystemEntity).max) + 1);
-        rsm.recipient = rsm.recipient % (uint8(type(SystemEntity).max) + 1);
-    }
-
-    function callPayload(RawSystemCall memory rsc) internal view returns (bytes memory scPayload) {
-        scPayload = rsc.systemMessage.callData.castToCallData().addPrefix(
-            abi.encode(rsc.proofMaturity, rsc.origin, rsc.systemMessage.sender)
-        );
+    function callPayload(RawManagerCall memory rsc) internal view returns (bytes memory scPayload) {
+        // Add (msgOrigin, proofMaturity) as the first two args
+        scPayload = rsc.callData.castToCallData().addPrefix(abi.encode(rsc.origin, rsc.proofMaturity));
     }
 
     // ═════════════════════════════════════════════════ RECEIPT ═════════════════════════════════════════════════════

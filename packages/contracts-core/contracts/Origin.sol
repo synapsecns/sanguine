@@ -9,7 +9,6 @@ import {Header, HeaderLib, MessageFlag} from "./libs/Message.sol";
 import {Request, RequestLib} from "./libs/Request.sol";
 import {StateReport} from "./libs/StateReport.sol";
 import {State} from "./libs/State.sol";
-import {SystemMessageLib} from "./libs/SystemMessage.sol";
 import {Tips, TipsLib} from "./libs/Tips.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -23,7 +22,6 @@ import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     using MemViewLib for bytes;
-    using SystemMessageLib for MemView;
     using TipsLib for bytes;
     using TypeCasts for address;
 
@@ -173,13 +171,13 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     }
 
     /// @inheritdoc InterfaceOrigin
-    function sendSystemMessage(uint32 destination, uint32 optimisticPeriod, bytes memory body)
+    function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes memory payload)
         external
-        onlySystemRouter
+        onlyAgentManager
         returns (uint32 messageNonce, bytes32 messageHash)
     {
-        // SystemRouter (checked via modifier) is responsible for constructing the body correctly.
-        return _sendMessage(destination, optimisticPeriod, MessageFlag.System, body);
+        // AgentManager (checked via modifier) is responsible for constructing the calldata payload correctly.
+        return _sendMessage(destination, optimisticPeriod, MessageFlag.Manager, payload);
     }
 
     /// @inheritdoc InterfaceOrigin

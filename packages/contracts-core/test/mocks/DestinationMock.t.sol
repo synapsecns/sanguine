@@ -4,17 +4,10 @@ pragma solidity 0.8.17;
 import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 import {ExecutionHubMock} from "./hubs/ExecutionHubMock.t.sol";
 import {DisputeHubMock} from "./hubs/DisputeHubMock.t.sol";
-import {SystemContractMock} from "./system/SystemContractMock.t.sol";
 import {SystemRegistryMock} from "./system/SystemRegistryMock.t.sol";
 
 // solhint-disable no-empty-blocks
-contract DestinationMock is
-    ExecutionHubMock,
-    DisputeHubMock,
-    SystemRegistryMock,
-    SystemContractMock,
-    InterfaceDestination
-{
+contract DestinationMock is ExecutionHubMock, DisputeHubMock, SystemRegistryMock, InterfaceDestination {
     /// @notice Prevents this contract from being included in the coverage report
     function testDestinationMock() external {}
 
