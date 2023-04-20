@@ -8,5 +8,6 @@ import (
 )
 
 func main() {
+
 	cmd.Start(os.Args, metadata.BuildInfo())
 }
