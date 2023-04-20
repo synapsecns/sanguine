@@ -44,7 +44,10 @@ contract TipsHarness {
         pure
         returns (uint256)
     {
-        return Tips.unwrap(TipsLib.encodeTips(summitTip_, attestationTip_, executionTip_, deliveryTip_));
+        // Walkaround to get the forge coverage working on libraries, see
+        // https://github.com/foundry-rs/foundry/pull/3128#issuecomment-1241245086
+        Tips tips = TipsLib.encodeTips(summitTip_, attestationTip_, executionTip_, deliveryTip_);
+        return Tips.unwrap(tips);
     }
 
     function wrapPadded(uint256 paddedTips) public pure returns (uint256) {
@@ -52,6 +55,8 @@ contract TipsHarness {
     }
 
     function emptyTips() public pure returns (uint256) {
-        return Tips.unwrap(TipsLib.emptyTips());
+        // TODO: figure out why this leaves `TipsLib.emptyTips()` uncovered
+        Tips tips = TipsLib.emptyTips();
+        return Tips.unwrap(tips);
     }
 }

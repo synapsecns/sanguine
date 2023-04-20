@@ -32,4 +32,9 @@ contract TipsLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.deliveryTip(encodedTips), deliveryTip, "!deliveryTip");
         assertEq(libHarness.value(encodedTips), totalTips * TIPS_MULTIPLIER, "!totalTips");
     }
+
+    function test_emptyTips() public {
+        test_encodeTips(0, 0, 0, 0);
+        assertEq(libHarness.emptyTips(), 0, "!emptyTips");
+    }
 }
