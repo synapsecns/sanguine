@@ -2,7 +2,12 @@
 pragma solidity 0.8.17;
 
 import {
-    InterfaceOrigin, PingPongClient, Request, RequestLib, TipsLib
+    InterfaceOrigin,
+    PingPongClient,
+    Request,
+    RequestLib,
+    Tips,
+    TipsLib
 } from "../../../contracts/client/PingPongClient.sol";
 
 import {OriginMock} from "../../mocks/OriginMock.t.sol";
@@ -115,7 +120,7 @@ contract PingPongTest is Test {
         bool isPing,
         uint16 counter
     ) internal {
-        bytes memory tipsPayload = TipsLib.emptyTips();
+        Tips tips = TipsLib.emptyTips();
         Request request = RequestLib.encodeRequest(0, 0);
         bytes memory content = _content(pingId, isPing, counter);
         vm.expectCall(
@@ -125,7 +130,7 @@ contract PingPongTest is Test {
                 destination,
                 recipient,
                 optimisticPeriod,
-                tipsPayload,
+                tips,
                 request,
                 content
             )
