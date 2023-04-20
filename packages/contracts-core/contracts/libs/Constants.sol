@@ -45,11 +45,3 @@ uint256 constant AGENT_ROOT_OPTIMISTIC_PERIOD = 1 days;
 // ══════════════════════════════════ ORIGIN ═══════════════════════════════════
 /// @dev Maximum bytes per message = 2 KiB (somewhat arbitrarily set to begin)
 uint256 constant MAX_CONTENT_BYTES = 2 * 2 ** 10;
-// ═══════════════════════════════ SYSTEM ROUTER ═══════════════════════════════
-/// @dev Custom address used for sending and receiving system messages.
-/// - Origin will dispatch messages from SystemRouter as if they were "sent by this sender".
-/// - Destination will reroute messages "sent to this recipient" to SystemRouter.
-/// - As a result: only SystemRouter messages will have this value as both sender and recipient.
-/// Note: all bits except for lower 20 bytes are set to 1.
-/// Note: TypeCasts.bytes32ToAddress(SYSTEM_ROUTER) == address(0)
-bytes32 constant SYSTEM_ROUTER = bytes32(type(uint256).max << 160);
