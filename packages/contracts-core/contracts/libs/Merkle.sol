@@ -3,50 +3,39 @@ pragma solidity 0.8.17;
 
 import {AGENT_TREE_HEIGHT, ORIGIN_TREE_HEIGHT} from "./Constants.sol";
 
-// work based on Merkle.sol, which is used under MIT OR Apache-2.0:
-// https://github.com/nomad-xyz/monorepo/blob/main/packages/contracts-core/contracts/libs/Merkle.sol
-// Changes:
-//  - Adapted for Solidity 0.8.x
-//  - Amount of tree leaves stored externally
-//  - Added thorough documentation
-//  - H(0,0) = 0 optimization is implemented (https://ethresear.ch/t/optimizing-sparse-merkle-trees/3751/6)
-
-// Nomad's Merkle.sol is work based on eth2 deposit contract, which is used under CC0-1.0:
-// https://github.com/ethereum/deposit_contract/blob/dev/deposit_contract/contracts/validator_registration.v.py
-// Changes:
-//  - Implemented in Solidity 0.7.6 (eth2 impl is Vyper)
-//  - H() = keccak256() is used as the hashing function instead of sha256()
-
-/// @notice Struct representing incremental merkle tree. Contains the current branch, while
-/// the number of inserted leaves are stored externally, and is later supplied for tree operation.
-/// Note: the hash function for the tree H(x, y) is defined as:
-/// - H(0,0) = 0
-/// - H(x,y) = keccak256(x, y), if x != 0 or y != 0
-/// @dev Following invariant is enforced:
-/// - First empty leaf has index `count`, where `count` is the amount of the inserted leafs so far
-/// - Value for the empty leaf is zeroes[0] = bytes32(0)
-/// - Value for node having empty children zeroes[i] = H(zeroes[i-1], zeroes[i-1])
-/// - branch[i] is the value of a node on the i-th level:
-///     - Levels are numbered from 0 (leafs) to ORIGIN_TREE_HEIGHT (root)
-///     - branch[i] stores the value for the node, that is a "left child"
-///     - The stored node must have non-zero values for both their children
-///     - Out of all level's "left child" nodes with "non-zero children",
-///       the one with the biggest index (the rightmost one) is stored.
-/// - Therefore, proof of inclusion for the first ZERO leaf (`index == count`) is:
-///     - i-th bit in `count` is 0 => we are the left child on this level => sibling is the right child
-///       sibling does not exist yet
-///         - Therefore proof[i] = zeroes[i]
-///     - i-th bit in `count` is 1 => we are the right child on this level => sibling is the left child
-///       sibling is the rightmost "left child" node on the level
-///         - Therefore proof[i] = branch[i]
+/// `BaseTree` is a struct representing incremental merkle tree.
+/// - Contains only the current branch.
+/// - The number of inserted leaves is stored externally, and is later supplied for tree operations.
+/// - Has a fixed height of `ORIGIN_TREE_HEIGHT`.
+/// - Can store up to `2 ** ORIGIN_TREE_HEIGHT - 1` leaves.
+/// > Note: the hash function for the tree `H(x, y)` is defined as:
+/// > - `H(0,0) = 0`
+/// > - `H(x,y) = keccak256(x, y), when (x != 0 || y != 0)`
+/// ## Invariant for leafs
+/// - The leftmost empty leaf has `index == count`, where `count` is the amount of the inserted leafs so far.
+/// - Value for any empty leaf or node is bytes32(0).
+/// ## Invariant for current branch
+/// `branch[i]` is always the value of a node on the i-th level:
+/// - Levels are numbered from leafs to root: `0 .. ORIGIN_TREE_HEIGHT`.
+/// - `branch[i]` stores the value for the node, that is a "left child".
+/// - The stored node must have non-zero values for both their children.
+/// - Out of all level's "left child" nodes with "non-zero children",
+/// the one with the biggest index (the rightmost one) is stored as `branch[i]`.
+/// > __Therefore, `branch` is always a proof of inclusion for the first empty leaf (`index == count`).__
+/// _Here is why:_
+/// - i-th bit in `count` is 0 → we are the left child on this level → sibling is the right child
+/// that does not exist yet → `proof[i] = bytes32(0)`.
+/// - i-th bit in `count` is 1 → we are the right child on this level → sibling is the left child
+/// sibling is the rightmost "left child" node on the level → `proof[i] = branch[i]`.
 struct BaseTree {
     bytes32[ORIGIN_TREE_HEIGHT] branch;
 }
 
 using MerkleLib for BaseTree global;
 
-/// @notice Incremental merkle tree keeping track of its historical merkle roots.
-/// @dev roots[N] is the root of the tree after N leafs were inserted
+/// `HistoricalTree` is an incremental merkle tree keeping track of its historical merkle roots.
+/// > - `roots[N]` is the root of the tree after `N` leafs were inserted
+/// > - `roots[0] == bytes32(0)`
 /// @param tree     Incremental merkle tree
 /// @param roots    Historical merkle roots of the tree
 struct HistoricalTree {
@@ -56,17 +45,29 @@ struct HistoricalTree {
 
 using MerkleLib for HistoricalTree global;
 
-/// @notice Struct representing a Dynamic Merkle Tree with 2**AGENT_TREE_HEIGHT leaves
-/// A single operation is available: update value for existing leaf (which might be ZERO).
-/// This is done by requesting the proof of inclusion for the old value, which is used to
+/// `DynamicTree` is a struct representing a Merkle Tree with `2**AGENT_TREE_HEIGHT` leaves.
+/// - A single operation is available: update value for leaf with an arbitrary index (which might be a non-empty leaf).
+/// - This is done by requesting the proof of inclusion for the old value, which is used to both
 /// verify the old value, and calculate the new root.
-/// Based on Original idea from https://ethresear.ch/t/efficient-on-chain-dynamic-merkle-tree/11054
+/// > Based on Original idea from [ER forum post](https://ethresear.ch/t/efficient-on-chain-dynamic-merkle-tree/11054).
 struct DynamicTree {
     bytes32 root;
 }
 
 using MerkleLib for DynamicTree global;
 
+/// MerkleLib is work based on Nomad's Merkle.sol, which is used under MIT OR Apache-2.0
+/// [link](https://github.com/nomad-xyz/monorepo/blob/main/packages/contracts-core/contracts/libs/Merkle.sol).
+/// With the following changes:
+/// - Adapted for Solidity 0.8.x.
+/// - Amount of tree leaves stored externally.
+/// - Added thorough documentation.
+/// - `H(0,0) = 0` optimization from [ER forum post](https://ethresear.ch/t/optimizing-sparse-merkle-trees/3751/6).
+/// > Nomad's Merkle.sol is work based on eth2 deposit contract, which is used under CC0-1.0
+///[link](https://github.com/ethereum/deposit_contract/blob/dev/deposit_contract/contracts/validator_registration.v.py).
+/// With the following changes:
+/// > - Implemented in Solidity 0.7.6 (eth2 deposit contract implemented in Vyper).
+/// > - `H() = keccak256()` is used as the hashing function instead of `sha256()`.
 library MerkleLib {
     uint256 internal constant MAX_LEAVES = 2 ** ORIGIN_TREE_HEIGHT - 1;
 
@@ -123,10 +124,10 @@ library MerkleLib {
             // Check if we are the left or the right child on the current level
             if ((count & 1) == 1) {
                 // We are the right child. Our sibling is the "rightmost" "left-child" node
-                // that has two non-zero children => sibling is tree.branch[i]
+                // that has two non-zero children → sibling is tree.branch[i]
                 current = getParent(tree.branch[i], current);
             } else {
-                // We are the left child. Our sibling does not exist yet => sibling is ZERO
+                // We are the left child. Our sibling does not exist yet → sibling is ZERO
                 current = getParent(current, bytes32(0));
             }
             // Get the parent index, and go to the next tree level
