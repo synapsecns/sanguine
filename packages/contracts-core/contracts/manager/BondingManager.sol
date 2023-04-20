@@ -134,6 +134,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     /// @inheritdoc InterfaceBondingManager
     function remoteRegistrySlash(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
         external
+        returns (bytes4 magicValue)
     {
         // Only destination can pass Manager Messages
         require(msg.sender == destination, "!destination");
@@ -145,6 +146,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         _initiateSlashing(domain, agent, prover);
         // Notify local registries about the slashing
         _notifySlashing(DESTINATION | ORIGIN, domain, agent, prover);
+        // Magic value to return is selector of the called function
+        return this.remoteRegistrySlash.selector;
     }
 
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════

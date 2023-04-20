@@ -69,7 +69,10 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceLightManager
-    function remoteWithdrawTips(uint32 msgOrigin, uint256 proofMaturity, address recipient, uint256 amount) external {
+    function remoteWithdrawTips(uint32 msgOrigin, uint256 proofMaturity, address recipient, uint256 amount)
+        external
+        returns (bytes4 magicValue)
+    {
         // Only destination can pass Manager Messages
         require(msg.sender == destination, "!destination");
         // Only AgentManager on Synapse Chain can give instructions to withdraw tips
@@ -77,6 +80,8 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
         // Check that merkle proof is mature enough
         require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
+        // Magic value to return is selector of the called function
+        return this.remoteWithdrawTips.selector;
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════

@@ -55,12 +55,16 @@ interface InterfaceBondingManager {
      * @dev This initiates the process of agent slashing. It could be immediately
      * completed by anyone calling completeSlashing() providing a correct merkle proof
      * for the OLD agent status.
-     * @param domain    Domain where the slashed agent was active
-     * @param agent     Address of the slashed Agent
-     * @param prover    Address that initially provided fraud proof in SystemRegistry
+     * Note: as an extra security check this function returns its own selector, so that
+     * Destination could verify that a "remote" function was called when executing a manager message.
+     * @param domain        Domain where the slashed agent was active
+     * @param agent         Address of the slashed Agent
+     * @param prover        Address that initially provided fraud proof in SystemRegistry
+     * @return magicValue   Selector of this function
      */
     function remoteRegistrySlash(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
-        external;
+        external
+        returns (bytes4 magicValue);
 
     /**
      * @notice Withdraws locked base message tips from requested domain Origin to the recipient.
