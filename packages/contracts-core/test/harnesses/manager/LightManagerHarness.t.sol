@@ -7,7 +7,8 @@ import {LightManager} from "../../../contracts/manager/LightManager.sol";
 contract LightManagerHarness is LightManager {
     constructor(uint32 domain) LightManager(domain) {}
 
-    function remoteMockFunc(uint32, uint256, bytes32) external view {
+    function remoteMockFunc(uint32, uint256, bytes32) external view returns (bytes4) {
         require(msg.sender == destination, "!destination");
+        return this.remoteMockFunc.selector;
     }
 }

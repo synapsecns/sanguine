@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib, MemView} from "../libs/BaseMessage.sol";
-import {ByteString} from "../libs/ByteString.sol";
+import {ByteString, CallData} from "../libs/ByteString.sol";
 import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
@@ -231,10 +231,17 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
 
     function _executeManagerMessage(Header header, uint256 proofMaturity, MemView body) internal returns (bool) {
         // TODO: introduce incentives for executing Manager Messages?
+        CallData callData = body.castToCallData();
         // Add the (origin, proofMaturity) values to the calldata
-        bytes memory payload = body.castToCallData().addPrefix(abi.encode(header.origin(), proofMaturity));
+        bytes memory payload = callData.addPrefix(abi.encode(header.origin(), proofMaturity));
         // functionCall() calls AgentManager and bubbles the revert from the external call
-        address(agentManager).functionCall(payload);
+        bytes memory magicValue = address(agentManager).functionCall(payload);
+        // We check the returned value here to ensure that only "remoteX" functions cold be called this way
+        // This is done to prevent an attack by a malicious Notary trying to force Destination to call arbitrary
+        // function in a local AgentManager. Any other function will not return the required selector,
+        // while the "remoteX" functions will perform the proofMaturity check that will make impossible to
+        // submit and attestation and execute a malicious Manager Message immediately, preventing this attack vector.
+        require(magicValue.length == 32 && bytes32(magicValue) == callData.callSelector(), "!magicValue");
         return true;
     }
 
