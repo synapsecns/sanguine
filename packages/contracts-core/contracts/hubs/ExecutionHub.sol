@@ -4,12 +4,12 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib, MemView} from "../libs/BaseMessage.sol";
+import {ByteString} from "../libs/ByteString.sol";
 import {SYSTEM_ROUTER, ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleLib} from "../libs/Merkle.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
 import {MessageStatus} from "../libs/Structures.sol";
-import {SystemMessage, SystemMessageLib} from "../libs/SystemMessage.sol";
 import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -17,6 +17,8 @@ import {AgentStatus, DisputeHub} from "./DisputeHub.sol";
 import {ExecutionHubEvents} from "../events/ExecutionHubEvents.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
  * @notice ExecutionHub is responsible for executing the messages that are
@@ -26,7 +28,9 @@ import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
  * On the other chains Notaries are submitting the attestations that are later used for proving.
  */
 abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub {
+    using Address for address;
     using BaseMessageLib for MemView;
+    using ByteString for MemView;
     using MessageLib for bytes;
     using TypeCasts for bytes32;
 
@@ -104,15 +108,15 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         uint256 proofMaturity = block.timestamp - rootData.submittedAt;
         require(proofMaturity >= header.optimisticPeriod(), "!optimisticPeriod");
         bool success;
-        // Only System/Base message flags exist
-        if (message.flag() == MessageFlag.System) {
-            // gasLimit is ignored when executing system messages
-            success = _executeSystemMessage(header, proofMaturity, message.body());
-        } else {
+        // Only Base/Manager message flags exist
+        if (message.flag() == MessageFlag.Base) {
             // This will revert if message body is not a formatted BaseMessage payload
             BaseMessage baseMessage = message.body().castToBaseMessage();
             success = _executeBaseMessage(header, proofMaturity, gasLimit, baseMessage);
             emit TipsRecorded(msgLeaf, Tips.unwrap(baseMessage.tips()));
+        } else {
+            // gasLimit is ignored when executing manager messages
+            success = _executeManagerMessage(header, proofMaturity, message.body());
         }
         if (rcptData.origin == 0) {
             // This is the first valid attempt to execute the message => save origin and snapshot proof
@@ -225,10 +229,12 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         }
     }
 
-    function _executeSystemMessage(Header header, uint256 proofMaturity, MemView body) internal returns (bool) {
-        // TODO: introduce incentives for executing System Messages?
-        // Forward system message to System Router
-        systemRouter.receiveSystemMessage(header.origin(), header.nonce(), proofMaturity, body.clone());
+    function _executeManagerMessage(Header header, uint256 proofMaturity, MemView body) internal returns (bool) {
+        // TODO: introduce incentives for executing Manager Messages?
+        // Add the (origin, proofMaturity) values to the calldata
+        bytes memory payload = body.castToCallData().addPrefix(abi.encode(header.origin(), proofMaturity));
+        // functionCall() calls AgentManager and bubbles the revert from the external call
+        address(agentManager).functionCall(payload);
         return true;
     }
 

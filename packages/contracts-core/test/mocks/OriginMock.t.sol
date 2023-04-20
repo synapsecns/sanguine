@@ -20,7 +20,7 @@ contract OriginMock is StateHubMock, SystemRegistryMock, SystemContractMock, Int
         bytes memory content
     ) external payable returns (uint32 messageNonce, bytes32 messageHash) {}
 
-    function sendSystemMessage(uint32 destination, uint32 optimisticPeriod, bytes memory body)
+    function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes memory body)
         external
         returns (uint32 messageNonce, bytes32 messageHash)
     {}
