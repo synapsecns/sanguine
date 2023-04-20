@@ -27,11 +27,5 @@ interface InterfaceLightManager {
      * @param recipient     Address to withdraw tips to
      * @param amount        Tips value to withdraw
      */
-    function remoteWithdrawTips(
-        uint256 proofMaturity,
-        uint32 callOrigin,
-        SystemEntity systemCaller,
-        address recipient,
-        uint256 amount
-    ) external;
+    function remoteWithdrawTips(uint32 msgOrigin, uint256 proofMaturity, address recipient, uint256 amount) external;
 }

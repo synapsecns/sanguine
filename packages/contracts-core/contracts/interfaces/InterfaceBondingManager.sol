@@ -61,14 +61,8 @@ interface InterfaceBondingManager {
      * @param agent     Address of the slashed Agent
      * @param prover    Address that initially provided fraud proof in SystemRegistry
      */
-    function remoteRegistrySlash(
-        uint256 proofMaturity,
-        uint32 callOrigin,
-        SystemEntity systemCaller,
-        uint32 domain,
-        address agent,
-        address prover
-    ) external;
+    function remoteRegistrySlash(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
+        external;
 
     /**
      * @notice Withdraws locked base message tips from requested domain Origin to the recipient.
