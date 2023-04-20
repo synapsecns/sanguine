@@ -27,14 +27,15 @@ interface InterfaceOrigin {
 
     /**
      * @notice Send a manager message to the destination domain.
-     * @dev This could only be called by AgentManager, which takes care of encoding the message body.
-     * The message body is a calldata payload to pass to AgentManager on the remote chain.
+     * @dev This could only be called by AgentManager, which takes care of encoding the calldata payload.
+     * Note: (msgOrigin, proofMaturity) security args will be added to payload on the destination chain
+     * so that the AgentManager could verify where the Manager Message came from and how mature is the proof.
      * Note: function is not payable, as no tips are required for sending a manager message.
      * @param destination           Domain of destination chain
      * @param optimisticPeriod      Optimistic period for message execution on destination chain
-     * @param body                  Body of the manager message
+     * @param payload               Payload for calling AgentManager on destination chain (with extra security args)
      */
-    function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes memory body)
+    function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes memory payload)
         external
         returns (uint32 messageNonce, bytes32 messageHash);
 

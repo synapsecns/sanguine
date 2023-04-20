@@ -161,7 +161,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
             InterfaceOrigin(origin).sendManagerMessage({
                 destination: origin_,
                 optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
-                body: abi.encodeWithSelector(InterfaceLightManager.remoteWithdrawTips.selector, recipient, amount)
+                payload: abi.encodeWithSelector(InterfaceLightManager.remoteWithdrawTips.selector, recipient, amount)
             });
         }
     }

@@ -87,7 +87,7 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
         InterfaceOrigin(origin).sendManagerMessage({
             destination: SYNAPSE_DOMAIN,
             optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
-            body: abi.encodeWithSelector(InterfaceBondingManager.remoteRegistrySlash.selector, domain, agent, prover)
+            payload: abi.encodeWithSelector(InterfaceBondingManager.remoteRegistrySlash.selector, domain, agent, prover)
         });
     }
 

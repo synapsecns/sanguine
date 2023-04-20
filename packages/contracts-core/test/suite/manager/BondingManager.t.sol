@@ -240,7 +240,7 @@ contract BondingManagerTest is AgentManagerTest {
         vm.assume(domain != DOMAIN_SYNAPSE);
         // remoteWithdrawTips(msgOrigin, proofMaturity, recipient, amount), but first two are omitted
         bytes memory payload = abi.encodeWithSelector(lightManager.remoteWithdrawTips.selector, recipient, amount);
-        // sendManagerMessage(destination, optimisticPeriod, body)
+        // sendManagerMessage(destination, optimisticPeriod, payload)
         bytes memory expectedCall = abi.encodeWithSelector(
             InterfaceOrigin.sendManagerMessage.selector, domain, BONDING_OPTIMISTIC_PERIOD, payload
         );

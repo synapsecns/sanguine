@@ -171,13 +171,13 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     }
 
     /// @inheritdoc InterfaceOrigin
-    function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes memory body)
+    function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes memory payload)
         external
         onlyAgentManager
         returns (uint32 messageNonce, bytes32 messageHash)
     {
-        // AgentManager (checked via modifier) is responsible for constructing the body correctly.
-        return _sendMessage(destination, optimisticPeriod, MessageFlag.Manager, body);
+        // AgentManager (checked via modifier) is responsible for constructing the calldata payload correctly.
+        return _sendMessage(destination, optimisticPeriod, MessageFlag.Manager, payload);
     }
 
     /// @inheritdoc InterfaceOrigin
