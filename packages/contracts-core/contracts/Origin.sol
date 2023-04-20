@@ -5,7 +5,7 @@ pragma solidity 0.8.17;
 import {BaseMessageLib} from "./libs/BaseMessage.sol";
 import {MAX_CONTENT_BYTES} from "./libs/Constants.sol";
 import {MemView, MemViewLib} from "./libs/MemView.sol";
-import {HeaderLib, MessageFlag} from "./libs/Message.sol";
+import {Header, HeaderLib, MessageFlag} from "./libs/Message.sol";
 import {Request, RequestLib} from "./libs/Request.sol";
 import {StateReport} from "./libs/StateReport.sol";
 import {State} from "./libs/State.sol";
@@ -199,14 +199,14 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
     {
         // Format the message header
         messageNonce = _nextNonce();
-        bytes memory headerPayload = HeaderLib.formatHeader({
+        Header header = HeaderLib.encodeHeader({
             origin_: localDomain,
             nonce_: messageNonce,
             destination_: destination,
             optimisticPeriod_: optimisticPeriod
         });
         // Format the full message payload
-        bytes memory msgPayload = flag.formatMessage(headerPayload, body);
+        bytes memory msgPayload = flag.formatMessage(header, body);
         // Insert new leaf into the Origin Merkle Tree and save the updated state
         messageHash = keccak256(msgPayload);
         _insertAndSave(messageHash);
