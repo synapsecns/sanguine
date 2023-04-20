@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentFlag, SystemEntity} from "../libs/Structures.sol";
-
 interface InterfaceBondingManager {
     /**
      * @notice Adds a new agent for the domain. This is either a fresh address (Inactive),
@@ -57,22 +55,20 @@ interface InterfaceBondingManager {
      * @dev This initiates the process of agent slashing. It could be immediately
      * completed by anyone calling completeSlashing() providing a correct merkle proof
      * for the OLD agent status.
-     * @param domain    Domain where the slashed agent was active
-     * @param agent     Address of the slashed Agent
-     * @param prover    Address that initially provided fraud proof in SystemRegistry
+     * Note: as an extra security check this function returns its own selector, so that
+     * Destination could verify that a "remote" function was called when executing a manager message.
+     * @param domain        Domain where the slashed agent was active
+     * @param agent         Address of the slashed Agent
+     * @param prover        Address that initially provided fraud proof in SystemRegistry
+     * @return magicValue   Selector of this function
      */
-    function remoteRegistrySlash(
-        uint256 proofMaturity,
-        uint32 callOrigin,
-        SystemEntity systemCaller,
-        uint32 domain,
-        address agent,
-        address prover
-    ) external;
+    function remoteRegistrySlash(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
+        external
+        returns (bytes4 magicValue);
 
     /**
      * @notice Withdraws locked base message tips from requested domain Origin to the recipient.
-     * Issues a call to a local Origin contract, or sends a system message to the remote chain.
+     * Issues a call to a local Origin contract, or sends a manager message to the remote chain.
      * @dev Could only be called by the Summit contract.
      * @param recipient     Address to withdraw tips to
      * @param origin        Domain where tips need to be withdrawn

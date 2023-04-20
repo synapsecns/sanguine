@@ -26,15 +26,16 @@ interface InterfaceOrigin {
     ) external payable returns (uint32 messageNonce, bytes32 messageHash);
 
     /**
-     * @notice Send a system message to the destination domain.
-     * @dev This could only be called by SystemRouter, which takes care of encoding/decoding the message body.
-     * The message body includes the sender and the recipient of the system message.
-     * Note: function is not payable, as no tips are required for sending a system message.
+     * @notice Send a manager message to the destination domain.
+     * @dev This could only be called by AgentManager, which takes care of encoding the calldata payload.
+     * Note: (msgOrigin, proofMaturity) security args will be added to payload on the destination chain
+     * so that the AgentManager could verify where the Manager Message came from and how mature is the proof.
+     * Note: function is not payable, as no tips are required for sending a manager message.
      * @param destination           Domain of destination chain
      * @param optimisticPeriod      Optimistic period for message execution on destination chain
-     * @param body                  Body of the system message
+     * @param payload               Payload for calling AgentManager on destination chain (with extra security args)
      */
-    function sendSystemMessage(uint32 destination, uint32 optimisticPeriod, bytes memory body)
+    function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes memory payload)
         external
         returns (uint32 messageNonce, bytes32 messageHash);
 

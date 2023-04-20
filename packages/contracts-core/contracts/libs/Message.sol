@@ -2,9 +2,9 @@
 pragma solidity 0.8.17;
 
 import {BaseMessageLib} from "./BaseMessage.sol";
+import {ByteString} from "./ByteString.sol";
 import {HEADER_LENGTH} from "./Constants.sol";
 import {Header, HeaderLib} from "./Header.sol";
-import {SystemMessageLib} from "./SystemMessage.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
 /// Message is a memory over over a formatted message payload.
@@ -13,11 +13,11 @@ type Message is uint256;
 using MessageLib for Message global;
 
 /// Types of messages supported by Origin-Destination
-/// - System: message sent between system contracts located on different chains
 /// - Base: message sent by protocol user, contains tips
+/// - Manager: message sent between AgentManager contracts located on different chains, no tips
 enum MessageFlag {
-    System,
-    Base
+    Base,
+    Manager
 }
 
 using MessageLib for MessageFlag global;
@@ -33,9 +33,9 @@ using MessageLib for MessageFlag global;
 /// | [017..AAA) | body   | bytes   | ??    | Formatted payload (according to flag) with message body |
 library MessageLib {
     using BaseMessageLib for MemView;
+    using ByteString for MemView;
     using MemViewLib for bytes;
     using HeaderLib for MemView;
-    using SystemMessageLib for MemView;
 
     /// @dev The variables below are not supposed to be used outside of the library directly.
     uint256 private constant OFFSET_FLAG = 0;
@@ -87,13 +87,13 @@ library MessageLib {
         // Check that Flag fits into MessageFlag enum
         if (flag_ > uint8(type(MessageFlag).max)) return false;
         // Check that body is formatted according to the flag
-        // Only System/Base message flags exist
-        if (flag_ == uint8(MessageFlag.System)) {
-            // Check if body is a formatted system message
-            return _body(memView).isSystemMessage();
-        } else {
+        // Only Base/Manager message flags exist
+        if (flag_ == uint8(MessageFlag.Base)) {
             // Check if body is a formatted base message
             return _body(memView).isBaseMessage();
+        } else {
+            // Check if body is a formatted calldata for AgentManager call
+            return _body(memView).isCallData();
         }
     }
 

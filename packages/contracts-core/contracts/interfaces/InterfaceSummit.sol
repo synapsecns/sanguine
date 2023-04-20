@@ -17,7 +17,7 @@ interface InterfaceSummit {
 
     /**
      * @notice Withdraws locked base message tips from requested domain Origin to the recipient.
-     * This is done by a call to a local Origin contract, or by a system message to the remote chain.
+     * This is done by a call to a local Origin contract, or by a manager message to the remote chain.
      * @dev This will revert, if the pending balance of origin tips (earned-claimed) is lower than requested.
      * @param origin    Domain of chain to withdraw tips on
      * @param amount    Amount of tips to withdraw

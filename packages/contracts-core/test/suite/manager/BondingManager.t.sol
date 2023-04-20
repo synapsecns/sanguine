@@ -2,13 +2,12 @@
 pragma solidity 0.8.17;
 
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
-import {ISystemRegistry} from "../../../contracts/interfaces/ISystemRegistry.sol";
 import {AGENT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
 import {MerkleLib} from "../../../contracts/libs/Merkle.sol";
 import {AgentFlag, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
-import {BondingManager, ISystemContract, ISystemRegistry, Summit, SynapseTest} from "../../utils/SynapseTest.t.sol";
+import {BondingManagerHarness, ISystemRegistry, Summit, SynapseTest} from "../../utils/SynapseTest.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable no-empty-blocks
@@ -24,9 +23,9 @@ contract BondingManagerTest is AgentManagerTest {
     // ═══════════════════════════════════════════════ TESTS: SETUP ════════════════════════════════════════════════════
 
     function test_initializer(address caller, address origin_, address destination_) public {
-        bondingManager = new BondingManager(DOMAIN_SYNAPSE);
+        bondingManager = new BondingManagerHarness(DOMAIN_SYNAPSE);
         vm.prank(caller);
-        bondingManager.initialize(ISystemRegistry(origin_), ISystemRegistry(destination_));
+        bondingManager.initialize(origin_, destination_);
         assertEq(bondingManager.owner(), caller);
         assertEq(address(bondingManager.origin()), origin_);
         assertEq(address(bondingManager.destination()), destination_);
@@ -65,8 +64,8 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_addAgent_fromScratch() public {
         // Deploy fresh instance of BondingManager
-        bondingManager = new BondingManager(DOMAIN_SYNAPSE);
-        bondingManager.initialize(ISystemRegistry(originSynapse), ISystemRegistry(summit));
+        bondingManager = new BondingManagerHarness(DOMAIN_SYNAPSE);
+        bondingManager.initialize(originSynapse, summit);
         // Try to add all agents one by one
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
@@ -189,19 +188,18 @@ contract BondingManagerTest is AgentManagerTest {
 
     // ═══════════════════════════════════════════ TEST: SLASHING AGENTS ═══════════════════════════════════════════════
 
-    function test_remoteRegistrySlash(uint32 callOrigin, uint256 domainId, uint256 agentId, address prover) public {
+    function test_remoteRegistrySlash(uint32 msgOrigin, uint256 domainId, uint256 agentId, address prover) public {
         // Needs to be a REMOTE call
-        vm.assume(callOrigin != DOMAIN_SYNAPSE);
+        vm.assume(msgOrigin != DOMAIN_SYNAPSE);
         (uint32 domain, address agent) = getAgent(domainId, agentId);
-        bytes memory localCall = abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent);
         skipBondingOptimisticPeriod();
+        bytes memory msgPayload = managerMsgPayload(msgOrigin, remoteRegistrySlashCalldata(domain, agent, prover));
+        bytes memory expectedCall = abi.encodeWithSelector(ISystemRegistry.managerSlash.selector, domain, agent);
         vm.expectEmit();
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        vm.expectCall(summit, localCall);
-        vm.expectCall(originSynapse, localCall);
-        systemPrank(
-            systemRouterSynapse, callOrigin, SystemEntity.AgentManager, remoteSlashPayload(domain, agent, prover)
-        );
+        vm.expectCall(summit, expectedCall);
+        vm.expectCall(originSynapse, expectedCall);
+        managerMsgPrank(msgPayload);
         assertEq(uint8(bondingManager.agentStatus(agent).flag), uint8(AgentFlag.Fraudulent));
         (bool isSlashed, address prover_) = bondingManager.slashStatus(agent);
         assertTrue(isSlashed);
@@ -240,13 +238,13 @@ contract BondingManagerTest is AgentManagerTest {
 
     function test_withdrawTips_remote(address recipient, uint32 domain, uint256 amount) public {
         vm.assume(domain != DOMAIN_SYNAPSE);
-        // remoteWithdrawTips(proofMaturity, callOrigin, systemCaller, recipient, amount), but first three are omitted
+        // remoteWithdrawTips(msgOrigin, proofMaturity, recipient, amount), but first two are omitted
         bytes memory payload = abi.encodeWithSelector(lightManager.remoteWithdrawTips.selector, recipient, amount);
-        // systemCall(destination_, optimisticPeriod, recipient, payload)
+        // sendManagerMessage(destination, optimisticPeriod, payload)
         bytes memory expectedCall = abi.encodeWithSelector(
-            systemRouter.systemCall.selector, domain, BONDING_OPTIMISTIC_PERIOD, SystemEntity.AgentManager, payload
+            InterfaceOrigin.sendManagerMessage.selector, domain, BONDING_OPTIMISTIC_PERIOD, payload
         );
-        vm.expectCall(address(systemRouterSynapse), expectedCall);
+        vm.expectCall(address(originSynapse), expectedCall);
         vm.prank(summit);
         bondingManager.withdrawTips(recipient, domain, amount);
     }

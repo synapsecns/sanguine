@@ -121,7 +121,7 @@ library ByteString {
         require(_fullWords(prefix.length), "Incorrect prefix");
         MemView[] memory views = new MemView[](3);
         // Use payload's function selector
-        views[0] = callData.callSelector();
+        views[0] = abi.encodePacked(callData.callSelector()).ref();
         // Use prefix as the first arguments
         views[1] = prefix.ref();
         // Use payload's remaining arguments
@@ -180,10 +180,10 @@ library ByteString {
     }
 
     /// @notice Returns selector for the provided calldata.
-    function callSelector(CallData callData) internal pure returns (MemView) {
+    function callSelector(CallData callData) internal pure returns (bytes4) {
         // Get the underlying memory view
         MemView memView = unwrap(callData);
-        return memView.slice({index_: OFFSET_SELECTOR, len_: SELECTOR_LENGTH});
+        return bytes4(memView.index({index_: OFFSET_SELECTOR, bytes_: SELECTOR_LENGTH}));
     }
 
     /// @notice Returns abi encoded arguments for the provided calldata.
