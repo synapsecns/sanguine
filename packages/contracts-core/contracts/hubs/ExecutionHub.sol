@@ -236,11 +236,11 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         bytes memory payload = callData.addPrefix(abi.encode(header.origin(), proofMaturity));
         // functionCall() calls AgentManager and bubbles the revert from the external call
         bytes memory magicValue = address(agentManager).functionCall(payload);
-        // We check the returned value here to ensure that only "remoteX" functions cold be called this way
-        // This is done to prevent an attack by a malicious Notary trying to force Destination to call arbitrary
+        // We check the returned value here to ensure that only "remoteX" functions could be called this way.
+        // This is done to prevent an attack by a malicious Notary trying to force Destination to call an arbitrary
         // function in a local AgentManager. Any other function will not return the required selector,
         // while the "remoteX" functions will perform the proofMaturity check that will make impossible to
-        // submit and attestation and execute a malicious Manager Message immediately, preventing this attack vector.
+        // submit an attestation and execute a malicious Manager Message immediately, preventing this attack vector.
         require(magicValue.length == 32 && bytes32(magicValue) == callData.callSelector(), "!magicValue");
         return true;
     }
