@@ -77,14 +77,13 @@ struct RawCallData {
 
 using CastLib for RawCallData global;
 
-struct RawSystemCall {
+struct RawManagerCall {
     uint32 origin;
-    uint32 nonce;
     uint256 proofMaturity;
     RawCallData callData;
 }
 
-using CastLib for RawSystemCall global;
+using CastLib for RawManagerCall global;
 
 struct RawBaseMessage {
     bytes32 sender;
@@ -164,7 +163,6 @@ library CastLib {
     using SnapshotLib for bytes;
     using StateLib for bytes;
     using StateReportLib for bytes;
-    using SystemMessageLib for bytes;
 
     /// @notice Prevents this contract from being included in the coverage report
     function testCastLib() external {}
@@ -262,8 +260,9 @@ library CastLib {
         ptr = rcd.formatCallData().castToCallData();
     }
 
-    function callPayload(RawSystemCall memory rsc) internal view returns (bytes memory scPayload) {
-        scPayload = rsc.callData.castToCallData().addPrefix(abi.encode(rsc.proofMaturity, rsc.origin));
+    function callPayload(RawManagerCall memory rsc) internal view returns (bytes memory scPayload) {
+        // Add (msgOrigin, proofMaturity) as the first two args
+        scPayload = rsc.callData.castToCallData().addPrefix(abi.encode(rsc.origin, rsc.proofMaturity));
     }
 
     // ═════════════════════════════════════════════════ RECEIPT ═════════════════════════════════════════════════════
