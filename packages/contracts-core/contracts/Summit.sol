@@ -230,7 +230,17 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @inheritdoc InterfaceSummit
     function getLatestState(uint32 origin) external view returns (bytes memory statePayload) {
-        // TODO: implement once Agent Merkle Tree is done
+        // Get a list of currently active guards
+        address[] memory guards = InterfaceBondingManager(address(agentManager)).getActiveAgents(0);
+        SummitState memory latestState;
+        for (uint256 i = 0; i < guards.length; ++i) {
+            SummitState memory state = _latestState(origin, guards[i]);
+            if (state.nonce > latestState.nonce) latestState = state;
+        }
+        // Check if we found anything
+        if (latestState.nonce != 0) {
+            statePayload = _formatSummitState(latestState);
+        }
     }
 
     // ═══════════════════════════════════════════ INTERNAL LOGIC: QUEUE ═══════════════════════════════════════════════

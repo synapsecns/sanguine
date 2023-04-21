@@ -227,22 +227,21 @@ contract SummitTest is DisputeHubTest {
         checkLatestState();
     }
 
+    function test_getLatestState_empty(uint32 domain) public {
+        assertEq(InterfaceSummit(summit).getLatestState(domain), "");
+    }
+
     function checkLatestState() public {
-        // TODO: enable once Agent Merkle Tree is implemented
         // Check global latest state
-        // for (uint32 j = 0; j < STATES; ++j) {
-        //     RawState memory latestState;
-        //     for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
-        //         if (guardStates[i][j].nonce > latestState.nonce) {
-        //             latestState = guardStates[i][j];
-        //         }
-        //     }
-        //     assertEq(
-        //         InterfaceSummit(summit).getLatestState(j + 1),
-        //         latestState.formatState(),
-        //         "!getLatestState"
-        //     );
-        // }
+        for (uint32 j = 0; j < STATES; ++j) {
+            RawState memory latestState;
+            for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
+                if (guardStates[i][j].nonce > latestState.nonce) {
+                    latestState = guardStates[i][j];
+                }
+            }
+            assertEq(InterfaceSummit(summit).getLatestState(j + 1), latestState.formatState(), "!getLatestState");
+        }
     }
 
     // ══════════════════════════════════════════════ DISPUTE OPENING ══════════════════════════════════════════════════
