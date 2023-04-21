@@ -2,8 +2,9 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {Attestation} from "./libs/Attestation.sol";
+import {Attestation, AttestationLib} from "./libs/Attestation.sol";
 import {AttestationReport} from "./libs/AttestationReport.sol";
+import {ByteString} from "./libs/ByteString.sol";
 import {AGENT_ROOT_OPTIMISTIC_PERIOD} from "./libs/Constants.sol";
 import {AgentStatus, DestinationStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -16,6 +17,15 @@ import {DomainContext, Versioned} from "./system/SystemContract.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
+    using ByteString for bytes;
+
+    // TODO: this could be further optimized in terms of storage
+    struct StoredAttData {
+        bytes32 agentRoot;
+        bytes32 r;
+        bytes32 s;
+    }
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination
@@ -25,6 +35,9 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     /// @inheritdoc InterfaceDestination
     DestinationStatus public destStatus;
+
+    /// @dev Stored lookup data for all accepted Notary Attestations
+    StoredAttData[] internal _storedAttestations;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
@@ -67,10 +80,13 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         require(status.domain == localDomain, "Wrong Notary domain");
         // Check that Notary who submitted the attestation is not in dispute
         require(!_inDispute(notary), "Notary is in dispute");
+        (bytes32 r, bytes32 s, uint8 v) = attSignature.castToSignature().toRSV();
         // This will revert if snapshot root has been previously submitted
-        _saveAttestation(att, status.index);
+        _saveAttestation(att, status.index, v);
+        bytes32 agentRoot = att.agentRoot();
+        _storedAttestations.push(StoredAttData(agentRoot, r, s));
         // Save Agent Root if required, and update the Destination's Status
-        destStatus = _saveAgentRoot(rootPending, att.agentRoot(), notary);
+        destStatus = _saveAgentRoot(rootPending, agentRoot, notary);
         emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
         return true;
     }
@@ -130,6 +146,26 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // solhint-disable-next-line ordering
     function attestationsAmount() external view returns (uint256) {
         return _roots.length;
+    }
+
+    /// @inheritdoc InterfaceDestination
+    function getSignedAttestation(uint256 index)
+        external
+        view
+        returns (bytes memory attPayload, bytes memory attSignature)
+    {
+        require(index < _roots.length, "Index out of range");
+        bytes32 snapRoot = _roots[index];
+        SnapRootData memory rootData = _rootData[snapRoot];
+        StoredAttData memory storedAtt = _storedAttestations[index];
+        attPayload = AttestationLib.formatAttestation({
+            snapRoot_: snapRoot,
+            agentRoot_: storedAtt.agentRoot,
+            nonce_: rootData.attNonce,
+            blockNumber_: rootData.attBN,
+            timestamp_: rootData.attTS
+        });
+        attSignature = ByteString.formatSignature({r: storedAtt.r, s: storedAtt.s, v: rootData.notaryV});
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════

@@ -269,6 +269,34 @@ contract BondingManagerTest is AgentManagerTest {
         assertEq(bondingManager.agentLeaf(agent), bytes32(0));
     }
 
+    function test_getActiveAgents() public {
+        for (uint256 d = 0; d < allDomains.length; ++d) {
+            uint32 domain = allDomains[d];
+            address[] memory agents = bondingManager.getActiveAgents(domain);
+            assertEq(agents.length, DOMAIN_AGENTS);
+            for (uint256 i = 0; i < agents.length; ++i) {
+                assertEq(agents[i], domains[domain].agents[i]);
+            }
+        }
+    }
+
+    function test_getActiveAgents_agentsRemoved() public {
+        // Change status of four agents into Unstaking, Resting, Fraudulent and Slashed - one for each domain
+        test_initiateUnstaking(0, 0);
+        test_completeUnstaking(1, 1);
+        test_registrySlash_origin(2, 2, address(1));
+        test_completeSlashing_active(3, 3, address(1), false);
+        for (uint256 d = 0; d < allDomains.length; ++d) {
+            uint32 domain = allDomains[d];
+            address[] memory agents = bondingManager.getActiveAgents(domain);
+            assertEq(agents.length, DOMAIN_AGENTS - 1);
+            for (uint256 i = 0; i < agents.length; ++i) {
+                // Agent with index `d` was removed
+                assertEq(agents[i], domains[domain].agents[i < d ? i : i + 1]);
+            }
+        }
+    }
+
     function test_getProof_knownAgent(uint256 domainId, uint256 agentId) public {
         (, address agent) = getAgent(domainId, agentId);
         bytes32[] memory proof = bondingManager.getProof(agent);

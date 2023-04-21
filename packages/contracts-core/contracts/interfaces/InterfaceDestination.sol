@@ -49,6 +49,18 @@ interface InterfaceDestination {
     function attestationsAmount() external view returns (uint256);
 
     /**
+     * @notice Returns a Notary-signed attestation with a given index. Index refers to the list of all attestations
+     * accepted by this contract.
+     * @param index             Attestation index
+     * @return attPayload       Raw payload with Attestation data
+     * @return attSignature     Notary signature for the reported attestation
+     */
+    function getSignedAttestation(uint256 index)
+        external
+        view
+        returns (bytes memory attPayload, bytes memory attSignature);
+
+    /**
      * Returns status of Destination contract as far as snapshot/agent roots are concerned
      * @return snapRootTime     Timestamp when latest snapshot root was accepted
      * @return agentRootTime    Timestamp when latest agent root was accepted

@@ -79,6 +79,13 @@ interface InterfaceBondingManager {
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**
+     * @notice Returns all active agents for a given domain.
+     * @param domain    Domain to get agents from (ZERO for Guards)
+     * @param agents    List of active agents for the domain
+     */
+    function getActiveAgents(uint32 domain) external view returns (address[] memory agents);
+
+    /**
      * @notice Returns a leaf representing the current status of agent in the Agent Merkle Tree.
      * @dev Will return an empty leaf, if agent is not added to the tree yet.
      * @param agent     Agent address
