@@ -21,6 +21,9 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     // (agent => their status)
     mapping(address => AgentStatus) private _agentMap;
 
+    // (domain => past and current agents for domain)
+    mapping(uint32 => address[]) private _domainAgents;
+
     // A list of all agent accounts. First entry is address(0) to make agent indexes start from 1.
     address[] private _agents;
 
@@ -62,6 +65,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
             index = uint32(_agents.length);
             // Current leaf for index is bytes32(0), which is already assigned to `leaf`
             _agents.push(agent);
+            _domainAgents[domain].push(agent);
         } else if (status.flag == AgentFlag.Resting && status.domain == domain) {
             // Resting agent could be only added back to the same domain
             // Agent is already in `_agents`, fetch the saved index
@@ -174,6 +178,26 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     /// @inheritdoc IAgentManager
     function agentRoot() external view override returns (bytes32) {
         return _agentTree.root;
+    }
+
+    /// @inheritdoc InterfaceBondingManager
+    function getActiveAgents(uint32 domain) external view returns (address[] memory agents) {
+        uint256 amount = _domainAgents[domain].length;
+        agents = new address[](amount);
+        uint256 activeAgents = 0;
+        for (uint256 i = 0; i < amount; ++i) {
+            address agent = _domainAgents[domain][i];
+            if (agentStatus(agent).flag == AgentFlag.Active) {
+                agents[activeAgents++] = agent;
+            }
+        }
+        if (activeAgents != amount) {
+            // Shrink the returned array by storing the required length in memory
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                mstore(agents, activeAgents)
+            }
+        }
     }
 
     /// @inheritdoc InterfaceBondingManager
