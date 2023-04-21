@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {AGENT_TREE_HEIGHT, ORIGIN_TREE_HEIGHT} from "./Constants.sol";
+import {MerkleMath} from "./MerkleMath.sol";
 
 /// `BaseTree` is a struct representing incremental merkle tree.
 /// - Contains only the current branch.
@@ -107,7 +108,7 @@ library MerkleTree {
             // Meaning on branch from JUST INSERTED leaf, `node` is a right child.
             // We compute value for `node` parent using `tree.branch` invariant:
             // This is the rightmost "left child" node, which would be sibling of `node`.
-            node = getParent(tree.branch[i], node);
+            node = MerkleMath.getParent(tree.branch[i], node);
             // Get the parent index, and go to the next tree level
             newCount >>= 1;
             unchecked {
@@ -131,10 +132,10 @@ library MerkleTree {
             if ((count & 1) == 1) {
                 // We are the right child. Our sibling is the "rightmost" "left-child" node
                 // that has two non-empty children → sibling is `tree.branch[i]`
-                current = getParent(tree.branch[i], current);
+                current = MerkleMath.getParent(tree.branch[i], current);
             } else {
                 // We are the left child. Our sibling does not exist yet → sibling is EMPTY
-                current = getParent(current, bytes32(0));
+                current = MerkleMath.getParent(current, bytes32(0));
             }
             // Get the parent index, and go to the next tree level
             count >>= 1;
@@ -197,79 +198,10 @@ library MerkleTree {
         bytes32 newValue
     ) internal returns (bytes32 newRoot) {
         // Check that the old value + proof result in a correct root
-        require(proofRoot(index, oldValue, branch, AGENT_TREE_HEIGHT) == tree.root, "Incorrect proof");
+        require(MerkleMath.proofRoot(index, oldValue, branch, AGENT_TREE_HEIGHT) == tree.root, "Incorrect proof");
         // New root is new value + the same proof (values for sibling nodes are not updated)
-        newRoot = proofRoot(index, newValue, branch, AGENT_TREE_HEIGHT);
+        newRoot = MerkleMath.proofRoot(index, newValue, branch, AGENT_TREE_HEIGHT);
         // Write the new root
         tree.root = newRoot;
-    }
-
-    // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
-
-    /**
-     * @notice Calculates the merkle root for the given leaf and merkle proof.
-     * @dev Will revert if proof length exceeds the tree height.
-     * @param index     Index of `leaf` in tree
-     * @param leaf      Leaf of the merkle tree
-     * @param proof     Proof of inclusion of `leaf` in the tree
-     * @param height    Height of the merkle tree
-     * @return root_    Calculated Merkle Root
-     */
-    function proofRoot(uint256 index, bytes32 leaf, bytes32[] memory proof, uint256 height)
-        internal
-        pure
-        returns (bytes32 root_)
-    {
-        // Proof length could not exceed the tree height
-        uint256 proofLen = proof.length;
-        require(proofLen <= height, "Proof too long");
-        root_ = leaf;
-        // Go up the tree levels from the leaf following the proof
-        for (uint256 h = 0; h < proofLen; ++h) {
-            // Get a sibling node on current level: this is proof[h]
-            root_ = getParent(root_, proof[h], index, h);
-        }
-        // Go up to the root: the remaining siblings are EMPTY
-        for (uint256 h = proofLen; h < height; ++h) {
-            root_ = getParent(root_, bytes32(0), index, h);
-        }
-    }
-
-    /**
-     * @notice Calculates the parent of a node on the path from one of the leafs to root.
-     * @param node          Node on a path from tree leaf to root
-     * @param sibling       Sibling for a given node
-     * @param leafIndex     Index of the tree leaf
-     * @param nodeHeight    "Level height" for `node` (ZERO for leafs, ORIGIN_TREE_HEIGHT for root)
-     */
-    function getParent(bytes32 node, bytes32 sibling, uint256 leafIndex, uint256 nodeHeight)
-        internal
-        pure
-        returns (bytes32 parent)
-    {
-        // Index for `node` on its "tree level" is (leafIndex / 2**height)
-        // "Left child" has even index, "right child" has odd index
-        if ((leafIndex >> nodeHeight) & 1 == 0) {
-            // Left child
-            return getParent(node, sibling);
-        } else {
-            // Right child
-            return getParent(sibling, node);
-        }
-    }
-
-    /// @notice Calculates the parent of tow nodes in the merkle tree.
-    /// @dev We use implementation with H(0,0) = 0
-    /// This makes EVERY empty node in the tree equal to ZERO,
-    /// saving us from storing H(0,0), H(H(0,0), H(0, 0)), and so on
-    /// @param leftChild    Left child of the calculated node
-    /// @param rightChild   Right child of the calculated node
-    /// @return parent      Value for the node having above mentioned children
-    function getParent(bytes32 leftChild, bytes32 rightChild) internal pure returns (bytes32 parent) {
-        if (leftChild == bytes32(0) && rightChild == bytes32(0)) {
-            return 0;
-        } else {
-            return keccak256(bytes.concat(leftChild, rightChild));
-        }
     }
 }
