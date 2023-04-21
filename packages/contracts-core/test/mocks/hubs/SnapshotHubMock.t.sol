@@ -14,6 +14,8 @@ contract SnapshotHubMock is ISnapshotHub {
 
     function getLatestAgentState(uint32 origin, address agent) external view returns (bytes memory statePayload) {}
 
+    function getLatestNotaryAttestation(address notary) external view returns (bytes memory attPayload) {}
+
     function getGuardSnapshot(uint256 index) external view returns (bytes memory snapshotPayload) {}
 
     function getNotarySnapshot(uint256 nonce) external view returns (bytes memory snapshotPayload) {}

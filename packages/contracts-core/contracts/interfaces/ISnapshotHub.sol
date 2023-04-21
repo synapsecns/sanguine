@@ -29,6 +29,13 @@ interface ISnapshotHub {
     function getLatestAgentState(uint32 origin, address agent) external view returns (bytes memory statePayload);
 
     /**
+     * @notice Returns latest saved attestation for a Notary.
+     * @param notary        Notary address
+     * @return attPayload   Raw payload with formatted Attestation data
+     */
+    function getLatestNotaryAttestation(address notary) external view returns (bytes memory attPayload);
+
+    /**
      * @notice Returns Guard snapshot for the list of all accepted Guard snapshots.
      * @dev Reverts if snapshot with given index hasn't been accepted yet.
      * @param index             Snapshot index in the list of all Guard snapshots

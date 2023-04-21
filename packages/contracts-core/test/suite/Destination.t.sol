@@ -38,6 +38,24 @@ contract DestinationTest is ExecutionHubTest {
         assertFalse(rootPending);
     }
 
+    function test_getSignedAttestation(Random memory random) public {
+        uint256 amount = 10;
+        bytes[] memory attPayloads = new bytes[](amount);
+        bytes[] memory attSignatures = new bytes[](amount);
+        for (uint32 index = 0; index < amount; ++index) {
+            address notary = domains[localDomain()].agents[random.nextUint256() % DOMAIN_AGENTS];
+            RawAttestation memory ra = random.nextAttestation(index + 1);
+            (attPayloads[index], attSignatures[index]) = signAttestation(notary, ra);
+            InterfaceDestination(destination).submitAttestation(attPayloads[index], attSignatures[index]);
+        }
+        for (uint32 index = 0; index < amount; ++index) {
+            (bytes memory attPayload, bytes memory attSignature) =
+                InterfaceDestination(destination).getSignedAttestation(index);
+            assertEq(attPayload, attPayloads[index], "!payload");
+            assertEq(attSignature, attSignatures[index], "!signature");
+        }
+    }
+
     function test_submitAttestation(RawAttestation memory ra, uint32 rootSubmittedAt) public {
         address notary = domains[DOMAIN_LOCAL].agent;
         (bytes memory attPayload, bytes memory attSig) = signAttestation(notary, ra);

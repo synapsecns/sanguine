@@ -25,6 +25,12 @@ contract DestinationMock is ExecutionHubMock, DisputeHubMock, SystemRegistryMock
 
     function attestationsAmount() external view returns (uint256) {}
 
+    function getSignedAttestation(uint256 index)
+        external
+        view
+        returns (bytes memory attPayload, bytes memory attSignature)
+    {}
+
     function destStatus() external view returns (uint48 snapRootTime, uint48 agentRootTime, address notary) {}
 
     function nextAgentRoot() external view returns (bytes32) {}
