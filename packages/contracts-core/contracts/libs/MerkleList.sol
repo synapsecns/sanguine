@@ -6,13 +6,14 @@ import {MerkleLib} from "./Merkle.sol";
 library MerkleList {
     /**
      * @notice Calculates merkle root for a list of given leafs.
-     * Merkle Tree is constructed by padding the list with ZERO values for leafs until list length is 2**HEIGHT.
-     * Merkle Root is calculated for the constructed tree, and recorded in leafs[0].
-     * Note: `leafs` values are overwritten in the process to avoid excessive memory allocations.
-     * Caller is expected not to reuse `hashes` list after the call, and only use leafs[0] value,
+     * Merkle Tree is constructed by padding the list with ZERO values for leafs until list length is `2**height`.
+     * Merkle Root is calculated for the constructed tree, and then saved in `leafs[0]`.
+     * > Note:
+     * > - `leafs` values are overwritten in the process to avoid excessive memory allocations.
+     * > - Caller is expected not to reuse `hashes` list after the call, and only use `leafs[0]` value,
      * which is guaranteed to contain the calculated merkle root.
-     * Note: root is calculated using the H(0,0)=0 Merkle Tree implementation. See Merkle.sol for details.
-     * @dev Amount of leaves should be at most 2**HEIGHT
+     * > - root is calculated using the `H(0,0) = 0` Merkle Tree implementation. See Merkle.sol for details.
+     * @dev Amount of leaves should be at most `2**height`
      * @param hashes    List of leafs for the merkle tree (to be overwritten)
      * @param height    Height of the Merkle Tree to construct
      */
@@ -22,9 +23,10 @@ library MerkleList {
         // Iterate `height` levels up from the leaf level
         // For every level we will only record "significant values", i.e. not equal to ZERO
         for (uint256 h = 0; h < height; ++h) {
-            // Let H be the height of the "current level". H = 0 for the "root level".
-            // Invariant: hashes[0 .. length) are "current level" tree nodes
-            // Invariant: bytes32(0) is the value for nodes with indexes [length .. 2**H)
+            // Let H be the height of the "current level". H = 0 for the "leafs level".
+            // Invariant: a total of 2**(HEIGHT-H) nodes are on the current level
+            // Invariant: hashes[0 .. length) are "significant values" for the "current level" nodes
+            // Invariant: bytes32(0) is the value for nodes with indexes [length .. 2**(HEIGHT-H))
 
             // Iterate over every pair of (leftChild, rightChild) on the current level
             for (uint256 leftIndex = 0; leftIndex < levelLength; leftIndex += 2) {
@@ -36,7 +38,7 @@ library MerkleList {
                 // further calculations for the same level: (leftIndex >> 1) <= leftIndex.
                 hashes[leftIndex >> 1] = MerkleLib.getParent(leftChild, rightChild);
             }
-            // Set length for the "parent level"
+            // Set length for the "parent level": the amount of iterations for the for loop above.
             levelLength = (levelLength + 1) >> 1;
         }
     }
@@ -44,11 +46,11 @@ library MerkleList {
     /**
      * @notice Generates a proof of inclusion of a leaf in the list. If the requested index is outside
      * of the list range, generates a proof of inclusion for an empty leaf (proof of non-inclusion).
-     * Merkle Tree is constructed by padding the list with ZERO values for leafs
-     * until list length is a power of two AND index is in the extended list range.
-     * Example: hashes.length == 6 and 0 <= index <= 7 will "extend" the list to 8 entries.
-     *          hashes.length == 6 and 7 < index <= 15 will "extend" the list to 16 entries.
-     * Note: `leafs` values are overwritten in the process to avoid excessive memory allocations.
+     * The Merkle Tree is constructed by padding the list with ZERO values until list length is a power of two
+     * __AND__ index is in the extended list range. For example:
+     *  - `hashes.length == 6` and `0 <= index <= 7` will "extend" the list to 8 entries.
+     *  - `hashes.length == 6` and `7 < index <= 15` will "extend" the list to 16 entries.
+     * > Note: `leafs` values are overwritten in the process to avoid excessive memory allocations.
      * Caller is expected not to reuse `hashes` list after the call.
      * @param hashes    List of leafs for the merkle tree (to be overwritten)
      * @param index     Leaf index to generate the proof for
@@ -63,12 +65,13 @@ library MerkleList {
         // Iterate `height` levels up from the leaf level
         // For every level we will only record "significant values", i.e. not equal to ZERO
         for (uint256 h = 0; h < height; ++h) {
-            // Use sibling for the merkle proof
+            // Use sibling for the merkle proof; `index^1` is index of our sibling
             proof[h] = (index ^ 1 < levelLength) ? hashes[index ^ 1] : bytes32(0);
 
-            // Let H be the height of the "current level". H = 0 for the "root level".
-            // Invariant: hashes[0 .. length) are "current level" tree nodes
-            // Invariant: bytes32(0) is the value for nodes with indexes [length .. 2**H)
+            // Let H be the height of the "current level". H = 0 for the "leafs level".
+            // Invariant: a total of 2**(HEIGHT-H) nodes are on the current level
+            // Invariant: hashes[0 .. length) are "significant values" for the "current level" nodes
+            // Invariant: bytes32(0) is the value for nodes with indexes [length .. 2**(HEIGHT-H))
 
             // Iterate over every pair of (leftChild, rightChild) on the current level
             for (uint256 leftIndex = 0; leftIndex < levelLength; leftIndex += 2) {
@@ -87,7 +90,7 @@ library MerkleList {
         }
     }
 
-    /// @notice Returns the height of the tree having given amount of leafs.
+    /// @notice Returns the height of the tree having a given amount of leafs.
     function getHeight(uint256 leafs) internal pure returns (uint256 height) {
         uint256 amount = 1;
         while (amount < leafs) {

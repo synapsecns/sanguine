@@ -15,18 +15,23 @@ import {AGENT_TREE_HEIGHT, ORIGIN_TREE_HEIGHT} from "./Constants.sol";
 /// - The leftmost empty leaf has `index == count`, where `count` is the amount of the inserted leafs so far.
 /// - Value for any empty leaf or node is bytes32(0).
 /// ## Invariant for current branch
-/// `branch[i]` is always the value of a node on the i-th level:
-/// - Levels are numbered from leafs to root: `0 .. ORIGIN_TREE_HEIGHT`.
-/// - `branch[i]` stores the value for the node, that is a "left child".
-/// - The stored node must have non-zero values for both their children.
-/// - Out of all level's "left child" nodes with "non-zero children",
+/// `branch[i]` is always the value of a node on the i-th level.
+/// Levels are numbered from leafs to root: `0 .. ORIGIN_TREE_HEIGHT`.
+/// `branch[i]` stores the value for the node, such that:
+//  - The node is a "left child" (e.g. has an even index).
+/// - The node must have two non-empty children.
+/// - Out of all level's "left child" nodes with "non-empty children",
 /// the one with the biggest index (the rightmost one) is stored as `branch[i]`.
-/// > __Therefore, `branch` is always a proof of inclusion for the first empty leaf (`index == count`).__
-/// _Here is why:_
+/// > __`branch` could be used to form a proof of inclusion for the first empty leaf (`index == count`).__
+/// _Here is how:_
+/// - Let's walk along the path from the "first empty leaf" to the root.
+/// - i-th bit of the "first empty leaf" index (which is equal to `count`) determines if the path's node
+/// for this i-th level is a "left child" or a "right child".
 /// - i-th bit in `count` is 0 → we are the left child on this level → sibling is the right child
 /// that does not exist yet → `proof[i] = bytes32(0)`.
 /// - i-th bit in `count` is 1 → we are the right child on this level → sibling is the left child
 /// sibling is the rightmost "left child" node on the level → `proof[i] = branch[i]`.
+/// > Therefore `proof[i] = (count & (1 << i)) == 0 ? bytes32(0) : branch[i])`
 struct BaseTree {
     bytes32[ORIGIN_TREE_HEIGHT] branch;
 }
@@ -69,6 +74,7 @@ using MerkleLib for DynamicTree global;
 /// > - Implemented in Solidity 0.7.6 (eth2 deposit contract implemented in Vyper).
 /// > - `H() = keccak256()` is used as the hashing function instead of `sha256()`.
 library MerkleLib {
+    /// @dev For root calculation we need at least one empty leaf, thus the minus one in the formula.
     uint256 internal constant MAX_LEAVES = 2 ** ORIGIN_TREE_HEIGHT - 1;
 
     // ═════════════════════════════════════════════════ BASE TREE ═════════════════════════════════════════════════════
@@ -81,26 +87,26 @@ library MerkleLib {
      */
     function insertBase(BaseTree storage tree, uint256 newCount, bytes32 node) internal {
         require(newCount <= MAX_LEAVES, "merkle tree full");
-        // We go up the tree following the branch from the zero leaf AFTER the just inserted one.
+        // We go up the tree following the branch from the empty leaf AFTER the just inserted one.
         // We stop when we find the first "right child" node.
-        // Its sibling is now the rightmost "left child" node that has both children as non-zero.
+        // Its sibling is now the rightmost "left child" node that has two non-empty children.
         // Therefore we need to update `tree.branch` value on this level.
         // One could see that `tree.branch` value on lower and higher levels remain unchanged.
 
         // Loop invariant: `node` is the current level's value for the branch from JUST INSERTED leaf
         for (uint256 i = 0; i < ORIGIN_TREE_HEIGHT;) {
             if ((newCount & 1) == 1) {
-                // Found the first "right child" node on the branch from ZERO leaf
+                // Found the first "right child" node on the branch from EMPTY leaf
                 // `node` is the value for node on branch from JUST INSERTED leaf
                 // Which in this case is the "left child".
                 // We update tree.branch and exit
                 tree.branch[i] = node;
                 return;
             }
-            // On the branch from ZERO leaf this is still "left child".
-            // Meaning on branch from JUST INSERTED leaf, `node` is right child
+            // On the branch from EMPTY leaf this is still a "left child".
+            // Meaning on branch from JUST INSERTED leaf, `node` is a right child.
             // We compute value for `node` parent using `tree.branch` invariant:
-            // This is the rightmost "left child" node, which would be sibling of `node`
+            // This is the rightmost "left child" node, which would be sibling of `node`.
             node = getParent(tree.branch[i], node);
             // Get the parent index, and go to the next tree level
             newCount >>= 1;
@@ -119,15 +125,15 @@ library MerkleLib {
      * @return current  Calculated root of `tree`
      */
     function rootBase(BaseTree storage tree, uint256 count) internal view returns (bytes32 current) {
-        // To calculate the root we follow the branch of first ZERO leaf (index == count)
+        // To calculate the root we follow the branch of first EMPTY leaf (index == count)
         for (uint256 i = 0; i < ORIGIN_TREE_HEIGHT;) {
             // Check if we are the left or the right child on the current level
             if ((count & 1) == 1) {
                 // We are the right child. Our sibling is the "rightmost" "left-child" node
-                // that has two non-zero children → sibling is tree.branch[i]
+                // that has two non-empty children → sibling is `tree.branch[i]`
                 current = getParent(tree.branch[i], current);
             } else {
-                // We are the left child. Our sibling does not exist yet → sibling is ZERO
+                // We are the left child. Our sibling does not exist yet → sibling is EMPTY
                 current = getParent(current, bytes32(0));
             }
             // Get the parent index, and go to the next tree level
@@ -140,8 +146,7 @@ library MerkleLib {
 
     // ══════════════════════════════════════════════ HISTORICAL TREE ══════════════════════════════════════════════════
 
-    /// @notice Initializes the historical roots for the tree by inserting
-    /// a precomputed root of an empty Merkle Tree.
+    /// @notice Initializes the historical roots for the tree by inserting an empty root.
     // solhint-disable-next-line ordering
     function initializeRoots(HistoricalTree storage tree) internal returns (bytes32 savedRoot) {
         // This should only be called once, when the contract is initialized
@@ -224,7 +229,7 @@ library MerkleLib {
             // Get a sibling node on current level: this is proof[h]
             root_ = getParent(root_, proof[h], index, h);
         }
-        // Go up to the root: the remaining siblings are ZERO
+        // Go up to the root: the remaining siblings are EMPTY
         for (uint256 h = proofLen; h < height; ++h) {
             root_ = getParent(root_, bytes32(0), index, h);
         }
