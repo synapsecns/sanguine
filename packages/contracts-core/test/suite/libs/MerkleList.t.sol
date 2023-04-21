@@ -4,17 +4,17 @@ pragma solidity 0.8.17;
 import {MerkleTree} from "../../../contracts/libs/MerkleTree.sol";
 
 import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
-import {MerkleListHarness} from "../../harnesses/libs/MerkleListHarness.t.sol";
+import {MerkleMathHarness} from "../../harnesses/libs/MerkleMathHarness.t.sol";
 
 // solhint-disable func-name-mixedcase
-contract MerkleListLibraryTest is SynapseLibraryTest {
+contract MerkleMathLibraryTest is SynapseLibraryTest {
     uint256 public constant HEIGHT = 8;
     uint256 public constant MAX_LENGTH = 1 << HEIGHT;
 
-    MerkleListHarness internal libHarness;
+    MerkleMathHarness internal libHarness;
 
     function setUp() public {
-        libHarness = new MerkleListHarness();
+        libHarness = new MerkleMathHarness();
     }
 
     function test_calculateRoot(uint256 length) public {

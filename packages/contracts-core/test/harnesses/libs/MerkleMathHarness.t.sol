@@ -2,18 +2,18 @@
 
 pragma solidity 0.8.17;
 
-import {MerkleList} from "../../../contracts/libs/MerkleList.sol";
+import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
 
-contract MerkleListHarness {
+contract MerkleMathHarness {
     // Note: we don't add an empty test() function here, as it currently leads
     // to zero coverage on the corresponding library.
 
     function calculateRoot(bytes32[] memory hashes, uint256 height) public pure returns (bytes32) {
-        MerkleList.calculateRoot(hashes, height);
+        MerkleMath.calculateRoot(hashes, height);
         return hashes[0];
     }
 
     function calculateProof(bytes32[] memory hashes, uint256 index) public pure returns (bytes32[] memory proof) {
-        return MerkleList.calculateProof(hashes, index);
+        return MerkleMath.calculateProof(hashes, index);
     }
 }

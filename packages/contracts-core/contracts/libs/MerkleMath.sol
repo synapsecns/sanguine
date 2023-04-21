@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {MerkleTree} from "./MerkleTree.sol";
 
-library MerkleList {
+library MerkleMath {
     /**
      * @notice Calculates merkle root for a list of given leafs.
      * Merkle Tree is constructed by padding the list with ZERO values for leafs until list length is `2**height`.
