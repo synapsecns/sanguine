@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/Attestation.sol";
-import {MerkleList} from "../libs/MerkleList.sol";
+import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {State, StateLib} from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -132,7 +132,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
             (hashes[2 * i], hashes[2 * i + 1]) = state.subLeafs();
         }
         // Index of State's left leaf is twice the state index
-        return MerkleList.calculateProof(hashes, 2 * stateIndex);
+        return MerkleMath.calculateProof(hashes, 2 * stateIndex);
     }
 
     // ════════════════════════════════════════ INTERNAL LOGIC: ACCEPT DATA ════════════════════════════════════════════

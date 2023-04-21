@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {SNAPSHOT_MAX_STATES, SNAPSHOT_SALT, SNAPSHOT_TREE_HEIGHT, STATE_LENGTH} from "./Constants.sol";
-import {MerkleList} from "./MerkleList.sol";
+import {MerkleMath} from "./MerkleMath.sol";
 import {State, StateLib} from "./State.sol";
 import {MemView, MemViewLib} from "./MemView.sol";
 
@@ -132,7 +132,7 @@ library SnapshotLib {
         }
         // We are subtracting one here, as we already calculated the hashes
         // for the tree level above the "leaf level".
-        MerkleList.calculateRoot(hashes, SNAPSHOT_TREE_HEIGHT - 1);
+        MerkleMath.calculateRoot(hashes, SNAPSHOT_TREE_HEIGHT - 1);
         // hashes[0] now stores the value for the Merkle Root of the list
         return hashes[0];
     }

@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AGENT_TREE_HEIGHT} from "../libs/Constants.sol";
-import {MerkleLib} from "../libs/Merkle.sol";
+import {MerkleMath} from "../libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager} from "./AgentManager.sol";
@@ -47,7 +47,7 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
         bytes32 leaf = _agentLeaf(status.flag, status.domain, agent);
         bytes32 root = agentRoot;
         // Check that proof matches the latest merkle root
-        require(MerkleLib.proofRoot(status.index, leaf, proof, AGENT_TREE_HEIGHT) == root, "Invalid proof");
+        require(MerkleMath.proofRoot(status.index, leaf, proof, AGENT_TREE_HEIGHT) == root, "Invalid proof");
         // Save index => agent in the map
         if (storedAgent == address(0)) _agents[status.index] = agent;
         // Update the agent status against this root

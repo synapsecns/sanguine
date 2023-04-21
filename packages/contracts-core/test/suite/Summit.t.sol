@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {ISystemRegistry} from "../../contracts/interfaces/ISystemRegistry.sol";
 import {ISnapshotHub} from "../../contracts/interfaces/ISnapshotHub.sol";
 import {SNAPSHOT_TREE_HEIGHT} from "../../contracts/libs/Constants.sol";
-import {MerkleLib} from "../../contracts/libs/Merkle.sol";
+import {MerkleMath} from "../../contracts/libs/MerkleMath.sol";
 
 import {InterfaceSummit} from "../../contracts/Summit.sol";
 import {Versioned} from "../../contracts/Version.sol";
@@ -213,7 +213,7 @@ contract SummitTest is DisputeHubTest {
                 (bytes32 item,) = states[j].subLeafs();
                 // Item index is twice the state index (since it's a left child)
                 assertEq(
-                    MerkleLib.proofRoot(2 * j, item, snapProof, SNAPSHOT_TREE_HEIGHT), ra.snapRoot, "!getSnapshotProof"
+                    MerkleMath.proofRoot(2 * j, item, snapProof, SNAPSHOT_TREE_HEIGHT), ra.snapRoot, "!getSnapshotProof"
                 );
             }
 
