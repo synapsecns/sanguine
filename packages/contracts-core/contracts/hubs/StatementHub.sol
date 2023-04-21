@@ -6,7 +6,7 @@ import {Attestation, AttestationLib} from "../libs/Attestation.sol";
 import {Snapshot, SnapshotLib, SNAPSHOT_TREE_HEIGHT, State, StateLib} from "../libs/Snapshot.sol";
 import {AttestationReport, AttestationReportLib} from "../libs/AttestationReport.sol";
 import {Receipt, ReceiptLib} from "../libs/Receipt.sol";
-import {MerkleLib} from "../libs/Merkle.sol";
+import {MerkleMath} from "../libs/MerkleMath.sol";
 import {StateReport, StateReportLib} from "../libs/StateReport.sol";
 import {AgentFlag, AgentStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -229,7 +229,7 @@ abstract contract StatementHub is SystemRegistry {
         bytes32 leftLeaf = StateLib.leftLeaf(originRoot, origin);
         // Reconstruct snapshot root using proof of inclusion
         // This will revert if snapshot proof length exceeds Snapshot Tree Height
-        return MerkleLib.proofRoot(leftLeafIndex, leftLeaf, snapProof, SNAPSHOT_TREE_HEIGHT);
+        return MerkleMath.proofRoot(leftLeafIndex, leftLeaf, snapProof, SNAPSHOT_TREE_HEIGHT);
     }
 
     // ════════════════════════════════════════════════ FLAG CHECKS ════════════════════════════════════════════════════

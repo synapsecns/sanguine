@@ -6,7 +6,7 @@ import {Attestation} from "../libs/Attestation.sol";
 import {BaseMessage, BaseMessageLib, MemView} from "../libs/BaseMessage.sol";
 import {ByteString, CallData} from "../libs/ByteString.sol";
 import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
-import {MerkleLib} from "../libs/Merkle.sol";
+import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
 import {MessageStatus} from "../libs/Structures.sol";
@@ -310,7 +310,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Reconstruct Origin Merkle Root using the origin proof
         // Message index in the tree is (nonce - 1), as nonce starts from 1
         // This will revert if origin proof length exceeds Origin Tree height
-        bytes32 originRoot = MerkleLib.proofRoot(header.nonce() - 1, msgLeaf, originProof, ORIGIN_TREE_HEIGHT);
+        bytes32 originRoot = MerkleMath.proofRoot(header.nonce() - 1, msgLeaf, originProof, ORIGIN_TREE_HEIGHT);
         // Reconstruct Snapshot Merkle Root using the snapshot proof
         // This will revert if:
         //  - State index is out of range.

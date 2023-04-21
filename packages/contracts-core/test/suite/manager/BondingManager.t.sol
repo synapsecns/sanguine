@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {InterfaceOrigin} from "../../../contracts/interfaces/InterfaceOrigin.sol";
 import {AGENT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
-import {MerkleLib} from "../../../contracts/libs/Merkle.sol";
+import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
 import {AgentFlag, SlashStatus, SystemEntity} from "../../../contracts/libs/Structures.sol";
 import {AgentManagerTest} from "./AgentManager.t.sol";
 
@@ -286,7 +286,7 @@ contract BondingManagerTest is AgentManagerTest {
     }
 
     function checkProof(uint256 index, bytes32[] memory proof) public {
-        assertEq(MerkleLib.proofRoot(index, getAgentLeaf(index), proof, AGENT_TREE_HEIGHT), getAgentRoot());
+        assertEq(MerkleMath.proofRoot(index, getAgentLeaf(index), proof, AGENT_TREE_HEIGHT), getAgentRoot());
     }
 
     function test_allLeafs() public {

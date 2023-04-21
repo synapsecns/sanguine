@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {HistoricalTree} from "../libs/Merkle.sol";
+import {HistoricalTree} from "../libs/MerkleTree.sol";
 import {State, StateLib} from "../libs/State.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {DomainContext} from "../context/DomainContext.sol";

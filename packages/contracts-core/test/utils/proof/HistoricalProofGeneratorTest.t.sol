@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {Test} from "forge-std/Test.sol";
 
-import {BaseTree, MerkleLib} from "../../../contracts/libs/Merkle.sol";
+import {BaseTree, MerkleMath} from "../../../contracts/libs/MerkleTree.sol";
 import {HistoricalProofGenerator} from "./HistoricalProofGenerator.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -50,12 +50,12 @@ contract HistoricalProofGeneratorTest is Test {
         test_getRoot();
         for (uint256 count = 1; count <= AMOUNT; ++count) {
             // Use a "historical root" for proving
-            // root is already tested against the MerkleLib implementation
+            // root is already tested against the MerkleTree implementation
             bytes32 root = proofGen.getRoot(count);
             // Check generated proofs for every leaf that precedes the "historical root"
             for (uint256 index = 0; index < count; ++index) {
                 bytes32[] memory proof = proofGen.getProof(index, count);
-                assertEq(MerkleLib.proofRoot(index, leafs[index], proof, ORIGIN_TREE_HEIGHT), root, "Invalid proof");
+                assertEq(MerkleMath.proofRoot(index, leafs[index], proof, ORIGIN_TREE_HEIGHT), root, "Invalid proof");
             }
         }
     }

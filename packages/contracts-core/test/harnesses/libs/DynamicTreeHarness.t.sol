@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {DynamicTree} from "../../../contracts/libs/Merkle.sol";
+import {DynamicTree} from "../../../contracts/libs/MerkleTree.sol";
 
 contract DynamicTreeHarness {
     DynamicTree internal tree;
