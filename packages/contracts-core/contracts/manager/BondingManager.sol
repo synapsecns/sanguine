@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
-import {DynamicTree, MerkleLib} from "../libs/Merkle.sol";
+import {DynamicTree, MerkleTree} from "../libs/MerkleTree.sol";
 import {MerkleList} from "../libs/MerkleList.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager} from "./AgentManager.sol";

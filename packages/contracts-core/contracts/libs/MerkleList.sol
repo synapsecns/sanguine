@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {MerkleLib} from "./Merkle.sol";
+import {MerkleTree} from "./MerkleTree.sol";
 
 library MerkleList {
     /**
@@ -12,7 +12,7 @@ library MerkleList {
      * > - `leafs` values are overwritten in the process to avoid excessive memory allocations.
      * > - Caller is expected not to reuse `hashes` list after the call, and only use `leafs[0]` value,
      * which is guaranteed to contain the calculated merkle root.
-     * > - root is calculated using the `H(0,0) = 0` Merkle Tree implementation. See Merkle.sol for details.
+     * > - root is calculated using the `H(0,0) = 0` Merkle Tree implementation. See MerkleTree.sol for details.
      * @dev Amount of leaves should be at most `2**height`
      * @param hashes    List of leafs for the merkle tree (to be overwritten)
      * @param height    Height of the Merkle Tree to construct
@@ -36,7 +36,7 @@ library MerkleList {
                 bytes32 rightChild = rightIndex < levelLength ? hashes[rightIndex] : bytes32(0);
                 // Record the parent hash in the same array. This will not affect
                 // further calculations for the same level: (leftIndex >> 1) <= leftIndex.
-                hashes[leftIndex >> 1] = MerkleLib.getParent(leftChild, rightChild);
+                hashes[leftIndex >> 1] = MerkleTree.getParent(leftChild, rightChild);
             }
             // Set length for the "parent level": the amount of iterations for the for loop above.
             levelLength = (levelLength + 1) >> 1;
@@ -81,7 +81,7 @@ library MerkleList {
                 bytes32 rightChild = rightIndex < levelLength ? hashes[rightIndex] : bytes32(0);
                 // Record the parent hash in the same array. This will not affect
                 // further calculations for the same level: (leftIndex >> 1) <= leftIndex.
-                hashes[leftIndex >> 1] = MerkleLib.getParent(leftChild, rightChild);
+                hashes[leftIndex >> 1] = MerkleTree.getParent(leftChild, rightChild);
             }
             // Set length for the "parent level"
             levelLength = (levelLength + 1) >> 1;

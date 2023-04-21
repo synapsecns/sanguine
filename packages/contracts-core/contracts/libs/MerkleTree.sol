@@ -36,7 +36,7 @@ struct BaseTree {
     bytes32[ORIGIN_TREE_HEIGHT] branch;
 }
 
-using MerkleLib for BaseTree global;
+using MerkleTree for BaseTree global;
 
 /// `HistoricalTree` is an incremental merkle tree keeping track of its historical merkle roots.
 /// > - `roots[N]` is the root of the tree after `N` leafs were inserted
@@ -48,7 +48,7 @@ struct HistoricalTree {
     bytes32[] roots;
 }
 
-using MerkleLib for HistoricalTree global;
+using MerkleTree for HistoricalTree global;
 
 /// `DynamicTree` is a struct representing a Merkle Tree with `2**AGENT_TREE_HEIGHT` leaves.
 /// - A single operation is available: update value for leaf with an arbitrary index (which might be a non-empty leaf).
@@ -59,9 +59,9 @@ struct DynamicTree {
     bytes32 root;
 }
 
-using MerkleLib for DynamicTree global;
+using MerkleTree for DynamicTree global;
 
-/// MerkleLib is work based on Nomad's Merkle.sol, which is used under MIT OR Apache-2.0
+/// MerkleTree is work based on Nomad's Merkle.sol, which is used under MIT OR Apache-2.0
 /// [link](https://github.com/nomad-xyz/monorepo/blob/main/packages/contracts-core/contracts/libs/Merkle.sol).
 /// With the following changes:
 /// - Adapted for Solidity 0.8.x.
@@ -73,7 +73,7 @@ using MerkleLib for DynamicTree global;
 /// With the following changes:
 /// > - Implemented in Solidity 0.7.6 (eth2 deposit contract implemented in Vyper).
 /// > - `H() = keccak256()` is used as the hashing function instead of `sha256()`.
-library MerkleLib {
+library MerkleTree {
     /// @dev For root calculation we need at least one empty leaf, thus the minus one in the formula.
     uint256 internal constant MAX_LEAVES = 2 ** ORIGIN_TREE_HEIGHT - 1;
 
