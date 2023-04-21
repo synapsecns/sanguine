@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {SNAPSHOT_TREE_HEIGHT} from "../../../contracts/libs/Constants.sol";
-import {MerkleLib} from "../../../contracts/libs/Merkle.sol";
+import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
 import {StateLib} from "../../../contracts/libs/State.sol";
 
 import {ProofCutter} from "./ProofCutter.t.sol";
@@ -32,7 +32,7 @@ contract AttestationProofGenerator is ProofCutter {
             ++h;
             amount >>= 1;
             for (uint256 i = 0; i < amount; ++i) {
-                nodes[h][i] = MerkleLib.getParent(nodes[h - 1][2 * i], nodes[h - 1][2 * i + 1]);
+                nodes[h][i] = MerkleMath.getParent(nodes[h - 1][2 * i], nodes[h - 1][2 * i + 1]);
             }
         }
         root = nodes[h][0];

@@ -3,8 +3,8 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
-import {DynamicTree, MerkleLib} from "../libs/Merkle.sol";
-import {MerkleList} from "../libs/MerkleList.sol";
+import {DynamicTree, MerkleTree} from "../libs/MerkleTree.sol";
+import {MerkleMath} from "../libs/MerkleMath.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager} from "./AgentManager.sol";
 import {DomainContext} from "../context/DomainContext.sol";
@@ -192,7 +192,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
         AgentStatus memory status = _agentStatus(agent);
         // Use next available index for unknown agents
         uint256 index = status.flag == AgentFlag.Unknown ? _agents.length : status.index;
-        return MerkleList.calculateProof(leafs, index);
+        return MerkleMath.calculateProof(leafs, index);
     }
 
     /// @inheritdoc InterfaceBondingManager
