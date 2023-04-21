@@ -195,6 +195,8 @@ contract SummitTest is DisputeHubTest {
 
             address notary = domains[DOMAIN_LOCAL].agents[i];
             (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(notary, states);
+            // Nothing should be saved before Notary submitted their first snapshot
+            assertEq(ISnapshotHub(summit).getLatestNotaryAttestation(notary), "");
 
             vm.expectEmit(true, true, true, true);
             emit AttestationSaved(attestation);
@@ -205,6 +207,9 @@ contract SummitTest is DisputeHubTest {
             assertEq(attPayload, attestation, "Notary: incorrect attestation");
             // Check attestation getter
             assertEq(ISnapshotHub(summit).getAttestation(ra.nonce), attestation, "!getAttestation");
+            assertEq(
+                ISnapshotHub(summit).getLatestNotaryAttestation(notary), attestation, "!getLatestNotaryAttestation"
+            );
 
             // Check proofs for every State in the Notary snapshot
             for (uint256 j = 0; j < STATES; ++j) {
@@ -221,6 +226,12 @@ contract SummitTest is DisputeHubTest {
             for (uint32 j = 0; j < STATES; ++j) {
                 assertEq(ISnapshotHub(summit).getLatestAgentState(j + 1, notary), rawStates[j], "!latestState: notary");
             }
+        }
+
+        for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
+            address guard = domains[0].agents[i];
+            // No Attestations should be saved for Guards
+            assertEq(ISnapshotHub(summit).getLatestNotaryAttestation(guard), "");
         }
 
         // Check global latest state
