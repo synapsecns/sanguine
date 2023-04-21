@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AgentFlag, AgentStatus} from "./libs/Structures.sol";
+import {ByteString} from "./libs/ByteString.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager} from "./manager/AgentManager.sol";
 import {DomainContext} from "./context/DomainContext.sol";
@@ -20,7 +21,13 @@ import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEnde
 
 contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
+    using ByteString for bytes;
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
+
+    struct StoredSnapData {
+        bytes32 r;
+        bytes32 s;
+    }
 
     // TODO: write docs, pack values
     struct SummitReceipt {
@@ -69,6 +76,9 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     /// @inheritdoc InterfaceSummit
     mapping(address => mapping(uint32 => ActorTips)) public actorTips;
+
+    /// @dev Stored lookup data for all accepted Notary Snapshots
+    StoredSnapData[] internal _storedSnapshots;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
@@ -138,8 +148,10 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
             // This will revert if any of the states from the Notary snapshot
             // haven't been submitted by any of the Guards before.
             attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent, status.index);
-            // Save attestation derived from Notary snapshot
-            _saveAttestation(attPayload.castToAttestation(), status.index);
+            // Save attestation derived from Notary snapshot.
+            (bytes32 r, bytes32 s, uint8 v) = snapSignature.castToSignature().toRSV();
+            _saveAttestation(attPayload.castToAttestation(), status.index, v);
+            _storedSnapshots.push(StoredSnapData({r: r, s: s}));
         }
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
@@ -241,6 +253,19 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         if (latestState.nonce != 0) {
             statePayload = _formatSummitState(latestState);
         }
+    }
+
+    /// @inheritdoc InterfaceSummit
+    function getSignedSnapshot(uint256 nonce)
+        external
+        view
+        returns (bytes memory snapPayload, bytes memory snapSignature)
+    {
+        // This will revert if nonce is out of range
+        snapPayload = getNotarySnapshot(nonce);
+        StoredSnapData memory storedSnap = _storedSnapshots[nonce - 1];
+        SnapRootData memory rootData = _rootData[_roots[nonce - 1]];
+        snapSignature = ByteString.formatSignature({r: storedSnap.r, s: storedSnap.s, v: rootData.notaryV});
     }
 
     // ═══════════════════════════════════════════ INTERNAL LOGIC: QUEUE ═══════════════════════════════════════════════

@@ -164,6 +164,9 @@ contract SummitTest is DisputeHubTest {
         // Every Guard submits a snapshot with a random state for domains in [1 .. DOMAINS] range
         test_guardSnapshots(random);
 
+        bytes[] memory snapPayloads = new bytes[](DOMAIN_AGENTS);
+        bytes[] memory snapSignatures = new bytes[](DOMAIN_AGENTS);
+
         // Every Notary submits a snapshot with a random Guard state for all domains
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
             // Set random timestamp and block height
@@ -194,16 +197,16 @@ contract SummitTest is DisputeHubTest {
             bytes memory attestation = ra.formatAttestation();
 
             address notary = domains[DOMAIN_LOCAL].agents[i];
-            (bytes memory snapPayload, bytes memory snapSig) = signSnapshot(notary, states);
+            (snapPayloads[i], snapSignatures[i]) = signSnapshot(notary, states);
             // Nothing should be saved before Notary submitted their first snapshot
             assertEq(ISnapshotHub(summit).getLatestNotaryAttestation(notary), "");
 
             vm.expectEmit(true, true, true, true);
             emit AttestationSaved(attestation);
             vm.expectEmit(true, true, true, true);
-            emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayload, snapSig);
+            emit SnapshotAccepted(DOMAIN_LOCAL, notary, snapPayloads[i], snapSignatures[i]);
 
-            bytes memory attPayload = InterfaceSummit(summit).submitSnapshot(snapPayload, snapSig);
+            bytes memory attPayload = InterfaceSummit(summit).submitSnapshot(snapPayloads[i], snapSignatures[i]);
             assertEq(attPayload, attestation, "Notary: incorrect attestation");
             // Check attestation getter
             assertEq(ISnapshotHub(summit).getAttestation(ra.nonce), attestation, "!getAttestation");
@@ -226,6 +229,12 @@ contract SummitTest is DisputeHubTest {
             for (uint32 j = 0; j < STATES; ++j) {
                 assertEq(ISnapshotHub(summit).getLatestAgentState(j + 1, notary), rawStates[j], "!latestState: notary");
             }
+        }
+
+        for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {
+            (bytes memory snapPayload, bytes memory snapSignature) = InterfaceSummit(summit).getSignedSnapshot(i + 1);
+            assertEq(snapPayload, snapPayloads[i], "!payload");
+            assertEq(snapSignature, snapSignatures[i], "!signature");
         }
 
         for (uint32 i = 0; i < DOMAIN_AGENTS; ++i) {

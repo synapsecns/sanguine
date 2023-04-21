@@ -110,12 +110,13 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
-    function getNotarySnapshot(uint256 nonce) external view returns (bytes memory snapshotPayload) {
-        require(nonce < _notarySnapshots.length, "Nonce out of range");
+    function getNotarySnapshot(uint256 nonce) public view returns (bytes memory snapshotPayload) {
+        require(nonce != 0 && nonce < _notarySnapshots.length, "Nonce out of range");
         return _restoreSnapshot(_notarySnapshots[nonce]);
     }
 
     /// @inheritdoc ISnapshotHub
+    // solhint-disable-next-line ordering
     function getNotarySnapshot(bytes memory attPayload) external view returns (bytes memory snapshotPayload) {
         // This will revert if payload is not a formatted attestation
         Attestation attestation = attPayload.castToAttestation();
@@ -127,7 +128,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @inheritdoc ISnapshotHub
     function getSnapshotProof(uint256 nonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof) {
-        require(nonce < _notarySnapshots.length, "Nonce out of range");
+        require(nonce != 0 && nonce < _notarySnapshots.length, "Nonce out of range");
         SummitSnapshot memory snap = _notarySnapshots[nonce];
         uint256 statesAmount = snap.statePtrs.length;
         require(stateIndex < statesAmount, "Index out of range");
