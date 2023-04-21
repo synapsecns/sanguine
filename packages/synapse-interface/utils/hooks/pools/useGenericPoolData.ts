@@ -1,8 +1,4 @@
-import _ from 'lodash'
-import { useEffect, useState, useContext } from 'react'
-import { BigNumber } from '@ethersproject/bignumber'
-import { Zero, One, AddressZero } from '@ethersproject/constants'
-import LPTOKEN_ABI from '@abis/lpToken.json'
+import { Zero } from '@ethersproject/constants'
 // import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 import { useGenericPoolApyData } from '@hooks/pools/useGenericPoolApyData'
 import { useEthPrice, useAvaxPrice } from '@hooks/usePrices'
@@ -13,15 +9,14 @@ import {
   getPoolTokenInfoArr,
   MAX_BN_POW,
 } from '@utils/poolDataFuncs'
-import { STAKING_MAP_TOKENS } from '@constants/tokens/staking'
+import { STAKING_MAP_TOKENS } from '@constants/tokens'
 import { useSynapseContext } from '@utils/SynapseProvider'
 import { fetchBalance } from '@wagmi/core'
+import { PoolTokenObject } from '@types'
 
 export const useGenericPoolData = async (chainId, poolName, address) => {
   const SynapseSDK = useSynapseContext()
-
   const poolToken = STAKING_MAP_TOKENS[chainId][poolName]
-
   const { poolType, addresses, poolTokens, swapAddresses } = poolToken
   const poolTokenAddress = addresses[chainId]
   const poolAddress = swapAddresses[chainId]
@@ -31,39 +26,73 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
 
   // get LP token
   const lpTokenAddress = (await SynapseSDK.getPoolInfo(chainId, poolAddress))
-    .lpToken
+    ?.lpToken
 
   // get balances of all tokens in the pool
-  const tokenBalances = {}
-  for (const poolToken of poolTokens.length) {
-    const balance = await fetchBalance({
-      address: poolAddress,
-      chainId,
-      token: poolToken.addresses[chainId],
+  const tokenBalances: PoolTokenObject[] = []
+  const userTokenBalances: PoolTokenObject[] = []
+  let poolTokenSum = Zero
+  let userLpTokenBalance = Zero
+  let lpTokenBalance = Zero
+  for (const token of poolTokens.length) {
+    const isLP = token.addresses[chainId] === lpTokenAddress
+
+    const rawBalance =
+      (
+        await fetchBalance({
+          address: poolAddress,
+          chainId,
+          token: token.addresses[chainId],
+        })
+      )?.value ?? Zero
+    const rawUserBalance =
+      (
+        await fetchBalance({
+          address,
+          chainId,
+          token: token.addresses[chainId],
+        })
+      )?.value ?? Zero
+    const balance = rawBalance?.pow(18 - token.decimals[chainId]) ?? Zero
+    const userBalance =
+      rawUserBalance?.pow(18 - token.decimals[chainId]) ?? Zero
+
+    // add to balances
+    tokenBalances.push({
+      rawBalance,
+      balance,
+      token,
+      isLP,
     })
-    tokenBalances[poolToken.addresses[chainId]] = {
-      rawBalance: balance,
-      balance: Zero,
-      token: poolToken,
+
+    // add to user balances
+    userTokenBalances.push({
+      rawBalance: rawUserBalance,
+      balance: userBalance,
+      token,
+      isLP,
+    })
+
+    // set lp variables
+    if (isLP) {
+      userLpTokenBalance = userBalance
+      lpTokenBalance = balance
     }
+
+    // running sum of all tokens in the pool
+    poolTokenSum = poolTokenSum.add(balance)
   }
-  const balance = await fetchBalance({
-    address: poolAddress,
-    chainId,
-    token: `0x${lpTokenAddress.slice(2)}`,
-  })
-  tokenBalances[lpTokenAddress] = {
-    rawBalance: balance,
-    balance: Zero,
-    token: poolToken,
-  }
+
+  const virtualPriceResult = poolTokenSum.div(
+    tokenBalances.filter((t) => t.isLP)[0].balance
+  )
+
   console.log('lp token', `0x${lpTokenAddress.slice(2)}`)
 
   console.log('tokenBalances', tokenBalances)
   // const swapContract = useGenericSwapContract(chainId, poolName)
-
   // get
-  const poolApyData = useGenericPoolApyData(chainId, poolToken)
+  // const poolApyData = useGenericPoolApyData(chainId, poolToken)
 
   // const lpTokenContract = useGenericContract(
   //   chainId,
@@ -74,62 +103,12 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
   const ethPrice = useEthPrice()
   const avaxPrice = useAvaxPrice()
 
-  // const virtualPriceResult = await SynapseSDK.getVirtualPrice()
-  const virtualPriceResult = Zero
-
-  // Pool token data
-  // const tokenBalancesResults = useSingleContractMultipleData(
-  //   chainId,
-  //   swapContract,
-  //   'getTokenBalance',
-  //   poolTokens?.map((token, i) => [i]),
-  //   { resultOnly: true }
-  // )
-
-  // const rawTokenBalances = tokenBalancesResults.map((item) => item?.[0] ?? One) //BigNumber.from(1))
-
-  // const [swapStorageResult, virtualPriceResult] =
-  //   useSingleContractMultipleMethods(
-  //     chainId,
-  //     swapContract,
-  //     {
-  //       swapStorage: [],
-  //       getVirtualPrice: [],
-  //     },
-  //     { resultOnly: true }
-  //   )
-
-  // const [lpTokenBalanceOfResult, totalLpTokenSupplyResult] =
-  //   useSingleContractMultipleMethods(
-  //     chainId,
-  //     lpTokenContract,
-  //     {
-  //       balanceOf: [address || AddressZero],
-  //       totalSupply: [],
-  //     },
-  //     { resultOnly: true }
-  //   )
-  // THIS IS THE FRESHLY INTRODUCED CANCER
-
-  // bahahahahhahah
-
-  for (const tokenAddress of Object.keys(tokenBalances)) {
-    const token = tokenBalances[tokenAddress]
-    tokenBalances[tokenAddress].balance = BigNumber.from(10)
-      .pow(18 - token.decimals[chainId]) // cast all to 18 decimals
-      .mul(token.rawBalance)
-  }
-  // const userLpTokenBalance =
-  const userLpTokenBalance = Zero
-  const totalLpTokenBalance = tokenBalances[lpTokenAddress].balance
-
   let virtualPrice
-  if (totalLpTokenBalance?.isZero()) {
+  if (lpTokenBalance.isZero()) {
     virtualPrice = MAX_BN_POW
   } else {
     virtualPrice = virtualPriceResult?.[0]
   }
-
 
   const { tokenBalancesSum, tokenBalancesUSD } = getTokenBalanceInfo({
     tokenBalances,
@@ -140,71 +119,62 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
     poolType,
   })
 
+  // const { adminFee, swapFee } = await swapStorageRequest
+  // (weeksPerYear * KEEPPerWeek * KEEPPrice) / (BTCPrice * BTCInPool)
 
+  // User share data
+  const userShare = userLpTokenBalance
+    .mul(MAX_BN_POW)
+    .div(calcIfZero(lpTokenBalance))
 
+  const userPoolTokenBalances = tokenBalances.map((token) =>
+    userShare.mul(token.balance).div(MAX_BN_POW)
+  )
 
+  const userPoolTokenBalancesSum = calcBnSum(userPoolTokenBalances)
 
-    // const { adminFee, swapFee } = await swapStorageRequest
-    // (weeksPerYear * KEEPPerWeek * KEEPPrice) / (BTCPrice * BTCInPool)
+  const sharedArgs = {
+    lpTokenBalance: tokenBalances.filter((t) => !t.isLP)[0].balance,
+    tokenBalancesSum,
+  }
 
-    // User share data
-    const userShare = userLpTokenBalance
-      .mul(MAX_BN_POW)
-      .div(calcIfZero(totalLpTokenBalance))
+  const generalPoolTokens = getPoolTokenInfoArr({
+    tokenBalances,
+    ...sharedArgs,
+  })
 
-    const userPoolTokenBalances = tokenBalances.map((balance) =>
-      userShare.mul(balance).div(MAX_BN_POW)
-    )
+  const userPoolTokens = getPoolTokenInfoArr({
+    tokenBalances: userTokenBalances,
+    ...sharedArgs,
+  })
 
-    const userPoolTokenBalancesSum = calcBnSum(userPoolTokenBalances)
+  const poolDataObj = {
+    name: poolName,
+    tokens: generalPoolTokens,
+    totalLocked: tokenBalancesSum,
+    totalLockedUSD: tokenBalancesUSD,
+    virtualPrice,
+    volume: 'XXX', // TODO
+    utilization: 'XXX', // TODO
+    apy: poolApyData, //? DIFF
+  }
 
-    const sharedArgs = {
-      totalLpTokenBalance,
-      tokenBalancesSum,
-    }
-
-    const generalPoolTokens = getPoolTokenInfoArr({
-      poolTokenBalances: tokenBalances,
-      ...sharedArgs,
-      poolTokens,
-      tokenBalances,
-    })
-
-    const userPoolTokens = getPoolTokenInfoArr({
-      poolTokenBalances: userPoolTokenBalances,
-      ...sharedArgs,
-      poolTokens,
-      tokenBalances,
-    })
-
-    const poolDataObj = {
+  let userShareData
+  if (address) {
+    userShareData = {
       name: poolName,
-      tokens: generalPoolTokens,
-      totalLocked: tokenBalancesSum,
-      totalLockedUSD: tokenBalancesUSD,
-      virtualPrice,
-      volume: 'XXX', // TODO
-      utilization: 'XXX', // TODO
-      apy: poolApyData, //? DIFF
+      share: userShare,
+      value: userPoolTokenBalancesSum,
+      avgBalance: userPoolTokenBalancesSum,
+      tokens: userPoolTokens,
+      lpTokenBalance: userLpTokenBalance,
+      // the code was always doing this, i could not find out why
+      lpTokenMinted: userLpTokenBalance,
     }
-
-    let userShareData
-    if (address) {
-      userShareData = {
-        name: poolName,
-        share: userShare,
-        value: userPoolTokenBalancesSum,
-        avgBalance: userPoolTokenBalancesSum,
-        tokens: userPoolTokens,
-        lpTokenBalance: userLpTokenBalance,
-        // the code was always doing this, i could not find out why
-        lpTokenMinted: userLpTokenBalance,
-      }
-    } else {
-      userShareData = null
-    }
-    return [poolDataObj, userShareData]
-
+  } else {
+    userShareData = null
+  }
+  return [poolDataObj, userShareData]
 
   // return [poolData, userPoolData]
 }

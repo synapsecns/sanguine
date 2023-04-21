@@ -6,7 +6,7 @@ import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
 
 // import { POOLS_MAP } from '@hooks/pools/usePools'
 
-// import { useGenericPoolData } from '@hooks/pools/useGenericPoolData'
+import { useGenericPoolData } from '@hooks/pools/useGenericPoolData'
 // import { useChainSwitcher } from '@hooks/wallet/useChainSwitcher'
 // import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 
@@ -19,8 +19,8 @@ import { getPoolStats } from './getPoolStats'
 
 import { CHAIN_INFO_MAP } from '@constants/chains'
 import { POOLS_BY_CHAIN } from '@constants/tokens'
-const PoolsListCard = ({ poolName, chainId, connectedChainId }) => {
-  const [poolData] = useGenericPoolData(chainId, poolName)
+const PoolsListCard = ({ poolName, chainId, address, connectedChainId }) => {
+  const [poolData] = await useGenericPoolData(chainId, address, poolName)
 
   const poolTokens = POOLS_BY_CHAIN[chainId][poolName]
   const poolRouterIndex = POOL_INVERTED_ROUTER_INDEX[chainId][poolName]

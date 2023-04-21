@@ -38,6 +38,15 @@ export interface IconProps {
   walletId?: string
   className?: string
 }
+export type PoolTokenObj = {
+  [x: string]: { token: Token; balance: BigNumber; rawBalance: BigNumber }
+}
+export type PoolTokenObject = {
+  token: Token
+  balance: BigNumber
+  rawBalance: BigNumber
+  isLP: boolean
+}
 
 export type SwapQuote = {
   outputAmount: BigNumber
