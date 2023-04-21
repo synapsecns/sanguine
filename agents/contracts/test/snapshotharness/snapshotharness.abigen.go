@@ -31,7 +31,7 @@ var (
 // MemViewLibMetaData contains all meta data concerning the MemViewLib contract.
 var MemViewLibMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"IndexedTooMuch\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OccupiedMemory\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"PrecompileOutOfGas\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"UnallocatedMemory\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ViewOverrun\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220684f9a2f2d834a70f311eaf51e7546333314a063d701b63b2b999899f24382b064736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205a9961b38af8d62c5cf102946d83781d6807b84c339490ba1191c5e971f2961464736f6c63430008110033",
 }
 
 // MemViewLibABI is the input ABI used to generate the binding from.
@@ -201,23 +201,23 @@ func (_MemViewLib *MemViewLibTransactorRaw) Transact(opts *bind.TransactOpts, me
 	return _MemViewLib.Contract.contract.Transact(opts, method, params...)
 }
 
-// MerkleLibMetaData contains all meta data concerning the MerkleLib contract.
-var MerkleLibMetaData = &bind.MetaData{
+// MerkleMathMetaData contains all meta data concerning the MerkleMath contract.
+var MerkleMathMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220c63fbee69d76ce1a2f1dd4e700aa44b06654a264769c38290b84680a563075ee64736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220030dea8adeee7085f087eaf8ab58604b1ca050ed7103dec56e5b289e5ee9186964736f6c63430008110033",
 }
 
-// MerkleLibABI is the input ABI used to generate the binding from.
-// Deprecated: Use MerkleLibMetaData.ABI instead.
-var MerkleLibABI = MerkleLibMetaData.ABI
+// MerkleMathABI is the input ABI used to generate the binding from.
+// Deprecated: Use MerkleMathMetaData.ABI instead.
+var MerkleMathABI = MerkleMathMetaData.ABI
 
-// MerkleLibBin is the compiled bytecode used for deploying new contracts.
-// Deprecated: Use MerkleLibMetaData.Bin instead.
-var MerkleLibBin = MerkleLibMetaData.Bin
+// MerkleMathBin is the compiled bytecode used for deploying new contracts.
+// Deprecated: Use MerkleMathMetaData.Bin instead.
+var MerkleMathBin = MerkleMathMetaData.Bin
 
-// DeployMerkleLib deploys a new Ethereum contract, binding an instance of MerkleLib to it.
-func DeployMerkleLib(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *MerkleLib, error) {
-	parsed, err := MerkleLibMetaData.GetAbi()
+// DeployMerkleMath deploys a new Ethereum contract, binding an instance of MerkleMath to it.
+func DeployMerkleMath(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *MerkleMath, error) {
+	parsed, err := MerkleMathMetaData.GetAbi()
 	if err != nil {
 		return common.Address{}, nil, nil, err
 	}
@@ -225,284 +225,111 @@ func DeployMerkleLib(auth *bind.TransactOpts, backend bind.ContractBackend) (com
 		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
 	}
 
-	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(MerkleLibBin), backend)
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(MerkleMathBin), backend)
 	if err != nil {
 		return common.Address{}, nil, nil, err
 	}
-	return address, tx, &MerkleLib{MerkleLibCaller: MerkleLibCaller{contract: contract}, MerkleLibTransactor: MerkleLibTransactor{contract: contract}, MerkleLibFilterer: MerkleLibFilterer{contract: contract}}, nil
+	return address, tx, &MerkleMath{MerkleMathCaller: MerkleMathCaller{contract: contract}, MerkleMathTransactor: MerkleMathTransactor{contract: contract}, MerkleMathFilterer: MerkleMathFilterer{contract: contract}}, nil
 }
 
-// MerkleLib is an auto generated Go binding around an Ethereum contract.
-type MerkleLib struct {
-	MerkleLibCaller     // Read-only binding to the contract
-	MerkleLibTransactor // Write-only binding to the contract
-	MerkleLibFilterer   // Log filterer for contract events
+// MerkleMath is an auto generated Go binding around an Ethereum contract.
+type MerkleMath struct {
+	MerkleMathCaller     // Read-only binding to the contract
+	MerkleMathTransactor // Write-only binding to the contract
+	MerkleMathFilterer   // Log filterer for contract events
 }
 
-// MerkleLibCaller is an auto generated read-only Go binding around an Ethereum contract.
-type MerkleLibCaller struct {
+// MerkleMathCaller is an auto generated read-only Go binding around an Ethereum contract.
+type MerkleMathCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// MerkleLibTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type MerkleLibTransactor struct {
+// MerkleMathTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type MerkleMathTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// MerkleLibFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type MerkleLibFilterer struct {
+// MerkleMathFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type MerkleMathFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// MerkleLibSession is an auto generated Go binding around an Ethereum contract,
+// MerkleMathSession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type MerkleLibSession struct {
-	Contract     *MerkleLib        // Generic contract binding to set the session for
+type MerkleMathSession struct {
+	Contract     *MerkleMath       // Generic contract binding to set the session for
 	CallOpts     bind.CallOpts     // Call options to use throughout this session
 	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
 }
 
-// MerkleLibCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// MerkleMathCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type MerkleLibCallerSession struct {
-	Contract *MerkleLibCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts    // Call options to use throughout this session
-}
-
-// MerkleLibTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
-// with pre-set transact options.
-type MerkleLibTransactorSession struct {
-	Contract     *MerkleLibTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts    // Transaction auth options to use throughout this session
-}
-
-// MerkleLibRaw is an auto generated low-level Go binding around an Ethereum contract.
-type MerkleLibRaw struct {
-	Contract *MerkleLib // Generic contract binding to access the raw methods on
-}
-
-// MerkleLibCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type MerkleLibCallerRaw struct {
-	Contract *MerkleLibCaller // Generic read-only contract binding to access the raw methods on
-}
-
-// MerkleLibTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type MerkleLibTransactorRaw struct {
-	Contract *MerkleLibTransactor // Generic write-only contract binding to access the raw methods on
-}
-
-// NewMerkleLib creates a new instance of MerkleLib, bound to a specific deployed contract.
-func NewMerkleLib(address common.Address, backend bind.ContractBackend) (*MerkleLib, error) {
-	contract, err := bindMerkleLib(address, backend, backend, backend)
-	if err != nil {
-		return nil, err
-	}
-	return &MerkleLib{MerkleLibCaller: MerkleLibCaller{contract: contract}, MerkleLibTransactor: MerkleLibTransactor{contract: contract}, MerkleLibFilterer: MerkleLibFilterer{contract: contract}}, nil
-}
-
-// NewMerkleLibCaller creates a new read-only instance of MerkleLib, bound to a specific deployed contract.
-func NewMerkleLibCaller(address common.Address, caller bind.ContractCaller) (*MerkleLibCaller, error) {
-	contract, err := bindMerkleLib(address, caller, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &MerkleLibCaller{contract: contract}, nil
-}
-
-// NewMerkleLibTransactor creates a new write-only instance of MerkleLib, bound to a specific deployed contract.
-func NewMerkleLibTransactor(address common.Address, transactor bind.ContractTransactor) (*MerkleLibTransactor, error) {
-	contract, err := bindMerkleLib(address, nil, transactor, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &MerkleLibTransactor{contract: contract}, nil
-}
-
-// NewMerkleLibFilterer creates a new log filterer instance of MerkleLib, bound to a specific deployed contract.
-func NewMerkleLibFilterer(address common.Address, filterer bind.ContractFilterer) (*MerkleLibFilterer, error) {
-	contract, err := bindMerkleLib(address, nil, nil, filterer)
-	if err != nil {
-		return nil, err
-	}
-	return &MerkleLibFilterer{contract: contract}, nil
-}
-
-// bindMerkleLib binds a generic wrapper to an already deployed contract.
-func bindMerkleLib(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(MerkleLibABI))
-	if err != nil {
-		return nil, err
-	}
-	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_MerkleLib *MerkleLibRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _MerkleLib.Contract.MerkleLibCaller.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_MerkleLib *MerkleLibRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _MerkleLib.Contract.MerkleLibTransactor.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_MerkleLib *MerkleLibRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _MerkleLib.Contract.MerkleLibTransactor.contract.Transact(opts, method, params...)
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_MerkleLib *MerkleLibCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _MerkleLib.Contract.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_MerkleLib *MerkleLibTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _MerkleLib.Contract.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_MerkleLib *MerkleLibTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _MerkleLib.Contract.contract.Transact(opts, method, params...)
-}
-
-// MerkleListMetaData contains all meta data concerning the MerkleList contract.
-var MerkleListMetaData = &bind.MetaData{
-	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212209ea6d36d18966838d1fbd0f1ec82609545a75527d39f857f9de0df2aa759052a64736f6c63430008110033",
-}
-
-// MerkleListABI is the input ABI used to generate the binding from.
-// Deprecated: Use MerkleListMetaData.ABI instead.
-var MerkleListABI = MerkleListMetaData.ABI
-
-// MerkleListBin is the compiled bytecode used for deploying new contracts.
-// Deprecated: Use MerkleListMetaData.Bin instead.
-var MerkleListBin = MerkleListMetaData.Bin
-
-// DeployMerkleList deploys a new Ethereum contract, binding an instance of MerkleList to it.
-func DeployMerkleList(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *MerkleList, error) {
-	parsed, err := MerkleListMetaData.GetAbi()
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	if parsed == nil {
-		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
-	}
-
-	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(MerkleListBin), backend)
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	return address, tx, &MerkleList{MerkleListCaller: MerkleListCaller{contract: contract}, MerkleListTransactor: MerkleListTransactor{contract: contract}, MerkleListFilterer: MerkleListFilterer{contract: contract}}, nil
-}
-
-// MerkleList is an auto generated Go binding around an Ethereum contract.
-type MerkleList struct {
-	MerkleListCaller     // Read-only binding to the contract
-	MerkleListTransactor // Write-only binding to the contract
-	MerkleListFilterer   // Log filterer for contract events
-}
-
-// MerkleListCaller is an auto generated read-only Go binding around an Ethereum contract.
-type MerkleListCaller struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// MerkleListTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type MerkleListTransactor struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// MerkleListFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type MerkleListFilterer struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// MerkleListSession is an auto generated Go binding around an Ethereum contract,
-// with pre-set call and transact options.
-type MerkleListSession struct {
-	Contract     *MerkleList       // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts     // Call options to use throughout this session
-	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
-}
-
-// MerkleListCallerSession is an auto generated read-only Go binding around an Ethereum contract,
-// with pre-set call options.
-type MerkleListCallerSession struct {
-	Contract *MerkleListCaller // Generic contract caller binding to set the session for
+type MerkleMathCallerSession struct {
+	Contract *MerkleMathCaller // Generic contract caller binding to set the session for
 	CallOpts bind.CallOpts     // Call options to use throughout this session
 }
 
-// MerkleListTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// MerkleMathTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type MerkleListTransactorSession struct {
-	Contract     *MerkleListTransactor // Generic contract transactor binding to set the session for
+type MerkleMathTransactorSession struct {
+	Contract     *MerkleMathTransactor // Generic contract transactor binding to set the session for
 	TransactOpts bind.TransactOpts     // Transaction auth options to use throughout this session
 }
 
-// MerkleListRaw is an auto generated low-level Go binding around an Ethereum contract.
-type MerkleListRaw struct {
-	Contract *MerkleList // Generic contract binding to access the raw methods on
+// MerkleMathRaw is an auto generated low-level Go binding around an Ethereum contract.
+type MerkleMathRaw struct {
+	Contract *MerkleMath // Generic contract binding to access the raw methods on
 }
 
-// MerkleListCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type MerkleListCallerRaw struct {
-	Contract *MerkleListCaller // Generic read-only contract binding to access the raw methods on
+// MerkleMathCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type MerkleMathCallerRaw struct {
+	Contract *MerkleMathCaller // Generic read-only contract binding to access the raw methods on
 }
 
-// MerkleListTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type MerkleListTransactorRaw struct {
-	Contract *MerkleListTransactor // Generic write-only contract binding to access the raw methods on
+// MerkleMathTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type MerkleMathTransactorRaw struct {
+	Contract *MerkleMathTransactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewMerkleList creates a new instance of MerkleList, bound to a specific deployed contract.
-func NewMerkleList(address common.Address, backend bind.ContractBackend) (*MerkleList, error) {
-	contract, err := bindMerkleList(address, backend, backend, backend)
+// NewMerkleMath creates a new instance of MerkleMath, bound to a specific deployed contract.
+func NewMerkleMath(address common.Address, backend bind.ContractBackend) (*MerkleMath, error) {
+	contract, err := bindMerkleMath(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &MerkleList{MerkleListCaller: MerkleListCaller{contract: contract}, MerkleListTransactor: MerkleListTransactor{contract: contract}, MerkleListFilterer: MerkleListFilterer{contract: contract}}, nil
+	return &MerkleMath{MerkleMathCaller: MerkleMathCaller{contract: contract}, MerkleMathTransactor: MerkleMathTransactor{contract: contract}, MerkleMathFilterer: MerkleMathFilterer{contract: contract}}, nil
 }
 
-// NewMerkleListCaller creates a new read-only instance of MerkleList, bound to a specific deployed contract.
-func NewMerkleListCaller(address common.Address, caller bind.ContractCaller) (*MerkleListCaller, error) {
-	contract, err := bindMerkleList(address, caller, nil, nil)
+// NewMerkleMathCaller creates a new read-only instance of MerkleMath, bound to a specific deployed contract.
+func NewMerkleMathCaller(address common.Address, caller bind.ContractCaller) (*MerkleMathCaller, error) {
+	contract, err := bindMerkleMath(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &MerkleListCaller{contract: contract}, nil
+	return &MerkleMathCaller{contract: contract}, nil
 }
 
-// NewMerkleListTransactor creates a new write-only instance of MerkleList, bound to a specific deployed contract.
-func NewMerkleListTransactor(address common.Address, transactor bind.ContractTransactor) (*MerkleListTransactor, error) {
-	contract, err := bindMerkleList(address, nil, transactor, nil)
+// NewMerkleMathTransactor creates a new write-only instance of MerkleMath, bound to a specific deployed contract.
+func NewMerkleMathTransactor(address common.Address, transactor bind.ContractTransactor) (*MerkleMathTransactor, error) {
+	contract, err := bindMerkleMath(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &MerkleListTransactor{contract: contract}, nil
+	return &MerkleMathTransactor{contract: contract}, nil
 }
 
-// NewMerkleListFilterer creates a new log filterer instance of MerkleList, bound to a specific deployed contract.
-func NewMerkleListFilterer(address common.Address, filterer bind.ContractFilterer) (*MerkleListFilterer, error) {
-	contract, err := bindMerkleList(address, nil, nil, filterer)
+// NewMerkleMathFilterer creates a new log filterer instance of MerkleMath, bound to a specific deployed contract.
+func NewMerkleMathFilterer(address common.Address, filterer bind.ContractFilterer) (*MerkleMathFilterer, error) {
+	contract, err := bindMerkleMath(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &MerkleListFilterer{contract: contract}, nil
+	return &MerkleMathFilterer{contract: contract}, nil
 }
 
-// bindMerkleList binds a generic wrapper to an already deployed contract.
-func bindMerkleList(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(MerkleListABI))
+// bindMerkleMath binds a generic wrapper to an already deployed contract.
+func bindMerkleMath(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(MerkleMathABI))
 	if err != nil {
 		return nil, err
 	}
@@ -513,38 +340,38 @@ func bindMerkleList(address common.Address, caller bind.ContractCaller, transact
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_MerkleList *MerkleListRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _MerkleList.Contract.MerkleListCaller.contract.Call(opts, result, method, params...)
+func (_MerkleMath *MerkleMathRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _MerkleMath.Contract.MerkleMathCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_MerkleList *MerkleListRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _MerkleList.Contract.MerkleListTransactor.contract.Transfer(opts)
+func (_MerkleMath *MerkleMathRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _MerkleMath.Contract.MerkleMathTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_MerkleList *MerkleListRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _MerkleList.Contract.MerkleListTransactor.contract.Transact(opts, method, params...)
+func (_MerkleMath *MerkleMathRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _MerkleMath.Contract.MerkleMathTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_MerkleList *MerkleListCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _MerkleList.Contract.contract.Call(opts, result, method, params...)
+func (_MerkleMath *MerkleMathCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _MerkleMath.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_MerkleList *MerkleListTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _MerkleList.Contract.contract.Transfer(opts)
+func (_MerkleMath *MerkleMathTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _MerkleMath.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_MerkleList *MerkleListTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _MerkleList.Contract.contract.Transact(opts, method, params...)
+func (_MerkleMath *MerkleMathTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _MerkleMath.Contract.contract.Transact(opts, method, params...)
 }
 
 // SnapshotHarnessMetaData contains all meta data concerning the SnapshotHarness contract.
@@ -559,7 +386,7 @@ var SnapshotHarnessMetaData = &bind.MetaData{
 		"1406cde1": "state(bytes,uint256)",
 		"450701c5": "statesAmount(bytes)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b506110e1806100206000396000f3fe608060405234801561001057600080fd5b506004361061007d5760003560e01c8063925ea6871161005b578063925ea687146100ef578063a641fa3314610102578063aa1e84de14610115578063c2e9e2081461012857600080fd5b80631406cde114610082578063450701c5146100ab5780638aae3c34146100cc575b600080fd5b610095610090366004610df4565b61013b565b6040516100a29190610e39565b60405180910390f35b6100be6100b9366004610ea5565b610167565b6040519081526020016100a2565b6100df6100da366004610ea5565b61017a565b60405190151581526020016100a2565b6100956100fd366004610ea5565b61018d565b610095610110366004610eda565b6101ac565b6100be610123366004610ea5565b610264565b6100be610136366004610ea5565b610277565b606061015e610159610156846101508761028a565b9061029d565b90565b61034b565b90505b92915050565b60006101616101758361028a565b6103a8565b6000610161610188836103c7565b6103da565b6060600061019a8361028a565b90506101a58161034b565b9392505050565b805160609060008167ffffffffffffffff8111156101cc576101cc610ce8565b6040519080825280602002602001820160405280156101f5578160200160208202803683370190505b50905060005b828110156102525761022585828151811061021857610218610f9d565b602002602001015161041a565b82828151811061023757610237610f9d565b602090810291909101015261024b81610ffb565b90506101fb565b5061025c81610428565b949350505050565b60006101616102728361028a565b610545565b60006101616102858361028a565b610571565b6000610161610298836103c7565b61064a565b600082816102ac603285611033565b90506fffffffffffffffffffffffffffffffff8216811061032e576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601860248201527f537461746520696e646578206f7574206f662072616e6765000000000000000060448201526064015b60405180910390fd5b61034261033d838360326106bf565b610730565b95945050505050565b6040518061035c83602083016107ae565b506fffffffffffffffffffffffffffffffff83166000601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0168301602001604052509052919050565b600061016160326fffffffffffffffffffffffffffffffff841661104a565b80516000906020830161025c818361085d565b60006fffffffffffffffffffffffffffffffff8216816103fb60328361104a565b905081610409603283611033565b14801561025c575061025c816108c0565b600061016161033d836103c7565b606061043482516108c0565b61049a576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601560248201527f496e76616c69642073746174657320616d6f756e7400000000000000000000006044820152606401610325565b815160008167ffffffffffffffff8111156104b7576104b7610ce8565b6040519080825280602002602001820160405280156104e0578160200160208202803683370190505b50905060005b8281101561053b5761050e85828151811061050357610503610f9d565b602002602001015190565b82828151811061052057610520610f9d565b602090810291909101015261053481610ffb565b90506104e6565b5061025c816108e5565b6000610161827fdfe02260445526f7b137cb9caf995dcdead56fff547ac8de4b3e330521723148610941565b60008061057d836103a8565b905060008167ffffffffffffffff81111561059a5761059a610ce8565b6040519080825280602002602001820160405280156105c3578160200160208202803683370190505b50905060005b82811015610610576105e36105de868361029d565b61097d565b8282815181106105f5576105f5610f9d565b602090810291909101015261060981610ffb565b90506105c9565b506106268161062160016006611085565b6109bc565b8060008151811061063957610639610f9d565b602002602001015192505050919050565b6000610655826103da565b6106bb576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600e60248201527f4e6f74206120736e617073686f740000000000000000000000000000000000006044820152606401610325565b5090565b6000806106cc8560801c90565b90506106d785610b05565b836106e28684611098565b6106ec9190611098565b1115610724576040517fa3b99ded00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6103428482018461085d565b600060326fffffffffffffffffffffffffffffffff8316146106bb576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600b60248201527f4e6f7420612073746174650000000000000000000000000000000000000000006044820152606401610325565b6040516000906fffffffffffffffffffffffffffffffff841690608085901c9080851015610808576040517f4b2a158c00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60008386858560045afa90508061084b576040517f7c7d772f00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b608086901b8417979650505050505050565b60008061086a8385611098565b905060405181111561087a575060005b806000036108b4576040517f10bef38600000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b608084901b831761025c565b6000811580159061016157506108d860016006611085565b6001901b82111592915050565b6040518060006108f88460208401610b2b565b6fffffffffffffffffffffffffffffffff16601f81017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016830160200160405290915250919050565b60008161094d84610bcf565b60408051602081019390935282015260600160405160208183030381529060405280519060200120905092915050565b600080600061098b84610bfa565b6040805160208082019490945280820192909252805180830382018152606090920190528051910120949350505050565b81516001821b811115610a2b576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600e60248201527f48656967687420746f6f206c6f770000000000000000000000000000000000006044820152606401610325565b60005b82811015610aff5760005b82811015610ade576000610a4e826001611098565b90506000868381518110610a6457610a64610f9d565b602002602001015190506000858310610a7e576000610a99565b878381518110610a9057610a90610f9d565b60200260200101515b9050610aa58282610c29565b88600186901c81518110610abb57610abb610f9d565b602002602001018181525050505050600281610ad79190611098565b9050610a39565b506001610aeb8382611098565b901c9150610af881610ffb565b9050610a2e565b50505050565b60006fffffffffffffffffffffffffffffffff8216610b248360801c90565b0192915050565b60405160009080831015610b6b576040517f4b2a158c00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000805b8551811015610bc2576000868281518110610b8c57610b8c610f9d565b60200260200101519050610ba2818488016107ae565b506fffffffffffffffffffffffffffffffff169190910190600101610b6f565b50608084901b8117610342565b600080610bdc8360801c90565b6fffffffffffffffffffffffffffffffff9390931690922092915050565b60008082610c11610c0c826024610c75565b610bcf565b9250610c21610c0c826024610c82565b915050915091565b600082158015610c37575081155b15610c4457506000610161565b6040805160208101859052908101839052606001604051602081830303815290604052805190602001209050610161565b600061015e8382846106bf565b60006fffffffffffffffffffffffffffffffff831680831115610cd1576040517fa3b99ded00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61025c83610cdf8660801c90565b0184830361085d565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff81118282101715610d5e57610d5e610ce8565b604052919050565b600082601f830112610d7757600080fd5b813567ffffffffffffffff811115610d9157610d91610ce8565b610dc260207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f84011601610d17565b818152846020838601011115610dd757600080fd5b816020850160208301376000918101602001919091529392505050565b60008060408385031215610e0757600080fd5b823567ffffffffffffffff811115610e1e57600080fd5b610e2a85828601610d66565b95602094909401359450505050565b600060208083528351808285015260005b81811015610e6657858101830151858201604001528201610e4a565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8301168501019250505092915050565b600060208284031215610eb757600080fd5b813567ffffffffffffffff811115610ece57600080fd5b61025c84828501610d66565b60006020808385031215610eed57600080fd5b823567ffffffffffffffff80821115610f0557600080fd5b818501915085601f830112610f1957600080fd5b813581811115610f2b57610f2b610ce8565b8060051b610f3a858201610d17565b9182528381018501918581019089841115610f5457600080fd5b86860192505b83831015610f9057823585811115610f725760008081fd5b610f808b89838a0101610d66565b8352509186019190860190610f5a565b9998505050505050505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff820361102c5761102c610fcc565b5060010190565b808202811582820484141761016157610161610fcc565b600082611080577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b8181038181111561016157610161610fcc565b8082018082111561016157610161610fcc56fea2646970667358221220d60daa24f259b645c07bc08719b8a70a185396306001a81ae67d0f03f1d8f48664736f6c63430008110033",
+	Bin: "0x608060405234801561001057600080fd5b506110bb806100206000396000f3fe608060405234801561001057600080fd5b506004361061007d5760003560e01c8063925ea6871161005b578063925ea687146100ef578063a641fa3314610102578063aa1e84de14610115578063c2e9e2081461012857600080fd5b80631406cde114610082578063450701c5146100ab5780638aae3c34146100cc575b600080fd5b610095610090366004610dce565b61013b565b6040516100a29190610e13565b60405180910390f35b6100be6100b9366004610e7f565b610167565b6040519081526020016100a2565b6100df6100da366004610e7f565b61017a565b60405190151581526020016100a2565b6100956100fd366004610e7f565b61018d565b610095610110366004610eb4565b6101ac565b6100be610123366004610e7f565b610264565b6100be610136366004610e7f565b610277565b606061015e610159610156846101508761028a565b9061029d565b90565b61034b565b90505b92915050565b60006101616101758361028a565b6103a8565b6000610161610188836103c7565b6103da565b6060600061019a8361028a565b90506101a58161034b565b9392505050565b805160609060008167ffffffffffffffff8111156101cc576101cc610cc2565b6040519080825280602002602001820160405280156101f5578160200160208202803683370190505b50905060005b828110156102525761022585828151811061021857610218610f77565b602002602001015161041a565b82828151811061023757610237610f77565b602090810291909101015261024b81610fd5565b90506101fb565b5061025c81610428565b949350505050565b60006101616102728361028a565b610545565b60006101616102858361028a565b610571565b6000610161610298836103c7565b61064a565b600082816102ac60328561100d565b90506fffffffffffffffffffffffffffffffff8216811061032e576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601860248201527f537461746520696e646578206f7574206f662072616e6765000000000000000060448201526064015b60405180910390fd5b61034261033d838360326106bf565b610730565b95945050505050565b6040518061035c83602083016107ae565b506fffffffffffffffffffffffffffffffff83166000601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0168301602001604052509052919050565b600061016160326fffffffffffffffffffffffffffffffff8416611024565b80516000906020830161025c818361085d565b60006fffffffffffffffffffffffffffffffff8216816103fb603283611024565b90508161040960328361100d565b14801561025c575061025c816108c0565b600061016161033d836103c7565b606061043482516108c0565b61049a576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601560248201527f496e76616c69642073746174657320616d6f756e7400000000000000000000006044820152606401610325565b815160008167ffffffffffffffff8111156104b7576104b7610cc2565b6040519080825280602002602001820160405280156104e0578160200160208202803683370190505b50905060005b8281101561053b5761050e85828151811061050357610503610f77565b602002602001015190565b82828151811061052057610520610f77565b602090810291909101015261053481610fd5565b90506104e6565b5061025c816108e5565b6000610161827fdfe02260445526f7b137cb9caf995dcdead56fff547ac8de4b3e330521723148610941565b60008061057d836103a8565b905060008167ffffffffffffffff81111561059a5761059a610cc2565b6040519080825280602002602001820160405280156105c3578160200160208202803683370190505b50905060005b82811015610610576105e36105de868361029d565b61097d565b8282815181106105f5576105f5610f77565b602090810291909101015261060981610fd5565b90506105c9565b50610626816106216001600661105f565b6109bc565b8060008151811061063957610639610f77565b602002602001015192505050919050565b6000610655826103da565b6106bb576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600e60248201527f4e6f74206120736e617073686f740000000000000000000000000000000000006044820152606401610325565b5090565b6000806106cc8560801c90565b90506106d785610adf565b836106e28684611072565b6106ec9190611072565b1115610724576040517fa3b99ded00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6103428482018461085d565b600060326fffffffffffffffffffffffffffffffff8316146106bb576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600b60248201527f4e6f7420612073746174650000000000000000000000000000000000000000006044820152606401610325565b6040516000906fffffffffffffffffffffffffffffffff841690608085901c9080851015610808576040517f4b2a158c00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60008386858560045afa90508061084b576040517f7c7d772f00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b608086901b8417979650505050505050565b60008061086a8385611072565b905060405181111561087a575060005b806000036108b4576040517f10bef38600000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b608084901b831761025c565b6000811580159061016157506108d86001600661105f565b6001901b82111592915050565b6040518060006108f88460208401610b05565b6fffffffffffffffffffffffffffffffff16601f81017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016830160200160405290915250919050565b60008161094d84610ba9565b60408051602081019390935282015260600160405160208183030381529060405280519060200120905092915050565b600080600061098b84610bd4565b6040805160208082019490945280820192909252805180830382018152606090920190528051910120949350505050565b81516001821b811115610a2b576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600e60248201527f48656967687420746f6f206c6f770000000000000000000000000000000000006044820152606401610325565b60005b82811015610ad95760005b82811015610aca5760008160010190506000868381518110610a5d57610a5d610f77565b602002602001015190506000858310610a77576000610a92565b878381518110610a8957610a89610f77565b60200260200101515b9050610a9e8282610c03565b88600186901c81518110610ab457610ab4610f77565b6020908102919091010152505050600201610a39565b506001918201821c9101610a2e565b50505050565b60006fffffffffffffffffffffffffffffffff8216610afe8360801c90565b0192915050565b60405160009080831015610b45576040517f4b2a158c00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000805b8551811015610b9c576000868281518110610b6657610b66610f77565b60200260200101519050610b7c818488016107ae565b506fffffffffffffffffffffffffffffffff169190910190600101610b49565b50608084901b8117610342565b600080610bb68360801c90565b6fffffffffffffffffffffffffffffffff9390931690922092915050565b60008082610beb610be6826024610c4f565b610ba9565b9250610bfb610be6826024610c5c565b915050915091565b600082158015610c11575081155b15610c1e57506000610161565b6040805160208101859052908101839052606001604051602081830303815290604052805190602001209050610161565b600061015e8382846106bf565b60006fffffffffffffffffffffffffffffffff831680831115610cab576040517fa3b99ded00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61025c83610cb98660801c90565b0184830361085d565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff81118282101715610d3857610d38610cc2565b604052919050565b600082601f830112610d5157600080fd5b813567ffffffffffffffff811115610d6b57610d6b610cc2565b610d9c60207fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f84011601610cf1565b818152846020838601011115610db157600080fd5b816020850160208301376000918101602001919091529392505050565b60008060408385031215610de157600080fd5b823567ffffffffffffffff811115610df857600080fd5b610e0485828601610d40565b95602094909401359450505050565b600060208083528351808285015260005b81811015610e4057858101830151858201604001528201610e24565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8301168501019250505092915050565b600060208284031215610e9157600080fd5b813567ffffffffffffffff811115610ea857600080fd5b61025c84828501610d40565b60006020808385031215610ec757600080fd5b823567ffffffffffffffff80821115610edf57600080fd5b818501915085601f830112610ef357600080fd5b813581811115610f0557610f05610cc2565b8060051b610f14858201610cf1565b9182528381018501918581019089841115610f2e57600080fd5b86860192505b83831015610f6a57823585811115610f4c5760008081fd5b610f5a8b89838a0101610d40565b8352509186019190860190610f34565b9998505050505050505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff820361100657611006610fa6565b5060010190565b808202811582820484141761016157610161610fa6565b60008261105a577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b8181038181111561016157610161610fa6565b8082018082111561016157610161610fa656fea2646970667358221220947e2986b9b4af039e2eb907b661ff6b2b8ab255cf38b844df8c790da5ce14d164736f6c63430008110033",
 }
 
 // SnapshotHarnessABI is the input ABI used to generate the binding from.
@@ -953,7 +780,7 @@ func (_SnapshotHarness *SnapshotHarnessCallerSession) StatesAmount(payload []byt
 // SnapshotLibMetaData contains all meta data concerning the SnapshotLib contract.
 var SnapshotLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220866d359ae85a38845e00c29a509ecc6c47f8fadd99320e815e2d4de418df6c7964736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220b7ae952611e6365de85a2c62ae171b0bb5361fbbb5812f34e78fb1a7525a32d164736f6c63430008110033",
 }
 
 // SnapshotLibABI is the input ABI used to generate the binding from.
@@ -1126,7 +953,7 @@ func (_SnapshotLib *SnapshotLibTransactorRaw) Transact(opts *bind.TransactOpts, 
 // StateLibMetaData contains all meta data concerning the StateLib contract.
 var StateLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122085e94f27079b0bf03e416bf8b1eb14345ebb00362f14730d5a1edec320e59c0264736f6c63430008110033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122032e0178e012ceda1f9b95395c30bd190e4d18a0bb79d4ec0c91b94699e3e001064736f6c63430008110033",
 }
 
 // StateLibABI is the input ABI used to generate the binding from.
