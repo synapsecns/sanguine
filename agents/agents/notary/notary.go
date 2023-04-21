@@ -444,10 +444,11 @@ func (n Notary) Start(ctx context.Context) error {
 	}
 	// Try starting from previous day
 	n.lastSummitBlock = uint64(latestBlockNUmber)
-	if n.lastSummitBlock >= 3000 {
+	if n.lastSummitBlock > 3000 {
 		n.lastSummitBlock = uint64(latestBlockNUmber) - uint64(3000)
+	} else {
+		n.lastSummitBlock = uint64(0)
 	}
-	n.lastSummitBlock = uint64(latestBlockNUmber) - uint64(3000)
 
 	// Ensure that gRPC is up and running.
 	logger.Info("Notary: ensure that gRPC is up and running.")
