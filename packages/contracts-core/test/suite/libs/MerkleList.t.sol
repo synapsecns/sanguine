@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {MerkleTree} from "../../../contracts/libs/MerkleTree.sol";
+import {MerkleMath} from "../../../contracts/libs/MerkleMath.sol";
 
 import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
 import {MerkleMathHarness} from "../../harnesses/libs/MerkleMathHarness.t.sol";
@@ -37,7 +37,7 @@ contract MerkleMathLibraryTest is SynapseLibraryTest {
         bytes32 node = index < length ? leaf(index) : bytes32(0);
         bytes32 expectedRoot = _calculateRoot(_extendHashes(hashes));
         bytes32[] memory proof = libHarness.calculateProof(hashes, index);
-        bytes32 root = MerkleTree.proofRoot(index, node, proof, HEIGHT);
+        bytes32 root = MerkleMath.proofRoot(index, node, proof, HEIGHT);
         assertEq(root, expectedRoot, "!calculateProof");
     }
 
