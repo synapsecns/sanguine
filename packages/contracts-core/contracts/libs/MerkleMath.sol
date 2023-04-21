@@ -22,14 +22,17 @@ library MerkleMath {
         uint256 proofLen = proof.length;
         require(proofLen <= height, "Proof too long");
         root_ = leaf;
-        // Go up the tree levels from the leaf following the proof
-        for (uint256 h = 0; h < proofLen; ++h) {
-            // Get a sibling node on current level: this is proof[h]
-            root_ = getParent(root_, proof[h], index, h);
-        }
-        // Go up to the root: the remaining siblings are EMPTY
-        for (uint256 h = proofLen; h < height; ++h) {
-            root_ = getParent(root_, bytes32(0), index, h);
+        /// @dev Apply unchecked to all ++h operations
+        unchecked {
+            // Go up the tree levels from the leaf following the proof
+            for (uint256 h = 0; h < proofLen; ++h) {
+                // Get a sibling node on current level: this is proof[h]
+                root_ = getParent(root_, proof[h], index, h);
+            }
+            // Go up to the root: the remaining siblings are EMPTY
+            for (uint256 h = proofLen; h < height; ++h) {
+                root_ = getParent(root_, bytes32(0), index, h);
+            }
         }
     }
 
@@ -89,26 +92,29 @@ library MerkleMath {
     function calculateRoot(bytes32[] memory hashes, uint256 height) internal pure {
         uint256 levelLength = hashes.length;
         require(levelLength <= (1 << height), "Height too low");
-        // Iterate `height` levels up from the leaf level
-        // For every level we will only record "significant values", i.e. not equal to ZERO
-        for (uint256 h = 0; h < height; ++h) {
-            // Let H be the height of the "current level". H = 0 for the "leafs level".
-            // Invariant: a total of 2**(HEIGHT-H) nodes are on the current level
-            // Invariant: hashes[0 .. length) are "significant values" for the "current level" nodes
-            // Invariant: bytes32(0) is the value for nodes with indexes [length .. 2**(HEIGHT-H))
+        /// @dev h, leftIndex, rightIndex and levelLength never overflow
+        unchecked {
+            // Iterate `height` levels up from the leaf level
+            // For every level we will only record "significant values", i.e. not equal to ZERO
+            for (uint256 h = 0; h < height; ++h) {
+                // Let H be the height of the "current level". H = 0 for the "leafs level".
+                // Invariant: a total of 2**(HEIGHT-H) nodes are on the current level
+                // Invariant: hashes[0 .. length) are "significant values" for the "current level" nodes
+                // Invariant: bytes32(0) is the value for nodes with indexes [length .. 2**(HEIGHT-H))
 
-            // Iterate over every pair of (leftChild, rightChild) on the current level
-            for (uint256 leftIndex = 0; leftIndex < levelLength; leftIndex += 2) {
-                uint256 rightIndex = leftIndex + 1;
-                bytes32 leftChild = hashes[leftIndex];
-                // Note: rightChild might be ZERO
-                bytes32 rightChild = rightIndex < levelLength ? hashes[rightIndex] : bytes32(0);
-                // Record the parent hash in the same array. This will not affect
-                // further calculations for the same level: (leftIndex >> 1) <= leftIndex.
-                hashes[leftIndex >> 1] = getParent(leftChild, rightChild);
+                // Iterate over every pair of (leftChild, rightChild) on the current level
+                for (uint256 leftIndex = 0; leftIndex < levelLength; leftIndex += 2) {
+                    uint256 rightIndex = leftIndex + 1;
+                    bytes32 leftChild = hashes[leftIndex];
+                    // Note: rightChild might be ZERO
+                    bytes32 rightChild = rightIndex < levelLength ? hashes[rightIndex] : bytes32(0);
+                    // Record the parent hash in the same array. This will not affect
+                    // further calculations for the same level: (leftIndex >> 1) <= leftIndex.
+                    hashes[leftIndex >> 1] = getParent(leftChild, rightChild);
+                }
+                // Set length for the "parent level": the amount of iterations for the for loop above.
+                levelLength = (levelLength + 1) >> 1;
             }
-            // Set length for the "parent level": the amount of iterations for the for loop above.
-            levelLength = (levelLength + 1) >> 1;
         }
     }
 
@@ -131,31 +137,34 @@ library MerkleMath {
         uint256 height = getHeight(index < hashes.length ? hashes.length : (index + 1));
         proof = new bytes32[](height);
         uint256 levelLength = hashes.length;
-        // Iterate `height` levels up from the leaf level
-        // For every level we will only record "significant values", i.e. not equal to ZERO
-        for (uint256 h = 0; h < height; ++h) {
-            // Use sibling for the merkle proof; `index^1` is index of our sibling
-            proof[h] = (index ^ 1 < levelLength) ? hashes[index ^ 1] : bytes32(0);
+        /// @dev h, leftIndex, rightIndex and levelLength never overflow
+        unchecked {
+            // Iterate `height` levels up from the leaf level
+            // For every level we will only record "significant values", i.e. not equal to ZERO
+            for (uint256 h = 0; h < height; ++h) {
+                // Use sibling for the merkle proof; `index^1` is index of our sibling
+                proof[h] = (index ^ 1 < levelLength) ? hashes[index ^ 1] : bytes32(0);
 
-            // Let H be the height of the "current level". H = 0 for the "leafs level".
-            // Invariant: a total of 2**(HEIGHT-H) nodes are on the current level
-            // Invariant: hashes[0 .. length) are "significant values" for the "current level" nodes
-            // Invariant: bytes32(0) is the value for nodes with indexes [length .. 2**(HEIGHT-H))
+                // Let H be the height of the "current level". H = 0 for the "leafs level".
+                // Invariant: a total of 2**(HEIGHT-H) nodes are on the current level
+                // Invariant: hashes[0 .. length) are "significant values" for the "current level" nodes
+                // Invariant: bytes32(0) is the value for nodes with indexes [length .. 2**(HEIGHT-H))
 
-            // Iterate over every pair of (leftChild, rightChild) on the current level
-            for (uint256 leftIndex = 0; leftIndex < levelLength; leftIndex += 2) {
-                uint256 rightIndex = leftIndex + 1;
-                bytes32 leftChild = hashes[leftIndex];
-                // Note: rightChild might be ZERO
-                bytes32 rightChild = rightIndex < levelLength ? hashes[rightIndex] : bytes32(0);
-                // Record the parent hash in the same array. This will not affect
-                // further calculations for the same level: (leftIndex >> 1) <= leftIndex.
-                hashes[leftIndex >> 1] = getParent(leftChild, rightChild);
+                // Iterate over every pair of (leftChild, rightChild) on the current level
+                for (uint256 leftIndex = 0; leftIndex < levelLength; leftIndex += 2) {
+                    uint256 rightIndex = leftIndex + 1;
+                    bytes32 leftChild = hashes[leftIndex];
+                    // Note: rightChild might be ZERO
+                    bytes32 rightChild = rightIndex < levelLength ? hashes[rightIndex] : bytes32(0);
+                    // Record the parent hash in the same array. This will not affect
+                    // further calculations for the same level: (leftIndex >> 1) <= leftIndex.
+                    hashes[leftIndex >> 1] = getParent(leftChild, rightChild);
+                }
+                // Set length for the "parent level"
+                levelLength = (levelLength + 1) >> 1;
+                // Traverse to parent node
+                index >>= 1;
             }
-            // Set length for the "parent level"
-            levelLength = (levelLength + 1) >> 1;
-            // Traverse to parent node
-            index >>= 1;
         }
     }
 
@@ -163,7 +172,9 @@ library MerkleMath {
     function getHeight(uint256 leafs) internal pure returns (uint256 height) {
         uint256 amount = 1;
         while (amount < leafs) {
-            ++height;
+            unchecked {
+                ++height;
+            }
             amount <<= 1;
         }
     }
