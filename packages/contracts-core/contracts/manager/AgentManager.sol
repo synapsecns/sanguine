@@ -12,9 +12,9 @@ import {SystemContract} from "../system/SystemContract.sol";
 abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentManager {
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
-    ISystemRegistry public origin;
+    address public origin;
 
-    ISystemRegistry public destination;
+    address public destination;
 
     // agent => (bool isSlashed, address prover)
     mapping(address => SlashStatus) public slashStatus;
@@ -25,7 +25,7 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
     // ════════════════════════════════════════════════ INITIALIZER ════════════════════════════════════════════════════
 
     // solhint-disable-next-line func-name-mixedcase
-    function __AgentManager_init(ISystemRegistry origin_, ISystemRegistry destination_) internal onlyInitializing {
+    function __AgentManager_init(address origin_, address destination_) internal onlyInitializing {
         origin = origin_;
         destination = destination_;
     }
@@ -93,9 +93,9 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
     /// Set is defined by a bitmask, eg: DESTINATION | ORIGIN
     function _notifySlashing(uint256 registryMask, uint32 domain, address agent, address prover) internal {
         // Notify Destination, if requested
-        if (registryMask & DESTINATION != 0) destination.managerSlash(domain, agent, prover);
+        if (registryMask & DESTINATION != 0) ISystemRegistry(destination).managerSlash(domain, agent, prover);
         // Notify Origin, if requested
-        if (registryMask & ORIGIN != 0) origin.managerSlash(domain, agent, prover);
+        if (registryMask & ORIGIN != 0) ISystemRegistry(origin).managerSlash(domain, agent, prover);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════

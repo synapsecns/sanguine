@@ -11,7 +11,7 @@ import {Versioned} from "../../contracts/Version.sol";
 
 import {Random} from "../utils/libs/Random.t.sol";
 import {RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
-import {AgentFlag, ISystemContract, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -22,9 +22,6 @@ contract DestinationTest is ExecutionHubTest {
     constructor() SynapseTest(DEPLOY_PROD_DESTINATION) {}
 
     function test_setupCorrectly() public {
-        // Check Messaging addresses
-        assertEq(address(ISystemContract(destination).systemRouter()), address(systemRouter), "!systemRouter");
-        // TODO: adjust when Agent Merkle Tree is implemented
         // Check Agents: currently all Agents are known in LightManager
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];

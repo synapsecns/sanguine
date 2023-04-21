@@ -6,7 +6,7 @@ import {RECEIPT_BODY_LENGTH, RECEIPT_LENGTH} from "../../../contracts/libs/Const
 import {SynapseLibraryTest, MemViewLib} from "../../utils/SynapseLibraryTest.t.sol";
 import {ReceiptHarness} from "../../harnesses/libs/ReceiptHarness.t.sol";
 
-import {RawExecReceipt, RawReceiptBody} from "../../utils/libs/SynapseStructs.t.sol";
+import {RawExecReceipt, RawReceiptBody, Tips} from "../../utils/libs/SynapseStructs.t.sol";
 
 // solhint-disable func-name-mixedcase
 contract ReceiptLibraryTest is SynapseLibraryTest {
@@ -61,15 +61,16 @@ contract ReceiptLibraryTest is SynapseLibraryTest {
 
     function test_formatReceipt(RawExecReceipt memory re) public {
         bytes memory bodyPayload = re.body.formatReceiptBody();
-        bytes memory tipsPayload = re.tips.formatTips();
+        Tips tips = re.tips.castToTips();
+        uint256 encodedTips = re.tips.encodeTips();
         // Test formatting
-        bytes memory payload = libHarness.formatReceipt(bodyPayload, tipsPayload);
-        assertEq(payload, abi.encodePacked(bodyPayload, tipsPayload), "!formatReceipt");
+        bytes memory payload = libHarness.formatReceipt(bodyPayload, tips);
+        assertEq(payload, abi.encodePacked(bodyPayload, encodedTips), "!formatReceipt");
         // Test formatting checker
         checkCastToReceipt({payload: payload, isReceipt: true});
         // Test getters
         assertEq(libHarness.body(payload), bodyPayload, "!bodyPayload");
-        assertEq(libHarness.tips(payload), tipsPayload, "!tipsPayload");
+        assertEq(libHarness.tips(payload), encodedTips, "!tips");
     }
 
     function test_isReceiptBody(uint8 length) public {

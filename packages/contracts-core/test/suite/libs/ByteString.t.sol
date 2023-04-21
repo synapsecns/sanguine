@@ -5,7 +5,6 @@ import {SynapseLibraryTest} from "../../utils/SynapseLibraryTest.t.sol";
 import {ByteStringHarness} from "../../harnesses/libs/ByteStringHarness.t.sol";
 
 import {ByteString} from "../../../contracts/libs/ByteString.sol";
-import {SystemMessageLib} from "../../../contracts/libs/SystemMessage.sol";
 
 import {Random} from "../../utils/libs/Random.t.sol";
 
@@ -35,7 +34,7 @@ contract ByteStringLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.castToCallData(callData), callData, "!castToCallData");
         // Test CallData getters
         assertEq(libHarness.argumentWords(callData), words, "!argumentWords");
-        assertEq(libHarness.callSelector(callData), bytes.concat(selector), "!callSelector");
+        assertEq(libHarness.callSelector(callData), selector, "!callSelector");
         assertEq(libHarness.arguments(callData), arguments, "!arguments");
     }
 
@@ -56,7 +55,7 @@ contract ByteStringLibraryTest is SynapseLibraryTest {
         assertEq(libHarness.castToCallData(finalCallData), finalCallData, "!castToCallData");
         // Test CallData getters
         assertEq(libHarness.argumentWords(finalCallData), wordsPrefix + wordsFollowing, "!argumentWords");
-        assertEq(libHarness.callSelector(finalCallData), bytes.concat(selector), "!callSelector");
+        assertEq(libHarness.callSelector(finalCallData), selector, "!callSelector");
         assertEq(libHarness.arguments(finalCallData), bytes.concat(prefix, following), "!arguments");
     }
 

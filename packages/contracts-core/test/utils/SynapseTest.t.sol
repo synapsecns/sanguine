@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 import {AgentFlag, BondingManager} from "../../contracts/manager/BondingManager.sol";
 import {AgentStatus, LightManager} from "../../contracts/manager/LightManager.sol";
-import {ISystemContract} from "../../contracts/interfaces/ISystemContract.sol";
 import {ISystemRegistry} from "../../contracts/interfaces/ISystemRegistry.sol";
 import {Destination} from "../../contracts/Destination.sol";
 import {Origin} from "../../contracts/Origin.sol";
@@ -11,7 +10,6 @@ import {Summit} from "../../contracts/Summit.sol";
 
 import {BondingManagerHarness} from "../harnesses/manager/BondingManagerHarness.t.sol";
 import {LightManagerHarness} from "../harnesses/manager/LightManagerHarness.t.sol";
-import {SystemRouterHarness} from "../harnesses/system/SystemRouterHarness.t.sol";
 
 import {DestinationMock} from "../mocks/DestinationMock.t.sol";
 import {OriginMock} from "../mocks/OriginMock.t.sol";
@@ -29,14 +27,11 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
 
     address internal originSynapse;
     address internal summit; // Summit is Synapse Chain's Destination
-    BondingManager internal bondingManager;
-    SystemRouterHarness internal systemRouterSynapse;
+    BondingManagerHarness internal bondingManager;
 
     address internal destination;
     address internal origin;
-    LightManager internal lightManager;
-
-    SystemRouterHarness internal systemRouter;
+    LightManagerHarness internal lightManager;
 
     constructor(uint256 deployMask_) {
         deployMask = deployMask_;
@@ -62,9 +57,6 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
         // Setup agents in LightManager
         initLightManager();
         setupAgentsLM();
-        // Deploy and setup System Routers
-        deploySystemRouter();
-        deploySystemRouterSynapse();
         // Skip block
         skipBlock();
     }
@@ -106,7 +98,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     }
 
     function initLightManager() public virtual {
-        lightManager.initialize(ISystemRegistry(origin), ISystemRegistry(destination));
+        lightManager.initialize(origin, destination);
     }
 
     function deployBondingManager() public virtual {
@@ -115,7 +107,7 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
     }
 
     function initBondingManager() public virtual {
-        bondingManager.initialize(ISystemRegistry(originSynapse), ISystemRegistry(summit));
+        bondingManager.initialize(originSynapse, summit);
     }
 
     function deployDestination() public virtual {
@@ -167,32 +159,6 @@ abstract contract SynapseTest is ProductionEvents, SuiteEvents, SynapseAgents, S
             revert("Unknown option: Summit");
         }
         vm.label(summit, "Summit");
-    }
-
-    function deploySystemRouter() public virtual {
-        systemRouter = new SystemRouterHarness(
-            DOMAIN_LOCAL,
-            address(origin),
-            address(destination),
-            address(lightManager)
-        );
-        ISystemContract(origin).setSystemRouter(systemRouter);
-        ISystemContract(destination).setSystemRouter(systemRouter);
-        lightManager.setSystemRouter(systemRouter);
-        vm.label(address(systemRouter), "SystemRouter Local");
-    }
-
-    function deploySystemRouterSynapse() public virtual {
-        systemRouterSynapse = new SystemRouterHarness(
-            DOMAIN_SYNAPSE,
-            address(originSynapse),
-            address(summit), // Summit is Synapse Chain's Destination
-            address(bondingManager)
-        );
-        ISystemContract(originSynapse).setSystemRouter(systemRouterSynapse);
-        ISystemContract(summit).setSystemRouter(systemRouterSynapse);
-        ISystemContract(bondingManager).setSystemRouter(systemRouterSynapse);
-        vm.label(address(systemRouterSynapse), "SystemRouter Synapse");
     }
 
     // ═══════════════════════════════════════════════ ADDING AGENTS ═══════════════════════════════════════════════════

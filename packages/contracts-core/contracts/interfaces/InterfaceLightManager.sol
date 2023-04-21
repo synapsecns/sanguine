@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentStatus, SystemEntity} from "../libs/Structures.sol";
+import {AgentStatus} from "../libs/Structures.sol";
 
 interface InterfaceLightManager {
     /**
@@ -24,14 +24,12 @@ interface InterfaceLightManager {
     /**
      * @notice Withdraws locked base message tips from local Origin to the recipient.
      * @dev Could only be remote-called by BondingManager contract on Synapse Chain.
+     * Note: as an extra security check this function returns its own selector, so that
+     * Destination could verify that a "remote" function was called when executing a manager message.
      * @param recipient     Address to withdraw tips to
      * @param amount        Tips value to withdraw
      */
-    function remoteWithdrawTips(
-        uint256 proofMaturity,
-        uint32 callOrigin,
-        SystemEntity systemCaller,
-        address recipient,
-        uint256 amount
-    ) external;
+    function remoteWithdrawTips(uint32 msgOrigin, uint256 proofMaturity, address recipient, uint256 amount)
+        external
+        returns (bytes4 magicValue);
 }

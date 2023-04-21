@@ -2,7 +2,9 @@
 
 pragma solidity 0.8.17;
 
-import {BaseMessage, BaseMessageLib, MemView, MemViewLib} from "../../../contracts/libs/BaseMessage.sol";
+import {
+    BaseMessage, BaseMessageLib, MemView, MemViewLib, Request, Tips
+} from "../../../contracts/libs/BaseMessage.sol";
 
 // solhint-disable ordering
 /**
@@ -36,13 +38,13 @@ contract BaseMessageHarness {
     }
 
     /// @notice Returns baseMessage's tips field
-    function tips(bytes memory payload) public view returns (bytes memory) {
-        return payload.castToBaseMessage().tips().unwrap().clone();
+    function tips(bytes memory payload) public pure returns (uint256) {
+        return Tips.unwrap(payload.castToBaseMessage().tips());
     }
 
     /// @notice Returns baseMessage's request field
-    function request(bytes memory payload) public view returns (bytes memory) {
-        return payload.castToBaseMessage().request().unwrap().clone();
+    function request(bytes memory payload) public pure returns (uint160) {
+        return Request.unwrap(payload.castToBaseMessage().request());
     }
 
     /// @notice Returns baseMessage's content field
@@ -56,13 +58,11 @@ contract BaseMessageHarness {
 
     // ════════════════════════════════════════════════ FORMATTERS ═════════════════════════════════════════════════════
 
-    function formatBaseMessage(
-        bytes32 sender_,
-        bytes32 recipient_,
-        bytes memory tipsPayload,
-        bytes memory requestPayload,
-        bytes memory content_
-    ) public pure returns (bytes memory) {
-        return BaseMessageLib.formatBaseMessage(sender_, recipient_, tipsPayload, requestPayload, content_);
+    function formatBaseMessage(bytes32 sender_, bytes32 recipient_, Tips tips_, Request request_, bytes memory content_)
+        public
+        pure
+        returns (bytes memory)
+    {
+        return BaseMessageLib.formatBaseMessage(sender_, recipient_, tips_, request_, content_);
     }
 }

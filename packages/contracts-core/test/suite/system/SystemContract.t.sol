@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {SynapseTest} from "../../utils/SynapseTest.t.sol";
-import {RawStateIndex, SystemEntity} from "../../utils/libs/SynapseStructs.t.sol";
+import {RawStateIndex} from "../../utils/libs/SynapseStructs.t.sol";
 
 abstract contract SystemContractTest is SynapseTest {
     modifier boundIndex(RawStateIndex memory rsi) {
@@ -36,19 +36,6 @@ abstract contract SystemContractTest is SynapseTest {
     /// @notice Returns address of Origin on the tested domain
     function localOrigin() public view virtual onlySupportedDomain returns (address) {
         return localDomain() == DOMAIN_LOCAL ? address(origin) : address(originSynapse);
-    }
-
-    /// @notice Returns address of given SystemEntity on the tested domain
-    function localSystemAddress(SystemEntity entity) public view virtual returns (address) {
-        if (entity == SystemEntity.AgentManager) return localAgentManager();
-        if (entity == SystemEntity.Destination) return localDestination();
-        if (entity == SystemEntity.Origin) return localOrigin();
-        revert("Unsupported enum value");
-    }
-
-    /// @notice Returns address of SystemRouter on the tested domain
-    function localSystemRouter() public view virtual onlySupportedDomain returns (address) {
-        return localDomain() == DOMAIN_LOCAL ? address(systemRouter) : address(systemRouterSynapse);
     }
 
     /// @notice Checks if contract is a local SystemContract
