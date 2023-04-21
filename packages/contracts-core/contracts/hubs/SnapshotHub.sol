@@ -68,8 +68,11 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     // (origin => (agent => {latest state index in _states PLUS 1}))
     mapping(uint32 => mapping(address => uint256)) private _latestStatePtr;
 
+    /// @dev Latest nonce that a Notary created
+    mapping(address => uint32) private _latestAttNonce;
+
     /// @dev gap for upgrade safety
-    uint256[44] private __GAP; // solhint-disable-line var-name-mixedcase
+    uint256[43] private __GAP; // solhint-disable-line var-name-mixedcase
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
@@ -94,18 +97,26 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
     }
 
     /// @inheritdoc ISnapshotHub
+    function getLatestNotaryAttestation(address notary) external view returns (bytes memory attPayload) {
+        uint32 latestAttNonce = _latestAttNonce[notary];
+        if (latestAttNonce == 0) return bytes("");
+        return _formatSummitAttestation(_attestations[latestAttNonce], latestAttNonce);
+    }
+
+    /// @inheritdoc ISnapshotHub
     function getGuardSnapshot(uint256 index) external view returns (bytes memory snapshotPayload) {
         require(index < _guardSnapshots.length, "Index out of range");
         return _restoreSnapshot(_guardSnapshots[index]);
     }
 
     /// @inheritdoc ISnapshotHub
-    function getNotarySnapshot(uint256 nonce) external view returns (bytes memory snapshotPayload) {
-        require(nonce < _notarySnapshots.length, "Nonce out of range");
+    function getNotarySnapshot(uint256 nonce) public view returns (bytes memory snapshotPayload) {
+        require(nonce != 0 && nonce < _notarySnapshots.length, "Nonce out of range");
         return _restoreSnapshot(_notarySnapshots[nonce]);
     }
 
     /// @inheritdoc ISnapshotHub
+    // solhint-disable-next-line ordering
     function getNotarySnapshot(bytes memory attPayload) external view returns (bytes memory snapshotPayload) {
         // This will revert if payload is not a formatted attestation
         Attestation attestation = attPayload.castToAttestation();
@@ -117,7 +128,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @inheritdoc ISnapshotHub
     function getSnapshotProof(uint256 nonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof) {
-        require(nonce < _notarySnapshots.length, "Nonce out of range");
+        require(nonce != 0 && nonce < _notarySnapshots.length, "Nonce out of range");
         SummitSnapshot memory snap = _notarySnapshots[nonce];
         uint256 statesAmount = snap.statePtrs.length;
         require(stateIndex < statesAmount, "Index out of range");
@@ -180,7 +191,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         }
         // Derive the snapshot merkle root and save it for a Notary attestation.
         // Save Notary snapshot for later retrieval
-        return _saveNotarySnapshot(snapshot, statePtrs, agentRoot);
+        return _saveNotarySnapshot(snapshot, statePtrs, agentRoot, notary);
     }
 
     // ════════════════════════════════════ INTERNAL LOGIC: SAVE STATEMENT DATA ════════════════════════════════════════
@@ -201,7 +212,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
 
     /// @dev Saves the Notary snapshot and the attestation created from it.
     /// Returns the created attestation.
-    function _saveNotarySnapshot(Snapshot snapshot, uint256[] memory statePtrs, bytes32 agentRoot)
+    function _saveNotarySnapshot(Snapshot snapshot, uint256[] memory statePtrs, bytes32 agentRoot, address notary)
         internal
         returns (bytes memory attPayload)
     {
@@ -209,6 +220,7 @@ abstract contract SnapshotHub is SnapshotHubEvents, ISnapshotHub {
         uint32 attNonce = uint32(_attestations.length);
         SummitAttestation memory summitAtt = _toSummitAttestation(snapshot.root(), agentRoot);
         attPayload = _formatSummitAttestation(summitAtt, attNonce);
+        _latestAttNonce[notary] = attNonce;
         /// @dev Add a single element to both `_attestations` and `_notarySnapshots`,
         /// enforcing the (_attestations.length == _notarySnapshots.length) invariant.
         _attestations.push(summitAtt);
