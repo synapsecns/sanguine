@@ -24,18 +24,14 @@ type IOriginTransactor interface {
 	//
 	// Solidity: function renounceOwnership() returns()
 	RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
-	// SendBaseMessage is a paid mutator transaction binding the contract method 0xc4175144.
+	// SendBaseMessage is a paid mutator transaction binding the contract method 0xf71c4347.
 	//
-	// Solidity: function sendBaseMessage(uint32 destination, bytes32 recipient, uint32 optimisticPeriod, bytes tipsPayload, bytes requestPayload, bytes content) payable returns(uint32 messageNonce, bytes32 messageHash)
-	SendBaseMessage(opts *bind.TransactOpts, destination uint32, recipient [32]byte, optimisticPeriod uint32, tipsPayload []byte, requestPayload []byte, content []byte) (*types.Transaction, error)
-	// SendSystemMessage is a paid mutator transaction binding the contract method 0x47d19ae7.
+	// Solidity: function sendBaseMessage(uint32 destination, bytes32 recipient, uint32 optimisticPeriod, uint256 paddedTips, uint256 paddedRequest, bytes content) payable returns(uint32 messageNonce, bytes32 messageHash)
+	SendBaseMessage(opts *bind.TransactOpts, destination uint32, recipient [32]byte, optimisticPeriod uint32, paddedTips *big.Int, paddedRequest *big.Int, content []byte) (*types.Transaction, error)
+	// SendManagerMessage is a paid mutator transaction binding the contract method 0xa1c702a7.
 	//
-	// Solidity: function sendSystemMessage(uint32 destination, uint32 optimisticPeriod, bytes body) returns(uint32 messageNonce, bytes32 messageHash)
-	SendSystemMessage(opts *bind.TransactOpts, destination uint32, optimisticPeriod uint32, body []byte) (*types.Transaction, error)
-	// SetSystemRouter is a paid mutator transaction binding the contract method 0xfbde22f7.
-	//
-	// Solidity: function setSystemRouter(address systemRouter_) returns()
-	SetSystemRouter(opts *bind.TransactOpts, systemRouter_ common.Address) (*types.Transaction, error)
+	// Solidity: function sendManagerMessage(uint32 destination, uint32 optimisticPeriod, bytes payload) returns(uint32 messageNonce, bytes32 messageHash)
+	SendManagerMessage(opts *bind.TransactOpts, destination uint32, optimisticPeriod uint32, payload []byte) (*types.Transaction, error)
 	// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()

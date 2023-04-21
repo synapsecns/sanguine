@@ -667,13 +667,13 @@ func (_m *IOrigin) SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error) {
 	return r0, r1
 }
 
-// SendBaseMessage provides a mock function with given fields: opts, destination, recipient, optimisticPeriod, tipsPayload, requestPayload, content
-func (_m *IOrigin) SendBaseMessage(opts *bind.TransactOpts, destination uint32, recipient [32]byte, optimisticPeriod uint32, tipsPayload []byte, requestPayload []byte, content []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, destination, recipient, optimisticPeriod, tipsPayload, requestPayload, content)
+// SendBaseMessage provides a mock function with given fields: opts, destination, recipient, optimisticPeriod, paddedTips, paddedRequest, content
+func (_m *IOrigin) SendBaseMessage(opts *bind.TransactOpts, destination uint32, recipient [32]byte, optimisticPeriod uint32, paddedTips *big.Int, paddedRequest *big.Int, content []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, destination, recipient, optimisticPeriod, paddedTips, paddedRequest, content)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, [32]byte, uint32, []byte, []byte, []byte) *types.Transaction); ok {
-		r0 = rf(opts, destination, recipient, optimisticPeriod, tipsPayload, requestPayload, content)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, [32]byte, uint32, *big.Int, *big.Int, []byte) *types.Transaction); ok {
+		r0 = rf(opts, destination, recipient, optimisticPeriod, paddedTips, paddedRequest, content)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -681,8 +681,8 @@ func (_m *IOrigin) SendBaseMessage(opts *bind.TransactOpts, destination uint32, 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, [32]byte, uint32, []byte, []byte, []byte) error); ok {
-		r1 = rf(opts, destination, recipient, optimisticPeriod, tipsPayload, requestPayload, content)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, [32]byte, uint32, *big.Int, *big.Int, []byte) error); ok {
+		r1 = rf(opts, destination, recipient, optimisticPeriod, paddedTips, paddedRequest, content)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -690,13 +690,13 @@ func (_m *IOrigin) SendBaseMessage(opts *bind.TransactOpts, destination uint32, 
 	return r0, r1
 }
 
-// SendSystemMessage provides a mock function with given fields: opts, destination, optimisticPeriod, body
-func (_m *IOrigin) SendSystemMessage(opts *bind.TransactOpts, destination uint32, optimisticPeriod uint32, body []byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, destination, optimisticPeriod, body)
+// SendManagerMessage provides a mock function with given fields: opts, destination, optimisticPeriod, payload
+func (_m *IOrigin) SendManagerMessage(opts *bind.TransactOpts, destination uint32, optimisticPeriod uint32, payload []byte) (*types.Transaction, error) {
+	ret := _m.Called(opts, destination, optimisticPeriod, payload)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, uint32, []byte) *types.Transaction); ok {
-		r0 = rf(opts, destination, optimisticPeriod, body)
+		r0 = rf(opts, destination, optimisticPeriod, payload)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -705,30 +705,7 @@ func (_m *IOrigin) SendSystemMessage(opts *bind.TransactOpts, destination uint32
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, uint32, []byte) error); ok {
-		r1 = rf(opts, destination, optimisticPeriod, body)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// SetSystemRouter provides a mock function with given fields: opts, systemRouter_
-func (_m *IOrigin) SetSystemRouter(opts *bind.TransactOpts, systemRouter_ common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, systemRouter_)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, systemRouter_)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
-		r1 = rf(opts, systemRouter_)
+		r1 = rf(opts, destination, optimisticPeriod, payload)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -798,29 +775,6 @@ func (_m *IOrigin) SuggestState(opts *bind.CallOpts, nonce uint32) ([]byte, erro
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
 		r1 = rf(opts, nonce)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// SystemRouter provides a mock function with given fields: opts
-func (_m *IOrigin) SystemRouter(opts *bind.CallOpts) (common.Address, error) {
-	ret := _m.Called(opts)
-
-	var r0 common.Address
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(common.Address)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
