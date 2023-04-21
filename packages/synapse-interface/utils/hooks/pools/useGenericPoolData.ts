@@ -156,7 +156,7 @@ export const useGenericPoolData = async (chainId, poolName, address) => {
     virtualPrice,
     volume: 'XXX', // TODO
     utilization: 'XXX', // TODO
-    apy: poolApyData, //? DIFF
+    apy: {}, //? DIFF apidata
   }
 
   let userShareData

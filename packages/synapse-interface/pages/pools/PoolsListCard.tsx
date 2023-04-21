@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { getPoolUrl } from '@urls'
 import { POOL_INVERTED_ROUTER_INDEX } from '@constants/poolRouter'
 import { fetchSigner, getNetwork, switchNetwork } from '@wagmi/core'
-
+import { useEffect, useState } from 'react'
 // import { POOLS_MAP } from '@hooks/pools/usePools'
 
 import { useGenericPoolData } from '@hooks/pools/useGenericPoolData'
@@ -17,10 +17,17 @@ import ApyTooltip from '@components/ApyTooltip'
 
 import { getPoolStats } from './getPoolStats'
 
-import { CHAIN_INFO_MAP } from '@constants/chains'
+import { CHAINS_BY_ID } from '@constants/chains'
 import { POOLS_BY_CHAIN } from '@constants/tokens'
 const PoolsListCard = ({ poolName, chainId, address, connectedChainId }) => {
-  const [poolData] = await useGenericPoolData(chainId, address, poolName)
+  const [poolData, setPoolData] = useState(undefined)
+  useEffect(() => {
+    useGenericPoolData(chainId, address, poolName).then((res) => {
+      console.log('resres: ', res)
+      setPoolData(res)
+    })
+  }, [])
+  // const [poolData] =
 
   const poolTokens = POOLS_BY_CHAIN[chainId][poolName]
   const poolRouterIndex = POOL_INVERTED_ROUTER_INDEX[chainId][poolName]
@@ -28,7 +35,7 @@ const PoolsListCard = ({ poolName, chainId, address, connectedChainId }) => {
   const { apy, fullCompoundedApyStr, totalLockedUSDStr } =
     getPoolStats(poolData)
 
-  const { chainName, chainImg } = CHAIN_INFO_MAP[chainId]
+  const { chainName, chainImg } = CHAINS_BY_ID[chainId]
 
   return (
     <div>
