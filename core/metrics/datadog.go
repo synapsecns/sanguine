@@ -28,7 +28,6 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 
 	// This is a no-op handler to prevent panics. it gets set in start!
 	handler.baseHandler = newBaseHandler(buildInfo)
-	logger.Warn("datadog metrics handler is not fully implemented, please see: https://docs.datadoghq.com/tracing/trace_collection/open_standards/go/")
 
 	handler.profilerOptions = []profiler.Option{
 		profiler.WithService(buildInfo.Name()),
