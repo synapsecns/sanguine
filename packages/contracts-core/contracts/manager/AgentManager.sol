@@ -8,8 +8,11 @@ import {AgentManagerEvents} from "../events/AgentManagerEvents.sol";
 import {IAgentManager} from "../interfaces/IAgentManager.sol";
 import {ISystemRegistry} from "../interfaces/ISystemRegistry.sol";
 import {SystemContract} from "../system/SystemContract.sol";
+import {VerificationManager} from "./VerificationManager.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentManager {
+abstract contract AgentManager is SystemContract, VerificationManager, AgentManagerEvents, IAgentManager {
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     address public origin;
@@ -110,4 +113,19 @@ abstract contract AgentManager is SystemContract, AgentManagerEvents, IAgentMana
 
     /// @dev Returns agent address for the given index. Returns zero for non existing indexes.
     function _getAgent(uint256 index) internal view virtual returns (address);
+
+    /// @inheritdoc VerificationManager
+    function _recoverAgent(bytes32 hashedStatement, bytes memory signature)
+        internal
+        view
+        override
+        returns (AgentStatus memory status, address agent)
+    {
+        bytes32 ethSignedMsg = ECDSA.toEthSignedMessageHash(hashedStatement);
+        agent = ECDSA.recover(ethSignedMsg, signature);
+        status = agentStatus(agent);
+        // Discard signature of unknown agents.
+        // Further flag checks are supposed to be performed in a caller function.
+        require(status.flag != AgentFlag.Unknown, "Unknown agent");
+    }
 }
