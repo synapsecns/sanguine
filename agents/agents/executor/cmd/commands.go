@@ -20,6 +20,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/node"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm/schema"
+	"time"
 
 	// used to embed markdown.
 	_ "embed"
@@ -150,6 +151,7 @@ var ExecutorRunCommand = &cli.Command{
 		// The flags below are used when `scribeTypeFlag` is set to "remote".
 		scribePortFlag, scribeURL},
 	Action: func(c *cli.Context) error {
+		time.Sleep(1 * time.Minute)
 		metricsProvider := metrics.Get()
 
 		executorConfig, executorDB, clients, err := createExecutorParameters(c, metricsProvider)
