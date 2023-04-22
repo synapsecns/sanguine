@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
+	"go.opentelemetry.io/contrib/propagators/b3"
 	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/opentelemetry"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
@@ -59,8 +60,12 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 		return fmt.Errorf("could not start profiler: %w", err)
 	}
 
-	tracerProvider := opentelemetry.NewTracerProvider(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true))
-	d.baseHandler = newBaseHandlerWithTracerProvider(d.buildInfo, tracerProvider)
+	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
+
+	ddPrpopgator := tracer.NewPropagator(&tracer.PropagatorConfig{B3: true})
+	tracerProvider := opentelemetry.NewTracerProvider(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true), tracer.WithPropagator(ddPrpopgator))
+
+	d.baseHandler = newBaseHandlerWithTracerProvider(d.buildInfo, tracerProvider, propagator)
 
 	// stop on context cancellation
 	go func() {

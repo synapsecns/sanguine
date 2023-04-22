@@ -90,15 +90,15 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 	// will do nothing if not enabled.
 	StartPyroscope(buildInfo)
 
-	return newBaseHandlerWithTracerProvider(buildInfo, tp)
+	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
+	return newBaseHandlerWithTracerProvider(buildInfo, tp, propagator)
 }
 
 // newBaseHandlerWithTracerProvider creates a new baseHandler for any opentelemtry tracer.
-func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider trace.TracerProvider) *baseHandler {
+func newBaseHandlerWithTracerProvider(buildInfo config.BuildInfo, tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator) *baseHandler {
 	// default tracer for server
 	otel.SetTracerProvider(tracerProvider)
 	tracer := tracerProvider.Tracer(buildInfo.Name())
-	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
 	otel.SetTextMapPropagator(propagator)
 
 	return &baseHandler{
