@@ -63,7 +63,8 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
 
 	ddPrpopgator := tracer.NewPropagator(&tracer.PropagatorConfig{B3: true})
-	tracerProvider := opentelemetry.NewTracerProvider(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true), tracer.WithPropagator(ddPrpopgator))
+	tracerProvider := opentelemetry.NewTracerProvider(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true),
+		tracer.WithPropagator(ddPrpopgator))
 
 	d.baseHandler = newBaseHandlerWithTracerProvider(d.buildInfo, tracerProvider, propagator)
 
