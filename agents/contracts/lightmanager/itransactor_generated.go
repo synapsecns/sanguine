@@ -20,10 +20,10 @@ type ILightManagerTransactor interface {
 	//
 	// Solidity: function registrySlash(uint32 domain, address agent, address prover) returns()
 	RegistrySlash(opts *bind.TransactOpts, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error)
-	// RemoteWithdrawTips is a paid mutator transaction binding the contract method 0xcc4c8466.
+	// RemoteWithdrawTips is a paid mutator transaction binding the contract method 0x1fa07138.
 	//
-	// Solidity: function remoteWithdrawTips(uint256 proofMaturity, uint32 callOrigin, uint8 systemCaller, address recipient, uint256 amount) returns()
-	RemoteWithdrawTips(opts *bind.TransactOpts, proofMaturity *big.Int, callOrigin uint32, systemCaller uint8, recipient common.Address, amount *big.Int) (*types.Transaction, error)
+	// Solidity: function remoteWithdrawTips(uint32 msgOrigin, uint256 proofMaturity, address recipient, uint256 amount) returns(bytes4 magicValue)
+	RemoteWithdrawTips(opts *bind.TransactOpts, msgOrigin uint32, proofMaturity *big.Int, recipient common.Address, amount *big.Int) (*types.Transaction, error)
 	// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 	//
 	// Solidity: function renounceOwnership() returns()
@@ -32,10 +32,6 @@ type ILightManagerTransactor interface {
 	//
 	// Solidity: function setAgentRoot(bytes32 agentRoot_) returns()
 	SetAgentRoot(opts *bind.TransactOpts, agentRoot_ [32]byte) (*types.Transaction, error)
-	// SetSystemRouter is a paid mutator transaction binding the contract method 0xfbde22f7.
-	//
-	// Solidity: function setSystemRouter(address systemRouter_) returns()
-	SetSystemRouter(opts *bind.TransactOpts, systemRouter_ common.Address) (*types.Transaction, error)
 	// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()

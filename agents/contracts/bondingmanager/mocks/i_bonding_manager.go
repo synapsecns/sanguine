@@ -312,6 +312,29 @@ func (_m *IBondingManager) FilterStatusUpdated(opts *bind.FilterOpts, domain []u
 	return r0, r1
 }
 
+// GetActiveAgents provides a mock function with given fields: opts, domain
+func (_m *IBondingManager) GetActiveAgents(opts *bind.CallOpts, domain uint32) ([]common.Address, error) {
+	ret := _m.Called(opts, domain)
+
+	var r0 []common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) []common.Address); ok {
+		r0 = rf(opts, domain)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
+		r1 = rf(opts, domain)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetAgent provides a mock function with given fields: opts, index
 func (_m *IBondingManager) GetAgent(opts *bind.CallOpts, index *big.Int) (struct {
 	Agent  common.Address
@@ -642,13 +665,13 @@ func (_m *IBondingManager) RegistrySlash(opts *bind.TransactOpts, domain uint32,
 	return r0, r1
 }
 
-// RemoteRegistrySlash provides a mock function with given fields: opts, proofMaturity, callOrigin, systemCaller, domain, agent, prover
-func (_m *IBondingManager) RemoteRegistrySlash(opts *bind.TransactOpts, proofMaturity *big.Int, callOrigin uint32, systemCaller uint8, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, proofMaturity, callOrigin, systemCaller, domain, agent, prover)
+// RemoteRegistrySlash provides a mock function with given fields: opts, msgOrigin, proofMaturity, domain, agent, prover
+func (_m *IBondingManager) RemoteRegistrySlash(opts *bind.TransactOpts, msgOrigin uint32, proofMaturity *big.Int, domain uint32, agent common.Address, prover common.Address) (*types.Transaction, error) {
+	ret := _m.Called(opts, msgOrigin, proofMaturity, domain, agent, prover)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, uint32, uint8, uint32, common.Address, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, proofMaturity, callOrigin, systemCaller, domain, agent, prover)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, *big.Int, uint32, common.Address, common.Address) *types.Transaction); ok {
+		r0 = rf(opts, msgOrigin, proofMaturity, domain, agent, prover)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -656,8 +679,8 @@ func (_m *IBondingManager) RemoteRegistrySlash(opts *bind.TransactOpts, proofMat
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, uint32, uint8, uint32, common.Address, common.Address) error); ok {
-		r1 = rf(opts, proofMaturity, callOrigin, systemCaller, domain, agent, prover)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, *big.Int, uint32, common.Address, common.Address) error); ok {
+		r1 = rf(opts, msgOrigin, proofMaturity, domain, agent, prover)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -709,29 +732,6 @@ func (_m *IBondingManager) SYNAPSEDOMAIN(opts *bind.CallOpts) (uint32, error) {
 	return r0, r1
 }
 
-// SetSystemRouter provides a mock function with given fields: opts, systemRouter_
-func (_m *IBondingManager) SetSystemRouter(opts *bind.TransactOpts, systemRouter_ common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, systemRouter_)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, systemRouter_)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
-		r1 = rf(opts, systemRouter_)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // SlashStatus provides a mock function with given fields: opts, arg0
 func (_m *IBondingManager) SlashStatus(opts *bind.CallOpts, arg0 common.Address) (struct {
 	IsSlashed bool
@@ -758,29 +758,6 @@ func (_m *IBondingManager) SlashStatus(opts *bind.CallOpts, arg0 common.Address)
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts, common.Address) error); ok {
 		r1 = rf(opts, arg0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// SystemRouter provides a mock function with given fields: opts
-func (_m *IBondingManager) SystemRouter(opts *bind.CallOpts) (common.Address, error) {
-	ret := _m.Called(opts)
-
-	var r0 common.Address
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(common.Address)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}

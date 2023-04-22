@@ -53,10 +53,6 @@ type ILightManagerCaller interface {
 		IsSlashed bool
 		Prover    common.Address
 	}, error)
-	// SystemRouter is a free data retrieval call binding the contract method 0x529d1549.
-	//
-	// Solidity: function systemRouter() view returns(address)
-	SystemRouter(opts *bind.CallOpts) (common.Address, error)
 	// Version is a free data retrieval call binding the contract method 0x54fd4d50.
 	//
 	// Solidity: function version() view returns(string versionString)

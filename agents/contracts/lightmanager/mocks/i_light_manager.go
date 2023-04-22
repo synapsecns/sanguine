@@ -435,13 +435,13 @@ func (_m *ILightManager) RegistrySlash(opts *bind.TransactOpts, domain uint32, a
 	return r0, r1
 }
 
-// RemoteWithdrawTips provides a mock function with given fields: opts, proofMaturity, callOrigin, systemCaller, recipient, amount
-func (_m *ILightManager) RemoteWithdrawTips(opts *bind.TransactOpts, proofMaturity *big.Int, callOrigin uint32, systemCaller uint8, recipient common.Address, amount *big.Int) (*types.Transaction, error) {
-	ret := _m.Called(opts, proofMaturity, callOrigin, systemCaller, recipient, amount)
+// RemoteWithdrawTips provides a mock function with given fields: opts, msgOrigin, proofMaturity, recipient, amount
+func (_m *ILightManager) RemoteWithdrawTips(opts *bind.TransactOpts, msgOrigin uint32, proofMaturity *big.Int, recipient common.Address, amount *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(opts, msgOrigin, proofMaturity, recipient, amount)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, *big.Int, uint32, uint8, common.Address, *big.Int) *types.Transaction); ok {
-		r0 = rf(opts, proofMaturity, callOrigin, systemCaller, recipient, amount)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, *big.Int, common.Address, *big.Int) *types.Transaction); ok {
+		r0 = rf(opts, msgOrigin, proofMaturity, recipient, amount)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -449,8 +449,8 @@ func (_m *ILightManager) RemoteWithdrawTips(opts *bind.TransactOpts, proofMaturi
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, *big.Int, uint32, uint8, common.Address, *big.Int) error); ok {
-		r1 = rf(opts, proofMaturity, callOrigin, systemCaller, recipient, amount)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, *big.Int, common.Address, *big.Int) error); ok {
+		r1 = rf(opts, msgOrigin, proofMaturity, recipient, amount)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -525,29 +525,6 @@ func (_m *ILightManager) SetAgentRoot(opts *bind.TransactOpts, agentRoot_ [32]by
 	return r0, r1
 }
 
-// SetSystemRouter provides a mock function with given fields: opts, systemRouter_
-func (_m *ILightManager) SetSystemRouter(opts *bind.TransactOpts, systemRouter_ common.Address) (*types.Transaction, error) {
-	ret := _m.Called(opts, systemRouter_)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, common.Address) *types.Transaction); ok {
-		r0 = rf(opts, systemRouter_)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, common.Address) error); ok {
-		r1 = rf(opts, systemRouter_)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // SlashStatus provides a mock function with given fields: opts, arg0
 func (_m *ILightManager) SlashStatus(opts *bind.CallOpts, arg0 common.Address) (struct {
 	IsSlashed bool
@@ -574,29 +551,6 @@ func (_m *ILightManager) SlashStatus(opts *bind.CallOpts, arg0 common.Address) (
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts, common.Address) error); ok {
 		r1 = rf(opts, arg0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// SystemRouter provides a mock function with given fields: opts
-func (_m *ILightManager) SystemRouter(opts *bind.CallOpts) (common.Address, error) {
-	ret := _m.Called(opts)
-
-	var r0 common.Address
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(common.Address)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}

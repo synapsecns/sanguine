@@ -109,7 +109,7 @@ func (u GuardSuite) TestGuardE2E() {
 	})
 
 	// Now make sure GetLatestState works as well
-	/*u.Eventually(func() bool {
+	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
 		rawState, err := u.SummitContract.GetLatestState(
@@ -124,5 +124,5 @@ func (u GuardSuite) TestGuardE2E() {
 		state, err := types.DecodeState(rawState)
 		Nil(u.T(), err)
 		return state.Nonce() >= uint32(1)
-	})*/
+	})
 }

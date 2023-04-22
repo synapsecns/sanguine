@@ -35,6 +35,10 @@ type IBondingManagerCaller interface {
 	//
 	// Solidity: function destination() view returns(address)
 	Destination(opts *bind.CallOpts) (common.Address, error)
+	// GetActiveAgents is a free data retrieval call binding the contract method 0xc1c0f4f6.
+	//
+	// Solidity: function getActiveAgents(uint32 domain) view returns(address[] agents)
+	GetActiveAgents(opts *bind.CallOpts, domain uint32) ([]common.Address, error)
 	// GetAgent is a free data retrieval call binding the contract method 0x2de5aaf7.
 	//
 	// Solidity: function getAgent(uint256 index) view returns(address agent, (uint8,uint32,uint32) status)
@@ -73,10 +77,6 @@ type IBondingManagerCaller interface {
 		IsSlashed bool
 		Prover    common.Address
 	}, error)
-	// SystemRouter is a free data retrieval call binding the contract method 0x529d1549.
-	//
-	// Solidity: function systemRouter() view returns(address)
-	SystemRouter(opts *bind.CallOpts) (common.Address, error)
 	// Version is a free data retrieval call binding the contract method 0x54fd4d50.
 	//
 	// Solidity: function version() view returns(string versionString)
