@@ -3,6 +3,7 @@ package backfill
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"math"
 	"time"
 
@@ -31,6 +32,8 @@ type ChainBackfiller struct {
 	chainConfig config.ChainConfig
 	// refreshRate is the rate at which the backfiller will refresh when livefilling.
 	refreshRate int
+	// handler is the metrics handler for the scribe.
+	handler metrics.Handler
 }
 
 // Used for handling logging of various context types.
@@ -43,7 +46,7 @@ const (
 // NewChainBackfiller creates a new backfiller for a chain. This is done by passing through all the function parameters
 // into the ChainBackfiller struct, as well as iterating through all the contracts in the chain config and creating
 // ContractBackfillers for each contract.
-func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig config.ChainConfig, refreshRate int) (*ChainBackfiller, error) {
+func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig config.ChainConfig, refreshRate int, handler metrics.Handler) (*ChainBackfiller, error) {
 	var contractBackfillers []*ContractBackfiller
 
 	startHeights := make(map[string]uint64)
@@ -70,8 +73,7 @@ func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig 
 	minBlockHeight := uint64(math.MaxUint64)
 
 	for _, contract := range chainConfig.Contracts {
-		contractBackfiller, err := NewContractBackfiller(chainConfig, contract.Address, eventDB, client)
-
+		contractBackfiller, err := NewContractBackfiller(chainConfig, contract, eventDB, client, handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not create contract backfiller: %w", err)
 		}
@@ -92,6 +94,7 @@ func NewChainBackfiller(eventDB db.EventDB, client []ScribeBackend, chainConfig 
 		minBlockHeight:      minBlockHeight,
 		chainConfig:         chainConfig,
 		refreshRate:         refreshRate,
+		handler:             handler,
 	}, nil
 }
 
@@ -116,16 +119,15 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 
 	for i := range c.contractBackfillers {
 		contractBackfiller := c.contractBackfillers[i]
-		startHeight := c.startHeights[contractBackfiller.address]
+		startHeight := c.startHeights[contractBackfiller.contractConfig.Address]
 
 		LogEvent(InfoLevel, "Starting livefilling contracts", LogData{"cid": c.chainID})
 		backfillGroup.Go(func() error {
 			timeout = time.Duration(0)
-
 			for {
 				select {
 				case <-backfillCtx.Done():
-					LogEvent(ErrorLevel, "Could not livefill contract, context canceled", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
+					LogEvent(ErrorLevel, "Couldn't livefill contract, context canceled", LogData{"cid": c.chainID, "ca": contractBackfiller.contractConfig.Address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": backfillCtx.Err()})
 
 					return fmt.Errorf("%s chain context canceled: %w", backfillCtx.Value(chainContextKey), backfillCtx.Err())
 				case <-time.After(timeout):
@@ -146,7 +148,12 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 					err = contractBackfiller.Backfill(backfillCtx, startHeight, *latestBlock)
 					if err != nil {
 						timeout = b.Duration()
-						LogEvent(WarnLevel, "Could not backfill contract, retrying", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
+
+						// If the contract has been given a specific refresh rate, then use that refresh rate for error handling.
+						if contractBackfiller.contractConfig.RefreshRate > 1 {
+							timeout = time.Duration(contractBackfiller.contractConfig.RefreshRate) * time.Second
+						}
+						LogEvent(WarnLevel, "Could not backfill contract, retrying", LogData{"cid": c.chainID, "ca": contractBackfiller.contractConfig.Address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
 
 						continue
 					}
@@ -154,15 +161,16 @@ func (c ChainBackfiller) Backfill(ctx context.Context, onlyOneBlock *uint64, liv
 					if !livefill {
 						return nil
 					}
-					timeout = time.Duration(c.refreshRate) * time.Second
-					LogEvent(InfoLevel, "Continuing to livefill contract", LogData{"cid": c.chainID, "ca": contractBackfiller.address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt()})
+
+					timeout = time.Duration(contractBackfiller.contractConfig.RefreshRate) * time.Second
+					LogEvent(InfoLevel, "Continuing to livefill contract", LogData{"t": timeout, "cid": c.chainID, "ca": contractBackfiller.contractConfig.Address, "sh": startHeight, "bd": b.Duration(), "a": b.Attempt()})
 				}
 			}
 		})
 	}
 
 	if err := backfillGroup.Wait(); err != nil {
-		LogEvent(ErrorLevel, "Could not backfill with error group", LogData{"cid": c.chainID, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error()})
+		LogEvent(ErrorLevel, "Could not backfill with error group", LogData{"cid": c.chainID, "bd": b.Duration(), "a": b.Attempt(), "e": err.Error(), "bt": true})
 
 		return fmt.Errorf("could not backfill: %w", err)
 	}

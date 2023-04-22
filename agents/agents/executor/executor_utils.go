@@ -1,18 +1,17 @@
 package executor
 
 import (
-	"context"
 	"fmt"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/types"
 )
 
 // logToMessage converts the log to a leaf data.
 func (e Executor) logToMessage(log ethTypes.Log, chainID uint32) (*types.Message, error) {
-	committedMessage, ok := e.chainExecutors[chainID].originParser.ParseDispatch(log)
+	committedMessage, ok := e.chainExecutors[chainID].originParser.ParseDispatched(log)
 	if !ok {
 		return nil, fmt.Errorf("could not parse committed message")
 	}
@@ -35,50 +34,47 @@ func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32) (*types.Att
 	return &attestation, nil
 }
 
-// logType determines whether a log is a `Dispatch` from Origin.sol or `AttestationAccepted` from Destination.sol.
-func (e Executor) logType(log ethTypes.Log, chainID uint32) contractType {
-	contract := other
-
-	if eventType, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && eventType == origin.DispatchEvent {
-		contract = originContract
+// logToSnapshot converts the log to a snapshot.
+func (e Executor) logToSnapshot(log ethTypes.Log, chainID uint32) (*types.Snapshot, error) {
+	snapshot, domain, ok := (*e.chainExecutors[chainID].summitParser).ParseSnapshotAccepted(log)
+	if !ok {
+		return nil, fmt.Errorf("could not parse snapshot")
 	}
 
-	if eventType, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok && eventType == destination.AttestationAcceptedEvent {
-		contract = destinationContract
+	if domain == 0 {
+		//nolint:nilnil
+		return nil, nil
 	}
 
-	return contract
+	return &snapshot, nil
 }
 
-// setMinimumTimes goes through a list of messages and sets the minimum time for each message
-// that has an associated attestation.
-// The messages need to be sorted by nonce, and the attestations by their destination submission time (which can be via block number or block time).
-func (e Executor) setMinimumTimes(ctx context.Context, messages []types.Message, attestations []execTypes.DBAttestation) error {
-	messageIndex := 0
-	attestationIndex := 0
-	for messageIndex < len(messages) && attestationIndex < len(attestations) {
-		if messages[messageIndex].Nonce() <= *attestations[attestationIndex].Nonce {
-			minimumTime := *attestations[attestationIndex].DestinationBlockTime + uint64(messages[messageIndex].OptimisticSeconds())
-			originDomain := messages[messageIndex].OriginDomain()
-			destinationDomain := messages[messageIndex].DestinationDomain()
-			nonce := messages[messageIndex].Nonce()
-			messageMask := execTypes.DBMessage{
-				ChainID:     &originDomain,
-				Destination: &destinationDomain,
-				Nonce:       &nonce,
-			}
-			err := e.executorDB.SetMinimumTime(ctx, messageMask, minimumTime)
-			if err != nil {
-				return fmt.Errorf("could not set minimum time: %w", err)
-			}
+// logType determines whether a log is a `Dispatch` from Origin.sol or `AttestationAccepted` from Destination.sol.
+func (e Executor) logType(log ethTypes.Log, chainID uint32) contractEventType {
+	contractEvent := contractEventType{
+		contractType: other,
+		eventType:    otherEvent,
+	}
 
-			messageIndex++
-		} else {
-			attestationIndex++
+	//nolint:nestif
+	if e.chainExecutors[chainID].summitParser != nil {
+		if summitEvent, ok := (*e.chainExecutors[chainID].summitParser).EventType(log); ok && summitEvent == summit.SnapshotAcceptedEvent {
+			contractEvent.contractType = summitContract
+			contractEvent.eventType = snapshotAcceptedEvent
+		}
+	} else if originEvent, ok := e.chainExecutors[chainID].originParser.EventType(log); ok && originEvent == origin.DispatchedEvent {
+		contractEvent.contractType = originContract
+		contractEvent.eventType = dispatchedEvent
+	} else if destinationEvent, ok := e.chainExecutors[chainID].destinationParser.EventType(log); ok {
+		contractEvent.contractType = destinationContract
+		if destinationEvent == destination.AttestationAcceptedEvent {
+			contractEvent.eventType = attestationAcceptedEvent
+		} else if destinationEvent == destination.ExecutedEvent {
+			contractEvent.eventType = executedEvent
 		}
 	}
 
-	return nil
+	return contractEvent
 }
 
 // verifyAfter guarantees the chronological ordering of logs.

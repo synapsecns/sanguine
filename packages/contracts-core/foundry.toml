@@ -1,15 +1,29 @@
 [profile.default]
 optimizer = true
-optimizer_runs = 1000000
+optimizer_runs = 200
 auto_detect_solc = true
 src = "contracts"
 out = "artifacts"
 libs = ["../../node_modules", "node_modules", "lib"]
+fs_permissions = [{ access = "read", path = "./artifacts"}, { access = "read-write", path = "./deployments"}, {access = "read-write", path = "./script"}]
 
 [profile.ci]
 verbosity = 4
 
 [fuzz]
 runs = 2000
+
+[rpc_endpoints]
+avalanche = "${RPC_AVALANCHE}"
+optimism = "${RPC_OPTIMISM}"
+polygon = "${RPC_POLYGON}"
+arb_goerli = "${RPC_ARB_GOERLI}"
+op_goerli = "${RPC_OP_GOERLI}"
+sepolia = "${RPC_SEPOLIA}"
+
+[etherscan]
+avalanche = { key = "${ETHERSCAN_AVALANCHE_KEY}" }
+optimism = { key = "${ETHERSCAN_OPTIMISM_KEY}" }
+polygon = { key = "${ETHERSCAN_POLYGON_KEY}" }
 
 # See more config options https://github.com/gakonst/foundry/tree/master/config

@@ -1,5 +1,5 @@
 {{- with .Values.executor_remote_fresh }}
-{{- if and .enabled ( eq $.Values.executor.type "remote-fresh" ) -}}
+{{- if eq $.Values.executor.type "remote-fresh" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

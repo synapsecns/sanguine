@@ -5,12 +5,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/sethvargo/go-githubactions"
-	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 	"os"
 	"sort"
 	"strings"
+	"time"
+
+	"github.com/sethvargo/go-githubactions"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 )
+
+const defaultTimeout = "1m"
 
 func main() {
 	token := githubactions.GetInput("github_token")
@@ -19,17 +23,21 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	rawIncludeDeps := githubactions.GetInput("include_deps")
-	// TODO: we might need to use a pr as a base
-	includeDeps := false
-	if rawIncludeDeps == "true" {
-		includeDeps = true
-	}
 
 	ref := githubactions.GetInput("ref")
 	base := githubactions.GetInput("base")
 
-	ct, err := detector.GetChangeTree(context.Background(), workingDirectory, ref, token, base)
+	timeout, err := getTimeout()
+	if err != nil {
+		panic(fmt.Errorf("failed to parse timeout: %w", err))
+	}
+
+	includeDeps := getIncludeDeps()
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	ct, err := detector.GetChangeTree(ctx, workingDirectory, ref, token, base)
 	if err != nil {
 		panic(err)
 	}
@@ -60,4 +68,31 @@ func main() {
 		fmt.Printf("setting output to %s\n", marshalledJSON)
 	}
 	githubactions.SetOutput("changed_modules", string(marshalledJSON))
+}
+
+// getIncludeDeps gets the include deps setting.
+// If it is not set, it defaults to false.
+func getIncludeDeps() (includeDeps bool) {
+	rawIncludeDeps := githubactions.GetInput("include_deps")
+
+	includeDeps = false
+	if rawIncludeDeps == "true" {
+		includeDeps = true
+	}
+	return
+}
+
+// getTimeout gets the timeout setting. If it is not set, it defaults to 1 minute.
+// Errors if the timeout is not a valid duration.
+func getTimeout() (timeout time.Duration, err error) {
+	rawTimeout := githubactions.GetInput("timeout")
+	if rawTimeout == "" {
+		rawTimeout = defaultTimeout
+	}
+
+	timeout, err = time.ParseDuration(rawTimeout)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse timeout: %w", err)
+	}
+	return timeout, nil
 }

@@ -6,25 +6,22 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
 	"github.com/puzpuzpuz/xsync"
+	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // IsConfirmable exports isConfirmable for testing.
 func IsConfirmable(body []byte) (bool, error) {
-	parsedPayload, err := parseRPCPayload(body)
+	parsedPayload, err := rpc.ParseRPCPayload(body)
 	if err != nil {
 		return false, fmt.Errorf("could not parse payload: %w", err)
 	}
 
 	//nolint: wrapcheck
-	return parsedPayload.isConfirmable()
-}
-
-// ParseRPCPayload exports parseRPCPayload for testing.
-func ParseRPCPayload(body []byte) (_ []RPCRequest, err error) {
-	//nolint: wrapcheck
-	return parseRPCPayload(body)
+	return areConfirmable(parsedPayload)
 }
 
 // SetClient allows overriding the client on the rpc proxy.
@@ -85,6 +82,10 @@ func (f *Forwarder) SetBody(body []byte) {
 	f.body = body
 }
 
+func (f *Forwarder) SetSpan(span trace.Span) {
+	f.span = span
+}
+
 func (f *Forwarder) RequiredConfirmations() uint16 {
 	return f.requiredConfirmations
 }
@@ -117,11 +118,11 @@ func (f *Forwarder) SetResMap(resMap *xsync.MapOf[[]rawResponse]) {
 	f.resMap = resMap
 }
 
-func (f *Forwarder) RPCRequest() []RPCRequest {
+func (f *Forwarder) RPCRequest() []rpc.Request {
 	return f.rpcRequest
 }
 
-func (f *Forwarder) SetRPCRequest(rpcRequest []RPCRequest) {
+func (f *Forwarder) SetRPCRequest(rpcRequest []rpc.Request) {
 	f.rpcRequest = rpcRequest
 }
 
@@ -136,7 +137,7 @@ func (f *Forwarder) SetBlankResMap() {
 	f.SetResMap(xsync.NewMapOf[[]rawResponse]())
 }
 
-func StandardizeResponse(ctx context.Context, req []RPCRequest, body []byte) ([]byte, error) {
+func StandardizeResponse(ctx context.Context, req []rpc.Request, body []byte) ([]byte, error) {
 	var rpcMessage JSONRPCMessage
 	err := json.Unmarshal(body, &rpcMessage)
 	if err != nil {
@@ -156,7 +157,7 @@ func StandardizeResponse(ctx context.Context, req []RPCRequest, body []byte) ([]
 
 // StandardizeResponseFalseParams exports standardizeResponseFalseParams for testing.
 // this is only used when params[1] is false when calling eth_getBlockByNumber or eth_getBlockByHash.
-func StandardizeResponseFalseParams(ctx context.Context, req []RPCRequest, body []byte) ([]byte, error) {
+func StandardizeResponseFalseParams(ctx context.Context, req []rpc.Request, body []byte) ([]byte, error) {
 	var rpcMessage JSONRPCMessage
 	err := json.Unmarshal(body, &rpcMessage)
 	if err != nil {
@@ -166,7 +167,7 @@ func StandardizeResponseFalseParams(ctx context.Context, req []RPCRequest, body 
 	params := []json.RawMessage{rpcMessage.Params}
 
 	// Handle BlockByHash, BlockByNumber, and HeaderByNumber events.
-	if req[0].Method == string(BlockByHashMethod) || req[0].Method == string(BlockByNumberMethod) {
+	if req[0].Method == string(client.BlockByHashMethod) || req[0].Method == string(client.BlockByNumberMethod) {
 		blockNumber := "0x1"
 		flag := true
 		jsonBlockNumber, err := json.Marshal(&blockNumber)
@@ -184,7 +185,7 @@ func StandardizeResponseFalseParams(ctx context.Context, req []RPCRequest, body 
 	}
 	var standardizedResponses []byte
 	for i := range req {
-		rpcRequest := RPCRequest{
+		rpcRequest := rpc.Request{
 			ID:     rpcMessage.ID,
 			Method: req[i].Method,
 			Params: params,
@@ -202,8 +203,4 @@ func StandardizeResponseFalseParams(ctx context.Context, req []RPCRequest, body 
 // CheckAndSetConfirmability exports checkAndSetConfirmability for testing.
 func (f *Forwarder) CheckAndSetConfirmability() (ok bool) {
 	return f.checkAndSetConfirmability()
-}
-
-func IsBatch(body []byte) bool {
-	return isBatch(body)
 }

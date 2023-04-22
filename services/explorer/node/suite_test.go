@@ -3,11 +3,14 @@ package node_test
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"math/big"
 	"testing"
 
@@ -34,6 +37,7 @@ type NodeSuite struct {
 	testDeployManager *testcontracts.DeployManager
 	// blockConfigChainID is the chain ID of the block config.
 	blockConfigChainID uint32
+	scribeMetrics      metrics.Handler
 }
 
 // NewConsumerSuite creates an end-to-end test suite.
@@ -62,7 +66,7 @@ func (c *NodeSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 	backends := make(map[uint32]backends.SimulatedTestBackend)
 	c.blockConfigChainID = uint32(10)
-	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup, _, c.deployManager = testutil.NewTestEnvDB(c.GetTestContext(), c.T())
+	c.db, c.eventDB, c.gqlClient, c.logIndex, c.cleanup, _, c.deployManager = testutil.NewTestEnvDB(c.GetTestContext(), c.T(), c.scribeMetrics)
 	backend1 := geth.NewEmbeddedBackendForChainID(c.GetTestContext(), c.T(), big.NewInt(int64(1)))
 	backend2 := geth.NewEmbeddedBackendForChainID(c.GetTestContext(), c.T(), big.NewInt(int64(2)))
 	backend3 := geth.NewEmbeddedBackendForChainID(c.GetTestContext(), c.T(), big.NewInt(int64(3)))
@@ -75,6 +79,15 @@ func (c *NodeSuite) SetupTest() {
 
 	c.testBackends = backends
 	c.testDeployManager = testcontracts.NewDeployManager(c.T())
+}
+
+func (c *NodeSuite) SetupSuite() {
+	c.TestSuite.SetupSuite()
+
+	localmetrics.SetupTestJaeger(c.GetSuiteContext(), c.T())
+	var err error
+	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	c.Require().Nil(err)
 }
 
 // TestConsumerSuite runs the integration test suite.

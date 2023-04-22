@@ -1,0 +1,86 @@
+name: Typescript Packages
+
+on:
+  pull_request:
+    paths:
+      - 'packages/**'
+  push:
+    paths:
+      - 'packages/**'
+
+jobs:
+  cancel-outdated:
+    name: Cancel Outdated Jobs
+    runs-on: ubuntu-latest
+    steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          submodules: 'recursive'
+
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
+
+      - name: Run tests # Run tests of all packages
+        run: npx lerna exec npm run ci:lint --parallel
+  test:
+      runs-on: ubuntu-latest
+      steps:
+        - name: 'Checkout'
+          uses: actions/checkout@v3
+          with:
+            fetch-depth: 1
+            submodules: 'recursive'
+
+        - name: Setup NodeJS
+          uses: ./.github/actions/setup-nodejs
+
+        - name: Verify Changed files
+          uses: tj-actions/verify-changed-files@v11.1
+          id: verify-yarn-lock
+          with:
+            files: |
+              yarn.lock
+
+        - name: Add Label
+          if: steps.verify-yarn-lock.outputs.files_changed == 'true'
+          uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+          with:
+            add-labels: 'needs-yarn-install'
+            repo-token: ${{ secrets.GITHUB_TOKEN }}
+            issue-number: ${{ needs.issue_number.outputs.issue_number }}
+
+        - name: Remove Label
+          if: steps.verify-yarn-lock.outputs.files_changed != 'true'
+          uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+          with:
+            remove-labels: 'needs-yarn-install'
+            repo-token: ${{ secrets.GITHUB_TOKEN }}
+            issue-number: ${{ needs.issue_number.outputs.issue_number }}
+
+
+        - name: Run tests # Run tests of all packages
+          run: yarn test:coverage
+
+        - name: LCOV move
+          run: mv lcov/lcov.info lcov.info
+
+        - uses: codecov/codecov-action@v3
+          name: Send Coverage (Codecov)
+          with:
+            token: ${{ secrets.CODECOV }}
+            fail_ci_if_error: true # optional (default = false)
+            verbose: true # optional (default = false)
+            flags: packages
+            files: lcov.info

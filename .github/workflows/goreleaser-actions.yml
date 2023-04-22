@@ -4,7 +4,7 @@ on: [push]
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
   # the next run since build-goreleaser and run-goreleaser are run concurrently. We expect github actions
-  # to fix this in a future verison
+  # to fix this in a future version.
   build-goreleaser:
     runs-on: ubuntu-latest
     outputs:
@@ -15,6 +15,12 @@ jobs:
         with:
           fetch-depth: 0 # needed if using new-from-rev (see: https://golangci-lint.run/usage/configuration/#issues-configuration)
           submodules: true
+
+
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.2.6
+        with:
+          key: docker-release-${{ runner.os }}-${{ matrix.package }}
 
       - uses: dorny/paths-filter@v2
         name: check if any changes warrant a new build of goreleaser-cgo-cross-compiler
@@ -76,6 +82,8 @@ jobs:
   changes:
     name: Change Detection
     runs-on: ubuntu-latest
+    # see: https://stackoverflow.com/a/68414395
+    if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[goreleaser]') }}
     outputs:
       # Expose matched filters as job 'packages' output variable
       packages: ${{ steps.filter_go.outputs.changed_modules }}
@@ -90,7 +98,7 @@ jobs:
         id: filter_go
         with:
           include_deps: true
-          github_token: ${{ secrets.github_token }}
+          github_token: ${{ secrets.WORKFLOW_PAT }}
 
       - id: length
         run: |
@@ -117,6 +125,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: 'recursive'
+
 
       - name: Get branch name
         id: branch-name
@@ -174,8 +183,19 @@ jobs:
           GOMEMLIMIT: 6GiB
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
-      - name: Run GoReleaser (Snapshot)
+      # use this to determine if we need goreleaser for a workflow
+      # TODO: it might be worth considering moving this into a seperate workflow so we can avoid doing a full clone + pulling the image when we don't need anything
+      - name: Check For Docker Images
         if: steps.branch-name.outputs.is_default != 'true'
+        id: image_check
+        run: |
+          # will be 0 if none present
+          has_images=$(yq eval '.dockers != null' ${{matrix.package}}/.goreleaser.yml)
+          echo "##[set-output name=has_images;]$(echo $has_images)"
+
+
+      - name: Run GoReleaser (Snapshot)
+        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
         run: goreleaser --timeout 900m --snapshot --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -186,7 +206,7 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
       - name: Push Docker Images (Snapshot)
-        if: steps.branch-name.outputs.is_default != 'true'
+        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
         run: |
           docker_image=$(yq '.dockers | length' dist/config.yaml)
           image_name=$(yq '.project_name' ${{matrix.package}}/.goreleaser.yml)
@@ -196,7 +216,6 @@ jobs:
           fi
           docker tag ghcr.io/synapsecns/sanguine/$image_name:latest ghcr.io/synapsecns/$image_name:${GITHUB_SHA}
           docker push ghcr.io/synapsecns/sanguine/$image_name:${GITHUB_SHA}
-
       - name: Copy Releases
         if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-iap') }}
         uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest

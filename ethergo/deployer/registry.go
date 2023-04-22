@@ -28,9 +28,13 @@ type GetOnlyContractRegistry interface {
 	Get(ctx context.Context, contractType contracts.ContractType) contracts.DeployedContract
 	// GetRegisteredDeployer gets the deployer for a given contract, returs nil if it doesn't exist
 	GetRegisteredDeployer(contractType contracts.ContractType) ContractDeployer
+	// GetDeployedContracts gets all deployed contracts in the registry.
+	GetDeployedContracts() (res map[int]contracts.DeployedContract)
 }
 
 // ContractRegistry handles contract deployment/storage for a specific chain.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name ContractRegistry --output ./mocks --case=underscore
 type ContractRegistry interface {
 	GetOnlyContractRegistry
 	// Deploy deploys the contract type, but does not register it
@@ -123,6 +127,13 @@ func (c *contractRegistryImpl) Get(ctx context.Context, contractType contracts.C
 
 	// and return the new contfract
 	return deployedContract
+}
+
+func (c *contractRegistryImpl) GetDeployedContracts() (res map[int]contracts.DeployedContract) {
+	c.structMux.RLock()
+	defer c.structMux.RUnlock()
+
+	return c.deployedContracts
 }
 
 // contractLock creates a contractLock from a contract type and locks the mutex.

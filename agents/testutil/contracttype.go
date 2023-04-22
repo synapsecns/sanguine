@@ -2,14 +2,19 @@ package testutil
 
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
-	"github.com/synapsecns/sanguine/agents/contracts/attestationcollector"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
+	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/headerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
+	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/testclient"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
 	"github.com/synapsecns/sanguine/agents/testutil/agentstestcontract"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -54,7 +59,11 @@ const (
 	MessageHarnessType // MessageHarness
 	// OriginHarnessType is the origin harness type.
 	OriginHarnessType // OriginHarness
-	// AttestationHarnessType is the attestation harness type.
+	// StateHarnessType is the state harness type.
+	StateHarnessType
+	// SnapshotHarnessType is the snapshot harness type.
+	SnapshotHarnessType
+	// AttestationHarnessType is the type of the attestation harness.
 	AttestationHarnessType
 	// TipsHarnessType is the type of the tips harness.
 	TipsHarnessType
@@ -62,12 +71,18 @@ const (
 	HeaderHarnessType
 	// DestinationHarnessType is the destination harness type.
 	DestinationHarnessType // DestinationHarness
-	// AttestationCollectorType is the type of the attestation collector.
-	AttestationCollectorType // AttestationCollector
+	// SummitHarnessType is the summit harness type.
+	SummitHarnessType // SummitHarness
+	// SummitType is the type of the summit.
+	SummitType // Summit
 	// DestinationType is the type of the destination.
 	DestinationType // Destination
 	// AgentsTestContractType is the type of the agents test contract.
 	AgentsTestContractType // AgentsTestContract
+	// TestClientType is the type of the test client.
+	TestClientType // TestClient
+	// PingPongClientType is the type of the test client.
+	PingPongClientType // PingPongClient
 )
 
 // ID gets the contract type as an id.
@@ -96,20 +111,30 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return messageharness.Contracts["solidity/MessageHarness.t.sol:MessageHarness"]
 	case OriginHarnessType:
 		return originharness.Contracts["solidity/OriginHarness.t.sol:OriginHarness"]
+	case StateHarnessType:
+		return stateharness.Contracts["solidity/StateHarness.t.sol:StateHarness"]
+	case SnapshotHarnessType:
+		return snapshotharness.Contracts["solidity/SnapshotHarness.t.sol:SnapshotHarness"]
 	case AttestationHarnessType:
 		return attestationharness.Contracts["solidity/AttestationHarness.t.sol:AttestationHarness"]
 	case DestinationHarnessType:
 		return destinationharness.Contracts["solidity/DestinationHarness.t.sol:DestinationHarness"]
+	case SummitHarnessType:
+		return summitharness.Contracts["solidity/SummitHarness.t.sol:SummitHarness"]
 	case TipsHarnessType:
 		return tipsharness.Contracts["solidity/TipsHarness.t.sol:TipsHarness"]
-	case AttestationCollectorType:
-		return attestationcollector.Contracts["solidity/AttestationCollector.sol:AttestationCollector"]
+	case SummitType:
+		return summit.Contracts["solidity/Summit.sol:Summit"]
 	case DestinationType:
 		return destination.Contracts["solidity/Destination.sol:Destination"]
 	case HeaderHarnessType:
 		return headerharness.Contracts["solidity/HeaderHarness.t.sol:HeaderHarness"]
 	case AgentsTestContractType:
 		return agentstestcontract.Contracts["solidity/AgentsTestContract.sol:AgentsTestContract"]
+	case TestClientType:
+		return testclient.Contracts["solidity/TestClient.sol:TestClient"]
+	case PingPongClientType:
+		return pingpongclient.Contracts["solidity/PingPongClient.sol:PingPongClient"]
 	default:
 		panic("not yet implemented")
 	}

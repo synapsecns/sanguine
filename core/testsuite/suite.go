@@ -3,12 +3,9 @@ package testsuite
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/ipfs/go-log"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -73,7 +70,7 @@ type TestSuite struct {
 // Every test suite in the synapse library should inherit from this suite and override where necessary.
 func NewTestSuite(tb testing.TB) *TestSuite {
 	tb.Helper()
-	log.SetAllLoggers(log.LevelDebug)
+	log.SetAllLoggers(log.LevelWarn)
 	ctx := context.Background()
 	return &TestSuite{
 		context: ctx,
@@ -82,20 +79,10 @@ func NewTestSuite(tb testing.TB) *TestSuite {
 }
 
 // Eventually asserts something is eventually true.
+// Note: this uses the suite context instead of the test context.
+// TODO: either separate suite and test context calls or deprecte and require generic.
 func (s *TestSuite) Eventually(willBeTrue func() bool) {
-	ctx, cancel := context.WithCancel(s.GetSuiteContext())
-	isTrue := false
-	wait.UntilWithContext(ctx, func(ctx context.Context) {
-		if willBeTrue() {
-			isTrue = true
-			cancel()
-		}
-	}, time.Millisecond)
-
-	// make sure the context just didn't cancel
-	if !isTrue {
-		s.T().Errorf("expected %T to be true before test context timed out", willBeTrue)
-	}
+	Eventually(s.GetSuiteContext(), s.T(), willBeTrue)
 }
 
 // SetupSuite sets up the test suite.
@@ -213,7 +200,5 @@ func (s *TestSuite) GetSuiteContext() context.Context {
 // MustMarshall is a helper method that attempts to marshall, otherwise it
 // fails the test.
 func (s *TestSuite) MustMarshall(v any) []byte {
-	res, err := json.Marshal(v)
-	assert.Nil(s.T(), err)
-	return res
+	return MustMarshall(s.T(), v)
 }

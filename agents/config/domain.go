@@ -35,21 +35,21 @@ func (d DomainConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 // DomainConfig defines the config for a specific domain.
 type DomainConfig struct {
 	// DomainID is the domain of the chain
-	DomainID uint32 `toml:"Domain"`
+	DomainID uint32 `yaml:"domain_id"`
 	// Type of the chain (e.g. evm)
-	Type string `toml:"Type"`
+	Type string `yaml:"type"`
 	// RequiredConfirmations is the number of confirmations to way
-	RequiredConfirmations uint32 `toml:"ConfirmationsThreshold"`
+	RequiredConfirmations uint32 `yaml:"required_confirmations"`
 	// OriginAddress gets origin contract address
-	OriginAddress string `toml:"OriginAddress"`
-	// AttestationCollectorAddress contains the attestation collector address (if present)
-	AttestationCollectorAddress string `toml:"AttestationCollectorAddress"`
+	OriginAddress string `yaml:"origin_address"`
+	// SummitAddress contains the summit address (if present)
+	SummitAddress string `yaml:"summit_address"`
 	// DestinationAddress gets destination contract address
-	DestinationAddress string `toml:"DestinationAddress"`
+	DestinationAddress string `yaml:"destination_address"`
 	// RPCUrl to use for the chain
-	RPCUrl string `toml:"RPCURL"`
+	RPCUrl string `yaml:"rpc_url"`
 	// Minimum start height
-	StartHeight uint32 `toml:"StartHeight"`
+	StartHeight uint32 `yaml:"start_height"`
 }
 
 // IsValid validates the domain config.
@@ -66,6 +66,10 @@ func (d DomainConfig) IsValid(_ context.Context) (ok bool, err error) {
 	// TODO: we should defer to chain-specific config here for verification
 	if d.OriginAddress == "" {
 		return false, fmt.Errorf("field OriginAddress: %w", ErrRequiredField)
+	}
+
+	if d.DestinationAddress == "" {
+		return false, fmt.Errorf("field DestinationAddress: %w", ErrRequiredField)
 	}
 
 	if d.RPCUrl == "" {

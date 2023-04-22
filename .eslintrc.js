@@ -4,13 +4,14 @@ module.exports = {
     browser: true,
     es6: true,
   },
-  ignorePatterns: ['dist', 'coverage', 'packages/contracts-core/hardhat'],
+  ignorePatterns: ['dist', 'coverage'],
   extends: ['plugin:prettier/recommended'],
-  parser: 'babel-eslint',
+  parser: '@babel/eslint-parser',
   parserOptions: {
     es6: true,
     ecmaVersion: 6,
     sourceType: 'module',
+    requireConfigFile: false,
   },
   plugins: [
     'eslint-plugin-import',
@@ -25,16 +26,18 @@ module.exports = {
       files: ['**/*.ts'],
       parser: '@typescript-eslint/parser',
       parserOptions: {
-        project: 'tsconfig.json',
+        project: './packages/**/tsconfig.json',
         sourceType: 'module',
         allowAutomaticSingleRunInference: true,
       },
       rules: {
+        '@typescript-eslint/comma-dangle': 'off',
         '@typescript-eslint/adjacent-overload-signatures': 'error',
         '@typescript-eslint/array-type': 'off',
         '@typescript-eslint/ban-types': 'off',
         '@typescript-eslint/consistent-type-assertions': 'error',
         '@typescript-eslint/dot-notation': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
         '@typescript-eslint/indent': 'off',
         '@typescript-eslint/member-delimiter-style': [
           'off',

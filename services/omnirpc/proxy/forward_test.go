@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	chainManagerMocks "github.com/synapsecns/sanguine/services/omnirpc/chainmanager/mocks"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
@@ -22,7 +25,7 @@ import (
 )
 
 func (p *ProxySuite) TestServeRequestNoChain() {
-	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -32,7 +35,7 @@ func (p *ProxySuite) TestServeRequestNoChain() {
 }
 
 func (p *ProxySuite) TestCannotReadBody() {
-	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -63,7 +66,7 @@ func (p *ProxySuite) generateFakeJSON() []byte {
 }
 
 func (p *ProxySuite) TestMalformedRequestBody() {
-	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -76,7 +79,7 @@ func (p *ProxySuite) TestMalformedRequestBody() {
 
 // TestAcquireReleaseForwarder makes sure the forwarder is cleared afte r being released.
 func (p *ProxySuite) TestAcquireReleaseForwarder() {
-	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	forwarder := prxy.AcquireForwarder()
 	forwarder.SetChain(new(chainManagerMocks.Chain))
@@ -87,7 +90,7 @@ func (p *ProxySuite) TestAcquireReleaseForwarder() {
 	forwarder.SetRequestID([]byte(uuid.New().String()))
 	forwarder.SetRequiredConfirmations(gofakeit.Uint16())
 	forwarder.SetBlankResMap()
-	forwarder.SetRPCRequest([]proxy.RPCRequest{{
+	forwarder.SetRPCRequest([]rpc.Request{{
 		ID:     gofakeit.Number(1, 2),
 		Method: gofakeit.Word(),
 	}})
@@ -107,7 +110,7 @@ func (p *ProxySuite) TestAcquireReleaseForwarder() {
 }
 
 func (p *ProxySuite) TestForwardRequestDisallowWS() {
-	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	invalidSchemes := []string{"wss", "ws"}
 	for _, scheme := range invalidSchemes {
@@ -130,7 +133,7 @@ func (p *ProxySuite) TestForwardRequestDisallowWS() {
 }
 
 func (p *ProxySuite) TestForwardRequest() {
-	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 
 	methodName := "test"
 	testRes := p.MustMarshall(proxy.JSONRPCMessage{
@@ -155,7 +158,7 @@ func (p *ProxySuite) TestForwardRequest() {
 	forwarder := prxy.AcquireForwarder()
 	forwarder.SetBody(testBody)
 	forwarder.SetRequestID([]byte(testRequestID))
-	forwarder.SetRPCRequest([]proxy.RPCRequest{{Method: methodName}})
+	forwarder.SetRPCRequest([]rpc.Request{{Method: methodName}})
 
 	_, err := forwarder.ForwardRequest(p.GetTestContext(), testURL)
 	Nil(p.T(), err)
@@ -174,8 +177,10 @@ func (p *ProxySuite) TestForwardRequest() {
 }
 
 func (p *ProxySuite) TestOverrideConfirmability() {
-	prxy := proxy.NewProxy(config.Config{}, omniHTTP.FastHTTP)
+	prxy := proxy.NewProxy(config.Config{}, p.metrics)
 	forwarder := prxy.AcquireForwarder()
+	_, span := p.metrics.Tracer().Start(p.GetTestContext(), fmt.Sprintf("test-%d", p.GetTestID()))
+	forwarder.SetSpan(span)
 
 	const chainConfirmations = uint16(10)
 	const overridedConfirmations = uint16(2)
@@ -190,9 +195,9 @@ func (p *ProxySuite) TestOverrideConfirmability() {
 	chainManager.On("URLs").Return(urls)
 	forwarder.SetChain(chainManager)
 
-	forwarder.SetBody(p.MustMarshall(proxy.RPCRequest{
+	forwarder.SetBody(p.MustMarshall(rpc.Request{
 		ID:     1,
-		Method: string(proxy.BlockByNumberMethod),
+		Method: string(client.BlockByNumberMethod),
 		Params: []json.RawMessage{[]byte("\"1\"")},
 	}))
 	testContext, _ := gin.CreateTestContext(httptest.NewRecorder())

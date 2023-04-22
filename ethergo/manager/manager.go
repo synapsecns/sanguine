@@ -3,13 +3,30 @@ package manager
 
 import (
 	"context"
-	"github.com/stretchr/testify/suite"
+	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"sync"
 	"testing"
 )
+
+// IDeployManager is responsible for deploying contracts.
+type IDeployManager interface {
+	// T returns the testing object.
+	T() *testing.T
+	// SetT sets the testing object.
+	SetT(t *testing.T)
+	// BulkDeploy deploys all contracts.
+	BulkDeploy(ctx context.Context, testBackends []backends.SimulatedTestBackend, contracts ...contracts.ContractType)
+	// GetContractRegistry returns the contract registry for the given backend.
+	GetContractRegistry(backend backends.SimulatedTestBackend) deployer.ContractRegistry
+	// Get returns the deployed contract for the given contract type.
+	Get(ctx context.Context, backend backends.SimulatedTestBackend, contractType contracts.ContractType) contracts.DeployedContract
+	// GetDeployedContracts returns all deployed contracts.
+	GetDeployedContracts() (res map[uint32][]contracts.DeployedContract)
+}
 
 // DeployerManager is responsible for wrapping contract registry with easy to use getters that correctly cast the handles.
 // since ContractRegistry is meant to be kept pure and go does not support generics, the sole function is to provide
@@ -95,4 +112,62 @@ func (d *DeployerManager) Get(ctx context.Context, backend backends.SimulatedTes
 	return d.GetContractRegistry(backend).Get(ctx, contractType)
 }
 
-var _ suite.TestingSuite = &DeployerManager{}
+// GetDeployedContracts gets all deployed contracts by domain.
+func (d *DeployerManager) GetDeployedContracts() (res map[uint32][]contracts.DeployedContract) {
+	d.structMux.RLock()
+	defer d.structMux.RUnlock()
+
+	res = make(map[uint32][]contracts.DeployedContract)
+
+	for _, registry := range d.registries {
+		for _, contract := range registry.GetDeployedContracts() {
+			chainID := uint32(contract.ChainID().Uint64())
+			res[chainID] = append(res[chainID], contract)
+		}
+	}
+
+	return res
+}
+
+// GetContract gets a contract from the registry and casts it to the correct type.
+func GetContract[T any](ctx context.Context, tb testing.TB, deployManager IDeployManager, backend backends.SimulatedTestBackend, contractType contracts.ContractType) (contracts.DeployedContract, T) {
+	tb.Helper()
+	deployedContract := deployManager.Get(ctx, backend, contractType)
+	contractHandle, ok := deployedContract.ContractHandle().(T)
+	assert.True(tb, ok)
+
+	return deployedContract, contractHandle
+}
+
+// DeployManagerFactory is a factory for a deploy manager.
+type DeployManagerFactory func() IDeployManager
+
+// AssertDependenciesCorrect asserts that all dependencies of contracts are correct.
+func AssertDependenciesCorrect(ctx context.Context, t *testing.T, deployManagerFactory DeployManagerFactory) {
+	t.Helper()
+
+	backend := simulated.NewSimulatedBackend(ctx, t)
+
+	deployManager := deployManagerFactory()
+	registeredContracts := deployManager.GetContractRegistry(backend).RegisteredDeployers()
+
+	// test until all contacts are done
+	for _, contract := range registeredContracts {
+		deployManager = deployManagerFactory()
+		contractRegistry := deployManager.GetContractRegistry(backend)
+		assert.Equal(t, len(contractRegistry.GetDeployedContracts()), 0)
+
+		// the contract is currently on the wrong backend, so we need to make it on the right backend
+		dc := contractRegistry.Get(ctx, contract.ContractType())
+		assert.Equal(t, dc.ChainID().String(), backend.GetBigChainID().String())
+
+		deployedContracts := contractRegistry.GetDeployedContracts()
+		// make sure dependency count is equal (adding our own contract to there expected amount)
+		assert.Equal(t, len(deployedContracts), len(contract.Dependencies())+1)
+
+		for _, dep := range contract.Dependencies() {
+			_, hasDep := deployedContracts[dep.ID()]
+			assert.True(t, hasDep)
+		}
+	}
+}

@@ -27,7 +27,7 @@ func (b BackfillSuite) TestChainBackfill() {
 	chainID := gofakeit.Uint32()
 
 	simulatedChain := geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), big.NewInt(int64(chainID)))
-	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress())
+	simulatedClient, err := backfill.DialBackend(b.GetTestContext(), simulatedChain.RPCAddress(), b.metrics)
 	Nil(b.T(), err)
 
 	simulatedChain.FundAccount(b.GetTestContext(), b.wallet.Address(), *big.NewInt(params.Ether))
@@ -60,7 +60,7 @@ func (b BackfillSuite) TestChainBackfill() {
 		Contracts: contractConfigs,
 	}
 	simulatedChainArr := []backfill.ScribeBackend{simulatedClient, simulatedClient}
-	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, simulatedChainArr, chainConfig, 1)
+	chainBackfiller, err := backfill.NewChainBackfiller(b.testDB, simulatedChainArr, chainConfig, 1, b.metrics)
 	Nil(b.T(), err)
 	b.EmitEventsForAChain(contracts, testRefs, simulatedChain, chainBackfiller, chainConfig, true)
 }

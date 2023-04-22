@@ -18,16 +18,29 @@ func init() {
 	}
 
 	AttestationAcceptedTopic = parsedDestination.Events["AttestationAccepted"].ID
+	ExecutedTopic = parsedDestination.Events["Executed"].ID
+
+	if AttestationAcceptedTopic == (common.Hash{}) {
+		panic("AttestationAcceptedTopic is nil")
+	}
+
+	if ExecutedTopic == (common.Hash{}) {
+		panic("ExecutedTopic is nil")
+	}
 }
 
 // AttestationAcceptedTopic is the topic that gets emitted when the AttestationAccepted event is called.
 var AttestationAcceptedTopic common.Hash
+
+// ExecutedTopic is the topic that gets emitted when the Executed event is called.
+var ExecutedTopic common.Hash
 
 // topicMap maps events to topics.
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
 		AttestationAcceptedEvent: AttestationAcceptedTopic,
+		ExecutedEvent:            ExecutedTopic,
 	}
 }
 

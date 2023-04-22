@@ -16,17 +16,21 @@ func init() {
 		panic(err)
 	}
 
-	DispatchTopic = parsedOrigin.Events["Dispatch"].ID
+	DispatchedTopic = parsedOrigin.Events["Dispatched"].ID
+
+	if DispatchedTopic == (common.Hash{}) {
+		panic("DispatchTopic is nil")
+	}
 }
 
-// DispatchTopic is the topic that gets emitted when the dispatch event is called.
-var DispatchTopic common.Hash
+// DispatchedTopic is the topic that gets emitted when the dispatch event is called.
+var DispatchedTopic common.Hash
 
 // topicMap maps events to topics.
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
-		DispatchEvent: DispatchTopic,
+		DispatchedEvent: DispatchedTopic,
 	}
 }
 

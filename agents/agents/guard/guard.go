@@ -3,49 +3,39 @@ package guard
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"time"
 
 	"github.com/synapsecns/sanguine/agents/config"
-	"github.com/synapsecns/sanguine/agents/db/datastore/sql"
+	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
-	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"golang.org/x/sync/errgroup"
 )
 
-// Guard in the current version scans the attestation collector for notary signed attestations,
-// signs them, and posts to destination chains.
-// TODO: Note right now, I have threads for each origin-destination pair and do no batching at all.
+// Guard scans origins for latest state and submits snapshots to the Summit.
 type Guard struct {
-	originScanners             map[string]map[string]OriginGuardAttestationScanner
-	scanners                   map[string]map[string]AttestationCollectorAttestationScanner
-	guardSigners               map[string]map[string]AttestationGuardSigner
-	guardCollectorSubmitters   map[string]map[string]AttestationGuardCollectorSubmitter
-	guardCollectorVerifiers    map[string]map[string]AttestationGuardCollectorVerifier
-	guardDestinationSubmitters map[string]map[string]AttestationGuardDestinationSubmitter
-	guardDestinationVerifiers  map[string]map[string]AttestationGuardDestinationVerifier
-	bondedSigner               signer.Signer
-	unbondedSigner             signer.Signer
-	refreshInterval            time.Duration
+	bondedSigner       signer.Signer
+	unbondedSigner     signer.Signer
+	domains            []domains.DomainClient
+	summitDomain       domains.DomainClient
+	refreshInterval    time.Duration
+	summitLatestStates map[uint32]types.State
+	// TODO: change to metrics type
+	originLatestStates map[uint32]types.State
+	handler            metrics.Handler
 }
 
 // NewGuard creates a new guard.
 //
 //nolint:cyclop
-func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) {
-	if cfg.RefreshIntervalInSeconds == int64(0) {
-		return Guard{}, fmt.Errorf("cfg.refreshInterval cannot be 0")
-	}
+func NewGuard(ctx context.Context, cfg config.AgentConfig, handler metrics.Handler) (_ Guard, err error) {
 	guard := Guard{
-		originScanners:             make(map[string]map[string]OriginGuardAttestationScanner),
-		scanners:                   make(map[string]map[string]AttestationCollectorAttestationScanner),
-		guardSigners:               make(map[string]map[string]AttestationGuardSigner),
-		guardCollectorSubmitters:   make(map[string]map[string]AttestationGuardCollectorSubmitter),
-		guardCollectorVerifiers:    make(map[string]map[string]AttestationGuardCollectorVerifier),
-		guardDestinationSubmitters: make(map[string]map[string]AttestationGuardDestinationSubmitter),
-		guardDestinationVerifiers:  make(map[string]map[string]AttestationGuardDestinationVerifier),
-		refreshInterval:            time.Second * time.Duration(cfg.RefreshIntervalInSeconds),
+		refreshInterval: time.Second * time.Duration(cfg.RefreshIntervalSeconds),
 	}
+	guard.domains = []domains.DomainClient{}
 
 	guard.bondedSigner, err = config.SignerFromConfig(ctx, cfg.BondedSigner)
 	if err != nil {
@@ -57,209 +47,168 @@ func NewGuard(ctx context.Context, cfg config.GuardConfig) (_ Guard, err error) 
 		return Guard{}, fmt.Errorf("error with unbondedSigner, could not create guard: %w", err)
 	}
 
-	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
-	if err != nil {
-		return Guard{}, fmt.Errorf("could not get legacyDB type: %w", err)
-	}
-
-	dbHandle, err := sql.NewStoreFromConfig(ctx, dbType, cfg.Database.ConnString, cfg.DBPrefix)
-	if err != nil {
-		return Guard{}, fmt.Errorf("could not connect to legacyDB: %w", err)
-	}
-
-	attestationDomainClient, err := evm.NewEVM(ctx, "attestation_collector", cfg.AttestationDomain)
-	if err != nil {
-		return Guard{}, fmt.Errorf("failing to create evm for attestation collector, could not create guard for B: %w", err)
-	}
-	err = attestationDomainClient.AttestationCollector().PrimeNonce(ctx, guard.unbondedSigner)
-	if err != nil {
-		return Guard{}, fmt.Errorf("error trying to PrimeNonce for attestationClient, could not create notary for: %w", err)
-	}
-
-	for originName, originDomain := range cfg.OriginDomains {
-		originDomainClient, err := evm.NewEVM(ctx, originName, originDomain)
+	for domainName, domain := range cfg.Domains {
+		var domainClient domains.DomainClient
+		domainClient, err = evm.NewEVM(ctx, domainName, domain)
 		if err != nil {
-			return Guard{}, fmt.Errorf("failing to create evm for origiin, could not create guard for: %w", err)
+			return Guard{}, fmt.Errorf("failing to create evm for domain, could not create guard for: %w", err)
 		}
-		guard.originScanners[originName] = make(map[string]OriginGuardAttestationScanner)
-		guard.scanners[originName] = make(map[string]AttestationCollectorAttestationScanner)
-		guard.guardSigners[originName] = make(map[string]AttestationGuardSigner)
-		guard.guardCollectorSubmitters[originName] = make(map[string]AttestationGuardCollectorSubmitter)
-		guard.guardCollectorVerifiers[originName] = make(map[string]AttestationGuardCollectorVerifier)
-		guard.guardDestinationSubmitters[originName] = make(map[string]AttestationGuardDestinationSubmitter)
-		guard.guardDestinationVerifiers[originName] = make(map[string]AttestationGuardDestinationVerifier)
-		for destinationName, destinationDomain := range cfg.DestinationDomains {
-			if originDomain.DomainID == destinationDomain.DomainID {
-				continue
-			}
-
-			// TODO (joe): other guard workers will submit to destination but for now
-			// we are commenting this out since we aren't using the destinationDomainClient yet
-			destinationDomainClient, err := evm.NewEVM(ctx, destinationName, destinationDomain)
-			if err != nil {
-				return Guard{}, fmt.Errorf("failing to create evm for destination, could not create guard for: %w", err)
-			}
-			err = destinationDomainClient.Destination().PrimeNonce(ctx, guard.unbondedSigner)
-			if err != nil {
-				return Guard{}, fmt.Errorf("error trying to PrimeNonce for destinationClient, could not create guard for: %w", err)
-			}
-
-			guard.originScanners[originName][destinationName] = NewOriginGuardAttestationScanner(
-				originDomainClient,
-				attestationDomainClient,
-				destinationDomainClient,
-				dbHandle,
-				guard.bondedSigner,
-				guard.unbondedSigner,
-				guard.refreshInterval)
-
-			guard.scanners[originName][destinationName] = NewAttestationCollectorAttestationScanner(
-				attestationDomainClient,
-				originDomain.DomainID,
-				destinationDomain.DomainID,
-				dbHandle,
-				guard.unbondedSigner,
-				guard.refreshInterval)
-
-			guard.guardSigners[originName][destinationName] = NewAttestationGuardSigner(
-				originDomainClient,
-				attestationDomainClient,
-				destinationDomainClient,
-				dbHandle,
-				guard.bondedSigner,
-				guard.unbondedSigner,
-				guard.refreshInterval)
-
-			guard.guardCollectorSubmitters[originName][destinationName] = NewAttestationGuardCollectorSubmitter(
-				originDomainClient,
-				attestationDomainClient,
-				destinationDomainClient,
-				dbHandle,
-				guard.bondedSigner,
-				guard.unbondedSigner,
-				guard.refreshInterval)
-
-			guard.guardCollectorVerifiers[originName][destinationName] = NewAttestationGuardCollectorVerifier(
-				originDomainClient,
-				attestationDomainClient,
-				destinationDomainClient,
-				dbHandle,
-				guard.bondedSigner,
-				guard.unbondedSigner,
-				guard.refreshInterval)
-
-			guard.guardDestinationSubmitters[originName][destinationName] = NewAttestationGuardDestinationSubmitter(
-				originDomainClient,
-				attestationDomainClient,
-				destinationDomainClient,
-				dbHandle,
-				guard.bondedSigner,
-				guard.unbondedSigner,
-				guard.refreshInterval)
-
-			guard.guardDestinationVerifiers[originName][destinationName] = NewAttestationGuardDestinationVerifier(
-				originDomainClient,
-				attestationDomainClient,
-				destinationDomainClient,
-				dbHandle,
-				guard.bondedSigner,
-				guard.unbondedSigner,
-				guard.refreshInterval)
+		guard.domains = append(guard.domains, domainClient)
+		if domain.DomainID == cfg.SummitDomainID {
+			guard.summitDomain = domainClient
 		}
 	}
+
+	guard.summitLatestStates = make(map[uint32]types.State, len(guard.domains))
+	guard.originLatestStates = make(map[uint32]types.State, len(guard.domains))
+
+	guard.handler = handler
 
 	return guard, nil
+}
+
+//nolint:cyclop
+func (g Guard) loadSummitLatestStates(parentCtx context.Context) {
+	for _, domain := range g.domains {
+		ctx, span := g.handler.Tracer().Start(parentCtx, "loadSummitLatestStates", trace.WithAttributes(
+			attribute.Int("domain", int(domain.Config().DomainID)),
+		))
+
+		originID := domain.Config().DomainID
+		latestState, err := g.summitDomain.Summit().GetLatestAgentState(ctx, originID, g.bondedSigner)
+		if err != nil {
+			latestState = nil
+			logger.Errorf("Failed calling GetLatestAgentState for originID %d on the Summit contract: err = %v", originID, err)
+			span.AddEvent("Failed calling GetLatestAgentState for originID on the Summit contract", trace.WithAttributes(
+				attribute.Int("originID", int(originID)),
+				attribute.String("err", err.Error()),
+			))
+		}
+		if latestState != nil && latestState.Nonce() > uint32(0) {
+			g.summitLatestStates[originID] = latestState
+		}
+
+		span.End()
+	}
+}
+
+//nolint:cyclop
+func (g Guard) loadOriginLatestStates(parentCtx context.Context) {
+	for _, domain := range g.domains {
+		ctx, span := g.handler.Tracer().Start(parentCtx, "loadOriginLatestStates", trace.WithAttributes(
+			attribute.Int("domain", int(domain.Config().DomainID)),
+		))
+
+		originID := domain.Config().DomainID
+		latestState, err := domain.Origin().SuggestLatestState(ctx)
+		if err != nil {
+			latestState = nil
+			logger.Errorf("Failed calling SuggestLatestState for originID %d on the Origin contract: %v", originID, err)
+			span.AddEvent("Failed calling SuggestLatestState for originID on the Origin contract", trace.WithAttributes(
+				attribute.Int("originID", int(originID)),
+				attribute.String("err", err.Error()),
+			))
+		} else if latestState == nil || latestState.Nonce() == uint32(0) {
+			logger.Errorf("No latest state found for origin id %d", originID)
+			span.AddEvent("No latest state found for origin id", trace.WithAttributes(
+				attribute.Int("originID", int(originID)),
+			))
+		}
+		if latestState != nil {
+			// TODO: if overwriting, end span and start a new one
+			g.originLatestStates[originID] = latestState
+		}
+
+		span.End()
+	}
+}
+
+//nolint:cyclop
+func (g Guard) getLatestSnapshot() (types.Snapshot, map[uint32]types.State) {
+	statesToSubmit := make(map[uint32]types.State, len(g.domains))
+	for _, domain := range g.domains {
+		originID := domain.Config().DomainID
+		summitLatest, ok := g.summitLatestStates[originID]
+		if !ok || summitLatest == nil || summitLatest.Nonce() == 0 {
+			summitLatest = nil
+		}
+		originLatest, ok := g.originLatestStates[originID]
+		if !ok || originLatest == nil || originLatest.Nonce() == 0 {
+			continue
+		}
+		if summitLatest != nil && summitLatest.Nonce() >= originLatest.Nonce() {
+			// Here this guard already submitted this state
+			continue
+		}
+		// TODO: add event for submitting that state
+		statesToSubmit[originID] = originLatest
+	}
+	snapshotStates := make([]types.State, 0, len(statesToSubmit))
+	for _, state := range statesToSubmit {
+		if state.Nonce() == 0 {
+			continue
+		}
+		snapshotStates = append(snapshotStates, state)
+	}
+	if len(snapshotStates) > 0 {
+		return types.NewSnapshot(snapshotStates), statesToSubmit
+	}
+	//nolint:nilnil
+	return nil, nil
+}
+
+//nolint:cyclop
+func (g Guard) submitLatestSnapshot(parentCtx context.Context) {
+	ctx, span := g.handler.Tracer().Start(parentCtx, "submitLatestSnapshot", trace.WithAttributes(
+		attribute.Int("domain", int(g.summitDomain.Config().DomainID)),
+	))
+
+	defer func() {
+		span.End()
+	}()
+
+	snapshot, statesToSubmit := g.getLatestSnapshot()
+	if snapshot == nil {
+		return
+	}
+
+	snapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(ctx, g.bondedSigner)
+	if err != nil {
+		logger.Errorf("Error signing snapshot: %v", err)
+		span.AddEvent("Error signing snapshot", trace.WithAttributes(
+			attribute.String("err", err.Error()),
+		))
+	} else {
+		err := g.summitDomain.Summit().SubmitSnapshot(ctx, g.unbondedSigner, encodedSnapshot, snapshotSignature)
+		if err != nil {
+			logger.Errorf("Failed to submit snapshot to summit: %v", err)
+			span.AddEvent("Failed to submit snapshot to summit", trace.WithAttributes(
+				attribute.String("err", err.Error()),
+			))
+		} else {
+			for originID, state := range statesToSubmit {
+				g.summitLatestStates[originID] = state
+			}
+		}
+	}
 }
 
 // Start starts the guard.
 //
 //nolint:cyclop
-func (u Guard) Start(ctx context.Context) error {
-	g, ctx := errgroup.WithContext(ctx)
+func (g Guard) Start(ctx context.Context) error {
+	// First initialize a map to track what was the last state signed by this guard
+	g.loadSummitLatestStates(ctx)
 
-	for originName, originScanners := range u.originScanners {
-		for destinationName := range originScanners {
-			originName := originName           // capture func literal
-			destinationName := destinationName // capture func literal
-			g.Go(func() error {
-				//nolint: wrapcheck
-				return u.originScanners[originName][destinationName].Start(ctx)
-			})
+	for {
+		select {
+		// parent loop terminated
+		case <-ctx.Done():
+			logger.Info("Guard exiting without error")
+			return nil
+		case <-time.After(g.refreshInterval):
+			g.loadOriginLatestStates(ctx)
+			g.submitLatestSnapshot(ctx)
 		}
 	}
-
-	for originName, attestationScanners := range u.scanners {
-		for destinationName := range attestationScanners {
-			originName := originName           // capture func literal
-			destinationName := destinationName // capture func literal
-			g.Go(func() error {
-				//nolint: wrapcheck
-				return u.scanners[originName][destinationName].Start(ctx)
-			})
-		}
-	}
-
-	for originName, allDestinationGuardSigners := range u.guardSigners {
-		for destinationName := range allDestinationGuardSigners {
-			originName := originName           // capture func literal
-			destinationName := destinationName // capture func literal
-			g.Go(func() error {
-				//nolint: wrapcheck
-				return u.guardSigners[originName][destinationName].Start(ctx)
-			})
-		}
-	}
-
-	for originName, allDestinationGuardCollectorSubmitters := range u.guardCollectorSubmitters {
-		for destinationName := range allDestinationGuardCollectorSubmitters {
-			originName := originName           // capture func literal
-			destinationName := destinationName // capture func literal
-			g.Go(func() error {
-				//nolint: wrapcheck
-				return u.guardCollectorSubmitters[originName][destinationName].Start(ctx)
-			})
-		}
-	}
-
-	for originName, allDestinationGuardCollectorVerifiers := range u.guardCollectorVerifiers {
-		for destinationName := range allDestinationGuardCollectorVerifiers {
-			originName := originName           // capture func literal
-			destinationName := destinationName // capture func literal
-			g.Go(func() error {
-				//nolint: wrapcheck
-				return u.guardCollectorVerifiers[originName][destinationName].Start(ctx)
-			})
-		}
-	}
-
-	for originName, allDestinationGuardDestinationSubmitters := range u.guardDestinationSubmitters {
-		for destinationName := range allDestinationGuardDestinationSubmitters {
-			originName := originName           // capture func literal
-			destinationName := destinationName // capture func literal
-			g.Go(func() error {
-				//nolint: wrapcheck
-				return u.guardDestinationSubmitters[originName][destinationName].Start(ctx)
-			})
-		}
-	}
-
-	for originName, allDestinationGuardDestinationVerifiers := range u.guardDestinationVerifiers {
-		for destinationName := range allDestinationGuardDestinationVerifiers {
-			originName := originName           // capture func literal
-			destinationName := destinationName // capture func literal
-			g.Go(func() error {
-				//nolint: wrapcheck
-				return u.guardDestinationVerifiers[originName][destinationName].Start(ctx)
-			})
-		}
-	}
-
-	err := g.Wait()
-	if err != nil {
-		logger.Errorf("Guard exiting with error: %v", err)
-		return fmt.Errorf("could not start the guard: %w", err)
-	}
-
-	logger.Info("Guard exiting without error")
-	return nil
 }

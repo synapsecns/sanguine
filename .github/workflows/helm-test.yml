@@ -39,6 +39,8 @@ jobs:
         working-directory: charts/
         run: make dependencies
 
+      # Even if there are no changes to the chart itself, if running `make lint` changes Chart.lock,
+      # then lint-test will fail due to version bump. To solve this, run `make lint` and version bump.
       - name: Run chart-testing (list-changed)
         id: list-changed
         run: |
@@ -62,9 +64,9 @@ jobs:
       - name: Run chart-testing (install agents embedded)
         working-directory: charts/
         if: ${{ contains(matrix.chart, 'agents_embedded') }}
-        run: ct install --debug --helm-extra-set-args "--set=executor.type=embedded" --chart-dirs "agents" --charts "agents"
+        run: ct install --debug --helm-extra-set-args "--set=executor.type=embedded  --set=scribe.enabled=false" --chart-dirs "agents" --charts "agents"
 
       - name: Run chart-testing (install agents remote)
         working-directory: charts/
         if: ${{ contains(matrix.chart, 'agents_remote') }}
-        run: ct install --debug --helm-extra-set-args "--set=executor.type=remote-fresh --set=scribe.enabled=true" --chart-dirs "agents" --charts "agents"
+        run: ct install --debug --helm-extra-set-args "--set=executor.type=remote-fresh" --chart-dirs "agents" --charts "agents"

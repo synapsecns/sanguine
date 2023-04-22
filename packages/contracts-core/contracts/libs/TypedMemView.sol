@@ -64,6 +64,8 @@ library TypedMemView {
 
     /**
      * @dev Memory layout for bytes29
+     * TODO (Chi): with the user defined types storing type is no longer necessary.
+     * Update the library, transforming bytes29 to bytes24 in the process.
      * [000..005)   type     5 bytes    Type flag for the pointer
      * [005..017)   loc     12 bytes    Memory address of underlying bytes
      * [017..029)   len     12 bytes    Length of underlying bytes

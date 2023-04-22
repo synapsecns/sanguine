@@ -1,0 +1,57 @@
+name: Publish Lerna
+on:
+  pull_request:
+    types: [closed]
+    paths:
+      - 'packages/**'
+    branches:
+      - master
+
+jobs:
+  publish:
+    # TODO: remove true at the end
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
+
+      - name: Authenticate with private NPM package
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          echo "always-auth=true" >> ~/.npmrc
+
+
+      - name: 'Version and publish' # Interesting step
+        env:
+          GH_TOKEN: ${{ secrets.LERNA_FGPAT }}
+        # branch is protected so this must be an admin token, this will expire on 03/01/2024
+        # replacement should be done by a service account with a fine-grained personal access token
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor}}@users.noreply.github.com"
+
+          if [ ${{ github.base_ref }} = development ]; then
+            npx lerna version --conventional-commits --conventional-prerelease --preid beta --yes
+          else
+            npx lerna version --conventional-commits --conventional-graduate --yes
+          fi
+
+          npx lerna publish from-git --yes --no-verify-access
+
+      # TODO: delete me
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        if: ${{ failure() }}
+        with:
+          ## limits ssh access and adds the ssh public key for the user which triggered the workflow
+          limit-access-to-actor: true
+          ## limits ssh access and adds the ssh public keys of the listed GitHub users
+          limit-access-to-users: trajan0x

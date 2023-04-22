@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"math/big"
 	"time"
 
@@ -23,11 +24,13 @@ type Scribe struct {
 	scribeBackfiller *backfill.ScribeBackfiller
 	// config is the config for the scribe.
 	config config.Config
+	// handler is the metrics handler for the scribe.
+	handler metrics.Handler
 }
 
 // NewScribe creates a new scribe.
-func NewScribe(eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, config config.Config) (*Scribe, error) {
-	scribeBackfiller, err := backfill.NewScribeBackfiller(eventDB, clients, config)
+func NewScribe(eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, config config.Config, handler metrics.Handler) (*Scribe, error) {
+	scribeBackfiller, err := backfill.NewScribeBackfiller(eventDB, clients, config, handler)
 	if err != nil {
 		return nil, fmt.Errorf("could not create scribe backfiller: %w", err)
 	}
@@ -37,6 +40,7 @@ func NewScribe(eventDB db.EventDB, clients map[uint32][]backfill.ScribeBackend, 
 		clients:          clients,
 		scribeBackfiller: scribeBackfiller,
 		config:           config,
+		handler:          handler,
 	}, nil
 }
 
@@ -167,6 +171,7 @@ func (s Scribe) confirmBlocks(ctx context.Context, chainID uint32, requiredConfi
 		//nolint:nestif
 		if block.Hash() != receipts[0].BlockHash {
 			logger.Errorf(" [LIVEFILL] incorrect blockhash, deleting blockhash %s on chain %d. correct block hash: %s", receipts[0].BlockHash.String(), chainID, block.Hash().String())
+
 			g, groupCtx := errgroup.WithContext(ctx)
 
 			g.Go(func() error {

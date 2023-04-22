@@ -39,7 +39,8 @@ library AgentSet {
         uint32 domain,
         address account
     ) internal returns (bool) {
-        if (contains(set, account)) return false;
+        (bool isActive, ) = contains(set, account);
+        if (isActive) return false;
         set._agents[domain].push(account);
         // The agent is stored at length-1, but we add 1 to all indexes
         // and use 0 as a sentinel value
@@ -86,10 +87,19 @@ library AgentSet {
     }
 
     /**
-     * @notice Returns true if the agent is active on any domain. O(1)
+     * @notice Returns true if the agent is active on any domain,
+     * and the domain where the agent is active. O(1)
      */
-    function contains(DomainAddressSet storage set, address account) internal view returns (bool) {
-        return set._indexes[account].index != 0;
+    function contains(DomainAddressSet storage set, address account)
+        internal
+        view
+        returns (bool isActive, uint32 domain)
+    {
+        AgentIndex memory agentIndex = set._indexes[account];
+        if (agentIndex.index != 0) {
+            isActive = true;
+            domain = agentIndex.domain;
+        }
     }
 
     /**

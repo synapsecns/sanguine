@@ -7,10 +7,10 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"math/big"
+	"testing"
 )
 
 // AuthType is the type used for authentication.
@@ -23,13 +23,17 @@ type AuthType struct {
 
 // SimulatedTestBackend is a strict subset of TestBackend that all backends must comply with.
 // TODO: we need one of these for testnets so we can run e2e tests. This should source addresses from a single address.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name SimulatedTestBackend --output ./mocks --case=underscore
 type SimulatedTestBackend interface {
 	// EnableTenderly attempts to enable tenderly for the TestBackend. Returns false if it cannot be done
 	EnableTenderly() (enabled bool)
 	// BackendName gets the name of the backend
 	BackendName() string
-	// TestingSuite allows access to T() and SetT() methods for testing
-	suite.TestingSuite
+	// T is the testing.T
+	T() *testing.T
+	// SetT sets the testing.T
+	SetT(t *testing.T)
 	// Manager is used for concurrent signing while generating nonce
 	nonce.Manager
 	// ContractVerifier are contract verification hooks
@@ -47,11 +51,6 @@ type SimulatedTestBackend interface {
 	chain.Chain
 	// Signer is the signer for the chain
 	Signer() types.Signer
-}
-
-// TestBackend provides a backend for testing.
-// Deprecated: use simulated test backend.
-type TestBackend interface {
-	// SimulatedTestBackend is the base of a test backend
-	SimulatedTestBackend
+	// ImpersonateAccount impersonates an account. This is only supported on the anvil backend backends.
+	ImpersonateAccount(ctx context.Context, address common.Address, transact func(opts *bind.TransactOpts) *types.Transaction) error
 }

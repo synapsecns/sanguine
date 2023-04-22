@@ -9,6 +9,7 @@ replace (
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/brianvoe/gofakeit/v6 v6.20.1
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/go-git/go-git/v5 v5.5.2
@@ -17,7 +18,7 @@ require (
 	github.com/migueleliasweb/go-github-mock v0.0.16
 	github.com/otiai10/copy v1.9.0
 	github.com/sethvargo/go-githubactions v1.1.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/vishalkuo/bimap v0.0.0-20220726225509-e0b4f20de28b
 	github.com/xlab/treeprint v1.1.0
@@ -55,19 +56,18 @@ require (
 	github.com/pjbgf/sha1cd v0.2.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
-	github.com/rung/go-safecast v1.0.1 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/sethvargo/go-envconfig v0.8.0 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
-	github.com/spf13/afero v1.9.3 // indirect
+	github.com/spf13/afero v1.9.5 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
-	golang.org/x/crypto v0.4.0 // indirect
-	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/crypto v0.6.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/tools v0.5.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect

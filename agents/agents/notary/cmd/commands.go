@@ -1,11 +1,19 @@
 package cmd
 
 import (
+	"github.com/synapsecns/sanguine/core/metrics"
+	"sync/atomic"
+	"time"
+
 	markdown "github.com/MichaelMure/go-term-markdown"
+	"github.com/hedzr/log"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/notary"
 	"github.com/synapsecns/sanguine/agents/agents/notary/api"
+	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/client"
+	"github.com/synapsecns/sanguine/services/scribe/node"
 	"golang.org/x/sync/errgroup"
 
 	// used to embed markdown.
@@ -14,6 +22,8 @@ import (
 
 	"github.com/synapsecns/sanguine/agents/config"
 	"github.com/synapsecns/sanguine/core"
+	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
+	scribeCmd "github.com/synapsecns/sanguine/services/scribe/cmd"
 	"github.com/urfave/cli/v2"
 )
 
@@ -55,38 +65,101 @@ var NotaryRunCommand = &cli.Command{
 	Description: "runs the notary service",
 	Flags:       []cli.Flag{configFlag, metricsPortFlag, ignoreInitErrorsFlag},
 	Action: func(c *cli.Context) error {
-		notaryConfig, err := config.DecodeNotaryConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		metricsProvider := metrics.Get()
+
+		notaryConfig, err := config.DecodeAgentConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("failed to decode config: %w", err)
 		}
 
-		g, _ := errgroup.WithContext(c.Context)
+		var shouldRetryAtomic atomic.Bool
+		shouldRetryAtomic.Store(true)
 
-		notary, err := notary.NewNotary(c.Context, notaryConfig)
-		if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
-			return fmt.Errorf("failed to create notary: %w", err)
-		}
+		for shouldRetryAtomic.Load() {
+			shouldRetryAtomic.Store(false)
 
-		g.Go(func() error {
-			err = notary.Start(c.Context)
+			var scribeClient client.ScribeClient
+
+			g, _ := errgroup.WithContext(c.Context)
+
+			eventDB, err := scribeAPI.InitDB(c.Context, "mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true", metrics.Get())
+			if err != nil {
+				return fmt.Errorf("failed to initialize database: %w", err)
+			}
+
+			scribeClients := make(map[uint32][]backfill.ScribeBackend)
+
+			for _, domain := range notaryConfig.Domains {
+				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
+					chainID := domain.DomainID
+					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", "https://rpc.interoperability.institute/confirmations", confNum, chainID), metricsProvider)
+					if err != nil {
+						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", "https://rpc.interoperability.institute/confirmations", chainID))
+					}
+
+					scribeClients[chainID] = append(scribeClients[chainID], backendClient)
+				}
+			}
+
+			scribe, err := node.NewScribe(eventDB, scribeClients, notaryConfig.EmbeddedScribeConfig, metricsProvider)
+			if err != nil {
+				return fmt.Errorf("failed to initialize scribe: %w", err)
+			}
+
+			g.Go(func() error {
+				err := scribe.Start(c.Context)
+				if err != nil {
+					return fmt.Errorf("failed to start scribe: %w", err)
+				}
+
+				return nil
+			})
+
+			embedded := client.NewEmbeddedScribe("mysql", "root:MysqlPassword@tcp(agents-mysql:3306)/notaryscribe?parseTime=true", metricsProvider)
+
+			g.Go(func() error {
+				err := embedded.Start(c.Context)
+				if err != nil {
+					return fmt.Errorf("failed to start embedded scribe: %w", err)
+				}
+
+				return nil
+			})
+
+			scribeClient = embedded.ScribeClient
+
+			notaryConfig.ScribeURL = scribeClient.URL
+			notaryConfig.ScribePort = uint32(scribeClient.Port)
+			notary, err := notary.NewNotary(c.Context, notaryConfig, metricsProvider)
 			if err != nil && !c.Bool(ignoreInitErrorsFlag.Name) {
+				return fmt.Errorf("failed to create notary: %w", err)
+			}
+
+			g.Go(func() error {
+				err = notary.Start(c.Context)
+				if err != nil {
+					shouldRetryAtomic.Store(true)
+
+					log.Errorf("Error running guard, will sleep for a minute and retry: %v", err)
+					time.Sleep(60 * time.Second)
+					return fmt.Errorf("failed to create notary: %w", err)
+				}
+
+				return nil
+			})
+
+			g.Go(func() error {
+				err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
+				if err != nil {
+					return fmt.Errorf("failed to start api: %w", err)
+				}
+
+				return nil
+			})
+
+			if err := g.Wait(); err != nil {
 				return fmt.Errorf("failed to run notary: %w", err)
 			}
-
-			return nil
-		})
-
-		g.Go(func() error {
-			err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
-			if err != nil {
-				return fmt.Errorf("failed to start api: %w", err)
-			}
-
-			return nil
-		})
-
-		if err := g.Wait(); err != nil {
-			return fmt.Errorf("failed to run notary: %w", err)
 		}
 
 		return nil

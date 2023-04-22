@@ -3,10 +3,9 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/internal/assets"
 	"os"
 	"path/filepath"
-
-	"github.com/synapsecns/sanguine/core/assets"
 )
 
 // logoFileName is the name of the logo file.

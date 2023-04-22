@@ -1,8 +1,10 @@
 package internal_test
 
 import (
+	"errors"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
@@ -30,5 +32,33 @@ func (a *AbiSuite) TestCompileSolidity() {
 	for _, value := range vals {
 		Equal(a.T(), value.Info.CompilerVersion, "0.8.4")
 		Equal(a.T(), value.Info.LanguageVersion, "0.8.4")
+	}
+}
+
+func TestFilePathsAreEqual(t *testing.T) {
+	tests := []struct {
+		file1 string
+		file2 string
+		want  bool
+		err   error
+	}{
+		{"path/to/file1.txt", "path/to/file2.txt", false, nil},
+		{"path/to/file1.txt", "path/to/file1.txt", true, nil},
+		{"path/to/file2.txt", "path/to/file2.txt", true, nil},
+		{"path/to/file1.txt", "", false, filepath.ErrBadPattern},
+		{"", "path/to/file2.txt", false, filepath.ErrBadPattern},
+		{"nonexistent/file.txt", "path/to/file.txt", false, nil},
+	}
+
+	for _, tt := range tests {
+		got, err := internal.FilePathsAreEqual(tt.file1, tt.file2)
+
+		if got != tt.want {
+			t.Errorf("filePathsAreEqual(%v, %v) got %v, want %v", tt.file1, tt.file2, got, tt.want)
+		}
+
+		if err != nil && !errors.Is(err, tt.err) {
+			t.Errorf("filePathsAreEqual(%v, %v) error got %v, want %v", tt.file1, tt.file2, err, tt.err)
+		}
 	}
 }
