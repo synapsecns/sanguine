@@ -65,6 +65,8 @@ type DestinationContract interface {
 	AttestationsAmount(ctx context.Context) (uint64, error)
 	// SubmitAttestation submits an attestation to the destination
 	SubmitAttestation(ctx context.Context, signer signer.Signer, attPayload []byte, signature signer.Signature) error
+	// GetAgentStatus returns the current agent status for the given agent.
+	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
 }
 
 // TestClientContract contains the interface for the test client.

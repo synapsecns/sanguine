@@ -129,3 +129,14 @@ func (a destinationContract) SubmitAttestation(ctx context.Context, signer signe
 
 	return nil
 }
+
+func (a destinationContract) GetAgentStatus(ctx context.Context, bondedAgentSigner signer.Signer) (types.AgentStatus, error) {
+	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve agent status: %w", err)
+	}
+
+	agentStatus := types.NewAgentStatus(rawStatus.Flag, rawStatus.Domain, rawStatus.Index)
+
+	return agentStatus, nil
+}

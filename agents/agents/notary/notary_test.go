@@ -125,6 +125,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		ScribePort:             uint32(scribeClient.ScribeClient.Port),
 		ScribeURL:              scribeClient.ScribeClient.URL,
 	}
+
 	notaryTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      u.OriginDomainClient.Config(),
@@ -163,6 +164,10 @@ func (u *NotarySuite) TestNotaryE2E() {
 	Nil(u.T(), err)
 
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
+
+	agentStatus, err := u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
+	Nil(u.T(), err)
+	Equal(u.T(), uint32(u.TestBackendDestination.GetChainID()), agentStatus.Domain)
 
 	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, u.GuardMetrics)
 	Nil(u.T(), err)
@@ -212,7 +217,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	/*u.Eventually(func() bool {
+	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
 
 		rawState, err := u.SummitContract.GetLatestState(
@@ -227,7 +232,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 		state, err := types.DecodeState(rawState)
 		Nil(u.T(), err)
 		return state.Nonce() >= uint32(1)
-	})*/
+	})
 
 	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, u.NotaryMetrics)
 	Nil(u.T(), err)

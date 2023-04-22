@@ -167,6 +167,15 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 	a.LightManagerMetadataOnDestination, a.LightManagerOnDestination = deployManager.GetLightManagerHarness(a.GetTestContext(), a.TestBackendDestination)
 
 	var err error
+	/*agentStatus, err := a.DestinationContract.AgentStatus(&bind.CallOpts{Context: a.GetTestContext()}, a.NotaryBondedSigner.Address())
+	if err != nil {
+		a.T().Fatal(err)
+	}
+
+	if agentStatus.Domain != uint32(a.TestBackendDestination.GetChainID()) {
+		a.T().Fatal(err)
+	}*/
+
 	a.DestinationDomainClient, err = evm.NewEVM(a.GetTestContext(), "destination_client", config.DomainConfig{
 		DomainID:           uint32(a.TestBackendDestination.GetBigChainID().Uint64()),
 		Type:               types.EVM.String(),

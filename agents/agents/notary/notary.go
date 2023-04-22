@@ -23,7 +23,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"golang.org/x/sync/errgroup"
 )
@@ -164,14 +163,8 @@ func (n Notary) streamLogs(ctx context.Context) error {
 			n.lastSummitBlock = log.BlockNumber
 
 			// Do your stuff with the attestation here!
-			attToSubmit, err := types.EncodeAttestation(*attestation)
-			if err != nil {
-				logger.Error("Notary stream logs could not encode attestation: %v", err)
-				return fmt.Errorf("could not encode attestation: %w", err)
-			}
-
 			logger.Info("Notary received a saved attestation event, will sign and submit to destination")
-			n.submitAttestation(ctx, attToSubmit)
+			n.submitAttestation(ctx, *attestation)
 		}
 	}
 }
@@ -403,29 +396,23 @@ func (n Notary) submitLatestSnapshot(parentCtx context.Context) {
 }
 
 //nolint:cyclop,unused
-func (n Notary) submitAttestation(parentCtx context.Context, attBytes []byte) {
+func (n Notary) submitAttestation(parentCtx context.Context, attestation types.Attestation) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "submitAttestation")
 	defer span.End()
-	hashedBytes, err := types.HashRawBytes(attBytes)
+
+	attestationSignature, encodedAttestation, _, err := attestation.SignAttestation(ctx, n.bondedSigner)
 	if err != nil {
-		span.AddEvent("Error hashing attestation", trace.WithAttributes(
-			attribute.String("err", err.Error()),
-		))
-		return
-	}
-	signature, err := n.bondedSigner.SignMessage(ctx, core.BytesToSlice(hashedBytes), false)
-	if err != nil {
+		logger.Errorf("Error signing attestation: %v", err)
 		span.AddEvent("Error signing attestation", trace.WithAttributes(
 			attribute.String("err", err.Error()),
 		))
-		return
-	}
-
-	err = n.destinationDomain.Destination().SubmitAttestation(ctx, n.unbondedSigner, attBytes, signature)
-	if err != nil {
-		span.AddEvent("Error submitting attestation", trace.WithAttributes(
-			attribute.String("err", err.Error()),
-		))
+	} else {
+		err = n.destinationDomain.Destination().SubmitAttestation(ctx, n.unbondedSigner, encodedAttestation, attestationSignature)
+		if err != nil {
+			span.AddEvent("Error submitting attestation", trace.WithAttributes(
+				attribute.String("err", err.Error()),
+			))
+		}
 	}
 }
 
