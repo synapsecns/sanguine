@@ -203,8 +203,11 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	transactOpts := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
 	transactOpts.Value = types.TotalTips(tips[0])
 
+	paddedTips := new(big.Int).SetBytes(encodedTips)
+	paddedRequest := new(big.Int).SetBytes(messageBytes)
+
 	// TODO (joe): figure out what to set for content param
-	tx, err := e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[0], optimisticSeconds[0], encodedTips, messageBytes, []byte{})
+	tx, err := e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[0], optimisticSeconds[0], paddedTips, paddedRequest, []byte{})
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -255,10 +258,13 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	encodedTips, err = types.EncodeTips(tips[1])
 	e.Nil(err)
 
+	paddedTips = new(big.Int).SetBytes(encodedTips)
+	paddedRequest = new(big.Int).SetBytes(messageBytes)
+
 	transactOpts.Value = types.TotalTips(tips[1])
 
 	// TODO (joe): figure out what to set for content param
-	tx, err = e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[1], optimisticSeconds[1], encodedTips, messageBytes, []byte{})
+	tx, err = e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[1], optimisticSeconds[1], paddedTips, paddedRequest, []byte{})
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
@@ -599,8 +605,11 @@ func (e *ExecutorSuite) TestExecutor() {
 	txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
 	txContextOrigin.Value = types.TotalTips(tips)
 
+	paddedTips := new(big.Int).SetBytes(encodedTips)
+	paddedRequest := new(big.Int).SetBytes(body)
+
 	// TODO (joe): figure out what to set for content param
-	tx, err := e.OriginContract.SendBaseMessage(txContextOrigin.TransactOpts, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds, encodedTips, body, []byte{})
+	tx, err := e.OriginContract.SendBaseMessage(txContextOrigin.TransactOpts, uint32(e.TestBackendDestination.GetChainID()), recipient, optimisticSeconds, paddedTips, paddedRequest, []byte{})
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 

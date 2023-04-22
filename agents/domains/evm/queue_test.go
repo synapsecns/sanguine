@@ -39,8 +39,11 @@ func (t *TxQueueSuite) TestGetTransactor() {
 
 	auth := t.TestBackendOrigin.GetTxContext(t.GetTestContext(), nil)
 
+	paddedTips := new(big.Int).SetBytes(encodedTips)
+	paddedRequest := new(big.Int).SetBytes([]byte("hello world"))
+
 	// TODO (joe): Figure out what to set for content
-	tx, err := t.OriginContract.SendBaseMessage(auth.TransactOpts, destinationDomain, [32]byte{}, 1, encodedTips, []byte("hello world"), []byte{})
+	tx, err := t.OriginContract.SendBaseMessage(auth.TransactOpts, destinationDomain, [32]byte{}, 1, paddedTips, paddedRequest, []byte{})
 	Nil(t.T(), err)
 
 	t.TestBackendOrigin.WaitForConfirmation(t.GetTestContext(), tx)

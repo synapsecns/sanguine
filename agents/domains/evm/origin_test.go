@@ -40,8 +40,11 @@ func (d TestDispatch) Call(i ContractSuite) (blockNumber uint32) {
 	encodedTips, err := types.EncodeTips(types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0)))
 	Nil(i.T(), err)
 
+	paddedTips := new(big.Int).SetBytes(encodedTips)
+	paddedRequest := new(big.Int).SetBytes(d.message)
+
 	// TODO (joe): Figure out what to set for content
-	tx, err := i.OriginContract.SendBaseMessage(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, encodedTips, d.message, []byte{})
+	tx, err := i.OriginContract.SendBaseMessage(auth.TransactOpts, d.domain, d.recipientAddress, d.optimisticSeconds, paddedTips, paddedRequest, []byte{})
 	Nil(i.T(), err)
 	i.TestBackendOrigin.WaitForConfirmation(i.GetTestContext(), tx)
 
