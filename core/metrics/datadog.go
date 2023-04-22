@@ -7,12 +7,10 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
 	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
-	ddhttp "gopkg.in/DataDog/dd-trace-go.v1/contrib/net/http"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/opentelemetry"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"gopkg.in/DataDog/dd-trace-go.v1/profiler"
-	"gorm.io/gorm"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"net/http"
 	"strings"
 )
 
@@ -28,7 +26,7 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 		buildInfo: buildInfo,
 	}
 
-	// TODO: these need to be bridged
+	// This is a no-op handler to prevent panics. it gets set in start!
 	handler.baseHandler = newBaseHandler(buildInfo)
 	logger.Warn("datadog metrics handler is not fully implemented, please see: https://docs.datadoghq.com/tracing/trace_collection/open_standards/go/")
 
@@ -46,8 +44,8 @@ func NewDatadogMetricsHandler(buildInfo config.BuildInfo) Handler {
 	return &handler
 }
 
-func (d *datadogHandler) AddGormCallbacks(db *gorm.DB) {
-	// TODO: implement, see:  https://github.com/DataDog/dd-trace-go/blob/main/contrib/jinzhu/gorm/example_test.go
+func (d *datadogHandler) Type() HandlerType {
+	return DataDog
 }
 
 // Gin gets a gin middleware for datadog tracing.
@@ -62,7 +60,8 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 		return fmt.Errorf("could not start profiler: %w", err)
 	}
 
-	tracer.Start(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true))
+	tracerProvider := opentelemetry.NewTracerProvider(tracer.WithRuntimeMetrics(), tracer.WithProfilerEndpoints(true), tracer.WithAnalytics(true))
+	d.baseHandler = newBaseHandlerWithTracerProvider(d.buildInfo, tracerProvider)
 
 	// stop on context cancellation
 	go func() {
@@ -71,12 +70,6 @@ func (d *datadogHandler) Start(ctx context.Context) error {
 		tracer.Stop()
 	}()
 	return nil
-}
-
-// ConfigureHTTPClient wraps the Transport of an http.Client with a datadog tracer.
-func (d *datadogHandler) ConfigureHTTPClient(client *http.Client) {
-	wrappedTransport := ddhttp.WrapClient(client).Transport
-	client.Transport = wrappedTransport
 }
 
 // DDProfileEnv is the data daog profile neviornment variable.

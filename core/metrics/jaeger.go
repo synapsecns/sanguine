@@ -51,3 +51,7 @@ func (j *jaegerHandler) Start(ctx context.Context) (err error) {
 
 	return nil
 }
+
+func (j *jaegerHandler) Type() HandlerType {
+	return Jaeger
+}

@@ -16,6 +16,10 @@ type nullHandler struct {
 	propagator nullPropogator
 }
 
+func (n nullHandler) Type() HandlerType {
+	return Null
+}
+
 func (n nullHandler) Propagator() propagation.TextMapPropagator {
 	return n.propagator
 }

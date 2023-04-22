@@ -28,6 +28,8 @@ type Handler interface {
 	Tracer() trace.Tracer
 	// Propagator returns the propagator.
 	Propagator() propagation.TextMapPropagator
+	// Type returns the handler type.
+	Type() HandlerType
 }
 
 // HandlerType is the handler type to use
