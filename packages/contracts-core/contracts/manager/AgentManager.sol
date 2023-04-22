@@ -62,7 +62,7 @@ abstract contract AgentManager is SystemContract, VerificationManager, AgentMana
 
     /// @inheritdoc IAgentManager
     function agentStatus(address agent) public view returns (AgentStatus memory status) {
-        status = _agentStatus(agent);
+        status = _storedAgentStatus(agent);
         // If agent was proven to commit fraud, but their slashing wasn't completed,
         // return the Fraudulent flag instead
         if (slashStatus[agent].isSlashed && status.flag != AgentFlag.Slashed) {
@@ -80,10 +80,9 @@ abstract contract AgentManager is SystemContract, VerificationManager, AgentMana
     /// @dev Checks and initiates the slashing of an agent.
     /// Should be called, after one of registries confirmed fraud committed by the agent.
     function _initiateSlashing(uint32 domain, address agent, address prover) internal {
-        // Check that Agent hasn't been already slashed
-        require(!slashStatus[agent].isSlashed, "Already slashed");
         // Check that agent is Active/Unstaking and that the domains match
-        AgentStatus memory status = _agentStatus(agent);
+        AgentStatus memory status = agentStatus(agent);
+        // Note: status would be Fraudulent/Slashed if slashing has been initiated before
         require(
             (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
             "Slashing could not be initiated"
@@ -109,7 +108,8 @@ abstract contract AgentManager is SystemContract, VerificationManager, AgentMana
     }
 
     /// @dev Returns the last known status for the agent from the Agent Merkle Tree.
-    function _agentStatus(address agent) internal view virtual returns (AgentStatus memory);
+    /// Note: the actual agent status (returned by `agentStatus()`) may differ, if agent fraud was proven.
+    function _storedAgentStatus(address agent) internal view virtual returns (AgentStatus memory);
 
     /// @dev Returns agent address for the given index. Returns zero for non existing indexes.
     function _getAgent(uint256 index) internal view virtual returns (address);

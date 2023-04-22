@@ -106,9 +106,9 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
-    /// @dev Returns the status for the agent: whether or not they have been added
+    /// @dev Returns the stored status for the agent: whether or not they have been added
     /// using latest Agent merkle Root.
-    function _agentStatus(address agent) internal view override returns (AgentStatus memory) {
+    function _storedAgentStatus(address agent) internal view override returns (AgentStatus memory) {
         return _agentMap[agentRoot][agent];
     }
 

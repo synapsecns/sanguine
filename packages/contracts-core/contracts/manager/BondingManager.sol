@@ -52,8 +52,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
 
     /// @inheritdoc InterfaceBondingManager
     function addAgent(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
-        // Check current status of the added agent
-        AgentStatus memory status = _agentStatus(agent);
+        // Check the STORED status of the added agent in the merkle tree
+        AgentStatus memory status = _storedAgentStatus(agent);
         // Agent index in `_agents`
         uint32 index;
         // Leaf representing currently saved agent information in the tree
@@ -85,8 +85,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
 
     /// @inheritdoc InterfaceBondingManager
     function initiateUnstaking(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
-        // Check current status of the unstaking agent
-        AgentStatus memory status = _agentStatus(agent);
+        // Check the CURRENT status of the unstaking agent
+        AgentStatus memory status = agentStatus(agent);
         // Could only initiate the unstaking for the active agent for the domain
         require(status.flag == AgentFlag.Active && status.domain == domain, "Unstaking could not be initiated");
         // Leaf representing currently saved agent information in the tree.
@@ -100,8 +100,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
 
     /// @inheritdoc InterfaceBondingManager
     function completeUnstaking(uint32 domain, address agent, bytes32[] memory proof) external onlyOwner {
-        // Check current status of the unstaking agent
-        AgentStatus memory status = _agentStatus(agent);
+        // Check the CURRENT status of the unstaking agent
+        AgentStatus memory status = agentStatus(agent);
         // Could only complete the unstaking, if it was previously initiated
         // TODO: add more checks (time-based, possibly collecting info from other chains)
         require(status.flag == AgentFlag.Unstaking && status.domain == domain, "Unstaking could not be completed");
@@ -120,8 +120,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     function completeSlashing(uint32 domain, address agent, bytes32[] memory proof) external {
         // Check that slashing was initiated by one of the System Registries
         require(slashStatus[agent].isSlashed, "Slashing not initiated");
-        // Check that agent is Active/Unstaking and that the domains match
-        AgentStatus memory status = _agentStatus(agent);
+        // Check that the STORED status is Active/Unstaking in the merkle tree and that the domains match
+        AgentStatus memory status = _storedAgentStatus(agent);
         require(
             (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
             "Slashing could not be completed"
@@ -213,7 +213,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     /// @inheritdoc InterfaceBondingManager
     function getProof(address agent) external view returns (bytes32[] memory proof) {
         bytes32[] memory leafs = allLeafs();
-        AgentStatus memory status = _agentStatus(agent);
+        // Use the STORED agent status from the merkle tree
+        AgentStatus memory status = _storedAgentStatus(agent);
         // Use next available index for unknown agents
         uint256 index = status.flag == AgentFlag.Unknown ? _agents.length : status.index;
         return MerkleMath.calculateProof(leafs, index);
@@ -256,7 +257,7 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Returns the status of the agent.
-    function _agentStatus(address agent) internal view override returns (AgentStatus memory) {
+    function _storedAgentStatus(address agent) internal view override returns (AgentStatus memory) {
         return _agentMap[agent];
     }
 
@@ -269,7 +270,8 @@ contract BondingManager is Versioned, AgentManager, InterfaceBondingManager {
 
     /// @dev Returns the current leaf representing agent in the Agent Merkle Tree.
     function _getLeaf(address agent) internal view returns (bytes32 leaf) {
-        AgentStatus memory status = _agentStatus(agent);
+        // Get the agent status STORED in the merkle tree
+        AgentStatus memory status = _storedAgentStatus(agent);
         if (status.flag != AgentFlag.Unknown) {
             return _agentLeaf(status.flag, status.domain, agent);
         }
