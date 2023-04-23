@@ -16,11 +16,10 @@ import {OriginEvents} from "./events/OriginEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceOrigin} from "./interfaces/InterfaceOrigin.sol";
 import {StateHub} from "./hubs/StateHub.sol";
-import {AgentStatus, Attestation, Snapshot, StatementHub} from "./hubs/StatementHub.sol";
 import {DomainContext, Versioned} from "./system/SystemContract.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 
-contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
+contract Origin is SystemRegistry, StateHub, OriginEvents, InterfaceOrigin {
     using MemViewLib for bytes;
     using TipsLib for bytes;
     using TypeCasts for address;

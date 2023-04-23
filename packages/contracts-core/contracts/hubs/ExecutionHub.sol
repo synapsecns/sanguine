@@ -9,11 +9,11 @@ import {ORIGIN_TREE_HEIGHT, SNAPSHOT_TREE_HEIGHT} from "../libs/Constants.sol";
 import {MerkleMath} from "../libs/MerkleMath.sol";
 import {Header, Message, MessageFlag, MessageLib} from "../libs/Message.sol";
 import {Receipt, ReceiptBody, ReceiptLib} from "../libs/Receipt.sol";
-import {MessageStatus} from "../libs/Structures.sol";
+import {AgentFlag, AgentStatus, MessageStatus} from "../libs/Structures.sol";
 import {Tips} from "../libs/Tips.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {AgentStatus, DisputeHub} from "./DisputeHub.sol";
+import {DisputeHub} from "./DisputeHub.sol";
 import {ExecutionHubEvents} from "../events/ExecutionHubEvents.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IMessageRecipient} from "../interfaces/IMessageRecipient.sol";
@@ -32,6 +32,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     using BaseMessageLib for MemView;
     using ByteString for MemView;
     using MessageLib for bytes;
+    using ReceiptLib for bytes;
     using TypeCasts for bytes32;
 
     /// @notice Struct representing stored data for the snapshot root
@@ -151,7 +152,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
     /// @inheritdoc IExecutionHub
     function isValidReceipt(bytes memory rcptPayload) external view returns (bool isValid) {
         // This will revert if payload is not an receipt
-        Receipt rcpt = _wrapReceipt(rcptPayload);
+        Receipt rcpt = rcptPayload.castToReceipt();
         // This will revert if receipt refers to another domain
         // Note: this doesn't check the validity of tips, this is done in Summit contract
         return _isValidReceipt(rcpt.body());
@@ -316,9 +317,13 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         rootData = _rootData[snapshotRoot];
         // Check if snapshot root has been submitted
         require(rootData.submittedAt != 0, "Invalid snapshot root");
+        // TODO: remove this check, the in Dispute in enough
         // Check if Notary who submitted the attestation is still active
         (address attNotary, AgentStatus memory attNotaryStatus) = _getAgent(rootData.notaryIndex);
-        _verifyActive(attNotaryStatus);
+        require(
+            attNotaryStatus.flag == AgentFlag.Active,
+            attNotaryStatus.domain == 0 ? "Not an active guard" : "Not an active notary"
+        );
         // Check that Notary who submitted the attestation is not in dispute
         require(!_inDispute(attNotary), "Notary is in dispute");
     }
