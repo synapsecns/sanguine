@@ -248,7 +248,7 @@ contract SummitTipsTest is DisputeHubTest {
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Set attNotary status to Fraudulent
         vm.prank(originSynapse);
-        bondingManager.registrySlash(DOMAIN_REMOTE, attNotary, address(0));
+        bondingManager.slashAgentExposed(DOMAIN_REMOTE, attNotary, address(0));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 
@@ -258,7 +258,7 @@ contract SummitTipsTest is DisputeHubTest {
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Set attNotary status to Slashed
         vm.prank(originSynapse);
-        bondingManager.registrySlash(DOMAIN_REMOTE, attNotary, address(0));
+        bondingManager.slashAgentExposed(DOMAIN_REMOTE, attNotary, address(0));
         bondingManager.completeSlashing(DOMAIN_REMOTE, attNotary, bondingManager.getProof(attNotary));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
@@ -278,7 +278,7 @@ contract SummitTipsTest is DisputeHubTest {
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Set rcptNotary status to Fraudulent
         vm.prank(originSynapse);
-        bondingManager.registrySlash(DOMAIN_REMOTE, rcptNotary, address(0));
+        bondingManager.slashAgentExposed(DOMAIN_REMOTE, rcptNotary, address(0));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 
@@ -288,7 +288,7 @@ contract SummitTipsTest is DisputeHubTest {
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Set rcptNotary status to Slashed
         vm.prank(originSynapse);
-        bondingManager.registrySlash(DOMAIN_REMOTE, rcptNotary, address(0));
+        bondingManager.slashAgentExposed(DOMAIN_REMOTE, rcptNotary, address(0));
         bondingManager.completeSlashing(DOMAIN_REMOTE, rcptNotary, bondingManager.getProof(rcptNotary));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }

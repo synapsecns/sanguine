@@ -188,6 +188,8 @@ contract BondingManagerTest is AgentManagerTest {
 
     // ═══════════════════════════════════════════ TEST: SLASHING AGENTS ═══════════════════════════════════════════════
 
+    // TODO: test_initiateSlashing
+
     function test_remoteRegistrySlash(uint32 msgOrigin, uint256 domainId, uint256 agentId, address prover) public {
         // Needs to be a REMOTE call
         vm.assume(msgOrigin != DOMAIN_SYNAPSE);
@@ -206,23 +208,19 @@ contract BondingManagerTest is AgentManagerTest {
         assertEq(prover_, prover);
     }
 
-    function test_completeSlashing_active(uint256 domainId, uint256 agentId, address slasher, bool initiatedByOrigin)
-        public
-    {
+    function test_completeSlashing_active(uint256 domainId, uint256 agentId, address slasher) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
-        // Initiate slashing by one of the Registries
-        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_destination)(domainId, agentId, address(1));
+        // Initiate slashing
+        test_remoteRegistrySlash(DOMAIN_REMOTE, domainId, agentId, address(1));
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
     }
 
-    function test_completeSlashing_unstaking(uint256 domainId, uint256 agentId, address slasher, bool initiatedByOrigin)
-        public
-    {
+    function test_completeSlashing_unstaking(uint256 domainId, uint256 agentId, address slasher) public {
         (uint32 domain, address agent) = getAgent(domainId, agentId);
         updateStatus(AgentFlag.Unstaking, domain, agent);
-        // Initiate slashing by one of the Registries
-        (initiatedByOrigin ? test_registrySlash_origin : test_registrySlash_destination)(domainId, agentId, address(1));
+        // Initiate slashing
+        test_remoteRegistrySlash(DOMAIN_REMOTE, domainId, agentId, address(1));
         updateStatus(slasher, AgentFlag.Slashed, domain, agent);
         checkAgentStatus(agent, bondingManager.agentStatus(agent), AgentFlag.Slashed);
     }
@@ -284,8 +282,8 @@ contract BondingManagerTest is AgentManagerTest {
         // Change status of four agents into Unstaking, Resting, Fraudulent and Slashed - one for each domain
         test_initiateUnstaking(0, 0);
         test_completeUnstaking(1, 1);
-        test_registrySlash_origin(2, 2, address(1));
-        test_completeSlashing_active(3, 3, address(1), false);
+        test_remoteRegistrySlash(DOMAIN_REMOTE, 2, 2, address(1));
+        test_completeSlashing_active(3, 3, address(1));
         for (uint256 d = 0; d < allDomains.length; ++d) {
             uint32 domain = allDomains[d];
             address[] memory agents = bondingManager.getActiveAgents(domain);
