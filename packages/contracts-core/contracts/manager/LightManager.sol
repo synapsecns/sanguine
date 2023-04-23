@@ -9,12 +9,12 @@ import {MerkleMath} from "../libs/MerkleMath.sol";
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager} from "./AgentManager.sol";
-import {DomainContext} from "../context/DomainContext.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
 import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
+import {SystemBase} from "../system/SystemBase.sol";
 import {Versioned} from "../Version.sol";
 
 /// @notice LightManager keeps track of all agents, staying in sync with the BondingManager.
@@ -35,8 +35,8 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain) DomainContext(domain) Versioned("0.0.3") {
-        require(!_onSynapseChain(), "Can't be deployed on SynChain");
+    constructor(uint32 domain) SystemBase(domain) Versioned("0.0.3") {
+        require(domain != SYNAPSE_DOMAIN, "Can't be deployed on SynChain");
     }
 
     function initialize(address origin_, address destination_) external initializer {

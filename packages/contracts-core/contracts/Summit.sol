@@ -9,14 +9,13 @@ import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
 import {AgentFlag, AgentStatus} from "./libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager} from "./manager/AgentManager.sol";
-import {DomainContext} from "./context/DomainContext.sol";
 import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "./interfaces/InterfaceBondingManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
 import {DisputeHub, ExecutionHub, MessageStatus, ReceiptBody, Tips} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub} from "./hubs/SnapshotHub.sol";
-import {DomainContext, Versioned} from "./system/SystemContract.sol";
+import {SystemBase, Versioned} from "./system/SystemBase.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
@@ -87,11 +86,11 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, IAgentManager agentManager_)
-        DomainContext(domain)
+        SystemBase(domain)
         SystemRegistry(agentManager_)
         Versioned("0.0.3")
     {
-        require(_onSynapseChain(), "Only deployed on SynChain");
+        require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
     }
 
     function initialize() external initializer {

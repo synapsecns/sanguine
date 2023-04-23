@@ -16,7 +16,7 @@ import {OriginEvents} from "./events/OriginEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceOrigin} from "./interfaces/InterfaceOrigin.sol";
 import {StateHub} from "./hubs/StateHub.sol";
-import {DomainContext, Versioned} from "./system/SystemContract.sol";
+import {SystemBase, Versioned} from "./system/SystemBase.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Origin is SystemRegistry, StateHub, OriginEvents, InterfaceOrigin {
@@ -27,7 +27,7 @@ contract Origin is SystemRegistry, StateHub, OriginEvents, InterfaceOrigin {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, IAgentManager agentManager_)
-        DomainContext(domain)
+        SystemBase(domain)
         SystemRegistry(agentManager_)
         Versioned("0.0.3")
     {} // solhint-disable-line no-empty-blocks

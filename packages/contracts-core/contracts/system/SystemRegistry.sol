@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
-import {SystemContract} from "./SystemContract.sol";
+import {SystemBase} from "./SystemBase.sol";
 import {SystemRegistryEvents} from "../events/SystemRegistryEvents.sol";
 import {AgentStatus, IAgentManager} from "../interfaces/IAgentManager.sol";
 import {ISystemRegistry} from "../interfaces/ISystemRegistry.sol";
@@ -10,7 +10,7 @@ import {ISystemRegistry} from "../interfaces/ISystemRegistry.sol";
 /// @notice Shared utilities for Origin, Destination/Summit contracts.
 /// This abstract contract is responsible for all interactions with the local AgentManager,
 /// where all agent are being tracked.
-abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISystemRegistry {
+abstract contract SystemRegistry is SystemBase, SystemRegistryEvents, ISystemRegistry {
     // ════════════════════════════════════════════════ IMMUTABLES ═════════════════════════════════════════════════════
 
     IAgentManager public immutable agentManager;

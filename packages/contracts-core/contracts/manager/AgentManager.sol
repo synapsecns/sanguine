@@ -15,12 +15,12 @@ import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
 import {IExecutionHub} from "../interfaces/IExecutionHub.sol";
 import {IStateHub} from "../interfaces/IStateHub.sol";
 import {ISystemRegistry} from "../interfaces/ISystemRegistry.sol";
-import {SystemContract} from "../system/SystemContract.sol";
+import {SystemBase} from "../system/SystemBase.sol";
 import {VerificationManager} from "./VerificationManager.sol";
 // ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-abstract contract AgentManager is SystemContract, VerificationManager, AgentManagerEvents, IAgentManager {
+abstract contract AgentManager is SystemBase, VerificationManager, AgentManagerEvents, IAgentManager {
     using AttestationLib for bytes;
     using ReceiptLib for bytes;
     using StateLib for bytes;

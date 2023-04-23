@@ -13,7 +13,7 @@ import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceDestination} from "./interfaces/InterfaceDestination.sol";
 import {InterfaceLightManager} from "./interfaces/InterfaceLightManager.sol";
 import {DisputeHub, ExecutionHub} from "./hubs/ExecutionHub.sol";
-import {DomainContext, Versioned} from "./system/SystemContract.sol";
+import {SystemBase, Versioned} from "./system/SystemBase.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
@@ -43,7 +43,7 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
     constructor(uint32 domain, IAgentManager agentManager_)
-        DomainContext(domain)
+        SystemBase(domain)
         SystemRegistry(agentManager_)
         Versioned("0.0.3")
     {} // solhint-disable-line no-empty-blocks

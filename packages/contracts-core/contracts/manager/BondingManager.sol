@@ -10,13 +10,13 @@ import {Snapshot, SnapshotLib} from "../libs/Snapshot.sol";
 import {AgentFlag, AgentStatus, SlashStatus} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager, IAgentManager} from "./AgentManager.sol";
-import {DomainContext} from "../context/DomainContext.sol";
 import {BondingManagerEvents} from "../events/BondingManagerEvents.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 import {ISnapshotHub} from "../interfaces/ISnapshotHub.sol";
 import {InterfaceSummit} from "../interfaces/InterfaceSummit.sol";
+import {SystemBase} from "../system/SystemBase.sol";
 import {Versioned} from "../Version.sol";
 
 /// @notice BondingManager keeps track of all existing _agents.
@@ -45,8 +45,8 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain) DomainContext(domain) Versioned("0.0.3") {
-        require(_onSynapseChain(), "Only deployed on SynChain");
+    constructor(uint32 domain) SystemBase(domain) Versioned("0.0.3") {
+        require(domain == SYNAPSE_DOMAIN, "Only deployed on SynChain");
     }
 
     function initialize(address origin_, address destination_) external initializer {
