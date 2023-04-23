@@ -154,7 +154,7 @@ contract SummitTipsTest is DisputeHubTest {
         RawExecReceipt memory re = mockReceipt("First");
         prepareReceipt(re, false, 0, false);
         // Put DOMAIN_REMOTE notary in Dispute
-        check_submitStateReport(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
         address notary = domains[DOMAIN_REMOTE].agent;
         (bytes memory rcptPayload, bytes memory rcptSignature) = signReceipt(notary, re);
         vm.expectRevert("Notary is in dispute");
@@ -238,7 +238,7 @@ contract SummitTipsTest is DisputeHubTest {
         prepareTwoReceiptTest(1, 0);
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Put DOMAIN_REMOTE agents[0] in Dispute
-        check_submitStateReport(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 
@@ -268,7 +268,7 @@ contract SummitTipsTest is DisputeHubTest {
         prepareTwoReceiptTest(0, 1);
         skip(BONDING_OPTIMISTIC_PERIOD);
         // Put DOMAIN_REMOTE agents[0] in Dispute
-        check_submitStateReport(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
+        check_submitStateReportWithSnapshot(summit, DOMAIN_REMOTE, state0, RawStateIndex(0, 1));
         assertTrue(InterfaceSummit(summit).distributeTips());
     }
 

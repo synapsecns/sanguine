@@ -11,7 +11,7 @@ import {Versioned} from "../../contracts/Version.sol";
 
 import {Random} from "../utils/libs/Random.t.sol";
 import {RawAttestation, RawState, RawStateIndex} from "../utils/libs/SynapseStructs.t.sol";
-import {AgentFlag, SynapseTest} from "../utils/SynapseTest.t.sol";
+import {AgentFlag, AgentStatus, SynapseTest} from "../utils/SynapseTest.t.sol";
 import {ExecutionHubTest} from "./hubs/ExecutionHub.t.sol";
 
 // solhint-disable func-name-mixedcase
@@ -108,7 +108,7 @@ contract DestinationTest is ExecutionHubTest {
         assertEq(notary, notaryF);
     }
 
-    function test_submitAttestation_notAccepted_agentRootUpdated(
+    function test_acceptAttestation_notAccepted_agentRootUpdated(
         RawAttestation memory firstRA,
         uint32 firstRootSubmittedAt
     ) public {
@@ -116,47 +116,10 @@ contract DestinationTest is ExecutionHubTest {
         vm.assume(firstRA.agentRoot != agentRootLM);
         test_submitAttestation(firstRA, firstRootSubmittedAt);
         skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        // Should not accept the attestation before doing any checks, so we could reuse the previous attestation
-        (bytes memory attPayload, bytes memory attSig) = signAttestation(domains[DOMAIN_LOCAL].agent, firstRA);
-        assertFalse(lightManager.submitAttestation(attPayload, attSig));
-        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(destination).destStatus();
-        assertEq(snapRootTime, firstRootSubmittedAt);
-        assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(notary, domains[DOMAIN_LOCAL].agent);
-        // Should update the Agent Merkle Root
-        assertEq(lightManager.agentRoot(), firstRA.agentRoot);
-    }
-
-    function test_submitStateReport_notAccepted_agentRootUpdated(
-        RawAttestation memory firstRA,
-        uint32 firstRootSubmittedAt
-    ) public {
-        bytes32 agentRootLM = lightManager.agentRoot();
-        vm.assume(firstRA.agentRoot != agentRootLM);
-        test_submitAttestation(firstRA, firstRootSubmittedAt);
-        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        // Should not accept the attestation before doing any checks,
-        // so we could pass empty values here
-        assertFalse(IDisputeHub(destination).submitStateReport(0, "", "", "", ""));
-        (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(destination).destStatus();
-        assertEq(snapRootTime, firstRootSubmittedAt);
-        assertEq(agentRootTime, firstRootSubmittedAt);
-        assertEq(notary, domains[DOMAIN_LOCAL].agent);
-        // Should update the Agent Merkle Root
-        assertEq(lightManager.agentRoot(), firstRA.agentRoot);
-    }
-
-    function test_submitStateReportWithProof_notAccepted_agentRootUpdated(
-        RawAttestation memory firstRA,
-        uint32 firstRootSubmittedAt
-    ) public {
-        bytes32 agentRootLM = lightManager.agentRoot();
-        vm.assume(firstRA.agentRoot != agentRootLM);
-        test_submitAttestation(firstRA, firstRootSubmittedAt);
-        skip(AGENT_ROOT_OPTIMISTIC_PERIOD);
-        // Should not accept the attestation before doing any checks,
-        // so we could pass empty values here
-        assertFalse(IDisputeHub(destination).submitStateReportWithProof(0, "", "", new bytes32[](0), "", ""));
+        // Mock a call from lightManager, could as well use the empty values as they won't be checked for validity
+        vm.prank(address(lightManager));
+        AgentStatus memory status;
+        assertFalse(InterfaceDestination(destination).acceptAttestation(address(0), status, "", ""));
         (uint48 snapRootTime, uint48 agentRootTime, address notary) = InterfaceDestination(destination).destStatus();
         assertEq(snapRootTime, firstRootSubmittedAt);
         assertEq(agentRootTime, firstRootSubmittedAt);
@@ -208,14 +171,14 @@ contract DestinationTest is ExecutionHubTest {
     }
 
     function test_submitStateReport(RawState memory rs, RawStateIndex memory rsi) public boundIndex(rsi) {
-        check_submitStateReport(destination, DOMAIN_LOCAL, rs, rsi);
+        check_submitStateReportWithSnapshot(destination, DOMAIN_LOCAL, rs, rsi);
     }
 
     function test_submitStateReportWithProof(RawState memory rs, RawAttestation memory ra, RawStateIndex memory rsi)
         public
         boundIndex(rsi)
     {
-        check_submitStateReportWithProof(destination, DOMAIN_LOCAL, rs, ra, rsi);
+        check_submitStateReportWithSnapshotProof(destination, DOMAIN_LOCAL, rs, ra, rsi);
     }
 
     // ════════════════════════════════════════════ DISPUTE RESOLUTION ═════════════════════════════════════════════════

@@ -272,7 +272,7 @@ contract SummitTest is DisputeHubTest {
     {
         // Restrict to non-zero existing domains
         domainId = bound(domainId, 1, allDomains.length - 1);
-        check_submitStateReport(summit, allDomains[domainId], rs, rsi);
+        check_submitStateReportWithSnapshot(summit, allDomains[domainId], rs, rsi);
     }
 
     function test_submitStateReportWithProof(
@@ -283,7 +283,7 @@ contract SummitTest is DisputeHubTest {
     ) public boundIndex(rsi) {
         // Restrict to non-zero existing domains
         domainId = bound(domainId, 1, allDomains.length - 1);
-        check_submitStateReportWithProof(summit, allDomains[domainId], rs, ra, rsi);
+        check_submitStateReportWithSnapshotProof(summit, allDomains[domainId], rs, ra, rsi);
     }
 
     // ════════════════════════════════════════════ DISPUTE RESOLUTION ═════════════════════════════════════════════════
@@ -339,7 +339,7 @@ contract SummitTest is DisputeHubTest {
         // Create report by Guard 1
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
         vm.expectRevert("Notary already in dispute");
-        IDisputeHub(summit).submitStateReport(0, srPayload, srSig, snapPayload, snapSig);
+        bondingManager.submitStateReportWithSnapshot(0, srPayload, srSig, snapPayload, snapSig);
     }
 
     function test_submitStateReport_revert_guardInDispute(RawState memory firstRS, RawState memory secondRS) public {
@@ -353,7 +353,7 @@ contract SummitTest is DisputeHubTest {
         // Create report by Guard 0
         (bytes memory srPayload, bytes memory srSig) = createSignedStateReport(guard, secondRS);
         vm.expectRevert("Guard already in dispute");
-        IDisputeHub(summit).submitStateReport(0, srPayload, srSig, snapPayload, snapSig);
+        bondingManager.submitStateReportWithSnapshot(0, srPayload, srSig, snapPayload, snapSig);
     }
 
     function test_submitStateReportWithProof_revert_notaryInDispute(
@@ -374,7 +374,9 @@ contract SummitTest is DisputeHubTest {
         // Generate Snapshot Proof
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         vm.expectRevert("Notary already in dispute");
-        IDisputeHub(summit).submitStateReportWithProof(rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig);
+        bondingManager.submitStateReportWithSnapshotProof(
+            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+        );
     }
 
     function test_submitStateReportWithProof_revert_guardInDispute(
@@ -395,7 +397,9 @@ contract SummitTest is DisputeHubTest {
         // Generate Snapshot Proof
         bytes32[] memory snapProof = genSnapshotProof(rsi.stateIndex);
         vm.expectRevert("Guard already in dispute");
-        IDisputeHub(summit).submitStateReportWithProof(rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig);
+        bondingManager.submitStateReportWithSnapshotProof(
+            rsi.stateIndex, srPayload, srSig, snapProof, attPayload, attSig
+        );
     }
 
     function test_submitSnapshot_revert_notaryInDispute(RawState memory firstRS, RawState memory secondRS) public {

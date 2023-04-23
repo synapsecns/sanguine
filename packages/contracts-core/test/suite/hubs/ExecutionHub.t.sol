@@ -150,7 +150,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         adjustSnapshot(sm);
         (, bytes32[] memory snapProof) = prepareExecution(sm);
         // initiate dispute
-        check_submitStateReport(systemContract(), localDomain(), sm.rs, sm.rsi);
+        check_submitStateReportWithSnapshot(systemContract(), localDomain(), sm.rs, sm.rsi);
         // Make sure that optimistic period is over
         uint32 timePassed = random.nextUint32();
         timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
