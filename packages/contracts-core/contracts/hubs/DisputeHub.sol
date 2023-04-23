@@ -9,6 +9,8 @@ import {IDisputeHub} from "../interfaces/IDisputeHub.sol";
 import {SystemRegistry} from "../system/SystemRegistry.sol";
 
 abstract contract DisputeHub is SystemRegistry, DisputeHubEvents, IDisputeHub {
+    // TODO: Merge with ExecutionHub
+
     // ══════════════════════════════════════════════════ STORAGE ══════════════════════════════════════════════════════
 
     // (agent => their dispute status)
@@ -32,10 +34,6 @@ abstract contract DisputeHub is SystemRegistry, DisputeHubEvents, IDisputeHub {
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
-
-    /// @dev Hook that is called before every statement is handled.
-    /// @return acceptNext  Whether to accept the next statement
-    function _beforeStatement() internal virtual returns (bool acceptNext);
 
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This should be called, when the Guard submits a Report on a statement signed by the Notary.

@@ -391,12 +391,6 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
-    /// @inheritdoc DisputeHub
-    function _beforeStatement() internal pure override returns (bool acceptNext) {
-        // Summit is always open for new Guard/Notary statements
-        return true;
-    }
-
     /// @dev Returns "snapshot part" of the summit tip.
     function _snapshotTip(uint64 summitTip) internal pure returns (uint64) {
         return summitTip / 3;

@@ -145,14 +145,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
-    /// @inheritdoc DisputeHub
-    function _beforeStatement() internal override returns (bool acceptNext) {
-        (bool rootPassed,) = passAgentRoot();
-        // We don't accept statements if the root was updated just now,
-        // as all the agent checks will fail otherwise.
-        return !rootPassed;
-    }
-
     /// @dev Opens a Dispute between a Guard and a Notary.
     /// This is overridden to allow disputes only between a Guard and a LOCAL Notary.
     function _openDispute(address guard, uint32 domain, address notary) internal override {
