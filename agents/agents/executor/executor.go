@@ -755,30 +755,35 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 			e.chainExecutors[chainID].executed[*messageLeaf] = true
 
 			span.AddEvent("executed event parsed")
-		case otherEvent:
-			logger.Warnf("the log's event type is not supported")
-		default:
-			return fmt.Errorf("log type not supported")
 		}
 	case summitContract:
 		//nolint:gocritic,exhaustive
 		switch contractEvent.eventType {
 		case snapshotAcceptedEvent:
+			span.AddEvent("snapshot accepted event")
 			snapshot, err := e.logToSnapshot(log, chainID)
 			if err != nil {
 				return fmt.Errorf("could not convert log to snapshot: %w", err)
 			}
 
+			span.AddEvent("snapshot converted")
+
 			if snapshot == nil {
 				return nil
 			}
+
+			span.AddEvent("snapshot not nil")
 
 			snapshotRoot, proofs, err := (*snapshot).SnapshotRootAndProofs()
 			if err != nil {
 				return fmt.Errorf("could not get snapshot root and proofs: %w", err)
 			}
 
+			span.AddEvent("snapshot root and proofs retrieved")
+
 			treeHeight := (*snapshot).TreeHeight()
+
+			span.AddEvent("snapshot tree height retrieved")
 
 			err = e.executorDB.StoreStates(ctx, (*snapshot).States(), snapshotRoot, proofs, treeHeight)
 			if err != nil {
