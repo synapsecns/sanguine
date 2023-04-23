@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AgentFlag, AgentStatus} from "./libs/Structures.sol";
 import {ByteString} from "./libs/ByteString.sol";
+import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager} from "./manager/AgentManager.sol";
 import {DomainContext} from "./context/DomainContext.sol";
@@ -23,6 +24,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
     using ByteString for bytes;
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
+    using SnapshotLib for bytes;
 
     struct StoredSnapData {
         bytes32 r;
@@ -116,6 +118,40 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         if (wasAccepted) {
             emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
         }
+    }
+
+    /// @inheritdoc InterfaceSummit
+    function acceptSnapshot(
+        address agent,
+        AgentStatus memory status,
+        bytes memory snapPayload,
+        bytes memory snapSignature
+    ) external returns (bytes memory attPayload) {
+        // This will revert if payload is not a snapshot
+        Snapshot snapshot = snapPayload.castToSnapshot();
+        if (status.domain == 0) {
+            /// @dev We don't check if Guard is in dispute for accepting the snapshots.
+            /// Guard could only be in Dispute, if they submitted a Report on a Notary.
+            /// This should not strip away their ability to post snapshots, as they require
+            /// a Notary signature in order to be used / gain tips anyway.
+
+            // This will revert if Guard has previously submitted
+            // a fresher state than one in the snapshot.
+            _acceptGuardSnapshot(snapshot, agent, status.index);
+        } else {
+            // Check that Notary who submitted the snapshot is not in dispute
+            require(!_inDispute(agent), "Notary is in dispute");
+            // Fetch current Agent Root from BondingManager
+            bytes32 agentRoot = agentManager.agentRoot();
+            // This will revert if any of the states from the Notary snapshot
+            // haven't been submitted by any of the Guards before.
+            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent, status.index);
+            // Save attestation derived from Notary snapshot.
+            (bytes32 r, bytes32 s, uint8 v) = snapSignature.castToSignature().toRSV();
+            _saveAttestation(attPayload.castToAttestation(), status.index, v);
+            _storedSnapshots.push(StoredSnapData({r: r, s: s}));
+        }
+        emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
     /// @inheritdoc InterfaceSummit

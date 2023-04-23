@@ -1,7 +1,40 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {AgentStatus} from "../libs/Structures.sol";
+
 interface InterfaceSummit {
+    // ══════════════════════════════════════════ ACCEPT AGENT STATEMENTS ══════════════════════════════════════════════
+
+    /**
+     * @notice Accepts a snapshot, which local `AgentManager` verified to have been signed by an active Agent.
+     * > Snapshot is a list of states for a set of Origin contracts residing on any of the chains.
+     * - Guard-signed snapshots: all the states in the snapshot become available for Notary signing.
+     * - Notary-signed snapshots: Snapshot Merkle Root is saved for valid snapshots, i.e.
+     * snapshots which are only using states previously submitted by any of the Guards.
+     * - Notary could use states singed by the same of different Guards in their snapshot.
+     * - Notary could then proceed to sign the attestation for their submitted snapshot.
+     * > Will revert if any of these is true:
+     * > - Called by anyone other than local `AgentManager`.
+     * > - Snapshot payload is not properly formatted.
+     * > - Snapshot contains a state older then the Agent has previously submitted.
+     * > - Agent is a Notary, and they are in Dispute.
+     * @param agent             Address of the Agent who signed the snapshot
+     * @param status            Structure specifying agent status: (flag, domain, index)
+     * @param snapPayload       Raw payload with snapshot data
+     * @param snapSignature     Agent signature for the snapshot
+     * @return attPayload       Raw payload with data for attestation derived from Notary snapshot.
+     *                          Empty payload, if a Guard snapshot was submitted.
+     */
+    function acceptSnapshot(
+        address agent,
+        AgentStatus memory status,
+        bytes memory snapPayload,
+        bytes memory snapSignature
+    ) external returns (bytes memory attPayload);
+
+    // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
+
     /**
      * @notice Distributes tips using the first Receipt from the "receipt quarantine queue".
      * Possible scenarios:

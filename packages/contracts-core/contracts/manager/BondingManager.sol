@@ -70,8 +70,7 @@ contract BondingManager is Versioned, StatementManager, InterfaceBondingManager 
         (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
         // Check that Agent is active
         _verifyActive(status);
-        // TODO: pass Snapshot to Summit and return the created attestation
-        InterfaceSummit(destination);
+        return InterfaceSummit(destination).acceptSnapshot(agent, status, snapPayload, snapSignature);
     }
 
     /// @inheritdoc InterfaceBondingManager
