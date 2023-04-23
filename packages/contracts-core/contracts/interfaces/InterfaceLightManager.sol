@@ -15,6 +15,7 @@ interface InterfaceLightManager {
      * > Will revert if any of these is true:
      * > - Attestation payload is not properly formatted.
      * > - Attestation signer is not an active Notary for local domain.
+     * > - Attestation signer is in Dispute.
      * > - Attestation's snapshot root has been previously submitted.
      * @param attPayload        Raw payload with Attestation data
      * @param attSignature      Notary signature for the attestation

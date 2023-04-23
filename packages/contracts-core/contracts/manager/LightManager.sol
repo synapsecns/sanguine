@@ -60,9 +60,8 @@ contract LightManager is Versioned, StatementManager, InterfaceLightManager {
         _verifyActive(status);
         // Check that Notary domain is local domain
         require(status.domain == localDomain, "Wrong Notary domain");
-        // TODO: pass Attestation to Destination
-        InterfaceDestination(destination);
-        return true;
+        // This will revert if Notary is in dispute
+        return InterfaceDestination(destination).acceptAttestation(notary, status, attPayload, attSignature);
     }
 
     /// @inheritdoc InterfaceLightManager

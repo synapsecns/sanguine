@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
+import {AgentStatus, InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 import {ExecutionHubMock} from "./hubs/ExecutionHubMock.t.sol";
 import {DisputeHubMock} from "./hubs/DisputeHubMock.t.sol";
 import {SystemRegistryMock} from "./system/SystemRegistryMock.t.sol";
@@ -12,6 +12,13 @@ contract DestinationMock is ExecutionHubMock, DisputeHubMock, SystemRegistryMock
     function testDestinationMock() external {}
 
     function passAgentRoot() external returns (bool rootPassed, bool rootPending) {}
+
+    function acceptAttestation(
+        address notary,
+        AgentStatus memory status,
+        bytes memory attPayload,
+        bytes memory attSignature
+    ) external returns (bool wasAccepted) {}
 
     function submitAttestation(bytes memory attPayload, bytes memory attSignature)
         external

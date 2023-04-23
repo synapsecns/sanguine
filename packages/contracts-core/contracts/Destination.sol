@@ -17,6 +17,7 @@ import {DomainContext, Versioned} from "./system/SystemContract.sol";
 import {SystemRegistry} from "./system/SystemRegistry.sol";
 
 contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
+    using AttestationLib for bytes;
     using ByteString for bytes;
 
     // TODO: this could be further optimized in terms of storage
@@ -59,6 +60,33 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
     }
 
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceDestination
+    function acceptAttestation(
+        address notary,
+        AgentStatus memory status,
+        bytes memory attPayload,
+        bytes memory attSignature
+    ) external returns (bool wasAccepted) {
+        // First, try passing current agent merkle root
+        (bool rootPassed, bool rootPending) = passAgentRoot();
+        // Don't accept attestation, if the agent root was updated in LightManager,
+        // as the following agent check will fail.
+        if (rootPassed) return false;
+        // This will revert if payload is not an attestation
+        Attestation att = attPayload.castToAttestation();
+        // Check that Notary who submitted the attestation is not in dispute
+        require(!_inDispute(notary), "Notary is in dispute");
+        (bytes32 r, bytes32 s, uint8 v) = attSignature.castToSignature().toRSV();
+        // This will revert if snapshot root has been previously submitted
+        _saveAttestation(att, status.index, v);
+        bytes32 agentRoot = att.agentRoot();
+        _storedAttestations.push(StoredAttData(agentRoot, r, s));
+        // Save Agent Root if required, and update the Destination's Status
+        destStatus = _saveAgentRoot(rootPending, agentRoot, notary);
+        emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
+        return true;
+    }
 
     /// @inheritdoc InterfaceDestination
     function submitAttestation(bytes memory attPayload, bytes memory attSignature)
