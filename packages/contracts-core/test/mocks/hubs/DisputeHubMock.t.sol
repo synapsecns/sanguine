@@ -8,6 +8,8 @@ contract DisputeHubMock is IDisputeHub {
     /// @notice Prevents this contract from being included in the coverage report
     function testDisputeHubMock() external {}
 
+    function openDispute(address guard, uint32 domain, address notary) external {}
+
     function submitStateReport(
         uint256 stateIndex,
         bytes memory srPayload,

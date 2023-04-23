@@ -80,8 +80,8 @@ contract LightManager is Versioned, StatementManager, InterfaceLightManager {
         (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(report.attestation(), attSignature);
         // Notary needs to be Active/Unstaking
         _verifyActiveUnstaking(notaryStatus);
-        // TODO: open a Dispute
-        IDisputeHub(destination);
+        // This will revert if either actor is already in dispute
+        IDisputeHub(destination).openDispute(guard, notaryStatus.domain, notary);
         return true;
     }
 

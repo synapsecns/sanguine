@@ -20,6 +20,11 @@ abstract contract DisputeHub is StatementHub, DisputeHubEvents, IDisputeHub {
     // ══════════════════════════════════════════ INITIATE DISPUTE LOGIC ═══════════════════════════════════════════════
 
     /// @inheritdoc IDisputeHub
+    function openDispute(address guard, uint32 domain, address notary) external onlyAgentManager {
+        _openDispute(guard, domain, notary);
+    }
+
+    /// @inheritdoc IDisputeHub
     function submitStateReport(
         uint256 stateIndex,
         bytes memory srPayload,

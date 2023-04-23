@@ -48,8 +48,8 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         // Snapshot state and reported state need to be the same
         // This will revert if state index is out of range
         require(snapshot.state(stateIndex).equals(report.state()), "States don't match");
-        // TODO: open a Dispute - which will revert if either actor is already in dispute
-        IDisputeHub(destination);
+        // This will revert if either actor is already in dispute
+        IDisputeHub(destination).openDispute(guard, notaryStatus.domain, notary);
         return true;
     }
 
@@ -80,8 +80,8 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         // Notary needs to be Active/Unstaking
         _verifyActiveUnstaking(notaryStatus);
         require(snapshot.root() == att.snapRoot(), "Attestation not matches snapshot");
-        // TODO: open a Dispute - which will revert if either actor is already in dispute
-        IDisputeHub(destination);
+        // This will revert if either actor is already in dispute
+        IDisputeHub(destination).openDispute(guard, notaryStatus.domain, notary);
         return true;
     }
 
@@ -112,8 +112,8 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         //  - Snapshot Proof length exceeds Snapshot tree Height.
         //  - State index is out of range.
         _verifySnapshotMerkle(att, stateIndex, report.state(), snapProof);
-        // TODO: open a Dispute - which will revert if either actor is already in dispute
-        IDisputeHub(destination);
+        // This will revert if either actor is already in dispute
+        IDisputeHub(destination).openDispute(guard, notaryStatus.domain, notary);
         return true;
     }
 
