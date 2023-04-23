@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {IExecutionHub} from "../../../contracts/interfaces/IExecutionHub.sol";
+import {IStatementManager} from "../../../contracts/interfaces/IStatementManager.sol";
 import {SNAPSHOT_MAX_STATES} from "../../../contracts/libs/Snapshot.sol";
 import {MessageStatus} from "../../../contracts/libs/Structures.sol";
 
@@ -402,6 +403,11 @@ abstract contract ExecutionHubTest is DisputeHubTest {
     function verify_receipt_valid(bytes memory receiptBody, RawTips memory rt) public {
         bytes memory rcptPayload = abi.encodePacked(receiptBody, rt.encodeTips());
         assertTrue(testedEH().isValidReceipt(rcptPayload));
+        address notary = domains[localDomain()].agent;
+        bytes memory rcptSignature = signReceipt(notary, rcptPayload);
+        vm.recordLogs();
+        assertTrue(IStatementManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
+        assertEq(vm.getRecordedLogs().length, 0);
     }
 
     function verify_receipt_invalid(RawExecReceipt memory re) public {
@@ -411,7 +417,7 @@ abstract contract ExecutionHubTest is DisputeHubTest {
         bytes memory rcptSignature = signReceipt(notary, rcptPayload);
         // TODO: check that anyone could make the call
         expectAgentSlashed(localDomain(), notary, address(this));
-        testedEH().verifyReceipt(rcptPayload, rcptSignature);
+        assertFalse(IStatementManager(localAgentManager()).verifyReceipt(rcptPayload, rcptSignature));
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

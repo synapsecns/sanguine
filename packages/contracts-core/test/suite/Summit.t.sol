@@ -91,7 +91,7 @@ contract SummitTest is DisputeHubTest {
             expectAgentSlashed(domain, notary, address(this));
         }
         vm.recordLogs();
-        assertEq(InterfaceSummit(summit).verifyAttestation(attPayload, attSig), isValid, "!returnValue");
+        assertEq(bondingManager.verifyAttestation(attPayload, attSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
@@ -114,7 +114,7 @@ contract SummitTest is DisputeHubTest {
             expectAgentSlashed(0, guard, address(this));
         }
         vm.recordLogs();
-        assertEq(InterfaceSummit(summit).verifyAttestationReport(arPayload, arSig), isValid, "!returnValue");
+        assertEq(bondingManager.verifyAttestationReport(arPayload, arSig), isValid, "!returnValue");
         if (isValid) {
             assertEq(vm.getRecordedLogs().length, 0, "Emitted logs when shouldn't");
         }
