@@ -133,7 +133,7 @@ contract LightManager is Versioned, StatementManager, InterfaceLightManager {
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
-    function _afterAgentSlashed(uint32 domain, address agent, address prover) internal override {
+    function _afterAgentSlashed(uint32 domain, address agent, address prover) internal virtual override {
         // Send a manager message to BondingManager on SynChain
         // remoteSlashAgent(msgOrigin, proofMaturity, domain, agent, prover) with the first two security args omitted
         InterfaceOrigin(origin).sendManagerMessage({

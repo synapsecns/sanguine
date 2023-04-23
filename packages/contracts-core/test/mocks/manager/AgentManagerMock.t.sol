@@ -48,8 +48,7 @@ contract AgentManagerMock is IAgentManager {
         agentRoot = agentRoot_;
     }
 
-    /// @inheritdoc IAgentManager
-    function registrySlash(uint32 domain, address agent, address prover) external {
+    function slashAgentExposed(uint32 domain, address agent, address prover) external {
         AgentStatus memory status = _agentMap[agent];
         require(status.flag == AgentFlag.Active, "Agent not active");
         require(status.domain == domain, "Incorrect domain");

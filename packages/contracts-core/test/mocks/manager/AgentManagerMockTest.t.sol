@@ -72,7 +72,7 @@ contract AgentManagerMockTest is Test {
 
     function test_registrySlash(uint32 domain, address agent, address prover) public {
         test_addAgent(domain, agent);
-        agentManager.registrySlash(domain, agent, prover);
+        agentManager.slashAgentExposed(domain, agent, prover);
         AgentStatus memory status = agentManager.agentStatus(agent);
         assertEq(uint8(status.flag), uint8(AgentFlag.Slashed));
         assertEq(status.domain, domain);
@@ -85,14 +85,14 @@ contract AgentManagerMockTest is Test {
     function test_registrySlash_revert_agentNotActive(uint32 domain, address agent) public {
         test_removeAgent(domain, agent);
         vm.expectRevert("Agent not active");
-        agentManager.registrySlash(domain, agent, address(0));
+        agentManager.slashAgentExposed(domain, agent, address(0));
     }
 
     function test_registrySlash_revert_incorrectDomain(uint32 domain, address agent, uint32 otherDomain) public {
         vm.assume(domain != otherDomain);
         test_addAgent(domain, agent);
         vm.expectRevert("Incorrect domain");
-        agentManager.registrySlash(otherDomain, agent, address(0));
+        agentManager.slashAgentExposed(otherDomain, agent, address(0));
     }
 
     // ══════════════════════════════════════════════ SET AGENT ROOT ═══════════════════════════════════════════════════
