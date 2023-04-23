@@ -146,24 +146,6 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         emit Executed(header.origin(), msgLeaf);
     }
 
-    /// @inheritdoc IExecutionHub
-    function verifyReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool isValid) {
-        // This will revert if payload is not an receipt
-        Receipt rcpt = _wrapReceipt(rcptPayload);
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
-        // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
-        // This will revert if receipt refers to another domain
-        // Note: this doesn't check the validity of tips, this is done in Summit contract
-        isValid = _isValidReceipt(rcpt.body());
-        if (!isValid) {
-            // emit InvalidReceipt(rcptPayload, rcptSignature);
-            // Slash Notary and notify local AgentManager
-            _slashAgent(status.domain, notary);
-        }
-    }
-
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IExecutionHub

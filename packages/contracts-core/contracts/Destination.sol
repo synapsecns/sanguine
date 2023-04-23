@@ -88,59 +88,6 @@ contract Destination is ExecutionHub, DestinationEvents, InterfaceDestination {
         return true;
     }
 
-    /// @inheritdoc InterfaceDestination
-    function submitAttestation(bytes memory attPayload, bytes memory attSignature)
-        external
-        returns (bool wasAccepted)
-    {
-        // First, try passing current agent merkle root
-        (bool rootPassed, bool rootPending) = passAgentRoot();
-        // Don't accept attestation, if the agent root was updated in LightManager,
-        // as the following agent check will fail.
-        if (rootPassed) return false;
-        // This will revert if payload is not an attestation
-        Attestation att = _wrapAttestation(attPayload);
-        // This will revert if signer is not an known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
-        // Check that Notary is active
-        _verifyActive(status);
-        // Check that Notary domain is local domain
-        require(status.domain == localDomain, "Wrong Notary domain");
-        // Check that Notary who submitted the attestation is not in dispute
-        require(!_inDispute(notary), "Notary is in dispute");
-        (bytes32 r, bytes32 s, uint8 v) = attSignature.castToSignature().toRSV();
-        // This will revert if snapshot root has been previously submitted
-        _saveAttestation(att, status.index, v);
-        bytes32 agentRoot = att.agentRoot();
-        _storedAttestations.push(StoredAttData(agentRoot, r, s));
-        // Save Agent Root if required, and update the Destination's Status
-        destStatus = _saveAgentRoot(rootPending, agentRoot, notary);
-        emit AttestationAccepted(status.domain, notary, attPayload, attSignature);
-        return true;
-    }
-
-    /// @inheritdoc InterfaceDestination
-    function submitAttestationReport(bytes memory arPayload, bytes memory arSignature, bytes memory attSignature)
-        external
-        returns (bool wasAccepted)
-    {
-        // Call the hook and check if we can accept the statement
-        if (!_beforeStatement()) return false;
-        // This will revert if payload is not an attestation report
-        AttestationReport report = _wrapAttestationReport(arPayload);
-        // This will revert if the report signer is not a known Guard
-        (AgentStatus memory guardStatus, address guard) = _verifyAttestationReport(report, arSignature);
-        // Check that Guard is active
-        _verifyActive(guardStatus);
-        // This will revert if attestation signer is not a known Notary
-        (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(report.attestation(), attSignature);
-        // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(notaryStatus);
-        // Reported Attestation was signed by the Notary => open dispute
-        _openDispute(guard, notaryStatus.domain, notary);
-        return true;
-    }
-
     // ═══════════════════════════════════════════ AGENT ROOT QUARANTINE ═══════════════════════════════════════════════
 
     /// @inheritdoc InterfaceDestination

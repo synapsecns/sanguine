@@ -25,26 +25,4 @@ contract OriginMock is StateHubMock, SystemRegistryMock, InterfaceOrigin {
     {}
 
     function withdrawTips(address recipient, uint256 amount) external {}
-
-    function verifyAttestation(
-        uint256 stateIndex,
-        bytes memory snapPayload,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool isValid) {}
-
-    function verifyAttestationWithProof(
-        uint256 stateIndex,
-        bytes memory statePayload,
-        bytes32[] memory snapProof,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool isValid) {}
-
-    function verifySnapshot(uint256 stateIndex, bytes memory snapPayload, bytes memory snapSignature)
-        external
-        returns (bool isValid)
-    {}
-
-    function verifyStateReport(bytes memory srPayload, bytes memory srSignature) external returns (bool isValid) {}
 }

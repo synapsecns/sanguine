@@ -20,16 +20,6 @@ contract DestinationMock is ExecutionHubMock, DisputeHubMock, SystemRegistryMock
         bytes memory attSignature
     ) external returns (bool wasAccepted) {}
 
-    function submitAttestation(bytes memory attPayload, bytes memory attSignature)
-        external
-        returns (bool wasAccepted)
-    {}
-
-    function submitAttestationReport(bytes memory arPayload, bytes memory arSignature, bytes memory attSignature)
-        external
-        returns (bool wasAccepted)
-    {}
-
     function attestationsAmount() external view returns (uint256) {}
 
     function getSignedAttestation(uint256 index)

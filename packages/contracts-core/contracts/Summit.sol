@@ -124,26 +124,6 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     /// @inheritdoc InterfaceSummit
-    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {
-        // Call the hook and check if we can accept the statement
-        if (!_beforeStatement()) return false;
-        // This will revert if payload is not an receipt
-        Receipt rcpt = _wrapReceipt(rcptPayload);
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
-        // Notary needs to be Active and not in Dispute
-        _verifyActive(status);
-        require(!_inDispute(notary), "Notary is in dispute");
-        // Receipt needs to be signed by a destination chain Notary
-        ReceiptBody rcptBody = rcpt.body();
-        require(rcptBody.destination() == status.domain, "Wrong Notary domain");
-        wasAccepted = _saveReceipt(rcptBody, rcpt.tips(), status.index);
-        if (wasAccepted) {
-            emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
-        }
-    }
-
-    /// @inheritdoc InterfaceSummit
     function acceptSnapshot(
         address agent,
         AgentStatus memory status,
@@ -177,81 +157,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
     }
 
-    /// @inheritdoc InterfaceSummit
-    function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
-        external
-        returns (bytes memory attPayload)
-    {
-        // Call the hook and check if we can accept the statement
-        if (!_beforeStatement()) return "";
-        // This will revert if payload is not a snapshot
-        Snapshot snapshot = _wrapSnapshot(snapPayload);
-        // This will revert if the signer is not a known Agent
-        (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
-        // Check that Agent is active
-        _verifyActive(status);
-        if (status.domain == 0) {
-            /// @dev We don't check if Guard is in dispute for accepting the snapshots.
-            /// Guard could only be in Dispute, if they submitted a Report on a Notary.
-            /// This should not strip away their ability to post snapshots, as they require
-            /// a Notary signature in order to be used / gain tips anyway.
-
-            // This will revert if Guard has previously submitted
-            // a fresher state than one in the snapshot.
-            _acceptGuardSnapshot(snapshot, agent, status.index);
-        } else {
-            // Check that Notary who submitted the snapshot is not in dispute
-            require(!_inDispute(agent), "Notary is in dispute");
-            // Fetch current Agent Root from BondingManager
-            bytes32 agentRoot = agentManager.agentRoot();
-            // This will revert if any of the states from the Notary snapshot
-            // haven't been submitted by any of the Guards before.
-            attPayload = _acceptNotarySnapshot(snapshot, agentRoot, agent, status.index);
-            // Save attestation derived from Notary snapshot.
-            (bytes32 r, bytes32 s, uint8 v) = snapSignature.castToSignature().toRSV();
-            _saveAttestation(attPayload.castToAttestation(), status.index, v);
-            _storedSnapshots.push(StoredSnapData({r: r, s: s}));
-        }
-        emit SnapshotAccepted(status.domain, agent, snapPayload, snapSignature);
-    }
-
-    // ═════════════════════════════════════════════ VERIFY STATEMENTS ═════════════════════════════════════════════════
-
-    /// @inheritdoc InterfaceSummit
-    function verifyAttestation(bytes memory attPayload, bytes memory attSignature) external returns (bool isValid) {
-        // This will revert if payload is not an attestation
-        Attestation att = _wrapAttestation(attPayload);
-        // This will revert if the attestation signer is not a known Notary
-        (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
-        // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
-        isValid = _isValidAttestation(att);
-        if (!isValid) {
-            // emit InvalidAttestation(attPayload, attSignature);
-            // Slash Notary and notify local AgentManager
-            _slashAgent(status.domain, notary);
-        }
-    }
-
-    /// @inheritdoc InterfaceSummit
-    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
-        external
-        returns (bool isValid)
-    {
-        // This will revert if payload is not an attestation report
-        AttestationReport report = _wrapAttestationReport(arPayload);
-        // This will revert if the report signer is not a known Guard
-        (AgentStatus memory status, address guard) = _verifyAttestationReport(report, arSignature);
-        // Guard needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
-        // Report is valid, if the reported attestation is invalid
-        isValid = !_isValidAttestation(report.attestation());
-        if (!isValid) {
-            // emit InvalidAttestationReport(arPayload, arSignature);
-            // Slash Guard and notify local AgentManager
-            _slashAgent(0, guard);
-        }
-    }
+    // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════
 
     /// @inheritdoc InterfaceSummit
     function distributeTips() public returns (bool queuePopped) {

@@ -28,20 +28,6 @@ contract SummitMock is SnapshotHubMock, SystemRegistryMock, InterfaceSummit {
 
     function withdrawTips(uint32 origin, uint256 amount) external {}
 
-    function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {}
-
-    function submitSnapshot(bytes memory snapPayload, bytes memory snapSignature)
-        external
-        returns (bytes memory attPayload)
-    {}
-
-    function verifyAttestation(bytes memory attPayload, bytes memory attSignature) external returns (bool isValid) {}
-
-    function verifyAttestationReport(bytes memory arPayload, bytes memory arSignature)
-        external
-        returns (bool isValid)
-    {}
-
     function actorTips(address actor, uint32 origin) external view returns (uint128 earned, uint128 claimed) {}
 
     function receiptQueueLength() external view returns (uint256) {}

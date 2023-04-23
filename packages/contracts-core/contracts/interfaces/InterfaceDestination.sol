@@ -38,36 +38,6 @@ interface InterfaceDestination {
         bytes memory attSignature
     ) external returns (bool wasAccepted);
 
-    /**
-     * @notice Submit an Attestation signed by a Notary.
-     * @dev Will revert if any of these is true:
-     *  - Attestation payload is not properly formatted.
-     *  - Attestation signer is not an active Notary for local domain.
-     *  - Attestation's snapshot root has been previously submitted.
-     * @param attPayload        Raw payload with Attestation data
-     * @param attSignature      Notary signature for the reported attestation
-     * @return wasAccepted      Whether the Attestation was accepted (resulting in Dispute between the agents)
-     */
-    function submitAttestation(bytes memory attPayload, bytes memory attSignature)
-        external
-        returns (bool wasAccepted);
-
-    /**
-     * @notice Submit an AttestationReport signed by a Guard, as well as Notary signature
-     * for the reported Attestation.
-     * @dev Will revert if any of these is true:
-     *  - Report payload is not properly formatted.
-     *  - Report signer is not an active Guard.
-     *  - Attestation signer is not an active Notary for local domain.
-     * @param arPayload         Raw payload with AttestationReport data
-     * @param arSignature       Guard signature for the report
-     * @param attSignature      Notary signature for the reported attestation
-     * @return wasAccepted      Whether the Report was accepted (resulting in Dispute between the agents)
-     */
-    function submitAttestationReport(bytes memory arPayload, bytes memory arSignature, bytes memory attSignature)
-        external
-        returns (bool wasAccepted);
-
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**

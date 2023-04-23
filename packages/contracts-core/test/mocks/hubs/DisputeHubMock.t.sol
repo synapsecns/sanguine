@@ -10,22 +10,5 @@ contract DisputeHubMock is IDisputeHub {
 
     function openDispute(address guard, uint32 domain, address notary) external {}
 
-    function submitStateReport(
-        uint256 stateIndex,
-        bytes memory srPayload,
-        bytes memory srSignature,
-        bytes memory snapPayload,
-        bytes memory snapSignature
-    ) external returns (bool wasAccepted) {}
-
-    function submitStateReportWithProof(
-        uint256 stateIndex,
-        bytes memory srPayload,
-        bytes memory srSignature,
-        bytes32[] memory snapProof,
-        bytes memory attPayload,
-        bytes memory attSignature
-    ) external returns (bool wasAccepted) {}
-
     function disputeStatus(address agent) external view returns (DisputeStatus memory status) {}
 }
