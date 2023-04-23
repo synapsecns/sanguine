@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {AgentFlag, AgentStatus} from "./libs/Structures.sol";
 import {ByteString} from "./libs/ByteString.sol";
+import {Receipt, ReceiptLib} from "./libs/Receipt.sol";
 import {Snapshot, SnapshotLib} from "./libs/Snapshot.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentManager} from "./manager/AgentManager.sol";
@@ -12,7 +13,7 @@ import {SummitEvents} from "./events/SummitEvents.sol";
 import {IAgentManager} from "./interfaces/IAgentManager.sol";
 import {InterfaceBondingManager} from "./interfaces/InterfaceBondingManager.sol";
 import {InterfaceSummit} from "./interfaces/InterfaceSummit.sol";
-import {DisputeHub, ExecutionHub, MessageStatus, Receipt, ReceiptBody, Tips} from "./hubs/ExecutionHub.sol";
+import {DisputeHub, ExecutionHub, MessageStatus, ReceiptBody, Tips} from "./hubs/ExecutionHub.sol";
 import {SnapshotHub} from "./hubs/SnapshotHub.sol";
 import {Attestation, AttestationLib, AttestationReport, Snapshot} from "./hubs/StatementHub.sol";
 import {DomainContext, Versioned} from "./system/SystemContract.sol";
@@ -24,6 +25,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     using AttestationLib for bytes;
     using ByteString for bytes;
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
+    using ReceiptLib for bytes;
     using SnapshotLib for bytes;
 
     struct StoredSnapData {
@@ -99,6 +101,27 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
     }
 
     // ═════════════════════════════════════════════ ACCEPT STATEMENTS ═════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceSummit
+    function acceptReceipt(
+        address notary,
+        AgentStatus memory status,
+        bytes memory rcptPayload,
+        bytes memory rcptSignature
+    ) external returns (bool wasAccepted) {
+        // This will revert if payload is not an receipt
+        Receipt rcpt = rcptPayload.castToReceipt();
+        require(!_inDispute(notary), "Notary is in dispute");
+        // Receipt needs to be signed by a destination chain Notary
+        ReceiptBody rcptBody = rcpt.body();
+        // TODO: remove this restriction
+        require(rcptBody.destination() == status.domain, "Wrong Notary domain");
+        wasAccepted = _saveReceipt(rcptBody, rcpt.tips(), status.index);
+        if (wasAccepted) {
+            // TODO: save signature
+            emit ReceiptAccepted(status.domain, notary, rcptPayload, rcptSignature);
+        }
+    }
 
     /// @inheritdoc InterfaceSummit
     function submitReceipt(bytes memory rcptPayload, bytes memory rcptSignature) external returns (bool wasAccepted) {

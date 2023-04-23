@@ -70,6 +70,7 @@ contract BondingManager is Versioned, StatementManager, InterfaceBondingManager 
         (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
         // Check that Agent is active
         _verifyActive(status);
+        // This will revert if agent is a Notary that is in dispute
         return InterfaceSummit(destination).acceptSnapshot(agent, status, snapPayload, snapSignature);
     }
 
@@ -81,9 +82,8 @@ contract BondingManager is Versioned, StatementManager, InterfaceBondingManager 
         (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
         // Notary needs to be Active
         _verifyActive(status);
-        // TODO: pass Receipt to Summit
-        InterfaceSummit(destination);
-        return true;
+        // This will revert if Notary is in dispute
+        return InterfaceSummit(destination).acceptReceipt(notary, status, rcptPayload, rcptSignature);
     }
 
     // ══════════════════════════════════════════ VERIFY AGENT STATEMENTS ══════════════════════════════════════════════

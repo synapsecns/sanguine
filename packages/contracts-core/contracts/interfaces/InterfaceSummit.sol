@@ -7,6 +7,28 @@ interface InterfaceSummit {
     // ══════════════════════════════════════════ ACCEPT AGENT STATEMENTS ══════════════════════════════════════════════
 
     /**
+     * @notice Accepts a receipt, which local `AgentManager` verified to have been signed by an active Notary.
+     * > Receipt is a statement about message execution status on the remote chain.
+     * - This will distribute the message tips across the off-chain actors once the receipt optimistic period is over.
+     * > Will revert if any of these is true:
+     * > - Called by anyone other than local `AgentManager`.
+     * > - Receipt payload is not properly formatted.
+     * > - Receipt signer is in Dispute.
+     * > - Receipt's snapshot root is unknown.
+     * @param notary            Address of the Notary who signed the receipt
+     * @param status            Structure specifying agent status: (flag, domain, index)
+     * @param rcptPayload       Raw payload with receipt data
+     * @param rcptSignature     Notary signature for the receipt
+     * @return wasAccepted      Whether the receipt was accepted
+     */
+    function acceptReceipt(
+        address notary,
+        AgentStatus memory status,
+        bytes memory rcptPayload,
+        bytes memory rcptSignature
+    ) external returns (bool wasAccepted);
+
+    /**
      * @notice Accepts a snapshot, which local `AgentManager` verified to have been signed by an active Agent.
      * > Snapshot is a list of states for a set of Origin contracts residing on any of the chains.
      * - Guard-signed snapshots: all the states in the snapshot become available for Notary signing.

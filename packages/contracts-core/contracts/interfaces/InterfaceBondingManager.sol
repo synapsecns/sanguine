@@ -34,6 +34,7 @@ interface InterfaceBondingManager {
      * > Will revert if any of these is true:
      * > - Receipt payload is not properly formatted.
      * > - Receipt signer is not an active Notary.
+     * > - Receipt signer is in Dispute.
      * > - Receipt's snapshot root is unknown.
      * @param rcptPayload       Raw payload with receipt data
      * @param rcptSignature     Notary signature for the receipt
