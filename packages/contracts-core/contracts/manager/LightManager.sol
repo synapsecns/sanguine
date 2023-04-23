@@ -56,7 +56,7 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
         // This will revert if signer is not an known Notary
         (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
         // Check that Notary is active
-        _verifyActive(status);
+        status.verifyActive();
         // Check that Notary domain is local domain
         require(status.domain == localDomain, "Wrong Notary domain");
         // This will revert if Notary is in dispute
@@ -73,11 +73,11 @@ contract LightManager is Versioned, AgentManager, InterfaceLightManager {
         // This will revert if the report signer is not a known Guard
         (AgentStatus memory guardStatus, address guard) = _verifyAttestationReport(report, arSignature);
         // Check that Guard is active
-        _verifyActive(guardStatus);
+        guardStatus.verifyActive();
         // This will revert if attestation signer is not a known Notary
         (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(report.attestation(), attSignature);
         // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(notaryStatus);
+        notaryStatus.verifyActiveUnstaking();
         // This will revert if either actor is already in dispute
         IDisputeHub(destination).openDispute(guard, notaryStatus.domain, notary);
         return true;

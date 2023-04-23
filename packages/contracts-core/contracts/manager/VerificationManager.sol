@@ -170,32 +170,4 @@ abstract contract VerificationManager {
         // Snapshot root should match the attestation root
         require(att.snapRoot() == snapshotRoot, "Incorrect snapshot root");
     }
-
-    // ════════════════════════════════════════════════ FLAG CHECKS ════════════════════════════════════════════════════
-
-    /// @dev Checks that Agent is Active
-    function _verifyActive(AgentStatus memory status) internal pure {
-        require(status.flag == AgentFlag.Active, status.domain == 0 ? "Not an active guard" : "Not an active notary");
-    }
-
-    /// @dev Checks that Agent is Active or Unstaking
-    function _verifyActiveUnstaking(AgentStatus memory status) internal pure {
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking),
-            status.domain == 0 ? "Not an active guard" : "Not an active notary"
-        );
-    }
-
-    /// @dev Checks that Agent is not Unknown
-    function _verifyKnown(AgentStatus memory status) internal pure {
-        require(status.flag != AgentFlag.Unknown, status.domain == 0 ? "Not a known guard" : "Not a known notary");
-    }
-
-    /// @dev Checks that Agent is not Fraudulent/Slashed
-    function _verifyNotSlashed(AgentStatus memory status) internal pure {
-        require(
-            status.flag != AgentFlag.Fraudulent && status.flag != AgentFlag.Slashed,
-            status.domain == 0 ? "Slashed guard" : "Slashed notary"
-        );
-    }
 }

@@ -279,8 +279,8 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // Attestation Notary needs to be known and not slashed
         address attNotary = rcptBody.attNotary();
         AgentStatus memory attNotaryStatus = _agentStatus(attNotary);
-        _verifyKnown(attNotaryStatus);
-        _verifyNotSlashed(attNotaryStatus);
+        attNotaryStatus.verifyKnown();
+        attNotaryStatus.verifyNotSlashed();
         // Check if tip values are non-zero
         if (tips.value() == 0) return false;
         // Check if there already exists receipt for the message

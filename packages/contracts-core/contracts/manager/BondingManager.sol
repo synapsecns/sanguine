@@ -69,7 +69,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
         // This will revert if the signer is not a known Agent
         (AgentStatus memory status, address agent) = _verifySnapshot(snapshot, snapSignature);
         // Check that Agent is active
-        _verifyActive(status);
+        status.verifyActive();
         // This will revert if agent is a Notary that is in dispute
         return InterfaceSummit(destination).acceptSnapshot(agent, status, snapPayload, snapSignature);
     }
@@ -81,7 +81,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
         // This will revert if the attestation signer is not a known Notary
         (AgentStatus memory status, address notary) = _verifyReceipt(rcpt, rcptSignature);
         // Notary needs to be Active
-        _verifyActive(status);
+        status.verifyActive();
         // This will revert if Notary is in dispute
         return InterfaceSummit(destination).acceptReceipt(notary, status, rcptPayload, rcptSignature);
     }
@@ -98,7 +98,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
         // This will revert if the attestation signer is not a known Notary
         (AgentStatus memory status, address notary) = _verifyAttestation(att, attSignature);
         // Notary needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
+        status.verifyActiveUnstaking();
         isValidAttestation = ISnapshotHub(destination).isValidAttestation(attPayload);
         if (!isValidAttestation) {
             emit InvalidAttestation(attPayload, attSignature);
@@ -116,7 +116,7 @@ contract BondingManager is Versioned, AgentManager, BondingManagerEvents, Interf
         // This will revert if the report signer is not a known Guard
         (AgentStatus memory status, address guard) = _verifyAttestationReport(report, arSignature);
         // Guard needs to be Active/Unstaking
-        _verifyActiveUnstaking(status);
+        status.verifyActiveUnstaking();
         // Report is valid IF AND ONLY IF the reported attestation in invalid
         isValidReport = !ISnapshotHub(destination).isValidAttestation(report.attestation().unwrap().clone());
         if (!isValidReport) {
