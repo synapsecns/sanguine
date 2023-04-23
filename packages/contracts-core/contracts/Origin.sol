@@ -67,7 +67,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         // This will revert if  state refers to another domain
         isValid = _isValidState(state);
         if (!isValid) {
-            emit InvalidAttestationState(stateIndex, state.unwrap().clone(), attPayload, attSignature);
+            // emit InvalidAttestationState(stateIndex, state.unwrap().clone(), attPayload, attSignature);
             // Slash Notary and notify local AgentManager
             _slashAgent(status.domain, notary);
         }
@@ -98,7 +98,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         // This will revert, if state refers to another domain
         isValid = _isValidState(state);
         if (!isValid) {
-            emit InvalidAttestationState(stateIndex, statePayload, attPayload, attSignature);
+            // emit InvalidAttestationState(stateIndex, statePayload, attPayload, attSignature);
             // Slash Notary and notify local AgentManager
             _slashAgent(status.domain, notary);
         }
@@ -118,7 +118,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         // This will revert, if state index is out of range, or state refers to another domain
         isValid = _isValidState(snapshot.state(stateIndex));
         if (!isValid) {
-            emit InvalidSnapshotState(stateIndex, snapPayload, snapSignature);
+            // emit InvalidSnapshotState(stateIndex, snapPayload, snapSignature);
             // Slash Agent and notify local AgentManager
             _slashAgent(status.domain, agent);
         }
@@ -135,7 +135,7 @@ contract Origin is StatementHub, StateHub, OriginEvents, InterfaceOrigin {
         // Report is valid, if the reported state is invalid
         isValid = !_isValidState(report.state());
         if (!isValid) {
-            emit InvalidStateReport(srPayload, srSignature);
+            // emit InvalidStateReport(srPayload, srSignature);
             // Slash Guard and notify local AgentManager
             _slashAgent(0, guard);
         }

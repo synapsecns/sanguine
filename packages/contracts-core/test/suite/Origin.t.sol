@@ -252,7 +252,7 @@ contract OriginTest is SystemRegistryTest {
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(rsi.stateIndex, state, attPayload, attSig);
+            emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
             expectAgentSlashed(domain, notary, address(this));
         }
@@ -276,7 +276,7 @@ contract OriginTest is SystemRegistryTest {
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidAttestationState(rsi.stateIndex, state, attPayload, attSig);
+            emit InvalidStateWithAttestation(rsi.stateIndex, state, attPayload, attSig);
             // TODO: check that anyone could make the call
             expectAgentSlashed(domain, notary, address(this));
         }
@@ -299,7 +299,7 @@ contract OriginTest is SystemRegistryTest {
         if (!isValid) {
             // Expect Events to be emitted
             vm.expectEmit(true, true, true, true);
-            emit InvalidSnapshotState(rsi.stateIndex, snapPayload, snapSig);
+            emit InvalidStateWithSnapshot(rsi.stateIndex, snapPayload, snapSig);
             // TODO: check that anyone could make the call
             expectAgentSlashed(DOMAIN_REMOTE, notary, address(this));
         }

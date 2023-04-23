@@ -227,7 +227,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         _verifyActiveUnstaking(status);
         isValid = _isValidAttestation(att);
         if (!isValid) {
-            emit InvalidAttestation(attPayload, attSignature);
+            // emit InvalidAttestation(attPayload, attSignature);
             // Slash Notary and notify local AgentManager
             _slashAgent(status.domain, notary);
         }
@@ -247,7 +247,7 @@ contract Summit is ExecutionHub, SnapshotHub, SummitEvents, InterfaceSummit {
         // Report is valid, if the reported attestation is invalid
         isValid = !_isValidAttestation(report.attestation());
         if (!isValid) {
-            emit InvalidAttestationReport(arPayload, arSignature);
+            // emit InvalidAttestationReport(arPayload, arSignature);
             // Slash Guard and notify local AgentManager
             _slashAgent(0, guard);
         }

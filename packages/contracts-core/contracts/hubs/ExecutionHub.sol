@@ -158,7 +158,7 @@ abstract contract ExecutionHub is DisputeHub, ExecutionHubEvents, IExecutionHub 
         // Note: this doesn't check the validity of tips, this is done in Summit contract
         isValid = _isValidReceipt(rcpt.body());
         if (!isValid) {
-            emit InvalidReceipt(rcptPayload, rcptSignature);
+            // emit InvalidReceipt(rcptPayload, rcptSignature);
             // Slash Notary and notify local AgentManager
             _slashAgent(status.domain, notary);
         }
