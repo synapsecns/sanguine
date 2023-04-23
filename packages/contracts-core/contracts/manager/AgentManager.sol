@@ -49,7 +49,7 @@ abstract contract AgentManager is SystemContract, VerificationManager, AgentMana
             revert("Unauthorized caller");
         }
         // Call "after slash" hook
-        _afterRegistrySlash(domain, agent, prover);
+        _afterAgentSlashed(domain, agent, prover);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -75,7 +75,7 @@ abstract contract AgentManager is SystemContract, VerificationManager, AgentMana
     /// @dev Hook that is called after agent was slashed on one of the Registries,
     /// and the remaining Registries were notified.
     // solhint-disable-next-line no-empty-blocks
-    function _afterRegistrySlash(uint32 domain, address agent, address prover) internal virtual {}
+    function _afterAgentSlashed(uint32 domain, address agent, address prover) internal virtual {}
 
     /// @dev Checks and initiates the slashing of an agent.
     /// Should be called, after one of registries confirmed fraud committed by the agent.
@@ -98,6 +98,25 @@ abstract contract AgentManager is SystemContract, VerificationManager, AgentMana
         if (registryMask & DESTINATION != 0) ISystemRegistry(destination).managerSlash(domain, agent, prover);
         // Notify Origin, if requested
         if (registryMask & ORIGIN != 0) ISystemRegistry(origin).managerSlash(domain, agent, prover);
+    }
+
+    /// @dev Slashes the Agent and notifies the local Destination and Origin contracts about the slashed agent.
+    /// Should be called when the agent fraud was confirmed.
+    function _slashAgent(uint32 domain, address agent, address prover) internal {
+        // Check that agent is Active/Unstaking and that the domains match
+        AgentStatus memory status = agentStatus(agent);
+        // Note: status would be Fraudulent/Slashed if slashing has been initiated before
+        require(
+            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
+            "Slashing could not be initiated"
+        );
+        slashStatus[agent] = SlashStatus({isSlashed: true, prover: prover});
+        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
+        // Notify local Registries
+        ISystemRegistry(destination).managerSlash(domain, agent, prover);
+        ISystemRegistry(origin).managerSlash(domain, agent, prover);
+        // Call "after slash" hook - this allows Bonding/Light Manager to add custom "after slash" logic
+        _afterAgentSlashed(domain, agent, prover);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════

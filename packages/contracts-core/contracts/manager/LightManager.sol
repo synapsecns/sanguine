@@ -134,13 +134,13 @@ contract LightManager is Versioned, StatementManager, InterfaceLightManager {
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
-    function _afterRegistrySlash(uint32 domain, address agent, address prover) internal override {
+    function _afterAgentSlashed(uint32 domain, address agent, address prover) internal override {
         // Send a manager message to BondingManager on SynChain
-        // remoteRegistrySlash(msgOrigin, proofMaturity, domain, agent, prover) with the first two security args omitted
+        // remoteSlashAgent(msgOrigin, proofMaturity, domain, agent, prover) with the first two security args omitted
         InterfaceOrigin(origin).sendManagerMessage({
             destination: SYNAPSE_DOMAIN,
             optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
-            payload: abi.encodeWithSelector(InterfaceBondingManager.remoteRegistrySlash.selector, domain, agent, prover)
+            payload: abi.encodeWithSelector(InterfaceBondingManager.remoteSlashAgent.selector, domain, agent, prover)
         });
     }
 

@@ -132,8 +132,7 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         _verifyActiveUnstaking(status);
         isValidReceipt = IExecutionHub(destination).isValidReceipt(rcptPayload);
         if (!isValidReceipt) {
-            // TODO: Slash Notary
-            notary;
+            _slashAgent(status.domain, notary, msg.sender);
         }
     }
 
@@ -156,8 +155,7 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         // This will revert if state does not refer to this chain
         isValidState = IStateHub(origin).isValidState(snapshot.state(stateIndex).unwrap().clone());
         if (!isValidState) {
-            // TODO: Slash Notary
-            notary;
+            _slashAgent(status.domain, notary, msg.sender);
         }
     }
 
@@ -186,8 +184,7 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         // This will revert if state does not refer to this chain
         isValidState = IStateHub(origin).isValidState(statePayload);
         if (!isValidState) {
-            // TODO: Slash Notary
-            notary;
+            _slashAgent(status.domain, notary, msg.sender);
         }
     }
 
@@ -205,8 +202,7 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         // This will revert if state does not refer to this chain
         isValidState = IStateHub(origin).isValidState(snapshot.state(stateIndex).unwrap().clone());
         if (!isValidState) {
-            // TODO: Slash Agent
-            agent;
+            _slashAgent(status.domain, agent, msg.sender);
         }
     }
 
@@ -225,8 +221,7 @@ abstract contract StatementManager is AgentManager, IStatementManager {
         // This will revert if the reported state does not refer to this chain
         isValidReport = !IStateHub(origin).isValidState(report.state().unwrap().clone());
         if (!isValidReport) {
-            // TODO: Slash Guard
-            guard;
+            _slashAgent(status.domain, guard, msg.sender);
         }
     }
 }

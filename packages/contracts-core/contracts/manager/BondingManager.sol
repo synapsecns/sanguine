@@ -102,8 +102,7 @@ contract BondingManager is Versioned, StatementManager, InterfaceBondingManager 
         _verifyActiveUnstaking(status);
         isValidAttestation = ISnapshotHub(destination).isValidAttestation(attPayload);
         if (!isValidAttestation) {
-            // TODO: slash Notary
-            notary;
+            _slashAgent(status.domain, notary, msg.sender);
         }
     }
 
@@ -121,8 +120,7 @@ contract BondingManager is Versioned, StatementManager, InterfaceBondingManager 
         // Report is valid IF AND ONLY IF the reported attestation in invalid
         isValidReport = !ISnapshotHub(destination).isValidAttestation(report.attestation().unwrap().clone());
         if (!isValidReport) {
-            // TODO: slash Guard
-            guard;
+            _slashAgent(status.domain, guard, msg.sender);
         }
     }
 
@@ -216,7 +214,7 @@ contract BondingManager is Versioned, StatementManager, InterfaceBondingManager 
     }
 
     /// @inheritdoc InterfaceBondingManager
-    function remoteRegistrySlash(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
+    function remoteSlashAgent(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
         external
         returns (bytes4 magicValue)
     {
@@ -231,7 +229,7 @@ contract BondingManager is Versioned, StatementManager, InterfaceBondingManager 
         // Notify local registries about the slashing
         _notifySlashing(DESTINATION | ORIGIN, domain, agent, prover);
         // Magic value to return is selector of the called function
-        return this.remoteRegistrySlash.selector;
+        return this.remoteSlashAgent.selector;
     }
 
     // ════════════════════════════════════════════════ TIPS LOGIC ═════════════════════════════════════════════════════

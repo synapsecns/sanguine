@@ -126,7 +126,7 @@ interface InterfaceBondingManager {
 
     /**
      * @notice Remote AgentManager should call this function to indicate that the agent
-     * has been proven to commit fraud in the SystemRegistry on the origin chain.
+     * has been proven to commit fraud on the origin chain.
      * @dev This initiates the process of agent slashing. It could be immediately
      * completed by anyone calling completeSlashing() providing a correct merkle proof
      * for the OLD agent status.
@@ -134,10 +134,10 @@ interface InterfaceBondingManager {
      * Destination could verify that a "remote" function was called when executing a manager message.
      * @param domain        Domain where the slashed agent was active
      * @param agent         Address of the slashed Agent
-     * @param prover        Address that initially provided fraud proof in SystemRegistry
+     * @param prover        Address that initially provided fraud proof to remote AgentManager
      * @return magicValue   Selector of this function
      */
-    function remoteRegistrySlash(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
+    function remoteSlashAgent(uint32 msgOrigin, uint256 proofMaturity, uint32 domain, address agent, address prover)
         external
         returns (bytes4 magicValue);
 

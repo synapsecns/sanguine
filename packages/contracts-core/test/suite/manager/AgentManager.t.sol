@@ -109,10 +109,8 @@ abstract contract AgentManagerTest is SystemContractTest {
         returns (RawCallData memory)
     {
         // (msgOrigin, proofMaturity) are omitted => (domain, agent, prover)
-        return RawCallData({
-            selector: bondingManager.remoteRegistrySlash.selector,
-            args: abi.encode(domain, agent, prover)
-        });
+        return
+            RawCallData({selector: bondingManager.remoteSlashAgent.selector, args: abi.encode(domain, agent, prover)});
     }
 
     function remoteWithdrawTipsCalldata(address actor, uint256 amount) public view returns (RawCallData memory) {
