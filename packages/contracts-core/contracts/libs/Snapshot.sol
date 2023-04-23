@@ -124,7 +124,7 @@ library SnapshotLib {
     // ═════════════════════════════════════════ SNAPSHOT ROOT CALCULATION ═════════════════════════════════════════════
 
     /// @notice Returns the root for the "Snapshot Merkle Tree" composed of state leafs from the snapshot.
-    function root(Snapshot snapshot) internal pure returns (bytes32) {
+    function calculateRoot(Snapshot snapshot) internal pure returns (bytes32) {
         uint256 statesAmount_ = snapshot.statesAmount();
         bytes32[] memory hashes = new bytes32[](statesAmount_);
         for (uint256 i = 0; i < statesAmount_; ++i) {

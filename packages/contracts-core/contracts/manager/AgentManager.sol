@@ -106,7 +106,7 @@ abstract contract AgentManager is SystemContract, VerificationManager, AgentMana
         (AgentStatus memory notaryStatus, address notary) = _verifyAttestation(att, attSignature);
         // Notary needs to be Active/Unstaking
         notaryStatus.verifyActiveUnstaking();
-        require(snapshot.root() == att.snapRoot(), "Attestation not matches snapshot");
+        require(snapshot.calculateRoot() == att.snapRoot(), "Attestation not matches snapshot");
         // This will revert if either actor is already in dispute
         IDisputeHub(destination).openDispute(guard, notaryStatus.domain, notary);
         return true;
@@ -179,7 +179,7 @@ abstract contract AgentManager is SystemContract, VerificationManager, AgentMana
         status.verifyActiveUnstaking();
         // This will revert if payload is not a snapshot
         Snapshot snapshot = snapPayload.castToSnapshot();
-        require(snapshot.root() == att.snapRoot(), "Attestation not matches snapshot");
+        require(snapshot.calculateRoot() == att.snapRoot(), "Attestation not matches snapshot");
         // This will revert if state does not refer to this chain
         bytes memory statePayload = snapshot.state(stateIndex).unwrap().clone();
         isValidState = IStateHub(origin).isValidState(statePayload);
