@@ -4,18 +4,6 @@ pragma solidity 0.8.17;
 import {AgentStatus} from "../libs/Structures.sol";
 
 interface IAgentManager {
-    /**
-     * @notice Local SystemRegistry should call this function to indicate that the agent
-     * is proven to commit fraud in the SystemRegistry.
-     * @dev On Synapse Chain this initiates the process of agent slashing. It could be immediately
-     * completed by anyone calling completeSlashing() providing a correct merkle proof
-     * for the OLD agent status.
-     * @param domain    Domain where the slashed agent was active
-     * @param agent     Address of the slashed Agent
-     * @param prover    Address that initially provided fraud proof in SystemRegistry
-     */
-    function registrySlash(uint32 domain, address agent, address prover) external;
-
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /**

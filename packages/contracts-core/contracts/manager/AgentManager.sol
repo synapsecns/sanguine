@@ -33,28 +33,10 @@ abstract contract AgentManager is SystemContract, VerificationManager, AgentMana
         destination = destination_;
     }
 
-    // ══════════════════════════════════════════════ SLASHING LOGIC ═══════════════════════════════════════════════════
-
-    /// @inheritdoc IAgentManager
-    // solhint-disable-next-line ordering
-    function registrySlash(uint32 domain, address agent, address prover) external {
-        // Check that Agent hasn't been already slashed and initiate the slashing
-        _initiateSlashing(domain, agent, prover);
-        // On all chains both Origin and Destination/Summit could slash agents
-        if (msg.sender == address(origin)) {
-            _notifySlashing(DESTINATION, domain, agent, prover);
-        } else if (msg.sender == address(destination)) {
-            _notifySlashing(ORIGIN, domain, agent, prover);
-        } else {
-            revert("Unauthorized caller");
-        }
-        // Call "after slash" hook
-        _afterAgentSlashed(domain, agent, prover);
-    }
-
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
+    // solhint-disable-next-line ordering
     function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status) {
         agent = _getAgent(index);
         if (agent != address(0)) status = agentStatus(agent);
@@ -77,27 +59,10 @@ abstract contract AgentManager is SystemContract, VerificationManager, AgentMana
     // solhint-disable-next-line no-empty-blocks
     function _afterAgentSlashed(uint32 domain, address agent, address prover) internal virtual {}
 
-    /// @dev Checks and initiates the slashing of an agent.
-    /// Should be called, after one of registries confirmed fraud committed by the agent.
-    function _initiateSlashing(uint32 domain, address agent, address prover) internal {
-        // Check that agent is Active/Unstaking and that the domains match
-        AgentStatus memory status = agentStatus(agent);
-        // Note: status would be Fraudulent/Slashed if slashing has been initiated before
-        require(
-            (status.flag == AgentFlag.Active || status.flag == AgentFlag.Unstaking) && status.domain == domain,
-            "Slashing could not be initiated"
-        );
-        slashStatus[agent] = SlashStatus({isSlashed: true, prover: prover});
-        emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-    }
-
-    /// @dev Notifies a given set of local registries about the slashed agent.
-    /// Set is defined by a bitmask, eg: DESTINATION | ORIGIN
-    function _notifySlashing(uint256 registryMask, uint32 domain, address agent, address prover) internal {
-        // Notify Destination, if requested
-        if (registryMask & DESTINATION != 0) ISystemRegistry(destination).managerSlash(domain, agent, prover);
-        // Notify Origin, if requested
-        if (registryMask & ORIGIN != 0) ISystemRegistry(origin).managerSlash(domain, agent, prover);
+    /// @dev Notifies the local registries about the slashed agent.
+    function _notifyRegistriesAgentSlashed(uint32 domain, address agent, address prover) internal {
+        ISystemRegistry(destination).managerSlash(domain, agent, prover);
+        ISystemRegistry(origin).managerSlash(domain, agent, prover);
     }
 
     /// @dev Slashes the Agent and notifies the local Destination and Origin contracts about the slashed agent.
@@ -112,9 +77,7 @@ abstract contract AgentManager is SystemContract, VerificationManager, AgentMana
         );
         slashStatus[agent] = SlashStatus({isSlashed: true, prover: prover});
         emit StatusUpdated(AgentFlag.Fraudulent, domain, agent);
-        // Notify local Registries
-        ISystemRegistry(destination).managerSlash(domain, agent, prover);
-        ISystemRegistry(origin).managerSlash(domain, agent, prover);
+        _notifyRegistriesAgentSlashed(domain, agent, prover);
         // Call "after slash" hook - this allows Bonding/Light Manager to add custom "after slash" logic
         _afterAgentSlashed(domain, agent, prover);
     }

@@ -53,13 +53,6 @@ abstract contract SystemRegistry is SystemContract, SystemRegistryEvents, ISyste
         emit AgentSlashed(domain, agent, prover);
     }
 
-    /// @dev This function should be called when the agent is proven to commit fraud in this contract.
-    function _slashAgent(uint32 domain, address agent) internal {
-        // Prover is msg.sender
-        _processSlashed(domain, agent, msg.sender);
-        agentManager.registrySlash(domain, agent, msg.sender);
-    }
-
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Returns status of the given agent: (flag, domain, index).

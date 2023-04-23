@@ -226,10 +226,8 @@ contract BondingManager is Versioned, StatementManager, BondingManagerEvents, In
         require(proofMaturity >= BONDING_OPTIMISTIC_PERIOD, "!optimisticPeriod");
         // TODO: do we need to save this?
         msgOrigin;
-        // Check that Agent hasn't been already slashed and initiate the slashing
-        _initiateSlashing(domain, agent, prover);
-        // Notify local registries about the slashing
-        _notifySlashing(DESTINATION | ORIGIN, domain, agent, prover);
+        // Slash agent and notify local registries
+        _slashAgent(domain, agent, prover);
         // Magic value to return is selector of the called function
         return this.remoteSlashAgent.selector;
     }

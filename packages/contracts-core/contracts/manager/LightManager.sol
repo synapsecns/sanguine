@@ -103,7 +103,7 @@ contract LightManager is Versioned, StatementManager, InterfaceLightManager {
         // Notify local Registries, if agent flag is Slashed
         if (status.flag == AgentFlag.Slashed) {
             // Prover is msg.sender
-            _notifySlashing(DESTINATION | ORIGIN, status.domain, agent, msg.sender);
+            _notifyRegistriesAgentSlashed(status.domain, agent, msg.sender);
         }
     }
 
